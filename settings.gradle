@@ -1,5 +1,11 @@
 rootProject.name = 'demo'
+
 include 'ventas'
 include 'ventas:domain'
 include 'ventas:application'
 include 'ventas:infrastructure'
+
+include 'seguridad'
+include 'seguridad:dominio'
+include 'seguridad:aplicacion'
+include 'seguridad:infraestructura'

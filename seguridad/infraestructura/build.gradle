@@ -1,0 +1,10 @@
+dependencies {
+    implementation project(':seguridad:dominio')
+    implementation project(':seguridad:aplicacion')
+    implementation "org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}"
+    implementation "org.flywaydb:flyway-core:${flywaydbVersion}"
+
+    runtimeOnly 'org.postgresql:postgresql:42.7.2'
+
+    testImplementation "com.h2database:h2:${h2Version}"
+}
