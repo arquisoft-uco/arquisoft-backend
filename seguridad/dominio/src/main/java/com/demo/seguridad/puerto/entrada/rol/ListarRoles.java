@@ -7,6 +7,6 @@ import com.demo.seguridad.modelo.Usuario;
 import java.util.List;
 
 public interface ListarRoles {
-    List<Rol> listarRoles(Aplicacion aplicacion);
-    List<Rol> listarRoles(Usuario usuario);
+    List<Rol> listarRolesPorAplicacion(Aplicacion aplicacion);
+    List<Rol> listarRolesPorUsuario(Usuario usuario);
 }

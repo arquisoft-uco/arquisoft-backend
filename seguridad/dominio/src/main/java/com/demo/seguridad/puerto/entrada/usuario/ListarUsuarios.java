@@ -6,5 +6,5 @@ import com.demo.seguridad.modelo.Usuario;
 import java.util.List;
 
 public interface ListarUsuarios {
-    List<Usuario> listarUsuarios(Organizacion organizacion);
+    List<Usuario> listarUsuariosPorOrganizacionYNombre(Usuario usuario);
 }
