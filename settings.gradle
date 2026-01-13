@@ -1,11 +1,86 @@
-rootProject.name = 'demo'
+rootProject.name = 'arquisoft-backend'
 
-include 'ventas'
-include 'ventas:domain'
-include 'ventas:application'
-include 'ventas:infrastructure'
+// ==================== SHARED ====================
+include 'shared'
+include 'shared:domain'
+include 'shared:security'
+include 'shared:notifications'
+include 'shared:redis'
+include 'shared:amqp'
+include 'shared:web'
+include 'shared:postgres'
+include 'shared:validation'
+include 'shared:exceptions'
 
-include 'seguridad'
-include 'seguridad:dominio'
-include 'seguridad:aplicacion'
-include 'seguridad:infraestructura'
+// ==================== CONTEXTOS ====================
+
+// Contexto 1: Usuarios
+include 'usuarios'
+include 'usuarios:domain'
+include 'usuarios:application'
+include 'usuarios:infrastructure'
+
+// Contexto 2: Fichas
+include 'fichas'
+include 'fichas:domain'
+include 'fichas:application'
+include 'fichas:infrastructure'
+
+// Contexto 3: Proyectos
+include 'proyectos'
+include 'proyectos:domain'
+include 'proyectos:application'
+include 'proyectos:infrastructure'
+
+// Contexto 4: Artefactos
+include 'artefactos'
+include 'artefactos:domain'
+include 'artefactos:application'
+include 'artefactos:infrastructure'
+
+// Contexto 5: Repositorio de Artefactos
+include 'repositorio_artefactos'
+include 'repositorio_artefactos:domain'
+include 'repositorio_artefactos:application'
+include 'repositorio_artefactos:infrastructure'
+
+// Contexto 6: Mapas de Ruta
+include 'mapas_ruta'
+include 'mapas_ruta:domain'
+include 'mapas_ruta:application'
+include 'mapas_ruta:infrastructure'
+
+// Contexto 7: Biblioteca
+include 'biblioteca'
+include 'biblioteca:domain'
+include 'biblioteca:application'
+include 'biblioteca:infrastructure'
+
+// Contexto 8: Entregables
+include 'entregables'
+include 'entregables:domain'
+include 'entregables:application'
+include 'entregables:infrastructure'
+
+// Contexto 9: Evaluaciones
+include 'evaluaciones'
+include 'evaluaciones:domain'
+include 'evaluaciones:application'
+include 'evaluaciones:infrastructure'
+
+// Contexto 10: Solicitudes
+include 'solicitudes'
+include 'solicitudes:domain'
+include 'solicitudes:application'
+include 'solicitudes:infrastructure'
+
+// Contexto 11: Notificaciones
+include 'notificaciones'
+include 'notificaciones:domain'
+include 'notificaciones:application'
+include 'notificaciones:infrastructure'
+
+// ==================== OTROS CONTEXTOS ====================
+// include 'api-gateway'  // No existe en la estructura actual
+// include 'seguridad'    // Revisar estructura
+// include 'ventas'       // Revisar estructura

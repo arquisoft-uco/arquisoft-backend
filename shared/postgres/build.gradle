@@ -1,0 +1,17 @@
+dependencies {
+    implementation project(':shared:domain')
+    implementation project(':shared:exceptions')
+    
+    // Spring Data JPA
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
+    
+    // PostgreSQL driver
+    runtimeOnly "org.postgresql:postgresql:42.7.2"
+    
+    // Migrations (Flyway)
+    implementation "org.flywaydb:flyway-core:${flywaydbVersion}"
+    implementation "org.flywaydb:flyway-database-postgresql:${flywaydbVersion}"
+    
+    // H2 for testing
+    testImplementation "com.h2database:h2:${h2Version}"
+}
