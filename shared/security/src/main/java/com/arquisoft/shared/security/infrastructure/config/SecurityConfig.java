@@ -13,7 +13,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * Configuración de Spring Security para OAuth2/JWT con Keycloak.
@@ -51,14 +50,6 @@ public class SecurityConfig {
         );
         log.info("Configuring JWT decoder with JWK Set URI: {}", jwkSetUri);
         return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-    }
-
-    /**
-     * RestTemplate para comunicación con Keycloak.
-     */
-    @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
     }
 
     /**
