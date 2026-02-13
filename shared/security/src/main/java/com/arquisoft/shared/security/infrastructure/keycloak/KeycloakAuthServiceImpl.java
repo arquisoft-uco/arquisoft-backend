@@ -68,7 +68,9 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
             
-            ResponseEntity<Map> response = restTemplate.postForEntity(tokenEndpoint, request, Map.class);
+            @SuppressWarnings("unchecked")
+            ResponseEntity<Map<String, Object>> response = restTemplate.postForEntity(
+                    tokenEndpoint, request, (Class<Map<String, Object>>)(Class<?>) Map.class);
             
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return mapResponseToLoginResponseDTO(response.getBody());
@@ -109,7 +111,10 @@ public class KeycloakAuthServiceImpl implements KeycloakAuthService {
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
             HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-            ResponseEntity<Map> response = restTemplate.postForEntity(tokenEndpoint, request, Map.class);
+            
+            @SuppressWarnings("unchecked")
+            ResponseEntity<Map<String, Object>> response = restTemplate.postForEntity(
+                    tokenEndpoint, request, (Class<Map<String, Object>>)(Class<?>) Map.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return mapResponseToLoginResponseDTO(response.getBody());

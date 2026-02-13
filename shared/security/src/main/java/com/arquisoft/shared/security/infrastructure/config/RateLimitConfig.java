@@ -2,7 +2,6 @@ package com.arquisoft.shared.security.infrastructure.config;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Bucket4j;
 import io.github.bucket4j.Refill;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +71,7 @@ public class RateLimitConfig {
                 requestsPerMinute,
                 Refill.intervally(requestsPerMinute, Duration.ofMinutes(1))
         );
-        return Bucket4j.builder()
+        return Bucket.builder()
                 .addLimit(limit)
                 .build();
     }
@@ -81,7 +80,7 @@ public class RateLimitConfig {
      * Crea un bucket sin límites (para cuando rate limiting está deshabilitado).
      */
     private Bucket createUnlimitedBucket() {
-        return Bucket4j.builder()
+        return Bucket.builder()
                 .addLimit(Bandwidth.classic(Integer.MAX_VALUE, Refill.intervally(Integer.MAX_VALUE, Duration.ofMinutes(1))))
                 .build();
     }

@@ -86,8 +86,8 @@ public class CurrentUserProviderImpl implements CurrentUserProvider {
                 .email(jwt.getClaimAsString("email"))
                 .name(jwt.getClaimAsString("name"))
                 .roles(roles)
-                .issuedAt(jwt.getIssuedAt() != null ? jwt.getIssuedAt().getTime() : null)
-                .expiresAt(jwt.getExpiresAt() != null ? jwt.getExpiresAt().getTime() : null)
+                .issuedAt(jwt.getIssuedAt() != null ? jwt.getIssuedAt().toEpochMilli() : null)
+                .expiresAt(jwt.getExpiresAt() != null ? jwt.getExpiresAt().toEpochMilli() : null)
                 .build();
     }
 }

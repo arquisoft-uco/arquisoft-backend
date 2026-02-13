@@ -68,8 +68,8 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
                 .email(jwt.getClaimAsString("email"))
                 .name(jwt.getClaimAsString("name"))
                 .roles(roles)
-                .issuedAt(jwt.getIssuedAt() != null ? jwt.getIssuedAt().getTime() : null)
-                .expiresAt(jwt.getExpiresAt() != null ? jwt.getExpiresAt().getTime() : null)
+                .issuedAt(jwt.getIssuedAt() != null ? jwt.getIssuedAt().toEpochMilli() : null)
+                .expiresAt(jwt.getExpiresAt() != null ? jwt.getExpiresAt().toEpochMilli() : null)
                 .build();
     }
 
@@ -80,6 +80,7 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
      * - En la propiedad "realm_access" -> "roles" (anidado)
      * - En la propiedad "resource_access" -> "client_id" -> "roles" (por cliente)
      */
+    @SuppressWarnings("unchecked")
     private List<String> extractRoles(Jwt jwt) {
         List<String> roles = new ArrayList<>();
 
