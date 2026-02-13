@@ -1,5 +1,6 @@
 package com.arquisoft.shared.security;
 
+import com.arquisoft.shared.security.domain.dto.AuthenticatedUserDTO;
 import org.springframework.security.core.Authentication;
 
 /**
@@ -13,9 +14,14 @@ public interface CurrentUserProvider {
     Authentication getCurrentAuthentication();
 
     /**
-     * Obtiene el ID del usuario actual.
+     * Obtiene el ID del usuario actual (subject del JWT).
      */
     String getCurrentUserId();
+
+    /**
+     * Obtiene el email del usuario actual.
+     */
+    String getCurrentEmail();
 
     /**
      * Obtiene el nombre de usuario actual.
@@ -26,4 +32,9 @@ public interface CurrentUserProvider {
      * Verifica si el usuario actual tiene un rol específico.
      */
     boolean hasRole(String role);
+
+    /**
+     * Obtiene la información completa del usuario autenticado desde el JWT.
+     */
+    AuthenticatedUserDTO getCurrentUser();
 }
