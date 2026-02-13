@@ -6,9 +6,9 @@ import com.arquisoft.shared.security.domain.dto.LoginRequestDTO;
 import com.arquisoft.shared.security.domain.dto.LoginResponseDTO;
 import com.arquisoft.shared.security.domain.dto.RefreshTokenRequestDTO;
 import com.arquisoft.shared.security.domain.dto.TokenValidationResponseDTO;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,19 +38,12 @@ public class AuthController {
      * @return tokens de acceso y refresh
      */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginRequestDTO loginRequest) {
+    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
         log.info("Login attempt for user: {}", loginRequest.getEmail());
         
-        try {
-            LoginResponseDTO response = keycloakAuthService.authenticate(loginRequest);
-            log.info("User {} logged in successfully", loginRequest.getEmail());
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Login failed for user {}: {}", loginRequest.getEmail(), e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(LoginResponseDTO.builder()
-                            .build());
-        }
+        LoginResponseDTO response = keycloakAuthService.authenticate(loginRequest);
+        log.info("User {} logged in successfully", loginRequest.getEmail());
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -60,19 +53,12 @@ public class AuthController {
      * @return nuevo access token y refresh token
      */
     @PostMapping("/refresh")
-    public ResponseEntity<LoginResponseDTO> refreshToken(@RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
+    public ResponseEntity<LoginResponseDTO> refreshToken(@Valid @RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
         log.debug("Token refresh attempt");
         
-        try {
-            LoginResponseDTO response = keycloakAuthService.refreshToken(refreshTokenRequest);
-            log.debug("Token refreshed successfully");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.warn("Token refresh failed: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(LoginResponseDTO.builder()
-                            .build());
-        }
+        LoginResponseDTO response = keycloakAuthService.refreshToken(refreshTokenRequest);
+        log.debug("Token refreshed successfully");
+        return ResponseEntity.ok(response);
     }
 
     /**
