@@ -1,8 +1,10 @@
 dependencies {
     implementation project(':shared:domain')
     
-    // Spring Security
+    // Spring Security & OAuth2
     implementation "org.springframework.boot:spring-boot-starter-security:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
     
     // JWT
     implementation "io.jsonwebtoken:jjwt-api:0.12.3"
@@ -11,4 +13,17 @@ dependencies {
     
     // Keycloak
     implementation "org.keycloak:keycloak-spring-boot-starter:${keycloakVersion}"
+    implementation "org.keycloak:keycloak-spring-security-adapter:${keycloakVersion}"
+    
+    // Rate Limiting
+    implementation "com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0"
+    
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    
+    // Testing
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testImplementation "org.springframework.security:spring-security-test:${springBootVersion}"
+    testImplementation "junit:junit:4.13.2"
 }
