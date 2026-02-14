@@ -1,0 +1,13 @@
+dependencies {
+    implementation project(':shared:domain')
+    implementation project(':shared:exceptions')
+    
+    // Spring Data Redis
+    implementation "org.springframework.boot:spring-boot-starter-data-redis:${springBootVersion}"
+    
+    // Redis client (Jedis)
+    implementation "redis.clients:jedis:5.1.0"
+    
+    // Serialization
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
+}

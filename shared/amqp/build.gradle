@@ -1,0 +1,10 @@
+dependencies {
+    implementation project(':shared:domain')
+    implementation project(':shared:exceptions')
+    
+    // Spring AMQP (RabbitMQ)
+    implementation "org.springframework.boot:spring-boot-starter-amqp:${springBootVersion}"
+    
+    // Serialization
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
+}

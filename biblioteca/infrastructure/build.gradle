@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':biblioteca:domain')
+    implementation project(':biblioteca:application')
+}
+
+

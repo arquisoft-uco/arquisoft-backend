@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':repositorio_artefactos:domain')
+    implementation project(':repositorio_artefactos:application')
+}
+
+

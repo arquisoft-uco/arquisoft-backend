@@ -1,0 +1,6 @@
+dependencies {
+    implementation project(':evaluaciones:domain')
+    implementation project(':evaluaciones:application')
+}
+
+
