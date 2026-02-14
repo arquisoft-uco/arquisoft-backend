@@ -1,0 +1,27 @@
+# Guía de Contribución — Arquisoft Backend
+
+## Antes de Contribuir
+
+1. Lee los [Estándares de Código](https://github.com/arquisoft-uco/arquisoft-docs/blob/main/docs/architecture/coding-standards.md)
+2. Asegúrate de tener asignada la tarea correspondiente
+
+## Flujo de Trabajo
+
+1. Crea una rama desde `develop`: `feature/<HT-XXX>-<descripcion_snake_case>`
+2. Implementa siguiendo arquitectura hexagonal por bounded context
+3. Ejecuta tests: `./gradlew test`
+4. Verifica cobertura: `./gradlew jacocoTestReport` (mínimo 75%)
+5. Crea un Pull Request hacia `develop` usando el template provisto
+6. Espera al menos 1 review aprobado antes de mergear
+
+## Convenciones
+
+- **Commits:** Conventional Commits en español — `feat(proyecto-grado): descripción`
+- **Branching:** GitFlow simplificado — `feature/`, `bugfix/`, `hotfix/`
+- **Nomenclatura:** Español para negocio (`ProyectoGrado`), inglés para sufijos técnicos (`UseCase`, `Adapter`, `DTO`)
+- **Arquitectura:** Hexagonal (puertos y adaptadores) por Bounded Context
+- **Testing:** JUnit 5 + Mockito + AssertJ — Convención: `debeHacerAlgo_cuandoCondicion()`
+
+## Estructura del PR
+
+Usa el template de PR incluido en `.github/PULL_REQUEST_TEMPLATE.md`.
