@@ -7,7 +7,8 @@
 
 ## Flujo de Trabajo
 
-1. Crea una rama desde `develop`: `feature/<HT-XXX>-<descripcion_snake_case>`
+1. Crea una rama desde `develop` siguiendo la convención: `<prefijo>/<id>-<descripcion_snake_case>`
+   - Ejemplo: `feature/HT-005-scaffolding_spring_boot`
 2. Implementa siguiendo arquitectura hexagonal por bounded context
 3. Ejecuta tests: `./gradlew test`
 4. Verifica cobertura: `./gradlew jacocoTestReport` (mínimo 75%)
@@ -16,8 +17,10 @@
 
 ## Convenciones
 
-- **Commits:** Conventional Commits en español — `feat(proyecto-grado): descripción`
-- **Branching:** GitFlow simplificado — `feature/`, `bugfix/`, `hotfix/`
+- **Commits:** Conventional Commits en español — `feat(proyectos): descripción`
+- **Branching:** GitFlow simplificado
+  - Prefijos válidos: `feature/`, `fix/`, `refactor/`, `hotfix/`, `docs/`, `test/`, `chore/`, `spike/`
+  - Formato: `<prefijo>/<id>-<descripcion_snake_case>`
 - **Nomenclatura:** Español para negocio (`ProyectoGrado`), inglés para sufijos técnicos (`UseCase`, `Adapter`, `DTO`)
 - **Arquitectura:** Hexagonal (puertos y adaptadores) por Bounded Context
 - **Testing:** JUnit 5 + Mockito + AssertJ — Convención: `debeHacerAlgo_cuandoCondicion()`
