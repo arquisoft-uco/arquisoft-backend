@@ -1,0 +1,82 @@
+# ==============================================================================
+# Arquisoft Backend — CI Pipeline
+# ==============================================================================
+# Ejecuta linting, tests y build en cada push/PR
+# Runner: GitHub-hosted (ubuntu-latest) — gratis
+# ==============================================================================
+
+name: CI Backend
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [develop, main]
+
+concurrency:
+  group: ci-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ── Checkout ──
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      # ── Setup Java 17 ──
+      - name: Setup Java 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # ── Cache Gradle ──
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties', 'gradle.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      # ── Permisos Gradle Wrapper ──
+      - name: Permisos gradlew
+        run: chmod +x gradlew
+
+      # ── Lint (Checkstyle) ──
+      - name: Lint — Checkstyle
+        run: ./gradlew checkstyleMain checkstyleTest --no-daemon
+        continue-on-error: false
+
+      # ── Tests ──
+      - name: Tests unitarios
+        run: ./gradlew test --no-daemon
+
+      # ── Build ──
+      - name: Build del proyecto
+        run: ./gradlew build -x test --no-daemon
+
+      # ── Upload test reports ──
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: '**/build/reports/tests/'
+          retention-days: 7
+
+      # ── Upload checkstyle reports ──
+      - name: Upload checkstyle reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: checkstyle-reports
+          path: '**/build/reports/checkstyle/'
+          retention-days: 7

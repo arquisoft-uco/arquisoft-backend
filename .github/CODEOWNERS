@@ -1,0 +1,17 @@
+# ==============================================================================
+# Arquisoft Backend — CODEOWNERS
+# ==============================================================================
+# Asigna reviewers automáticos a Pull Requests según las rutas modificadas
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# ==============================================================================
+
+# Default: todo el repo requiere review del equipo
+* @arquisoft-uco/developers
+
+# Configuración de CI/CD
+.github/ @arquisoft-uco/devops
+
+# Arquitectura y configuración global
+build.gradle @arquisoft-uco/developers
+settings.gradle @arquisoft-uco/developers
+Dockerfile @arquisoft-uco/devops
