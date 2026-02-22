@@ -64,7 +64,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 // CORS configurado en CorsConfig
-                .cors(cors -> {})
+                .cors(cors -> { })
                 
                 // CSRF deshabilitado para APIs REST
                 .csrf(csrf -> csrf.disable())
