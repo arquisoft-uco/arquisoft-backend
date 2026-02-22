@@ -1,6 +1,0 @@
-dependencies {
-    implementation project(':usuarios:domain')
-    implementation project(':usuarios:application')
-}
-
-

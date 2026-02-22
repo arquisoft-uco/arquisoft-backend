@@ -1,0 +1,30 @@
+dependencies {
+    implementation project(':seguridad:domain')
+    implementation project(':seguridad:application')
+
+    // Spring Security & OAuth2
+    implementation "org.springframework.boot:spring-boot-starter-security:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"
+
+    // JWT
+    implementation "io.jsonwebtoken:jjwt-api:0.12.3"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:0.12.3"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:0.12.3"
+
+    // Keycloak
+    implementation "org.keycloak:keycloak-spring-boot-starter:${keycloakVersion}"
+    implementation "org.keycloak:keycloak-spring-security-adapter:${keycloakVersion}"
+
+    // Rate Limiting
+    implementation "com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0"
+
+    // Database
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
+    implementation "org.flywaydb:flyway-core:${flywaydbVersion}"
+    runtimeOnly "org.postgresql:postgresql:42.7.2"
+
+    // Testing
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation "com.h2database:h2:${h2Version}"
+}

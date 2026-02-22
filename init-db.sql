@@ -1,8 +1,8 @@
 -- ==================== CREAR SCHEMAS PARA CADA CONTEXTO ====================
 
--- Contexto 1: Usuarios
-CREATE SCHEMA IF NOT EXISTS usuarios;
-GRANT ALL PRIVILEGES ON SCHEMA usuarios TO arquisoft;
+-- Contexto 1: Seguridad (Usuarios, Roles, Permisos)
+CREATE SCHEMA IF NOT EXISTS seguridad;
+GRANT ALL PRIVILEGES ON SCHEMA seguridad TO arquisoft;
 
 -- Contexto 2: Fichas
 CREATE SCHEMA IF NOT EXISTS fichas;
@@ -20,29 +20,13 @@ GRANT ALL PRIVILEGES ON SCHEMA artefactos TO arquisoft;
 CREATE SCHEMA IF NOT EXISTS repositorio_artefactos;
 GRANT ALL PRIVILEGES ON SCHEMA repositorio_artefactos TO arquisoft;
 
--- Contexto 6: Mapas de Ruta
-CREATE SCHEMA IF NOT EXISTS mapas_ruta;
-GRANT ALL PRIVILEGES ON SCHEMA mapas_ruta TO arquisoft;
-
--- Contexto 7: Biblioteca
-CREATE SCHEMA IF NOT EXISTS biblioteca;
-GRANT ALL PRIVILEGES ON SCHEMA biblioteca TO arquisoft;
-
--- Contexto 8: Entregables
+-- Contexto 6: Entregables
 CREATE SCHEMA IF NOT EXISTS entregables;
 GRANT ALL PRIVILEGES ON SCHEMA entregables TO arquisoft;
 
--- Contexto 9: Evaluaciones
+-- Contexto 7: Evaluaciones
 CREATE SCHEMA IF NOT EXISTS evaluaciones;
 GRANT ALL PRIVILEGES ON SCHEMA evaluaciones TO arquisoft;
-
--- Contexto 10: Solicitudes
-CREATE SCHEMA IF NOT EXISTS solicitudes;
-GRANT ALL PRIVILEGES ON SCHEMA solicitudes TO arquisoft;
-
--- Contexto 11: Notificaciones
-CREATE SCHEMA IF NOT EXISTS notificaciones;
-GRANT ALL PRIVILEGES ON SCHEMA notificaciones TO arquisoft;
 
 -- ==================== CREAR USUARIO PARA KEYCLOAK ====================
 
@@ -62,9 +46,8 @@ DECLARE
   schema_name TEXT;
 BEGIN
   FOR schema_name IN 
-    SELECT unnest(ARRAY['usuarios', 'fichas', 'proyectos', 'artefactos', 
-                        'repositorio_artefactos', 'mapas_ruta', 'biblioteca', 
-                        'entregables', 'evaluaciones', 'solicitudes', 'notificaciones'])
+    SELECT unnest(ARRAY['seguridad', 'fichas', 'proyectos', 'artefactos', 
+                        'repositorio_artefactos', 'entregables', 'evaluaciones'])
   LOOP
     EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL ON TABLES TO arquisoft', schema_name);
     EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL ON SEQUENCES TO arquisoft', schema_name);

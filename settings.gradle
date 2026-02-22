@@ -1,9 +1,8 @@
 rootProject.name = 'arquisoft-backend'
 
-// ==================== SHARED ====================
+// ==================== SHARED (Commons) ====================
 include 'shared'
 include 'shared:domain'
-include 'shared:security'
 include 'shared:notifications'
 include 'shared:redis'
 include 'shared:amqp'
@@ -12,75 +11,46 @@ include 'shared:postgres'
 include 'shared:validation'
 include 'shared:exceptions'
 
-// ==================== CONTEXTOS ====================
+// ==================== CONTEXTOS DE NEGOCIO ====================
 
-// Contexto 1: Usuarios
-include 'usuarios'
-include 'usuarios:domain'
-include 'usuarios:application'
-include 'usuarios:infrastructure'
+// Contexto 1: Seguridad (Autenticación, Usuarios, Roles, Permisos)
+include 'seguridad'
+include 'seguridad:domain'
+include 'seguridad:application'
+include 'seguridad:infrastructure'
 
-// Contexto 2: Fichas
+// Contexto 2: Fichas (Fichas de Caracterización de Trabajos de Grado)
 include 'fichas'
 include 'fichas:domain'
 include 'fichas:application'
 include 'fichas:infrastructure'
 
-// Contexto 3: Proyectos
+// Contexto 3: Proyectos (Proyectos de Grado)
 include 'proyectos'
 include 'proyectos:domain'
 include 'proyectos:application'
 include 'proyectos:infrastructure'
 
-// Contexto 4: Artefactos
+// Contexto 4: Artefactos (Documentos y Artefactos de Proyecto)
 include 'artefactos'
 include 'artefactos:domain'
 include 'artefactos:application'
 include 'artefactos:infrastructure'
 
-// Contexto 5: Repositorio de Artefactos
+// Contexto 5: Repositorio de Artefactos (Control de Versiones y Almacenamiento)
 include 'repositorio_artefactos'
 include 'repositorio_artefactos:domain'
 include 'repositorio_artefactos:application'
 include 'repositorio_artefactos:infrastructure'
 
-// Contexto 6: Mapas de Ruta
-include 'mapas_ruta'
-include 'mapas_ruta:domain'
-include 'mapas_ruta:application'
-include 'mapas_ruta:infrastructure'
-
-// Contexto 7: Biblioteca
-include 'biblioteca'
-include 'biblioteca:domain'
-include 'biblioteca:application'
-include 'biblioteca:infrastructure'
-
-// Contexto 8: Entregables
+// Contexto 6: Entregables (Entregables y Hitos del Proyecto)
 include 'entregables'
 include 'entregables:domain'
 include 'entregables:application'
 include 'entregables:infrastructure'
 
-// Contexto 9: Evaluaciones
+// Contexto 7: Evaluaciones (Evaluaciones Definitivas y Calificaciones)
 include 'evaluaciones'
 include 'evaluaciones:domain'
 include 'evaluaciones:application'
 include 'evaluaciones:infrastructure'
-
-// Contexto 10: Solicitudes
-include 'solicitudes'
-include 'solicitudes:domain'
-include 'solicitudes:application'
-include 'solicitudes:infrastructure'
-
-// Contexto 11: Notificaciones
-include 'notificaciones'
-include 'notificaciones:domain'
-include 'notificaciones:application'
-include 'notificaciones:infrastructure'
-
-// ==================== OTROS CONTEXTOS ====================
-// include 'api-gateway'  // No existe en la estructura actual
-// include 'seguridad'    // Revisar estructura
-// include 'ventas'       // Revisar estructura

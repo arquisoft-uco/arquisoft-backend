@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(':shared:domain')
+
+    // Spring Security types (Authentication, Jwt) used in port interfaces
+    implementation "org.springframework.boot:spring-boot-starter-security:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server:${springBootVersion}"
+}
