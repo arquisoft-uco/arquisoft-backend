@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.domain.port.in;
 
-import com.arquisoft.seguridad.application.dto.AuthenticatedUserDTO;
+import com.arquisoft.seguridad.domain.model.AuthenticatedUserDTO;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
 import org.springframework.security.oauth2.jwt.Jwt;
 

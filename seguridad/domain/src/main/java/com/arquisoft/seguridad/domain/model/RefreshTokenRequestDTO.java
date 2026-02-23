@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.application.dto;
+package com.arquisoft.seguridad.domain.model;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -7,7 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO para solicitud de refresh token
+ * Value object para solicitud de refresh token
  */
 @Data
 @NoArgsConstructor

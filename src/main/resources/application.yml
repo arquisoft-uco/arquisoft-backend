@@ -22,6 +22,8 @@ spring:
         format_sql: true
         jdbc:
           batch_size: 25
+    open-in-view: false
+    show-sql: false
   
   # ==================== FLYWAY ====================
   flyway:
@@ -52,11 +54,6 @@ spring:
         max-active: 10
         max-idle: 5
         min-idle: 0
-  
-  # ==================== JPA/HIBERNATE ====================
-  jpa:
-    open-in-view: false
-    show-sql: false
   
 # ==================== SERVER ====================
 server:

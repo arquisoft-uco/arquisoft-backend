@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.application.dto;
+package com.arquisoft.seguridad.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 /**
- * DTO que contiene la información del usuario actual extraída del token JWT.
+ * Value object que contiene la información del usuario actual extraída del token JWT.
  * Se utiliza para pasar información del usuario autenticado entre contextos.
  */
 @Data

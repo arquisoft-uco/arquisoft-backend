@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.application.dto;
+package com.arquisoft.seguridad.domain.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO para solicitud de login
+ * Value object para solicitud de login
  */
 @Data
 @NoArgsConstructor

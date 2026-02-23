@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out;
 
 import com.arquisoft.seguridad.domain.port.in.JwtTokenProvider;
-import com.arquisoft.seguridad.application.dto.AuthenticatedUserDTO;
+import com.arquisoft.seguridad.domain.model.AuthenticatedUserDTO;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

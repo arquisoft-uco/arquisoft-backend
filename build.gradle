@@ -64,7 +64,16 @@ subprojects { subproject ->
         }
     }
 
-    group = parent.group
+    // Unique GAV per context: e.g. com.arquisoft.seguridad:domain avoids collision with com.arquisoft.shared:domain
+    if (subproject.parent != rootProject) {
+        group = "${rootProject.group}.${subproject.parent.name}"
+        // Unique JAR name: e.g. seguridad-infrastructure-1.0.0.jar to avoid bootJar collision
+        base {
+            archivesName = "${subproject.parent.name}-${subproject.name}"
+        }
+    } else {
+        group = rootProject.group
+    }
     version = parent.version
 
     java {

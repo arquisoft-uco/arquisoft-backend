@@ -7,7 +7,7 @@ package com.arquisoft.seguridad.domain.model;
 public enum UserRole {
     ASESOR_FICHA("asesor_ficha", "Asesor de Ficha"),
     JURADO("jurado", "Jurado"),
-    BIBLIOTECARIO("bibliotecario", "Bibliotecario"), # Rol que no se implementara
+    BIBLIOTECARIO("bibliotecario", "Bibliotecario"),
     ADMINISTRADOR("administrador", "Administrador"),
     ESTUDIANTE("estudiante", "Estudiante"),
     ASESOR("asesor", "Asesor"),

@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.application.dto;
+package com.arquisoft.seguridad.domain.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO para respuesta de login
+ * Value object para respuesta de login
  */
 @Data
 @NoArgsConstructor

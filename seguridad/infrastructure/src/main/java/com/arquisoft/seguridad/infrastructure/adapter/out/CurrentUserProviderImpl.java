@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out;
 
 import com.arquisoft.seguridad.domain.port.in.CurrentUserProvider;
-import com.arquisoft.seguridad.application.dto.AuthenticatedUserDTO;
+import com.arquisoft.seguridad.domain.model.AuthenticatedUserDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

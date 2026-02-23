@@ -1,9 +1,9 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out;
 
 import com.arquisoft.seguridad.domain.port.in.KeycloakAuthService;
-import com.arquisoft.seguridad.application.dto.LoginRequestDTO;
-import com.arquisoft.seguridad.application.dto.LoginResponseDTO;
-import com.arquisoft.seguridad.application.dto.RefreshTokenRequestDTO;
+import com.arquisoft.seguridad.domain.model.LoginRequestDTO;
+import com.arquisoft.seguridad.domain.model.LoginResponseDTO;
+import com.arquisoft.seguridad.domain.model.RefreshTokenRequestDTO;
 import com.arquisoft.seguridad.domain.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.exception.InvalidCredentialsException;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;

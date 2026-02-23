@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.domain.port.in;
 
-import com.arquisoft.seguridad.application.dto.AuthenticatedUserDTO;
+import com.arquisoft.seguridad.domain.model.AuthenticatedUserDTO;
 import org.springframework.security.core.Authentication;
 
 /**
