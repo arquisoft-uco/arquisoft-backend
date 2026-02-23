@@ -6,7 +6,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-data-redis:${springBootVersion}"
     
     // Redis client (Jedis)
-    implementation "redis.clients:jedis:5.1.0"
+    implementation "redis.clients:jedis:7.3.0"
     
     // Serialization
     implementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
