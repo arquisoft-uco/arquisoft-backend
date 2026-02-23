@@ -1,5 +1,5 @@
 # ==================== STAGE 1: BUILD ====================
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 
 WORKDIR /build
 
@@ -14,7 +14,7 @@ COPY . .
 RUN ./gradlew build -x test --no-daemon
 
 # ==================== STAGE 2: RUNTIME ====================
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 
 WORKDIR /app
 
