@@ -9,6 +9,7 @@ import com.arquisoft.seguridad.application.dto.TokenValidationResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,8 +40,7 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
-        log.info("Login attempt for user: {}", loginRequest.getEmail());
-        
+        log.info("Login attempt for user: {}", loginRequest.getEmail());    
         LoginResponseDTO response = keycloakAuthService.authenticate(loginRequest);
         log.info("User {} logged in successfully", loginRequest.getEmail());
         return ResponseEntity.ok(response);

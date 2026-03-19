@@ -135,7 +135,7 @@ services:
       dockerfile: Dockerfile
     container_name: arquisoft-backend
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/arquisoft
+      #SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/arquisoft
       SPRING_DATASOURCE_USERNAME: arquisoft
       SPRING_DATASOURCE_PASSWORD: arquisoft123
       SPRING_RABBITMQ_HOST: rabbitmq

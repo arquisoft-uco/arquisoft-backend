@@ -1,6 +1,10 @@
 spring:
   application:
     name: arquisoft
+
+  threads:
+    virtual:
+      enabled: true
   
   # ==================== BASE DE DATOS ====================
   datasource:

@@ -108,7 +108,7 @@ arquisoft-backend/
 | Componente | Tecnología | Versión |
 |-----------|-----------|---------|
 | Framework | Spring Boot | 3.2.4 |
-| Lenguaje | Java | 17 |
+| Lenguaje | Java | 21 |
 | Build | Gradle | 7+ |
 | Patrón | Hexagonal (Puertos y Adaptadores) | - |
 
@@ -171,7 +171,7 @@ arquisoft-backend/
 
 ### Requisitos Previos
 
-- Java 17+
+- Java 21+
 - Docker y Docker Compose
 - Git
 

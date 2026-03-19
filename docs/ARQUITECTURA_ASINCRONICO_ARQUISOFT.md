@@ -566,7 +566,7 @@ docker run -p 8080:8080 \
 | **Almacenamiento** | Nextcloud (WebDAV) |
 | **Autenticación** | Keycloak 22 (OAuth2/JWT) |
 | **Rate Limiting** | Bucket4j 7.6.0 |
-| **Framework** | Spring Boot 3.2.4 (Java 17) |
+| **Framework** | Spring Boot 3.2.4 (Java 21) |
 | **Build** | Gradle 7+ |
 | **Testing** | JUnit 5 + Mockito + H2 |
 
