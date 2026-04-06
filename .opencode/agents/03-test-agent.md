@@ -3,7 +3,8 @@ name: tester
 description: >-
   Agente de pruebas unitarias. Invocar después de que el agente implementador
   (02-dev-agent) haya completado la implementación de una Historia de Usuario.
-  Lee el PLAN-HT-XXX.md y el código implementado, genera tests JUnit 5 + Mockito
+  Recibe el ID del plan al ser invocado (ej: @tester genera los tests para HU-160).
+  Lee el PLAN-{HU|HT}-{ID}.md y el código implementado, genera tests JUnit 5 + Mockito
   agrupados por capa (domain → application → infrastructure), espera aprobación
   por capa completa antes de continuar. Usa Context7 obligatoriamente para
   verificar APIs de testing actualizadas. Ejecuta ./gradlew test al finalizar
@@ -18,11 +19,10 @@ permission:
     "./gradlew :*:test": allow
     "./gradlew :*:test --tests *": allow
     "./gradlew jacocoTestReport": allow
-    "git status": allow
+    "./gradlew :*:jacocoTestReport": allow
   webfetch: deny
   skill:
     "context7-stack": allow
-    "gh-docs-reader": allow
     "*": deny
 ---
 
@@ -205,8 +205,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 ```
 
 ---
@@ -215,8 +220,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 ### FASE 0 — Carga de Contexto
 
-1. Solicita el ID de la HU al usuario o búscalo en `/.workspace/HU-PLAN/`.
-2. Lee el `PLAN-HT-XXX.md` completo — extrae:
+1. El usuario indica el plan al invocar el agente, por ejemplo:
+   `@tester genera los tests para HU-160` o `@tester genera los tests para HT-007`.
+   Si no se indicó el ID, pregunta: **"¿Cuál es el ID del plan (HU o HT)?"**
+2. Lee el `PLAN-{HU|HT}-{ID}.md` completo — extrae:
    - Bounded context afectado
    - Árbol de archivos implementados
    - Casos de prueba sugeridos (sección 9 del plan)
@@ -226,7 +233,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 4. Confirma con el usuario:
 
 ```
-📋 Contexto cargado — HT-XXX
+📋 Contexto cargado — {HU|HT}-{ID}
 
 Bounded context: {contexto}
 Archivos de producción encontrados: N
@@ -263,21 +270,23 @@ Voy a generar tests para las siguientes clases:
 
 ```
 skill("context7-stack")
-query-docs /junit-team/junit5 "test lifecycle BeforeEach nested"
-query-docs /assertj/assertj-core "assertThat isEqualTo isInstanceOf"
+query-docs /websites/junit_current "test lifecycle BeforeEach nested DisplayName"
+query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf"
 ```
 
 #### Ciclo de aprobación por capa
 
 ```
 1. ANUNCIAR  → "Voy a generar los tests de capa domain ({N} archivos)"
-2. GENERAR   → Escribir todos los archivos de test de domain
-3. MOSTRAR   → Presentar cada archivo generado
-4. EJECUTAR  → ./gradlew :{contexto}:domain:test
-5. REPORTAR  → Mostrar resultado: tests pasados / fallados / cobertura
-6. ESPERAR   → "¿Apruebas los tests de domain o necesitas ajustes?"
-7. AJUSTAR   → Si el usuario pide cambios, aplicar y volver al paso 4
-8. CONFIRMAR → Solo con aprobación explícita, pasar a FASE 2
+2. GENERAR   → Producir el contenido de cada archivo de test de domain
+3. ESCRIBIR  → Guardar cada archivo en disco (src/test/java/...) con la herramienta Edit/Write
+4. MOSTRAR   → Presentar al usuario el código escrito para revisión
+5. EJECUTAR  → ./gradlew :{contexto}:domain:test
+6. REPORTAR  → Mostrar resultado con el formato de la sección "Reporte por Capa" (ver abajo)
+7. ESPERAR   → "¿Apruebas los tests de domain o necesitas ajustes?"
+8. AJUSTAR   → Si hay test fallido, aplicar el "Protocolo de Test Fallido" antes de continuar.
+              Si el usuario pide cambios manuales, aplicar, re-ejecutar (paso 5) y volver al paso 6.
+9. CONFIRMAR → Solo con aprobación explícita y todos los tests en verde, pasar a FASE 2
 ```
 
 #### Escenarios mínimos obligatorios para domain
@@ -303,21 +312,23 @@ query-docs /assertj/assertj-core "assertThat isEqualTo isInstanceOf"
 
 ```
 skill("context7-stack")
-query-docs /mockito/mockito "Mock InjectMocks verify when thenReturn thenThrow"
-query-docs /assertj/assertj-core "assertThatThrownBy isInstanceOf hasMessage"
+query-docs /mockito/mockito "Mock InjectMocks ExtendWith MockitoExtension verify when thenReturn thenThrow"
+query-docs /assertj/assertj "assertThatThrownBy isInstanceOf hasMessage assertThatExceptionOfType"
 ```
 
 #### Ciclo de aprobación por capa
 
 ```
 1. ANUNCIAR  → "Voy a generar los tests de capa application ({N} archivos)"
-2. GENERAR   → Escribir todos los archivos de test de application
-3. MOSTRAR   → Presentar cada archivo generado
-4. EJECUTAR  → ./gradlew :{contexto}:application:test
-5. REPORTAR  → Mostrar resultado: tests pasados / fallados / cobertura
-6. ESPERAR   → "¿Apruebas los tests de application o necesitas ajustes?"
-7. AJUSTAR   → Si el usuario pide cambios, aplicar y volver al paso 4
-8. CONFIRMAR → Solo con aprobación explícita, pasar a FASE 3
+2. GENERAR   → Producir el contenido de cada archivo de test de application
+3. ESCRIBIR  → Guardar cada archivo en disco (src/test/java/...) con la herramienta Edit/Write
+4. MOSTRAR   → Presentar al usuario el código escrito para revisión
+5. EJECUTAR  → ./gradlew :{contexto}:application:test
+6. REPORTAR  → Mostrar resultado con el formato de la sección "Reporte por Capa" (ver abajo)
+7. ESPERAR   → "¿Apruebas los tests de application o necesitas ajustes?"
+8. AJUSTAR   → Si hay test fallido, aplicar el "Protocolo de Test Fallido" antes de continuar.
+              Si el usuario pide cambios manuales, aplicar, re-ejecutar (paso 5) y volver al paso 6.
+9. CONFIRMAR → Solo con aprobación explícita y todos los tests en verde, pasar a FASE 3
 ```
 
 #### Escenarios mínimos obligatorios para application
@@ -347,23 +358,25 @@ query-docs /assertj/assertj-core "assertThatThrownBy isInstanceOf hasMessage"
 ```
 skill("context7-stack")
 # Para repositorio
-query-docs /spring-projects/spring-data-jpa "DataJpaTest AutoConfigureTestDatabase H2"
+query-docs /websites/junit_current "SpringBootTest DataJpaTest TestPropertySource H2"
 # Para controller
-query-docs /spring-projects/spring-security "WebMvcTest WithMockUser MockMvc perform"
-query-docs /spring-projects/spring-framework "MockMvc jsonPath status andExpect"
+query-docs /websites/spring_io_spring-security_reference_6_5 "MockMvc WithMockUser SecurityMockMvcRequestPostProcessors"
+query-docs /websites/spring_io_spring-framework_reference_6_2 "MockMvc jsonPath status andExpect perform"
 ```
 
 #### Ciclo de aprobación por capa
 
 ```
 1. ANUNCIAR  → "Voy a generar los tests de capa infrastructure ({N} archivos)"
-2. GENERAR   → Escribir todos los archivos de test de infrastructure
-3. MOSTRAR   → Presentar cada archivo generado
-4. EJECUTAR  → ./gradlew :{contexto}:infrastructure:test
-5. REPORTAR  → Mostrar resultado: tests pasados / fallados / cobertura
-6. ESPERAR   → "¿Apruebas los tests de infrastructure o necesitas ajustes?"
-7. AJUSTAR   → Si el usuario pide cambios, aplicar y volver al paso 4
-8. CONFIRMAR → Solo con aprobación explícita, pasar a FASE 4
+2. GENERAR   → Producir el contenido de cada archivo de test de infrastructure
+3. ESCRIBIR  → Guardar cada archivo en disco (src/test/java/...) con la herramienta Edit/Write
+4. MOSTRAR   → Presentar al usuario el código escrito para revisión
+5. EJECUTAR  → ./gradlew :{contexto}:infrastructure:test
+6. REPORTAR  → Mostrar resultado con el formato de la sección "Reporte por Capa" (ver abajo)
+7. ESPERAR   → "¿Apruebas los tests de infrastructure o necesitas ajustes?"
+8. AJUSTAR   → Si hay test fallido, aplicar el "Protocolo de Test Fallido" antes de continuar.
+              Si el usuario pide cambios manuales, aplicar, re-ejecutar (paso 5) y volver al paso 6.
+9. CONFIRMAR → Solo con aprobación explícita y todos los tests en verde, pasar a FASE 4
 ```
 
 #### Escenarios mínimos obligatorios para infrastructure — Repositorio
@@ -371,7 +384,7 @@ query-docs /spring-projects/spring-framework "MockMvc jsonPath status andExpect"
 | Escenario | Método sugerido |
 |-----------|----------------|
 | Guardar entidad correctamente | `debeGuardar_cuandoEntidadEsValida` |
-| Encontrar por ID existente | `debRetornarEntidad_cuandoIdExiste` |
+| Encontrar por ID existente | `debeRetornarEntidad_cuandoIdExiste` |
 | Lanzar excepción cuando no existe | `debeLanzarExcepcion_cuandoIdNoExiste` |
 | Listar entidades (si aplica) | `debeRetornarLista_cuandoHayRegistros` |
 | Retornar vacío cuando no hay datos | `debeRetornarVacio_cuandoNoHayRegistros` |
@@ -388,17 +401,26 @@ query-docs /spring-projects/spring-framework "MockMvc jsonPath status andExpect"
 
 ---
 
-### FASE 4 — Reporte de Cobertura y Cierre
+### FASE 4 — Verificación Final y Reporte de Cobertura
+
+Antes de generar el reporte JaCoCo, ejecuta la suite completa del contexto
+para confirmar que todas las capas pasan juntas (no solo de forma individual):
 
 ```bash
+# Suite completa del contexto (domain + application + infrastructure)
+./gradlew :{contexto}:test
+
 # Generar reporte JaCoCo completo del contexto
 ./gradlew :{contexto}:jacocoTestReport
 ```
 
+Si la suite completa falla después de que las capas individuales pasaron,
+aplica el **Protocolo de Test Fallido** antes de continuar.
+
 Presenta el resumen final al usuario:
 
 ```
-✅ Tests completados — HT-XXX
+✅ Tests completados — {HU|HT}-{ID}
 
 CAPA domain
   ✅ {Entidad}Test.java              — N tests, todos pasaron
@@ -423,8 +445,9 @@ Archivos de test generados:
   ...
 
 Siguiente paso sugerido:
-→ Invocar el agente 04-validator-agent para validar la
-  implementación completa (código + tests) y gestionar el commit.
+→ Invocar @validator para validar la implementación completa
+  (código + tests) y gestionar el commit:
+  "@validator valida la implementacion de {HU|HT}-{ID}"
 ```
 
 Si la cobertura es menor al 75%, advierte pero no bloquea:
@@ -434,8 +457,47 @@ Si la cobertura es menor al 75%, advierte pero no bloquea:
 
 Opciones:
   A) Agregar más escenarios de prueba ahora
-  B) Continuar con el validator (quedará registrado en el reporte)
+  B) Continuar con @validator (quedará registrado en el reporte)
 ```
+
+---
+
+### FASE 5 — Actualización del Checklist de Trazabilidad
+
+Al finalizar todos los tests aprobados, actualiza la sección **11. Trazabilidad del Flujo**
+del plan en `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`:
+
+Cambia la fila de **Tests**:
+
+```markdown
+| Tests | @tester | ✅ Completado | {fecha actual} | Cobertura: {XX}% — {CUMPLE / POR DEBAJO} del 75% |
+```
+
+> **Importante:** solo modifica la fila `Tests`. No toques las demás filas.
+
+---
+
+## Reporte por Capa (formato obligatorio en paso 6 de cada ciclo)
+
+Tras ejecutar `./gradlew :{contexto}:{capa}:test`, muestra siempre este formato:
+
+```
+Tests capa {capa} — {HU|HT}-{ID}
+
+  {NombreClaseTest}.java
+    ✅ debeHacerAlgo_cuandoCondicion       — PASÓ
+    ✅ debeLanzarExcepcion_cuandoX         — PASÓ
+    ❌ debeRetornar404_cuandoNoExiste      — FALLÓ
+       → {mensaje exacto del error de Gradle}
+
+  Resultado: {N} pasaron / {N} fallaron / {N} omitidos
+  Tiempo: {X}s
+
+Estado: ✅ TODOS PASAN / ❌ HAY FALLOS (ver Protocolo de Test Fallido)
+```
+
+Si todos pasan, continúa al paso 7 (ESPERAR).
+Si hay fallos, aplica el **Protocolo de Test Fallido** antes de continuar.
 
 ---
 
@@ -479,4 +541,4 @@ de modificar cualquier archivo de producción.
 7. **Cobertura 75% mínimo.** Advertir si no se alcanza, pero no bloquear.
 8. **Java 21** — usa `./gradlew`, nunca `mvn` ni `javac` directo.
 9. **Imports explícitos** — nunca wildcard `*`.
-10. **Al finalizar** indica siempre invocar `04-validator-agent`.
+10. **Al finalizar** actualiza la fila `Tests` en la sección 11 del plan e indica siempre invocar `@validator` con el comando exacto.

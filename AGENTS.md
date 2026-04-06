@@ -7,7 +7,7 @@ Arquitectura Hexagonal (Puertos y Adaptadores) con Diseno Dirigido por Dominio (
 Siete contextos acotados (bounded contexts), cada uno como multi-proyecto Gradle
 con tres capas: `domain`, `application`, `infrastructure`.
 
-Infraestructura: PostgreSQL 15, RabbitMQ 3.12, Redis 7, Keycloak 22 (OAuth2/OIDC).
+Infraestructura: PostgreSQL 15, RabbitMQ 3.12, Redis 7, Keycloak 23 (OAuth2/OIDC).
 
 ## Comandos de Compilacion y Ejecucion
 
@@ -102,7 +102,7 @@ Domain ← Application ← Infrastructure
 ### Imports
 
 - Imports explicitos siempre (nunca wildcard `*`)
-- Orden: proyecto (`com.arquisoft.*`) > Jakarta > Lombok > Spring > Java stdlib
+- Orden: proyecto (`com.arquisoft.{contexto}.{paquete}.{Clase}`) > Jakarta > Lombok > Spring > Java stdlib
 
 ### DTOs
 
@@ -125,6 +125,8 @@ public class FichaDTO {
 - Inmutables: constructor privado, campos `final`, solo getters
 - Factory methods: `build(...)` para instancias nuevas, `rebuild(...)` desde persistencia
 - Sin Lombok, sin anotaciones de framework — Java puro
+- **ID principal siempre `UUID` (`java.util.UUID`) — nunca `Long`, nunca `Integer`**
+- `build(...)` genera el UUID con `UUID.randomUUID()`; `rebuild(...)` lo recibe desde persistencia
 
 ### Inyeccion de Dependencias
 
@@ -179,16 +181,16 @@ Context7 sin que el usuario te lo pida explícitamente:
 - `query-docs` para obtener la documentación específica de esa versión
 
 Librerías prioritarias para este proyecto:
-- Spring Boot → `/spring-projects/spring-boot` (versión 3.2.4)
-- Spring AMQP (RabbitMQ) → `/spring-projects/spring-amqp`
+- Spring Boot → `/websites/spring_io_spring-boot` (versión 3.2.4)
+- Spring AMQP (RabbitMQ) → `/websites/spring_io`
 - Spring Data JPA → `/spring-projects/spring-data-jpa`
-- Spring Security → `/spring-projects/spring-security`
+- Spring Security → `/websites/spring_io_spring-security_reference_6_5`
 - Flyway → `/flyway/flyway`
 - Keycloak Admin Client → `/keycloak/keycloak`
-- Gradle → `/gradle/gradle`
-- JUnit 5 → `/junit-team/junit5`
+- Gradle → `/websites/gradle_current_userguide`
+- JUnit 5 → `/websites/junit_current`
 - Mockito → `/mockito/mockito`
-- AssertJ → `/assertj/assertj-core`
+- AssertJ → `/assertj/assertj`
 
 ## Archivos Clave
 
