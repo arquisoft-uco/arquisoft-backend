@@ -1,7 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out;
 
-import com.arquisoft.seguridad.domain.port.in.JwtTokenProvider;
-import com.arquisoft.seguridad.domain.model.AuthenticatedUserDTO;
+import com.arquisoft.seguridad.domain.port.out.TokenPort;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,29 +9,30 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Implementación de JwtTokenProvider usando Spring Security OAuth2.
+ * Adaptador de salida que implementa TokenPort usando Spring Security OAuth2.
  * Valida y parsea tokens JWT emitidos por Keycloak.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JwtTokenProviderImpl implements JwtTokenProvider {
-    
+public class JwtTokenAdapter implements TokenPort {
+
     private final JwtDecoder jwtDecoder;
 
     @Override
-    public AuthenticatedUserDTO extractUserFromToken(String token) {
+    public Map<String, Object> extractUserInfo(String token) {
         try {
-            Jwt jwt = getJwt(token);
-            return mapJwtToUser(jwt);
+            Jwt jwt = jwtDecoder.decode(token);
+            return mapJwtToUserInfo(jwt);
         } catch (Exception e) {
-            log.error("Error extracting user from token: {}", e.getMessage());
-            throw new InvalidTokenException("Token inválido: " + e.getMessage(), e);
+            log.error("Error al extraer informacion del token: {}", e.getMessage());
+            throw new InvalidTokenException("Token invalido: " + e.getMessage(), e);
         }
     }
 
@@ -42,32 +42,20 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
             jwtDecoder.decode(token);
             return true;
         } catch (Exception e) {
-            log.warn("Token validation failed: {}", e.getMessage());
+            log.warn("Validacion de token fallida: {}", e.getMessage());
             return false;
         }
     }
 
-    @Override
-    public Jwt getJwt(String token) {
-        try {
-            return jwtDecoder.decode(token);
-        } catch (Exception e) {
-            log.error("Error decoding JWT: {}", e.getMessage());
-            throw new InvalidTokenException("No se pudo decodificar el token JWT", e);
-        }
-    }
-
-    private AuthenticatedUserDTO mapJwtToUser(Jwt jwt) {
-        List<String> roles = extractRoles(jwt);
-
-        return AuthenticatedUserDTO.builder()
-                .keycloakUserId(jwt.getSubject())
-                .email(jwt.getClaimAsString("email"))
-                .name(jwt.getClaimAsString("name"))
-                .roles(roles)
-                .issuedAt(jwt.getIssuedAt() != null ? jwt.getIssuedAt().toEpochMilli() : null)
-                .expiresAt(jwt.getExpiresAt() != null ? jwt.getExpiresAt().toEpochMilli() : null)
-                .build();
+    private Map<String, Object> mapJwtToUserInfo(Jwt jwt) {
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("keycloakUserId", jwt.getSubject());
+        userInfo.put("email", jwt.getClaimAsString("email"));
+        userInfo.put("name", jwt.getClaimAsString("name"));
+        userInfo.put("roles", extractRoles(jwt));
+        userInfo.put("issuedAt", jwt.getIssuedAt() != null ? jwt.getIssuedAt().toEpochMilli() : null);
+        userInfo.put("expiresAt", jwt.getExpiresAt() != null ? jwt.getExpiresAt().toEpochMilli() : null);
+        return userInfo;
     }
 
     @SuppressWarnings("unchecked")

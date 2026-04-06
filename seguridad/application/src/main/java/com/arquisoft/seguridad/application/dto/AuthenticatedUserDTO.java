@@ -1,53 +1,54 @@
-package com.arquisoft.seguridad.domain.model;
+package com.arquisoft.seguridad.application.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 /**
- * Value object que contiene la información del usuario actual extraída del token JWT.
- * Se utiliza para pasar información del usuario autenticado entre contextos.
+ * DTO que contiene la informacion del usuario actual extraida del token JWT.
+ * Se utiliza para pasar informacion del usuario autenticado entre capas y contextos.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class AuthenticatedUserDTO {
-    
+
     /**
-     * ID único del usuario en Keycloak (subject del JWT)
+     * ID unico del usuario en Keycloak (subject del JWT)
      */
     private String keycloakUserId;
-    
+
     /**
-     * Email del usuario (única forma de contacto inicial)
+     * Email del usuario
      */
     private String email;
-    
+
     /**
-     * Nombre del usuario (si está disponible en Keycloak)
+     * Nombre del usuario (si esta disponible en Keycloak)
      */
     private String name;
-    
+
     /**
      * Lista de roles asignados al usuario
      */
     private List<String> roles;
-    
+
     /**
-     * Marca de tiempo de emisión del token
+     * Marca de tiempo de emision del token
      */
     private Long issuedAt;
-    
+
     /**
-     * Marca de tiempo de expiración del token
+     * Marca de tiempo de expiracion del token
      */
     private Long expiresAt;
-    
+
     /**
-     * Verificar si el usuario tiene un rol específico
+     * Verificar si el usuario tiene un rol especifico
      */
     public boolean hasRole(String role) {
         return roles != null && roles.contains(role);

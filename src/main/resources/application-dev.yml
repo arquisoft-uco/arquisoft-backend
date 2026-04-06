@@ -1,61 +1,17 @@
 # ==================== PERFIL DESARROLLO (DEV) ====================
-# Activa: application.yml + application-dev.yml
+# Activa: ./gradlew bootRun --args='--spring.profiles.active=dev'
+#
+# Solo contiene overrides sobre application.yml.
+# Diferencias respecto al perfil base:
+#   - show-sql: true       (ver queries en consola)
+#   - rate-limit: false    (ya es el default, explícito por claridad)
+#   - Spring Security en DEBUG (ver decisiones de autorizacion)
 
 spring:
-  # ==================== BASE DE DATOS ====================
-  datasource:
-    url: jdbc:postgresql://localhost:5432/arquisoft
-    username: arquisoft
-    password: arquisoft123
-
-  # ==================== JPA/HIBERNATE ====================
   jpa:
-    hibernate:
-      ddl-auto: validate
     show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-
-  # ==================== FLYWAY ====================
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
-
-  # ==================== RABBITMQ ====================
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-
-  # ==================== REDIS ====================
-  redis:
-    host: localhost
-    port: 6379
-
-# ==================== KEYCLOAK ====================
-keycloak:
-  auth-server-url: http://localhost:8081
-  realm: arquisoft
-  resource: arquisoft-app
-  credentials:
-    secret: ""
-
-# ==================== SEGURIDAD ====================
-security:
-  cors:
-    allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
-  rate-limit:
-    enabled: false
 
 # ==================== LOGGING ====================
 logging:
   level:
-    root: INFO
-    com.arquisoft: DEBUG
-    org.springframework.web: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.springframework.security: DEBUG

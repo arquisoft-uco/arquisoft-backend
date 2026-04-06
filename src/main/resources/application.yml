@@ -1,22 +1,34 @@
+# ==============================================================================
+# CONFIGURACION BASE DE ARQUISOFT
+# ==============================================================================
+# Importa credenciales desde .env.properties (archivo local, NO versionado).
+# Si el archivo no existe, se usan los defaults vacios (el arranque fallara
+# con mensaje claro de conexion).
+# Para crear el tuyo: cp .env.properties.example .env.properties
+# ==============================================================================
+
 spring:
+  config:
+    import: "optional:file:./.env.properties"
+
   application:
     name: arquisoft
 
   threads:
     virtual:
       enabled: true
-  
+
   # ==================== BASE DE DATOS ====================
   datasource:
-    url: jdbc:postgresql://localhost:5432/arquisoft
-    username: arquisoft
-    password: arquisoft123
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/arquisoft}
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
       connection-timeout: 20000
-  
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -28,37 +40,52 @@ spring:
           batch_size: 25
     open-in-view: false
     show-sql: false
-  
+
   # ==================== FLYWAY ====================
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
-  
+
   # ==================== RABBITMQ ====================
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
     virtual-host: /
     listener:
       simple:
         acknowledge-mode: auto
         concurrency: 5
         max-concurrency: 10
-  
+
   # ==================== REDIS ====================
   redis:
-    host: localhost
-    port: 6379
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
     timeout: 2000
     jedis:
       pool:
         max-active: 10
         max-idle: 5
         min-idle: 0
-  
+
+# ==================== KEYCLOAK ====================
+keycloak:
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8081}
+  realm: ${KEYCLOAK_REALM:arquisoft}
+  resource: ${KEYCLOAK_CLIENT_ID:arquisoft-app}
+  credentials:
+    secret: ${KEYCLOAK_CLIENT_SECRET:}
+
+# ==================== SEGURIDAD ====================
+security:
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
+  rate-limit:
+    enabled: false
+
 # ==================== SERVER ====================
 server:
   port: 8080

@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.domain.model;
+package com.arquisoft.seguridad.application.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,13 +6,15 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Value object para respuesta de login
+ * DTO para respuesta de login.
+ * Contiene los tokens de acceso y refresh emitidos por Keycloak.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class LoginResponseDTO {
+
     private String accessToken;
     private String refreshToken;
     private long expiresIn;

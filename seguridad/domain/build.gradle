@@ -1,14 +1,8 @@
 dependencies {
     implementation project(':shared:domain')
 
-    // Spring Security types (Authentication, Jwt) used in port interfaces
-    implementation "org.springframework.boot:spring-boot-starter-security:${springBootVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server:${springBootVersion}"
-
-    // Jakarta Validation (used in domain DTOs)
-    implementation "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"
-
-    // Lombok for domain models
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    // Domain puro: sin dependencias de framework
+    // Las excepciones extienden RuntimeException (Java puro)
+    // Los puertos usan solo tipos de Java stdlib (Map, List, String)
+    // El enum UserRole es Java puro
 }
