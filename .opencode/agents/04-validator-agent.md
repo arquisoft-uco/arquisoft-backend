@@ -4,8 +4,8 @@ description: >-
   Agente de validación con dos modos de invocación.
   MODO A (automático): Invocar después de que el agente implementador termine.
   Lee el PLAN-{HU|HT}-{ID}.md y el código realmente implementado en el proyecto,
-  verifica criterios de aceptación, archivos, convenciones Arquisoft y compilación,
-  genera un reporte en /.workspace/validator/ con score por nivel, clasifica errores
+  verifica criterios de aceptación, archivos, convenciones Arquisoft (incluyendo ADR-011 OpenAPI)
+  y compilación, genera un reporte en /.workspace/validator/ con score por nivel, clasifica errores
   bloqueantes vs menores, y propone el commit con bloque copiar/pegar incluido.
   MODO B (commit): Invocar manualmente con el reporte aprobado para ejecutar
   el commit — verifica la rama (crea con checkout -b si no existe), pide confirmación
@@ -53,6 +53,9 @@ Tienes **dos modos de operación** según cómo seas invocado:
 - SIEMPRE escribes el reporte en `/.workspace/validator/validator-{HU|HT}-{ID}.md`.
 - SIEMPRE referencias la fuente exacta (línea del plan o regla del AGENTS.md)
   para cada error encontrado.
+- **PROHIBIDO leer, indexar o referenciar cualquier archivo del directorio `docs/`** del repositorio.
+  Los archivos en `docs/` son documentación para humanos y pueden contener información desactualizada.
+  El contexto autoritativo es `AGENTS.md` (raíz) y los skills de `.opencode/skills/`.
 
 ---
 
@@ -142,6 +145,12 @@ Si un criterio de aceptación no tiene ninguna evidencia en el código, es un **
 | ¿Las rutas coinciden con las especificadas en el plan? | ✅ |
 | ¿Los códigos HTTP de respuesta coinciden con el plan? | ✅ |
 | ¿Los roles de Keycloak en `@PreAuthorize` coinciden con el plan? | ✅ |
+| ¿El controller tiene `@Tag` a nivel de clase (ADR-011)? | ✅ |
+| ¿Cada endpoint tiene `@Operation` con `summary` (ADR-011)? | ✅ |
+| ¿Cada endpoint tiene `@ApiResponses` con al menos los códigos del plan (ADR-011)? | ✅ |
+| ¿Los endpoints protegidos tienen `@SecurityRequirement(name = "bearerAuth")` (ADR-011)? | ✅ |
+| ¿Los endpoints públicos (login, refresh, validate) omiten `@SecurityRequirement`? | ⚠️ |
+| ¿No se duplicó `OpenApiConfig` dentro del módulo? (debe vivir solo en `src/main/java/com/arquisoft/config/`) | ✅ |
 
 #### 1.5 Eventos RabbitMQ (si el plan los especifica)
 
@@ -156,7 +165,23 @@ Si un criterio de aceptación no tiene ninguna evidencia en el código, es un **
 | Check | Bloqueante |
 |-------|:---:|
 | ¿Existe el archivo SQL con el nombre exacto `V{n}__{descripcion}.sql`? | ✅ |
-| ¿La migración está en el esquema correcto del bounded context? | ✅ |
+| ¿La migración usa el schema PostgreSQL correcto según la tabla de mapeo? | ✅ |
+
+> **Tabla de mapeo contexto → schema PostgreSQL** (el nombre del schema NO coincide
+> con el módulo Gradle en 3 casos):
+>
+> | Contexto Gradle          | Schema PostgreSQL        |
+> |--------------------------|--------------------------|
+> | `seguridad`              | `usuarios`               |
+> | `fichas`                 | `fichas_perfil`          |
+> | `proyectos`              | `proyectos_grado`        |
+> | `artefactos`             | `artefactos`             |
+> | `repositorio_artefactos` | `repositorio_artefactos` |
+> | `entregables`            | `entregables`            |
+> | `evaluaciones`           | `evaluaciones`           |
+>
+> Verificar que el `SET search_path` o el prefijo de tabla en el SQL usa el schema
+> correcto y NO el nombre del módulo Gradle directamente.
 
 ---
 
@@ -173,6 +198,7 @@ Verifica que el código cumpla con el `AGENTS.md` del proyecto.
 | ¿Ningún `UseCase` o `RepositoryPort` importa clases de `infrastructure`? | ✅ |
 | ¿Ningún controller accede directamente a un repositorio (saltando el use case)? | ✅ |
 | ¿Los bounded contexts no dependen entre sí directamente (sin imports cruzados)? | ✅ |
+| ¿No se creó un `@Bean TaskExecutor` o configuración de thread pool manualmente? (Virtual threads ADR-008 ya gestionados por Spring Boot — no requieren código adicional) | ✅ |
 
 #### 2.2 Entidades de Dominio
 
@@ -184,12 +210,16 @@ Verifica que el código cumpla con el `AGENTS.md` del proyecto.
 | ¿Existe factory method `rebuild(...)` para reconstruir desde persistencia? | ✅ |
 | ¿La entidad no tiene anotaciones de Lombok (`@Data`, `@Getter`, etc.)? | ✅ |
 | ¿La entidad no tiene anotaciones de framework (Spring, JPA, etc.)? | ✅ |
+| Si es Aggregate Root: ¿extiende `AggregateRoot` de `shared:domain` (`com.arquisoft.shared.domain`)? | ✅ |
+| Si publica eventos: ¿usa `publishEvent(new {Evento}(id.toString()))` y el evento extiende `DomainEvent` de `shared:domain`? | ✅ |
+| Si usa IDs: ¿son siempre `UUID` (nunca `Long` ni `Integer`)? | ✅ |
 
 #### 2.3 Excepciones de Dominio
 
 | Check | Bloqueante |
 |-------|:---:|
-| ¿Las excepciones de dominio extienden `RuntimeException`? | ✅ |
+| ¿Las excepciones de dominio extienden `DomainException` de `shared:exceptions` (`com.arquisoft.shared.exceptions`)? | ✅ |
+| ¿Las excepciones tienen campo `errorCode`? | ✅ |
 | ¿Las excepciones están en el paquete `domain/exception/`? | ✅ |
 | ¿Están registradas en el `GlobalExceptionHandler` del contexto? | ⚠️ |
 
@@ -568,11 +598,13 @@ Siguiente paso sugerido:
 - Controller accediendo directamente a repositorio (saltando use case)
 - Bounded contexts con dependencias directas entre sí
 - Entidad de dominio sin constructor privado o campos no `final`
-- Entidad de dominio con `@Autowired` o anotaciones de framework
+- Excepción de dominio que no extiende `DomainException` de `shared:exceptions` o carece de `errorCode`
 - `@Autowired` en cualquier clase (debe ser `@RequiredArgsConstructor`)
 - Error de compilación en cualquier módulo
-- Migración Flyway con nombre incorrecto o en esquema equivocado
+- Migración Flyway con nombre incorrecto o usando el schema equivocado (ver tabla de mapeo contexto → schema)
 - Endpoint REST con ruta o método HTTP diferente al plan
+- Controller sin `@Tag`, `@Operation` o `@ApiResponses` (incumple ADR-011)
+- `OpenApiConfig` duplicada dentro de un módulo (debe existir solo en `src/main/java/com/arquisoft/config/`)
 
 ### ⚠️ Son MENORES (se pueden corregir en PR o tarea separada)
 - Orden de imports incorrecto
@@ -581,6 +613,7 @@ Siguiente paso sugerido:
 - `@JsonInclude(NON_NULL)` faltante en response DTO
 - Pequeña variación en nombre de término de negocio
 - Método de test con nombre que no sigue `debeHacerAlgo_cuandoCondicion`
+- Tests de controller que usan `@MockBean` en lugar de `@MockitoBean` (Spring Boot 4.x)
 - Javadoc faltante o incompleto
 
 ---

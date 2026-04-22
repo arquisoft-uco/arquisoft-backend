@@ -1,3 +1,12 @@
+> [!WARNING]
+> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
+>
+> Este archivo es documentación de referencia para desarrolladores humanos.
+> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
+> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
+> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
+> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+
 # Arquitectura Hexagonal Asincrónica para Arquisoft
 
 ## Índice
@@ -152,16 +161,14 @@ arquisoft-backend/
 ├── docker-compose.yml
 ├── init-db.sql
 │
-├── shared/                           # Utilidades compartidas (8 sub-módulos)
+├── shared/                           # Utilidades compartidas (7 sub-módulos)
 │   ├── domain/                       # DomainEvent, AggregateRoot
-│   ├── example/                      # Ejemplo estructura para cada BC
 │   ├── exceptions/                   # DomainException
 │   ├── amqp/                         # EventPublisher interface
 │   ├── postgres/                     # BaseRepository
 │   ├── redis/                        # RedisClient
 │   ├── web/                          # HttpClient
-│   ├── validation/                   # @ValidEmail
-│   └── notifications/               # NotificationService
+│   └── validation/                   # @ValidEmail
 │
 ├── seguridad/                        # CONTEXTO 1: Auth/Seguridad
 │   ├── domain/
@@ -213,37 +220,37 @@ dependencies {
 ### Backend
 
 ```
-Framework: Spring Boot 3.2.4
+Framework: Spring Boot 4.0.5
 ├─ Spring Web (REST APIs)
 ├─ Spring Data JPA (ORM)
 ├─ Spring AMQP (RabbitMQ)
 ├─ Spring Data Redis (Cache)
 ├─ Spring Security + OAuth2 (Keycloak)
 ├─ Lombok (reduce boilerplate)
-└─ JUnit 5 + Mockito (testing)
+└─ JUnit 6.0.3 + Mockito + AssertJ (testing)
 ```
 
 ### Infraestructura
 
 ```
-Message Queue: RabbitMQ 3.12+
+Message Queue: RabbitMQ 4.2.5
 ├─ Exchange: Topic (arquisoft.events)
 ├─ Queues: Una por contexto
 ├─ DLQ: Dead Letter Queue para errores
 └─ Persistence: Durable queues
 
-Database: PostgreSQL 15+
+Database: PostgreSQL 18
 ├─ 7 Schemas (1 por contexto)
-├─ Migrations: Flyway 10.10.0
+├─ Migrations: Flyway 11.20.3
 ├─ Connection Pool: HikariCP
-└─ Testing: H2 2.2.224
+└─ Testing: H2
 
 Cache: Redis 7+
 ├─ Session store
 ├─ Cache distribuido
 └─ Rate limiting data
 
-Auth: Keycloak 22+
+Auth: Keycloak 26.6
 ├─ OpenID Connect
 ├─ OAuth2 / JWT
 └─ 8 roles predefinidos
@@ -318,7 +325,7 @@ public class Entregable extends AggregateRoot {
         e.archivoUrl = archivoUrl;
         e.fechaCreacion = LocalDateTime.now();
         
-        e.recordEvent(new EntregableSubidoEvent(
+        e.publishEvent(new EntregableSubidoEvent(
             e.id, proyectoId, descripcion, archivoUrl, LocalDateTime.now()
         ));
         return e;
@@ -345,7 +352,8 @@ public class CrearEntregableUseCaseImpl implements CrearEntregableUseCase {
         );
 
         Entregable saved = entregableRepository.save(entregable);
-        saved.getDomainEvents().forEach(eventPublisher::publish);
+        saved.getUnPublishedEvents().forEach(eventPublisher::publish);
+        saved.clearUnPublishedEvents();
         return saved;
     }
 }
@@ -506,7 +514,7 @@ services:
     depends_on: [postgres, rabbitmq, redis, keycloak]
 
   postgres:
-    image: postgres:15-alpine
+    image: postgres:18-alpine
     environment:
       POSTGRES_DB: arquisoft
       POSTGRES_USER: arquisoft
@@ -516,7 +524,7 @@ services:
     ports: ["5432:5432"]
 
   rabbitmq:
-    image: rabbitmq:3.12-management-alpine
+    image: rabbitmq:4.2.5-management-alpine
     ports: ["5672:5672", "15672:15672"]
 
   redis:
@@ -524,7 +532,7 @@ services:
     ports: ["6379:6379"]
 
   keycloak:
-    image: quay.io/keycloak/keycloak:22.0.0
+    image: quay.io/keycloak/keycloak:26.6
     command: start-dev
     ports: ["8081:8080"]
     depends_on: [postgres]
@@ -561,20 +569,19 @@ docker run -p 8080:8080 \
 | **Contextos** | 7 independientes (Seguridad, Fichas, Proyectos, Artefactos, Repositorio Artefactos, Entregables, Evaluaciones) |
 | **Comunicación** | RabbitMQ Topic Exchange + Durable Queues |
 | **Latencia** | ~100ms (respuesta síncrona al usuario) |
-| **Base de Datos** | PostgreSQL 15 (1 schema por contexto) |
+| **Base de Datos** | PostgreSQL 18 (1 schema por contexto) |
 | **Cache** | Redis 7 (sesiones + cache distribuido) |
 | **Almacenamiento** | Nextcloud (WebDAV) |
-| **Autenticación** | Keycloak 22 (OAuth2/JWT) |
+| **Autenticación** | Keycloak 26.6 (OAuth2/JWT) |
 | **Rate Limiting** | Bucket4j 7.6.0 |
-| **Framework** | Spring Boot 3.2.4 (Java 21) |
-| **Build** | Gradle 7+ |
-| **Testing** | JUnit 5 + Mockito + H2 |
+| **Framework** | Spring Boot 4.0.5 (Java 21) |
+| **Build** | Gradle 9.0.0 |
+| **Testing** | JUnit 6.0.3 + Mockito + AssertJ |
 
 ---
 
 ## Referencias
 
-- **Ejemplo de referencia completo**: `shared/example/README.md`
 - **Arquitectura y Estructura**: `ARQUITECTURA_Y_ESTRUCTURA.md`
 - **Arquitectura Hexagonal**: Alistair Cockburn
 - **Event-Driven DDD**: Chris Richardson, "Microservices Patterns"

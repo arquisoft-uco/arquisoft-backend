@@ -8,21 +8,17 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"
 
     // JWT
-    implementation "io.jsonwebtoken:jjwt-api:0.12.3"
-    runtimeOnly "io.jsonwebtoken:jjwt-impl:0.12.3"
-    runtimeOnly "io.jsonwebtoken:jjwt-jackson:0.12.3"
-
-    // Keycloak
-    implementation "org.keycloak:keycloak-spring-boot-starter:${keycloakVersion}"
-    implementation "org.keycloak:keycloak-spring-security-adapter:${keycloakVersion}"
+    implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 
     // Rate Limiting
-    implementation "com.github.vladimir-bukhtoyarov:bucket4j-core:7.6.0"
+    implementation "com.github.vladimir-bukhtoyarov:bucket4j-core:${bucket4jVersion}"
 
     // Database
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
     implementation "org.flywaydb:flyway-core:${flywaydbVersion}"
-    runtimeOnly "org.postgresql:postgresql:42.7.2"
+    runtimeOnly "org.postgresql:postgresql:${postgresVersion}"
 
     // Testing
     testImplementation "org.springframework.security:spring-security-test"

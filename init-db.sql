@@ -1,36 +1,53 @@
--- ==================== CREAR SCHEMAS PARA CADA CONTEXTO ====================
+-- =============================================================================
+-- init-db.sql
+-- Inicialización de la base de datos Arquisoft — FASE 1 (MVP)
+--
+-- Estrategia: una sola base de datos "arquisoft" con 7 schemas, uno por
+-- bounded context. Sin foreign keys cruzados entre schemas.
+-- Comunicación entre contextos exclusivamente via RabbitMQ.
+--
+-- Fuente: ADR-002 (base-datos-postgresql) — sección "Fase 1 MVP"
+--         ADR-003 (autenticacion-keycloak)
+-- =============================================================================
 
--- Contexto 1: Seguridad (Usuarios, Roles, Permisos)
-CREATE SCHEMA IF NOT EXISTS seguridad;
-GRANT ALL PRIVILEGES ON SCHEMA seguridad TO arquisoft;
+-- ==================== CREAR SCHEMAS — 7 CONTEXTOS FASE 1 ====================
 
--- Contexto 2: Fichas
-CREATE SCHEMA IF NOT EXISTS fichas;
-GRANT ALL PRIVILEGES ON SCHEMA fichas TO arquisoft;
+-- Contexto 1: Usuarios (seguridad e identidad)
+CREATE SCHEMA IF NOT EXISTS usuarios;
+GRANT ALL PRIVILEGES ON SCHEMA usuarios TO arquisoft;
 
--- Contexto 3: Proyectos
-CREATE SCHEMA IF NOT EXISTS proyectos;
-GRANT ALL PRIVILEGES ON SCHEMA proyectos TO arquisoft;
+-- Contexto 2: Fichas de Perfil de Trabajo de Grado
+CREATE SCHEMA IF NOT EXISTS fichas_perfil;
+GRANT ALL PRIVILEGES ON SCHEMA fichas_perfil TO arquisoft;
 
--- Contexto 4: Artefactos
+-- Contexto 3: Artefactos (documentos del proyecto)
 CREATE SCHEMA IF NOT EXISTS artefactos;
 GRANT ALL PRIVILEGES ON SCHEMA artefactos TO arquisoft;
 
--- Contexto 5: Repositorio de Artefactos
+-- Contexto 4: Repositorio de Artefactos (plantillas institucionales)
 CREATE SCHEMA IF NOT EXISTS repositorio_artefactos;
 GRANT ALL PRIVILEGES ON SCHEMA repositorio_artefactos TO arquisoft;
 
--- Contexto 6: Entregables
+-- Contexto 5: Proyectos de Grado
+CREATE SCHEMA IF NOT EXISTS proyectos_grado;
+GRANT ALL PRIVILEGES ON SCHEMA proyectos_grado TO arquisoft;
+
+-- Contexto 6: Entregables de Proyectos de Grado
 CREATE SCHEMA IF NOT EXISTS entregables;
 GRANT ALL PRIVILEGES ON SCHEMA entregables TO arquisoft;
 
--- Contexto 7: Evaluaciones
+-- Contexto 7: Evaluaciones Definitivas
 CREATE SCHEMA IF NOT EXISTS evaluaciones;
 GRANT ALL PRIVILEGES ON SCHEMA evaluaciones TO arquisoft;
 
--- ==================== CREAR USUARIO PARA KEYCLOAK ====================
+-- ==================== BASE DE DATOS KEYCLOAK (ADR-003) ====================
 
-CREATE USER IF NOT EXISTS keycloak WITH PASSWORD 'keycloak123';
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'keycloak') THEN
+    CREATE USER keycloak WITH PASSWORD 'keycloak123';
+  END IF;
+END $$;
 CREATE DATABASE keycloak OWNER keycloak;
 
 -- ==================== PERMISOS FINALES ====================
@@ -40,14 +57,15 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO arquisoft;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO arquisoft;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON FUNCTIONS TO arquisoft;
 
--- Hacer lo mismo para cada schema
+-- Aplicar permisos sobre los 7 schemas de Fase 1
 DO $$
 DECLARE
   schema_name TEXT;
 BEGIN
-  FOR schema_name IN 
-    SELECT unnest(ARRAY['seguridad', 'fichas', 'proyectos', 'artefactos', 
-                        'repositorio_artefactos', 'entregables', 'evaluaciones'])
+  FOR schema_name IN
+    SELECT unnest(ARRAY['usuarios', 'fichas_perfil', 'artefactos',
+                        'repositorio_artefactos', 'proyectos_grado',
+                        'entregables', 'evaluaciones'])
   LOOP
     EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL ON TABLES TO arquisoft', schema_name);
     EXECUTE format('ALTER DEFAULT PRIVILEGES IN SCHEMA %I GRANT ALL ON SEQUENCES TO arquisoft', schema_name);

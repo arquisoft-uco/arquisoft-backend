@@ -9,7 +9,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}"
     
     // JSON processing
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
     
     // Validation
     implementation "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"

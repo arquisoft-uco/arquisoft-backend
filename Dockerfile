@@ -11,7 +11,7 @@ COPY gradlew gradlew.bat gradle.properties ./
 COPY . .
 
 # Build the application
-RUN ./gradlew build -x test --no-daemon
+RUN chmod +x gradlew && ./gradlew build -x test --no-daemon
 
 # ==================== STAGE 2: RUNTIME ====================
 FROM eclipse-temurin:21-jre-alpine

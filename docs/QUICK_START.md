@@ -1,3 +1,12 @@
+> [!WARNING]
+> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
+>
+> Este archivo es documentación de referencia para desarrolladores humanos.
+> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
+> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
+> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
+> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+
 # Guía de Inicio Rápido - Arquisoft Backend
 
 Esta guía te ayudará a comenzar con el desarrollo del backend de Arquisoft basado en Arquitectura Hexagonal Modular.
@@ -54,7 +63,7 @@ curl http://localhost:8080/api/actuator/health
 ## Estructura Rápida
 
 ```
-shared/                          ← Componentes reutilizables (8 sub-módulos)
+shared/                          ← Componentes reutilizables (7 sub-módulos)
 ├── domain/                      ← DomainEvent, AggregateRoot
 ├── exceptions/                  ← DomainException base
 ├── amqp/                        ← EventPublisher (RabbitMQ)
@@ -62,8 +71,6 @@ shared/                          ← Componentes reutilizables (8 sub-módulos)
 ├── redis/                       ← RedisClient
 ├── web/                         ← HttpClient
 ├── validation/                  ← @ValidEmail
-├── notifications/               ← NotificationService
-└── example/                     ← Ejemplo de referencia (leer primero)
 
 seguridad/                       ← CONTEXTO 1: Autenticación/Autorización
 ├── domain/                      ← UserRole, JWT, CurrentUser ports
@@ -117,32 +124,41 @@ evaluaciones/                    ← CONTEXTO 7: Evaluaciones
 
 ## Crear un Nuevo Caso de Uso (Ejemplo: Fichas)
 
-> Para un ejemplo completo con código, ver: `shared/example/README.md`
-
 ### 1. Definir Entidad en Domain
 
 ```java
 // fichas/domain/src/main/java/com/arquisoft/fichas/domain/model/Ficha.java
 package com.arquisoft.fichas.domain.model;
 
+import java.util.UUID;
+
 public class Ficha {
-    private final Long id;
+    private final UUID id;
     private final String titulo;
     private final String descripcion;
     private final String areaConocimiento;
 
-    private Ficha(Long id, String titulo, String descripcion, String areaConocimiento) {
+    private Ficha(UUID id, String titulo, String descripcion, String areaConocimiento) {
         this.id = id;
         this.titulo = titulo;
         this.descripcion = descripcion;
         this.areaConocimiento = areaConocimiento;
     }
 
+    // Factory para NUEVA ficha
     public static Ficha build(String titulo, String descripcion, String areaConocimiento) {
-        return new Ficha(null, titulo, descripcion, areaConocimiento);
+        return new Ficha(UUID.randomUUID(), titulo, descripcion, areaConocimiento);
     }
 
-    // Getters...
+    // Factory para RECONSTRUIR desde persistencia
+    public static Ficha rebuild(UUID id, String titulo, String descripcion, String areaConocimiento) {
+        return new Ficha(id, titulo, descripcion, areaConocimiento);
+    }
+
+    public UUID getId() { return id; }
+    public String getTitulo() { return titulo; }
+    public String getDescripcion() { return descripcion; }
+    public String getAreaConocimiento() { return areaConocimiento; }
 }
 ```
 
@@ -161,7 +177,7 @@ public interface CrearFichaUseCase {
 // fichas/domain/src/main/java/com/arquisoft/fichas/domain/port/out/FichaRepositoryPort.java
 public interface FichaRepositoryPort {
     Ficha save(Ficha ficha);
-    Optional<Ficha> findById(Long id);
+    Optional<Ficha> findById(UUID id);
     List<Ficha> findAll();
 }
 ```
@@ -211,8 +227,8 @@ public class FichaRepositoryAdapter implements FichaRepositoryPort {
 
     @Override
     public Ficha save(Ficha ficha) {
-        String sql = "INSERT INTO fichas.ficha (titulo, descripcion, area) VALUES (?, ?, ?)";
-        jdbcTemplate.update(sql, ficha.getTitulo(), ficha.getDescripcion(), ficha.getAreaConocimiento());
+        String sql = "INSERT INTO fichas_perfil.ficha (id, titulo, descripcion, area) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.update(sql, ficha.getId(), ficha.getTitulo(), ficha.getDescripcion(), ficha.getAreaConocimiento());
         return ficha;
     }
 }
@@ -275,7 +291,6 @@ ports:
 - [ ] Compilar el proyecto
 - [ ] Ejecutar la aplicación con perfil `dev`
 - [ ] Verificar health check (GET /api/actuator/health)
-- [ ] Leer la estructura de referencia (`shared/example/README.md`)
 - [ ] Crear primer modelo de dominio en tu contexto
 - [ ] Crear primer caso de uso
 - [ ] Crear tests unitarios
@@ -288,7 +303,7 @@ ports:
 - **README.md** — Documentación completa del proyecto
 - **ARQUITECTURA_Y_ESTRUCTURA.md** — Arquitectura hexagonal y ejemplos
 - **ARQUITECTURA_ASINCRONICO_ARQUISOFT.md** — Arquitectura asincrónica con eventos
-- **shared/example/README.md** — Ejemplo de referencia con código completo
+
 
 ---
 

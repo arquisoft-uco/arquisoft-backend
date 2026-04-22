@@ -1,11 +1,7 @@
 # ==================== PERFIL DESARROLLO (DEV) ====================
 # Activa: ./gradlew bootRun --args='--spring.profiles.active=dev'
 #
-# Solo contiene overrides sobre application.yml.
-# Diferencias respecto al perfil base:
-#   - show-sql: true       (ver queries en consola)
-#   - rate-limit: false    (ya es el default, explícito por claridad)
-#   - Spring Security en DEBUG (ver decisiones de autorizacion)
+# Sobreescribe application.yml con configuracion especifica para desarrollo local.
 
 spring:
   jpa:
@@ -14,4 +10,7 @@ spring:
 # ==================== LOGGING ====================
 logging:
   level:
+    com.arquisoft: DEBUG
     org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

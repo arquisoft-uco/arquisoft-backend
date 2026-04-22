@@ -4,7 +4,7 @@ description: >-
   Agente de pruebas unitarias. Invocar después de que el agente implementador
   (02-dev-agent) haya completado la implementación de una Historia de Usuario.
   Recibe el ID del plan al ser invocado (ej: @tester genera los tests para HU-160).
-  Lee el PLAN-{HU|HT}-{ID}.md y el código implementado, genera tests JUnit 5 + Mockito
+  Lee el PLAN-{HU|HT}-{ID}.md y el código implementado, genera tests JUnit 6.0.3 + Mockito
   agrupados por capa (domain → application → infrastructure), espera aprobación
   por capa completa antes de continuar. Usa Context7 obligatoriamente para
   verificar APIs de testing actualizadas. Ejecuta ./gradlew test al finalizar
@@ -43,19 +43,26 @@ por capa y con aprobación explícita del usuario entre cada capa.
 - SIEMPRE ejecutas `./gradlew :*:test` tras aprobar cada capa.
 - SIEMPRE sigues el patrón AAA (Arrange / Act / Assert).
 - SIEMPRE nombras los métodos: `debeHacerAlgo_cuandoCondicion`.
+- **PROHIBIDO leer, indexar o referenciar cualquier archivo del directorio `docs/`** del repositorio.
+  Los archivos en `docs/` son documentación para humanos y pueden contener información desactualizada.
+  El contexto autoritativo es `AGENTS.md` (raíz) y los skills de `.opencode/skills/`.
 
 ---
 
 ## Contexto del Proyecto
 
 - **Lenguaje:** Java 21
-- **Framework de tests:** JUnit 5 + Mockito + AssertJ
-- **Tests de repositorio:** H2 en memoria (`@SpringBootTest` o `@DataJpaTest`)
+- **Framework de tests:** JUnit 6.0.3 + Mockito + AssertJ
+- **Tests de repositorio:** H2 en memoria (`@DataJpaTest`)
 - **Tests de controller:** Spring Security Test (`@WebMvcTest`)
-- **Build:** Gradle 8.6 — ejecutar con `./gradlew`, nunca `mvn`
+- **Build:** Gradle 9.0.0 — 28 subproyectos (7 contextos × 3 capas + 7 módulos shared) — ejecutar con `./gradlew`, nunca `mvn`
 - **Cobertura mínima:** 75% por módulo (JaCoCo)
 - **Ubicación:** `src/test/java/com/arquisoft/{contexto}/...`
   refleja exactamente la estructura de `src/main/java/`
+
+> **Nota Context7:** el skill `context7-stack` referencia IDs de JUnit 5 (`/websites/junit_current`)
+> porque es la documentación disponible — las APIs de anotaciones (`@Test`, `@ExtendWith`,
+> `@BeforeEach`, etc.) son compatibles con JUnit 6.0.3. Usar esos IDs es correcto.
 
 ---
 
@@ -118,6 +125,60 @@ class CrearFichaUseCaseImplTest {
 }
 ```
 
+### Estructura base — Test de entidad AggregateRoot (capa domain)
+```java
+class FichaTest {
+
+    @Test
+    void debeConstruirEntidad_cuandoDatosValidos() {
+        // Arrange / Act
+        Ficha ficha = Ficha.build("Título de prueba");
+
+        // Assert
+        assertThat(ficha.getId()).isNotNull();
+        assertThat(ficha.getTitulo()).isEqualTo("Título de prueba");
+    }
+
+    @Test
+    void debePublicarEvento_cuandoAccionEsEjecutada() {
+        // Arrange
+        Ficha ficha = Ficha.build("Título de prueba");
+
+        // Act
+        ficha.accion(); // método que internamente llama publishEvent(new FichaCreada(...))
+
+        // Assert
+        assertThat(ficha.getUnPublishedEvents()).hasSize(1);
+        assertThat(ficha.getUnPublishedEvents().get(0)).isInstanceOf(FichaCreada.class);
+    }
+
+    @Test
+    void debeLimpiarEventos_cuandoClearUnPublishedEventesEsInvocado() {
+        // Arrange
+        Ficha ficha = Ficha.build("Título de prueba");
+        ficha.accion();
+
+        // Act
+        ficha.clearUnPublishedEvents();
+
+        // Assert
+        assertThat(ficha.getUnPublishedEvents()).isEmpty();
+    }
+
+    @Test
+    void debeAsignarMetadatos_cuandoEventoEsCreado() {
+        // Arrange / Act
+        FichaCreada evento = new FichaCreada(UUID.randomUUID().toString());
+
+        // Assert
+        assertThat(evento.getEventId()).isNotNull();
+        assertThat(evento.getOccurredAt()).isNotNull();
+        assertThat(evento.getEventType()).isEqualTo("FichaCreada");
+        assertThat(evento.getAggregateId()).isNotNull();
+    }
+}
+```
+
 ### Estructura base — Test de repositorio (capa infrastructure)
 ```java
 @DataJpaTest
@@ -146,13 +207,12 @@ class FichaRepositoryAdapterTest {
 ### Estructura base — Test de controller (capa infrastructure)
 ```java
 @WebMvcTest(FichaController.class)
-@Import(SecurityConfig.class)
 class FichaControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean                          // Spring Boot 4.x: @MockitoBean reemplaza a @MockBean
     private CrearFichaUseCase crearFichaUseCase;
 
     @Autowired
@@ -181,6 +241,10 @@ class FichaControllerTest {
 }
 ```
 
+> **Nota Spring Boot 4.x:** `@MockBean` fue reemplazado por `@MockitoBean`.
+> No usar `@Import(SecurityConfig.class)` en `@WebMvcTest` — el contexto de seguridad
+> se controla con `@WithMockUser` y `SecurityMockMvcRequestPostProcessors`.
+
 ### Imports obligatorios por tipo de test
 ```java
 // Test unitario (application)
@@ -201,10 +265,11 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.junit.jupiter.api.BeforeEach;
 
-// Test de controller (infrastructure)
+// Test de controller (infrastructure) — Spring Boot 4.x
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;  // Spring Boot 4.x
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -270,8 +335,8 @@ Voy a generar tests para las siguientes clases:
 
 ```
 skill("context7-stack")
-query-docs /websites/junit_current "test lifecycle BeforeEach nested DisplayName"
-query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf"
+query-docs /websites/junit_current "test lifecycle BeforeEach Nested DisplayName ParameterizedTest"
+query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf isEmpty hasSize"
 ```
 
 #### Ciclo de aprobación por capa
@@ -297,6 +362,22 @@ query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf"
 | Reconstruir entidad desde persistencia | `debeReconstruirEntidad_cuandoDatosCompletos` |
 | Lanzar excepción con datos inválidos | `debeLanzarExcepcion_cuando{Campo}EsNulo` |
 | Excepción con mensaje correcto | `debeContenerMensajeCorrecto_cuandoSeLanzaExcepcion` |
+| Excepción extiende DomainException con errorCode | `debeContenerErrorCode_cuandoSeLanzaExcepcion` |
+| Aggregate Root publica evento al realizar acción | `debePublicarEvento_cuandoAccionEsEjecutada` |
+| Aggregate Root acumula eventos no publicados | `debeAcumularEventos_cuandoVariasAccionesSonEjecutadas` |
+| Limpiar eventos publicados | `debeLimpiarEventos_cuandoClearUnPublishedEventesEsInvocado` |
+| Evento contiene aggregateId, eventId, occurredAt y eventType | `debeAsignarMetadatos_cuandoEventoEsCreado` |
+
+> **Regla AggregateRoot:** si la entidad extiende `AggregateRoot` de `shared:domain`,
+> los tests de domain **DEBEN** verificar el ciclo completo de eventos:
+> `publishEvent` → `getUnPublishedEvents` → `clearUnPublishedEvents`.
+>
+> **Regla DomainEvent:** verificar que el constructor asigna automáticamente
+> `eventId` (no nulo, UUID válido), `occurredAt` (no nulo) y `eventType`
+> (igual al `getClass().getSimpleName()` del evento concreto).
+>
+> **Regla DomainException:** verificar que el campo `errorCode` está presente
+> y que la excepción es instancia de `DomainException` de `shared:exceptions`.
 
 ---
 
@@ -308,11 +389,11 @@ query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf"
   error de repositorio — mockeando los puertos de salida
 - **DTOs:** conversiones `toDomain()` y `fromDomain()`
 
-#### Consulta Context7 antes de generar
+#### Consulta Context7 antes de generar (capa application)
 
 ```
 skill("context7-stack")
-query-docs /mockito/mockito "Mock InjectMocks ExtendWith MockitoExtension verify when thenReturn thenThrow"
+query-docs /mockito/mockito "Mock InjectMocks ExtendWith MockitoExtension verify when thenReturn thenThrow ArgumentCaptor"
 query-docs /assertj/assertj "assertThatThrownBy isInstanceOf hasMessage assertThatExceptionOfType"
 ```
 
@@ -353,15 +434,21 @@ query-docs /assertj/assertj "assertThatThrownBy isInstanceOf hasMessage assertTh
 - **Controller:** todos los endpoints — respuestas HTTP correctas, validación
   de request body, autenticación/autorización con Keycloak roles
 
-#### Consulta Context7 antes de generar
+> **Virtual Threads (ADR-008):** el proyecto tiene `spring.threads.virtual.enabled: true`.
+> Los tests `@DataJpaTest` y `@WebMvcTest` no levantan el contexto completo, por lo que
+> los virtual threads no afectan estas pruebas. Si se usa `@SpringBootTest` completo,
+> puede observarse comportamiento concurrente diferente — usar `@DirtiesContext` si hay
+> interferencia entre tests en ese caso.
+
+#### Consulta Context7 antes de generar (capa infrastructure)
 
 ```
 skill("context7-stack")
 # Para repositorio
-query-docs /websites/junit_current "SpringBootTest DataJpaTest TestPropertySource H2"
+query-docs /websites/junit_current "DataJpaTest AutoConfigureTestDatabase H2 replace BeforeEach"
 # Para controller
-query-docs /websites/spring_io_spring-security_reference_6_5 "MockMvc WithMockUser SecurityMockMvcRequestPostProcessors"
-query-docs /websites/spring_io_spring-framework_reference_6_2 "MockMvc jsonPath status andExpect perform"
+query-docs /websites/spring_io_spring-security_reference_6_5 "MockMvc WithMockUser SecurityMockMvcRequestPostProcessors jwt"
+query-docs /websites/spring_io_spring-framework_reference_6_2 "MockMvc jsonPath status andExpect perform contentType"
 ```
 
 #### Ciclo de aprobación por capa

@@ -1,2 +1,2 @@
 // Módulos compartidos - Cada uno es independiente y reutilizable
-// Submódulos: domain, security, notifications, redis, amqp, web, postgres, validation, exceptions
+// Submódulos: domain, security, redis, amqp, web, postgres, validation, exceptions

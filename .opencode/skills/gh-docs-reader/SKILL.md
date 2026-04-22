@@ -122,6 +122,7 @@ arquisoft-docs/
 │
 ├── docs/
 │   ├── stories/                                     # Historias TECNICAS (HT-XXX), NO historias de usuario
+│   │   ├── README.md
 │   │   ├── HT-001.despliegue-infraestructura-desarrollo.story.md
 │   │   ├── HT-002.configuracion-ambiente-produccion.story.md
 │   │   ├── HT-003.creacion-repositorios-git.story.md
@@ -156,7 +157,12 @@ arquisoft-docs/
 │   │   │   ├── ADR-005-logging-monitoreo.md
 │   │   │   ├── ADR-006-seguridad-criptografica-keycloak.md
 │   │   │   ├── ADR-007-version-java-21.md
-│   │   │   └── ADR-INFRA-especificaciones-servidor.md
+│   │   │   ├── ADR-008-migracion-spring-boot-4.0.x.md      # Spring Boot 4.0.5, Gradle 9, Virtual Threads automaticos
+│   │   │   ├── ADR-009-migracion-postgresql-15-a-18.md     # PostgreSQL 18, EOL 2030, sin breaking changes en Flyway/JPA
+│   │   │   ├── ADR-010-migracion-rabbitmq-313-a-42.md      # RabbitMQ 4.2.5, AMQP 0-9-1 compatible, Khepri store
+│   │   │   ├── ADR-011-documentacion-api-springdoc-openapi.md  # springdoc-openapi 2.8.17, plugin 1.9.0, Swagger UI
+│   │   │   ├── ADR-INFRA-especificaciones-servidor.md
+│   │   │   └── guides/                                     # Guias tecnicas de referencia (10 .md, no son ADRs)
 │   │   └── risks/
 │   │       └── matriz_riesgos_tecnicos.md
 │   ├── spikes/                                      # Investigaciones tecnicas
@@ -171,10 +177,16 @@ arquisoft-docs/
 │   └── propuesta/04-arquitectura/                   # Propuesta arquitectonica
 │
 ├── mer/                                             # Modelo Entidad-Relacion
-│   ├── modelo_entidad_relacion.md
-│   ├── 01_base_datos_y_esquemas.sql
-│   ├── 02_tablas_usuarios.sql
-│   └── 03_tablas_fichas_perfil.sql
+│   ├── modelo_entidad_relacion.md                   # Indice completo con todas las tablas por contexto
+│   ├── 01_base_datos_y_esquemas.sql                 # Creacion de esquemas y base de datos
+│   ├── 02_tablas_usuarios.sql                       # Tablas: Usuario, roles (Estudiante, Asesor, etc.)
+│   ├── 03_tablas_fichas_perfil.sql                  # Tablas: FichaPerfil, EstadoFicha, Item, Revision...
+│   ├── 04_tablas_artefactos.sql                     # Tablas: Artefacto, VersionArtefacto, RevisionAsesor...
+│   ├── 05_tablas_repositorio_artefactos.sql         # Tablas: RepositorioArtefacto, VersionRepositorio...
+│   ├── 06_tablas_mapas_ruta.sql                     # Tablas: MapaRuta, PlanEstimado, PlanReal, Tarea
+│   ├── 07_tablas_proyectos_grado.sql                # Tablas: ProyectoGrado, AsesorProyecto, Estudiante...
+│   ├── 08_tablas_entregables.sql                    # Tablas: EntregableProyectoGrado, ArtefactoEntregable
+│   └── 09_tablas_evaluaciones.sql                   # Tablas: Evaluacion, EvaluacionAsesor, EvaluacionJurado...
 │
 └── templates/
     └── ARQUITECTURA_Y_ESTRUCTURA.md
@@ -230,8 +242,33 @@ gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/tecnicos/diseno-a
 gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/tecnicos/diseno-arquitectonico/drivers-arquitectonicos/atributos-calidad/tacticas/TAC-SEG-seguridad.md" \
   -H "Accept: application/vnd.github.raw+json"
 
-# Modelo entidad-relacion
+# Modelo entidad-relacion (indice completo, todas las tablas)
 gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/modelo_entidad_relacion.md" \
+  -H "Accept: application/vnd.github.raw+json"
+
+# SQL del MER por contexto (DDL exacto para Flyway)
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/02_tablas_usuarios.sql" \
+  -H "Accept: application/vnd.github.raw+json"
+
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/03_tablas_fichas_perfil.sql" \
+  -H "Accept: application/vnd.github.raw+json"
+
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/04_tablas_artefactos.sql" \
+  -H "Accept: application/vnd.github.raw+json"
+
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/05_tablas_repositorio_artefactos.sql" \
+  -H "Accept: application/vnd.github.raw+json"
+
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/06_tablas_mapas_ruta.sql" \
+  -H "Accept: application/vnd.github.raw+json"
+
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/07_tablas_proyectos_grado.sql" \
+  -H "Accept: application/vnd.github.raw+json"
+
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/08_tablas_entregables.sql" \
+  -H "Accept: application/vnd.github.raw+json"
+
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/09_tablas_evaluaciones.sql" \
   -H "Accept: application/vnd.github.raw+json"
 ```
 
@@ -267,9 +304,13 @@ gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/tecnicos/diseno-a
 gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/tecnicos/diseno-arquitectonico/drivers-arquitectonicos/atributos-calidad/tacticas" \
   --jq ".[].name"
 
-# Listar ADRs
+# Listar ADRs (001-011 + INFRA; ignorar carpeta guides/)
 gh api "repos/arquisoft-uco/arquisoft-docs/contents/docs/architecture/decisions" \
-  --jq '.[] | select(.name | endswith(".md")) | .name'
+  --jq '.[] | select(.type=="file" and (.name | endswith(".md"))) | .name'
+
+# Listar guias tecnicas de referencia (decisions/guides/)
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/docs/architecture/decisions/guides" \
+  --jq '.[].name'
 
 # Listar flujos de arquitectura
 gh api "repos/arquisoft-uco/arquisoft-docs/contents/docs/architecture" \
@@ -305,18 +346,18 @@ gh api "repos/arquisoft-uco/arquisoft-docs/git/trees/main?recursive=1" \
 
 Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
 
-| Contexto Backend | Event Storming | Modelo Anemico | Modelo Enriquecido |
-|------------------|---------------|----------------|-------------------|
-| `seguridad` (usuarios) | `Usuario - Event Storming.md` | `05_delimitar_contextos_usuarios.md` | `05_usuarios_modelo_enriquecido.md` |
-| `fichas` | `Ficha Perfil - Event Storming.md` | `06_delimitar_contextos_fichas_trabajos_grado.md` | `06_fichas_trabajos_grado_modelo_enriquecido.md` |
-| `artefactos` | `Artefactos - Event Storming.md` | `07_delimitar_contextos_artefactos.md` | `07_artefactos_modelo_enriquecido.md` |
-| `repositorio_artefactos` | `Repositorio Artefactos - Event Storming.md` | `08_delimitar_contextos_repositorio_artefactos.md` | `08_repositorio_artefactos_modelo_enriquecido.md` |
-| `proyectos` | `Proyecto Grado - Event Storming.md` | `10_delimitar_contextos_proyectos_grado.md` | `10_proyectos_grado_modelo_enriquecido.md` |
-| `entregables` | `Entregables Proyectos de Grado - Event Storming.md` | `11_delimitar_contextos_entregables_proyectos_grado.md` | `11_entregables_proyectos_grado_modelo_enriquecido.md` |
-| `evaluaciones` | `Evaluaciones Definitivas - Event Storming.md` | `12_delimitar_contextos_evaluaciones_definitivas.md` | `12_evaluaciones_definitivas_modelo_enriquecido.md` |
-| (mapas_ruta)* | `Mapa Ruta - Event Storming.md` | `09_delimitar_contextos_mapas_ruta.md` | `09_mapas_ruta_modelo_enriquecido.md` |
-| (biblioteca)* | `Biblioteca - Event Storming.md` | `14_delimitar_contextos_biblioteca.md` | `14_biblioteca_modelo_enriquecido.md` |
-| (solicitudes)* | `Solicitudes - Event Storming.md` | `15_delimitar_contextos_solicitudes.md` | `15_solicitudes_modelo_enriquecido.md` |
+| Contexto Backend | Event Storming | Modelo Anemico | Modelo Enriquecido | SQL del MER |
+|------------------|---------------|----------------|-------------------|-------------|
+| `seguridad` (usuarios) | `Usuario - Event Storming.md` | `05_delimitar_contextos_usuarios.md` | `05_usuarios_modelo_enriquecido.md` | `02_tablas_usuarios.sql` |
+| `fichas` | `Ficha Perfil - Event Storming.md` | `06_delimitar_contextos_fichas_trabajos_grado.md` | `06_fichas_trabajos_grado_modelo_enriquecido.md` | `03_tablas_fichas_perfil.sql` |
+| `artefactos` | `Artefactos - Event Storming.md` | `07_delimitar_contextos_artefactos.md` | `07_artefactos_modelo_enriquecido.md` | `04_tablas_artefactos.sql` |
+| `repositorio_artefactos` | `Repositorio Artefactos - Event Storming.md` | `08_delimitar_contextos_repositorio_artefactos.md` | `08_repositorio_artefactos_modelo_enriquecido.md` | `05_tablas_repositorio_artefactos.sql` |
+| `proyectos` | `Proyecto Grado - Event Storming.md` | `10_delimitar_contextos_proyectos_grado.md` | `10_proyectos_grado_modelo_enriquecido.md` | `07_tablas_proyectos_grado.sql` |
+| `entregables` | `Entregables Proyectos de Grado - Event Storming.md` | `11_delimitar_contextos_entregables_proyectos_grado.md` | `11_entregables_proyectos_grado_modelo_enriquecido.md` | `08_tablas_entregables.sql` |
+| `evaluaciones` | `Evaluaciones Definitivas - Event Storming.md` | `12_delimitar_contextos_evaluaciones_definitivas.md` | `12_evaluaciones_definitivas_modelo_enriquecido.md` | `09_tablas_evaluaciones.sql` |
+| (mapas_ruta)* | `Mapa Ruta - Event Storming.md` | `09_delimitar_contextos_mapas_ruta.md` | `09_mapas_ruta_modelo_enriquecido.md` | `06_tablas_mapas_ruta.sql` |
+| (biblioteca)* | `Biblioteca - Event Storming.md` | `14_delimitar_contextos_biblioteca.md` | `14_biblioteca_modelo_enriquecido.md` | *(sin SQL dedicado — ver modelo_entidad_relacion.md §9)* |
+| (solicitudes)* | `Solicitudes - Event Storming.md` | `15_delimitar_contextos_solicitudes.md` | `15_solicitudes_modelo_enriquecido.md` | *(sin SQL dedicado — ver modelo_entidad_relacion.md §10)* |
 
 *Contextos documentados en arquisoft-docs que aun no tienen bounded context en el backend.
 
@@ -324,6 +365,12 @@ Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
 - Event Storming: `artefactos/estrategicos/event-storming/{nombre archivo}`
 - Modelo Anemico: `artefactos/estrategicos/modelo-dominio/anemico/documentacion/{nombre archivo}`
 - Modelo Enriquecido: `artefactos/estrategicos/modelo-dominio/enriquecido/documentacion/{nombre archivo}`
+- SQL del MER: `mer/{nombre archivo}`
+
+**Para que usar cada fuente:**
+- `modelo_entidad_relacion.md` → vision completa de todas las tablas, tipos de dato, PKs, FKs, indices y restricciones
+- `{NN}_tablas_{contexto}.sql` → DDL exacto listo para Flyway; columnas, constraints y nombres de tabla tal como van a la BD
+- El agente planificador DEBE consultar el SQL del MER del contexto correspondiente para definir las migraciones Flyway en el plan
 
 ---
 
@@ -348,9 +395,20 @@ Sigue este orden en la FASE 0. Distingue entre **HU** (Historias de Usuario) y *
  7. Leer funcionalidades_criticas.md                   → Riesgos e impacto
  8. Si el Event Storming revela Aspectos por solucionar → Registrarlos para preguntar en FASE 2
  9. Si las Politicas mencionan atributos de calidad poco claros → Leer QA relevantes
-10. Si aplica: leer ADR relacionado                    → Decisiones arquitectonicas previas
-11. Si aplica: leer flujo de arquitectura              → Flujo del proceso de negocio
-12. Si aplica: leer MER                                → Modelo de base de datos
+10. Leer el SQL del MER del contexto (OBLIGATORIO)     → Tablas, columnas exactas, tipos, PKs, FKs
+    Usar la columna "SQL del MER" de la tabla de mapeo para obtener el nombre del archivo.
+    Comando:
+      gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/{NN}_tablas_{contexto}.sql" \
+        -H "Accept: application/vnd.github.raw+json"
+    Extraer: nombres de tabla, columnas, tipos de dato, constraints, indices unicos.
+    Usar estos datos para definir las migraciones Flyway en la seccion correspondiente del plan.
+11. Si aplica: leer ADR relacionado                    → Decisiones arquitectonicas previas
+    ADRs clave del stack actual:
+    - ADR-008: Spring Boot 4.0.5 + Gradle 9 + Virtual Threads automaticos
+    - ADR-009: PostgreSQL 18 (EOL 2030, compatible con Flyway/JPA sin cambios)
+    - ADR-010: RabbitMQ 4.2.5 (AMQP 0-9-1 compatible, Khepri store)
+    - ADR-011: springdoc-openapi 2.8.17 + plugin 1.9.0 (Swagger UI, @Tag/@Operation obligatorios)
+12. Si aplica: leer flujo de arquitectura              → Flujo del proceso de negocio
 13. Si aplica: listar docs/stories/ y leer HTs relacionadas → Contexto tecnico complementario
 14. Registrar en Metadata del plan: archivos consultados
 ```

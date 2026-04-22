@@ -1,3 +1,12 @@
+> [!WARNING]
+> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
+>
+> Este archivo es documentación de referencia para desarrolladores humanos.
+> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
+> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
+> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
+> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+
 # Arquisoft Backend - Arquitectura Hexagonal Modular
 
 Aplicación backend para Arquisoft basada en **Arquitectura Hexagonal Modular** con **7 contextos independientes** y **comunicación asincrónica** mediante RabbitMQ.
@@ -36,16 +45,14 @@ El proyecto está organizado en **7 contextos independientes**, cada uno represe
 
 ```
 arquisoft-backend/
-├── shared/                              # Módulo compartido (8 sub-módulos)
+├── shared/                              # Módulo compartido (7 sub-módulos)
 │   ├── domain/                          # Eventos base (DomainEvent, AggregateRoot)
 │   ├── exceptions/                      # DomainException base
 │   ├── amqp/                            # EventPublisher interface (RabbitMQ)
 │   ├── postgres/                        # BaseRepository (JPA)
 │   ├── redis/                           # RedisClient interface
 │   ├── web/                             # HttpClient interface
-│   ├── validation/                      # Anotaciones de validación (@ValidEmail)
-│   ├── notifications/                   # NotificationService interface
-│   └── example/                         # Ejemplo de referencia (README.md)
+│   └── validation/                      # Anotaciones de validación (@ValidEmail)
 │
 ├── seguridad/                           # CONTEXTO 1: Seguridad y Autenticación
 │   ├── domain/                          # UserRole, CurrentUserProvider, JwtTokenProvider
@@ -107,24 +114,25 @@ arquisoft-backend/
 
 | Componente | Tecnología | Versión |
 |-----------|-----------|---------|
-| Framework | Spring Boot | 3.2.4 |
+| Framework | Spring Boot | 4.0.5 |
 | Lenguaje | Java | 21 |
-| Build | Gradle | 7+ |
+| Build | Gradle | 9.0.0 |
 | Patrón | Hexagonal (Puertos y Adaptadores) | - |
+| Concurrencia | Virtual Threads | Java 21 (auto) |
 
 ### Base de Datos
 
 | Componente | Tecnología |
 |-----------|-----------|
-| Motor | PostgreSQL 15 |
-| Migraciones | Flyway 10.10.0 |
+| Motor | PostgreSQL 18 |
+| Migraciones | Flyway 11.20.3 |
 | ORM | Spring Data JPA / JdbcTemplate |
 
 ### Mensajería y Eventos
 
 | Componente | Tecnología |
 |-----------|-----------|
-| Message Broker | RabbitMQ 3.12 |
+| Message Broker | RabbitMQ 4.2.5 |
 | Modo | Topic Exchange (desacoplamiento asincrónico) |
 | Dead Letter Queue | Para manejo de errores |
 
@@ -139,7 +147,7 @@ arquisoft-backend/
 
 | Componente | Tecnología |
 |-----------|-----------|
-| Servidor OAuth2 | Keycloak 22 |
+| Servidor OAuth2 | Keycloak 26.6 |
 | Protocolo | OpenID Connect |
 | JWT | spring-security-oauth2-jose |
 | Rate Limiting | Bucket4j 7.6.0 |
@@ -155,9 +163,9 @@ arquisoft-backend/
 
 | Componente | Tecnología | Versión |
 |-----------|-----------|---------|
-| Tests | JUnit | 5.10.2 |
-| Mocking | Mockito | - |
-| BD Test | H2 | 2.2.224 |
+| Tests | JUnit | 6.0.3 |
+| Mocking | Mockito + AssertJ | - |
+| BD Test | H2 | 2.3.232 |
 
 ### Utilidades
 
@@ -321,9 +329,10 @@ java -jar app.jar --spring.profiles.active=prod
 Cada contexto tiene su propio schema en PostgreSQL:
 
 ```sql
-CREATE SCHEMA IF NOT EXISTS seguridad;
-CREATE SCHEMA IF NOT EXISTS fichas;
-CREATE SCHEMA IF NOT EXISTS proyectos;
+-- NOTA: el nombre del schema NO coincide con el contexto en 3 casos
+CREATE SCHEMA IF NOT EXISTS usuarios;             -- contexto: seguridad
+CREATE SCHEMA IF NOT EXISTS fichas_perfil;        -- contexto: fichas
+CREATE SCHEMA IF NOT EXISTS proyectos_grado;      -- contexto: proyectos
 CREATE SCHEMA IF NOT EXISTS artefactos;
 CREATE SCHEMA IF NOT EXISTS repositorio_artefactos;
 CREATE SCHEMA IF NOT EXISTS entregables;
@@ -421,8 +430,10 @@ docker run -p 8080:8080 \
 
 ## Documentación Adicional
 
-- **Ejemplo de Referencia**: `shared/example/README.md` — Estructura hexagonal con código de ejemplo
-- **Arquitectura Asincrónica**: `ARQUITECTURA_ASINCRONICO_ARQUISOFT.md`
+- **Arquitectura Asincronica**: `ARQUITECTURA_ASINCRONICO_ARQUISOFT.md`
+- **AggregateRoot y Eventos**: Ver sección `AggregateRoot y Eventos de Dominio` en `ARQUITECTURA_Y_ESTRUCTURA.md`
+- **Virtual Threads**: Ver sección `Virtual Threads (ADR-008)` en `ARQUITECTURA_Y_ESTRUCTURA.md`
+- **Estructura config/**: Ver sección `Separación entre config/ raíz y seguridad/infrastructure/config/` en `ARQUITECTURA_Y_ESTRUCTURA.md`
 - **Arquitectura y Estructura**: `ARQUITECTURA_Y_ESTRUCTURA.md`
 - **Guía de Inicio Rápido**: `QUICK_START.md`
 - **Contribuir**: `CONTRIBUTING.md`

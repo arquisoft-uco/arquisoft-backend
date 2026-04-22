@@ -40,20 +40,23 @@ documento estructurado `PLAN-{HU|HT}-{ID}.md` (ej. `PLAN-HU-160.md` o `PLAN-HT-0
 - NO modificas archivos del proyecto Java.
 - Solo puedes ejecutar comandos `gh api` o `gh auth status` para consultar el repositorio de documentación.
 - Tu output es el plan. El plan es el contrato para el agente de implementación.
+- **PROHIBIDO leer, indexar o referenciar cualquier archivo del directorio `docs/`** del repositorio.
+  Los archivos en `docs/` son documentación para humanos y pueden contener información desactualizada.
+  El contexto autoritativo es `AGENTS.md` (raíz) y los skills de `.opencode/skills/`.
 
 ---
 
 ## Contexto del Proyecto
 
 - **Lenguaje:** Java 21
-- **Framework:** Spring Boot 3.2.4
-- **Build:** Gradle 8.6 multi-módulo (38 subproyectos)
+- **Framework:** Spring Boot 4.0.5
+- **Build:** Gradle 9.0.0 multi-módulo (28 subproyectos: 7 contextos × 3 capas + 7 módulos shared)
 - **Arquitectura:** Hexagonal (Puertos y Adaptadores) + DDD
-- **Base de datos:** PostgreSQL 15 con Flyway (migraciones SQL)
-- **Mensajería:** RabbitMQ 3.12 (comunicación entre bounded contexts)
+- **Base de datos:** PostgreSQL 18 con Flyway (migraciones SQL)
+- **Mensajería:** RabbitMQ 4.2.5 (comunicación entre bounded contexts)
 - **Caché:** Redis 7
-- **Autenticación:** Keycloak 23 (OAuth2/OIDC)
-- **Tests:** JUnit 5 + Mockito + AssertJ (cobertura mínima 75% con JaCoCo)
+- **Autenticación:** Keycloak 26.6 (OAuth2/OIDC)
+- **Tests:** JUnit 6.0.3 + Mockito + AssertJ (cobertura mínima 75% con JaCoCo)
 
 ### Bounded Contexts (7)
 
@@ -67,6 +70,29 @@ documento estructurado `PLAN-{HU|HT}-{ID}.md` (ej. `PLAN-HU-160.md` o `PLAN-HT-0
 | `entregables`             | `com.arquisoft.entregables`                        |
 | `artefactos`              | `com.arquisoft.artefactos`                         |
 
+### Módulos shared (7)
+
+| Módulo           | Paquete base                       | Propósito                                        |
+|------------------|------------------------------------|--------------------------------------------------|
+| `shared:domain`  | `com.arquisoft.shared.domain`      | `AggregateRoot`, `DomainEvent` — base del modelo |
+| `shared:amqp`    | `com.arquisoft.shared.amqp`        | Infraestructura RabbitMQ compartida              |
+| `shared:exceptions` | `com.arquisoft.shared.exceptions` | `DomainException`, `GlobalExceptionHandler`     |
+| `shared:postgres`| `com.arquisoft.shared.postgres`    | Configuración JPA / Flyway compartida            |
+| `shared:redis`   | `com.arquisoft.shared.redis`       | Configuración Redis compartida                   |
+| `shared:validation` | `com.arquisoft.shared.validation` | Validaciones reutilizables                      |
+| `shared:web`     | `com.arquisoft.shared.web`         | Filtros, utilidades HTTP compartidas             |
+
+> **`shared:domain`** expone dos clases clave que los contextos deben usar:
+> - `AggregateRoot` — clase base para entidades raíz; gestiona eventos con `publishEvent(DomainEvent)`
+> - `DomainEvent` — clase base para todos los eventos de dominio; asigna `eventId`, `occurredAt` y `eventType` automáticamente
+
+### Virtual Threads (ADR-008)
+
+- Habilitados globalmente en `application.yml`: `spring.threads.virtual.enabled: true`
+- Aplica automáticamente a Tomcat, `@Async` y RabbitMQ listeners — **no requiere código adicional**
+- Beneficio: operaciones I/O bloqueantes (Keycloak, JDBC, Redis) sin consumo de OS threads
+- Al planificar HUs que involucren operaciones I/O intensivas, no proponer configuración de executor adicional — ya está gestionado
+
 ### Estructura Hexagonal por Contexto
 
 ```
@@ -76,7 +102,7 @@ documento estructurado `PLAN-{HU|HT}-{ID}.md` (ej. `PLAN-HU-160.md` o `PLAN-HT-0
 │   ├── port/
 │   │   ├── in/         # Interfaces de casos de uso: {Accion}{Entidad}UseCase
 │   │   └── out/        # Interfaces de repositorio: {Entidad}RepositoryPort
-│   └── exception/      # Excepciones de dominio (extienden RuntimeException)
+│   └── exception/      # Excepciones de dominio (extienden DomainException de shared:domain)
 ├── application/
 │   ├── dto/            # DTOs con toDomain() / fromDomain(), sufijo DTO
 │   └── usecase/        # Implementaciones: {Accion}{Entidad}UseCaseImpl
@@ -353,11 +379,11 @@ produce el documento en el formato a continuación y guárdalo como
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/model/{Entidad}.java` | Entidad | {descripción} |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/port/in/{Accion}{Entidad}UseCase.java` | Interface | {descripción} |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/port/out/{Entidad}RepositoryPort.java` | Interface | {descripción} |
-| domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/exception/{Entidad}NoEncontradaException.java` | Exception | {descripción} |
+| domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/exception/{Entidad}NoEncontradaException.java` | Exception | {descripción} — extiende `DomainException` (shared) |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/dto/{Accion}{Entidad}RequestDTO.java` | DTO | {descripción} |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/dto/{Entidad}ResponseDTO.java` | DTO | {descripción} |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/usecase/{Accion}{Entidad}UseCaseImpl.java` | UseCase Impl | {descripción} |
-| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/in/web/{Entidad}Controller.java` | Controller | {descripción} |
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/in/web/{Entidad}Controller.java` | Controller | {descripción} — DEBE incluir `@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement` (ADR-011) |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}JpaEntity.java` | JPA Entity | {descripción} |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}JpaRepository.java` | JPA Repo | {descripción} |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}RepositoryAdapter.java` | Adapter | {descripción} |
@@ -390,13 +416,31 @@ produce el documento en el formato a continuación y guárdalo como
 
 {Repetir para cada archivo del árbol}
 
+#### Plantilla extendida para Controllers (ADR-011)
+
+Para cada archivo de tipo Controller, añadir además:
+
+- **`@Tag`:** `name = "{NombreContexto}"`, `description = "{descripción del grupo}"`
+- **Endpoints documentados:**
+
+  | Método del Controller | `@Operation(summary)` | Códigos `@ApiResponse` | `@SecurityRequirement` |
+  |-----------------------|-----------------------|------------------------|------------------------|
+  | `{metodo}` | `"{resumen corto < 10 palabras}"` | 200/201, 400, 401, 403, 404 | `bearerAuth` (omitir si es público) |
+
+- **Nota:** Los endpoints públicos (login, refresh, validate) omiten `@SecurityRequirement`.
+
 ---
 
 ## 6. Endpoints REST (si aplica)
 
-| Método | Ruta | Request Body | Response | Código HTTP | Roles permitidos |
-|--------|------|--------------|----------|-------------|-----------------|
-| POST | `/api/{contexto}/{recurso}` | `{Accion}{Entidad}RequestDTO` | `{Entidad}ResponseDTO` | 201 | `ROL_X` |
+| Método | Ruta | Request Body | Response | Código HTTP | Roles permitidos | Anotaciones Swagger (ADR-011) |
+|--------|------|--------------|----------|-------------|-----------------|-------------------------------|
+| POST | `/api/{contexto}/{recurso}` | `{Accion}{Entidad}RequestDTO` | `{Entidad}ResponseDTO` | 201 | `ROL_X` | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
+
+> **Nota ADR-011:** Todo endpoint documentado aquí **DEBE** tener en su Controller las anotaciones
+> `@Tag` (clase), `@Operation`, `@ApiResponses` y `@SecurityRequirement(name="bearerAuth")` (método).
+> Los endpoints públicos (login, refresh, validate) omiten `@SecurityRequirement`. Ver convenciones
+> completas en `AGENTS.md` sección "Configuracion: Swagger / OpenAPI".
 
 ---
 
@@ -411,7 +455,18 @@ produce el documento en el formato a continuación y guárdalo como
 ## 8. Migración de Base de Datos (si aplica)
 
 - **Archivo:** `V{n}__{descripcion}.sql`
-- **Esquema PostgreSQL:** `{contexto}`
+- **Esquema PostgreSQL:** usar la tabla de mapeo (el nombre del schema NO coincide con el nombre del contexto en tres casos):
+
+  | Contexto (módulo Gradle / paquete Java) | Schema PostgreSQL (Fase 1 MVP) |
+  |-----------------------------------------|-------------------------------|
+  | `seguridad`                             | `usuarios`                    |
+  | `fichas`                                | `fichas_perfil`               |
+  | `proyectos`                             | `proyectos_grado`             |
+  | `artefactos`                            | `artefactos`                  |
+  | `repositorio_artefactos`                | `repositorio_artefactos`      |
+  | `entregables`                           | `entregables`                 |
+  | `evaluaciones`                          | `evaluaciones`                |
+
 - **Cambios:** {descripción de tablas/columnas nuevas o modificadas}
 
 ---
@@ -444,6 +499,7 @@ produce el documento en el formato a continuación y guárdalo como
 - [ ] DTOs con `toDomain()` / `fromDomain()` y anotaciones Jakarta Validation
 - [ ] Caso de uso (`{Accion}{Entidad}UseCaseImpl`) con `@RequiredArgsConstructor`
 - [ ] Controller REST con `@Valid @RequestBody` y roles Keycloak configurados
+- [ ] Controller documentado con `@Tag`, `@Operation`, `@ApiResponses` y `@SecurityRequirement` (ADR-011)
 - [ ] Entidad JPA y adaptador de repositorio creados
 - [ ] Migración Flyway (`V{n}__{descripcion}.sql`) en esquema `{contexto}`
 - [ ] Eventos RabbitMQ publicados/consumidos (si aplica)
@@ -472,7 +528,7 @@ produce el documento en el formato a continuación y guárdalo como
 ## Reglas Invariantes del Agente
 
 1. **Nunca generes código.** Solo el plan. Sin excepción.
-2. **Siempre ejecuta FASE 0** antes de hacer preguntas — carga el skill `gh-docs-reader` y sigue su protocolo de 14 pasos en el orden indicado.
+2. **Siempre ejecuta FASE 0** antes de hacer preguntas — carga el skill `gh-docs-reader` y sigue su protocolo de consulta en el orden indicado.
 3. **Siempre haz las preguntas de FASE 2** antes de generar el plan. Sin excepción.
 4. **La pregunta de observaciones** es la última de FASE 2 — nunca la omitas.
 5. **Usa rutas absolutas** desde la raíz del monorepo en todos los archivos.

@@ -14,6 +14,9 @@ spring:
   application:
     name: arquisoft
 
+  # ==================== VIRTUAL THREADS (ADR-008) ====================
+  # Java 21 + Spring Boot 4.x: habilita virtual threads en Tomcat, @Async y RabbitMQ listeners.
+  # Beneficio: I/O bloqueante (Keycloak, JDBC, Redis) sin consumo de OS threads.
   threads:
     virtual:
       enabled: true
@@ -73,11 +76,12 @@ spring:
 
 # ==================== KEYCLOAK ====================
 keycloak:
-  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8081}
-  realm: ${KEYCLOAK_REALM:arquisoft}
-  resource: ${KEYCLOAK_CLIENT_ID:arquisoft-app}
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL}
+  realm: ${KEYCLOAK_REALM}
+  resource: ${KEYCLOAK_CLIENT_ID}
   credentials:
-    secret: ${KEYCLOAK_CLIENT_SECRET:}
+    secret: ${KEYCLOAK_CLIENT_SECRET}
+  principal-attribute: preferred_username #Simplemente te hara la vida fácil
 
 # ==================== SEGURIDAD ====================
 security:
@@ -99,10 +103,7 @@ server:
 logging:
   level:
     root: INFO
-    com.arquisoft: DEBUG
     org.springframework.web: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
@@ -124,3 +125,10 @@ management:
     export:
       prometheus:
         enabled: true
+
+# ==================== SPRINGDOCS ====================
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true

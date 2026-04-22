@@ -1,12 +1,12 @@
 ---
 name: context7-stack
 description:
-  IDs de librerias Context7 del stack Arquisoft (Spring Boot 3.2.4, Java 21, Gradle 8.6). Usar antes de generar cualquier archivo Java o de configuracion para obtener documentacion actualizada y especifica por version de cada dependencia del proyecto. Incluye tabla de IDs directos validados, IDs alternativos con mas snippets, y ejemplos de consulta por tipo de archivo.
+  IDs de librerias Context7 del stack Arquisoft (Spring Boot 4.0.5, Java 21, Gradle 9.0.0). Usar antes de generar cualquier archivo Java o de configuracion para obtener documentacion actualizada y especifica por version de cada dependencia del proyecto. Incluye tabla de IDs directos validados, IDs alternativos con mas snippets, y ejemplos de consulta por tipo de archivo.
 license: MIT
 compatibility: opencode
 metadata:
-  stack: java21-spring-boot-3.2.4
-  build: gradle-8.6
+  stack: java21-spring-boot-4.0.5
+  build: gradle-9.0.0
 ---
 
 # Skill: context7-stack
@@ -16,6 +16,9 @@ Usa estos IDs directamente con `query-docs` para saltarte el paso `resolve-libra
 
 > IMPORTANTE: Siempre usar el ID de mayor score de snippets disponible para obtener
 > la documentacion mas completa. Los IDs marcados con ★ son los recomendados.
+>
+> **Stack real:** Spring Boot 4.0.5 · Java 21 · Gradle 9.0.0 · JUnit 6.0.3 · Keycloak 26.6
+> **Nota JUnit:** El ID `/websites/junit_current` cubre JUnit 5 — las anotaciones son compatibles con JUnit 6.0.3.
 
 ---
 
@@ -23,20 +26,20 @@ Usa estos IDs directamente con `query-docs` para saltarte el paso `resolve-libra
 
 | Libreria | ID Recomendado ★ | Snippets | Version en proyecto |
 |----------|-----------------|----------|---------------------|
-| Spring Boot | `/websites/spring_io_spring-boot` | 295 000+ | 3.2.4 |
-| Spring Framework (MVC/Web/Tx) | `/websites/spring_io_spring-framework_reference_6_2` | 6 761 | 6.1.x (via Boot 3.2) |
-| Spring Security + OAuth2 | `/websites/spring_io_spring-security_reference_6_5` | 11 697 | 6.2.x (via Boot 3.2) |
-| Spring AMQP / RabbitMQ | `/websites/spring_io` | 50 638 | 3.1.x (via Boot 3.2) |
-| Spring Data JPA | `/spring-projects/spring-data-jpa` | 315 | 3.2.x (via Boot 3.2) |
-| Spring Data Redis | `/spring-projects/spring-data-redis` | 357 | 3.2.x (via Boot 3.2) |
+| Spring Boot | `/websites/spring_io_spring-boot` | 295 000+ | **4.0.5** |
+| Spring Framework (MVC/Web/Tx) | `/websites/spring_io_spring-framework_reference_6_2` | 6 761 | 7.x (via Boot 4.0) |
+| Spring Security + OAuth2 | `/websites/spring_io_spring-security_reference_6_5` | 11 697 | 6.5.x (via Boot 4.0) |
+| Spring AMQP / RabbitMQ | `/websites/spring_io` | 50 638 | 3.2.x (via Boot 4.0) |
+| Spring Data JPA | `/spring-projects/spring-data-jpa` | 315 | 3.4.x (via Boot 4.0) |
+| Spring Data Redis | `/spring-projects/spring-data-redis` | 357 | 3.4.x (via Boot 4.0) |
 | Flyway | `/flyway/flyway` | 2 434 | **10.10.0** |
-| JUnit 5 | `/websites/junit_current` | 5 740 | 5.10.2 |
-| Mockito | `/mockito/mockito` | 120 | 5.x (via Boot 3.2) |
-| AssertJ | `/assertj/assertj` | 81 | 3.x (via Boot 3.2) |
-| Lombok | `/projectlombok/lombok` | 638 | 1.18.30 |
-| Gradle | `/websites/gradle_current_userguide` | 4 607 | 8.6 |
+| JUnit 5 | `/websites/junit_current` | 5 740 | **6.0.3** (compatible con anotaciones JUnit 5) |
+| Mockito | `/mockito/mockito` | 120 | 5.x (via Boot 4.0) |
+| AssertJ | `/assertj/assertj` | 81 | 3.x (via Boot 4.0) |
+| Lombok | `/projectlombok/lombok` | 638 | 1.18.x |
+| Gradle | `/websites/gradle_current_userguide` | 4 607 | **9.0.0** |
 | JJWT | `/jwtk/jjwt` | 166 | 0.12.3 |
-| Keycloak | `/keycloak/keycloak` | 2 453 | 23.0.0 |
+| Keycloak | `/keycloak/keycloak` | 2 453 | **26.6** |
 | Bucket4j | `/bucket4j/bucket4j` | 301 | 7.6.0 |
 | Jackson | `/fasterxml/jackson-databind` | 47 | 2.15.2 |
 | Hibernate ORM | `/hibernate/hibernate-orm` | 4 278 | 6.x (via JPA Boot 3.2) |

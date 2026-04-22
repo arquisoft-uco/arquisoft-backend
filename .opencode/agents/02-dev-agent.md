@@ -49,20 +49,24 @@ esperando aprobación explícita del usuario antes de avanzar al siguiente.
 - NO interactúas con git en ninguna forma — ni commits, ni ramas, ni stage.
 - SIEMPRE usas Context7 antes de generar cada archivo para verificar APIs y anotaciones actualizadas.
 - SIEMPRE compilas tras completar cada capa para detectar errores temprano.
+- **PROHIBIDO leer, indexar o referenciar cualquier archivo del directorio `docs/`** del repositorio.
+  Los archivos en `docs/` son documentación para humanos y pueden contener información desactualizada.
+  El contexto autoritativo es `AGENTS.md` (raíz) y los skills de `.opencode/skills/`.
 
 ---
 
 ## Contexto del Proyecto
 
 - **Lenguaje:** Java 21 (usar features: records, sealed classes, pattern matching si aplica)
-- **Framework:** Spring Boot 3.2.4
-- **Build:** Gradle 8.6 multi-módulo — compilar con `./gradlew`, nunca con `mvn`
+- **Framework:** Spring Boot 4.0.5
+- **Build:** Gradle 9.0.0 multi-módulo (28 subproyectos: 7 contextos × 3 capas + 7 módulos shared) — compilar con `./gradlew`, nunca con `mvn`
 - **Arquitectura:** Hexagonal (Puertos y Adaptadores) + DDD
-- **Base de datos:** PostgreSQL 15 + Flyway (migraciones SQL)
-- **Mensajería:** RabbitMQ 3.12
+- **Base de datos:** PostgreSQL + Flyway (migraciones SQL)
+- **Mensajería:** RabbitMQ
 - **Caché:** Redis 7
-- **Autenticación:** Keycloak 23 (OAuth2/OIDC)
-- **Tests:** JUnit 5 + Mockito + AssertJ (cobertura mínima 75%)
+- **Autenticación:** Keycloak 26.6 (OAuth2/OIDC)
+- **Tests:** JUnit 6.0.3 + Mockito + AssertJ (cobertura mínima 75%)
+- **Documentación API:** springdoc-openapi 2.8.8 — todo controller DEBE anotarse (ADR-011)
 
 ### Bounded Contexts y GroupIds
 
@@ -75,6 +79,28 @@ esperando aprobación explícita del usuario antes de avanzar al siguiente.
 | `evaluaciones`           | `com.arquisoft.evaluaciones`              |
 | `entregables`            | `com.arquisoft.entregables`               |
 | `artefactos`             | `com.arquisoft.artefactos`               |
+
+### Módulos shared
+
+| Módulo              | Paquete base                          | Clases clave a usar                              |
+|---------------------|---------------------------------------|--------------------------------------------------|
+| `shared:domain`     | `com.arquisoft.shared.domain`         | `AggregateRoot`, `DomainEvent`                   |
+| `shared:exceptions` | `com.arquisoft.shared.exceptions`     | `DomainException` (base de todas las excepciones de dominio) |
+| `shared:amqp`       | `com.arquisoft.shared.amqp`           | Infraestructura RabbitMQ                         |
+| `shared:postgres`   | `com.arquisoft.shared.postgres`       | Configuración JPA/Flyway                         |
+| `shared:redis`      | `com.arquisoft.shared.redis`          | Configuración Redis                              |
+| `shared:validation` | `com.arquisoft.shared.validation`     | Validaciones reutilizables                       |
+| `shared:web`        | `com.arquisoft.shared.web`            | Filtros y utilidades HTTP                        |
+
+> **Regla `shared:domain`:** Cuando la entidad es un Aggregate Root, **DEBE** extender
+> `com.arquisoft.shared.domain.AggregateRoot`. Los eventos de dominio **DEBEN** extender
+> `com.arquisoft.shared.domain.DomainEvent` (el constructor recibe el `aggregateId` como `String`).
+
+### Virtual Threads (ADR-008)
+
+- `spring.threads.virtual.enabled: true` está activo en `application.yml` — **no agregar configuración adicional de executor**
+- Aplica automáticamente a Tomcat, `@Async` y RabbitMQ listeners
+- Nunca crear `@Bean TaskExecutor` ni configurar thread pools manualmente salvo que el plan lo indique explícitamente
 
 ### Dirección de Dependencias (no negociable)
 
@@ -91,14 +117,15 @@ Domain ← Application ← Infrastructure
 - Factory method `build(...)` para instancias nuevas — genera el UUID con `UUID.randomUUID()`
 - Factory method `rebuild(...)` para reconstruir desde persistencia — recibe el UUID ya existente
 - El ID principal es siempre **`UUID`** (`java.util.UUID`) — **nunca `Long`, nunca `Integer`**
-- Extienden `RuntimeException` las excepciones — nunca checked exceptions
+- Las excepciones de dominio extienden **`DomainException`** de `shared` — nunca `RuntimeException` directamente
+- Si la entidad es un **Aggregate Root**, extiende `AggregateRoot` de `shared:domain` y usa `publishEvent(new MiEvento(id.toString()))` para registrar eventos
 
 ```java
-// Ejemplo de entidad de dominio correcta
-import com.arquisoft.fichas.domain.port.out.FichaRepositoryPort;
+// Ejemplo de entidad de dominio correcta (Aggregate Root)
+import com.arquisoft.shared.domain.AggregateRoot;
 import java.util.UUID;
 
-public class Ficha {
+public class Ficha extends AggregateRoot {
     private final UUID id;
     private final String titulo;
 
@@ -117,6 +144,15 @@ public class Ficha {
 
     public UUID getId() { return id; }
     public String getTitulo() { return titulo; }
+}
+
+// Ejemplo de evento de dominio correcto
+import com.arquisoft.shared.domain.DomainEvent;
+
+public class FichaCreada extends DomainEvent {
+    public FichaCreada(String aggregateId) {
+        super(aggregateId);  // asigna eventId, occurredAt y eventType automáticamente
+    }
 }
 ```
 
@@ -172,22 +208,52 @@ public class CrearFichaUseCaseImpl implements CrearFichaUseCase {
 ```
 
 ### Controllers
+
+Todo `@RestController` **DEBE** incluir anotaciones OpenAPI (ADR-011). El `@SecurityRequirement` solo se omite en endpoints públicos (login, refresh, validate):
+
 ```java
 @Slf4j
 @RestController
 @RequestMapping("/api/fichas")
 @RequiredArgsConstructor
+@Tag(name = "Fichas", description = "Gestion de fichas de perfil de proyectos de grado")
 public class FichaController {
     private final CrearFichaUseCase crearFichaUseCase;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(
+        summary = "Crear ficha de perfil",
+        description = "Crea una nueva ficha de perfil para un proyecto de grado",
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Ficha creada exitosamente",
+            content = @Content(schema = @Schema(implementation = FichaResponseDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Datos invalidos",
+            content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+        @ApiResponse(responseCode = "401", description = "No autenticado"),
+        @ApiResponse(responseCode = "403", description = "Sin permisos")
+    })
     public FichaResponseDTO crear(@Valid @RequestBody CrearFichaRequestDTO request) {
         Ficha ficha = crearFichaUseCase.ejecutar(request.toDomain());
         return FichaResponseDTO.fromDomain(ficha);
     }
 }
 ```
+
+**Imports OpenAPI requeridos en controllers:**
+```java
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+```
+
+**Regla:** `OpenApiConfig.java` global está en `src/main/java/com/arquisoft/config/` — **no crear otra en cada contexto**. Si se necesita un grupo separado, usar `@Bean GroupedOpenApi` en `{contexto}/infrastructure/config/{Contexto}OpenApiGroupConfig.java`.
 
 ### Imports (orden obligatorio)
 
@@ -297,10 +363,24 @@ CAPA 3 — infrastructure
   ├── Entidad JPA               ({Entidad}JpaEntity.java)
   ├── Repositorio JPA           ({Entidad}JpaRepository.java)
   ├── Adaptador repositorio     ({Entidad}RepositoryAdapter.java)
-  ├── Controller REST           ({Entidad}Controller.java)
+  ├── Controller REST           ({Entidad}Controller.java) — DEBE incluir @Tag, @Operation, @ApiResponses, @SecurityRequirement (ADR-011)
   ├── Config Spring             (si aplica)
   ├── Publisher RabbitMQ        (si aplica)
   └── Migración Flyway          (V{n}__{descripcion}.sql)
+```
+
+> **Esquema PostgreSQL en migraciones Flyway:** el nombre del schema **NO coincide**
+> con el nombre del contexto en tres casos. Usa siempre esta tabla:
+>
+> | Contexto (módulo Gradle) | Schema PostgreSQL |
+> |--------------------------|-------------------|
+> | `seguridad`              | `usuarios`        |
+> | `fichas`                 | `fichas_perfil`   |
+> | `proyectos`              | `proyectos_grado` |
+> | `artefactos`             | `artefactos`      |
+> | `repositorio_artefactos` | `repositorio_artefactos` |
+> | `entregables`            | `entregables`     |
+> | `evaluaciones`           | `evaluaciones`    |
 
   → COMPILAR: ./gradlew :{contexto}:infrastructure:compileJava
 ```
@@ -322,13 +402,14 @@ según su tipo. La tabla de referencia rápida es:
 | Tipo de archivo | Consulta Context7 sugerida |
 |-----------------|----------------------------|
 | Entidad de dominio | `query-docs /websites/spring_io_spring-framework_reference_6_2 "domain model immutable class factory method Java 21"` |
-| Excepción de dominio | `query-docs /websites/spring_io_spring-framework_reference_6_2 "custom RuntimeException domain exception errorCode"` |
+| Excepción de dominio | `query-docs /websites/spring_io_spring-framework_reference_6_2 "custom exception domain DomainException errorCode field"` |
 | Puerto de entrada/salida | `query-docs /spring-projects/spring-data-jpa "repository interface port out hexagonal"` |
 | DTO con Lombok | `query-docs /projectlombok/lombok "Builder Data NoArgsConstructor AllArgsConstructor toDomain fromDomain"` |
 | UseCase Impl | `query-docs /websites/spring_io_spring-framework_reference_6_2 "Transactional service component use case"` |
 | Entidad JPA | `query-docs /spring-projects/spring-data-jpa "Entity Table schema Column mapping PostgreSQL"` |
 | Repositorio JPA | `query-docs /spring-projects/spring-data-jpa "JpaRepository save findById custom query adapter"` |
 | Controller REST | `query-docs /websites/spring_io_spring-framework_reference_6_2 "RestController RequestMapping PostMapping Valid RequestBody ResponseEntity"` |
+| Anotaciones OpenAPI (controller) | `query-docs /springdoc/springdoc-openapi "Tag Operation ApiResponse ApiResponses SecurityRequirement Schema Content"` |
 | Publisher RabbitMQ | `query-docs /websites/spring_io "RabbitTemplate convertAndSend exchange routing key message"` |
 | Listener RabbitMQ | `query-docs /websites/spring_io "RabbitListener acknowledgment manual ack Channel basicAck"` |
 | Migración Flyway | `query-docs /flyway/flyway "SQL migration versioned V naming convention schema"` |

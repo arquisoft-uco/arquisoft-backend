@@ -1,3 +1,12 @@
+> [!WARNING]
+> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
+>
+> Este archivo es documentación de referencia para desarrolladores humanos.
+> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
+> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
+> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
+> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+
 # Arquitectura Hexagonal Modular - Documentación Completa
 
 ## Índice
@@ -7,16 +16,18 @@
 3. [Estructura del Proyecto](#estructura-del-proyecto)
 4. [Módulo Seguridad](#módulo-seguridad)
 5. [Módulo Shared](#módulo-shared)
-6. [Ejemplos Prácticos](#ejemplos-prácticos)
-7. [Configuración y Build](#configuración-y-build)
-8. [Flujos de Datos](#flujos-de-datos)
-9. [Perfiles de Ejecución](#perfiles-de-ejecución)
+6. [AggregateRoot y Eventos de Dominio](#aggregateroot-y-eventos-de-dominio)
+7. [Virtual Threads (ADR-008)](#virtual-threads-adr-008)
+8. [Ejemplos Prácticos](#ejemplos-prácticos)
+9. [Configuración y Build](#configuración-y-build)
+10. [Flujos de Datos](#flujos-de-datos)
+11. [Perfiles de Ejecución](#perfiles-de-ejecución)
 
 ---
 
 ## Visión General
 
-Este proyecto implementa una **Arquitectura Hexagonal Modular** usando **Spring Boot 3.2.4** y **Gradle** como herramienta de construcción. La arquitectura se basa en el patrón de **Puertos y Adaptadores** con **7 contextos independientes**.
+Este proyecto implementa una **Arquitectura Hexagonal Modular** usando **Spring Boot 4.0.5** y **Gradle 9.0.0** como herramienta de construcción. La arquitectura se basa en el patrón de **Puertos y Adaptadores** con **7 contextos independientes**, Java 21 y Virtual Threads habilitados.
 
 ### Ventajas Principales
 
@@ -106,6 +117,12 @@ arquisoft-backend/
 ├── Dockerfile                            # Imagen Docker multi-stage
 ├── init-db.sql                           # Creación de 7 schemas
 │
+├── config/                               # Configuraciones GENERALES del proyecto
+│   └── checkstyle/
+│       └── checkstyle.xml                # Reglas de estilo de código
+│   # config/ contiene solo tooling del build (checkstyle, etc.)
+│   # OpenApiConfig.java GLOBAL está en src/main/java/com/arquisoft/config/ — NO en config/ ni en contextos individuales.
+│
 ├── src/
 │   └── main/
 │       ├── java/com/arquisoft/
@@ -122,9 +139,7 @@ arquisoft-backend/
 │   ├── postgres/                         # BaseRepository
 │   ├── redis/                            # RedisClient
 │   ├── web/                              # HttpClient
-│   ├── validation/                       # @ValidEmail, EmailValidator
-│   ├── notifications/                    # NotificationService
-│   └── example/                          # Ejemplo de referencia
+│   └── validation/                       # @ValidEmail, EmailValidator
 │
 ├── seguridad/                            # CONTEXTO 1
 │   ├── domain/
@@ -156,14 +171,14 @@ arquisoft-backend/
 │           │   ├── CurrentUserProviderImpl.java
 │           │   ├── KeycloakAuthServiceImpl.java
 │           │   └── JwtTokenProviderImpl.java
-│           ├── config/
-│           │   ├── SecurityConfig.java
-│           │   ├── CorsConfig.java
-│           │   ├── RateLimitConfig.java
-│           │   └── RestTemplateConfig.java
+│           ├── config/                   # Configuraciones de SEGURIDAD (no van en config/ raíz)
+│           │   ├── SecurityConfig.java    # JWT + OAuth2 Resource Server + método security
+│           │   ├── CorsConfig.java        # Orígenes, headers expuestos, credenciales
+│           │   ├── RateLimitConfig.java   # Bucket4j per-IP (100/min global, 5/min login)
+│           │   └── RestTemplateConfig.java # SimpleClientHttpRequestFactory (SB4 compat)
 │           └── filter/
-│               ├── RateLimitingFilter.java
-│               └── AuditFilter.java
+│               ├── RateLimitingFilter.java  # OncePerRequestFilter: evalúa límite por IP
+│               └── AuditFilter.java         # Registra METHOD, URI, USER, TIME, STATUS
 │
 ├── fichas/                               # CONTEXTO 2
 │   ├── domain/
@@ -200,7 +215,7 @@ El contexto **seguridad** maneja toda la autenticación y autorización de la ap
 ### Responsabilidades
 
 - Autenticación OAuth2/JWT via Keycloak
-- Gestión de roles (`ADMIN`, `COORDINADOR`, `DIRECTOR`, `ASESOR`, `JURADO`, `ESTUDIANTE`, `DOCENTE`, `INVITADO`)
+- Gestión de roles (`ADMINISTRADOR`, `COORDINADOR`, `ASESOR_FICHA`, `ASESOR`, `JURADO`, `ESTUDIANTE`, `BIBLIOTECARIO`, `REPRESENTANTE_COMITE_CURRICULUM`)
 - Rate limiting con Bucket4j
 - Auditoría de requests
 - CORS configuration
@@ -225,7 +240,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.security:spring-security-oauth2-jose'
-    implementation 'org.keycloak:keycloak-admin-client:23.0.0'
+    implementation 'org.keycloak:keycloak-admin-client:25.0.3'
     implementation 'com.bucket4j:bucket4j-core:7.6.0'
 }
 ```
@@ -234,7 +249,7 @@ dependencies {
 
 ## Módulo Shared
 
-El módulo `shared` contiene **8 sub-módulos** reutilizables por cualquier contexto:
+El módulo `shared` contiene **7 sub-módulos** reutilizables por cualquier contexto:
 
 | Sub-módulo | Contenido | Uso |
 |-----------|-----------|-----|
@@ -245,7 +260,6 @@ El módulo `shared` contiene **8 sub-módulos** reutilizables por cualquier cont
 | `redis` | RedisClient (interface) | Operaciones de cache |
 | `web` | HttpClient (interface) | Llamadas HTTP entre contextos |
 | `validation` | @ValidEmail, EmailValidator | Anotaciones de validación |
-| `notifications` | NotificationService (interface) | Envío de notificaciones |
 
 ### Ejemplo de Uso
 
@@ -264,9 +278,212 @@ dependencies {
 
 ---
 
-## Ejemplos Prácticos
+## AggregateRoot y Eventos de Dominio
 
-> Ver `shared/example/README.md` para un ejemplo completo con código.
+### ¿Qué es AggregateRoot?
+
+`AggregateRoot` (en `shared/domain`) es la clase base para entidades de dominio que necesitan **emitir eventos de negocio**. Gestiona una lista interna de eventos no publicados que el use case drena después de persistir.
+
+```java
+// shared/domain — clase existente
+public abstract class AggregateRoot {
+    private final List<DomainEvent> unPublishedEvents = new ArrayList<>();
+
+    protected void publishEvent(DomainEvent event) {
+        unPublishedEvents.add(event);         // acumula el evento en memoria
+    }
+
+    public List<DomainEvent> getUnPublishedEvents() {
+        return new ArrayList<>(unPublishedEvents);
+    }
+
+    public void clearUnPublishedEvents() {
+        unPublishedEvents.clear();
+    }
+}
+```
+
+### ¿Cuándo extender AggregateRoot?
+
+| Contexto | ¿Usa AggregateRoot? | Razón |
+|---|---|---|
+| `fichas` | ✅ Sí | Emite `FichaCreadaEvent`, `FichaAprobadaEvent` |
+| `proyectos` | ✅ Sí | Emite `ProyectoCreadoEvent`, `ProyectoFinalizadoEvent` |
+| `artefactos` | ✅ Sí | Emite `ArtefactoCreadoEvent`, `ArtefactoEvaluadoEvent` |
+| `entregables` | ✅ Sí | Emite `EntregableCreadoEvent`, `EntregableSubidoEvent` |
+| `evaluaciones` | ✅ Sí | Emite `EvaluacionCalificadaEvent` |
+| `repositorio_artefactos` | ✅ Sí | Emite `VersionPublicadaEvent` |
+| `seguridad` | ❌ No | Contexto transversal, delega a Keycloak, sin estado propio |
+
+### Estructura de carpetas en domain (con eventos)
+
+```
+{contexto}/domain/src/main/java/com/arquisoft/{contexto}/domain/
+├── model/
+│   └── {Entidad}.java          ← extends AggregateRoot
+├── event/                      ← carpeta para eventos de dominio
+│   ├── {Entidad}CreadaEvent.java
+│   ├── {Entidad}AprobadaEvent.java
+│   └── {Entidad}FinalizadaEvent.java
+├── port/
+│   ├── in/
+│   └── out/
+└── exception/
+```
+
+### Ejemplo completo: entidad con AggregateRoot
+
+```java
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/model/Ficha.java
+package com.arquisoft.fichas.domain.model;
+
+import com.arquisoft.shared.domain.AggregateRoot;
+import com.arquisoft.fichas.domain.event.FichaCreadaEvent;
+import java.util.UUID;
+
+public class Ficha extends AggregateRoot {   // ← hereda gestión de eventos
+
+    private final UUID id;
+    private final String titulo;
+    private final String estado;
+
+    private Ficha(UUID id, String titulo, String estado) {
+        this.id = id;
+        this.titulo = titulo;
+        this.estado = estado;
+    }
+
+    // Factory para NUEVA ficha — genera UUID y registra evento
+    public static Ficha build(String titulo) {
+        Ficha ficha = new Ficha(UUID.randomUUID(), titulo, "BORRADOR");
+        ficha.publishEvent(new FichaCreadaEvent(ficha.id.toString(), titulo));
+        return ficha;
+    }
+
+    // Factory para RECONSTRUIR desde persistencia — sin evento
+    public static Ficha rebuild(UUID id, String titulo, String estado) {
+        return new Ficha(id, titulo, estado);
+    }
+
+    public UUID getId()       { return id; }
+    public String getTitulo() { return titulo; }
+    public String getEstado() { return estado; }
+}
+```
+
+```java
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/event/FichaCreadaEvent.java
+package com.arquisoft.fichas.domain.event;
+
+import com.arquisoft.shared.domain.DomainEvent;
+
+public class FichaCreadaEvent extends DomainEvent {
+    private final String titulo;
+
+    public FichaCreadaEvent(String aggregateId, String titulo) {
+        super(aggregateId);   // eventId, occurredAt y eventType se generan automáticamente
+        this.titulo = titulo;
+    }
+
+    public String getTitulo() { return titulo; }
+}
+```
+
+### Use Case: drenar y publicar eventos tras persistir
+
+El **use case** es el único responsable de drenar los eventos del aggregate y entregarlos a RabbitMQ. Nunca lo hace el controller ni el repositorio.
+
+```java
+// fichas/application/src/main/java/com/arquisoft/fichas/application/usecase/CrearFichaUseCaseImpl.java
+@Component
+@RequiredArgsConstructor
+public class CrearFichaUseCaseImpl implements CrearFichaUseCase {
+
+    private final FichaRepositoryPort fichaRepository;
+    private final EventPublisher eventPublisher;      // shared:amqp
+
+    @Override
+    public Ficha crearFicha(Ficha ficha) {
+        Ficha guardada = fichaRepository.save(ficha);  // 1. persistir
+
+        guardada.getUnPublishedEvents()                // 2. drenar eventos acumulados
+                .forEach(eventPublisher::publish);     // 3. publicar a RabbitMQ
+        guardada.clearUnPublishedEvents();             // 4. limpiar lista
+
+        return guardada;
+    }
+}
+```
+
+### Regla importante
+
+- `build(...)` → para **crear** una entidad nueva: genera UUID + registra eventos.
+- `rebuild(...)` → para **reconstruir** desde BD: sin UUID nuevo, sin eventos.
+- El dominio **nunca** inyecta `EventPublisher` — solo acumula eventos en memoria.
+
+---
+
+## Virtual Threads (ADR-008)
+
+### Configuración
+
+> **Spring Boot 4.0.x (versión actual del proyecto):** Virtual Threads se activan **automáticamente** cuando la JVM es Java 21+. La propiedad `spring.threads.virtual.enabled=true` ya **no es necesaria** y fue eliminada de `application.yml` con la migración a Boot 4.0.5 (ADR-008).
+>
+> Si el proyecto estuviera en Spring Boot 3.x, la propiedad requerida sería:
+> ```yaml
+> spring:
+>   threads:
+>     virtual:
+>       enabled: true
+> ```
+> En Boot 4.x esto ocurre sin configuración adicional.
+
+Esta configuración hace que Spring Boot reemplace automáticamente los executors de OS threads en **Tomcat**, **`@Async`** y **RabbitMQ listeners**.
+
+### ¿Qué cubre automáticamente?
+
+| Componente del proyecto | Efecto |
+|---|---|
+| Todos los **Controllers** (requests HTTP) | Cada request corre en un virtual thread |
+| **`KeycloakAuthAdapter`** (HTTP a Keycloak) | Bloqueo I/O sin consumir OS thread |
+| **`JwtTokenAdapter`** (decodificación JWT) | Igual |
+| **`FichaRepositoryAdapter`** y todos los adapters JPA/JDBC | Queries a BD sin bloquear OS thread |
+| **`@RabbitListener`** en event listeners | Mensajes procesados en virtual threads |
+| **`AuditFilter`**, **`RateLimitingFilter`** | Mismo virtual thread del request |
+
+No hay que modificar ningún método ni clase — el beneficio es completamente transparente para el código de negocio.
+
+### La única excepción: `@Async` con `TaskExecutor` manual
+
+Si en algún use case se declara un `TaskExecutor` propio en un `@Configuration`, ese bean **no hereda** la configuración global y debe ajustarse explícitamente:
+
+```java
+// ❌ NO hereda virtual threads — usa OS threads del pool
+@Bean
+public TaskExecutor miExecutor() {
+    return new ThreadPoolTaskExecutor();
+}
+
+// ✅ SÍ usa virtual threads
+@Bean
+public TaskExecutor miExecutor() {
+    return new SimpleAsyncTaskExecutor(Thread.ofVirtual().factory());
+}
+```
+
+En este proyecto no hay ningún `TaskExecutor` declarado manualmente, por lo que toda la concurrencia queda cubierta con la propiedad ya configurada.
+
+### Separación entre `config/` raíz y `seguridad/infrastructure/config/`
+
+| Carpeta | Qué va aquí |
+|---|---|
+| `config/` *(raíz del proyecto)* | Configuraciones **transversales** del build/tooling: `checkstyle.xml`, reglas de análisis estático. |
+| `src/main/java/com/arquisoft/` | Punto de entrada (`ArquisoftApplication`) y configuraciones **globales de la API ensamblada**: `config/OpenApiConfig` con `@OpenAPIDefinition` y `@SecurityScheme`. Reside aquí porque es el único módulo con visibilidad de todos los contextos. |
+| `seguridad/infrastructure/config/` | Configuraciones **de runtime de Spring Security**: `SecurityConfig`, `CorsConfig`, `RateLimitConfig`, `RestTemplateConfig`. Solo pertenecen al contexto de seguridad. |
+
+---
+
+## Ejemplos Prácticos
 
 ### Ejemplo: Crear una Ficha
 
@@ -515,13 +732,15 @@ class CrearFichaUseCaseImplTest {
 ### Versiones de Dependencias (gradle.properties)
 
 ```properties
-javaVersion=17
-springBootVersion=3.2.4
-jUnitVersion=5.10.2
-lombokVersion=1.18.30
-h2Version=2.2.224
-flywaydbVersion=10.10.0
-keycloakVersion=23.0.0
+javaVersion=21
+springBootVersion=4.0.5
+jUnitVersion=6.0.3
+lombokVersion=1.18.36
+h2Version=2.3.232
+flywaydbVersion=11.20.3
+keycloakVersion=25.0.3
+# postgresVersion, rabbitmqVersion, redisVersion están comentadas
+# Spring Boot BOM gestiona estas versiones automáticamente
 ```
 
 ### Dependencias entre Capas (build.gradle)
@@ -682,22 +901,22 @@ con hexagonal:  Controller → Port (interface) ← Repository
 |--------|-------------|
 | **Patrón** | Hexagonal (Puertos y Adaptadores) |
 | **Contextos** | 7 independientes |
-| **Módulo compartido** | shared (8 sub-módulos) |
+| **Módulo compartido** | shared (7 sub-módulos) |
 | **Capas** | Domain → Application → Infrastructure |
-| **Framework** | Spring Boot 3.2.4 |
-| **BD** | PostgreSQL 15 (1 schema por contexto) |
-| **Migraciones** | Flyway 10.10.0 |
-| **Build** | Gradle 7+ con Wrapper |
-| **Java** | 17 |
-| **Testing** | JUnit 5.10.2 + Mockito |
-| **Auth** | Keycloak 22 (OAuth2/JWT) |
+| **Framework** | Spring Boot 4.0.5 |
+| **BD** | PostgreSQL 18 (1 schema por contexto) |
+| **Migraciones** | Flyway 11.20.3 |
+| **Build** | Gradle 9.0.0 con Wrapper |
+| **Java** | 21 (Virtual Threads habilitados) |
+| **Testing** | JUnit 6.0.3 + Mockito + AssertJ |
+| **Auth** | Keycloak 26.6 (OAuth2/OIDC Resource Server) |
 | **Rate Limiting** | Bucket4j 7.6.0 |
+| **Concurrencia** | Virtual Threads (`spring.threads.virtual.enabled=true`) |
 
 ---
 
 ## Referencias
 
-- **Ejemplo de referencia completo**: `shared/example/README.md`
 - **Arquitectura Hexagonal**: https://alistair.cockburn.us/hexagonal-architecture/
 - **Clean Architecture**: Robert C. Martin (2017)
 - **Spring Boot Documentation**: https://spring.io/projects/spring-boot

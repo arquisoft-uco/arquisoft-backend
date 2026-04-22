@@ -88,3 +88,10 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+
+# ==================== SPRINGDOCS ====================
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
