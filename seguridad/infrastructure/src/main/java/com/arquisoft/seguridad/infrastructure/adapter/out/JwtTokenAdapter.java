@@ -8,15 +8,13 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Adaptador de salida que implementa TokenPort usando Spring Security OAuth2.
  * Valida y parsea tokens JWT emitidos por Keycloak.
+ * Los roles se leen exclusivamente de realm_access.roles (ADR-003).
  */
 @Slf4j
 @Service
@@ -48,49 +46,28 @@ public class JwtTokenAdapter implements TokenPort {
     }
 
     private Map<String, Object> mapJwtToUserInfo(Jwt jwt) {
-        Map<String, Object> userInfo = new HashMap<>();
-        userInfo.put("keycloakUserId", jwt.getSubject());
-        userInfo.put("email", jwt.getClaimAsString("email"));
-        userInfo.put("name", jwt.getClaimAsString("name"));
-        userInfo.put("roles", extractRoles(jwt));
-        userInfo.put("issuedAt", jwt.getIssuedAt() != null ? jwt.getIssuedAt().toEpochMilli() : null);
-        userInfo.put("expiresAt", jwt.getExpiresAt() != null ? jwt.getExpiresAt().toEpochMilli() : null);
-        return userInfo;
+        return Map.of(
+                "keycloakUserId", jwt.getSubject(),
+                "email",          String.valueOf(jwt.getClaimAsString("email")),
+                "name",           String.valueOf(jwt.getClaimAsString("name")),
+                "roles",          extractRealmRoles(jwt),
+                "issuedAt",       jwt.getIssuedAt()  != null ? jwt.getIssuedAt().toEpochMilli()  : 0L,
+                "expiresAt",      jwt.getExpiresAt() != null ? jwt.getExpiresAt().toEpochMilli() : 0L
+        );
     }
 
-    @SuppressWarnings("unchecked")
-    private List<String> extractRoles(Jwt jwt) {
-        List<String> roles = new ArrayList<>();
-
-        Object rolesObj = jwt.getClaim("roles");
-        if (rolesObj instanceof List) {
-            roles.addAll((List<String>) rolesObj);
+    /**
+     * Extrae los roles de realm_access.roles únicamente.
+     * Usa instanceof pattern matching (Java 16+) — sin @SuppressWarnings.
+     */
+    private List<String> extractRealmRoles(Jwt jwt) {
+        if (jwt.getClaim("realm_access") instanceof Map<?, ?> realmAccess
+                && realmAccess.get("roles") instanceof List<?> rawRoles) {
+            return rawRoles.stream()
+                    .filter(String.class::isInstance)
+                    .map(String.class::cast)
+                    .toList();
         }
-
-        Object realmAccess = jwt.getClaim("realm_access");
-        if (realmAccess instanceof Map) {
-            Object realmRoles = ((Map<?, ?>) realmAccess).get("roles");
-            if (realmRoles instanceof List) {
-                roles.addAll((List<String>) realmRoles);
-            }
-        }
-
-        Object resourceAccess = jwt.getClaim("resource_access");
-        if (resourceAccess instanceof Map) {
-            Map<?, ?> resourceMap = (Map<?, ?>) resourceAccess;
-            for (Object value : resourceMap.values()) {
-                if (value instanceof Map) {
-                    Object clientRoles = ((Map<?, ?>) value).get("roles");
-                    if (clientRoles instanceof List) {
-                        roles.addAll((List<String>) clientRoles);
-                    }
-                }
-            }
-        }
-
-        return roles.stream()
-                .distinct()
-                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
-                .collect(Collectors.toList());
+        return List.of();
     }
 }

@@ -12,14 +12,16 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
  * Configuración de Spring Security para OAuth2/JWT con Keycloak.
  * Configura:
- * - Validación de JWT basada en las claves públicas de Keycloak
+ * - Validación de JWT basada en las claves públicas de Keycloak (JWK Set URI)
+ * - Conversión de roles Keycloak a GrantedAuthority via KeycloakJwtConverterConfig
  * - Políticas de sesión stateless
- * - Protección CSRF
+ * - Protección CSRF deshabilitada (API REST)
  * - Rutas públicas y protegidas
  */
 @Slf4j
@@ -28,15 +30,14 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
-    
+
+    private final JwtAuthenticationConverter jwtAuthenticationConverter;
+
     @Value("${keycloak.auth-server-url}")
     private String keycloakServerUrl;
-    
+
     @Value("${keycloak.realm}")
     private String realm;
-    
-    @Value("${security.public-endpoints:}")
-    private String publicEndpoints;
 
     @Bean
     public JwtDecoder jwtDecoder() {
@@ -51,10 +52,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // CORS configurado en CorsConfig
                 .cors(cors -> { })
-                
-                // CSRF deshabilitado para APIs REST
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
@@ -65,7 +63,12 @@ public class SecurityConfig {
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder())));
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter)
+                        )
+                );
 
         return http.build();
     }
