@@ -204,12 +204,13 @@ Migraciones Flyway en `{contexto}/infrastructure/src/main/resources/db/migration
 
 ## Pipeline de Agentes (.opencode/)
 
-El repositorio usa un pipeline de 4 agentes:
+El repositorio usa un pipeline de 5 agentes:
 
 1. `@planificador` — genera `PLAN-{HU|HT}-{ID}.md` en `.workspace/h-plan/`
 2. `@implementador` — lee el plan como contrato, implementa capa a capa
 3. `@tester` — genera tests JUnit 6 + Mockito por capa
-4. `@validator` — verifica criterios, genera reporte en `.workspace/validator/`, propone commit
+4. `@validator` — verifica criterios, genera reporte en `.workspace/validator/`, propone commit (sin ejecutar git)
+5. `@commit` — lee el reporte aprobado por `@validator` y ejecuta el commit git
 
 **Antes de planificar cualquier HU:** usar skill `gh-docs-reader` para leer la HU del repo de documentación.
 **Antes de generar cualquier archivo Java:** usar skill `context7-stack` para obtener IDs de Context7 actualizados.

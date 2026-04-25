@@ -176,6 +176,12 @@ seguridad/infrastructure/src/test/java/com/arquisoft/seguridad/infrastructure/ad
 
 ---
 
+## 9. Commit
+
+**Estado:** ✅ EJECUTADO
+**Hash:** 3bf6219
+**Fecha de ejecución:** 2026-04-25
+
 ## 9. Commit Propuesto
 
 ```

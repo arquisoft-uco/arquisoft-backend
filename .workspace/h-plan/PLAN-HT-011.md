@@ -292,4 +292,4 @@ No aplica — los roles globales viven en Keycloak; los roles contextuales por p
 | Desarrollo | @implementador | ✅ Completo  | 2026-04-24 | 6 archivos; arquitectura extendida con RoleAuthorityMapper + KeycloakRoleExtractor; build OK |
 | Tests      | @tester        | ✅ Completo  | 2026-04-24 | 15 tests (9 domain + 6 infrastructure), todos en verde. Correcciones: junit-platform-launcher + BOM en domain y infrastructure build.gradle |
 | Validación | @validator     | ✅ Completo  | 2026-04-25 | Score 96/100 — APROBADO. 7/7 CA, 9/9 archivos plan, 15 tests verdes. Errores menores: Checkstyle MethodName en *Test.java, JaCoCo no medido por módulo. Reporte: .workspace/validator/validator-HT-011.md |
-| Commit     | @validator     | ⏳ Pendiente |       |       |
+| Commit     | @commit        | ✅ Completado | 2026-04-25 | Hash: 3bf6219 |

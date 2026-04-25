@@ -42,15 +42,17 @@ import org.springframework.context.annotation.Configuration;
         contact = @Contact(
             name = "Equipo Arquisoft UCO",
             email = "arquisoft@uco.edu.co"
-        ),
+        )
+/*            ,
         license = @License(
             name = "Uso interno UCO",
             url = "https://www.uco.edu.co"
-        )
+        )*/
     ),
     servers = {
-        @Server(url = "/api", description = "Servidor local de desarrollo"),
-        @Server(url = "https://arquisoft.uco.edu.co/api", description = "Servidor de produccion UCO")
+        @Server(url = "/api", description = "Servidor local de desarrollo")
+/*            ,
+        @Server(url = "https://arquisoft.uco.edu.co/api", description = "Servidor de produccion UCO")*/
     },
     security = @SecurityRequirement(name = "bearerAuth")
 )
