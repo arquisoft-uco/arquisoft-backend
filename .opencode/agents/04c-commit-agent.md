@@ -76,8 +76,27 @@ Si no se indicó el ID, pregunta: **"¿Cuál es el ID del plan a commitear (HU o
    Y termina sin ejecutar nada más.
 4. Extrae del reporte:
    - Mensaje de commit propuesto
-   - Lista de archivos a incluir (`git add`)
+   - Lista de archivos de código a incluir (`git add`)
    - Nombre de la rama (`feature/{HU|HT}-{ID}-{descripcion_snake_case}`)
+5. **Construye la lista FINAL de archivos del commit** combinando:
+   - Los archivos de código listados en el reporte (`Archivos a incluir`).
+   - **Los dos archivos del workspace que documentan esta HU/HT** (siempre incluidos):
+     - `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`
+     - `.workspace/validator/validator-{HU|HT}-{ID}.md`
+
+   Estos dos archivos del workspace son parte del **artefacto auditable** de la HU/HT
+   y deben quedar versionados junto al código que justifican. Si alguien revisa el
+   commit más adelante, podrá ver el plan que se siguió y el reporte de validación
+   que aprobó la implementación.
+
+   > **Nota sobre la ruta:** las rutas se escriben **sin barra inicial** (`.workspace/...`),
+   > no con barra absoluta (`/.workspace/...`), porque git trabaja sobre rutas relativas
+   > a la raíz del repositorio.
+
+   > **Nota sobre `.gitignore`:** asegúrate de que `.workspace/` NO esté ignorado en
+   > el `.gitignore` del repo. Si lo está, los archivos no se podrán commitear y este
+   > paso fallará. La política recomendada es versionar `.workspace/h-plan/` y
+   > `.workspace/validator/` para mantener trazabilidad histórica de las HU/HT.
 
 ### FASE 2 — Verificación de Rama
 
@@ -104,10 +123,15 @@ Rama destino: feature/{HU|HT}-{ID}-{descripcion}
   → {COINCIDE / SE CREARÁ CON checkout -b / YA EXISTE}
 
 Mensaje: {tipo}({contexto}): {descripcion}
-Archivos:
+
+Archivos de código:
   - {archivo 1}
   - {archivo 2}
   ...
+
+Archivos de trazabilidad (auditoría de la {HU|HT}):
+  - .workspace/h-plan/PLAN-{HU|HT}-{ID}.md
+  - .workspace/validator/validator-{HU|HT}-{ID}.md
 
 ¿Confirmas la ejecución? (sí / no / ajustar mensaje)
 ```
@@ -126,14 +150,33 @@ Solo tras confirmación explícita del usuario en FASE 3, ejecuta esta secuencia
 
 ```bash
 git status
-git add {archivos del reporte}
+git add {archivos de código del reporte} .workspace/h-plan/PLAN-{HU|HT}-{ID}.md .workspace/validator/validator-{HU|HT}-{ID}.md
 git commit -m "{tipo}({contexto}): {descripcion corta en español}"
 git log --oneline -5
 ```
 
+> **Importante:**
+> - Los **archivos de código** vienen del reporte (lista en sección "Archivos a incluir").
+> - Los **dos archivos de workspace** se añaden SIEMPRE al commit, sin que el reporte tenga que listarlos.
+> - Todas las rutas son **relativas a la raíz del repo** (sin barra inicial). El `git add` se ejecuta desde la raíz del repositorio.
+
 Captura del output:
 - El **hash** del commit (de `git log --oneline -5`)
 - La **rama** confirmada (de `git status`)
+
+**Si `git add` falla** porque alguno de los archivos de workspace está en `.gitignore`
+o no existe, detén la ejecución sin hacer commit y notifica al usuario:
+
+```
+⚠️ No se pudieron añadir los archivos de trazabilidad al commit.
+
+Posibles causas:
+  - El archivo .workspace/h-plan/PLAN-{HU|HT}-{ID}.md no existe.
+  - El archivo .workspace/validator/validator-{HU|HT}-{ID}.md no existe.
+  - El directorio .workspace/ está en .gitignore.
+
+Por favor verifica y reinvoca el agente.
+```
 
 **Tras esta fase, no debes volver a invocar bash bajo ninguna circunstancia.** Cualquier
 verificación adicional (ej. "déjame confirmar que quedó bien") es innecesaria — el commit
@@ -258,3 +301,8 @@ Frases correctas (descriptivas del estado **terminado**, no anticipatorias):
 8. **Si el usuario quiere ajustar el mensaje del commit**, recibe el nuevo mensaje, muestra la confirmación actualizada y espera nueva confirmación antes de ejecutar FASE 4.
 9. **Tras ejecutar el commit**, actualiza la fila `Commit` en la sección 13 del plan y el campo `Estado` del reporte del validator. **No toques otras filas o campos.**
 10. **Si el usuario cancela en FASE 3**, no propongas alternativas, no insistas, no preguntes razones. Simplemente confirma "Commit cancelado." y detente.
+11. **SIEMPRE incluyes en el `git add` los dos archivos de workspace** que documentan la HU/HT, además de los archivos de código del reporte:
+    - `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`
+    - `.workspace/validator/validator-{HU|HT}-{ID}.md`
+
+    Estos archivos son parte del artefacto auditable del cambio y deben quedar versionados con el código que justifican. Si alguno de los dos no existe en disco o está bloqueado por `.gitignore`, detén el commit y notifica al usuario.
