@@ -40,6 +40,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # ── Buildx ──
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       # ── Metadata (tags y labels) ──
       - name: Extraer metadata Docker
         id: meta
