@@ -1,0 +1,40 @@
+package com.arquisoft.seguridad.domain.service;
+
+import com.arquisoft.seguridad.domain.model.UserRole;
+
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * Regla de negocio pura: traduce códigos de rol (emitidos por Keycloak)
+ * en el nombre de autoridad que Spring Security reconoce (ROLE_XXX).
+ * Sin dependencias de framework — Java 21 puro.
+ */
+public final class RoleAuthorityMapper {
+
+    private RoleAuthorityMapper() {}
+
+    /**
+     * Convierte un código de rol a su representación ROLE_XXX.
+     * Retorna vacío si el código no pertenece al dominio.
+     */
+    public static Optional<String> toAuthorityName(String roleCode) {
+        try {
+            UserRole role = UserRole.fromCode(roleCode);
+            return Optional.of("ROLE_" + role.name());
+        } catch (IllegalArgumentException e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Filtra y mapea una lista de códigos de rol a sus nombres de autoridad.
+     * Los códigos internos de Keycloak (offline_access, etc.) son ignorados.
+     */
+    public static List<String> toAuthorityNames(List<String> roleCodes) {
+        return roleCodes.stream()
+                .map(RoleAuthorityMapper::toAuthorityName)
+                .flatMap(Optional::stream)
+                .toList();
+    }
+}

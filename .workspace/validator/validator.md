@@ -1,1 +1,0 @@
-Borrar cuando exista el primer validator creado en md

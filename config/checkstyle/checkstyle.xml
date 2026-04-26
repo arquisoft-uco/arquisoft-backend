@@ -91,4 +91,10 @@
     </module>
 
     <module name="SuppressWarningsFilter"/>
+
+    <!-- Permitir guion bajo en nombres de métodos de test (patrón debe_cuando) -->
+    <module name="SuppressionSingleFilter">
+        <property name="checks" value="MethodName"/>
+        <property name="files" value=".*[\\/]test[\\/].*"/>
+    </module>
 </module>

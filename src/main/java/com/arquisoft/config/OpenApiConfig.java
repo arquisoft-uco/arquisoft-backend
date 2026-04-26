@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
-import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
@@ -42,15 +41,17 @@ import org.springframework.context.annotation.Configuration;
         contact = @Contact(
             name = "Equipo Arquisoft UCO",
             email = "arquisoft@uco.edu.co"
-        ),
+        )
+/*            ,
         license = @License(
             name = "Uso interno UCO",
             url = "https://www.uco.edu.co"
-        )
+        )*/
     ),
     servers = {
-        @Server(url = "/api", description = "Servidor local de desarrollo"),
-        @Server(url = "https://arquisoft.uco.edu.co/api", description = "Servidor de produccion UCO")
+        @Server(url = "/api", description = "Servidor local de desarrollo")
+/*            ,
+        @Server(url = "https://arquisoft.uco.edu.co/api", description = "Servidor de produccion UCO")*/
     },
     security = @SecurityRequirement(name = "bearerAuth")
 )

@@ -4,7 +4,7 @@
 
 ## Historia / Incidente Relacionado
 
-- [ ] HT-XXX / INC-XXX: (descripción)
+- [ ] HU-XXX / HT-XXX / INC-XXX: (descripción)
 
 ## Tipo de Cambio
 
@@ -25,7 +25,7 @@
 - [ ] Commits siguen Conventional Commits en español
 
 ### Calidad
-- [ ] Tests unitarios agregados/actualizados (JUnit 5 + Mockito + AssertJ)
+- [ ] Tests unitarios agregados/actualizados (JUnit 6 + Mockito + AssertJ)
 - [ ] Cobertura ≥ 75% (JaCoCo)
 - [ ] Build exitoso (`./gradlew build`)
 - [ ] Sin código muerto ni imports no utilizados
