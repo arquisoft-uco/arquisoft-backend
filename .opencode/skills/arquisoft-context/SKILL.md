@@ -1,14 +1,7 @@
 ---
 name: arquisoft-context
-description: >-
-  Contexto autoritativo del proyecto Arquisoft Backend para subagentes.
-  Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier
-  Historia de Usuario o Técnica. Contiene el stack exacto verificado, las
-  convenciones de arquitectura hexagonal + DDD, la regla estricta de
-  AggregateRoot, el mapeo contexto → schema PostgreSQL, la guía de uso de
-  features de Java 21 y las plantillas de código canónicas. Este skill es la
-  ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md,
-  README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
+description:
+   Contexto autoritativo del proyecto Arquisoft Backend para subagentes. Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier Historia de Usuario o Técnica. Contiene el stack exacto verificado, las convenciones de arquitectura hexagonal + DDD, la regla estricta de AggregateRoot, el mapeo contexto → schema PostgreSQL, la guía de uso de features de Java 21 y las plantillas de código canónicas. Este skill es la ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md, README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
 ---
 
 # Skill: arquisoft-context — Contexto Autoritativo para Subagentes
@@ -127,14 +120,44 @@ Domain  ←  Application  ←  Infrastructure
 │   └── usecase/       # Impl: {Accion}{Entidad}UseCaseImpl
 └── infrastructure/
     ├── adapter/
-    │   ├── in/web/                  # Controllers REST
+    │   ├── in/
+    │   │   ├── web/                 # Controllers REST + componentes web globales
+    │   │   │   ├── {Entidad}Controller.java
+    │   │   │   └── GlobalExceptionHandler.java   # @RestControllerAdvice (si aplica)
+    │   │   └── messaging/           # EventListeners RabbitMQ (si el contexto escucha eventos)
+    │   │       └── {Entidad}EventListener.java
     │   └── out/
     │       ├── persistence/         # JPA Entity, JpaRepository, RepositoryAdapter
-    │       └── messaging/           # EventPublisher / EventListener RabbitMQ
-    ├── config/                      # @Configuration (sufijo Config)
+    │       ├── messaging/           # EventPublisher RabbitMQ
+    │       └── {tipo}/              # security/, storage/, notification/, etc. (si aplica)
+    ├── config/                      # @Configuration (sufijo Config) — solo cablea, sin lógica
     ├── filter/                      # Filtros HTTP (sufijo Filter)
     └── resources/db/migration/      # Flyway V{n}__{descripcion}.sql
 ```
+
+### Convenciones de subcarpetas en adaptadores
+
+**Subcarpetas SIEMPRE obligatorias** (aunque solo haya un tipo de adaptador):
+
+- `adapter/in/web/` — para todo lo que sirve a la capa REST: controllers (`@RestController`), advice global (`@RestControllerAdvice`), interceptores de petición que solo aplican a endpoints REST.
+- `adapter/in/messaging/` — para listeners de RabbitMQ (`@RabbitListener`). Solo se crea si el contexto consume eventos de otros bounded contexts.
+- `adapter/out/persistence/` — para JPA Entity, JpaRepository, RepositoryAdapter.
+- `adapter/out/messaging/` — para publishers de RabbitMQ (`EventPublisher` impl).
+- `adapter/out/{tipo}/` — para otras integraciones externas (ej. `security/` para Keycloak admin client, `storage/` para S3, `notification/` para SMTP). Una subcarpeta por tipo de integración.
+
+La consistencia (siempre subcarpeta) prevalece sobre la simplicidad (carpeta plana cuando solo hay un tipo). Esto facilita que cualquier nuevo tipo de adaptador encuentre su lugar sin reorganizaciones.
+
+### Componentes web especiales — dónde van
+
+| Componente | Ubicación | Tipo Spring |
+|---|---|---|
+| `{Entidad}Controller` | `adapter/in/web/` | `@RestController` |
+| `GlobalExceptionHandler` | `adapter/in/web/` | `@RestControllerAdvice` |
+| Interceptores REST específicos del contexto | `adapter/in/web/` | clase con `HandlerInterceptor` |
+| Filtros HTTP (cross-cutting, ej. rate limit) | `infrastructure/filter/` | `@Component` con `Filter` |
+| `OpenApiConfig`, `SecurityConfig`, `RabbitMQConfig` | `infrastructure/config/` | `@Configuration` |
+
+**Regla:** un componente está en `adapter/in/web/` si **solo se activa durante una request REST**. Si es transversal a más cosas (filtros que también aplican a actuator, configs globales), va en `filter/` o `config/`.
 
 ---
 
@@ -179,9 +202,13 @@ Si una misma clase responde "sí" a dos preguntas, está mezclando responsabilid
 | Contratos con el exterior (abstractos) | `domain/port/out/` | `FichaRepositoryPort`, `TokenAuthoritiesPort` |
 | Casos de uso (qué se invoca y en qué orden) | `application/usecase/` | "persistir → drenar eventos → publicar → limpiar" |
 | DTOs de entrada/salida | `application/dto/` | `CrearFichaRequestDTO`, `FichaResponseDTO` |
-| Implementaciones concretas de puertos | `infrastructure/adapter/out/` | `FichaRepositoryAdapter` (JPA), `KeycloakAuthoritiesAdapter` |
+| Controllers REST | `infrastructure/adapter/in/web/` | `FichaController` (`@RestController`) |
+| Advice global de errores web | `infrastructure/adapter/in/web/` | `GlobalExceptionHandler` (`@RestControllerAdvice`) |
+| Listeners RabbitMQ | `infrastructure/adapter/in/messaging/` | `FichaEventListener` (`@RabbitListener`) |
+| Implementaciones concretas de puertos out | `infrastructure/adapter/out/{tipo}/` | `FichaRepositoryAdapter` (en `persistence/`), `KeycloakAuthoritiesAdapter` (en `security/`) |
 | Detalles de frameworks | `infrastructure/` | JPA `@Entity`, Spring `@Configuration`, RabbitMQ `@RabbitListener` |
-| Configuración técnica | `infrastructure/config/` | `SecurityConfig`, `RabbitMQConfig`, `OpenApiConfig` |
+| Configuración técnica (cableado) | `infrastructure/config/` | `SecurityConfig`, `RabbitMQConfig`, `OpenApiConfig` (sin lógica de negocio) |
+| Filtros HTTP cross-cutting | `infrastructure/filter/` | `RateLimitFilter`, `RequestLoggingFilter` |
 
 ### Lista negra de imports por capa
 
@@ -802,6 +829,29 @@ El nombre del schema **no coincide** con el nombre del módulo Gradle en 3 casos
 - Nomenclatura: `V{n}__{descripcion}.sql` (ej. `V1.0__fichas_schema.sql`)
 - El SQL debe referenciar el schema correcto (ej. `fichas_perfil.ficha`, no `fichas.ficha`).
 - En `@Entity` de JPA: `@Table(schema = "fichas_perfil", name = "ficha")`.
+
+### Dependencias entre schemas (orden de creación)
+
+Todos los schemas conviven en la base de datos `arquisoft`. Cuando una tabla de un contexto
+referencia con FK una tabla de otro schema, la migración del contexto dependiente debe
+ejecutarse **después** de que el schema del que depende ya tenga sus tablas creadas.
+
+```
+usuarios              → (ninguna — schema raíz)
+fichas_perfil         → usuarios
+repositorio_artefactos→ usuarios
+proyectos_grado       → usuarios, fichas_perfil
+mapas_ruta            → usuarios, proyectos_grado
+artefactos            → usuarios, proyectos_grado, repositorio_artefactos
+entregables           → usuarios, proyectos_grado, artefactos
+evaluaciones          → usuarios, entregables
+biblioteca            → usuarios
+solicitudes           → usuarios
+```
+
+**Regla para FKs cruzadas entre schemas:** si la tabla del contexto A tiene una FK que apunta
+a un schema B, escribir la constraint con schema calificado:
+`REFERENCES {schema_b}.{tabla}(id)`. Verificar que la migración de B se ejecute antes que la de A.
 
 ---
 

@@ -1,11 +1,14 @@
 package com.arquisoft.seguridad.domain.model;
 
 /**
- * Roles globales del sistema definidos en Keycloak (ADR-003).
+ * Roles contextuales del sistema definidos en Keycloak (ADR-003).
  * El código de cada rol coincide exactamente con el nombre emitido
  * en el claim realm_access.roles del token JWT (SCREAMING_CASE).
+ *
+ * Estos roles representan las responsabilidades que puede ejercer un usuario
+ * dentro del contexto de negocio de Arquisoft.
  */
-public enum UserRole {
+public enum UsuarioRole {
     ESTUDIANTE("ESTUDIANTE", "Estudiante que presenta proyecto de grado"),
     ASESOR("ASESOR", "Asesor asignado a un proyecto de grado"),
     ASESOR_FICHA("ASESOR_FICHA", "Asesor que apoya la elaboracion de fichas de perfil"),
@@ -18,7 +21,7 @@ public enum UserRole {
     private final String code;
     private final String description;
 
-    UserRole(String code, String description) {
+    UsuarioRole(String code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -34,8 +37,8 @@ public enum UserRole {
     /**
      * Busca el rol a partir del codigo exacto emitido por Keycloak en realm_access.roles.
      */
-    public static UserRole fromCode(String code) {
-        for (UserRole role : UserRole.values()) {
+    public static UsuarioRole fromCode(String code) {
+        for (UsuarioRole role : UsuarioRole.values()) {
             if (role.code.equals(code)) {
                 return role;
             }

@@ -1,33 +1,33 @@
 ---
 name: validator-analyze
 description: >-
-  Agente de análisis de validación (parte 1 de 2 del proceso de validación).
-  Invocar después de que el implementador y/o tester hayan terminado.
-  Carga el skill arquisoft-context, lee el PLAN-{HU|HT}-{ID}.md, lee el código
-  implementado, ejecuta ./gradlew para verificar compilación, y produce un análisis
-  completo COMO MENSAJE AL USUARIO (no escribe archivos en disco).
-  Este agente solo LEE y ANALIZA — su único output al final es un mensaje estructurado
-  con el reporte completo. El usuario revisa, y luego invoca @validator-report para
-  persistir el reporte en disco. NO ejecuta git. NO escribe archivos. NO modifica
-  el plan. Solo análisis y mensaje al usuario. Invocar con:
-  "@validator-analyze analiza HU-{ID}" o "@validator-analyze analiza HT-{ID}".
+   Agente de análisis de validación (parte 1 de 2 del proceso de validación).
+   Invocar después de que el implementador y/o tester hayan terminado.
+   Carga el skill arquisoft-context, lee el PLAN-{HU|HT}-{ID}.md, lee el código
+   implementado, ejecuta ./gradlew para verificar compilación, y produce un análisis
+   completo COMO MENSAJE AL USUARIO (no escribe archivos en disco).
+   Este agente solo LEE y ANALIZA — su único output al final es un mensaje estructurado
+   con el reporte completo. El usuario revisa, y luego invoca @validator-report para
+   persistir el reporte en disco. NO ejecuta git. NO escribe archivos. NO modifica
+   el plan. Solo análisis y mensaje al usuario. Invocar con:
+   "@validator-analyze analiza HU-{ID}" o "@validator-analyze analiza HT-{ID}".
 mode: subagent
 hidden: true
 temperature: 0.1
 permission:
-  read: allow
-  glob: deny
-  grep: deny
-  edit: deny
-  bash:
-    "*": deny
-    "./gradlew :*:compileJava": allow
-    "./gradlew build -x test": allow
-    "./gradlew :*:build -x test": allow
-  webfetch: deny
-  skill:
-    "arquisoft-context": allow
-    "*": deny
+   read: allow
+   glob: deny
+   grep: deny
+   edit: deny
+   bash:
+      "*": deny
+      "./gradlew :*:compileJava": allow
+      "./gradlew build -x test": allow
+      "./gradlew :*:build -x test": allow
+   webfetch: deny
+   skill:
+      "arquisoft-context": allow
+      "*": deny
 ---
 
 # Agente Validator-Analyze — Arquisoft Backend
@@ -253,6 +253,49 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 
 **Prueba del algodón:** "si mañana cambio Keycloak por Auth0, RabbitMQ por Kafka, PostgreSQL por MongoDB, ¿este archivo tiene que cambiar?". Si SÍ → infraestructura. Si NO → la lógica pertenece al dominio (check bloqueante).
 
+**2.10 Estructura de Carpetas — Subcarpetas en Adapters:**
+
+> El skill `arquisoft-context` define que los adapters SIEMPRE usan subcarpetas
+> por tipo, aunque solo haya un tipo. Esto previene que componentes de distinto
+> tipo queden mezclados en un mismo paquete.
+
+| Check | Bloqueante |
+|-------|:---:|
+| Controllers REST (`@RestController`) ubicados en `infrastructure/adapter/in/web/` | ✅ |
+| `@RestControllerAdvice` (advice global) ubicado en `infrastructure/adapter/in/web/` | ✅ |
+| Listeners RabbitMQ (`@RabbitListener`) ubicados en `infrastructure/adapter/in/messaging/` | ✅ |
+| `@RestController` o `@RestControllerAdvice` ubicado directamente en `infrastructure/adapter/in/` (sin subcarpeta `web/`) | ❌ violación bloqueante |
+| Entidades JPA (`@Entity`) y `RepositoryAdapter` ubicados en `infrastructure/adapter/out/persistence/` | ✅ |
+| Publishers RabbitMQ ubicados en `infrastructure/adapter/out/messaging/` | ✅ |
+| Adaptadores de integraciones externas (Keycloak, S3, SMTP) en `infrastructure/adapter/out/{tipo}/` con tipo descriptivo (`security/`, `storage/`, `notification/`) | ✅ |
+| Componentes de adapter ubicados directamente en `infrastructure/adapter/out/` (sin subcarpeta de tipo) | ❌ violación bloqueante |
+| `@Configuration` con `OpenApi`, `Security`, `RabbitMQ` ubicados en `infrastructure/config/` (no dentro de `adapter/`) | ✅ |
+| Filtros HTTP cross-cutting (rate limit, request logging) en `infrastructure/filter/` | ✅ |
+
+**Cómo verificar:**
+
+Cuando leas con `view` los archivos del plan, observa el `package` declarado en cada uno y compáralo contra la tabla. Ejemplo de violación bloqueante:
+
+```java
+// ❌ Archivo: seguridad/infrastructure/adapter/in/GlobalExceptionHandler.java
+package com.arquisoft.seguridad.infrastructure.adapter.in;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler { ... }
+```
+
+Debería estar en:
+
+```java
+// ✅ Archivo: seguridad/infrastructure/adapter/in/web/GlobalExceptionHandler.java
+package com.arquisoft.seguridad.infrastructure.adapter.in.web;
+
+@RestControllerAdvice
+public class GlobalExceptionHandler { ... }
+```
+
+**Razón de fondo:** un `@RestControllerAdvice` solo se activa durante requests REST. Vive en el mismo mundo que los controllers, no a la altura genérica de `adapter/in/`.
+
 ### FASE 3 — Estado de Tests (sin verificación filesystem)
 
 > Esta fase es mental. Cero tool calls.
@@ -413,5 +456,6 @@ mensaje.
 8. **Referencia exacta** en cada error — cita textualmente el plan, el skill o las convenciones.
 9. **DDD estricto:** entidad raíz sin `AggregateRoot` en los 6 contextos de negocio = bloqueante. Imports de framework en `domain/` = bloqueante. Lógica de negocio en `infrastructure/` = bloqueante.
 10. **Integraciones externas:** si la sección 5 del plan lista una integración externa y falta el puerto en `domain/port/out/` o el adaptador, es bloqueante.
-11. **Si APROBADO** → indica al usuario el comando exacto para invocar `@validator-report` con el contenido del reporte.
-12. **Si RECHAZADO** → no sugieras `@validator-report`, indica corrección.
+11. **Estructura de carpetas en adapters (sección 2.10):** los componentes web (`@RestController`, `@RestControllerAdvice`) DEBEN estar en `infrastructure/adapter/in/web/`. Los listeners RabbitMQ en `adapter/in/messaging/`. Las implementaciones JPA en `adapter/out/persistence/`. Los publishers en `adapter/out/messaging/`. Otras integraciones externas en `adapter/out/{tipo}/` con nombre descriptivo. Una violación de esta estructura es bloqueante.
+12. **Si APROBADO** → indica al usuario el comando exacto para invocar `@validator-report` con el contenido del reporte.
+13. **Si RECHAZADO** → no sugieras `@validator-report`, indica corrección.

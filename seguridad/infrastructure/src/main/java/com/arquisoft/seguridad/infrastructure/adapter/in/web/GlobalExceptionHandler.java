@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.adapter.in;
+package com.arquisoft.seguridad.infrastructure.adapter.in.web;
 
 import com.arquisoft.seguridad.application.dto.ErrorResponseDTO;
 import com.arquisoft.seguridad.domain.exception.AuthenticationException;

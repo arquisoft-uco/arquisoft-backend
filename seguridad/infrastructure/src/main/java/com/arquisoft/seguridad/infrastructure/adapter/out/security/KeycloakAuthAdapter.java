@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.adapter.out;
+package com.arquisoft.seguridad.infrastructure.adapter.out.security;
 
 import com.arquisoft.seguridad.domain.port.out.AuthenticationPort;
 import com.arquisoft.seguridad.domain.exception.AuthenticationException;

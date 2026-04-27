@@ -5,18 +5,18 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class UserRoleTest {
+class UsuarioRoleTest {
 
     @Test
     void debeRetornarCodigoCorrecto_cuandoRolEstudiante() {
         // Arrange / Act / Assert
-        assertThat(UserRole.ESTUDIANTE.getCode()).isEqualTo("ESTUDIANTE");
+        assertThat(UsuarioRole.ESTUDIANTE.getCode()).isEqualTo("ESTUDIANTE");
     }
 
     @Test
     void debeRetornarSpringRole_cuandoRolAsesorFicha() {
         // Arrange / Act / Assert
-        assertThat(UserRole.ASESOR_FICHA.getSpringRole()).isEqualTo("ROLE_ASESOR_FICHA");
+        assertThat(UsuarioRole.ASESOR_FICHA.getSpringRole()).isEqualTo("ROLE_ASESOR_FICHA");
     }
 
     @Test
@@ -25,10 +25,10 @@ class UserRoleTest {
         String codigo = "ASESOR_FICHA";
 
         // Act
-        UserRole rol = UserRole.fromCode(codigo);
+        UsuarioRole rol = UsuarioRole.fromCode(codigo);
 
         // Assert
-        assertThat(rol).isEqualTo(UserRole.ASESOR_FICHA);
+        assertThat(rol).isEqualTo(UsuarioRole.ASESOR_FICHA);
     }
 
     @Test
@@ -37,7 +37,7 @@ class UserRoleTest {
         String codigoInexistente = "admin";
 
         // Act / Assert
-        assertThatThrownBy(() -> UserRole.fromCode(codigoInexistente))
+        assertThatThrownBy(() -> UsuarioRole.fromCode(codigoInexistente))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("admin");
     }
@@ -45,6 +45,6 @@ class UserRoleTest {
     @Test
     void debeTener8Roles_cuandoSeListanTodos() {
         // Arrange / Act / Assert
-        assertThat(UserRole.values()).hasSize(8);
+        assertThat(UsuarioRole.values()).hasSize(8);
     }
 }
