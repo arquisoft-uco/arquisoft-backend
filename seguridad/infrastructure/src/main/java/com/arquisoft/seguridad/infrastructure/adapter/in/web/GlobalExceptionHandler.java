@@ -2,6 +2,7 @@ package com.arquisoft.seguridad.infrastructure.adapter.in.web;
 
 import com.arquisoft.seguridad.application.dto.ErrorResponseDTO;
 import com.arquisoft.seguridad.domain.exception.AuthenticationException;
+import com.arquisoft.seguridad.domain.exception.ParametroFiltroInvalidoException;
 import com.arquisoft.seguridad.domain.exception.InvalidCredentialsException;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -142,6 +143,20 @@ public class GlobalExceptionHandler {
                         .error("Service Unavailable")
                         .message("Error al conectar con el servidor de autenticación. Intente más tarde.")
                         .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
+
+    @ExceptionHandler(ParametroFiltroInvalidoException.class)
+    public ResponseEntity<ErrorResponseDTO> handleParametroFiltroInvalido(
+            ParametroFiltroInvalidoException ex,
+            HttpServletRequest request) {
+        log.warn("Filtro inválido [{}]: {}", ex.getErrorCode(), ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponseDTO.builder()
+                        .error("Bad Request")
+                        .message(ex.getMessage())
+                        .status(HttpStatus.BAD_REQUEST.value())
                         .path(request.getRequestURI())
                         .build());
     }

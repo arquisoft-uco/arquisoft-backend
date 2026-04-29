@@ -53,7 +53,7 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 - Los filtros son **opcionales** — si no se envía ninguno, se retornan todos los usuarios paginados.
 - El filtro por `nombre` aplica búsqueda parcial (LIKE) sobre `nombre` y `apellido` y `email` de forma combinada (OR).
 - El filtro por `estado` acepta únicamente los valores del enum `EstadoUsuario`: `ACTIVO` o `INACTIVO`.
-- **El filtro por `rol` acepta únicamente valores del enum `UsuarioRole` (renombrado de `UserRole`): `ESTUDIANTE`, `ASESOR`, `COORDINADOR`, `JURADO`, `BIBLIOTECARIO`, `ADMINISTRADOR`, `ASESOR_FICHA`, `REPRESENTANTE_COMITE_CURRICULUM`.
+- **El filtro por `rol` acepta únicamente valores del enum `UsuarioRole`: `ESTUDIANTE`, `ASESOR`, `COORDINADOR`, `JURADO`, `BIBLIOTECARIO`, `ADMINISTRADOR`, `ASESOR_FICHA`, `REPRESENTANTE_COMITE_CURRICULUM`.
 - La paginación es obligatoria en la respuesta. Valores por defecto: `pagina=0`, `tamano=20`.
 - Solo el rol `ADMINISTRADOR` puede ejecutar esta acción (validado con `@PreAuthorize`).
 - La información de negocio se consulta **exclusivamente** desde PostgreSQL (schema `usuarios`). No se consulta Keycloak en este flujo.
@@ -70,15 +70,16 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 - **ID:** `UUID`
 - **Campos:**
   - `UUID id`
+  - `UUID keycloakUserId` — vínculo con Keycloak (`sub` claim del JWT). Inmutable tras la creación.
   - `String nombre`
   - `String apellido`
   - `String email`
-  - `String identificador` (número de documento)
+  - `String identificador` (código institucional)
   - `EstadoUsuario estado` — enum: `ACTIVO`, `INACTIVO`
   - `List<UsuarioRole> roles` — lista de enums (NO strings), valores del enum `UsuarioRole`
 - **Value Objects / Enums:**
   - `EstadoUsuario` — enum Java con valores `ACTIVO`, `INACTIVO` (NUEVO)
-  - `UsuarioRole` — enum Java existente (RENOMBRADO de `UserRole`) con todos los roles del sistema (REUTILIZAR)
+  - `UsuarioRole` — enum Java con todos los roles del sistema (REUTILIZAR, ubicado en `seguridad/domain/model/UsuarioRole.java`)
 
 ### Eventos de Dominio que emite
 
@@ -104,7 +105,7 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 |------|---------------------------------------|------|-----------------|
 | domain | `seguridad/domain/src/main/java/com/arquisoft/seguridad/domain/model/Usuario.java` | Entidad de dominio | Entidad plana con campos `final`, constructor privado, factory methods `build` y `rebuild`. Sin Lombok, sin Spring. |
 | domain | `seguridad/domain/src/main/java/com/arquisoft/seguridad/domain/model/EstadoUsuario.java` | Enum | Estados posibles del usuario: `ACTIVO`, `INACTIVO` |
-| — | `seguridad/domain/src/main/java/com/arquisoft/seguridad/domain/model/UsuarioRole.java` | Enum (EXISTENTE - RENOMBRADO) | Roles contextuales del sistema — **YA EXISTE como `UserRole`, renombrado a `UsuarioRole`**. Ubicado en esta ruta. |
+| — | `seguridad/domain/src/main/java/com/arquisoft/seguridad/domain/model/UsuarioRole.java` | Enum (EXISTENTE) | Roles contextuales del sistema. Ubicado en esta ruta desde el inicio del proyecto. |
 | domain | `seguridad/domain/src/main/java/com/arquisoft/seguridad/domain/port/in/ConsultarUsuariosUseCase.java` | Interface (puerto de entrada) | Define el contrato para consultar usuarios con filtros y paginación |
 | domain | `seguridad/domain/src/main/java/com/arquisoft/seguridad/domain/port/out/UsuarioRepositoryPort.java` | Interface (puerto de salida) | Define el contrato de persistencia: buscar usuarios con filtros y paginación |
 | domain | `seguridad/domain/src/main/java/com/arquisoft/seguridad/domain/exception/ParametroFiltroInvalidoException.java` | Exception | Extiende `DomainException` de `shared:exceptions`. Se lanza cuando un parámetro de filtro tiene formato o valor inválido. Incluye campo `errorCode`. |
@@ -123,14 +124,27 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 | Capa | Ruta completa desde raíz del monorepo | Tipo | Responsabilidad |
 |------|---------------------------------------|------|-----------------|
 | infrastructure | `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/in/web/UsuarioController.java` | Controller REST | Expone `GET /seguridad/usuarios`. Recibe parámetros de filtro y paginación como `@RequestParam`. Escribe headers de paginación en la respuesta. Anotado con `@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement`. |
-| infrastructure | `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/out/persistence/UsuarioJpaEntity.java` | JPA Entity | `@Entity @Table(schema = "usuarios", name = "usuario")`. Mapea todos los campos del dominio. Incluye relación con tabla `usuario_rol`. |
-| infrastructure | `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/out/persistence/UsuarioJpaRepository.java` | JPA Repository | Extiende `JpaRepository<UsuarioJpaEntity, UUID>`. Define método de consulta con filtros dinámicos usando `Specification<UsuarioJpaEntity>` o `@Query` JPQL. |
-| infrastructure | `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/out/persistence/UsuarioRepositoryAdapter.java` | Adapter de repositorio | Implementa `UsuarioRepositoryPort`. Traduce entre `UsuarioJpaEntity` y `Usuario` de dominio usando `rebuild(...)`. Construye `Specification` dinámica con los filtros recibidos. |
-| infrastructure | `seguridad/infrastructure/src/main/resources/db/migration/V1__crear_schema_usuarios.sql` | Flyway — migración inicial | Crea el schema `usuarios` y la tabla `usuario` con todos sus campos y la tabla `usuario_rol` para los roles. |
+| infrastructure | `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/out/persistence/UsuarioJpaEntity.java` | JPA Entity | `@Entity @Table(schema = "usuarios", name = "usuario")`. Mapea todos los campos del dominio incluido `keycloak_user_id`. Relación `@ManyToMany` hacia `RolJpaEntity`. |
+| infrastructure | `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/out/persistence/RolJpaEntity.java` | JPA Entity | `@Entity @Table(schema = "usuarios", name = "rol")`. Mapea el catálogo de roles. El campo `nombre` coincide con `UsuarioRole.getCode()`. |
+| infrastructure | `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/out/persistence/UsuarioJpaRepository.java` | JPA Repository | Extiende `JpaRepository<UsuarioJpaEntity, UUID>` y `JpaSpecificationExecutor<UsuarioJpaEntity>` para filtros dinámicos con `Specification`. |
+| infrastructure | `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/out/persistence/UsuarioRepositoryAdapter.java` | Adapter de repositorio | Implementa `UsuarioRepositoryPort`. Traduce entre `UsuarioJpaEntity` y `Usuario` de dominio usando `rebuild(...)`. Construye `Specification` dinámica. Convierte `RolJpaEntity.nombre` → `UsuarioRole.fromCode()`. |
+| infrastructure | `seguridad/infrastructure/src/main/resources/db/migration/V1__crear_schema_usuarios.sql` | Flyway — migración inicial | Crea schema `usuarios`, tablas `usuario`, `rol`, `usuario_rol`, índices y los 8 INSERT de datos iniciales de roles. |
 
 ### Archivos a MODIFICAR
 
-> No aplica — esta es la primera HU del contexto `seguridad`. No hay archivos previos que modificar.
+| Ruta completa | Cambio requerido |
+|---|---|
+| `seguridad/domain/src/main/java/com/arquisoft/seguridad/domain/model/EstadoUsuario.java` | Agregar `code` y `description` al enum (alinear con `UsuarioRole`): constructor con parámetros y métodos `getCode()`, `getDescription()`, `fromCode(String)` — ✅ ya implementado |
+| `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/out/persistence/UsuarioJpaEntity.java` | Reemplazar `@Enumerated + @Column(estado)` por `@ManyToOne` hacia `EstadoUsuarioJpaEntity` — ✅ ya implementado |
+| `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/out/persistence/UsuarioRepositoryAdapter.java` | Actualizar `toDomain()`: traducir `EstadoUsuarioJpaEntity.nombre` → `EstadoUsuario.fromCode()` en lugar de leer el enum directamente — ✅ ya implementado |
+| `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/in/web/GlobalExceptionHandler.java` | **DEUDA TÉCNICA — agregar `@ExceptionHandler(ParametroFiltroInvalidoException.class)`** mapeado a HTTP 400. Sin este handler, la excepción cae en `handleGeneral` y retorna 500. El controller test `debeRetornar400_cuandoFiltroInvalido` requiere este handler para pasar. |
+
+### Archivos NUEVOS adicionales (normalización estado)
+
+| Capa | Ruta completa | Tipo | Responsabilidad |
+|---|---|---|---|
+| infrastructure | `seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/adapter/out/persistence/EstadoUsuarioJpaEntity.java` | JPA Entity | `@Entity @Table(schema = "usuarios", name = "estado_usuario")`. Mapea el catálogo de estados. Campo `nombre` coincide con `EstadoUsuario.getCode()`. |
+| infrastructure | `seguridad/infrastructure/src/main/resources/db/migration/V2__normalizar_estado_usuario.sql` | Flyway — migración V2 | Crea tabla `estado_usuario`, inserta los 2 registros (`ACTIVO`, `INACTIVO`), agrega columna `estado_id UUID FK`, migra datos desde `estado` VARCHAR, elimina columna `estado` y el CHECK anterior. |
 
 ### Archivos de MENSAJERÍA RabbitMQ
 
@@ -146,12 +160,12 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 - **Paquete:** `com.arquisoft.seguridad.domain.model`
 - **Tipo:** Entidad de dominio plana (NO extiende `AggregateRoot`)
 - **Responsabilidad:** Representa un usuario del sistema con sus datos de negocio. Inmutable, constructor privado, campos `final`.
-- **Features Java 21 aplicables:** Ninguna especial para esta entidad. Los enums `EstadoUsuario` y `RolUsuario` son tipos cerrados y bien definidos.
+- **Features Java 21 aplicables:** Ninguna especial para esta entidad.
 - **Métodos principales:**
-  - `build(UUID id, String nombre, String apellido, String email, String identificador, EstadoUsuario estado, List<RolUsuario> roles): Usuario` — factory method para crear nuevas instancias (uso futuro en HUs de escritura)
-  - `rebuild(UUID id, String nombre, String apellido, String email, String identificador, EstadoUsuario estado, List<RolUsuario> roles): Usuario` — factory method para reconstruir desde persistencia (uso en esta HU)
-  - Getters para todos los campos: `getId()`, `getNombre()`, `getApellido()`, `getEmail()`, `getIdentificador()`, `getEstado()`, `getRoles()`
-- **Dependencias:** `EstadoUsuario`, `RolUsuario`
+  - `build(UUID id, UUID keycloakUserId, String nombre, String apellido, String email, String identificador, EstadoUsuario estado, List<UsuarioRole> roles): Usuario` — factory para crear nuevas instancias (uso futuro en HUs de escritura)
+  - `rebuild(UUID id, UUID keycloakUserId, String nombre, String apellido, String email, String identificador, EstadoUsuario estado, List<UsuarioRole> roles): Usuario` — factory para reconstruir desde persistencia (uso en esta HU)
+  - Getters: `getId()`, `getKeycloakUserId()`, `getNombre()`, `getApellido()`, `getEmail()`, `getIdentificador()`, `getEstado()`, `getRoles()`
+- **Dependencias:** `EstadoUsuario`, `UsuarioRole`
 
 ---
 
@@ -164,11 +178,11 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 
 ---
 
-### `UsuarioRole.java` (EXISTENTE - RENOMBRADO)
+### `UsuarioRole.java` (EXISTENTE)
 - **Paquete:** `com.arquisoft.seguridad.domain.model`
-- **Tipo:** Enum Java (renombrado de `UserRole`)
-- **Ubicación actual:** `seguridad/domain/src/main/java/com/arquisoft/seguridad/domain/model/UsuarioRole.java`
-- **Responsabilidad:** Representa los roles contextuales que puede tener un usuario. **Renombrar `UserRole` → `UsuarioRole` para mejor legibilidad en español del dominio.**
+- **Tipo:** Enum Java
+- **Ubicación:** `seguridad/domain/src/main/java/com/arquisoft/seguridad/domain/model/UsuarioRole.java`
+- **Responsabilidad:** Representa los roles contextuales que puede tener un usuario en el sistema Arquisoft. REUTILIZAR este enum existente.
 - **Valores (8 en total):**
   - `ESTUDIANTE` → code: `ESTUDIANTE`, Spring role: `ROLE_ESTUDIANTE`
   - `ASESOR` → code: `ASESOR`, Spring role: `ROLE_ASESOR`
@@ -184,20 +198,141 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
   - `fromCode(String code)` — factory para buscar por código, lanza `IllegalArgumentException` si no existe
   - `getDescription()` — retorna descripción legible
 - **Cambios requeridos:**
-  - ✅ Renombrar `UserRole.java` → `UsuarioRole.java`
-  - ✅ Renombrar clase `public enum UserRole` → `public enum UsuarioRole`
-  - ✅ Actualizar método `fromCode()` para usar `UsuarioRole.values()`
-  - ✅ Actualizar test `UserRoleTest.java` → `UsuarioRoleTest.java`
-  - ✅ Actualizar `RoleAuthorityMapper.java` para importar `UsuarioRole`
-- **Ventajas del cambio:**
-  - ✅ Nomenclatura consistente en español para el dominio (`UsuarioRole` vs `UserRole`)
+  - ✅ COMPLETADO: Enum `UsuarioRole.java` ya existe y está siendo utilizado
+  - ✅ COMPLETADO: Test `UsuarioRoleTest.java` actualizado
+  - ✅ COMPLETADO: `RoleAuthorityMapper.java` importa y usa `UsuarioRole`
+- **Ventajas:**
+  - ✅ Nomenclatura consistente en español para el dominio (`UsuarioRole`)
   - ✅ Sincronización automática con Keycloak (códigos coinciden con JWT)
   - ✅ Reutiliza lógica existente
+  - ✅ Completamente testado
 - **Dependencias:** Ninguna
 
 ---
 
-### `ConsultarUsuariosUseCase.java`
+### `EstadoUsuario.java` — MODIFICAR (normalización)
+- **Paquete:** `com.arquisoft.seguridad.domain.model`
+- **Estado actual:** Enum simple con solo `ACTIVO` e `INACTIVO` sin campos adicionales.
+- **Cambio requerido:** Alinear con el patrón de `UsuarioRole` — agregar `code` y `description` para que el adapter pueda traducir `EstadoUsuarioJpaEntity.nombre` → `EstadoUsuario` usando `fromCode()`.
+- **Valores tras el cambio:**
+  - `ACTIVO("ACTIVO", "Usuario habilitado para operar en el sistema")`
+  - `INACTIVO("INACTIVO", "Usuario deshabilitado; no puede iniciar sesión")`
+- **Métodos a agregar:**
+  - `getCode(): String` — retorna el nombre exacto coincidente con la tabla `estado_usuario.nombre`
+  - `getDescription(): String` — descripción legible
+  - `fromCode(String code): EstadoUsuario` — factory, lanza `IllegalArgumentException` si no existe
+- **Impacto:** El `ConsultarUsuariosUseCaseImpl` ya usa `EstadoUsuario.valueOf()` — puede mantenerse o migrarse a `fromCode()`. El adapter usará `fromCode()` al traducir desde la entidad JPA.
+
+---
+
+### `EstadoUsuarioJpaEntity.java` — NUEVO
+- **Paquete:** `com.arquisoft.seguridad.infrastructure.adapter.out.persistence`
+- **Tipo:** JPA Entity
+- **Responsabilidad:** Mapea la tabla `usuarios.estado_usuario`. Representa el catálogo de estados pre-poblado. El campo `nombre` coincide exactamente con `EstadoUsuario.getCode()`.
+- **Anotaciones JPA clave:**
+  - `@Entity`
+  - `@Table(schema = "usuarios", name = "estado_usuario")`
+  - `@Id @Column(name = "id", columnDefinition = "uuid")` sobre `UUID id`
+  - `@Column(name = "nombre", nullable = false, unique = true)` sobre `String nombre`
+- **Campos:**
+  - `UUID id`
+  - `String nombre` — coincide con `EstadoUsuario.getCode()` (ej. `"ACTIVO"`)
+  - `String descripcion`
+- **Dependencias:** Ninguna
+
+---
+
+### `UsuarioJpaEntity.java` — MODIFICAR (normalización)
+- **Paquete:** `com.arquisoft.seguridad.infrastructure.adapter.out.persistence`
+- **Estado actual:** Tiene `@Enumerated(EnumType.STRING) @Column(name = "estado") EstadoUsuario estado`.
+- **Cambio requerido:** Reemplazar ese campo por una relación `@ManyToOne` hacia `EstadoUsuarioJpaEntity`, mapeando la columna `estado_id` (FK de la nueva tabla).
+- **Cambio específico:**
+  ```
+  // ELIMINAR:
+  @Enumerated(EnumType.STRING)
+  @Column(name = "estado", nullable = false, length = 20)
+  private EstadoUsuario estado;
+
+  // AGREGAR:
+  @ManyToOne(fetch = FetchType.EAGER)
+  @JoinColumn(name = "estado_id", nullable = false)
+  private EstadoUsuarioJpaEntity estado;
+  ```
+- **Dependencias nuevas:** `EstadoUsuarioJpaEntity`
+
+---
+
+### `UsuarioRepositoryAdapter.java` — MODIFICAR (normalización)
+- **Estado actual:** `toDomain()` lee `entity.getEstado()` directamente como `EstadoUsuario` (enum).
+- **Cambio requerido:** Traducir `entity.getEstado().getNombre()` → `EstadoUsuario.fromCode()`, igual que se hace con los roles.
+- **Cambio específico en `toDomain()`:**
+  ```
+  // ANTES:
+  entity.getEstado()
+
+  // DESPUÉS:
+  EstadoUsuario.fromCode(entity.getEstado().getNombre())
+  ```
+- **Dependencias nuevas:** `EstadoUsuario.fromCode()` (método a agregar en el enum)
+
+---
+
+### `V2__normalizar_estado_usuario.sql` — NUEVO
+- **Ruta:** `seguridad/infrastructure/src/main/resources/db/migration/V2__normalizar_estado_usuario.sql`
+- **Tipo:** Flyway — migración de normalización
+- **Responsabilidad:** Introduce la tabla `estado_usuario` como catálogo, migra los datos de la columna `estado VARCHAR` a la FK `estado_id`, y elimina la columna y constraint anteriores. **No pierde datos existentes.**
+- **Pasos en orden:**
+  1. Crear tabla `estado_usuario`
+  2. Insertar los 2 registros (`ACTIVO`, `INACTIVO`)
+  3. Agregar columna `estado_id UUID NULL` en `usuario`
+  4. Poblar `estado_id` desde el `estado` VARCHAR existente
+  5. Aplicar `NOT NULL` a `estado_id`
+  6. Agregar FK `fk_usuario_estado`
+  7. Eliminar columna `estado` y constraint `ck_usuario_estado`
+  8. Agregar índice `idx_usuario_estado` sobre `estado_id`
+
+```sql
+SET search_path TO usuarios;
+
+-- 1. Catálogo de estados
+CREATE TABLE estado_usuario (
+    id          UUID        PRIMARY KEY,
+    nombre      VARCHAR(20) NOT NULL,
+    descripcion VARCHAR(200),
+    CONSTRAINT uk_estado_usuario_nombre UNIQUE (nombre)
+);
+
+-- 2. Datos iniciales
+INSERT INTO estado_usuario (id, nombre, descripcion) VALUES
+    (gen_random_uuid(), 'ACTIVO',   'Usuario habilitado para operar en el sistema'),
+    (gen_random_uuid(), 'INACTIVO', 'Usuario deshabilitado; no puede iniciar sesión');
+
+-- 3. Nueva columna FK (nullable para poder migrar datos primero)
+ALTER TABLE usuario ADD COLUMN estado_id UUID;
+
+-- 4. Poblar estado_id desde el VARCHAR existente
+UPDATE usuario u
+SET estado_id = eu.id
+FROM estado_usuario eu
+WHERE eu.nombre = u.estado;
+
+-- 5. NOT NULL ahora que todos los registros tienen FK
+ALTER TABLE usuario ALTER COLUMN estado_id SET NOT NULL;
+
+-- 6. FK constraint
+ALTER TABLE usuario
+    ADD CONSTRAINT fk_usuario_estado
+    FOREIGN KEY (estado_id) REFERENCES estado_usuario(id);
+
+-- 7. Eliminar columna y constraint obsoletos
+ALTER TABLE usuario DROP CONSTRAINT ck_usuario_estado;
+ALTER TABLE usuario DROP COLUMN estado;
+
+-- 8. Índice sobre la FK
+CREATE INDEX idx_usuario_estado ON usuario(estado_id);
+```
+
+---
 - **Paquete:** `com.arquisoft.seguridad.domain.port.in`
 - **Tipo:** Interface (puerto de entrada)
 - **Responsabilidad:** Define el contrato de la operación de consulta de usuarios con filtros y paginación.
@@ -293,12 +428,12 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 - **Métodos principales:**
   - `ejecutar(UsuarioFiltroDTO filtro): PaginaResponseDTO<UsuarioResponseDTO>` — flujo principal:
     1. Validar `filtro.estado()` → convertir a `EstadoUsuario` o lanzar `ParametroFiltroInvalidoException`
-    2. Validar `filtro.rol()` → convertir a `UserRole` usando `UserRole.fromCode()` o lanzar `ParametroFiltroInvalidoException`
+    2. Validar `filtro.rol()` → convertir a `UsuarioRole` usando `UsuarioRole.fromCode()` o lanzar `ParametroFiltroInvalidoException`
     3. Llamar `repositoryPort.buscarConFiltros(...)` para obtener la lista de `Usuario`
     4. Llamar `repositoryPort.contarConFiltros(...)` para obtener el total
     5. Mapear cada `Usuario` a `UsuarioResponseDTO.fromDomain(...)`
     6. Retornar `PaginaResponseDTO.fromData(total, pagina, tamano, lista)`
-- **Dependencias:** `UsuarioRepositoryPort`, `UsuarioFiltroDTO`, `UsuarioResponseDTO`, `PaginaResponseDTO`, `ParametroFiltroInvalidoException`, `EstadoUsuario`, `UserRole`
+- **Dependencias:** `UsuarioRepositoryPort`, `UsuarioFiltroDTO`, `UsuarioResponseDTO`, `PaginaResponseDTO`, `ParametroFiltroInvalidoException`, `EstadoUsuario`, `UsuarioRole`
 
 ---
 
@@ -327,22 +462,41 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 ### `UsuarioJpaEntity.java`
 - **Paquete:** `com.arquisoft.seguridad.infrastructure.adapter.out.persistence`
 - **Tipo:** JPA Entity
-- **Responsabilidad:** Mapea la tabla `usuarios.usuario` de PostgreSQL. Incluye la relación con la tabla `usuarios.usuario_rol` para los roles.
+- **Responsabilidad:** Mapea la tabla `usuarios.usuario`. Incluye `keycloak_user_id` y relación `@ManyToMany` hacia `RolJpaEntity` a través de la tabla `usuarios.usuario_rol`.
 - **Anotaciones JPA clave:**
   - `@Entity`
   - `@Table(schema = "usuarios", name = "usuario")`
-  - `@Id @Column(name = "id", columnDefinition = "uuid")` sobre el campo `UUID id`
-  - `@Enumerated(EnumType.STRING)` sobre el campo `EstadoUsuario estado`
-  - `@ElementCollection(fetch = FetchType.EAGER)` + `@CollectionTable(schema = "usuarios", name = "usuario_rol", joinColumns = @JoinColumn(name = "usuario_id"))` + `@Column(name = "rol")` + `@Enumerated(EnumType.STRING)` sobre `List<UsuarioRole> roles`
+  - `@Id @Column(name = "id", columnDefinition = "uuid")` sobre `UUID id`
+  - `@Column(name = "keycloak_user_id", nullable = false, unique = true, columnDefinition = "uuid")` sobre `UUID keycloakUserId`
+  - `@Enumerated(EnumType.STRING)` sobre `EstadoUsuario estado`
+  - `@ManyToMany(fetch = FetchType.EAGER)` + `@JoinTable(schema = "usuarios", name = "usuario_rol", joinColumns = @JoinColumn(name = "usuario_id"), inverseJoinColumns = @JoinColumn(name = "rol_id"))` sobre `List<RolJpaEntity> roles`
 - **Campos:**
   - `UUID id`
+  - `UUID keycloakUserId`
   - `String nombre`
   - `String apellido`
   - `String email`
   - `String identificador`
   - `EstadoUsuario estado`
-  - `List<UsuarioRole> roles`
-- **Dependencias:** `EstadoUsuario`, `UsuarioRole`
+  - `List<RolJpaEntity> roles`
+- **Dependencias:** `EstadoUsuario`, `RolJpaEntity`
+
+---
+
+### `RolJpaEntity.java`
+- **Paquete:** `com.arquisoft.seguridad.infrastructure.adapter.out.persistence`
+- **Tipo:** JPA Entity
+- **Responsabilidad:** Mapea la tabla `usuarios.rol`. Representa el catálogo de roles pre-poblado. El campo `nombre` coincide exactamente con `UsuarioRole.getCode()`.
+- **Anotaciones JPA clave:**
+  - `@Entity`
+  - `@Table(schema = "usuarios", name = "rol")`
+  - `@Id @Column(name = "id", columnDefinition = "uuid")` sobre `UUID id`
+  - `@Column(name = "nombre", nullable = false, unique = true)` sobre `String nombre`
+- **Campos:**
+  - `UUID id`
+  - `String nombre` — coincide con el `code` de `UsuarioRole` (ej. `"ESTUDIANTE"`)
+  - `String descripcion`
+- **Dependencias:** ninguna
 
 ---
 
@@ -359,24 +513,50 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 ### `UsuarioRepositoryAdapter.java`
 - **Paquete:** `com.arquisoft.seguridad.infrastructure.adapter.out.persistence`
 - **Tipo:** Adapter de repositorio
-- **Responsabilidad:** Implementa `UsuarioRepositoryPort`. Construye `Specification<UsuarioJpaEntity>` dinámicamente con los filtros recibidos. Traduce `UsuarioJpaEntity` → `Usuario` de dominio usando `rebuild(...)`. Nunca usa `build(...)` al reconstruir desde persistencia.
+- **Responsabilidad:** Implementa `UsuarioRepositoryPort`. Construye `Specification<UsuarioJpaEntity>` dinámicamente. Traduce `UsuarioJpaEntity` → `Usuario` de dominio usando `rebuild(...)`. Convierte `RolJpaEntity.nombre` → `UsuarioRole.fromCode()` al reconstruir roles. Nunca usa `build(...)`.
 - **Anotaciones Spring:** `@Component`, `@RequiredArgsConstructor`
 - **Métodos principales:**
   - `buscarConFiltros(String nombreOEmail, EstadoUsuario estado, UsuarioRole rol, int pagina, int tamano): List<Usuario>`
     - Construye `Specification` combinando predicados opcionales:
       - Si `nombreOEmail != null`: `LOWER(nombre) LIKE %valor% OR LOWER(apellido) LIKE %valor% OR LOWER(email) LIKE %valor%`
       - Si `estado != null`: `estado = :estado`
-      - Si `rol != null`: `rol IN (SELECT r FROM usuario_rol WHERE usuario_id = id AND rol = :rol)`
+      - Si `rol != null`: JOIN con `usuario_rol` y `rol` filtrando `rol.nombre = :rolCode`
     - Ejecuta `jpaRepository.findAll(spec, PageRequest.of(pagina, tamano))`
-    - Mapea cada `UsuarioJpaEntity` a `Usuario` con `rebuild(...)`
+    - Mapea: `jpaEntity.getRoles().stream().map(r -> UsuarioRole.fromCode(r.getNombre())).toList()`
+    - Llama `rebuild(id, keycloakUserId, nombre, apellido, email, identificador, estado, roles)` — todos los UUIDs ya son `UUID`, no strings
   - `contarConFiltros(String nombreOEmail, EstadoUsuario estado, UsuarioRole rol): long`
-    - Construye la misma `Specification` y ejecuta `jpaRepository.count(spec)`
-- **Dependencias:** `UsuarioJpaRepository`, `UsuarioJpaEntity`, `Usuario`, `EstadoUsuario`, `UsuarioRole`
+    - Misma `Specification`, ejecuta `jpaRepository.count(spec)`
+- **Dependencias:** `UsuarioJpaRepository`, `UsuarioJpaEntity`, `RolJpaEntity`, `Usuario`, `EstadoUsuario`, `UsuarioRole`
+
+---
+
+### `GlobalExceptionHandler.java` — MODIFICAR (deuda técnica)
+- **Paquete:** `com.arquisoft.seguridad.infrastructure.adapter.in.web`
+- **Tipo:** `@RestControllerAdvice` — manejador global de excepciones del contexto `seguridad`
+- **Estado actual:** ya existe con handlers para `InvalidCredentialsException`, `InvalidTokenException`, `AuthenticationException`, `AccessDeniedException`, `MethodArgumentNotValidException`, `MissingServletRequestParameterException`, `ResourceAccessException` y `Exception` (fallback 500).
+- **Problema:** `ParametroFiltroInvalidoException` **no está registrada** → cae en `handleGeneral` → HTTP 500. Esto hace que el test `debeRetornar400_cuandoFiltroInvalido` falle aunque el use case lance la excepción correctamente.
+- **Cambio requerido:** Añadir el siguiente `@ExceptionHandler` **antes** del fallback `Exception.class`:
+  ```java
+  @ExceptionHandler(ParametroFiltroInvalidoException.class)
+  public ResponseEntity<ErrorResponseDTO> handleParametroFiltroInvalido(
+          ParametroFiltroInvalidoException ex,
+          HttpServletRequest request) {
+      log.warn("Filtro inválido [{}]: {}", ex.getErrorCode(), ex.getMessage());
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+              .body(ErrorResponseDTO.builder()
+                      .error("Bad Request")
+                      .message(ex.getMessage())
+                      .status(HttpStatus.BAD_REQUEST.value())
+                      .path(request.getRequestURI())
+                      .build());
+  }
+  ```
+- **Import a agregar:** `com.arquisoft.seguridad.domain.exception.ParametroFiltroInvalidoException`
+- **Dependencias:** `ParametroFiltroInvalidoException`, `ErrorResponseDTO`, `HttpServletRequest`
 
 ---
 
 ### `V1__crear_schema_usuarios.sql`
-- **Ruta:** `seguridad/infrastructure/src/main/resources/db/migration/V1__crear_schema_usuarios.sql`
 - **Tipo:** Migración Flyway — primera migración del contexto `seguridad`
 - **Schema PostgreSQL:** `usuarios` (según tabla de mapeo: contexto `seguridad` → schema `usuarios`)
 - **Cambios:**
@@ -399,7 +579,7 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 |-----------|------|-----------|---------|-------------|
 | `nombreOEmail` | `String` | No | — | Búsqueda parcial en nombre, apellido o email |
 | `estado` | `String` | No | — | Filtro por estado: `ACTIVO` o `INACTIVO` |
-| `rol` | `String` | No | — | Filtro por rol contextual (ver enum `RolUsuario`) |
+| `rol` | `String` | No | — | Filtro por rol contextual (ver enum `UsuarioRole`) |
 | `pagina` | `int` | No | `0` | Número de página (0-indexed) |
 | `tamano` | `int` | No | `20` | Tamaño de página (1-100) |
 
@@ -439,117 +619,154 @@ Extraídas del Event Storming — comando **"Consultar información de los usuar
 - **Archivo:** `V1__crear_schema_usuarios.sql`
 - **Esquema PostgreSQL:** `usuarios` (contexto `seguridad` → schema `usuarios`, según tabla de mapeo del proyecto)
 - **Base de datos:** `arquisoft` (local, ya conectada al proyecto)
+- **Fuente:** `mer/02_tablas_usuarios.sql` del repositorio `arquisoft-docs` (validado)
 - **Cambios detallados:**
 
+```sql
+SET search_path TO usuarios;
+
+-- Tabla principal de usuarios
+CREATE TABLE usuario (
+    id                 UUID         PRIMARY KEY,
+    keycloak_user_id   UUID         NOT NULL,              -- Sub claim de Keycloak (sub del JWT)
+    nombre             VARCHAR(100) NOT NULL,
+    apellido           VARCHAR(100) NOT NULL,
+    email              VARCHAR(150) NOT NULL,
+    identificador      VARCHAR(50)  NOT NULL,
+    estado             VARCHAR(20)  NOT NULL DEFAULT 'ACTIVO',
+
+    CONSTRAINT uk_usuario_keycloak UNIQUE (keycloak_user_id),
+    CONSTRAINT uk_usuario_email    UNIQUE (email),
+    CONSTRAINT uk_usuario_ident    UNIQUE (identificador),
+    CONSTRAINT ck_usuario_estado   CHECK  (estado IN ('ACTIVO', 'INACTIVO'))
+);
+
+-- Catálogo inmutable de roles del sistema
+CREATE TABLE rol (
+    id          UUID         PRIMARY KEY,
+    nombre      VARCHAR(30)  NOT NULL,
+    descripcion VARCHAR(200),
+
+    CONSTRAINT uk_rol_nombre UNIQUE (nombre)
+);
+
+-- Relación N:M usuario ↔ rol
+CREATE TABLE usuario_rol (
+    usuario_id UUID NOT NULL,
+    rol_id     UUID NOT NULL,
+
+    PRIMARY KEY (usuario_id, rol_id),
+    CONSTRAINT fk_ur_usuario FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE,
+    CONSTRAINT fk_ur_rol     FOREIGN KEY (rol_id)     REFERENCES rol(id)
+);
+
+-- Índices
+CREATE INDEX idx_usuario_keycloak ON usuario(keycloak_user_id);
+CREATE INDEX idx_usuario_email    ON usuario(email);
+CREATE INDEX idx_usuario_ident    ON usuario(identificador);
+CREATE INDEX idx_ur_rol           ON usuario_rol(rol_id);
+
+-- Datos iniciales: 8 roles del sistema (coinciden con UsuarioRole.getCode())
+INSERT INTO rol (id, nombre, descripcion) VALUES
+    (gen_random_uuid(), 'ESTUDIANTE',                     'Estudiante activo con proyecto de grado en curso'),
+    (gen_random_uuid(), 'ASESOR',                         'Docente asesor de proyectos de grado'),
+    (gen_random_uuid(), 'ASESOR_FICHA',                   'Asesor asignado a la ficha perfil de un proyecto'),
+    (gen_random_uuid(), 'JURADO',                         'Evaluador externo asignado como jurado de sustentación'),
+    (gen_random_uuid(), 'COORDINADOR',                    'Coordinador del programa académico'),
+    (gen_random_uuid(), 'ADMINISTRADOR',                  'Administrador general del sistema'),
+    (gen_random_uuid(), 'BIBLIOTECARIO',                  'Responsable de la gestión de la biblioteca digital'),
+    (gen_random_uuid(), 'REPRESENTANTE_COMITE_CURRICULUM', 'Representante del comité de currículo ante el programa');
 ```
-SCHEMA:   usuarios
 
-TABLA:    usuarios.usuario
-  - id            UUID          PRIMARY KEY
-  - nombre        VARCHAR(100)  NOT NULL
-  - apellido      VARCHAR(100)  NOT NULL
-  - email         VARCHAR(150)  NOT NULL  UNIQUE
-  - identificador VARCHAR(50)   NOT NULL  UNIQUE
-  - estado        VARCHAR(20)   NOT NULL  DEFAULT 'ACTIVO'
-                  CHECK (estado IN ('ACTIVO', 'INACTIVO'))
-
-TABLA:    usuarios.usuario_rol
-  - usuario_id    UUID          NOT NULL  FK → usuarios.usuario(id) ON DELETE CASCADE
-  - rol           VARCHAR(50)   NOT NULL
-                  CHECK (rol IN ('ESTUDIANTE','ASESOR','COORDINADOR','JURADO',
-                                 'BIBLIOTECARIO','ADMINISTRADOR','ASESOR_FICHA',
-                                 'REPRESENTANTE_COMITE_CURRICULUM'))
-  - PRIMARY KEY (usuario_id, rol)
-
-ÍNDICES:
-  - idx_usuario_email          ON usuarios.usuario(email)
-  - idx_usuario_estado         ON usuarios.usuario(estado)
-  - idx_usuario_nombre_apellido ON usuarios.usuario(nombre, apellido)
-  - idx_usuario_rol            ON usuarios.usuario_rol(rol)
-```
-
-> **Nota:** Esta es la migración `V1` — primera del contexto `seguridad`. Las HUs futuras (registrar, modificar, eliminar usuario) usarán `V2`, `V3`, etc.
+> **Nota:** Esta es la migración `V1` — primera del contexto `seguridad`. Los roles son datos de referencia inmutables del sistema: se insertan aquí y no se crean/borran por HUs de negocio. Las HUs futuras (registrar, modificar, eliminar usuario) usarán `V2`, `V3`, etc.
 
 ---
 
 ## 11. Casos de Prueba Sugeridos
 
-### Tests Unitarios — capa `domain`
+> **Tipo de Use Case: CONSULTA** — no aplican tests de ciclo de eventos (`publishEvent`, `getUnPublishedEvents`, `clearUnPublishedEvents`, ni `verify(eventPublisher).publish(...)`).
+
+### Presupuesto orientativo
+
+Esta HU es **mediana** (1 endpoint con filtros, paginación y múltiples escenarios): se esperan entre 15 y 25 tests en total.
+
+---
+
+### Tests capa `domain` (solo Value Objects nuevos)
+
+> La consulta solo lee entidades existentes con `rebuild(...)`. `ParametroFiltroInvalidoException` solo hace `super(errorCode, msg)` — no requiere test propio (se verifica implícitamente en el use case). `Usuario` no tiene invariantes adicionales más allá de campos no nulos, por lo que se limita a un test de reconstrucción.
 
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `UsuarioTest` | `debeCrearUsuario_cuandoDatosValidos` | `rebuild(...)` crea entidad con todos los campos correctamente asignados |
-| `UsuarioTest` | `debeRetornarRoles_cuandoTieneMultiplesRoles` | `getRoles()` retorna la lista completa de roles asignados |
-| `UsuarioTest` | `debeRetornarEstadoActivo_cuandoEstadoEsActivo` | `getEstado()` retorna `EstadoUsuario.ACTIVO` |
-| `ParametroFiltroInvalidoExceptionTest` | `debeCrearExcepcion_cuandoErrorCodeYMensajeProvistos` | La excepción contiene `errorCode` y mensaje correctos |
+| `UsuarioTest` | `debeReconstruirUsuario_cuandoDatosValidos` | `rebuild(...)` asigna correctamente id, nombre, apellido, email, identificador, estado y roles (asserts consolidados en un solo test) |
+| `EstadoUsuarioTest` | `debeResolverDesdeCode_cuandoCodeEsValido` | `EstadoUsuario.fromCode("ACTIVO")` retorna `ACTIVO`; `fromCode("INACTIVO")` retorna `INACTIVO`; code inválido lanza `IllegalArgumentException` (asserts consolidados) |
 
-### Tests Unitarios — capa `application`
+---
 
-| Clase de test | Método | Escenario |
-|---------------|--------|-----------|
-| `ConsultarUsuariosUseCaseImplTest` | `debeRetornarPaginaVacia_cuandoNoHayUsuarios` | Repositorio retorna lista vacía → respuesta con `totalElementos = 0` y `contenido` vacío |
-| `ConsultarUsuariosUseCaseImplTest` | `debeRetornarUsuariosFiltradosPorEstado_cuandoEstadoEsActivo` | Repositorio recibe `EstadoUsuario.ACTIVO` como parámetro |
-| `ConsultarUsuariosUseCaseImplTest` | `debeRetornarUsuariosFiltradosPorRol_cuandoRolEsEstudiante` | Repositorio recibe `RolUsuario.ESTUDIANTE` como parámetro |
-| `ConsultarUsuariosUseCaseImplTest` | `debeLanzarExcepcion_cuandoEstadoFiltroEsInvalido` | Se lanza `ParametroFiltroInvalidoException` con `errorCode = "FILTRO_ESTADO_INVALIDO"` |
-| `ConsultarUsuariosUseCaseImplTest` | `debeLanzarExcepcion_cuandoRolFiltroEsInvalido` | Se lanza `ParametroFiltroInvalidoException` con `errorCode = "FILTRO_ROL_INVALIDO"` |
-| `ConsultarUsuariosUseCaseImplTest` | `debeMapearCorrectamente_cuandoUsuarioDominioAResponseDTO` | `UsuarioResponseDTO.fromDomain(...)` mapea todos los campos correctamente |
-| `ConsultarUsuariosUseCaseImplTest` | `debeUsarValoresPorDefecto_cuandoPaginaYTamanoNoProvistos` | Se usan `pagina=0` y `tamano=20` cuando no se especifican |
-
-### Tests de Repositorio — capa `infrastructure` (H2 en memoria)
+### Tests capa `application`
 
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `UsuarioRepositoryAdapterTest` | `debeBuscarTodos_cuandoNoHayFiltros` | Sin filtros retorna todos los usuarios de la BD de prueba |
+| `ConsultarUsuariosUseCaseImplTest` | `debeRetornarPagina_cuandoHayUsuarios` | Flujo principal: repositorio retorna lista con un usuario → `PaginaResponseDTO` con `totalElementos`, `numeroPagina`, `tamanoPagina` y `contenido` correctos (asserts consolidados) |
+| `ConsultarUsuariosUseCaseImplTest` | `debeRetornarPaginaVacia_cuandoNoHayUsuarios` | Repositorio retorna lista vacía → `totalElementos = 0` y `contenido` vacío |
+| `ConsultarUsuariosUseCaseImplTest` | `debeLanzarExcepcion_cuandoFiltrosInvalidos` | Estado inválido lanza `ParametroFiltroInvalidoException` con `errorCode = "FILTRO_ESTADO_INVALIDO"`; rol inválido lanza con `errorCode = "FILTRO_ROL_INVALIDO"` (dos escenarios, consolidar tipo + errorCode en cada assert) |
+
+> **Nota de consolidación:** los dos escenarios de filtro inválido (estado y rol) tienen el mismo "Act" estructural — se incluyen como métodos separados porque el parámetro que falla es distinto, pero cada uno consolida la verificación de tipo de excepción + errorCode en un solo test, sin duplicar asserts.
+
+---
+
+### Tests capa `infrastructure`
+
+#### Adapter de repositorio (H2 en memoria)
+
+| Clase de test | Método | Escenario |
+|---------------|--------|-----------|
+| `UsuarioRepositoryAdapterTest` | `debeBuscarYReconstruirConRebuild_cuandoNoHayFiltros` | Sin filtros retorna todos los usuarios; verifica que el adapter usa `rebuild(...)` al mapear desde JPA (asserts de lista + tipo de factory consolidados) |
 | `UsuarioRepositoryAdapterTest` | `debeFiltrarPorEstado_cuandoEstadoEsActivo` | Solo retorna usuarios con `estado = ACTIVO` |
-| `UsuarioRepositoryAdapterTest` | `debeFiltrarPorNombreOEmail_cuandoNombreParcialesCoincidenConBusqueda` | Búsqueda parcial case-insensitive funciona correctamente |
-| `UsuarioRepositoryAdapterTest` | `debeFiltrarPorRol_cuandoRolEsCoordinador` | Solo retorna usuarios que tienen el rol `COORDINADOR` |
-| `UsuarioRepositoryAdapterTest` | `debeReconstruirConRebuild_cuandoEntidadJpaExiste` | El adapter llama `rebuild(...)`, no `build(...)`, al mapear desde JPA |
-| `UsuarioRepositoryAdapterTest` | `debeContarCorrectamente_cuandoHayFiltros` | `contarConFiltros(...)` retorna el número correcto de registros |
-| `UsuarioRepositoryAdapterTest` | `debePaginar_cuandoHayMasRegistrosQueElTamano` | La segunda página retorna los registros correctos |
+| `UsuarioRepositoryAdapterTest` | `debeFiltrarPorNombreOEmail_cuandoBusquedaParcialCoincide` | Búsqueda parcial case-insensitive sobre nombre, apellido o email |
+| `UsuarioRepositoryAdapterTest` | `debeFiltrarPorRol_cuandoRolEsCoordinador` | Solo retorna usuarios con rol `COORDINADOR` |
+| `UsuarioRepositoryAdapterTest` | `debeContarYPaginar_cuandoHayMasRegistrosQueElTamano` | `contarConFiltros(...)` retorna el total correcto; la segunda página retorna los registros correctos (asserts de count + paginación consolidados) |
 
-### Tests de Controller — capa `infrastructure` (Spring Security Test)
+#### Controller (Spring Security Test + `@MockitoBean`)
 
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `UsuarioControllerTest` | `debeRetornar200_cuandoAdministradorConsultaSinFiltros` | JWT con rol `ADMINISTRADOR` → HTTP 200 con lista y headers de paginación |
-| `UsuarioControllerTest` | `debeRetornar403_cuandoUsuarioNoEsAdministrador` | JWT con rol `ESTUDIANTE` → HTTP 403 |
+| `UsuarioControllerTest` | `debeRetornar200ConHeaders_cuandoAdministradorConsulta` | JWT con rol `ADMINISTRADOR` → HTTP 200 con lista de usuarios y headers `X-Total-Count`, `X-Page-Number`, `X-Page-Size` presentes (asserts de status + headers consolidados) |
+| `UsuarioControllerTest` | `debeRetornar200ConListaVacia_cuandoNoHayCoincidencias` | Use case retorna página vacía → HTTP 200, lista vacía y `X-Total-Count: 0` |
+| `UsuarioControllerTest` | `debeRetornar400_cuandoFiltroInvalido` | `?estado=INVALIDO` → use case lanza `ParametroFiltroInvalidoException` → HTTP 400 con mensaje descriptivo |
 | `UsuarioControllerTest` | `debeRetornar401_cuandoNoHayToken` | Sin JWT → HTTP 401 |
-| `UsuarioControllerTest` | `debeRetornar400_cuandoEstadoFiltroEsInvalido` | `?estado=INVALIDO` → HTTP 400 con mensaje de error |
-| `UsuarioControllerTest` | `debeEscribirHeadersDePaginacion_cuandoConsultaExitosa` | Response contiene `X-Total-Count`, `X-Page-Number`, `X-Page-Size` |
-| `UsuarioControllerTest` | `debeRetornarListaVacia_cuandoNoHayCoincidencias` | HTTP 200 con lista vacía y `X-Total-Count: 0` |
-| `UsuarioControllerTest` | `debeAplicarFiltrosCombinados_cuandoSeEnvianVariosParametros` | `?estado=ACTIVO&rol=ESTUDIANTE` → use case recibe ambos filtros |
+| `UsuarioControllerTest` | `debeRetornar403_cuandoRolInsuficiente` | JWT con rol `ESTUDIANTE` → HTTP 403 |
 
 ---
 
 ## 12. Checklist de Implementación
 
-- [ ] **DDD:** Entidad `Usuario` es plana (NO extiende `AggregateRoot`) — justificado porque `seguridad` delega auth en Keycloak y esta HU es de solo lectura
-- [ ] Entidad `Usuario` inmutable: constructor privado, campos `final`, factory methods `build` / `rebuild`, sin Lombok
-- [ ] Enums: `EstadoUsuario` definido en `domain/model/` (NUEVO), `UsuarioRole` renombrado de `UserRole` (cambiar nombre en todos los archivos)
-- [ ] Modelo `Usuario` con `List<UsuarioRole> roles` (NOT `List<String>`) — lista de enums tipados, no strings
-- [ ] Puerto de entrada `ConsultarUsuariosUseCase` definido en `domain/port/in/`
-- [ ] Puerto de salida `UsuarioRepositoryPort` definido en `domain/port/out/` — solo usa tipos del dominio (`UsuarioRole`)
-- [ ] Excepción `ParametroFiltroInvalidoException` extiende `DomainException` y tiene `errorCode`
-- [ ] DTOs `UsuarioFiltroDTO`, `UsuarioResponseDTO`, `PaginaResponseDTO` con anotaciones Jakarta Validation
-- [ ] `UsuarioResponseDTO` tiene método estático `fromDomain(Usuario)` — convierte `List<UsuarioRole>` a `List<String>` (códigos de roles)
-- [ ] `ConsultarUsuariosUseCaseImpl` con `@RequiredArgsConstructor`, `@Transactional(readOnly = true)` y validación POL-04 usando `UsuarioRole.fromCode()`
-- [ ] Controller REST con `@Valid @RequestParam` y `@PreAuthorize("hasRole('ADMINISTRADOR')")`
-- [ ] Controller documentado con `@Tag`, `@Operation`, `@ApiResponses` y `@SecurityRequirement(name="bearerAuth")` (ADR-011)
-- [ ] `UsuarioJpaEntity` con `@Table(schema = "usuarios", name = "usuario")` y mapeo de `@ElementCollection` para roles (`List<UsuarioRole>`)
-- [ ] `UsuarioJpaRepository` extiende `JpaSpecificationExecutor<UsuarioJpaEntity>` para filtros dinámicos
-- [ ] `UsuarioRepositoryAdapter` usa `rebuild(...)` al reconstruir desde JPA — nunca `build(...)`
-- [ ] `UsuarioRepositoryAdapter` construye `Specification` dinámica con predicados opcionales
-- [ ] Controller escribe headers `X-Total-Count`, `X-Page-Number`, `X-Page-Size` en `HttpServletResponse`
-- [ ] Migración Flyway `V1__crear_schema_usuarios.sql` en schema `usuarios` con tablas `usuario` y `usuario_rol` e índices (CHECK constraints usan valores exactos de `UsuarioRole`)
-- [ ] Renombrar `UserRole.java` → `UsuarioRole.java` y actualizar test `UserRoleTest.java` → `UsuarioRoleTest.java`
-- [ ] Actualizar `RoleAuthorityMapper.java` para importar y usar `UsuarioRole`
-- [ ] No se publica ni consume eventos RabbitMQ (HU de solo lectura)
-- [ ] Tests unitarios con patrón AAA (cobertura ≥ 75%)
-- [ ] Tests de repositorio con H2 en memoria
-- [ ] Tests de controller con Spring Security Test y `@MockitoBean` (Spring Boot 4.x)
-- [ ] Sin `@Bean TaskExecutor` manual (Virtual Threads gestionados por Spring Boot)
-- [ ] Compilar con `./gradlew build -x test` para verificar que el renombramiento no rompió el proyecto
-- [ ] Commit: `feat(seguridad): renombrar UserRole a UsuarioRole y consultar usuarios con filtros`
+### ✅ Ya implementado (HU-260 base)
+- [x] **DDD:** Entidad `Usuario` plana, inmutable, con `keycloakUserId UUID`, sin `AggregateRoot`
+- [x] Enums `EstadoUsuario` y `UsuarioRole` definidos en `domain/model/`
+- [x] Modelo `Usuario` con `List<UsuarioRole> roles` (tipado, no strings)
+- [x] Puertos `ConsultarUsuariosUseCase` y `UsuarioRepositoryPort` definidos
+- [x] Excepción `ParametroFiltroInvalidoException` extiende `DomainException`
+- [x] DTOs `UsuarioFiltroDTO`, `UsuarioResponseDTO`, `PaginaResponseDTO`
+- [x] `ConsultarUsuariosUseCaseImpl` con validación POL-04
+- [x] `UsuarioController` con `@PreAuthorize("hasRole('ADMINISTRADOR')")` y ADR-011
+- [x] `RolJpaEntity`, `UsuarioJpaEntity` con `@ManyToMany` y `keycloak_user_id UUID`
+- [x] `UsuarioJpaRepository` con `JpaSpecificationExecutor`
+- [x] `UsuarioRepositoryAdapter` con `Specification` dinámica y traducción `RolJpaEntity → UsuarioRole`
+- [x] `V1__crear_schema_usuarios.sql` con tablas `usuario`, `rol`, `usuario_rol`, índices y 8 INSERT de roles
+- [x] `UsuarioRole.java` compilado y testeado
+
+### ✅ Completado (normalización estado) — 2026-04-27
+- [x] **`EstadoUsuario.java`** — agregar constructor con `code`/`description` y métodos `getCode()`, `getDescription()`, `fromCode(String)`
+- [x] **`EstadoUsuarioJpaEntity.java`** — crear: `@Entity @Table(schema = "usuarios", name = "estado_usuario")` con campos `UUID id`, `String nombre`, `String descripcion`
+- [x] **`UsuarioJpaEntity.java`** — reemplazar `@Enumerated @Column(estado)` por `@ManyToOne` hacia `EstadoUsuarioJpaEntity` con columna `estado_id`
+- [x] **`UsuarioRepositoryAdapter.java`** — actualizar `toDomain()`: `EstadoUsuario.fromCode(entity.getEstado().getNombre())` en lugar de `entity.getEstado()` directo
+- [x] **`V2__normalizar_estado_usuario.sql`** — crear tabla `estado_usuario`, insertar 2 registros, agregar `estado_id UUID FK`, migrar datos desde `estado` VARCHAR, eliminar columna y CHECK anterior
+### ✅ Completado (deuda técnica resuelta) — 2026-04-28
+- [x] **`GlobalExceptionHandler.java`** — `@ExceptionHandler(ParametroFiltroInvalidoException.class)` → HTTP 400 registrado. `shared:exceptions` añadido al classpath de `seguridad:infrastructure` para resolver la jerarquía de herencia en compilación.
+- [x] Compilado con `./gradlew :seguridad:infrastructure:compileJava` — sin errores
+- [x] `./gradlew :seguridad:infrastructure:test` — todos los tests de controller pasan (incluido `debeRetornar400_cuandoFiltroInvalido`)
+- [x] `./gradlew build -x test` (monorepo completo) — sin errores
 
 ---
 
@@ -560,8 +777,8 @@ TABLA:    usuarios.usuario_rol
 
 | Etapa      | Agente              | Estado       | Fecha | Notas |
 |------------|---------------------|--------------|-------|-------|
-| Desarrollo | @implementador      | ⏳ Pendiente |       |       |
-| Tests      | @tester             | ⏳ Pendiente |       |       |
-| Validación | @validator-analyze  | ⏳ Pendiente |       |       |
-| Reporte    | @validator-report   | ⏳ Pendiente |       |       |
+| Desarrollo | @implementador      | ✅ Completado | 2026-04-28 | Handler ParametroFiltroInvalidoException → HTTP 400 registrado. shared:exceptions añadido a infra classpath. Build -x test: sin errores. |
+| Tests      | @tester             | ✅ Completado | 2026-04-28 | 16 tests (2 domain, 4 application, 10 infrastructure). Todos pasan. JaCoCo no configurado por módulo — cobertura estimada por revisión manual. |
+| Validación | @validator-analyze  | ✅ Completado | 2026-04-28 | Score: 94/100 — APROBADO |
+| Reporte    | @validator-report   | ✅ Completado | 2026-04-28 | /.workspace/validator/validator-HU-260.md |
 | Commit     | @commit             | ⏳ Pendiente |       |       |

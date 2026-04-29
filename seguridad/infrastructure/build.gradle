@@ -1,6 +1,7 @@
 dependencies {
     implementation project(':seguridad:domain')
     implementation project(':seguridad:application')
+    implementation project(':shared:exceptions')
 
     // Spring Security & OAuth2
     implementation "org.springframework.boot:spring-boot-starter-security:${springBootVersion}"
@@ -18,7 +19,11 @@ dependencies {
     // Database
     implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
     implementation "org.flywaydb:flyway-core:${flywaydbVersion}"
+    implementation "org.flywaydb:flyway-database-postgresql:${flywaydbVersion}"
     runtimeOnly "org.postgresql:postgresql:${postgresVersion}"
+
+    // OpenAPI / Swagger (ADR-011)
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
 
     // Testing
     testImplementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
