@@ -781,4 +781,4 @@ Esta HU es **mediana** (1 endpoint con filtros, paginación y múltiples escenar
 | Tests      | @tester             | ✅ Completado | 2026-04-28 | 16 tests (2 domain, 4 application, 10 infrastructure). Todos pasan. JaCoCo no configurado por módulo — cobertura estimada por revisión manual. |
 | Validación | @validator-analyze  | ✅ Completado | 2026-04-28 | Score: 94/100 — APROBADO |
 | Reporte    | @validator-report   | ✅ Completado | 2026-04-28 | /.workspace/validator/validator-HU-260.md |
-| Commit     | @commit             | ⏳ Pendiente |       |       |
+| Commit     | @commit             | ✅ Completado | 2026-04-28 | Hash: 12b8924 |

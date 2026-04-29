@@ -1,10 +1,11 @@
 dependencies {
     implementation project(':shared:domain')
+    implementation project(':shared:exceptions')
 
     // Domain puro: sin dependencias de framework
-    // Las excepciones extienden RuntimeException (Java puro)
+    // Las excepciones de dominio extienden DomainException (shared:exceptions)
     // Los puertos usan solo tipos de Java stdlib (Map, List, String)
-    // El enum UserRole es Java puro
+    // El enum UsuarioRole es Java puro
 
     // Test: AssertJ + JUnit launcher (versiones gestionadas por BOM de Spring Boot)
     // junit-platform-launcher requerido explícitamente por Gradle 9 en módulos sin spring-boot-starter-test

@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out;
 
+import com.arquisoft.seguridad.infrastructure.adapter.out.security.JwtTokenAdapter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

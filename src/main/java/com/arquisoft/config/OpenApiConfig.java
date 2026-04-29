@@ -79,15 +79,15 @@ public class OpenApiConfig {
     }
 
     /**
-     * Grupo: Seguridad — autenticacion, tokens y validacion.
-     * Endpoints publicos: /auth/login, /auth/refresh, /auth/validate
+     * Grupo: Seguridad — autenticacion, tokens, validacion y gestion de usuarios.
+     * Incluye: /auth/** (login, refresh, logout, validate) y /seguridad/** (usuarios)
      */
     @Bean
     public GroupedOpenApi seguridadApi() {
         return GroupedOpenApi.builder()
             .group("01-seguridad")
             .displayName("Seguridad")
-            .pathsToMatch("/auth/**")
+            .pathsToMatch("/auth/**", "/seguridad/**")
             .build();
     }
 

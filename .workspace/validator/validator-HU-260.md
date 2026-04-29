@@ -146,5 +146,9 @@
 
 ## Próximos pasos
 
-→ Para ejecutar el commit, invoca en una sesión nueva:
-  `@commit ejecuta el commit de HU-260`
+**Estado:** ✅ EJECUTADO
+**Hash:** 12b8924
+**Fecha de ejecución:** 2026-04-28
+
+→ Abrir Pull Request hacia `develop` usando `.github/PULL_REQUEST_TEMPLATE.md`
+→ Requiere 1 aprobación según CONTRIBUTING.md

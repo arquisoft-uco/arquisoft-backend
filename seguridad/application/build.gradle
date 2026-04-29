@@ -1,6 +1,10 @@
 dependencies {
     implementation project(':seguridad:domain')
+    implementation project(':shared:exceptions')
 
     // Jakarta validation para DTOs
     implementation "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"
+
+    // Testing — junit-platform-launcher requerido explícitamente por Gradle 9
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
