@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.adapter.out;
+package com.arquisoft.seguridad.infrastructure.adapter.out.security;
 
 import com.arquisoft.seguridad.domain.port.out.AuthenticationPort;
 import com.arquisoft.seguridad.domain.exception.AuthenticationException;
@@ -30,16 +30,16 @@ public class KeycloakAuthAdapter implements AuthenticationPort {
 
     private final RestTemplate restTemplate;
 
-    @Value("${keycloak.auth-server-url}")
+    @Value("${arquisoft.keycloak.server-url}")
     private String keycloakServerUrl;
 
-    @Value("${keycloak.realm}")
+    @Value("${arquisoft.keycloak.realm}")
     private String realm;
 
-    @Value("${keycloak.resource}")
+    @Value("${arquisoft.keycloak.client-id}")
     private String clientId;
 
-    @Value("${keycloak.credentials.secret:#{null}}")
+    @Value("${arquisoft.keycloak.client-secret:#{null}}")
     private String clientSecret;
 
     @Override

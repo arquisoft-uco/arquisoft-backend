@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.domain.service;
 
-import com.arquisoft.seguridad.domain.model.UserRole;
+import com.arquisoft.seguridad.domain.model.UsuarioRole;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +20,7 @@ public final class RoleAuthorityMapper {
      */
     public static Optional<String> toAuthorityName(String roleCode) {
         try {
-            UserRole role = UserRole.fromCode(roleCode);
+            UsuarioRole role = UsuarioRole.fromCode(roleCode);
             return Optional.of("ROLE_" + role.name());
         } catch (IllegalArgumentException e) {
             return Optional.empty();

@@ -1,14 +1,7 @@
 ---
 name: arquisoft-context
-description: >-
-  Contexto autoritativo del proyecto Arquisoft Backend para subagentes.
-  Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier
-  Historia de Usuario o Técnica. Contiene el stack exacto verificado, las
-  convenciones de arquitectura hexagonal + DDD, la regla estricta de
-  AggregateRoot, el mapeo contexto → schema PostgreSQL, la guía de uso de
-  features de Java 21 y las plantillas de código canónicas. Este skill es la
-  ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md,
-  README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
+description:
+   Contexto autoritativo del proyecto Arquisoft Backend para subagentes. Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier Historia de Usuario o Técnica. Contiene el stack exacto verificado, las convenciones de arquitectura hexagonal + DDD, la regla estricta de AggregateRoot, el mapeo contexto → base de datos PostgreSQL, la guía de uso de features de Java 21 y las plantillas de código canónicas. Este skill es la ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md, README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
 ---
 
 # Skill: arquisoft-context — Contexto Autoritativo para Subagentes
@@ -37,7 +30,7 @@ Tras cargarlo, el subagente tiene disponible en su contexto:
 - El stack verificado (sección "Stack Verificado")
 - La estructura hexagonal + DDD (sección "Arquitectura Hexagonal + DDD")
 - La regla estricta de AggregateRoot (sección "AggregateRoot — Regla Estricta")
-- Mapeo contexto → schema PostgreSQL (sección "Mapeo Contexto → Schema")
+- Mapeo contexto → base de datos PostgreSQL (sección "Mapeo Contexto Gradle → Base de Datos PostgreSQL")
 - Guía de features de Java 21 (sección "Java 21 — Uso Balanceado")
 - Plantillas canónicas (sección "Plantillas de Código")
 - Convenciones de nomenclatura (sección "Nomenclatura")
@@ -127,14 +120,44 @@ Domain  ←  Application  ←  Infrastructure
 │   └── usecase/       # Impl: {Accion}{Entidad}UseCaseImpl
 └── infrastructure/
     ├── adapter/
-    │   ├── in/web/                  # Controllers REST
+    │   ├── in/
+    │   │   ├── web/                 # Controllers REST + componentes web globales
+    │   │   │   ├── {Entidad}Controller.java
+    │   │   │   └── GlobalExceptionHandler.java   # @RestControllerAdvice (si aplica)
+    │   │   └── messaging/           # EventListeners RabbitMQ (si el contexto escucha eventos)
+    │   │       └── {Entidad}EventListener.java
     │   └── out/
     │       ├── persistence/         # JPA Entity, JpaRepository, RepositoryAdapter
-    │       └── messaging/           # EventPublisher / EventListener RabbitMQ
-    ├── config/                      # @Configuration (sufijo Config)
+    │       ├── messaging/           # EventPublisher RabbitMQ
+    │       └── {tipo}/              # security/, storage/, notification/, etc. (si aplica)
+    ├── config/                      # @Configuration (sufijo Config) — solo cablea, sin lógica
     ├── filter/                      # Filtros HTTP (sufijo Filter)
     └── resources/db/migration/      # Flyway V{n}__{descripcion}.sql
 ```
+
+### Convenciones de subcarpetas en adaptadores
+
+**Subcarpetas SIEMPRE obligatorias** (aunque solo haya un tipo de adaptador):
+
+- `adapter/in/web/` — para todo lo que sirve a la capa REST: controllers (`@RestController`), advice global (`@RestControllerAdvice`), interceptores de petición que solo aplican a endpoints REST.
+- `adapter/in/messaging/` — para listeners de RabbitMQ (`@RabbitListener`). Solo se crea si el contexto consume eventos de otros bounded contexts.
+- `adapter/out/persistence/` — para JPA Entity, JpaRepository, RepositoryAdapter.
+- `adapter/out/messaging/` — para publishers de RabbitMQ (`EventPublisher` impl).
+- `adapter/out/{tipo}/` — para otras integraciones externas (ej. `security/` para Keycloak admin client, `storage/` para S3, `notification/` para SMTP). Una subcarpeta por tipo de integración.
+
+La consistencia (siempre subcarpeta) prevalece sobre la simplicidad (carpeta plana cuando solo hay un tipo). Esto facilita que cualquier nuevo tipo de adaptador encuentre su lugar sin reorganizaciones.
+
+### Componentes web especiales — dónde van
+
+| Componente | Ubicación | Tipo Spring |
+|---|---|---|
+| `{Entidad}Controller` | `adapter/in/web/` | `@RestController` |
+| `GlobalExceptionHandler` | `adapter/in/web/` | `@RestControllerAdvice` |
+| Interceptores REST específicos del contexto | `adapter/in/web/` | clase con `HandlerInterceptor` |
+| Filtros HTTP (cross-cutting, ej. rate limit) | `infrastructure/filter/` | `@Component` con `Filter` |
+| `OpenApiConfig`, `SecurityConfig`, `RabbitMQConfig` | `infrastructure/config/` | `@Configuration` |
+
+**Regla:** un componente está en `adapter/in/web/` si **solo se activa durante una request REST**. Si es transversal a más cosas (filtros que también aplican a actuator, configs globales), va en `filter/` o `config/`.
 
 ---
 
@@ -179,9 +202,13 @@ Si una misma clase responde "sí" a dos preguntas, está mezclando responsabilid
 | Contratos con el exterior (abstractos) | `domain/port/out/` | `FichaRepositoryPort`, `TokenAuthoritiesPort` |
 | Casos de uso (qué se invoca y en qué orden) | `application/usecase/` | "persistir → drenar eventos → publicar → limpiar" |
 | DTOs de entrada/salida | `application/dto/` | `CrearFichaRequestDTO`, `FichaResponseDTO` |
-| Implementaciones concretas de puertos | `infrastructure/adapter/out/` | `FichaRepositoryAdapter` (JPA), `KeycloakAuthoritiesAdapter` |
+| Controllers REST | `infrastructure/adapter/in/web/` | `FichaController` (`@RestController`) |
+| Advice global de errores web | `infrastructure/adapter/in/web/` | `GlobalExceptionHandler` (`@RestControllerAdvice`) |
+| Listeners RabbitMQ | `infrastructure/adapter/in/messaging/` | `FichaEventListener` (`@RabbitListener`) |
+| Implementaciones concretas de puertos out | `infrastructure/adapter/out/{tipo}/` | `FichaRepositoryAdapter` (en `persistence/`), `KeycloakAuthoritiesAdapter` (en `security/`) |
 | Detalles de frameworks | `infrastructure/` | JPA `@Entity`, Spring `@Configuration`, RabbitMQ `@RabbitListener` |
-| Configuración técnica | `infrastructure/config/` | `SecurityConfig`, `RabbitMQConfig`, `OpenApiConfig` |
+| Configuración técnica (cableado) | `infrastructure/config/` | `SecurityConfig`, `RabbitMQConfig`, `OpenApiConfig` (sin lógica de negocio) |
+| Filtros HTTP cross-cutting | `infrastructure/filter/` | `RateLimitFilter`, `RequestLoggingFilter` |
 
 ### Lista negra de imports por capa
 
@@ -280,22 +307,22 @@ Consecuencias:
 @Configuration
 public class KeycloakJwtConverterConfig {
 
-    @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            // ❌ Regla de negocio: qué claims representan roles
-            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-            List<String> roles = (List<String>) realmAccess.get("roles");
+   @Bean
+   public JwtAuthenticationConverter jwtAuthenticationConverter() {
+      JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+      converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+         // ❌ Regla de negocio: qué claims representan roles
+         Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+         List<String> roles = (List<String>) realmAccess.get("roles");
 
-            // ❌ Regla de negocio: prefijo "ROLE_" y uppercase
-            return roles.stream()
-                .map(r -> "ROLE_" + r.toUpperCase())
-                .map(SimpleGrantedAuthority::new)
-                .toList();
-        });
-        return converter;
-    }
+         // ❌ Regla de negocio: prefijo "ROLE_" y uppercase
+         return roles.stream()
+                 .map(r -> "ROLE_" + r.toUpperCase())
+                 .map(SimpleGrantedAuthority::new)
+                 .toList();
+      });
+      return converter;
+   }
 }
 ```
 
@@ -516,6 +543,197 @@ Aplicar features de Java 21 **cuando aporten claridad o seguridad**, no por moda
 ### Regla de oro
 
 > Si la feature no mejora la claridad del código específico que estás escribiendo, **no la uses**. Un `switch` clásico está bien; un `instanceof` con cast explícito está bien.
+
+---
+
+## Tipos de Use Case y sus Tests
+
+No todos los use cases son iguales — y los tests apropiados dependen del tipo.
+Antes de planificar tests, identifica qué tipo de use case estás trabajando:
+
+### Use Case de Escritura (crear, actualizar, eliminar)
+
+Características:
+- Modifica el estado del Aggregate Root.
+- Genera eventos de dominio (`build()` los acumula, `update()` los acumula).
+- El use case drena los eventos tras persistir y los publica vía `EventPublisher`.
+
+Tests apropiados:
+- **domain:** ciclo completo de eventos (`publishEvent` → `getUnPublishedEvents` → `clearUnPublishedEvents`), `rebuild()` no emite eventos, invariantes del constructor.
+- **application:** flujo exitoso, error de repositorio, drenado de eventos verificado con `verify(eventPublisher).publish(...)`.
+- **infrastructure:** controller con códigos HTTP correctos (201, 400, 401, 403), repositorio guarda y reconstruye con `rebuild()`.
+
+### Use Case de Consulta (listar, buscar, obtener)
+
+Características:
+- **NO** modifica estado.
+- **NO** genera eventos de dominio.
+- Devuelve datos (DTO o lista de DTOs).
+- Puede tener filtros, paginación, ordenamiento.
+
+Tests apropiados:
+- **domain:** validaciones de los Value Objects que reciba como parámetros (ej. enum de estado, criterios de filtro).
+- **application:** flujo con datos válidos, lista vacía cuando no hay resultados, excepción cuando los filtros son inválidos.
+- **infrastructure:** controller con códigos HTTP correctos (200, 400, 404, 401, 403), repositorio retorna lista esperada.
+
+**Tests que NO aplican a use cases de consulta:**
+- ❌ Ciclo de eventos del Aggregate Root (no hay eventos).
+- ❌ Verificación de `eventPublisher.publish(...)` (no se publica nada).
+- ❌ `clearUnPublishedEvents()` / `getUnPublishedEvents()`.
+- ❌ Validación de que `rebuild()` no emite eventos (irrelevante en flujo de lectura).
+
+### Use Case Mixto (raro, requiere cuidado)
+
+Algunos use cases hacen ambas cosas (ej. "buscar entidad y marcarla como vista" — lectura con efecto secundario). Si el plan describe esto, los tests son la suma de ambos tipos. **Si dudas si tu use case es mixto, casi siempre no lo es** — separa la consulta de la escritura en dos use cases distintos antes de tener un mixto.
+
+---
+
+## Anti-patrones de Testing en Arquisoft
+
+> **Filosofía:** se testea **comportamiento observable**, no implementación interna.
+> Cobertura del 75% es objetivo, no premio. Una alta cobertura con tests triviales
+> es **peor** que cobertura más baja con tests significativos.
+
+### Lo que NO se testea (con ejemplos)
+
+#### ❌ Anti-patrón 1: Tests de getters/setters generados por Lombok
+
+```java
+// ❌ MAL — testea Lombok, no tu código
+@Test
+void debeRetornarTitulo_cuandoGetTituloEsLlamado() {
+    Ficha ficha = Ficha.build("Mi título");
+    assertThat(ficha.getTitulo()).isEqualTo("Mi título");
+}
+```
+
+`@Data`, `@Getter`, `@Builder` ya están testeados por el equipo de Lombok. **Tu código no aporta lógica al getter, no hay nada que testear.** Solo testea getters cuando contengan lógica custom (ej. `public String getNombreCompleto() { return nombre + " " + apellido; }`).
+
+#### ❌ Anti-patrón 2: Tests de cada validación Jakarta una por una
+
+```java
+// ❌ MAL — 6 tests para una sola anotación
+@Test void debeRechazar_cuandoTituloEsNull() { ... }
+@Test void debeRechazar_cuandoTituloEsVacio() { ... }
+@Test void debeRechazar_cuandoTituloTieneEspacios() { ... }
+@Test void debeRechazar_cuandoTituloEsMuyCorto() { ... }
+@Test void debeRechazar_cuandoTituloEsMuyLargo() { ... }
+@Test void debeRechazar_cuandoTituloTieneCaracteresEspeciales() { ... }
+```
+
+`@NotBlank`, `@Size`, `@Email` ya están testeados por Jakarta Validation. **Un solo test que verifique "el DTO falla con datos inválidos" es suficiente:**
+
+```java
+// ✅ BIEN — un test global de validación
+@Test
+void debeRechazarRequest_cuandoCamposObligatoriosFaltan() {
+    CrearFichaRequestDTO req = new CrearFichaRequestDTO();
+    Set<ConstraintViolation<CrearFichaRequestDTO>> violations = validator.validate(req);
+    assertThat(violations).isNotEmpty();
+}
+```
+
+Si tienes un **validator custom** (con regla de negocio propia, ej. "el título debe empezar con P-"), eso sí lo testeas — pero solo el validator custom, no las anotaciones estándar.
+
+#### ❌ Anti-patrón 3: Tests de métodos `private`
+
+```java
+// ❌ MAL — el método es privado, no debería testearse directamente
+@Test void debeConvertirEstadoActivo_cuandoStringEsActivo() { ... }
+@Test void debeConvertirEstadoInactivo_cuandoStringEsInactivo() { ... }
+@Test void debeRetornarNulo_cuandoEstadoStringEsNulo() { ... }
+@Test void debeRetornarNulo_cuandoEstadoStringEsVacio() { ... }
+@Test void debeSerCaseInsensitive_cuandoConvertirEstadoConMinusculas() { ... }
+```
+
+Métodos `private` son detalles de implementación. **Su comportamiento se valida indirectamente** desde los tests del método público que los usa. Si conviertes un método `private` en `package-private` solo para testearlo, estás rompiendo encapsulación.
+
+✅ Si necesitas mucho un helper específico, **promuévelo a una clase aparte** con responsabilidad clara (ej. `EstadoUsuarioConverter` como Value Object) y testéalo allí.
+
+#### ❌ Anti-patrón 4: Tests duplicados con asserts distintos
+
+```java
+// ❌ MAL — dos tests para el mismo escenario
+@Test
+void debeLanzarExcepcion_cuandoEstadoFiltroEsInvalido() {
+    assertThatThrownBy(() -> useCase.ejecutar("BLOQUEADO"))
+        .isInstanceOf(ParametroFiltroInvalidoException.class);
+}
+
+@Test
+void debeLanzarExcepcionConErrorCode_cuandoEstadoFiltroEsInvalido() {
+    Throwable ex = catchThrowable(() -> useCase.ejecutar("BLOQUEADO"));
+    assertThat(((DomainException) ex).getErrorCode()).isEqualTo("PARAMETRO_FILTRO_INVALIDO");
+}
+```
+
+Mismo "Act", asserts complementarios → **consolidar en un solo test:**
+
+```java
+// ✅ BIEN — un test con los asserts agrupados
+@Test
+void debeLanzarExcepcion_cuandoEstadoFiltroEsInvalido() {
+    Throwable ex = catchThrowable(() -> useCase.ejecutar("BLOQUEADO"));
+
+    assertThat(ex)
+        .isInstanceOf(ParametroFiltroInvalidoException.class)
+        .hasMessageContaining("BLOQUEADO");
+    assertThat(((DomainException) ex).getErrorCode())
+        .isEqualTo("PARAMETRO_FILTRO_INVALIDO");
+}
+```
+
+#### ❌ Anti-patrón 5: Tests de delegación pura sin lógica
+
+```java
+// ❌ MAL — solo verifica que un método llama a otro
+@Test
+void debeDelegarBusquedaAlRepositorio_cuandoBuscarUsuariosEsInvocado() {
+    useCase.ejecutar(filtros);
+    verify(repository).buscar(filtros);
+}
+```
+
+Si el use case **solo** delega al repositorio (sin transformar, validar, ni orquestar nada), el `verify()` ya está cubierto en el test del flujo principal. No necesita test aparte.
+
+#### ❌ Anti-patrón 6: Tests de excepciones simples sin lógica
+
+```java
+// ❌ MAL — testear que super() funciona
+@Test
+void debeContenerErrorCode_cuandoExcepcionEsCreada() {
+    FichaNoEncontradaException ex = new FichaNoEncontradaException("123");
+    assertThat(ex.getErrorCode()).isEqualTo("FICHA_NO_ENCONTRADA");
+}
+```
+
+Una excepción que solo hace `super("CODIGO", "mensaje")` no tiene lógica propia. **Su `errorCode` se verifica implícitamente** desde el test del use case que la lanza (anti-patrón 4 muestra el patrón correcto). Solo escribe `*ExceptionTest.java` si la excepción tiene lógica adicional (validaciones en el constructor, transformación de mensaje según parámetros, etc.).
+
+#### ❌ Anti-patrón 7: Tests de equals/hashCode/toString generados
+
+```java
+// ❌ MAL — testea Lombok
+@Test void debeSerIgual_cuandoIdsCoinciden() { ... }
+@Test void debeTenerHashCodeConsistente() { ... }
+@Test void debeRetornarToString_conTodosLosCampos() { ... }
+```
+
+`@Data` y `@EqualsAndHashCode` generan estos métodos correctamente. **Solo testea equality si tu código tiene un `equals()` custom** (lo cual debería ser raro y siempre justificado).
+
+### Regla de consolidación
+
+**Si tienes 3 o más tests con el mismo "Act" pero distintos "Assert", consolídalos en un solo test con múltiples asserts.** El patrón AAA permite varios asserts si todos verifican el mismo escenario desde ángulos complementarios.
+
+### Presupuesto orientativo de tests por HU
+
+| Tipo de HU | Tests esperados | Notas |
+|---|---|---|
+| HU pequeña (1 endpoint, 1 entidad) | 15 - 25 | CRUD básico de una entidad |
+| HU mediana (2-3 endpoints) | 25 - 50 | Varios endpoints sobre la misma entidad |
+| HU grande (4+ endpoints o flujo complejo) | 50 - 80 | Justificable solo en flujos complejos |
+| HU > 80 tests | revisar | Casi siempre indica sobre-testeo. Buscar duplicados, helpers privados, validaciones Jakarta repetidas. |
+
+**119 tests para una HU es señal clara de sobre-testeo** — revisar contra los 7 anti-patrones de arriba antes de aceptar el resultado.
 
 ---
 
@@ -782,11 +1000,110 @@ public class FichaController {
 
 ---
 
-## Mapeo Contexto → Schema PostgreSQL
+### GlobalExceptionHandler — Patrón Canónico (uno por contexto)
 
-El nombre del schema **no coincide** con el nombre del módulo Gradle en 3 casos. Usar **siempre** esta tabla:
+Cada bounded context que **defina excepciones de dominio propias** debe tener su propio `GlobalExceptionHandler` en `infrastructure/adapter/in/web/GlobalExceptionHandler.java`. Ahí se mapean las excepciones del dominio a códigos HTTP. **Ninguna excepción de dominio debe caer en `handleGeneral(Exception ex)` (que retorna 500)** — eso indica que falta su `@ExceptionHandler` específico.
 
-| Contexto Gradle | Schema PostgreSQL |
+**Estado actual del proyecto:** solo `seguridad` tiene `GlobalExceptionHandler`. Los demás contextos **no lo tienen aún** — se crearán cuando aparezca su primera excepción de dominio.
+
+#### Mapeo estándar Excepción → Código HTTP
+
+| Patrón de la excepción / errorCode | Código HTTP |
+|---|---|
+| `*NoEncontrad*Exception` / errorCode `*_NO_ENCONTRADO` / `*_NOT_FOUND` | 404 |
+| `*Invalid*Exception` / errorCode `*_INVALIDO` / `PARAMETRO_*_INVALIDO` | 400 |
+| `*NoAutorizad*Exception` / `AccesoDenegadoException` | 403 |
+| `*Conflict*Exception` / `*Duplicad*Exception` / errorCode `*_CONFLICTO` / `*_DUPLICADO` | 409 |
+| `EstadoInvalidoException` (transición de estado prohibida por regla de negocio) | 409 |
+| Resto de `DomainException` (regla de negocio violada que no encaja arriba) | 422 |
+| `Exception` genérica (fallback) | 500 |
+
+> **Si una excepción nueva no encaja claramente en ningún patrón**, el implementador debe pausar y preguntar al usuario qué código HTTP corresponde — nunca asumir 500.
+
+#### Plantilla canónica del handler
+
+```java
+package com.arquisoft.{contexto}.infrastructure.adapter.in.web;
+
+import com.arquisoft.{contexto}.application.dto.ErrorResponseDTO;
+import com.arquisoft.{contexto}.domain.exception.{Entidad}NoEncontradaException;
+import com.arquisoft.shared.exceptions.DomainException;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+@Slf4j
+@RestControllerAdvice(basePackages = "com.arquisoft.{contexto}")
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler({Entidad}NoEncontradaException.class)
+    public ResponseEntity<ErrorResponseDTO> handleNoEncontrada(
+            {Entidad}NoEncontradaException ex,
+            HttpServletRequest request) {
+        log.warn("Recurso no encontrado: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponseDTO.builder()
+                        .error("Not Found")
+                        .errorCode(ex.getErrorCode())
+                        .message(ex.getMessage())
+                        .status(HttpStatus.NOT_FOUND.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
+
+    // Más @ExceptionHandler — uno por cada DomainException del contexto, mapeado al código HTTP correcto.
+
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDomainGeneric(
+            DomainException ex,
+            HttpServletRequest request) {
+        log.warn("Regla de negocio violada: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErrorResponseDTO.builder()
+                        .error("Unprocessable Entity")
+                        .errorCode(ex.getErrorCode())
+                        .message(ex.getMessage())
+                        .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponseDTO> handleGeneral(
+            Exception ex,
+            HttpServletRequest request) {
+        log.error("Error inesperado: {}", ex.getMessage(), ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponseDTO.builder()
+                        .error("Internal Server Error")
+                        .message("Error interno del servidor")
+                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
+}
+```
+
+> **Nota:** `@RestControllerAdvice(basePackages = "com.arquisoft.{contexto}")` limita el handler a su contexto, evitando que aplique a controllers de otros contextos en la misma app.
+
+#### Reglas inviolables
+
+1. **Toda excepción de dominio nueva debe registrarse** en el handler antes de cerrar la capa infrastructure. Si no, su excepción cae en `handleGeneral` → 500, lo cual es **siempre incorrecto** para reglas de negocio.
+2. **Los tests de controller NO deben afirmar 500** para inputs inválidos. Si un test espera 500, indica handler faltante — corrige el handler, no el test.
+3. **`handleGeneral(Exception ex)` es solo para errores realmente inesperados** (NPE, errores de infraestructura no controlados). Nunca para excepciones de dominio.
+
+---
+
+## Mapeo Contexto Gradle → Base de Datos PostgreSQL
+
+Cada bounded context tiene **su propia base de datos PostgreSQL independiente**.
+No hay schemas dentro de una BD compartida — son BDs distintas, una por contexto.
+Todas las BDs viven en el mismo servidor PostgreSQL pero son aisladas entre sí.
+
+| Contexto Gradle | Base de Datos PostgreSQL |
 |---|---|
 | `seguridad` | `usuarios` |
 | `fichas` | `fichas_perfil` |
@@ -796,12 +1113,43 @@ El nombre del schema **no coincide** con el nombre del módulo Gradle en 3 casos
 | `entregables` | `entregables` |
 | `evaluaciones` | `evaluaciones` |
 
-### Reglas Flyway
+### Configuración del DataSource (ya existe, NO se crea por HU)
 
-- Ubicación: `{contexto}/infrastructure/src/main/resources/db/migration/`
-- Nomenclatura: `V{n}__{descripcion}.sql` (ej. `V1.0__fichas_schema.sql`)
-- El SQL debe referenciar el schema correcto (ej. `fichas_perfil.ficha`, no `fichas.ficha`).
-- En `@Entity` de JPA: `@Table(schema = "fichas_perfil", name = "ficha")`.
+Cada contexto tiene una clase `{Contexto}DataSourceConfig` ya creada y funcional en
+`infrastructure/config/`. Esta clase configura el `DataSource`, `EntityManagerFactory`
+y `TransactionManager` apuntando a la BD de ese contexto. **No se crea ni modifica
+en HUs nuevas** — es infraestructura ya establecida.
+
+La URL, usuario y password de cada BD están parametrizados en `application.yml`
+por contexto. El implementador **no toca configuración de DataSource**.
+
+### Reglas para JPA y Flyway
+
+- **`@Table` SIN atributo `schema`.** Todas las tablas viven en el `public` de su BD propia.
+  Usa solo `@Table(name = "ficha_perfil")`. **Nunca** `@Table(schema = "...", name = "...")`.
+- **Migraciones Flyway** en `{contexto}/infrastructure/src/main/resources/db/migration/`.
+- **Nomenclatura Flyway:** `V{n}__{descripcion}.sql` (ej. `V1.0__crear_tabla_ficha_perfil.sql`).
+- **El SQL referencia tablas sin prefijo de schema** (ej. `CREATE TABLE ficha_perfil (...)`,
+  no `CREATE TABLE fichas_perfil.ficha (...)`).
+- **NO hay FKs cruzadas entre BDs.** Cada contexto es totalmente autónomo a nivel de datos.
+
+### Réplicas locales de entidades de otros contextos
+
+Cuando un contexto necesita información de otro (ej. `fichas_perfil` necesita conocer
+`nombre`, `identificador` y `email` de un estudiante que vive en `usuarios`), **modela
+una entidad propia con esos atributos denormalizados** dentro de su BD.
+
+Ejemplo: en la BD `fichas_perfil` existe una tabla `estudiante` con columnas
+`id`, `identificador`, `nombre`, `email` — **réplica local**, no FK a `usuarios.estudiante`.
+La consistencia entre la copia local y la fuente real **no es preocupación del implementador
+de la HU** — se gestiona fuera del contexto. El implementador trata la tabla local como
+parte natural de su contexto.
+
+### Convención de nombres de tablas
+
+- `snake_case` para tablas y columnas (ej. `ficha_perfil`, `tipo_item`, `fecha_actualizacion`).
+- Nombre de tabla = nombre de entidad de dominio en `snake_case`. La entidad `FichaPerfil`
+  mapea a la tabla `ficha_perfil`.
 
 ---
 

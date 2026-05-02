@@ -37,6 +37,12 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-amqp:${springBootVersion}"
     implementation "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
 
+    // Flyway — declarado aquí para que esté en el classpath del módulo principal.
+    // flyway-database-postgresql es necesario en Flyway 11.x para soportar PostgreSQL
+    // (incluyendo PostgreSQL 18.x). Sin este módulo, Flyway lanza "Unsupported Database".
+    implementation "org.flywaydb:flyway-core:${flywaydbVersion}"
+    implementation "org.flywaydb:flyway-database-postgresql:${flywaydbVersion}"
+
     // OpenAPI / Swagger UI (ADR-011) — va aquí porque describe la API ensamblada completa
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
     

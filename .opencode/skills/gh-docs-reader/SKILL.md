@@ -246,6 +246,10 @@ gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/tecnicos/diseno-a
 gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/modelo_entidad_relacion.md" \
   -H "Accept: application/vnd.github.raw+json"
 
+# Schemas y dependencias entre contextos (LEER antes de planificar Flyway con FKs cruzadas)
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/01_base_datos_y_esquemas.sql" \
+  -H "Accept: application/vnd.github.raw+json"
+
 # SQL del MER por contexto (DDL exacto para Flyway)
 gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/02_tablas_usuarios.sql" \
   -H "Accept: application/vnd.github.raw+json"
@@ -369,8 +373,26 @@ Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
 
 **Para que usar cada fuente:**
 - `modelo_entidad_relacion.md` → vision completa de todas las tablas, tipos de dato, PKs, FKs, indices y restricciones
+- `01_base_datos_y_esquemas.sql` → orden de creacion de schemas y **grafo de dependencias entre contextos** (LEER SIEMPRE antes de planificar migraciones Flyway que involucren FKs cruzadas entre schemas)
 - `{NN}_tablas_{contexto}.sql` → DDL exacto listo para Flyway; columnas, constraints y nombres de tabla tal como van a la BD
 - El agente planificador DEBE consultar el SQL del MER del contexto correspondiente para definir las migraciones Flyway en el plan
+
+**Dependencias entre schemas (extraidas de `01_base_datos_y_esquemas.sql`):**
+
+```
+usuarios              → (ninguna — schema raiz)
+fichas_perfil         → usuarios
+repositorio_artefactos→ usuarios
+proyectos_grado       → usuarios, fichas_perfil
+mapas_ruta            → usuarios, proyectos_grado
+artefactos            → usuarios, proyectos_grado, repositorio_artefactos
+entregables           → usuarios, proyectos_grado, artefactos
+evaluaciones          → usuarios, entregables
+biblioteca            → usuarios
+solicitudes           → usuarios
+```
+
+**Regla para migraciones Flyway con FKs cruzadas:** si una tabla del contexto A referencia una tabla del schema B (dependencia), la migracion de A debe ejecutarse DESPUES de que el schema B ya exista y tenga sus tablas creadas. Verificar en `01_base_datos_y_esquemas.sql` si el contexto tiene dependencias antes de definir el orden de los scripts `V{n}__*.sql`.
 
 ---
 
@@ -396,10 +418,16 @@ Sigue este orden en la FASE 0. Distingue entre **HU** (Historias de Usuario) y *
  8. Si el Event Storming revela Aspectos por solucionar → Registrarlos para preguntar en FASE 2
  9. Si las Politicas mencionan atributos de calidad poco claros → Leer QA relevantes
 10. Leer el SQL del MER del contexto (OBLIGATORIO)     → Tablas, columnas exactas, tipos, PKs, FKs
-    Usar la columna "SQL del MER" de la tabla de mapeo para obtener el nombre del archivo.
-    Comando:
-      gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/{NN}_tablas_{contexto}.sql" \
-        -H "Accept: application/vnd.github.raw+json"
+    a) Leer primero `01_base_datos_y_esquemas.sql` para identificar si el contexto tiene
+       dependencias de otros schemas (FK cruzadas). Si las tiene, anotar cuales schemas
+       deben preexistir antes de correr las migraciones Flyway del contexto actual.
+       Comando:
+         gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/01_base_datos_y_esquemas.sql" \
+           -H "Accept: application/vnd.github.raw+json"
+    b) Leer el SQL especifico del contexto usando la columna "SQL del MER" de la tabla de mapeo.
+       Comando:
+         gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/{NN}_tablas_{contexto}.sql" \
+           -H "Accept: application/vnd.github.raw+json"
     Extraer: nombres de tabla, columnas, tipos de dato, constraints, indices unicos.
     Usar estos datos para definir las migraciones Flyway en la seccion correspondiente del plan.
 11. Si aplica: leer ADR relacionado                    → Decisiones arquitectonicas previas
