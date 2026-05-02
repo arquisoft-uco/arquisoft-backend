@@ -62,7 +62,7 @@ agente `@validator-report` que sí lo persistirá en disco.
 
 | Fuente | Propósito |
 |--------|-----------|
-| Skill `arquisoft-context` | Convenciones autoritativas del proyecto (DDD estricto, AggregateRoot, Java 21, mapeo schema, nomenclatura) — cargar en FASE 0 |
+| Skill `arquisoft-context` | Convenciones autoritativas del proyecto (DDD estricto, AggregateRoot, Java 21, mapeo contexto→BD, nomenclatura) — cargar en FASE 0 |
 | `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` | Qué debía implementarse (árbol de archivos, criterios de aceptación, eventos, endpoints, integraciones externas) |
 | Archivos `.java` y `.sql` generados | Verificación real del código producido — fuente primaria de verdad |
 | Archivos `*Test.java` en `src/test/` (si existen) | Tests generados por `03-test-agent` |
@@ -162,7 +162,7 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | ¿Endpoints protegidos con `@SecurityRequirement(name="bearerAuth")`? | ✅ |
 | ¿Eventos RabbitMQ con routing key y exchange del plan? | ✅ |
 | ¿Migración Flyway con nombre `V{n}__{descripcion}.sql`? | ✅ |
-| ¿Migración Flyway usa el schema correcto del mapeo? | ✅ |
+| ¿Migración Flyway sin atributo schema (tablas sin prefijo) y `@Table` sin `schema` en JPA Entity? | ✅ |
 
 #### Nivel 2 — Convenciones Arquisoft + DDD Estricto
 
@@ -562,12 +562,12 @@ Nota: las secciones 2.11, 2.12 y 2.13 se omiten porque no hay tests que validar.
 
 {Si APROBADO}
 → Para persistir este reporte en disco, invoca:
-  "@validator-report genera el reporte de {HU|HT}-{ID}"
-  Y pega este reporte completo cuando el agente lo solicite.
+"@validator-report genera el reporte de {HU|HT}-{ID}"
+Y pega este reporte completo cuando el agente lo solicite.
 
 {Si RECHAZADO}
 → El agente implementador debe corregir los errores bloqueantes
-  y solicitar un nuevo análisis.
+y solicitar un nuevo análisis.
 ```
 
 **Tras imprimir este mensaje, NO hagas nada más.** No invoques herramientas, no

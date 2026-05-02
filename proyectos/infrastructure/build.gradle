@@ -1,6 +1,7 @@
 dependencies {
     implementation project(':proyectos:domain')
     implementation project(':proyectos:application')
+    implementation "org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}"
 }
 
 

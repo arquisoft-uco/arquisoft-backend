@@ -33,10 +33,10 @@ public class SecurityConfig {
 
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
 
-    @Value("${keycloak.auth-server-url}")
+    @Value("${arquisoft.keycloak.server-url}")
     private String keycloakServerUrl;
 
-    @Value("${keycloak.realm}")
+    @Value("${arquisoft.keycloak.realm}")
     private String realm;
 
     @Bean

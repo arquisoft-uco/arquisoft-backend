@@ -1,7 +1,7 @@
 ---
 name: arquisoft-context
 description:
-   Contexto autoritativo del proyecto Arquisoft Backend para subagentes. Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier Historia de Usuario o Técnica. Contiene el stack exacto verificado, las convenciones de arquitectura hexagonal + DDD, la regla estricta de AggregateRoot, el mapeo contexto → schema PostgreSQL, la guía de uso de features de Java 21 y las plantillas de código canónicas. Este skill es la ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md, README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
+   Contexto autoritativo del proyecto Arquisoft Backend para subagentes. Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier Historia de Usuario o Técnica. Contiene el stack exacto verificado, las convenciones de arquitectura hexagonal + DDD, la regla estricta de AggregateRoot, el mapeo contexto → base de datos PostgreSQL, la guía de uso de features de Java 21 y las plantillas de código canónicas. Este skill es la ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md, README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
 ---
 
 # Skill: arquisoft-context — Contexto Autoritativo para Subagentes
@@ -30,7 +30,7 @@ Tras cargarlo, el subagente tiene disponible en su contexto:
 - El stack verificado (sección "Stack Verificado")
 - La estructura hexagonal + DDD (sección "Arquitectura Hexagonal + DDD")
 - La regla estricta de AggregateRoot (sección "AggregateRoot — Regla Estricta")
-- Mapeo contexto → schema PostgreSQL (sección "Mapeo Contexto → Schema")
+- Mapeo contexto → base de datos PostgreSQL (sección "Mapeo Contexto Gradle → Base de Datos PostgreSQL")
 - Guía de features de Java 21 (sección "Java 21 — Uso Balanceado")
 - Plantillas canónicas (sección "Plantillas de Código")
 - Convenciones de nomenclatura (sección "Nomenclatura")
@@ -1097,11 +1097,13 @@ public class GlobalExceptionHandler {
 
 ---
 
-## Mapeo Contexto → Schema PostgreSQL
+## Mapeo Contexto Gradle → Base de Datos PostgreSQL
 
-El nombre del schema **no coincide** con el nombre del módulo Gradle en 3 casos. Usar **siempre** esta tabla:
+Cada bounded context tiene **su propia base de datos PostgreSQL independiente**.
+No hay schemas dentro de una BD compartida — son BDs distintas, una por contexto.
+Todas las BDs viven en el mismo servidor PostgreSQL pero son aisladas entre sí.
 
-| Contexto Gradle | Schema PostgreSQL |
+| Contexto Gradle | Base de Datos PostgreSQL |
 |---|---|
 | `seguridad` | `usuarios` |
 | `fichas` | `fichas_perfil` |
@@ -1111,35 +1113,43 @@ El nombre del schema **no coincide** con el nombre del módulo Gradle en 3 casos
 | `entregables` | `entregables` |
 | `evaluaciones` | `evaluaciones` |
 
-### Reglas Flyway
+### Configuración del DataSource (ya existe, NO se crea por HU)
 
-- Ubicación: `{contexto}/infrastructure/src/main/resources/db/migration/`
-- Nomenclatura: `V{n}__{descripcion}.sql` (ej. `V1.0__fichas_schema.sql`)
-- El SQL debe referenciar el schema correcto (ej. `fichas_perfil.ficha`, no `fichas.ficha`).
-- En `@Entity` de JPA: `@Table(schema = "fichas_perfil", name = "ficha")`.
+Cada contexto tiene una clase `{Contexto}DataSourceConfig` ya creada y funcional en
+`infrastructure/config/`. Esta clase configura el `DataSource`, `EntityManagerFactory`
+y `TransactionManager` apuntando a la BD de ese contexto. **No se crea ni modifica
+en HUs nuevas** — es infraestructura ya establecida.
 
-### Dependencias entre schemas (orden de creación)
+La URL, usuario y password de cada BD están parametrizados en `application.yml`
+por contexto. El implementador **no toca configuración de DataSource**.
 
-Todos los schemas conviven en la base de datos `arquisoft`. Cuando una tabla de un contexto
-referencia con FK una tabla de otro schema, la migración del contexto dependiente debe
-ejecutarse **después** de que el schema del que depende ya tenga sus tablas creadas.
+### Reglas para JPA y Flyway
 
-```
-usuarios              → (ninguna — schema raíz)
-fichas_perfil         → usuarios
-repositorio_artefactos→ usuarios
-proyectos_grado       → usuarios, fichas_perfil
-mapas_ruta            → usuarios, proyectos_grado
-artefactos            → usuarios, proyectos_grado, repositorio_artefactos
-entregables           → usuarios, proyectos_grado, artefactos
-evaluaciones          → usuarios, entregables
-biblioteca            → usuarios
-solicitudes           → usuarios
-```
+- **`@Table` SIN atributo `schema`.** Todas las tablas viven en el `public` de su BD propia.
+  Usa solo `@Table(name = "ficha_perfil")`. **Nunca** `@Table(schema = "...", name = "...")`.
+- **Migraciones Flyway** en `{contexto}/infrastructure/src/main/resources/db/migration/`.
+- **Nomenclatura Flyway:** `V{n}__{descripcion}.sql` (ej. `V1.0__crear_tabla_ficha_perfil.sql`).
+- **El SQL referencia tablas sin prefijo de schema** (ej. `CREATE TABLE ficha_perfil (...)`,
+  no `CREATE TABLE fichas_perfil.ficha (...)`).
+- **NO hay FKs cruzadas entre BDs.** Cada contexto es totalmente autónomo a nivel de datos.
 
-**Regla para FKs cruzadas entre schemas:** si la tabla del contexto A tiene una FK que apunta
-a un schema B, escribir la constraint con schema calificado:
-`REFERENCES {schema_b}.{tabla}(id)`. Verificar que la migración de B se ejecute antes que la de A.
+### Réplicas locales de entidades de otros contextos
+
+Cuando un contexto necesita información de otro (ej. `fichas_perfil` necesita conocer
+`nombre`, `identificador` y `email` de un estudiante que vive en `usuarios`), **modela
+una entidad propia con esos atributos denormalizados** dentro de su BD.
+
+Ejemplo: en la BD `fichas_perfil` existe una tabla `estudiante` con columnas
+`id`, `identificador`, `nombre`, `email` — **réplica local**, no FK a `usuarios.estudiante`.
+La consistencia entre la copia local y la fuente real **no es preocupación del implementador
+de la HU** — se gestiona fuera del contexto. El implementador trata la tabla local como
+parte natural de su contexto.
+
+### Convención de nombres de tablas
+
+- `snake_case` para tablas y columnas (ej. `ficha_perfil`, `tipo_item`, `fecha_actualizacion`).
+- Nombre de tabla = nombre de entidad de dominio en `snake_case`. La entidad `FichaPerfil`
+  mapea a la tabla `ficha_perfil`.
 
 ---
 

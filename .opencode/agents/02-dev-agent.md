@@ -59,7 +59,7 @@ esperando aprobación explícita del usuario antes de avanzar al siguiente.
 
 | Skill | Propósito | Cuándo usarlo |
 |---|---|---|
-| `arquisoft-context` | Estado real del proyecto: stack, DDD, AggregateRoot, plantillas canónicas, mapeo schema, Java 21 balanceado | **FASE 0 (al inicio).** Y referencia constante durante toda la sesión. |
+| `arquisoft-context` | Estado real del proyecto: stack, DDD, AggregateRoot, plantillas canónicas, mapeo contexto→BD, Java 21 balanceado | **FASE 0 (al inicio).** Y referencia constante durante toda la sesión. |
 | `context7-stack` | APIs actualizadas del stack (Spring, JPA, Mockito, RabbitMQ, Lombok, OpenAPI, Flyway) | **Antes de generar CADA archivo** (FASE 2). |
 
 **Regla dura:** si el skill `arquisoft-context` contradice algo del plan, **detente y reporta al usuario** — no resuelvas la contradicción por tu cuenta. Si contradice un archivo del repositorio (`AGENTS.md`, `README.md`, etc.), **gana el skill**.
@@ -79,7 +79,7 @@ skill("arquisoft-context")
 Este skill contiene:
 - El stack verificado (Java 21, Spring Boot 4.0.5, JUnit 6.0.3, Keycloak 26.6, etc.)
 - La arquitectura DDD + Hexagonal y la regla estricta de AggregateRoot
-- El mapeo contexto → schema PostgreSQL (seguridad→usuarios, fichas→fichas_perfil, proyectos→proyectos_grado)
+- El mapeo contexto → base de datos PostgreSQL (seguridad→usuarios, fichas→fichas_perfil, proyectos→proyectos_grado, los demás coinciden)
 - Las plantillas de código canónicas para cada tipo de archivo
 - La guía de uso balanceado de features de Java 21 (records para VO, sealed para estados cerrados, text blocks para SQL, var donde el tipo es evidente — NO records para entidades de dominio, NO virtual threads manuales)
 - Las convenciones de nomenclatura (bilingüe: español para negocio, inglés para sufijos técnicos)
@@ -193,7 +193,7 @@ CAPA 2 — application
      ./gradlew :{contexto}:application:compileJava
 
 CAPA 3 — infrastructure
-  ├── Entidad JPA               ({Entidad}JpaEntity.java) — @Table(schema = "{schema correcto}")
+  ├── Entidad JPA               ({Entidad}JpaEntity.java) — @Table(name = "...") (sin atributo schema; cada contexto tiene su propia BD)
   ├── Repositorio JPA           ({Entidad}JpaRepository.java)
   ├── Adaptador repositorio     ({Entidad}RepositoryAdapter.java) — usa rebuild(...) al reconstruir
   ├── Controller REST           ({Entidad}Controller.java) — @Tag, @Operation, @ApiResponses, @SecurityRequirement (ADR-011)
@@ -209,7 +209,7 @@ CAPA 3 — infrastructure
   ├── Listener RabbitMQ         (si aplica) — en adapter/in/messaging/
   ├── Config Spring             (si aplica) — en infrastructure/config/, sin lógica de negocio
   ├── Publisher RabbitMQ        (si aplica) — en adapter/out/messaging/
-  └── Migración Flyway          (V{n}__{descripcion}.sql) — schema correcto según tabla de mapeo
+  └── Migración Flyway          (V{n}__{descripcion}.sql) — tablas sin prefijo de schema; BD correcta según tabla de mapeo
 
   → 🔨 FIN DE CAPA — compilar OBLIGATORIO antes de seguir:
      ./gradlew :{contexto}:infrastructure:compileJava
@@ -229,7 +229,7 @@ CAPA 3 — infrastructure
 > trazabilidad del plan.
 
 
-> **Recordatorio mapeo schema:** `seguridad→usuarios`, `fichas→fichas_perfil`, `proyectos→proyectos_grado`.
+> **Recordatorio mapeo BD:** `seguridad→usuarios`, `fichas→fichas_perfil`, `proyectos→proyectos_grado`, los demás coinciden con el nombre del contexto.
 > Los demás coinciden. Tabla completa en el skill `arquisoft-context`.
 
 #### Uso de Context7 por tipo de archivo
@@ -451,7 +451,7 @@ DDD aplicado:
   ✅ Eventos de dominio en domain/event/
   ✅ Use case drena eventos tras persistir
   ✅ IDs UUID
-  ✅ Schema PostgreSQL correcto según mapeo
+  ✅ BD PostgreSQL correcta según mapeo (sin atributo schema en @Table)
 
 Compilacion:
   {contexto}:domain         — sin errores
@@ -536,7 +536,7 @@ Opciones:
 13. **DDD estricto — Aggregate Root:** entidades raíz extienden `AggregateRoot` en los 6 contextos de negocio. Excepción única: `seguridad`. Si el plan no especifica AggregateRoot para una entidad raíz en los 6 contextos, reporta ambigüedad.
 14. **Eventos de dominio:** en `domain/event/`, extienden `DomainEvent`. El use case los drena tras persistir — nunca el dominio publica directamente.
 15. **IDs siempre `UUID`** (`java.util.UUID`). `build()` genera con `UUID.randomUUID()`, `rebuild()` recibe el UUID desde persistencia.
-16. **Schema PostgreSQL:** usar la tabla de mapeo del skill `arquisoft-context`. `seguridad→usuarios`, `fichas→fichas_perfil`, `proyectos→proyectos_grado`, los demás coinciden.
+16. **Base de datos PostgreSQL:** cada contexto tiene su propia BD (no schemas). Usar la tabla de mapeo del skill `arquisoft-context`. `seguridad→usuarios`, `fichas→fichas_perfil`, `proyectos→proyectos_grado`, los demás coinciden. `@Table(name = "...")` sin atributo `schema`. Migraciones Flyway sin prefijo de schema en el SQL. Sin FKs cruzadas entre BDs.
 17. **Java 21 balanceado:** records para VO y payloads, sealed para estados cerrados, text blocks para SQL, var donde el tipo es evidente. **NO** records para entidades, **NO** virtual threads manuales.
 18. **Java 21** — siempre `./gradlew`, nunca `mvn` ni `javac` directo.
 19. **Imports explícitos** — nunca wildcard `*`.

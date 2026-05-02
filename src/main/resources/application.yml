@@ -2,8 +2,8 @@
 # CONFIGURACION BASE DE ARQUISOFT
 # ==============================================================================
 # Importa credenciales desde .env.properties (archivo local, NO versionado).
-# Si el archivo no existe, se usan los defaults vacios (el arranque fallara
-# con mensaje claro de conexion).
+# Si el archivo no existe, se usan los defaults (el arranque fallará
+# con mensaje claro de conexión).
 # Para crear el tuyo: cp .env.properties.example .env.properties
 # ==============================================================================
 
@@ -21,34 +21,16 @@ spring:
     virtual:
       enabled: true
 
-  # ==================== BASE DE DATOS ====================
-  datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/arquisoft}
-    username: ${DB_USERNAME:}
-    password: ${DB_PASSWORD:}
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      connection-timeout: 20000
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-        jdbc:
-          batch_size: 25
-    open-in-view: false
-    show-sql: false
-
-  # ==================== FLYWAY ====================
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
+  # ==================== DESHABILITAR AUTOCONFIGURACIÓN DE DATASOURCE GLOBAL ====================
+  # Cada bounded context configura su propio DataSource, EntityManagerFactory y Flyway
+  # en su clase *DataSourceConfig.java dentro de infrastructure/config/.
+  # Sin esta exclusión, Spring Boot intentaría autoconfigurar un DataSource primario
+  # y fallaría con NoUniqueBeanDefinitionException al encontrar 7 beans DataSource.
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
 
   # ==================== RABBITMQ ====================
   rabbitmq:
@@ -64,31 +46,145 @@ spring:
         max-concurrency: 10
 
   # ==================== REDIS ====================
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    timeout: 2000
-    jedis:
-      pool:
-        max-active: 10
-        max-idle: 5
-        min-idle: 0
+  # CORRECCIÓN: En Spring Boot 3.x+ la clave cambió de spring.redis a spring.data.redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      jedis:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 0
+
+  # ==================== OAUTH2 / KEYCLOAK (Spring Boot 3.x+) ====================
+  # En tu SecurityConfig debes usar: http.oauth2ResourceServer(oauth2 -> oauth2.jwt(...))
+  spring:
+    security:
+      oauth2:
+        # ── Resource Server ──────────────────────────────────────────────
+        # Valida los tokens JWT que llegan en los requests entrantes.
+        # Keycloak expone automáticamente el JWKS en el issuer-uri/.well-known/openid-configuration
+        resourceserver:
+          jwt:
+            issuer-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}
+            jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/certs
+
+        # ── Client ───────────────────────────────────────────────────────
+        # Permite al backend llamar al endpoint /token de Keycloak
+        # para login, refresh y validación directa.
+        client:
+          provider:
+            keycloak:
+              issuer-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}
+              token-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/token
+              jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/certs
+          registration:
+            keycloak:
+              provider: keycloak
+              client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-app}
+              client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+              authorization-grant-type: password
+              scope: openid, profile, email
+
+# ==================== DATASOURCES POR BOUNDED CONTEXT ====================
+# Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
+# usando @ConfigurationProperties("datasource.{contexto}").
+datasource:
+  seguridad:
+    url: ${DB_SEGURIDAD_URL:jdbc:postgresql://localhost:5432/usuarios}
+    username: ${DB_SEGURIDAD_USERNAME:arquisoft_user}
+    password: ${DB_SEGURIDAD_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Seguridad
+
+  fichas:
+    url: ${DB_FICHAS_URL:jdbc:postgresql://localhost:5432/fichas_perfil}
+    username: ${DB_FICHAS_USERNAME:arquisoft_user}
+    password: ${DB_FICHAS_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Fichas
+
+  proyectos:
+    url: ${DB_PROYECTOS_URL:jdbc:postgresql://localhost:5432/proyectos_grado}
+    username: ${DB_PROYECTOS_USERNAME:arquisoft_user}
+    password: ${DB_PROYECTOS_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Proyectos
+
+  artefactos:
+    url: ${DB_ARTEFACTOS_URL:jdbc:postgresql://localhost:5432/artefactos}
+    username: ${DB_ARTEFACTOS_USERNAME:arquisoft_user}
+    password: ${DB_ARTEFACTOS_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Artefactos
+
+  repositorio_artefactos:
+    url: ${DB_REPO_ARTEFACTOS_URL:jdbc:postgresql://localhost:5432/repositorio_artefactos}
+    username: ${DB_REPO_ARTEFACTOS_USERNAME:arquisoft_user}
+    password: ${DB_REPO_ARTEFACTOS_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-RepositorioArtefactos
+
+  entregables:
+    url: ${DB_ENTREGABLES_URL:jdbc:postgresql://localhost:5432/entregables}
+    username: ${DB_ENTREGABLES_USERNAME:arquisoft_user}
+    password: ${DB_ENTREGABLES_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Entregables
+
+  evaluaciones:
+    url: ${DB_EVALUACIONES_URL:jdbc:postgresql://localhost:5432/evaluaciones}
+    username: ${DB_EVALUACIONES_USERNAME:arquisoft_user}
+    password: ${DB_EVALUACIONES_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Evaluaciones
 
 # ==================== KEYCLOAK ====================
-keycloak:
-  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL}
-  realm: ${KEYCLOAK_REALM}
-  resource: ${KEYCLOAK_CLIENT_ID}
-  credentials:
-    secret: ${KEYCLOAK_CLIENT_SECRET}
-  principal-attribute: preferred_username #Simplemente te hara la vida fácil
+# Propiedades propias para KeycloakAuthAdapter y SecurityConfig.
+# No se usa el adapter keycloak-spring-boot-adapter (removido en SB3+).
+# La validación JWT usa Spring Security OAuth2 Resource Server de forma nativa.
+arquisoft:
+  keycloak:
+    server-url: ${KEYCLOAK_URL:http://localhost:8081}
+    realm: ${KEYCLOAK_REALM:arquisoft}
+    client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-app}
+    client-secret: ${KEYCLOAK_CLIENT_SECRET:}
 
-# ==================== SEGURIDAD ====================
-security:
-  cors:
-    allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
-  rate-limit:
-    enabled: false
+  security:
+    cors:
+      allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
+    rate-limit:
+      enabled: false
 
 # ==================== SERVER ====================
 server:
@@ -109,8 +205,11 @@ logging:
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file:
     name: logs/arquisoft.log
-    max-size: 10MB
-    max-history: 10
+  # CORRECCIÓN: En Spring Boot 2.7+ max-size y max-history se movieron a logback.rollingpolicy
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 10
 
 # ==================== ACTUATOR ====================
 management:

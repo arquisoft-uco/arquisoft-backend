@@ -1,5 +1,7 @@
 package com.arquisoft.seguridad.domain.port.out;
 
+import java.util.Map;
+
 /**
  * Puerto de salida para autenticacion contra el servidor de identidad (Keycloak).
  * El dominio define el contrato; la infraestructura implementa la comunicacion
@@ -22,7 +24,7 @@ public interface AuthenticationPort {
      * @throws com.arquisoft.seguridad.domain.exception.AuthenticationException
      *         si hay error en la comunicacion con el proveedor
      */
-    java.util.Map<String, Object> authenticate(String email, String password);
+    Map<String, Object> authenticate(String email, String password);
 
     /**
      * Refresca el token de acceso usando el refresh token.
@@ -32,7 +34,7 @@ public interface AuthenticationPort {
      * @throws com.arquisoft.seguridad.domain.exception.InvalidTokenException
      *         si el refresh token es invalido o expirado
      */
-    java.util.Map<String, Object> refreshToken(String refreshToken);
+    Map<String, Object> refreshToken(String refreshToken);
 
     /**
      * Valida que el refresh token sea valido.

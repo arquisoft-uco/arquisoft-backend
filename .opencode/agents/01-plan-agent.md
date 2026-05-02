@@ -51,7 +51,7 @@ documento estructurado `PLAN-{HU|HT}-{ID}.md` (ej. `PLAN-HU-160.md` o `PLAN-HT-0
 
 | Skill | Propósito | Cuándo usarlo |
 |---|---|---|
-| `arquisoft-context` | Estado real del proyecto: stack, arquitectura DDD, AggregateRoot, mapeo contexto→schema, convenciones, Java 21 | **Siempre al inicio (FASE 0).** Antes de cualquier pregunta o plan. |
+| `arquisoft-context` | Estado real del proyecto: stack, arquitectura DDD, AggregateRoot, mapeo contexto→base de datos, convenciones, Java 21 | **Siempre al inicio (FASE 0).** Antes de cualquier pregunta o plan. |
 | `gh-docs-reader` | Acceso al repo `arquisoft-docs`: HUs, Event Storming, ADRs, modelo de dominio | **Siempre antes de preguntar al usuario (FASE 1).** Para localizar y contextualizar la HU. |
 
 **Regla dura:** si hay contradicción entre el skill `arquisoft-context` y cualquier archivo del repositorio de documentación, **gana `arquisoft-context`**.
@@ -69,7 +69,7 @@ skill("arquisoft-context")
 ```
 
 Este skill contiene el stack verificado, la arquitectura DDD + Hexagonal, la regla estricta
-de AggregateRoot, el mapeo contexto → schema PostgreSQL, las plantillas canónicas y las
+de AggregateRoot, el mapeo contexto → base de datos PostgreSQL, las plantillas canónicas y las
 convenciones de nomenclatura. **Mantén este contexto activo durante toda la sesión.**
 
 ---
@@ -374,10 +374,10 @@ Para cada integración externa, documenta:
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/dto/{Entidad}ResponseDTO.java` | DTO | {descripción} |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/usecase/{Accion}{Entidad}UseCaseImpl.java` | UseCase Impl | {descripción} — drena eventos de dominio tras persistir |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/in/web/{Entidad}Controller.java` | Controller | {descripción} — `@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement` (ADR-011) |
-| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}JpaEntity.java` | JPA Entity | `@Table(schema = "{schema correcto}", name = "...")` |
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}JpaEntity.java` | JPA Entity | `@Table(name = "...")` (sin atributo `schema` — cada contexto tiene su propia BD) |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}JpaRepository.java` | JPA Repo | {descripción} |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}RepositoryAdapter.java` | Adapter | usa `rebuild(...)` al reconstruir desde JPA |
-| infrastructure | `{contexto}/src/main/resources/db/migration/V{n}__{descripcion}.sql` | Flyway | schema correcto según tabla de mapeo |
+| infrastructure | `{contexto}/src/main/resources/db/migration/V{n}__{descripcion}.sql` | Flyway | tablas sin prefijo de schema — cada contexto tiene su propia BD |
 
 ### Manejo de Errores HTTP (`@ExceptionHandler`) — OBLIGATORIO si se introducen excepciones nuevas
 
@@ -468,9 +468,14 @@ Para cada archivo de tipo Controller, añadir además:
 ## 10. Migración de Base de Datos (si aplica)
 
 - **Archivo:** `V{n}__{descripcion}.sql`
-- **Esquema PostgreSQL:** usar la tabla de mapeo del skill `arquisoft-context` (el nombre del
-  schema NO coincide con el nombre del contexto en tres casos: `seguridad→usuarios`,
-  `fichas→fichas_perfil`, `proyectos→proyectos_grado`).
+- **Base de datos:** la migración se ejecuta dentro de la BD propia del contexto. Usar
+  la tabla de mapeo del skill `arquisoft-context` (el nombre de la BD NO coincide con
+  el nombre del contexto en tres casos: `seguridad→usuarios`, `fichas→fichas_perfil`,
+  `proyectos→proyectos_grado`).
+- **Sin schemas:** las tablas se crean sin prefijo (ej. `CREATE TABLE ficha_perfil (...)`,
+  no `CREATE TABLE fichas_perfil.ficha (...)`).
+- **Sin FKs cruzadas entre BDs:** cada contexto es autónomo. Si necesitas datos de otro
+  contexto, modela una réplica local con los atributos requeridos.
 - **Cambios:** {descripción de tablas/columnas nuevas o modificadas}
 
 ---
@@ -596,8 +601,8 @@ ejemplos detallados.
 - [ ] Caso de uso (`{Accion}{Entidad}UseCaseImpl`) con `@RequiredArgsConstructor`, `@Transactional` y drenado de eventos
 - [ ] Controller REST con `@Valid @RequestBody` y roles Keycloak configurados con `@PreAuthorize`
 - [ ] Controller documentado con `@Tag`, `@Operation`, `@ApiResponses` y `@SecurityRequirement` (ADR-011)
-- [ ] Entidad JPA con `@Table(schema = "{schema correcto}", ...)` y adaptador de repositorio creados
-- [ ] Migración Flyway (`V{n}__{descripcion}.sql`) en el schema correcto según tabla de mapeo
+- [ ] Entidad JPA con `@Table(name = "...")` (sin atributo `schema`) y adaptador de repositorio creados
+- [ ] Migración Flyway (`V{n}__{descripcion}.sql`) en la BD correcta según tabla de mapeo, sin prefijo de schema en el SQL
 - [ ] Eventos RabbitMQ publicados/consumidos (si aplica)
 - [ ] Tests unitarios con patrón AAA (cobertura ≥ 75%), incluyen ciclo completo de eventos del Aggregate Root
 - [ ] Tests de repositorio con H2
