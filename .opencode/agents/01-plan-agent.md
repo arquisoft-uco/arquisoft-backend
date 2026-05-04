@@ -1,29 +1,29 @@
 ---
 name: planificador
 description: >-
-   Agente interno de planificación. Invocar SIEMPRE antes de implementar cualquier
-   Historia de Usuario nueva o modificación de funcionalidad existente.
-   Carga el skill arquisoft-context (contexto autoritativo del proyecto) y el skill
-   gh-docs-reader (HUs y Event Storming del repo arquisoft-docs), hace preguntas de
-   clarificación al usuario y genera un PLAN-{HU|HT}-{ID}.md detallado con capas
-   afectadas, árbol de archivos con rutas absolutas, endpoints, eventos RabbitMQ,
-   migraciones Flyway, casos de prueba sugeridos y estructura DDD (AggregateRoot +
-   eventos de dominio). No escribe código. Su output debe ser aprobado por el
-   usuario antes de que el agente de implementación ejecute.
+  Agente interno de planificación. Invocar SIEMPRE antes de implementar cualquier
+  Historia de Usuario nueva o modificación de funcionalidad existente.
+  Carga el skill arquisoft-context (contexto autoritativo del proyecto) y el skill
+  gh-docs-reader (HUs y Event Storming del repo arquisoft-docs), hace preguntas de
+  clarificación al usuario y genera un PLAN-{HU|HT}-{ID}.md detallado con capas
+  afectadas, árbol de archivos con rutas absolutas, endpoints, eventos RabbitMQ,
+  migraciones Flyway, casos de prueba sugeridos y estructura DDD (AggregateRoot +
+  eventos de dominio). No escribe código. Su output debe ser aprobado por el
+  usuario antes de que el agente de implementación ejecute.
 mode: subagent
 hidden: true
 temperature: 0.2
 permission:
-   edit: allow
-   bash:
-      "*": deny
-      "gh api *": allow
-      "gh auth status": allow
-   webfetch: deny
-   skill:
-      "arquisoft-context": allow
-      "gh-docs-reader": allow
-      "*": deny
+  edit: allow
+  bash:
+    "*": deny
+    "gh api *": allow
+    "gh auth status": allow
+  webfetch: deny
+  skill:
+    "arquisoft-context": allow
+    "gh-docs-reader": allow
+    "*": deny
 ---
 
 # Agente Planificador de Historia de Usuario — Arquisoft Backend
@@ -123,19 +123,60 @@ el comando que coincide con la HU, que contiene:
 
 **Paso 3 — Identificar el bounded context afectado** usando la tabla de mapeo del skill.
 
-**Paso 4 — Identificar si el bounded context usa AggregateRoot.** Consulta la tabla en la
-sección "Bounded Contexts" del skill `arquisoft-context`. Recuerda:
+**Paso 4 — Identificar si el bounded context usa AggregateRoot y verificar si la entidad raíz YA EXISTE en el código.**
+
+**4.1 — Determinar si aplica AggregateRoot:** consulta la tabla en la sección "Bounded Contexts" del skill `arquisoft-context`:
 - `seguridad` → **NO** usa AggregateRoot (delega en Keycloak).
 - Los otros 6 contextos → **SÍ** usan AggregateRoot obligatoriamente para la entidad raíz.
 
-**Paso 5 — Consultar documentación complementaria:**
-- Modelo de dominio (anémico y enriquecido) del contexto identificado.
+**4.2 — Verificar si la entidad raíz YA EXISTE en el código** (CRÍTICO para evitar planes incoherentes):
+
+Si el contexto usa AggregateRoot, busca el archivo `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/model/{Entidad}.java` y `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/event/{Entidad}CreadaEvent.java`.
+
+| Caso | Acción en el plan |
+|---|---|
+| **La entidad ya existe** (creada en HU previa) | NO se incluye en el árbol de archivos a CREAR. Si la HU la modifica, va en "Archivos a MODIFICAR". |
+| **La entidad NO existe** (esta es la primera HU del contexto que la toca) | DEBE incluirse en el árbol como archivo a CREAR, **incluso si la HU es de Consulta**. Sin la entidad raíz, el puerto del repositorio no puede retornarla, el adapter no puede usar `rebuild(...)`, y la arquitectura queda rota. |
+
+> **Regla dura:** una HU de consulta NO emite eventos NI tiene tests de ciclo de eventos, **pero SÍ requiere que la entidad raíz exista** para que el puerto `{Entidad}RepositoryPort` retorne `Page<{Entidad}>` y el adapter use `rebuild(...)`. Si esta es la primera HU del contexto, la entidad raíz, sus value objects y al menos un evento (`{Entidad}CreadaEvent`) deben crearse aquí — aunque el use case actual no los emita. El evento queda disponible para futuras HUs de escritura.
+
+> **Cómo verificar existencia:** mediante `bash` o `view` sobre el filesystem local del proyecto. Si el módulo `{contexto}/` aún no tiene carpeta `domain/model/`, asume que la entidad NO existe.
+
+**Paso 5 — Lectura OBLIGATORIA del Modelo de Dominio Enriquecido del contexto.**
+
+Mediante `gh-docs-reader`, lee el archivo correspondiente al contexto identificado en
+`artefactos/estrategicos/modelo-dominio/enriquecido/documentacion/`:
+
+| Contexto Gradle | Archivo del modelo enriquecido |
+|---|---|
+| `seguridad` | `05_usuarios_modelo_enriquecido.md` |
+| `fichas` | `06_fichas_trabajos_grado_modelo_enriquecido.md` |
+| `artefactos` | `07_artefactos_modelo_enriquecido.md` |
+| `repositorio_artefactos` | `08_repositorio_artefactos_modelo_enriquecido.md` |
+| `proyectos` | `10_proyectos_grado_modelo_enriquecido.md` |
+| `entregables` | `11_entregables_proyectos_grado_modelo_enriquecido.md` |
+| `evaluaciones` | `12_evaluaciones_definitivas_modelo_enriquecido.md` |
+
+De **cada objeto de dominio que la HU afecte** (entidad raíz + entidades hijas + réplicas locales), extrae:
+
+- **Por atributo:** tipo de dato, longitud mínima/máxima (si aplica), obligatorio, modificable, autogenerado, sensible, limpiar espacios.
+- **Combinaciones únicas (Restricciones):** qué atributos las componen.
+
+> **Nota sobre réplicas locales:** lee solo el archivo del contexto propio. Las réplicas tienen su propia definición simplificada — sus combinaciones únicas las garantiza el contexto origen, no el actual.
+
+Esta información alimenta la sección 4 del plan y permite traducir el modelo enriquecido directamente a:
+- Invariantes del AggregateRoot (validaciones en el constructor de la entidad).
+- Validaciones Jakarta del DTO request (`@NotBlank`, `@Size`, `@Email`).
+- Constraints de la migración Flyway (`UNIQUE`, `NOT NULL`, `VARCHAR(n)`).
+- `@Column` de la JPA Entity (length, nullable).
+
+**Paso 6 — Consultar documentación complementaria adicional (si aplica):**
 - Si hay atributos de calidad poco claros en las políticas → leer los QA relevantes.
 - Si la HU afecta decisiones de arquitectura o integraciones → consultar ADRs en
   `docs/architecture/decisions/` y flujos en `docs/architecture/flujo-*.md` (del repo docs, no del código).
 - Si aplica, consultar `docs/stories/` para Historias **Técnicas** (HT-XXX) relacionadas.
 
-**Paso 6 — Pasa a FASE 3.** Nunca generes el plan sin antes hacer las preguntas.
+**Paso 7 — Pasa a FASE 3.** Nunca generes el plan sin antes hacer las preguntas.
 
 > **IMPORTANTE:** No confundir **HU** (Historias de Usuario, en `propuestas-hu/`) con
 > **HT** (Historias Técnicas, en `docs/stories/`). Las HU son funcionalidad de negocio
@@ -156,9 +197,9 @@ Espera las respuestas del usuario antes de continuar.
    > con las preguntas 2–9 (ver sección al final de FASE 3).
 
 2. **¿Qué tipo de use case es esta HU?**
-   - **A) Escritura** (crea, actualiza o elimina datos; modifica estado del Aggregate Root; emite eventos de dominio).
-   - **B) Consulta** (lee datos; puede tener filtros, paginación, ordenamiento; **NO** modifica estado, **NO** emite eventos).
-   - **C) Mixta** (lectura con efecto secundario, ej. "consultar y marcar como visto"). **Si dudas, casi siempre no es mixta** — separa en dos use cases distintos.
+    - **A) Escritura** (crea, actualiza o elimina datos; modifica estado del Aggregate Root; emite eventos de dominio).
+    - **B) Consulta** (lee datos; puede tener filtros, paginación, ordenamiento; **NO** modifica estado, **NO** emite eventos).
+    - **C) Mixta** (lectura con efecto secundario, ej. "consultar y marcar como visto"). **Si dudas, casi siempre no es mixta** — separa en dos use cases distintos.
 
    > Esta respuesta determina **qué tipos de tests aplican** en la sección 11 del plan
    > y previene sobre-testeo. Una HU de consulta NO debe tener tests de ciclo de eventos
@@ -288,8 +329,8 @@ produce el documento en el formato a continuación y guárdalo como
 - **Fecha de plan:** {fecha}
 - **Rama sugerida:** `feature/{HU|HT}-{ID}-{descripcion_snake_case}`
 - **Fuentes consultadas del repo de documentación:**
-   - `{ruta/archivo1.md}`
-   - `{ruta/archivo2.md}`
+    - `{ruta/archivo1.md}`
+    - `{ruta/archivo2.md}`
 - **Skill arquisoft-context cargado:** ✅
 - **Observaciones del usuario:** {observaciones adicionales o "Ninguna"}
 
@@ -323,6 +364,42 @@ produce el documento en el formato a continuación y guárdalo como
 - **ID:** `UUID`
 - **Value Objects:** {listar si aplican, ej. `Calificacion` como `record` con validación en constructor compacto}
 - **Enums / Sealed types:** {listar si aplican, ej. `sealed interface EstadoFicha permits Borrador, EnRevision, Aprobada` si el dominio lo justifica}
+
+### Atributos por objeto de dominio (extraídos del modelo enriquecido)
+
+> Una tabla por cada objeto de dominio que la HU afecte (entidad raíz + entidades hijas + réplicas locales).
+
+#### `{Objeto de Dominio 1}`
+
+| Atributo | Tipo | Longitud | Obligatorio | Modificable | Autogenerado | Notas |
+|---|---|---|---|---|---|---|
+| `id` | `UUID` | — | Sí | No | {Sí/No según modelo} | Identifica el registro |
+| `{atributo}` | `{tipo}` | `{min-max o —}` | {Sí/No} | {Sí/No} | {Sí/No} | {Limpiar espacios / sensible / referencia a otro objeto / etc.} |
+
+**Combinaciones únicas (Restricciones):**
+- {Descripción de la restricción}: `{atributos involucrados}` → traducción: `UNIQUE` en Flyway + validación de unicidad previa en use case.
+
+#### `{Objeto de Dominio 2 — entidad hija o réplica local, si aplica}`
+
+| Atributo | Tipo | Longitud | Obligatorio | Modificable | Autogenerado | Notas |
+|---|---|---|---|---|---|---|
+| ... | ... | ... | ... | ... | ... | ... |
+
+> **Réplicas locales:** si el objeto es una réplica de otro contexto, omite la sección de combinaciones únicas — esas las garantiza el contexto origen.
+
+### Traducción del modelo enriquecido a código
+
+Las características de cada atributo se traducen así en cada capa:
+
+| Característica del modelo | Traducción en código |
+|---|---|
+| Longitud mínima/máxima | `@Size(min=N, max=M)` en DTO + `@Column(length=M)` en JPA + `VARCHAR(M)` en Flyway + validación en constructor del Aggregate |
+| Obligatorio | `@NotBlank` o `@NotNull` en DTO + `@Column(nullable=false)` en JPA + `NOT NULL` en Flyway + validación en constructor |
+| No modificable | NO se genera setter ni método `cambiar{Atributo}()` en la entidad |
+| Autogenerado (UUID) | `UUID.randomUUID()` dentro de `build(...)` |
+| Limpiar espacios | `.trim()` en el factory `build(...)` antes de validar |
+| Sensible | No se incluye en `toString()`, no se loguea, no se devuelve en DTOs salvo necesidad explícita |
+| Combinación única | `UNIQUE` constraint en Flyway + validación de unicidad en use case antes de persistir |
 
 ### Eventos de Dominio que emite
 | Evento | Clase | Routing Key RabbitMQ | Cuándo se emite |
@@ -368,33 +445,45 @@ Para cada integración externa, documenta:
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/model/{Entidad}.java` | Entidad (Aggregate Root) | {descripción} — extiende `AggregateRoot` |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/event/{Entidad}CreadaEvent.java` | Evento de dominio | {descripción} — extiende `DomainEvent` |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/port/in/{Accion}{Entidad}UseCase.java` | Interface | {descripción} |
-| domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/port/out/{Entidad}RepositoryPort.java` | Interface | {descripción} |
+| domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/port/out/{Entidad}RepositoryPort.java` | Interface | Puerto de salida. **Sus métodos retornan entidades de dominio (`{Entidad}` o `Page<{Entidad}>`), NUNCA DTOs de aplicación.** |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/exception/{Entidad}NoEncontradaException.java` | Exception | extiende `DomainException` de `shared:exceptions` |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/dto/{Accion}{Entidad}RequestDTO.java` | DTO | {descripción} |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/dto/{Entidad}ResponseDTO.java` | DTO | {descripción} |
-| application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/usecase/{Accion}{Entidad}UseCaseImpl.java` | UseCase Impl | {descripción} — drena eventos de dominio tras persistir |
+| application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/usecase/{Accion}{Entidad}UseCaseImpl.java` | UseCase Impl | {descripción} — recibe entidades de dominio del repositorio y las convierte a DTOs aquí. Drena eventos tras persistir (solo en HUs de escritura). |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/in/web/{Entidad}Controller.java` | Controller | {descripción} — `@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement` (ADR-011) |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}JpaEntity.java` | JPA Entity | `@Table(name = "...")` (sin atributo `schema` — cada contexto tiene su propia BD) |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}JpaRepository.java` | JPA Repo | {descripción} |
-| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}RepositoryAdapter.java` | Adapter | usa `rebuild(...)` al reconstruir desde JPA |
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/out/persistence/{Entidad}RepositoryAdapter.java` | Adapter | **Convierte JPA Entity → entidad de dominio usando `{Entidad}.rebuild(...)`. NUNCA convierte directamente JPA Entity → DTO de aplicación** (eso es responsabilidad del use case). |
 | infrastructure | `{contexto}/src/main/resources/db/migration/V{n}__{descripcion}.sql` | Flyway | tablas sin prefijo de schema — cada contexto tiene su propia BD |
+
+> ## ⚠️ Regla DDD inviolable: el flujo de datos siempre pasa por el dominio
+>
+> En **toda HU** (escritura, consulta o mixta), el flujo de datos respeta esta cadena:
+>
+> ```
+> JPA Entity  →  {Entidad} (dominio, vía rebuild)  →  {Entidad}ResponseDTO o ResumenDTO
+>      ↑                    ↑                                   ↑
+>   adapter             adapter (rebuild)                    use case
+> ```
+>
+> **Saltarse el dominio en consultas (JPA Entity → DTO directamente) es una violación de DDD estricto** — aunque sea tentador "para optimizar". Si el contexto usa AggregateRoot, **toda lectura desde BD pasa por la entidad de dominio**. La conversión a DTO es responsabilidad exclusiva del use case, nunca del adapter de repositorio.
 
 ### Manejo de Errores HTTP (`@ExceptionHandler`) — OBLIGATORIO si se introducen excepciones nuevas
 
 > Toda excepción de dominio definida en este plan debe tener su `@ExceptionHandler`
-> en el `GlobalExceptionHandler` del contexto, mapeada al código HTTP correcto.
+> en el `{Contexto}GlobalExceptionHandler` del contexto, mapeada al código HTTP correcto.
 > **No registrar la excepción = caída en `handleGeneral` = 500**, lo cual es siempre
 > incorrecto para una violación de regla de negocio.
 
 **Estado actual del proyecto:**
-- `seguridad` ya tiene `GlobalExceptionHandler` → solo añadir `@ExceptionHandler` para la nueva excepción.
+- `seguridad` ya tiene `SeguridadGlobalExceptionHandler` → solo añadir `@ExceptionHandler` para la nueva excepción.
 - Otros contextos (`fichas`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones`) **no lo tienen** → crear el handler completo si esta HU introduce la primera excepción de dominio.
 
 | Capa | Ruta | Tipo | Acción | Mapeo HTTP |
 |------|------|------|--------|------------|
-| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/in/web/GlobalExceptionHandler.java` | Handler | {CREAR si el contexto no lo tiene / MODIFICAR si ya existe} | añadir `@ExceptionHandler({Entidad}{Tipo}Exception.class)` → {código HTTP según tabla del skill} |
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/in/web/{Contexto}GlobalExceptionHandler.java` | Handler | {CREAR si el contexto no lo tiene / MODIFICAR si ya existe} | añadir `@ExceptionHandler({Entidad}{Tipo}Exception.class)` → {código HTTP según tabla del skill}. Nombre del archivo y clase con prefijo del contexto en PascalCase (ej. `SeguridadGlobalExceptionHandler`, `FichasGlobalExceptionHandler`). Ver tabla completa en el skill. |
 
-> **Mapeo estándar** (ver sección "GlobalExceptionHandler — Patrón Canónico" del skill):
+> **Mapeo estándar** (ver sección "{Contexto}GlobalExceptionHandler — Patrón Canónico" del skill):
 > - `*NoEncontrad*Exception` → 404
 > - `*Invalid*Exception` / `Parametro*Invalido` → 400
 > - `*NoAutorizad*Exception` → 403
@@ -425,7 +514,7 @@ Para cada integración externa, documenta:
 - **Responsabilidad:** {descripción}
 - **Features Java 21 aplicables:** {si aplica — ej. "Value Object como `record`", "estados como `sealed interface`", "SQL con text blocks"; omitir si no aplica}
 - **Métodos principales:**
-   - `{metodo}({parametros}): {retorno}` — {descripción breve}
+    - `{metodo}({parametros}): {retorno}` — {descripción breve}
 - **Dependencias:** {lista de clases/interfaces que usa}
 
 {Repetir para cada archivo del árbol}
@@ -438,7 +527,7 @@ Para cada archivo de tipo Controller, añadir además:
 - **Endpoints documentados:**
 
   | Método del Controller | `@Operation(summary)` | Códigos `@ApiResponse` | `@SecurityRequirement` |
-    |-----------------------|-----------------------|------------------------|------------------------|
+          |-----------------------|-----------------------|------------------------|------------------------|
   | `{metodo}` | `"{resumen corto < 10 palabras}"` | 200/201, 400, 401, 403, 404 | `bearerAuth` (omitir si es público) |
 
 - **Nota:** Los endpoints públicos (login, refresh, validate) omiten `@SecurityRequirement`.
@@ -596,7 +685,7 @@ ejemplos detallados.
 - [ ] Puerto de entrada (`{Accion}{Entidad}UseCase`) definido
 - [ ] Puerto de salida (`{Entidad}RepositoryPort`) definido
 - [ ] Excepciones de dominio definidas, extienden `DomainException` y tienen `errorCode`
-- [ ] **Toda excepción nueva registrada en `GlobalExceptionHandler` del contexto** con `@ExceptionHandler` y código HTTP correcto (ver mapeo en el skill). Si el contexto no tenía handler aún, se creó. Ningún test de controller espera 500 para inputs inválidos.
+- [ ] **Toda excepción nueva registrada en `{Contexto}GlobalExceptionHandler` del contexto** con `@ExceptionHandler` y código HTTP correcto (ver mapeo en el skill). Si el contexto no tenía handler aún, se creó con el nombre prefijado correcto. Ningún test de controller espera 500 para inputs inválidos.
 - [ ] DTOs con `toDomain()` / `fromDomain()` y anotaciones Jakarta Validation
 - [ ] Caso de uso (`{Accion}{Entidad}UseCaseImpl`) con `@RequiredArgsConstructor`, `@Transactional` y drenado de eventos
 - [ ] Controller REST con `@Valid @RequestBody` y roles Keycloak configurados con `@PreAuthorize`
@@ -638,11 +727,13 @@ ejemplos detallados.
 6. **Usa rutas absolutas** desde la raíz del monorepo en todos los archivos.
 7. **Respeta la dirección de dependencias:** Domain ← Application ← Infrastructure.
 8. **DDD estricto:** toda entidad raíz debe extender `AggregateRoot` (excepto `seguridad`). Documenta siempre en el plan (sección 4) qué eventos emite.
-9. **Integraciones externas:** si la HU toca Keycloak, SMTP, S3, Redis con lógica propia, o servicios HTTP externos, el plan **debe** incluir la sección 5 con el puerto abstracto (`domain/port/out/`) y el adaptador concreto (`infrastructure/adapter/out/{tipo}/`). Ninguna regla de negocio puede vivir en el adaptador — solo traducción entre mundos.
-10. **Si la HU toca más de un bounded context**, genera una sección del plan por cada contexto afectado.
-11. **Comunicación entre contextos = evento RabbitMQ.** Nunca dependencia directa.
-12. **Valida nombres** contra las convenciones del skill `arquisoft-context` antes de incluirlos en el plan.
-13. **El plan es el contrato:** debe ser suficientemente detallado para implementarse sin ambigüedades.
-14. **Guarda el plan** como `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` al finalizar.
-15. **Incluye en el Metadata** qué archivos del repo de documentación fueron consultados y la confirmación `Skill arquisoft-context cargado: ✅`.
-16. **La sección 13 (Trazabilidad)** se incluye siempre con todas las etapas en estado `⏳ Pendiente`.
+9. **Verificación de existencia de la entidad raíz (Paso 4.2 del Protocolo de Carga):** antes de generar el árbol de archivos, verifica si `domain/model/{Entidad}.java` ya existe en el código del contexto. Si NO existe (primera HU del contexto que la toca), inclúyela como archivo a CREAR junto con su `{Entidad}CreadaEvent` — incluso si la HU es de Consulta. Sin la entidad raíz, el puerto del repositorio no puede retornarla y el adapter no puede usar `rebuild(...)`.
+10. **Flujo de datos JPA → dominio → DTO (regla DDD inviolable):** el puerto `{Entidad}RepositoryPort` retorna entidades de dominio (`{Entidad}` o `Page<{Entidad}>`), nunca DTOs. El adapter convierte JPA Entity → entidad de dominio con `rebuild(...)`. El use case convierte entidad de dominio → DTO de respuesta. **Ningún plan puede saltarse este flujo, ni siquiera para optimizar consultas.** Si una HU justifica saltarse el dominio (CQRS query side), debe documentarse explícitamente en la sección 5 como decisión arquitectónica, no asumirse silenciosamente.
+11. **Integraciones externas:** si la HU toca Keycloak, SMTP, S3, Redis con lógica propia, o servicios HTTP externos, el plan **debe** incluir la sección 5 con el puerto abstracto (`domain/port/out/`) y el adaptador concreto (`infrastructure/adapter/out/{tipo}/`). Ninguna regla de negocio puede vivir en el adaptador — solo traducción entre mundos.
+12. **Si la HU toca más de un bounded context**, genera una sección del plan por cada contexto afectado.
+13. **Comunicación entre contextos = evento RabbitMQ.** Nunca dependencia directa.
+14. **Valida nombres** contra las convenciones del skill `arquisoft-context` antes de incluirlos en el plan.
+15. **El plan es el contrato:** debe ser suficientemente detallado para implementarse sin ambigüedades.
+16. **Guarda el plan** como `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` al finalizar.
+17. **Incluye en el Metadata** qué archivos del repo de documentación fueron consultados y la confirmación `Skill arquisoft-context cargado: ✅`.
+18. **La sección 13 (Trazabilidad)** se incluye siempre con todas las etapas en estado `⏳ Pendiente`.

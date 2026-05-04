@@ -1,7 +1,28 @@
 dependencies {
     implementation project(':fichas:domain')
     implementation project(':fichas:application')
-    implementation "org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}"
+    implementation project(':shared:domain')
+    implementation project(':shared:amqp')
+    implementation project(':shared:exceptions')
+    implementation project(':shared:web')
+
+    // Spring Security (para @PreAuthorize y @EnableMethodSecurity)
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+
+    // Database
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
+    runtimeOnly "org.postgresql:postgresql"
+
+    // OpenAPI / Swagger (ADR-011)
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
+
+    // Testing — Spring Boot 4.x: @DataJpaTest y @WebMvcTest requieren modulos separados
+    testImplementation "org.springframework.boot:spring-boot-starter-data-jpa-test"
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation "com.h2database:h2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
-
-

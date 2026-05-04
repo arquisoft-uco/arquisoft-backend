@@ -7,7 +7,6 @@ include 'shared:domain'
 include 'shared:redis'
 include 'shared:amqp'
 include 'shared:web'
-include 'shared:postgres'
 include 'shared:validation'
 include 'shared:exceptions'
 

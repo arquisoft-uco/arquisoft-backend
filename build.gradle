@@ -2,8 +2,14 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'org.springframework.boot' version "${springBootVersion}"
-    id 'io.spring.dependency-management' version '1.1.7'
+    id 'io.spring.dependency-management' version "${springManagement}"
     id "org.springdoc.openapi-gradle-plugin" version "${openapiVersion}"
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
 }
 
 group = 'com.arquisoft'
@@ -31,21 +37,45 @@ repositories {
     mavenCentral()
 }
 
+// ==================== DEPENDENCY MANAGEMENT (BOM + OVERRIDES PUNTUALES) ====================
+// El BOM de Spring Boot 4.0.5 gobierna la mayoria de versiones. Los overrides aqui son
+// para librerias que el BOM no gestiona o donde el equipo necesita una version especifica
+// por razones de trazabilidad/compatibilidad documentada.
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+    }
+    dependencies {
+        // PostgreSQL driver: pin explicito por compatibilidad con PostgreSQL 18.x del docker-compose
+        dependency "org.postgresql:postgresql:${postgresVersion}"
+
+        // OpenAPI / Swagger UI: el BOM no gestiona springdoc
+        dependency "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+
+        // JWT (jjwt 0.12.x se publica como tres artefactos separados, ninguno gestionado por el BOM)
+        dependency "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+        dependency "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+        dependency "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
+        // Rate Limiting (no gestionado por el BOM)
+        dependency "com.github.vladimir-bukhtoyarov:bucket4j-core:${bucket4jVersion}"
+    }
+}
+
 // ==================== APLICACIÓN PRINCIPAL ====================
 dependencies {
-    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-amqp:${springBootVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-amqp"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
 
-    // Flyway — declarado aquí para que esté en el classpath del módulo principal.
-    // flyway-database-postgresql es necesario en Flyway 11.x para soportar PostgreSQL
-    // (incluyendo PostgreSQL 18.x). Sin este módulo, Flyway lanza "Unsupported Database".
-    implementation "org.flywaydb:flyway-core:${flywaydbVersion}"
-    implementation "org.flywaydb:flyway-database-postgresql:${flywaydbVersion}"
+    // Flyway — version gestionada por el BOM de Spring Boot 4.0.5 (12.4.0).
+    // flyway-database-postgresql es necesario en Flyway 11+ para soportar PostgreSQL.
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
 
-    // OpenAPI / Swagger UI (ADR-011) — va aquí porque describe la API ensamblada completa
-    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
-    
+    // OpenAPI / Swagger UI (ADR-011) — describe la API ensamblada completa
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
+
     // Incluir todos los módulos de infraestructura (contextos)
     subprojects.each { subproject ->
         if (subproject.name.endsWith('infrastructure')) {
@@ -53,7 +83,7 @@ dependencies {
         }
     }
 
-    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.junit.jupiter:junit-jupiter:${jUnitVersion}"
 }
 
@@ -71,6 +101,22 @@ bootJar {
 subprojects { subproject ->
     apply plugin: 'java'
     apply plugin: 'checkstyle'
+    apply plugin: 'io.spring.dependency-management'
+
+    // Mismos BOM y overrides en cada subproyecto para garantizar consistencia transversal.
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        }
+        dependencies {
+            dependency "org.postgresql:postgresql:${postgresVersion}"
+            dependency "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+            dependency "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+            dependency "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+            dependency "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+            dependency "com.github.vladimir-bukhtoyarov:bucket4j-core:${bucket4jVersion}"
+        }
+    }
 
     checkstyle {
         toolVersion = '10.12.5'
@@ -81,20 +127,20 @@ subprojects { subproject ->
 
     if (subproject.name.endsWith('application') || subproject.name.endsWith('infrastructure')) {
         dependencies {
-            implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+            implementation "org.springframework.boot:spring-boot-starter-web"
 
             compileOnly "org.projectlombok:lombok:${lombokVersion}"
-
             annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-            testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+            testImplementation "org.springframework.boot:spring-boot-starter-test"
         }
     }
 
-    // Unique GAV per context: e.g. com.arquisoft.seguridad:domain avoids collision with com.arquisoft.shared:domain
+    // Unique GAV per context: e.g. com.arquisoft.seguridad:domain
+    // evita colision con com.arquisoft.shared:domain
     if (subproject.parent != rootProject) {
         group = "${rootProject.group}.${subproject.parent.name}"
-        // Unique JAR name: e.g. seguridad-infrastructure-1.0.0.jar to avoid bootJar collision
+        // Unique JAR name: e.g. seguridad-infrastructure-1.0.0.jar
         base {
             archivesName = "${subproject.parent.name}-${subproject.name}"
         }
@@ -113,7 +159,7 @@ subprojects { subproject ->
 
     dependencies {
         testImplementation platform("org.junit:junit-bom:${jUnitVersion}")
-        testImplementation "org.junit.jupiter:junit-jupiter:${jUnitVersion}"
+        testImplementation "org.junit.jupiter:junit-jupiter"
     }
 
     test {
@@ -127,6 +173,6 @@ subprojects { subproject ->
     }
 
     compileJava {
-        options.compilerArgs.add('-parameters')
+        options.compilerArgs.addAll(['-parameters', '-Xlint:deprecation'])
     }
 }

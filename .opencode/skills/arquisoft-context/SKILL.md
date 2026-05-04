@@ -1,7 +1,7 @@
 ---
 name: arquisoft-context
 description:
-   Contexto autoritativo del proyecto Arquisoft Backend para subagentes. Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier Historia de Usuario o Técnica. Contiene el stack exacto verificado, las convenciones de arquitectura hexagonal + DDD, la regla estricta de AggregateRoot, el mapeo contexto → base de datos PostgreSQL, la guía de uso de features de Java 21 y las plantillas de código canónicas. Este skill es la ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md, README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
+  Contexto autoritativo del proyecto Arquisoft Backend para subagentes. Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier Historia de Usuario o Técnica. Contiene el stack exacto verificado, las convenciones de arquitectura hexagonal + DDD, la regla estricta de AggregateRoot, el mapeo contexto → base de datos PostgreSQL, la guía de uso de features de Java 21 y las plantillas de código canónicas. Este skill es la ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md, README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
 ---
 
 # Skill: arquisoft-context — Contexto Autoritativo para Subagentes
@@ -97,7 +97,7 @@ Domain  ←  Application  ←  Infrastructure
 | Módulo | Paquete base | Clases/Interfaces clave |
 |---|---|---|
 | `shared:domain` | `com.arquisoft.shared.domain` | `AggregateRoot`, `DomainEvent` |
-| `shared:exceptions` | `com.arquisoft.shared.exceptions` | `DomainException`, `GlobalExceptionHandler` |
+| `shared:exceptions` | `com.arquisoft.shared.exceptions` | `DomainException` (clase base de excepciones de dominio). Los handlers concretos viven en cada contexto como `{Contexto}GlobalExceptionHandler` (ver sección "{Contexto}GlobalExceptionHandler — Patrón Canónico"). |
 | `shared:amqp` | `com.arquisoft.shared.amqp` | `EventPublisher` (interfaz) |
 | `shared:postgres` | `com.arquisoft.shared.postgres` | `BaseRepository` (JPA) |
 | `shared:redis` | `com.arquisoft.shared.redis` | `RedisClient` |
@@ -123,7 +123,7 @@ Domain  ←  Application  ←  Infrastructure
     │   ├── in/
     │   │   ├── web/                 # Controllers REST + componentes web globales
     │   │   │   ├── {Entidad}Controller.java
-    │   │   │   └── GlobalExceptionHandler.java   # @RestControllerAdvice (si aplica)
+    │   │   │   └── {Contexto}GlobalExceptionHandler.java   # @RestControllerAdvice (si aplica)
     │   │   └── messaging/           # EventListeners RabbitMQ (si el contexto escucha eventos)
     │   │       └── {Entidad}EventListener.java
     │   └── out/
@@ -152,7 +152,7 @@ La consistencia (siempre subcarpeta) prevalece sobre la simplicidad (carpeta pla
 | Componente | Ubicación | Tipo Spring |
 |---|---|---|
 | `{Entidad}Controller` | `adapter/in/web/` | `@RestController` |
-| `GlobalExceptionHandler` | `adapter/in/web/` | `@RestControllerAdvice` |
+| `{Contexto}GlobalExceptionHandler` | `adapter/in/web/` | `@RestControllerAdvice` |
 | Interceptores REST específicos del contexto | `adapter/in/web/` | clase con `HandlerInterceptor` |
 | Filtros HTTP (cross-cutting, ej. rate limit) | `infrastructure/filter/` | `@Component` con `Filter` |
 | `OpenApiConfig`, `SecurityConfig`, `RabbitMQConfig` | `infrastructure/config/` | `@Configuration` |
@@ -203,7 +203,7 @@ Si una misma clase responde "sí" a dos preguntas, está mezclando responsabilid
 | Casos de uso (qué se invoca y en qué orden) | `application/usecase/` | "persistir → drenar eventos → publicar → limpiar" |
 | DTOs de entrada/salida | `application/dto/` | `CrearFichaRequestDTO`, `FichaResponseDTO` |
 | Controllers REST | `infrastructure/adapter/in/web/` | `FichaController` (`@RestController`) |
-| Advice global de errores web | `infrastructure/adapter/in/web/` | `GlobalExceptionHandler` (`@RestControllerAdvice`) |
+| Advice global de errores web | `infrastructure/adapter/in/web/` | `{Contexto}GlobalExceptionHandler` (`@RestControllerAdvice`) |
 | Listeners RabbitMQ | `infrastructure/adapter/in/messaging/` | `FichaEventListener` (`@RabbitListener`) |
 | Implementaciones concretas de puertos out | `infrastructure/adapter/out/{tipo}/` | `FichaRepositoryAdapter` (en `persistence/`), `KeycloakAuthoritiesAdapter` (en `security/`) |
 | Detalles de frameworks | `infrastructure/` | JPA `@Entity`, Spring `@Configuration`, RabbitMQ `@RabbitListener` |
@@ -1000,11 +1000,27 @@ public class FichaController {
 
 ---
 
-### GlobalExceptionHandler — Patrón Canónico (uno por contexto)
+### {Contexto}GlobalExceptionHandler — Patrón Canónico (uno por contexto, nombre prefijado)
 
-Cada bounded context que **defina excepciones de dominio propias** debe tener su propio `GlobalExceptionHandler` en `infrastructure/adapter/in/web/GlobalExceptionHandler.java`. Ahí se mapean las excepciones del dominio a códigos HTTP. **Ninguna excepción de dominio debe caer en `handleGeneral(Exception ex)` (que retorna 500)** — eso indica que falta su `@ExceptionHandler` específico.
+Cada bounded context que **defina excepciones de dominio propias** debe tener su propio handler nombrado con el prefijo del contexto en PascalCase: `{Contexto}GlobalExceptionHandler`. El archivo se ubica en `infrastructure/adapter/in/web/{Contexto}GlobalExceptionHandler.java`. Ahí se mapean las excepciones del dominio a códigos HTTP. **Ninguna excepción de dominio debe caer en `handleGeneral(Exception ex)` (que retorna 500)** — eso indica que falta su `@ExceptionHandler` específico.
 
-**Estado actual del proyecto:** solo `seguridad` tiene `GlobalExceptionHandler`. Los demás contextos **no lo tienen aún** — se crearán cuando aparezca su primera excepción de dominio.
+> **Por qué el prefijo del contexto:** Spring Boot detecta múltiples `@RestControllerAdvice` con el mismo nombre simple de clase (`GlobalExceptionHandler`) en distintos paquetes y genera conflicto al registrar los beans en runtime, aunque los paquetes sean distintos. Prefijar con el nombre del contexto resuelve el conflicto y mejora la legibilidad en stack traces.
+
+#### Tabla de nombres por contexto
+
+| Contexto Gradle | Nombre del handler | Archivo |
+|---|---|---|
+| `seguridad` | `SeguridadGlobalExceptionHandler` | `seguridad/.../adapter/in/web/SeguridadGlobalExceptionHandler.java` |
+| `fichas` | `FichasGlobalExceptionHandler` | `fichas/.../adapter/in/web/FichasGlobalExceptionHandler.java` |
+| `proyectos` | `ProyectosGlobalExceptionHandler` | `proyectos/.../adapter/in/web/ProyectosGlobalExceptionHandler.java` |
+| `artefactos` | `ArtefactosGlobalExceptionHandler` | `artefactos/.../adapter/in/web/ArtefactosGlobalExceptionHandler.java` |
+| `repositorio_artefactos` | `RepositorioArtefactosGlobalExceptionHandler` | `repositorio_artefactos/.../adapter/in/web/RepositorioArtefactosGlobalExceptionHandler.java` |
+| `entregables` | `EntregablesGlobalExceptionHandler` | `entregables/.../adapter/in/web/EntregablesGlobalExceptionHandler.java` |
+| `evaluaciones` | `EvaluacionesGlobalExceptionHandler` | `evaluaciones/.../adapter/in/web/EvaluacionesGlobalExceptionHandler.java` |
+
+**Regla de PascalCase:** los contextos con underscore en su nombre Gradle (`repositorio_artefactos`) se convierten a PascalCase eliminando el underscore (`RepositorioArtefactos`).
+
+**Estado actual del proyecto:** solo `seguridad` tiene su handler implementado (como `SeguridadGlobalExceptionHandler`). Los demás contextos **no lo tienen aún** — se crearán cuando aparezca su primera excepción de dominio, ya con el nombre prefijado.
 
 #### Mapeo estándar Excepción → Código HTTP
 
@@ -1037,12 +1053,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice(basePackages = "com.arquisoft.{contexto}")
-public class GlobalExceptionHandler {
+public class {Contexto}GlobalExceptionHandler {
 
     @ExceptionHandler({Entidad}NoEncontradaException.class)
     public ResponseEntity<ErrorResponseDTO> handleNoEncontrada(
             {Entidad}NoEncontradaException ex,
-            HttpServletRequest request) {
+    HttpServletRequest request) {
         log.warn("Recurso no encontrado: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponseDTO.builder()

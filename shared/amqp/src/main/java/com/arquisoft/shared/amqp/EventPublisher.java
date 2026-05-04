@@ -1,22 +1,16 @@
 package com.arquisoft.shared.amqp;
 
+import com.arquisoft.shared.domain.DomainEvent;
+
 /**
- * Publicador de eventos de dominio a través de RabbitMQ.
- * Los contextos usan esto para publicar eventos de dominio.
+ * Publicador de eventos de dominio a RabbitMQ.
+ * Cada evento conoce su routing key vía getRoutingKey().
  */
 public interface EventPublisher {
-    /**
-     * Publica un evento de dominio.
-     */
-    void publish(Object event);
 
     /**
-     * Publica un evento de dominio con una ruta específica.
+     * Publica un evento de dominio al exchange arquisoft.events
+     * usando la routing key que devuelve event.getRoutingKey().
      */
-    void publish(String routingKey, Object event);
-
-    /**
-     * Publica múltiples eventos.
-     */
-    void publishBatch(java.util.List<?> events);
+    void publish(DomainEvent event);
 }
