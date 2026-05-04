@@ -474,4 +474,4 @@ HU pequeña (1 endpoint, 1 entidad) → 10–15 tests esperados. Esta HU crea la
 | Tests      | @tester             | ✅ Completado | 2026-05-04 | 10 tests pasando (3 domain + 2 application + 2 repository + 4 controller) — JaCoCo no configurado en submódulos |
 | Validación | @validator-analyze  | ✅ Completado | 2026-05-04 | Score: 98/100 — APROBADO |
 | Reporte    | @validator-report   | ✅ Completado | 2026-05-04 | /.workspace/validator/validator-HU-160.md |
-| Commit     | @commit             | ⏳ Pendiente |       |       |
+| Commit     | @commit             | ✅ Completado | 2026-05-04 | Hash: e8b486c |

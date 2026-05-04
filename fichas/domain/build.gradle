@@ -1,1 +1,14 @@
-// Configuración automática desde build.gradle raíz
+dependencies {
+    implementation project(':shared:domain')
+    implementation project(':shared:exceptions')
+
+    // Domain puro: sin dependencias de framework
+    // - Las excepciones de dominio extienden DomainException (shared:exceptions)
+    // - FichaPerfil extiende AggregateRoot (shared:domain)
+    // - FichaPerfilCreadaEvent extiende DomainEvent (shared:domain)
+
+    // Test: AssertJ + JUnit launcher (versiones gestionadas por BOM heredado del raiz)
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+}

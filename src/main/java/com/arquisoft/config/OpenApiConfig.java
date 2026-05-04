@@ -99,7 +99,7 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
             .group("02-fichas")
             .displayName("Fichas de Perfil")
-            .pathsToMatch("/fichas/**")
+            .pathsToMatch("/fichas-perfil/**")
             .build();
     }
 

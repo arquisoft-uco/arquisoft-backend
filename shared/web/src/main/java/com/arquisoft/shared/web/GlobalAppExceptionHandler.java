@@ -1,15 +1,15 @@
-package com.arquisoft.seguridad.infrastructure.adapter.in.web;
+package com.arquisoft.shared.web;
 
-import com.arquisoft.seguridad.application.dto.ErrorResponseDTO;
-import com.arquisoft.seguridad.domain.exception.AuthenticationException;
-import com.arquisoft.seguridad.domain.exception.InvalidCredentialsException;
-import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.validation.FieldError;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,68 +20,41 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Manejador global de excepciones para el módulo de seguridad.
- * Proporciona respuestas de error estandarizadas para todas las excepciones.
+ * Manejador global de excepciones cross-cutting para toda la aplicación.
+ * Cubre Spring Security, validación, parsing y fallback genérico.
+ *
+ * <p>Se registra con la menor precedencia ({@code LOWEST_PRECEDENCE}) para que
+ * los handlers de cada contexto (anotados con {@code basePackages}) siempre
+ * ganen si capturan la misma excepción.</p>
  */
 @Slf4j
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+@Order(Ordered.LOWEST_PRECEDENCE)
+public class GlobalAppExceptionHandler {
 
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ErrorResponseDTO> handleInvalidCredentials(
-            InvalidCredentialsException ex, 
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAuthorizationDenied(
+            AuthorizationDeniedException ex,
             HttpServletRequest request) {
-        
-        log.warn("Invalid credentials: {}", ex.getMessage());
-        
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponseDTO.builder()
-                        .error("Unauthorized")
-                        .message(ex.getMessage())
-                        .status(HttpStatus.UNAUTHORIZED.value())
-                        .path(request.getRequestURI())
-                        .build());
-    }
 
-    @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<ErrorResponseDTO> handleInvalidToken(
-            InvalidTokenException ex, 
-            HttpServletRequest request) {
-        
-        log.warn("Invalid token: {}", ex.getMessage());
-        
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponseDTO.builder()
-                        .error("Unauthorized")
-                        .message(ex.getMessage())
-                        .status(HttpStatus.UNAUTHORIZED.value())
-                        .path(request.getRequestURI())
-                        .build());
-    }
+        log.warn("Authorization denied (method-level): {}", ex.getMessage());
 
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponseDTO> handleAuthentication(
-            AuthenticationException ex, 
-            HttpServletRequest request) {
-        
-        log.error("Authentication error: {}", ex.getMessage());
-        
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ErrorResponseDTO.builder()
-                        .error("Unauthorized")
-                        .message(ex.getMessage())
-                        .status(HttpStatus.UNAUTHORIZED.value())
+                        .error("Forbidden")
+                        .message("No tienes permisos para acceder a este recurso")
+                        .status(HttpStatus.FORBIDDEN.value())
                         .path(request.getRequestURI())
                         .build());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponseDTO> handleAccessDenied(
-            AccessDeniedException ex, 
+            AccessDeniedException ex,
             HttpServletRequest request) {
-        
+
         log.warn("Access denied: {}", ex.getMessage());
-        
+
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ErrorResponseDTO.builder()
                         .error("Forbidden")
@@ -92,18 +65,22 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponseDTO> handleValidation(
-            MethodArgumentNotValidException ex, 
+    public ResponseEntity<ErrorResponseDTO> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
             HttpServletRequest request) {
-        
+
         List<ErrorResponseDTO.FieldErrorDTO> fieldErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .map(this::mapFieldError)
+                .map(fe -> ErrorResponseDTO.FieldErrorDTO.builder()
+                        .field(fe.getField())
+                        .message(fe.getDefaultMessage())
+                        .rejectedValue(fe.getRejectedValue())
+                        .build())
                 .collect(Collectors.toList());
 
         log.warn("Validation error: {} field(s) with errors", fieldErrors.size());
-        
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponseDTO.builder()
                         .error("Bad Request")
@@ -116,11 +93,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ErrorResponseDTO> handleMissingParameter(
-            MissingServletRequestParameterException ex, 
+            MissingServletRequestParameterException ex,
             HttpServletRequest request) {
-        
+
         log.warn("Missing parameter: {}", ex.getParameterName());
-        
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponseDTO.builder()
                         .error("Bad Request")
@@ -130,17 +107,50 @@ public class GlobalExceptionHandler {
                         .build());
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleConstraintViolation(
+            ConstraintViolationException ex,
+            HttpServletRequest request) {
+
+        log.warn("Constraint violation in {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponseDTO.builder()
+                        .error("Parámetros inválidos")
+                        .errorCode("PARAMETRO_INVALIDO")
+                        .message(ex.getMessage())
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDTO> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex,
+            HttpServletRequest request) {
+
+        log.warn("Malformed request body in {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponseDTO.builder()
+                        .error("Bad Request")
+                        .message("Cuerpo de la petición mal formado")
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
+
     @ExceptionHandler(ResourceAccessException.class)
     public ResponseEntity<ErrorResponseDTO> handleResourceAccess(
-            ResourceAccessException ex, 
+            ResourceAccessException ex,
             HttpServletRequest request) {
-        
+
         log.error("External service connection error: {}", ex.getMessage());
-        
+
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(ErrorResponseDTO.builder()
                         .error("Service Unavailable")
-                        .message("Error al conectar con el servidor de autenticación. Intente más tarde.")
+                        .message("Error al conectar con servicio externo. Intente más tarde.")
                         .status(HttpStatus.SERVICE_UNAVAILABLE.value())
                         .path(request.getRequestURI())
                         .build());
@@ -148,11 +158,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGeneral(
-            Exception ex, 
+            Exception ex,
             HttpServletRequest request) {
-        
-        log.error("Unexpected error: {}", ex.getMessage(), ex);
-        
+
+        log.error("Unexpected error in {}: {}", request.getRequestURI(), ex.getMessage(), ex);
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseDTO.builder()
                         .error("Internal Server Error")
@@ -160,13 +170,5 @@ public class GlobalExceptionHandler {
                         .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .path(request.getRequestURI())
                         .build());
-    }
-
-    private ErrorResponseDTO.FieldErrorDTO mapFieldError(FieldError fieldError) {
-        return ErrorResponseDTO.FieldErrorDTO.builder()
-                .field(fieldError.getField())
-                .message(fieldError.getDefaultMessage())
-                .rejectedValue(fieldError.getRejectedValue())
-                .build();
     }
 }

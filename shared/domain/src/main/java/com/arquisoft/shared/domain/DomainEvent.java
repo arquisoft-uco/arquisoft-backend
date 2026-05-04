@@ -35,4 +35,10 @@ public abstract class DomainEvent {
     public String getEventType() {
         return eventType;
     }
+
+    /**
+     * Routing key con la que este evento se publica al exchange arquisoft.events.
+     * Formato esperado: '{contexto}.{entidad}.{accion}' (ej. 'fichas.ficha.creada').
+     */
+    public abstract String getRoutingKey();
 }

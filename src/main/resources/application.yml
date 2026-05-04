@@ -10,9 +10,11 @@
 spring:
   config:
     import: "optional:file:./.env.properties"
-
+  banner:
+    location: classpath:banner.txt
   application:
     name: arquisoft
+    version: 1.0.0
 
   # ==================== VIRTUAL THREADS (ADR-008) ====================
   # Java 21 + Spring Boot 4.x: habilita virtual threads en Tomcat, @Async y RabbitMQ listeners.

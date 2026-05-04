@@ -2,32 +2,37 @@ dependencies {
     implementation project(':seguridad:domain')
     implementation project(':seguridad:application')
     implementation project(':shared:exceptions')
+    implementation project(':shared:web')
 
-    // Spring Security & OAuth2
-    implementation "org.springframework.boot:spring-boot-starter-security:${springBootVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server:${springBootVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"
+    // Spring Security & OAuth2 Resource Server
+    // Nota arquitectonica: NO se usa keycloak-admin-client ni keycloak-spring-boot-starter.
+    // La validacion de JWT se hace con NimbusJwtDecoder contra las JWKs del realm de Keycloak,
+    // y el login/refresh se realiza con HTTP POST directo al token endpoint via RestTemplate.
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
 
-    // JWT
-    implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
-    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
-    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+    // JWT (parseo manual de claims realm_access.roles para mapear a UsuarioRole)
+    implementation "io.jsonwebtoken:jjwt-api"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson"
 
-    // Rate Limiting
-    implementation "com.github.vladimir-bukhtoyarov:bucket4j-core:${bucket4jVersion}"
+    // Rate Limiting (Bucket4j 7.6.0 — grupo legacy com.github.vladimir-bukhtoyarov)
+    implementation "com.github.vladimir-bukhtoyarov:bucket4j-core"
 
     // Database
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa:${springBootVersion}"
-    implementation "org.flywaydb:flyway-core:${flywaydbVersion}"
-    implementation "org.flywaydb:flyway-database-postgresql:${flywaydbVersion}"
-    runtimeOnly "org.postgresql:postgresql:${postgresVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
+    runtimeOnly "org.postgresql:postgresql"
 
     // OpenAPI / Swagger (ADR-011)
-    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
 
-    // Testing
-    testImplementation platform("org.springframework.boot:spring-boot-dependencies:${springBootVersion}")
+    // Testing — Spring Boot 4.x: @DataJpaTest y @WebMvcTest requieren modulos separados
+    testImplementation "org.springframework.boot:spring-boot-starter-data-jpa-test"
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
     testImplementation "org.springframework.security:spring-security-test"
-    testImplementation "com.h2database:h2:${h2Version}"
+    testImplementation "com.h2database:h2"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

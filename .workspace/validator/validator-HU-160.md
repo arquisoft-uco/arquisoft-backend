@@ -31,6 +31,10 @@
 > ✅ APROBADO — Score: 98/100. Sin checks bloqueantes.
 > Análisis listo para persistir en disco.
 
+**Estado:** ✅ EJECUTADO
+**Hash:** e8b486c
+**Fecha de ejecución:** 2026-05-04
+
 **Regla:** un solo check bloqueante fallado = estado RECHAZADO. No hay bloqueantes en esta HU.
 
 ---
