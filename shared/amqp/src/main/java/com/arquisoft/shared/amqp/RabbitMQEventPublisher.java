@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Implementación de {@link EventPublisher} que publica eventos de dominio
- * al exchange {@value RabbitMQConfig#EXCHANGE_NAME} usando la routing key
- * que cada evento declara en {@link DomainEvent#getRoutingKey()}.
+ * al exchange {@value RabbitMQConfig#EXCHANGE_NAME} usando el topic conceptual
+ * que cada evento declara en {@link DomainEvent#getEventTopic()} como routing key.
  */
 @Slf4j
 @Component
@@ -21,7 +21,7 @@ public class RabbitMQEventPublisher implements EventPublisher {
 
     @Override
     public void publish(DomainEvent event) {
-        String routingKey = event.getRoutingKey();
+        String routingKey = event.getEventTopic();
         try {
             rabbitTemplate.convertAndSend(
                     RabbitMQConfig.EXCHANGE_NAME,

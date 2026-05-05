@@ -5,7 +5,7 @@ description: >-
    (02-dev-agent) haya completado la implementación de una Historia de Usuario.
    Recibe el ID del plan al ser invocado (ej: @tester genera los tests para HU-160).
    Carga el skill arquisoft-context (convenciones DDD y plantillas de tests de
-   AggregateRoot) y el skill context7-stack (APIs de testing actualizadas), lee el
+   EventEmittingEntity) y el skill context7-stack (APIs de testing actualizadas), lee el
    PLAN-{HU|HT}-{ID}.md y el código implementado, genera tests JUnit 6.0.3 + Mockito
    + AssertJ agrupados por capa (domain → application → infrastructure), con cobertura
    explícita del ciclo completo de eventos de dominio (publishEvent, getUnPublishedEvents,
@@ -55,7 +55,7 @@ por capa y con aprobación explícita del usuario entre cada capa.
 
 | Skill | Propósito | Cuándo usarlo |
 |---|---|---|
-| `arquisoft-context` | Convenciones de testing: patrón AAA, nomenclatura, tests de AggregateRoot + eventos de dominio | **FASE 0 (al inicio).** Y referencia constante. |
+| `arquisoft-context` | Convenciones de testing: patrón AAA, nomenclatura, tests de EventEmittingEntity + eventos de dominio | **FASE 0 (al inicio).** Y referencia constante. |
 | `context7-stack` | APIs actualizadas de testing (JUnit 6, Mockito, AssertJ, Spring Security Test, MockMvc, DataJpaTest) | **Antes de generar tests de cada capa.** |
 
 ---
@@ -512,7 +512,7 @@ durante toda la sesión.
    Si no se indicó el ID, pregunta: **"¿Cuál es el ID del plan (HU o HT)?"**
 2. Lee el `PLAN-{HU|HT}-{ID}.md` completo — extrae:
    - Bounded context afectado
-   - Si usa AggregateRoot (sección 4 del plan)
+   - Si usa EventEmittingEntity (sección 4 del plan)
    - Eventos de dominio emitidos (sección 4 del plan)
    - Árbol de archivos implementados
    - **Tipo de Use Case** (Escritura / Consulta / Mixto) — está en la Metadata del plan
@@ -534,7 +534,7 @@ durante toda la sesión.
 
 Bounded context: {contexto}
 Tipo de Use Case: {Escritura / Consulta / Mixto}
-Usa AggregateRoot: Sí / No
+Usa EventEmittingEntity: Sí / No
 Eventos de dominio: {lista o "N/A — use case de consulta"}
 Archivos de producción encontrados: N
 Casos de prueba sugeridos en el plan: N
@@ -628,13 +628,20 @@ query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf isEmpty
 | **⭐ Limpiar eventos publicados** | `debeLimpiarEventos_cuandoClearUnPublishedEventsEsInvocado` |
 | **⭐ Evento contiene metadatos correctos** | `debeAsignarMetadatos_cuandoEventoEsCreado` |
 
-> **Regla AggregateRoot:** si la entidad del plan es un Aggregate Root (los 6 contextos de
-> negocio, excepto `seguridad`), los tests de domain **DEBEN** verificar el ciclo completo
-> de eventos: `publishEvent` → `getUnPublishedEvents` → `clearUnPublishedEvents`.
+> **Regla de eventos en tests de dominio:** si la entidad del plan extiende
+> `EventEmittingEntity` (los 6 contextos de negocio, excepto `seguridad`) **Y**
+> el plan declara eventos en su sección 4, los tests de domain DEBEN verificar
+> el ciclo completo: `publishEvent` → `getUnPublishedEvents` → `clearUnPublishedEvents`.
+>
+> Si el plan dice **"Eventos: ninguno"** (CRUD sin consumidores), estos tests
+> NO aplican — la entidad sigue extendiendo `EventEmittingEntity` por consistencia,
+> pero su `build(...)` no emite eventos. Generar tests de ciclo de eventos en ese
+> caso es sobre-testeo (anti-patrón).
 >
 > **Regla DomainEvent:** verificar que el constructor asigna automáticamente
 > `eventId` (no nulo, UUID válido), `occurredAt` (no nulo), `eventType`
-> (igual al `getClass().getSimpleName()`) y `aggregateId`.
+> (igual al `getClass().getSimpleName()`) y `aggregateId`. Verificar también
+> que `getEventTopic()` retorne el formato correcto `{contexto}.{entidad}.{accion}`.
 >
 > **Regla DomainException:** verificar que el campo `errorCode` está presente
 > y que la excepción es instancia de `DomainException` de `shared:exceptions`.

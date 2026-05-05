@@ -1,33 +1,33 @@
 ---
 name: validator-analyze
 description: >-
-  Agente de análisis de validación (parte 1 de 2 del proceso de validación).
-  Invocar después de que el implementador y/o tester hayan terminado.
-  Carga el skill arquisoft-context, lee el PLAN-{HU|HT}-{ID}.md, lee el código
-  implementado, ejecuta ./gradlew para verificar compilación, y produce un análisis
-  completo COMO MENSAJE AL USUARIO (no escribe archivos en disco).
-  Este agente solo LEE y ANALIZA — su único output al final es un mensaje estructurado
-  con el reporte completo. El usuario revisa, y luego invoca @validator-report para
-  persistir el reporte en disco. NO ejecuta git. NO escribe archivos. NO modifica
-  el plan. Solo análisis y mensaje al usuario. Invocar con:
-  "@validator-analyze analiza HU-{ID}" o "@validator-analyze analiza HT-{ID}".
+   Agente de análisis de validación (parte 1 de 2 del proceso de validación).
+   Invocar después de que el implementador y/o tester hayan terminado.
+   Carga el skill arquisoft-context, lee el PLAN-{HU|HT}-{ID}.md, lee el código
+   implementado, ejecuta ./gradlew para verificar compilación, y produce un análisis
+   completo COMO MENSAJE AL USUARIO (no escribe archivos en disco).
+   Este agente solo LEE y ANALIZA — su único output al final es un mensaje estructurado
+   con el reporte completo. El usuario revisa, y luego invoca @validator-report para
+   persistir el reporte en disco. NO ejecuta git. NO escribe archivos. NO modifica
+   el plan. Solo análisis y mensaje al usuario. Invocar con:
+   "@validator-analyze analiza HU-{ID}" o "@validator-analyze analiza HT-{ID}".
 mode: subagent
 hidden: true
 temperature: 0.1
 permission:
-  read: allow
-  glob: deny
-  grep: deny
-  edit: deny
-  bash:
-    "*": deny
-    "./gradlew :*:compileJava": allow
-    "./gradlew build -x test": allow
-    "./gradlew :*:build -x test": allow
-  webfetch: deny
-  skill:
-    "arquisoft-context": allow
-    "*": deny
+   read: allow
+   glob: deny
+   grep: deny
+   edit: deny
+   bash:
+      "*": deny
+      "./gradlew :*:compileJava": allow
+      "./gradlew build -x test": allow
+      "./gradlew :*:build -x test": allow
+   webfetch: deny
+   skill:
+      "arquisoft-context": allow
+      "*": deny
 ---
 
 # Agente Validator-Analyze — Arquisoft Backend
@@ -62,7 +62,7 @@ agente `@validator-report` que sí lo persistirá en disco.
 
 | Fuente | Propósito |
 |--------|-----------|
-| Skill `arquisoft-context` | Convenciones autoritativas del proyecto (DDD estricto, AggregateRoot, Java 21, mapeo contexto→BD, nomenclatura) — cargar en FASE 0 |
+| Skill `arquisoft-context` | Convenciones autoritativas del proyecto (DDD estricto, EventEmittingEntity, Java 21, mapeo contexto→BD, nomenclatura) — cargar en FASE 0 |
 | `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` | Qué debía implementarse (árbol de archivos, criterios de aceptación, eventos, endpoints, integraciones externas) |
 | Archivos `.java` y `.sql` generados | Verificación real del código producido — fuente primaria de verdad |
 | Archivos `*Test.java` en `src/test/` (si existen) | Tests generados por `03-test-agent` |
@@ -131,15 +131,15 @@ skill("arquisoft-context")
    Si no se indicó el ID, pregunta una sola vez: **"¿Cuál es el ID del plan a analizar (HU o HT)?"** y espera respuesta.
 2. Lee `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`.
 3. Extrae del plan:
-    - Bounded context afectado
-    - Si usa AggregateRoot (sección 4)
-    - Eventos de dominio emitidos (sección 4)
-    - Integraciones externas (sección 5, si existe)
-    - Árbol completo de archivos (sección 6)
-    - Criterios de aceptación
-    - Endpoints REST (sección 8, si aplica)
-    - Eventos RabbitMQ (sección 9, si aplica)
-    - Migración Flyway (sección 10, si aplica)
+   - Bounded context afectado
+   - Si usa EventEmittingEntity (sección 4)
+   - Eventos de dominio emitidos (sección 4)
+   - Integraciones externas (sección 5, si existe)
+   - Árbol completo de archivos (sección 6)
+   - Criterios de aceptación
+   - Endpoints REST (sección 8, si aplica)
+   - Eventos RabbitMQ (sección 9, si aplica)
+   - Migración Flyway (sección 10, si aplica)
 4. Lee cada archivo `.java` y `.sql` listado en el plan con `view`.
 
 ### FASE 2 — Aplicar Checks Nivel 1 y Nivel 2 (mental)
@@ -176,17 +176,43 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Bounded contexts NO se importan entre sí | ✅ |
 | No hay `@Bean TaskExecutor` manual (ADR-008) | ✅ |
 
-**2.2 DDD — Aggregate Root y Eventos de Dominio:**
+**2.2 DDD — EventEmittingEntity y Eventos de Dominio:**
+
+> **Determina primero qué declara el plan en su sección 4 (Eventos de Dominio):**
+> - Si el plan lista eventos concretos → aplican TODOS los checks de "con eventos" abajo.
+> - Si el plan dice **"Eventos: ninguno"** (CRUD sin consumidores) → solo aplican los checks de "sin eventos".
+>
+> Marcar checks de "con eventos" como bloqueantes en una HU declarada como "sin eventos"
+> es un FALSO POSITIVO. No reportar.
+
+**Checks comunes (siempre aplican):**
 
 | Check | Bloqueante |
 |-------|:---:|
-| Si los 6 contextos de negocio: entidad raíz extiende `AggregateRoot` | ✅ |
-| Eventos en `{contexto}/domain/event/` y extienden `DomainEvent` | ✅ |
-| Factory `build(...)` publica evento con `publishEvent(...)` | ✅ |
+| En los 6 contextos de negocio: entidad raíz extiende `EventEmittingEntity` (incluso si la HU no emite eventos — es por consistencia) | ✅ |
 | Factory `rebuild(...)` NO publica eventos | ✅ |
 | `RepositoryAdapter` usa `rebuild(...)` al reconstruir | ✅ |
-| Use case drena eventos tras persistir y llama `clearUnPublishedEvents()` | ✅ |
 | Dominio NO inyecta `EventPublisher` | ✅ |
+| Existencia de un `{Entidad}EventPublisher` local en algún contexto (en `adapter/out/messaging/` o similar) | ❌ violación bloqueante (la publicación está centralizada en `shared:amqp`) |
+
+**Checks aplicables SOLO si el plan declara eventos en sección 4:**
+
+| Check | Bloqueante |
+|-------|:---:|
+| Eventos en `{contexto}/domain/event/` y extienden `DomainEvent` | ✅ |
+| Cada `DomainEvent` implementa `getEventTopic()` con formato `{contexto}.{entidad}.{accion}` | ✅ |
+| Factory `build(...)` publica evento con `publishEvent(...)` | ✅ |
+| Use case inyecta `EventPublisher` de `com.arquisoft.shared.amqp` (NO una implementación local del contexto) | ✅ |
+| Use case drena eventos tras persistir y llama `clearUnPublishedEvents()` | ✅ |
+
+**Checks aplicables SOLO si el plan declara "Eventos: ninguno":**
+
+| Check | Bloqueante |
+|-------|:---:|
+| NO existen archivos en `{contexto}/domain/event/` para esta HU | ✅ |
+| Factory `build(...)` NO llama a `publishEvent(...)` | ✅ |
+| Use case NO inyecta `EventPublisher` | ✅ |
+| Use case NO drena ni limpia eventos | ✅ |
 
 **2.3 Entidades de dominio:**
 
@@ -204,6 +230,11 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Extienden `DomainException` y tienen `errorCode` | ✅ |
 | Ubicadas en `domain/exception/` | ✅ |
 | Registradas en `{Contexto}GlobalExceptionHandler` (con nombre prefijado, ej. `SeguridadGlobalExceptionHandler`) | ⚠️ |
+| **El handler de un contexto distinto de `seguridad` contiene `@ExceptionHandler(Exception.class)`** | ❌ violación bloqueante (cross-cutting va en `GlobalAppExceptionHandler` de `shared:web`) |
+| **El handler de un contexto distinto de `seguridad` contiene handlers de Spring Security (`AccessDeniedException`, `AuthorizationDeniedException`)** | ❌ violación bloqueante |
+| **El handler de un contexto distinto de `seguridad` contiene `MethodArgumentNotValidException`, `ConstraintViolationException`, `MissingServletRequestParameterException` o `HttpMessageNotReadableException`** | ❌ violación bloqueante |
+| Excepción a las 3 reglas anteriores: el handler de `seguridad` puede manejar excepciones de su propio dominio (`InvalidCredentialsException`, `InvalidTokenException`, `AuthenticationException` propia del dominio → 401) | ✅ |
+| Importe de `ErrorResponseDTO` desde `com.arquisoft.shared.web` (no desde el paquete del contexto) | ✅ |
 
 **2.5 DTOs:**
 
@@ -213,6 +244,10 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Validación Jakarta en request DTOs | ⚠️ |
 | `@JsonInclude(NON_NULL)` en response DTOs | ⚠️ |
 | Sufijo `DTO` | ✅ |
+| **DTOs de dominio** (Request, Response, Resumen específicos del contexto) en `{contexto}/application/dto/` con campos en **español** que reflejan el modelo enriquecido | ✅ |
+| **Existencia de `ErrorResponseDTO` o `PageResponseDTO` LOCAL en algún contexto** (en `application/dto/` o similar) | ❌ violación bloqueante (esos viven solo en `shared:web`) |
+| Imports de `ErrorResponseDTO` y `PageResponseDTO` desde `com.arquisoft.shared.web` (no desde el paquete del contexto) | ✅ |
+| DTOs de dominio renombrando atributos del modelo enriquecido a inglés (ej. campo `title` cuando el modelo dice `tituloProyecto`) | ❌ violación bloqueante |
 
 **2.6 Use cases:**
 
@@ -266,7 +301,7 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Listeners RabbitMQ (`@RabbitListener`) ubicados en `infrastructure/adapter/in/messaging/` | ✅ |
 | `@RestController` o `@RestControllerAdvice` ubicado directamente en `infrastructure/adapter/in/` (sin subcarpeta `web/`) | ❌ violación bloqueante |
 | Entidades JPA (`@Entity`) y `RepositoryAdapter` ubicados en `infrastructure/adapter/out/persistence/` | ✅ |
-| Publishers RabbitMQ ubicados en `infrastructure/adapter/out/messaging/` | ✅ |
+| Existencia de `infrastructure/adapter/out/messaging/` con publishers locales del contexto | ❌ violación bloqueante (la publicación está centralizada en `shared:amqp`) |
 | Adaptadores de integraciones externas (Keycloak, S3, SMTP) en `infrastructure/adapter/out/{tipo}/` con tipo descriptivo (`security/`, `storage/`, `notification/`) | ✅ |
 | Componentes de adapter ubicados directamente en `infrastructure/adapter/out/` (sin subcarpeta de tipo) | ❌ violación bloqueante |
 | `@Configuration` con `OpenApi`, `Security`, `RabbitMQ` ubicados en `infrastructure/config/` (no dentro de `adapter/`) | ✅ |
@@ -397,8 +432,8 @@ revise. NO lo marques como bloqueante por sí solo.
 1. Extrae de la Metadata del plan el campo "Tipo de Use Case" (si existe).
 2. Lee los archivos de test relevantes (`{Entidad}Test.java`, `{Accion}{Entidad}UseCaseImplTest.java`).
 3. Busca patrones de eventos en su contenido:
-    - Llamadas a `publishEvent`, `getUnPublishedEvents`, `clearUnPublishedEvents`.
-    - `verify(eventPublisher)`, `verify(...EventPublisher)`.
+   - Llamadas a `publishEvent`, `getUnPublishedEvents`, `clearUnPublishedEvents`.
+   - `verify(eventPublisher)`, `verify(...EventPublisher)`.
 4. Compara con el Tipo de Use Case declarado y aplica la tabla.
 
 **Reporta como bloqueante** con esta estructura:
@@ -411,6 +446,37 @@ revise. NO lo marques como bloqueante por sí solo.
   que no aplican a use cases de consulta (no hay eventos que verificar).
 - Acción requerida: eliminar tests de publishEvent, getUnPublishedEvents y clearUnPublishedEvents.
 - Referencia: skill arquisoft-context, sección "Tipos de Use Case y sus Tests".
+```
+
+**2.14 Paginación — `Page<T>` interno vs `PageResponseDTO<T>` externo (CRÍTICO si la HU es paginada):**
+
+Solo aplica si la HU es de Consulta paginada (paginación visible en el contrato HTTP).
+
+| Check | Bloqueante |
+|-------|:---:|
+| Puerto `{Entidad}RepositoryPort` retorna `Page<{Entidad}>` (record de `shared:domain`), NO `PageResponseDTO<...>` ni `org.springframework.data.domain.Page<...>` ni `Page<JpaEntity>` | ✅ |
+| Use case retorna `Page<{Entidad}ResponseDTO>` (sigue siendo `Page` de dominio) | ✅ |
+| Existencia de `PageResponseDTO` en `domain/` o `application/` de cualquier contexto | ❌ violación bloqueante |
+| Importes de `org.springframework.data.domain.Page` fuera de la capa `infrastructure/adapter/out/persistence/` | ❌ violación bloqueante |
+| Controller convierte `Page<...>` → `PageResponseDTO<...>` justo antes de retornar el `ResponseEntity` (típicamente con `PageResponseDTO.from(page)`) | ✅ |
+| `PageResponseDTO` se importa de `com.arquisoft.shared.web` (NO se crea local) | ✅ |
+
+**Cómo verificar:**
+
+1. Lee la firma del puerto (`{contexto}/domain/port/out/{Entidad}RepositoryPort.java`). Su tipo de retorno DEBE ser `Page<{Entidad}>` (de `com.arquisoft.shared.domain`), no de Spring Data ni `PageResponseDTO`.
+2. Lee el use case impl. Su tipo de retorno DEBE ser `Page<{Entidad}ResponseDTO>`. NO debe importar `PageResponseDTO`.
+3. Lee el controller. DEBE importar `PageResponseDTO` de `com.arquisoft.shared.web` y convertir el `Page<...>` recibido del use case justo antes del `ResponseEntity.ok(...)`.
+4. Verifica que en ningún lugar de `domain/` ni `application/` aparezca `PageResponseDTO`.
+
+```
+[NIVEL 2.14] — PageResponseDTO en capa equivocada
+- Archivo: {contexto}/application/dto/PageResponseDTO.java
+- Problema: PageResponseDTO es un DTO técnico genérico que vive en shared:web,
+  no en cada contexto. Su existencia local viola la regla de "DTOs técnicos
+  centralizados en shared:web" y la convención de paginación interna/externa.
+- Acción requerida: eliminar el archivo local. Usar import com.arquisoft.shared.web.PageResponseDTO
+  en el controller. Asegurarse de que el use case y el puerto retornen Page<T> de shared:domain.
+- Referencia: skill arquisoft-context, sección "Paginación — Page<T> interno y PageResponseDTO<T> externo".
 ```
 
 ### FASE 3 — Estado de Tests (sin verificación filesystem)
@@ -462,7 +528,7 @@ Imprime el siguiente reporte completo en markdown (rellenando los placeholders):
 ## Metadata
 - **ID Historia:** {HU|HT}-{ID}
 - **Bounded Context:** {contexto}
-- **Usa AggregateRoot:** {Sí / No}
+- **Usa EventEmittingEntity:** {Sí / No}
 - **Fecha de análisis:** {fecha actual}
 - **Rama propuesta:** `feature/{HU|HT}-{ID}-{descripcion_snake_case}`
 - **Analizado por:** agente validator-analyze (04a-validator-analyze)
@@ -586,9 +652,9 @@ mensaje.
 6. **Empieza el mensaje final con "📋 Análisis de validación completado — ..."** sin preámbulo.
 7. **Un bloqueante = RECHAZADO**, sin importar el score total.
 8. **Referencia exacta** en cada error — cita textualmente el plan, el skill o las convenciones.
-9. **DDD estricto:** entidad raíz sin `AggregateRoot` en los 6 contextos de negocio = bloqueante. Imports de framework en `domain/` = bloqueante. Lógica de negocio en `infrastructure/` = bloqueante.
+9. **DDD estricto:** entidad raíz sin `EventEmittingEntity` en los 6 contextos de negocio = bloqueante. Imports de framework en `domain/` = bloqueante. Lógica de negocio en `infrastructure/` = bloqueante.
 10. **Integraciones externas:** si la sección 5 del plan lista una integración externa y falta el puerto en `domain/port/out/` o el adaptador, es bloqueante.
-11. **Estructura de carpetas en adapters (sección 2.10):** los componentes web (`@RestController`, `@RestControllerAdvice`) DEBEN estar en `infrastructure/adapter/in/web/`. Los listeners RabbitMQ en `adapter/in/messaging/`. Las implementaciones JPA en `adapter/out/persistence/`. Los publishers en `adapter/out/messaging/`. Otras integraciones externas en `adapter/out/{tipo}/` con nombre descriptivo. Una violación de esta estructura es bloqueante.
+11. **Estructura de carpetas en adapters (sección 2.10):** los componentes web (`@RestController`, `@RestControllerAdvice`) DEBEN estar en `infrastructure/adapter/in/web/`. Los listeners RabbitMQ en `adapter/in/messaging/`. Las implementaciones JPA en `adapter/out/persistence/`. Otras integraciones externas en `adapter/out/{tipo}/` con nombre descriptivo. **NO existe** `adapter/out/messaging/` en los contextos — la publicación de eventos está centralizada en `shared:amqp`. Una violación de esta estructura es bloqueante.
 12. **Anti-patrones de testing (sección 2.11):** los 7 anti-patrones definidos en el skill `arquisoft-context` son bloqueantes individualmente cuando se detectan. El conteo total de tests es informativo (no bloqueante por sí solo) — solo se reporta como observación si supera el presupuesto orientativo. Aplica solo si la fila Tests del plan dice ✅ Completado.
 13. **Tests que afirman 500 (sección 2.12):** un test de controller que afirma `status().isInternalServerError()` para inputs inválidos es bloqueante — indica que falta el `@ExceptionHandler` correspondiente. Verifica que toda excepción de dominio del plan tenga su entrada en el `{Contexto}GlobalExceptionHandler` del contexto (con nombre prefijado en PascalCase, ej. `SeguridadGlobalExceptionHandler`).
 14. **Tests inapropiados para el Tipo de Use Case (sección 2.13):** si la Metadata del plan declara Tipo de Use Case = Consulta, los tests NO deben incluir ciclo de eventos del Aggregate ni `verify(eventPublisher)`. Si declara Escritura, esos tests SÍ son obligatorios. Si el plan no declara el campo, repórtalo como ⚠️ menor (versión vieja del planificador).
