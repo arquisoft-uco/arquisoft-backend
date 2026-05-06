@@ -1,10 +1,11 @@
 # ====================================================================================
 # .dockerignore — Excluye archivos innecesarios y sensibles del contexto de build
-# CRÍTICO: .env.properties contiene credenciales y NUNCA debe quedar en la imagen
+# CRÍTICO: archivos de credenciales NUNCA deben quedar en la imagen
 # ====================================================================================
 
 # --- Secretos y credenciales (OWASP A02: Cryptographic Failures) ---
 .env.properties
+.env
 *.env
 .env.*
 **/secret*

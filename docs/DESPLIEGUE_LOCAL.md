@@ -1,5 +1,15 @@
 # Despliegue local con Docker
 
+## 0. Preparar el archivo de variables de entorno
+
+Copiar la plantilla y completar con los valores reales:
+
+```bash
+cp .env.example .env
+```
+
+El archivo `.env` nunca se sube al repositorio (está en `.gitignore`).
+
 ## 1. Generar imagen
 
 ```bash
@@ -7,35 +17,24 @@ docker build -t arquisoft-backend:local .
 ```
 
 La imagen es **agnóstica al perfil** — el mismo artefacto sirve para dev y prod.
-El perfil se inyecta en tiempo de ejecución con `-e SPRING_PROFILES_ACTIVE`.
+El perfil se inyecta en tiempo de ejecución en el archivo `.env` (`SPRING_PROFILES_ACTIVE`).
 
 ## 2. Ejecutar contenedor
 
-### Perfil dev (desarrollo local)
-
 ```bash
 docker run -d --rm \
   --name arquisoft-backend \
   --network host \
-  -e SPRING_PROFILES_ACTIVE=dev \
-  -v $(pwd)/.env.properties:/app/.env.properties:ro \
+  --env-file .env \
   arquisoft-backend:local
 ```
 
-Activa: logs DEBUG, SQL visible, valores con defaults tolerantes a variables faltantes.
+El perfil activo (`dev` o `prod`) se controla con la variable `SPRING_PROFILES_ACTIVE` dentro de `.env`.
 
-### Perfil prod (producción)
-
-```bash
-docker run -d --rm \
-  --name arquisoft-backend \
-  --network host \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  -v $(pwd)/.env.properties:/app/.env.properties:ro \
-  arquisoft-backend:local
-```
-
-Activa: rate limiting (60 req/min), Swagger deshabilitado, **todas las variables de entorno son obligatorias** (sin defaults). El arranque falla con error claro si falta alguna.
+| Valor | Comportamiento |
+|---|---|
+| `dev` | Logs DEBUG, SQL visible, defaults tolerantes a variables faltantes |
+| `prod` | Rate limiting (60 req/min), Swagger deshabilitado, todas las variables son obligatorias |
 
 ## 3. Verificar que está corriendo
 
