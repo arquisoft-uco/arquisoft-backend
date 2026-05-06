@@ -42,3 +42,4 @@ logs/
 
 ### Configuracion local sensible ###
 .env.properties
+.env

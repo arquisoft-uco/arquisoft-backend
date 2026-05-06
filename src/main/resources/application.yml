@@ -1,15 +1,18 @@
 # ==============================================================================
 # CONFIGURACION BASE DE ARQUISOFT
 # ==============================================================================
-# Importa credenciales desde .env.properties (archivo local, NO versionado).
-# Si el archivo no existe, se usan los defaults (el arranque fallará
-# con mensaje claro de conexión).
-# Para crear el tuyo: cp .env.properties.example .env.properties
+# Importa credenciales desde .env o .env.properties (archivos locales, NO versionados).
+# Se pueden usar indistintamente — ambos están en .gitignore.
+#   - .env          → formato Docker (recomendado, compatible con --env-file)
+#   - .env.properties → formato Spring legado (compatibilidad con setups anteriores)
+# Para crear el tuyo: cp .env.example .env
 # ==============================================================================
 
 spring:
   config:
-    import: "optional:file:./.env.properties"
+    import:
+      - "optional:file:./.env[.properties]"
+      - "optional:file:./.env.properties"
   banner:
     location: classpath:banner.txt
   application:
