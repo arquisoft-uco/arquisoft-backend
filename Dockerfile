@@ -19,9 +19,12 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Crear grupo y usuario de sistema sin contraseña ni shell interactivo (OWASP A05)
+# /app/logs      → perfil dev/base (application.yml: logs/arquisoft.log)
+# /var/log/arquisoft → perfil prod  (application-prod.yml: /var/log/arquisoft/arquisoft.log)
 RUN addgroup -S arquisoft && \
         adduser -S -u 1000 -G arquisoft arquisoft && \
-        mkdir -p /app/logs && chown arquisoft:arquisoft /app/logs
+        mkdir -p /app/logs /var/log/arquisoft && \
+        chown arquisoft:arquisoft /app/logs /var/log/arquisoft
 # --chown evita un RUN chown separado (menos capas, sin ejecutar como root tras el COPY)
 COPY --chown=arquisoft:arquisoft --from=builder /build/app.jar app.jar
 
