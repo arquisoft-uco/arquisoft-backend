@@ -4,6 +4,7 @@ import com.arquisoft.seguridad.domain.port.out.AuthenticationPort;
 import com.arquisoft.seguridad.domain.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.exception.InvalidCredentialsException;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
+import com.arquisoft.seguridad.domain.exception.KeycloakUnavailableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -69,6 +71,9 @@ public class KeycloakAuthAdapter implements AuthenticationPort {
         } catch (HttpClientErrorException e) {
             log.error("Error de autenticacion en Keycloak: {} - {}", e.getStatusCode(), e.getMessage());
             throw new AuthenticationException("Error al comunicarse con Keycloak: " + e.getMessage());
+        } catch (ResourceAccessException e) {
+            log.error("Keycloak no disponible (timeout/red) al autenticar usuario {}: {}", email, e.getMessage());
+            throw new KeycloakUnavailableException("Servicio de autenticacion no disponible temporalmente", e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {
@@ -103,6 +108,9 @@ public class KeycloakAuthAdapter implements AuthenticationPort {
         } catch (HttpClientErrorException e) {
             log.error("Error de refresco de token en Keycloak: {} - {}", e.getStatusCode(), e.getMessage());
             throw new AuthenticationException("Error al refrescar el token: " + e.getMessage());
+        } catch (ResourceAccessException e) {
+            log.error("Keycloak no disponible (timeout/red) al refrescar token: {}", e.getMessage());
+            throw new KeycloakUnavailableException("Servicio de autenticacion no disponible temporalmente", e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {

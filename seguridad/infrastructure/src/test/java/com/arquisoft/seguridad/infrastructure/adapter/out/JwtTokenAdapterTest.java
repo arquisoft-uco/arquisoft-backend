@@ -49,7 +49,7 @@ class JwtTokenAdapterTest {
         Jwt jwt = buildJwt(Map.of(
                 "email", "estudiante@uco.edu.co",
                 "name", "Estudiante UCO",
-                "realm_access", Map.of("roles", List.of("ESTUDIANTE"))
+                "realm_access", Map.of("roles", List.of("estudiante"))
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
@@ -60,7 +60,7 @@ class JwtTokenAdapterTest {
         assertThat(userInfo).isNotNull();
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) userInfo.get("roles");
-        assertThat(roles).containsExactly("ESTUDIANTE");
+        assertThat(roles).containsExactly("estudiante");
     }
 
     @Test
@@ -69,7 +69,7 @@ class JwtTokenAdapterTest {
         Jwt jwt = buildJwt(Map.of(
                 "email", "asesor@uco.edu.co",
                 "name", "Asesor UCO",
-                "realm_access", Map.of("roles", List.of("ASESOR_FICHA"))
+                "realm_access", Map.of("roles", List.of("asesor-ficha"))
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
@@ -79,7 +79,7 @@ class JwtTokenAdapterTest {
         // Assert
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) userInfo.get("roles");
-        assertThat(roles).containsExactly("ASESOR_FICHA");
+        assertThat(roles).containsExactly("asesor-ficha");
     }
 
     @Test
@@ -88,7 +88,7 @@ class JwtTokenAdapterTest {
         Jwt jwt = buildJwt(Map.of(
                 "email", "coordinador@uco.edu.co",
                 "name", "Coordinador UCO",
-                "realm_access", Map.of("roles", List.of("ESTUDIANTE", "COORDINADOR"))
+                "realm_access", Map.of("roles", List.of("estudiante", "coordinador"))
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
@@ -98,7 +98,7 @@ class JwtTokenAdapterTest {
         // Assert
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) userInfo.get("roles");
-        assertThat(roles).hasSize(2).containsExactlyInAnyOrder("ESTUDIANTE", "COORDINADOR");
+        assertThat(roles).hasSize(2).containsExactlyInAnyOrder("estudiante", "coordinador");
     }
 
     @Test
@@ -125,7 +125,7 @@ class JwtTokenAdapterTest {
         Jwt jwt = buildJwt(Map.of(
                 "email", "jurado@uco.edu.co",
                 "name", "Jurado UCO",
-                "realm_access", Map.of("roles", List.of("JURADO")),
+                "realm_access", Map.of("roles", List.of("jurado")),
                 "resource_access", Map.of(
                         "arquisoft-backend", Map.of("roles", List.of("manage-account"))
                 )
@@ -138,7 +138,7 @@ class JwtTokenAdapterTest {
         // Assert — solo el rol de realm_access, sin duplicados de resource_access
         @SuppressWarnings("unchecked")
         List<String> roles = (List<String>) userInfo.get("roles");
-        assertThat(roles).containsExactly("JURADO");
+        assertThat(roles).containsExactly("jurado");
         assertThat(roles).doesNotContain("manage-account");
     }
 

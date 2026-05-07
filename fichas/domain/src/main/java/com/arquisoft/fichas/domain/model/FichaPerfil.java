@@ -1,8 +1,5 @@
 package com.arquisoft.fichas.domain.model;
 
-import com.arquisoft.fichas.domain.event.FichaPerfilCreadaEvent;
-import com.arquisoft.shared.domain.AggregateRoot;
-
 import java.util.UUID;
 
 /**
@@ -17,7 +14,7 @@ import java.util.UUID;
  *   <li>{@link #rebuild(UUID, String, AsesorFicha)} — reconstruye desde persistencia, sin evento.</li>
  * </ul>
  */
-public final class FichaPerfil extends AggregateRoot {
+public final class FichaPerfil {
 
     private final UUID id;
     private final String tituloProyecto;
@@ -45,9 +42,7 @@ public final class FichaPerfil extends AggregateRoot {
         }
 
         UUID id = UUID.randomUUID();
-        FichaPerfil ficha = new FichaPerfil(id, titulo, asesorFicha);
-        ficha.publishEvent(new FichaPerfilCreadaEvent(id.toString(), titulo));
-        return ficha;
+        return new FichaPerfil(id, titulo, asesorFicha);
     }
 
     /**

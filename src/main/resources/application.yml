@@ -5,6 +5,7 @@
 # Se pueden usar indistintamente — ambos están en .gitignore.
 #   - .env          → formato Docker (recomendado, compatible con --env-file)
 #   - .env.properties → formato Spring legado (compatibilidad con setups anteriores)
+#   - .env-${spring.profiles.active:dev}.properties → formato compatible desde consola
 # Para crear el tuyo: cp .env.example .env
 # ==============================================================================
 
@@ -13,6 +14,7 @@ spring:
     import:
       - "optional:file:./.env[.properties]"
       - "optional:file:./.env.properties"
+      - "optional:file:./.env-${spring.profiles.active:dev}.properties"
   banner:
     location: classpath:banner.txt
   application:
@@ -88,8 +90,8 @@ spring:
           registration:
             keycloak:
               provider: keycloak
-              client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-app}
-              client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+              client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
+              client-secret: ${KEYCLOAK_CLIENT_SECRET}
               authorization-grant-type: password
               scope: openid, profile, email
 

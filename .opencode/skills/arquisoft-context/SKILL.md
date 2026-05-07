@@ -1,7 +1,7 @@
 ---
 name: arquisoft-context
 description:
-  Contexto autoritativo del proyecto Arquisoft Backend para subagentes. Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier Historia de Usuario o Técnica. Contiene el stack exacto verificado, las convenciones de arquitectura hexagonal + DDD, la regla estricta de AggregateRoot, el mapeo contexto → base de datos PostgreSQL, la guía de uso de features de Java 21 y las plantillas de código canónicas. Este skill es la ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md, README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
+  Contexto autoritativo del proyecto Arquisoft Backend para subagentes. Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier Historia de Usuario o Técnica. Contiene el stack exacto verificado, las convenciones de arquitectura hexagonal + DDD, la regla estricta de EventEmittingEntity, el mapeo contexto → base de datos PostgreSQL, la guía de uso de features de Java 21 y las plantillas de código canónicas. Este skill es la ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md, README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
 ---
 
 # Skill: arquisoft-context — Contexto Autoritativo para Subagentes
@@ -29,7 +29,7 @@ skill("arquisoft-context")
 Tras cargarlo, el subagente tiene disponible en su contexto:
 - El stack verificado (sección "Stack Verificado")
 - La estructura hexagonal + DDD (sección "Arquitectura Hexagonal + DDD")
-- La regla estricta de AggregateRoot (sección "AggregateRoot — Regla Estricta")
+- La regla estricta de EventEmittingEntity (sección "EventEmittingEntity — Regla Estricta")
 - Mapeo contexto → base de datos PostgreSQL (sección "Mapeo Contexto Gradle → Base de Datos PostgreSQL")
 - Guía de features de Java 21 (sección "Java 21 — Uso Balanceado")
 - Plantillas canónicas (sección "Plantillas de Código")
@@ -82,7 +82,7 @@ Domain  ←  Application  ←  Infrastructure
 
 ### Bounded Contexts (7)
 
-| Contexto Gradle | GroupId base | ¿Usa AggregateRoot? |
+| Contexto Gradle | GroupId base | ¿Usa EventEmittingEntity? |
 |---|---|---|
 | `seguridad` | `com.arquisoft.seguridad` | ❌ No (transversal, delega en Keycloak) |
 | `fichas` | `com.arquisoft.fichas` | ✅ Sí |
@@ -96,13 +96,12 @@ Domain  ←  Application  ←  Infrastructure
 
 | Módulo | Paquete base | Clases/Interfaces clave |
 |---|---|---|
-| `shared:domain` | `com.arquisoft.shared.domain` | `AggregateRoot`, `DomainEvent` |
+| `shared:domain` | `com.arquisoft.shared.domain` | `EventEmittingEntity`, `DomainEvent`, `Page<T>` (record para paginación interna del dominio y application) |
 | `shared:exceptions` | `com.arquisoft.shared.exceptions` | `DomainException` (clase base de excepciones de dominio). Los handlers concretos viven en cada contexto como `{Contexto}GlobalExceptionHandler` (ver sección "{Contexto}GlobalExceptionHandler — Patrón Canónico"). |
-| `shared:amqp` | `com.arquisoft.shared.amqp` | `EventPublisher` (interfaz) |
-| `shared:postgres` | `com.arquisoft.shared.postgres` | `BaseRepository` (JPA) |
-| `shared:redis` | `com.arquisoft.shared.redis` | `RedisClient` |
-| `shared:web` | `com.arquisoft.shared.web` | `HttpClient`, filtros HTTP |
-| `shared:validation` | `com.arquisoft.shared.validation` | `@ValidEmail` y validadores |
+| `shared:amqp` | `com.arquisoft.shared.amqp` | `EventPublisher` (interfaz, firma única `void publish(DomainEvent event)`), `RabbitMQConfig`, `RabbitMQEventPublisher` (implementación). |
+| `shared:redis` | `com.arquisoft.shared.redis` | `RedisClient` (interfaz, **sin implementación todavía** — esqueleto de intención para uso futuro). |
+| `shared:web` | `com.arquisoft.shared.web` | `GlobalAppExceptionHandler`, `ErrorResponseDTO`, `PageResponseDTO<T>`, `HttpClient`. **Hogar de DTOs técnicos genéricos** y manejo cross-cutting de excepciones. |
+| `shared:validation` | `com.arquisoft.shared.validation` | Esqueleto de intención. **Sin uso activo todavía** — listo para validadores de dominio reales (cédula colombiana, código de estudiante, etc.) cuando aparezcan en una HU. NO duplicar validaciones que Jakarta Validation ya cubre (`@Email`, `@Size`, `@NotBlank`, etc.). |
 
 ### Estructura estándar por contexto
 
@@ -128,7 +127,6 @@ Domain  ←  Application  ←  Infrastructure
     │   │       └── {Entidad}EventListener.java
     │   └── out/
     │       ├── persistence/         # JPA Entity, JpaRepository, RepositoryAdapter
-    │       ├── messaging/           # EventPublisher RabbitMQ
     │       └── {tipo}/              # security/, storage/, notification/, etc. (si aplica)
     ├── config/                      # @Configuration (sufijo Config) — solo cablea, sin lógica
     ├── filter/                      # Filtros HTTP (sufijo Filter)
@@ -142,8 +140,9 @@ Domain  ←  Application  ←  Infrastructure
 - `adapter/in/web/` — para todo lo que sirve a la capa REST: controllers (`@RestController`), advice global (`@RestControllerAdvice`), interceptores de petición que solo aplican a endpoints REST.
 - `adapter/in/messaging/` — para listeners de RabbitMQ (`@RabbitListener`). Solo se crea si el contexto consume eventos de otros bounded contexts.
 - `adapter/out/persistence/` — para JPA Entity, JpaRepository, RepositoryAdapter.
-- `adapter/out/messaging/` — para publishers de RabbitMQ (`EventPublisher` impl).
 - `adapter/out/{tipo}/` — para otras integraciones externas (ej. `security/` para Keycloak admin client, `storage/` para S3, `notification/` para SMTP). Una subcarpeta por tipo de integración.
+
+> **Nota:** **NO** existe `adapter/out/messaging/` en los contextos. La publicación de eventos de dominio a RabbitMQ se centraliza en `shared:amqp` (con `RabbitMQEventPublisher`). Cada contexto solo inyecta `EventPublisher` y lo invoca desde sus use cases.
 
 La consistencia (siempre subcarpeta) prevalece sobre la simplicidad (carpeta plana cuando solo hay un tipo). Esto facilita que cualquier nuevo tipo de adaptador encuentre su lugar sin reorganizaciones.
 
@@ -164,7 +163,7 @@ La consistencia (siempre subcarpeta) prevalece sobre la simplicidad (carpeta pla
 ## DDD Estricto — Separación de Responsabilidades por Capas
 
 Esta sección define **qué puede y qué no puede vivir en cada capa** del proyecto. Es la regla
-fundamental que subyace a todo lo demás (incluido AggregateRoot). Antes de escribir cualquier
+fundamental que subyace a todo lo demás (incluido EventEmittingEntity). Antes de escribir cualquier
 archivo, verifica que la lógica esté en la capa correcta.
 
 ### Principio rector
@@ -307,22 +306,22 @@ Consecuencias:
 @Configuration
 public class KeycloakJwtConverterConfig {
 
-   @Bean
-   public JwtAuthenticationConverter jwtAuthenticationConverter() {
-      JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-      converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-         // ❌ Regla de negocio: qué claims representan roles
-         Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-         List<String> roles = (List<String>) realmAccess.get("roles");
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            // ❌ Regla de negocio: qué claims representan roles
+            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+            List<String> roles = (List<String>) realmAccess.get("roles");
 
-         // ❌ Regla de negocio: prefijo "ROLE_" y uppercase
-         return roles.stream()
-                 .map(r -> "ROLE_" + r.toUpperCase())
-                 .map(SimpleGrantedAuthority::new)
-                 .toList();
-      });
-      return converter;
-   }
+            // ❌ Regla de negocio: prefijo "ROLE_" y uppercase
+            return roles.stream()
+                    .map(r -> "ROLE_" + r.toUpperCase())
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
+        });
+        return converter;
+    }
 }
 ```
 
@@ -336,27 +335,33 @@ Problemas:
 **Capa domain — el concepto de Rol es del negocio:**
 
 ```java
-// seguridad/domain/model/Rol.java
+// seguridad/domain/model/UsuarioRole.java
 package com.arquisoft.seguridad.domain.model;
 
-public enum Rol {
-    COORDINADOR,
-    ASESOR_FICHA,
-    ASESOR_PROYECTO,
-    JURADO,
-    ESTUDIANTE;
+public enum UsuarioRole {
+    ESTUDIANTE("estudiante", "Estudiante que presenta proyecto de grado"),
+    ASESOR("asesor", "Asesor asignado a un proyecto de grado"),
+    ASESOR_FICHA("asesor-ficha", "Asesor que apoya la elaboración de fichas de perfil"),
+    COORDINADOR("coordinador", "Coordinador del programa que gestiona proyectos"),
+    JURADO("jurado", "Jurado que evalúa proyectos de grado"),
+    BIBLIOTECARIO("bibliotecario", "Bibliotecario que gestiona consulta de PG"),
+    REPRESENTANTE_COMITE_CURRICULUM("representante-comite", "Representante que aprueba fichas de perfil"),
+    ADMINISTRADOR("administrador", "Administrador del sistema");
 
-    /** Regla de negocio: así se representa un rol como authority de seguridad. */
-    public String asAuthority() {
-        return "ROLE_" + this.name();
+    private final String keycloakName;
+    private final String descripcion;
+
+    UsuarioRole(String keycloakName, String descripcion) {
+        this.keycloakName = keycloakName;
+        this.descripcion = descripcion;
     }
 
-    /** Regla de negocio: parsear un string externo a un rol válido. */
-    public static Rol fromExternalName(String nombre) {
-        return Rol.valueOf(nombre.toUpperCase());
-    }
+    public String getKeycloakName() { return keycloakName; }
+    public String getDescripcion() { return descripcion; }
 }
 ```
+
+> **Convención de nombres:** los roles realm en Keycloak usan **kebab-case** (`coordinador`, `asesor-ficha`, `representante-comite`). El JWT trae estos nombres tal cual en `realm_access.roles`. **NO** se usa el prefijo `ROLE_` ni MAYÚSCULAS — esos son convenciones de Spring Security antiguas que aquí no aplican.
 
 **Capa domain — el puerto abstracto:**
 
@@ -452,23 +457,37 @@ o un mock de `RabbitTemplate`/`Jwt`/`JpaRepository`, la lógica está en la capa
 
 ---
 
-## AggregateRoot — Regla Estricta
+## EventEmittingEntity — Regla Estricta
+
+> **Nota sobre el nombre:** `EventEmittingEntity` (en `shared:domain`) es la clase base
+> que gestiona **únicamente la emisión de eventos de dominio** en memoria. NO define
+> identidad, invariantes ni comportamiento de un Aggregate Root completo. Una entidad
+> es un Aggregate Root cuando, además de extender esta clase, define su identidad,
+> sus invariantes (validaciones en el constructor) y su comportamiento de negocio
+> (factories `build`/`rebuild`, métodos de acción).
 
 ### Principio DDD
 
-En el proyecto Arquisoft, **toda entidad que sea raíz de su agregado DEBE extender `AggregateRoot` de `shared:domain`**, con una única excepción:
+En el proyecto Arquisoft, **toda entidad que sea raíz de su agregado DEBE extender `EventEmittingEntity` de `shared:domain`**, con una única excepción:
 
-- **Excepción:** el contexto `seguridad` no usa `AggregateRoot` porque es transversal y delega el estado en Keycloak.
+- **Excepción:** el contexto `seguridad` no usa `EventEmittingEntity` porque es transversal y delega el estado en Keycloak.
 
-En los otros 6 contextos, la ausencia de `AggregateRoot` en una entidad raíz es un **error bloqueante** que debe corregirse.
+En los otros 6 contextos, la ausencia de `EventEmittingEntity` en una entidad raíz es un **error bloqueante** que debe corregirse.
 
-### ¿Qué es AggregateRoot?
+> **Importante:** una entidad puede extender `EventEmittingEntity` y NO emitir eventos.
+> Si la HU es un CRUD simple sin consumidores conocidos del evento, el factory `build(...)`
+> simplemente no llama a `publishEvent(...)` y el use case no inyecta `EventPublisher`.
+> Extender `EventEmittingEntity` es por consistencia y para tener la maquinaria lista
+> el día que aparezca la necesidad de emitir eventos. Ver sección "¿Cuándo emitir eventos
+> de dominio?" más abajo.
+
+### ¿Qué es EventEmittingEntity?
 
 Clase base en `shared:domain` que gestiona eventos de dominio acumulados en memoria hasta que el use case los drena tras persistir.
 
 ```java
 // Ya existe en shared:domain — no reimplementar, solo usar
-public abstract class AggregateRoot {
+public abstract class EventEmittingEntity {
     private final List<DomainEvent> unPublishedEvents = new ArrayList<>();
 
     protected void publishEvent(DomainEvent event) { unPublishedEvents.add(event); }
@@ -479,22 +498,30 @@ public abstract class AggregateRoot {
 
 ### ¿Qué es DomainEvent?
 
-Clase base en `shared:domain` que asigna automáticamente `eventId` (UUID), `occurredAt` (Instant) y `eventType` (simpleName de la subclase).
+Clase base en `shared:domain` que asigna automáticamente `eventId` (UUID), `occurredAt` (Instant) y `eventType` (simpleName de la subclase). Define el método abstracto `getEventTopic()` que cada subclase DEBE implementar.
 
 ```java
 // Ya existe en shared:domain
 public abstract class DomainEvent {
-    private final UUID eventId;
-    private final Instant occurredAt;
-    private final String eventType;
+    private final String eventId;
     private final String aggregateId;
+    private final LocalDateTime occurredAt;
+    private final String eventType;
 
     protected DomainEvent(String aggregateId) {
-        this.eventId = UUID.randomUUID();
-        this.occurredAt = Instant.now();
-        this.eventType = this.getClass().getSimpleName();
+        this.eventId = UUID.randomUUID().toString();
         this.aggregateId = aggregateId;
+        this.occurredAt = LocalDateTime.now();
+        this.eventType = this.getClass().getSimpleName();
     }
+
+    /**
+     * Routing key con la que este evento se publica al exchange arquisoft.events.
+     * Formato esperado: "{contexto}.{entidad}.{accion}" (ej. "fichas.ficha.creada").
+     * Cada subclase de DomainEvent DEBE implementar este método.
+     */
+    public abstract String getEventTopic();
+
     // getters...
 }
 ```
@@ -502,18 +529,57 @@ public abstract class DomainEvent {
 ### Ciclo completo: emisión y drenado
 
 1. **Dominio:** la entidad raíz acumula eventos con `publishEvent(...)` en sus métodos de negocio (incluido el factory `build`).
-2. **Use case:** tras persistir, drena los eventos con `getUnPublishedEvents()`, los entrega a `EventPublisher` (puerto `shared:amqp`) y llama a `clearUnPublishedEvents()`.
-3. **El dominio NUNCA** inyecta `EventPublisher`. Solo acumula eventos en memoria.
-4. **El controller NUNCA** drena eventos directamente. Solo lo hace el use case.
+2. **Use case:** tras persistir, drena los eventos con `getUnPublishedEvents()`, los entrega a `EventPublisher` (puerto `shared:amqp` con firma `void publish(DomainEvent event)`) y llama a `clearUnPublishedEvents()`.
+3. **`EventPublisher` lee internamente `event.getEventTopic()`** y publica al exchange `arquisoft.events`. La implementación concreta `RabbitMQEventPublisher` ya vive en `shared:amqp`.
+4. **El dominio NUNCA** inyecta `EventPublisher`. Solo acumula eventos en memoria.
+5. **El controller NUNCA** drena eventos directamente. Solo lo hace el use case.
 
 ### Factory methods obligatorios
 
 | Método | Cuándo usar | ¿Emite evento? | ¿Genera UUID? |
 |---|---|---|---|
-| `build(...)` | Crear entidad nueva desde un comando/DTO | ✅ Sí (típicamente `{Entidad}CreadaEvent`) | ✅ Sí — `UUID.randomUUID()` |
-| `rebuild(...)` | Reconstruir entidad desde persistencia | ❌ No | ❌ No — recibe el UUID de BD |
+| `build(...)` | Crear entidad nueva desde un comando/DTO | Solo si la HU emite eventos (ver "¿Cuándo emitir eventos?") | ✅ Sí — `UUID.randomUUID()` |
+| `rebuild(...)` | Reconstruir entidad desde persistencia | ❌ Nunca | ❌ No — recibe el UUID de BD |
 
 **Regla dura:** un `RepositoryAdapter` SIEMPRE usa `rebuild(...)`, nunca `build(...)`.
+
+### ¿Cuándo emitir eventos de dominio?
+
+Una HU de Escritura puede emitir eventos o no. La decisión depende de si hay (o se anticipa) **al menos un consumidor** que necesite reaccionar al hecho.
+
+**Emite eventos cuando:**
+- Otro bounded context necesita reaccionar (ej. al crearse una `FichaPerfil`, el contexto `entregables` debe replicarla localmente).
+- Hay un caso concreto de auditoría/observabilidad que requiere registrar el hecho.
+- Se anticipa razonablemente que aparecerá un consumidor en HUs próximas.
+
+**NO emite eventos cuando:**
+- Es un CRUD interno del contexto sin consumidores conocidos ni casos de auditoría (ej. registrar un tipo de proyecto en un catálogo administrativo).
+- La HU solo lee/consulta (las consultas nunca emiten eventos).
+- Ningún otro contexto necesita saber del cambio y no hay caso de uso futuro identificado.
+
+**Implicaciones de la decisión:**
+
+| Decisión | `build(...)` | Use case | Plan declara |
+|---|---|---|---|
+| **Con eventos** | Llama a `publishEvent(new {Entidad}{Accion}Event(...))` | Inyecta `EventPublisher`, drena con `getUnPublishedEvents()`, publica, llama a `clearUnPublishedEvents()` | Sección 4 lista los eventos emitidos con su `eventTopic` |
+| **Sin eventos (CRUD simple)** | NO llama a `publishEvent(...)` | NO inyecta `EventPublisher`, no hay drenado/limpieza | Sección 4 declara explícitamente "Esta HU no emite eventos: <razón>" |
+
+**Ambas opciones son válidas.** La entidad sigue extendiendo `EventEmittingEntity` por consistencia y para tener la maquinaria lista. Cuando aparezca la necesidad futura, solo añades la clase del evento, llamas a `publishEvent(...)` en `build(...)` e inyectas `EventPublisher` en el use case.
+
+### Firma de EventPublisher (shared:amqp)
+
+```java
+// Ya existe en shared:amqp
+public interface EventPublisher {
+    /**
+     * Publica un evento de dominio al exchange arquisoft.events
+     * usando la routing key que devuelve event.getEventTopic().
+     */
+    void publish(DomainEvent event);
+}
+```
+
+**Una sola firma con type safety.** Recibe `DomainEvent` (no `Object`) — el compilador garantiza que solo se publican eventos de dominio.
 
 ---
 
@@ -737,18 +803,178 @@ Una excepción que solo hace `super("CODIGO", "mensaje")` no tiene lógica propi
 
 ---
 
-## Plantillas de Código Canónicas
+## Convención de DTOs — técnicos genéricos vs DTOs de dominio
 
-### Entidad (Aggregate Root)
+Esta convención evita duplicación, mantiene la API consistente con la industria
+y respeta el modelo de dominio en el código interno.
+
+### Dos tipos de DTOs en el proyecto
+
+| Tipo | Idioma de campos | Ubicación | Ejemplos |
+|---|---|---|---|
+| **DTO técnico genérico** | **Inglés** (sigue convención de la industria) | `shared:web` | `ErrorResponseDTO`, `PageResponseDTO<T>`, futuros `HealthResponseDTO`, etc. |
+| **DTO de dominio** | **Español** (refleja el modelo enriquecido) | `{contexto}/application/dto/` | `FichaPerfilResumenDTO`, `CrearFichaPerfilRequestDTO`, `UsuarioResponseDTO` |
+
+### Razón de la separación
+
+- **DTOs técnicos** son envoltorios que no contienen conceptos de negocio. Pagina cualquier cosa, formatea cualquier error. Sus campos siguen convenciones universales (`content`, `totalElements`, `error`, `errorCode`) que los clientes esperan. Viven en `shared:web` para no duplicarlos.
+- **DTOs de dominio** modelan tu dominio académico. Sus campos (`tituloProyecto`, `asesorFichaId`, `nombreEstudiante`) reflejan el modelo enriquecido y se mantienen en español para consistencia con entidades, repositorios y eventos.
+
+### Reglas inviolables
+
+1. **NUNCA crees un `PageResponseDTO` o `ErrorResponseDTO` local en un contexto.** Importa desde `com.arquisoft.shared.web`.
+2. **Si necesitas un DTO técnico nuevo que vaya a usarse en más de un contexto** (ej. `FilterRequestDTO`, `ValidationErrorDTO` específico, etc.) → ponlo en `shared:web` con campos en inglés.
+3. **DTOs de dominio NO pueden tener campos en inglés** que renombren conceptos del modelo enriquecido. Si el modelo dice `tituloProyecto`, el DTO usa `tituloProyecto`, no `title`.
+4. **No anotes campos con `@JsonProperty` para mezclar idiomas.** Si el JSON externo necesita un nombre específico, evalúa si el DTO debería ser técnico (en inglés) o de dominio (en español) — no ambos.
+
+---
+
+## Paginación — Spring Data `Page<T>` en domain/application + `PageResponseDTO<T>` en HTTP
+
+> **Decisión arquitectónica:** Spring Data `spring-data-commons` (que provee `Page<T>` y `Pageable`) se trata como tipo estándar de la industria, al nivel de `java.util.List`. Es una librería ligera de tipos genéricos que NO arrastra Spring Boot, ORM ni autoconfiguración. Usarla en domain reduce drásticamente la complejidad sin romper la separación de responsabilidades real (lo que SÍ rompe DDD es importar `@Entity`, `JpaRepository`, `EntityManager` — eso NO ocurre con `Page<T>`/`Pageable`).
+>
+> **No existe `Page<T>` propio en `shared:domain`.** Si ves un import desde `com.arquisoft.shared.domain.Page`, está obsoleto: debe ser `org.springframework.data.domain.Page`.
+
+### Flujo canónico de paginación
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ HTTP Client                                                     │
+│   ↓ JSON request con params (?page=0&size=20&sort=...)          │
+├─────────────────────────────────────────────────────────────────┤
+│ INFRASTRUCTURE ({contexto}/infrastructure)                      │
+│   • Controller recibe Pageable (Spring lo construye desde       │
+│     query params automáticamente)                               │
+│   • Llama al UseCase: Page<{Entidad}DTO> ejecutar(Pageable)     │
+│   • Convierte Page<{Entidad}DTO> → PageResponseDTO<{Entidad}DTO>│
+│     con PageResponseDTO.from(...)                               │
+│   • Adapter JPA: jpaRepository.findAll(pageable)                │
+│     .map(JpaEntity::toDomain) → Page<{Entidad}>                 │
+├─────────────────────────────────────────────────────────────────┤
+│ APPLICATION ({contexto}/application)                            │
+│   • UseCaseImpl orquesta lógica                                 │
+│   • Habla con Page<T>, Pageable de Spring Data — son tipos      │
+│     estándar de la industria, igual que List<T>                 │
+│   • Llama a RepositoryPort (interfaz del dominio)               │
+├─────────────────────────────────────────────────────────────────┤
+│ DOMAIN ({contexto}/domain + shared/domain)                      │
+│   • Define puertos (interfaces): UseCase, RepositoryPort        │
+│     que pueden retornar Page<{Entidad}> (Spring Data)           │
+│   • Define modelos de dominio                                   │
+│   • CERO conocimiento de @Entity, JpaRepository, ni             │
+│     PageResponseDTO                                             │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Tipos involucrados — quién conoce qué
+
+| Tipo | Vive en | Usado por | Notas |
+|---|---|---|---|
+| `org.springframework.data.domain.Page<T>` | `spring-data-commons` | Puerto, use case, adapter | Tipo estándar — válido en domain, application e infrastructure |
+| `org.springframework.data.domain.Pageable` | `spring-data-commons` | Puerto, use case, controller | Tipo estándar — Spring lo construye desde query params automáticamente |
+| `PageResponseDTO<T>` | `shared:web` | Controller (response) | **SOLO** infrastructure. NUNCA aparece en domain ni application |
+
+### Reglas inviolables de paginación
+
+1. **`spring-data-commons` se declara como `api` en `shared:domain/build.gradle`** para exponer `Page<T>` y `Pageable` transitivamente a quien consuma el módulo.
+2. **El puerto retorna `Page<{Entidad}>` (Spring Data) y recibe `Pageable`.** El nombre del método NUNCA incluye "Paginadas" — la paginación se infiere del `Pageable`.
+3. **El use case usa `.map(...)` directo de Spring `Page`** para convertir entidades a DTOs (Spring `Page<T>` ya tiene método `map(Function<T, R>)` built-in).
+4. **El adapter del repositorio queda en una sola línea:** `jpaRepository.findAll(pageable).map(JpaEntity::toDomain)`. Cero conversiones manuales.
+5. **El controller convierte `Page<...>` → `PageResponseDTO<...>` con `PageResponseDTO.from(...)`** justo antes del `ResponseEntity.ok(...)`.
+6. **`PageResponseDTO` NUNCA aparece en `domain/` ni en `application/`.** Si aparece, es violación bloqueante.
+7. **Nombres de métodos:** usar `consultarTodas`, `listarTodas`, `buscarPor...` — la paginación es un parámetro, no parte del nombre. **`consultarPaginadas` es un anti-patrón.**
+
+### Configuración de `shared:domain/build.gradle`
+
+```gradle
+dependencies {
+    api 'org.springframework.data:spring-data-commons'
+    // ... resto de dependencias
+}
+```
+
+`api` (no `implementation`) expone los tipos transitivamente. Así `application` e `infrastructure` ven `Page<T>` y `Pageable` automáticamente sin redeclarar la dependencia.
+
+### Ejemplo completo — firmas correctas
+
+```java
+// ✅ Puerto de salida (domain)
+public interface FichaPerfilRepositoryPort {
+    Page<FichaPerfil> consultarTodas(Pageable pageable);
+}
+
+// ✅ Use case (domain port in)
+public interface ConsultarFichasPerfilUseCase {
+    Page<FichaPerfilResumenDTO> ejecutar(Pageable pageable);
+}
+
+// ✅ Use case impl (application) — usa .map() de Spring Page
+@Service
+@RequiredArgsConstructor
+public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilUseCase {
+    private final FichaPerfilRepositoryPort repository;
+
+    @Override
+    public Page<FichaPerfilResumenDTO> ejecutar(Pageable pageable) {
+        return repository.consultarTodas(pageable)
+                .map(FichaPerfilResumenDTO::from);
+    }
+}
+
+// ✅ Adapter (infrastructure) — una sola línea
+@Component
+@RequiredArgsConstructor
+public class FichaPerfilRepositoryAdapter implements FichaPerfilRepositoryPort {
+    private final FichaPerfilJpaRepository jpaRepository;
+
+    @Override
+    public Page<FichaPerfil> consultarTodas(Pageable pageable) {
+        return jpaRepository.findAll(pageable).map(FichaPerfilJpaEntity::toDomain);
+    }
+}
+
+// ✅ Controller (infrastructure) — Spring inyecta Pageable desde query params
+@GetMapping
+public ResponseEntity<PageResponseDTO<FichaPerfilResumenDTO>> consultar(Pageable pageable) {
+    return ResponseEntity.ok(PageResponseDTO.from(useCase.ejecutar(pageable)));
+}
+```
+
+### Anti-patrones bloqueantes
+
+```java
+// ❌ MAL — Page propio del dominio (eliminado del proyecto)
+import com.arquisoft.shared.domain.Page;  // ya no existe
+Page<FichaPerfil> consultarTodas(...);
+
+// ❌ MAL — nombre con "Paginadas"
+Page<FichaPerfil> consultarPaginadas(int page, int size);
+Page<FichaPerfil> consultarTodasPaginadas(int page, int size);
+
+// ❌ MAL — use case retornando PageResponseDTO (DTO técnico filtra a application)
+PageResponseDTO<FichaPerfilResumenDTO> ejecutar(Pageable pageable);
+
+// ❌ MAL — puerto retornando Page<JpaEntity>
+Page<FichaPerfilJpaEntity> consultarTodas(Pageable pageable);
+
+// ❌ MAL — controller con @RequestParam manuales en lugar de Pageable
+public ResponseEntity<...> consultar(@RequestParam int page, @RequestParam int size) {
+    // Spring ya construye Pageable solo. Hacerlo manual es redundante.
+}
+```
+
+---
+
+
 
 ```java
 package com.arquisoft.fichas.domain.model;
 
-import com.arquisoft.shared.domain.AggregateRoot;
+import com.arquisoft.shared.domain.EventEmittingEntity;
 import com.arquisoft.fichas.domain.event.FichaCreadaEvent;
 import java.util.UUID;
 
-public class Ficha extends AggregateRoot {
+public class Ficha extends EventEmittingEntity {
     private final UUID id;
     private final String titulo;
     private final String estado;
@@ -792,9 +1018,16 @@ public final class FichaCreadaEvent extends DomainEvent {
         this.titulo = titulo;
     }
 
+    @Override
+    public String getEventTopic() {
+        return "fichas.ficha.creada";
+    }
+
     public String getTitulo() { return titulo; }
 }
 ```
+
+> **Obligatorio:** toda subclase de `DomainEvent` DEBE implementar `getEventTopic()` retornando un string con el formato `{contexto}.{entidad}.{accion}`. La firma del método es `public abstract String getEventTopic()` en la clase base. Sin esta implementación el código no compila.
 
 ### Value Object (usar `record`)
 
@@ -978,7 +1211,7 @@ public class FichaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('ASESOR_FICHA')")
+    @PreAuthorize("hasAuthority('fichas:ficha:create')")
     @Operation(
         summary = "Crear ficha de perfil",
         description = "Crea una nueva ficha de perfil para un proyecto de grado",
@@ -1036,12 +1269,25 @@ Cada bounded context que **defina excepciones de dominio propias** debe tener su
 
 > **Si una excepción nueva no encaja claramente en ningún patrón**, el implementador debe pausar y preguntar al usuario qué código HTTP corresponde — nunca asumir 500.
 
-#### Plantilla canónica del handler
+#### Plantilla canónica del handler (reducida — solo excepciones de dominio)
+
+> **Importante:** este handler **solo** maneja excepciones de dominio del contexto.
+> Las excepciones cross-cutting (Spring Security, validaciones de Jakarta, JSON
+> mal formado, fallback `Exception.class`) las maneja `GlobalAppExceptionHandler`
+> en `shared:web` con `@Order(LOWEST_PRECEDENCE)`.
+>
+> **NO incluyas** en este handler:
+> - `@ExceptionHandler(Exception.class)` (lo tiene `shared:web`).
+> - `@ExceptionHandler(MethodArgumentNotValidException.class)` (lo tiene `shared:web`).
+> - `@ExceptionHandler(AccessDeniedException.class)` o `AuthorizationDeniedException` (lo tiene `shared:web`).
+> - `@ExceptionHandler(ConstraintViolationException.class)`, `MissingServletRequestParameterException`, `HttpMessageNotReadableException` (lo tiene `shared:web`).
+>
+> Excepción a la regla: el handler de `seguridad` puede manejar excepciones de su propio dominio relacionadas con autenticación (`InvalidCredentialsException`, `InvalidTokenException`, `AuthenticationException`) → 401. Esas son excepciones de su dominio, no cross-cutting.
 
 ```java
 package com.arquisoft.{contexto}.infrastructure.adapter.in.web;
 
-import com.arquisoft.{contexto}.application.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.ErrorResponseDTO;
 import com.arquisoft.{contexto}.domain.exception.{Entidad}NoEncontradaException;
 import com.arquisoft.shared.exceptions.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -1058,7 +1304,7 @@ public class {Contexto}GlobalExceptionHandler {
     @ExceptionHandler({Entidad}NoEncontradaException.class)
     public ResponseEntity<ErrorResponseDTO> handleNoEncontrada(
             {Entidad}NoEncontradaException ex,
-    HttpServletRequest request) {
+            HttpServletRequest request) {
         log.warn("Recurso no encontrado: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponseDTO.builder()
@@ -1070,7 +1316,7 @@ public class {Contexto}GlobalExceptionHandler {
                         .build());
     }
 
-    // Más @ExceptionHandler — uno por cada DomainException del contexto, mapeado al código HTTP correcto.
+    // Más @ExceptionHandler — uno por cada DomainException específica del contexto, mapeada al código HTTP correcto según la tabla de mapeo.
 
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ErrorResponseDTO> handleDomainGeneric(
@@ -1086,30 +1332,146 @@ public class {Contexto}GlobalExceptionHandler {
                         .path(request.getRequestURI())
                         .build());
     }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDTO> handleGeneral(
-            Exception ex,
-            HttpServletRequest request) {
-        log.error("Error inesperado: {}", ex.getMessage(), ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorResponseDTO.builder()
-                        .error("Internal Server Error")
-                        .message("Error interno del servidor")
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                        .path(request.getRequestURI())
-                        .build());
-    }
 }
 ```
 
-> **Nota:** `@RestControllerAdvice(basePackages = "com.arquisoft.{contexto}")` limita el handler a su contexto, evitando que aplique a controllers de otros contextos en la misma app.
+> **Nota:** `@RestControllerAdvice(basePackages = "com.arquisoft.{contexto}")` limita el handler a su contexto. `GlobalAppExceptionHandler` de `shared:web` tiene `@Order(LOWEST_PRECEDENCE)` así que SIEMPRE pierde frente a este si ambos pueden manejar la excepción — los handlers de contexto siempre ganan para excepciones de su dominio.
 
 #### Reglas inviolables
 
-1. **Toda excepción de dominio nueva debe registrarse** en el handler antes de cerrar la capa infrastructure. Si no, su excepción cae en `handleGeneral` → 500, lo cual es **siempre incorrecto** para reglas de negocio.
-2. **Los tests de controller NO deben afirmar 500** para inputs inválidos. Si un test espera 500, indica handler faltante — corrige el handler, no el test.
-3. **`handleGeneral(Exception ex)` es solo para errores realmente inesperados** (NPE, errores de infraestructura no controlados). Nunca para excepciones de dominio.
+1. **Toda excepción de dominio nueva debe registrarse** en el handler antes de cerrar la capa infrastructure. Si no, cae en el `DomainException` genérico → 422, lo cual puede no ser el código correcto.
+2. **Los tests de controller NO deben afirmar 500** para inputs inválidos. Si un test espera 500, indica handler faltante o uso indebido del fallback de `shared:web` — corrige el handler, no el test.
+3. **NUNCA incluyas `@ExceptionHandler(Exception.class)` en un handler de contexto.** Eso es responsabilidad exclusiva de `GlobalAppExceptionHandler` en `shared:web`. Si lo añades, capturarás excepciones cross-cutting por accidente y romperás el sistema (ej. `AuthorizationDeniedException` caería como 500 en lugar de 403).
+
+---
+
+## Autorización — Roles realm + Client Roles de Keycloak
+
+> **Convención del proyecto:** los endpoints REST autorizan contra **client roles** (formato `contexto:recurso:accion`) usando `@PreAuthorize("hasAuthority('...')")`. Los **roles realm** (`coordinador`, `asesor-ficha`, etc.) NO se evalúan directamente en endpoints — se mantienen como agrupación lógica de permisos en Keycloak, y cada rol realm tiene asignados sus client roles correspondientes.
+
+### Estructura del JWT
+
+El JWT que llega del frontend contiene:
+
+```json
+{
+  "realm_access": {
+    "roles": ["coordinador"]
+  },
+  "resource_access": {
+    "arquisoft-api": {
+      "roles": ["fichas:ficha:view", "fichas:ficha:create"]
+    }
+  }
+}
+```
+
+- `realm_access.roles` → roles realm (kebab-case): `coordinador`, `asesor`, `asesor-ficha`, etc.
+- `resource_access.arquisoft-api.roles` → **client roles** del cliente `arquisoft-api`. Estos son los que `hasAuthority(...)` evalúa.
+
+### Convención de client roles: `contexto:recurso:accion`
+
+Cada client role declara qué acción se puede realizar sobre qué recurso de qué contexto:
+
+| Componente | Significado | Ejemplos |
+|---|---|---|
+| `contexto` | Bounded context Gradle | `fichas`, `proyectos`, `entregables`, `evaluaciones`, `repositorio_artefactos`, `artefactos`, `seguridad` |
+| `recurso` | Entidad o recurso del contexto | `ficha`, `proyecto`, `entregable`, `evaluacion`, `usuario` |
+| `accion` | Verbo CRUD o acción de negocio | `view`, `create`, `update`, `delete`, `approve`, `submit`, `evaluate` |
+
+**Ejemplos válidos:**
+- `fichas:ficha:view` → ver fichas de perfil
+- `fichas:ficha:create` → crear fichas de perfil
+- `proyectos:proyecto:approve` → aprobar proyecto de grado
+- `evaluaciones:evaluacion:submit` → enviar evaluación
+
+### Mapeo realm role → client roles
+
+Cada **rol realm** tiene asignados varios **client roles** según sus responsabilidades. Un mismo client role puede pertenecer a varios roles realm:
+
+| Client role | Roles realm que lo poseen | Razón |
+|---|---|---|
+| `fichas:ficha:view` | `coordinador`, `asesor-ficha`, `representante-comite` | Todos pueden consultar fichas |
+| `fichas:ficha:create` | `asesor-ficha` | Solo asesor-ficha crea fichas |
+| `fichas:ficha:approve` | `representante-comite` | Solo el comité aprueba |
+
+> **El planificador es responsable de declarar este mapeo** en cada plan: por cada endpoint/acción, lista el client role nuevo y a qué roles realm debe asignarse en Keycloak. Esto permite al equipo de seguridad configurar Keycloak en paralelo con el desarrollo.
+
+### Uso en controllers
+
+```java
+// ✅ CORRECTO — usa hasAuthority con client role
+@PostMapping
+@PreAuthorize("hasAuthority('fichas:ficha:create')")
+public ResponseEntity<FichaResponseDTO> crear(@Valid @RequestBody CrearFichaRequestDTO req) {
+    // ...
+}
+
+// ❌ MAL — hasRole con realm role (convención antigua)
+@PreAuthorize("hasRole('ASESOR_FICHA')")  // ❌
+@PreAuthorize("hasRole('asesor-ficha')")  // ❌
+
+// ❌ MAL — múltiples authorities con OR (preferir uno solo y asignarlo a varios roles realm en Keycloak)
+@PreAuthorize("hasAuthority('fichas:ficha:view') or hasAuthority('fichas:ficha:admin')")  // ❌
+```
+
+### Reglas de uso
+
+1. **Cada endpoint tiene exactamente un `@PreAuthorize("hasAuthority('...')")`** con un único client role.
+2. **El nombre del client role refleja el contexto, recurso y acción.** No usar nombres genéricos como `admin`, `read`, `write`.
+3. **Si dos roles realm distintos pueden ejecutar la misma acción**, ambos tendrán asignado el mismo client role en Keycloak — NO se hace OR en el endpoint.
+4. **El planificador documenta los client roles nuevos** en cada plan (sección de seguridad) con su mapeo a roles realm.
+5. **Tests de controller** mockean los authorities con `with(jwt().authorities(new SimpleGrantedAuthority("fichas:ficha:create")))` — no roles realm.
+
+---
+
+## Manejo de errores externos en `seguridad` (Keycloak)
+
+Una lección aprendida: el `SeguridadGlobalExceptionHandler` debe **distinguir entre fallos de credenciales del usuario y fallos de infraestructura externa** (Keycloak). Mezclarlos es un bug de seguridad.
+
+### Tabla de mapeo correcto
+
+| Situación | Código HTTP | Razón |
+|---|---|---|
+| Credenciales incorrectas (login) | `401 Unauthorized` | El usuario falló la autenticación |
+| Refresh token inválido / expirado | `401 Unauthorized` | El token del usuario no sirve |
+| Keycloak caído / timeout | `503 Service Unavailable` | Problema del servicio externo, no del usuario |
+| Refresh con Keycloak caído | `503 Service Unavailable` | Idem |
+| Error inesperado en `/auth/*` (NPE, casts, bugs) | `500 Internal Server Error` | Bug del backend, NO del usuario |
+
+### Anti-patrón resuelto
+
+**ANTES** (vulnerabilidad): el handler de `seguridad` capturaba todo error de Keycloak (timeout, conexión rechazada, errores HTTP del Keycloak) y lo retornaba como `401 Unauthorized` con un mensaje que **incluía la URL de Keycloak** en el cuerpo. Esto exponía infraestructura interna al cliente.
+
+**DESPUÉS** (correcto): el handler distingue:
+
+```java
+// En SeguridadGlobalExceptionHandler
+
+@ExceptionHandler(InvalidCredentialsException.class)
+public ResponseEntity<ErrorResponseDTO> handleInvalidCredentials(...) {
+    // 401 — fallo legítimo del usuario
+}
+
+@ExceptionHandler(InvalidTokenException.class)
+public ResponseEntity<ErrorResponseDTO> handleInvalidToken(...) {
+    // 401 — el token del usuario no sirve
+}
+
+// ResourceAccessException (Keycloak caído / timeout) ya está cubierto por
+// GlobalAppExceptionHandler en shared:web → 503. NO duplicar aquí.
+
+// NO hay @ExceptionHandler(Exception.class) en SeguridadGlobalExceptionHandler.
+// El fallback Exception → 500 vive en GlobalAppExceptionHandler de shared:web.
+```
+
+### Reglas inviolables
+
+1. **El handler de `seguridad` NO captura `Exception.class`** — el fallback genérico vive en `shared:web`.
+2. **El handler de `seguridad` NO captura `ResourceAccessException` ni `HttpClientErrorException` propios de RestTemplate/WebClient hacia Keycloak** — eso lo hace `GlobalAppExceptionHandler` de `shared:web` con código 503.
+3. **El mensaje de error NUNCA expone la URL del Keycloak**, ni stack traces, ni nombres de hosts internos. Mensajes genéricos de cara al cliente.
+4. **El log interno** sí registra el error completo con `log.error("...", ex)` para diagnóstico, pero el `ErrorResponseDTO` que se retorna al cliente es genérico.
+5. **Un error 500 NUNCA se disfraza de 401.** Si la causa es interna del backend, retorna 500. Si es Keycloak externo caído, retorna 503. Solo retorna 401 si el usuario falló credenciales o token.
 
 ---
 
@@ -1233,7 +1595,8 @@ parte natural de su contexto.
 ### Seguridad
 
 - JWT decodificado vía JWK Set URI de Keycloak.
-- `@EnableMethodSecurity(prePostEnabled = true)` → usar `@PreAuthorize("hasRole('...')")` en controllers.
+- `@EnableMethodSecurity(prePostEnabled = true)` → usar `@PreAuthorize("hasAuthority('contexto:recurso:accion')")` en controllers (ver sección "Autorización con client roles" más abajo).
+- **NO** se usa `hasRole('NOMBRE_ROL')` — los roles realm de Keycloak (`coordinador`, `asesor-ficha`, etc.) **no se evalúan directamente en endpoints**; en su lugar, cada rol tiene asignados unos *client roles* (formato `contexto:recurso:accion`) y la autorización del endpoint se hace contra esos client roles vía `hasAuthority(...)`.
 - Endpoints públicos permit-all: `/auth/login`, `/auth/refresh`, `/auth/validate`, `/actuator/health/**`, `/swagger-ui/**`, `/v3/api-docs/**`.
 - CSRF deshabilitado, sesiones stateless.
 - Rate limiting (Bucket4j) habilitado en prod: 60/min global, 3/min login.
@@ -1303,7 +1666,7 @@ Orden típico de consulta por subagente:
 3. **DDD estricto por capas:** el dominio es Java puro (sin Spring, JPA, Lombok, Jackson, RabbitMQ, Keycloak, Swagger). La aplicación solo conoce dominio + librerías permitidas. La infraestructura es la única que habla con tecnologías externas.
 4. **Cero reglas de negocio en `infrastructure/`:** si una decisión tiene sentido de negocio, vive en `domain/`. Los `@Configuration` solo cablean; los adaptadores solo traducen.
 5. **Patrón puerto/adaptador obligatorio** para toda integración externa (Keycloak, RabbitMQ, Redis, servicios HTTP, SMTP, S3). Puerto en `domain/port/out/`, adaptador en `infrastructure/adapter/out/{tipo}/`.
-6. Toda entidad raíz en los 6 contextos de negocio **DEBE** extender `AggregateRoot`. La única excepción documentada es `seguridad`.
+6. Toda entidad raíz en los 6 contextos de negocio **DEBE** extender `EventEmittingEntity`. La única excepción documentada es `seguridad`.
 7. Los IDs son **siempre `UUID`**. Cualquier uso de `Long`/`Integer` como ID es un error.
 8. La dirección de dependencias `domain ← application ← infrastructure` **no se negocia**.
 9. Los bounded contexts **no se importan entre sí** — solo eventos RabbitMQ.

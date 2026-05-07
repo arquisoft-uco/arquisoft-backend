@@ -1,4 +1,15 @@
+// java-library habilita la configuración 'api', que expone dependencias
+// transitivamente a los consumidores. Necesario para que Page<T> y Pageable
+// sean visibles sin redeclararlos en cada módulo que use shared:domain.
+apply plugin: 'java-library'
+
 dependencies {
+    // Spring Data Commons — Page<T> y Pageable como tipos estándar de paginación.
+    // Se declara 'api' para que los módulos que consuman shared:domain (fichas:domain,
+    // proyectos:domain, etc.) vean Page/Pageable sin necesidad de redeclararlos.
+    // No arrastra Spring Boot ni ORM — es una librería ligera de tipos.
+    api 'org.springframework.data:spring-data-commons'
+
     // Lombok (used in domain models)
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"

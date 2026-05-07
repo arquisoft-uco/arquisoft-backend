@@ -7,7 +7,8 @@ import java.util.Optional;
 
 /**
  * Regla de negocio pura: traduce códigos de rol (emitidos por Keycloak)
- * en el nombre de autoridad que Spring Security reconoce (ROLE_XXX).
+ * en el nombre de autoridad que Spring Security reconoce.
+ * Sin prefijo ROLE_ — compatible con hasAuthority() en @PreAuthorize.
  * Sin dependencias de framework — Java 21 puro.
  */
 public final class RoleAuthorityMapper {
@@ -15,13 +16,13 @@ public final class RoleAuthorityMapper {
     private RoleAuthorityMapper() {}
 
     /**
-     * Convierte un código de rol a su representación ROLE_XXX.
+     * Convierte un código de rol a su authority name (coincide con el código kebab-case).
      * Retorna vacío si el código no pertenece al dominio.
      */
     public static Optional<String> toAuthorityName(String roleCode) {
         try {
             UsuarioRole role = UsuarioRole.fromCode(roleCode);
-            return Optional.of("ROLE_" + role.name());
+            return Optional.of(role.getCode());
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }

@@ -12,7 +12,7 @@ class FichaPerfilTest {
     // ─── Helpers de Arrange ───────────────────────────────────────────────────
 
     private AsesorFicha asesorValido() {
-        return AsesorFicha.of(UUID.randomUUID(), "Asesor Test", "asesor@test.com");
+        return AsesorFicha.of(UUID.randomUUID(), "DOC-001", "Asesor Test", "asesor@test.com");
     }
 
     // ─── Tests ────────────────────────────────────────────────────────────────
@@ -31,7 +31,6 @@ class FichaPerfilTest {
         assertThat(ficha.getId()).isEqualTo(id);
         assertThat(ficha.getTituloProyecto()).isEqualTo(titulo);
         assertThat(ficha.getAsesorFicha()).isEqualTo(asesor);
-        assertThat(ficha.getUnPublishedEvents()).isEmpty();
     }
 
     @Test

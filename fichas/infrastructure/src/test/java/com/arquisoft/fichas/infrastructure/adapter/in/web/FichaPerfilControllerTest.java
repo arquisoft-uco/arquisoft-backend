@@ -2,7 +2,6 @@ package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
 import com.arquisoft.fichas.domain.model.FichaPerfil;
 import com.arquisoft.fichas.domain.port.in.ConsultarFichasPerfilUseCase;
-import com.arquisoft.shared.domain.Page;
 import com.arquisoft.shared.web.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,15 +9,18 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,7 +34,7 @@ class FichaPerfilControllerTest {
     /**
      * Configuración de seguridad mínima para tests de slice (@WebMvcTest).
      * @EnableWebSecurity provee el bean HttpSecurity.
-     * @EnableMethodSecurity activa @PreAuthorize en el controller.
+     * @EnableMethodSecurity activa @PreAuthorize (hasAuthority) en el controller.
      */
     @TestConfiguration
     @EnableWebSecurity
@@ -59,31 +61,35 @@ class FichaPerfilControllerTest {
     @Test
     void debe200_cuandoConsultaExitosa() throws Exception {
         // Arrange
-        Page<FichaPerfil> paginaVacia = Page.empty(0, 10);
-        when(consultarFichasPerfilUseCase.ejecutar(anyInt(), anyInt())).thenReturn(paginaVacia);
+        Page<FichaPerfil> paginaVacia = Page.empty();
+        when(consultarFichasPerfilUseCase.ejecutar(any(Pageable.class))).thenReturn(paginaVacia);
 
-        // Act & Assert — usuario con rol COORDINADOR
+        // Act & Assert — usuario con authority ficha:ficha:view (resource_access)
         mockMvc.perform(get("/fichas-perfil/coordinador")
                         .param("page", "0")
                         .param("size", "10")
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .roles("COORDINADOR")))
+                                .authorities(new SimpleGrantedAuthority("ficha:ficha:view"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(0));
     }
 
     @Test
-    void debe400_cuandoParametrosPaginacionInvalidos() throws Exception {
-        // Arrange — page=-1 viola @Min(0) en el controller (@Validated)
+    void debeNormalizar_cuandoPageEsNegativo() throws Exception {
+        // Arrange — page=-1 es normalizado a 0 por PageableHandlerMethodArgumentResolver
+        // (Math.max(0, page)). El antiguo @Min(0) + @Validated fue eliminado al migrar
+        // a Pageable; la validación de rango es responsabilidad del resolver de Spring.
+        Page<FichaPerfil> paginaVacia = Page.empty();
+        when(consultarFichasPerfilUseCase.ejecutar(any(Pageable.class))).thenReturn(paginaVacia);
 
-        // Act & Assert — usuario COORDINADOR, pero parámetros inválidos → 400
+        // Act & Assert — Spring acepta page=-1 tratándolo como page=0 → 200
         mockMvc.perform(get("/fichas-perfil/coordinador")
                         .param("page", "-1")
                         .param("size", "10")
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .roles("COORDINADOR")))
-                .andExpect(status().isBadRequest());
+                                .authorities(new SimpleGrantedAuthority("ficha:ficha:view"))))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -96,17 +102,15 @@ class FichaPerfilControllerTest {
     }
 
     @Test
-    void debe403_cuandoRolInsuficiente() throws Exception {
-        // Arrange — usuario autenticado pero sin rol COORDINADOR
-        when(consultarFichasPerfilUseCase.ejecutar(anyInt(), anyInt()))
-                .thenReturn(Page.empty(0, 10));
+    void debe403_cuandoAuthorityInsuficiente() throws Exception {
+        // Arrange — @PreAuthorize rechaza antes de invocar el use case; no hace falta mock
 
-        // Act & Assert — @PreAuthorize("hasRole('COORDINADOR')") rechaza con 403
+        // Act & Assert — @PreAuthorize("hasAuthority('ficha:ficha:view')") rechaza con 403
         mockMvc.perform(get("/fichas-perfil/coordinador")
                         .param("page", "0")
                         .param("size", "10")
                         .with(SecurityMockMvcRequestPostProcessors.user("estudiante")
-                                .roles("ESTUDIANTE")))
+                                .authorities(new SimpleGrantedAuthority("estudiante"))))
                 .andExpect(status().isForbidden());
     }
 }

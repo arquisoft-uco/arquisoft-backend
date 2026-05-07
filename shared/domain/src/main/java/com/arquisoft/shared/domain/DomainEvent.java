@@ -37,8 +37,13 @@ public abstract class DomainEvent {
     }
 
     /**
-     * Routing key con la que este evento se publica al exchange arquisoft.events.
+     * Topic conceptual al que pertenece este evento.
      * Formato esperado: '{contexto}.{entidad}.{accion}' (ej. 'fichas.ficha.creada').
+     *
+     * Este valor es agnóstico del broker — la implementación de EventPublisher
+     * decide cómo interpretarlo (en RabbitMQ se usa como routing key del
+     * exchange arquisoft.events; en otros brokers podría ser un topic de Kafka
+     * o un canal genérico).
      */
-    public abstract String getRoutingKey();
+    public abstract String getEventTopic();
 }

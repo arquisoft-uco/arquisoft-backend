@@ -1,6 +1,7 @@
 -- Tabla del asesor (debe crearse primero por la FK en ficha_perfil)
 CREATE TABLE asesor_ficha (
     id     UUID         NOT NULL,
+    identificador VARCHAR(30) NOT NULL,
     nombre VARCHAR(50)  NOT NULL,
     email  VARCHAR(50)  NOT NULL,
     PRIMARY KEY (id)

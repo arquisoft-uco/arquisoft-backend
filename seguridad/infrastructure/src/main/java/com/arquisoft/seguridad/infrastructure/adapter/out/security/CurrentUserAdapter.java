@@ -49,11 +49,9 @@ public class CurrentUserAdapter implements CurrentUserPort {
             return false;
         }
 
-        String roleToCheck = role.startsWith("ROLE_") ? role : "ROLE_" + role;
-
         return auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(authority -> authority.equals(roleToCheck) || authority.equals(role));
+                .anyMatch(role::equals);
     }
 
     @Override
@@ -65,7 +63,6 @@ public class CurrentUserAdapter implements CurrentUserPort {
 
         return auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .map(authority -> authority.startsWith("ROLE_") ? authority.substring(5) : authority)
                 .collect(Collectors.toList());
     }
 

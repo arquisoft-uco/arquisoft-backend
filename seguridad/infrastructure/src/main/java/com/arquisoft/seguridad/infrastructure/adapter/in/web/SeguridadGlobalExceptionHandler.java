@@ -3,6 +3,7 @@ package com.arquisoft.seguridad.infrastructure.adapter.in.web;
 import com.arquisoft.seguridad.domain.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.exception.InvalidCredentialsException;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
+import com.arquisoft.seguridad.domain.exception.KeycloakUnavailableException;
 import com.arquisoft.shared.web.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +65,22 @@ public class SeguridadGlobalExceptionHandler {
                         .error("Unauthorized")
                         .message(ex.getMessage())
                         .status(HttpStatus.UNAUTHORIZED.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
+
+    @ExceptionHandler(KeycloakUnavailableException.class)
+    public ResponseEntity<ErrorResponseDTO> handleKeycloakUnavailable(
+            KeycloakUnavailableException ex,
+            HttpServletRequest request) {
+
+        log.error("Keycloak unreachable: {}", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(ErrorResponseDTO.builder()
+                        .error("Service Unavailable")
+                        .message("El servicio de autenticacion no esta disponible temporalmente. Intente mas tarde.")
+                        .status(HttpStatus.SERVICE_UNAVAILABLE.value())
                         .path(request.getRequestURI())
                         .build());
     }

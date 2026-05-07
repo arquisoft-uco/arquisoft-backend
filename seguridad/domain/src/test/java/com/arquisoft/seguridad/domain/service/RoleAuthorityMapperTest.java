@@ -12,13 +12,13 @@ class RoleAuthorityMapperTest {
     @Test
     void debeRetornarAuthority_cuandoCodigoEsValido() {
         // Arrange
-        String codigo = "ESTUDIANTE";
+        String codigo = "estudiante";
 
         // Act
         Optional<String> resultado = RoleAuthorityMapper.toAuthorityName(codigo);
 
         // Assert
-        assertThat(resultado).isPresent().hasValue("ROLE_ESTUDIANTE");
+        assertThat(resultado).isPresent().hasValue("estudiante");
     }
 
     @Test
@@ -36,7 +36,7 @@ class RoleAuthorityMapperTest {
     @Test
     void debeMapearTodosLosRoles_cuandoListaContieneRolesValidos() {
         // Arrange
-        List<String> codigos = List.of("ESTUDIANTE", "COORDINADOR", "ADMINISTRADOR");
+        List<String> codigos = List.of("estudiante", "coordinador", "administrador");
 
         // Act
         List<String> authorities = RoleAuthorityMapper.toAuthorityNames(codigos);
@@ -44,13 +44,13 @@ class RoleAuthorityMapperTest {
         // Assert
         assertThat(authorities)
                 .hasSize(3)
-                .containsExactly("ROLE_ESTUDIANTE", "ROLE_COORDINADOR", "ROLE_ADMINISTRADOR");
+                .containsExactly("estudiante", "coordinador", "administrador");
     }
 
     @Test
     void debeFiltrarRolesInternos_cuandoListaMixta() {
         // Arrange
-        List<String> codigos = List.of("ESTUDIANTE", "offline_access", "uma_authorization", "JURADO");
+        List<String> codigos = List.of("estudiante", "offline_access", "uma_authorization", "jurado");
 
         // Act
         List<String> authorities = RoleAuthorityMapper.toAuthorityNames(codigos);
@@ -58,6 +58,6 @@ class RoleAuthorityMapperTest {
         // Assert
         assertThat(authorities)
                 .hasSize(2)
-                .containsExactly("ROLE_ESTUDIANTE", "ROLE_JURADO");
+                .containsExactly("estudiante", "jurado");
     }
 }
