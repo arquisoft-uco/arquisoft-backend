@@ -4,6 +4,7 @@ import com.arquisoft.shared.exceptions.DomainException;
 import com.arquisoft.shared.web.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,6 +18,23 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice(basePackages = "com.arquisoft.fichas")
 public class FichasGlobalExceptionHandler {
+
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<ErrorResponseDTO> handleInvalidDataAccessApiUsage(
+            InvalidDataAccessApiUsageException ex,
+            HttpServletRequest request) {
+
+        log.warn("Invalid data access in {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponseDTO.builder()
+                        .error("Bad Request")
+                        .errorCode("ORDENAMIENTO_INVALIDO")
+                        .message(ex.getMessage())
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
 
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ErrorResponseDTO> handleDomainGeneric(
