@@ -36,6 +36,12 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Los preflight OPTIONS no consumen cuota — son generados por el browser, no por el usuario
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String clientIp = getClientIp(request);
         
         boolean isLoginEndpoint = request.getRequestURI().contains("/auth/login");
@@ -50,13 +56,16 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
         } else {
             long waitForRefill = TimeUnit.NANOSECONDS.toSeconds(probe.getNanosToWaitForRefill());
-            
+
+            response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+            response.setContentType("application/json");
             response.addHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitForRefill));
-            response.sendError(
-                    HttpStatus.TOO_MANY_REQUESTS.value(),
-                    "Has excedido el límite de solicitudes. Intenta de nuevo en " + waitForRefill + " segundos."
+            response.getWriter().write(
+                "{\"error\":\"Too Many Requests\"," +
+                "\"message\":\"Has excedido el límite de solicitudes. Intenta de nuevo en " + waitForRefill + " segundos.\"," +
+                "\"status\":429}"
             );
-            
+
             log.warn("Rate limit exceeded for IP: {} on endpoint: {}", clientIp, request.getRequestURI());
         }
     }
