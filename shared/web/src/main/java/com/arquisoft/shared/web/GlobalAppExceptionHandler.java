@@ -15,6 +15,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -152,6 +154,38 @@ public class GlobalAppExceptionHandler {
                         .error("Service Unavailable")
                         .message("Error al conectar con servicio externo. Intente más tarde.")
                         .status(HttpStatus.SERVICE_UNAVAILABLE.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleNoResourceFound(
+            NoResourceFoundException ex,
+            HttpServletRequest request) {
+
+        log.warn("Resource not found: {}", request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponseDTO.builder()
+                        .error("Not Found")
+                        .message("El recurso solicitado no existe")
+                        .status(HttpStatus.NOT_FOUND.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponseDTO> handleResponseStatus(
+            ResponseStatusException ex,
+            HttpServletRequest request) {
+
+        log.warn("Response status exception in {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(ex.getStatusCode())
+                .body(ErrorResponseDTO.builder()
+                        .error(ex.getStatusCode().toString())
+                        .message(ex.getReason() != null ? ex.getReason() : ex.getMessage())
+                        .status(ex.getStatusCode().value())
                         .path(request.getRequestURI())
                         .build());
     }

@@ -1,17 +1,20 @@
 # ==============================================================================
 # CONFIGURACION BASE DE ARQUISOFT
 # ==============================================================================
-# Importa credenciales segun el perfil activo (archivos locales, NO versionados):
-#   - Perfil dev (default): .env-dev.properties
-#   - Perfil prod:          .env-prod.properties
-# Si el archivo no existe, se usan los defaults (el arranque fallara
-# con mensaje claro de conexion).
-# Para crear el tuyo: cp .env-dev.properties.example .env-dev.properties
+# Importa credenciales desde .env o .env.properties (archivos locales, NO versionados).
+# Se pueden usar indistintamente — ambos están en .gitignore.
+#   - .env          → formato Docker (recomendado, compatible con --env-file)
+#   - .env.properties → formato Spring legado (compatibilidad con setups anteriores)
+#   - .env-${spring.profiles.active:dev}.properties → formato compatible desde consola
+# Para crear el tuyo: cp .env.example .env
 # ==============================================================================
 
 spring:
   config:
-    import: "optional:file:./.env-${spring.profiles.active:dev}.properties"
+    import:
+      - "optional:file:./.env[.properties]"
+      - "optional:file:./.env.properties"
+      - "optional:file:./.env-${spring.profiles.active:dev}.properties"
   banner:
     location: classpath:banner.txt
   application:
