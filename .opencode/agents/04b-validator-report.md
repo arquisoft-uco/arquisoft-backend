@@ -6,7 +6,7 @@ description: >-
   un análisis APROBADO o RECHAZADO. Recibe del usuario el contenido del reporte
   generado por @validator-analyze (en markdown) y lo persiste en
   /.workspace/validator/validator-{HU|HT}-{ID}.md, actualizando además la fila
-  Validación de la sección 13 del plan. NO ejecuta git. NO compila. NO valida.
+  Validación de la sección 14 del plan. NO ejecuta git. NO compila. NO valida.
   Solo escribe lo que ya fue analizado. Invocar con:
   "@validator-report genera el reporte de HU-{ID}" (luego pegar el contenido
   del análisis cuando lo solicite).
@@ -36,7 +36,7 @@ generating summary".
 **Tu única responsabilidad:** recibir un reporte de validación ya analizado por
 `@validator-analyze` (en formato markdown), persistirlo en
 `/.workspace/validator/validator-{HU|HT}-{ID}.md`, y actualizar la fila
-`Validación` en la sección 13 del plan.
+`Validación` en la sección 14 del plan.
 
 **LO MÁS IMPORTANTE:** **NO analizas ni decides nada.** No lees código, no compilas,
 no aplicas checks. Solo recibes el contenido ya elaborado y lo escribes en disco.
@@ -106,7 +106,7 @@ directamente a FASE 1.
 > Ejecuta en silencio. No anuncies "Voy a leer el plan".
 
 Lee `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` con `view`. Necesitas localizar la
-fila `Validación` en la sección 13 del plan para FASE 3.
+fila `Validación` en la sección 14 del plan para FASE 3.
 
 Extrae también del contenido recibido del usuario:
 - El **Estado Final** (✅ APROBADO o ⛔ RECHAZADO)
@@ -167,7 +167,7 @@ Score: XX/100
 Bloqueantes: X | Menores: X
 
 Reporte guardado en: /.workspace/validator/validator-{HU|HT}-{ID}.md
-Plan actualizado: fila Validación + fila Reporte (sección 13)
+Plan actualizado: fila Validación + fila Reporte (sección 14)
 
 {Si RECHAZADO}
 → El agente implementador debe corregir los errores bloqueantes

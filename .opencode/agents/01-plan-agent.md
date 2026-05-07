@@ -138,7 +138,7 @@ Si el contexto usa EventEmittingEntity, busca el archivo `{contexto}/src/main/ja
 | **La entidad ya existe** (creada en HU previa) | NO se incluye en el árbol de archivos a CREAR. Si la HU la modifica, va en "Archivos a MODIFICAR". |
 | **La entidad NO existe** (esta es la primera HU del contexto que la toca) | DEBE incluirse en el árbol como archivo a CREAR, **incluso si la HU es de Consulta**. Sin la entidad raíz, el puerto del repositorio no puede retornarla, el adapter no puede usar `rebuild(...)`, y la arquitectura queda rota. |
 
-> **Regla dura:** una HU de consulta NO emite eventos NI tiene tests de ciclo de eventos, **pero SÍ requiere que la entidad raíz exista** para que el puerto `{Entidad}RepositoryPort` retorne `Page<{Entidad}>` y el adapter use `rebuild(...)`. Si esta es la primera HU del contexto, la entidad raíz, sus value objects y al menos un evento (`{Entidad}CreadaEvent`) deben crearse aquí — aunque el use case actual no los emita. El evento queda disponible para futuras HUs de escritura.
+> **Regla dura:** una HU de consulta NO emite eventos NI tiene tests de ciclo de eventos, **pero SÍ requiere que la entidad raíz exista** para que el puerto `{Entidad}RepositoryPort` retorne `Page<{Entidad}>` (de Spring Data) y el adapter use `rebuild(...)`. Si esta es la primera HU del contexto, la entidad raíz, sus value objects y al menos un evento (`{Entidad}CreadaEvent`) deben crearse aquí — aunque el use case actual no los emita. El evento queda disponible para futuras HUs de escritura.
 
 > **Cómo verificar existencia:** mediante `bash` o `view` sobre el filesystem local del proyecto. Si el módulo `{contexto}/` aún no tiene carpeta `domain/model/`, asume que la entidad NO existe.
 
@@ -201,12 +201,20 @@ Espera las respuestas del usuario antes de continuar.
     - **B) Consulta** (lee datos; puede tener filtros, paginación, ordenamiento; **NO** modifica estado, **NO** emite eventos).
     - **C) Mixta** (lectura con efecto secundario, ej. "consultar y marcar como visto"). **Si dudas, casi siempre no es mixta** — separa en dos use cases distintos.
 
-   > Esta respuesta determina **qué tipos de tests aplican** en la sección 11 del plan
+   > Esta respuesta determina **qué tipos de tests aplican** en la sección 12 del plan
    > y previene sobre-testeo. Una HU de consulta NO debe tener tests de ciclo de eventos
    > del Aggregate Root, ni verificación de `eventPublisher.publish(...)` — ver sección
    > "Tipos de Use Case y sus Tests" del skill `arquisoft-context`.
 
-3. ¿Qué rol(es) de usuario pueden ejecutar esta acción? (roles de Keycloak)
+3. **¿Qué client role(s) requiere esta acción y qué roles realm de Keycloak deben tenerlo asignado?**
+
+   Convención del proyecto: cada endpoint REST se autoriza con `@PreAuthorize("hasAuthority('contexto:recurso:accion')")`. La autorización va contra **client roles** de Keycloak, no contra roles realm directamente.
+
+   Por cada acción de la HU, decide:
+    - **Nombre del client role:** formato `{contexto}:{recurso}:{accion}` (ej. `fichas:ficha:create`, `proyectos:proyecto:approve`).
+    - **A qué roles realm se asignará** (uno o varios pueden compartir el mismo client role). Roles realm en kebab-case: `coordinador`, `asesor`, `asesor-ficha`, `jurado`, `bibliotecario`, `representante-comite`, `estudiante`, `administrador`.
+
+   El plan debe documentar este mapeo en la sección 9 (Seguridad y Autorización) para que el equipo de Keycloak pueda configurarlo en paralelo.
 4. ¿Hay reglas de negocio implícitas que no están explícitas en la HU?
 5. **¿Esta HU debe emitir eventos de dominio?** (Solo aplica si pregunta 2 = Escritura o Mixta — las consultas nunca emiten eventos).
     - **A) Sí, hay consumidores conocidos.** Otro bounded context necesita reaccionar a este hecho. Anotar: qué contexto consume y qué payload espera.
@@ -563,7 +571,7 @@ Para cada archivo de tipo Controller, añadir además:
 - **Endpoints documentados:**
 
   | Método del Controller | `@Operation(summary)` | Códigos `@ApiResponse` | `@SecurityRequirement` |
-            |-----------------------|-----------------------|------------------------|------------------------|
+              |-----------------------|-----------------------|------------------------|------------------------|
   | `{metodo}` | `"{resumen corto < 10 palabras}"` | 200/201, 400, 401, 403, 404 | `bearerAuth` (omitir si es público) |
 
 - **Nota:** Los endpoints públicos (login, refresh, validate) omiten `@SecurityRequirement`.
@@ -572,25 +580,59 @@ Para cada archivo de tipo Controller, añadir además:
 
 ## 8. Endpoints REST (si aplica)
 
-| Método | Ruta | Request Body | Response | Código HTTP | Roles permitidos | Anotaciones Swagger (ADR-011) |
-|--------|------|--------------|----------|-------------|-----------------|-------------------------------|
-| POST | `/api/{contexto}/{recurso}` | `{Accion}{Entidad}RequestDTO` | `{Entidad}ResponseDTO` | 201 | `ROL_X` | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
+| Método | Ruta | Request Body | Response | Código HTTP | Client role requerido | Anotaciones Swagger (ADR-011) |
+|--------|------|--------------|----------|-------------|----------------------|-------------------------------|
+| POST | `/api/{contexto}/{recurso}` | `{Accion}{Entidad}RequestDTO` | `{Entidad}ResponseDTO` | 201 | `{contexto}:{recurso}:{accion}` | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
+
+> **Anotación de autorización canónica:** `@PreAuthorize("hasAuthority('{contexto}:{recurso}:{accion}')")` — uno solo por endpoint, contra un único client role. Ver sección 9 para el mapeo a roles realm.
 
 ---
 
-## 9. Eventos RabbitMQ (si aplica)
+## 9. Seguridad y Autorización (Keycloak)
 
-| Dirección | Exchange | Routing Key | Payload | Bounded Context receptor |
-|-----------|----------|-------------|---------|--------------------------|
-| Publica | `arquisoft.events` | `{contexto}.{entidad}.{accion}` | `{Entidad}{Accion}Event` (record con campos del payload) | `{otro_contexto}` |
+Por cada endpoint nuevo, declara el **client role** que requiere y a qué **roles realm** debe asignarse en Keycloak. El equipo de seguridad usa esta tabla para configurar Keycloak en paralelo con el desarrollo.
+
+### Client roles nuevos a crear en Keycloak
+
+| Client role | Roles realm que lo poseen | Endpoint(s) que lo requieren | Descripción funcional |
+|---|---|---|---|
+| `{contexto}:{recurso}:{accion}` | `coordinador`, `asesor-ficha` | `POST /api/...` | {qué permite hacer este client role} |
+
+### Reglas de uso
+
+1. **Formato del client role:** `{contexto}:{recurso}:{accion}` — todo en minúscula, separado por dos puntos.
+2. **Roles realm en kebab-case:** `coordinador`, `asesor`, `asesor-ficha`, `jurado`, `bibliotecario`, `representante-comite`, `estudiante`, `administrador`.
+3. **Un client role puede pertenecer a varios roles realm.** Si dos roles realm distintos pueden ejecutar la misma acción, ambos tendrán asignado el mismo client role en Keycloak — NO se hace OR en `@PreAuthorize`.
+4. **Cada endpoint REST tiene exactamente un `@PreAuthorize("hasAuthority('...')")`** con un único client role.
+5. **NO se usa `hasRole(...)`** ni roles realm directamente en endpoints — siempre `hasAuthority(...)` con client role.
+
+### Configuración requerida en Keycloak (instrucciones para equipo de seguridad)
+
+Para cada client role nuevo de la tabla anterior:
+
+1. En el cliente `arquisoft-api`: crear el client role con el nombre exacto (formato `{contexto}:{recurso}:{accion}`).
+2. Asignar el client role a cada uno de los roles realm listados en la columna "Roles realm que lo poseen".
+3. Verificar que los usuarios de prueba con esos roles realm reciban el client role en su JWT (`resource_access.arquisoft-api.roles`).
+
+---
+
+## 10. Eventos RabbitMQ (si aplica)
+
+| Dirección | Exchange | Routing Key (`eventTopic`) | Payload | Bounded Context receptor |
+|-----------|----------|----------------------------|---------|--------------------------|
+| Publica | `arquisoft.events` | `{contexto}.{entidad}.{accion}` | `{Entidad}{Accion}Event` (record con campos del payload) | `{otro_contexto}` o "ninguno aún" |
 
 > **Nota DDD:** el evento del dominio (`{Entidad}{Accion}Event` en `{contexto}/domain/event/`)
 > es el mismo que se publica en RabbitMQ. El use case lo drena del Aggregate Root y lo pasa
-> a `EventPublisher` (puerto `shared:amqp`).
+> a `EventPublisher` (puerto `shared:amqp`). Cada evento implementa `getEventTopic()` retornando
+> la routing key `{contexto}.{entidad}.{accion}`.
+
+> **Si la HU es CRUD sin consumidores** (respuesta C en pregunta 5 de FASE 3): documenta
+> aquí "Eventos: ninguno" con razón explícita. El use case NO inyecta `EventPublisher`.
 
 ---
 
-## 10. Migración de Base de Datos (si aplica)
+## 11. Migración de Base de Datos (si aplica)
 
 - **Archivo:** `V{n}__{descripcion}.sql`
 - **Base de datos:** la migración se ejecuta dentro de la BD propia del contexto. Usar
@@ -605,7 +647,7 @@ Para cada archivo de tipo Controller, añadir además:
 
 ---
 
-## 11. Casos de Prueba Sugeridos (condicional según tipo de Use Case)
+## 12. Casos de Prueba Sugeridos (condicional según tipo de Use Case)
 
 > **El alcance de los tests depende del Tipo de Use Case** declarado en la Metadata
 > (Escritura, Consulta o Mixto). NO copies todas las secciones — incluye solo las que
@@ -711,7 +753,7 @@ ejemplos detallados.
 
 ---
 
-## 12. Checklist de Implementación
+## 13. Checklist de Implementación
 
 - [ ] **DDD:** Entidad de dominio extiende `EventEmittingEntity` (salvo `seguridad`)
 - [ ] Entidad inmutable: constructor privado, campos `final`, factory methods `build` / `rebuild`, sin Lombok
@@ -724,7 +766,7 @@ ejemplos detallados.
 - [ ] **Toda excepción nueva registrada en `{Contexto}GlobalExceptionHandler` del contexto** con `@ExceptionHandler` y código HTTP correcto (ver mapeo en el skill). Si el contexto no tenía handler aún, se creó con el nombre prefijado correcto. Ningún test de controller espera 500 para inputs inválidos.
 - [ ] DTOs con `toDomain()` / `fromDomain()` y anotaciones Jakarta Validation
 - [ ] Caso de uso (`{Accion}{Entidad}UseCaseImpl`) con `@RequiredArgsConstructor`, `@Transactional` y drenado de eventos
-- [ ] Controller REST con `@Valid @RequestBody` y roles Keycloak configurados con `@PreAuthorize`
+- [ ] Controller REST con `@Valid @RequestBody` y autorización vía `@PreAuthorize("hasAuthority('{contexto}:{recurso}:{accion}')")` (client role declarado en sección 9 del plan)
 - [ ] Controller documentado con `@Tag`, `@Operation`, `@ApiResponses` y `@SecurityRequirement` (ADR-011)
 - [ ] Entidad JPA con `@Table(name = "...")` (sin atributo `schema`) y adaptador de repositorio creados
 - [ ] Migración Flyway (`V{n}__{descripcion}.sql`) en la BD correcta según tabla de mapeo, sin prefijo de schema en el SQL
@@ -737,7 +779,7 @@ ejemplos detallados.
 
 ---
 
-## 13. Trazabilidad del Flujo
+## 14. Trazabilidad del Flujo
 
 > Esta sección es actualizada automáticamente por cada agente al completar su etapa.
 > No modificar manualmente.
@@ -764,8 +806,8 @@ ejemplos detallados.
 7. **Respeta la dirección de dependencias:** Domain ← Application ← Infrastructure.
 8. **DDD estricto:** toda entidad raíz debe extender `EventEmittingEntity` (excepto `seguridad`). Documenta siempre en el plan (sección 4) qué eventos emite.
 9. **Verificación de existencia de la entidad raíz (Paso 4.2 del Protocolo de Carga):** antes de generar el árbol de archivos, verifica si `domain/model/{Entidad}.java` ya existe en el código del contexto. Si NO existe (primera HU del contexto que la toca), inclúyela como archivo a CREAR junto con su `{Entidad}CreadaEvent` — incluso si la HU es de Consulta. Sin la entidad raíz, el puerto del repositorio no puede retornarla y el adapter no puede usar `rebuild(...)`.
-10. **Flujo de datos JPA → dominio → DTO (regla DDD inviolable):** el puerto `{Entidad}RepositoryPort` retorna entidades de dominio (`{Entidad}` o `Page<{Entidad}>`), nunca DTOs. El adapter convierte JPA Entity → entidad de dominio con `rebuild(...)`. El use case convierte entidad de dominio → DTO de respuesta. **Ningún plan puede saltarse este flujo, ni siquiera para optimizar consultas.** Si una HU justifica saltarse el dominio (CQRS query side), debe documentarse explícitamente en la sección 5 como decisión arquitectónica, no asumirse silenciosamente.
-11. **Paginación: `Page<T>` interno, `PageResponseDTO<T>` externo.** Cuando una HU es paginada, el puerto retorna `Page<{Entidad}>` (record de `shared:domain`). El use case retorna `Page<{Entidad}ResponseDTO>` (sigue siendo `Page` de dominio, no DTO técnico). **El controller** convierte `Page<T>` → `PageResponseDTO<T>` (de `shared:web`) justo antes de retornar el `ResponseEntity`. `PageResponseDTO` **NUNCA** aparece en `domain/` ni en `application/`. El adapter del repositorio convierte Spring `Page<JpaEntity>` → `Page<{Entidad}>` de dominio usando `rebuild(...)` por elemento.
+10. **Flujo de datos JPA → dominio → DTO (regla DDD inviolable):** el puerto `{Entidad}RepositoryPort` retorna entidades de dominio (`{Entidad}` o `Page<{Entidad}>` de Spring Data), nunca DTOs ni JPA Entities. El adapter convierte JPA Entity → entidad de dominio con `rebuild(...)` o vía `JpaEntity::toDomain`. El use case convierte entidad de dominio → DTO de respuesta. **Ningún plan puede saltarse este flujo, ni siquiera para optimizar consultas.** Si una HU justifica saltarse el dominio (CQRS query side), debe documentarse explícitamente en la sección 5 como decisión arquitectónica, no asumirse silenciosamente.
+11. **Paginación con Spring Data:** cuando una HU es paginada, el puerto retorna `org.springframework.data.domain.Page<{Entidad}>` y recibe `Pageable`. El use case retorna `Page<{Entidad}ResponseDTO>` (Spring Data) y usa `.map(...)` directo. **El controller** convierte `Page<T>` → `PageResponseDTO<T>` (de `shared:web`) con `PageResponseDTO.from(...)` justo antes de retornar el `ResponseEntity`. `PageResponseDTO` **NUNCA** aparece en `domain/` ni en `application/`. El adapter del repositorio queda en una sola línea: `jpaRepository.findAll(pageable).map(JpaEntity::toDomain)`. **NO existe `Page<T>` propio del dominio** — `spring-data-commons` provee los tipos. Nombres de métodos sin "Paginadas" (usar `consultarTodas`, `listarTodas`, `buscarPor...`).
 11. **Integraciones externas:** si la HU toca Keycloak, SMTP, S3, Redis con lógica propia, o servicios HTTP externos, el plan **debe** incluir la sección 5 con el puerto abstracto (`domain/port/out/`) y el adaptador concreto (`infrastructure/adapter/out/{tipo}/`). Ninguna regla de negocio puede vivir en el adaptador — solo traducción entre mundos.
 12. **Si la HU toca más de un bounded context**, genera una sección del plan por cada contexto afectado.
 13. **Comunicación entre contextos = evento RabbitMQ.** Nunca dependencia directa.
@@ -773,4 +815,4 @@ ejemplos detallados.
 15. **El plan es el contrato:** debe ser suficientemente detallado para implementarse sin ambigüedades.
 16. **Guarda el plan** como `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` al finalizar.
 17. **Incluye en el Metadata** qué archivos del repo de documentación fueron consultados y la confirmación `Skill arquisoft-context cargado: ✅`.
-18. **La sección 13 (Trazabilidad)** se incluye siempre con todas las etapas en estado `⏳ Pendiente`.
+18. **La sección 14 (Trazabilidad)** se incluye siempre con todas las etapas en estado `⏳ Pendiente`.

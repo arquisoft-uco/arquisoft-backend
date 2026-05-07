@@ -10,19 +10,19 @@ class UsuarioRoleTest {
     @Test
     void debeRetornarCodigoCorrecto_cuandoRolEstudiante() {
         // Arrange / Act / Assert
-        assertThat(UsuarioRole.ESTUDIANTE.getCode()).isEqualTo("ESTUDIANTE");
+        assertThat(UsuarioRole.ESTUDIANTE.getCode()).isEqualTo("estudiante");
     }
 
     @Test
     void debeRetornarSpringRole_cuandoRolAsesorFicha() {
         // Arrange / Act / Assert
-        assertThat(UsuarioRole.ASESOR_FICHA.getSpringRole()).isEqualTo("ROLE_ASESOR_FICHA");
+        assertThat(UsuarioRole.ASESOR_FICHA.getSpringRole()).isEqualTo("asesor-ficha");
     }
 
     @Test
     void debeEncontrarRol_cuandoCodigoAsesorFichaExiste() {
         // Arrange
-        String codigo = "ASESOR_FICHA";
+        String codigo = "asesor-ficha";
 
         // Act
         UsuarioRole rol = UsuarioRole.fromCode(codigo);

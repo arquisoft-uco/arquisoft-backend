@@ -75,14 +75,14 @@ Si no se indicó el ID, pregunta: **"¿Cuál es el ID del plan a commitear (HU o
    > `@validator-analyze` seguido de `@validator-report`."
    Y termina sin ejecutar nada más.
 4. Extrae del reporte:
-   - Mensaje de commit propuesto
-   - Lista de archivos de código a incluir (`git add`)
-   - Nombre de la rama (`feature/{HU|HT}-{ID}-{descripcion_snake_case}`)
+    - Mensaje de commit propuesto
+    - Lista de archivos de código a incluir (`git add`)
+    - Nombre de la rama (`feature/{HU|HT}-{ID}-{descripcion_snake_case}`)
 5. **Construye la lista FINAL de archivos del commit** combinando:
-   - Los archivos de código listados en el reporte (`Archivos a incluir`).
-   - **Los dos archivos del workspace que documentan esta HU/HT** (siempre incluidos):
-     - `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`
-     - `.workspace/validator/validator-{HU|HT}-{ID}.md`
+    - Los archivos de código listados en el reporte (`Archivos a incluir`).
+    - **Los dos archivos del workspace que documentan esta HU/HT** (siempre incluidos):
+        - `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`
+        - `.workspace/validator/validator-{HU|HT}-{ID}.md`
 
    Estos dos archivos del workspace son parte del **artefacto auditable** de la HU/HT
    y deben quedar versionados junto al código que justifican. Si alguien revisa el
@@ -107,9 +107,9 @@ git branch --show-current
 
 - Si la rama actual **coincide** con la del reporte → continúa.
 - Si la rama actual **no coincide**:
-  - **Si no existe:** ejecuta `git checkout -b feature/{HU|HT}-{ID}-{descripcion_snake_case}`
-  - **Si ya existe:** informa al usuario y pregunta si desea hacer checkout a esa rama
-    o continuar en la rama actual antes de proceder.
+    - **Si no existe:** ejecuta `git checkout -b feature/{HU|HT}-{ID}-{descripcion_snake_case}`
+    - **Si ya existe:** informa al usuario y pregunta si desea hacer checkout a esa rama
+      o continuar en la rama actual antes de proceder.
 
 ### FASE 3 — Confirmación del Usuario
 
@@ -299,7 +299,7 @@ Frases correctas (descriptivas del estado **terminado**, no anticipatorias):
 6. **Tu última acción es el mensaje de FASE 6** (texto descriptivo, sin gerundios). Después, detente completamente. No anuncies acciones pendientes — desencadenan el error de OpenCode.
 7. **Si la rama del reporte ya existe pero no estás en ella**, pregunta al usuario antes de actuar — no asumas. No hagas `git checkout` automático a una rama existente.
 8. **Si el usuario quiere ajustar el mensaje del commit**, recibe el nuevo mensaje, muestra la confirmación actualizada y espera nueva confirmación antes de ejecutar FASE 4.
-9. **Tras ejecutar el commit**, actualiza la fila `Commit` en la sección 13 del plan y el campo `Estado` del reporte del validator. **No toques otras filas o campos.**
+9. **Tras ejecutar el commit**, actualiza la fila `Commit` en la sección 14 del plan y el campo `Estado` del reporte del validator. **No toques otras filas o campos.**
 10. **Si el usuario cancela en FASE 3**, no propongas alternativas, no insistas, no preguntes razones. Simplemente confirma "Commit cancelado." y detente.
 11. **SIEMPRE incluyes en el `git add` los dos archivos de workspace** que documentan la HU/HT, además de los archivos de código del reporte:
     - `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`

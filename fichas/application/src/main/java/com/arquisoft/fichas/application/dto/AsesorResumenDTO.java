@@ -15,12 +15,14 @@ import java.util.UUID;
 public class AsesorResumenDTO {
 
     private UUID id;
+    private String identificador;
     private String nombre;
     private String email;
 
     public static AsesorResumenDTO fromDomain(AsesorFicha asesor) {
         return AsesorResumenDTO.builder()
                 .id(asesor.getId())
+                .identificador(asesor.getIdentificador())
                 .nombre(asesor.getNombre())
                 .email(asesor.getEmail())
                 .build();

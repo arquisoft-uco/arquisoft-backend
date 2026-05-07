@@ -34,8 +34,11 @@ public class PageResponseDTO<T> {
     private Boolean empty;
 
     /**
-     * Constructor de conveniencia desde un org.springframework.data.domain.Page.
+     * Factory desde un {@link org.springframework.data.domain.Page} de Spring Data.
      * Permite usar: PageResponseDTO.from(springPage)
+     *
+     * <p>Es el único método factory de esta clase. Los controllers reciben un
+     * {@code Page<T>} del use case y lo convierten aquí antes de retornar al cliente.
      */
     public static <T> PageResponseDTO<T> from(org.springframework.data.domain.Page<T> page) {
         return PageResponseDTO.<T>builder()
@@ -47,23 +50,6 @@ public class PageResponseDTO<T> {
                 .first(page.isFirst())
                 .last(page.isLast())
                 .empty(page.isEmpty())
-                .build();
-    }
-
-    /**
-     * Constructor de conveniencia desde un {@link com.arquisoft.shared.domain.Page} de dominio.
-     * Permite usar: PageResponseDTO.from(domainPage)
-     */
-    public static <T> PageResponseDTO<T> from(com.arquisoft.shared.domain.Page<T> page) {
-        return PageResponseDTO.<T>builder()
-                .content(page.content())
-                .page(page.page())
-                .size(page.size())
-                .totalElements(page.totalElements())
-                .totalPages(page.totalPages())
-                .first(page.first())
-                .last(page.last())
-                .empty(page.empty())
                 .build();
     }
 }

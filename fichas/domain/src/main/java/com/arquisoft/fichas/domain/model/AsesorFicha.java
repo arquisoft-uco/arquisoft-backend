@@ -12,11 +12,13 @@ import java.util.UUID;
 public final class AsesorFicha {
 
     private final UUID id;
+    private final String identificador;
     private final String nombre;
     private final String email;
 
-    private AsesorFicha(UUID id, String nombre, String email) {
+    private AsesorFicha(UUID id, String identificador, String nombre, String email) {
         this.id = id;
+        this.identificador = identificador;
         this.nombre = nombre;
         this.email = email;
     }
@@ -25,17 +27,22 @@ public final class AsesorFicha {
      * Factory estático para construir un AsesorFicha.
      * Usado tanto para instancias nuevas como para reconstrucción desde persistencia.
      *
-     * @param id     identificador único del asesor
-     * @param nombre nombre completo del asesor
-     * @param email  correo institucional del asesor
+     * @param id            identificador único (UUID) del asesor
+     * @param identificador código/documento institucional del asesor (máx. 30 chars)
+     * @param nombre        nombre completo del asesor
+     * @param email         correo institucional del asesor
      * @return instancia de AsesorFicha
      */
-    public static AsesorFicha of(UUID id, String nombre, String email) {
-        return new AsesorFicha(id, nombre, email);
+    public static AsesorFicha of(UUID id, String identificador, String nombre, String email) {
+        return new AsesorFicha(id, identificador, nombre, email);
     }
 
     public UUID getId() {
         return id;
+    }
+
+    public String getIdentificador() {
+        return identificador;
     }
 
     public String getNombre() {

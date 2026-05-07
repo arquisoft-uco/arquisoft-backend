@@ -1,15 +1,17 @@
 # ==============================================================================
 # CONFIGURACION BASE DE ARQUISOFT
 # ==============================================================================
-# Importa credenciales desde .env.properties (archivo local, NO versionado).
-# Si el archivo no existe, se usan los defaults (el arranque fallará
-# con mensaje claro de conexión).
-# Para crear el tuyo: cp .env.properties.example .env.properties
+# Importa credenciales segun el perfil activo (archivos locales, NO versionados):
+#   - Perfil dev (default): .env-dev.properties
+#   - Perfil prod:          .env-prod.properties
+# Si el archivo no existe, se usan los defaults (el arranque fallara
+# con mensaje claro de conexion).
+# Para crear el tuyo: cp .env-dev.properties.example .env-dev.properties
 # ==============================================================================
 
 spring:
   config:
-    import: "optional:file:./.env.properties"
+    import: "optional:file:./.env-${spring.profiles.active:dev}.properties"
   banner:
     location: classpath:banner.txt
   application:
@@ -85,8 +87,8 @@ spring:
           registration:
             keycloak:
               provider: keycloak
-              client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-app}
-              client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+              client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
+              client-secret: ${KEYCLOAK_CLIENT_SECRET}
               authorization-grant-type: password
               scope: openid, profile, email
 

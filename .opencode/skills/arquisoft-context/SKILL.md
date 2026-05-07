@@ -306,22 +306,22 @@ Consecuencias:
 @Configuration
 public class KeycloakJwtConverterConfig {
 
-   @Bean
-   public JwtAuthenticationConverter jwtAuthenticationConverter() {
-      JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-      converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-         // ❌ Regla de negocio: qué claims representan roles
-         Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-         List<String> roles = (List<String>) realmAccess.get("roles");
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            // ❌ Regla de negocio: qué claims representan roles
+            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+            List<String> roles = (List<String>) realmAccess.get("roles");
 
-         // ❌ Regla de negocio: prefijo "ROLE_" y uppercase
-         return roles.stream()
-                 .map(r -> "ROLE_" + r.toUpperCase())
-                 .map(SimpleGrantedAuthority::new)
-                 .toList();
-      });
-      return converter;
-   }
+            // ❌ Regla de negocio: prefijo "ROLE_" y uppercase
+            return roles.stream()
+                    .map(r -> "ROLE_" + r.toUpperCase())
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
+        });
+        return converter;
+    }
 }
 ```
 
@@ -335,27 +335,33 @@ Problemas:
 **Capa domain — el concepto de Rol es del negocio:**
 
 ```java
-// seguridad/domain/model/Rol.java
+// seguridad/domain/model/UsuarioRole.java
 package com.arquisoft.seguridad.domain.model;
 
-public enum Rol {
-    COORDINADOR,
-    ASESOR_FICHA,
-    ASESOR_PROYECTO,
-    JURADO,
-    ESTUDIANTE;
+public enum UsuarioRole {
+    ESTUDIANTE("estudiante", "Estudiante que presenta proyecto de grado"),
+    ASESOR("asesor", "Asesor asignado a un proyecto de grado"),
+    ASESOR_FICHA("asesor-ficha", "Asesor que apoya la elaboración de fichas de perfil"),
+    COORDINADOR("coordinador", "Coordinador del programa que gestiona proyectos"),
+    JURADO("jurado", "Jurado que evalúa proyectos de grado"),
+    BIBLIOTECARIO("bibliotecario", "Bibliotecario que gestiona consulta de PG"),
+    REPRESENTANTE_COMITE_CURRICULUM("representante-comite", "Representante que aprueba fichas de perfil"),
+    ADMINISTRADOR("administrador", "Administrador del sistema");
 
-    /** Regla de negocio: así se representa un rol como authority de seguridad. */
-    public String asAuthority() {
-        return "ROLE_" + this.name();
+    private final String keycloakName;
+    private final String descripcion;
+
+    UsuarioRole(String keycloakName, String descripcion) {
+        this.keycloakName = keycloakName;
+        this.descripcion = descripcion;
     }
 
-    /** Regla de negocio: parsear un string externo a un rol válido. */
-    public static Rol fromExternalName(String nombre) {
-        return Rol.valueOf(nombre.toUpperCase());
-    }
+    public String getKeycloakName() { return keycloakName; }
+    public String getDescripcion() { return descripcion; }
 }
 ```
+
+> **Convención de nombres:** los roles realm en Keycloak usan **kebab-case** (`coordinador`, `asesor-ficha`, `representante-comite`). El JWT trae estos nombres tal cual en `realm_access.roles`. **NO** se usa el prefijo `ROLE_` ni MAYÚSCULAS — esos son convenciones de Spring Security antiguas que aquí no aplican.
 
 **Capa domain — el puerto abstracto:**
 
@@ -823,86 +829,137 @@ y respeta el modelo de dominio en el código interno.
 
 ---
 
-## Paginación — `Page<T>` interno y `PageResponseDTO<T>` externo
+## Paginación — Spring Data `Page<T>` en domain/application + `PageResponseDTO<T>` en HTTP
 
-El proyecto separa estrictamente la paginación interna (dominio + application) de la paginación externa (HTTP response).
+> **Decisión arquitectónica:** Spring Data `spring-data-commons` (que provee `Page<T>` y `Pageable`) se trata como tipo estándar de la industria, al nivel de `java.util.List`. Es una librería ligera de tipos genéricos que NO arrastra Spring Boot, ORM ni autoconfiguración. Usarla en domain reduce drásticamente la complejidad sin romper la separación de responsabilidades real (lo que SÍ rompe DDD es importar `@Entity`, `JpaRepository`, `EntityManager` — eso NO ocurre con `Page<T>`/`Pageable`).
+>
+> **No existe `Page<T>` propio en `shared:domain`.** Si ves un import desde `com.arquisoft.shared.domain.Page`, está obsoleto: debe ser `org.springframework.data.domain.Page`.
 
 ### Flujo canónico de paginación
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ HTTP Client                                                     │
-│   ↓ JSON request con params (?page=0&size=20)                   │
+│   ↓ JSON request con params (?page=0&size=20&sort=...)          │
 ├─────────────────────────────────────────────────────────────────┤
 │ INFRASTRUCTURE ({contexto}/infrastructure)                      │
-│   • Controller recibe request                                   │
-│   • Llama al UseCase con tipos primitivos/dominio               │
-│   • Recibe Page<{Entidad}> de vuelta              ← Page de dominio
-│   • Mapea Page<{Entidad}> → PageResponseDTO<{Entidad}DTO>       ← aquí
-│   • Repositorio JPA: mapea Spring Page → Page de dominio        ← aquí también
+│   • Controller recibe Pageable (Spring lo construye desde       │
+│     query params automáticamente)                               │
+│   • Llama al UseCase: Page<{Entidad}DTO> ejecutar(Pageable)     │
+│   • Convierte Page<{Entidad}DTO> → PageResponseDTO<{Entidad}DTO>│
+│     con PageResponseDTO.from(...)                               │
+│   • Adapter JPA: jpaRepository.findAll(pageable)                │
+│     .map(JpaEntity::toDomain) → Page<{Entidad}>                 │
 ├─────────────────────────────────────────────────────────────────┤
 │ APPLICATION ({contexto}/application)                            │
 │   • UseCaseImpl orquesta lógica                                 │
-│   • Habla SOLO con tipos de dominio: {Entidad}, Page<T>         ← solo dominio
+│   • Habla con Page<T>, Pageable de Spring Data — son tipos      │
+│     estándar de la industria, igual que List<T>                 │
 │   • Llama a RepositoryPort (interfaz del dominio)               │
 ├─────────────────────────────────────────────────────────────────┤
 │ DOMAIN ({contexto}/domain + shared/domain)                      │
 │   • Define puertos (interfaces): UseCase, RepositoryPort        │
-│   • Define modelos: {Entidad}, usa Page<T> de shared:domain     │
-│   • CERO conocimiento de Spring Data ni de PageResponseDTO      │
+│     que pueden retornar Page<{Entidad}> (Spring Data)           │
+│   • Define modelos de dominio                                   │
+│   • CERO conocimiento de @Entity, JpaRepository, ni             │
+│     PageResponseDTO                                             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Tipos involucrados — quién conoce qué
 
-| Tipo | Vive en | Usado por | Puede ser conocido por |
+| Tipo | Vive en | Usado por | Notas |
 |---|---|---|---|
-| `org.springframework.data.domain.Page<T>` | Spring Data | El JPA repository | **SOLO** el adapter de repositorio (infrastructure) |
-| `Page<T>` (record de dominio) | `shared:domain` | El puerto del repositorio, el use case | domain + application + adapter (que lo construye) |
-| `PageResponseDTO<T>` | `shared:web` | El controller (response) | **SOLO** infrastructure (controller) |
+| `org.springframework.data.domain.Page<T>` | `spring-data-commons` | Puerto, use case, adapter | Tipo estándar — válido en domain, application e infrastructure |
+| `org.springframework.data.domain.Pageable` | `spring-data-commons` | Puerto, use case, controller | Tipo estándar — Spring lo construye desde query params automáticamente |
+| `PageResponseDTO<T>` | `shared:web` | Controller (response) | **SOLO** infrastructure. NUNCA aparece en domain ni application |
 
 ### Reglas inviolables de paginación
 
-1. **El puerto de salida del repositorio retorna `Page<{Entidad}>` (de dominio), nunca `Page<JpaEntity>` ni `PageResponseDTO`.**
-2. **El use case opera con `Page<{Entidad}>` de dominio**, lo transforma a `Page<{Entidad}ResponseDTO>` si necesita mapear, y lo retorna así al controller.
-3. **El controller convierte `Page<...>` (dominio) → `PageResponseDTO<...>` (HTTP)** justo antes de retornar la respuesta. Es el último paso, vive solo en infrastructure.
-4. **El adapter del repositorio convierte Spring `Page<JpaEntity>` → `Page<{Entidad}>` de dominio** usando `rebuild(...)` por cada elemento. Spring Data no debe filtrar al use case.
-5. **`PageResponseDTO` NUNCA aparece en `domain/` ni en `application/`.** Si lo ves ahí, es violación de DDD.
+1. **`spring-data-commons` se declara como `api` en `shared:domain/build.gradle`** para exponer `Page<T>` y `Pageable` transitivamente a quien consuma el módulo.
+2. **El puerto retorna `Page<{Entidad}>` (Spring Data) y recibe `Pageable`.** El nombre del método NUNCA incluye "Paginadas" — la paginación se infiere del `Pageable`.
+3. **El use case usa `.map(...)` directo de Spring `Page`** para convertir entidades a DTOs (Spring `Page<T>` ya tiene método `map(Function<T, R>)` built-in).
+4. **El adapter del repositorio queda en una sola línea:** `jpaRepository.findAll(pageable).map(JpaEntity::toDomain)`. Cero conversiones manuales.
+5. **El controller convierte `Page<...>` → `PageResponseDTO<...>` con `PageResponseDTO.from(...)`** justo antes del `ResponseEntity.ok(...)`.
+6. **`PageResponseDTO` NUNCA aparece en `domain/` ni en `application/`.** Si aparece, es violación bloqueante.
+7. **Nombres de métodos:** usar `consultarTodas`, `listarTodas`, `buscarPor...` — la paginación es un parámetro, no parte del nombre. **`consultarPaginadas` es un anti-patrón.**
 
-### Ejemplo — firmas correctas vs incorrectas
+### Configuración de `shared:domain/build.gradle`
+
+```gradle
+dependencies {
+    api 'org.springframework.data:spring-data-commons'
+    // ... resto de dependencias
+}
+```
+
+`api` (no `implementation`) expone los tipos transitivamente. Así `application` e `infrastructure` ven `Page<T>` y `Pageable` automáticamente sin redeclarar la dependencia.
+
+### Ejemplo completo — firmas correctas
 
 ```java
-// ✅ CORRECTO — puerto de salida en domain
+// ✅ Puerto de salida (domain)
 public interface FichaPerfilRepositoryPort {
-    Page<FichaPerfil> consultarTodasPaginadas(int page, int size);
+    Page<FichaPerfil> consultarTodas(Pageable pageable);
 }
 
-// ✅ CORRECTO — use case en application
+// ✅ Use case (domain port in)
 public interface ConsultarFichasPerfilUseCase {
-    Page<FichaPerfilResumenDTO> ejecutar(int page, int size);
+    Page<FichaPerfilResumenDTO> ejecutar(Pageable pageable);
 }
 
-// ✅ CORRECTO — controller en infrastructure
-@GetMapping("/fichas-perfil")
-public ResponseEntity<PageResponseDTO<FichaPerfilResumenDTO>> consultar(
-        @RequestParam int page, @RequestParam int size) {
-    Page<FichaPerfilResumenDTO> resultado = useCase.ejecutar(page, size);
-    return ResponseEntity.ok(PageResponseDTO.from(resultado));
+// ✅ Use case impl (application) — usa .map() de Spring Page
+@Service
+@RequiredArgsConstructor
+public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilUseCase {
+    private final FichaPerfilRepositoryPort repository;
+
+    @Override
+    public Page<FichaPerfilResumenDTO> ejecutar(Pageable pageable) {
+        return repository.consultarTodas(pageable)
+                .map(FichaPerfilResumenDTO::from);
+    }
 }
+
+// ✅ Adapter (infrastructure) — una sola línea
+@Component
+@RequiredArgsConstructor
+public class FichaPerfilRepositoryAdapter implements FichaPerfilRepositoryPort {
+    private final FichaPerfilJpaRepository jpaRepository;
+
+    @Override
+    public Page<FichaPerfil> consultarTodas(Pageable pageable) {
+        return jpaRepository.findAll(pageable).map(FichaPerfilJpaEntity::toDomain);
+    }
+}
+
+// ✅ Controller (infrastructure) — Spring inyecta Pageable desde query params
+@GetMapping
+public ResponseEntity<PageResponseDTO<FichaPerfilResumenDTO>> consultar(Pageable pageable) {
+    return ResponseEntity.ok(PageResponseDTO.from(useCase.ejecutar(pageable)));
+}
+```
+
+### Anti-patrones bloqueantes
+
+```java
+// ❌ MAL — Page propio del dominio (eliminado del proyecto)
+import com.arquisoft.shared.domain.Page;  // ya no existe
+Page<FichaPerfil> consultarTodas(...);
+
+// ❌ MAL — nombre con "Paginadas"
+Page<FichaPerfil> consultarPaginadas(int page, int size);
+Page<FichaPerfil> consultarTodasPaginadas(int page, int size);
 
 // ❌ MAL — use case retornando PageResponseDTO (DTO técnico filtra a application)
-public interface ConsultarFichasPerfilUseCase {
-    PageResponseDTO<FichaPerfilResumenDTO> ejecutar(int page, int size);  // ❌
-}
-
-// ❌ MAL — puerto retornando Spring Page directamente
-public interface FichaPerfilRepositoryPort {
-    org.springframework.data.domain.Page<FichaPerfil> consultarTodas(...);  // ❌
-}
+PageResponseDTO<FichaPerfilResumenDTO> ejecutar(Pageable pageable);
 
 // ❌ MAL — puerto retornando Page<JpaEntity>
-public interface FichaPerfilRepositoryPort {
-    Page<FichaPerfilJpaEntity> consultarTodas(...);  // ❌ infraestructura en domain
+Page<FichaPerfilJpaEntity> consultarTodas(Pageable pageable);
+
+// ❌ MAL — controller con @RequestParam manuales en lugar de Pageable
+public ResponseEntity<...> consultar(@RequestParam int page, @RequestParam int size) {
+    // Spring ya construye Pageable solo. Hacerlo manual es redundante.
 }
 ```
 
@@ -1154,7 +1211,7 @@ public class FichaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('ASESOR_FICHA')")
+    @PreAuthorize("hasAuthority('fichas:ficha:create')")
     @Operation(
         summary = "Crear ficha de perfil",
         description = "Crea una nueva ficha de perfil para un proyecto de grado",
@@ -1288,6 +1345,136 @@ public class {Contexto}GlobalExceptionHandler {
 
 ---
 
+## Autorización — Roles realm + Client Roles de Keycloak
+
+> **Convención del proyecto:** los endpoints REST autorizan contra **client roles** (formato `contexto:recurso:accion`) usando `@PreAuthorize("hasAuthority('...')")`. Los **roles realm** (`coordinador`, `asesor-ficha`, etc.) NO se evalúan directamente en endpoints — se mantienen como agrupación lógica de permisos en Keycloak, y cada rol realm tiene asignados sus client roles correspondientes.
+
+### Estructura del JWT
+
+El JWT que llega del frontend contiene:
+
+```json
+{
+  "realm_access": {
+    "roles": ["coordinador"]
+  },
+  "resource_access": {
+    "arquisoft-api": {
+      "roles": ["fichas:ficha:view", "fichas:ficha:create"]
+    }
+  }
+}
+```
+
+- `realm_access.roles` → roles realm (kebab-case): `coordinador`, `asesor`, `asesor-ficha`, etc.
+- `resource_access.arquisoft-api.roles` → **client roles** del cliente `arquisoft-api`. Estos son los que `hasAuthority(...)` evalúa.
+
+### Convención de client roles: `contexto:recurso:accion`
+
+Cada client role declara qué acción se puede realizar sobre qué recurso de qué contexto:
+
+| Componente | Significado | Ejemplos |
+|---|---|---|
+| `contexto` | Bounded context Gradle | `fichas`, `proyectos`, `entregables`, `evaluaciones`, `repositorio_artefactos`, `artefactos`, `seguridad` |
+| `recurso` | Entidad o recurso del contexto | `ficha`, `proyecto`, `entregable`, `evaluacion`, `usuario` |
+| `accion` | Verbo CRUD o acción de negocio | `view`, `create`, `update`, `delete`, `approve`, `submit`, `evaluate` |
+
+**Ejemplos válidos:**
+- `fichas:ficha:view` → ver fichas de perfil
+- `fichas:ficha:create` → crear fichas de perfil
+- `proyectos:proyecto:approve` → aprobar proyecto de grado
+- `evaluaciones:evaluacion:submit` → enviar evaluación
+
+### Mapeo realm role → client roles
+
+Cada **rol realm** tiene asignados varios **client roles** según sus responsabilidades. Un mismo client role puede pertenecer a varios roles realm:
+
+| Client role | Roles realm que lo poseen | Razón |
+|---|---|---|
+| `fichas:ficha:view` | `coordinador`, `asesor-ficha`, `representante-comite` | Todos pueden consultar fichas |
+| `fichas:ficha:create` | `asesor-ficha` | Solo asesor-ficha crea fichas |
+| `fichas:ficha:approve` | `representante-comite` | Solo el comité aprueba |
+
+> **El planificador es responsable de declarar este mapeo** en cada plan: por cada endpoint/acción, lista el client role nuevo y a qué roles realm debe asignarse en Keycloak. Esto permite al equipo de seguridad configurar Keycloak en paralelo con el desarrollo.
+
+### Uso en controllers
+
+```java
+// ✅ CORRECTO — usa hasAuthority con client role
+@PostMapping
+@PreAuthorize("hasAuthority('fichas:ficha:create')")
+public ResponseEntity<FichaResponseDTO> crear(@Valid @RequestBody CrearFichaRequestDTO req) {
+    // ...
+}
+
+// ❌ MAL — hasRole con realm role (convención antigua)
+@PreAuthorize("hasRole('ASESOR_FICHA')")  // ❌
+@PreAuthorize("hasRole('asesor-ficha')")  // ❌
+
+// ❌ MAL — múltiples authorities con OR (preferir uno solo y asignarlo a varios roles realm en Keycloak)
+@PreAuthorize("hasAuthority('fichas:ficha:view') or hasAuthority('fichas:ficha:admin')")  // ❌
+```
+
+### Reglas de uso
+
+1. **Cada endpoint tiene exactamente un `@PreAuthorize("hasAuthority('...')")`** con un único client role.
+2. **El nombre del client role refleja el contexto, recurso y acción.** No usar nombres genéricos como `admin`, `read`, `write`.
+3. **Si dos roles realm distintos pueden ejecutar la misma acción**, ambos tendrán asignado el mismo client role en Keycloak — NO se hace OR en el endpoint.
+4. **El planificador documenta los client roles nuevos** en cada plan (sección de seguridad) con su mapeo a roles realm.
+5. **Tests de controller** mockean los authorities con `with(jwt().authorities(new SimpleGrantedAuthority("fichas:ficha:create")))` — no roles realm.
+
+---
+
+## Manejo de errores externos en `seguridad` (Keycloak)
+
+Una lección aprendida: el `SeguridadGlobalExceptionHandler` debe **distinguir entre fallos de credenciales del usuario y fallos de infraestructura externa** (Keycloak). Mezclarlos es un bug de seguridad.
+
+### Tabla de mapeo correcto
+
+| Situación | Código HTTP | Razón |
+|---|---|---|
+| Credenciales incorrectas (login) | `401 Unauthorized` | El usuario falló la autenticación |
+| Refresh token inválido / expirado | `401 Unauthorized` | El token del usuario no sirve |
+| Keycloak caído / timeout | `503 Service Unavailable` | Problema del servicio externo, no del usuario |
+| Refresh con Keycloak caído | `503 Service Unavailable` | Idem |
+| Error inesperado en `/auth/*` (NPE, casts, bugs) | `500 Internal Server Error` | Bug del backend, NO del usuario |
+
+### Anti-patrón resuelto
+
+**ANTES** (vulnerabilidad): el handler de `seguridad` capturaba todo error de Keycloak (timeout, conexión rechazada, errores HTTP del Keycloak) y lo retornaba como `401 Unauthorized` con un mensaje que **incluía la URL de Keycloak** en el cuerpo. Esto exponía infraestructura interna al cliente.
+
+**DESPUÉS** (correcto): el handler distingue:
+
+```java
+// En SeguridadGlobalExceptionHandler
+
+@ExceptionHandler(InvalidCredentialsException.class)
+public ResponseEntity<ErrorResponseDTO> handleInvalidCredentials(...) {
+    // 401 — fallo legítimo del usuario
+}
+
+@ExceptionHandler(InvalidTokenException.class)
+public ResponseEntity<ErrorResponseDTO> handleInvalidToken(...) {
+    // 401 — el token del usuario no sirve
+}
+
+// ResourceAccessException (Keycloak caído / timeout) ya está cubierto por
+// GlobalAppExceptionHandler en shared:web → 503. NO duplicar aquí.
+
+// NO hay @ExceptionHandler(Exception.class) en SeguridadGlobalExceptionHandler.
+// El fallback Exception → 500 vive en GlobalAppExceptionHandler de shared:web.
+```
+
+### Reglas inviolables
+
+1. **El handler de `seguridad` NO captura `Exception.class`** — el fallback genérico vive en `shared:web`.
+2. **El handler de `seguridad` NO captura `ResourceAccessException` ni `HttpClientErrorException` propios de RestTemplate/WebClient hacia Keycloak** — eso lo hace `GlobalAppExceptionHandler` de `shared:web` con código 503.
+3. **El mensaje de error NUNCA expone la URL del Keycloak**, ni stack traces, ni nombres de hosts internos. Mensajes genéricos de cara al cliente.
+4. **El log interno** sí registra el error completo con `log.error("...", ex)` para diagnóstico, pero el `ErrorResponseDTO` que se retorna al cliente es genérico.
+5. **Un error 500 NUNCA se disfraza de 401.** Si la causa es interna del backend, retorna 500. Si es Keycloak externo caído, retorna 503. Solo retorna 401 si el usuario falló credenciales o token.
+
+---
+
 ## Mapeo Contexto Gradle → Base de Datos PostgreSQL
 
 Cada bounded context tiene **su propia base de datos PostgreSQL independiente**.
@@ -1408,7 +1595,8 @@ parte natural de su contexto.
 ### Seguridad
 
 - JWT decodificado vía JWK Set URI de Keycloak.
-- `@EnableMethodSecurity(prePostEnabled = true)` → usar `@PreAuthorize("hasRole('...')")` en controllers.
+- `@EnableMethodSecurity(prePostEnabled = true)` → usar `@PreAuthorize("hasAuthority('contexto:recurso:accion')")` en controllers (ver sección "Autorización con client roles" más abajo).
+- **NO** se usa `hasRole('NOMBRE_ROL')` — los roles realm de Keycloak (`coordinador`, `asesor-ficha`, etc.) **no se evalúan directamente en endpoints**; en su lugar, cada rol tiene asignados unos *client roles* (formato `contexto:recurso:accion`) y la autorización del endpoint se hace contra esos client roles vía `hasAuthority(...)`.
 - Endpoints públicos permit-all: `/auth/login`, `/auth/refresh`, `/auth/validate`, `/actuator/health/**`, `/swagger-ui/**`, `/v3/api-docs/**`.
 - CSRF deshabilitado, sesiones stateless.
 - Rate limiting (Bucket4j) habilitado en prod: 60/min global, 3/min login.

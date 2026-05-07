@@ -10,13 +10,16 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 /**
  * Configura el bean JwtAuthenticationConverter orquestando:
- * - KeycloakRoleExtractor: extrae roles del claim realm_access.roles
- * - RoleAuthorityMapper: filtra y traduce a ROLE_XXX del dominio
+ * - KeycloakRoleExtractor: extrae roles de realm_access.roles y resource_access.{clientId}.roles
+ * - RoleAuthorityMapper: filtra y traduce roles de dominio (solo realm_access)
+ * - Roles de resource_access: mapeo directo (permisos finos como ficha:ficha:view)
+ * Sin prefijo ROLE_ — compatible con hasAuthority() en @PreAuthorize.
  */
 @Slf4j
 @Configuration
@@ -34,11 +37,21 @@ public class KeycloakJwtConverterConfig {
 
     private Collection<GrantedAuthority> buildAuthorities(Jwt jwt) {
         List<String> realmRoles = roleExtractor.extractRealmRoles(jwt);
-        List<String> authorityNames = RoleAuthorityMapper.toAuthorityNames(realmRoles);
+        List<String> resourceRoles = roleExtractor.extractResourceRoles(jwt);
 
-        log.debug("Roles del token: {} → authorities: {}", realmRoles, authorityNames);
+        List<String> realmAuthorities = RoleAuthorityMapper.toAuthorityNames(realmRoles);
 
-        return authorityNames.stream()
+        List<String> resourceAuthorities = resourceRoles.stream()
+                .toList();
+
+        List<String> allAuthorityNames = new ArrayList<>();
+        allAuthorityNames.addAll(realmAuthorities);
+        allAuthorityNames.addAll(resourceAuthorities);
+
+        log.debug("Realm roles: {} → {}, Resource roles: {} → {}",
+                realmRoles, realmAuthorities, resourceRoles, resourceAuthorities);
+
+        return allAuthorityNames.stream()
                 .map(SimpleGrantedAuthority::new)
                 .map(GrantedAuthority.class::cast)
                 .toList();

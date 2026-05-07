@@ -24,6 +24,9 @@ public class AsesorFichaJpaEntity {
     @Column(columnDefinition = "uuid")
     private UUID id;
 
+    @Column(nullable = false, length = 30)
+    private String identificador;
+
     @Column(nullable = false, length = 50)
     private String nombre;
 
@@ -31,6 +34,6 @@ public class AsesorFichaJpaEntity {
     private String email;
 
     public AsesorFicha toDomain() {
-        return AsesorFicha.of(id, nombre, email);
+        return AsesorFicha.of(id, identificador, nombre, email);
     }
 }

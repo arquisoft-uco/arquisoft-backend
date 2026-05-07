@@ -232,7 +232,7 @@ CAPA 1 — domain (genera todos antes de compilar)
   │        Si no, build(...) construye y retorna la entidad sin emitir nada.
   ├── Enums                     (si aplican)
   ├── Puerto de entrada         ({Accion}{Entidad}UseCase.java) — si paginada: retorna Page<{Entidad}ResponseDTO>
-  └── Puerto de salida          ({Entidad}RepositoryPort.java) — si paginada: retorna Page<{Entidad}> (Page de shared:domain)
+  └── Puerto de salida          ({Entidad}RepositoryPort.java) — si paginada: retorna `Page<{Entidad}>` (de Spring Data) y recibe `Pageable`. NO usa Page propio (no existe). Nombres sin "Paginadas" — usar `consultarTodas`, `listarTodas`, `buscarPor...`
 
   → 🔨 COMPILAR: ./gradlew :{contexto}:domain:compileJava
 
@@ -275,11 +275,18 @@ CAPA 2 — application (genera todos antes de compilar)
 CAPA 3 — infrastructure (genera todos antes de compilar)
   ├── Entidad JPA               ({Entidad}JpaEntity.java) — @Table(name = "...") (sin atributo schema; cada contexto tiene su propia BD)
   ├── Repositorio JPA           ({Entidad}JpaRepository.java)
-  ├── Adaptador repositorio     ({Entidad}RepositoryAdapter.java) — usa rebuild(...) al reconstruir; si paginada, mapea Spring Page<JpaEntity> → Page<{Entidad}> de dominio elemento por elemento
+  ├── Adaptador repositorio     ({Entidad}RepositoryAdapter.java) — usa rebuild(...) al reconstruir. Si paginada: una sola línea `jpaRepository.findAll(pageable).map(JpaEntity::toDomain)` — Spring Data `Page` ya tiene `.map()` built-in. Cero conversiones manuales, cero FQN.
   ├── Controller REST           ({Entidad}Controller.java) — @Tag, @Operation, @ApiResponses, @SecurityRequirement (ADR-011)
-  │     ⚠️ Si la HU es paginada: convierte Page<{Entidad}ResponseDTO> (recibido del use case) →
-  │        PageResponseDTO<{Entidad}ResponseDTO> usando PageResponseDTO.from(page) JUSTO
-  │        antes de retornar. Importa PageResponseDTO de com.arquisoft.shared.web.
+  │     ⚠️ Autorización: `@PreAuthorize("hasAuthority('{contexto}:{recurso}:{accion}')")` con
+  │        UN ÚNICO client role declarado en sección 9 del plan. NO usar `hasRole(...)` ni
+  │        roles realm directamente. Ver SKILL sección "Autorización con client roles".
+  │     ⚠️ Si la HU es paginada:
+  │        • Recibe `Pageable` directo como parámetro (Spring lo construye desde query params).
+  │          Si necesitas defaults: `@PageableDefault(size = 20, page = 0) Pageable pageable`.
+  │        • NO usa `@RequestParam("page") int page, @RequestParam("size") int size` — es redundante.
+  │        • Convierte `Page<{Entidad}ResponseDTO>` (recibido del use case) →
+  │          `PageResponseDTO<{Entidad}ResponseDTO>` usando `PageResponseDTO.from(page)` JUSTO
+  │          antes de retornar. Importa `PageResponseDTO` de `com.arquisoft.shared.web`.
   ├── {Contexto}GlobalExceptionHandler    (OBLIGATORIO si el plan introduce excepciones de dominio nuevas)
   │     • Ubicación: {contexto}/infrastructure/adapter/in/web/{Contexto}GlobalExceptionHandler.java
   │     • Nombre con prefijo del contexto en PascalCase (ej. SeguridadGlobalExceptionHandler, FichasGlobalExceptionHandler, RepositorioArtefactosGlobalExceptionHandler)
@@ -440,7 +447,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 - `@Tag(name="...", description="...")` a nivel de clase.
 - Cada endpoint: `@Operation(summary="...", description="...", security = @SecurityRequirement(name="bearerAuth"))` + `@ApiResponses({...})`.
 - Endpoints públicos (login, refresh, validate): omitir `@SecurityRequirement`.
-- `@PreAuthorize("hasRole('...')")` según roles del plan.
+- `@PreAuthorize("hasAuthority('{contexto}:{recurso}:{accion}')")` con el client role declarado en sección 9 del plan. **NO** usar `hasRole(...)` ni roles realm directamente.
 - `@Valid @RequestBody` para requests.
 - No accede directamente a repositorios — solo a puertos de entrada (use cases).
 

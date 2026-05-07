@@ -448,42 +448,95 @@ revise. NO lo marques como bloqueante por sí solo.
 - Referencia: skill arquisoft-context, sección "Tipos de Use Case y sus Tests".
 ```
 
-**2.14 Paginación — `Page<T>` interno vs `PageResponseDTO<T>` externo (CRÍTICO si la HU es paginada):**
+**2.14 Paginación — Spring Data `Page<T>` en domain/application + `PageResponseDTO<T>` en HTTP (CRÍTICO si la HU es paginada):**
 
 Solo aplica si la HU es de Consulta paginada (paginación visible en el contrato HTTP).
 
 | Check | Bloqueante |
 |-------|:---:|
-| Puerto `{Entidad}RepositoryPort` retorna `Page<{Entidad}>` (record de `shared:domain`), NO `PageResponseDTO<...>` ni `org.springframework.data.domain.Page<...>` ni `Page<JpaEntity>` | ✅ |
-| Use case retorna `Page<{Entidad}ResponseDTO>` (sigue siendo `Page` de dominio) | ✅ |
+| Puerto `{Entidad}RepositoryPort` retorna `org.springframework.data.domain.Page<{Entidad}>` y recibe `Pageable` | ✅ |
+| Existencia de cualquier import `com.arquisoft.shared.domain.Page` en cualquier archivo del proyecto | ❌ violación bloqueante (ese tipo ya no existe — eliminado del proyecto) |
+| Use case retorna `Page<{Entidad}ResponseDTO>` (Spring Data) y recibe `Pageable` | ✅ |
 | Existencia de `PageResponseDTO` en `domain/` o `application/` de cualquier contexto | ❌ violación bloqueante |
-| Importes de `org.springframework.data.domain.Page` fuera de la capa `infrastructure/adapter/out/persistence/` | ❌ violación bloqueante |
-| Controller convierte `Page<...>` → `PageResponseDTO<...>` justo antes de retornar el `ResponseEntity` (típicamente con `PageResponseDTO.from(page)`) | ✅ |
+| Adapter usa `.map(JpaEntity::toDomain)` directo de Spring Page (una sola línea), sin streams manuales ni `Page.of(...)` | ✅ |
+| Nombre del método con sufijo "Paginadas" / "Paginada" (ej. `consultarPaginadas`, `consultarTodasPaginadas`) | ❌ violación bloqueante (la paginación se infiere de `Pageable` — usar `consultarTodas`, `listarTodas`, `buscarPor...`) |
+| Controller recibe `Pageable` directo (no `@RequestParam("page") int page, @RequestParam("size") int size`) | ✅ |
+| Controller convierte `Page<...>` → `PageResponseDTO<...>` con `PageResponseDTO.from(page)` justo antes del `ResponseEntity` | ✅ |
 | `PageResponseDTO` se importa de `com.arquisoft.shared.web` (NO se crea local) | ✅ |
 
 **Cómo verificar:**
 
-1. Lee la firma del puerto (`{contexto}/domain/port/out/{Entidad}RepositoryPort.java`). Su tipo de retorno DEBE ser `Page<{Entidad}>` (de `com.arquisoft.shared.domain`), no de Spring Data ni `PageResponseDTO`.
-2. Lee el use case impl. Su tipo de retorno DEBE ser `Page<{Entidad}ResponseDTO>`. NO debe importar `PageResponseDTO`.
-3. Lee el controller. DEBE importar `PageResponseDTO` de `com.arquisoft.shared.web` y convertir el `Page<...>` recibido del use case justo antes del `ResponseEntity.ok(...)`.
-4. Verifica que en ningún lugar de `domain/` ni `application/` aparezca `PageResponseDTO`.
+1. Buscar imports residuales: `grep -r "com.arquisoft.shared.domain.Page" .` debe retornar cero coincidencias.
+2. Lee la firma del puerto (`{contexto}/domain/port/out/{Entidad}RepositoryPort.java`). Su tipo de retorno DEBE ser `org.springframework.data.domain.Page<{Entidad}>` y debe recibir `Pageable`.
+3. Lee el use case impl. Su tipo de retorno DEBE ser `Page<{Entidad}ResponseDTO>`. Su lógica usa `.map(...)` directo. NO debe importar `PageResponseDTO`.
+4. Lee el adapter del repositorio. Debe ser una línea: `jpaRepository.findAll(pageable).map(JpaEntity::toDomain)`. Si tiene streams manuales o construcción de `Page`, es violación.
+5. Lee el controller. DEBE recibir `Pageable` (no `@RequestParam` manuales), DEBE importar `PageResponseDTO` de `com.arquisoft.shared.web` y convertir con `PageResponseDTO.from(...)` justo antes del `ResponseEntity.ok(...)`.
+6. Lee el nombre del método del puerto: si contiene "Paginadas" / "Paginada", es violación.
 
 ```
+[NIVEL 2.14] — Page propio del dominio (eliminado)
+- Archivo: {contexto}/.../{cualquier archivo con import obsoleto}
+- Problema: import com.arquisoft.shared.domain.Page detectado.
+  Ese tipo fue eliminado del proyecto. La paginación usa
+  org.springframework.data.domain.Page directamente.
+- Acción requerida: cambiar el import a org.springframework.data.domain.Page
+  y verificar que la firma sea consistente (recibe Pageable).
+- Referencia: skill arquisoft-context, sección "Paginación — Spring Data Page".
+
+[NIVEL 2.14] — Nombre con "Paginadas" en método
+- Archivo: {contexto}/domain/port/out/{Entidad}RepositoryPort.java
+- Problema: método declarado como consultarPaginadas / consultarTodasPaginadas.
+  La paginación se infiere del parámetro Pageable — el sufijo es redundante y
+  rompe la convención del proyecto.
+- Acción requerida: renombrar a consultarTodas, listarTodas, buscarPor... según
+  semántica. Aplicar el rename también en use case, adapter y tests.
+- Referencia: skill arquisoft-context, sección "Reglas inviolables de paginación".
+
 [NIVEL 2.14] — PageResponseDTO en capa equivocada
 - Archivo: {contexto}/application/dto/PageResponseDTO.java
 - Problema: PageResponseDTO es un DTO técnico genérico que vive en shared:web,
-  no en cada contexto. Su existencia local viola la regla de "DTOs técnicos
-  centralizados en shared:web" y la convención de paginación interna/externa.
+  no en cada contexto.
 - Acción requerida: eliminar el archivo local. Usar import com.arquisoft.shared.web.PageResponseDTO
-  en el controller. Asegurarse de que el use case y el puerto retornen Page<T> de shared:domain.
-- Referencia: skill arquisoft-context, sección "Paginación — Page<T> interno y PageResponseDTO<T> externo".
+  en el controller.
+- Referencia: skill arquisoft-context, sección "Convención de DTOs".
+```
+
+**2.15 Autorización — `@PreAuthorize` con client role (CRÍTICO en endpoints REST):**
+
+| Check | Bloqueante |
+|-------|:---:|
+| Cada endpoint REST tiene exactamente un `@PreAuthorize("hasAuthority('...')")` | ✅ |
+| El argumento de `hasAuthority` sigue el formato `{contexto}:{recurso}:{accion}` (todo en minúscula, separado por dos puntos) | ✅ |
+| El client role usado coincide con el declarado en sección 9 del plan | ✅ |
+| Uso de `hasRole(...)` en lugar de `hasAuthority(...)` | ❌ violación bloqueante (convención antigua) |
+| Uso de roles realm en MAYÚSCULAS o con prefijo `ROLE_` (ej. `'COORDINADOR'`, `'ROLE_COORDINADOR'`) | ❌ violación bloqueante (los roles realm son kebab-case y NO se evalúan directamente) |
+| Múltiples `hasAuthority` con OR/AND en un mismo endpoint | ❌ violación bloqueante (un único client role por endpoint; si varios roles realm pueden ejecutarlo, se asigna el mismo client role a todos en Keycloak) |
+| Ausencia total de `@PreAuthorize` en endpoints no-públicos | ❌ violación bloqueante |
+| Endpoints públicos (`/auth/login`, `/auth/refresh`, `/auth/validate`, `/actuator/health/**`, `/swagger-ui/**`) sin `@PreAuthorize` | ✅ correcto, no es bloqueante |
+
+**Cómo verificar:**
+
+1. Lee cada `{Entidad}Controller.java` del contexto.
+2. Por cada método con `@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping`, `@PatchMapping`: verifica que tenga `@PreAuthorize("hasAuthority('...')")` con un único client role.
+3. Compara el client role usado con la sección 9 del plan (Seguridad y Autorización). Debe coincidir.
+4. Si encuentras `hasRole(...)`, `'ROLE_X'`, o roles realm directos como `'coordinador'` o `'COORDINADOR'`, es violación bloqueante.
+
+```
+[NIVEL 2.15] — Autorización con hasRole (convención antigua)
+- Archivo: {contexto}/infrastructure/adapter/in/web/{Entidad}Controller.java
+- Línea: @PreAuthorize("hasRole('COORDINADOR')")
+- Problema: el proyecto usa autorización contra client roles de Keycloak vía
+  hasAuthority('contexto:recurso:accion'), no contra roles realm directos.
+- Acción requerida: cambiar a @PreAuthorize("hasAuthority('{contexto}:{recurso}:{accion}')")
+  con el client role declarado en sección 9 del plan.
+- Referencia: skill arquisoft-context, sección "Autorización — Roles realm + Client Roles".
 ```
 
 ### FASE 3 — Estado de Tests (sin verificación filesystem)
 
 > Esta fase es mental. Cero tool calls.
 
-Lee la sección 13 del plan (que ya cargaste en FASE 1):
+Lee la sección 14 del plan (que ya cargaste en FASE 1):
 - Si fila `Tests` dice `✅ Completado` → marca tests como ejecutados.
 - Si fila `Tests` dice `⏳ Pendiente` → marca tests como NO EJECUTADOS (deuda técnica, no bloqueante).
 

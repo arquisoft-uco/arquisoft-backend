@@ -1,7 +1,5 @@
 package com.arquisoft.fichas.domain.model;
 
-import com.arquisoft.shared.domain.EventEmittingEntity;
-
 import java.util.UUID;
 
 /**
@@ -16,7 +14,7 @@ import java.util.UUID;
  *   <li>{@link #rebuild(UUID, String, AsesorFicha)} — reconstruye desde persistencia, sin evento.</li>
  * </ul>
  */
-public final class FichaPerfil extends EventEmittingEntity {
+public final class FichaPerfil {
 
     private final UUID id;
     private final String tituloProyecto;
