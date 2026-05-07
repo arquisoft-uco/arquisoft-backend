@@ -154,9 +154,9 @@ security:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
   rate-limit:
-    enabled: true
-    requests-per-minute: 60
-    login-requests-per-minute: 3
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:60}
+    login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:3}
 
 # ==================== LOGGING ====================
 logging:
