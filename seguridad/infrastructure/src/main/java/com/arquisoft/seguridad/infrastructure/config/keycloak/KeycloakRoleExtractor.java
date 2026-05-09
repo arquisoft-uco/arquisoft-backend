@@ -20,7 +20,7 @@ public class KeycloakRoleExtractor {
     private static final String CLAIM_RESOURCE_ACCESS = "resource_access";
     private static final String KEY_ROLES = "roles";
 
-    @Value("${KEYCLOAK_CLIENT_ID:arquisoft-api}")
+    @Value("${KEYCLOAK_CLIENT_ID}")
     private String clientId;
 
     /**
