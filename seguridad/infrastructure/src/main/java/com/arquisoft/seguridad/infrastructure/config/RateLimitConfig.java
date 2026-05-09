@@ -6,7 +6,6 @@ import io.github.bucket4j.Refill;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Duration;
@@ -29,7 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Configuration
-@EnableScheduling
 public class RateLimitConfig {
 
     @Value("${security.rate-limit.enabled:true}")
