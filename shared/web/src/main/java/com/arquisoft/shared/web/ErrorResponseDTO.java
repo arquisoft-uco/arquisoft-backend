@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -28,11 +28,9 @@ public class ErrorResponseDTO {
     private String path;
 
     @Builder.Default
-    private LocalDateTime timestamp = LocalDateTime.now();
+    private Instant timestamp = Instant.now();
 
     private List<FieldErrorDTO> fieldErrors;
-
-    private List<String> trace;
 
     public static ErrorResponseDTO fromBaseException(BaseException ex, String error, HttpStatus status, String path) {
         // La traza de causas NO se incluye en la respuesta al cliente — podría exponer
