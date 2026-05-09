@@ -23,6 +23,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -39,8 +40,26 @@ import java.util.stream.Collectors;
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
+    /**
+     * Mapeo de tipo de excepción → (HTTP status, mensaje de error para el cliente).
+     *
+     * <p>Reemplaza el {@code instanceof} chain original para respetar OCP: agregar soporte
+     * para un nuevo subtipo de {@link BaseException} solo requiere añadir una entrada aquí,
+     * sin modificar la lógica del handler.</p>
+     */
+    private static final Map<Class<? extends BaseException>, ExceptionMapping> EXCEPTION_MAPPINGS = Map.of(
+            DomainException.class,        new ExceptionMapping(HttpStatus.UNPROCESSABLE_ENTITY, "Error de dominio",       false),
+            ApplicationException.class,   new ExceptionMapping(HttpStatus.BAD_REQUEST,          "Error de aplicación",    false),
+            InfrastructureException.class, new ExceptionMapping(HttpStatus.SERVICE_UNAVAILABLE,  "Servicio no disponible", true)
+    );
+
+    private static final ExceptionMapping FALLBACK_MAPPING =
+            new ExceptionMapping(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno", true);
+
+    private record ExceptionMapping(HttpStatus status, String error, boolean logAsError) {}
+
     // -------------------------------------------------------------------------
-    // Excepciones de dominio personalizado — un handler, polimorfismo por instanceof
+    // Excepciones de dominio personalizado — un handler, dispatch por mapa
     // -------------------------------------------------------------------------
 
     @ExceptionHandler(BaseException.class)
@@ -48,29 +67,18 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             BaseException ex,
             HttpServletRequest request) {
 
-        final HttpStatus status;
-        final String error;
+        ExceptionMapping mapping = EXCEPTION_MAPPINGS.getOrDefault(ex.getClass(), FALLBACK_MAPPING);
 
-        if (ex instanceof DomainException) {
-            log.warn("Domain exception in {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
-            status = HttpStatus.UNPROCESSABLE_CONTENT;
-            error = "Error de dominio";
-        } else if (ex instanceof ApplicationException) {
-            log.warn("Application exception in {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
-            status = HttpStatus.BAD_REQUEST;
-            error = "Error de aplicación";
-        } else if (ex instanceof InfrastructureException) {
-            log.error("Infrastructure exception in {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage(), ex);
-            status = HttpStatus.SERVICE_UNAVAILABLE;
-            error = "Servicio no disponible";
+        if (mapping.logAsError()) {
+            log.error("Exception [{}] in {}: [{}] {}", ex.getClass().getSimpleName(),
+                    request.getRequestURI(), ex.getErrorCode(), ex.getMessage(), ex);
         } else {
-            log.error("Unclassified base exception in {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage(), ex);
-            status = HttpStatus.INTERNAL_SERVER_ERROR;
-            error = "Error interno";
+            log.warn("Exception [{}] in {}: [{}] {}", ex.getClass().getSimpleName(),
+                    request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
         }
 
-        return ResponseEntity.status(status)
-                .body(ErrorResponseDTO.fromBaseException(ex, error, status, request.getRequestURI()));
+        return ResponseEntity.status(mapping.status())
+                .body(ErrorResponseDTO.fromBaseException(ex, mapping.error(), mapping.status(), request.getRequestURI()));
     }
 
     // -------------------------------------------------------------------------
