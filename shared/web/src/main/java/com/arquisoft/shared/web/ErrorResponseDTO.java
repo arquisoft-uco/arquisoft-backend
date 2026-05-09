@@ -57,6 +57,6 @@ public class ErrorResponseDTO {
     public static class FieldErrorDTO {
         private String field;
         private String message;
-        private Object rejectedValue;
+        private String rejectedValue;
     }
 }

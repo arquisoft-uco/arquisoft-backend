@@ -24,6 +24,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -55,6 +56,10 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final ExceptionMapping FALLBACK_MAPPING =
             new ExceptionMapping(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno", true);
+
+    /** Campos cuyo valor nunca debe exponerse en la respuesta JSON (OWASP A01). */
+    private static final Pattern SENSITIVE_FIELD_PATTERN =
+            Pattern.compile("(?i)(password|contrasena|contraseña|secret|token|credential|clave|pin)");
 
     private record ExceptionMapping(HttpStatus status, String error, boolean logAsError) {}
 
@@ -240,7 +245,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                     .map(fe -> ErrorResponseDTO.FieldErrorDTO.builder()
                             .field(fe.getField())
                             .message(fe.getDefaultMessage())
-                            .rejectedValue(fe.getRejectedValue())
+                            .rejectedValue(sanitizeRejectedValue(fe.getField(), fe.getRejectedValue()))
                             .build())
                     .collect(Collectors.toList());
             builder.fieldErrors(fieldErrors);
@@ -248,6 +253,20 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         return builder.build();
+    }
+
+    /**
+     * Convierte el valor rechazado a String enmascarando campos sensibles.
+     * Evita exponer contraseñas, tokens o secretos en la respuesta JSON (OWASP A01).
+     */
+    private String sanitizeRejectedValue(String field, Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (field != null && SENSITIVE_FIELD_PATTERN.matcher(field).find()) {
+            return "[REDACTED]";
+        }
+        return value.toString();
     }
 
     private String extractBadRequestMessage(Exception ex) {
