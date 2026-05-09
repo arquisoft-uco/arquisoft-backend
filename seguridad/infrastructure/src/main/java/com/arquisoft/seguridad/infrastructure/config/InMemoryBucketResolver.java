@@ -49,6 +49,11 @@ public class InMemoryBucketResolver implements BucketResolver {
         if (!properties.enabled()) {
             return createUnlimitedBucket();
         }
+        if (!bucketsByIp.containsKey(ip) && bucketsByIp.size() >= properties.maxTrackedIps()) {
+            log.warn("Rate-limit: limite de IPs rastreadas alcanzado ({}/{}), rechazando IP desconocida (fail-closed)",
+                    bucketsByIp.size(), properties.maxTrackedIps());
+            return createExhaustedBucket();
+        }
         lastAccessByIp.put(ip, Instant.now());
         return bucketsByIp.computeIfAbsent(ip, k -> createGeneralBucket());
     }
@@ -57,6 +62,11 @@ public class InMemoryBucketResolver implements BucketResolver {
     public Bucket resolveLoginBucket(String ip) {
         if (!properties.enabled()) {
             return createUnlimitedBucket();
+        }
+        if (!loginBucketsByIp.containsKey(ip) && loginBucketsByIp.size() >= properties.maxTrackedIps()) {
+            log.warn("Rate-limit: limite de IPs rastreadas (login) alcanzado ({}/{}), rechazando IP desconocida (fail-closed)",
+                    loginBucketsByIp.size(), properties.maxTrackedIps());
+            return createExhaustedBucket();
         }
         lastLoginAccessByIp.put(ip, Instant.now());
         return loginBucketsByIp.computeIfAbsent(ip, k -> createLoginBucket());
@@ -117,6 +127,21 @@ public class InMemoryBucketResolver implements BucketResolver {
                 .refillGreedy(properties.loginRequestsPerMinute(), Duration.ofMinutes(1))
                 .build();
         return Bucket.builder().addLimit(limit).build();
+    }
+
+    /**
+     * Bucket con 0 fichas disponibles: cualquier petición recibe HTTP 429 de inmediato.
+     * Se usa en modo fail-closed cuando el mapa de IPs rastreadas está lleno.
+     * No se almacena en el mapa — se crea y descarta por petición, sin consumo de memoria.
+     */
+    private Bucket createExhaustedBucket() {
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(1)
+                .refillIntervally(1, Duration.ofDays(1))
+                .build();
+        Bucket bucket = Bucket.builder().addLimit(limit).build();
+        bucket.tryConsume(1);
+        return bucket;
     }
 
     private Bucket createUnlimitedBucket() {
