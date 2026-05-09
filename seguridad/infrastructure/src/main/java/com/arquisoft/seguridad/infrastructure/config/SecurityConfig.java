@@ -2,7 +2,6 @@ package com.arquisoft.seguridad.infrastructure.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,12 +32,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
-
-    @Autowired
-    private SecurityAccessDeniedHandler securityAccessDeniedHandler;
-
-    @Autowired
-    private SecurityAuthenticationEntryPoint securityAuthenticationEntryPoint;
+    private final SecurityAccessDeniedHandler securityAccessDeniedHandler;
+    private final SecurityAuthenticationEntryPoint securityAuthenticationEntryPoint;
 
     @Value("${arquisoft.keycloak.server-url}")
     private String keycloakServerUrl;
