@@ -35,14 +35,16 @@ public class ErrorResponseDTO {
     private List<String> trace;
 
     public static ErrorResponseDTO fromBaseException(BaseException ex, String error, HttpStatus status, String path) {
-        List<String> trace = ex.getError().getTrace().isEmpty() ? null : ex.getError().getTrace();
+        // La traza de causas NO se incluye en la respuesta al cliente — podría exponer
+        // hostnames, URLs internas o detalles de infraestructura (OWASP A05 - Security Misconfiguration).
+        // El handler que invoca este método debe registrar ex en el logger para conservar
+        // el stack trace completo en los logs del servidor.
         return ErrorResponseDTO.builder()
                 .error(error)
                 .errorCode(ex.getErrorCode())
                 .message(ex.getMessage())
                 .status(status.value())
                 .path(path)
-                .trace(trace)
                 .build();
     }
 
