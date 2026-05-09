@@ -119,13 +119,21 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             ConstraintViolationException ex,
             HttpServletRequest request) {
 
-        log.warn("Constraint violation in {}: {}", request.getRequestURI(), ex.getMessage());
+        // ex.getMessage() expone propertyPath, nombre de clase y valor rechazado de la
+        // implementación interna (Hibernate Validator). Se extraen solo los mensajes
+        // interpolados para evitar filtración de detalles de infraestructura (OWASP A05).
+        String safeMessage = ex.getConstraintViolations().stream()
+                .map(cv -> cv.getPropertyPath().toString() + ": " + cv.getMessage())
+                .collect(Collectors.joining("; "));
+
+        log.warn("Constraint violation in {}: {} violation(s)", request.getRequestURI(),
+                ex.getConstraintViolations().size());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponseDTO.builder()
                         .error("Parámetros inválidos")
                         .errorCode("PARAMETRO_INVALIDO")
-                        .message(ex.getMessage())
+                        .message(safeMessage)
                         .status(HttpStatus.BAD_REQUEST.value())
                         .path(request.getRequestURI())
                         .build());
