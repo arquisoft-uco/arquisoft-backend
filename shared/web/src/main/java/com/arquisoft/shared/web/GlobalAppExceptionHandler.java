@@ -58,6 +58,27 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
     private record ExceptionMapping(HttpStatus status, String error, boolean logAsError) {}
 
+    /**
+     * Resuelve el mapeo recorriendo la jerarquía de superclases de la excepción.
+     *
+     * <p>Garantiza que subclases no registradas explícitamente en {@link #EXCEPTION_MAPPINGS}
+     * hereden el mapping de su superclase más cercana (ej. {@code OrdenamientoInvalidoException}
+     * → {@code ApplicationException} → HTTP 400) en lugar de degradar silenciosamente a HTTP 500.
+     * La búsqueda se detiene en {@link BaseException} inclusive.</p>
+     */
+    @SuppressWarnings("unchecked")
+    private ExceptionMapping resolveMapping(BaseException ex) {
+        Class<?> clazz = ex.getClass();
+        while (clazz != null && BaseException.class.isAssignableFrom(clazz)) {
+            ExceptionMapping mapping = EXCEPTION_MAPPINGS.get((Class<? extends BaseException>) clazz);
+            if (mapping != null) {
+                return mapping;
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return FALLBACK_MAPPING;
+    }
+
     // -------------------------------------------------------------------------
     // Excepciones de dominio personalizado — un handler, dispatch por mapa
     // -------------------------------------------------------------------------
@@ -67,7 +88,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             BaseException ex,
             HttpServletRequest request) {
 
-        ExceptionMapping mapping = EXCEPTION_MAPPINGS.getOrDefault(ex.getClass(), FALLBACK_MAPPING);
+        ExceptionMapping mapping = resolveMapping(ex);
 
         if (mapping.logAsError()) {
             log.error("Exception [{}] in {}: [{}] {}", ex.getClass().getSimpleName(),
