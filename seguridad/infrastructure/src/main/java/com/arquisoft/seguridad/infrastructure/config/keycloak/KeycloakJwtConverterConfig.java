@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.config;
+package com.arquisoft.seguridad.infrastructure.config.keycloak;
 
 import com.arquisoft.seguridad.domain.service.RoleAuthorityMapper;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.config;
+package com.arquisoft.seguridad.infrastructure.config.datasource;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

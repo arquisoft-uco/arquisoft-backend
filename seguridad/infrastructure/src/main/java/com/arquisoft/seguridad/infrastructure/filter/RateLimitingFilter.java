@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
-import com.arquisoft.seguridad.infrastructure.config.BucketResolver;
-import com.arquisoft.shared.web.ErrorResponseDTO;
+import com.arquisoft.seguridad.infrastructure.config.ratelimit.BucketResolver;
+import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import tools.jackson.databind.ObjectMapper;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;

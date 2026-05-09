@@ -1,4 +1,4 @@
-package com.arquisoft.shared.web;
+package com.arquisoft.shared.web.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

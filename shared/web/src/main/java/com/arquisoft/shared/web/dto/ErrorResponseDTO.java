@@ -1,4 +1,4 @@
-package com.arquisoft.shared.web;
+package com.arquisoft.shared.web.dto;
 
 import com.arquisoft.shared.exceptions.BaseException;
 import com.fasterxml.jackson.annotation.JsonInclude;

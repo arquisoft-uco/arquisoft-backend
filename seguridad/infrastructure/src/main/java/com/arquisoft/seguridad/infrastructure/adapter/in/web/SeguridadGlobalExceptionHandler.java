@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.adapter.in.web;
 
 import com.arquisoft.seguridad.domain.exception.AuthenticationException;
-import com.arquisoft.shared.web.ErrorResponseDTO;
+import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

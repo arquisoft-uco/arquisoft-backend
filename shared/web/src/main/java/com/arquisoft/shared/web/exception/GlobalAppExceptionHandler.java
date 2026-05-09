@@ -1,9 +1,10 @@
-package com.arquisoft.shared.web;
+package com.arquisoft.shared.web.exception;
 
 import com.arquisoft.shared.exceptions.ApplicationException;
 import com.arquisoft.shared.exceptions.BaseException;
 import com.arquisoft.shared.exceptions.DomainException;
 import com.arquisoft.shared.exceptions.InfrastructureException;
+import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;

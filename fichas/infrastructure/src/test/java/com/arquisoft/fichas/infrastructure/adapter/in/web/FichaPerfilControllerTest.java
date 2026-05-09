@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
 import com.arquisoft.fichas.domain.model.FichaPerfil;
 import com.arquisoft.fichas.domain.port.in.ConsultarFichasPerfilUseCase;
-import com.arquisoft.shared.web.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
