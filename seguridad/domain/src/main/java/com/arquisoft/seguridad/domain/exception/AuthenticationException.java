@@ -1,15 +1,30 @@
 package com.arquisoft.seguridad.domain.exception;
 
+import com.arquisoft.shared.exceptions.BaseError;
+import com.arquisoft.shared.exceptions.DomainException;
+
 /**
- * Excepción base para errores de autenticación
+ * Excepción base para errores de autenticación.
+ * Extiende {@link DomainException}: las reglas de autenticación son contratos del dominio.
+ *
+ * <p>Las subclases deben proporcionar su propio {@code errorCode} vía
+ * {@link BaseError#of(String, String)} para identificación precisa en el cliente.</p>
  */
-public class AuthenticationException extends RuntimeException {
-    
+public class AuthenticationException extends DomainException {
+
     public AuthenticationException(String message) {
-        super(message);
+        super(BaseError.of("AUTENTICACION_ERROR", message));
     }
 
     public AuthenticationException(String message, Throwable cause) {
-        super(message, cause);
+        super(BaseError.of("AUTENTICACION_ERROR", message, cause), cause);
+    }
+
+    protected AuthenticationException(BaseError error) {
+        super(error);
+    }
+
+    protected AuthenticationException(BaseError error, Throwable cause) {
+        super(error, cause);
     }
 }

@@ -30,6 +30,8 @@ public class ErrorResponseDTO {
 
     private List<FieldErrorDTO> fieldErrors;
 
+    private List<String> trace;
+
     /**
      * DTO para errores de validación de campos específicos.
      */

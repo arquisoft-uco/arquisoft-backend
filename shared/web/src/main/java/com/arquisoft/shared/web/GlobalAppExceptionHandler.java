@@ -1,5 +1,9 @@
 package com.arquisoft.shared.web;
 
+import com.arquisoft.shared.exceptions.ApplicationException;
+import com.arquisoft.shared.exceptions.BaseException;
+import com.arquisoft.shared.exceptions.DomainException;
+import com.arquisoft.shared.exceptions.InfrastructureException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +27,15 @@ import java.util.stream.Collectors;
 
 /**
  * Manejador global de excepciones cross-cutting para toda la aplicación.
- * Cubre Spring Security, validación, parsing y fallback genérico.
+ *
+ * <p>Cubre tres niveles:</p>
+ * <ol>
+ *   <li>Excepciones de dominio personalizado: {@link DomainException} (422),
+ *       {@link ApplicationException} (400), {@link InfrastructureException} (503),
+ *       {@link BaseException} (500) para subtipos no cubiertos.</li>
+ *   <li>Excepciones de Spring Security y validación (403, 400).</li>
+ *   <li>Fallback genérico {@link Exception} (500).</li>
+ * </ol>
  *
  * <p>Se registra con la menor precedencia ({@code LOWEST_PRECEDENCE}) para que
  * los handlers de cada contexto (anotados con {@code basePackages}) siempre
@@ -33,6 +45,44 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class GlobalAppExceptionHandler {
+
+    // -------------------------------------------------------------------------
+    // Excepciones de dominio personalizado — un handler, polimorfismo por instanceof
+    // -------------------------------------------------------------------------
+
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<ErrorResponseDTO> handleBaseException(
+            BaseException ex,
+            HttpServletRequest request) {
+
+        final HttpStatus status;
+        final String error;
+
+        if (ex instanceof DomainException) {
+            log.warn("Domain exception in {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+            status = HttpStatus.UNPROCESSABLE_CONTENT;
+            error = "Error de dominio";
+        } else if (ex instanceof ApplicationException) {
+            log.warn("Application exception in {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+            status = HttpStatus.BAD_REQUEST;
+            error = "Error de aplicación";
+        } else if (ex instanceof InfrastructureException) {
+            log.error("Infrastructure exception in {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+            status = HttpStatus.SERVICE_UNAVAILABLE;
+            error = "Servicio no disponible";
+        } else {
+            log.error("Unclassified base exception in {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage(), ex);
+            status = HttpStatus.INTERNAL_SERVER_ERROR;
+            error = "Error interno";
+        }
+
+        return ResponseEntity.status(status)
+                .body(buildBody(ex, error, status, request));
+    }
+
+    // -------------------------------------------------------------------------
+    // Spring Security
+    // -------------------------------------------------------------------------
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorResponseDTO> handleAuthorizationDenied(
@@ -65,6 +115,10 @@ public class GlobalAppExceptionHandler {
                         .path(request.getRequestURI())
                         .build());
     }
+
+    // -------------------------------------------------------------------------
+    // Validación y parsing
+    // -------------------------------------------------------------------------
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponseDTO> handleMethodArgumentNotValid(
@@ -142,6 +196,10 @@ public class GlobalAppExceptionHandler {
                         .build());
     }
 
+    // -------------------------------------------------------------------------
+    // Infraestructura Spring (ResourceAccessException, routing)
+    // -------------------------------------------------------------------------
+
     @ExceptionHandler(ResourceAccessException.class)
     public ResponseEntity<ErrorResponseDTO> handleResourceAccess(
             ResourceAccessException ex,
@@ -190,6 +248,10 @@ public class GlobalAppExceptionHandler {
                         .build());
     }
 
+    // -------------------------------------------------------------------------
+    // Fallback absoluto
+    // -------------------------------------------------------------------------
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGeneral(
             Exception ex,
@@ -204,5 +266,21 @@ public class GlobalAppExceptionHandler {
                         .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .path(request.getRequestURI())
                         .build());
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    private ErrorResponseDTO buildBody(BaseException ex, String error, HttpStatus status, HttpServletRequest request) {
+        List<String> trace = ex.getError().getTrace().isEmpty() ? null : ex.getError().getTrace();
+        return ErrorResponseDTO.builder()
+                .error(error)
+                .errorCode(ex.getErrorCode())
+                .message(ex.getMessage())
+                .status(status.value())
+                .path(request.getRequestURI())
+                .trace(trace)
+                .build();
     }
 }
