@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.config;
+package com.arquisoft.seguridad.infrastructure.config.cors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

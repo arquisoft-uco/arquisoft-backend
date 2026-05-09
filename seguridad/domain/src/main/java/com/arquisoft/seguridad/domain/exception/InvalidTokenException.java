@@ -1,15 +1,17 @@
 package com.arquisoft.seguridad.domain.exception;
 
+import com.arquisoft.shared.exceptions.BaseError;
+
 /**
- * Excepción para tokens inválidos o expirados
+ * Excepción para tokens JWT inválidos, malformados o expirados.
  */
 public class InvalidTokenException extends AuthenticationException {
-    
+
     public InvalidTokenException(String message) {
-        super(message);
+        super(BaseError.of("TOKEN_INVALIDO", message));
     }
 
     public InvalidTokenException(String message, Throwable cause) {
-        super(message, cause);
+        super(BaseError.of("TOKEN_INVALIDO", message, cause), cause);
     }
 }

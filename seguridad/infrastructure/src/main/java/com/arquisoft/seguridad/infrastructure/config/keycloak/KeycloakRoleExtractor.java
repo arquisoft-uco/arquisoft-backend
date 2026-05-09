@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.config;
+package com.arquisoft.seguridad.infrastructure.config.keycloak;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -20,7 +20,7 @@ public class KeycloakRoleExtractor {
     private static final String CLAIM_RESOURCE_ACCESS = "resource_access";
     private static final String KEY_ROLES = "roles";
 
-    @Value("${KEYCLOAK_CLIENT_ID:arquisoft-api}")
+    @Value("${KEYCLOAK_CLIENT_ID}")
     private String clientId;
 
     /**

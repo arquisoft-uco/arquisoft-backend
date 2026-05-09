@@ -1,4 +1,4 @@
-package com.arquisoft.shared.web;
+package com.arquisoft.shared.web.client;
 
 /**
  * Cliente HTTP para consumir APIs externas.

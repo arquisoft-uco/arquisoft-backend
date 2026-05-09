@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
 import com.arquisoft.fichas.application.dto.FichaPerfilResumenDTO;
 import com.arquisoft.fichas.domain.port.in.ConsultarFichasPerfilUseCase;
-import com.arquisoft.shared.web.PageResponseDTO;
+import com.arquisoft.shared.web.dto.PageResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -42,7 +42,7 @@ public class FichaPerfilController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = PageResponseDTO.class))),
             @ApiResponse(responseCode = "400", description = "Parámetros de paginación inválidos",
-                    content = @Content(schema = @Schema(implementation = com.arquisoft.shared.web.ErrorResponseDTO.class))),
+                    content = @Content(schema = @Schema(implementation = com.arquisoft.shared.web.dto.ErrorResponseDTO.class))),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "Sin permisos — se requiere rol coordinador")
     })

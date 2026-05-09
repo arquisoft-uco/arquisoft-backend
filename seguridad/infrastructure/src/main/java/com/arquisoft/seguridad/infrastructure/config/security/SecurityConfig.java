@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.config;
+package com.arquisoft.seguridad.infrastructure.config.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +32,8 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
+    private final SecurityAccessDeniedHandler securityAccessDeniedHandler;
+    private final SecurityAuthenticationEntryPoint securityAuthenticationEntryPoint;
 
     @Value("${arquisoft.keycloak.server-url}")
     private String keycloakServerUrl;
@@ -64,10 +66,15 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
+                        .authenticationEntryPoint(securityAuthenticationEntryPoint)
                         .jwt(jwt -> jwt
                                 .decoder(jwtDecoder())
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter)
                         )
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(securityAuthenticationEntryPoint)
+                        .accessDeniedHandler(securityAccessDeniedHandler)
                 );
 
         return http.build();

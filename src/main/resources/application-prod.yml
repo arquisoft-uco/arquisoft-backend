@@ -157,6 +157,7 @@ security:
     enabled: ${RATE_LIMIT_ENABLED:true}
     requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:60}
     login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:3}
+    max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:1000}
 
 # ==================== LOGGING ====================
 logging:
