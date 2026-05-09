@@ -28,7 +28,9 @@ import java.util.concurrent.TimeUnit;
 @Order(-200)
 @RequiredArgsConstructor
 public class RateLimitingFilter extends OncePerRequestFilter {
-    
+
+    private static final String LOGIN_PATH = "/api/auth/login";
+
     private final RateLimitConfig rateLimitConfig;
     private final ObjectMapper objectMapper;
 
@@ -58,7 +60,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
         String clientIp = getClientIp(request);
         
-        boolean isLoginEndpoint = request.getRequestURI().contains("/auth/login");
+        boolean isLoginEndpoint = LOGIN_PATH.equals(request.getRequestURI());
         Bucket bucket = isLoginEndpoint ? 
                 rateLimitConfig.resolveLoginBucket(clientIp) : 
                 rateLimitConfig.resolveBucket(clientIp);
