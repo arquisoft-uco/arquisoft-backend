@@ -117,7 +117,7 @@ public class RateLimitConfig {
 
     private Bucket createUnlimitedBucket() {
         return Bucket.builder()
-                .addLimit(Bandwidth.classic(Integer.MAX_VALUE, Refill.intervally(Integer.MAX_VALUE, Duration.ofMinutes(1))))
+                .addLimit(Bandwidth.classic(Long.MAX_VALUE, Refill.intervally(Long.MAX_VALUE, Duration.ofDays(1))))
                 .build();
     }
 
