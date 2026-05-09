@@ -2,7 +2,7 @@ package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.seguridad.infrastructure.config.BucketResolver;
 import com.arquisoft.shared.web.ErrorResponseDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import lombok.RequiredArgsConstructor;
