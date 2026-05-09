@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
-import com.arquisoft.seguridad.infrastructure.config.RateLimitConfig;
+import com.arquisoft.seguridad.infrastructure.config.BucketResolver;
 import com.arquisoft.shared.web.ErrorResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bucket4j.Bucket;
@@ -31,7 +31,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private static final String LOGIN_PATH = "/api/auth/login";
 
-    private final RateLimitConfig rateLimitConfig;
+    private final BucketResolver bucketResolver;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -47,7 +47,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
                                     FilterChain filterChain) throws ServletException, IOException {
         
-        if (!rateLimitConfig.isRateLimitEnabled()) {
+        if (!bucketResolver.isRateLimitEnabled()) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -62,8 +62,8 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         
         boolean isLoginEndpoint = LOGIN_PATH.equals(request.getRequestURI());
         Bucket bucket = isLoginEndpoint ? 
-                rateLimitConfig.resolveLoginBucket(clientIp) : 
-                rateLimitConfig.resolveBucket(clientIp);
+                bucketResolver.resolveLoginBucket(clientIp) : 
+                bucketResolver.resolveBucket(clientIp);
 
         ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
 

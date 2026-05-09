@@ -34,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties(RateLimitProperties.class)
-public class RateLimitConfig {
+public class RateLimitConfig implements BucketResolver {
 
     private final RateLimitProperties properties;
 
