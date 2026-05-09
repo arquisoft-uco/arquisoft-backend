@@ -17,8 +17,9 @@ dependencies {
     runtimeOnly "io.jsonwebtoken:jjwt-impl"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson"
 
-    // Rate Limiting (Bucket4j 7.6.0 — grupo legacy com.github.vladimir-bukhtoyarov)
-    implementation "com.github.vladimir-bukhtoyarov:bucket4j-core"
+    // Rate Limiting — Bucket4j oficial Maven Central (com.bucket4j).
+    // bucket4j_jdk17-core: requiere Java 17+, compatible con Java 21 y Virtual Threads.
+    implementation "com.bucket4j:bucket4j_jdk17-core"
 
     // Database
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"

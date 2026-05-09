@@ -57,8 +57,9 @@ dependencyManagement {
         dependency "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
         dependency "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 
-        // Rate Limiting (no gestionado por el BOM)
-        dependency "com.github.vladimir-bukhtoyarov:bucket4j-core:${bucket4jVersion}"
+        // Rate Limiting (no gestionado por el BOM). Fuente: Maven Central (com.bucket4j).
+        // bucket4j_jdk17-core: artefacto oficial para Java 17+, compatible con Java 21 y Virtual Threads.
+        dependency "com.bucket4j:bucket4j_jdk17-core:${bucket4jVersion}"
     }
 }
 
@@ -114,7 +115,8 @@ subprojects { subproject ->
             dependency "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
             dependency "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
             dependency "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
-            dependency "com.github.vladimir-bukhtoyarov:bucket4j-core:${bucket4jVersion}"
+            // bucket4j_jdk17-core: artefacto oficial Maven Central para Java 17+ / Java 21 / Virtual Threads
+            dependency "com.bucket4j:bucket4j_jdk17-core:${bucket4jVersion}"
         }
     }
 

@@ -2,7 +2,6 @@ package com.arquisoft.seguridad.infrastructure.config;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Refill;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * las entradas inactivas cada 2 minutos. Como la ventana de cuota es 1 minuto,
  * un bucket no accedido en 2 minutos ya habría sido reabastecido de todos modos.</p>
  *
- * <p>El bucket de login usa {@link Refill#greedy} en lugar de {@code intervally}
+ * <p>El bucket de login usa {@code refillGreedy} en lugar de {@code refillIntervally}
  * para evitar la vulnerabilidad de ventana fija: distribuye los tokens a lo largo
  * del minuto en lugar de reponerlos todos de golpe al final del período.</p>
  *
@@ -94,29 +93,32 @@ public class RateLimitConfig implements BucketResolver {
 
     /** Bucket general: ventana fija es suficiente para tráfico normal. */
     private Bucket createGeneralBucket() {
-        Bandwidth limit = Bandwidth.classic(
-                properties.requestsPerMinute(),
-                Refill.intervally(properties.requestsPerMinute(), Duration.ofMinutes(1))
-        );
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(properties.requestsPerMinute())
+                .refillIntervally(properties.requestsPerMinute(), Duration.ofMinutes(1))
+                .build();
         return Bucket.builder().addLimit(limit).build();
     }
 
     /**
-     * Bucket de login: usa {@link Refill#greedy} para distribuir los tokens gradualmente.
+     * Bucket de login: usa {@code refillGreedy} para distribuir los tokens gradualmente.
      * Previene el ataque de ventana fija: 3 intentos al 11:59:59 + 3 al 12:00:00 = 6 en 2 s.
      * Con greedy, los tokens se reabastecen 1 cada (60/N) segundos.
      */
     private Bucket createLoginBucket() {
-        Bandwidth limit = Bandwidth.classic(
-                properties.loginRequestsPerMinute(),
-                Refill.greedy(properties.loginRequestsPerMinute(), Duration.ofMinutes(1))
-        );
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(properties.loginRequestsPerMinute())
+                .refillGreedy(properties.loginRequestsPerMinute(), Duration.ofMinutes(1))
+                .build();
         return Bucket.builder().addLimit(limit).build();
     }
 
     private Bucket createUnlimitedBucket() {
         return Bucket.builder()
-                .addLimit(Bandwidth.classic(Long.MAX_VALUE, Refill.intervally(Long.MAX_VALUE, Duration.ofDays(1))))
+                .addLimit(Bandwidth.builder()
+                        .capacity(Long.MAX_VALUE)
+                        .refillIntervally(Long.MAX_VALUE, Duration.ofDays(1))
+                        .build())
                 .build();
     }
 
