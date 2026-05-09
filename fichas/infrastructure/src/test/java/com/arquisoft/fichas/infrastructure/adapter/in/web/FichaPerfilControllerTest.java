@@ -27,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(FichaPerfilController.class)
-@Import({FichasGlobalExceptionHandler.class, GlobalAppExceptionHandler.class,
+@Import({GlobalAppExceptionHandler.class,
         FichaPerfilControllerTest.TestSecurityConfig.class})
 class FichaPerfilControllerTest {
 
@@ -47,7 +47,9 @@ class FichaPerfilControllerTest {
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                     .authenticationEntryPoint((request, response, authException) ->
-                        response.sendError(401, "Unauthorized")));
+                        response.sendError(401, "Unauthorized"))
+                    .accessDeniedHandler((request, response, accessDeniedException) ->
+                        response.sendError(403, "Forbidden")));
             return http.build();
         }
     }

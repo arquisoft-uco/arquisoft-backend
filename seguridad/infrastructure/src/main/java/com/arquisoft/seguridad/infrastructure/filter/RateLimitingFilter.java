@@ -5,6 +5,7 @@ import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -22,6 +23,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Component
+@Order(-200)
 @RequiredArgsConstructor
 public class RateLimitingFilter extends OncePerRequestFilter {
     
