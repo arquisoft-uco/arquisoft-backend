@@ -12,10 +12,8 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
     implementation "org.springframework.boot:spring-boot-starter-validation"
 
-    // JWT (parseo manual de claims realm_access.roles para mapear a UsuarioRole)
-    implementation "io.jsonwebtoken:jjwt-api"
-    runtimeOnly "io.jsonwebtoken:jjwt-impl"
-    runtimeOnly "io.jsonwebtoken:jjwt-jackson"
+    // JWT: validación y parseo gestionados íntegramente por spring-boot-starter-oauth2-resource-server
+    // (NimbusJwtDecoder + org.springframework.security.oauth2.jwt.Jwt). jjwt eliminado — no se usa.
 
     // Rate Limiting — Bucket4j oficial Maven Central (com.bucket4j).
     // bucket4j_jdk17-core: requiere Java 17+, compatible con Java 21 y Virtual Threads.
