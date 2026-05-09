@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -63,8 +64,24 @@ public class GlobalAppExceptionHandler {
     }
 
     // -------------------------------------------------------------------------
-    // Spring Security — autorización (AccessDeniedException + AuthorizationDeniedException via herencia)
+    // Spring Security — autenticación y autorización a nivel de filtro
     // -------------------------------------------------------------------------
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleAuthenticationException(
+            AuthenticationException ex,
+            HttpServletRequest request) {
+
+        log.warn("Authentication failed in {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponseDTO.builder()
+                        .error("Unauthorized")
+                        .message("No autenticado o token inválido")
+                        .status(HttpStatus.UNAUTHORIZED.value())
+                        .path(request.getRequestURI())
+                        .build());
+    }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponseDTO> handleAccessDenied(

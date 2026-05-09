@@ -30,6 +30,15 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private final RateLimitConfig rateLimitConfig;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri.startsWith("/api/swagger-ui")
+                || uri.startsWith("/api/v3/api-docs")
+                || uri.startsWith("/api/swagger-resources")
+                || uri.startsWith("/api/actuator");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
                                     FilterChain filterChain) throws ServletException, IOException {
         
