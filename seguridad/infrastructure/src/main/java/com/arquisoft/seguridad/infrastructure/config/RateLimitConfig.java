@@ -3,8 +3,9 @@ package com.arquisoft.seguridad.infrastructure.config;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -25,19 +26,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>El bucket de login usa {@link Refill#greedy} en lugar de {@code intervally}
  * para evitar la vulnerabilidad de ventana fija: distribuye los tokens a lo largo
  * del minuto en lugar de reponerlos todos de golpe al final del período.</p>
+ *
+ * <p>Las propiedades se leen de {@link RateLimitProperties} (prefijo
+ * {@code security.rate-limit.*}) en lugar de múltiples {@code @Value} dispersos.</p>
  */
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
+@EnableConfigurationProperties(RateLimitProperties.class)
 public class RateLimitConfig {
 
-    @Value("${security.rate-limit.enabled:true}")
-    private boolean rateLimitEnabled;
-
-    @Value("${security.rate-limit.requests-per-minute:100}")
-    private int requestsPerMinute;
-
-    @Value("${security.rate-limit.login-requests-per-minute:5}")
-    private int loginRequestsPerMinute;
+    private final RateLimitProperties properties;
 
     private final Map<String, Bucket> bucketsByIp = new ConcurrentHashMap<>();
     private final Map<String, Bucket> loginBucketsByIp = new ConcurrentHashMap<>();
@@ -49,7 +48,7 @@ public class RateLimitConfig {
     private final Map<String, Instant> lastLoginAccessByIp = new ConcurrentHashMap<>();
 
     public Bucket resolveBucket(String ip) {
-        if (!rateLimitEnabled) {
+        if (!properties.enabled()) {
             return createUnlimitedBucket();
         }
         lastAccessByIp.put(ip, Instant.now());
@@ -57,7 +56,7 @@ public class RateLimitConfig {
     }
 
     public Bucket resolveLoginBucket(String ip) {
-        if (!rateLimitEnabled) {
+        if (!properties.enabled()) {
             return createUnlimitedBucket();
         }
         lastLoginAccessByIp.put(ip, Instant.now());
@@ -96,8 +95,8 @@ public class RateLimitConfig {
     /** Bucket general: ventana fija es suficiente para tráfico normal. */
     private Bucket createGeneralBucket() {
         Bandwidth limit = Bandwidth.classic(
-                requestsPerMinute,
-                Refill.intervally(requestsPerMinute, Duration.ofMinutes(1))
+                properties.requestsPerMinute(),
+                Refill.intervally(properties.requestsPerMinute(), Duration.ofMinutes(1))
         );
         return Bucket.builder().addLimit(limit).build();
     }
@@ -109,8 +108,8 @@ public class RateLimitConfig {
      */
     private Bucket createLoginBucket() {
         Bandwidth limit = Bandwidth.classic(
-                loginRequestsPerMinute,
-                Refill.greedy(loginRequestsPerMinute, Duration.ofMinutes(1))
+                properties.loginRequestsPerMinute(),
+                Refill.greedy(properties.loginRequestsPerMinute(), Duration.ofMinutes(1))
         );
         return Bucket.builder().addLimit(limit).build();
     }
@@ -122,7 +121,7 @@ public class RateLimitConfig {
     }
 
     public boolean isRateLimitEnabled() {
-        return rateLimitEnabled;
+        return properties.enabled();
     }
 }
 
