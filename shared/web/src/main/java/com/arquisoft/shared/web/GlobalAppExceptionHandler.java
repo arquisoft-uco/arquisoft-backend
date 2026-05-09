@@ -12,35 +12,17 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Manejador global de excepciones cross-cutting para toda la aplicación.
- *
- * <p>Cubre tres niveles:</p>
- * <ol>
- *   <li>Excepciones de dominio personalizado: {@link DomainException} (422),
- *       {@link ApplicationException} (400), {@link InfrastructureException} (503),
- *       {@link BaseException} (500) para subtipos no cubiertos.</li>
- *   <li>Excepciones de Spring Security y validación (403, 400).</li>
- *   <li>Fallback genérico {@link Exception} (500).</li>
- * </ol>
- *
- * <p>Se registra con la menor precedencia ({@code LOWEST_PRECEDENCE}) para que
- * los handlers de cada contexto (anotados con {@code basePackages}) siempre
- * ganen si capturan la misma excepción.</p>
- */
 @Slf4j
 @RestControllerAdvice
 @Order(Ordered.LOWEST_PRECEDENCE)
@@ -77,35 +59,19 @@ public class GlobalAppExceptionHandler {
         }
 
         return ResponseEntity.status(status)
-                .body(buildBody(ex, error, status, request));
+                .body(ErrorResponseDTO.fromBaseException(ex, error, status, request.getRequestURI()));
     }
 
     // -------------------------------------------------------------------------
-    // Spring Security
+    // Spring Security — autorización (AccessDeniedException + AuthorizationDeniedException via herencia)
     // -------------------------------------------------------------------------
-
-    @ExceptionHandler(AuthorizationDeniedException.class)
-    public ResponseEntity<ErrorResponseDTO> handleAuthorizationDenied(
-            AuthorizationDeniedException ex,
-            HttpServletRequest request) {
-
-        log.warn("Authorization denied (method-level): {}", ex.getMessage());
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                .body(ErrorResponseDTO.builder()
-                        .error("Forbidden")
-                        .message("No tienes permisos para acceder a este recurso")
-                        .status(HttpStatus.FORBIDDEN.value())
-                        .path(request.getRequestURI())
-                        .build());
-    }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponseDTO> handleAccessDenied(
             AccessDeniedException ex,
             HttpServletRequest request) {
 
-        log.warn("Access denied: {}", ex.getMessage());
+        log.warn("Access denied in {}: {}", request.getRequestURI(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ErrorResponseDTO.builder()
@@ -197,24 +163,8 @@ public class GlobalAppExceptionHandler {
     }
 
     // -------------------------------------------------------------------------
-    // Infraestructura Spring (ResourceAccessException, routing)
+    // Routing
     // -------------------------------------------------------------------------
-
-    @ExceptionHandler(ResourceAccessException.class)
-    public ResponseEntity<ErrorResponseDTO> handleResourceAccess(
-            ResourceAccessException ex,
-            HttpServletRequest request) {
-
-        log.error("External service connection error: {}", ex.getMessage());
-
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(ErrorResponseDTO.builder()
-                        .error("Service Unavailable")
-                        .message("Error al conectar con servicio externo. Intente más tarde.")
-                        .status(HttpStatus.SERVICE_UNAVAILABLE.value())
-                        .path(request.getRequestURI())
-                        .build());
-    }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleNoResourceFound(
@@ -228,22 +178,6 @@ public class GlobalAppExceptionHandler {
                         .error("Not Found")
                         .message("El recurso solicitado no existe")
                         .status(HttpStatus.NOT_FOUND.value())
-                        .path(request.getRequestURI())
-                        .build());
-    }
-
-    @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<ErrorResponseDTO> handleResponseStatus(
-            ResponseStatusException ex,
-            HttpServletRequest request) {
-
-        log.warn("Response status exception in {}: {}", request.getRequestURI(), ex.getMessage());
-
-        return ResponseEntity.status(ex.getStatusCode())
-                .body(ErrorResponseDTO.builder()
-                        .error(ex.getStatusCode().toString())
-                        .message(ex.getReason() != null ? ex.getReason() : ex.getMessage())
-                        .status(ex.getStatusCode().value())
                         .path(request.getRequestURI())
                         .build());
     }
@@ -267,20 +201,5 @@ public class GlobalAppExceptionHandler {
                         .path(request.getRequestURI())
                         .build());
     }
-
-    // -------------------------------------------------------------------------
-    // Helpers
-    // -------------------------------------------------------------------------
-
-    private ErrorResponseDTO buildBody(BaseException ex, String error, HttpStatus status, HttpServletRequest request) {
-        List<String> trace = ex.getError().getTrace().isEmpty() ? null : ex.getError().getTrace();
-        return ErrorResponseDTO.builder()
-                .error(error)
-                .errorCode(ex.getErrorCode())
-                .message(ex.getMessage())
-                .status(status.value())
-                .path(request.getRequestURI())
-                .trace(trace)
-                .build();
-    }
 }
+

@@ -6,24 +6,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.List;
-
-/**
- * Manejador de excepciones del módulo de seguridad.
- *
- * <p>Cubre la jerarquía de {@link AuthenticationException} ({@code InvalidCredentialsException},
- * {@code InvalidTokenException}) usando polimorfismo — un único handler captura todos los
- * subtipos y los mapea a {@code 401 Unauthorized}.</p>
- *
- * <p>Las excepciones de infraestructura ({@code KeycloakUnavailableException}) y las
- * cross-cutting (Spring Security, validación, fallback) son gestionadas por
- * {@code GlobalAppExceptionHandler} en {@code shared:web}.</p>
- */
 @Slf4j
-@RestControllerAdvice(basePackages = "com.arquisoft.seguridad")
+@RestControllerAdvice
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class SeguridadGlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
@@ -33,16 +23,7 @@ public class SeguridadGlobalExceptionHandler {
 
         log.warn("Authentication exception in {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
 
-        List<String> trace = ex.getError().getTrace().isEmpty() ? null : ex.getError().getTrace();
-
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponseDTO.builder()
-                        .error("Unauthorized")
-                        .errorCode(ex.getErrorCode())
-                        .message(ex.getMessage())
-                        .status(HttpStatus.UNAUTHORIZED.value())
-                        .path(request.getRequestURI())
-                        .trace(trace)
-                        .build());
+                .body(ErrorResponseDTO.fromBaseException(ex, "Unauthorized", HttpStatus.UNAUTHORIZED, request.getRequestURI()));
     }
 }
