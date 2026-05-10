@@ -2,12 +2,5 @@ dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:exceptions')
 
-    // Spring Validation (incluye Jakarta Validation API + Hibernate Validator transitivamente,
-    // versiones gestionadas por el BOM de Spring Boot 4.0.5: jakarta.validation 3.1.1 +
-    // hibernate-validator 9.1.0.Final, alineado con Jakarta EE 11)
-    implementation "org.springframework.boot:spring-boot-starter-validation"
-
-    // Jakarta Bean Validation API (explicito para uso directo desde codigo, version del BOM)
-    implementation "jakarta.validation:jakarta.validation-api"
-    implementation "org.hibernate.validator:hibernate-validator"
+    // DomainValidator es Java puro — sin dependencias de framework ni Jakarta
 }

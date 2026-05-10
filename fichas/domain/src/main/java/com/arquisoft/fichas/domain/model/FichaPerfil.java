@@ -1,56 +1,90 @@
 package com.arquisoft.fichas.domain.model;
 
+import com.arquisoft.shared.validation.DomainValidator;
+import com.arquisoft.shared.validation.ValidationResult;
 import java.util.UUID;
 
 /**
  * Aggregate Root del bounded context {@code fichas}.
  *
  * <p>Representa una ficha de perfil de proyecto de grado con su asesor asignado.
- * Inmutable: constructor privado, campos {@code final}, acceso solo por getters.
+ * Constructor privado y setters privados con encapsulamiento estricto.
  * Sin Spring, sin Lombok, sin JPA — Java puro.
  *
  * <ul>
- *   <li>{@link #build(String, AsesorFicha)} — crea una nueva ficha, genera UUID y publica evento.</li>
- *   <li>{@link #rebuild(UUID, String, AsesorFicha)} — reconstruye desde persistencia, sin evento.</li>
+ *   <li>{@link #build(String, AsesorFicha)} — valida todos los campos acumulando errores
+ *       (Notification Pattern) y lanza {@link com.arquisoft.shared.validation.DomainValidationException}
+ *       con la lista completa si existe al menos uno. Genera UUID solo si la validación pasa.</li>
+ *   <li>{@link #rebuild(UUID, String, AsesorFicha)} — reconstruye desde persistencia sin validación.</li>
  * </ul>
  */
 public final class FichaPerfil {
 
-    private final UUID id;
-    private final String tituloProyecto;
-    private final AsesorFicha asesorFicha;
+    private UUID id;
+    private String tituloProyecto;
+    private AsesorFicha asesorFicha;
 
-    private FichaPerfil(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
-        this.id = id;
-        this.tituloProyecto = tituloProyecto;
-        this.asesorFicha = asesorFicha;
+    private FichaPerfil() {}
+
+    // ─── Private setters ──────────────────────────────────────────────────────
+    // Cada setter delega sus reglas en DomainValidator, acumula en result
+    // y solo asigna el valor cuando el campo no presentó errores.
+    // Son la única fuente de verdad por campo: reutilizables desde build()
+    // y cualquier método de mutación de negocio.
+
+    private void setId() {
+        this.id = UUID.randomUUID();
     }
 
-    /**
-     * Crea una nueva FichaPerfil con identidad generada automáticamente.
-     */
-    public static FichaPerfil build(String tituloProyecto, AsesorFicha asesorFicha) {
-        if (tituloProyecto == null || tituloProyecto.isBlank()) {
-            throw new IllegalArgumentException("El título del proyecto no puede ser nulo ni vacío");
+    private void setTituloProyecto(String titulo, ValidationResult result) {
+        DomainValidator.notBlank(titulo, "tituloProyecto", "FICHA_TITULO_REQUIRED", result);
+        DomainValidator.maxLength(titulo, 100, "tituloProyecto", "FICHA_TITULO_TOO_LONG", result);
+        if (!result.hasFieldErrors("tituloProyecto")) {
+            this.tituloProyecto = titulo.trim();
         }
-        String titulo = tituloProyecto.trim();
-        if (titulo.length() > 100) {
-            throw new IllegalArgumentException("El título del proyecto no puede superar 100 caracteres");
-        }
-        if (asesorFicha == null) {
-            throw new IllegalArgumentException("El asesor de la ficha no puede ser nulo");
-        }
-
-        UUID id = UUID.randomUUID();
-        return new FichaPerfil(id, titulo, asesorFicha);
     }
 
-    /**
-     * Reconstruye una FichaPerfil desde persistencia.
-     */
-    public static FichaPerfil rebuild(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
-        return new FichaPerfil(id, tituloProyecto, asesorFicha);
+    private void setAsesorFicha(AsesorFicha asesor, ValidationResult result) {
+        DomainValidator.notNull(asesor, "asesorFicha", "FICHA_ASESOR_REQUIRED", result);
+        if (!result.hasFieldErrors("asesorFicha")) {
+            this.asesorFicha = asesor;
+        }
     }
+
+    // ─── Factory: build ───────────────────────────────────────────────────────
+
+    public static FichaPerfil build(String titulo, AsesorFicha asesor) {
+        FichaPerfil ficha = new FichaPerfil();
+        ValidationResult result = new ValidationResult();
+
+        ficha.setTituloProyecto(titulo, result);
+        ficha.setAsesorFicha(asesor, result);
+
+        result.throwIfHasErrors();  // lanza DomainValidationException con TODOS los errores
+
+        ficha.setId();              // UUID solo se genera si la validación pasa
+        return ficha;
+    }
+
+    // ─── Factory: rebuild (desde persistencia — dato confiable) ──────────────
+
+    public static FichaPerfil rebuild(UUID id, String titulo, AsesorFicha asesor) {
+        FichaPerfil ficha = new FichaPerfil();
+        ficha.id = id;
+        ficha.tituloProyecto = titulo;
+        ficha.asesorFicha = asesor;
+        return ficha;
+    }
+
+    // ─── Métodos de negocio ───────────────────────────────────────────────────
+
+    public void actualizarTitulo(String nuevoTitulo) {
+        ValidationResult result = new ValidationResult();
+        setTituloProyecto(nuevoTitulo, result);
+        result.throwIfHasErrors();
+    }
+
+    // ─── Getters ──────────────────────────────────────────────────────────────
 
     public UUID getId() {
         return id;
