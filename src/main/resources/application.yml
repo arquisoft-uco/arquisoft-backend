@@ -198,6 +198,10 @@ server:
   port: 8080
   servlet:
     context-path: /api
+  # ForwardedHeaderFilter de Spring valida X-Forwarded-For/X-Real-IP contra trusted-proxies
+  # antes de reescribir request.getRemoteAddr() — evita IP spoofing desde internet.
+  # AuditFilter lee solo request.getRemoteAddr() y obtiene la IP real del cliente.
+  forward-headers-strategy: FRAMEWORK
   compression:
     enabled: true
     min-response-size: 1024

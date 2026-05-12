@@ -28,6 +28,15 @@
     ==========================================================================
     -->
 
+    <!--
+    Cierra la cola de AsyncAppender antes de que la JVM termine (SIGTERM/SIGKILL).
+    Retraso de 200 ms — suficiente para drenar eventos pendientes sin bloquear el shutdown.
+    Cubre el caso en que Spring Boot termine antes de que Logback procese los últimos logs.
+    -->
+    <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook">
+        <delay>200</delay>
+    </shutdownHook>
+
     <!-- Captura el perfil activo para usarlo como campo customFields del JSON -->
     <springProperty name="activeProfile" source="spring.profiles.active" defaultValue="dev"/>
 
@@ -50,10 +59,12 @@
          - Root: INFO (ajustado por paquete desde application-dev.yml)
          ================================================================== -->
     <springProfile name="dev">
-        <property name="json.maxHistory"           value="7"/>
-        <property name="json.totalSizeCap"         value="500MB"/>
-        <property name="async.queueSize"           value="2048"/>
-        <property name="async.discardingThreshold" value="0"/>
+        <property name="json.maxHistory"                value="7"/>
+        <property name="json.totalSizeCap"              value="500MB"/>
+        <property name="async.queueSize"                value="2048"/>
+        <property name="async.discardingThreshold"      value="0"/>
+        <!-- En dev: el archivo tampoco descarta — queremos ver todos los logs -->
+        <property name="async.file.discardingThreshold" value="0"/>
         <include resource="logback-json-appender.xml"/>
         <root level="INFO">
             <appender-ref ref="ASYNC_CONSOLE"/>
@@ -69,14 +80,29 @@
          - Root: WARN (com.arquisoft elevado a INFO desde application-prod.yml)
          ================================================================== -->
     <springProfile name="prod">
-        <property name="json.maxHistory"           value="30"/>
-        <property name="json.totalSizeCap"         value="2GB"/>
-        <property name="async.queueSize"           value="4096"/>
-        <property name="async.discardingThreshold" value="20"/>
+        <property name="json.maxHistory"                value="30"/>
+        <property name="json.totalSizeCap"              value="2GB"/>
+        <property name="async.queueSize"                value="4096"/>
+        <!-- CONSOLE: puede descartar INFO bajo presión — solo lectura humana -->
+        <property name="async.discardingThreshold"      value="20"/>
+        <!-- FILE→Loki: nunca descarta — el archivo es el único canal hacia Alloy/Loki -->
+        <property name="async.file.discardingThreshold" value="0"/>
         <include resource="logback-json-appender.xml"/>
         <root level="WARN">
             <appender-ref ref="ASYNC_CONSOLE"/>
             <appender-ref ref="ASYNC_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- ==================================================================
+         FALLBACK: sin perfil activo
+         Garantiza que siempre haya al menos un appender configurado.
+         Evita silencio total cuando spring.profiles.active no está definido
+         (tests sin @ActiveProfiles, Dockerfile sin -Dspring.profiles.active).
+         ================================================================== -->
+    <springProfile name="!dev &amp; !prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 

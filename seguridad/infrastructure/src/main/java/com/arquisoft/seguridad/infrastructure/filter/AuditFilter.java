@@ -14,6 +14,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -26,29 +27,46 @@ public class AuditFilter extends OncePerRequestFilter {
 
     private static final Pattern IP_PATTERN = Pattern.compile("^[\\d.:a-fA-F]{3,45}$");
 
+    private static final List<String> AUDIT_EXCLUDED_PREFIXES = List.of(
+            "/api/actuator/health",
+            "/api/swagger-ui",
+            "/api/v3/api-docs"
+    );
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String userId = extractUserId();
-        MDC.put(MdcKeys.USER_ID, userId);
-
-        // Genera un traceId propio por request para correlación en logs (stdout → Loki).
+        // traceId y userId se ponen al inicio: propagan a TODOS los logs del hilo (correlación).
+        MDC.put(MdcKeys.USER_ID,  extractUserId());
         MDC.put(MdcKeys.TRACE_ID, UUID.randomUUID().toString().replace("-", ""));
 
-        long startTime    = System.currentTimeMillis();
+        // Capturamos los datos HTTP pero NO los ponemos en MDC todavía —
+        // se agregarán solo en el evento AUDIT para no contaminar logs de capas internas.
         String clientIp   = getClientIp(request);
         String method     = request.getMethod();
-        String requestUri = request.getRequestURI();
+        String requestUri = sanitizeUri(request.getRequestURI());
+        long   startTime  = System.currentTimeMillis();
 
         try {
             filterChain.doFilter(request, response);
         } finally {
             long duration = System.currentTimeMillis() - startTime;
-            int status    = response.getStatus();
+            int  status   = response.getStatus();
 
-            if (!requestUri.contains("/actuator/health") && !requestUri.contains("/swagger")) {
-                auditLog(clientIp, method, requestUri, status, duration);
+            if (!isExcluded(requestUri)) {
+                // Campos HTTP en MDC solo durante la escritura del log AUDIT
+                MDC.put(MdcKeys.HTTP_METHOD, method);
+                MDC.put(MdcKeys.HTTP_URI,    requestUri);
+                MDC.put(MdcKeys.HTTP_STATUS, String.valueOf(status));
+                MDC.put(MdcKeys.DURATION_MS, String.valueOf(duration));
+                MDC.put(MdcKeys.CLIENT_IP,   clientIp);
+                auditLog(status);
+                MDC.remove(MdcKeys.HTTP_METHOD);
+                MDC.remove(MdcKeys.HTTP_URI);
+                MDC.remove(MdcKeys.HTTP_STATUS);
+                MDC.remove(MdcKeys.DURATION_MS);
+                MDC.remove(MdcKeys.CLIENT_IP);
             }
 
             MDC.remove(MdcKeys.TRACE_ID);
@@ -64,30 +82,29 @@ public class AuditFilter extends OncePerRequestFilter {
         return "ANONYMOUS";
     }
 
-    private void auditLog(String clientIp, String method, String uri, int status, long duration) {
+    private void auditLog(int status) {
         if (status >= 200 && status < 300) {
-            log.info("AUDIT [{}] {} {} - Status: {} - Duration: {}ms",
-                    clientIp, method, uri, status, duration);
+            log.info("AUDIT");
         } else if (status >= 400 && status < 500) {
-            log.warn("AUDIT [{}] {} {} - Status: {} - Duration: {}ms",
-                    clientIp, method, uri, status, duration);
+            log.warn("AUDIT");
         } else if (status >= 500) {
-            log.error("AUDIT [{}] {} {} - Status: {} - Duration: {}ms",
-                    clientIp, method, uri, status, duration);
+            log.error("AUDIT");
         }
     }
 
+    private boolean isExcluded(String uri) {
+        return AUDIT_EXCLUDED_PREFIXES.stream().anyMatch(uri::startsWith);
+    }
+
+    private static String sanitizeUri(String uri) {
+        if (uri == null) return "UNKNOWN";
+        return uri.replaceAll("[\r\n\t]", "_");
+    }
+
     private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
-        }
-        if (ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
+        // request.getRemoteAddr() ya refleja la IP real cuando server.forward-headers-strategy=FRAMEWORK
+        // está configurado — Spring's ForwardedHeaderFilter valida el proxy antes de reescribir la IP.
+        String ip = request.getRemoteAddr();
         return IP_PATTERN.matcher(ip).matches() ? ip : "INVALID";
     }
 }

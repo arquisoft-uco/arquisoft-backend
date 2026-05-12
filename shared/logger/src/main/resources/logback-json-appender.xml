@@ -23,9 +23,15 @@
                 <fieldName>@version</fieldName>
                 <fieldName>level_value</fieldName>
             </excludedFields>
-            <!-- Campos MDC: traceId (correlación de request) + userId (correlación de usuario) -->
+            <!-- Campos MDC: traceId + userId (correlación de request/usuario) -->
             <includeMdcKeyName>traceId</includeMdcKeyName>
             <includeMdcKeyName>userId</includeMdcKeyName>
+            <!-- Campos de auditoría HTTP (gestionados por AuditFilter) -->
+            <includeMdcKeyName>httpMethod</includeMdcKeyName>
+            <includeMdcKeyName>httpStatus</includeMdcKeyName>
+            <includeMdcKeyName>httpUri</includeMdcKeyName>
+            <includeMdcKeyName>durationMs</includeMdcKeyName>
+            <includeMdcKeyName>clientIp</includeMdcKeyName>
         </encoder>
     </appender>
 
@@ -38,7 +44,8 @@
 
     <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>${async.queueSize}</queueSize>
-        <discardingThreshold>${async.discardingThreshold}</discardingThreshold>
+        <!-- Nunca descarta eventos del archivo — es el canal hacia Alloy/Loki -->
+        <discardingThreshold>${async.file.discardingThreshold}</discardingThreshold>
         <includeCallerData>false</includeCallerData>
         <appender-ref ref="JSON_FILE"/>
     </appender>
