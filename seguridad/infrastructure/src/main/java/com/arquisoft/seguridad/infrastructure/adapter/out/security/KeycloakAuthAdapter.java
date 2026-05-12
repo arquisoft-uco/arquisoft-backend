@@ -66,13 +66,15 @@ public class KeycloakAuthAdapter implements AuthenticationPort {
             throw new InvalidCredentialsException("Error al autenticar con Keycloak");
 
         } catch (HttpClientErrorException.Unauthorized e) {
-            log.warn("Credenciales invalidas para usuario: {}", email);
+            // Email omitido del log — PII bajo GDPR / Ley 1581. El traceId correlaciona el evento.
+            log.warn("Credenciales invalidas");
             throw new InvalidCredentialsException("Credenciales invalidas");
         } catch (HttpClientErrorException e) {
             log.error("Error de autenticacion en Keycloak: {} - {}", e.getStatusCode(), e.getMessage());
             throw new AuthenticationException("Error al comunicarse con Keycloak: " + e.getMessage());
         } catch (ResourceAccessException e) {
-            log.error("Keycloak no disponible (timeout/red) al autenticar usuario {}: {}", email, e.getMessage());
+            // Email omitido del log — PII bajo GDPR / Ley 1581. El traceId correlaciona el evento.
+            log.error("Keycloak no disponible (timeout/red) al autenticar: {}", e.getMessage());
             throw new IdentityProviderUnavailableException("Servicio de autenticacion no disponible temporalmente", e);
         } catch (AuthenticationException e) {
             throw e;

@@ -18,15 +18,16 @@ import java.util.UUID;
  *
  * Responsabilidad única: correlación de logs por request.
  *
- * Orden -200 — corre ANTES de FilterChainProxy (Spring Security, orden -100).
+ * Orden -300 — corre ANTES de RateLimitingFilter y FilterChainProxy (Spring Security, orden -100).
  * Esto garantiza que traceId esté presente en TODOS los logs del hilo,
- * incluyendo los de rechazo de JWT (401) que nunca llegan a AuditFilter.
+ * incluyendo requests rechazados por rate-limit (429) o JWT inválido (401)
+ * que nunca llegan a AuditFilter.
  *
  * AuditFilter (Ordered.LOWEST_PRECEDENCE) es responsable del userId y del
  * evento AUDIT; este filtro solo gestiona el traceId.
  */
 @Component
-@Order(-200)
+@Order(-300)
 public class TraceIdFilter extends OncePerRequestFilter {
 
     @Override

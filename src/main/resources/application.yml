@@ -207,20 +207,13 @@ server:
     min-response-size: 1024
 
 # ==================== LOGGING ====================
+# logback-spring.xml gestiona appenders, formato, rotación y AsyncAppender.
+# Aquí solo se declaran niveles — el resto (file.name, pattern.*, logback.rollingpolicy.*)
+# no tiene efecto cuando existe un logback-spring.xml custom y genera confusión.
 logging:
   level:
     root: INFO
     org.springframework.web: INFO
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  file:
-    name: logs/arquisoft.log
-  # CORRECCIÓN: En Spring Boot 2.7+ max-size y max-history se movieron a logback.rollingpolicy
-  logback:
-    rollingpolicy:
-      max-file-size: 10MB
-      max-history: 10
 
 # ==================== ACTUATOR ====================
 management:

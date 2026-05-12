@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 /**
  * Filtro de Rate Limiting que limita el número de solicitudes por IP.
@@ -28,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 @Order(-200)
 @RequiredArgsConstructor
 public class RateLimitingFilter extends OncePerRequestFilter {
+
+    private static final Pattern IP_PATTERN = Pattern.compile("^[\\d.:a-fA-F]{3,45}$");
 
     private static final String LOGIN_PATH = "/api/auth/login";
 
@@ -91,26 +94,16 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Extrae la IP real del cliente respetando cabeceras de proxy inverso.
+     * Extrae la IP del cliente usando request.getRemoteAddr().
      *
-     * <p><strong>Requisito de despliegue (OWASP A07):</strong> este método confía en
-     * {@code X-Forwarded-For} y {@code X-Real-IP}. Un atacante podría falsificar estas
-     * cabeceras para evadir el rate limiting si la aplicación está expuesta directamente
-     * a Internet. En producción, el proxy inverso (nginx/Traefik/AWS ALB) <em>debe</em>
-     * sobrescribir estas cabeceras con la IP real antes de reenviar la petición, y la
-     * red debe rechazar peticiones que no pasen por ese proxy.</p>
+     * Con server.forward-headers-strategy=FRAMEWORK, Spring Boot registra
+     * ForwardedHeaderFilter antes de cualquier filtro de aplicación. Ese filtro
+     * procesa y elimina X-Forwarded-For / X-Real-IP reescribiendo getRemoteAddr()
+     * con la IP real validada — leer los headers manualmente aquí sería código muerto
+     * y omitiría la validación de proxy de Spring.
      */
     private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
-        }
-        if (ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        return ip;
+        String ip = request.getRemoteAddr();
+        return IP_PATTERN.matcher(ip).matches() ? ip : "INVALID";
     }
 }
