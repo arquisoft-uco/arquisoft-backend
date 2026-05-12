@@ -12,18 +12,17 @@ loki.process "extract_labels" {
     // Extraer campos del JSON emitido por logstash-logback-encoder.
     stage.json {
         expressions = {
-            level     = "level",
-            env       = "env",
-            message   = "message",
-            logger    = "logger_name",
-            traceId   = "traceId",
-            requestId = "requestId",
-            userId    = "userId",
+            level   = "level",
+            env     = "env",
+            message = "message",
+            logger  = "logger_name",
+            traceId = "traceId",
+            userId  = "userId",
         }
     }
 
     // Promover a stream labels (baja cardinalidad — usables en {}).
-    // NUNCA promover traceId/requestId/userId — alta cardinalidad, destruye el índice de Loki.
+    // NUNCA promover traceId/userId — alta cardinalidad, destruye el índice de Loki.
     stage.labels {
         values = {
             level = "",

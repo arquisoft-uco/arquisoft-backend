@@ -194,9 +194,6 @@ management:
   endpoint:
     health:
       show-details: when-authorized
-  tracing:
-    sampling:
-      probability: 0.1   # 10% en prod — suficiente para correlación; reduce overhead de Brave
 
 # ==================== SPRINGDOCS ====================
 springdoc:

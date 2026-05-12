@@ -15,7 +15,7 @@
 | Componente | Rol | Versión |
 |---|---|---|
 | **logstash-logback-encoder** | Serializa eventos de log como JSON en el proceso Java | `8.0` |
-| **micrometer-tracing-bridge-brave** | Inyecta `traceId` + `spanId` en MDC automáticamente | Gestionada por Spring Boot BOM |
+| **AuditFilter** | Inyecta `traceId` (UUID por request) + `userId` en MDC | Módulo `seguridad:infrastructure` |
 | **Grafana Alloy** | Agente único: lee el archivo de log, extrae labels, envía a Loki | `latest` |
 | **Loki** | Almacén de logs indexado por labels | `https://loki.arquisoft.top` |
 | **Grafana** | Visualización y alertas | `https://grafana.arquisoft.top` |
@@ -51,7 +51,6 @@ Dependencias que aporta a cualquier módulo que lo importe:
 ```gradle
 implementation "org.springframework.boot:spring-boot-starter-logging"
 implementation "net.logstash.logback:logstash-logback-encoder:${logstashVersion}"
-implementation "io.micrometer:micrometer-tracing-bridge-brave"
 ```
 
 El módulo raíz lo importa en `build.gradle`:
@@ -85,14 +84,12 @@ Estándar unificado para **todos los perfiles**:
   "level": "INFO",
   "app": "arquisoft-backend",
   "env": "prod",
-  "traceId": "abc123",
-  "spanId": "def456",
-  "requestId": "uuid-xxx",
+  "traceId": "abc123def456abc123def456abc123de",
   "userId": "uuid-yyy"
 }
 ```
 
-`traceId` y `spanId` los inyecta `micrometer-tracing-bridge-brave` en el MDC automáticamente por request. `requestId` y `userId` los inyecta el `RequestCorrelationFilter`.
+`traceId` (UUID hex sin guiones) y `userId` los inyecta `AuditFilter` en el MDC al inicio de cada request y los limpia en el bloque `finally`.
 
 ### Diferencias entre perfiles (solo comportamiento, no estructura)
 
@@ -174,13 +171,12 @@ loki.process "extract_labels" {
 
     stage.json {
         expressions = {
-            level     = "level",
-            env       = "env",
-            message   = "message",
-            logger    = "logger_name",
-            traceId   = "traceId",
-            requestId = "requestId",
-            userId    = "userId",
+            level   = "level",
+            env     = "env",
+            message = "message",
+            logger  = "logger_name",
+            traceId = "traceId",
+            userId  = "userId",
         }
     }
 
@@ -224,7 +220,7 @@ loki.write "remote_loki" {
 | `origin` | `external_labels` | Baja | `local-brayan`, otros devs |
 | `job` | `external_labels` | Baja | `backend-java-local` |
 
-> **Regla de cardinalidad Loki:** solo campos con pocos valores distintos van como stream labels en `{}`. `traceId`, `requestId` y `userId` son alta cardinalidad — se consultan con `| json` en Grafana.
+> **Regla de cardinalidad Loki:** solo campos con pocos valores distintos van como stream labels en `{}`. `traceId` y `userId` son alta cardinalidad — se consultan con `| json` en Grafana.
 
 ---
 

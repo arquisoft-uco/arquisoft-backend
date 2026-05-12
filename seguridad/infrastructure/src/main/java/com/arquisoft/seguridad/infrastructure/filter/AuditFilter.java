@@ -33,13 +33,8 @@ public class AuditFilter extends OncePerRequestFilter {
         String userId = extractUserId();
         MDC.put(MdcKeys.USER_ID, userId);
 
-        // Usa el traceId del proveedor activo (Brave/OTel via MDCScopeDecorator) si ya está en MDC.
-        // Si no hay proveedor configurado, genera un traceId propio para correlación en logs.
-        // Nombre de clave = estándar Brave/OTel → sin acoplamiento a ninguna librería.
-        boolean providerActive = MDC.get(MdcKeys.TRACE_ID) != null;
-        if (!providerActive) {
-            MDC.put(MdcKeys.TRACE_ID, UUID.randomUUID().toString().replace("-", ""));
-        }
+        // Genera un traceId propio por request para correlación en logs (stdout → Loki).
+        MDC.put(MdcKeys.TRACE_ID, UUID.randomUUID().toString().replace("-", ""));
 
         long startTime    = System.currentTimeMillis();
         String clientIp   = getClientIp(request);
@@ -56,11 +51,7 @@ public class AuditFilter extends OncePerRequestFilter {
                 auditLog(clientIp, method, requestUri, status, duration);
             }
 
-            // Solo limpiar lo que este filtro puso — si el proveedor de tracing lo gestionó,
-            // él mismo cerrará el scope y limpiará traceId
-            if (!providerActive) {
-                MDC.remove(MdcKeys.TRACE_ID);
-            }
+            MDC.remove(MdcKeys.TRACE_ID);
             MDC.remove(MdcKeys.USER_ID);
         }
     }

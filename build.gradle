@@ -68,7 +68,7 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-amqp"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
 
-    // Logging estructurado (ADR-005): JSON encoder + Micrometer Tracing (traceId/spanId en MDC)
+    // Logging estructurado (ADR-005): JSON encoder con traceId/userId en MDC via AuditFilter
     implementation project(':shared:logger')
 
     // Flyway — version gestionada por el BOM de Spring Boot 4.0.5 (12.4.0).
