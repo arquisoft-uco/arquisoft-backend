@@ -6,6 +6,8 @@ import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -15,7 +17,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Pattern;
 
 /**
@@ -23,6 +24,7 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 @Component
+@Order(Ordered.LOWEST_PRECEDENCE)  // debe ejecutarse DESPUÉS de FilterChainProxy (orden -100)
 public class AuditFilter extends OncePerRequestFilter {
 
     private static final Pattern IP_PATTERN = Pattern.compile("^[\\d.:a-fA-F]{3,45}$");
@@ -37,12 +39,10 @@ public class AuditFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        // traceId y userId se ponen al inicio: propagan a TODOS los logs del hilo (correlación).
-        MDC.put(MdcKeys.USER_ID,  extractUserId());
-        MDC.put(MdcKeys.TRACE_ID, UUID.randomUUID().toString().replace("-", ""));
+        // traceId lo gestiona TraceIdFilter (orden -200, antes de Spring Security).
+        // AuditFilter solo es responsable de userId y del evento AUDIT.
+        MDC.put(MdcKeys.USER_ID, extractUserId());
 
-        // Capturamos los datos HTTP pero NO los ponemos en MDC todavía —
-        // se agregarán solo en el evento AUDIT para no contaminar logs de capas internas.
         String clientIp   = getClientIp(request);
         String method     = request.getMethod();
         String requestUri = sanitizeUri(request.getRequestURI());
@@ -69,7 +69,6 @@ public class AuditFilter extends OncePerRequestFilter {
                 MDC.remove(MdcKeys.CLIENT_IP);
             }
 
-            MDC.remove(MdcKeys.TRACE_ID);
             MDC.remove(MdcKeys.USER_ID);
         }
     }
@@ -98,7 +97,7 @@ public class AuditFilter extends OncePerRequestFilter {
 
     private static String sanitizeUri(String uri) {
         if (uri == null) return "UNKNOWN";
-        return uri.replaceAll("[\r\n\t]", "_");
+        return uri.replaceAll("[\r\n\t\0]", "_");
     }
 
     private String getClientIp(HttpServletRequest request) {

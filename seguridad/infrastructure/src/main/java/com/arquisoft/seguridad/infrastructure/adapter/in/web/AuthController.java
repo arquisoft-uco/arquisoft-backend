@@ -62,8 +62,6 @@ public class AuthController {
             )
     })
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
-        log.info("Intento de login para usuario: {}", loginRequest.getEmail());
-
         AuthenticateUserUseCase.AuthResult result = authenticateUserUseCase.authenticate(
                 loginRequest.getEmail(),
                 loginRequest.getPassword()
@@ -77,7 +75,6 @@ public class AuthController {
                 .scope(result.scope())
                 .build();
 
-        log.info("Usuario {} autenticado exitosamente", loginRequest.getEmail());
         return ResponseEntity.ok(response);
     }
 
