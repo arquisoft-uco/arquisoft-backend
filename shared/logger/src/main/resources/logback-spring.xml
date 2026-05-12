@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!--
+    ==========================================================================
+    logback-spring.xml — Arquisoft Backend
+    ==========================================================================
+    Ubicación: shared/logger/src/main/resources/
+    Procesado por Spring Boot (nombre "-spring.xml" habilita <springProfile>).
+    Spring Boot escanea el classpath completo — este archivo se encuentra aquí
+    porque shared:logger es la dependencia raíz de logging de toda la plataforma.
+
+    Estándar unificado (dev y prod):
+      CONSOLA → texto legible con colores ANSI  (para el desarrollador)
+      ARCHIVO → JSON estructurado               (para Alloy → Loki)
+
+    La diferencia entre perfiles es SOLO comportamental, no estructural:
+      dev  → discardingThreshold=0  (nunca descarta), retención 7 días
+      prod → discardingThreshold=20 (descarta INFO bajo presión), retención 30 días
+
+    Los niveles de log se controlan desde application-{perfil}.yml, NO aquí.
+    Los campos MDC (traceId, userId) los gestiona AuditFilter — ver MdcKeys.java.
+
+    Thread safety con Virtual Threads (Java 21):
+      AsyncAppender desacopla el hilo productor (VT) del I/O del appender.
+      Sin él, synchronized en ConsoleAppender/FileAppender causa "pinning" del VT
+      a su carrier thread bajo alta concurrencia, degradando el throughput.
+    ==========================================================================
+    -->
+
+    <!-- Captura el perfil activo para usarlo como campo customFields del JSON -->
+    <springProperty name="activeProfile" source="spring.profiles.active" defaultValue="dev"/>
+
+    <!-- ==================================================================
+         APPENDER: CONSOLE — texto legible con colores ANSI
+         Definido globalmente: es idéntico en dev y prod.
+         En servidores sin TTY los colores ANSI se ignoran automáticamente.
+         ================================================================== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) --- [%15.15t] %cyan(%-40.40logger{39}) : %m%n%throwable</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ==================================================================
+         PERFIL: dev
+         - JSON_FILE: retención 7 días, totalSizeCap 500MB
+         - AsyncAppender: discardingThreshold=0 (nunca descarta — ver todos los logs)
+         - Root: INFO (ajustado por paquete desde application-dev.yml)
+         ================================================================== -->
+    <springProfile name="dev">
+        <property name="json.maxHistory"           value="7"/>
+        <property name="json.totalSizeCap"         value="500MB"/>
+        <property name="async.queueSize"           value="2048"/>
+        <property name="async.discardingThreshold" value="0"/>
+        <include resource="logback-json-appender.xml"/>
+        <root level="INFO">
+            <appender-ref ref="ASYNC_CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- ==================================================================
+         PERFIL: prod
+         - JSON_FILE: retención 30 días, totalSizeCap 2GB
+         - AsyncAppender: discardingThreshold=20 (descarta INFO/DEBUG bajo presión
+           de cola; WARN y ERROR nunca se descartan — throughput > completitud)
+         - Root: WARN (com.arquisoft elevado a INFO desde application-prod.yml)
+         ================================================================== -->
+    <springProfile name="prod">
+        <property name="json.maxHistory"           value="30"/>
+        <property name="json.totalSizeCap"         value="2GB"/>
+        <property name="async.queueSize"           value="4096"/>
+        <property name="async.discardingThreshold" value="20"/>
+        <include resource="logback-json-appender.xml"/>
+        <root level="WARN">
+            <appender-ref ref="ASYNC_CONSOLE"/>
+            <appender-ref ref="ASYNC_FILE"/>
+        </root>
+    </springProfile>
+
+</configuration>

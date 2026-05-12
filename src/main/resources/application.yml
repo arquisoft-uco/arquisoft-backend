@@ -231,6 +231,9 @@ management:
     export:
       prometheus:
         enabled: true
+  tracing:
+    sampling:
+      probability: 1.0   # 100% en dev — asegura traceId/spanId en MDC para todos los requests
 
 # ==================== SPRINGDOCS ====================
 springdoc:

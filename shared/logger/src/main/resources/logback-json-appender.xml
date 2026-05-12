@@ -1,0 +1,45 @@
+<included>
+    <!--
+    Fragmento reutilizado por ambos perfiles (dev y prod) en logback-spring.xml.
+    Las propiedades variables se definen en el bloque <springProfile> que lo incluye:
+      ${json.maxHistory}            — días de retención del archivo rotado
+      ${json.totalSizeCap}          — tamaño total máximo del directorio archived/
+      ${async.queueSize}            — tamaño de la cola del AsyncAppender
+      ${async.discardingThreshold}  — 0=nunca descarta; 20=descarta INFO/DEBUG bajo presión
+    -->
+
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/arquisoft.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/archived/arquisoft.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>${json.maxHistory}</maxHistory>
+            <totalSizeCap>${json.totalSizeCap}</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <customFields>{"app":"arquisoft-backend","env":"${activeProfile}"}</customFields>
+            <!-- Excluir campos redundantes: @version siempre="1", level_value duplica level -->
+            <excludedFields>
+                <fieldName>@version</fieldName>
+                <fieldName>level_value</fieldName>
+            </excludedFields>
+            <!-- Campos MDC: traceId (correlación de request) + userId (correlación de usuario) -->
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>userId</includeMdcKeyName>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>${async.queueSize}</queueSize>
+        <discardingThreshold>${async.discardingThreshold}</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="CONSOLE"/>
+    </appender>
+
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>${async.queueSize}</queueSize>
+        <discardingThreshold>${async.discardingThreshold}</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="JSON_FILE"/>
+    </appender>
+</included>

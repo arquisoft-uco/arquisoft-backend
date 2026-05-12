@@ -3,6 +3,7 @@ dependencies {
     implementation project(':seguridad:application')
     implementation project(':shared:exceptions')
     implementation project(':shared:web')
+    implementation project(':shared:logger')
 
     // Spring Security & OAuth2 Resource Server
     // Nota arquitectonica: NO se usa keycloak-admin-client ni keycloak-spring-boot-starter.

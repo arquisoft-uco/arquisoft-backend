@@ -10,9 +10,12 @@ dependencies {
     // en gradle.properties § JACKSON 2/3 COEXISTENCE.
     implementation "net.logstash.logback:logstash-logback-encoder:${logstashVersion}"
 
-    // Micrometer Tracing — inyecta traceId + spanId en MDC automáticamente.
+    // Micrometer Tracing — bridge para inyectar traceId/spanId en MDC via MDCScopeDecorator.
     // Spring Boot 4.x BOM gestiona la versión de micrometer-tracing-bridge-brave.
-    // Sin configurar un exporter, Brave opera en modo no-op (genera IDs sin enviarlos),
-    // lo cual es correcto para dev. En prod, añadir un exporter OTel/Zipkin si se usa Tempo.
+    // IMPORTANTE: sin configurar un exporter (Zipkin/OTel), Spring Boot NO instancia el bean
+    // Tracer ni activa MDCScopeDecorator — el MDC permanece vacío. Por eso AuditFilter genera
+    // su propio traceId como fallback cuando MDC.get("traceId") == null.
+    // Para activar tracing real: añadir management.zipkin.tracing.endpoint o
+    // management.otlp.tracing.endpoint en application-prod.yml + configurar Tempo/Zipkin.
     implementation "io.micrometer:micrometer-tracing-bridge-brave"
 }
