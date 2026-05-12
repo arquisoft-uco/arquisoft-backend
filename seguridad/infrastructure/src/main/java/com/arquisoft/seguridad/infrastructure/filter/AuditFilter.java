@@ -69,7 +69,11 @@ public class AuditFilter extends OncePerRequestFilter {
             }
 
             // Restaurar MDC al estado previo al filtro (preserva traceId, elimina userId y campos HTTP)
-            if (preMdc != null) MDC.setContextMap(preMdc); else MDC.clear();
+            if (preMdc != null) {
+                MDC.setContextMap(preMdc);
+            } else {
+                MDC.clear();
+            }
         }
     }
 
@@ -96,7 +100,9 @@ public class AuditFilter extends OncePerRequestFilter {
     }
 
     private static String sanitizeUri(String uri) {
-        if (uri == null) return "UNKNOWN";
+        if (uri == null) {
+            return "UNKNOWN";
+        }
         return uri.replaceAll("[\r\n\t\0]", "_");
     }
 
