@@ -2,10 +2,11 @@
     <!--
     Fragmento reutilizado por ambos perfiles (dev y prod) en logback-spring.xml.
     Las propiedades variables se definen en el bloque <springProfile> que lo incluye:
-      ${json.maxHistory}            — días de retención del archivo rotado
-      ${json.totalSizeCap}          — tamaño total máximo del directorio archived/
-      ${async.queueSize}            — tamaño de la cola del AsyncAppender
-      ${async.discardingThreshold}  — 0=nunca descarta; 20=descarta INFO/DEBUG bajo presión
+      ${json.maxHistory}                 — días de retención del archivo rotado
+      ${json.totalSizeCap}               — tamaño total máximo del directorio archived/
+      ${async.queueSize}                 — tamaño de la cola del AsyncAppender
+      ${async.discardingThreshold}       — umbral para ASYNC_CONSOLE (20 en prod, 0 en dev)
+      ${async.file.discardingThreshold}  — umbral para ASYNC_FILE (siempre 0 — nunca descarta logs hacia Loki)
     -->
 
     <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
