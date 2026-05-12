@@ -101,6 +101,11 @@
          (tests sin @ActiveProfiles, Dockerfile sin -Dspring.profiles.active).
          ================================================================== -->
     <springProfile name="!dev &amp; !prod">
+        <!--
+        Sin perfil activo: tests sin @ActiveProfiles o Docker sin -Dspring.profiles.active.
+        Appender síncrono: en este escenario no hay carga de Virtual Threads concurrentes,
+        por lo que el synchronized de ConsoleAppender no produce pinning relevante.
+        -->
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>

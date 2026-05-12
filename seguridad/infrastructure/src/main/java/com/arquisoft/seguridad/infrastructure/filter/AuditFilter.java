@@ -17,6 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -39,6 +40,9 @@ public class AuditFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
+        // Guardar estado MDC previo (contiene traceId de TraceIdFilter) para restaurar
+        // atómicamente al finalizar — evita removes individuales y race conditions con VTs.
+        Map<String, String> preMdc = MDC.getCopyOfContextMap();
         // traceId lo gestiona TraceIdFilter (orden -200, antes de Spring Security).
         // AuditFilter solo es responsable de userId y del evento AUDIT.
         MDC.put(MdcKeys.USER_ID, extractUserId());
@@ -62,14 +66,10 @@ public class AuditFilter extends OncePerRequestFilter {
                 MDC.put(MdcKeys.DURATION_MS, String.valueOf(duration));
                 MDC.put(MdcKeys.CLIENT_IP,   clientIp);
                 auditLog(status);
-                MDC.remove(MdcKeys.HTTP_METHOD);
-                MDC.remove(MdcKeys.HTTP_URI);
-                MDC.remove(MdcKeys.HTTP_STATUS);
-                MDC.remove(MdcKeys.DURATION_MS);
-                MDC.remove(MdcKeys.CLIENT_IP);
             }
 
-            MDC.remove(MdcKeys.USER_ID);
+            // Restaurar MDC al estado previo al filtro (preserva traceId, elimina userId y campos HTTP)
+            if (preMdc != null) MDC.setContextMap(preMdc); else MDC.clear();
         }
     }
 
@@ -101,6 +101,9 @@ public class AuditFilter extends OncePerRequestFilter {
     }
 
     private String getClientIp(HttpServletRequest request) {
+        // PII: la IP del cliente es dato personal bajo GDPR / Ley 1581.
+        // Base legal: interés legítimo (seguridad, detección de abuso de la API).
+        // Para mayor privacidad, considerar anonimizar el último octeto IPv4.
         // request.getRemoteAddr() ya refleja la IP real cuando server.forward-headers-strategy=FRAMEWORK
         // está configurado — Spring's ForwardedHeaderFilter valida el proxy antes de reescribir la IP.
         String ip = request.getRemoteAddr();

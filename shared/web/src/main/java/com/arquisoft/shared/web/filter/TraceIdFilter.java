@@ -32,7 +32,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        MDC.put(MdcKeys.TRACE_ID, UUID.randomUUID().toString().replace("-", ""));
+        MDC.put(MdcKeys.TRACE_ID, UUID.randomUUID().toString());
         try {
             filterChain.doFilter(request, response);
         } finally {

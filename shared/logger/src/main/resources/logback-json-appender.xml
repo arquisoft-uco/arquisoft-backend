@@ -39,6 +39,7 @@
     <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>${async.queueSize}</queueSize>
         <discardingThreshold>${async.discardingThreshold}</discardingThreshold>
+        <!-- Desactivado: caller data requiere synthesis del stack trace (~2µs/evento) -->
         <includeCallerData>false</includeCallerData>
         <appender-ref ref="CONSOLE"/>
     </appender>
@@ -47,6 +48,7 @@
         <queueSize>${async.queueSize}</queueSize>
         <!-- Nunca descarta eventos del archivo — es el canal hacia Alloy/Loki -->
         <discardingThreshold>${async.file.discardingThreshold}</discardingThreshold>
+        <!-- Desactivado: caller data requiere synthesis del stack trace (~2µs/evento) -->
         <includeCallerData>false</includeCallerData>
         <appender-ref ref="JSON_FILE"/>
     </appender>
