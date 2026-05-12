@@ -55,6 +55,10 @@ dependencyManagement {
         // Rate Limiting (no gestionado por el BOM). Fuente: Maven Central (com.bucket4j).
         // bucket4j_jdk17-core: artefacto oficial para Java 17+, compatible con Java 21 y Virtual Threads.
         dependency "com.bucket4j:bucket4j_jdk17-core:${bucket4jVersion}"
+
+        // Logstash Logback Encoder — no gestionado por el BOM. Usa Jackson 2 (subsistema Logback,
+        // independiente del HTTP stack Jackson 3). Documentado en gradle.properties.
+        dependency "net.logstash.logback:logstash-logback-encoder:${logstashVersion}"
     }
 }
 
@@ -63,6 +67,9 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-starter-amqp"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
+
+    // Logging estructurado (ADR-005): JSON encoder + Micrometer Tracing (traceId/spanId en MDC)
+    implementation project(':shared:logger')
 
     // Flyway — version gestionada por el BOM de Spring Boot 4.0.5 (12.4.0).
     // flyway-database-postgresql es necesario en Flyway 11+ para soportar PostgreSQL.

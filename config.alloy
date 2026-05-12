@@ -1,0 +1,60 @@
+// 1. Descubrimiento del archivo de log
+local.file_match "spring_boot_logs" {
+    path_targets = [
+        { "__path__" = "/logs/*.log", "app" = "arquisoft-api" },
+    ]
+}
+
+// 2. Pipeline de procesamiento: extrae campos, promueve labels, formatea el body.
+loki.process "extract_labels" {
+    forward_to = [loki.write.remote_loki.receiver]
+
+    // Extraer campos del JSON emitido por logstash-logback-encoder.
+    stage.json {
+        expressions = {
+            level     = "level",
+            env       = "env",
+            message   = "message",
+            logger    = "logger_name",
+            traceId   = "traceId",
+            requestId = "requestId",
+            userId    = "userId",
+        }
+    }
+
+    // Promover a stream labels (baja cardinalidad — usables en {}).
+    // NUNCA promover traceId/requestId/userId — alta cardinalidad, destruye el índice de Loki.
+    stage.labels {
+        values = {
+            level = "",
+            env   = "",
+        }
+    }
+
+    // Red de seguridad: descartar DEBUG y TRACE antes de enviar a Loki.
+    // Spring filtra por nivel, pero esta regla protege ante cambios temporales de nivel.
+    // La expresión evalúa el JSON original (antes de cambiar el body en stage.output).
+    stage.drop {
+        expression          = "\"level\":\"(?:DEBUG|TRACE)\""
+        drop_counter_reason = "debug_trace_noise"
+    }
+}
+
+// 3. Lectura del archivo → pipeline
+loki.source.file "backend_logs" {
+    targets    = local.file_match.spring_boot_logs.targets
+    forward_to = [loki.process.extract_labels.receiver]
+}
+
+// 4. Envío a Loki en Coolify
+loki.write "remote_loki" {
+    endpoint {
+        url = "https://loki.arquisoft.top/loki/api/v1/push"
+    }
+    // Labels estáticos que identifican el origen de esta instancia.
+    // 'app' viene de path_targets. 'level' y 'env' vienen del pipeline.
+    external_labels = {
+        origin = "local-brayan",
+        job    = "backend-java-local",
+    }
+}
