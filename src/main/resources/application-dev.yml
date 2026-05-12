@@ -25,6 +25,5 @@ logging:
     com.arquisoft: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   # El archivo de salida lo gestiona logback-spring.xml (logs/arquisoft.log).
   # No declarar logging.file.name aqui: causaria conflicto con el RollingFileAppender del XML.

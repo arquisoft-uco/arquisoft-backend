@@ -19,7 +19,8 @@
       prod → discardingThreshold=20 (descarta INFO bajo presión), retención 30 días
 
     Los niveles de log se controlan desde application-{perfil}.yml, NO aquí.
-    Los campos MDC (traceId, userId) los gestiona AuditFilter — ver MdcKeys.java.
+    Campos MDC: traceId lo gestiona TraceIdFilter (orden -300); userId lo gestiona
+    AuditFilter (LOWEST_PRECEDENCE). Ver MdcKeys.java.
 
     Thread safety con Virtual Threads (Java 21):
       AsyncAppender desacopla el hilo productor (VT) del I/O del appender.
