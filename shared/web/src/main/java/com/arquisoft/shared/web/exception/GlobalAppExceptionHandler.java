@@ -4,6 +4,7 @@ import com.arquisoft.shared.exceptions.ApplicationException;
 import com.arquisoft.shared.exceptions.BaseException;
 import com.arquisoft.shared.exceptions.DomainException;
 import com.arquisoft.shared.exceptions.InfrastructureException;
+import com.arquisoft.shared.validation.exception.DomainValidationException;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -83,6 +84,40 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             clazz = clazz.getSuperclass();
         }
         return FALLBACK_MAPPING;
+    }
+
+    // -------------------------------------------------------------------------
+    // DomainValidationException — DEBE capturarse ANTES que BaseException.
+    // Spring selecciona el handler por el tipo más específico de la excepción,
+    // pero declararla explícitamente aquí hace la intención obvia y evita que
+    // el payload multi-error del Notification Pattern sea engullido por el
+    // handler genérico de BaseException, que solo expone un mensaje único.
+    // -------------------------------------------------------------------------
+
+    @ExceptionHandler(DomainValidationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleDomainValidationException(
+            DomainValidationException ex,
+            HttpServletRequest request) {
+
+        List<ErrorResponseDTO.FieldErrorDTO> fieldErrors = ex.getValidationResult().getErrors().stream()
+                .map(e -> ErrorResponseDTO.FieldErrorDTO.builder()
+                        .field(e.field())
+                        .message(e.message())
+                        .build())
+                .collect(Collectors.toList());
+
+        log.warn("Domain validation failed in {}: {} error(s) [{}]",
+                request.getRequestURI(), fieldErrors.size(), ex.getErrorCode());
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErrorResponseDTO.builder()
+                        .error("Error de validación de dominio")
+                        .errorCode(ex.getErrorCode())
+                        .message("La entidad contiene %d error(es) de validación.".formatted(fieldErrors.size()))
+                        .fieldErrors(fieldErrors)
+                        .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                        .path(request.getRequestURI())
+                        .build());
     }
 
     // -------------------------------------------------------------------------

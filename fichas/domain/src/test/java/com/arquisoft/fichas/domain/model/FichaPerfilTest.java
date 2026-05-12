@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.domain.model;
 
+import com.arquisoft.shared.validation.exception.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -40,17 +41,17 @@ class FichaPerfilTest {
 
         // Act & Assert — null
         assertThatThrownBy(() -> FichaPerfil.build(null, asesor))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
 
         // Act & Assert — blank (solo espacios)
         assertThatThrownBy(() -> FichaPerfil.build("   ", asesor))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
 
         // Act & Assert — cadena vacía
         assertThatThrownBy(() -> FichaPerfil.build("", asesor))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
     }
 
@@ -62,7 +63,7 @@ class FichaPerfilTest {
 
         // Act & Assert
         assertThatThrownBy(() -> FichaPerfil.build(tituloLargo, asesor))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("100 caracteres");
     }
 }
