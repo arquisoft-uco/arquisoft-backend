@@ -1,9 +1,13 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
+import com.arquisoft.shared.logger.MdcKeys;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -12,32 +16,63 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Filtro de Auditoría que registra todos los intentos de acceso a la API.
  */
 @Slf4j
 @Component
+@Order(Ordered.LOWEST_PRECEDENCE)  // debe ejecutarse DESPUÉS de FilterChainProxy (orden -100)
 public class AuditFilter extends OncePerRequestFilter {
 
+    private static final Pattern IP_PATTERN = Pattern.compile("^[\\d.:a-fA-F]{3,45}$");
+
+    private static final List<String> AUDIT_EXCLUDED_PREFIXES = List.of(
+            "/api/actuator/health",
+            "/api/swagger-ui",
+            "/api/v3/api-docs"
+    );
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, 
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        
-        long startTime = System.currentTimeMillis();
-        String clientIp = getClientIp(request);
-        String method = request.getMethod();
-        String requestUri = request.getRequestURI();
-        
+
+        // Guardar estado MDC previo (contiene traceId de TraceIdFilter) para restaurar
+        // atómicamente al finalizar — evita removes individuales y race conditions con VTs.
+        Map<String, String> preMdc = MDC.getCopyOfContextMap();
+        // traceId lo gestiona TraceIdFilter (orden -300, antes de RateLimitingFilter y Spring Security).
+        // AuditFilter solo es responsable de userId y del evento AUDIT.
+        MDC.put(MdcKeys.USER_ID, extractUserId());
+
+        String clientIp   = getClientIp(request);
+        String method     = request.getMethod();
+        String requestUri = sanitizeUri(request.getRequestURI());
+        long   startTime  = System.currentTimeMillis();
+
         try {
             filterChain.doFilter(request, response);
         } finally {
             long duration = System.currentTimeMillis() - startTime;
-            String userId = extractUserId();
-            int status = response.getStatus();
-            
-            if (!requestUri.contains("/actuator/health") && !requestUri.contains("/swagger")) {
-                auditLog(clientIp, userId, method, requestUri, status, duration);
+            int  status   = response.getStatus();
+
+            if (!isExcluded(requestUri)) {
+                // Campos HTTP en MDC solo durante la escritura del log AUDIT
+                MDC.put(MdcKeys.HTTP_METHOD, method);
+                MDC.put(MdcKeys.HTTP_URI,    requestUri);
+                MDC.put(MdcKeys.HTTP_STATUS, String.valueOf(status));
+                MDC.put(MdcKeys.DURATION_MS, String.valueOf(duration));
+                MDC.put(MdcKeys.CLIENT_IP,   clientIp);
+                auditLog(status);
+            }
+
+            // Restaurar MDC al estado previo al filtro (preserva traceId, elimina userId y campos HTTP)
+            if (preMdc != null) {
+                MDC.setContextMap(preMdc);
+            } else {
+                MDC.clear();
             }
         }
     }
@@ -50,30 +85,34 @@ public class AuditFilter extends OncePerRequestFilter {
         return "ANONYMOUS";
     }
 
-    private void auditLog(String clientIp, String userId, String method, String uri, int status, long duration) {
+    private void auditLog(int status) {
         if (status >= 200 && status < 300) {
-            log.info("AUDIT [{}] {} {} - User: {} - Status: {} - Duration: {}ms",
-                    clientIp, method, uri, userId, status, duration);
+            log.info("AUDIT");
         } else if (status >= 400 && status < 500) {
-            log.warn("AUDIT [{}] {} {} - User: {} - Status: {} - Duration: {}ms",
-                    clientIp, method, uri, userId, status, duration);
+            log.warn("AUDIT");
         } else if (status >= 500) {
-            log.error("AUDIT [{}] {} {} - User: {} - Status: {} - Duration: {}ms",
-                    clientIp, method, uri, userId, status, duration);
+            log.error("AUDIT");
         }
     }
 
+    private boolean isExcluded(String uri) {
+        return AUDIT_EXCLUDED_PREFIXES.stream().anyMatch(uri::startsWith);
+    }
+
+    private static String sanitizeUri(String uri) {
+        if (uri == null) {
+            return "UNKNOWN";
+        }
+        return uri.replaceAll("[\r\n\t\0]", "_");
+    }
+
     private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty()) {
-            ip = request.getRemoteAddr();
-        }
-        if (ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        return ip;
+        // PII: la IP del cliente es dato personal bajo GDPR / Ley 1581.
+        // Base legal: interés legítimo (seguridad, detección de abuso de la API).
+        // Para mayor privacidad, considerar anonimizar el último octeto IPv4.
+        // request.getRemoteAddr() ya refleja la IP real cuando server.forward-headers-strategy=FRAMEWORK
+        // está configurado — Spring's ForwardedHeaderFilter valida el proxy antes de reescribir la IP.
+        String ip = request.getRemoteAddr();
+        return IP_PATTERN.matcher(ip).matches() ? ip : "INVALID";
     }
 }

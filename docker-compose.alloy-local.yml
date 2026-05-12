@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy-local
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy
+      # IMPORTANTE: Mapear la ruta de los logs de tu backend para que el contenedor los vea
+      - /home/brayanesq/projects/arquisoft/arquisoft-backend/logs:/logs:ro
+    command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    network_mode: host # Permite a Alloy acceder fácilmente a servicios locales si fuera necesario
+    restart: unless-stopped
+
+
+# docker compose -f docker-compose.alloy-local.yml up -d
+# docker ps
+# docker logs -f alloy-local
+# docker compose -f docker-compose.alloy-local.yml restart alloy
+
+# echo "$(date) - LOG DE PRUEBA DESDE TERMINAL" >> /home/brayanesq/projects/arquisoft/arquisoft-backend/logs/arquisoft.log

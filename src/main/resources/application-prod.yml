@@ -160,19 +160,30 @@ security:
     max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:1000}
 
 # ==================== LOGGING ====================
+# logback-spring.xml gestiona TODOS los appenders (ASYNC_STDOUT + ASYNC_FILE_PROD).
+# NO configurar logging.file.name aquí: Spring Boot crearía un FileAppender adicional
+# en texto plano que conflictaría con el LogstashEncoder de logback-spring.xml.
 logging:
   level:
     root: WARN
+    # Código propio: INFO — captura eventos de negocio y errores de dominio en Loki
     com.arquisoft: INFO
-    org.springframework.web: WARN
-    org.hibernate.SQL: WARN
+    # Framework: solo WARN/ERROR — el ruido de inicialización no genera valor en Loki
     org.springframework.security: WARN
-  file:
-    name: /var/log/arquisoft/arquisoft.log
-  logback:
-    rollingpolicy:
-      max-file-size: 50MB
-      max-history: 30
+    org.springframework.web: WARN
+    org.springframework.amqp: WARN
+    org.springframework.data: WARN
+    com.zaxxer.hikari: WARN
+    org.flywaydb: WARN
+    org.apache.tomcat: WARN
+    com.rabbitmq: WARN
+    io.micrometer: WARN
+    # Hibernate SQL: OFF en prod — demasiado verboso, sin valor en Loki, usar traceId para debug
+    org.hibernate: WARN
+    org.hibernate.SQL: OFF
+    org.hibernate.type: OFF
+    # SpringDoc deshabilitado en prod — suprimir sus logs también
+    springdoc: OFF
 
 # ==================== ACTUATOR ====================
 management:
