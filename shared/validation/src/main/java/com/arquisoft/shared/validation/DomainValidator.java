@@ -1,5 +1,8 @@
 package com.arquisoft.shared.validation;
 
+import com.arquisoft.shared.validation.messages.ValidationMessages;
+import com.arquisoft.shared.validation.util.UtilText;
+
 /**
  * Guard central de invariantes de dominio — Notification Pattern.
  *
@@ -11,6 +14,10 @@ package com.arquisoft.shared.validation;
  * <p>El lanzamiento ocurre una sola vez al final, mediante
  * {@link ValidationResult#throwIfHasErrors()}, entregando todos los errores
  * juntos como {@link DomainValidationException}.</p>
+ *
+ * <p>Los mensajes de error se centralizan en {@link ValidationMessages} y las
+ * operaciones de texto en {@link UtilText} — no se permiten literales ni
+ * expresiones de normalización inline en este guard.</p>
  *
  * <p>No tiene dependencias de Spring ni Jakarta — Java puro.</p>
  */
@@ -24,7 +31,7 @@ public final class DomainValidator {
     public static void notNull(Object value, String fieldName, String errorCode, ValidationResult result) {
         if (value == null) {
             result.addError(fieldName, errorCode,
-                "El campo '%s' no puede ser nulo.".formatted(fieldName));
+                ValidationMessages.NOT_NULL.formatted(fieldName));
         }
     }
 
@@ -32,9 +39,9 @@ public final class DomainValidator {
      * Acumula error si {@code value} es {@code null} o está vacío/en blanco.
      */
     public static void notBlank(String value, String fieldName, String errorCode, ValidationResult result) {
-        if (value == null || value.isBlank()) {
+        if (UtilText.getUtilText().isEmpty(value)) {
             result.addError(fieldName, errorCode,
-                "El campo '%s' no puede ser nulo ni vacío.".formatted(fieldName));
+                ValidationMessages.NOT_BLANK.formatted(fieldName));
         }
     }
 
@@ -43,9 +50,9 @@ public final class DomainValidator {
      * No acumula si {@code value} es {@code null} — combinar con {@link #notBlank} cuando sea necesario.
      */
     public static void maxLength(String value, int max, String fieldName, String errorCode, ValidationResult result) {
-        if (value != null && value.trim().length() > max) {
+        if (value != null && UtilText.getUtilText().applyTrim(value).length() > max) {
             result.addError(fieldName, errorCode,
-                "El campo '%s' no puede superar %d caracteres.".formatted(fieldName, max));
+                ValidationMessages.MAX_LENGTH.formatted(fieldName, max));
         }
     }
 
@@ -54,9 +61,9 @@ public final class DomainValidator {
      * No acumula si {@code value} es {@code null} — combinar con {@link #notBlank} cuando sea necesario.
      */
     public static void minLength(String value, int min, String fieldName, String errorCode, ValidationResult result) {
-        if (value != null && value.trim().length() < min) {
+        if (value != null && UtilText.getUtilText().applyTrim(value).length() < min) {
             result.addError(fieldName, errorCode,
-                "El campo '%s' debe tener al menos %d caracteres.".formatted(fieldName, min));
+                ValidationMessages.MIN_LENGTH.formatted(fieldName, min));
         }
     }
 
@@ -65,9 +72,9 @@ public final class DomainValidator {
      * No acumula si {@code value} es {@code null} — combinar con {@link #notBlank} cuando sea necesario.
      */
     public static void validEmail(String value, String fieldName, String errorCode, ValidationResult result) {
-        if (value != null && !value.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+        if (value != null && !UtilText.emailStringIsValid(value)) {
             result.addError(fieldName, errorCode,
-                "El campo '%s' no tiene formato de correo electrónico válido.".formatted(fieldName));
+                ValidationMessages.VALID_EMAIL.formatted(fieldName));
         }
     }
 }

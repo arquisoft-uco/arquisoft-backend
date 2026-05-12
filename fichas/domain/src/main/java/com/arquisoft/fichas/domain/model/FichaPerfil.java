@@ -1,7 +1,11 @@
 package com.arquisoft.fichas.domain.model;
 
+import com.arquisoft.fichas.domain.utils.messages.FichaMessages;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.util.UtilText;
+import com.arquisoft.shared.validation.util.UtilUUID;
+
 import java.util.UUID;
 
 /**
@@ -13,7 +17,7 @@ import java.util.UUID;
  *
  * <ul>
  *   <li>{@link #build(String, AsesorFicha)} — valida todos los campos acumulando errores
- *       (Notification Pattern) y lanza {@link com.arquisoft.shared.validation.DomainValidationException}
+ *       (Notification Pattern) y lanza {@link com.arquisoft.shared.validation.exception.DomainValidationException}
  *       con la lista completa si existe al menos uno. Genera UUID solo si la validación pasa.</li>
  *   <li>{@link #rebuild(UUID, String, AsesorFicha)} — reconstruye desde persistencia sin validación.</li>
  * </ul>
@@ -26,54 +30,31 @@ public final class FichaPerfil {
 
     private FichaPerfil() {}
 
-    // ─── Private setters ──────────────────────────────────────────────────────
-    // Cada setter delega sus reglas en DomainValidator, acumula en result
-    // y solo asigna el valor cuando el campo no presentó errores.
-    // Son la única fuente de verdad por campo: reutilizables desde build()
-    // y cualquier método de mutación de negocio.
-
-    private void setId() {
-        this.id = UUID.randomUUID();
-    }
-
-    private void setTituloProyecto(String titulo, ValidationResult result) {
-        DomainValidator.notBlank(titulo, "tituloProyecto", "FICHA_TITULO_REQUIRED", result);
-        DomainValidator.maxLength(titulo, 100, "tituloProyecto", "FICHA_TITULO_TOO_LONG", result);
-        if (!result.hasFieldErrors("tituloProyecto")) {
-            this.tituloProyecto = titulo.trim();
-        }
-    }
-
-    private void setAsesorFicha(AsesorFicha asesor, ValidationResult result) {
-        DomainValidator.notNull(asesor, "asesorFicha", "FICHA_ASESOR_REQUIRED", result);
-        if (!result.hasFieldErrors("asesorFicha")) {
-            this.asesorFicha = asesor;
-        }
+    private FichaPerfil(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
+        this.id = id;
+        this.tituloProyecto = tituloProyecto;
+        this.asesorFicha = asesorFicha;
     }
 
     // ─── Factory: build ───────────────────────────────────────────────────────
 
     public static FichaPerfil build(String titulo, AsesorFicha asesor) {
         FichaPerfil ficha = new FichaPerfil();
-        ValidationResult result = new ValidationResult();
+        ValidationResult result = new ValidationResult();  // una instancia por llamada
 
         ficha.setTituloProyecto(titulo, result);
         ficha.setAsesorFicha(asesor, result);
 
-        result.throwIfHasErrors();  // lanza DomainValidationException con TODOS los errores
+        result.throwIfHasErrors();  // lanza con TODOS los errores acumulados
 
-        ficha.setId();              // UUID solo se genera si la validación pasa
+        ficha.setId();
         return ficha;
     }
 
     // ─── Factory: rebuild (desde persistencia — dato confiable) ──────────────
 
     public static FichaPerfil rebuild(UUID id, String titulo, AsesorFicha asesor) {
-        FichaPerfil ficha = new FichaPerfil();
-        ficha.id = id;
-        ficha.tituloProyecto = titulo;
-        ficha.asesorFicha = asesor;
-        return ficha;
+        return new FichaPerfil(id, titulo, asesor);
     }
 
     // ─── Métodos de negocio ───────────────────────────────────────────────────
@@ -82,6 +63,31 @@ public final class FichaPerfil {
         ValidationResult result = new ValidationResult();
         setTituloProyecto(nuevoTitulo, result);
         result.throwIfHasErrors();
+    }
+
+    // ─── Private setters ──────────────────────────────────────────────────────
+    // Cada setter delega sus reglas en DomainValidator, acumula en result
+    // y solo asigna el valor si ese campo específico no presentó errores.
+    // Son la única fuente de verdad por campo: reutilizables desde build()
+    // y cualquier método de mutación de negocio.
+
+    private void setId() {
+        this.id = UtilUUID.generateNewUUID();
+    }
+
+    private void setTituloProyecto(String titulo, ValidationResult result) {
+        DomainValidator.notBlank(titulo, FichaMessages.CAMPO_TITULO, FichaMessages.TITULO_REQUERIDO, result);
+        DomainValidator.maxLength(titulo, FichaMessages.TITULO_MAX, FichaMessages.CAMPO_TITULO, FichaMessages.TITULO_DEMASIADO_LARGO, result);
+        if (!result.hasFieldErrors(FichaMessages.CAMPO_TITULO)) {
+            this.tituloProyecto = UtilText.getUtilText().applyTrim(titulo);
+        }
+    }
+
+    private void setAsesorFicha(AsesorFicha asesor, ValidationResult result) {
+        DomainValidator.notNull(asesor, FichaMessages.CAMPO_ASESOR, FichaMessages.ASESOR_REQUERIDO, result);
+        if (!result.hasFieldErrors(FichaMessages.CAMPO_ASESOR)) {
+            this.asesorFicha = asesor;
+        }
     }
 
     // ─── Getters ──────────────────────────────────────────────────────────────

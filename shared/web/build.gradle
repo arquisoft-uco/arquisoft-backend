@@ -1,6 +1,7 @@
 dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:exceptions')
+    implementation project(':shared:validation')
 
     // Spring Web
     implementation "org.springframework.boot:spring-boot-starter-web"
