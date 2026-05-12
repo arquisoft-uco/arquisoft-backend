@@ -21,11 +21,11 @@ public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
 
     @Override
     public AuthResult authenticate(String email, String password) {
-        log.info("Intento de autenticacion para usuario: {}", email);
+        log.debug("Intento de autenticacion");
 
         Map<String, Object> tokenResponse = authenticationPort.authenticate(email, password);
 
-        log.info("Usuario {} autenticado exitosamente", email);
+        log.info("Autenticacion exitosa");
 
         return new AuthResult(
                 (String) tokenResponse.get("access_token"),

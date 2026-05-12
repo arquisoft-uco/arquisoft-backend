@@ -21,6 +21,9 @@ public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilUs
     @Transactional(readOnly = true)
     public Page<FichaPerfil> ejecutar(Pageable pageable) {
         log.debug("Consultando fichas de perfil — pageable={}", pageable);
-        return fichaPerfilRepositoryPort.consultarTodas(pageable);
+        Page<FichaPerfil> resultado = fichaPerfilRepositoryPort.consultarTodas(pageable);
+        log.info("Consulta fichas-perfil completada — total={}, pagina={}, tamanio={}",
+                resultado.getTotalElements(), pageable.getPageNumber(), pageable.getPageSize());
+        return resultado;
     }
 }
