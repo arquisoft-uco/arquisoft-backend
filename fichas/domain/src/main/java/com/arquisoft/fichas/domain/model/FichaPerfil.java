@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.model;
 
-import com.arquisoft.fichas.domain.utils.messages.FichaMessages;
+import com.arquisoft.fichas.domain.utils.messages.FichasMessages;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.util.UtilText;
@@ -76,16 +76,16 @@ public final class FichaPerfil {
     }
 
     private void setTituloProyecto(String titulo, ValidationResult result) {
-        DomainValidator.notBlank(titulo, FichaMessages.CAMPO_TITULO, FichaMessages.TITULO_REQUERIDO, result);
-        DomainValidator.maxLength(titulo, FichaMessages.TITULO_MAX, FichaMessages.CAMPO_TITULO, FichaMessages.TITULO_DEMASIADO_LARGO, result);
-        if (!result.hasFieldErrors(FichaMessages.CAMPO_TITULO)) {
-            this.tituloProyecto = UtilText.getUtilText().applyTrim(titulo);
+        DomainValidator.notBlank(titulo, FichasMessages.FichaPerfil.CAMPO_TITULO, FichasMessages.FichaPerfil.TITULO_REQUERIDO, result);
+        DomainValidator.maxLength(titulo, FichasMessages.FichaPerfil.TITULO_MAX, FichasMessages.FichaPerfil.CAMPO_TITULO, FichasMessages.FichaPerfil.TITULO_DEMASIADO_LARGO, result);
+        if (!result.hasFieldErrors(FichasMessages.FichaPerfil.CAMPO_TITULO)) {
+            this.tituloProyecto = UtilText.applyTrim(titulo);
         }
     }
 
     private void setAsesorFicha(AsesorFicha asesor, ValidationResult result) {
-        DomainValidator.notNull(asesor, FichaMessages.CAMPO_ASESOR, FichaMessages.ASESOR_REQUERIDO, result);
-        if (!result.hasFieldErrors(FichaMessages.CAMPO_ASESOR)) {
+        DomainValidator.notNull(asesor, FichasMessages.FichaPerfil.CAMPO_ASESOR, FichasMessages.FichaPerfil.ASESOR_REQUERIDO, result);
+        if (!result.hasFieldErrors(FichasMessages.FichaPerfil.CAMPO_ASESOR)) {
             this.asesorFicha = asesor;
         }
     }

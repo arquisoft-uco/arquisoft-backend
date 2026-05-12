@@ -1,6 +1,7 @@
 package com.arquisoft.shared.validation;
 
 import com.arquisoft.shared.validation.messages.ValidationMessages;
+import com.arquisoft.shared.validation.util.UtilObject;
 import com.arquisoft.shared.validation.util.UtilText;
 
 /**
@@ -29,9 +30,9 @@ public final class DomainValidator {
      * Acumula error si {@code value} es {@code null}.
      */
     public static void notNull(Object value, String fieldName, String errorCode, ValidationResult result) {
-        if (value == null) {
+        if (UtilObject.isNull(value)) {
             result.addError(fieldName, errorCode,
-                ValidationMessages.NOT_NULL.formatted(fieldName));
+                    ValidationMessages.DomainValidator.NOT_NULL.formatted(fieldName));
         }
     }
 
@@ -39,9 +40,9 @@ public final class DomainValidator {
      * Acumula error si {@code value} es {@code null} o está vacío/en blanco.
      */
     public static void notBlank(String value, String fieldName, String errorCode, ValidationResult result) {
-        if (UtilText.getUtilText().isEmpty(value)) {
+        if (UtilText.isEmptyOrNull(value)) {
             result.addError(fieldName, errorCode,
-                ValidationMessages.NOT_BLANK.formatted(fieldName));
+                    ValidationMessages.DomainValidator.NOT_BLANK.formatted(fieldName));
         }
     }
 
@@ -50,9 +51,9 @@ public final class DomainValidator {
      * No acumula si {@code value} es {@code null} — combinar con {@link #notBlank} cuando sea necesario.
      */
     public static void maxLength(String value, int max, String fieldName, String errorCode, ValidationResult result) {
-        if (value != null && UtilText.getUtilText().applyTrim(value).length() > max) {
+        if (!UtilText.isEmptyOrNull(value) && UtilText.applyTrim(value).length() > max) {
             result.addError(fieldName, errorCode,
-                ValidationMessages.MAX_LENGTH.formatted(fieldName, max));
+                    ValidationMessages.DomainValidator.MAX_LENGTH.formatted(fieldName, max));
         }
     }
 
@@ -61,9 +62,9 @@ public final class DomainValidator {
      * No acumula si {@code value} es {@code null} — combinar con {@link #notBlank} cuando sea necesario.
      */
     public static void minLength(String value, int min, String fieldName, String errorCode, ValidationResult result) {
-        if (value != null && UtilText.getUtilText().applyTrim(value).length() < min) {
+        if (!UtilText.isEmptyOrNull(value) && UtilText.applyTrim(value).length() < min) {
             result.addError(fieldName, errorCode,
-                ValidationMessages.MIN_LENGTH.formatted(fieldName, min));
+                    ValidationMessages.DomainValidator.MIN_LENGTH.formatted(fieldName, min));
         }
     }
 
@@ -72,9 +73,9 @@ public final class DomainValidator {
      * No acumula si {@code value} es {@code null} — combinar con {@link #notBlank} cuando sea necesario.
      */
     public static void validEmail(String value, String fieldName, String errorCode, ValidationResult result) {
-        if (value != null && !UtilText.emailStringIsValid(value)) {
+        if (!UtilText.isEmptyOrNull(value) && !UtilText.emailStringIsValid(value)) {
             result.addError(fieldName, errorCode,
-                ValidationMessages.VALID_EMAIL.formatted(fieldName));
+                    ValidationMessages.DomainValidator.VALID_EMAIL.formatted(fieldName));
         }
     }
 }

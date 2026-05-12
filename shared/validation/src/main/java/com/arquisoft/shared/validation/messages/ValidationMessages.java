@@ -15,30 +15,45 @@ public final class ValidationMessages {
 
     private ValidationMessages() {}
 
-    // -------------------------------------------------------------------------
-    // Presencia
-    // -------------------------------------------------------------------------
+    public static final class DomainValidator {
 
-    /** El campo '%s' no puede ser nulo. */
-    public static final String NOT_NULL = "El campo '%s' no puede ser nulo.";
+        private DomainValidator(){}
 
-    /** El campo '%s' no puede ser nulo ni vacío. */
-    public static final String NOT_BLANK = "El campo '%s' no puede ser nulo ni vacío.";
+        // -------------------------------------------------------------------------
+        // Presencia
+        // -------------------------------------------------------------------------
 
-    // -------------------------------------------------------------------------
-    // Longitud
-    // -------------------------------------------------------------------------
+        /**
+         * El campo '%s' no puede ser nulo.
+         */
+        public static final String NOT_NULL = "El campo '%s' no puede ser nulo.";
 
-    /** El campo '%s' no puede superar %d caracteres. */
-    public static final String MAX_LENGTH = "El campo '%s' no puede superar %d caracteres.";
+        /**
+         * El campo '%s' no puede ser nulo ni vacío.
+         */
+        public static final String NOT_BLANK = "El campo '%s' no puede ser nulo ni vacío.";
 
-    /** El campo '%s' debe tener al menos %d caracteres. */
-    public static final String MIN_LENGTH = "El campo '%s' debe tener al menos %d caracteres.";
+        // -------------------------------------------------------------------------
+        // Longitud
+        // -------------------------------------------------------------------------
 
-    // -------------------------------------------------------------------------
-    // Formato
-    // -------------------------------------------------------------------------
+        /**
+         * El campo '%s' no puede superar %d caracteres.
+         */
+        public static final String MAX_LENGTH = "El campo '%s' no puede superar %d caracteres.";
 
-    /** El campo '%s' no tiene formato de correo electrónico válido. */
-    public static final String VALID_EMAIL = "El campo '%s' no tiene formato de correo electrónico válido.";
+        /**
+         * El campo '%s' debe tener al menos %d caracteres.
+         */
+        public static final String MIN_LENGTH = "El campo '%s' debe tener al menos %d caracteres.";
+
+        // -------------------------------------------------------------------------
+        // Formato
+        // -------------------------------------------------------------------------
+
+        /**
+         * El campo '%s' no tiene formato de correo electrónico válido.
+         */
+        public static final String VALID_EMAIL = "El campo '%s' no tiene formato de correo electrónico válido.";
+    }
 }

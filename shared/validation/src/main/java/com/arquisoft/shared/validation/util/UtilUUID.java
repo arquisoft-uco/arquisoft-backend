@@ -31,7 +31,7 @@ public final class UtilUUID {
      * (8-4-4-4-12 hex en minúsculas).
      */
     public static boolean uuidStringIsValid(final String uuidValue) {
-        return UtilText.getUtilText().matchPattern(uuidValue, UUID_RE);
+        return UtilText.matchPattern(uuidValue, UUID_RE);
     }
 
     // ─── Conversión ───────────────────────────────────────────────────────────
