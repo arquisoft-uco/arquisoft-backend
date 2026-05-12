@@ -13,7 +13,7 @@ import com.arquisoft.shared.validation.util.UtilText;
  *
  * <p>El lanzamiento ocurre una sola vez al final, mediante
  * {@link ValidationResult#throwIfHasErrors()}, entregando todos los errores
- * juntos como {@link DomainValidationException}.</p>
+ * juntos como {@link com.arquisoft.shared.validation.exception.DomainValidationException}.</p>
  *
  * <p>Los mensajes de error se centralizan en {@link ValidationMessages} y las
  * operaciones de texto en {@link UtilText} — no se permiten literales ni
