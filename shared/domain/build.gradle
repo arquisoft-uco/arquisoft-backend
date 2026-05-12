@@ -8,9 +8,6 @@ dependencies {
     // Se declara 'api' para que los módulos que consuman shared:domain (fichas:domain,
     // proyectos:domain, etc.) vean Page/Pageable sin necesidad de redeclararlos.
     // No arrastra Spring Boot ni ORM — es una librería ligera de tipos.
+    // PENDIENTE: reemplazar por implementación propia en Java puro (ver decisión de diseño).
     api 'org.springframework.data:spring-data-commons'
-
-    // Lombok (used in domain models)
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }

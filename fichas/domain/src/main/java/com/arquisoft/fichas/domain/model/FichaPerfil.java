@@ -3,8 +3,8 @@ package com.arquisoft.fichas.domain.model;
 import com.arquisoft.fichas.domain.utils.messages.FichasMessages;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
-import com.arquisoft.shared.validation.util.UtilText;
-import com.arquisoft.shared.validation.util.UtilUUID;
+import com.arquisoft.shared.utils.UtilText;
+import com.arquisoft.shared.utils.UtilUUID;
 
 import java.util.UUID;
 
@@ -17,7 +17,7 @@ import java.util.UUID;
  *
  * <ul>
  *   <li>{@link #build(String, AsesorFicha)} — valida todos los campos acumulando errores
- *       (Notification Pattern) y lanza {@link com.arquisoft.shared.validation.exception.DomainValidationException}
+ *       (Notification Pattern) y lanza {@link com.arquisoft.shared.exceptions.DomainValidationException}
  *       con la lista completa si existe al menos uno. Genera UUID solo si la validación pasa.</li>
  *   <li>{@link #rebuild(UUID, String, AsesorFicha)} — reconstruye desde persistencia sin validación.</li>
  * </ul>

@@ -1,4 +1,4 @@
-package com.arquisoft.shared.validation.messages;
+package com.arquisoft.shared.utils.messages;
 
 /**
  * Plantillas de mensajes para los errores de validación de dominio.
@@ -11,9 +11,9 @@ package com.arquisoft.shared.validation.messages;
  *
  * <p>Java puro — sin dependencias de Spring ni Jakarta.</p>
  */
-public final class ValidationMessages {
+public final class AppMessages {
 
-    private ValidationMessages() {}
+    private AppMessages() {}
 
     public static final class DomainValidator {
 

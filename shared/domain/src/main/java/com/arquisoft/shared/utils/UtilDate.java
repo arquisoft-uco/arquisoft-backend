@@ -1,4 +1,4 @@
-package com.arquisoft.shared.validation.util;
+package com.arquisoft.shared.utils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;

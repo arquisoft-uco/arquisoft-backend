@@ -1,4 +1,4 @@
-package com.arquisoft.shared.domain;
+package com.arquisoft.shared.events;
 
 import java.util.ArrayList;
 import java.util.List;

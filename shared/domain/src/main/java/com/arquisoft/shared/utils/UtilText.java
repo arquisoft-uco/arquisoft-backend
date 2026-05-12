@@ -1,4 +1,4 @@
-package com.arquisoft.shared.validation.util;
+package com.arquisoft.shared.utils;
 
 /**
  * Utilidades de texto para validación de dominio.
@@ -6,7 +6,7 @@ package com.arquisoft.shared.validation.util;
  * <p>Centraliza operaciones de normalización y validación de cadenas usadas
  * en {@code DomainValidator} y en las validaciones de cada contexto acotado.</p>
  *
- * ({@link #applyTrim}, {@link #isEmpty}, {@link #matchPattern}, {@link #isNull}).
+ * ({@link #applyTrim}, {@link #isEmptyOrNull}, {@link #matchPattern}).
  * Los métodos de validación de formatos concretos (ej. {@link #emailStringIsValid})
  * se exponen también como estáticos para mayor comodidad en el caller.</p>
  *

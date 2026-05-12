@@ -1,6 +1,0 @@
-dependencies {
-    implementation project(':shared:domain')
-    implementation project(':shared:exceptions')
-
-    // DomainValidator es Java puro — sin dependencias de framework ni Jakarta
-}

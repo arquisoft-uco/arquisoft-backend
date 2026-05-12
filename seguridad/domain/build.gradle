@@ -1,9 +1,8 @@
 dependencies {
     implementation project(':shared:domain')
-    implementation project(':shared:exceptions')
 
     // Domain puro: sin dependencias de framework
-    // - Las excepciones de dominio extienden DomainException (shared:exceptions)
+    // - Las excepciones de dominio extienden DomainException (shared:domain → exceptions)
     // - Los puertos usan solo tipos de Java stdlib (Map, List, String)
     // - El enum UsuarioRole es Java puro
 

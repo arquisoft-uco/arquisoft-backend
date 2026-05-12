@@ -1,11 +1,9 @@
 dependencies {
     implementation project(':shared:domain')
-    implementation project(':shared:exceptions')
-    implementation project(':shared:validation')
 
     // Domain puro: sin dependencias de framework
-    // - Las excepciones de dominio extienden DomainException (shared:exceptions)
-    // - DomainValidator (shared:validation) centraliza los guards de invariantes
+    // - Las excepciones de dominio extienden DomainException (shared:domain → exceptions)
+    // - DomainValidator (shared:domain → validation) centraliza los guards de invariantes
 
     // Test: AssertJ + JUnit launcher (versiones gestionadas por BOM heredado del raiz)
     testImplementation "org.assertj:assertj-core"

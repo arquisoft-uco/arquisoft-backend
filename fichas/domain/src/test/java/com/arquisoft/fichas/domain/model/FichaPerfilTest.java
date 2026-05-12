@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.model;
 
-import com.arquisoft.shared.validation.exception.DomainValidationException;
+import com.arquisoft.shared.exceptions.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
