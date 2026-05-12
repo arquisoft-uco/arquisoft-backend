@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -34,13 +35,13 @@ public class PageResponseDTO<T> {
     private Boolean empty;
 
     /**
-     * Factory desde un {@link org.springframework.data.domain.Page} de Spring Data.
+     * Factory desde un {@link Page} de Spring Data.
      * Permite usar: PageResponseDTO.from(springPage)
      *
      * <p>Es el único método factory de esta clase. Los controllers reciben un
      * {@code Page<T>} del use case y lo convierten aquí antes de retornar al cliente.
      */
-    public static <T> PageResponseDTO<T> from(org.springframework.data.domain.Page<T> page) {
+    public static <T> PageResponseDTO<T> from(Page<T> page) {
         return PageResponseDTO.<T>builder()
                 .content(page.getContent())
                 .page(page.getNumber())

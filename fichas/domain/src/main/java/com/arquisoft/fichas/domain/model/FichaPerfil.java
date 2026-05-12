@@ -77,7 +77,8 @@ public final class FichaPerfil {
 
     private void setTituloProyecto(String titulo, ValidationResult result) {
         DomainValidator.notBlank(titulo, FichasMessages.FichaPerfil.CAMPO_TITULO, FichasMessages.FichaPerfil.TITULO_REQUERIDO, result);
-        DomainValidator.maxLength(titulo, FichasMessages.FichaPerfil.TITULO_MAX, FichasMessages.FichaPerfil.CAMPO_TITULO, FichasMessages.FichaPerfil.TITULO_DEMASIADO_LARGO, result);
+        DomainValidator.maxLength(titulo, FichasMessages.FichaPerfil.TITULO_MAX,
+                FichasMessages.FichaPerfil.CAMPO_TITULO, FichasMessages.FichaPerfil.TITULO_DEMASIADO_LARGO, result);
         if (!result.hasFieldErrors(FichasMessages.FichaPerfil.CAMPO_TITULO)) {
             this.tituloProyecto = UtilText.applyTrim(titulo);
         }

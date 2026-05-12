@@ -17,7 +17,7 @@ public final class ValidationMessages {
 
     public static final class DomainValidator {
 
-        private DomainValidator(){}
+        private DomainValidator() {}
 
         // -------------------------------------------------------------------------
         // Presencia
