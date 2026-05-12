@@ -37,15 +37,8 @@ dependencies {
 
     // Encoder JSON para Logback — emite NDJSON indexable por Loki/ELK.
     implementation "net.logstash.logback:logstash-logback-encoder:${logstashVersion}"
-
-    // Micrometer Tracing bridge (Brave) — SIN exporter configurado en este proyecto.
-    // Spring Boot NO instancia el bean Tracer → MDCScopeDecorator no se activa →
-    // MDC.get("traceId") == null → AuditFilter genera UUID de correlación como fallback.
-    // Cuando se configure un exporter (Zipkin/OTLP), el fallback se desactiva automáticamente.
-    implementation "io.micrometer:micrometer-tracing-bridge-brave"
-
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    // Nota: no se usa micrometer-tracing-bridge-brave — el traceId lo genera
+    // TraceIdFilter (shared:web) con UUID.randomUUID(), sin dependencia de exporters.
 }
 ```
 
@@ -57,32 +50,47 @@ Constantes tipadas para las claves MDC — elimina magic strings dispersos en fi
 package com.arquisoft.shared.logger;
 
 public final class MdcKeys {
-    public static final String TRACE_ID = "traceId";
-    public static final String USER_ID  = "userId";
-    // SPAN_ID reservado para cuando se configure exporter Brave/OTel
-    // public static final String SPAN_ID = "spanId";
+    public static final String TRACE_ID    = "traceId";
+    public static final String USER_ID     = "userId";
+
+    // Campos de auditoría HTTP — gestionados por AuditFilter, exportados como campos JSON por LogstashEncoder
+    public static final String HTTP_METHOD = "httpMethod";
+    public static final String HTTP_STATUS = "httpStatus";
+    public static final String HTTP_URI    = "httpUri";
+    public static final String DURATION_MS = "durationMs";
+    public static final String CLIENT_IP   = "clientIp";
+
     private MdcKeys() {}
 }
 ```
 
 ---
 
-## Correlación de requests — patrón Correlation ID (MVP)
+## Correlación de requests — patrón Correlation ID
 
-Para el MVP se adopta **Correlation ID** en lugar de trazado distribuido completo (sin spanId):
+Dos filtros con responsabilidades separadas:
 
-| Campo MDC | Origen | Descripción |
-|---|---|---|
-| `traceId` | `AuditFilter` (fallback UUID) | UUID hex sin guiones por request. Cuando se configure un exporter de Micrometer, el bridge Brave/OTel lo inyectará directamente. |
-| `userId` | `AuditFilter.extractUserId()` | Claim `sub` del JWT. `"anonymous"` si no hay token. Poblado **antes** de `filterChain.doFilter()`. |
+| Campo MDC | Filtro responsable | Orden | Descripción |
+|---|---|---|---|
+| `traceId` | `TraceIdFilter` (`shared:web`) | -300 | UUID estándar por request. Corre antes de cualquier filtro de aplicación, incluido rate-limiting (401/429 tienen traceId). |
+| `userId` | `AuditFilter` (`seguridad:infrastructure`) | LOWEST_PRECEDENCE | Claim `sub` del JWT. `"ANONYMOUS"` si no hay token. Poblado después de Spring Security. |
 
-**Flujo en `AuditFilter`:**
+**Flujo de `TraceIdFilter`:**
 
 ```
-request → extractUserId() → MDC.put(USER_ID, userId)
-        → MDC.get(TRACE_ID) == null?  → MDC.put(TRACE_ID, UUID)
-        → filterChain.doFilter()       ← todos los logs del request ya tienen ambos campos
-        → finally: MDC.clear()
+request → MDC.put(TRACE_ID, UUID.randomUUID().toString())
+        → filterChain.doFilter()   ← todos los logs del hilo tienen traceId
+        → finally: MDC.remove(TRACE_ID)
+```
+
+**Flujo de `AuditFilter`:**
+
+```
+request → preMdc = MDC.getCopyOfContextMap()   ← snapshot (incluye traceId)
+        → MDC.put(USER_ID, extractUserId())
+        → filterChain.doFilter()
+        → finally: MDC.put(HTTP_*, durationMs, clientIp) → log.info/warn/error("AUDIT")
+                   MDC.setContextMap(preMdc)   ← restauración atómica
 ```
 
 ### Propagación a RabbitMQ
@@ -127,24 +135,33 @@ Recibe 4 propiedades del perfil que lo incluye:
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <customFields>{"app":"arquisoft-backend","env":"${activeProfile}"}</customFields>
             <excludedFields>
-                <fieldName>@version</fieldName>     <!-- siempre "1", sin valor informativo -->
-                <fieldName>level_value</fieldName>  <!-- duplica el campo "level" legible -->
+                <fieldName>@version</fieldName>
+                <fieldName>level_value</fieldName>
             </excludedFields>
             <includeMdcKeyName>traceId</includeMdcKeyName>
             <includeMdcKeyName>userId</includeMdcKeyName>
+            <!-- Campos de auditoría HTTP (gestionados por AuditFilter) -->
+            <includeMdcKeyName>httpMethod</includeMdcKeyName>
+            <includeMdcKeyName>httpStatus</includeMdcKeyName>
+            <includeMdcKeyName>httpUri</includeMdcKeyName>
+            <includeMdcKeyName>durationMs</includeMdcKeyName>
+            <includeMdcKeyName>clientIp</includeMdcKeyName>
         </encoder>
     </appender>
 
     <appender name="ASYNC_CONSOLE" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>${async.queueSize}</queueSize>
         <discardingThreshold>${async.discardingThreshold}</discardingThreshold>
+        <!-- Desactivado: caller data requiere synthesis del stack trace (~2µs/evento) -->
         <includeCallerData>false</includeCallerData>
         <appender-ref ref="CONSOLE"/>
     </appender>
 
     <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
         <queueSize>${async.queueSize}</queueSize>
-        <discardingThreshold>${async.discardingThreshold}</discardingThreshold>
+        <!-- Nunca descarta — es el canal hacia Alloy/Loki -->
+        <discardingThreshold>${async.file.discardingThreshold}</discardingThreshold>
+        <!-- Desactivado: caller data requiere synthesis del stack trace (~2µs/evento) -->
         <includeCallerData>false</includeCallerData>
         <appender-ref ref="JSON_FILE"/>
     </appender>

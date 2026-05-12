@@ -15,7 +15,8 @@
 | Componente | Rol | Versión |
 |---|---|---|
 | **logstash-logback-encoder** | Serializa eventos de log como JSON en el proceso Java | `8.0` |
-| **AuditFilter** | Inyecta `traceId` (UUID por request) + `userId` en MDC | Módulo `seguridad:infrastructure` |
+| **AuditFilter** | Inyecta `userId` en MDC; emite evento `AUDIT` al finalizar cada request | Módulo `seguridad:infrastructure` |
+| **TraceIdFilter** | Inyecta `traceId` (UUID por request) en MDC — orden -300, antes de cualquier filtro de aplicación | Módulo `shared:web` |
 | **Grafana Alloy** | Agente único: lee el archivo de log, extrae labels, envía a Loki | `latest` |
 | **Loki** | Almacén de logs indexado por labels | `https://loki.arquisoft.top` |
 | **Grafana** | Visualización y alertas | `https://grafana.arquisoft.top` |
@@ -84,12 +85,18 @@ Estándar unificado para **todos los perfiles**:
   "level": "INFO",
   "app": "arquisoft-backend",
   "env": "prod",
-  "traceId": "abc123def456abc123def456abc123de",
-  "userId": "uuid-yyy"
+  "traceId": "550e8400-e29b-41d4-a716-446655440000",
+  "userId": "uuid-yyy",
+  "httpMethod": "POST",
+  "httpStatus": "200",
+  "httpUri": "/api/auth/login",
+  "durationMs": "142",
+  "clientIp": "192.168.1.10"
 }
 ```
 
-`traceId` (UUID hex sin guiones) y `userId` los inyecta `AuditFilter` en el MDC al inicio de cada request y los limpia en el bloque `finally`.
+`traceId` (UUID estándar con guiones) lo inyecta `TraceIdFilter` (orden -300) en el MDC al inicio de cada request.
+`userId` lo inyecta `AuditFilter` (LOWEST_PRECEDENCE). Los campos `http*`, `durationMs` y `clientIp` solo están presentes en el evento `AUDIT`.
 
 ### Diferencias entre perfiles (solo comportamiento, no estructura)
 
@@ -118,7 +125,7 @@ logging:
     com.arquisoft: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    # org.hibernate.type.descriptor.sql.BasicBinder omitido — loguea valores de parámetros SQL (PII)
 ```
 
 ### `application-prod.yml`
