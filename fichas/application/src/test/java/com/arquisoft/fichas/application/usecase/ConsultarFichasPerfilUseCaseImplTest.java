@@ -3,15 +3,13 @@ package com.arquisoft.fichas.application.usecase;
 import com.arquisoft.fichas.domain.model.AsesorFicha;
 import com.arquisoft.fichas.domain.model.FichaPerfil;
 import com.arquisoft.fichas.domain.port.out.FichaPerfilRepositoryPort;
+import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.PaginationRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.UUID;
@@ -33,50 +31,52 @@ class ConsultarFichasPerfilUseCaseImplTest {
     @Test
     void debeRetornarFichasPaginadas_cuandoExistenFichas() {
         // Arrange
-        Pageable pageable = PageRequest.of(0, 10);
+        PaginationRequest request = PaginationRequest.of(0, 10);
 
         AsesorFicha asesor = AsesorFicha.of(
                 UUID.randomUUID(), "DOC-001", "Juan Salazar", "juan.salazar@soyuco.edu.co");
         FichaPerfil ficha = FichaPerfil.rebuild(
                 UUID.randomUUID(), "Arquisoft Backend", asesor);
 
-        Page<FichaPerfil> paginaEsperada = new PageImpl<>(List.of(ficha), pageable, 1L);
+        PaginatedResult<FichaPerfil> resultadoEsperado =
+                PaginatedResult.of(List.of(ficha), 0, 10, 1L);
 
-        when(fichaPerfilRepositoryPort.consultarTodas(pageable))
-                .thenReturn(paginaEsperada);
+        when(fichaPerfilRepositoryPort.consultarTodas(request))
+                .thenReturn(resultadoEsperado);
 
         // Act
-        Page<FichaPerfil> resultado = consultarFichasPerfilUseCase.ejecutar(pageable);
+        PaginatedResult<FichaPerfil> resultado = consultarFichasPerfilUseCase.ejecutar(request);
 
         // Assert
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).hasSize(1);
         assertThat(resultado.getContent().get(0).getTituloProyecto()).isEqualTo("Arquisoft Backend");
         assertThat(resultado.getTotalElements()).isEqualTo(1L);
-        assertThat(resultado.getNumber()).isEqualTo(0);
+        assertThat(resultado.getPage()).isEqualTo(0);
         assertThat(resultado.getSize()).isEqualTo(10);
-        verify(fichaPerfilRepositoryPort, times(1)).consultarTodas(pageable);
+        verify(fichaPerfilRepositoryPort, times(1)).consultarTodas(request);
     }
 
     @Test
     void debeRetornarVacio_cuandoNoHayFichas() {
         // Arrange
-        Pageable pageable = PageRequest.of(0, 10);
+        PaginationRequest request = PaginationRequest.of(0, 10);
 
-        Page<FichaPerfil> paginaVacia = Page.empty(pageable);
+        PaginatedResult<FichaPerfil> resultadoVacio =
+                PaginatedResult.of(List.of(), 0, 10, 0L);
 
-        when(fichaPerfilRepositoryPort.consultarTodas(pageable))
-                .thenReturn(paginaVacia);
+        when(fichaPerfilRepositoryPort.consultarTodas(request))
+                .thenReturn(resultadoVacio);
 
         // Act
-        Page<FichaPerfil> resultado = consultarFichasPerfilUseCase.ejecutar(pageable);
+        PaginatedResult<FichaPerfil> resultado = consultarFichasPerfilUseCase.ejecutar(request);
 
         // Assert
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).isEmpty();
         assertThat(resultado.getTotalElements()).isZero();
-        assertThat(resultado.getNumber()).isEqualTo(0);
+        assertThat(resultado.getPage()).isEqualTo(0);
         assertThat(resultado.getSize()).isEqualTo(10);
-        verify(fichaPerfilRepositoryPort, times(1)).consultarTodas(pageable);
+        verify(fichaPerfilRepositoryPort, times(1)).consultarTodas(request);
     }
 }

@@ -2,7 +2,10 @@ package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
 import com.arquisoft.fichas.application.dto.FichaPerfilResumenDTO;
 import com.arquisoft.fichas.domain.port.in.ConsultarFichasPerfilUseCase;
+import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.PaginationRequest;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
+import com.arquisoft.shared.web.util.PaginationMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +15,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
@@ -48,11 +50,12 @@ public class FichaPerfilController {
     })
     public ResponseEntity<PageResponseDTO<FichaPerfilResumenDTO>> consultarFichasCoordinador(
             @PageableDefault(size = 10, page = 0) Pageable pageable) {
-
         log.debug("GET /fichas-perfil/coordinador — pageable={}", pageable);
 
-        Page<FichaPerfilResumenDTO> resultado = consultarFichasPerfilUseCase
-                .ejecutar(pageable)
+        PaginationRequest request = PaginationMapper.toDomain(pageable);
+
+        PaginatedResult<FichaPerfilResumenDTO> resultado = consultarFichasPerfilUseCase
+                .ejecutar(request)
                 .map(FichaPerfilResumenDTO::fromDomain);
 
         return ResponseEntity.ok(PageResponseDTO.from(resultado));

@@ -1,22 +1,24 @@
 package com.arquisoft.shared.web.dto;
 
+import com.arquisoft.shared.pagination.PaginatedResult;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 /**
- * DTO genérico para respuestas paginadas. Convención de Spring Data:
- * content, page, size, totalElements, totalPages, first, last, empty.
+ * DTO genérico para respuestas paginadas.
+ * Formato estándar: content, page, size, totalElements, totalPages, first, last, empty.
  * Todos los endpoints paginados de la aplicación retornan este formato.
  *
  * <p>Nota: first, last y empty se declaran como Boolean (boxed) para evitar
  * el conflicto de Lombok @Data + @Builder con campos boolean primitivos
  * (Lombok omite del builder los campos cuyos getters tienen prefijo "is").
+ * {@code @JsonInclude(NON_NULL)} evita que esos campos aparezcan como {@code null}
+ * en el JSON si el DTO se construye sin el factory.</p>
  */
 @Data
 @NoArgsConstructor
@@ -35,22 +37,19 @@ public class PageResponseDTO<T> {
     private Boolean empty;
 
     /**
-     * Factory desde un {@link Page} de Spring Data.
-     * Permite usar: PageResponseDTO.from(springPage)
-     *
-     * <p>Es el único método factory de esta clase. Los controllers reciben un
-     * {@code Page<T>} del use case y lo convierten aquí antes de retornar al cliente.
+     * Factory desde un {@link PaginatedResult} del dominio.
+     * Es el único punto de entrada para construir este DTO a partir de un resultado paginado.
      */
-    public static <T> PageResponseDTO<T> from(Page<T> page) {
+    public static <T> PageResponseDTO<T> from(PaginatedResult<T> result) {
         return PageResponseDTO.<T>builder()
-                .content(page.getContent())
-                .page(page.getNumber())
-                .size(page.getSize())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .first(page.isFirst())
-                .last(page.isLast())
-                .empty(page.isEmpty())
+                .content(result.getContent())
+                .page(result.getPage())
+                .size(result.getSize())
+                .totalElements(result.getTotalElements())
+                .totalPages(result.getTotalPages())
+                .first(result.isFirst())
+                .last(result.isLast())
+                .empty(result.isEmpty())
                 .build();
     }
 }
