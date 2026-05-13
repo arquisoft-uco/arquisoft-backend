@@ -8,7 +8,7 @@ COPY . .
 # chmod + build en un solo RUN para minimizar capas.
 # find excluye el artefacto *-plain.jar que Spring Boot también genera,
 # evitando que el COPY del stage 2 falle por múltiples coincidencias.
-RUN chmod +x gradlew && \
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew && \
     ./gradlew build -x test --no-daemon && \
     find build/libs -maxdepth 1 -name "*.jar" ! -name "*-plain.jar" \
          -exec cp {} app.jar \;
