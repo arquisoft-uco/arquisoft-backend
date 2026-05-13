@@ -1,6 +1,6 @@
 package com.arquisoft.shared.amqp;
 
-import com.arquisoft.shared.domain.DomainEvent;
+import com.arquisoft.shared.events.DomainEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;

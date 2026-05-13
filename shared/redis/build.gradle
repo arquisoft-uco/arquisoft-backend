@@ -1,6 +1,5 @@
 dependencies {
     implementation project(':shared:domain')
-    implementation project(':shared:exceptions')
 
     // Spring Data Redis (incluye Jedis transitivamente, version gestionada por el BOM)
     implementation "org.springframework.boot:spring-boot-starter-data-redis"

@@ -17,13 +17,13 @@ import java.util.UUID;
 public class FichaPerfilResumenDTO {
 
     private UUID id;
-    private String titulo;
+    private String tituloProyecto;
     private AsesorResumenDTO asesor;
 
     public static FichaPerfilResumenDTO fromDomain(FichaPerfil ficha) {
         return FichaPerfilResumenDTO.builder()
                 .id(ficha.getId())
-                .titulo(ficha.getTituloProyecto())
+                .tituloProyecto(ficha.getTituloProyecto())
                 .asesor(AsesorResumenDTO.fromDomain(ficha.getAsesorFicha()))
                 .build();
     }

@@ -106,7 +106,7 @@ public class SeguridadDataSourceConfig {
     public Flyway seguridadFlyway(@Qualifier("seguridadDataSource") DataSource dataSource) {
         return Flyway.configure()
                 .dataSource(dataSource)
-                .locations("classpath:db/migration")
+                .locations("classpath:db/migration/seguridad")
                 .baselineOnMigrate(true)
                 .load();
     }

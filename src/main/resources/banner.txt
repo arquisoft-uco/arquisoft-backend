@@ -5,5 +5,4 @@
 _|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|_|"""""|
 "`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'"`-0-0-'
 ${spring.application.name} ${spring.application.version}
-${spring.application.title}
 Powered by Spring Boot ${spring-boot.version}

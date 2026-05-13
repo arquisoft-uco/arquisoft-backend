@@ -1,4 +1,4 @@
-package com.arquisoft.shared.domain;
+package com.arquisoft.shared.events;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

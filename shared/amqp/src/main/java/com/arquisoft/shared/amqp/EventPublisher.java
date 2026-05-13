@@ -1,6 +1,6 @@
 package com.arquisoft.shared.amqp;
 
-import com.arquisoft.shared.domain.DomainEvent;
+import com.arquisoft.shared.events.DomainEvent;
 
 /**
  * Publicador de eventos de dominio a RabbitMQ.

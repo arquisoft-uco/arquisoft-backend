@@ -3,7 +3,6 @@ dependencies {
     implementation project(':fichas:application')
     implementation project(':shared:domain')
     implementation project(':shared:amqp')
-    implementation project(':shared:exceptions')
     implementation project(':shared:web')
 
     // Spring Security (para @PreAuthorize y @EnableMethodSecurity)

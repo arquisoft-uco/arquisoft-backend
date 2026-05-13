@@ -1,4 +1,4 @@
-package com.arquisoft.shared.validation.util;
+package com.arquisoft.shared.utils;
 
 /**
  * Utilidades genéricas para comprobaciones sobre objetos.
@@ -12,6 +12,7 @@ package com.arquisoft.shared.validation.util;
 public final class UtilObject {
 
     private UtilObject() {}
+
     /**
      * Retorna {@code true} si {@code object} es {@code null}.
      */
