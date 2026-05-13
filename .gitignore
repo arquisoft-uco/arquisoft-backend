@@ -44,3 +44,4 @@ logs/
 .env.properties
 .env*.properties
 .env
+*.key
