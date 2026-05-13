@@ -12,9 +12,9 @@ services:
     restart: unless-stopped
 
 
-# docker compose -f docker-compose.alloy-local.yml up -d
+# docker compose -f observability/local/docker-compose.yml up -d
 # docker ps
 # docker logs -f alloy-local
-# docker compose -f docker-compose.alloy-local.yml restart alloy
+# docker compose -f observability/local/docker-compose.yml restart alloy
 
 # echo "$(date) - LOG DE PRUEBA DESDE TERMINAL" >> /home/brayanesq/projects/arquisoft/arquisoft-backend/logs/arquisoft.log

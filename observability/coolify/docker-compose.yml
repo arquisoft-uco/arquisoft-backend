@@ -1,0 +1,79 @@
+version: '3.8'
+services:
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - coolify
+    volumes:
+      - loki-data:/loki
+    healthcheck:
+      test: [CMD-SHELL, "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 10s
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --web.enable-remote-write-receiver
+    networks:
+      - coolify
+    volumes:
+      - prometheus-data:/prometheus
+
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    volumes:
+      - /opt/arquisoft/logs:/opt/arquisoft/logs:ro
+      - /opt/observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
+    command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    networks:
+      - coolify
+    depends_on:
+      - loki
+      - prometheus
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SERVER_ROOT_URL=https://grafana.arquisoft.duckdns.org
+      - GF_SERVER_SERVE_FROM_SUB_PATH=false
+    networks:
+      - coolify
+    depends_on:
+      - loki
+      - prometheus
+    volumes:
+      - grafana-data:/var/lib/grafana
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.gzip.compress=true
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.http-0-observability-grafana.entryPoints=http
+      - traefik.http.routers.http-0-observability-grafana.middlewares=redirect-to-https
+      - traefik.http.routers.http-0-observability-grafana.rule=Host(`grafana.arquisoft.duckdns.org`) && PathPrefix(`/`)
+      - traefik.http.routers.http-0-observability-grafana.service=http-0-observability-grafana
+      - traefik.http.routers.https-0-observability-grafana.entryPoints=https
+      - traefik.http.routers.https-0-observability-grafana.middlewares=gzip
+      - traefik.http.routers.https-0-observability-grafana.rule=Host(`grafana.arquisoft.duckdns.org`) && PathPrefix(`/`)
+      - traefik.http.routers.https-0-observability-grafana.service=https-0-observability-grafana
+      - traefik.http.routers.https-0-observability-grafana.tls=true
+      - traefik.http.routers.https-0-observability-grafana.tls.certresolver=letsencrypt
+      - traefik.http.services.http-0-observability-grafana.loadbalancer.server.port=3000
+      - traefik.http.services.https-0-observability-grafana.loadbalancer.server.port=3000
+
+networks:
+  coolify:
+    external: true
+
+volumes:
+  loki-data:
+  prometheus-data:
+  grafana-data:
