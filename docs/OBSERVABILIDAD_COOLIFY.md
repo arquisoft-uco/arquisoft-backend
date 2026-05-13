@@ -16,7 +16,7 @@ ssh root@<SERVER_IP> 'mkdir -p /opt/arquisoft/logs && chown 1000:1000 /opt/arqui
 ## 2. Subir config.alloy
 
 ```bash
-scp observability/local/config.alloy root@<SERVER_IP>:/opt/observability/alloy/config.alloy
+scp infra/local/config.alloy root@<SERVER_IP>:/opt/observability/alloy/config.alloy
 ```
 
 > El `config.alloy` del servidor debe tener `__path__ = "/opt/arquisoft/logs/*.log"` y `url = "http://loki:3100/loki/api/v1/push"`.
@@ -24,7 +24,7 @@ scp observability/local/config.alloy root@<SERVER_IP>:/opt/observability/alloy/c
 ## 3. Subir docker-compose del stack
 
 ```bash
-scp observability/coolify/docker-compose.yml root@<SERVER_IP>:/opt/observability/docker-compose.yml
+scp infra/coolify/docker-compose.yml root@<SERVER_IP>:/opt/observability/docker-compose.yml
 ```
 
 ## 4. Bind mount en Coolify UI

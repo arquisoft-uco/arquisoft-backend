@@ -154,15 +154,15 @@ logging:
 
 ---
 
-## Grafana Alloy local (`observability/local/`)
+## Grafana Alloy local (`infra/local/`)
 
 ### Arrancar Alloy local
 
 ```bash
-docker compose -f observability/local/docker-compose.yml up -d
+docker compose -f infra/local/docker-compose.yml up -d
 ```
 
-### Pipeline configurado en `observability/local/config.alloy`
+### Pipeline configurado en `infra/local/config.alloy`
 
 ```hcl
 // 1. Descubrimiento del archivo de log
