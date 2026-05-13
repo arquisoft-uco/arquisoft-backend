@@ -1,4 +1,4 @@
-package com.arquisoft.shared.validation.util;
+package com.arquisoft.shared.utils;
 
 /**
  * Utilidades para manipulación y validación de números.

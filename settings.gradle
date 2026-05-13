@@ -7,8 +7,6 @@ include 'shared:logger'
 include 'shared:redis'
 include 'shared:amqp'
 include 'shared:web'
-include 'shared:validation'
-include 'shared:exceptions'
 
 // ==================== CONTEXTOS DE NEGOCIO ====================
 

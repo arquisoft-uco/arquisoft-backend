@@ -1,6 +1,5 @@
 dependencies {
     implementation project(':seguridad:domain')
-    implementation project(':shared:exceptions')
 
     // Transactional — solo necesitamos @Transactional, no todo el starter
     implementation 'org.springframework:spring-tx'

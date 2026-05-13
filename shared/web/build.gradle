@@ -1,7 +1,5 @@
 dependencies {
     implementation project(':shared:domain')
-    implementation project(':shared:exceptions')
-    implementation project(':shared:validation')
     implementation project(':shared:logger')
 
     // Spring Web

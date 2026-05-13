@@ -4,7 +4,7 @@ import com.arquisoft.shared.exceptions.ApplicationException;
 import com.arquisoft.shared.exceptions.BaseException;
 import com.arquisoft.shared.exceptions.DomainException;
 import com.arquisoft.shared.exceptions.InfrastructureException;
-import com.arquisoft.shared.validation.exception.DomainValidationException;
+import com.arquisoft.shared.exceptions.DomainValidationException;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;

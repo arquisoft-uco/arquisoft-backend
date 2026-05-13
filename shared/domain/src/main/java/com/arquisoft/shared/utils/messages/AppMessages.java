@@ -1,4 +1,4 @@
-package com.arquisoft.shared.validation.messages;
+package com.arquisoft.shared.utils.messages;
 
 /**
  * Plantillas de mensajes para los errores de validación de dominio.
@@ -11,9 +11,9 @@ package com.arquisoft.shared.validation.messages;
  *
  * <p>Java puro — sin dependencias de Spring ni Jakarta.</p>
  */
-public final class ValidationMessages {
+public final class AppMessages {
 
-    private ValidationMessages() {}
+    private AppMessages() {}
 
     public static final class DomainValidator {
 
@@ -55,5 +55,18 @@ public final class ValidationMessages {
          * El campo '%s' no tiene formato de correo electrónico válido.
          */
         public static final String VALID_EMAIL = "El campo '%s' no tiene formato de correo electrónico válido.";
+    }
+
+    public static final class PaginationRequest {
+
+        private PaginationRequest() {}
+
+        public static final String MENSAJE_PAGE_MAYOR_CERO = "El número de página debe ser >= 0";
+
+        public static final String PAGE_INVALIDA = "PAGINACION_PAGE_INVALIDA";
+
+        public static final String SIZE_INVALIDA = "PAGINACION_SIZE_INVALIDA";
+
+        public static final String MENSAJE_SIZE_MAYOR_CERO = "El tamaño de página debe ser > 0";
     }
 }

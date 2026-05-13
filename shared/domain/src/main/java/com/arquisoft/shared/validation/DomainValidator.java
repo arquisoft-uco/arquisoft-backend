@@ -1,8 +1,8 @@
 package com.arquisoft.shared.validation;
 
-import com.arquisoft.shared.validation.messages.ValidationMessages;
-import com.arquisoft.shared.validation.util.UtilObject;
-import com.arquisoft.shared.validation.util.UtilText;
+import com.arquisoft.shared.utils.UtilObject;
+import com.arquisoft.shared.utils.UtilText;
+import com.arquisoft.shared.utils.messages.AppMessages;
 
 /**
  * Guard central de invariantes de dominio — Notification Pattern.
@@ -14,9 +14,9 @@ import com.arquisoft.shared.validation.util.UtilText;
  *
  * <p>El lanzamiento ocurre una sola vez al final, mediante
  * {@link ValidationResult#throwIfHasErrors()}, entregando todos los errores
- * juntos como {@link com.arquisoft.shared.validation.exception.DomainValidationException}.</p>
+ * juntos como {@link com.arquisoft.shared.exceptions.DomainValidationException}.</p>
  *
- * <p>Los mensajes de error se centralizan en {@link ValidationMessages} y las
+ * <p>Los mensajes de error se centralizan en {@link AppMessages} y las
  * operaciones de texto en {@link UtilText} — no se permiten literales ni
  * expresiones de normalización inline en este guard.</p>
  *
@@ -32,7 +32,7 @@ public final class DomainValidator {
     public static void notNull(Object value, String fieldName, String errorCode, ValidationResult result) {
         if (UtilObject.isNull(value)) {
             result.addError(fieldName, errorCode,
-                    ValidationMessages.DomainValidator.NOT_NULL.formatted(fieldName));
+                    AppMessages.DomainValidator.NOT_NULL.formatted(fieldName));
         }
     }
 
@@ -42,7 +42,7 @@ public final class DomainValidator {
     public static void notBlank(String value, String fieldName, String errorCode, ValidationResult result) {
         if (UtilText.isEmptyOrNull(value)) {
             result.addError(fieldName, errorCode,
-                    ValidationMessages.DomainValidator.NOT_BLANK.formatted(fieldName));
+                    AppMessages.DomainValidator.NOT_BLANK.formatted(fieldName));
         }
     }
 
@@ -53,7 +53,7 @@ public final class DomainValidator {
     public static void maxLength(String value, int max, String fieldName, String errorCode, ValidationResult result) {
         if (!UtilText.isEmptyOrNull(value) && UtilText.applyTrim(value).length() > max) {
             result.addError(fieldName, errorCode,
-                    ValidationMessages.DomainValidator.MAX_LENGTH.formatted(fieldName, max));
+                    AppMessages.DomainValidator.MAX_LENGTH.formatted(fieldName, max));
         }
     }
 
@@ -64,7 +64,7 @@ public final class DomainValidator {
     public static void minLength(String value, int min, String fieldName, String errorCode, ValidationResult result) {
         if (!UtilText.isEmptyOrNull(value) && UtilText.applyTrim(value).length() < min) {
             result.addError(fieldName, errorCode,
-                    ValidationMessages.DomainValidator.MIN_LENGTH.formatted(fieldName, min));
+                    AppMessages.DomainValidator.MIN_LENGTH.formatted(fieldName, min));
         }
     }
 
@@ -75,7 +75,7 @@ public final class DomainValidator {
     public static void validEmail(String value, String fieldName, String errorCode, ValidationResult result) {
         if (!UtilText.isEmptyOrNull(value) && !UtilText.emailStringIsValid(value)) {
             result.addError(fieldName, errorCode,
-                    ValidationMessages.DomainValidator.VALID_EMAIL.formatted(fieldName));
+                    AppMessages.DomainValidator.VALID_EMAIL.formatted(fieldName));
         }
     }
 }
