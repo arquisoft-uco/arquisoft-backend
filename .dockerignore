@@ -37,8 +37,9 @@ Thumbs.db
 # --- Scripts de Windows (build es en Linux) ---
 gradlew.bat
 
-# --- Documentación (no necesaria en runtime) ---
+# --- Documentación e infraestructura externa (no necesaria en runtime) ---
 docs/
+infra/
 AGENTS.md
 CONTRIBUTING.md
 README.md
