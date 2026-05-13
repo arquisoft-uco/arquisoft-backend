@@ -1,14 +1,14 @@
 package com.arquisoft.fichas.infrastructure.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.model.FichaPerfil;
+import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.PaginationRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 
 import java.util.UUID;
 
@@ -51,7 +51,7 @@ class FichaPerfilRepositoryAdapterTest {
         entityManager.flush();
 
         // Act
-        Page<FichaPerfil> resultado = adapter.consultarTodas(PageRequest.of(0, 10));
+        PaginatedResult<FichaPerfil> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
 
         // Assert
         assertThat(resultado).isNotNull();
@@ -69,13 +69,13 @@ class FichaPerfilRepositoryAdapterTest {
         // Arrange — BD vacía (sin datos previos)
 
         // Act
-        Page<FichaPerfil> resultado = adapter.consultarTodas(PageRequest.of(0, 10));
+        PaginatedResult<FichaPerfil> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
 
         // Assert
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).isEmpty();
         assertThat(resultado.getTotalElements()).isZero();
-        assertThat(resultado.getNumber()).isEqualTo(0);
+        assertThat(resultado.getPage()).isEqualTo(0);
         assertThat(resultado.getSize()).isEqualTo(10);
     }
 }

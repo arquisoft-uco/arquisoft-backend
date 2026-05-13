@@ -3,10 +3,10 @@ package com.arquisoft.fichas.application.usecase;
 import com.arquisoft.fichas.domain.model.FichaPerfil;
 import com.arquisoft.fichas.domain.port.in.ConsultarFichasPerfilUseCase;
 import com.arquisoft.fichas.domain.port.out.FichaPerfilRepositoryPort;
+import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.PaginationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,11 +19,8 @@ public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilUs
 
     @Override
     @Transactional(readOnly = true)
-    public Page<FichaPerfil> ejecutar(Pageable pageable) {
-        log.debug("Consultando fichas de perfil — pageable={}", pageable);
-        Page<FichaPerfil> resultado = fichaPerfilRepositoryPort.consultarTodas(pageable);
-        log.info("Consulta fichas-perfil completada — total={}, pagina={}, tamanio={}",
-                resultado.getTotalElements(), pageable.getPageNumber(), pageable.getPageSize());
-        return resultado;
+    public PaginatedResult<FichaPerfil> ejecutar(PaginationRequest request) {
+        log.debug("Consultando fichas de perfil — page={}, size={}", request.getPage(), request.getSize());
+        return fichaPerfilRepositoryPort.consultarTodas(request);
     }
 }
