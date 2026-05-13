@@ -103,7 +103,7 @@ public class FichasDataSourceConfig {
     public Flyway fichasFlyway(@Qualifier("fichasDataSource") DataSource dataSource) {
         return Flyway.configure()
                 .dataSource(dataSource)
-                .locations("classpath:db/migration")
+                .locations("classpath:db/migration/fichas")
                 .baselineOnMigrate(true)
                 .load();
     }
