@@ -43,7 +43,14 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
         usuarioRepository.save(usuario);
 
         // 3. Drenar y publicar los eventos que el aggregate acumuló
-        //    El aggregate sabe QUÉ emitir; el use case solo ejecuta el drenaje mecánico
+        //    El aggregate sabe QUÉ emitir; el use case solo ejecuta el drenaje mecánico.
+        //
+        //    DEUDA TÉCNICA (Outbox Pattern): los pasos 2 y 3 no son atómicos.
+        //    Si el broker RabbitMQ está caído y los 3 reintentos de RabbitMQEventPublisher
+        //    se agotan, el usuario quedará persistido pero fichas no recibirá el evento.
+        //    Solución correcta: persistir el evento en tabla domain_events dentro de la
+        //    misma transacción JDBC (Outbox Pattern), y publicar desde un scheduler/CDC.
+        //    Pendiente de implementar cuando InMemoryUsuarioRepository sea reemplazado por JPA.
         usuario.getUnPublishedEvents().forEach(eventPublisher::publish);
         usuario.clearUnPublishedEvents();
 

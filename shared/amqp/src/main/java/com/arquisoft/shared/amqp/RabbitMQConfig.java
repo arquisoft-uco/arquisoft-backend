@@ -56,11 +56,15 @@ public class RabbitMQConfig {
     }
 
     /**
-     * Expuesto como {@code JsonMapper} para que los consumers AMQP puedan inyectarlo
-     * como {@code tools.jackson.databind.ObjectMapper} (tipo padre).
+     * {@code ObjectMapper} dedicado a la capa AMQP (serialización/deserialización de mensajes).
+     *
+     * <p>Se nombra {@code rabbitObjectMapper} (en lugar de {@code objectMapper}) para evitar
+     * colisionar con el bean auto-configurado por Spring Boot ({@code JacksonAutoConfiguration})
+     * que se usa en la capa HTTP. Cada consumer lo inyecta con
+     * {@code @Qualifier("rabbitObjectMapper")}.
      */
-    @Bean
-    public JsonMapper objectMapper() {
+    @Bean("rabbitObjectMapper")
+    public JsonMapper rabbitObjectMapper() {
         return JsonMapper.builder().build();
     }
 
@@ -72,8 +76,10 @@ public class RabbitMQConfig {
      * en {@code RabbitListenerConfig} de la aplicación principal.
      */
     @Bean
-    public JacksonJsonMessageConverter jsonMessageConverter(JsonMapper objectMapper) {
-        return new JacksonJsonMessageConverter(objectMapper);
+    public JacksonJsonMessageConverter jsonMessageConverter(
+            @org.springframework.beans.factory.annotation.Qualifier("rabbitObjectMapper")
+            JsonMapper rabbitObjectMapper) {
+        return new JacksonJsonMessageConverter(rabbitObjectMapper);
     }
 
     @Bean

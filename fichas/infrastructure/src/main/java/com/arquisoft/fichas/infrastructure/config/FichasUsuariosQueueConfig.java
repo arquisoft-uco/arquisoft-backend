@@ -33,6 +33,13 @@ public class FichasUsuariosQueueConfig {
      */
     public static final String USUARIO_CREADO_QUEUE = "fichas.seguridad.usuario.creado";
 
+    /**
+     * Routing key del evento publicado por el contexto {@code seguridad}.
+     * Debe coincidir con el valor que retorna
+     * {@code UsuarioCreadoEvent#getEventTopic()}.
+     */
+    static final String USUARIO_CREADO_ROUTING_KEY = "seguridad.usuario.creado";
+
     @Bean
     public Queue fichasUsuarioCreadoQueue() {
         return QueueBuilder
@@ -54,6 +61,6 @@ public class FichasUsuariosQueueConfig {
         return BindingBuilder
                 .bind(fichasUsuarioCreadoQueue)
                 .to(arquisoftEventsExchange)
-                .with("seguridad.usuario.creado");
+                .with(USUARIO_CREADO_ROUTING_KEY);
     }
 }

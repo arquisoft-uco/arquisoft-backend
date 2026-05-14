@@ -3,13 +3,13 @@ package com.arquisoft.fichas.infrastructure.adapter.in.amqp;
 import com.arquisoft.fichas.domain.port.in.RegistrarUsuarioUseCase;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
-import tools.jackson.databind.ObjectMapper;
 import com.rabbitmq.client.Channel;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -26,21 +26,26 @@ import java.util.UUID;
  *   <li>Propagación automática de {@code X-Trace-Id} y {@code X-User-Id} al MDC.</li>
  *   <li>ACK automático en caso de éxito.</li>
  *   <li>NACK (requeue=false) en caso de excepción — el mensaje va al DLQ.</li>
+ *   <li>Deserialización centralizada vía {@link AbstractEventConsumer#deserialize}.</li>
  * </ul>
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class UsuarioCreadoConsumer extends AbstractEventConsumer {
 
     private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
-    private final ObjectMapper objectMapper;
+
+    public UsuarioCreadoConsumer(
+            RegistrarUsuarioUseCase registrarUsuarioUseCase,
+            @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper) {
+        super(objectMapper);
+        this.registrarUsuarioUseCase = registrarUsuarioUseCase;
+    }
 
     @RabbitListener(queues = FichasUsuariosQueueConfig.USUARIO_CREADO_QUEUE)
     public void onUsuarioCreado(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
-            UsuarioCreadoPayload payload = objectMapper.readValue(
-                    message.getBody(), UsuarioCreadoPayload.class);
+            UsuarioCreadoPayload payload = deserialize(message, UsuarioCreadoPayload.class);
 
             log.info("[FICHAS] UsuarioCreado recibido: usuarioId={} email={} rol={}",
                     payload.aggregateId(), payload.email(), payload.rol());

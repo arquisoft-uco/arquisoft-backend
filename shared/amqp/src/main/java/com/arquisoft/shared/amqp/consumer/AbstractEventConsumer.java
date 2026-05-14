@@ -4,7 +4,10 @@ import com.arquisoft.shared.logger.MdcKeys;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
+import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.Map;
@@ -31,16 +34,21 @@ import java.util.UUID;
  * <pre>{@code
  * @Slf4j
  * @Component
- * @RequiredArgsConstructor
  * public class FichaCreadaConsumer extends AbstractEventConsumer {
  *
  *     private final VincularFichaUseCase useCase;
  *
+ *     public FichaCreadaConsumer(VincularFichaUseCase useCase,
+ *             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper) {
+ *         super(objectMapper);
+ *         this.useCase = useCase;
+ *     }
+ *
  *     @RabbitListener(queues = FichasQueueConfig.FICHA_CREADA_QUEUE)
  *     public void onFichaCreada(Message message, Channel channel) throws IOException {
  *         withCorrelation(message, channel, () -> {
- *             FichaCreadaEvent event = deserialize(message, FichaCreadaEvent.class);
- *             useCase.ejecutar(event.getAggregateId());
+ *             FichaCreadaPayload payload = deserialize(message, FichaCreadaPayload.class);
+ *             useCase.ejecutar(UUID.fromString(payload.aggregateId()));
  *         });
  *     }
  * }
@@ -48,6 +56,31 @@ import java.util.UUID;
  */
 @Slf4j
 public abstract class AbstractEventConsumer {
+
+    private final ObjectMapper objectMapper;
+
+    protected AbstractEventConsumer(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    /**
+     * Deserializa el cuerpo del mensaje AMQP en el tipo indicado usando el
+     * {@code ObjectMapper} de RabbitMQ (Jackson 3.x, bytes crudos).
+     *
+     * @param message mensaje AMQP con el cuerpo en formato JSON
+     * @param type    clase destino de la deserialización
+     * @param <T>     tipo del payload
+     * @return instancia deserializada del payload
+     * @throws AmqpException si el cuerpo no puede deserializarse en el tipo dado
+     */
+    protected <T> T deserialize(Message message, Class<T> type) {
+        try {
+            return objectMapper.readValue(message.getBody(), type);
+        } catch (JacksonException ex) {
+            throw new AmqpException(
+                    "Error deserializando mensaje como " + type.getSimpleName(), ex);
+        }
+    }
 
     /**
      * Ejecuta el handler del evento garantizando propagación de traza, manual ACK/NACK
