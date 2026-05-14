@@ -46,9 +46,19 @@ spring:
     username: ${RABBITMQ_USERNAME:guest}
     password: ${RABBITMQ_PASSWORD:guest}
     virtual-host: /
+    # Publisher Confirms: el broker confirma (ACK) o rechaza (NACK) cada mensaje publicado.
+    # Requerido para que RabbitMQEventPublisher detecte mensajes no entregados al broker.
+    publisher-confirm-type: correlated
+    # Publisher Returns: si el broker no puede enrutar el mensaje a ninguna cola, lo devuelve.
+    publisher-returns: true
     listener:
       simple:
-        acknowledge-mode: auto
+        # Manual ACK: el mensaje permanece en 'unacknowledged' hasta que el consumer
+        # llama basicAck. Si el consumer falla o muere, RabbitMQ re-entrega el mensaje.
+        acknowledge-mode: manual
+        # prefetch=1: el broker envía un mensaje a la vez por consumer.
+        # Garantiza backpressure — un consumer lento no acumula mensajes sin procesar.
+        prefetch: 1
         concurrency: 5
         max-concurrency: 10
 
