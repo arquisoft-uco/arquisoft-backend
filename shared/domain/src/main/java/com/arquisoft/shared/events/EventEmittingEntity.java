@@ -8,7 +8,7 @@ import java.util.List;
  *
  * Acumula los eventos no publicados en memoria. El use case los drena
  * tras persistir mediante getUnPublishedEvents() y los publica vía
- * EventPublisher (shared:amqp), luego llama a clearUnPublishedEvents().
+ * {@link EventPublisher}, luego llama a clearUnPublishedEvents().
  *
  * Nota: esta clase NO define identidad, invariantes ni comportamiento de un
  * Aggregate Root completo — solo encapsula la gestión de eventos. Una entidad

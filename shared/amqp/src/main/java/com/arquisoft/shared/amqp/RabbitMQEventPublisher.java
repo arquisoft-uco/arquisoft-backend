@@ -17,8 +17,12 @@ import java.util.UUID;
  * al exchange {@value RabbitMQConfig#EXCHANGE_NAME} usando el topic conceptual
  * que cada evento declara en {@link DomainEvent#getEventTopic()} como routing key.
  *
- * <p><b>Fiabilidad:</b> reintentos automáticos con backoff exponencial ante caídas
- * momentáneas de RabbitMQ (hasta 3 intentos: 500 ms → 1 s → 2 s).
+ * <p><b>Política de reintentos:</b> backoff exponencial ante errores de conectividad
+ * con el broker ({@link AmqpException}) — hasta 3 intentos: 500 ms → 1 s → 2 s.
+ * Solo se reintenta {@link AmqpException} porque son errores transitorios (broker caído,
+ * timeout de red). Cualquier otra excepción ({@code RuntimeException}) indica un error
+ * de programación (ej. fallo de serialización) que no se recupera con reintentos y
+ * se propaga inmediatamente al use case.
  * Si el broker sigue caído después de los reintentos, la excepción se propaga
  * al use case para que el request HTTP falle con 500.
  *
@@ -72,6 +76,7 @@ public class RabbitMQEventPublisher implements EventPublisher { // EventPublishe
                         event.getEventType(), routingKey, event.getEventId());
                 return;
             } catch (AmqpException ex) {
+                // Error transitorio de conectividad: vale la pena reintentar.
                 lastException = ex;
                 if (attempt < MAX_ATTEMPTS) {
                     log.warn("Error al publicar evento (intento {}/{}), reintentando en {} ms: type={} eventId={}",
@@ -79,6 +84,12 @@ public class RabbitMQEventPublisher implements EventPublisher { // EventPublishe
                     sleepUninterruptibly(backoffMs);
                     backoffMs *= 2;
                 }
+            } catch (RuntimeException ex) {
+                // Error no transitorio (ej. fallo de serialización): no se reintenta.
+                // Se loguea aquí para preservar el contexto del evento antes de propagar.
+                log.error("Error no recuperable al publicar evento (sin reintentos): type={} routingKey={} eventId={}",
+                        event.getEventType(), routingKey, event.getEventId(), ex);
+                throw ex;
             }
         }
 

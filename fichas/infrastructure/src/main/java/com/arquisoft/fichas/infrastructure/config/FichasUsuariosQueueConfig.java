@@ -35,10 +35,14 @@ public class FichasUsuariosQueueConfig {
 
     /**
      * Routing key del evento publicado por el contexto {@code seguridad}.
-     * Debe coincidir con el valor que retorna
-     * {@code UsuarioCreadoEvent#getEventTopic()}.
+     *
+     * <p><b>Duplicación intencional:</b> este valor duplica {@code UsuarioCreadoEvent#EVENT_TOPIC}
+     * del contexto {@code seguridad:domain}. No se importa esa clase para preservar el
+     * aislamiento entre bounded contexts — fichas no puede depender de seguridad:domain.
+     * El routing key es el contrato de mensajería; si cambia en el productor, debe
+     * actualizarse aquí manualmente.
      */
-    static final String USUARIO_CREADO_ROUTING_KEY = "seguridad.usuario.creado";
+    public static final String USUARIO_CREADO_ROUTING_KEY = "seguridad.usuario.creado";
 
     @Bean
     public Queue fichasUsuarioCreadoQueue() {

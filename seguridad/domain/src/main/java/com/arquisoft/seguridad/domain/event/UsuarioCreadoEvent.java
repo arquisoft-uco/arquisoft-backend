@@ -16,6 +16,15 @@ import java.util.UUID;
  */
 public class UsuarioCreadoEvent extends DomainEvent {
 
+    /**
+     * Topic canónico de este evento. Es la fuente de verdad del contrato de mensajería.
+     * Cada bounded context consumidor debe mantener su propia copia de este valor
+     * (no puede importar esta clase) — esa duplicación es intencional por aislamiento
+     * de contextos. Si este valor cambia, deben actualizarse los bindings de todos
+     * los contextos que lo consuman.
+     */
+    public static final String EVENT_TOPIC = "seguridad.usuario.creado";
+
     private final String email;
     private final String rol;
 
@@ -35,6 +44,6 @@ public class UsuarioCreadoEvent extends DomainEvent {
 
     @Override
     public String getEventTopic() {
-        return "seguridad.usuario.creado";
+        return EVENT_TOPIC;
     }
 }

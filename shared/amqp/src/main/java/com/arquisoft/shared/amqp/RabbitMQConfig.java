@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -65,7 +66,11 @@ public class RabbitMQConfig {
      */
     @Bean("rabbitObjectMapper")
     public JsonMapper rabbitObjectMapper() {
-        return JsonMapper.builder().build();
+        return JsonMapper.builder()
+                // Tolerant Reader pattern: ignora campos desconocidos del evento.
+                // Permite evolución del esquema del evento sin romper consumers existentes.
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
     }
 
     /**

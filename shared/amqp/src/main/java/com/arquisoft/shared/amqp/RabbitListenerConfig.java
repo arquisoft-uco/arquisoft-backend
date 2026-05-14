@@ -4,6 +4,7 @@ import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.support.converter.SimpleMessageConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -30,9 +31,20 @@ import org.springframework.context.annotation.Configuration;
  *   <li>{@link RabbitMQConfig#rabbitTemplate} → {@code JacksonJsonMessageConverter} (publica objetos como JSON).</li>
  *   <li>Este factory → {@code SimpleMessageConverter} (entrega bytes crudos al consumer).</li>
  * </ul>
+ *
+ * <h3>Concurrencia</h3>
+ * <p>Los valores se leen de {@code application.yml} ({@code spring.rabbitmq.listener.simple.*})
+ * para que sean configurables por ambiente. El bean custom no hereda la auto-configuración
+ * de Spring Boot, por lo que se inyectan explícitamente.
  */
 @Configuration
 public class RabbitListenerConfig {
+
+    @Value("${spring.rabbitmq.listener.simple.concurrency:5}")
+    private int concurrentConsumers;
+
+    @Value("${spring.rabbitmq.listener.simple.max-concurrency:10}")
+    private int maxConcurrentConsumers;
 
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
@@ -43,8 +55,8 @@ public class RabbitListenerConfig {
         factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         // prefetch=1: backpressure — un consumer lento no acumula mensajes sin procesar
         factory.setPrefetchCount(1);
-        factory.setConcurrentConsumers(5);
-        factory.setMaxConcurrentConsumers(10);
+        factory.setConcurrentConsumers(concurrentConsumers);
+        factory.setMaxConcurrentConsumers(maxConcurrentConsumers);
         // Bytes crudos: los consumers deserializan con ObjectMapper directamente
         factory.setMessageConverter(new SimpleMessageConverter());
         return factory;
