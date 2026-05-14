@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.domain.model;
 
 import com.arquisoft.seguridad.domain.event.UsuarioCreadoEvent;
-import com.arquisoft.shared.events.EventEmittingEntity;
+import com.arquisoft.shared.events.AggregateRoot;
 
 import java.util.UUID;
 
@@ -20,7 +20,7 @@ import java.util.UUID;
  *
  * <p>Sin Spring, sin Lombok, sin JPA — Java puro.
  */
-public final class Usuario extends EventEmittingEntity {
+public final class Usuario extends AggregateRoot {
 
     private final UUID id;
     private final String email;

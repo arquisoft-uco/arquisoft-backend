@@ -6,6 +6,7 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -61,7 +62,7 @@ public class FichasUsuariosQueueConfig {
     @Bean
     public Binding fichasUsuarioCreadoBinding(
             Queue fichasUsuarioCreadoQueue,
-            TopicExchange arquisoftEventsExchange) {
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange) {
         return BindingBuilder
                 .bind(fichasUsuarioCreadoQueue)
                 .to(arquisoftEventsExchange)

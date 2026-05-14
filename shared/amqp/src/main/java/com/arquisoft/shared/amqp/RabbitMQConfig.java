@@ -7,6 +7,7 @@ import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.DeserializationFeature;
@@ -82,8 +83,7 @@ public class RabbitMQConfig {
      */
     @Bean
     public JacksonJsonMessageConverter jsonMessageConverter(
-            @org.springframework.beans.factory.annotation.Qualifier("rabbitObjectMapper")
-            JsonMapper rabbitObjectMapper) {
+            @Qualifier("rabbitObjectMapper") JsonMapper rabbitObjectMapper) {
         return new JacksonJsonMessageConverter(rabbitObjectMapper);
     }
 

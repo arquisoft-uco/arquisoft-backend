@@ -102,13 +102,13 @@ public abstract class AbstractEventConsumer {
 
         try {
             handler.handle();
-            channel.basicAck(deliveryTag, false);
         } catch (Exception ex) {
             log.error("Error procesando evento — enviando a DLQ: deliveryTag={} error={}",
                     deliveryTag, ex.getMessage(), ex);
             // requeue=false → el mensaje va al Dead Letter Exchange en lugar de volver a la cola.
             // Evita bucles infinitos de re-entrega ante errores de negocio no recuperables.
             channel.basicNack(deliveryTag, false, false);
+            return;
         } finally {
             if (prevMdc != null) {
                 MDC.setContextMap(prevMdc);
@@ -116,6 +116,8 @@ public abstract class AbstractEventConsumer {
                 MDC.clear();
             }
         }
+        // Solo se alcanza si handler.handle() no lanzó excepción.
+        channel.basicAck(deliveryTag, false);
     }
 
     /**
