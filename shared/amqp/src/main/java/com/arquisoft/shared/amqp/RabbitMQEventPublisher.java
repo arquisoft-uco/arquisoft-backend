@@ -1,6 +1,7 @@
 package com.arquisoft.shared.amqp;
 
 import com.arquisoft.shared.events.DomainEvent;
+import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.MdcKeys;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -28,7 +29,7 @@ import java.util.UUID;
  */
 @Slf4j
 @Component
-public class RabbitMQEventPublisher implements EventPublisher {
+public class RabbitMQEventPublisher implements EventPublisher { // EventPublisher de shared:domain
 
     private static final int MAX_ATTEMPTS = 3;
     private static final long INITIAL_BACKOFF_MS = 500L;
