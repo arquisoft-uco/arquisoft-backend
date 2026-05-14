@@ -4,9 +4,7 @@ import com.arquisoft.shared.logger.MdcKeys;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
-import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -67,19 +65,17 @@ public abstract class AbstractEventConsumer {
      * Deserializa el cuerpo del mensaje AMQP en el tipo indicado usando el
      * {@code ObjectMapper} de RabbitMQ (Jackson 3.x, bytes crudos).
      *
+     * <p>Si el cuerpo es JSON inválido o incompatible con el tipo destino, lanza
+     * {@code JacksonException} (unchecked). El método {@link #withCorrelation} la
+     * captura como {@code Exception} y emite un NACK hacia el DLX — sin re-encolar.
+     *
      * @param message mensaje AMQP con el cuerpo en formato JSON
      * @param type    clase destino de la deserialización
      * @param <T>     tipo del payload
      * @return instancia deserializada del payload
-     * @throws AmqpException si el cuerpo no puede deserializarse en el tipo dado
      */
     protected <T> T deserialize(Message message, Class<T> type) {
-        try {
-            return objectMapper.readValue(message.getBody(), type);
-        } catch (JacksonException ex) {
-            throw new AmqpException(
-                    "Error deserializando mensaje como " + type.getSimpleName(), ex);
-        }
+        return objectMapper.readValue(message.getBody(), type);
     }
 
     /**

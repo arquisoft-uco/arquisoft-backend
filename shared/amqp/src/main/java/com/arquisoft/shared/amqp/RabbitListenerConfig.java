@@ -32,10 +32,11 @@ import org.springframework.context.annotation.Configuration;
  *   <li>Este factory → {@code SimpleMessageConverter} (entrega bytes crudos al consumer).</li>
  * </ul>
  *
- * <h3>Concurrencia</h3>
+ * <h3>Concurrencia y backpressure</h3>
  * <p>Los valores se leen de {@code application.yml} ({@code spring.rabbitmq.listener.simple.*})
  * para que sean configurables por ambiente. El bean custom no hereda la auto-configuración
- * de Spring Boot, por lo que se inyectan explícitamente.
+ * de Spring Boot, por lo que se inyectan explícitamente ({@code concurrency},
+ * {@code max-concurrency} y {@code prefetch}).
  */
 @Configuration
 public class RabbitListenerConfig {
@@ -46,6 +47,9 @@ public class RabbitListenerConfig {
     @Value("${spring.rabbitmq.listener.simple.max-concurrency:10}")
     private int maxConcurrentConsumers;
 
+    @Value("${spring.rabbitmq.listener.simple.prefetch:1}")
+    private int prefetch;
+
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
             ConnectionFactory connectionFactory) {
@@ -53,8 +57,8 @@ public class RabbitListenerConfig {
         factory.setConnectionFactory(connectionFactory);
         // Manual ACK: sincronizado con spring.rabbitmq.listener.simple.acknowledge-mode=manual
         factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
-        // prefetch=1: backpressure — un consumer lento no acumula mensajes sin procesar
-        factory.setPrefetchCount(1);
+        // prefetch: backpressure — un consumer lento no acumula mensajes sin procesar
+        factory.setPrefetchCount(prefetch);
         factory.setConcurrentConsumers(concurrentConsumers);
         factory.setMaxConcurrentConsumers(maxConcurrentConsumers);
         // Bytes crudos: los consumers deserializan con ObjectMapper directamente

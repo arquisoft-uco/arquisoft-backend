@@ -25,11 +25,18 @@ public class UsuarioCreadoEvent extends DomainEvent {
      */
     public static final String EVENT_TOPIC = "seguridad.usuario.creado";
 
+    /**
+     * Identificador de tipo estable del evento. Desvinculado del nombre de la clase Java
+     * para resistir renombres de refactoring sin alterar logs históricos ni contratos de
+     * mensajería.
+     */
+    public static final String EVENT_TYPE = "UsuarioCreadoEvent";
+
     private final String email;
     private final String rol;
 
     public UsuarioCreadoEvent(UUID usuarioId, String email, String rol) {
-        super(usuarioId.toString());
+        super(usuarioId.toString(), EVENT_TOPIC, EVENT_TYPE);
         this.email = email;
         this.rol   = rol;
     }
@@ -40,10 +47,5 @@ public class UsuarioCreadoEvent extends DomainEvent {
 
     public String getRol() {
         return rol;
-    }
-
-    @Override
-    public String getEventTopic() {
-        return EVENT_TOPIC;
     }
 }
