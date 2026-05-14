@@ -1,9 +1,7 @@
 package com.arquisoft.seguridad.application.usecase;
 
-import com.arquisoft.seguridad.domain.event.UsuarioAutenticadoEvent;
 import com.arquisoft.seguridad.domain.port.in.AuthenticateUserUseCase;
 import com.arquisoft.seguridad.domain.port.out.AuthenticationPort;
-import com.arquisoft.shared.events.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,7 +18,6 @@ import java.util.Map;
 public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
 
     private final AuthenticationPort authenticationPort;
-    private final EventPublisher eventPublisher;
 
     @Override
     public AuthResult authenticate(String email, String password) {
@@ -29,7 +26,6 @@ public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
         Map<String, Object> tokenResponse = authenticationPort.authenticate(email, password);
 
         log.info("Autenticacion exitosa");
-        eventPublisher.publish(new UsuarioAutenticadoEvent(email));
 
         return new AuthResult(
                 (String) tokenResponse.get("access_token"),

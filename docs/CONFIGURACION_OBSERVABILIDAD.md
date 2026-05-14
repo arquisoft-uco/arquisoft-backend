@@ -156,10 +156,84 @@ logging:
 
 ## Grafana Alloy local (`infra/local/`)
 
-### Arrancar Alloy local
+### Paso a paso para levantar Alloy local
+
+**Prerrequisito:** Docker instalado y corriendo.
+
+**1. Verificar que el archivo de config existe**
+
+```bash
+ls infra/local/config.alloy   # debe existir
+```
+
+**2. Asegurarse de que no hay un contenedor viejo detenido**
+
+```bash
+docker ps -a --filter name=alloy-local
+```
+
+Si aparece en estado `Exited`, eliminarlo antes de intentar levantar:
+
+```bash
+docker rm alloy-local
+```
+
+> **Por qué ocurre esto:** si el contenedor falló en un arranque anterior
+> (p.ej. por error de sintaxis en `config.alloy`), Docker lo deja en estado
+> `Exited` y el nombre `/alloy-local` queda reservado. El siguiente
+> `docker compose up` falla con *"container name already in use"* hasta que
+> se elimine manualmente.
+
+**3. Levantar el contenedor**
 
 ```bash
 docker compose -f infra/local/docker-compose.yml up -d
+```
+
+**4. Verificar que está corriendo y leyendo el log**
+
+```bash
+docker logs alloy-local 2>&1 | tail -10
+```
+
+La última línea debe incluir:
+
+```
+msg="start tailing file" ... path=/logs/arquisoft.log
+```
+
+Si en lugar de eso aparece un error como `missing ',' in field list`, hay un
+error de sintaxis en `config.alloy` — corregirlo, hacer `docker rm alloy-local`
+y volver al paso 3.
+
+---
+
+### Troubleshooting
+
+| Síntoma | Causa | Solución |
+|---|---|---|
+| `container name "/alloy-local" is already in use` | Contenedor viejo en estado `Exited` | `docker rm alloy-local` y relanzar |
+| `missing ',' in field list` en los logs | Falta coma trailing en algún bloque HCL de `config.alloy` | Corregir la línea indicada en el error (ej. `app = "arquisoft-api",`) |
+| `could not perform the initial load` | Error de configuración de Alloy | Revisar todos los bloques HCL con `docker logs alloy-local 2>&1 \| head -20` |
+| WARN `the attribute 'version' is obsolete` | Campo `version:` en el docker-compose (ignorado por versiones modernas) | Warning inocuo — no afecta el funcionamiento |
+
+---
+
+### Comandos útiles de operación
+
+```bash
+# Ver logs en tiempo real
+docker logs -f alloy-local
+
+# Reiniciar (sin borrar el contenedor)
+docker compose -f infra/local/docker-compose.yml restart alloy
+
+# Detener y eliminar el contenedor
+docker compose -f infra/local/docker-compose.yml down
+
+# Inyectar un log de prueba para verificar el pipeline
+echo "{\"level\":\"INFO\",\"message\":\"log de prueba\",\"env\":\"dev\",\"app\":\"arquisoft-backend\",\"traceId\":\"test-trace-$(date +%s)\"}" \
+  >> logs/arquisoft.log
 ```
 
 ### Pipeline configurado en `infra/local/config.alloy`

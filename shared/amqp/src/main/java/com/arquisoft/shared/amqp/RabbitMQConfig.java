@@ -55,9 +55,25 @@ public class RabbitMQConfig {
                 .build();
     }
 
+    /**
+     * Expuesto como {@code JsonMapper} para que los consumers AMQP puedan inyectarlo
+     * como {@code tools.jackson.databind.ObjectMapper} (tipo padre).
+     */
     @Bean
-    public JacksonJsonMessageConverter jsonMessageConverter() {
-        return new JacksonJsonMessageConverter(JsonMapper.builder().build());
+    public JsonMapper objectMapper() {
+        return JsonMapper.builder().build();
+    }
+
+    /**
+     * Usado exclusivamente por {@link RabbitTemplate} para <b>publicar</b> eventos:
+     * serializa objetos Java a JSON y añade el header {@code __TypeId__}.
+     *
+     * <p>Los consumers usan {@code SimpleMessageConverter} (bytes crudos) configurado
+     * en {@code RabbitListenerConfig} de la aplicación principal.
+     */
+    @Bean
+    public JacksonJsonMessageConverter jsonMessageConverter(JsonMapper objectMapper) {
+        return new JacksonJsonMessageConverter(objectMapper);
     }
 
     @Bean
