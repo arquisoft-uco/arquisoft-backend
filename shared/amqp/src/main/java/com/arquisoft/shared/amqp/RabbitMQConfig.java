@@ -9,7 +9,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.retry.annotation.EnableRetry;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
@@ -30,7 +29,6 @@ import tools.jackson.databind.json.JsonMapper;
  * <p>Usa Jackson 3.x (tools.jackson) — soporte de java.time integrado en jackson-databind 3.x.
  */
 @Slf4j
-@EnableRetry
 @Configuration
 public class RabbitMQConfig {
 
