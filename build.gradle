@@ -55,10 +55,6 @@ dependencyManagement {
         // Rate Limiting (no gestionado por el BOM). Fuente: Maven Central (com.bucket4j).
         // bucket4j_jdk17-core: artefacto oficial para Java 17+, compatible con Java 21 y Virtual Threads.
         dependency "com.bucket4j:bucket4j_jdk17-core:${bucket4jVersion}"
-
-        // Logstash Logback Encoder — no gestionado por el BOM. Usa Jackson 2 (subsistema Logback,
-        // independiente del HTTP stack Jackson 3). Documentado en gradle.properties.
-        dependency "net.logstash.logback:logstash-logback-encoder:${logstashVersion}"
     }
 }
 

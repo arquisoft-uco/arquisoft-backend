@@ -36,7 +36,9 @@ services:
     image: grafana/alloy:latest
     container_name: alloy
     volumes:
-      - /opt/arquisoft/logs:/opt/arquisoft/logs:ro
+      # Docker socket: Alloy captura logs de todos los contenedores del host
+      # directamente del motor Docker, sin volumen compartido con el backend.
+      - /var/run/docker.sock:/var/run/docker.sock
       - /opt/observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
     command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     networks:

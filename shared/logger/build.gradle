@@ -2,11 +2,7 @@ dependencies {
     // SLF4J + Logback — transitivos de spring-boot-starter-logging.
     // Se declara explícitamente para garantizar que logback-spring.xml sea reconocido
     // como configuración de Spring Boot en cualquier contexto que importe este módulo.
+    // El perfil prod usa StructuredLogEncoder (nativo de Spring Boot 4.x) para JSON
+    // en stdout — sin dependencias de terceros para logging JSON.
     implementation "org.springframework.boot:spring-boot-starter-logging"
-
-    // JSON encoder para Logback (perfil prod → Loki vía stdout / Alloy).
-    // Usa Jackson 2 (com.fasterxml.jackson.*) de forma independiente al HTTP stack
-    // de Spring Boot 4.x que usa Jackson 3 (tools.jackson.*). Coexistencia documentada
-    // en gradle.properties § JACKSON 2/3 COEXISTENCE.
-    implementation "net.logstash.logback:logstash-logback-encoder:${logstashVersion}"
 }

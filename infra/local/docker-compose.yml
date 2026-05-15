@@ -5,10 +5,11 @@ services:
     container_name: alloy-local
     volumes:
       - ./config.alloy:/etc/alloy/config.alloy
-      # IMPORTANTE: Mapear la ruta de los logs de tu backend para que el contenedor los vea
-      - /home/brayanesq/projects/arquisoft/arquisoft-backend/logs:/logs:ro
+      # Docker socket: permite a Alloy capturar logs de todos los contenedores
+      # directamente del motor Docker, sin volumen compartido con el backend.
+      - /var/run/docker.sock:/var/run/docker.sock
     command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
-    network_mode: host # Permite a Alloy acceder fácilmente a servicios locales si fuera necesario
+    network_mode: host
     restart: unless-stopped
 
 
@@ -16,5 +17,3 @@ services:
 # docker ps
 # docker logs -f alloy-local
 # docker compose -f infra/local/docker-compose.yml restart alloy
-
-# echo "$(date) - LOG DE PRUEBA DESDE TERMINAL" >> /home/brayanesq/projects/arquisoft/arquisoft-backend/logs/arquisoft.log
