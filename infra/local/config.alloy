@@ -3,13 +3,37 @@ discovery.docker "contenedores_locales" {
     host = "unix:///var/run/docker.sock"
 }
 
-// 2. Pipeline de procesamiento: extrae campos, promueve labels, filtra ruido.
+// 2. Metadatos Docker: promueve __meta_docker_container_name → label "container"
+//    y filtra para capturar solo el contenedor del backend.
+//    Los __meta_* de discovery.docker NO se propagan automáticamente a Loki —
+//    deben promoverse explícitamente con loki.relabel.
+loki.relabel "docker_metadata" {
+    forward_to = [loki.process.extract_labels.receiver]
+
+    // Elimina la "/" inicial que Docker antepone a los nombres de contenedor.
+    rule {
+        source_labels = ["__meta_docker_container_name"]
+        regex         = "/(.*)"
+        target_label  = "container"
+    }
+
+    // Captura solo el backend. Para incluir todos los contenedores de arquisoft
+    // (postgres, rabbitmq, etc.) cambia el regex a "arquisoft-.*"
+    rule {
+        source_labels = ["container"]
+        regex         = "arquisoft-backend"
+        action        = "keep"
+    }
+}
+
+// 3. Pipeline de procesamiento: extrae campos del JSON de Spring Boot (perfil prod),
+//    promueve level a stream label y descarta ruido DEBUG/TRACE.
+//    El label "container" ya viene como stream label desde loki.relabel.
 loki.process "extract_labels" {
     forward_to = [loki.write.remote_loki.receiver]
 
-    // Extraer campos del JSON emitido por StructuredLogEncoder (formato logstash,
-    // Spring Boot 4.x). Todos los campos MDC (traceId, userId, httpMethod, etc.)
-    // se incluyen como campos de primer nivel en el JSON producido por Spring Boot.
+    // Campos del JSON emitido por StructuredLogEncoder (formato logstash, Spring Boot 4.x).
+    // Todos los campos MDC (traceId, userId, httpMethod, etc.) son de primer nivel en el JSON.
     stage.json {
         expressions = {
             level   = "level",
@@ -20,9 +44,8 @@ loki.process "extract_labels" {
         }
     }
 
-    // Promover a stream labels (baja cardinalidad — usables en {}).
+    // Promueve level a stream label (baja cardinalidad — usable en {}).
     // NUNCA promover traceId/userId — alta cardinalidad, destruye el índice de Loki.
-    // container_name y container_image los añade loki.source.docker automáticamente.
     stage.labels {
         values = {
             level = "",
@@ -30,21 +53,19 @@ loki.process "extract_labels" {
     }
 
     // Red de seguridad: descartar DEBUG y TRACE antes de enviar a Loki.
-    // Spring filtra por nivel, pero esta regla protege ante cambios temporales de nivel.
     stage.drop {
         expression          = "\"level\":\"(?:DEBUG|TRACE)\""
         drop_counter_reason = "debug_trace_noise"
     }
 }
 
-// 3. Fuente: captura stdout/stderr de contenedores Docker.
-//    loki.source.docker desenvuelve automáticamente el formato JSON del driver de Docker
-//    y entrega el contenido de "log" (JSON de Spring Boot) como la línea a procesar.
-//    Requiere que el backend corra en Docker (docker-compose.yml raíz).
+// 4. Fuente: captura stdout/stderr de contenedores vía Docker socket.
+//    Reenvía a loki.relabel para añadir container_name antes del pipeline.
+//    Requiere que el backend corra en Docker (docker-compose.yml raíz) con perfil prod.
 loki.source.docker "backend_logs" {
     host       = "unix:///var/run/docker.sock"
     targets    = discovery.docker.contenedores_locales.targets
-    forward_to = [loki.process.extract_labels.receiver]
+    forward_to = [loki.relabel.docker_metadata.receiver]
 }
 
 // 4. Envío a Loki en Coolify
