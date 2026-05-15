@@ -31,9 +31,10 @@ public class AuditFilter extends OncePerRequestFilter {
     private static final Pattern IP_PATTERN = Pattern.compile("^[\\d.:a-fA-F]{3,45}$");
 
     private static final List<String> AUDIT_EXCLUDED_PREFIXES = List.of(
-            "/api/actuator/health",
+            "/api/actuator/",
             "/api/swagger-ui",
-            "/api/v3/api-docs"
+            "/api/v3/api-docs",
+            "/api/swagger-resources"
     );
 
     @Override
