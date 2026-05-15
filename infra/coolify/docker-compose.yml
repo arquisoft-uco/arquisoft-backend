@@ -1,10 +1,15 @@
 services:
   loki:
-    image: grafana/loki:2.9.0
+    image: grafana/loki:3.3.2
     container_name: loki
     command: -config.file=/etc/loki/local-config.yaml
+    labels:
+      - coolify.managed=true
     networks:
       - coolify
+    ports:
+      # Puerto solo para la red privada entre servidores — restringir con firewall a Server1_PRIVATE_IP
+      - "3100:3100"
     volumes:
       - loki-data:/loki
     healthcheck:
@@ -12,10 +17,20 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 384M
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.1.0
     container_name: prometheus
+    labels:
+      - coolify.managed=true
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
@@ -23,6 +38,9 @@ services:
       - --web.enable-remote-write-receiver
     networks:
       - coolify
+    ports:
+      # Puerto solo para la red privada entre servidores — restringir con firewall a Server1_PRIVATE_IP
+      - "9090:9090"
     volumes:
       - prometheus-data:/prometheus
     healthcheck:
@@ -30,38 +48,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-
-  alloy:
-    image: grafana/alloy:latest
-    container_name: alloy
-    group_add:
-      - "999"  # GID del grupo docker en el host — verificar con: stat -c '%g' /var/run/docker.sock
-    volumes:
-      # Docker socket: Alloy captura logs de todos los contenedores del host
-      # directamente del motor Docker, sin volumen compartido con el backend.
-      - /var/run/docker.sock:/var/run/docker.sock
-      # config.alloy se copia manualmente al servidor vía SSH antes del primer deploy.
-      # Ver docs/OBSERVABILIDAD_COOLIFY.md — sección "Pre-requisitos".
-      - /opt/observability/config.alloy:/etc/alloy/config.alloy:ro
-    command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
-    networks:
-      - coolify
-    depends_on:
-      - loki
-      - prometheus
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:12345/ready || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.10'
+          memory: 192M
 
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.5.0
     container_name: grafana
+    labels:
+      - coolify.managed=true
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
-      - GF_SERVER_ROOT_URL=https://grafana.arquisoft.duckdns.org
-      - GF_SERVER_SERVE_FROM_SUB_PATH=false
     networks:
       - coolify
     depends_on:
@@ -74,22 +76,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    labels:
-      - traefik.enable=true
-      - traefik.http.middlewares.gzip.compress=true
-      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-      - traefik.http.routers.http-0-observability-grafana.entryPoints=http
-      - traefik.http.routers.http-0-observability-grafana.middlewares=redirect-to-https
-      - traefik.http.routers.http-0-observability-grafana.rule=Host(`grafana.arquisoft.duckdns.org`) && PathPrefix(`/`)
-      - traefik.http.routers.http-0-observability-grafana.service=http-0-observability-grafana
-      - traefik.http.routers.https-0-observability-grafana.entryPoints=https
-      - traefik.http.routers.https-0-observability-grafana.middlewares=gzip
-      - traefik.http.routers.https-0-observability-grafana.rule=Host(`grafana.arquisoft.duckdns.org`) && PathPrefix(`/`)
-      - traefik.http.routers.https-0-observability-grafana.service=https-0-observability-grafana
-      - traefik.http.routers.https-0-observability-grafana.tls=true
-      - traefik.http.routers.https-0-observability-grafana.tls.certresolver=letsencrypt
-      - traefik.http.services.http-0-observability-grafana.loadbalancer.server.port=3000
-      - traefik.http.services.https-0-observability-grafana.loadbalancer.server.port=3000
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.05'
+          memory: 96M
 
 networks:
   coolify:
@@ -97,11 +91,8 @@ networks:
 
 volumes:
   loki-data:
-    external: true
     name: observability_loki-data
   prometheus-data:
-    external: true
     name: observability_prometheus-data
   grafana-data:
-    external: true
     name: observability_grafana-data

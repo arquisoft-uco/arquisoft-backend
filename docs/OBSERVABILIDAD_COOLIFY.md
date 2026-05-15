@@ -1,7 +1,17 @@
 # Observabilidad — Coolify
 
-> Pipeline: backend (stdout JSON) → Docker socket → Grafana Alloy → Loki local → Grafana.
-> Todo el stack de monitoreo corre en el mismo host Coolify.
+> Arquitectura two-server: Alloy corre en el mismo servidor que el backend (Server 1) y envía
+> logs y métricas al stack de observabilidad en un servidor dedicado (Server 2).
+
+```
+Server 1 (backend)                     Server 2 (observabilidad)
+┌────────────────────────────┐          ┌──────────────────────────────┐
+│  backend (Spring Boot)     │          │  Loki  ←─── Grafana          │
+│       ↓ stdout JSON        │          │   ↑              ↑           │
+│  Alloy (docker socket)  ───┼─3100────▶│  push         Prometheus     │
+│       ↓ node_exporter   ───┼─9090────▶│  push           ↑           │
+└────────────────────────────┘          └──────────────────────────────┘
+```
 
 ---
 
@@ -9,8 +19,9 @@
 
 | Archivo | Propósito |
 |---|---|
-| [`infra/coolify/docker-compose.yml`](../infra/coolify/docker-compose.yml) | Stack completo: Loki, Prometheus, Alloy, Grafana con integración Traefik |
-| [`infra/coolify/config.alloy`](../infra/coolify/config.alloy) | Pipeline Alloy: Docker socket → filtro al backend → Loki + métricas de sistema → Prometheus |
+| [`infra/coolify/docker-compose.yml`](../infra/coolify/docker-compose.yml) | Stack de observabilidad (Server 2): Loki, Prometheus, Grafana |
+| [`infra/coolify/docker-compose-alloy.yml`](../infra/coolify/docker-compose-alloy.yml) | Stack de captura (Server 1): Alloy con acceso al Docker socket |
+| [`infra/coolify/config.alloy`](../infra/coolify/config.alloy) | Pipeline Alloy: Docker socket → filtro backend → Loki + métricas → Prometheus |
 
 ---
 
@@ -18,36 +29,79 @@
 
 ### Pre-requisitos
 
-- Backend desplegado en Coolify con `SPRING_PROFILES_ACTIVE=prod`.
-- Variable de entorno `GRAFANA_PASSWORD` configurada en el recurso de Coolify.
-- Red `coolify` ya creada por Coolify (se genera al desplegar la primera app).
+- Backend desplegado en Server 1 con `SPRING_PROFILES_ACTIVE=prod`.
+- Variable de entorno `GRAFANA_PASSWORD` configurada en el recurso de Coolify (Server 2).
+- Red `coolify` ya creada en ambos servidores (se genera al desplegar la primera app).
+- IP privada de Server 2 disponible para configurar `LOKI_URL` y `PROMETHEUS_URL`.
 
-### 1. Copiar `config.alloy` al servidor (SSH — una sola vez)
+---
 
-Alloy necesita el archivo en una ruta fija del host antes del primer deploy. El `docker-compose.yml` lo monta desde `/opt/observability/config.alloy`.
+### Stack observabilidad — Server 2
+
+#### 1. Desplegar desde Coolify UI
+
+En Coolify → **New Resource → Docker Compose** → apuntar al repositorio y seleccionar
+`infra/coolify/docker-compose.yml` como compose file.
+
+Coolify gestiona el HTTPS y el dominio de Grafana desde su panel. No se requiere
+configuración manual de Traefik.
+
+#### 2. Verificar
 
 ```bash
-ssh root@<SERVER_IP> 'mkdir -p /opt/observability'
-scp infra/coolify/config.alloy root@<SERVER_IP>:/opt/observability/config.alloy
+ssh root@<SERVER2_IP> 'docker ps --format "table {{.Names}}\t{{.Status}}"'
+# Esperado: loki (healthy), prometheus (healthy), grafana (healthy)
 ```
 
-Para actualizarlo sin tocar el stack:
+---
+
+### Stack Alloy — Server 1
+
+#### 1. Copiar `config.alloy` al servidor (SSH — una sola vez)
+
+Alloy lee la configuración desde una ruta fija del host. Debe copiarse antes del
+primer deploy y cada vez que el archivo cambie.
 
 ```bash
-scp infra/coolify/config.alloy root@<SERVER_IP>:/opt/observability/config.alloy
-ssh root@<SERVER_IP> 'docker restart alloy'
+ssh root@<SERVER1_IP> 'mkdir -p /opt/alloy'
+scp infra/coolify/config.alloy root@<SERVER1_IP>:/opt/alloy/config.alloy
 ```
 
-### 2. Desplegar el stack desde Coolify UI
-
-En Coolify → **New Resource → Docker Compose** → apuntar al repositorio y seleccionar `infra/coolify/docker-compose.yml` como compose file.
-
-> Coolify ejecuta el compose desde su propio directorio de trabajo, por eso el `config.alloy` usa ruta absoluta (`/opt/observability/config.alloy`) y no ruta relativa.
-
-### 3. Verificar
+Para actualizar sin redeployar el stack:
 
 ```bash
-ssh root@<SERVER_IP> 'docker logs alloy --tail 20 2>&1'
+scp infra/coolify/config.alloy root@<SERVER1_IP>:/opt/alloy/config.alloy
+ssh root@<SERVER1_IP> 'docker restart alloy'
+```
+
+#### 2. Configurar variables de entorno en Coolify (Server 1)
+
+El `docker-compose-alloy.yml` requiere dos variables que apuntan al servidor de
+observabilidad. Configurarlas en el recurso de Coolify de Server 1, o directamente
+en el compose file antes del deploy:
+
+| Variable | Valor |
+|---|---|
+| `LOKI_URL` | `http://<SERVER2_PRIVATE_IP>:3100/loki/api/v1/push` |
+| `PROMETHEUS_URL` | `http://<SERVER2_PRIVATE_IP>:9090/api/v1/write` |
+
+> **Firewall:** el puerto 3100 de Server 2 debe aceptar conexiones desde la IP privada
+> de Server 1. El puerto 9090 aplica igual si se quiere push de métricas cross-server.
+
+#### 3. Desplegar desde Coolify UI
+
+En Coolify (Server 1) → **New Resource → Docker Compose** → seleccionar
+`infra/coolify/docker-compose-alloy.yml` como compose file.
+
+> **`group_add: ["999"]`:** añade el GID del grupo `docker` del host al contenedor,
+> permitiéndole leer el socket sin elevar privilegios a root. Si el deploy falla con
+> `permission denied on /var/run/docker.sock`, verificar el GID real con
+> `stat -c '%g' /var/run/docker.sock` en Server 1 y ajustar el valor en el compose.
+
+#### 4. Verificar
+
+```bash
+ssh root@<SERVER1_IP> 'docker logs alloy --tail 20 2>&1'
 ```
 
 **Salida esperada:**
@@ -55,33 +109,36 @@ ssh root@<SERVER_IP> 'docker logs alloy --tail 20 2>&1'
 level=info msg="finished transferring logs" component=tailer container=docker/...
 ```
 
-> **`group_add: ["999"]` en Alloy:** añade el GID del grupo `docker` del host al contenedor, permitiéndole leer el socket sin elevar privilegios a root. Si el deploy falla con `permission denied on /var/run/docker.sock`, verificar el GID real con `stat -c '%g' /var/run/docker.sock` en el servidor y ajustar el valor.
-
-> **Volúmenes externos:** `observability_loki-data`, `observability_prometheus-data` y `observability_grafana-data` — Coolify los crea al aprovisionar el recurso si no existen.
-
 ---
 
 ## Stack
 
-| Servicio | Imagen | Puerto interno | Expuesto al exterior |
-|---|---|---|---|
-| Loki | `grafana/loki:2.9.0` | `3100` | Sí — `loki.arquisoft.top` (usado por devs locales) |
-| Prometheus | `prom/prometheus:latest` | `9090` | No |
-| Alloy | `grafana/alloy:latest` | `12345` (health) | No |
-| Grafana | `grafana/grafana:latest` | `3000` | Sí — `grafana.arquisoft.top` (Traefik) |
+### Server 2 — observabilidad
 
-Todos comparten la red `coolify` (externa, gestionada por Coolify).
+| Servicio | Imagen | Puerto interno | Expuesto |
+|---|---|---|---|
+| Loki | `grafana/loki:3.3.2` | `3100` | Sí — red privada entre servidores (firewall) |
+| Prometheus | `prom/prometheus:v3.1.0` | `9090` | No (exponer si se requiere push cross-server) |
+| Grafana | `grafana/grafana:11.5.0` | `3000` | Sí — gestionado por Coolify (HTTPS) |
+
+Todos comparten la red `coolify` (externa, gestionada por Coolify) en Server 2.
+
+### Server 1 — captura
+
+| Servicio | Imagen | Puerto | Expuesto |
+|---|---|---|---|
+| Alloy | `grafana/alloy:v1.5.1` | `12345` (health) | No |
 
 ---
 
 ## Datasources en Grafana
 
-| Datasource | URL interna |
+Configurar en Grafana (Server 2): **Connections → Data sources → Add → Loki / Prometheus**.
+
+| Datasource | URL interna (misma red Docker en Server 2) |
 |---|---|
 | Loki | `http://loki:3100` |
 | Prometheus | `http://prometheus:9090` |
-
-Configurar en Grafana: **Connections → Data sources → Add → Loki / Prometheus**.
 
 ---
 
@@ -122,25 +179,33 @@ count_over_time({container="arquisoft-backend", level="WARN"}[1h])
 
 | FQDN | Servicio |
 |---|---|
-| `grafana.arquisoft.top` | Panel de visualización (Traefik → Grafana:3000) |
-| `loki.arquisoft.top` | Recepción de logs desde los entornos locales de los devs |
+| `grafana.arquisoft.top` | Panel de visualización (gestionado por Coolify) |
+| `loki.arquisoft.top` | Recepción de logs desde entornos locales de los devs |
 
-> `loki.arquisoft.top` es el endpoint al que apunta `infra/local/config.alloy`. Es el único punto de entrada externo para logs; Prometheus y Alloy no tienen exposición pública.
+> `loki.arquisoft.top` es el endpoint al que apunta `infra/local/config.alloy`.
+> Prometheus y Alloy no tienen exposición pública.
 
 ---
 
 ## Mantenimiento
 
 ```bash
-# Logs de Alloy en tiempo real
-ssh root@<SERVER_IP> 'docker logs alloy -f 2>&1'
+# ── Server 1 (Alloy) ──────────────────────────────────────────
 
-# Reiniciar Alloy (ej. tras actualizar config.alloy)
-ssh root@<SERVER_IP> 'docker restart alloy'
+# Logs en tiempo real
+ssh root@<SERVER1_IP> 'docker logs alloy -f 2>&1'
 
-# Actualizar config.alloy en el servidor
-scp infra/coolify/config.alloy root@<SERVER_IP>:/opt/observability/config.alloy
-ssh root@<SERVER_IP> 'docker restart alloy'
+# Reiniciar tras actualizar config.alloy
+scp infra/coolify/config.alloy root@<SERVER1_IP>:/opt/alloy/config.alloy
+ssh root@<SERVER1_IP> 'docker restart alloy'
+
+# ── Server 2 (observabilidad) ─────────────────────────────────
+
+# Estado de los servicios
+ssh root@<SERVER2_IP> 'docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Image}}"'
+
+# Logs de Loki
+ssh root@<SERVER2_IP> 'docker logs loki --tail 30 2>&1'
 ```
 
-> El `docker-compose.yml` se gestiona desde Coolify UI (redeploy desde el repo). No se actualiza via SSH.
+> Los stacks se gestionan desde Coolify UI (redeploy desde el repo). No se actualizan via SSH.
