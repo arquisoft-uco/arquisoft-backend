@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   loki:
     image: grafana/loki:2.9.0
@@ -35,11 +34,15 @@ services:
   alloy:
     image: grafana/alloy:latest
     container_name: alloy
+    group_add:
+      - "999"  # GID del grupo docker en el host — verificar con: stat -c '%g' /var/run/docker.sock
     volumes:
       # Docker socket: Alloy captura logs de todos los contenedores del host
       # directamente del motor Docker, sin volumen compartido con el backend.
       - /var/run/docker.sock:/var/run/docker.sock
-      - /opt/observability/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      # config.alloy se copia manualmente al servidor vía SSH antes del primer deploy.
+      # Ver docs/OBSERVABILIDAD_COOLIFY.md — sección "Pre-requisitos".
+      - /opt/observability/config.alloy:/etc/alloy/config.alloy:ro
     command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
     networks:
       - coolify

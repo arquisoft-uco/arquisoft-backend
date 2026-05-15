@@ -1,0 +1,100 @@
+// ============================================================
+// Grafana Alloy — configuración para servidor Coolify
+// ============================================================
+// Pipeline: Docker socket → filtra backend → extrae labels → Loki local
+// Métricas del sistema (node_exporter) → Prometheus local
+// ============================================================
+
+// 1. Descubrimiento de contenedores Docker del servidor
+discovery.docker "contenedores_servidor" {
+    host = "unix:///var/run/docker.sock"
+}
+
+// 2. Extrae container_name y filtra SOLO al contenedor del backend.
+//    IMPORTANTE: los __meta_docker_* solo están disponibles en discovery.relabel
+//    con relabel_rules (argumento de loki.source.docker) — NO en loki.relabel
+//    usado como forward_to. Usar este patrón evita que el filtro descarte todos
+//    los logs en silencio.
+discovery.relabel "docker_metadata" {
+    targets = []
+
+    // Elimina el "/" inicial que antepone Docker al container_name
+    rule {
+        source_labels = ["__meta_docker_container_name"]
+        regex         = "/(.*)"
+        target_label  = "container"
+    }
+
+    // Descarta todos los contenedores excepto el backend
+    rule {
+        source_labels = ["container"]
+        regex         = "arquisoft-backend"
+        action        = "keep"
+    }
+}
+
+// 3. Pipeline de procesamiento: parsea JSON de Spring Boot (perfil prod),
+//    extrae level como stream label y descarta DEBUG/TRACE.
+loki.process "extract_labels" {
+    forward_to = [loki.write.loki_local.receiver]
+
+    // Extrae campos del JSON producido por StructuredLogEncoder
+    stage.json {
+        expressions = {
+            level   = "level",
+            message = "message",
+            logger  = "logger_name",
+            traceId = "traceId",
+            userId  = "userId",
+        }
+    }
+
+    // Promueve level a stream label (baja cardinalidad → usable en {})
+    stage.labels {
+        values = { level = "" }
+    }
+
+    // Descarta DEBUG y TRACE — no aportan valor en prod y aumentan el volumen
+    stage.drop {
+        expression          = "\"level\":\"(?:DEBUG|TRACE)\""
+        drop_counter_reason = "debug_trace_noise"
+    }
+}
+
+// 4. Fuente de logs: captura stdout de contenedores vía Docker socket.
+//    relabel_rules aplica las reglas de discovery.relabel ANTES de enviar
+//    a loki.process — es aquí donde los __meta_docker_* están disponibles.
+loki.source.docker "backend_logs" {
+    host          = "unix:///var/run/docker.sock"
+    targets       = discovery.docker.contenedores_servidor.targets
+    forward_to    = [loki.process.extract_labels.receiver]
+    relabel_rules = discovery.relabel.docker_metadata.rules
+}
+
+// 5. Envío a Loki local (mismo docker-compose, red interna coolify)
+loki.write "loki_local" {
+    endpoint {
+        url = "http://loki:3100/loki/api/v1/push"
+    }
+    external_labels = {
+        job = "backend-java-coolify",
+    }
+}
+
+// ── MÉTRICAS ──────────────────────────────────────────────────────────────────
+
+// 6. Exporta métricas del sistema (CPU, RAM, disco, red) como node_exporter
+prometheus.exporter.unix "node_stats" { }
+
+// 7. Scrape de métricas del sistema
+prometheus.scrape "scrape_node" {
+    targets    = prometheus.exporter.unix.node_stats.targets
+    forward_to = [prometheus.remote_write.prometheus_local.receiver]
+}
+
+// 8. Envío a Prometheus local (mismo docker-compose, red interna coolify)
+prometheus.remote_write "prometheus_local" {
+    endpoint {
+        url = "http://prometheus:9090/api/v1/write"
+    }
+}
