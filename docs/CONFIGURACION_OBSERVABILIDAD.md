@@ -346,24 +346,48 @@ loki.write "remote_loki" {
 
 ## Queries en Grafana (LogQL)
 
+> **Nota:** usar `{container="arquisoft-backend", origin="local-brayan"}` y NO solo `{origin="local-brayan"}` — el filtro amplio incluye logs internos de Alloy, Traefik y otros contenedores mezclados.
+
 ```logql
-# Todos los logs del backend desde tu instancia local
+# ── BASE ─────────────────────────────────────────────────────────────────────
+
+# Todos los logs del backend (solo WARN/ERROR llegan en perfil prod)
 {container="arquisoft-backend", origin="local-brayan"}
 
-# Solo errores
+# ── POR NIVEL ────────────────────────────────────────────────────────────────
+
+{container="arquisoft-backend", origin="local-brayan", level="WARN"}
 {container="arquisoft-backend", origin="local-brayan", level="ERROR"}
 
-# Buscar texto en el mensaje
-{container="arquisoft-backend", level="ERROR"} |= "JWT"
+# ── BÚSQUEDA EN TEXTO ────────────────────────────────────────────────────────
 
-# Trazar un request completo (alta cardinalidad → | json)
-{container="arquisoft-backend"} | json | traceId="abc123def456"
+# Buscar una cadena en el mensaje
+{container="arquisoft-backend", origin="local-brayan"} |= "JWT"
+{container="arquisoft-backend", origin="local-brayan"} |= "NullPointerException"
+
+# ── TRAZABILIDAD ─────────────────────────────────────────────────────────────
+
+# Seguir todos los logs de un request por traceId (alta cardinalidad → | json)
+{container="arquisoft-backend"} | json | traceId="344bc533-a7d7-478a-ba31-4c5335aabb2f"
 
 # Logs de un usuario específico
 {container="arquisoft-backend", origin="local-brayan"} | json | userId="uuid-xxx"
 
-# Rate de errores por minuto (panel de Grafana)
+# ── FORMATO LEGIBLE ──────────────────────────────────────────────────────────
+
+# Mostrar solo nivel + mensaje (sin el JSON completo)
+{container="arquisoft-backend", origin="local-brayan"} | json | line_format "{{.level}} {{.message}}"
+
+# Con logger y traceId
+{container="arquisoft-backend", origin="local-brayan"} | json | line_format "[{{.level}}] {{.logger_name}} — {{.message}} (trace={{.traceId}})"
+
+# ── MÉTRICAS (paneles de Grafana) ─────────────────────────────────────────────
+
+# Rate de errores por minuto
 rate({container="arquisoft-backend", level="ERROR"}[1m])
+
+# Conteo de WARN en la última hora
+count_over_time({container="arquisoft-backend", level="WARN"}[1h])
 ```
 
 ---
