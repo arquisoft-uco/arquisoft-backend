@@ -62,10 +62,14 @@ services:
     container_name: grafana
     labels:
       - coolify.managed=true
+      - coolify.proxy.port=3000
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_SERVER_ROOT_URL=https://grafana.arquisoft-b.duckdns.org
     networks:
       - coolify
+    ports:
+      - '3000:3000'
     depends_on:
       - loki
       - prometheus
