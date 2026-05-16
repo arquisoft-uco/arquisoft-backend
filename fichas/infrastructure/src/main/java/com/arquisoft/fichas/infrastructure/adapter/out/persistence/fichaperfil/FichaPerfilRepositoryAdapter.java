@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.infrastructure.adapter.out.persistence;
+package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
 import com.arquisoft.fichas.domain.model.FichaPerfil;
 import com.arquisoft.fichas.domain.port.out.FichaPerfilRepositoryPort;
@@ -26,7 +26,7 @@ public class FichaPerfilRepositoryAdapter implements FichaPerfilRepositoryPort {
         try {
             return PaginationMapper.toResult(
                     fichaPerfilJpaRepository.findAll(pageable)
-                            .map(FichaPerfilJpaEntity::toDomain));
+                            .map(FichaPerfilMapper::toDomain));
         } catch (PropertyReferenceException ex) {
             log.warn("Campo de ordenamiento inválido: {}", ex.getPropertyName());
             throw new OrdenamientoInvalidoException(ex.getPropertyName(), ex);

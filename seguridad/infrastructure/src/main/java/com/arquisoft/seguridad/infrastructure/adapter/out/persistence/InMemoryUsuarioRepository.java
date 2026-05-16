@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.adapter.out.db;
+package com.arquisoft.seguridad.infrastructure.adapter.out.persistence;
 
 import com.arquisoft.seguridad.domain.model.Usuario;
 import com.arquisoft.seguridad.domain.port.out.UsuarioRepositoryPort;

@@ -1,6 +1,6 @@
-package com.arquisoft.fichas.infrastructure.adapter.out.persistence;
+package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
-import com.arquisoft.fichas.domain.model.FichaPerfil;
+import com.arquisoft.fichas.infrastructure.adapter.out.persistence.asesorficha.AsesorFichaJpaEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,8 +33,4 @@ public class FichaPerfilJpaEntity {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "asesor_ficha_id", nullable = false)
     private AsesorFichaJpaEntity asesorFicha;
-
-    public FichaPerfil toDomain() {
-        return FichaPerfil.rebuild(id, tituloProyecto, asesorFicha.toDomain());
-    }
 }

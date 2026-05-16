@@ -1,6 +1,7 @@
-package com.arquisoft.fichas.infrastructure.adapter.out.persistence;
+package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
 import com.arquisoft.fichas.domain.model.FichaPerfil;
+import com.arquisoft.fichas.infrastructure.adapter.out.persistence.asesorficha.AsesorFichaJpaEntity;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +34,6 @@ class FichaPerfilRepositoryAdapterTest {
 
     @Test
     void debeRetornarFichasConRebuild_cuandoExistenEnBD() {
-        // Arrange — AsesorFichaJpaEntity sin @GeneratedValue: UUID manual obligatorio
         AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador("DOC-001")
@@ -50,15 +50,12 @@ class FichaPerfilRepositoryAdapterTest {
         entityManager.persist(ficha);
         entityManager.flush();
 
-        // Act
         PaginatedResult<FichaPerfil> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
 
-        // Assert
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).hasSize(1);
         assertThat(resultado.getTotalElements()).isEqualTo(1L);
 
-        // Verifica que el adapter usa rebuild() — los datos de dominio son correctos
         FichaPerfil fichaReconstruida = resultado.getContent().get(0);
         assertThat(fichaReconstruida.getTituloProyecto()).isEqualTo("Arquisoft Backend");
         assertThat(fichaReconstruida.getAsesorFicha().getNombre()).isEqualTo("Juan Salazar");
@@ -66,12 +63,8 @@ class FichaPerfilRepositoryAdapterTest {
 
     @Test
     void debeRetornarVacio_cuandoNoHayFichasEnBD() {
-        // Arrange — BD vacía (sin datos previos)
-
-        // Act
         PaginatedResult<FichaPerfil> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
 
-        // Assert
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).isEmpty();
         assertThat(resultado.getTotalElements()).isZero();

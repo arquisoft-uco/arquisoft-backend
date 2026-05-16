@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.infrastructure.adapter.out.persistence;
+package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

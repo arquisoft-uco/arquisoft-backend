@@ -34,7 +34,7 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "com.arquisoft.seguridad.infrastructure.adapter.out.db",
+        basePackages = "com.arquisoft.seguridad.infrastructure.adapter.out.persistence",
         entityManagerFactoryRef = "seguridadEntityManager",
         transactionManagerRef = "seguridadTransactionManager"
 )
@@ -78,7 +78,7 @@ public class SeguridadDataSourceConfig {
 
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.arquisoft.seguridad.infrastructure.adapter.out.db");
+        em.setPackagesToScan("com.arquisoft.seguridad.infrastructure.adapter.out.persistence");
         em.setPersistenceUnitName("seguridad");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();

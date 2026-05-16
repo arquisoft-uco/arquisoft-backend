@@ -1,6 +1,5 @@
-package com.arquisoft.fichas.infrastructure.adapter.out.persistence;
+package com.arquisoft.fichas.infrastructure.adapter.out.persistence.asesorficha;
 
-import com.arquisoft.fichas.domain.model.AsesorFicha;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -32,8 +31,4 @@ public class AsesorFichaJpaEntity {
 
     @Column(nullable = false, length = 50)
     private String email;
-
-    public AsesorFicha toDomain() {
-        return AsesorFicha.of(id, identificador, nombre, email);
-    }
 }
