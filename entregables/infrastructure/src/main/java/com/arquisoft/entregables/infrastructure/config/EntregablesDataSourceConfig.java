@@ -17,22 +17,22 @@ import javax.sql.DataSource;
 @Configuration
 public class EntregablesDataSourceConfig {
 
-    @Value("${datasource.entregables.url:jdbc:postgresql://localhost:5432/entregables}")
+    @Value("${datasource.entregables.url}")
     private String url;
 
-    @Value("${datasource.entregables.username:arquisoft_user}")
+    @Value("${datasource.entregables.username}")
     private String username;
 
-    @Value("${datasource.entregables.password:arquisoft123}")
+    @Value("${datasource.entregables.password}")
     private String password;
 
-    @Value("${datasource.entregables.hikari.maximum-pool-size:10}")
+    @Value("${datasource.entregables.hikari.maximum-pool-size}")
     private int maxPoolSize;
 
-    @Value("${datasource.entregables.hikari.minimum-idle:2}")
+    @Value("${datasource.entregables.hikari.minimum-idle}")
     private int minIdle;
 
-    @Value("${datasource.entregables.hikari.connection-timeout:20000}")
+    @Value("${datasource.entregables.hikari.connection-timeout}")
     private long connectionTimeout;
 
     @Bean(name = "entregablesDataSource")

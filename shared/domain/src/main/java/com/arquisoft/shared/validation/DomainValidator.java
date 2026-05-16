@@ -1,8 +1,8 @@
 package com.arquisoft.shared.validation;
 
-import com.arquisoft.shared.utils.UtilObject;
-import com.arquisoft.shared.utils.UtilText;
-import com.arquisoft.shared.utils.messages.AppMessages;
+import com.arquisoft.shared.util.UtilObject;
+import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.message.AppMessages;
 
 /**
  * Guard central de invariantes de dominio — Notification Pattern.
@@ -14,7 +14,7 @@ import com.arquisoft.shared.utils.messages.AppMessages;
  *
  * <p>El lanzamiento ocurre una sola vez al final, mediante
  * {@link ValidationResult#throwIfHasErrors()}, entregando todos los errores
- * juntos como {@link com.arquisoft.shared.exceptions.DomainValidationException}.</p>
+ * juntos como {@link com.arquisoft.shared.exception.DomainValidationException}.</p>
  *
  * <p>Los mensajes de error se centralizan en {@link AppMessages} y las
  * operaciones de texto en {@link UtilText} — no se permiten literales ni

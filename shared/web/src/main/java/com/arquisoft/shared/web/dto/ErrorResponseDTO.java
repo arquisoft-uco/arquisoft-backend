@@ -1,6 +1,6 @@
 package com.arquisoft.shared.web.dto;
 
-import com.arquisoft.shared.exceptions.BaseException;
+import com.arquisoft.shared.exception.BaseException;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

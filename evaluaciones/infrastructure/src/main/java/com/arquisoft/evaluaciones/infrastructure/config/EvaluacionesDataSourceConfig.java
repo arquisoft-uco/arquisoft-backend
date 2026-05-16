@@ -17,22 +17,22 @@ import javax.sql.DataSource;
 @Configuration
 public class EvaluacionesDataSourceConfig {
 
-    @Value("${datasource.evaluaciones.url:jdbc:postgresql://localhost:5432/evaluaciones}")
+    @Value("${datasource.evaluaciones.url}")
     private String url;
 
-    @Value("${datasource.evaluaciones.username:arquisoft_user}")
+    @Value("${datasource.evaluaciones.username}")
     private String username;
 
-    @Value("${datasource.evaluaciones.password:arquisoft123}")
+    @Value("${datasource.evaluaciones.password}")
     private String password;
 
-    @Value("${datasource.evaluaciones.hikari.maximum-pool-size:10}")
+    @Value("${datasource.evaluaciones.hikari.maximum-pool-size}")
     private int maxPoolSize;
 
-    @Value("${datasource.evaluaciones.hikari.minimum-idle:2}")
+    @Value("${datasource.evaluaciones.hikari.minimum-idle}")
     private int minIdle;
 
-    @Value("${datasource.evaluaciones.hikari.connection-timeout:20000}")
+    @Value("${datasource.evaluaciones.hikari.connection-timeout}")
     private long connectionTimeout;
 
     @Bean(name = "evaluacionesDataSource")

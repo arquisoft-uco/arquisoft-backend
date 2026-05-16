@@ -97,7 +97,7 @@ Domain  ←  Application  ←  Infrastructure
 | Módulo | Paquete base | Clases/Interfaces clave |
 |---|---|---|
 | `shared:domain` | `com.arquisoft.shared.domain` | `EventEmittingEntity`, `DomainEvent`, `Page<T>` (record para paginación interna del dominio y application) |
-| `shared:exceptions` | `com.arquisoft.shared.exceptions` | `DomainException` (clase base de excepciones de dominio). Los handlers concretos viven en cada contexto como `{Contexto}GlobalExceptionHandler` (ver sección "{Contexto}GlobalExceptionHandler — Patrón Canónico"). |
+| `shared:exceptions` | `com.arquisoft.shared.exception` | `DomainException` (clase base de excepciones de dominio). Los handlers concretos viven en cada contexto como `{Contexto}GlobalExceptionHandler` (ver sección "{Contexto}GlobalExceptionHandler — Patrón Canónico"). |
 | `shared:amqp` | `com.arquisoft.shared.amqp` | `EventPublisher` (interfaz, firma única `void publish(DomainEvent event)`), `RabbitMQConfig`, `RabbitMQEventPublisher` (implementación). |
 | `shared:redis` | `com.arquisoft.shared.redis` | `RedisClient` (interfaz, **sin implementación todavía** — esqueleto de intención para uso futuro). |
 | `shared:web` | `com.arquisoft.shared.web` | `GlobalAppExceptionHandler`, `ErrorResponseDTO`, `PageResponseDTO<T>`, `HttpClient`. **Hogar de DTOs técnicos genéricos** y manejo cross-cutting de excepciones. |
@@ -227,7 +227,7 @@ lombok.*                           ← Lombok PROHIBIDO en dominio
 
 **Permitido en `domain/`:** solo `java.*`, `java.util.*`, `java.time.*`, `java.util.UUID`,
 y clases del propio proyecto (`com.arquisoft.{contexto}.domain.*`, `com.arquisoft.shared.domain.*`,
-`com.arquisoft.shared.exceptions.*`).
+`com.arquisoft.shared.exception.*`).
 
 #### En `application/**/*.java` — permitido:
 
@@ -1048,7 +1048,7 @@ public record Calificacion(double valor) {
 ```java
 package com.arquisoft.fichas.domain.exception;
 
-import com.arquisoft.shared.exceptions.DomainException;
+import com.arquisoft.shared.exception.DomainException;
 
 public class FichaNoEncontradaException extends DomainException {
     public FichaNoEncontradaException(String id) {
@@ -1285,11 +1285,13 @@ Cada bounded context que **defina excepciones de dominio propias** debe tener su
 > Excepción a la regla: el handler de `seguridad` puede manejar excepciones de su propio dominio relacionadas con autenticación (`InvalidCredentialsException`, `InvalidTokenException`, `AuthenticationException`) → 401. Esas son excepciones de su dominio, no cross-cutting.
 
 ```java
-package com.arquisoft.{contexto}.infrastructure.adapter.in.web;
+package com.arquisoft.
+
+{contexto}.infrastructure.adapter.in.web;
 
 import com.arquisoft.shared.web.ErrorResponseDTO;
 import com.arquisoft.{contexto}.domain.exception.{Entidad}NoEncontradaException;
-import com.arquisoft.shared.exceptions.DomainException;
+import com.arquisoft.shared.exception.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -1299,12 +1301,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice(basePackages = "com.arquisoft.{contexto}")
-public class {Contexto}GlobalExceptionHandler {
+public class {Contexto}
 
-    @ExceptionHandler({Entidad}NoEncontradaException.class)
-    public ResponseEntity<ErrorResponseDTO> handleNoEncontrada(
-            {Entidad}NoEncontradaException ex,
-            HttpServletRequest request) {
+GlobalExceptionHandler {
+
+    @ExceptionHandler({Entidad} NoEncontradaException.class)
+    public ResponseEntity<ErrorResponseDTO> handleNoEncontrada (
+            {Entidad} NoEncontradaException ex,
+    HttpServletRequest request){
         log.warn("Recurso no encontrado: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponseDTO.builder()
@@ -1319,9 +1323,9 @@ public class {Contexto}GlobalExceptionHandler {
     // Más @ExceptionHandler — uno por cada DomainException específica del contexto, mapeada al código HTTP correcto según la tabla de mapeo.
 
     @ExceptionHandler(DomainException.class)
-    public ResponseEntity<ErrorResponseDTO> handleDomainGeneric(
+    public ResponseEntity<ErrorResponseDTO> handleDomainGeneric (
             DomainException ex,
-            HttpServletRequest request) {
+            HttpServletRequest request){
         log.warn("Regla de negocio violada: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
                 .body(ErrorResponseDTO.builder()

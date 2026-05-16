@@ -17,22 +17,22 @@ import javax.sql.DataSource;
 @Configuration
 public class ProyectosDataSourceConfig {
 
-    @Value("${datasource.proyectos.url:jdbc:postgresql://localhost:5432/proyectos_grado}")
+    @Value("${datasource.proyectos.url}")
     private String url;
 
-    @Value("${datasource.proyectos.username:arquisoft_user}")
+    @Value("${datasource.proyectos.username}")
     private String username;
 
-    @Value("${datasource.proyectos.password:arquisoft123}")
+    @Value("${datasource.proyectos.password}")
     private String password;
 
-    @Value("${datasource.proyectos.hikari.maximum-pool-size:10}")
+    @Value("${datasource.proyectos.hikari.maximum-pool-size}")
     private int maxPoolSize;
 
-    @Value("${datasource.proyectos.hikari.minimum-idle:2}")
+    @Value("${datasource.proyectos.hikari.minimum-idle}")
     private int minIdle;
 
-    @Value("${datasource.proyectos.hikari.connection-timeout:20000}")
+    @Value("${datasource.proyectos.hikari.connection-timeout}")
     private long connectionTimeout;
 
     @Bean(name = "proyectosDataSource")
