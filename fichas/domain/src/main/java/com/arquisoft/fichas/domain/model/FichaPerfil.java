@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.domain.model;
 
-import com.arquisoft.fichas.domain.utils.messages.FichasMessages;
+import com.arquisoft.fichas.domain.util.message.FichasDomainMessages;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
-import com.arquisoft.shared.utils.UtilText;
-import com.arquisoft.shared.utils.UtilUUID;
+import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilUUID;
 
 import java.util.UUID;
 
@@ -17,7 +17,7 @@ import java.util.UUID;
  *
  * <ul>
  *   <li>{@link #build(String, AsesorFicha)} — valida todos los campos acumulando errores
- *       (Notification Pattern) y lanza {@link com.arquisoft.shared.exceptions.DomainValidationException}
+ *       (Notification Pattern) y lanza {@link com.arquisoft.shared.exception.DomainValidationException}
  *       con la lista completa si existe al menos uno. Genera UUID solo si la validación pasa.</li>
  *   <li>{@link #rebuild(UUID, String, AsesorFicha)} — reconstruye desde persistencia sin validación.</li>
  * </ul>
@@ -76,17 +76,18 @@ public final class FichaPerfil {
     }
 
     private void setTituloProyecto(String titulo, ValidationResult result) {
-        DomainValidator.notBlank(titulo, FichasMessages.FichaPerfil.CAMPO_TITULO, FichasMessages.FichaPerfil.TITULO_REQUERIDO, result);
-        DomainValidator.maxLength(titulo, FichasMessages.FichaPerfil.TITULO_MAX,
-                FichasMessages.FichaPerfil.CAMPO_TITULO, FichasMessages.FichaPerfil.TITULO_DEMASIADO_LARGO, result);
-        if (!result.hasFieldErrors(FichasMessages.FichaPerfil.CAMPO_TITULO)) {
+        DomainValidator.notBlank(titulo, FichasDomainMessages.FichaPerfil.CAMPO_TITULO, FichasDomainMessages.FichaPerfil.TITULO_REQUERIDO, result);
+        //TODO:max no puede estar despues del null
+        DomainValidator.maxLength(titulo, FichasDomainMessages.FichaPerfil.TITULO_MAX,
+                FichasDomainMessages.FichaPerfil.CAMPO_TITULO, FichasDomainMessages.FichaPerfil.TITULO_DEMASIADO_LARGO, result);
+        if (!result.hasFieldErrors(FichasDomainMessages.FichaPerfil.CAMPO_TITULO)) {
             this.tituloProyecto = UtilText.applyTrim(titulo);
         }
     }
 
     private void setAsesorFicha(AsesorFicha asesor, ValidationResult result) {
-        DomainValidator.notNull(asesor, FichasMessages.FichaPerfil.CAMPO_ASESOR, FichasMessages.FichaPerfil.ASESOR_REQUERIDO, result);
-        if (!result.hasFieldErrors(FichasMessages.FichaPerfil.CAMPO_ASESOR)) {
+        DomainValidator.notNull(asesor, FichasDomainMessages.FichaPerfil.CAMPO_ASESOR, FichasDomainMessages.FichaPerfil.ASESOR_REQUERIDO, result);
+        if (!result.hasFieldErrors(FichasDomainMessages.FichaPerfil.CAMPO_ASESOR)) {
             this.asesorFicha = asesor;
         }
     }

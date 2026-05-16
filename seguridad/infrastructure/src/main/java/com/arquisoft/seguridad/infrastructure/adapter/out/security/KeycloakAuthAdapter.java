@@ -1,10 +1,10 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out.security;
 
-import com.arquisoft.seguridad.domain.port.out.AuthenticationPort;
+import com.arquisoft.seguridad.application.auth.port.AuthenticationPort;
 import com.arquisoft.seguridad.domain.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.exception.InvalidCredentialsException;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
-import com.arquisoft.seguridad.domain.exception.IdentityProviderUnavailableException;
+import com.arquisoft.seguridad.infrastructure.exception.IdentityProviderUnavailableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

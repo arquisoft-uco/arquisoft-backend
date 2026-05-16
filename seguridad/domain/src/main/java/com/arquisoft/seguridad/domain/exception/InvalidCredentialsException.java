@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.domain.exception;
 
-import com.arquisoft.shared.exceptions.BaseError;
+import com.arquisoft.shared.exception.BaseError;
 
 /**
  * Excepción para credenciales inválidas (usuario/contraseña incorrectos).

@@ -40,22 +40,22 @@ import java.util.Map;
 )
 public class SeguridadDataSourceConfig {
 
-    @Value("${datasource.seguridad.url:jdbc:postgresql://localhost:5432/usuarios}")
+    @Value("${datasource.seguridad.url}")
     private String url;
 
-    @Value("${datasource.seguridad.username:arquisoft_user}")
+    @Value("${datasource.seguridad.username}")
     private String username;
 
-    @Value("${datasource.seguridad.password:arquisoft123}")
+    @Value("${datasource.seguridad.password}")
     private String password;
 
-    @Value("${datasource.seguridad.hikari.maximum-pool-size:10}")
+    @Value("${datasource.seguridad.hikari.maximum-pool-size}")
     private int maxPoolSize;
 
-    @Value("${datasource.seguridad.hikari.minimum-idle:2}")
+    @Value("${datasource.seguridad.hikari.minimum-idle}")
     private int minIdle;
 
-    @Value("${datasource.seguridad.hikari.connection-timeout:20000}")
+    @Value("${datasource.seguridad.hikari.connection-timeout}")
     private long connectionTimeout;
 
     @Bean(name = "seguridadDataSource")

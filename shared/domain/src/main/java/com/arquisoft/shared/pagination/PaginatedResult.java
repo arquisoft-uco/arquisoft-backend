@@ -34,7 +34,7 @@ public final class PaginatedResult<T> {
     private final boolean last;
     private final boolean empty;
 
-    private PaginatedResult(List<T> content, int page, int size, long totalElements) {
+    public PaginatedResult(List<T> content, int page, int size, long totalElements) {
         this.content = Collections.unmodifiableList(content);
         this.page = page;
         this.size = size;

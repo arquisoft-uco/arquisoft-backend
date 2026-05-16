@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.domain.exception;
 
-import com.arquisoft.shared.exceptions.BaseError;
+import com.arquisoft.shared.exception.BaseError;
 
 /**
  * Excepción para tokens JWT inválidos, malformados o expirados.

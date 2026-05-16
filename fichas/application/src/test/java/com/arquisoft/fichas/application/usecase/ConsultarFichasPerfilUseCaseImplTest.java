@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.application.usecase;
 
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCaseImpl;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilResponseDTO;
 import com.arquisoft.fichas.domain.model.AsesorFicha;
 import com.arquisoft.fichas.domain.model.FichaPerfil;
 import com.arquisoft.fichas.domain.port.out.FichaPerfilRepositoryPort;
@@ -45,7 +47,7 @@ class ConsultarFichasPerfilUseCaseImplTest {
                 .thenReturn(resultadoEsperado);
 
         // Act
-        PaginatedResult<FichaPerfil> resultado = consultarFichasPerfilUseCase.ejecutar(request);
+        PaginatedResult<FichaPerfilResponseDTO> resultado = consultarFichasPerfilUseCase.ejecutar(request);
 
         // Assert
         assertThat(resultado).isNotNull();
@@ -69,7 +71,7 @@ class ConsultarFichasPerfilUseCaseImplTest {
                 .thenReturn(resultadoVacio);
 
         // Act
-        PaginatedResult<FichaPerfil> resultado = consultarFichasPerfilUseCase.ejecutar(request);
+        PaginatedResult<FichaPerfilResponseDTO> resultado = consultarFichasPerfilUseCase.ejecutar(request);
 
         // Assert
         assertThat(resultado).isNotNull();

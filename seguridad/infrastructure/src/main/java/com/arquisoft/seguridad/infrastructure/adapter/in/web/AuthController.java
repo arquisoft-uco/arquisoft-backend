@@ -1,13 +1,13 @@
 package com.arquisoft.seguridad.infrastructure.adapter.in.web;
 
-import com.arquisoft.seguridad.application.dto.LoginRequestDTO;
-import com.arquisoft.seguridad.application.dto.LoginResponseDTO;
-import com.arquisoft.seguridad.application.dto.LogoutResponseDTO;
-import com.arquisoft.seguridad.application.dto.RefreshTokenRequestDTO;
-import com.arquisoft.seguridad.application.dto.TokenValidationResponseDTO;
-import com.arquisoft.seguridad.domain.port.in.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.domain.port.in.RefreshTokenUseCase;
-import com.arquisoft.seguridad.domain.port.in.ValidateTokenUseCase;
+import com.arquisoft.seguridad.application.auth.dto.LoginRequestDTO;
+import com.arquisoft.seguridad.application.auth.dto.LoginResponseDTO;
+import com.arquisoft.seguridad.application.auth.dto.LogoutResponseDTO;
+import com.arquisoft.seguridad.application.auth.dto.RefreshTokenRequestDTO;
+import com.arquisoft.seguridad.application.auth.dto.TokenValidationResponseDTO;
+import com.arquisoft.seguridad.application.auth.command.AuthenticateUserUseCase;
+import com.arquisoft.seguridad.application.auth.command.RefreshTokenUseCase;
+import com.arquisoft.seguridad.application.auth.query.ValidateTokenUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
-import com.arquisoft.fichas.domain.port.in.ConsultarFichasPerfilUseCase;
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCase;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilResponseDTO;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
@@ -64,7 +65,7 @@ class FichaPerfilControllerTest {
     @Test
     void debe200_cuandoConsultaExitosa() throws Exception {
         // Arrange
-        PaginatedResult<com.arquisoft.fichas.domain.model.FichaPerfil> resultadoVacio =
+        PaginatedResult<FichaPerfilResponseDTO> resultadoVacio =
                 PaginatedResult.of(List.of(), 0, 10, 0L);
         when(consultarFichasPerfilUseCase.ejecutar(any(PaginationRequest.class)))
                 .thenReturn(resultadoVacio);
@@ -85,7 +86,7 @@ class FichaPerfilControllerTest {
         // Arrange — page=-1 es normalizado a 0 por PageableHandlerMethodArgumentResolver
         // (Math.max(0, page)). La validación de rango es responsabilidad del resolver de Spring;
         // PaginationMapper.toDomain() recibe el Pageable ya normalizado.
-        PaginatedResult<com.arquisoft.fichas.domain.model.FichaPerfil> resultadoVacio =
+        PaginatedResult<FichaPerfilResponseDTO> resultadoVacio =
                 PaginatedResult.of(List.of(), 0, 10, 0L);
         when(consultarFichasPerfilUseCase.ejecutar(any(PaginationRequest.class)))
                 .thenReturn(resultadoVacio);

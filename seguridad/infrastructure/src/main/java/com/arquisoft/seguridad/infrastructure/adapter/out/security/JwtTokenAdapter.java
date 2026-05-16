@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out.security;
 
-import com.arquisoft.seguridad.domain.port.out.TokenPort;
+import com.arquisoft.seguridad.application.auth.port.TokenPort;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

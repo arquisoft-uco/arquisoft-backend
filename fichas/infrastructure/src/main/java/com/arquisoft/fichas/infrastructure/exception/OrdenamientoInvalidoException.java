@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.exception;
 
-import com.arquisoft.shared.exceptions.ApplicationException;
-import com.arquisoft.shared.exceptions.BaseError;
+import com.arquisoft.shared.exception.ApplicationException;
+import com.arquisoft.shared.exception.BaseError;
 
 /**
  * Excepción lanzada cuando el campo de ordenamiento recibido en la paginación

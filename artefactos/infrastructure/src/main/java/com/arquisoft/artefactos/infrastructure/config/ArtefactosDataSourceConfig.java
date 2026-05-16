@@ -17,22 +17,22 @@ import javax.sql.DataSource;
 @Configuration
 public class ArtefactosDataSourceConfig {
 
-    @Value("${datasource.artefactos.url:jdbc:postgresql://localhost:5432/artefactos}")
+    @Value("${datasource.artefactos.url}")
     private String url;
 
-    @Value("${datasource.artefactos.username:arquisoft_user}")
+    @Value("${datasource.artefactos.username}")
     private String username;
 
-    @Value("${datasource.artefactos.password:arquisoft123}")
+    @Value("${datasource.artefactos.password}")
     private String password;
 
-    @Value("${datasource.artefactos.hikari.maximum-pool-size:10}")
+    @Value("${datasource.artefactos.hikari.maximum-pool-size}")
     private int maxPoolSize;
 
-    @Value("${datasource.artefactos.hikari.minimum-idle:2}")
+    @Value("${datasource.artefactos.hikari.minimum-idle}")
     private int minIdle;
 
-    @Value("${datasource.artefactos.hikari.connection-timeout:20000}")
+    @Value("${datasource.artefactos.hikari.connection-timeout}")
     private long connectionTimeout;
 
     @Bean(name = "artefactosDataSource")
