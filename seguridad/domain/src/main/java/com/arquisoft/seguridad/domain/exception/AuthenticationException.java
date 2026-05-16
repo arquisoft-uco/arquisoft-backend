@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.domain.exception;
 
-import com.arquisoft.shared.exceptions.BaseError;
-import com.arquisoft.shared.exceptions.DomainException;
+import com.arquisoft.shared.exception.BaseError;
+import com.arquisoft.shared.exception.DomainException;
 
 /**
  * Excepción base para errores de autenticación.

@@ -37,22 +37,22 @@ import java.util.Map;
 )
 public class FichasDataSourceConfig {
 
-    @Value("${datasource.fichas.url:jdbc:postgresql://localhost:5432/fichas_perfil}")
+    @Value("${datasource.fichas.url}")
     private String url;
 
-    @Value("${datasource.fichas.username:arquisoft_user}")
+    @Value("${datasource.fichas.username}")
     private String username;
 
-    @Value("${datasource.fichas.password:arquisoft123}")
+    @Value("${datasource.fichas.password}")
     private String password;
 
-    @Value("${datasource.fichas.hikari.maximum-pool-size:10}")
+    @Value("${datasource.fichas.hikari.maximum-pool-size}")
     private int maxPoolSize;
 
-    @Value("${datasource.fichas.hikari.minimum-idle:2}")
+    @Value("${datasource.fichas.hikari.minimum-idle}")
     private int minIdle;
 
-    @Value("${datasource.fichas.hikari.connection-timeout:20000}")
+    @Value("${datasource.fichas.hikari.connection-timeout}")
     private long connectionTimeout;
 
     @Bean(name = "fichasDataSource")

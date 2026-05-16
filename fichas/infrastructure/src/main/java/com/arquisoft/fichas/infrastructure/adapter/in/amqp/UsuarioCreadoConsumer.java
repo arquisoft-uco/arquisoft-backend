@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.adapter.in.amqp;
 
-import com.arquisoft.fichas.domain.port.in.RegistrarUsuarioUseCase;
+import com.arquisoft.fichas.application.fichaperfil.command.RegistrarUsuarioUseCase;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.rabbitmq.client.Channel;

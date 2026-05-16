@@ -1,9 +1,9 @@
 package com.arquisoft.shared.pagination;
 
-import com.arquisoft.shared.exceptions.ApplicationException;
-import com.arquisoft.shared.utils.UtilObject;
-import com.arquisoft.shared.utils.UtilText;
-import com.arquisoft.shared.utils.messages.AppMessages;
+import com.arquisoft.shared.exception.ApplicationException;
+import com.arquisoft.shared.util.UtilObject;
+import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.message.AppMessages;
 
 /**
  * Solicitud de consulta paginada — valor inmutable.
@@ -30,15 +30,11 @@ public final class PaginationRequest {
     private final SortDirection direction;
 
     private PaginationRequest(int page, int size, String sort, SortDirection direction) {
-        if (page < 0) {
-            throw new ApplicationException(
-                    AppMessages.PaginationRequest.MENSAJE_PAGE_MAYOR_CERO, AppMessages.PaginationRequest.PAGE_INVALIDA);
-        }
         if (size <= 0) {
             throw new ApplicationException(
                     AppMessages.PaginationRequest.MENSAJE_SIZE_MAYOR_CERO, AppMessages.PaginationRequest.SIZE_INVALIDA);
         }
-        this.page = page;
+        this.page = Math.max(0, page);
         this.size = size;
         this.sort = sort;
         this.direction = (!UtilObject.isNull(direction)) ? direction : SortDirection.ASC;

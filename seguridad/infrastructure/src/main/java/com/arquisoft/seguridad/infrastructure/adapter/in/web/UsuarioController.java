@@ -1,8 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.adapter.in.web;
 
-import com.arquisoft.seguridad.application.dto.CrearUsuarioRequestDTO;
-import com.arquisoft.seguridad.application.dto.CrearUsuarioResponseDTO;
-import com.arquisoft.seguridad.domain.port.in.CrearUsuarioUseCase;
+import com.arquisoft.seguridad.application.usuario.dto.CrearUsuarioRequestDTO;
+import com.arquisoft.seguridad.application.usuario.dto.CrearUsuarioResponseDTO;
+import com.arquisoft.seguridad.application.usuario.command.CrearUsuarioUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

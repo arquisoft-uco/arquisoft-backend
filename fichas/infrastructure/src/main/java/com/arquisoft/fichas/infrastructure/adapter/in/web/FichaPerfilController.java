@@ -1,11 +1,10 @@
 package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
-import com.arquisoft.fichas.application.dto.FichaPerfilResumenDTO;
-import com.arquisoft.fichas.domain.port.in.ConsultarFichasPerfilUseCase;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilResponseDTO;
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCase;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
-import com.arquisoft.shared.web.util.PaginationMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,7 +14,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -48,15 +46,11 @@ public class FichaPerfilController {
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "Sin permisos — se requiere rol coordinador")
     })
-    public ResponseEntity<PageResponseDTO<FichaPerfilResumenDTO>> consultarFichasCoordinador(
-            @PageableDefault(size = 10, page = 0) Pageable pageable) {
-        log.debug("GET /fichas-perfil/coordinador — pageable={}", pageable);
+    public ResponseEntity<PageResponseDTO<FichaPerfilResponseDTO>> consultarFichasCoordinador(
+            @PageableDefault(size = 10, page = 0) PaginationRequest request) {
+        log.debug("GET /fichas-perfil/coordinador — pageable={}", request);
 
-        PaginationRequest request = PaginationMapper.toDomain(pageable);
-
-        PaginatedResult<FichaPerfilResumenDTO> resultado = consultarFichasPerfilUseCase
-                .ejecutar(request)
-                .map(FichaPerfilResumenDTO::fromDomain);
+        PaginatedResult<FichaPerfilResponseDTO> resultado = consultarFichasPerfilUseCase.ejecutar(request);
 
         return ResponseEntity.ok(PageResponseDTO.from(resultado));
     }
