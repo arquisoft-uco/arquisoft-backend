@@ -1,19 +1,40 @@
-// 1. Descubrimiento del archivo de log
-local.file_match "spring_boot_logs" {
-    path_targets = [
-        { "__path__" = "/logs/*.log", "app" = "arquisoft-api" },
-    ]
+// 1. Descubrimiento de todos los contenedores en el motor Docker local
+discovery.docker "contenedores_locales" {
+    host = "unix:///var/run/docker.sock"
 }
 
-// 2. Pipeline de procesamiento: extrae campos, promueve labels, formatea el body.
+// 2. Reglas de re-etiquetado para los targets de discovery.docker.
+//    discovery.relabel es el lugar correcto para acceder a __meta_docker_* —
+//    estos labels están disponibles aquí pero NO en loki.relabel (forward_to).
+//    Aplica via relabel_rules en loki.source.docker (ver bloque 4).
+discovery.relabel "docker_metadata" {
+    targets = []
+
+    // Promueve container_name sin la "/" inicial que antepone Docker.
+    rule {
+        source_labels = ["__meta_docker_container_name"]
+        regex         = "/(.*)"
+        target_label  = "container"
+    }
+
+    // Captura solo el backend. Para incluir otros, cambia a "arquisoft-.*"
+    rule {
+        source_labels = ["container"]
+        regex         = "arquisoft-backend"
+        action        = "keep"
+    }
+}
+
+// 3. Pipeline de procesamiento: extrae campos del JSON de Spring Boot (perfil prod),
+//    promueve level a stream label y descarta ruido DEBUG/TRACE.
 loki.process "extract_labels" {
     forward_to = [loki.write.remote_loki.receiver]
 
-    // Extraer campos del JSON emitido por logstash-logback-encoder.
+    // Campos del JSON emitido por StructuredLogEncoder (formato logstash, Spring Boot 4.x).
+    // Todos los campos MDC (traceId, userId, httpMethod, etc.) son de primer nivel en el JSON.
     stage.json {
         expressions = {
             level   = "level",
-            env     = "env",
             message = "message",
             logger  = "logger_name",
             traceId = "traceId",
@@ -21,28 +42,31 @@ loki.process "extract_labels" {
         }
     }
 
-    // Promover a stream labels (baja cardinalidad — usables en {}).
+    // Promueve level a stream label (baja cardinalidad — usable en {}).
+    // container ya es stream label (viene de discovery.relabel vía relabel_rules).
     // NUNCA promover traceId/userId — alta cardinalidad, destruye el índice de Loki.
     stage.labels {
         values = {
             level = "",
-            env   = "",
         }
     }
 
     // Red de seguridad: descartar DEBUG y TRACE antes de enviar a Loki.
-    // Spring filtra por nivel, pero esta regla protege ante cambios temporales de nivel.
-    // La expresión evalúa el JSON original (antes de cambiar el body en stage.output).
     stage.drop {
         expression          = "\"level\":\"(?:DEBUG|TRACE)\""
         drop_counter_reason = "debug_trace_noise"
     }
 }
 
-// 3. Lectura del archivo → pipeline
-loki.source.file "backend_logs" {
-    targets    = local.file_match.spring_boot_logs.targets
-    forward_to = [loki.process.extract_labels.receiver]
+// 4. Fuente: captura stdout/stderr de contenedores vía Docker socket.
+//    relabel_rules aplica discovery.relabel sobre los targets ANTES de iniciar
+//    la lectura — aquí sí están disponibles __meta_docker_container_name y
+//    el filtro keep. El label "container" resultante viaja con cada log entry.
+loki.source.docker "backend_logs" {
+    host          = "unix:///var/run/docker.sock"
+    targets       = discovery.docker.contenedores_locales.targets
+    forward_to    = [loki.process.extract_labels.receiver]
+    relabel_rules = discovery.relabel.docker_metadata.rules
 }
 
 // 4. Envío a Loki en Coolify
@@ -51,7 +75,7 @@ loki.write "remote_loki" {
         url = "https://loki.arquisoft.top/loki/api/v1/push"
     }
     // Labels estáticos que identifican el origen de esta instancia.
-    // 'app' viene de path_targets. 'level' y 'env' vienen del pipeline.
+    // container_name y level vienen del pipeline. origin/job identifican el entorno.
     external_labels = {
         origin = "local-brayan",
         job    = "backend-java-local",
