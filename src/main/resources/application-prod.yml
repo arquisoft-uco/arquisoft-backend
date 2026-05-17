@@ -28,7 +28,7 @@ spring:
     redis:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
-      username: ${REDIS_USERNAME}
+      username: ${REDIS_USER}
       password: ${REDIS_PASSWORD}
       timeout: 3000ms
       lettuce:
@@ -155,10 +155,6 @@ arquisoft:
 security:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
-  rate-limit:
-    enabled: ${RATE_LIMIT_ENABLED:true}
-    requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:60}
-    login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:3}
 
 # ==================== LOGGING ====================
 # logback-spring.xml gestiona TODOS los appenders (ASYNC_STDOUT + ASYNC_FILE_PROD).
