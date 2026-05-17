@@ -44,6 +44,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: arquisoft-redis
+    command: redis-server --requirepass default123
     ports:
       - "6379:6379"
     volumes:
@@ -51,7 +52,7 @@ services:
     networks:
       - arquisoft-network
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "default123", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
