@@ -1,15 +1,50 @@
 package com.arquisoft.shared.redis.config;
 
+import com.arquisoft.shared.util.UtilText;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
+
+    @Value("${spring.data.redis.host}")
+    private String host;
+
+    @Value("${spring.data.redis.port}")
+    private int port;
+
+    @Value("${spring.data.redis.username}")
+    private String username;
+
+    @Value("${spring.data.redis.password}")
+    private String password;
+
+    /**
+     * Crea explicitamente el LettuceConnectionFactory con credenciales opcionales.
+     * Desplaza la auto-configuracion de Spring Boot (RedisAutoConfiguration) que no
+     * expone username cuando se usa la propiedad spring.data.redis.username en ciertas versiones.
+     * Si REDIS_USERNAME o REDIS_PASSWORD estan vacios, no se envian al servidor (compatible con Redis sin auth).
+     */
+    @Bean
+    @Primary
+    public LettuceConnectionFactory redisConnectionFactory() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+        if (!UtilText.isEmptyOrNull(username)) {
+            config.setUsername(username);
+        }
+        if (!UtilText.isEmptyOrNull(password)) {
+            config.setPassword(password);
+        }
+        return new LettuceConnectionFactory(config);
+    }
 
     /**
      * Sobreescribe el RedisTemplate<Object,Object> por defecto de Spring Boot,
