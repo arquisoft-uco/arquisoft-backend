@@ -57,6 +57,20 @@ ssh root@<SERVER2_IP> 'docker ps --format "table {{.Names}}\t{{.Status}}"'
 
 ### Stack Alloy — Server 1
 
+#### 0. Agregar label al backend en Coolify (una sola vez)
+
+Coolify asigna nombres de contenedor aleatorios, por lo que Alloy no puede filtrar
+por `container_name`. En su lugar usa el label Docker `monitoring=arquisoft-backend`.
+
+En Coolify → app del backend → **Configuration → Labels (Custom Labels)**:
+
+```
+monitoring=arquisoft-backend
+```
+
+Hacer **Redeploy** del backend para que el label quede aplicado. Sin este paso,
+Alloy no capturará ningún log.
+
 #### 1. Copiar `config.alloy` al servidor (SSH — una sola vez)
 
 Alloy lee la configuración desde una ruta fija del host. Debe copiarse antes del
@@ -101,13 +115,17 @@ En Coolify (Server 1) → **New Resource → Docker Compose** → seleccionar
 #### 4. Verificar
 
 ```bash
+# Health del proceso Alloy
+ssh root@<SERVER1_IP> 'docker exec alloy wget -qO- http://localhost:12345/-/ready'
+# Esperado: ready
+
+# Logs de captura
 ssh root@<SERVER1_IP> 'docker logs alloy --tail 20 2>&1'
+# Esperado: level=info msg="finished transferring logs" component=tailer ...
 ```
 
-**Salida esperada:**
-```
-level=info msg="finished transferring logs" component=tailer container=docker/...
-```
+> Si el contenedor aparece como **unhealthy** pero los logs llegan a Grafana, verificar
+> que el healthcheck apunte a `/-/ready` (con guion) y no a `/ready`.
 
 ---
 
@@ -146,7 +164,7 @@ Configurar en Grafana (Server 2): **Connections → Data sources → Add → Lok
 
 | Label | Origen | Valores típicos |
 |---|---|---|
-| `container` | `discovery.relabel` → `__meta_docker_container_name` | `arquisoft-backend` |
+| `container` | `discovery.relabel` → valor fijo `arquisoft-backend` (Coolify genera nombres aleatorios) | `arquisoft-backend` |
 | `level` | JSON → `stage.labels` | `INFO`, `WARN`, `ERROR` |
 | `job` | `external_labels` | `backend-java-coolify` |
 

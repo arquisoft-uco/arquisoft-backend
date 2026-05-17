@@ -16,26 +16,29 @@ discovery.docker "contenedores_servidor" {
 	host = "unix:///var/run/docker.sock"
 }
 
-// 2. Extrae container_name y filtra SOLO al contenedor del backend.
+// 2. Filtra contenedores por el label Docker "monitoring=arquisoft-backend".
+//    Coolify genera nombres de contenedor aleatorios, por lo que no es posible
+//    filtrar por container_name. En su lugar se usa un label personalizado que
+//    el equipo agrega en Coolify → app → Configuration → Labels:
+//      monitoring=arquisoft-backend
+//    Los puntos y guiones en nombres de label se convierten a "_" en el meta-label.
 //    IMPORTANTE: los __meta_docker_* solo están disponibles en discovery.relabel
-//    con relabel_rules (argumento de loki.source.docker) — NO en loki.relabel
-//    usado como forward_to. Usar este patrón evita que el filtro descarte todos
-//    los logs en silencio.
+//    con relabel_rules (argumento de loki.source.docker) — NO en loki.relabel.
 discovery.relabel "docker_metadata" {
 	targets = []
 
-	// Elimina el "/" inicial que antepone Docker al container_name
+	// Descarta todos los contenedores que NO tengan el label monitoring=arquisoft-backend
 	rule {
-		source_labels = ["__meta_docker_container_name"]
-		regex         = "/(.*)"
-		target_label  = "container"
-	}
-
-	// Descarta todos los contenedores excepto el backend
-	rule {
-		source_labels = ["container"]
+		source_labels = ["__meta_docker_container_label_monitoring"]
 		regex         = "arquisoft-backend"
 		action        = "keep"
+	}
+
+	// Fija el label "container" a un valor estable para las queries en Loki,
+	// independientemente del nombre aleatorio que Coolify asigne al contenedor.
+	rule {
+		target_label = "container"
+		replacement  = "arquisoft-backend"
 	}
 }
 
