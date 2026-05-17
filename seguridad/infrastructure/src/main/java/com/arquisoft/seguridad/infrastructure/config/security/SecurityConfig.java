@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
+import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -34,6 +36,7 @@ public class SecurityConfig {
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
     private final SecurityAccessDeniedHandler securityAccessDeniedHandler;
     private final SecurityAuthenticationEntryPoint securityAuthenticationEntryPoint;
+    private final JwtBlacklistFilter jwtBlacklistFilter;
 
     @Value("${arquisoft.keycloak.server-url}")
     private String keycloakServerUrl;
@@ -76,6 +79,10 @@ public class SecurityConfig {
                         .authenticationEntryPoint(securityAuthenticationEntryPoint)
                         .accessDeniedHandler(securityAccessDeniedHandler)
                 );
+
+        // Verifica blacklist de tokens revocados en cada request autenticado.
+        // Corre despues de BearerTokenAuthenticationFilter (autenticacion ya verificada).
+        http.addFilterAfter(jwtBlacklistFilter, BearerTokenAuthenticationFilter.class);
 
         return http.build();
     }

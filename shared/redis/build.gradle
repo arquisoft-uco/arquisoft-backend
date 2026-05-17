@@ -1,11 +1,16 @@
 dependencies {
     implementation project(':shared:domain')
 
-    // Spring Data Redis (incluye Jedis transitivamente, version gestionada por el BOM)
+    // Spring Data Redis — Lettuce es el cliente por defecto cuando Jedis no esta en classpath
     implementation "org.springframework.boot:spring-boot-starter-data-redis"
 
-    // Redis client (Jedis) — version gestionada por el BOM de Spring Boot 4.0.5
-    implementation "redis.clients:jedis"
+    // Pool de conexiones para Lettuce
+    implementation "org.apache.commons:commons-pool2"
 
-    // Serialization — Jackson 3.x viene transitivo de spring-boot-starter-data-redis
+    // Jackson 3.x databind — spring-data-redis declara Jackson como 'optional', por lo que
+    // no viene transitivo. Necesario para GenericJacksonJsonRedisSerializer.
+    implementation "tools.jackson.core:jackson-databind"
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }

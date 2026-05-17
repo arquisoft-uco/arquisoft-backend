@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command;
 
 import com.arquisoft.seguridad.application.auth.port.AuthenticationPort;
+import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,11 +21,11 @@ public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
 
     @Override
     public AuthResult authenticate(String email, String password) {
-        log.debug("Intento de autenticacion");
+        log.debug(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_DEBUG);
 
         Map<String, Object> tokenResponse = authenticationPort.authenticate(email, password);
 
-        log.info("Autenticacion exitosa");
+        log.info(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_EXITOSO);
 
         return new AuthResult(
                 (String) tokenResponse.get("access_token"),

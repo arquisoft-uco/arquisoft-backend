@@ -4,6 +4,7 @@ dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:web')
     implementation project(':shared:logger')
+    implementation project(':shared:redis')
 
     // Spring Security & OAuth2 Resource Server
     // Nota arquitectonica: NO se usa keycloak-admin-client ni keycloak-spring-boot-starter.
@@ -13,12 +14,21 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
     implementation "org.springframework.boot:spring-boot-starter-validation"
 
+    // Spring Data Redis — necesario para StringRedisTemplate, LettuceConnectionFactory y
+    // io.lettuce.core.* (Lettuce viene transitivo desde spring-boot-starter-data-redis).
+    // shared:redis usa 'implementation' (no 'api') por lo que no lo expone como API transitivo.
+    implementation "org.springframework.boot:spring-boot-starter-data-redis"
+
     // JWT: validación y parseo gestionados íntegramente por spring-boot-starter-oauth2-resource-server
     // (NimbusJwtDecoder + org.springframework.security.oauth2.jwt.Jwt). jjwt eliminado — no se usa.
 
     // Rate Limiting — Bucket4j oficial Maven Central (com.bucket4j).
     // bucket4j_jdk17-core: requiere Java 17+, compatible con Java 21 y Virtual Threads.
     implementation "com.bucket4j:bucket4j_jdk17-core"
+
+    // Rate Limiting distribuido con Redis via Lettuce
+    implementation "com.bucket4j:bucket4j_jdk17-redis-common:${bucket4jVersion}"
+    implementation "com.bucket4j:bucket4j_jdk17-lettuce:${bucket4jVersion}"
 
     // Database
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"

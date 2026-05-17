@@ -6,23 +6,33 @@ import com.arquisoft.seguridad.application.auth.dto.LogoutResponseDTO;
 import com.arquisoft.seguridad.application.auth.dto.RefreshTokenRequestDTO;
 import com.arquisoft.seguridad.application.auth.dto.TokenValidationResponseDTO;
 import com.arquisoft.seguridad.application.auth.command.AuthenticateUserUseCase;
+import com.arquisoft.seguridad.application.auth.command.LogoutCommand;
+import com.arquisoft.seguridad.application.auth.command.LogoutUseCase;
 import com.arquisoft.seguridad.application.auth.command.RefreshTokenUseCase;
 import com.arquisoft.seguridad.application.auth.query.ValidateTokenUseCase;
+import com.arquisoft.seguridad.infrastructure.util.message.SeguridadInfraestructureMessages;
+import com.arquisoft.shared.util.UtilObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.Duration;
+import java.time.Instant;
 
 @Slf4j
 @RestController
@@ -34,6 +44,7 @@ public class AuthController {
     private final AuthenticateUserUseCase authenticateUserUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
     private final ValidateTokenUseCase validateTokenUseCase;
+    private final LogoutUseCase logoutUseCase;
 
     @PostMapping("/login")
     @Operation(
@@ -106,7 +117,7 @@ public class AuthController {
     })
     public ResponseEntity<LoginResponseDTO> refreshToken(
             @Valid @RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
-        log.debug("Intento de refresco de token");
+        log.debug(SeguridadInfraestructureMessages.AuthController.REFRESH_DEBUG);
 
         RefreshTokenUseCase.RefreshResult result = refreshTokenUseCase.refresh(
                 refreshTokenRequest.getRefreshToken()
@@ -120,28 +131,55 @@ public class AuthController {
                 .scope(result.scope())
                 .build();
 
-        log.debug("Token refrescado exitosamente");
+        log.debug(SeguridadInfraestructureMessages.AuthController.REFRESH_EXITOSO_DEBUG);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/logout")
     @Operation(
             summary = "Cerrar sesion",
-            description = "Notifica el cierre de sesion. La invalidacion del token es responsabilidad del cliente. "
-                    + "En implementaciones futuras con Redis se mantendra un blacklist de tokens."
+            description = "Invalida el token JWT actual en la blacklist de Redis. " +
+                          "El token queda rechazado hasta su expiracion natural aunque se presente con firma valida.",
+            security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Logout registrado correctamente",
+                    description = "Sesion cerrada",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = LogoutResponseDTO.class)
                     )
-            )
+            ),
+            @ApiResponse(responseCode = "401", description = "No autenticado")
     })
-    public ResponseEntity<LogoutResponseDTO> logout() {
-        log.info("Endpoint de logout invocado - Invalidacion de token es del lado del cliente");
+    public ResponseEntity<LogoutResponseDTO> logout(@AuthenticationPrincipal Jwt jwt) {
+        // jwt != null garantizado: /auth/logout requiere autenticacion (anyRequest().authenticated())
+        String jti = jwt.getId();
+
+        if (UtilObject.isNull(jti)) {
+            // log.warn: error de cliente — token sin claim jti, situacion anormal
+            log.warn(SeguridadInfraestructureMessages.AuthController.LOGOUT_SIN_JTI);
+            return ResponseEntity.ok(LogoutResponseDTO.builder().build());
+        }
+
+        Instant expiresAt = jwt.getExpiresAt();
+        long remainingSeconds = 0;
+        if (!UtilObject.isNull(expiresAt)) {
+            remainingSeconds = Instant.now().isAfter(expiresAt)
+                    ? 0
+                    : Math.max(1, Duration.between(Instant.now(), expiresAt).toSeconds());
+        }
+
+        if (remainingSeconds <= 0) {
+            // log.warn: error de cliente — token ya expirado al momento del logout
+            log.warn(SeguridadInfraestructureMessages.AuthController.LOGOUT_TOKEN_EXPIRADO, jti);
+            return ResponseEntity.ok(LogoutResponseDTO.builder().build());
+        }
+
+        logoutUseCase.ejecutar(new LogoutCommand(jti, remainingSeconds));
+        // log.info: evento de negocio completado exitosamente
+        log.info(SeguridadInfraestructureMessages.AuthController.LOGOUT_EXITOSO, jti, remainingSeconds);
         return ResponseEntity.ok(LogoutResponseDTO.builder().build());
     }
 
@@ -167,7 +205,7 @@ public class AuthController {
             )
     })
     public ResponseEntity<TokenValidationResponseDTO> validateToken(@RequestParam String token) {
-        log.debug("Intento de validacion de token");
+        log.debug(SeguridadInfraestructureMessages.AuthController.VALIDATE_DEBUG);
 
         ValidateTokenUseCase.ValidationResult result = validateTokenUseCase.validate(token);
 

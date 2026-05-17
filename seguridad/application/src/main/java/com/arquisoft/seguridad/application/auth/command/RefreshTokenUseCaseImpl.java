@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command;
 
 import com.arquisoft.seguridad.application.auth.port.AuthenticationPort;
+import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -19,11 +20,12 @@ public class RefreshTokenUseCaseImpl implements RefreshTokenUseCase {
 
     @Override
     public RefreshResult refresh(String refreshToken) {
-        log.debug("Intento de refresco de token");
+        log.debug(SeguridadApplicationMessages.RefreshTokenUseCase.REFRESH_DEBUG);
 
         Map<String, Object> tokenResponse = authenticationPort.refreshToken(refreshToken);
 
-        log.debug("Token refrescado exitosamente");
+        // log.info: evento de negocio completado — nuevo access token emitido
+        log.info(SeguridadApplicationMessages.RefreshTokenUseCase.REFRESH_EXITOSO);
 
         return new RefreshResult(
                 (String) tokenResponse.get("access_token"),
