@@ -69,7 +69,7 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       timeout: 2000ms
-      jedis:
+      lettuce:
         pool:
           max-active: 10
           max-idle: 5
@@ -200,8 +200,17 @@ arquisoft:
   security:
     cors:
       allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
-    rate-limit:
-      enabled: ${RATE_LIMIT_ENABLED:true}
+    # rate-limit aqui es arquisoft.security.rate-limit — prefijo incorrecto para RateLimitProperties.
+    # La configuracion efectiva esta en el bloque security.rate-limit al final del archivo.
+
+# ==================== RATE LIMITING ====================
+# Prefijo correcto para @ConfigurationProperties(prefix = "security.rate-limit").
+# application-prod.yml sobreescribe estos valores con los de las variables de entorno.
+security:
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:100}
+    login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:5}
 
 # ==================== SERVER ====================
 server:

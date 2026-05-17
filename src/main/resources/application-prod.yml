@@ -29,7 +29,7 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
       timeout: 3000ms
-      jedis:
+      lettuce:
         pool:
           max-active: 20
           max-idle: 10
@@ -157,7 +157,6 @@ security:
     enabled: ${RATE_LIMIT_ENABLED:true}
     requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:60}
     login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:3}
-    max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:1000}
 
 # ==================== LOGGING ====================
 # logback-spring.xml gestiona TODOS los appenders (ASYNC_STDOUT + ASYNC_FILE_PROD).
