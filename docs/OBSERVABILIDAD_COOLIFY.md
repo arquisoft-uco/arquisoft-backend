@@ -20,7 +20,7 @@ Server 1 (backend)                     Server 2 (observabilidad)
 | Archivo | Propósito |
 |---|---|
 | [`infra/coolify/docker-compose.yml`](../infra/coolify/docker-compose.yml) | Stack de observabilidad (Server 2): Loki, Prometheus, Grafana |
-| [`infra/coolify/docker-compose-alloy.yml`](../infra/coolify/docker-compose-alloy.yml) | Stack de captura (Server 1): Alloy con acceso al Docker socket |
+| [`infra/coolify/docker-compose.alloy.yml`](../infra/coolify/docker-compose.alloy.yml) | Stack de captura (Server 1): Alloy con acceso al Docker socket |
 | [`infra/coolify/config.alloy`](../infra/coolify/config.alloy) | Pipeline Alloy: Docker socket → filtro backend → Loki + métricas → Prometheus |
 
 ---

@@ -59,7 +59,7 @@ scp infra/coolify/config.alloy root@<SERVER1_IP>:/opt/alloy/config.alloy
 ## 3. Crear el recurso en Coolify
 
 - Buscar y seleccionar el recurso **Docker Compose Empty**.
-- En la vista **Create a new Service**, copiar y pegar el contenido de [`docker-compose-alloy.yml`](../infra/coolify/docker-compose-alloy.yml). En este paso también se pueden editar las variables de entorno directamente en el compose.
+- En la vista **Create a new Service**, copiar y pegar el contenido de [`docker-compose.alloy.yml`](../infra/coolify/docker-compose.alloy.yml). En este paso también se pueden editar las variables de entorno directamente en el compose.
 - En **Configuration → General**, usar el nombre personalizado `alloy` y guardar.
 - En **Configuration → Environment Variables**, configurar las variables según el escenario si no se hizo en el paso anterior (ver tabla al inicio del documento).
 
