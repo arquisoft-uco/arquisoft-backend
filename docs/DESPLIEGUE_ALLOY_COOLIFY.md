@@ -1,8 +1,40 @@
 # Despliegue — Grafana Alloy (Coolify)
 
-> Guía paso a paso para desplegar Alloy en **Server 1** (servidor del backend).
+> Guía paso a paso para desplegar Alloy junto al backend.
 > Prerequisito: el stack de observabilidad (Loki, Prometheus, Grafana) debe estar
-> activo en Server 2. Ver [OBSERVABILIDAD_COOLIFY.md](OBSERVABILIDAD_COOLIFY.md).
+> activo. Ver [OBSERVABILIDAD_COOLIFY.md](OBSERVABILIDAD_COOLIFY.md).
+
+---
+
+## Escenarios de despliegue
+
+Alloy necesita saber dónde están Loki y Prometheus. Esto depende de si el backend
+comparte servidor con el stack de observabilidad o no.
+
+### Escenario A — mismo servidor
+
+El backend y el stack de observabilidad corren en el mismo host Coolify. Alloy
+puede alcanzar Loki y Prometheus por su nombre de contenedor dentro de la red
+Docker `coolify`, sin exponer puertos al exterior.
+
+| Variable | Valor |
+|---|---|
+| `LOKI_URL` | `http://loki:3100/loki/api/v1/push` |
+| `PROMETHEUS_URL` | `http://prometheus:9090/api/v1/write` |
+
+### Escenario B — servidores separados (red privada)
+
+El backend está en **Server 1** y el stack de observabilidad en **Server 2**,
+ambos dentro de la misma red privada del proveedor. Alloy usa la IP privada de
+Server 2 para alcanzar los puertos expuestos.
+
+| Variable | Valor ejemplo |
+|---|---|
+| `LOKI_URL` | `http://10.0.0.2:3100/loki/api/v1/push` |
+| `PROMETHEUS_URL` | `http://10.0.0.2:9090/api/v1/write` |
+
+> Reemplazar `10.0.0.2` con la IP privada real de Server 2. El firewall de Server 2
+> debe permitir conexiones entrantes desde la IP de Server 1 en los puertos `3100` y `9090`.
 
 ---
 
@@ -27,17 +59,9 @@ scp infra/coolify/config.alloy root@<SERVER1_IP>:/opt/alloy/config.alloy
 ## 3. Crear el recurso en Coolify
 
 - Buscar y seleccionar el recurso **Docker Compose Empty**.
-- En la vista **Create a new Service**, copiar y pegar el contenido de [`docker-compose.alloy.yml`](../infra/coolify/docker-compose.alloy.yml). En este paso también se pueden editar las variables de entorno directamente en el compose.
+- En la vista **Create a new Service**, copiar y pegar el contenido de [`docker-compose-alloy.yml`](../infra/coolify/docker-compose-alloy.yml). En este paso también se pueden editar las variables de entorno directamente en el compose.
 - En **Configuration → General**, usar el nombre personalizado `alloy` y guardar.
-- En **Configuration → Environment Variables**, configurar las variables si no se hizo en el paso anterior:
-
-| Variable | Valor |
-|---|---|
-| `LOKI_URL` | `http://<SERVER2_PRIVATE_IP>:3100/loki/api/v1/push` |
-| `PROMETHEUS_URL` | `http://<SERVER2_PRIVATE_IP>:9090/api/v1/write` |
-
-> Reemplazar `<SERVER2_PRIVATE_IP>` con la IP privada de Server 2. El puerto 3100 debe estar
-> permitido en el firewall de Server 2 para la IP de Server 1; ídem para el 9090.
+- En **Configuration → Environment Variables**, configurar las variables según el escenario si no se hizo en el paso anterior (ver tabla al inicio del documento).
 
 ## 4. Desplegar
 
@@ -45,6 +69,7 @@ scp infra/coolify/config.alloy root@<SERVER1_IP>:/opt/alloy/config.alloy
 - Después del despliegue se pueden asignar límites de recursos y configurar tuning personalizado para producción.
 
 ## 5. Verificar
+Se puede verificar los logs del contenedor en la vista `Logs` del recurso de coolify.
 
 Confirmar en Grafana con la query:
 ```logql
