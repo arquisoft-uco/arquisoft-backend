@@ -68,7 +68,7 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      username: ${REDIS_USERNAME:default}
+      username: ${REDIS_USER:default}
       password: ${REDIS_PASSWORD:}
       timeout: 2000ms
       lettuce:
@@ -213,6 +213,7 @@ security:
     enabled: ${RATE_LIMIT_ENABLED:true}
     requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:100}
     login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:5}
+    # RATE_LIMIT_MAX_TRACKED_IPS eliminado — propiedad removida al migrar a RedisBucketResolver
 
 # ==================== SERVER ====================
 server:
