@@ -117,6 +117,7 @@ minio:
   presigned-url-expiry:
     upload-minutes: ${MINIO_UPLOAD_EXPIRY_MINUTES:15}
     download-minutes: ${MINIO_DOWNLOAD_EXPIRY_MINUTES:15}
+  trust-self-signed-certificates: ${MINIO_TRUST_SELF_SIGNED_CERTS:false}
 
 # ==================== DATASOURCES POR BOUNDED CONTEXT ====================
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
