@@ -11,6 +11,8 @@ public class MinioProperties {
     private String accessKey;
     private String secretKey;
     private Expiry presignedUrlExpiry = new Expiry();
+    // Permite certificados autofirmados. Usar solo en dev/staging; en prod usar un cert de CA válida.
+    private boolean trustSelfSignedCertificates = false;
 
     @Data
     public static class Expiry {
