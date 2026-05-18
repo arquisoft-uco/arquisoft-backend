@@ -15,7 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -51,7 +51,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
      * sin modificar la lógica del handler.</p>
      */
     private static final Map<Class<? extends BaseException>, ExceptionMapping> EXCEPTION_MAPPINGS = Map.of(
-            DomainException.class,        new ExceptionMapping(HttpStatus.UNPROCESSABLE_ENTITY, "Error de dominio",       false),
+            DomainException.class,        new ExceptionMapping(HttpStatus.UNPROCESSABLE_CONTENT, "Error de dominio",       false),
             ApplicationException.class,   new ExceptionMapping(HttpStatus.BAD_REQUEST,          "Error de aplicación",    false),
             InfrastructureException.class, new ExceptionMapping(HttpStatus.SERVICE_UNAVAILABLE,  "Servicio no disponible", true)
     );
@@ -109,13 +109,13 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
         log.warn("Domain validation failed in {}: {} error(s) [{}]",
                 request.getRequestURI(), fieldErrors.size(), ex.getErrorCode());
 
-        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(ErrorResponseDTO.builder()
                         .error("Error de validación de dominio")
                         .errorCode(ex.getErrorCode())
                         .message("La entidad contiene %d error(es) de validación.".formatted(fieldErrors.size()))
                         .fieldErrors(fieldErrors)
-                        .status(HttpStatus.UNPROCESSABLE_ENTITY.value())
+                        .status(HttpStatus.UNPROCESSABLE_CONTENT.value())
                         .path(request.getRequestURI())
                         .build());
     }
@@ -259,7 +259,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             case METHOD_NOT_ALLOWED -> "El método HTTP no está permitido en este endpoint";
             case NOT_ACCEPTABLE -> "No se puede producir una respuesta en el formato solicitado";
             case UNSUPPORTED_MEDIA_TYPE -> "Content-Type no soportado";
-            case PAYLOAD_TOO_LARGE -> "El archivo supera el tamaño máximo permitido";
+            case CONTENT_TOO_LARGE -> "El archivo supera el tamaño máximo permitido";
             default -> "Error en la petición";
         };
 
@@ -269,7 +269,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                 .status(status.value())
                 .path(path);
 
-        if (status == HttpStatus.PAYLOAD_TOO_LARGE) {
+        if (status == HttpStatus.CONTENT_TOO_LARGE) {
             builder.errorCode("ARCHIVO_DEMASIADO_GRANDE");
         }
 
