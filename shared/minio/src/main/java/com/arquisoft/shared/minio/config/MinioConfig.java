@@ -32,7 +32,9 @@ public class MinioConfig {
         X509TrustManager trustAll = new X509TrustManager() {
             public void checkClientTrusted(X509Certificate[] chain, String authType) {}
             public void checkServerTrusted(X509Certificate[] chain, String authType) {}
-            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
         };
         SSLContext sslContext = SSLContext.getInstance("TLS");
         sslContext.init(null, new TrustManager[]{trustAll}, null);
