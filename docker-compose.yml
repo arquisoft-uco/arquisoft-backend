@@ -85,44 +85,28 @@ services:
       retries: 10
       start_period: 60s
 
-  # ==================== NEXTCLOUD ====================
-  # Considerar cambiarlo a Minio, mas liviano
-  nextcloud-db:
-    image: postgres:18-alpine
-    container_name: arquisoft-nextcloud-db
+  # ==================== MINIO ====================
+  minio:
+    image: 'pgsty/minio:RELEASE.2026-04-17T00-00-00Z'
+    container_name: minio
     environment:
-      POSTGRES_DB: nextcloud
-      POSTGRES_USER: nextcloud
-      POSTGRES_PASSWORD: nextcloud123
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      TZ: America/Bogota
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     volumes:
-      - nextcloud_db_data:/var/lib/postgresql/data
+      - minio_data:/data
+    command: server /data --console-address ":9001"
     networks:
       - arquisoft-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U nextcloud"]
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/minio/health/live || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  nextcloud:
-    image: nextcloud:27-apache
-    container_name: arquisoft-nextcloud
-    environment:
-      POSTGRES_HOST: nextcloud-db
-      POSTGRES_DB: nextcloud
-      POSTGRES_USER: nextcloud
-      POSTGRES_PASSWORD: nextcloud123
-      NEXTCLOUD_ADMIN_USER: admin
-      NEXTCLOUD_ADMIN_PASSWORD: admin123
-    ports:
-      - "8082:80"
-    volumes:
-      - nextcloud_data:/var/www/html
-    depends_on:
-      nextcloud-db:
-        condition: service_healthy
-    networks:
-      - arquisoft-network
+      start_period: 20s
 
   # ==================== BACKEND ====================
   arquisoft-backend:
@@ -155,6 +139,9 @@ services:
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_REDIS_HOST: redis
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
     ports:
       - "8080:8080"
     depends_on:
@@ -166,6 +153,8 @@ services:
         condition: service_healthy
       keycloak:
         condition: service_healthy  # ✅ Backend espera Keycloak listo
+      minio:
+        condition: service_healthy
     networks:
       - arquisoft-network
 
@@ -173,8 +162,7 @@ volumes:
   postgres_data:
   rabbitmq_data:
   redis_data:
-  nextcloud_db_data:
-  nextcloud_data:
+  minio_data:
 
 networks:
   arquisoft-network:
