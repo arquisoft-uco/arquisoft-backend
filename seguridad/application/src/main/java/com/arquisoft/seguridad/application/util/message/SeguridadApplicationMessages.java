@@ -18,28 +18,28 @@ public final class SeguridadApplicationMessages {
     private SeguridadApplicationMessages() {}
 
     // =========================================================================
-    // LogoutCommand
+    // LogoutRequestDTO
     // =========================================================================
 
-    public static final class LogoutCommand {
+    public static final class LogoutRequestDTO {
 
-        private LogoutCommand() {}
+        private LogoutRequestDTO() {}
 
         // --- Logs (tecnicos, solo visibles en los logs del servidor) ---
 
         /**
-         * log.warn — El campo 'jti' llego null al construir el comando.
+         * log.warn — El campo 'jti' llego null al construir el DTO.
          * Indica un fallo en la guardia previa del controlador.
          */
         public static final String JTI_NULL_LOG =
-                "LogoutCommand: campo 'jti' es null — la guardia del controlador no funciono correctamente";
+                "LogoutRequestDTO: campo 'jti' es null — la guardia del controlador no funciono correctamente";
 
         /**
          * log.warn — El campo 'ttlSegundos' es <= 0.
          * Parametro {}: valor recibido para orientar el diagnostico.
          */
         public static final String TTL_INVALIDO_LOG =
-                "LogoutCommand: ttlSegundos debe ser > 0, recibido: {}";
+                "LogoutRequestDTO: ttlSegundos debe ser > 0, recibido: {}";
 
         // --- ApplicationException (mensaje generico para el cliente, codigo para el desarrollador) ---
 
