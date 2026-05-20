@@ -2,11 +2,11 @@ package com.arquisoft.seguridad.infrastructure.adapter.in.web;
 
 import com.arquisoft.seguridad.application.auth.dto.LoginRequestDTO;
 import com.arquisoft.seguridad.application.auth.dto.LoginResponseDTO;
+import com.arquisoft.seguridad.application.auth.dto.LogoutRequestDTO;
 import com.arquisoft.seguridad.application.auth.dto.LogoutResponseDTO;
 import com.arquisoft.seguridad.application.auth.dto.RefreshTokenRequestDTO;
 import com.arquisoft.seguridad.application.auth.dto.TokenValidationResponseDTO;
 import com.arquisoft.seguridad.application.auth.command.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.application.auth.command.LogoutCommand;
 import com.arquisoft.seguridad.application.auth.command.LogoutUseCase;
 import com.arquisoft.seguridad.application.auth.command.RefreshTokenUseCase;
 import com.arquisoft.seguridad.application.auth.query.ValidateTokenUseCase;
@@ -177,7 +177,7 @@ public class AuthController {
             return ResponseEntity.ok(LogoutResponseDTO.builder().build());
         }
 
-        logoutUseCase.ejecutar(new LogoutCommand(jti, remainingSeconds));
+        logoutUseCase.ejecutar(new LogoutRequestDTO(jti, remainingSeconds));
         // log.info: evento de negocio completado exitosamente
         log.info(SeguridadInfraestructureMessages.AuthController.LOGOUT_EXITOSO, jti, remainingSeconds);
         return ResponseEntity.ok(LogoutResponseDTO.builder().build());
