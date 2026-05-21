@@ -76,20 +76,26 @@ public final class FichaPerfil {
     }
 
     private void setTituloProyecto(String titulo, ValidationResult result) {
-        DomainValidator.notBlank(titulo, FichasDomainMessages.FichaPerfil.CAMPO_TITULO, FichasDomainMessages.FichaPerfil.TITULO_REQUERIDO, result);
-        //TODO:max no puede estar despues del null
-        DomainValidator.maxLength(titulo, FichasDomainMessages.FichaPerfil.TITULO_MAX,
-                FichasDomainMessages.FichaPerfil.CAMPO_TITULO, FichasDomainMessages.FichaPerfil.TITULO_DEMASIADO_LARGO, result);
-        if (!result.hasFieldErrors(FichasDomainMessages.FichaPerfil.CAMPO_TITULO)) {
-            this.tituloProyecto = UtilText.applyTrim(titulo);
+        if (!DomainValidator.notBlank(titulo,
+                FichasDomainMessages.FichaPerfil.CAMPO_TITULO,
+                FichasDomainMessages.FichaPerfil.TITULO_REQUERIDO, result)) {
+            return;
         }
+        if (!DomainValidator.maxLength(titulo, FichasDomainMessages.FichaPerfil.TITULO_MAX,
+                FichasDomainMessages.FichaPerfil.CAMPO_TITULO,
+                FichasDomainMessages.FichaPerfil.TITULO_DEMASIADO_LARGO, result)) {
+            return;
+        }
+        this.tituloProyecto = UtilText.applyTrim(titulo);
     }
 
     private void setAsesorFicha(AsesorFicha asesor, ValidationResult result) {
-        DomainValidator.notNull(asesor, FichasDomainMessages.FichaPerfil.CAMPO_ASESOR, FichasDomainMessages.FichaPerfil.ASESOR_REQUERIDO, result);
-        if (!result.hasFieldErrors(FichasDomainMessages.FichaPerfil.CAMPO_ASESOR)) {
-            this.asesorFicha = asesor;
+        if (!DomainValidator.notNull(asesor,
+                FichasDomainMessages.FichaPerfil.CAMPO_ASESOR,
+                FichasDomainMessages.FichaPerfil.ASESOR_REQUERIDO, result)) {
+            return;
         }
+        this.asesorFicha = asesor;
     }
 
     // ─── Getters ──────────────────────────────────────────────────────────────

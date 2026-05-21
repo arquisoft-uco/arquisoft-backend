@@ -17,7 +17,7 @@ public final class FichaPerfilMapper {
         return FichaPerfil.rebuild(
                 entity.getId(),
                 entity.getTituloProyecto(),
-                AsesorFicha.of(
+                AsesorFicha.rebuild(
                         entity.getAsesorFicha().getId(),
                         entity.getAsesorFicha().getIdentificador(),
                         entity.getAsesorFicha().getNombre(),
