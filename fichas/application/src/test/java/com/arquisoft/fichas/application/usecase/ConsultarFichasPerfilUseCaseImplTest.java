@@ -35,7 +35,7 @@ class ConsultarFichasPerfilUseCaseImplTest {
         // Arrange
         PaginationRequest request = PaginationRequest.of(0, 10);
 
-        AsesorFicha asesor = AsesorFicha.of(
+        AsesorFicha asesor = AsesorFicha.rebuild(
                 UUID.randomUUID(), "DOC-001", "Juan Salazar", "juan.salazar@soyuco.edu.co");
         FichaPerfil ficha = FichaPerfil.rebuild(
                 UUID.randomUUID(), "Arquisoft Backend", asesor);

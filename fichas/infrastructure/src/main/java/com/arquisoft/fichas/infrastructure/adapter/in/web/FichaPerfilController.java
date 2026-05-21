@@ -14,11 +14,11 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -47,7 +47,7 @@ public class FichaPerfilController {
             @ApiResponse(responseCode = "403", description = "Sin permisos — se requiere rol coordinador")
     })
     public ResponseEntity<PageResponseDTO<FichaPerfilResponseDTO>> consultarFichasCoordinador(
-            @PageableDefault(size = 10, page = 0) PaginationRequest request) {
+            PaginationRequest request) {
         log.debug("GET /fichas-perfil/coordinador — pageable={}", request);
 
         PaginatedResult<FichaPerfilResponseDTO> resultado = consultarFichasPerfilUseCase.ejecutar(request);

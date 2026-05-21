@@ -28,54 +28,74 @@ public final class DomainValidator {
 
     /**
      * Acumula error si {@code value} es {@code null}.
+     *
+     * @return {@code true} si la validación pasó (valor no nulo); {@code false} si falló.
      */
-    public static void notNull(Object value, String fieldName, String errorCode, ValidationResult result) {
+    public static boolean notNull(Object value, String fieldName, String errorCode, ValidationResult result) {
         if (UtilObject.isNull(value)) {
             result.addError(fieldName, errorCode,
                     AppMessages.DomainValidator.NOT_NULL.formatted(fieldName));
+            return false;
         }
+        return true;
     }
 
     /**
      * Acumula error si {@code value} es {@code null} o está vacío/en blanco.
+     *
+     * @return {@code true} si la validación pasó (valor presente); {@code false} si falló.
      */
-    public static void notBlank(String value, String fieldName, String errorCode, ValidationResult result) {
+    public static boolean notBlank(String value, String fieldName, String errorCode, ValidationResult result) {
         if (UtilText.isEmptyOrNull(value)) {
             result.addError(fieldName, errorCode,
                     AppMessages.DomainValidator.NOT_BLANK.formatted(fieldName));
+            return false;
         }
+        return true;
     }
 
     /**
      * Acumula error si la longitud de {@code value} (sin espacios extremos) supera {@code max}.
-     * No acumula si {@code value} es {@code null} — combinar con {@link #notBlank} cuando sea necesario.
+     * Llamar solo después de verificar que el valor existe con {@link #notBlank}.
+     *
+     * @return {@code true} si la validación pasó (longitud dentro del límite); {@code false} si falló.
      */
-    public static void maxLength(String value, int max, String fieldName, String errorCode, ValidationResult result) {
-        if (!UtilText.isEmptyOrNull(value) && UtilText.applyTrim(value).length() > max) {
+    public static boolean maxLength(String value, int max, String fieldName, String errorCode, ValidationResult result) {
+        if (UtilText.applyTrim(value).length() > max) {
             result.addError(fieldName, errorCode,
                     AppMessages.DomainValidator.MAX_LENGTH.formatted(fieldName, max));
+            return false;
         }
+        return true;
     }
 
     /**
      * Acumula error si la longitud de {@code value} (sin espacios extremos) es menor que {@code min}.
-     * No acumula si {@code value} es {@code null} — combinar con {@link #notBlank} cuando sea necesario.
+     * Llamar solo después de verificar que el valor existe con {@link #notBlank}.
+     *
+     * @return {@code true} si la validación pasó (longitud dentro del límite); {@code false} si falló.
      */
-    public static void minLength(String value, int min, String fieldName, String errorCode, ValidationResult result) {
-        if (!UtilText.isEmptyOrNull(value) && UtilText.applyTrim(value).length() < min) {
+    public static boolean minLength(String value, int min, String fieldName, String errorCode, ValidationResult result) {
+        if (UtilText.applyTrim(value).length() < min) {
             result.addError(fieldName, errorCode,
                     AppMessages.DomainValidator.MIN_LENGTH.formatted(fieldName, min));
+            return false;
         }
+        return true;
     }
 
     /**
      * Acumula error si {@code value} no tiene formato de correo electrónico válido.
-     * No acumula si {@code value} es {@code null} — combinar con {@link #notBlank} cuando sea necesario.
+     * Llamar solo después de verificar que el valor existe con {@link #notBlank}.
+     *
+     * @return {@code true} si la validación pasó (formato válido); {@code false} si falló.
      */
-    public static void validEmail(String value, String fieldName, String errorCode, ValidationResult result) {
-        if (!UtilText.isEmptyOrNull(value) && !UtilText.emailStringIsValid(value)) {
+    public static boolean validEmail(String value, String fieldName, String errorCode, ValidationResult result) {
+        if (!UtilText.emailStringIsValid(value)) {
             result.addError(fieldName, errorCode,
                     AppMessages.DomainValidator.VALID_EMAIL.formatted(fieldName));
+            return false;
         }
+        return true;
     }
 }

@@ -9,53 +9,24 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 /**
- * Utilidad de conversión entre los tipos de paginación de dominio y Spring Data.
+ * Utilidad de conversión entre los tipos de paginación de dominio y Spring Data JPA.
  *
- * <p>Centraliza todas las conversiones Spring ↔ domain para que ni los controllers
- * ni los adapters tengan lógica de conversión dispersa:</p>
+ * <p>Usado exclusivamente en la capa de infraestructura (adaptadores JPA) para
+ * mantener Spring Data fuera del dominio y la aplicación:</p>
  *
  * <ul>
- *   <li>{@link #toDomain(Pageable)} — convierte el {@link Pageable} de Spring MVC
- *       al {@link PaginationRequest} del dominio.</li>
  *   <li>{@link #toPageable(PaginationRequest)} — convierte el {@link PaginationRequest}
- *       del dominio al {@link Pageable} de Spring Data JPA.</li>
- *   <li>{@link #toResult(Page)} — convierte un {@link Page} de Spring Data
+ *       del dominio al {@link Pageable} que necesita Spring Data JPA.</li>
+ *   <li>{@link #toResult(Page)} — convierte el {@link Page} devuelto por JPA
  *       al {@link PaginatedResult} del dominio.</li>
  * </ul>
  *
- * <p>Esta clase vive en {@code shared:web} porque es la única capa que tiene
- * dependencias legítimas tanto de Spring Data Commons como de {@code shared:domain}.</p>
+ * <p>La conversión de los parámetros HTTP al {@link PaginationRequest} del dominio
+ * es responsabilidad de {@code PaginationRequestArgumentResolver} en {@code shared:web}.</p>
  */
 public final class PaginationMapper {
 
     private PaginationMapper() {}
-
-    /**
-     * Convierte un {@link Pageable} de Spring MVC al {@link PaginationRequest} del dominio.
-     *
-     * <p>Solo se considera el primer campo de ordenamiento si el {@link Pageable}
-     * tiene múltiples; los campos adicionales se ignoran.</p>
-     *
-     * @param pageable pageable recibido por el controller (nunca {@code null})
-     * @return {@link PaginationRequest} equivalente
-     */
-    public static PaginationRequest toDomain(Pageable pageable) {
-        String sortProperty = null;
-        SortDirection direction = SortDirection.ASC;
-
-        Sort sort = pageable.getSort();
-        if (sort.isSorted()) {
-            Sort.Order order = sort.iterator().next();
-            sortProperty = order.getProperty();
-            direction = order.isAscending() ? SortDirection.ASC : SortDirection.DESC;
-        }
-
-        return PaginationRequest.of(
-                pageable.getPageNumber(),
-                pageable.getPageSize(),
-                sortProperty,
-                direction);
-    }
 
     /**
      * Convierte un {@link PaginationRequest} del dominio al {@link Pageable} de Spring Data JPA.
@@ -89,3 +60,4 @@ public final class PaginationMapper {
                 page.getTotalElements());
     }
 }
+

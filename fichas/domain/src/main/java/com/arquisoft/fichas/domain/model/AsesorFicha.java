@@ -33,7 +33,7 @@ public final class AsesorFicha {
      * @param email         correo institucional del asesor
      * @return instancia de AsesorFicha
      */
-    public static AsesorFicha of(UUID id, String identificador, String nombre, String email) {
+    public static AsesorFicha rebuild(UUID id, String identificador, String nombre, String email) {
         return new AsesorFicha(id, identificador, nombre, email);
     }
 

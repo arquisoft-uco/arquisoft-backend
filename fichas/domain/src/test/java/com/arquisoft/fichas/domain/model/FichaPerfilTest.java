@@ -13,7 +13,7 @@ class FichaPerfilTest {
     // ─── Helpers de Arrange ───────────────────────────────────────────────────
 
     private AsesorFicha asesorValido() {
-        return AsesorFicha.of(UUID.randomUUID(), "DOC-001", "Asesor Test", "asesor@test.com");
+        return AsesorFicha.rebuild(UUID.randomUUID(), "DOC-001", "Asesor Test", "asesor@test.com");
     }
 
     // ─── Tests ────────────────────────────────────────────────────────────────
