@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCase;
-import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilResponseDTO;
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(FichaPerfilController.class)
+@WebMvcTest(FichaPerfilInputAdapter.class)
 @Import({GlobalAppExceptionHandler.class,
         FichaPerfilControllerTest.TestSecurityConfig.class})
 class FichaPerfilControllerTest {
@@ -60,14 +60,14 @@ class FichaPerfilControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;
+    private ConsultarFichasPerfilInputPort consultarFichasPerfilInputPort;
 
     @Test
     void debe200_cuandoConsultaExitosa() throws Exception {
         // Arrange
-        PaginatedResult<FichaPerfilResponseDTO> resultadoVacio =
+        PaginatedResult<FichaPerfilReadModel> resultadoVacio =
                 PaginatedResult.of(List.of(), 0, 10, 0L);
-        when(consultarFichasPerfilUseCase.ejecutar(any(PaginationRequest.class)))
+        when(consultarFichasPerfilInputPort.ejecutar(any(PaginationRequest.class)))
                 .thenReturn(resultadoVacio);
 
         // Act & Assert — usuario con authority ficha:ficha:view (resource_access)
@@ -84,9 +84,9 @@ class FichaPerfilControllerTest {
     @Test
     void debeNormalizar_cuandoPageEsNegativo() throws Exception {
         // Arrange — page=-1 es normalizado a 0 por PaginationRequest.of() (Math.max(0, page)).
-        PaginatedResult<FichaPerfilResponseDTO> resultadoVacio =
+        PaginatedResult<FichaPerfilReadModel> resultadoVacio =
                 PaginatedResult.of(List.of(), 0, 10, 0L);
-        when(consultarFichasPerfilUseCase.ejecutar(any(PaginationRequest.class)))
+        when(consultarFichasPerfilInputPort.ejecutar(any(PaginationRequest.class)))
                 .thenReturn(resultadoVacio);
 
         // Act & Assert — PaginationRequest normaliza page=-1 → 0 internamente → 200

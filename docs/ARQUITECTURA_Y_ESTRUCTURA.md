@@ -83,13 +83,13 @@ La arquitectura hexagonal divide cada contexto en tres capas principales:
 
 #### 2. Puertos de Entrada (In)
 
-- Interfaces que definen casos de uso
-- Ejemplo: `CrearFichaUseCase`, `ObtenerFichaUseCase`
+- Interfaces que definen casos de uso, sufijo `InputPort`
+- Ejemplo: `CrearFichaInputPort`, `ConsultarFichasPerfilInputPort`
 
 #### 3. Puertos de Salida (Out)
 
-- Interfaces que definen dependencias externas
-- Ejemplo: `FichaRepositoryPort`, `ExternalServicePort`
+- Interfaces que definen dependencias externas, sufijo `OutputPort`
+- Ejemplo: `FichaPerfilOutputPort`, `UsuarioOutputPort`
 
 #### 4. Aplicación (Application)
 
@@ -99,8 +99,8 @@ La arquitectura hexagonal divide cada contexto en tres capas principales:
 
 #### 5. Infraestructura (Infrastructure)
 
-- Implementa los puertos de salida
-- Contiene adaptadores de entrada (Controllers)
+- Implementa los puertos de salida mediante `OutputAdapter` (e.g., `FichaPerfilOutputAdapter`)
+- Contiene adaptadores de entrada (`InputAdapter`): REST controllers y AMQP consumers (e.g., `FichaPerfilInputAdapter`, `UsuarioCreadoInputAdapter`)
 - Configuración de Spring Boot, Flyway, etc.
 
 ---
@@ -145,32 +145,54 @@ arquisoft-backend/
 │   ├── domain/
 │   │   └── src/main/java/com/arquisoft/seguridad/domain/
 │   │       ├── model/
-│   │       │   └── UserRole.java         # Enum: 8 roles
-│   │       ├── port/in/
-│   │       │   ├── CurrentUserProvider.java
-│   │       │   ├── KeycloakAuthService.java
-│   │       │   └── JwtTokenProvider.java
+│   │       │   ├── UsuarioAggregate.java  # Aggregate root con factory build()/rebuild()
+│   │       │   └── UserRole.java          # Enum: 8 roles
+│   │       ├── port/out/
+│   │       │   └── UsuarioOutputPort.java # OutputPort para persistencia de usuarios
 │   │       └── exception/
 │   │           ├── AuthenticationException.java
 │   │           ├── InvalidCredentialsException.java
 │   │           └── InvalidTokenException.java
 │   ├── application/
-│   │   └── src/main/java/com/arquisoft/seguridad/application/dto/
-│   │       ├── LoginRequestDTO.java
-│   │       ├── LoginResponseDTO.java
-│   │       ├── AuthenticatedUserDTO.java
-│   │       ├── RefreshTokenRequestDTO.java
-│   │       ├── TokenValidationResponseDTO.java
-│   │       └── ErrorResponseDTO.java
+│   │   └── src/main/java/com/arquisoft/seguridad/application/
+│   │       ├── auth/
+│   │       │   ├── AuthenticateUserInputPort.java   # InputPort (contiene inner record AuthResult)
+│   │       │   ├── AuthenticateUserUseCaseImpl.java
+│   │       │   ├── LogoutInputPort.java
+│   │       │   ├── LogoutUseCaseImpl.java
+│   │       │   ├── RefreshTokenInputPort.java       # InputPort (contiene inner record RefreshResult)
+│   │       │   ├── RefreshTokenUseCaseImpl.java
+│   │       │   ├── ValidateTokenInputPort.java      # InputPort (contiene inner record ValidationResult)
+│   │       │   └── ValidateTokenUseCaseImpl.java
+│   │       ├── usuario/
+│   │       │   ├── CrearUsuarioInputPort.java
+│   │       │   ├── CrearUsuarioUseCaseImpl.java
+│   │       │   ├── RegistrarUsuarioInputPort.java
+│   │       │   └── RegistrarUsuarioUseCaseImpl.java
+│   │       ├── port/out/
+│   │       │   ├── AuthenticationOutputPort.java   # Contrato Keycloak
+│   │       │   ├── TokenOutputPort.java             # Contrato validación JWT
+│   │       │   ├── TokenBlacklistOutputPort.java    # Contrato Redis blacklist
+│   │       │   └── CurrentUserOutputPort.java       # Contrato Spring Security context
+│   │       └── dto/
+│   │           ├── LoginRequestDTO.java
+│   │           ├── LoginResponseDTO.java
+│   │           ├── AuthenticatedUserDTO.java
+│   │           ├── RefreshTokenRequestDTO.java
+│   │           ├── TokenValidationReadModel.java    # ReadModel (sufijo ReadModel, no ResponseDTO)
+│   │           └── ErrorResponseDTO.java
 │   └── infrastructure/
 │       └── src/main/java/com/arquisoft/seguridad/infrastructure/
 │           ├── adapter/in/
-│           │   ├── AuthController.java
-│           │   └── GlobalExceptionHandler.java
+│           │   ├── AuthInputAdapter.java            # InputAdapter (ex AuthController)
+│           │   ├── UsuarioInputAdapter.java          # InputAdapter (ex UsuarioController)
+│           │   └── UsuarioCreadoInputAdapter.java    # InputAdapter AMQP (ex UsuarioCreadoConsumer)
 │           ├── adapter/out/
-│           │   ├── CurrentUserProviderImpl.java
-│           │   ├── KeycloakAuthServiceImpl.java
-│           │   └── JwtTokenProviderImpl.java
+│           │   ├── UsuarioOutputAdapter.java         # OutputAdapter (ex InMemoryUsuarioRepository)
+│           │   ├── JwtTokenOutputAdapter.java        # OutputAdapter (ex JwtTokenAdapter)
+│           │   ├── KeycloakAuthOutputAdapter.java    # OutputAdapter (ex KeycloakAuthAdapter)
+│           │   ├── CurrentUserOutputAdapter.java     # OutputAdapter (ex CurrentUserAdapter)
+│           │   └── RedisTokenBlacklistOutputAdapter.java  # OutputAdapter (ex RedisTokenBlacklistAdapter)
 │           ├── config/                   # Configuraciones de SEGURIDAD (no van en config/ raíz)
 │           │   ├── SecurityConfig.java    # JWT + OAuth2 Resource Server + método security
 │           │   ├── CorsConfig.java        # Orígenes, headers expuestos, credenciales
@@ -194,17 +216,19 @@ arquisoft-backend/
 
 ### Convenciones de Nomenclatura
 
-| Capa | Paquete | Ejemplo |
-|------|---------|---------|
-| **Domain - models** | `model/` | `Ficha.java` |
-| **Domain - puertos entrada** | `port/in/` | `CrearFichaUseCase.java` |
-| **Domain - puertos salida** | `port/out/` | `FichaRepositoryPort.java` |
-| **Domain - excepciones** | `exception/` | `FichaNotFoundException.java` |
-| **Application - DTOs** | `dto/` | `FichaDTO.java` |
-| **Application - use cases** | `usecase/` | `CrearFichaUseCaseImpl.java` |
-| **Infrastructure - entrada** | `adapter/in/` | `FichaController.java` |
-| **Infrastructure - salida** | `adapter/out/` | `FichaRepositoryAdapter.java` |
-| **Infrastructure - config** | `config/` | `FichasConfig.java` |
+| Capa | Paquete | Sufijo | Ejemplo |
+|------|---------|--------|---------|
+| **Domain - aggregate roots** | `model/` | `Aggregate` | `FichaPerfilAggregate.java` |
+| **Domain - puertos entrada** | `port/in/` | `InputPort` | `CrearFichaInputPort.java` |
+| **Domain - puertos salida** | `port/out/` | `OutputPort` | `FichaPerfilOutputPort.java` |
+| **Domain - excepciones** | `exception/` | `Exception` | `FichaNotFoundException.java` |
+| **Application - DTOs** | `{feature}/dto/` | `DTO` | `LoginRequestDTO.java` |
+| **Application - ReadModels** | `{feature}/dto/` | `ReadModel` | `FichaPerfilReadModel.java` |
+| **Application - input ports** | `{feature}/command/` o `{feature}/query/` | `InputPort` | `ConsultarFichasPerfilInputPort.java` |
+| **Application - use cases** | `{feature}/command/` o `{feature}/query/` | `UseCaseImpl` | `ConsultarFichasPerfilUseCaseImpl.java` |
+| **Infrastructure - entrada** | `adapter/in/` | `InputAdapter` | `FichaPerfilInputAdapter.java` |
+| **Infrastructure - salida** | `adapter/out/` | `OutputAdapter` | `FichaPerfilOutputAdapter.java` |
+| **Infrastructure - config** | `config/` | `Config` | `FichasConfig.java` |
 
 ---
 
@@ -320,54 +344,54 @@ public abstract class AggregateRoot {
 ```
 {contexto}/domain/src/main/java/com/arquisoft/{contexto}/domain/
 ├── model/
-│   └── {Entidad}.java          ← extends AggregateRoot
-├── event/                      ← carpeta para eventos de dominio
+│   └── {Entidad}Aggregate.java    ← extends AggregateRoot
+├── event/                         ← carpeta para eventos de dominio
 │   ├── {Entidad}CreadaEvent.java
 │   ├── {Entidad}AprobadaEvent.java
 │   └── {Entidad}FinalizadaEvent.java
 ├── port/
-│   ├── in/
-│   └── out/
+│   ├── in/                        ← InputPort interfaces (o en application layer)
+│   └── out/                       ← OutputPort interfaces
 └── exception/
 ```
 
-### Ejemplo completo: entidad con AggregateRoot
+### Ejemplo completo: aggregate con AggregateRoot
 
 ```java
-// fichas/domain/src/main/java/com/arquisoft/fichas/domain/model/Ficha.java
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/model/FichaPerfilAggregate.java
 package com.arquisoft.fichas.domain.model;
 
 import com.arquisoft.shared.domain.AggregateRoot;
-import com.arquisoft.fichas.domain.event.FichaCreadaEvent;
+import com.arquisoft.fichas.domain.event.FichaPerfilCreadaEvent;
 import java.util.UUID;
 
-public class Ficha extends AggregateRoot {   // ← hereda gestión de eventos
+public class FichaPerfilAggregate extends AggregateRoot {  // ← sufijo Aggregate
 
     private final UUID id;
-    private final String titulo;
-    private final String estado;
+    private final String tituloProyecto;
+    private final AsesorFicha asesorFicha;
 
-    private Ficha(UUID id, String titulo, String estado) {
+    private FichaPerfilAggregate(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
         this.id = id;
-        this.titulo = titulo;
-        this.estado = estado;
+        this.tituloProyecto = tituloProyecto;
+        this.asesorFicha = asesorFicha;
     }
 
     // Factory para NUEVA ficha — genera UUID y registra evento
-    public static Ficha build(String titulo) {
-        Ficha ficha = new Ficha(UUID.randomUUID(), titulo, "BORRADOR");
-        ficha.publishEvent(new FichaCreadaEvent(ficha.id.toString(), titulo));
+    public static FichaPerfilAggregate build(String tituloProyecto, AsesorFicha asesorFicha) {
+        FichaPerfilAggregate ficha = new FichaPerfilAggregate(UUID.randomUUID(), tituloProyecto, asesorFicha);
+        ficha.publishEvent(new FichaPerfilCreadaEvent(ficha.id.toString(), tituloProyecto));
         return ficha;
     }
 
     // Factory para RECONSTRUIR desde persistencia — sin evento
-    public static Ficha rebuild(UUID id, String titulo, String estado) {
-        return new Ficha(id, titulo, estado);
+    public static FichaPerfilAggregate rebuild(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
+        return new FichaPerfilAggregate(id, tituloProyecto, asesorFicha);
     }
 
-    public UUID getId()       { return id; }
-    public String getTitulo() { return titulo; }
-    public String getEstado() { return estado; }
+    public UUID getId()                   { return id; }
+    public String getTituloProyecto()     { return tituloProyecto; }
+    public AsesorFicha getAsesorFicha()   { return asesorFicha; }
 }
 ```
 
@@ -394,17 +418,17 @@ public class FichaCreadaEvent extends DomainEvent {
 El **use case** es el único responsable de drenar los eventos del aggregate y entregarlos a RabbitMQ. Nunca lo hace el controller ni el repositorio.
 
 ```java
-// fichas/application/src/main/java/com/arquisoft/fichas/application/usecase/CrearFichaUseCaseImpl.java
+// fichas/application/.../fichaperfil/command/CrearFichaPerfilUseCaseImpl.java
 @Component
 @RequiredArgsConstructor
-public class CrearFichaUseCaseImpl implements CrearFichaUseCase {
+public class CrearFichaPerfilUseCaseImpl implements CrearFichaPerfilInputPort {
 
-    private final FichaRepositoryPort fichaRepository;
+    private final FichaPerfilOutputPort fichaPerfilOutputPort;
     private final EventPublisher eventPublisher;      // shared:amqp
 
     @Override
-    public Ficha crearFicha(Ficha ficha) {
-        Ficha guardada = fichaRepository.save(ficha);  // 1. persistir
+    public FichaPerfilAggregate crear(FichaPerfilAggregate ficha) {
+        FichaPerfilAggregate guardada = fichaPerfilOutputPort.save(ficha);  // 1. persistir
 
         guardada.getUnPublishedEvents()                // 2. drenar eventos acumulados
                 .forEach(eventPublisher::publish);     // 3. publicar a RabbitMQ
@@ -444,11 +468,11 @@ Esta configuración hace que Spring Boot reemplace automáticamente los executor
 
 | Componente del proyecto | Efecto |
 |---|---|
-| Todos los **Controllers** (requests HTTP) | Cada request corre en un virtual thread |
-| **`KeycloakAuthAdapter`** (HTTP a Keycloak) | Bloqueo I/O sin consumir OS thread |
-| **`JwtTokenAdapter`** (decodificación JWT) | Igual |
-| **`FichaRepositoryAdapter`** y todos los adapters JPA/JDBC | Queries a BD sin bloquear OS thread |
-| **`@RabbitListener`** en event listeners | Mensajes procesados en virtual threads |
+| Todos los **InputAdapters** REST (requests HTTP) | Cada request corre en un virtual thread |
+| **`KeycloakAuthOutputAdapter`** (HTTP a Keycloak) | Bloqueo I/O sin consumir OS thread |
+| **`JwtTokenOutputAdapter`** (decodificación JWT) | Igual |
+| **`FichaPerfilOutputAdapter`** y todos los OutputAdapters JPA/JDBC | Queries a BD sin bloquear OS thread |
+| **`@RabbitListener`** en InputAdapters AMQP | Mensajes procesados en virtual threads |
 | **`AuditFilter`**, **`RateLimitingFilter`** | Mismo virtual thread del request |
 
 No hay que modificar ningún método ni clase — el beneficio es completamente transparente para el código de negocio.
@@ -492,194 +516,166 @@ En este proyecto no hay ningún `TaskExecutor` declarado manualmente, por lo que
 ```
 HTTP POST /api/fichas
     ↓
-FichaController.crear(FichaDTO)          [Adapter IN]
+FichaPerfilInputAdapter.crear(FichaDTO)          [InputAdapter IN]
     ↓
-FichaDTO.toDomain() → Ficha
+FichaDTO.toDomain() → FichaPerfilAggregate
     ↓
-CrearFichaUseCaseImpl.crearFicha(Ficha)  [Use Case]
+CrearFichaUseCaseImpl.crear(FichaPerfilAggregate) [Use Case]
     ↓
-FichaRepositoryPort.save(Ficha)          [Port OUT - Interface]
+FichaPerfilOutputPort.save(FichaPerfilAggregate)  [OutputPort - Interface]
     ↓
-FichaRepositoryAdapter.save(Ficha)       [Adapter OUT - Implementation]
+FichaPerfilOutputAdapter.save(FichaPerfilAggregate) [OutputAdapter - Implementation]
     ↓
-JdbcTemplate.update()                    [Database INSERT]
+JpaRepository.save()                              [Database INSERT]
     ↓
 HTTP 201 Created
 ```
 
 #### Código
 
-**1. Entidad de Dominio**
+**1. Aggregate de Dominio**
 
 ```java
-// fichas/domain/src/main/java/com/arquisoft/fichas/domain/model/Ficha.java
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/model/FichaPerfilAggregate.java
 package com.arquisoft.fichas.domain.model;
 
-import java.time.LocalDateTime;
+import com.arquisoft.shared.domain.AggregateRoot;
+import java.util.UUID;
 
-public class Ficha {
-    private final Long id;
-    private final String titulo;
-    private final String descripcion;
-    private final String areaConocimiento;
-    private final String estado;
-    private final LocalDateTime fechaCreacion;
+public class FichaPerfilAggregate extends AggregateRoot {
+    private final UUID id;
+    private final String tituloProyecto;
+    private final AsesorFicha asesorFicha;
 
-    private Ficha(Long id, String titulo, String descripcion,
-                  String areaConocimiento, String estado, LocalDateTime fechaCreacion) {
+    private FichaPerfilAggregate(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
         this.id = id;
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-        this.areaConocimiento = areaConocimiento;
-        this.estado = estado;
-        this.fechaCreacion = fechaCreacion;
+        this.tituloProyecto = tituloProyecto;
+        this.asesorFicha = asesorFicha;
     }
 
-    public static Ficha build(String titulo, String descripcion, String areaConocimiento) {
-        return new Ficha(null, titulo, descripcion, areaConocimiento, "BORRADOR", LocalDateTime.now());
+    // Factory para NUEVA ficha — genera UUID y puede registrar evento
+    public static FichaPerfilAggregate build(String tituloProyecto, AsesorFicha asesorFicha) {
+        return new FichaPerfilAggregate(UUID.randomUUID(), tituloProyecto, asesorFicha);
     }
 
-    public static Ficha rebuild(Long id, String titulo, String descripcion,
-                                String areaConocimiento, String estado, LocalDateTime fechaCreacion) {
-        return new Ficha(id, titulo, descripcion, areaConocimiento, estado, fechaCreacion);
+    // Factory para RECONSTRUIR desde persistencia — sin evento
+    public static FichaPerfilAggregate rebuild(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
+        return new FichaPerfilAggregate(id, tituloProyecto, asesorFicha);
     }
 
-    public Long getId() { return id; }
-    public String getTitulo() { return titulo; }
-    public String getDescripcion() { return descripcion; }
-    public String getAreaConocimiento() { return areaConocimiento; }
-    public String getEstado() { return estado; }
-    public LocalDateTime getFechaCreacion() { return fechaCreacion; }
+    public UUID getId() { return id; }
+    public String getTituloProyecto() { return tituloProyecto; }
+    public AsesorFicha getAsesorFicha() { return asesorFicha; }
 }
 ```
 
-**2. Puerto de Entrada**
+**2. Puerto de Entrada (InputPort)**
 
 ```java
-// fichas/domain/src/main/java/com/arquisoft/fichas/domain/port/in/CrearFichaUseCase.java
-package com.arquisoft.fichas.domain.port.in;
+// fichas/application/src/main/java/com/arquisoft/fichas/application/fichaperfil/query/ConsultarFichasPerfilInputPort.java
+package com.arquisoft.fichas.application.fichaperfil.query;
 
-import com.arquisoft.fichas.domain.model.Ficha;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.PaginationRequest;
 
-public interface CrearFichaUseCase {
-    Ficha crearFicha(Ficha ficha);
+public interface ConsultarFichasPerfilInputPort {
+    PaginatedResult<FichaPerfilReadModel> ejecutar(PaginationRequest request);
 }
 ```
 
-**3. Puerto de Salida**
+**3. Puerto de Salida (OutputPort)**
 
 ```java
-// fichas/domain/src/main/java/com/arquisoft/fichas/domain/port/out/FichaRepositoryPort.java
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/port/out/FichaPerfilOutputPort.java
 package com.arquisoft.fichas.domain.port.out;
 
-import com.arquisoft.fichas.domain.model.Ficha;
-import java.util.List;
-import java.util.Optional;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
+import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.PaginationRequest;
 
-public interface FichaRepositoryPort {
-    Ficha save(Ficha ficha);
-    Optional<Ficha> findById(Long id);
-    List<Ficha> findAll();
-    boolean deleteById(Long id);
+public interface FichaPerfilOutputPort {
+    PaginatedResult<FichaPerfilAggregate> consultarTodas(PaginationRequest request);
 }
 ```
 
-**4. Implementación UseCase**
+**4. Implementación UseCaseImpl**
 
 ```java
-// fichas/application/src/main/java/com/arquisoft/fichas/application/usecase/CrearFichaUseCaseImpl.java
-package com.arquisoft.fichas.application.usecase;
+// fichas/application/.../fichaperfil/query/ConsultarFichasPerfilUseCaseImpl.java
+package com.arquisoft.fichas.application.fichaperfil.query;
 
-import com.arquisoft.fichas.domain.model.Ficha;
-import com.arquisoft.fichas.domain.port.in.CrearFichaUseCase;
-import com.arquisoft.fichas.domain.port.out.FichaRepositoryPort;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.fichas.domain.port.out.FichaPerfilOutputPort;
+import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.PaginationRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CrearFichaUseCaseImpl implements CrearFichaUseCase {
-    private final FichaRepositoryPort fichaRepositoryPort;
+public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilInputPort {
+    private final FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Override
-    public Ficha crearFicha(Ficha ficha) {
-        return fichaRepositoryPort.save(ficha);
+    public PaginatedResult<FichaPerfilReadModel> ejecutar(PaginationRequest request) {
+        return fichaPerfilOutputPort.consultarTodas(request)
+                .map(FichaPerfilReadModel::fromDomain);
     }
 }
 ```
 
-**5. Controller**
+**5. InputAdapter (REST Controller)**
 
 ```java
-// fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/adapter/in/FichaController.java
-package com.arquisoft.fichas.infrastructure.adapter.in;
+// fichas/infrastructure/.../adapter/in/web/FichaPerfilInputAdapter.java
+package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
-import com.arquisoft.fichas.application.dto.FichaDTO;
-import com.arquisoft.fichas.domain.port.in.CrearFichaUseCase;
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/fichas")
+@RequestMapping("/fichas-perfil")
 @RequiredArgsConstructor
-public class FichaController {
-    private final CrearFichaUseCase crearFichaUseCase;
+public class FichaPerfilInputAdapter {
+    private final ConsultarFichasPerfilInputPort consultarFichasPerfilInputPort;
 
-    @PostMapping
-    public ResponseEntity<FichaDTO> crear(@RequestBody FichaDTO dto) {
-        var ficha = crearFichaUseCase.crearFicha(dto.toDomain());
-        return ResponseEntity.status(HttpStatus.CREATED).body(FichaDTO.fromDomain(ficha));
+    @GetMapping("/coordinador")
+    @PreAuthorize("hasAuthority('ficha:ficha:view')")
+    public ResponseEntity<?> consultarTodas(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(consultarFichasPerfilInputPort.ejecutar(
+                PaginationRequest.of(page, size)));
     }
 }
 ```
 
-**6. Repository Adapter**
+**6. OutputAdapter (JPA)**
 
 ```java
-// fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/adapter/out/FichaRepositoryAdapter.java
-package com.arquisoft.fichas.infrastructure.adapter.out;
+// fichas/infrastructure/.../adapter/out/persistence/fichaperfil/FichaPerfilOutputAdapter.java
+package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
-import com.arquisoft.fichas.domain.model.Ficha;
-import com.arquisoft.fichas.domain.port.out.FichaRepositoryPort;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.port.out.FichaPerfilOutputPort;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class FichaRepositoryAdapter implements FichaRepositoryPort {
-    private final JdbcTemplate jdbcTemplate;
+public class FichaPerfilOutputAdapter implements FichaPerfilOutputPort {
+    private final FichaPerfilJpaRepository fichaPerfilJpaRepository;
 
     @Override
-    public Ficha save(Ficha ficha) {
-        String sql = "INSERT INTO fichas.ficha (titulo, descripcion, area_conocimiento, estado, fecha_creacion) VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql,
-            ficha.getTitulo(), ficha.getDescripcion(),
-            ficha.getAreaConocimiento(), ficha.getEstado(),
-            ficha.getFechaCreacion()
-        );
-        return ficha;
-    }
-
-    @Override
-    public Optional<Ficha> findById(Long id) {
-        // Implementar SELECT por ID en schema fichas
-        return Optional.empty();
-    }
-
-    @Override
-    public List<Ficha> findAll() {
-        // Implementar SELECT ALL en schema fichas
-        return List.of();
-    }
-
-    @Override
-    public boolean deleteById(Long id) {
-        return jdbcTemplate.update("DELETE FROM fichas.ficha WHERE id = ?", id) > 0;
+    public PaginatedResult<FichaPerfilAggregate> consultarTodas(PaginationRequest request) {
+        Page<FichaPerfilJpaEntity> page = fichaPerfilJpaRepository.findAll(
+                PageRequest.of(request.getPage(), request.getSize()));
+        return PaginatedResult.of(
+                page.getContent().stream().map(FichaPerfilMapper::toDomain).toList(),
+                request.getPage(), request.getSize(), page.getTotalElements());
     }
 }
 ```
@@ -687,40 +683,41 @@ public class FichaRepositoryAdapter implements FichaRepositoryPort {
 ### Test Unitario
 
 ```java
-// fichas/application/src/test/java/com/arquisoft/fichas/application/usecase/CrearFichaUseCaseImplTest.java
+// fichas/application/src/test/java/com/arquisoft/fichas/application/usecase/ConsultarFichasPerfilUseCaseImplTest.java
 package com.arquisoft.fichas.application.usecase;
 
-import com.arquisoft.fichas.domain.model.Ficha;
-import com.arquisoft.fichas.domain.port.out.FichaRepositoryPort;
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCaseImpl;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.port.out.FichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CrearFichaUseCaseImplTest {
+class ConsultarFichasPerfilUseCaseImplTest {
 
     @Mock
-    private FichaRepositoryPort fichaRepositoryPort;
+    private FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @InjectMocks
-    private CrearFichaUseCaseImpl crearFichaUseCase;
+    private ConsultarFichasPerfilUseCaseImpl consultarFichasPerfilUseCase;
 
     @Test
-    void shouldCreateFichaSuccessfully() {
-        Ficha ficha = Ficha.build("Mi Ficha", "Descripción", "Ingeniería");
-        when(fichaRepositoryPort.save(any(Ficha.class))).thenReturn(ficha);
+    void debeRetornarVacio_cuandoNoHayFichas() {
+        PaginationRequest request = PaginationRequest.of(0, 10);
+        when(fichaPerfilOutputPort.consultarTodas(request))
+                .thenReturn(PaginatedResult.of(List.of(), 0, 10, 0L));
 
-        Ficha result = crearFichaUseCase.crearFicha(ficha);
+        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilUseCase.ejecutar(request);
 
-        assertNotNull(result);
-        assertEquals("Mi Ficha", result.getTitulo());
-        verify(fichaRepositoryPort, times(1)).save(ficha);
+        assertThat(resultado.getContent()).isEmpty();
+        verify(fichaPerfilOutputPort, times(1)).consultarTodas(request);
     }
 }
 ```
@@ -787,44 +784,42 @@ dependencies {
 
 ## Flujos de Datos
 
-### Flujo de Lectura (GET /api/fichas/1)
+### Flujo de Lectura (GET /fichas-perfil/coordinador)
 
 ```
-FichaController.obtenerPorId(1)
+FichaPerfilInputAdapter.consultarTodas(page, size)   [InputAdapter IN]
     ↓
-ObtenerFichaUseCaseImpl.obtener(1)
+ConsultarFichasPerfilUseCaseImpl.ejecutar(request)   [UseCaseImpl]
     ↓
-FichaRepositoryPort.findById(1)  [interface]
+FichaPerfilOutputPort.consultarTodas(request)        [OutputPort - interface]
     ↓
-FichaRepositoryAdapter.findById(1)  [implementation]
+FichaPerfilOutputAdapter.consultarTodas(request)     [OutputAdapter - implementation]
     ↓
-JdbcTemplate.queryForObject()
+FichaPerfilJpaRepository.findAll(PageRequest)
     ↓
-Mapeo SQL → Ficha (entidad)
+FichaPerfilMapper.toDomain() → FichaPerfilAggregate
     ↓
-FichaDTO.fromDomain(ficha)
+FichaPerfilReadModel.fromDomain(aggregate)           [ReadModel projection]
     ↓
-HTTP Response 200 OK
+HTTP Response 200 OK [PaginatedResult<FichaPerfilReadModel>]
 ```
 
-### Flujo de Escritura (POST /api/fichas)
+### Flujo de Escritura (POST /fichas-perfil)
 
 ```
 HTTP Request [JSON]
     ↓
-FichaController.crear(FichaDTO)
+FichaPerfilInputAdapter.crear(FichaDTO)              [InputAdapter IN]
     ↓
-FichaDTO.toDomain() → Ficha
+FichaDTO.toDomain() → FichaPerfilAggregate
     ↓
-CrearFichaUseCaseImpl.crearFicha(Ficha)
-    ↓ [Validaciones de negocio]
-FichaRepositoryPort.save(Ficha) [interface]
+CrearFichaPerfilUseCaseImpl.crear(aggregate)         [UseCaseImpl]
+    ↓ [Validaciones de negocio en el aggregate]
+FichaPerfilOutputPort.save(aggregate)                [OutputPort - interface]
     ↓
-FichaRepositoryAdapter.save(Ficha) [implementation]
+FichaPerfilOutputAdapter.save(aggregate)             [OutputAdapter - implementation]
     ↓
-INSERT en BD (schema fichas)
-    ↓
-FichaDTO.fromDomain(ficha)
+INSERT en BD (schema fichas_perfil)
     ↓
 HTTP Response 201 CREATED
 ```

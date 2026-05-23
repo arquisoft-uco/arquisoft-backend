@@ -11,7 +11,7 @@ import java.util.Map;
  * la aplicacion libre de DTOs de infraestructura. La traduccion a DTOs ocurre en
  * la capa de aplicacion (casos de uso).
  */
-public interface AuthenticationPort {
+public interface AuthenticationOutputPort {
 
     /**
      * Autentica al usuario contra el proveedor de identidad usando email y contrasena.

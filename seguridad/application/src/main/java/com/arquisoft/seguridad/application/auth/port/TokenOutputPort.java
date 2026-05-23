@@ -10,7 +10,7 @@ import java.util.Map;
  * Nota: Se retorna Map<String, Object> para mantener la aplicacion libre de
  * dependencias de framework. La traduccion a DTOs ocurre en la capa de aplicacion.
  */
-public interface TokenPort {
+public interface TokenOutputPort {
 
     /**
      * Extrae la informacion del usuario desde el JWT.

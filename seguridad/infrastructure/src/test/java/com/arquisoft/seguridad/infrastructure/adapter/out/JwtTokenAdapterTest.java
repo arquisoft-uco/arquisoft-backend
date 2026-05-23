@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out;
 
-import com.arquisoft.seguridad.infrastructure.adapter.out.security.JwtTokenAdapter;
+import com.arquisoft.seguridad.infrastructure.adapter.out.security.JwtTokenOutputAdapter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,7 +25,7 @@ class JwtTokenAdapterTest {
     private JwtDecoder jwtDecoder;
 
     @InjectMocks
-    private JwtTokenAdapter jwtTokenAdapter;
+    private JwtTokenOutputAdapter jwtTokenAdapter;
 
     // ── utilidad: construye un Jwt real usando el builder de Spring Security ──
 

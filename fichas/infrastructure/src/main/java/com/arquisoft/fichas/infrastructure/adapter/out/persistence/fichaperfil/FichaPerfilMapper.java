@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
 import com.arquisoft.fichas.domain.model.AsesorFicha;
-import com.arquisoft.fichas.domain.model.FichaPerfil;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
 import com.arquisoft.fichas.infrastructure.adapter.out.persistence.asesorficha.AsesorFichaJpaEntity;
 
 /**
@@ -13,8 +13,8 @@ public final class FichaPerfilMapper {
 
     private FichaPerfilMapper() {}
 
-    public static FichaPerfil toDomain(FichaPerfilJpaEntity entity) {
-        return FichaPerfil.rebuild(
+    public static FichaPerfilAggregate toDomain(FichaPerfilJpaEntity entity) {
+        return FichaPerfilAggregate.rebuild(
                 entity.getId(),
                 entity.getTituloProyecto(),
                 AsesorFicha.rebuild(
@@ -26,7 +26,7 @@ public final class FichaPerfilMapper {
         );
     }
 
-    public static FichaPerfilJpaEntity toEntity(FichaPerfil domain) {
+    public static FichaPerfilJpaEntity toEntity(FichaPerfilAggregate domain) {
         return FichaPerfilJpaEntity.builder()
                 .id(domain.getId())
                 .tituloProyecto(domain.getTituloProyecto())

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
-import com.arquisoft.fichas.domain.model.FichaPerfil;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
 import com.arquisoft.fichas.infrastructure.adapter.out.persistence.asesorficha.AsesorFichaJpaEntity;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
@@ -25,11 +25,11 @@ class FichaPerfilRepositoryAdapterTest {
     @Autowired
     private FichaPerfilJpaRepository fichaPerfilJpaRepository;
 
-    private FichaPerfilRepositoryAdapter adapter;
+    private FichaPerfilOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new FichaPerfilRepositoryAdapter(fichaPerfilJpaRepository);
+        adapter = new FichaPerfilOutputAdapter(fichaPerfilJpaRepository);
     }
 
     @Test
@@ -50,20 +50,20 @@ class FichaPerfilRepositoryAdapterTest {
         entityManager.persist(ficha);
         entityManager.flush();
 
-        PaginatedResult<FichaPerfil> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
+        PaginatedResult<FichaPerfilAggregate> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).hasSize(1);
         assertThat(resultado.getTotalElements()).isEqualTo(1L);
 
-        FichaPerfil fichaReconstruida = resultado.getContent().get(0);
+        FichaPerfilAggregate fichaReconstruida = resultado.getContent().get(0);
         assertThat(fichaReconstruida.getTituloProyecto()).isEqualTo("Arquisoft Backend");
         assertThat(fichaReconstruida.getAsesorFicha().getNombre()).isEqualTo("Juan Salazar");
     }
 
     @Test
     void debeRetornarVacio_cuandoNoHayFichasEnBD() {
-        PaginatedResult<FichaPerfil> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
+        PaginatedResult<FichaPerfilAggregate> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).isEmpty();

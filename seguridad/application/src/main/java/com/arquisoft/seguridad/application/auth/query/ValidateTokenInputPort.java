@@ -1,9 +1,9 @@
 package com.arquisoft.seguridad.application.auth.query;
 
 /**
- * Caso de uso para validar un token JWT.
+ * Puerto de entrada — caso de uso para validar un token JWT.
  */
-public interface ValidateTokenUseCase {
+public interface ValidateTokenInputPort {
 
     /**
      * Resultado de la validacion del token.

@@ -2,7 +2,7 @@ package com.arquisoft.seguridad.application.auth.command;
 
 import com.arquisoft.seguridad.application.auth.dto.LogoutRequestDTO;
 
-public interface LogoutUseCase {
+public interface LogoutInputPort {
 
     /**
      * Invalida el token JWT representado por el DTO de solicitud.

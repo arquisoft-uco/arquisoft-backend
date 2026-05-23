@@ -2,7 +2,7 @@ package com.arquisoft.seguridad.infrastructure.adapter.in.web;
 
 import com.arquisoft.seguridad.application.usuario.dto.CrearUsuarioRequestDTO;
 import com.arquisoft.seguridad.application.usuario.dto.CrearUsuarioResponseDTO;
-import com.arquisoft.seguridad.application.usuario.command.CrearUsuarioUseCase;
+import com.arquisoft.seguridad.application.usuario.command.CrearUsuarioInputPort;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,9 +28,9 @@ import java.util.UUID;
 @RequestMapping("/usuarios")
 @RequiredArgsConstructor
 @Tag(name = "Seguridad - Usuarios", description = "Gestión de usuarios del sistema")
-public class UsuarioController {
+public class UsuarioInputAdapter {
 
-    private final CrearUsuarioUseCase crearUsuarioUseCase;
+    private final CrearUsuarioInputPort crearUsuarioInputPort;
 
     @PostMapping
     @PreAuthorize("hasAuthority('usuarios:usuario:create')")
@@ -51,7 +51,7 @@ public class UsuarioController {
     public ResponseEntity<CrearUsuarioResponseDTO> crear(
             @Valid @RequestBody CrearUsuarioRequestDTO request) {
 
-        UUID id = crearUsuarioUseCase.crear(request.getEmail(), request.getRol());
+        UUID id = crearUsuarioInputPort.crear(request.getEmail(), request.getRol());
 
         CrearUsuarioResponseDTO response = CrearUsuarioResponseDTO.builder()
                 .id(id)

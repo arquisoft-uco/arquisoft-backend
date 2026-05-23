@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
-import com.arquisoft.fichas.domain.model.FichaPerfil;
-import com.arquisoft.fichas.domain.port.out.FichaPerfilRepositoryPort;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.port.out.FichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.exception.OrdenamientoInvalidoException;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
@@ -16,12 +16,12 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class FichaPerfilRepositoryAdapter implements FichaPerfilRepositoryPort {
+public class FichaPerfilOutputAdapter implements FichaPerfilOutputPort {
 
     private final FichaPerfilJpaRepository fichaPerfilJpaRepository;
 
     @Override
-    public PaginatedResult<FichaPerfil> consultarTodas(PaginationRequest request) {
+    public PaginatedResult<FichaPerfilAggregate> consultarTodas(PaginationRequest request) {
         Pageable pageable = PaginationMapper.toPageable(request);
         try {
             return PaginationMapper.toResult(

@@ -31,10 +31,10 @@
                 <mxCell id="c_req_dto_b" value="- campo1&#xa;- campo2&#xa;(solo datos HTTP, sin logica)" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_req_dto" vertex="1">
                     <mxGeometry y="40" width="290" height="38" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_opi" value="«Output Adapter»&#xa;XxxOutputPortImpl" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                <mxCell id="c_opi" value="«Output Adapter»&#xa;XxxOutputAdapter" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
                     <mxGeometry x="40" y="370" width="290" height="128" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_opi_b" value="+ buscarPorId(id): XxxAgregado&#xa;+ guardar(a: XxxAgregado): void&#xa;&#xa;Mapea Dominio &lt;-&gt; XxxJpaEntity" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_opi" vertex="1">
+                <mxCell id="c_opi_b" value="+ buscarPorId(id): XxxAggregate&#xa;+ guardar(aggregate: XxxAggregate): void&#xa;&#xa;Mapea Dominio &lt;-&gt; XxxJpaEntity" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_opi" vertex="1">
                     <mxGeometry y="40" width="290" height="88" as="geometry"/>
                 </mxCell>
                 <mxCell id="c_jpa" value="«Persistencia»&#xa;XxxJpaEntity" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
@@ -55,55 +55,55 @@
                 <mxCell id="c_cmd_b" value="- campo1&#xa;- campo2&#xa;(intencion de negocio, sin logica)" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_cmd" vertex="1">
                     <mxGeometry y="40" width="275" height="42" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_ipi" value="«Caso de uso»&#xa;XxxInputPortImpl" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                <mxCell id="c_ipi" value="«Caso de uso»&#xa;XxxUseCaseImpl" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
                     <mxGeometry x="460" y="340" width="275" height="158" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_ipi_b" value="- outputPort: XxxOutputPort&#xa;&#xa;+ ejecutar(cmd): void&#xa;&#xa;XxxAgregado.build(cmd.campo1, ...)&#xa;Las validaciones disparan aqui.&#xa;outputPort.guardar(agregado)" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_ipi" vertex="1">
+                <mxCell id="c_ipi_b" value="- outputPort: XxxOutputPort&#xa;&#xa;+ ejecutar(cmd): void&#xa;&#xa;XxxAggregate.build(cmd.campo1, ...)&#xa;Las validaciones disparan aqui.&#xa;outputPort.guardar(aggregate)" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_ipi" vertex="1">
                     <mxGeometry y="40" width="275" height="118" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_agg" value="«Aggregate - domain»&#xa;XxxAgregado" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                <mxCell id="c_agg" value="«Aggregate - domain»&#xa;XxxAggregate" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
                     <mxGeometry x="860" y="92" width="270" height="235" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_agg_b" value="- id: UUID&#xa;- ...estado&#xa;&#xa;+ build(...): XxxAgregado&#xa;+ rebuild(...): XxxAgregado&#xa;+ operacionNegocio()&#xa;&#xa;Valida invariantes. Sin Spring." style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_agg" vertex="1">
+                <mxCell id="c_agg_b" value="- id: UUID&#xa;- ...estado&#xa;&#xa;+ build(...): XxxAggregate&#xa;+ rebuild(...): XxxAggregate&#xa;+ operacionNegocio()&#xa;&#xa;Valida invariantes. Sin Spring." style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_agg" vertex="1">
                     <mxGeometry y="40" width="270" height="195" as="geometry"/>
                 </mxCell>
                 <mxCell id="c_outport" value="«interface»&#xa;XxxOutputPort" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
                     <mxGeometry x="860" y="400" width="270" height="108" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_outport_b" value="+ buscarPorId(id): XxxAgregado&#xa;+ guardar(a: XxxAgregado): void" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;fontStyle=2;" parent="c_outport" vertex="1">
+                <mxCell id="c_outport_b" value="+ buscarPorId(id): XxxAggregate&#xa;+ guardar(aggregate: XxxAggregate): void" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;fontStyle=2;" parent="c_outport" vertex="1">
                     <mxGeometry y="40" width="270" height="68" as="geometry"/>
                 </mxCell>
                 <mxCell id="sep" value="" style="line;strokeColor=#888888;strokeWidth=2;fillColor=none;" parent="1" vertex="1">
                     <mxGeometry x="20" y="632" width="1130" height="8" as="geometry"/>
                 </mxCell>
-                <mxCell id="qry_hdr" value="READ — QUERY  |  XxxQueryPort.consultar(params): XxxReadModel  |  NO involucra el agregado de dominio" style="text;html=1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                <mxCell id="qry_hdr" value="READ — QUERY  |  XxxQueryInputPort.consultar(params): XxxReadModel  |  NO involucra el agregado de dominio" style="text;html=1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
                     <mxGeometry x="20" y="642" width="1130" height="22" as="geometry"/>
                 </mxCell>
                 <mxCell id="c_qry_adp" value="«Input Adapter»&#xa;XxxQueryAdapter" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
                     <mxGeometry x="40" y="674" width="290" height="128" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_qry_adp_b" value="+ consultar(params): 200 OK + ReadModel&#xa;&#xa;1. Extrae parametros HTTP&#xa;2. Invoca XxxQueryPort.consultar(params)&#xa;3. Serializa XxxReadModel como JSON" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_qry_adp" vertex="1">
+                <mxCell id="c_qry_adp_b" value="+ consultar(params): 200 OK + ReadModel&#xa;&#xa;1. Extrae parametros HTTP&#xa;2. Invoca XxxQueryInputPort.consultar(params)&#xa;3. Serializa XxxReadModel como JSON" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_qry_adp" vertex="1">
                     <mxGeometry y="40" width="290" height="88" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_read_repo_impl" value="«Output Adapter»&#xa;XxxReadRepositoryImpl" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                <mxCell id="c_read_repo_impl" value="«Output Adapter»&#xa;XxxReadOutputAdapter" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
                     <mxGeometry x="40" y="822" width="290" height="118" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_read_repo_impl_b" value="+ consultar(params): XxxReadModel&#xa;&#xa;Query SQL / JPQL directo.&#xa;Proyeccion aplanada, sin XxxAgregado." style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_read_repo_impl" vertex="1">
+                <mxCell id="c_read_repo_impl_b" value="+ consultar(params): XxxReadModel&#xa;&#xa;Query SQL / JPQL directo.&#xa;Proyeccion aplanada, sin XxxAggregate." style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_read_repo_impl" vertex="1">
                     <mxGeometry y="40" width="290" height="78" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_qport" value="«interface»&#xa;XxxQueryPort" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                <mxCell id="c_qport" value="«interface»&#xa;XxxQueryInputPort" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
                     <mxGeometry x="460" y="674" width="275" height="92" as="geometry"/>
                 </mxCell>
                 <mxCell id="c_qport_b" value="+ consultar(params): XxxReadModel" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;fontStyle=2;" parent="c_qport" vertex="1">
                     <mxGeometry y="40" width="275" height="52" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_qport_impl" value="«Caso de uso»&#xa;XxxQueryPortImpl" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                <mxCell id="c_qport_impl" value="«Caso de uso»&#xa;XxxQueryUseCaseImpl" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
                     <mxGeometry x="460" y="786" width="275" height="128" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_qport_impl_b" value="- readRepo: XxxReadRepositoryPort&#xa;&#xa;+ consultar(params): XxxReadModel&#xa;&#xa;Delega al repositorio de lectura.&#xa;Sin dominio, sin validaciones." style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_qport_impl" vertex="1">
+                <mxCell id="c_qport_impl_b" value="- readRepo: XxxReadOutputPort&#xa;&#xa;+ consultar(params): XxxReadModel&#xa;&#xa;Delega al repositorio de lectura.&#xa;Sin dominio, sin validaciones." style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_qport_impl" vertex="1">
                     <mxGeometry y="40" width="275" height="88" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_read_repo_port" value="«interface»&#xa;XxxReadRepositoryPort" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                <mxCell id="c_read_repo_port" value="«interface»&#xa;XxxReadOutputPort" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
                     <mxGeometry x="460" y="934" width="275" height="88" as="geometry"/>
                 </mxCell>
                 <mxCell id="c_read_repo_port_b" value="+ consultar(params): XxxReadModel" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;fontStyle=2;" parent="c_read_repo_port" vertex="1">
@@ -160,7 +160,7 @@
                 <mxCell id="eq5" value="retorna" style="endArrow=open;dashed=1;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="c_qport" target="c_read_model" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="legend" value="LEYENDA&#xa;COMMAND (amarillo): XxxInputPort.ejecutar(cmd): void — sin retorno. El adaptador devuelve HTTP 204. XxxInputPortImpl llama XxxAgregado.build() — validaciones en application.&#xa;QUERY (azul): XxxQueryPort.consultar(): XxxReadModel — sin pasar por el agregado. XxxReadRepositoryImpl hace SQL/JPQL directo, retorna proyeccion plana.&#xa;DIP (rojo): XxxOutputPortImpl (infra) implementa XxxOutputPort (domain). XxxReadRepositoryImpl (infra) implementa XxxReadRepositoryPort (application).&#xa;- - -|&gt; (triangulo hueco) = implements.   - - -&gt; (flecha abierta) = usa.   XxxReadModel vive en application; se muestra en columna derecha por contraste visual con XxxAgregado." style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;spacing=8;" parent="1" vertex="1">
+                <mxCell id="legend" value="LEYENDA&#xa;COMMAND (amarillo): XxxInputPort.ejecutar(cmd): void — sin retorno. El adaptador (InputAdapter) devuelve HTTP 204. XxxUseCaseImpl llama XxxAggregate.build() — validaciones en el aggregate.&#xa;QUERY (azul): XxxQueryInputPort.consultar(): XxxReadModel — sin pasar por el aggregate. XxxReadOutputAdapter hace SQL/JPQL directo, retorna proyeccion plana (ReadModel).&#xa;DIP (rojo): XxxOutputAdapter (infra) implementa XxxOutputPort (domain). XxxReadOutputAdapter (infra) implementa XxxReadOutputPort (application).&#xa;- - -|&gt; (triangulo hueco) = implements.   - - -&gt; (flecha abierta) = usa.   XxxReadModel vive en application; se muestra en columna derecha por contraste visual con XxxAggregate." style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;spacing=8;" parent="1" vertex="1">
                     <mxGeometry x="20" y="1042" width="1130" height="95" as="geometry"/>
                 </mxCell>
             </root>

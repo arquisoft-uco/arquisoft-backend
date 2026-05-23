@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.query;
 
-import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilResponseDTO;
-import com.arquisoft.fichas.domain.port.out.FichaPerfilRepositoryPort;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.fichas.domain.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
 import lombok.RequiredArgsConstructor;
@@ -12,18 +12,18 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilUseCase {
+public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilInputPort {
 
-    private final FichaPerfilRepositoryPort fichaPerfilRepositoryPort;
+    private final FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Override
     @Transactional(readOnly = true)
-    public PaginatedResult<FichaPerfilResponseDTO> ejecutar(PaginationRequest request) {
+    public PaginatedResult<FichaPerfilReadModel> ejecutar(PaginationRequest request) {
         log.debug("Consultando fichas de perfil — page={}, size={}", request.getPage(), request.getSize());
 
-        PaginatedResult<FichaPerfilResponseDTO> result = fichaPerfilRepositoryPort
+        PaginatedResult<FichaPerfilReadModel> result = fichaPerfilOutputPort
                 .consultarTodas(request)
-                .map(FichaPerfilResponseDTO::fromDomain);
+                .map(FichaPerfilReadModel::fromDomain);
 
         log.info("Consulta fichas-perfil completada — total={}, page={}, size={}",
                 result.getTotalElements(), request.getPage(), request.getSize());

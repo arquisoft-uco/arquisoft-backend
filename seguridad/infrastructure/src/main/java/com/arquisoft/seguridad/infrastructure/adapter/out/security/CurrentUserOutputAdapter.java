@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out.security;
 
-import com.arquisoft.seguridad.application.auth.port.CurrentUserPort;
+import com.arquisoft.seguridad.application.auth.port.CurrentUserOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -13,12 +13,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Adaptador de salida que implementa CurrentUserPort
+ * Output Adapter que implementa CurrentUserOutputPort
  * obteniendo informacion del contexto de seguridad de Spring.
  */
 @Component
 @RequiredArgsConstructor
-public class CurrentUserAdapter implements CurrentUserPort {
+public class CurrentUserOutputAdapter implements CurrentUserOutputPort {
 
     @Override
     public String getCurrentUserId() {

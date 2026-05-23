@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.port.out;
 
-import com.arquisoft.fichas.domain.model.FichaPerfil;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
 
@@ -13,7 +13,7 @@ import com.arquisoft.shared.pagination.PaginationRequest;
  * <p>Usa tipos propios del dominio ({@link PaginationRequest} y {@link PaginatedResult})
  * para mantener esta capa libre de dependencias de framework.</p>
  */
-public interface FichaPerfilRepositoryPort {
+public interface FichaPerfilOutputPort {
 
     /**
      * Consulta todas las fichas de perfil de forma paginada.
@@ -21,5 +21,5 @@ public interface FichaPerfilRepositoryPort {
      * @param request criterios de paginación y ordenamiento
      * @return {@link PaginatedResult} con las fichas de dominio de la página solicitada
      */
-    PaginatedResult<FichaPerfil> consultarTodas(PaginationRequest request);
+    PaginatedResult<FichaPerfilAggregate> consultarTodas(PaginationRequest request);
 }

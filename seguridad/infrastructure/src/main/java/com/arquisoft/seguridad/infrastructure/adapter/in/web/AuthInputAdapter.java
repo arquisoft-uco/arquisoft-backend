@@ -5,11 +5,11 @@ import com.arquisoft.seguridad.application.auth.dto.LoginResponseDTO;
 import com.arquisoft.seguridad.application.auth.dto.LogoutRequestDTO;
 import com.arquisoft.seguridad.application.auth.dto.LogoutResponseDTO;
 import com.arquisoft.seguridad.application.auth.dto.RefreshTokenRequestDTO;
-import com.arquisoft.seguridad.application.auth.dto.TokenValidationResponseDTO;
-import com.arquisoft.seguridad.application.auth.command.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.application.auth.command.LogoutUseCase;
-import com.arquisoft.seguridad.application.auth.command.RefreshTokenUseCase;
-import com.arquisoft.seguridad.application.auth.query.ValidateTokenUseCase;
+import com.arquisoft.seguridad.application.auth.dto.TokenValidationReadModel;
+import com.arquisoft.seguridad.application.auth.command.AuthenticateUserInputPort;
+import com.arquisoft.seguridad.application.auth.command.LogoutInputPort;
+import com.arquisoft.seguridad.application.auth.command.RefreshTokenInputPort;
+import com.arquisoft.seguridad.application.auth.query.ValidateTokenInputPort;
 import com.arquisoft.seguridad.infrastructure.util.message.SeguridadInfraestructureMessages;
 import com.arquisoft.shared.util.UtilObject;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,12 +39,12 @@ import java.time.Instant;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @Tag(name = "Seguridad - Autenticacion", description = "Autenticacion via Keycloak: login, refresh, logout y validacion de tokens JWT")
-public class AuthController {
+public class AuthInputAdapter {
 
-    private final AuthenticateUserUseCase authenticateUserUseCase;
-    private final RefreshTokenUseCase refreshTokenUseCase;
-    private final ValidateTokenUseCase validateTokenUseCase;
-    private final LogoutUseCase logoutUseCase;
+    private final AuthenticateUserInputPort authenticateUserInputPort;
+    private final RefreshTokenInputPort refreshTokenInputPort;
+    private final ValidateTokenInputPort validateTokenInputPort;
+    private final LogoutInputPort logoutInputPort;
 
     @PostMapping("/login")
     @Operation(
@@ -73,7 +73,7 @@ public class AuthController {
             )
     })
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
-        AuthenticateUserUseCase.AuthResult result = authenticateUserUseCase.authenticate(
+        AuthenticateUserInputPort.AuthResult result = authenticateUserInputPort.authenticate(
                 loginRequest.getEmail(),
                 loginRequest.getPassword()
         );
@@ -117,9 +117,9 @@ public class AuthController {
     })
     public ResponseEntity<LoginResponseDTO> refreshToken(
             @Valid @RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
-        log.debug(SeguridadInfraestructureMessages.AuthController.REFRESH_DEBUG);
+        log.debug(SeguridadInfraestructureMessages.AuthInputAdapter.REFRESH_DEBUG);
 
-        RefreshTokenUseCase.RefreshResult result = refreshTokenUseCase.refresh(
+        RefreshTokenInputPort.RefreshResult result = refreshTokenInputPort.refresh(
                 refreshTokenRequest.getRefreshToken()
         );
 
@@ -131,7 +131,7 @@ public class AuthController {
                 .scope(result.scope())
                 .build();
 
-        log.debug(SeguridadInfraestructureMessages.AuthController.REFRESH_EXITOSO_DEBUG);
+        log.debug(SeguridadInfraestructureMessages.AuthInputAdapter.REFRESH_EXITOSO_DEBUG);
         return ResponseEntity.ok(response);
     }
 
@@ -159,7 +159,7 @@ public class AuthController {
 
         if (UtilObject.isNull(jti)) {
             // log.warn: error de cliente — token sin claim jti, situacion anormal
-            log.warn(SeguridadInfraestructureMessages.AuthController.LOGOUT_SIN_JTI);
+            log.warn(SeguridadInfraestructureMessages.AuthInputAdapter.LOGOUT_SIN_JTI);
             return ResponseEntity.ok(LogoutResponseDTO.builder().build());
         }
 
@@ -173,13 +173,13 @@ public class AuthController {
 
         if (remainingSeconds <= 0) {
             // log.warn: error de cliente — token ya expirado al momento del logout
-            log.warn(SeguridadInfraestructureMessages.AuthController.LOGOUT_TOKEN_EXPIRADO, jti);
+            log.warn(SeguridadInfraestructureMessages.AuthInputAdapter.LOGOUT_TOKEN_EXPIRADO, jti);
             return ResponseEntity.ok(LogoutResponseDTO.builder().build());
         }
 
-        logoutUseCase.ejecutar(new LogoutRequestDTO(jti, remainingSeconds));
+        logoutInputPort.ejecutar(new LogoutRequestDTO(jti, remainingSeconds));
         // log.info: evento de negocio completado exitosamente
-        log.info(SeguridadInfraestructureMessages.AuthController.LOGOUT_EXITOSO, jti, remainingSeconds);
+        log.info(SeguridadInfraestructureMessages.AuthInputAdapter.LOGOUT_EXITOSO, jti, remainingSeconds);
         return ResponseEntity.ok(LogoutResponseDTO.builder().build());
     }
 
@@ -195,7 +195,7 @@ public class AuthController {
                     description = "Resultado de la validacion del token",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = TokenValidationResponseDTO.class)
+                            schema = @Schema(implementation = TokenValidationReadModel.class)
                     )
             ),
             @ApiResponse(
@@ -204,12 +204,12 @@ public class AuthController {
                     content = @Content(mediaType = "application/json")
             )
     })
-    public ResponseEntity<TokenValidationResponseDTO> validateToken(@RequestParam String token) {
-        log.debug(SeguridadInfraestructureMessages.AuthController.VALIDATE_DEBUG);
+    public ResponseEntity<TokenValidationReadModel> validateToken(@RequestParam String token) {
+        log.debug(SeguridadInfraestructureMessages.AuthInputAdapter.VALIDATE_DEBUG);
 
-        ValidateTokenUseCase.ValidationResult result = validateTokenUseCase.validate(token);
+        ValidateTokenInputPort.ValidationResult result = validateTokenInputPort.validate(token);
 
-        TokenValidationResponseDTO response = TokenValidationResponseDTO.builder()
+        TokenValidationReadModel response = TokenValidationReadModel.builder()
                 .valid(result.valid())
                 .keycloakUserId(result.keycloakUserId())
                 .email(result.email())

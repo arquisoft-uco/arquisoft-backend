@@ -2,13 +2,13 @@ package com.arquisoft.seguridad.application.auth.port;
 
 /**
  * Puerto de salida para la blacklist de tokens JWT revocados explicitamente.
- * Sigue el patron del contexto seguridad: TokenPort, CurrentUserPort, AuthenticationPort.
+ * Sigue el patron del contexto seguridad: TokenOutputPort, CurrentUserOutputPort, AuthenticationOutputPort.
  *
  * Estrategia anti-saturacion: el TTL de cada entrada = vida restante del token.
  * Redis expira automaticamente la entrada cuando el token habria caducado de todas formas.
  * El tamano maximo del blacklist ≈ sesiones activas con logout pendiente, no el total historico.
  */
-public interface TokenBlacklistPort {
+public interface TokenBlacklistOutputPort {
 
     /**
      * Registra el JTI del token como revocado durante {@code ttlSegundos}.

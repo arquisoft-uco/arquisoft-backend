@@ -8,7 +8,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class FichaPerfilTest {
+class FichaPerfilAggregateTest {
 
     // ─── Helpers de Arrange ───────────────────────────────────────────────────
 
@@ -26,7 +26,7 @@ class FichaPerfilTest {
         AsesorFicha asesor = asesorValido();
 
         // Act
-        FichaPerfil ficha = FichaPerfil.rebuild(id, titulo, asesor);
+        FichaPerfilAggregate ficha = FichaPerfilAggregate.rebuild(id, titulo, asesor);
 
         // Assert
         assertThat(ficha.getId()).isEqualTo(id);
@@ -40,17 +40,17 @@ class FichaPerfilTest {
         AsesorFicha asesor = asesorValido();
 
         // Act & Assert — null
-        assertThatThrownBy(() -> FichaPerfil.build(null, asesor))
+        assertThatThrownBy(() -> FichaPerfilAggregate.build(null, asesor))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
 
         // Act & Assert — blank (solo espacios)
-        assertThatThrownBy(() -> FichaPerfil.build("   ", asesor))
+        assertThatThrownBy(() -> FichaPerfilAggregate.build("   ", asesor))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
 
         // Act & Assert — cadena vacía
-        assertThatThrownBy(() -> FichaPerfil.build("", asesor))
+        assertThatThrownBy(() -> FichaPerfilAggregate.build("", asesor))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
     }
@@ -62,7 +62,7 @@ class FichaPerfilTest {
         String tituloLargo = "A".repeat(101); // 101 caracteres — supera el máximo de 100
 
         // Act & Assert
-        assertThatThrownBy(() -> FichaPerfil.build(tituloLargo, asesor))
+        assertThatThrownBy(() -> FichaPerfilAggregate.build(tituloLargo, asesor))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("100 caracteres");
     }

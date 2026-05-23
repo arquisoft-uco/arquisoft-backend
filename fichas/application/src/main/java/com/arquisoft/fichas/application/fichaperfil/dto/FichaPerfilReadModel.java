@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.dto;
 
-import com.arquisoft.fichas.application.asesorficha.dto.AsesorFichaResponseDTO;
-import com.arquisoft.fichas.domain.model.FichaPerfil;
+import com.arquisoft.fichas.application.asesorficha.dto.AsesorFichaReadModel;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,17 +15,17 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class FichaPerfilResponseDTO {
+public class FichaPerfilReadModel {
 
     private UUID id;
     private String tituloProyecto;
-    private AsesorFichaResponseDTO asesorFicha;
+    private AsesorFichaReadModel asesorFicha;
 
-    public static FichaPerfilResponseDTO fromDomain(FichaPerfil ficha) {
-        return FichaPerfilResponseDTO.builder()
+    public static FichaPerfilReadModel fromDomain(FichaPerfilAggregate ficha) {
+        return FichaPerfilReadModel.builder()
                 .id(ficha.getId())
                 .tituloProyecto(ficha.getTituloProyecto())
-                .asesorFicha(AsesorFichaResponseDTO.fromDomain(ficha.getAsesorFicha()))
+                .asesorFicha(AsesorFichaReadModel.fromDomain(ficha.getAsesorFicha()))
                 .build();
     }
 }

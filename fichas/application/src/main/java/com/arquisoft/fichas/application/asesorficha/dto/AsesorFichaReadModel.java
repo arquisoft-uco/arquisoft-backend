@@ -12,15 +12,15 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AsesorFichaResponseDTO {
+public class AsesorFichaReadModel {
 
     private UUID id;
     private String identificador;
     private String nombre;
     private String email;
 
-    public static AsesorFichaResponseDTO fromDomain(AsesorFicha asesorFicha) {
-        return AsesorFichaResponseDTO.builder()
+    public static AsesorFichaReadModel fromDomain(AsesorFicha asesorFicha) {
+        return AsesorFichaReadModel.builder()
                 .id(asesorFicha.getId())
                 .identificador(asesorFicha.getIdentificador())
                 .nombre(asesorFicha.getNombre())

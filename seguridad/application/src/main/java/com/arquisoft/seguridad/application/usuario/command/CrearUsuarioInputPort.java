@@ -10,7 +10,7 @@ import java.util.UUID;
  * <p>El use case orquesta: crear el aggregate, persistirlo y drenar los eventos
  * acumulados por el aggregate hacia el bus de mensajería.
  */
-public interface CrearUsuarioUseCase {
+public interface CrearUsuarioInputPort {
 
     /**
      * Crea un nuevo usuario con el email y rol dados.

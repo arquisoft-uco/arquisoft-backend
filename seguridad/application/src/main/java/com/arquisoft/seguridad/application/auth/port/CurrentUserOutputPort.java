@@ -10,7 +10,7 @@ import java.util.List;
  * Nota: Se retornan tipos primitivos y String para mantener la aplicacion
  * libre de dependencias de framework (no se expone Authentication ni Jwt).
  */
-public interface CurrentUserPort {
+public interface CurrentUserOutputPort {
 
     /**
      * Obtiene el ID del usuario actual (subject del JWT).

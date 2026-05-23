@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilResponseDTO;
-import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCase;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilInputPort;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
@@ -25,9 +25,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "Fichas Perfil", description = "Gestión de fichas de perfil de proyectos de grado")
-public class FichaPerfilController {
+public class FichaPerfilInputAdapter {
 
-    private final ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;
+    private final ConsultarFichasPerfilInputPort consultarFichasPerfilInputPort;
 
     @GetMapping("/coordinador")
     @PreAuthorize("hasAuthority('ficha:ficha:view')")
@@ -45,11 +45,11 @@ public class FichaPerfilController {
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "Sin permisos — se requiere rol coordinador")
     })
-    public ResponseEntity<PageResponseDTO<FichaPerfilResponseDTO>> consultarFichasCoordinador(
+    public ResponseEntity<PageResponseDTO<FichaPerfilReadModel>> consultarFichasCoordinador(
             PaginationRequest request) {
         log.debug("GET /fichas-perfil/coordinador — page={}, size={}", request.getPage(), request.getSize());
 
-        PaginatedResult<FichaPerfilResponseDTO> resultado = consultarFichasPerfilUseCase.ejecutar(request);
+        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilInputPort.ejecutar(request);
 
         return ResponseEntity.ok(PageResponseDTO.from(resultado));
     }

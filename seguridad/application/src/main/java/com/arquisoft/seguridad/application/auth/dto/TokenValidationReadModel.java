@@ -6,13 +6,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO para validación de token
+ * ReadModel para la respuesta de validacion de token (resultado de consulta).
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TokenValidationResponseDTO {
+public class TokenValidationReadModel {
     private boolean valid;
     private String keycloakUserId;
     private String email;

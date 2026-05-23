@@ -1,8 +1,8 @@
 package com.arquisoft.seguridad.application.usuario.command;
 
-import com.arquisoft.seguridad.domain.model.Usuario;
+import com.arquisoft.seguridad.domain.model.UsuarioAggregate;
 import com.arquisoft.seguridad.domain.model.UsuarioRole;
-import com.arquisoft.seguridad.domain.port.out.UsuarioRepositoryPort;
+import com.arquisoft.seguridad.domain.port.out.UsuarioOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,7 @@ import java.util.UUID;
  *
  * <p>Orquesta el patrón aggregate-driven de publicación de eventos:
  * <ol>
- *   <li>El aggregate {@link Usuario#crear} decide qué evento emitir y lo acumula
+ *   <li>El aggregate {@link UsuarioAggregate#crear} decide qué evento emitir y lo acumula
  *       internamente — sin saber que existe RabbitMQ.</li>
  *   <li>Este use case persiste el aggregate.</li>
  *   <li>Drena mecánicamente los eventos acumulados y los entrega a {@link EventPublisher}
@@ -28,18 +28,18 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
+public class CrearUsuarioUseCaseImpl implements CrearUsuarioInputPort {
 
-    private final UsuarioRepositoryPort usuarioRepository;
+    private final UsuarioOutputPort usuarioOutputPort;
     private final EventPublisher eventPublisher;
 
     @Override
     public UUID crear(String email, UsuarioRole rol) {
         // 1. El aggregate valida invariantes y acumula UsuarioCreadoEvent en memoria
-        Usuario usuario = Usuario.crear(email, rol);
+        UsuarioAggregate usuario = UsuarioAggregate.crear(email, rol);
 
         // 2. Persistir el aggregate (mock en memoria por ahora)
-        usuarioRepository.save(usuario);
+        usuarioOutputPort.save(usuario);
 
         // 3. Drenar y publicar los eventos que el aggregate acumuló — operación atómica:
         //    drainUnPublishedEvents() retorna y limpia en un solo paso, evitando
@@ -50,7 +50,7 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
         //    se agotan, el usuario quedará persistido pero fichas no recibirá el evento.
         //    Solución correcta: persistir el evento en tabla domain_events dentro de la
         //    misma transacción JDBC (Outbox Pattern), y publicar desde un scheduler/CDC.
-        //    Pendiente de implementar cuando InMemoryUsuarioRepository sea reemplazado por JPA.
+        //    Pendiente de implementar cuando UsuarioOutputAdapter sea reemplazado por JPA.
         usuario.drainUnPublishedEvents().forEach(eventPublisher::publish);
 
         log.info("Usuario creado: id={} email={} rol={}", usuario.getId(), email, rol.getCode());

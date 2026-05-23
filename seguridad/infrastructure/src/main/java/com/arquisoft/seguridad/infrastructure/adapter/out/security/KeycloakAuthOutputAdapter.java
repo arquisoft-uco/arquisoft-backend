@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out.security;
 
-import com.arquisoft.seguridad.application.auth.port.AuthenticationPort;
+import com.arquisoft.seguridad.application.auth.port.AuthenticationOutputPort;
 import com.arquisoft.seguridad.domain.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.exception.InvalidCredentialsException;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
@@ -22,13 +22,13 @@ import org.springframework.web.client.RestTemplate;
 import java.util.Map;
 
 /**
- * Adaptador de salida que implementa AuthenticationPort comunicandose con Keycloak.
+ * Output Adapter que implementa AuthenticationOutputPort comunicandose con Keycloak.
  * Maneja autenticacion y refresco de tokens contra el servidor de identidad.
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class KeycloakAuthAdapter implements AuthenticationPort {
+public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
 
     private final RestTemplate restTemplate;
 

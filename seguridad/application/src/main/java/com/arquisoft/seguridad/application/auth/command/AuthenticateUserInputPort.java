@@ -1,11 +1,11 @@
 package com.arquisoft.seguridad.application.auth.command;
 
 /**
- * Caso de uso para autenticar un usuario.
+ * Puerto de entrada — caso de uso para autenticar un usuario.
  * Recibe credenciales primitivas; la traduccion desde/hacia DTOs
  * ocurre en la implementacion de la capa de aplicacion.
  */
-public interface AuthenticateUserUseCase {
+public interface AuthenticateUserInputPort {
 
     /**
      * Resultado de la autenticacion representado como record (Java 21).

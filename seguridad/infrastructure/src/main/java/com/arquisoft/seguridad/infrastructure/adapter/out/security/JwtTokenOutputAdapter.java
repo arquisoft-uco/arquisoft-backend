@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.adapter.out.security;
 
-import com.arquisoft.seguridad.application.auth.port.TokenPort;
+import com.arquisoft.seguridad.application.auth.port.TokenOutputPort;
 import com.arquisoft.seguridad.domain.exception.InvalidTokenException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Adaptador de salida que implementa TokenPort usando Spring Security OAuth2.
+ * Output Adapter que implementa TokenOutputPort usando Spring Security OAuth2.
  * Valida y parsea tokens JWT emitidos por Keycloak.
  * Los roles se leen exclusivamente de realm_access.roles (ADR-003).
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JwtTokenAdapter implements TokenPort {
+public class JwtTokenOutputAdapter implements TokenOutputPort {
 
     private final JwtDecoder jwtDecoder;
 

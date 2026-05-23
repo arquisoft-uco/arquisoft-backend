@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.adapter.in.amqp;
 
-import com.arquisoft.fichas.application.fichaperfil.command.RegistrarUsuarioUseCase;
+import com.arquisoft.fichas.application.fichaperfil.command.RegistrarUsuarioInputPort;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.rabbitmq.client.Channel;
@@ -15,10 +15,10 @@ import java.io.IOException;
 import java.util.UUID;
 
 /**
- * Consumer AMQP del evento {@code seguridad.usuario.creado}.
+ * Input Adapter AMQP del evento {@code seguridad.usuario.creado}.
  *
  * <p>Recibe el evento publicado por el contexto {@code seguridad} cuando se crea un usuario
- * y delega al use case {@link RegistrarUsuarioUseCase} para que el contexto {@code fichas}
+ * y delega al use case {@link RegistrarUsuarioInputPort} para que el contexto {@code fichas}
  * registre al usuario en su base de datos espejo.
  *
  * <p>Extiende {@link AbstractEventConsumer} para obtener:
@@ -31,15 +31,15 @@ import java.util.UUID;
  */
 @Slf4j
 @Component
-public class UsuarioCreadoConsumer extends AbstractEventConsumer {
+public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
 
-    private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
+    private final RegistrarUsuarioInputPort registrarUsuarioInputPort;
 
-    public UsuarioCreadoConsumer(
-            RegistrarUsuarioUseCase registrarUsuarioUseCase,
+    public UsuarioCreadoInputAdapter(
+            RegistrarUsuarioInputPort registrarUsuarioInputPort,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper) {
         super(objectMapper);
-        this.registrarUsuarioUseCase = registrarUsuarioUseCase;
+        this.registrarUsuarioInputPort = registrarUsuarioInputPort;
     }
 
     @RabbitListener(queues = FichasUsuariosQueueConfig.USUARIO_CREADO_QUEUE)
@@ -50,7 +50,7 @@ public class UsuarioCreadoConsumer extends AbstractEventConsumer {
             log.info("[FICHAS] UsuarioCreado recibido: usuarioId={} email={} rol={}",
                     payload.aggregateId(), payload.email(), payload.rol());
 
-            registrarUsuarioUseCase.registrar(
+            registrarUsuarioInputPort.registrar(
                     UUID.fromString(payload.aggregateId()),
                     payload.email(),
                     payload.rol());

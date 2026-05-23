@@ -1,9 +1,9 @@
 package com.arquisoft.seguridad.application.auth.command;
 
 /**
- * Caso de uso para refrescar el token de acceso.
+ * Puerto de entrada — caso de uso para refrescar el token de acceso.
  */
-public interface RefreshTokenUseCase {
+public interface RefreshTokenInputPort {
 
     /**
      * Resultado del refresco de token.

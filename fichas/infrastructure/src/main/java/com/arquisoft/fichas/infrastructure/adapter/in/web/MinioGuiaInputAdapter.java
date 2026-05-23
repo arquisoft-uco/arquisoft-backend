@@ -27,7 +27,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Slf4j
 @Tag(name = "MinIO Guía", description = "Endpoints de prueba para validar el módulo shared:minio. Eliminar tras el PoC.")
-public class MinioGuiaController {
+public class MinioGuiaInputAdapter {
 
     private final MinioStorageClient minioStorageClient;
 

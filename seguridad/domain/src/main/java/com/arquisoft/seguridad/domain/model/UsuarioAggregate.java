@@ -20,13 +20,13 @@ import java.util.UUID;
  *
  * <p>Sin Spring, sin Lombok, sin JPA — Java puro.
  */
-public final class Usuario extends AggregateRoot {
+public final class UsuarioAggregate extends AggregateRoot {
 
     private final UUID id;
     private final String email;
     private final UsuarioRole rol;
 
-    private Usuario(UUID id, String email, UsuarioRole rol) {
+    private UsuarioAggregate(UUID id, String email, UsuarioRole rol) {
         this.id    = id;
         this.email = email;
         this.rol   = rol;
@@ -39,7 +39,7 @@ public final class Usuario extends AggregateRoot {
      * @param rol   rol asignado al usuario en el sistema (no puede ser nulo)
      * @return nuevo aggregate con el evento acumulado en {@code unPublishedEvents}
      */
-    public static Usuario crear(String email, UsuarioRole rol) {
+    public static UsuarioAggregate crear(String email, UsuarioRole rol) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("El email del usuario no puede ser vacío");
         }
@@ -47,7 +47,7 @@ public final class Usuario extends AggregateRoot {
             throw new IllegalArgumentException("El rol del usuario no puede ser nulo");
         }
 
-        Usuario usuario = new Usuario(UUID.randomUUID(), email.trim().toLowerCase(), rol);
+        UsuarioAggregate usuario = new UsuarioAggregate(UUID.randomUUID(), email.trim().toLowerCase(), rol);
         // El aggregate decide que su creación es un evento relevante para el sistema.
         // El evento queda acumulado en memoria — el use case lo drenará tras persistir.
         usuario.publishEvent(new UsuarioCreadoEvent(usuario.id, usuario.email, usuario.rol.getCode()));
@@ -58,8 +58,8 @@ public final class Usuario extends AggregateRoot {
      * Reconstruye un usuario desde persistencia sin emitir eventos.
      * Usado por el repositorio cuando carga un aggregate ya existente.
      */
-    public static Usuario rebuild(UUID id, String email, UsuarioRole rol) {
-        return new Usuario(id, email, rol);
+    public static UsuarioAggregate rebuild(UUID id, String email, UsuarioRole rol) {
+        return new UsuarioAggregate(id, email, rol);
     }
 
     public UUID getId() {

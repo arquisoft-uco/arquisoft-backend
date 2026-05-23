@@ -22,15 +22,15 @@ import java.util.UUID;
  *   <li>{@link #rebuild(UUID, String, AsesorFicha)} — reconstruye desde persistencia sin validación.</li>
  * </ul>
  */
-public final class FichaPerfil {
+public final class FichaPerfilAggregate {
 
     private UUID id;
     private String tituloProyecto;
     private AsesorFicha asesorFicha;
 
-    private FichaPerfil() {}
+    private FichaPerfilAggregate() {}
 
-    private FichaPerfil(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
+    private FichaPerfilAggregate(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
         this.id = id;
         this.tituloProyecto = tituloProyecto;
         this.asesorFicha = asesorFicha;
@@ -38,8 +38,8 @@ public final class FichaPerfil {
 
     // ─── Factory: build ───────────────────────────────────────────────────────
 
-    public static FichaPerfil build(String titulo, AsesorFicha asesor) {
-        FichaPerfil ficha = new FichaPerfil();
+    public static FichaPerfilAggregate build(String titulo, AsesorFicha asesor) {
+        FichaPerfilAggregate ficha = new FichaPerfilAggregate();
         ValidationResult result = new ValidationResult();  // una instancia por llamada
 
         ficha.setTituloProyecto(titulo, result);
@@ -53,8 +53,8 @@ public final class FichaPerfil {
 
     // ─── Factory: rebuild (desde persistencia — dato confiable) ──────────────
 
-    public static FichaPerfil rebuild(UUID id, String titulo, AsesorFicha asesor) {
-        return new FichaPerfil(id, titulo, asesor);
+    public static FichaPerfilAggregate rebuild(UUID id, String titulo, AsesorFicha asesor) {
+        return new FichaPerfilAggregate(id, titulo, asesor);
     }
 
     // ─── Métodos de negocio ───────────────────────────────────────────────────

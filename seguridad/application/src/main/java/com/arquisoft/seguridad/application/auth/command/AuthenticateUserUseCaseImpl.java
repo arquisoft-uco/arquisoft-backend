@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.application.auth.command;
 
-import com.arquisoft.seguridad.application.auth.port.AuthenticationPort;
+import com.arquisoft.seguridad.application.auth.port.AuthenticationOutputPort;
 import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,15 +15,15 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
+public class AuthenticateUserUseCaseImpl implements AuthenticateUserInputPort {
 
-    private final AuthenticationPort authenticationPort;
+    private final AuthenticationOutputPort authenticationOutputPort;
 
     @Override
     public AuthResult authenticate(String email, String password) {
         log.debug(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_DEBUG);
 
-        Map<String, Object> tokenResponse = authenticationPort.authenticate(email, password);
+        Map<String, Object> tokenResponse = authenticationOutputPort.authenticate(email, password);
 
         log.info(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_EXITOSO);
 

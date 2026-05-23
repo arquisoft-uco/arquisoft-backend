@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.application.auth.query;
 
-import com.arquisoft.seguridad.application.auth.port.TokenPort;
+import com.arquisoft.seguridad.application.auth.port.TokenOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,17 +13,17 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ValidateTokenUseCaseImpl implements ValidateTokenUseCase {
+public class ValidateTokenUseCaseImpl implements ValidateTokenInputPort {
 
-    private final TokenPort tokenPort;
+    private final TokenOutputPort tokenOutputPort;
 
     @Override
     public ValidationResult validate(String token) {
         log.debug("Intento de validacion de token");
 
         try {
-            if (tokenPort.validateToken(token)) {
-                Map<String, Object> userInfo = tokenPort.extractUserInfo(token);
+            if (tokenOutputPort.validateToken(token)) {
+                Map<String, Object> userInfo = tokenOutputPort.extractUserInfo(token);
 
                 return new ValidationResult(
                         true,

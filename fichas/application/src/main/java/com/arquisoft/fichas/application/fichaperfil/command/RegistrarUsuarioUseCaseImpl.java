@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 @Slf4j
 @Component
-public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
+public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioInputPort {
 
     @Override
     public void registrar(UUID usuarioId, String email, String rol) {

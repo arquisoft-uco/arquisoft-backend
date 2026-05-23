@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.application.auth.command;
 
-import com.arquisoft.seguridad.application.auth.port.AuthenticationPort;
+import com.arquisoft.seguridad.application.auth.port.AuthenticationOutputPort;
 import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,15 +14,15 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RefreshTokenUseCaseImpl implements RefreshTokenUseCase {
+public class RefreshTokenUseCaseImpl implements RefreshTokenInputPort {
 
-    private final AuthenticationPort authenticationPort;
+    private final AuthenticationOutputPort authenticationOutputPort;
 
     @Override
     public RefreshResult refresh(String refreshToken) {
         log.debug(SeguridadApplicationMessages.RefreshTokenUseCase.REFRESH_DEBUG);
 
-        Map<String, Object> tokenResponse = authenticationPort.refreshToken(refreshToken);
+        Map<String, Object> tokenResponse = authenticationOutputPort.refreshToken(refreshToken);
 
         // log.info: evento de negocio completado — nuevo access token emitido
         log.info(SeguridadApplicationMessages.RefreshTokenUseCase.REFRESH_EXITOSO);

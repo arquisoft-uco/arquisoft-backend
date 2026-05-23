@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
-import com.arquisoft.seguridad.application.auth.port.TokenBlacklistPort;
+import com.arquisoft.seguridad.application.auth.port.TokenBlacklistOutputPort;
 import com.arquisoft.seguridad.infrastructure.util.message.SeguridadInfraestructureMessages;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
@@ -41,7 +41,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtBlacklistFilter extends OncePerRequestFilter {
 
-    private final TokenBlacklistPort tokenBlacklistPort;
+    private final TokenBlacklistOutputPort tokenBlacklistPort;
     private final ObjectMapper objectMapper;
 
     @Override

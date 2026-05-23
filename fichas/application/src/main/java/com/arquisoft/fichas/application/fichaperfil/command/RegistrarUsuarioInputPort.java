@@ -10,7 +10,7 @@ import java.util.UUID;
  * La implementación inicial solo deja traza de auditoría; la persistencia en tabla
  * espejo se implementará en una historia de usuario posterior.
  */
-public interface RegistrarUsuarioUseCase {
+public interface RegistrarUsuarioInputPort {
 
     /**
      * Registra (o sincroniza) un usuario en el contexto de fichas.

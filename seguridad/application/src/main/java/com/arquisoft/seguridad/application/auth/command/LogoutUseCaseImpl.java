@@ -1,18 +1,18 @@
 package com.arquisoft.seguridad.application.auth.command;
 
 import com.arquisoft.seguridad.application.auth.dto.LogoutRequestDTO;
-import com.arquisoft.seguridad.application.auth.port.TokenBlacklistPort;
+import com.arquisoft.seguridad.application.auth.port.TokenBlacklistOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class LogoutUseCaseImpl implements LogoutUseCase {
+public class LogoutUseCaseImpl implements LogoutInputPort {
 
-    private final TokenBlacklistPort tokenBlacklistPort;
+    private final TokenBlacklistOutputPort tokenBlacklistOutputPort;
 
     @Override
     public void ejecutar(LogoutRequestDTO request) {
-        tokenBlacklistPort.invalidarToken(request.jti(), request.ttlSegundos());
+        tokenBlacklistOutputPort.invalidarToken(request.jti(), request.ttlSegundos());
     }
 }
