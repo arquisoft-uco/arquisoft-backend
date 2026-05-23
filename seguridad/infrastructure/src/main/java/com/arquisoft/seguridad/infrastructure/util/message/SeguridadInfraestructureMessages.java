@@ -123,7 +123,7 @@ public final class SeguridadInfraestructureMessages {
 
         /**
          * log.debug — Refresco completado en el adaptador de entrada.
-         * El caso de uso RefreshTokenUseCaseImpl ya emite log.info del exito del negocio;
+         * El caso de uso RefreshTokenUseCase ya emite log.info del exito del negocio;
          * este debug es a nivel de capa web para trazar el flujo del request.
          */
         public static final String REFRESH_EXITOSO_DEBUG = "Token refrescado exitosamente";

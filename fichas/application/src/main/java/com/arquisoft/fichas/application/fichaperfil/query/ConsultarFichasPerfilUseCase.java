@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.query;
 
-import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.fichas.application.fichaperfil.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.domain.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilInputPort {
+public class ConsultarFichasPerfilUseCase implements ConsultarFichasPerfilInputPort {
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
 

@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.application.asesorficha.dto;
+package com.arquisoft.fichas.application.asesorficha.readmodel;
 
 import com.arquisoft.fichas.domain.model.AsesorFicha;
 import lombok.AllArgsConstructor;

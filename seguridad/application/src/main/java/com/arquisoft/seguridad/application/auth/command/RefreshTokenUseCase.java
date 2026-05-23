@@ -14,7 +14,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RefreshTokenUseCaseImpl implements RefreshTokenInputPort {
+public class RefreshTokenUseCase implements RefreshTokenInputPort {
 
     private final AuthenticationOutputPort authenticationOutputPort;
 
@@ -24,7 +24,6 @@ public class RefreshTokenUseCaseImpl implements RefreshTokenInputPort {
 
         Map<String, Object> tokenResponse = authenticationOutputPort.refreshToken(refreshToken);
 
-        // log.info: evento de negocio completado — nuevo access token emitido
         log.info(SeguridadApplicationMessages.RefreshTokenUseCase.REFRESH_EXITOSO);
 
         return new RefreshResult(

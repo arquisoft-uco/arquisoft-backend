@@ -13,7 +13,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ValidateTokenUseCaseImpl implements ValidateTokenInputPort {
+public class ValidateTokenUseCase implements ValidateTokenInputPort {
 
     private final TokenOutputPort tokenOutputPort;
 

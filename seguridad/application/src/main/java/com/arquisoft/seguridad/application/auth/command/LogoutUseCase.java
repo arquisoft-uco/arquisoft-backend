@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class LogoutUseCaseImpl implements LogoutInputPort {
+public class LogoutUseCase implements LogoutInputPort {
 
     private final TokenBlacklistOutputPort tokenBlacklistOutputPort;
 

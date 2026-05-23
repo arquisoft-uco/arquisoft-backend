@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.application.auth.dto;
+package com.arquisoft.seguridad.application.auth.readmodel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

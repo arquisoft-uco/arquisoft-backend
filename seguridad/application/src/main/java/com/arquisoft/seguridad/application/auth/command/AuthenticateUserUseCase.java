@@ -15,7 +15,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class AuthenticateUserUseCaseImpl implements AuthenticateUserInputPort {
+public class AuthenticateUserUseCase implements AuthenticateUserInputPort {
 
     private final AuthenticationOutputPort authenticationOutputPort;
 

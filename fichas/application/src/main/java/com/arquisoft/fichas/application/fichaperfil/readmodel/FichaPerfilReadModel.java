@@ -1,6 +1,6 @@
-package com.arquisoft.fichas.application.fichaperfil.dto;
+package com.arquisoft.fichas.application.fichaperfil.readmodel;
 
-import com.arquisoft.fichas.application.asesorficha.dto.AsesorFichaReadModel;
+import com.arquisoft.fichas.application.asesorficha.readmodel.AsesorFichaReadModel;
 import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

@@ -5,7 +5,7 @@ import com.arquisoft.seguridad.application.auth.dto.LoginResponseDTO;
 import com.arquisoft.seguridad.application.auth.dto.LogoutRequestDTO;
 import com.arquisoft.seguridad.application.auth.dto.LogoutResponseDTO;
 import com.arquisoft.seguridad.application.auth.dto.RefreshTokenRequestDTO;
-import com.arquisoft.seguridad.application.auth.dto.TokenValidationReadModel;
+import com.arquisoft.seguridad.application.auth.readmodel.TokenValidationReadModel;
 import com.arquisoft.seguridad.application.auth.command.AuthenticateUserInputPort;
 import com.arquisoft.seguridad.application.auth.command.LogoutInputPort;
 import com.arquisoft.seguridad.application.auth.command.RefreshTokenInputPort;

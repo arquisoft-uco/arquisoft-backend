@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 /**
- * Implementación del caso de uso para registrar un usuario en el contexto de fichas.
+ * Implementacion del caso de uso para registrar un usuario en el contexto de fichas.
  *
  * <p><b>Estado actual (simulado):</b> solo registra la recepción del evento con un log
  * de auditoría. No persiste en base de datos.
@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 @Slf4j
 @Component
-public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioInputPort {
+public class RegistrarUsuarioUseCase implements RegistrarUsuarioInputPort {
 
     @Override
     public void registrar(UUID usuarioId, String email, String rol) {

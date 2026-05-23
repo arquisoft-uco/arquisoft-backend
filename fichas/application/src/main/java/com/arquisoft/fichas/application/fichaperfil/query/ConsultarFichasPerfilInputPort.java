@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.query;
 
-import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.fichas.application.fichaperfil.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
 

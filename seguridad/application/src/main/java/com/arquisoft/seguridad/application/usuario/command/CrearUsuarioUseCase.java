@@ -28,7 +28,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CrearUsuarioUseCaseImpl implements CrearUsuarioInputPort {
+public class CrearUsuarioUseCase implements CrearUsuarioInputPort {
 
     private final UsuarioOutputPort usuarioOutputPort;
     private final EventPublisher eventPublisher;

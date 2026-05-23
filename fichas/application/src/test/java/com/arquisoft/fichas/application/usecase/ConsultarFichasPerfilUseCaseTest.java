@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.usecase;
 
-import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCaseImpl;
-import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCase;
+import com.arquisoft.fichas.application.fichaperfil.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.domain.model.AsesorFicha;
 import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.port.out.FichaPerfilOutputPort;
@@ -22,13 +22,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarFichasPerfilUseCaseImplTest {
+class ConsultarFichasPerfilUseCaseTest {
 
     @Mock
     private FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @InjectMocks
-    private ConsultarFichasPerfilUseCaseImpl consultarFichasPerfilUseCase;
+    private ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;
 
     @Test
     void debeRetornarFichasPaginadas_cuandoExistenFichas() {

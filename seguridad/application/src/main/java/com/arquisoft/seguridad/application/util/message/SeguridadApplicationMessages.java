@@ -58,7 +58,7 @@ public final class SeguridadApplicationMessages {
     }
 
     // =========================================================================
-    // AuthenticateUserUseCaseImpl
+    // AuthenticateUserUseCase
     // =========================================================================
 
     public static final class AuthenticateUserUseCase {
@@ -73,7 +73,7 @@ public final class SeguridadApplicationMessages {
     }
 
     // =========================================================================
-    // RefreshTokenUseCaseImpl
+    // RefreshTokenUseCase
     // =========================================================================
 
     public static final class RefreshTokenUseCase {
