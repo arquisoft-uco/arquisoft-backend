@@ -85,7 +85,15 @@ public final class FichaPerfilAggregate {
 
     // ─── Getters ──────────────────────────────────────────────────────────────
 
-    public UUID getId() { return id; }
-    public String getTituloProyecto() { return tituloProyecto; }
-    public UUID getAsesorFichaId() { return asesorFichaId; }
+    public UUID getId() {
+        return id;
+    }
+
+    public String getTituloProyecto() {
+        return tituloProyecto;
+    }
+
+    public UUID getAsesorFichaId() {
+        return asesorFichaId;
+    }
 }

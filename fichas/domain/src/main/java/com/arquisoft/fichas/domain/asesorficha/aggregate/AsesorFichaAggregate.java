@@ -20,8 +20,19 @@ public final class AsesorFichaAggregate {
         return new AsesorFichaAggregate(id, identificador, nombre, email);
     }
 
-    public UUID getId() { return id; }
-    public String getIdentificador() { return identificador; }
-    public String getNombre() { return nombre; }
-    public String getEmail() { return email; }
+    public UUID getId() {
+        return id;
+    }
+
+    public String getIdentificador() {
+        return identificador;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public String getEmail() {
+        return email;
+    }
 }
