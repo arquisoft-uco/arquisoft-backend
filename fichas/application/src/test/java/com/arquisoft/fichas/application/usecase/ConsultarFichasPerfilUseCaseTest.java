@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.application.usecase;
 
 import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCase;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.pagination.PaginatedResult;
-import com.arquisoft.shared.pagination.PaginationRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,7 +30,7 @@ class ConsultarFichasPerfilUseCaseTest {
 
     @Test
     void debeRetornarFichasPaginadas_cuandoExistenFichas() {
-        PaginationRequest request = PaginationRequest.of(0, 10);
+        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder().pagina(0).tamanio(10).build();
 
         FichaPerfilReadModel ficha = FichaPerfilReadModel.builder()
                 .id(UUID.randomUUID())
@@ -40,9 +40,9 @@ class ConsultarFichasPerfilUseCaseTest {
         PaginatedResult<FichaPerfilReadModel> resultadoEsperado =
                 PaginatedResult.of(List.of(ficha), 0, 10, 1L);
 
-        when(fichaPerfilQueryOutputPort.consultarTodas(request)).thenReturn(resultadoEsperado);
+        when(fichaPerfilQueryOutputPort.consultarTodas(criteria)).thenReturn(resultadoEsperado);
 
-        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilUseCase.ejecutar(request);
+        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilUseCase.ejecutar(criteria);
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).hasSize(1);
@@ -50,25 +50,25 @@ class ConsultarFichasPerfilUseCaseTest {
         assertThat(resultado.getTotalElements()).isEqualTo(1L);
         assertThat(resultado.getPage()).isEqualTo(0);
         assertThat(resultado.getSize()).isEqualTo(10);
-        verify(fichaPerfilQueryOutputPort, times(1)).consultarTodas(request);
+        verify(fichaPerfilQueryOutputPort, times(1)).consultarTodas(criteria);
     }
 
     @Test
     void debeRetornarVacio_cuandoNoHayFichas() {
-        PaginationRequest request = PaginationRequest.of(0, 10);
+        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder().pagina(0).tamanio(10).build();
 
         PaginatedResult<FichaPerfilReadModel> resultadoVacio =
                 PaginatedResult.of(List.of(), 0, 10, 0L);
 
-        when(fichaPerfilQueryOutputPort.consultarTodas(request)).thenReturn(resultadoVacio);
+        when(fichaPerfilQueryOutputPort.consultarTodas(criteria)).thenReturn(resultadoVacio);
 
-        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilUseCase.ejecutar(request);
+        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilUseCase.ejecutar(criteria);
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).isEmpty();
         assertThat(resultado.getTotalElements()).isZero();
         assertThat(resultado.getPage()).isEqualTo(0);
         assertThat(resultado.getSize()).isEqualTo(10);
-        verify(fichaPerfilQueryOutputPort, times(1)).consultarTodas(request);
+        verify(fichaPerfilQueryOutputPort, times(1)).consultarTodas(criteria);
     }
 }

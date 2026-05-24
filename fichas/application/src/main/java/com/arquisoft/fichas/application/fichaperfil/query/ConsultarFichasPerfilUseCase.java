@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.application.fichaperfil.query;
 
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.pagination.PaginatedResult;
-import com.arquisoft.shared.pagination.PaginationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,13 +19,13 @@ public class ConsultarFichasPerfilUseCase implements ConsultarFichasPerfilInputP
 
     @Override
     @Transactional(readOnly = true)
-    public PaginatedResult<FichaPerfilReadModel> ejecutar(PaginationRequest request) {
-        log.debug("Consultando fichas de perfil — page={}, size={}", request.getPage(), request.getSize());
+    public PaginatedResult<FichaPerfilReadModel> ejecutar(FichaPerfilCriteria criteria) {
+        log.debug("Consultando fichas de perfil — page={}, size={}", criteria.getPagina(), criteria.getTamanio());
 
-        PaginatedResult<FichaPerfilReadModel> result = fichaPerfilQueryOutputPort.consultarTodas(request);
+        PaginatedResult<FichaPerfilReadModel> result = fichaPerfilQueryOutputPort.consultarTodas(criteria);
 
         log.info("Consulta fichas-perfil completada — total={}, page={}, size={}",
-                result.getTotalElements(), request.getPage(), request.getSize());
+                result.getTotalElements(), criteria.getPagina(), criteria.getTamanio());
         return result;
     }
 }

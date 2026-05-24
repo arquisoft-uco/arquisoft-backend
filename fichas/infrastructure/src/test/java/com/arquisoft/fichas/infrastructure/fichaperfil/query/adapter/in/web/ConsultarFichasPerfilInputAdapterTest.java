@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.pagination.PaginatedResult;
-import com.arquisoft.shared.pagination.PaginationRequest;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +61,7 @@ class ConsultarFichasPerfilInputAdapterTest {
     void debe200_cuandoConsultaExitosa() throws Exception {
         PaginatedResult<FichaPerfilReadModel> resultadoVacio =
                 PaginatedResult.of(List.of(), 0, 10, 0L);
-        when(consultarFichasPerfilInputPort.ejecutar(any(PaginationRequest.class)))
+        when(consultarFichasPerfilInputPort.ejecutar(any(FichaPerfilCriteria.class)))
                 .thenReturn(resultadoVacio);
 
         mockMvc.perform(get("/fichas-perfil/coordinador")
@@ -78,7 +78,7 @@ class ConsultarFichasPerfilInputAdapterTest {
     void debeNormalizar_cuandoPageEsNegativo() throws Exception {
         PaginatedResult<FichaPerfilReadModel> resultadoVacio =
                 PaginatedResult.of(List.of(), 0, 10, 0L);
-        when(consultarFichasPerfilInputPort.ejecutar(any(PaginationRequest.class)))
+        when(consultarFichasPerfilInputPort.ejecutar(any(FichaPerfilCriteria.class)))
                 .thenReturn(resultadoVacio);
 
         mockMvc.perform(get("/fichas-perfil/coordinador")

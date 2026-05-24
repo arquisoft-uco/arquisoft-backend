@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.pagination.PaginatedResult;
-import com.arquisoft.shared.pagination.PaginationRequest;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,7 +18,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/fichas-perfil")
@@ -46,10 +49,22 @@ public class ConsultarFichasPerfilInputAdapter {
             @ApiResponse(responseCode = "403", description = "Sin permisos — se requiere rol coordinador")
     })
     public ResponseEntity<PageResponseDTO<FichaPerfilReadModel>> consultarFichasCoordinador(
-            PaginationRequest request) {
-        log.debug("GET /fichas-perfil/coordinador — page={}, size={}", request.getPage(), request.getSize());
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String titulo,
+            @RequestParam(required = false) UUID asesorId) {
+        log.debug("GET /fichas-perfil/coordinador — page={}, size={}", page, size);
 
-        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilInputPort.ejecutar(request);
+        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
+                .pagina(page)
+                .tamanio(size)
+                .ordenarPor(sort)
+                .tituloProyecto(titulo)
+                .asesorId(asesorId)
+                .build();
+
+        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilInputPort.ejecutar(criteria);
 
         return ResponseEntity.ok(PageResponseDTO.from(resultado));
     }

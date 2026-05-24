@@ -1,11 +1,11 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persistence;
 
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
 import com.arquisoft.shared.pagination.PaginatedResult;
-import com.arquisoft.shared.pagination.PaginationRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +52,8 @@ class FichaPerfilQueryOutputAdapterTest {
         entityManager.persist(ficha);
         entityManager.flush();
 
-        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
+        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(
+                FichaPerfilCriteria.builder().pagina(0).tamanio(10).build());
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).hasSize(1);
@@ -65,7 +66,8 @@ class FichaPerfilQueryOutputAdapterTest {
 
     @Test
     void debeRetornarVacio_cuandoNoHayFichasEnBD() {
-        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
+        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(
+                FichaPerfilCriteria.builder().pagina(0).tamanio(10).build());
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).isEmpty();
