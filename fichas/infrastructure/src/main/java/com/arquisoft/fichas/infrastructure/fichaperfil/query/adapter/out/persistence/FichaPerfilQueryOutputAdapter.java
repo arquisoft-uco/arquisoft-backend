@@ -9,7 +9,7 @@ import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJp
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.SortDirection;
-import com.arquisoft.shared.web.util.PaginationMapper;
+import com.arquisoft.shared.postgres.util.PaginationMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessApiUsageException;

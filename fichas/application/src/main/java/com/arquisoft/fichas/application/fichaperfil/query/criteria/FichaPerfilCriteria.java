@@ -97,8 +97,18 @@ public final class FichaPerfilCriteria extends QueryCriteria {
         }
 
         private void validarCamposFiltro(NodoFiltro nodo) {
+            validarCamposFiltro(nodo, 0);
+        }
+
+        private void validarCamposFiltro(NodoFiltro nodo, int profundidad) {
             if (nodo == null) {
                 return;
+            }
+            if (profundidad > QueryCriteria.MAX_PROFUNDIDAD_FILTRO) {
+                throw new ApplicationException(
+                        "El árbol de filtros supera la profundidad máxima permitida de "
+                        + QueryCriteria.MAX_PROFUNDIDAD_FILTRO + " niveles",
+                        "PROFUNDIDAD_FILTRO_EXCEDIDA");
             }
             switch (nodo) {
                 case NodoFiltro.Predicado p -> {
@@ -108,8 +118,15 @@ public final class FichaPerfilCriteria extends QueryCriteria {
                                 "'. Campos disponibles: " + Campo.CLAVES,
                                 "CAMPO_FILTRO_NO_PERMITIDO");
                     }
+                    if (p.operador().requiereValor() && (p.valor() == null || p.valor().isBlank())) {
+                        throw new ApplicationException(
+                                "El operador '" + p.operador() + "' requiere un valor no vacío para el campo '"
+                                + p.campo() + "'",
+                                "VALOR_REQUERIDO");
+                    }
                 }
-                case NodoFiltro.Grupo g -> g.nodos().forEach(this::validarCamposFiltro);
+                case NodoFiltro.Grupo g ->
+                    g.nodos().forEach(hijo -> validarCamposFiltro(hijo, profundidad + 1));
             }
         }
     }

@@ -2,7 +2,6 @@ package com.arquisoft.shared.postgres.query;
 
 import com.arquisoft.shared.postgres.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.FiltroOperador;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Root;
@@ -82,24 +81,31 @@ public sealed interface CampoSpec<E>
         public Specification<E> construirSpec(FiltroOperador operador, String valor) {
             validar(operador, VALIDOS, "texto");
             return (root, q, cb) -> {
-                Expression<String> expr = toLower(cb, path.apply(root));
-                String v = valor != null ? valor.toLowerCase() : "";
+                Expression<String> rawExpr = path.apply(root);
                 return switch (operador) {
-                    case CONTIENE     -> cb.like(expr, "%" + v + "%");
-                    case NO_CONTIENE  -> cb.notLike(expr, "%" + v + "%");
-                    case EMPIEZA_CON  -> cb.like(expr, v + "%");
-                    case TERMINA_CON  -> cb.like(expr, "%" + v);
-                    case ES           -> cb.equal(expr, v);
-                    case NO_ES        -> cb.notEqual(expr, v);
-                    case ES_NULO      -> cb.isNull(path.apply(root));
-                    case NO_ES_NULO   -> cb.isNotNull(path.apply(root));
-                    default           -> throw new IllegalStateException();
+                    case CONTIENE -> {
+                        String v = valor != null ? valor.toLowerCase() : "";
+                        yield cb.like(cb.lower(rawExpr), "%" + v + "%");
+                    }
+                    case NO_CONTIENE -> {
+                        String v = valor != null ? valor.toLowerCase() : "";
+                        yield cb.notLike(cb.lower(rawExpr), "%" + v + "%");
+                    }
+                    case EMPIEZA_CON -> {
+                        String v = valor != null ? valor.toLowerCase() : "";
+                        yield cb.like(cb.lower(rawExpr), v + "%");
+                    }
+                    case TERMINA_CON -> {
+                        String v = valor != null ? valor.toLowerCase() : "";
+                        yield cb.like(cb.lower(rawExpr), "%" + v);
+                    }
+                    case ES         -> cb.equal(rawExpr, valor);
+                    case NO_ES      -> cb.notEqual(rawExpr, valor);
+                    case ES_NULO    -> cb.isNull(rawExpr);
+                    case NO_ES_NULO -> cb.isNotNull(rawExpr);
+                    default         -> throw new IllegalStateException();
                 };
             };
-        }
-
-        private Expression<String> toLower(CriteriaBuilder cb, Expression<String> expr) {
-            return cb.lower(expr);
         }
     }
 
