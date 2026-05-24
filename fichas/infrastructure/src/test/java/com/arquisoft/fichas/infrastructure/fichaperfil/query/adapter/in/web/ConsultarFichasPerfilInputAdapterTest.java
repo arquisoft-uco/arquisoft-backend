@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -24,7 +25,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -43,10 +44,8 @@ class ConsultarFichasPerfilInputAdapterTest {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
-                    .authenticationEntryPoint((request, response, authException) ->
-                        response.sendError(401, "Unauthorized"))
-                    .accessDeniedHandler((request, response, accessDeniedException) ->
-                        response.sendError(403, "Forbidden")));
+                    .authenticationEntryPoint((req, res, e) -> res.sendError(401, "Unauthorized"))
+                    .accessDeniedHandler((req, res, e)    -> res.sendError(403, "Forbidden")));
             return http.build();
         }
     }
@@ -58,15 +57,12 @@ class ConsultarFichasPerfilInputAdapterTest {
     private ConsultarFichasPerfilInputPort consultarFichasPerfilInputPort;
 
     @Test
-    void debe200_cuandoConsultaExitosa() throws Exception {
-        PaginatedResult<FichaPerfilReadModel> resultadoVacio =
-                PaginatedResult.of(List.of(), 0, 10, 0L);
+    void debe200_cuandoBodyVacio() throws Exception {
         when(consultarFichasPerfilInputPort.ejecutar(any(FichaPerfilCriteria.class)))
-                .thenReturn(resultadoVacio);
+                .thenReturn(PaginatedResult.of(List.of(), 0, 10, 0L));
 
-        mockMvc.perform(get("/fichas-perfil/coordinador")
-                        .param("page", "0")
-                        .param("size", "10")
+        mockMvc.perform(post("/fichas-perfil/coordinador")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
                                 .authorities(new SimpleGrantedAuthority("ficha:ficha:view"))))
                 .andExpect(status().isOk())
@@ -75,39 +71,71 @@ class ConsultarFichasPerfilInputAdapterTest {
     }
 
     @Test
-    void debeNormalizar_cuandoPageEsNegativo() throws Exception {
-        PaginatedResult<FichaPerfilReadModel> resultadoVacio =
-                PaginatedResult.of(List.of(), 0, 10, 0L);
+    void debe200_cuandoConsultaConFiltroPredicado() throws Exception {
         when(consultarFichasPerfilInputPort.ejecutar(any(FichaPerfilCriteria.class)))
-                .thenReturn(resultadoVacio);
+                .thenReturn(PaginatedResult.of(List.of(), 0, 10, 0L));
 
-        mockMvc.perform(get("/fichas-perfil/coordinador")
-                        .param("page", "-1")
-                        .param("size", "10")
+        String body = """
+                {
+                  "pagina": 0,
+                  "tamanio": 10,
+                  "filtros": {
+                    "tipo": "PREDICADO",
+                    "campo": "tituloProyecto",
+                    "operador": "CONTIENE",
+                    "valor": "web"
+                  }
+                }
+                """;
+
+        mockMvc.perform(post("/fichas-perfil/coordinador")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
                                 .authorities(new SimpleGrantedAuthority("ficha:ficha:view"))))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void debe400_cuandoNoSeEnvianParametrosDePaginacion() throws Exception {
-        mockMvc.perform(get("/fichas-perfil/coordinador")
+    void debe200_cuandoConsultaConGrupoOR() throws Exception {
+        when(consultarFichasPerfilInputPort.ejecutar(any(FichaPerfilCriteria.class)))
+                .thenReturn(PaginatedResult.of(List.of(), 0, 5, 0L));
+
+        String body = """
+                {
+                  "pagina": 0,
+                  "tamanio": 5,
+                  "ordenamiento": ["tituloProyecto:ASC"],
+                  "filtros": {
+                    "tipo": "GRUPO",
+                    "conector": "OR",
+                    "nodos": [
+                      { "tipo": "PREDICADO", "campo": "tituloProyecto", "operador": "CONTIENE", "valor": "web" },
+                      { "tipo": "PREDICADO", "campo": "asesorNombre",   "operador": "CONTIENE", "valor": "juan" }
+                    ]
+                  }
+                }
+                """;
+
+        mockMvc.perform(post("/fichas-perfil/coordinador")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
                                 .authorities(new SimpleGrantedAuthority("ficha:ficha:view"))))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isOk());
     }
 
     @Test
     void debe401_cuandoNoAutenticado() throws Exception {
-        mockMvc.perform(get("/fichas-perfil/coordinador"))
+        mockMvc.perform(post("/fichas-perfil/coordinador")
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void debe403_cuandoAuthorityInsuficiente() throws Exception {
-        mockMvc.perform(get("/fichas-perfil/coordinador")
-                        .param("page", "0")
-                        .param("size", "10")
+        mockMvc.perform(post("/fichas-perfil/coordinador")
+                        .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.user("estudiante")
                                 .authorities(new SimpleGrantedAuthority("estudiante"))))
                 .andExpect(status().isForbidden());

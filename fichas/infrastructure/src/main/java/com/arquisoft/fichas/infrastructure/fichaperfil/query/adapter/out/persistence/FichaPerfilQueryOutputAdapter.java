@@ -4,12 +4,12 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCr
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.exception.OrdenamientoInvalidoException;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
 import com.arquisoft.shared.pagination.PaginatedResult;
-import com.arquisoft.fichas.application.fichaperfil.query.criteria.SortOrder;
 import com.arquisoft.shared.pagination.SortDirection;
+import com.arquisoft.shared.query.SortOrder;
 import com.arquisoft.shared.web.util.PaginationMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,10 +18,10 @@ import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-
-import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Slf4j
 @Component
@@ -29,11 +29,12 @@ import org.springframework.stereotype.Component;
 public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
 
     private final FichaPerfilJpaRepository fichaPerfilJpaRepository;
+    private final FichaPerfilJpaSpecification specification;
 
     @Override
     public PaginatedResult<FichaPerfilReadModel> consultarTodas(FichaPerfilCriteria criteria) {
         Pageable pageable = toPageable(criteria);
-        Specification<FichaPerfilJpaEntity> spec = FichaPerfilJpaSpecification.desdeCriteria(criteria);
+        Specification<FichaPerfilJpaEntity> spec = specification.desdeCriteria(criteria);
         try {
             return PaginationMapper.toResult(
                     fichaPerfilJpaRepository.findAll(spec, pageable)

@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.application.fichaperfil.query.criteria;
+package com.arquisoft.shared.query;
 
 import com.arquisoft.shared.exception.ApplicationException;
 import com.arquisoft.shared.pagination.SortDirection;
@@ -18,9 +18,7 @@ public final class SortOrder {
     }
 
     /**
-     * Parsea una expresión del tipo "campo" o "campo:ASC" / "campo:DESC".
-     * Se usa ':' como separador para evitar que Spring MVC divida el valor
-     * en coma al resolver @RequestParam List<String>.
+     * Parsea "campo" o "campo:ASC" / "campo:DESC".
      * Dirección inválida lanza ApplicationException (HTTP 400).
      */
     public static SortOrder parse(String expresion) {

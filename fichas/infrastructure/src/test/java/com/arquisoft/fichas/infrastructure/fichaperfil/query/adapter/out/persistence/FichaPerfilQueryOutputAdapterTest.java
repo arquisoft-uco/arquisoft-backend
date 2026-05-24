@@ -31,7 +31,7 @@ class FichaPerfilQueryOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new FichaPerfilQueryOutputAdapter(fichaPerfilJpaRepository);
+        adapter = new FichaPerfilQueryOutputAdapter(fichaPerfilJpaRepository, new FichaPerfilJpaSpecification());
     }
 
     @Test
