@@ -21,30 +21,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
 
-    private static final Map<String, String> RUTAS_ORDEN;
-
-    static {
-        Map<String, String> m = new LinkedHashMap<>();
-        for (FichaPerfilCriteria.CampoOrden campo : FichaPerfilCriteria.CampoOrden.values()) {
-            String ruta = switch (campo) {
-                case TITULO_PROYECTO -> "tituloProyecto";
-                case ASESOR_NOMBRE   -> "asesorFicha.nombre";
-                case ASESOR_EMAIL    -> "asesorFicha.email";
-            };
-            m.put(campo.getClave(), ruta);
-        }
-        RUTAS_ORDEN = Collections.unmodifiableMap(m);
-    }
 
     private final FichaPerfilJpaRepository fichaPerfilJpaRepository;
     private final FichaPerfilJpaSpecification specification;
@@ -69,12 +52,9 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
     private Pageable toPageable(FichaPerfilCriteria criteria) {
         if (criteria.tieneOrden()) {
             List<Sort.Order> orders = criteria.getOrdenamiento().stream()
-                    .map(o -> {
-                        String ruta = RUTAS_ORDEN.get(o.getCampo());
-                        return o.getDireccion() == SortDirection.ASC
-                                ? Sort.Order.asc(ruta)
-                                : Sort.Order.desc(ruta);
-                    })
+                    .map(o -> o.getDireccion() == SortDirection.ASC
+                            ? Sort.Order.asc(FichaPerfilSortMapper.traducir(o.getCampo()))
+                            : Sort.Order.desc(FichaPerfilSortMapper.traducir(o.getCampo())))
                     .toList();
             return PageRequest.of(criteria.getPagina(), criteria.getTamanio(), Sort.by(orders));
         }
