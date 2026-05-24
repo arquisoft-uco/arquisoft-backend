@@ -1,6 +1,5 @@
 package com.arquisoft.shared.query;
 
-import com.arquisoft.shared.exception.ApplicationException;
 
 public enum FiltroOperador {
 
@@ -32,7 +31,7 @@ public enum FiltroOperador {
         try {
             return FiltroOperador.valueOf(valor.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new ApplicationException(
+            throw new FiltroException(
                     "Operador de filtro inválido: '" + valor +
                     "'. Opciones: CONTIENE, NO_CONTIENE, EMPIEZA_CON, TERMINA_CON, " +
                     "ES, NO_ES, MAYOR_QUE, MENOR_QUE, MAYOR_IGUAL_QUE, MENOR_IGUAL_QUE, ES_NULO, NO_ES_NULO",

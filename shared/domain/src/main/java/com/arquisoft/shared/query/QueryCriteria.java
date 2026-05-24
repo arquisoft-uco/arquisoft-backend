@@ -1,5 +1,6 @@
 package com.arquisoft.shared.query;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,8 +73,21 @@ public abstract class QueryCriteria {
 
         @SuppressWarnings("unchecked")
         public B raiz(NodoFiltro raiz) {
+            if (raiz != null) validarProfundidad(raiz, 0);
             this.raiz = raiz;
             return (B) this;
+        }
+
+        private void validarProfundidad(NodoFiltro nodo, int profundidad) {
+            if (profundidad > MAX_PROFUNDIDAD_FILTRO) {
+                throw new FiltroException(
+                        "El árbol de filtros supera la profundidad máxima de "
+                        + MAX_PROFUNDIDAD_FILTRO + " niveles",
+                        "PROFUNDIDAD_FILTRO_EXCEDIDA");
+            }
+            if (nodo instanceof NodoFiltro.Grupo g) {
+                g.nodos().forEach(hijo -> validarProfundidad(hijo, profundidad + 1));
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.arquisoft.shared.query;
 
-import com.arquisoft.shared.exception.ApplicationException;
 
 public enum FiltroConector {
 
@@ -11,7 +10,7 @@ public enum FiltroConector {
         try {
             return FiltroConector.valueOf(valor.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new ApplicationException(
+            throw new FiltroException(
                     "Conector de filtro inválido: '" + valor + "'. Use AND u OR",
                     "FILTRO_CONECTOR_INVALIDO"
             );

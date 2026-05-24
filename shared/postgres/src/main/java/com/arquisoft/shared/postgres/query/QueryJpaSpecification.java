@@ -17,29 +17,24 @@ public abstract class QueryJpaSpecification<E> {
         if (!criteria.tieneFiltros()) {
             return (root, query, cb) -> null;
         }
-        return especDesdeNodo(criteria.getRaiz(), 0);
+        return especDesdeNodo(criteria.getRaiz());
     }
 
-    private Specification<E> especDesdeNodo(NodoFiltro nodo, int profundidad) {
-        if (profundidad > QueryCriteria.MAX_PROFUNDIDAD_FILTRO) {
-            throw new FiltroInvalidoException(
-                    "El árbol de filtros supera la profundidad máxima permitida de "
-                    + QueryCriteria.MAX_PROFUNDIDAD_FILTRO + " niveles");
-        }
+    private Specification<E> especDesdeNodo(NodoFiltro nodo) {
         return switch (nodo) {
             case NodoFiltro.Predicado p -> especDesdePredicado(p);
-            case NodoFiltro.Grupo g     -> especDesdeGrupo(g, profundidad);
+            case NodoFiltro.Grupo g     -> especDesdeGrupo(g);
         };
     }
 
-    private Specification<E> especDesdeGrupo(NodoFiltro.Grupo grupo, int profundidad) {
+    private Specification<E> especDesdeGrupo(NodoFiltro.Grupo grupo) {
         List<NodoFiltro> nodos = grupo.nodos();
         if (nodos.isEmpty()) {
             return (root, query, cb) -> null;
         }
-        Specification<E> acc = especDesdeNodo(nodos.get(0), profundidad + 1);
+        Specification<E> acc = especDesdeNodo(nodos.get(0));
         for (int i = 1; i < nodos.size(); i++) {
-            Specification<E> sig = especDesdeNodo(nodos.get(i), profundidad + 1);
+            Specification<E> sig = especDesdeNodo(nodos.get(i));
             acc = grupo.conector() == FiltroConector.OR
                     ? acc.or(sig)
                     : acc.and(sig);

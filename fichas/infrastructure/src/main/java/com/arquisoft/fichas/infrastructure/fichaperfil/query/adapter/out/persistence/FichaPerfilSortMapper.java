@@ -12,13 +12,16 @@ final class FichaPerfilSortMapper {
 
     static {
         Map<String, String> m = new LinkedHashMap<>();
-        for (FichaPerfilCriteria.CampoOrden campo : FichaPerfilCriteria.CampoOrden.values()) {
+        for (FichaPerfilCriteria.Campo campo : FichaPerfilCriteria.Campo.values()) {
             String ruta = switch (campo) {
                 case TITULO_PROYECTO -> "tituloProyecto";
                 case ASESOR_NOMBRE   -> "asesorFicha.nombre";
                 case ASESOR_EMAIL    -> "asesorFicha.email";
+                case ASESOR_ID       -> null; // no ordenable
             };
-            m.put(campo.getClave(), ruta);
+            if (ruta != null) {
+                m.put(campo.getClave(), ruta);
+            }
         }
         RUTAS = Collections.unmodifiableMap(m);
     }
