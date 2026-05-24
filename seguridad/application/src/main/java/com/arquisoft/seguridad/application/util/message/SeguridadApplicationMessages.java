@@ -18,12 +18,12 @@ public final class SeguridadApplicationMessages {
     private SeguridadApplicationMessages() {}
 
     // =========================================================================
-    // LogoutRequestDTO
+    // LogoutCommand
     // =========================================================================
 
-    public static final class LogoutRequestDTO {
+    public static final class LogoutCommand {
 
-        private LogoutRequestDTO() {}
+        private LogoutCommand() {}
 
         // --- Logs (tecnicos, solo visibles en los logs del servidor) ---
 

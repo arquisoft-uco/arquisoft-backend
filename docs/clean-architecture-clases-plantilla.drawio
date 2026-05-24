@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="clean-arch-cqrs-a" name="CQRS — Escenario A">
-        <mxGraphModel dx="1244" dy="1136" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1150" math="0" shadow="0">
+        <mxGraphModel dx="717" dy="496" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="1150" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -55,7 +55,7 @@
                 <mxCell id="c_cmd_b" value="- campo1&#xa;- campo2&#xa;(intencion de negocio, sin logica)" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_cmd" vertex="1">
                     <mxGeometry y="40" width="275" height="42" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_ipi" value="«Caso de uso»&#xa;XxxUseCaseImpl" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                <mxCell id="c_ipi" value="«Caso de uso»&lt;br&gt;XxxUseCase" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
                     <mxGeometry x="460" y="340" width="275" height="158" as="geometry"/>
                 </mxCell>
                 <mxCell id="c_ipi_b" value="- outputPort: XxxOutputPort&#xa;&#xa;+ ejecutar(cmd): void&#xa;&#xa;XxxAggregate.build(cmd.campo1, ...)&#xa;Las validaciones disparan aqui.&#xa;outputPort.guardar(aggregate)" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_ipi" vertex="1">

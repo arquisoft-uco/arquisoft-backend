@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
-import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
+import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.adapter.out.persistence.asesorficha.AsesorFichaJpaEntity;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
@@ -33,7 +33,7 @@ class FichaPerfilRepositoryAdapterTest {
     }
 
     @Test
-    void debeRetornarFichasConRebuild_cuandoExistenEnBD() {
+    void debeRetornarReadModel_cuandoExistenEnBD() {
         AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador("DOC-001")
@@ -50,20 +50,20 @@ class FichaPerfilRepositoryAdapterTest {
         entityManager.persist(ficha);
         entityManager.flush();
 
-        PaginatedResult<FichaPerfilAggregate> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
+        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).hasSize(1);
         assertThat(resultado.getTotalElements()).isEqualTo(1L);
 
-        FichaPerfilAggregate fichaReconstruida = resultado.getContent().get(0);
-        assertThat(fichaReconstruida.getTituloProyecto()).isEqualTo("Arquisoft Backend");
-        assertThat(fichaReconstruida.getAsesorFicha().getNombre()).isEqualTo("Juan Salazar");
+        FichaPerfilReadModel fichaLeida = resultado.getContent().get(0);
+        assertThat(fichaLeida.getTituloProyecto()).isEqualTo("Arquisoft Backend");
+        assertThat(fichaLeida.getAsesorFicha().getNombre()).isEqualTo("Juan Salazar");
     }
 
     @Test
     void debeRetornarVacio_cuandoNoHayFichasEnBD() {
-        PaginatedResult<FichaPerfilAggregate> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
+        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(PaginationRequest.of(0, 10));
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).isEmpty();

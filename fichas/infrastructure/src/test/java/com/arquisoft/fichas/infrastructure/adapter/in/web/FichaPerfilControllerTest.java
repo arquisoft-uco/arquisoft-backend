@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilInputPort;
-import com.arquisoft.fichas.application.fichaperfil.readmodel.FichaPerfilReadModel;
+import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.PaginationRequest;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;

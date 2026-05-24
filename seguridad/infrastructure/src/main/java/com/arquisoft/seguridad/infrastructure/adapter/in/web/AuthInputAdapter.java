@@ -1,11 +1,11 @@
 package com.arquisoft.seguridad.infrastructure.adapter.in.web;
 
-import com.arquisoft.seguridad.application.auth.dto.LoginRequestDTO;
-import com.arquisoft.seguridad.application.auth.dto.LoginResponseDTO;
-import com.arquisoft.seguridad.application.auth.dto.LogoutRequestDTO;
-import com.arquisoft.seguridad.application.auth.dto.LogoutResponseDTO;
-import com.arquisoft.seguridad.application.auth.dto.RefreshTokenRequestDTO;
-import com.arquisoft.seguridad.application.auth.readmodel.TokenValidationReadModel;
+import com.arquisoft.seguridad.application.auth.command.LogoutCommand;
+import com.arquisoft.seguridad.application.auth.query.TokenValidationReadModel;
+import com.arquisoft.seguridad.infrastructure.adapter.in.web.dto.LoginRequestDTO;
+import com.arquisoft.seguridad.infrastructure.adapter.in.web.dto.LoginResponseDTO;
+import com.arquisoft.seguridad.infrastructure.adapter.in.web.dto.LogoutResponseDTO;
+import com.arquisoft.seguridad.infrastructure.adapter.in.web.dto.RefreshTokenRequestDTO;
 import com.arquisoft.seguridad.application.auth.command.AuthenticateUserInputPort;
 import com.arquisoft.seguridad.application.auth.command.LogoutInputPort;
 import com.arquisoft.seguridad.application.auth.command.RefreshTokenInputPort;
@@ -177,7 +177,7 @@ public class AuthInputAdapter {
             return ResponseEntity.ok(LogoutResponseDTO.builder().build());
         }
 
-        logoutInputPort.ejecutar(new LogoutRequestDTO(jti, remainingSeconds));
+        logoutInputPort.ejecutar(new LogoutCommand(jti, remainingSeconds));
         // log.info: evento de negocio completado exitosamente
         log.info(SeguridadInfraestructureMessages.AuthInputAdapter.LOGOUT_EXITOSO, jti, remainingSeconds);
         return ResponseEntity.ok(LogoutResponseDTO.builder().build());

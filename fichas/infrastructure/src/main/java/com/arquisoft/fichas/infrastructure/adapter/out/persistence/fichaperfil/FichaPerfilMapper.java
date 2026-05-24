@@ -1,14 +1,10 @@
 package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
-import com.arquisoft.fichas.domain.model.AsesorFicha;
-import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
+import com.arquisoft.fichas.application.asesorficha.query.AsesorFichaReadModel;
+import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.infrastructure.adapter.out.persistence.asesorficha.AsesorFichaJpaEntity;
 
-/**
- * Mapper entre la capa de persistencia y el dominio del contexto fichas.
- * Centraliza toda la lógica de traducción, manteniendo las JPA entities
- * como objetos de datos puros y el adapter libre de detalles de construcción.
- */
 public final class FichaPerfilMapper {
 
     private FichaPerfilMapper() {}
@@ -17,25 +13,28 @@ public final class FichaPerfilMapper {
         return FichaPerfilAggregate.rebuild(
                 entity.getId(),
                 entity.getTituloProyecto(),
-                AsesorFicha.rebuild(
-                        entity.getAsesorFicha().getId(),
-                        entity.getAsesorFicha().getIdentificador(),
-                        entity.getAsesorFicha().getNombre(),
-                        entity.getAsesorFicha().getEmail()
-                )
+                entity.getAsesorFicha().getId()
         );
     }
 
-    public static FichaPerfilJpaEntity toEntity(FichaPerfilAggregate domain) {
+    public static FichaPerfilReadModel toReadModel(FichaPerfilJpaEntity entity) {
+        return FichaPerfilReadModel.builder()
+                .id(entity.getId())
+                .tituloProyecto(entity.getTituloProyecto())
+                .asesorFicha(AsesorFichaReadModel.builder()
+                        .id(entity.getAsesorFicha().getId())
+                        .identificador(entity.getAsesorFicha().getIdentificador())
+                        .nombre(entity.getAsesorFicha().getNombre())
+                        .email(entity.getAsesorFicha().getEmail())
+                        .build())
+                .build();
+    }
+
+    public static FichaPerfilJpaEntity toEntity(FichaPerfilAggregate domain, AsesorFichaJpaEntity asesorRef) {
         return FichaPerfilJpaEntity.builder()
                 .id(domain.getId())
                 .tituloProyecto(domain.getTituloProyecto())
-                .asesorFicha(AsesorFichaJpaEntity.builder()
-                        .id(domain.getAsesorFicha().getId())
-                        .identificador(domain.getAsesorFicha().getIdentificador())
-                        .nombre(domain.getAsesorFicha().getNombre())
-                        .email(domain.getAsesorFicha().getEmail())
-                        .build())
+                .asesorFicha(asesorRef)
                 .build();
     }
 }
