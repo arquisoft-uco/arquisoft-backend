@@ -30,7 +30,7 @@ public class FichaPerfilJpaEntity {
     @Column(name = "titulo_proyecto", nullable = false, length = 100)
     private String tituloProyecto;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "asesor_ficha_id", nullable = false)
     private AsesorFichaJpaEntity asesorFicha;
 }
