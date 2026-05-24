@@ -40,6 +40,11 @@ public final class SortOrder {
         return new SortOrder(campo, dir);
     }
 
-    public String getCampo()            { return campo; }
-    public SortDirection getDireccion() { return direccion; }
+    public String getCampo() {
+        return campo;
+    }
+
+    public SortDirection getDireccion() {
+        return direccion;
+    }
 }

@@ -26,12 +26,29 @@ public abstract class QueryCriteria {
         this.raiz         = b.raiz;
     }
 
-    public int getPagina()                   { return pagina; }
-    public int getTamanio()                  { return tamanio; }
-    public List<SortOrder> getOrdenamiento() { return ordenamiento; }
-    public NodoFiltro getRaiz()              { return raiz; }
-    public boolean tieneOrden()              { return !ordenamiento.isEmpty(); }
-    public boolean tieneFiltros()            { return raiz != null; }
+    public int getPagina() {
+        return pagina;
+    }
+
+    public int getTamanio() {
+        return tamanio;
+    }
+
+    public List<SortOrder> getOrdenamiento() {
+        return ordenamiento;
+    }
+
+    public NodoFiltro getRaiz() {
+        return raiz;
+    }
+
+    public boolean tieneOrden() {
+        return !ordenamiento.isEmpty();
+    }
+
+    public boolean tieneFiltros() {
+        return raiz != null;
+    }
 
     /**
      * Builder base con self-type para preservar fluidez en subclases.

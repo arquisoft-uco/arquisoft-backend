@@ -55,14 +55,14 @@ public class ConsultarFichasPerfilInputAdapter {
     public ResponseEntity<PageResponseDTO<FichaPerfilReadModel>> consultarFichasCoordinador(
             @RequestBody(required = false) QueryCriteriaRequestDTO request) {
 
-        QueryCriteriaRequestDTO req = request != null ? request : new QueryCriteriaRequestDTO();
-        log.debug("POST /fichas-perfil/coordinador — pagina={}, tamanio={}", req.getPagina(), req.getTamanio());
+        QueryCriteriaRequestDTO solicitud = request != null ? request : new QueryCriteriaRequestDTO();
+        log.debug("POST /fichas-perfil/coordinador — pagina={}, tamanio={}", solicitud.getPagina(), solicitud.getTamanio());
 
         FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
-                .pagina(req.getPagina())
-                .tamanio(req.getTamanio())
-                .ordenamiento(req.parsearOrdenamiento())
-                .raiz(req.parsearFiltros())
+                .pagina(solicitud.getPagina())
+                .tamanio(solicitud.getTamanio())
+                .ordenamiento(solicitud.parsearOrdenamiento())
+                .raiz(solicitud.parsearFiltros())
                 .build();
 
         PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilInputPort.ejecutar(criteria);

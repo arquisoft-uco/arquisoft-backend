@@ -20,12 +20,12 @@ public class ConsultarFichasPerfilUseCase implements ConsultarFichasPerfilInputP
     @Override
     @Transactional(readOnly = true)
     public PaginatedResult<FichaPerfilReadModel> ejecutar(FichaPerfilCriteria criteria) {
-        log.debug("Consultando fichas de perfil — page={}, size={}", criteria.getPagina(), criteria.getTamanio());
+        log.debug("Consultando fichas de perfil — pagina={}, tamanio={}", criteria.getPagina(), criteria.getTamanio());
 
-        PaginatedResult<FichaPerfilReadModel> result = fichaPerfilQueryOutputPort.consultarTodas(criteria);
+        PaginatedResult<FichaPerfilReadModel> resultado = fichaPerfilQueryOutputPort.consultarTodas(criteria);
 
-        log.info("Consulta fichas-perfil completada — total={}, page={}, size={}",
-                result.getTotalElements(), criteria.getPagina(), criteria.getTamanio());
-        return result;
+        log.info("Consulta fichas-perfil completada — total={}, pagina={}, tamanio={}",
+                resultado.getTotalElements(), criteria.getPagina(), criteria.getTamanio());
+        return resultado;
     }
 }

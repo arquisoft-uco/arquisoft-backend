@@ -20,15 +20,21 @@ public final class FichaPerfilCriteria extends QueryCriteria {
 
         private final String clave;
 
-        Campo(String clave) { this.clave = clave; }
+        Campo(String clave) {
+            this.clave = clave;
+        }
 
-        public String getClave() { return clave; }
+        public String getClave() {
+            return clave;
+        }
 
         static final Set<String> CLAVES = Arrays.stream(values())
                 .map(Campo::getClave)
                 .collect(Collectors.toUnmodifiableSet());
 
-        public static boolean esValido(String clave) { return CLAVES.contains(clave); }
+        public static boolean esValido(String clave) {
+            return CLAVES.contains(clave);
+        }
     }
 
     public enum CampoOrden {
@@ -38,15 +44,21 @@ public final class FichaPerfilCriteria extends QueryCriteria {
 
         private final String clave;
 
-        CampoOrden(String clave) { this.clave = clave; }
+        CampoOrden(String clave) {
+            this.clave = clave;
+        }
 
-        public String getClave() { return clave; }
+        public String getClave() {
+            return clave;
+        }
 
         static final Set<String> CLAVES = Arrays.stream(values())
                 .map(CampoOrden::getClave)
                 .collect(Collectors.toUnmodifiableSet());
 
-        public static boolean esValido(String clave) { return CLAVES.contains(clave); }
+        public static boolean esValido(String clave) {
+            return CLAVES.contains(clave);
+        }
     }
 
     private FichaPerfilCriteria(Builder b) {
@@ -69,11 +81,12 @@ public final class FichaPerfilCriteria extends QueryCriteria {
         public Builder ordenamiento(List<SortOrder> ordenamiento) {
             if (ordenamiento != null) {
                 ordenamiento.forEach(o -> {
-                    if (!CampoOrden.esValido(o.getCampo()))
+                    if (!CampoOrden.esValido(o.getCampo())) {
                         throw new ApplicationException(
                                 "Campo de ordenamiento no permitido: '" + o.getCampo() +
                                 "'. Campos disponibles: " + CampoOrden.CLAVES,
                                 "CAMPO_ORDEN_NO_PERMITIDO");
+                    }
                 });
             }
             return super.ordenamiento(ordenamiento);
@@ -84,14 +97,17 @@ public final class FichaPerfilCriteria extends QueryCriteria {
         }
 
         private void validarCamposFiltro(NodoFiltro nodo) {
-            if (nodo == null) return;
+            if (nodo == null) {
+                return;
+            }
             switch (nodo) {
                 case NodoFiltro.Predicado p -> {
-                    if (!Campo.esValido(p.campo()))
+                    if (!Campo.esValido(p.campo())) {
                         throw new ApplicationException(
                                 "Campo de filtro no permitido: '" + p.campo() +
                                 "'. Campos disponibles: " + Campo.CLAVES,
                                 "CAMPO_FILTRO_NO_PERMITIDO");
+                    }
                 }
                 case NodoFiltro.Grupo g -> g.nodos().forEach(this::validarCamposFiltro);
             }

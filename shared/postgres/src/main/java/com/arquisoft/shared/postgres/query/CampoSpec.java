@@ -39,13 +39,33 @@ public sealed interface CampoSpec<E>
 
     // ── Factories ─────────────────────────────────────────────────────────────
 
-    static <E> Texto<E>    texto(Function<Root<E>, Expression<String>> path) { return new Texto<>(path); }
-    static <E> Uuid<E>     uuid(Function<Root<E>, Path<UUID>> path)          { return new Uuid<>(path); }
-    static <E> Entero<E>   entero(Function<Root<E>, Path<Long>> path)        { return new Entero<>(path); }
-    static <E> Decimal<E>  decimal(Function<Root<E>, Path<BigDecimal>> path) { return new Decimal<>(path); }
-    static <E> Fecha<E>    fecha(Function<Root<E>, Path<LocalDate>> path)    { return new Fecha<>(path); }
-    static <E> FechaHora<E> fechaHora(Function<Root<E>, Path<LocalDateTime>> path) { return new FechaHora<>(path); }
-    static <E> Booleano<E> booleano(Function<Root<E>, Path<Boolean>> path)   { return new Booleano<>(path); }
+    static <E> Texto<E> texto(Function<Root<E>, Expression<String>> path) {
+        return new Texto<>(path);
+    }
+
+    static <E> Uuid<E> uuid(Function<Root<E>, Path<UUID>> path) {
+        return new Uuid<>(path);
+    }
+
+    static <E> Entero<E> entero(Function<Root<E>, Path<Long>> path) {
+        return new Entero<>(path);
+    }
+
+    static <E> Decimal<E> decimal(Function<Root<E>, Path<BigDecimal>> path) {
+        return new Decimal<>(path);
+    }
+
+    static <E> Fecha<E> fecha(Function<Root<E>, Path<LocalDate>> path) {
+        return new Fecha<>(path);
+    }
+
+    static <E> FechaHora<E> fechaHora(Function<Root<E>, Path<LocalDateTime>> path) {
+        return new FechaHora<>(path);
+    }
+
+    static <E> Booleano<E> booleano(Function<Root<E>, Path<Boolean>> path) {
+        return new Booleano<>(path);
+    }
 
     // ── Implementaciones sealed ────────────────────────────────────────────────
 
