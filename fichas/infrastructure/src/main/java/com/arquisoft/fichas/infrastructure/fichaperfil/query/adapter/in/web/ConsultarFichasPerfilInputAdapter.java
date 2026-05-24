@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.SortOrder;
 import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.pagination.PaginatedResult;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -51,17 +53,23 @@ public class ConsultarFichasPerfilInputAdapter {
     public ResponseEntity<PageResponseDTO<FichaPerfilReadModel>> consultarFichasCoordinador(
             @RequestParam int page,
             @RequestParam int size,
-            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) List<String> sort,
             @RequestParam(required = false) String titulo,
-            @RequestParam(required = false) UUID asesorId) {
+            @RequestParam(required = false) UUID asesorId,
+            @RequestParam(required = false) String asesorNombre,
+            @RequestParam(required = false) String asesorEmail,
+            @RequestParam(required = false) String termino) {
         log.debug("GET /fichas-perfil/coordinador — page={}, size={}", page, size);
 
         FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
                 .pagina(page)
                 .tamanio(size)
-                .ordenarPor(sort)
+                .ordenamiento(sort != null ? sort.stream().map(SortOrder::parse).toList() : null)
                 .tituloProyecto(titulo)
                 .asesorId(asesorId)
+                .asesorNombre(asesorNombre)
+                .asesorEmail(asesorEmail)
+                .termino(termino)
                 .build();
 
         PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilInputPort.ejecutar(criteria);

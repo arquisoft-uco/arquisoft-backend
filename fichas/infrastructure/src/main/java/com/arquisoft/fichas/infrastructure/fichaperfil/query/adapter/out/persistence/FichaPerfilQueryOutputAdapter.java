@@ -8,6 +8,7 @@ import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJp
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
 import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.SortOrder;
 import com.arquisoft.shared.pagination.SortDirection;
 import com.arquisoft.shared.web.util.PaginationMapper;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,8 @@ import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+
+import java.util.List;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
@@ -46,11 +49,12 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
 
     private Pageable toPageable(FichaPerfilCriteria criteria) {
         if (criteria.tieneOrden()) {
-            Sort sort = Sort.by(
-                    criteria.getDireccion() == SortDirection.ASC ? Sort.Direction.ASC : Sort.Direction.DESC,
-                    criteria.getOrdenarPor()
-            );
-            return PageRequest.of(criteria.getPagina(), criteria.getTamanio(), sort);
+            List<Sort.Order> orders = criteria.getOrdenamiento().stream()
+                    .map(o -> o.getDireccion() == SortDirection.ASC
+                            ? Sort.Order.asc(o.getCampo())
+                            : Sort.Order.desc(o.getCampo()))
+                    .toList();
+            return PageRequest.of(criteria.getPagina(), criteria.getTamanio(), Sort.by(orders));
         }
         return PageRequest.of(criteria.getPagina(), criteria.getTamanio());
     }
