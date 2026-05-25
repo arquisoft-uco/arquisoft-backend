@@ -16,18 +16,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
-/**
- * Contrato para construir un predicado JPA a partir de un operador y un valor en texto.
- *
- * Cada implementación sealed cubre un tipo de dato y valida los operadores compatibles
- * antes de construir el predicado. Principios aplicados:
- *
- *   SRP — cada record es responsable de un único tipo de dato.
- *   OCP — agregar soporte a un nuevo tipo implica añadir un nuevo record sin modificar
- *          los existentes ni la interfaz.
- *   ISP — interfaz mínima: un único método construirSpec.
- *   DIP — QueryJpaSpecification depende de esta abstracción, no de los records concretos.
- */
 public sealed interface CampoSpec<E>
         permits CampoSpec.Texto, CampoSpec.Uuid,
                 CampoSpec.Entero, CampoSpec.Decimal,

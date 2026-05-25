@@ -10,12 +10,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Implementa en JPA el contrato de campos filtrables declarado en FichaPerfilCriteria.Campo.
- *
- * El switch exhaustivo garantiza que todo campo del enum tenga una traducción JPA.
- * Si se agrega un campo al enum sin implementarlo aquí, el compilador lo detecta.
- */
 @Component
 class FichaPerfilJpaSpecification extends QueryJpaSpecification<FichaPerfilJpaEntity> {
 

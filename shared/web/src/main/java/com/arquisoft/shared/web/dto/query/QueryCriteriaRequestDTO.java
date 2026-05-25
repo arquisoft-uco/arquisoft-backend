@@ -9,25 +9,6 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * DTO de entrada para endpoints de consulta paginada con filtros dinámicos.
- *
- * Encapsula todos los parámetros de una consulta: paginación, ordenamiento
- * y el árbol de filtros. Es reutilizable en cualquier contexto de negocio.
- *
- * Formato JSON:
- * <pre>
- * {
- *   "pagina": 0,
- *   "tamanio": 10,
- *   "ordenamiento": ["tituloProyecto:ASC"],
- *   "filtros": {
- *     "tipo": "GRUPO", "conector": "AND",
- *     "nodos": [...]
- *   }
- * }
- * </pre>
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

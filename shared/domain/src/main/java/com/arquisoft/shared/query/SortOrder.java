@@ -16,9 +16,6 @@ public final class SortOrder {
         return new SortOrder(campo, direccion != null ? direccion : SortDirection.ASC);
     }
 
-    /**
-     * Parsea "campo" o "campo:ASC" / "campo:DESC".
-     */
     public static SortOrder parse(String expresion) {
         String[] partes = expresion.split(":", 2);
         String campo = partes[0].trim();
