@@ -16,19 +16,19 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GrupoFiltroDTO implements NodoFiltroDTO {
 
-    private FiltroConector conector;
+    private String conector;
     private List<NodoFiltroDTO> nodos;
 
     @Override
     public NodoFiltro toDomain() {
-        if (conector == null) {
+        if (conector == null || conector.isBlank()) {
             throw new ApplicationException(
                     "El campo 'conector' es requerido en un nodo GRUPO",
                     "CONECTOR_REQUERIDO");
         }
         List<NodoFiltroDTO> lista = nodos != null ? nodos : List.of();
         return NodoFiltro.grupo(
-                conector,
+                FiltroConector.parse(conector),
                 lista.stream().map(NodoFiltroDTO::toDomain).toList()
         );
     }

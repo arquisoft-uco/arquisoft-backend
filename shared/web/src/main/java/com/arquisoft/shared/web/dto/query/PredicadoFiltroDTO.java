@@ -7,15 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Hoja del árbol de filtros: representa un predicado atómico.
- *
- * JSON esperado:
- * <pre>
- * { "tipo": "PREDICADO", "campo": "tituloProyecto", "operador": "CONTIENE", "valor": "web" }
- * { "tipo": "PREDICADO", "campo": "asesorId",       "operador": "ES_NULO" }
- * </pre>
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -23,11 +14,11 @@ import lombok.NoArgsConstructor;
 public class PredicadoFiltroDTO implements NodoFiltroDTO {
 
     private String campo;
-    private FiltroOperador operador;
-    private String valor;   // opcional: null para ES_NULO / NO_ES_NULO
+    private String operador;
+    private String valor;
 
     @Override
     public NodoFiltro toDomain() {
-        return NodoFiltro.predicado(campo, operador, valor);
+        return NodoFiltro.predicado(campo, FiltroOperador.parse(operador), valor);
     }
 }
