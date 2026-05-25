@@ -1,12 +1,8 @@
 package com.arquisoft.fichas.application.fichaperfil.query.criteria;
 
-import com.arquisoft.shared.exception.ApplicationException;
-import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.QueryCriteria;
-import com.arquisoft.shared.query.SortOrder;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -60,49 +56,11 @@ public final class FichaPerfilCriteria extends QueryCriteria {
     public static final class Builder extends QueryCriteria.BaseBuilder<Builder> {
 
         @Override
-        public Builder raiz(NodoFiltro raiz) {
-            validarCamposFiltro(raiz);
-            return super.raiz(raiz);
-        }
+        protected Set<String> camposFiltrables() { return Campo.CLAVES_FILTRABLES; }
 
         @Override
-        public Builder ordenamiento(List<SortOrder> ordenamiento) {
-            if (ordenamiento != null) {
-                ordenamiento.forEach(o -> {
-                    if (!Campo.esValidoParaOrdenar(o.getCampo())) {
-                        throw new ApplicationException(
-                                "Campo de ordenamiento no permitido: '" + o.getCampo() +
-                                "'. Campos disponibles: " + Campo.CLAVES_ORDENABLES,
-                                "CAMPO_ORDEN_NO_PERMITIDO");
-                    }
-                });
-            }
-            return super.ordenamiento(ordenamiento);
-        }
+        protected Set<String> camposOrdenables() { return Campo.CLAVES_ORDENABLES; }
 
-        public FichaPerfilCriteria build() {
-            return new FichaPerfilCriteria(this);
-        }
-
-        private void validarCamposFiltro(NodoFiltro nodo) {
-            if (nodo == null) return;
-            switch (nodo) {
-                case NodoFiltro.Predicado p -> {
-                    if (!Campo.esValidoParaFiltrar(p.campo())) {
-                        throw new ApplicationException(
-                                "Campo de filtro no permitido: '" + p.campo() +
-                                "'. Campos disponibles: " + Campo.CLAVES_FILTRABLES,
-                                "CAMPO_FILTRO_NO_PERMITIDO");
-                    }
-                    if (p.operador().requiereValor() && (p.valor() == null || p.valor().isBlank())) {
-                        throw new ApplicationException(
-                                "El operador '" + p.operador() + "' requiere un valor no vacío para el campo '"
-                                + p.campo() + "'",
-                                "VALOR_REQUERIDO");
-                    }
-                }
-                case NodoFiltro.Grupo g -> g.nodos().forEach(this::validarCamposFiltro);
-            }
-        }
+        public FichaPerfilCriteria build() { return new FichaPerfilCriteria(this); }
     }
 }

@@ -51,9 +51,13 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
     private Pageable toPageable(FichaPerfilCriteria criteria) {
         if (criteria.tieneOrden()) {
             List<Sort.Order> orders = criteria.getOrdenamiento().stream()
-                    .map(o -> o.getDireccion() == SortDirection.ASC
-                            ? Sort.Order.asc(FichaPerfilSortMapper.traducir(o.getCampo()))
-                            : Sort.Order.desc(FichaPerfilSortMapper.traducir(o.getCampo())))
+                    .map(o -> {
+                        String ruta = FichaPerfilSortMapper.traducir(o.getCampo());
+                        if (ruta == null) throw new OrdenamientoInvalidoException(o.getCampo());
+                        return o.getDireccion() == SortDirection.ASC
+                                ? Sort.Order.asc(ruta)
+                                : Sort.Order.desc(ruta);
+                    })
                     .toList();
             return PageRequest.of(criteria.getPagina(), criteria.getTamanio(), Sort.by(orders));
         }

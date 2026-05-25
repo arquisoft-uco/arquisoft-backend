@@ -3,6 +3,7 @@ package com.arquisoft.shared.query;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public abstract class QueryCriteria {
 
@@ -67,16 +68,36 @@ public abstract class QueryCriteria {
 
         @SuppressWarnings("unchecked")
         public B ordenamiento(List<SortOrder> ordenamiento) {
+            if (ordenamiento != null) {
+                Set<String> permitidos = camposOrdenables();
+                if (permitidos != null) {
+                    ordenamiento.forEach(o -> {
+                        if (!permitidos.contains(o.getCampo())) {
+                            throw new FiltroException(
+                                    "Campo de ordenamiento no permitido: '" + o.getCampo() +
+                                    "'. Campos disponibles: " + permitidos,
+                                    "CAMPO_ORDEN_NO_PERMITIDO");
+                        }
+                    });
+                }
+            }
             this.ordenamiento = ordenamiento != null ? ordenamiento : new ArrayList<>();
             return (B) this;
         }
 
         @SuppressWarnings("unchecked")
         public B raiz(NodoFiltro raiz) {
-            if (raiz != null) validarProfundidad(raiz, 0);
+            if (raiz != null) {
+                validarProfundidad(raiz, 0);
+                validarPredicados(raiz);
+            }
             this.raiz = raiz;
             return (B) this;
         }
+
+        protected Set<String> camposFiltrables() { return null; }
+
+        protected Set<String> camposOrdenables() { return null; }
 
         private void validarProfundidad(NodoFiltro nodo, int profundidad) {
             if (profundidad > MAX_PROFUNDIDAD_FILTRO) {
@@ -87,6 +108,28 @@ public abstract class QueryCriteria {
             }
             if (nodo instanceof NodoFiltro.Grupo g) {
                 g.nodos().forEach(hijo -> validarProfundidad(hijo, profundidad + 1));
+            }
+        }
+
+        private void validarPredicados(NodoFiltro nodo) {
+            if (nodo == null) return;
+            Set<String> permitidos = camposFiltrables();
+            switch (nodo) {
+                case NodoFiltro.Predicado p -> {
+                    if (permitidos != null && !permitidos.contains(p.campo())) {
+                        throw new FiltroException(
+                                "Campo de filtro no permitido: '" + p.campo() +
+                                "'. Campos disponibles: " + permitidos,
+                                "CAMPO_FILTRO_NO_PERMITIDO");
+                    }
+                    if (p.operador().requiereValor() && (p.valor() == null || p.valor().isBlank())) {
+                        throw new FiltroException(
+                                "El operador '" + p.operador() + "' requiere un valor no vacío para el campo '"
+                                + p.campo() + "'",
+                                "VALOR_REQUERIDO");
+                    }
+                }
+                case NodoFiltro.Grupo g -> g.nodos().forEach(this::validarPredicados);
             }
         }
     }
