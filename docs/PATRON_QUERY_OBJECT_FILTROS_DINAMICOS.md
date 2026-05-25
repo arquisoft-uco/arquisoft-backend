@@ -1,7 +1,12 @@
-# Patrón Specification — Filtros Dinámicos con Agrupación Booleana
+# Query Object + Spring Data Specification — Filtros Dinámicos con Agrupación Booleana
 
-Este documento describe la implementación del patrón Specification en el proyecto,
-orientada a soportar consultas dinámicas y personalizables desde sistemas externos.
+Este documento describe la implementación del sistema de filtrado dinámico del proyecto,
+que combina dos patrones arquitectónicos complementarios:
+
+- **Query Object** (Martin Fowler, POEAA): representa la consulta como un objeto portable
+  e independiente de la tecnología de persistencia — aplicado en capas de dominio y aplicación.
+- **Spring Data Specification**: traduce ese objeto a predicados JPA — aplicado exclusivamente
+  en la capa de infraestructura.
 
 ---
 
@@ -32,11 +37,14 @@ bounded context pueda exponer consultas filtrables, ordenables y paginadas sin d
 lógica. Un sistema externo puede construir la consulta completa —incluyendo agrupaciones
 booleanas complejas— y enviarla como JSON al endpoint correspondiente.
 
-**Antes:** cada contexto definía sus propios campos hardcodeados en el criteria y su
-propia lógica de especificación.
+**Patrón Query Object** (dominio y aplicación): encapsula todos los parámetros de una
+consulta —paginación, ordenamiento y árbol de filtros— en un objeto inmutable tipado.
+El objeto existe sin saber nada de JPA, SQL ni Spring. Es portable, testeable y reutilizable
+en cualquier tipo de persistencia.
 
-**Después:** un árbol de expresión booleana (`NodoFiltro`) con operadores tipados
-(`CampoSpec`) que se traduce automáticamente a una `Specification` JPA.
+**Spring Data Specification** (infraestructura): recibe ese objeto y lo traduce a
+predicados `javax.persistence.criteria.Predicate` usando la API `Specification<T>` de
+Spring Data JPA. Es el único punto del sistema que conoce JPA.
 
 ---
 
@@ -50,7 +58,7 @@ propia lógica de especificación.
      │  .parsearFiltros()
      │  .parsearOrdenamiento()
      ▼
- FichaPerfilCriteria       ← criteria concreto (fichas:application)
+ FichaPerfilCriteria       ← [QUERY OBJECT] criteria concreto (fichas:application)
      │  extends QueryCriteria
      │
      ▼
@@ -63,7 +71,7 @@ propia lógica de especificación.
  FichaPerfilQueryOutputAdapter ← adaptador JPA (fichas:infrastructure)
      │  specification.desdeCriteria(criteria)
      ▼
- FichaPerfilJpaSpecification   ← spec concreta (fichas:infrastructure)
+ FichaPerfilJpaSpecification   ← [SPRING DATA SPECIFICATION] spec concreta (fichas:infrastructure)
      │  extends QueryJpaSpecification<FichaPerfilJpaEntity>
      │
      ▼
@@ -76,17 +84,21 @@ propia lógica de especificación.
  Specification<FichaPerfilJpaEntity>  → SQL WHERE generado
 ```
 
+La frontera entre los dos patrones está exactamente en `FichaPerfilQueryOutputPort`:
+todo lo que está por encima es **Query Object**; todo lo que está por debajo es
+**Spring Data Specification**.
+
 ---
 
 ## 3. Módulos involucrados
 
-| Módulo | Capa | Responsabilidad en este patrón |
-|--------|------|-------------------------------|
-| `shared:domain` | Dominio puro | Modelo del árbol de filtros, operadores, conector, criteria base |
-| `shared:postgres` | Infraestructura compartida | Traducción del árbol a predicados JPA, validación de tipos |
-| `shared:web` | Transporte HTTP compartido | Deserialización JSON del árbol de filtros y body del request |
-| `{ctx}:application` | Aplicación | Criteria concreto del contexto (solo builder, hereda todo) |
-| `{ctx}:infrastructure` | Infraestructura | Spec JPA concreta con el mapa de campos filtrables |
+| Módulo | Capa | Patrón | Responsabilidad |
+|--------|------|--------|----------------|
+| `shared:domain` | Dominio puro | Query Object | Modelo del árbol de filtros, operadores, conector, criteria base, Template Method de validación |
+| `shared:postgres` | Infraestructura compartida | Spring Data Specification | Traducción del árbol a predicados JPA, validación de tipos |
+| `shared:web` | Transporte HTTP compartido | — | Deserialización JSON del árbol de filtros y body del request |
+| `{ctx}:application` | Aplicación | Query Object | Criteria concreto del contexto (enum de campos + builder con hooks) |
+| `{ctx}:infrastructure` | Infraestructura | Spring Data Specification | Spec JPA concreta con el mapa de campos filtrables; mapper de sort |
 
 > `{ctx}` = cualquier bounded context (`fichas`, `proyectos`, `evaluaciones`, etc.)
 
@@ -97,38 +109,40 @@ propia lógica de especificación.
 ```
 shared/
 ├── domain/src/main/java/com/arquisoft/shared/
-│   └── query/
-│       ├── FiltroOperador.java        ← enum de operadores de comparación
-│       ├── FiltroConector.java        ← enum AND / OR
-│       ├── NodoFiltro.java            ← sealed interface: árbol booleano
-│       ├── SortOrder.java             ← valor de ordenamiento (campo + dirección)
-│       └── QueryCriteria.java         ← clase abstracta base para criterios
+│   └── query/                              ← [QUERY OBJECT]
+│       ├── FiltroOperador.java             ← enum de operadores de comparación
+│       ├── FiltroConector.java             ← enum AND / OR
+│       ├── FiltroException.java            ← excepción de dominio para validaciones del filtro
+│       ├── NodoFiltro.java                 ← sealed interface: árbol booleano
+│       ├── SortOrder.java                  ← valor de ordenamiento (campo + dirección)
+│       └── QueryCriteria.java              ← clase abstracta base para criterios
 │
 ├── postgres/src/main/java/com/arquisoft/shared/postgres/
-│   ├── query/
-│   │   ├── CampoSpec.java             ← sealed interface: predicado JPA por tipo
-│   │   └── QueryJpaSpecification.java ← abstract: recorre el árbol y compone specs
+│   ├── query/                              ← [SPRING DATA SPECIFICATION]
+│   │   ├── CampoSpec.java                  ← sealed interface: predicado JPA por tipo
+│   │   └── QueryJpaSpecification.java      ← abstract: recorre el árbol y compone specs
 │   └── exception/
-│       └── FiltroInvalidoException.java
+│       └── FiltroInvalidoException.java    ← campo inválido o tipo incompatible en infraestructura
 │
 └── web/src/main/java/com/arquisoft/shared/web/dto/
     └── query/
-        ├── NodoFiltroDTO.java          ← interface Jackson con @JsonTypeInfo
-        ├── PredicadoFiltroDTO.java     ← DTO para nodos hoja
-        ├── GrupoFiltroDTO.java         ← DTO para nodos internos
-        └── QueryCriteriaRequestDTO.java ← body completo del endpoint POST
+        ├── NodoFiltroDTO.java              ← interface Jackson con @JsonTypeInfo
+        ├── PredicadoFiltroDTO.java         ← DTO para nodos hoja
+        ├── GrupoFiltroDTO.java             ← DTO para nodos internos
+        └── QueryCriteriaRequestDTO.java    ← body completo del endpoint POST
 
 fichas/
 ├── application/src/main/java/com/arquisoft/fichas/application/fichaperfil/query/
 │   └── criteria/
-│       └── FichaPerfilCriteria.java   ← criteria concreto (solo builder)
+│       └── FichaPerfilCriteria.java        ← [QUERY OBJECT] criteria concreto con enum de campos
 │
 └── infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/fichaperfil/query/
     ├── adapter/in/web/
-    │   └── ConsultarFichasPerfilInputAdapter.java  ← endpoint POST
+    │   └── ConsultarFichasPerfilInputAdapter.java      ← endpoint POST
     └── adapter/out/persistence/
-        ├── FichaPerfilJpaSpecification.java        ← mapa de campos
-        └── FichaPerfilQueryOutputAdapter.java      ← ejecuta la consulta JPA
+        ├── FichaPerfilJpaSpecification.java            ← [SPRING DATA SPECIFICATION] mapa de campos
+        ├── FichaPerfilSortMapper.java                  ← traduce claves lógicas a rutas JPA para sort
+        └── FichaPerfilQueryOutputAdapter.java          ← ejecuta la consulta JPA
 ```
 
 ---
@@ -138,6 +152,7 @@ fichas/
 ### 5.1 `shared:domain` — capa de dominio puro
 
 > Java puro. Sin dependencias de Spring, JPA ni Jackson. Usable en cualquier capa.
+> Todas las clases de este paquete pertenecen al **patrón Query Object**.
 
 ---
 
@@ -152,8 +167,10 @@ Conjunto cerrado de operadores de comparación soportados por el sistema.
 | Comparación (números y fechas) | `MAYOR_QUE` `MENOR_QUE` `MAYOR_IGUAL_QUE` `MENOR_IGUAL_QUE` |
 | Nulidad (sin valor) | `ES_NULO` `NO_ES_NULO` |
 
-Método clave: `requiereValor()` — indica si el operador necesita un valor o no
-(los operadores de nulidad no lo requieren).
+Método clave: `requiereValor()` — indica si el operador necesita un valor o no.
+Factory: `parse(String)` — convierte el string del JSON al enum con mensaje de error
+descriptivo; se invoca explícitamente en el DTO para evitar que Jackson use su
+propio mecanismo de deserialización de enums.
 
 ---
 
@@ -166,11 +183,27 @@ Define cómo se combinan los nodos hermanos dentro de un `Grupo`.
 | `AND` | Todos los nodos hijos deben cumplirse |
 | `OR` | Basta con que uno de los hijos se cumpla |
 
+Factory: `parse(String)` — mismo comportamiento que `FiltroOperador.parse`.
+
+---
+
+#### `FiltroException` — excepción de dominio
+
+Extiende `DomainException`. Se lanza dentro de `shared:domain` cuando:
+
+- Un campo de filtro no está en los campos permitidos del contexto.
+- Un campo de ordenamiento no está en los campos ordenables del contexto.
+- Se usa un operador que requiere valor pero el valor es nulo o vacío.
+- El árbol de filtros supera la profundidad máxima (`MAX_PROFUNDIDAD_FILTRO = 10`).
+
+Mantiene la pureza del dominio: nunca se usa `ApplicationException` ni ninguna
+clase con dependencia de Spring en este paquete.
+
 ---
 
 #### `NodoFiltro` — sealed interface
 
-Árbol de expresión booleana. Tiene exactamente dos nodos:
+Árbol de expresión booleana. Tiene exactamente dos implementaciones:
 
 ```
 NodoFiltro
@@ -180,7 +213,7 @@ NodoFiltro
 
 **`Predicado`**
 
-- `campo` — nombre del campo a filtrar (e.g. `"tituloProyecto"`)
+- `campo` — nombre lógico del campo (e.g. `"tituloProyecto"`)
 - `operador` — `FiltroOperador` a aplicar
 - `valor` — valor en texto para comparar; `null` cuando el operador no lo requiere
 
@@ -217,14 +250,29 @@ public abstract class QueryCriteria {
 }
 ```
 
-Los contextos de negocio **extienden** esta clase definiendo únicamente su `Builder`.
-Ningún campo de negocio se agrega aquí; la clase es agnóstica al dominio.
+**`BaseBuilder<B>`** — Template Method con self-type para subclases fluidas.
 
-**`BaseBuilder<B>`** — builder con self-type para mantener la API fluida en subclases:
+El builder implementa las validaciones comunes en sus métodos `ordenamiento()` y
+`raiz()`, y delega en dos métodos hook para conocer los campos permitidos de cada
+contexto concreto:
+
+```java
+protected Set<String> camposFiltrables() { return null; }  // null = sin restricción
+protected Set<String> camposOrdenables() { return null; }  // null = sin restricción
+```
+
+Las subclases sobreescriben estos hooks para declarar qué campos acepta su contexto.
+Cuando se llama a `.ordenamiento(...)`, el builder valida cada `SortOrder` contra
+`camposOrdenables()`. Cuando se llama a `.raiz(...)`, valida recursivamente cada
+`NodoFiltro.Predicado` contra `camposFiltrables()` y verifica que los operadores que
+requieren valor tengan uno no vacío. Todas las violaciones lanzan `FiltroException`.
+
 ```java
 FichaPerfilCriteria.builder()
-    .pagina(0).tamanio(10)
-    .raiz(NodoFiltro.predicado(...))
+    .pagina(0)
+    .tamanio(10)
+    .ordenamiento(List.of(SortOrder.parse("tituloProyecto:ASC")))
+    .raiz(NodoFiltro.predicado("tituloProyecto", FiltroOperador.CONTIENE, "web"))
     .build()
 ```
 
@@ -234,6 +282,7 @@ FichaPerfilCriteria.builder()
 
 > Usa Spring Data JPA (`Specification`, `Root`, `CriteriaBuilder`). No debe importarse
 > desde capas de dominio ni de aplicación.
+> Todas las clases de este paquete pertenecen al **patrón Spring Data Specification**.
 
 ---
 
@@ -249,8 +298,8 @@ Extiende `ApplicationException` (HTTP 400). Se lanza cuando:
 
 #### `CampoSpec<E>` — sealed interface
 
-**El corazón del sistema.** Define el contrato para construir un predicado JPA dado
-un operador y un valor en texto.
+**El corazón del sistema de traducción JPA.** Define el contrato para construir un predicado
+JPA dado un operador y un valor en texto.
 
 ```java
 Specification<E> construirSpec(FiltroOperador operador, String valor);
@@ -297,7 +346,7 @@ public final Specification<E> desdeCriteria(QueryCriteria criteria)
 ```java
 protected abstract Map<String, CampoSpec<E>> camposPermitidos();
 ```
-El mapa asocia el nombre del campo (tal como llega en el JSON) con su `CampoSpec`
+El mapa asocia el nombre lógico del campo (tal como llega en el JSON) con su `CampoSpec`
 correspondiente. Es el único punto de extensión para cada contexto.
 
 **Algoritmo de recorrido:**
@@ -335,15 +384,23 @@ Método único: `toDomain()` — convierte el DTO al modelo de dominio `NodoFilt
 
 #### `PredicadoFiltroDTO`
 
-DTO para nodos hoja. Campos: `campo`, `operador` (`FiltroOperador`), `valor` (nullable).
+DTO para nodos hoja. Campos: `campo` (`String`), `operador` (`String`), `valor` (nullable).
+
+El campo `operador` es `String` deliberadamente: Jackson puede deserializar enums
+directamente, pero lo haría por ordinal o nombre sin pasar por `FiltroOperador.parse()`,
+perdiendo el mensaje de error descriptivo. `toDomain()` llama `FiltroOperador.parse(operador)`
+explícitamente para garantizar el error correcto ante valores inválidos.
 
 ---
 
 #### `GrupoFiltroDTO`
 
-DTO para nodos internos. Campos: `conector` (`FiltroConector`), `nodos` (`List<NodoFiltroDTO>`).
+DTO para nodos internos. Campos: `conector` (`String`), `nodos` (`List<NodoFiltroDTO>`).
 La lista es polimórfica: cada elemento puede ser `PREDICADO` o `GRUPO`, lo que
 permite el anidamiento recursivo en la deserialización.
+
+El campo `conector` es `String` por la misma razón que `operador` en `PredicadoFiltroDTO`.
+`toDomain()` llama `FiltroConector.parse(conector)` explícitamente.
 
 ---
 
@@ -370,23 +427,44 @@ Métodos de conversión:
 
 ---
 
-#### `FichaPerfilCriteria`
+#### `FichaPerfilCriteria` — [QUERY OBJECT]
 
-Criteria concreto para el contexto fichas. **No agrega campos propios**; su única
-responsabilidad es establecer el tipo concreto y exponer su builder.
+Criteria concreto para el contexto fichas. Declara un enum `Campo` que centraliza
+todos los campos del contexto —tanto filtrables como ordenables— con flags booleanos
+para cada uso. El `Builder` sobreescribe los hooks del `BaseBuilder` para activar la
+validación automática.
 
 ```java
 public final class FichaPerfilCriteria extends QueryCriteria {
+
+    public enum Campo {
+        TITULO_PROYECTO("tituloProyecto", true,  true),
+        ASESOR_NOMBRE  ("asesorNombre",   true,  true),
+        ASESOR_EMAIL   ("asesorEmail",    true,  true),
+        ASESOR_ID      ("asesorId",       true,  false);  // filtrable, NO ordenable
+
+        // Sets derivados del enum — O(1) lookup en validaciones
+        static final Set<String> CLAVES_FILTRABLES = ...;
+        static final Set<String> CLAVES_ORDENABLES = ...;
+
+        public static boolean esValidoParaFiltrar(String clave) { ... }
+        public static boolean esValidoParaOrdenar(String clave) { ... }
+    }
+
     public static Builder builder() { return new Builder(); }
 
     public static final class Builder extends QueryCriteria.BaseBuilder<Builder> {
+        @Override protected Set<String> camposFiltrables() { return Campo.CLAVES_FILTRABLES; }
+        @Override protected Set<String> camposOrdenables() { return Campo.CLAVES_ORDENABLES; }
         public FichaPerfilCriteria build() { return new FichaPerfilCriteria(this); }
     }
 }
 ```
 
-Gracias a la herencia, `FichaPerfilCriteria.builder().pagina(0).tamanio(10).raiz(...).build()`
-ya tiene toda la funcionalidad sin código adicional.
+El enum `Campo` es la **fuente de verdad** del contexto: toda la infraestructura
+(`FichaPerfilJpaSpecification`, `FichaPerfilSortMapper`) itera sobre sus valores
+usando switches exhaustivos, de modo que agregar un nuevo campo implica solo extender
+el enum y el compilador señala todos los puntos que requieren actualización.
 
 ---
 
@@ -394,22 +472,35 @@ ya tiene toda la funcionalidad sin código adicional.
 
 ---
 
-#### `FichaPerfilJpaSpecification` — `@Component`
+#### `FichaPerfilJpaSpecification` — `@Component` — [SPRING DATA SPECIFICATION]
 
-Extiende `QueryJpaSpecification<FichaPerfilJpaEntity>` y declara los **campos
-filtrables de la entidad ficha perfil** con su tipo de dato correspondiente.
+Extiende `QueryJpaSpecification<FichaPerfilJpaEntity>`. Construye el mapa de campos
+filtrables iterando `FichaPerfilCriteria.Campo` con un switch exhaustivo: si se agrega
+un campo al enum sin actualizar el switch, el compilador falla.
 
 ```java
-private static final Map<String, CampoSpec<FichaPerfilJpaEntity>> CAMPOS = Map.of(
-    "tituloProyecto", CampoSpec.texto(root -> root.get("tituloProyecto")),
-    "asesorNombre",   CampoSpec.texto(root -> root.get("asesorFicha").get("nombre")),
-    "asesorEmail",    CampoSpec.texto(root -> root.get("asesorFicha").get("email")),
-    "asesorId",       CampoSpec.uuid(root -> root.get("asesorFicha").get("id"))
-);
+static {
+    for (FichaPerfilCriteria.Campo campo : FichaPerfilCriteria.Campo.values()) {
+        CampoSpec<FichaPerfilJpaEntity> spec = switch (campo) {
+            case TITULO_PROYECTO -> CampoSpec.texto(root -> root.get("tituloProyecto"));
+            case ASESOR_NOMBRE   -> CampoSpec.texto(root -> root.get("asesorFicha").get("nombre"));
+            case ASESOR_EMAIL    -> CampoSpec.texto(root -> root.get("asesorFicha").get("email"));
+            case ASESOR_ID       -> CampoSpec.uuid(root -> root.get("asesorFicha").get("id"));
+        };
+        m.put(campo.getClave(), spec);
+    }
+}
 ```
 
-Para **agregar un nuevo campo filtrable** basta con añadir una entrada al mapa.
-No se modifica ninguna otra clase.
+---
+
+#### `FichaPerfilSortMapper`
+
+Clase de utilidad (final, sin instancias) que traduce claves lógicas de ordenamiento
+(`"tituloProyecto"`) a rutas de propiedad JPA (`"asesorFicha.nombre"`). También itera
+`FichaPerfilCriteria.Campo` con un switch exhaustivo. Devuelve `null` para los campos
+declarados como no ordenables; el `OutputAdapter` convierte ese `null` en
+`OrdenamientoInvalidoException` antes de que llegue a JPA.
 
 ---
 
@@ -417,8 +508,8 @@ No se modifica ninguna otra clase.
 
 Implementa `FichaPerfilQueryOutputPort`. Recibe `FichaPerfilCriteria`, delega la
 construcción de la spec a `FichaPerfilJpaSpecification`, convierte el criteria a
-`Pageable` para ordenamiento/paginación, ejecuta `findAll(spec, pageable)` y
-mapea el resultado a `PaginatedResult<FichaPerfilReadModel>`.
+`Pageable` (usando `FichaPerfilSortMapper` para ordenamiento), ejecuta
+`findAll(spec, pageable)` y mapea el resultado a `PaginatedResult<FichaPerfilReadModel>`.
 
 Maneja dos excepciones de Spring Data JPA y las convierte en errores HTTP 400:
 - `PropertyReferenceException` → campo de ordenamiento inválido
@@ -447,15 +538,21 @@ Body: QueryCriteriaRequestDTO     (opcional — sin body devuelve todo paginado)
 
 2. ConsultarFichasPerfilInputAdapter
    └─ Deserializa QueryCriteriaRequestDTO via Jackson
-   └─ dto.parsearFiltros()  →  NodoFiltro (árbol)
+   └─ dto.parsearFiltros()  →  NodoFiltro (árbol) via NodoFiltroDTO.toDomain()
+        └─ PredicadoFiltroDTO.toDomain() llama FiltroOperador.parse(operador)
    └─ dto.parsearOrdenamiento()  →  List<SortOrder>
-   └─ FichaPerfilCriteria.builder()...build()
+   └─ FichaPerfilCriteria.builder()
+        .ordenamiento(...)   ← BaseBuilder valida contra Campo.CLAVES_ORDENABLES
+        .raiz(...)           ← BaseBuilder valida campos y operadores contra Campo.CLAVES_FILTRABLES
+        .build()
+   [Cualquier campo inválido lanza FiltroException aquí, antes de llegar al caso de uso]
 
 3. ConsultarFichasPerfilUseCase.ejecutar(criteria)
    └─ Delega a FichaPerfilQueryOutputPort.consultarTodas(criteria)
 
 4. FichaPerfilQueryOutputAdapter.consultarTodas(criteria)
    └─ specification.desdeCriteria(criteria)  →  Specification<FichaPerfilJpaEntity>
+   └─ FichaPerfilSortMapper.traducir(campo)  →  ruta JPA para Pageable
    └─ fichaPerfilJpaRepository.findAll(spec, pageable)
 
 5. FichaPerfilJpaSpecification → QueryJpaSpecification.desdeCriteria(criteria)
@@ -556,11 +653,11 @@ Formato de valores:
 
 | Principio | Aplicación |
 |-----------|-----------|
-| **SRP** | `CampoSpec.Texto` solo maneja predicados de texto. `QueryJpaSpecification` solo recorre el árbol. `FichaPerfilJpaSpecification` solo declara qué campos son filtrables. Cada clase tiene una única razón para cambiar. |
-| **OCP** | Agregar un nuevo contexto → nueva subclase de `QueryJpaSpecification`, sin modificar nada existente. Agregar un nuevo tipo de dato → nuevo record en `CampoSpec`. Agregar un nuevo campo filtrable → nueva entrada en el mapa de `camposPermitidos()`. |
-| **LSP** | `FichaPerfilCriteria` sustituye a `QueryCriteria` en cualquier punto. Cualquier `CampoSpec.*` es intercambiable donde se espera `CampoSpec<E>`. Cualquier subclase de `QueryJpaSpecification` puede usarse en el `OutputAdapter`. |
+| **SRP** | `CampoSpec.Texto` solo maneja predicados de texto. `QueryJpaSpecification` solo recorre el árbol. `FichaPerfilJpaSpecification` solo declara qué campos son filtrables. `FichaPerfilSortMapper` solo traduce claves de sort a rutas JPA. Cada clase tiene una única razón para cambiar. |
+| **OCP** | Agregar un nuevo contexto → nueva subclase de `QueryJpaSpecification`, sin modificar nada existente. Agregar un nuevo tipo de dato → nuevo record en `CampoSpec`. Agregar un campo al enum `Campo` → el switch exhaustivo señala los puntos a actualizar. |
+| **LSP** | `FichaPerfilCriteria` sustituye a `QueryCriteria` en cualquier punto. Cualquier `CampoSpec.*` es intercambiable donde se espera `CampoSpec<E>`. |
 | **ISP** | `CampoSpec<E>` tiene un único método (`construirSpec`). `NodoFiltroDTO` tiene un único método (`toDomain`). Ninguna clase implementa métodos que no necesita. |
-| **DIP** | `QueryJpaSpecification` depende de `CampoSpec<E>` (interfaz), no de `CampoSpec.Texto` ni de ningún record concreto. `FichaPerfilQueryOutputAdapter` depende de `QueryJpaSpecification` (abstracta), no de `FichaPerfilJpaSpecification` directamente. Las capas superiores dependen de abstracciones definidas en capas inferiores. |
+| **DIP** | `QueryJpaSpecification` depende de `CampoSpec<E>` (interfaz), no de ningún record concreto. `FichaPerfilQueryOutputAdapter` depende de `QueryJpaSpecification` (abstracta), no de `FichaPerfilJpaSpecification` directamente. Las capas superiores dependen de abstracciones. |
 
 ---
 
@@ -570,13 +667,48 @@ Para añadir filtros dinámicos al contexto `proyectos`, por ejemplo:
 
 ### 1. Crear el criteria en `proyectos:application`
 
+Declarar el enum `Campo` con todos los campos del contexto y sus flags. El builder
+sobreescribe los dos hooks para activar las validaciones del `BaseBuilder`.
+
 ```java
 // proyectos/application/.../criteria/ProyectoCriteria.java
 public final class ProyectoCriteria extends QueryCriteria {
 
+    public enum Campo {
+        TITULO      ("titulo",      true,  true),
+        ESTADO      ("estado",      true,  true),
+        ANIO        ("anio",        true,  true),
+        FECHA_INICIO("fechaInicio", true,  false),  // filtrable, NO ordenable
+        ACTIVO      ("activo",      true,  false);
+
+        private final String  clave;
+        private final boolean filtrable;
+        private final boolean ordenable;
+
+        Campo(String clave, boolean filtrable, boolean ordenable) {
+            this.clave     = clave;
+            this.filtrable = filtrable;
+            this.ordenable = ordenable;
+        }
+
+        public String getClave() { return clave; }
+
+        static final Set<String> CLAVES_FILTRABLES = Arrays.stream(values())
+                .filter(c -> c.filtrable).map(Campo::getClave)
+                .collect(Collectors.toUnmodifiableSet());
+
+        static final Set<String> CLAVES_ORDENABLES = Arrays.stream(values())
+                .filter(c -> c.ordenable).map(Campo::getClave)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    private ProyectoCriteria(Builder b) { super(b); }
+
     public static Builder builder() { return new Builder(); }
 
     public static final class Builder extends QueryCriteria.BaseBuilder<Builder> {
+        @Override protected Set<String> camposFiltrables() { return Campo.CLAVES_FILTRABLES; }
+        @Override protected Set<String> camposOrdenables() { return Campo.CLAVES_ORDENABLES; }
         public ProyectoCriteria build() { return new ProyectoCriteria(this); }
     }
 }
@@ -591,18 +723,30 @@ implementation project(':shared:postgres')
 
 ### 3. Crear la specification concreta en `proyectos:infrastructure`
 
+Usar switch exhaustivo sobre `ProyectoCriteria.Campo` para que el compilador detecte
+campos olvidados.
+
 ```java
 // proyectos/infrastructure/.../ProyectoJpaSpecification.java
 @Component
 class ProyectoJpaSpecification extends QueryJpaSpecification<ProyectoJpaEntity> {
 
-    private static final Map<String, CampoSpec<ProyectoJpaEntity>> CAMPOS = Map.of(
-        "titulo",        CampoSpec.texto(root -> root.get("titulo")),
-        "estado",        CampoSpec.texto(root -> root.get("estado")),
-        "anio",          CampoSpec.entero(root -> root.get("anio")),
-        "fechaInicio",   CampoSpec.fecha(root -> root.get("fechaInicio")),
-        "activo",        CampoSpec.booleano(root -> root.get("activo"))
-    );
+    private static final Map<String, CampoSpec<ProyectoJpaEntity>> CAMPOS;
+
+    static {
+        Map<String, CampoSpec<ProyectoJpaEntity>> m = new LinkedHashMap<>();
+        for (ProyectoCriteria.Campo campo : ProyectoCriteria.Campo.values()) {
+            CampoSpec<ProyectoJpaEntity> spec = switch (campo) {
+                case TITULO       -> CampoSpec.texto(root -> root.get("titulo"));
+                case ESTADO       -> CampoSpec.texto(root -> root.get("estado"));
+                case ANIO         -> CampoSpec.entero(root -> root.get("anio"));
+                case FECHA_INICIO -> CampoSpec.fecha(root -> root.get("fechaInicio"));
+                case ACTIVO       -> CampoSpec.booleano(root -> root.get("activo"));
+            };
+            m.put(campo.getClave(), spec);
+        }
+        CAMPOS = Collections.unmodifiableMap(m);
+    }
 
     @Override
     protected Map<String, CampoSpec<ProyectoJpaEntity>> camposPermitidos() {
@@ -611,7 +755,36 @@ class ProyectoJpaSpecification extends QueryJpaSpecification<ProyectoJpaEntity> 
 }
 ```
 
-### 4. Inyectar en el OutputAdapter
+### 4. Crear el SortMapper en `proyectos:infrastructure`
+
+```java
+// proyectos/infrastructure/.../ProyectoSortMapper.java
+final class ProyectoSortMapper {
+
+    private static final Map<String, String> RUTAS;
+
+    static {
+        Map<String, String> m = new LinkedHashMap<>();
+        for (ProyectoCriteria.Campo campo : ProyectoCriteria.Campo.values()) {
+            String ruta = switch (campo) {
+                case TITULO       -> "titulo";
+                case ESTADO       -> "estado";
+                case ANIO         -> "anio";
+                case FECHA_INICIO -> null;  // no ordenable
+                case ACTIVO       -> null;  // no ordenable
+            };
+            if (ruta != null) m.put(campo.getClave(), ruta);
+        }
+        RUTAS = Collections.unmodifiableMap(m);
+    }
+
+    private ProyectoSortMapper() {}
+
+    static String traducir(String clave) { return RUTAS.get(clave); }
+}
+```
+
+### 5. Inyectar en el OutputAdapter
 
 ```java
 @Component
@@ -623,14 +796,30 @@ public class ProyectoQueryOutputAdapter implements ProyectoQueryOutputPort {
 
     @Override
     public PaginatedResult<ProyectoReadModel> consultarTodos(ProyectoCriteria criteria) {
+        Pageable pageable = toPageable(criteria);
         Specification<ProyectoJpaEntity> spec = specification.desdeCriteria(criteria);
-        Pageable pageable = /* convertir criteria a Pageable */;
-        return PaginationMapper.toResult(repository.findAll(spec, pageable).map(ProyectoMapper::toReadModel));
+        return PaginationMapper.toResult(
+                repository.findAll(spec, pageable).map(ProyectoMapper::toReadModel));
+    }
+
+    private Pageable toPageable(ProyectoCriteria criteria) {
+        if (criteria.tieneOrden()) {
+            List<Sort.Order> orders = criteria.getOrdenamiento().stream()
+                    .map(o -> {
+                        String ruta = ProyectoSortMapper.traducir(o.getCampo());
+                        if (ruta == null) throw new OrdenamientoInvalidoException(o.getCampo());
+                        return o.getDireccion() == SortDirection.ASC
+                                ? Sort.Order.asc(ruta) : Sort.Order.desc(ruta);
+                    })
+                    .toList();
+            return PageRequest.of(criteria.getPagina(), criteria.getTamanio(), Sort.by(orders));
+        }
+        return PageRequest.of(criteria.getPagina(), criteria.getTamanio());
     }
 }
 ```
 
-### 5. Exponer el endpoint en el InputAdapter
+### 6. Exponer el endpoint en el InputAdapter
 
 ```java
 @PostMapping("/coordinador")
@@ -647,5 +836,7 @@ public ResponseEntity<PageResponseDTO<ProyectoReadModel>> consultar(
 }
 ```
 
-Con estos 5 pasos, el nuevo contexto soporta la misma capacidad de filtrado dinámico
-que `fichas`, sin haber modificado ninguna clase de los módulos `shared`.
+Con estos 6 pasos, el nuevo contexto soporta la misma capacidad de filtrado dinámico
+que `fichas`, sin haber modificado ninguna clase de los módulos `shared`. El enum
+`Campo` actúa como fuente de verdad única: los switches exhaustivos en la spec y el
+sort mapper garantizan en tiempo de compilación que ningún campo quede sin cobertura.
