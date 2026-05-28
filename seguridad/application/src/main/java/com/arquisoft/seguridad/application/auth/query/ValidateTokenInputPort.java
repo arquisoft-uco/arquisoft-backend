@@ -1,9 +1,12 @@
 package com.arquisoft.seguridad.application.auth.query;
 
+import com.arquisoft.shared.inputport.InputPort;
+
 /**
  * Puerto de entrada — caso de uso para validar un token JWT.
  */
-public interface ValidateTokenInputPort {
+public interface ValidateTokenInputPort
+        extends InputPort<String, ValidateTokenInputPort.ValidationResult> {
 
     /**
      * Resultado de la validacion del token.
@@ -14,12 +17,4 @@ public interface ValidateTokenInputPort {
             String email,
             String message
     ) {}
-
-    /**
-     * Valida un token JWT y extrae informacion basica del usuario.
-     *
-     * @param token el token JWT a validar
-     * @return resultado de la validacion con informacion del usuario si es valido
-     */
-    ValidationResult validate(String token);
 }

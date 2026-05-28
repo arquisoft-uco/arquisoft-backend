@@ -20,10 +20,10 @@ public class AuthenticateUserUseCase implements AuthenticateUserInputPort {
     private final AuthenticationOutputPort authenticationOutputPort;
 
     @Override
-    public AuthResult authenticate(String email, String password) {
+    public AuthResult ejecutar(AuthenticateUserCommand command) {
         log.debug(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_DEBUG);
 
-        Map<String, Object> tokenResponse = authenticationOutputPort.authenticate(email, password);
+        Map<String, Object> tokenResponse = authenticationOutputPort.authenticate(command.email(), command.password());
 
         log.info(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_EXITOSO);
 

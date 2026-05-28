@@ -1,7 +1,6 @@
 package com.arquisoft.seguridad.application.usuario.command;
 
 import com.arquisoft.seguridad.domain.model.UsuarioAggregate;
-import com.arquisoft.seguridad.domain.model.UsuarioRole;
 import com.arquisoft.seguridad.domain.port.out.UsuarioOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +33,9 @@ public class CrearUsuarioUseCase implements CrearUsuarioInputPort {
     private final EventPublisher eventPublisher;
 
     @Override
-    public UUID crear(String email, UsuarioRole rol) {
+    public UUID ejecutar(CrearUsuarioCommand command) {
         // 1. El aggregate valida invariantes y acumula UsuarioCreadoEvent en memoria
-        UsuarioAggregate usuario = UsuarioAggregate.crear(email, rol);
+        UsuarioAggregate usuario = UsuarioAggregate.crear(command.email(), command.rol());
 
         // 2. Persistir el aggregate (mock en memoria por ahora)
         usuarioOutputPort.save(usuario);
@@ -53,7 +52,7 @@ public class CrearUsuarioUseCase implements CrearUsuarioInputPort {
         //    Pendiente de implementar cuando UsuarioOutputAdapter sea reemplazado por JPA.
         usuario.drainUnPublishedEvents().forEach(eventPublisher::publish);
 
-        log.info("Usuario creado: id={} email={} rol={}", usuario.getId(), email, rol.getCode());
+        log.info("Usuario creado: id={} email={} rol={}", usuario.getId(), command.email(), command.rol().getCode());
         return usuario.getId();
     }
 }

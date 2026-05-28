@@ -1,11 +1,14 @@
 package com.arquisoft.seguridad.application.auth.command;
 
+import com.arquisoft.shared.inputport.InputPort;
+
 /**
  * Puerto de entrada — caso de uso para autenticar un usuario.
- * Recibe credenciales primitivas; la traduccion desde/hacia DTOs
- * ocurre en la implementacion de la capa de aplicacion.
+ * Recibe un {@link AuthenticateUserCommand} con las credenciales; la traduccion
+ * desde/hacia DTOs ocurre en la capa de infraestructura.
  */
-public interface AuthenticateUserInputPort {
+public interface AuthenticateUserInputPort
+        extends InputPort<AuthenticateUserCommand, AuthenticateUserInputPort.AuthResult> {
 
     /**
      * Resultado de la autenticacion representado como record (Java 21).
@@ -18,15 +21,4 @@ public interface AuthenticateUserInputPort {
             String tokenType,
             String scope
     ) {}
-
-    /**
-     * Autentica al usuario con email y contrasena.
-     *
-     * @param email    email del usuario
-     * @param password contrasena del usuario
-     * @return resultado con los tokens de autenticacion
-     * @throws com.arquisoft.seguridad.domain.exception.InvalidCredentialsException
-     *         si las credenciales son invalidas
-     */
-    AuthResult authenticate(String email, String password);
 }

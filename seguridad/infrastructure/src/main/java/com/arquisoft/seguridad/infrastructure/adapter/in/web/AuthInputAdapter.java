@@ -6,6 +6,7 @@ import com.arquisoft.seguridad.infrastructure.adapter.in.web.dto.LoginRequestDTO
 import com.arquisoft.seguridad.infrastructure.adapter.in.web.dto.LoginResponseDTO;
 import com.arquisoft.seguridad.infrastructure.adapter.in.web.dto.LogoutResponseDTO;
 import com.arquisoft.seguridad.infrastructure.adapter.in.web.dto.RefreshTokenRequestDTO;
+import com.arquisoft.seguridad.application.auth.command.AuthenticateUserCommand;
 import com.arquisoft.seguridad.application.auth.command.AuthenticateUserInputPort;
 import com.arquisoft.seguridad.application.auth.command.LogoutInputPort;
 import com.arquisoft.seguridad.application.auth.command.RefreshTokenInputPort;
@@ -73,9 +74,8 @@ public class AuthInputAdapter {
             )
     })
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
-        AuthenticateUserInputPort.AuthResult result = authenticateUserInputPort.authenticate(
-                loginRequest.getEmail(),
-                loginRequest.getPassword()
+        AuthenticateUserInputPort.AuthResult result = authenticateUserInputPort.ejecutar(
+                new AuthenticateUserCommand(loginRequest.getEmail(), loginRequest.getPassword())
         );
 
         LoginResponseDTO response = LoginResponseDTO.builder()
@@ -119,7 +119,7 @@ public class AuthInputAdapter {
             @Valid @RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
         log.debug(SeguridadInfraestructureMessages.AuthInputAdapter.REFRESH_DEBUG);
 
-        RefreshTokenInputPort.RefreshResult result = refreshTokenInputPort.refresh(
+        RefreshTokenInputPort.RefreshResult result = refreshTokenInputPort.ejecutar(
                 refreshTokenRequest.getRefreshToken()
         );
 
@@ -207,7 +207,7 @@ public class AuthInputAdapter {
     public ResponseEntity<TokenValidationReadModel> validateToken(@RequestParam String token) {
         log.debug(SeguridadInfraestructureMessages.AuthInputAdapter.VALIDATE_DEBUG);
 
-        ValidateTokenInputPort.ValidationResult result = validateTokenInputPort.validate(token);
+        ValidateTokenInputPort.ValidationResult result = validateTokenInputPort.ejecutar(token);
 
         TokenValidationReadModel response = TokenValidationReadModel.builder()
                 .valid(result.valid())

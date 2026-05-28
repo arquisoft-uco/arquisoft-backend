@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.application.usuario.command;
 
-import com.arquisoft.seguridad.domain.model.UsuarioRole;
+import com.arquisoft.shared.inputport.InputPort;
 
 import java.util.UUID;
 
@@ -10,14 +10,4 @@ import java.util.UUID;
  * <p>El use case orquesta: crear el aggregate, persistirlo y drenar los eventos
  * acumulados por el aggregate hacia el bus de mensajería.
  */
-public interface CrearUsuarioInputPort {
-
-    /**
-     * Crea un nuevo usuario con el email y rol dados.
-     *
-     * @param email email único del usuario
-     * @param rol   rol asignado al usuario
-     * @return UUID del usuario recién creado
-     */
-    UUID crear(String email, UsuarioRole rol);
-}
+public interface CrearUsuarioInputPort extends InputPort<CrearUsuarioCommand, UUID> {}

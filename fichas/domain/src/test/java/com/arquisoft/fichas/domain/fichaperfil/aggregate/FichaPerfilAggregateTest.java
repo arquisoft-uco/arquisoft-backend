@@ -24,42 +24,41 @@ class FichaPerfilAggregateTest {
 
     @Test
     void debeLanzarExcepcion_cuandoTituloEsNuloOVacioEnBuild() {
-        UUID id = UUID.randomUUID();
         UUID asesorFichaId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> FichaPerfilAggregate.build(id, null, asesorFichaId))
+        assertThatThrownBy(() -> FichaPerfilAggregate.build(null, asesorFichaId))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
 
-        assertThatThrownBy(() -> FichaPerfilAggregate.build(id, "   ", asesorFichaId))
+        assertThatThrownBy(() -> FichaPerfilAggregate.build("   ", asesorFichaId))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
 
-        assertThatThrownBy(() -> FichaPerfilAggregate.build(id, "", asesorFichaId))
+        assertThatThrownBy(() -> FichaPerfilAggregate.build("", asesorFichaId))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
     }
 
     @Test
     void debeLanzarExcepcion_cuandoTituloSuperaLongitudMaxima() {
-        UUID id = UUID.randomUUID();
         UUID asesorFichaId = UUID.randomUUID();
         String tituloLargo = "A".repeat(101);
 
-        assertThatThrownBy(() -> FichaPerfilAggregate.build(id, tituloLargo, asesorFichaId))
+        assertThatThrownBy(() -> FichaPerfilAggregate.build(tituloLargo, asesorFichaId))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("100 caracteres");
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoIdEsNulo() {
-        assertThatThrownBy(() -> FichaPerfilAggregate.build(null, "Título válido", UUID.randomUUID()))
-                .isInstanceOf(DomainValidationException.class);
+    void debeGenerarIdNoNulo_cuandoBuildEsInvocado() {
+        FichaPerfilAggregate ficha = FichaPerfilAggregate.build("Título válido", UUID.randomUUID());
+
+        assertThat(ficha.getId()).isNotNull();
     }
 
     @Test
     void debeLanzarExcepcion_cuandoAsesorFichaIdEsNulo() {
-        assertThatThrownBy(() -> FichaPerfilAggregate.build(UUID.randomUUID(), "Título válido", null))
+        assertThatThrownBy(() -> FichaPerfilAggregate.build("Título válido", null))
                 .isInstanceOf(DomainValidationException.class);
     }
 }

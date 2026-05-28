@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.usuario.command.adapter.in.amqp;
 
+import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
 import com.arquisoft.fichas.application.usuario.command.port.in.RegistrarUsuarioInputPort;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
@@ -35,10 +36,10 @@ public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
             log.info("[FICHAS] UsuarioCreado recibido: usuarioId={} email={} rol={}",
                     payload.aggregateId(), payload.email(), payload.rol());
 
-            registrarUsuarioInputPort.registrar(
+            registrarUsuarioInputPort.ejecutar(new RegistrarUsuarioCommand(
                     UUID.fromString(payload.aggregateId()),
                     payload.email(),
-                    payload.rol());
+                    payload.rol()));
         });
     }
 }

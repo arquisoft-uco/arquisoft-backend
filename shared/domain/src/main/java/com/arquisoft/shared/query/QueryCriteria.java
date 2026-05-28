@@ -95,9 +95,13 @@ public abstract class QueryCriteria {
             return (B) this;
         }
 
-        protected Set<String> camposFiltrables() { return null; }
+        protected Set<String> camposFiltrables() {
+            return null;
+        }
 
-        protected Set<String> camposOrdenables() { return null; }
+        protected Set<String> camposOrdenables() {
+            return null;
+        }
 
         private void validarProfundidad(NodoFiltro nodo, int profundidad) {
             if (profundidad > MAX_PROFUNDIDAD_FILTRO) {
@@ -112,7 +116,9 @@ public abstract class QueryCriteria {
         }
 
         private void validarPredicados(NodoFiltro nodo) {
-            if (nodo == null) return;
+            if (nodo == null) {
+                return;
+            }
             Set<String> permitidos = camposFiltrables();
             switch (nodo) {
                 case NodoFiltro.Predicado p -> {

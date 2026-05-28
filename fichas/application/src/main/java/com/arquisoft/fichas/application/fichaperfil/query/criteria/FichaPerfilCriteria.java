@@ -24,7 +24,9 @@ public final class FichaPerfilCriteria extends QueryCriteria {
             this.ordenable = ordenable;
         }
 
-        public String getClave() { return clave; }
+        public String getClave() {
+            return clave;
+        }
 
         static final Set<String> CLAVES_FILTRABLES = Arrays.stream(values())
                 .filter(c -> c.filtrable)
@@ -56,11 +58,17 @@ public final class FichaPerfilCriteria extends QueryCriteria {
     public static final class Builder extends QueryCriteria.BaseBuilder<Builder> {
 
         @Override
-        protected Set<String> camposFiltrables() { return Campo.CLAVES_FILTRABLES; }
+        protected Set<String> camposFiltrables() {
+            return Campo.CLAVES_FILTRABLES;
+        }
 
         @Override
-        protected Set<String> camposOrdenables() { return Campo.CLAVES_ORDENABLES; }
+        protected Set<String> camposOrdenables() {
+            return Campo.CLAVES_ORDENABLES;
+        }
 
-        public FichaPerfilCriteria build() { return new FichaPerfilCriteria(this); }
+        public FichaPerfilCriteria build() {
+            return new FichaPerfilCriteria(this);
+        }
     }
 }

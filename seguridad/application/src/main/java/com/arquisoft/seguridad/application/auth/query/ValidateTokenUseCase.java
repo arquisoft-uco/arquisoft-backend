@@ -18,7 +18,7 @@ public class ValidateTokenUseCase implements ValidateTokenInputPort {
     private final TokenOutputPort tokenOutputPort;
 
     @Override
-    public ValidationResult validate(String token) {
+    public ValidationResult ejecutar(String token) {
         log.debug("Intento de validacion de token");
 
         try {

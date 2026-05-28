@@ -1,6 +1,5 @@
 package com.arquisoft.seguridad.application.auth.command;
 
-public interface LogoutInputPort {
+import com.arquisoft.shared.inputport.VoidInputPort;
 
-    void ejecutar(LogoutCommand command);
-}
+public interface LogoutInputPort extends VoidInputPort<LogoutCommand> {}

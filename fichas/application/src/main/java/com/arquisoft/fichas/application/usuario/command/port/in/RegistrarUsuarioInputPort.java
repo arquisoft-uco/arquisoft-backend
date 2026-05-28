@@ -1,8 +1,6 @@
 package com.arquisoft.fichas.application.usuario.command.port.in;
 
-import java.util.UUID;
+import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
+import com.arquisoft.shared.inputport.VoidInputPort;
 
-public interface RegistrarUsuarioInputPort {
-
-    void registrar(UUID usuarioId, String email, String rol);
-}
+public interface RegistrarUsuarioInputPort extends VoidInputPort<RegistrarUsuarioCommand> {}

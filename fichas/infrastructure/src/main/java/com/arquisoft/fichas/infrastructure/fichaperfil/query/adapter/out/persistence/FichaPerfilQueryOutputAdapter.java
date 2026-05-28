@@ -53,7 +53,9 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
             List<Sort.Order> orders = criteria.getOrdenamiento().stream()
                     .map(o -> {
                         String ruta = FichaPerfilSortMapper.traducir(o.getCampo());
-                        if (ruta == null) throw new OrdenamientoInvalidoException(o.getCampo());
+                        if (ruta == null) {
+                            throw new OrdenamientoInvalidoException(o.getCampo());
+                        }
                         return o.getDireccion() == SortDirection.ASC
                                 ? Sort.Order.asc(ruta)
                                 : Sort.Order.desc(ruta);

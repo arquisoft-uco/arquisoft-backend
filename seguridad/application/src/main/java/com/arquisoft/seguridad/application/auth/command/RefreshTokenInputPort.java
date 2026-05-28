@@ -1,9 +1,12 @@
 package com.arquisoft.seguridad.application.auth.command;
 
+import com.arquisoft.shared.inputport.InputPort;
+
 /**
  * Puerto de entrada — caso de uso para refrescar el token de acceso.
  */
-public interface RefreshTokenInputPort {
+public interface RefreshTokenInputPort
+        extends InputPort<String, RefreshTokenInputPort.RefreshResult> {
 
     /**
      * Resultado del refresco de token.
@@ -15,14 +18,4 @@ public interface RefreshTokenInputPort {
             String tokenType,
             String scope
     ) {}
-
-    /**
-     * Refresca el access token usando un refresh token valido.
-     *
-     * @param refreshToken el refresh token
-     * @return resultado con los nuevos tokens
-     * @throws com.arquisoft.seguridad.domain.exception.InvalidTokenException
-     *         si el refresh token es invalido o expirado
-     */
-    RefreshResult refresh(String refreshToken);
 }

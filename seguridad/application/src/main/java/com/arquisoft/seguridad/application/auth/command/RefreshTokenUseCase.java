@@ -19,7 +19,7 @@ public class RefreshTokenUseCase implements RefreshTokenInputPort {
     private final AuthenticationOutputPort authenticationOutputPort;
 
     @Override
-    public RefreshResult refresh(String refreshToken) {
+    public RefreshResult ejecutar(String refreshToken) {
         log.debug(SeguridadApplicationMessages.RefreshTokenUseCase.REFRESH_DEBUG);
 
         Map<String, Object> tokenResponse = authenticationOutputPort.refreshToken(refreshToken);
