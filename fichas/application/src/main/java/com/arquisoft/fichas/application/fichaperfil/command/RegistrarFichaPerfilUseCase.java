@@ -7,6 +7,8 @@ import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -18,11 +20,8 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
 
     @Override
     @Transactional
-    public void ejecutar(RegistrarFichaPerfilCommand command) {
-        log.debug("Registrando ficha de perfil — id={}", command.id());
-
+    public UUID ejecutar(RegistrarFichaPerfilCommand command) {
         FichaPerfilAggregate ficha = FichaPerfilAggregate.build(
-                command.id(),
                 command.tituloProyecto(),
                 command.asesorFichaId()
         );
@@ -30,5 +29,6 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
         fichaPerfilOutputPort.guardar(ficha);
 
         log.info("Ficha de perfil registrada — id={}", ficha.getId());
+        return ficha.getId();
     }
 }

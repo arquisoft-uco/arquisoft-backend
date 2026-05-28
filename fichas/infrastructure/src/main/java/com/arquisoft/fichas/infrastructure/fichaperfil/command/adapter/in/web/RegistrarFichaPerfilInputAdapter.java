@@ -1,6 +1,5 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInputPort;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.RegistrarFichaPerfilRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.UUID;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -38,21 +39,15 @@ public class RegistrarFichaPerfilInputAdapter {
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Ficha de perfil registrada exitosamente"),
+            @ApiResponse(responseCode = "201", description = "Ficha de perfil registrada — retorna el UUID asignado"),
             @ApiResponse(responseCode = "400", description = "Datos inválidos",
                     content = @Content(schema = @Schema(implementation = com.arquisoft.shared.web.dto.ErrorResponseDTO.class))),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
             @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
-    public ResponseEntity<Void> registrar(@Valid @RequestBody RegistrarFichaPerfilRequestDTO request) {
-        log.debug("POST /fichas-perfil — id={}", request.getId());
+    public ResponseEntity<UUID> registrar(@Valid @RequestBody RegistrarFichaPerfilRequestDTO request) {
+        UUID id = registrarFichaPerfilInputPort.ejecutar(request.toCommand());
 
-        registrarFichaPerfilInputPort.ejecutar(new RegistrarFichaPerfilCommand(
-                request.getId(),
-                request.getTituloProyecto(),
-                request.getAsesorFichaId()
-        ));
-
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(id);
     }
 }

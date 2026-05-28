@@ -23,11 +23,11 @@ public final class FichaPerfilAggregate {
 
     // ─── Factory: build ───────────────────────────────────────────────────────
 
-    public static FichaPerfilAggregate build(UUID id, String titulo, UUID asesorFichaId) {
+    public static FichaPerfilAggregate build(String titulo, UUID asesorFichaId) {
         FichaPerfilAggregate ficha = new FichaPerfilAggregate();
         ValidationResult result = new ValidationResult();
 
-        ficha.setId(id, result);
+        ficha.setId(UUID.randomUUID(), result);
         ficha.setTituloProyecto(titulo, result);
         ficha.setAsesorFichaId(asesorFichaId, result);
 
