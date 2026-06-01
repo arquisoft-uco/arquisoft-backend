@@ -1,7 +1,7 @@
 ---
 name: arquisoft-context
 description:
-  Contexto autoritativo del proyecto Arquisoft Backend para subagentes. Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier Historia de Usuario o Técnica. Contiene el stack exacto verificado, las convenciones de arquitectura hexagonal + DDD, la regla estricta de EventEmittingEntity, el mapeo contexto → base de datos PostgreSQL, la guía de uso de features de Java 21 y las plantillas de código canónicas. Este skill es la ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md, README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
+  Contexto autoritativo del proyecto Arquisoft Backend para subagentes. Carga SIEMPRE antes de planificar, implementar, testear o validar cualquier Historia de Usuario o Técnica. Contiene el stack exacto verificado, las convenciones de arquitectura hexagonal + DDD, la regla estricta de AggregateRoot, el mapeo contexto → base de datos PostgreSQL, la guía de uso de features de Java 21 y las plantillas de código canónicas. Este skill es la ÚNICA fuente de verdad para el estado del proyecto — no leer AGENTS.md, README.md, QUICK_START.md, ARQUITECTURA_*.md ni docs/ del repositorio.
 ---
 
 # Skill: arquisoft-context — Contexto Autoritativo para Subagentes
@@ -29,7 +29,7 @@ skill("arquisoft-context")
 Tras cargarlo, el subagente tiene disponible en su contexto:
 - El stack verificado (sección "Stack Verificado")
 - La estructura hexagonal + DDD (sección "Arquitectura Hexagonal + DDD")
-- La regla estricta de EventEmittingEntity (sección "EventEmittingEntity — Regla Estricta")
+- La regla estricta de AggregateRoot (sección "AggregateRoot — Regla Estricta")
 - Mapeo contexto → base de datos PostgreSQL (sección "Mapeo Contexto Gradle → Base de Datos PostgreSQL")
 - Guía de features de Java 21 (sección "Java 21 — Uso Balanceado")
 - Plantillas canónicas (sección "Plantillas de Código")
@@ -80,80 +80,110 @@ Domain  ←  Application  ←  Infrastructure
 - `infrastructure`: depende de ambas + frameworks completos.
 - **Los bounded contexts NUNCA dependen entre sí.** Comunicación exclusivamente vía RabbitMQ.
 
-### Bounded Contexts (7)
+### Bounded Contexts
 
-| Contexto Gradle | GroupId base | ¿Usa EventEmittingEntity? |
-|---|---|---|
-| `seguridad` | `com.arquisoft.seguridad` | ❌ No (transversal, delega en Keycloak) |
-| `fichas` | `com.arquisoft.fichas` | ✅ Sí |
-| `proyectos` | `com.arquisoft.proyectos` | ✅ Sí |
-| `artefactos` | `com.arquisoft.artefactos` | ✅ Sí |
-| `repositorio_artefactos` | `com.arquisoft.repositorio_artefactos` | ✅ Sí |
-| `entregables` | `com.arquisoft.entregables` | ✅ Sí |
-| `evaluaciones` | `com.arquisoft.evaluaciones` | ✅ Sí |
+| Contexto Gradle | GroupId base | Estado actual | ¿Usa AggregateRoot? |
+|---|---|---|---|
+| `seguridad` | `com.arquisoft.seguridad` | **Solo configuración** (login/refresh con Keycloak, rate-limit, JWT). No tiene HUs de negocio | ❌ No |
+| `fichas` | `com.arquisoft.fichas` | Activo | ✅ Sí |
+| `proyectos` | `com.arquisoft.proyectos` | Pendiente | ✅ Sí |
+| `artefactos` | `com.arquisoft.artefactos` | Pendiente | ✅ Sí |
+| `repositorio_artefactos` | `com.arquisoft.repositorio_artefactos` | Pendiente | ✅ Sí |
+| `entregables` | `com.arquisoft.entregables` | Pendiente | ✅ Sí |
+| `evaluaciones` | `com.arquisoft.evaluaciones` | Pendiente | ✅ Sí |
 
-### Módulos shared (7)
+> **El contexto `usuarios` NO se implementa en esta versión.** Los usuarios y roles viven en Keycloak — los demás contextos consumen el JWT directamente.
+>
+> **`seguridad` no implementa HUs de negocio.** Solo expone `/auth/login`, `/auth/refresh`, `/auth/validate` y la configuración global (rate-limit, JWT decoder). No tiene aggregates, eventos ni casos de uso CQRS.
+>
+> En documentación y ejemplos del SKILL/agentes, los aggregates publicadores de eventos se ilustran con `fichas` (ej. `FichaPerfilAggregate.crear()` publica `FichaPerfilCreadaEvent`), **no** con `seguridad/usuarios`.
+
+### Módulos shared
 
 | Módulo | Paquete base | Clases/Interfaces clave |
 |---|---|---|
-| `shared:domain` | `com.arquisoft.shared.domain` | `EventEmittingEntity`, `DomainEvent`, `Page<T>` (record para paginación interna del dominio y application) |
-| `shared:exceptions` | `com.arquisoft.shared.exception` | `DomainException` (clase base de excepciones de dominio). Los handlers concretos viven en cada contexto como `{Contexto}GlobalExceptionHandler` (ver sección "{Contexto}GlobalExceptionHandler — Patrón Canónico"). |
-| `shared:amqp` | `com.arquisoft.shared.amqp` | `EventPublisher` (interfaz, firma única `void publish(DomainEvent event)`), `RabbitMQConfig`, `RabbitMQEventPublisher` (implementación). |
-| `shared:redis` | `com.arquisoft.shared.redis` | `RedisClient` (interfaz, **sin implementación todavía** — esqueleto de intención para uso futuro). |
-| `shared:web` | `com.arquisoft.shared.web` | `GlobalAppExceptionHandler`, `ErrorResponseDTO`, `PageResponseDTO<T>`, `HttpClient`. **Hogar de DTOs técnicos genéricos** y manejo cross-cutting de excepciones. |
-| `shared:validation` | `com.arquisoft.shared.validation` | Esqueleto de intención. **Sin uso activo todavía** — listo para validadores de dominio reales (cédula colombiana, código de estudiante, etc.) cuando aparezcan en una HU. NO duplicar validaciones que Jakarta Validation ya cubre (`@Email`, `@Size`, `@NotBlank`, etc.). |
+| `shared:domain` | `com.arquisoft.shared.domain` | `AggregateRoot`, `DomainEvent`, `InputPort<I, O>`, `VoidInputPort<I>`, `PaginatedResult<T>`, jerarquía base de excepciones |
+| `shared:amqp` | `com.arquisoft.shared.amqp` | `EventPublisher` (interfaz), `RabbitMQEventPublisher`, `AbstractEventConsumer`, `RabbitMQConfig` |
+| `shared:web` | `com.arquisoft.shared.web` | `GlobalAppExceptionHandler`, `ErrorResponseDTO`, `PageResponseDTO<T>`, `QueryCriteriaRequestDTO`, `NodoFiltroDTO` (Jackson polimórfico) |
+| `shared:postgres` | `com.arquisoft.shared.postgres` | `QueryJpaSpecification<JpaEntity>`, `CampoSpec` (sealed: `Texto`, `Uuid`, `Entero`, `Decimal`, `Fecha`, `FechaHora`, `Booleano`). Utilería para traducir `Criteria` → `Specification` |
+| `shared:minio` | `com.arquisoft.shared.minio` | `MinioStorageClient` (presigned URLs PUT/GET, `objectExists`, `deleteObject`), `MinioConfig`, `MinioProperties` |
+| `shared:redis` | `com.arquisoft.shared.redis` | Esqueleto sin implementación |
 
-### Estructura estándar por contexto
+### Estructura estándar por contexto — CQRS + Vertical Slice
+
+> **Principio organizador:** primero por **entidad/agregado**, luego dentro de cada entidad se separa `command/` (write) de `query/` (read). NO hay carpetas planas `usecase/`, `dto/`, `entity/`.
 
 ```
 {contexto}/
 ├── domain/
-│   ├── model/         # Entidades (inmutables, build/rebuild) + Value Objects + Enums
-│   ├── event/         # Eventos de dominio (extends DomainEvent)  ← CRÍTICO para DDD
-│   ├── port/
-│   │   ├── in/        # Casos de uso: {Accion}{Entidad}UseCase
-│   │   └── out/       # Repositorios: {Entidad}RepositoryPort
-│   └── exception/     # Excepciones de dominio (extends DomainException)
+│   └── {entidad}/
+│       ├── aggregate/         # XxxAggregate (extiende AggregateRoot)
+│       ├── port/out/          # XxxOutputPort (interfaces de persistencia del write side)
+│       ├── event/             # Eventos de dominio (extiende DomainEvent)
+│       ├── exception/         # Excepciones del agregado
+│       └── message/           # Constantes de mensajes de dominio
+│
 ├── application/
-│   ├── dto/           # DTOs con toDomain() / fromDomain()
-│   └── usecase/       # Impl: {Accion}{Entidad}UseCaseImpl
+│   └── {entidad}/
+│       ├── command/
+│       │   ├── model/         # XxxCommand (record con la intención de negocio)
+│       │   ├── port/in/       # XxxInputPort (extends InputPort<Command, Result> o VoidInputPort)
+│       │   └── XxxUseCase.java   # Implementación (@Component)
+│       └── query/
+│           ├── criteria/      # XxxCriteria (extiende QueryCriteria, opcional)
+│           ├── readmodel/     # XxxReadModel (proyección plana de solo lectura)
+│           ├── port/in/       # XxxQueryInputPort
+│           ├── port/out/      # XxxQueryOutputPort (lectura — vive en application, no en domain)
+│           └── XxxQueryUseCase.java
+│
 └── infrastructure/
-    ├── adapter/
-    │   ├── in/
-    │   │   ├── web/                 # Controllers REST + componentes web globales
-    │   │   │   ├── {Entidad}Controller.java
-    │   │   │   └── {Contexto}GlobalExceptionHandler.java   # @RestControllerAdvice (si aplica)
-    │   │   └── messaging/           # EventListeners RabbitMQ (si el contexto escucha eventos)
-    │   │       └── {Entidad}EventListener.java
-    │   └── out/
-    │       ├── persistence/         # JPA Entity, JpaRepository, RepositoryAdapter
-    │       └── {tipo}/              # security/, storage/, notification/, etc. (si aplica)
-    ├── config/                      # @Configuration (sufijo Config) — solo cablea, sin lógica
-    ├── filter/                      # Filtros HTTP (sufijo Filter)
-    └── resources/db/migration/      # Flyway V{n}__{descripcion}.sql
+    └── {entidad}/
+        ├── command/
+        │   └── adapter/
+        │       ├── in/
+        │       │   ├── web/   # XxxInputAdapter (@RestController) + dto/XxxRequestDTO
+        │       │   └── amqp/  # XxxConsumerInputAdapter (extiende AbstractEventConsumer, si consume eventos)
+        │       └── out/
+        │           └── persistence/   # XxxCommandOutputAdapter (implementa XxxOutputPort)
+        ├── query/
+        │   └── adapter/
+        │       ├── in/web/    # XxxQueryInputAdapter (@RestController)
+        │       └── out/persistence/   # XxxQueryOutputAdapter + XxxJpaSpecification (si usa Criteria)
+        ├── persistence/       # XxxJpaEntity, XxxJpaRepository, XxxMapper (compartido entre command y query)
+        ├── config/            # @Configuration (cablea, sin lógica)
+        └── exception/         # Excepciones de infraestructura
 ```
 
-### Convenciones de subcarpetas en adaptadores
+### Reglas de la estructura
 
-**Subcarpetas SIEMPRE obligatorias** (aunque solo haya un tipo de adaptador):
+1. **`port/in/` vive en `application`, NO en domain.** El dominio solo expone `port/out/` (write side). Las interfaces de entrada describen casos de uso, no son contratos puros del dominio.
+2. **`port/out/` se reparte entre dos sitios:** el **write side** (`XxxOutputPort`) en `domain/{entidad}/port/out/`. El **read side** (`XxxQueryOutputPort`) en `application/{entidad}/query/port/out/`. El read side no toca el agregado.
+3. **JPA Entities, repositorios y mappers viven en `infrastructure/{entidad}/persistence/`** (compartido entre command y query). Los adapters específicos van en `command/adapter/out/persistence/` y `query/adapter/out/persistence/`.
+4. **Vertical Slice por agregado:** todo lo de `FichaPerfil` vive bajo `domain/fichaPerfil/`, `application/fichaPerfil/`, `infrastructure/fichaPerfil/`. NO hay carpeta genérica `domain/model/` con todos los agregados.
+5. **Subcarpetas obligatorias siempre**, aunque solo haya un tipo: `adapter/in/web/`, `adapter/out/persistence/`, etc. Nunca componentes directamente en `adapter/in/` o `adapter/out/`.
 
-- `adapter/in/web/` — para todo lo que sirve a la capa REST: controllers (`@RestController`), advice global (`@RestControllerAdvice`), interceptores de petición que solo aplican a endpoints REST.
-- `adapter/in/messaging/` — para listeners de RabbitMQ (`@RabbitListener`). Solo se crea si el contexto consume eventos de otros bounded contexts.
-- `adapter/out/persistence/` — para JPA Entity, JpaRepository, RepositoryAdapter.
-- `adapter/out/{tipo}/` — para otras integraciones externas (ej. `security/` para Keycloak admin client, `storage/` para S3, `notification/` para SMTP). Una subcarpeta por tipo de integración.
+### Convención de sufijos de clases
 
-> **Nota:** **NO** existe `adapter/out/messaging/` en los contextos. La publicación de eventos de dominio a RabbitMQ se centraliza en `shared:amqp` (con `RabbitMQEventPublisher`). Cada contexto solo inyecta `EventPublisher` y lo invoca desde sus use cases.
-
-La consistencia (siempre subcarpeta) prevalece sobre la simplicidad (carpeta plana cuando solo hay un tipo). Esto facilita que cualquier nuevo tipo de adaptador encuentre su lugar sin reorganizaciones.
-
-### Componentes web especiales — dónde van
-
-| Componente | Ubicación | Tipo Spring |
+| Tipo | Sufijo | Anotación |
 |---|---|---|
-| `{Entidad}Controller` | `adapter/in/web/` | `@RestController` |
-| `{Contexto}GlobalExceptionHandler` | `adapter/in/web/` | `@RestControllerAdvice` |
-| Interceptores REST específicos del contexto | `adapter/in/web/` | clase con `HandlerInterceptor` |
-| Filtros HTTP (cross-cutting, ej. rate limit) | `infrastructure/filter/` | `@Component` con `Filter` |
+| Adaptador REST de entrada | `XxxInputAdapter` | `@RestController` |
+| Adaptador REST de consulta | `XxxQueryInputAdapter` | `@RestController` |
+| Adaptador AMQP consumidor | `XxxConsumerInputAdapter` | `@Component` + `@RabbitListener` (extiende `AbstractEventConsumer`) |
+| Adaptador persistencia write | `XxxCommandOutputAdapter` | `@Component` |
+| Adaptador persistencia read | `XxxQueryOutputAdapter` | `@Component` |
+| Caso de uso write | `XxxUseCase` | `@Component` |
+| Caso de uso read | `XxxQueryUseCase` | `@Component` |
+| Puerto de entrada write | `XxxInputPort` (interfaz, vacía) | — |
+| Puerto de entrada read | `XxxQueryInputPort` (interfaz, vacía) | — |
+| Puerto de salida write | `XxxOutputPort` (interfaz, en domain) | — |
+| Puerto de salida read | `XxxQueryOutputPort` (interfaz, en application) | — |
+| Comando | `XxxCommand` (`record`) | — |
+| Read model | `XxxReadModel` (`record`) | — |
+| Criteria | `XxxCriteria` (extiende `QueryCriteria`) | — |
+| Configuración | `XxxConfig` | `@Configuration` |
+| Filtro HTTP | `XxxFilter` | `@Component` + implementa `Filter` |
+
+> **Ya NO se usan los sufijos `Controller`, `Listener`, `RepositoryAdapter`, `UseCaseImpl`.** Reemplazados por `InputAdapter`, `ConsumerInputAdapter`, `CommandOutputAdapter`/`QueryOutputAdapter`, `UseCase`.
 | `OpenApiConfig`, `SecurityConfig`, `RabbitMQConfig` | `infrastructure/config/` | `@Configuration` |
 
 **Regla:** un componente está en `adapter/in/web/` si **solo se activa durante una request REST**. Si es transversal a más cosas (filtros que también aplican a actuator, configs globales), va en `filter/` o `config/`.
@@ -163,7 +193,7 @@ La consistencia (siempre subcarpeta) prevalece sobre la simplicidad (carpeta pla
 ## DDD Estricto — Separación de Responsabilidades por Capas
 
 Esta sección define **qué puede y qué no puede vivir en cada capa** del proyecto. Es la regla
-fundamental que subyace a todo lo demás (incluido EventEmittingEntity). Antes de escribir cualquier
+fundamental que subyace a todo lo demás (incluido AggregateRoot). Antes de escribir cualquier
 archivo, verifica que la lógica esté en la capa correcta.
 
 ### Principio rector
@@ -194,19 +224,26 @@ Si una misma clase responde "sí" a dos preguntas, está mezclando responsabilid
 
 | Tipo de conocimiento | Capa correcta | Ejemplos en Arquisoft |
 |---|---|---|
-| Reglas de negocio | `domain/model/` | "una `Ficha` nace en BORRADOR", "solo ASESOR_FICHA puede aprobar" |
-| Invariantes de entidad | `domain/model/` | validaciones en constructor, transiciones de estado |
-| Definición de Value Objects | `domain/model/` | `Calificacion`, `Rol`, `Email` (records con validación) |
-| Definición de eventos de dominio | `domain/event/` | `FichaCreadaEvent extends DomainEvent` |
-| Contratos con el exterior (abstractos) | `domain/port/out/` | `FichaRepositoryPort`, `TokenAuthoritiesPort` |
-| Casos de uso (qué se invoca y en qué orden) | `application/usecase/` | "persistir → drenar eventos → publicar → limpiar" |
-| DTOs de entrada/salida | `application/dto/` | `CrearFichaRequestDTO`, `FichaResponseDTO` |
-| Controllers REST | `infrastructure/adapter/in/web/` | `FichaController` (`@RestController`) |
-| Advice global de errores web | `infrastructure/adapter/in/web/` | `{Contexto}GlobalExceptionHandler` (`@RestControllerAdvice`) |
-| Listeners RabbitMQ | `infrastructure/adapter/in/messaging/` | `FichaEventListener` (`@RabbitListener`) |
-| Implementaciones concretas de puertos out | `infrastructure/adapter/out/{tipo}/` | `FichaRepositoryAdapter` (en `persistence/`), `KeycloakAuthoritiesAdapter` (en `security/`) |
-| Detalles de frameworks | `infrastructure/` | JPA `@Entity`, Spring `@Configuration`, RabbitMQ `@RabbitListener` |
-| Configuración técnica (cableado) | `infrastructure/config/` | `SecurityConfig`, `RabbitMQConfig`, `OpenApiConfig` (sin lógica de negocio) |
+| Reglas de negocio del agregado | `domain/{entidad}/aggregate/` | `FichaPerfilAggregate` con `crear()`, `aprobar()`, invariantes |
+| Definición de Value Objects | `domain/{entidad}/aggregate/` | `Calificacion`, `Email` (records con validación) |
+| Eventos de dominio | `domain/{entidad}/event/` | `FichaPerfilCreadaEvent extends DomainEvent` |
+| Puertos de salida write | `domain/{entidad}/port/out/` | `FichaPerfilOutputPort` (persistencia del aggregate) |
+| Comandos (intención de negocio) | `application/{entidad}/command/model/` | `CrearFichaPerfilCommand` (record) |
+| Puertos de entrada write | `application/{entidad}/command/port/in/` | `CrearFichaPerfilInputPort extends InputPort<Command, UUID>` |
+| Casos de uso write (orquestación) | `application/{entidad}/command/` | `CrearFichaPerfilUseCase` (`@Component`) |
+| Criteria de consulta (opcional) | `application/{entidad}/query/criteria/` | `FichaPerfilCriteria extends QueryCriteria` |
+| Read models (proyección plana) | `application/{entidad}/query/readmodel/` | `FichaPerfilReadModel` (record) |
+| Puertos de entrada read | `application/{entidad}/query/port/in/` | `ConsultarFichasPerfilInputPort` |
+| Puertos de salida read | `application/{entidad}/query/port/out/` | `FichaPerfilQueryOutputPort` (vive en application, no en domain) |
+| Casos de uso read | `application/{entidad}/query/` | `ConsultarFichasPerfilQueryUseCase` |
+| Request DTOs HTTP | `infrastructure/{entidad}/command/adapter/in/web/dto/` | `CrearFichaPerfilRequestDTO` |
+| Adaptadores REST write | `infrastructure/{entidad}/command/adapter/in/web/` | `CrearFichaPerfilInputAdapter` (`@RestController`) |
+| Adaptadores REST read | `infrastructure/{entidad}/query/adapter/in/web/` | `ConsultarFichasPerfilQueryInputAdapter` (`@RestController`) |
+| Consumidores AMQP | `infrastructure/{entidad}/command/adapter/in/amqp/` | `XxxConsumerInputAdapter` (extiende `AbstractEventConsumer`) |
+| Adaptadores persistencia write | `infrastructure/{entidad}/command/adapter/out/persistence/` | `FichaPerfilCommandOutputAdapter` (implementa `FichaPerfilOutputPort`) |
+| Adaptadores persistencia read | `infrastructure/{entidad}/query/adapter/out/persistence/` | `FichaPerfilQueryOutputAdapter` + `FichaPerfilJpaSpecification` (si usa Criteria) |
+| JPA Entity / Repository / Mapper | `infrastructure/{entidad}/persistence/` | `FichaPerfilJpaEntity`, `FichaPerfilJpaRepository`, `FichaPerfilMapper` |
+| Configuración técnica | `infrastructure/config/` | `RabbitMQQueueConfig`, `DataSourceConfig` (sin lógica de negocio) |
 | Filtros HTTP cross-cutting | `infrastructure/filter/` | `RateLimitFilter`, `RequestLoggingFilter` |
 
 ### Lista negra de imports por capa
@@ -226,8 +263,11 @@ lombok.*                           ← Lombok PROHIBIDO en dominio
 ```
 
 **Permitido en `domain/`:** solo `java.*`, `java.util.*`, `java.time.*`, `java.util.UUID`,
-y clases del propio proyecto (`com.arquisoft.{contexto}.domain.*`, `com.arquisoft.shared.domain.*`,
-`com.arquisoft.shared.exception.*`).
+y clases del propio proyecto:
+- `com.arquisoft.{contexto}.domain.*` (mismo contexto, capa propia)
+- `com.arquisoft.shared.domain.*` (incluye subpaquetes `events/`, `exception/`, `pagination/`, `validation/`, `util/`)
+
+> **NUNCA** en `domain/`: `com.arquisoft.shared.amqp.*`, `com.arquisoft.shared.web.*`, `com.arquisoft.shared.postgres.*`, `com.arquisoft.shared.minio.*`. Esos son adaptadores técnicos.
 
 #### En `application/**/*.java` — permitido:
 
@@ -255,193 +295,38 @@ Si tienes una decisión que el negocio entendería, esa decisión vive en `domai
 
 ### Patrón Puerto/Adaptador para Integraciones Externas
 
-Toda integración con un sistema externo (Keycloak, RabbitMQ, Redis, servicios HTTP, SMTP, S3…)
-sigue este patrón sin excepción:
+Toda integración con un sistema externo (RabbitMQ, MinIO, Redis, SMTP, HTTP externo) sigue el patrón Puerto/Adaptador. Una regla, dos ejemplos.
 
-```
-┌────────────────────────────────────────────────────────────┐
-│ domain/model/                                              │
-│   Rol.java, Usuario.java (entidades y VOs puros)           │
-└────────────────────────────────────────────────────────────┘
-                        ▲
-                        │ usa
-┌────────────────────────────────────────────────────────────┐
-│ domain/port/out/                                           │
-│   TokenAuthoritiesPort.java                                │
-│   interface TokenAuthoritiesPort {                         │
-│       List<Rol> extraerRoles(Object token);                │
-│   }                                                        │
-└────────────────────────────────────────────────────────────┘
-                        ▲
-                        │ implementa
-┌────────────────────────────────────────────────────────────┐
-│ infrastructure/adapter/out/security/                       │
-│   KeycloakAuthoritiesAdapter.java                          │
-│   @Component                                               │
-│   class KeycloakAuthoritiesAdapter                         │
-│           implements TokenAuthoritiesPort {                │
-│       // aquí sí se lee "realm_access.roles"               │
-│       // aquí sí se usan clases org.springframework.*      │
-│   }                                                        │
-└────────────────────────────────────────────────────────────┘
+**Regla:** el `domain/` declara una **interfaz** (puerto) en `port/out/`. La implementación concreta vive en `infrastructure/.../adapter/out/{tipo}/`. La capa de aplicación llama al puerto sin conocer la tecnología.
+
+**Ejemplo 1 — Persistencia del aggregate:**
+
+```java
+// domain/fichaPerfil/port/out/FichaPerfilOutputPort.java
+public interface FichaPerfilOutputPort {
+    void save(FichaPerfilAggregate aggregate);
+    Optional<FichaPerfilAggregate> findById(UUID id);
+}
+
+// infrastructure/fichaPerfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java
+@Component
+public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
+    private final FichaPerfilJpaRepository jpaRepository;  // tecnología: JPA
+    private final FichaPerfilMapper mapper;
+    // ...
+}
 ```
 
-- El **dominio** no menciona Keycloak jamás.
-- El **puerto** define qué necesita el dominio en términos del dominio (`List<Rol>`).
-- El **adaptador** traduce entre el mundo externo y el dominio.
+**Ejemplo 2 — Storage (MinIO):**
 
-Consecuencias:
-- Cambiar Keycloak por Auth0 = escribir un `Auth0AuthoritiesAdapter` nuevo. Cero cambios en dominio o aplicación.
-- Tests del dominio = Java puro, sin mocks de Spring.
-- Tests del adaptador = mock de la librería externa.
+MinIO ya tiene su cliente en `shared:minio` (`MinioStorageClient`). Los casos de uso del contexto lo inyectan directamente — no se crea un puerto adicional. Detalles en la sección "Almacenamiento — MinIO con presigned URLs".
+
+> **Excepción a la regla general:** los clientes técnicos puros que viven en `shared:*` (como `MinioStorageClient`, `EventPublisher`) son interfaces compartidas que cualquier contexto puede inyectar directamente. **No** requieren un puerto adicional por contexto. La regla del puerto aplica cuando el contexto define una abstracción propia (persistencia del aggregate, integración HTTP específica, etc.).
 
 ---
 
-### Ejemplo Corregido — Roles de Keycloak (el caso `KeycloakJwtConverter`)
-
-#### ❌ Anti-patrón (lo que había antes, mezclado)
-
-```java
-// infrastructure/config/KeycloakJwtConverterConfig.java
-@Configuration
-public class KeycloakJwtConverterConfig {
-
-    @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            // ❌ Regla de negocio: qué claims representan roles
-            Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-            List<String> roles = (List<String>) realmAccess.get("roles");
-
-            // ❌ Regla de negocio: prefijo "ROLE_" y uppercase
-            return roles.stream()
-                    .map(r -> "ROLE_" + r.toUpperCase())
-                    .map(SimpleGrantedAuthority::new)
-                    .toList();
-        });
-        return converter;
-    }
-}
-```
-
-Problemas:
-- La decisión de **qué es un rol válido** y **cómo se nombra** está en infraestructura.
-- Cambiar a Auth0 obliga a reescribir lógica de negocio.
-- El test necesita un `Jwt` real o un mock de Spring Security.
-
-#### ✅ Versión corregida (DDD estricto)
-
-**Capa domain — el concepto de Rol es del negocio:**
-
-```java
-// seguridad/domain/model/UsuarioRole.java
-package com.arquisoft.seguridad.domain.model;
-
-public enum UsuarioRole {
-    ESTUDIANTE("estudiante", "Estudiante que presenta proyecto de grado"),
-    ASESOR("asesor", "Asesor asignado a un proyecto de grado"),
-    ASESOR_FICHA("asesor-ficha", "Asesor que apoya la elaboración de fichas de perfil"),
-    COORDINADOR("coordinador", "Coordinador del programa que gestiona proyectos"),
-    JURADO("jurado", "Jurado que evalúa proyectos de grado"),
-    BIBLIOTECARIO("bibliotecario", "Bibliotecario que gestiona consulta de PG"),
-    REPRESENTANTE_COMITE_CURRICULUM("representante-comite", "Representante que aprueba fichas de perfil"),
-    ADMINISTRADOR("administrador", "Administrador del sistema");
-
-    private final String keycloakName;
-    private final String descripcion;
-
-    UsuarioRole(String keycloakName, String descripcion) {
-        this.keycloakName = keycloakName;
-        this.descripcion = descripcion;
-    }
-
-    public String getKeycloakName() { return keycloakName; }
-    public String getDescripcion() { return descripcion; }
-}
-```
-
-> **Convención de nombres:** los roles realm en Keycloak usan **kebab-case** (`coordinador`, `asesor-ficha`, `representante-comite`). El JWT trae estos nombres tal cual en `realm_access.roles`. **NO** se usa el prefijo `ROLE_` ni MAYÚSCULAS — esos son convenciones de Spring Security antiguas que aquí no aplican.
-
-**Capa domain — el puerto abstracto:**
-
-```java
-// seguridad/domain/port/out/TokenAuthoritiesPort.java
-package com.arquisoft.seguridad.domain.port.out;
-
-import com.arquisoft.seguridad.domain.model.Rol;
-import java.util.List;
-
-public interface TokenAuthoritiesPort {
-    /** Extrae los roles de un token ya verificado. */
-    List<Rol> extraerRoles(Object token);
-}
-```
-
-**Capa infrastructure — el adaptador conoce Keycloak:**
-
-```java
-// seguridad/infrastructure/adapter/out/security/KeycloakAuthoritiesAdapter.java
-package com.arquisoft.seguridad.infrastructure.adapter.out.security;
-
-import com.arquisoft.seguridad.domain.model.Rol;
-import com.arquisoft.seguridad.domain.port.out.TokenAuthoritiesPort;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
-import java.util.List;
-import java.util.Map;
-
-@Component
-public class KeycloakAuthoritiesAdapter implements TokenAuthoritiesPort {
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Rol> extraerRoles(Object token) {
-        if (!(token instanceof Jwt jwt)) {
-            return List.of();
-        }
-        // Detalle de infraestructura: Keycloak pone los roles aquí.
-        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-        if (realmAccess == null) return List.of();
-
-        List<String> nombres = (List<String>) realmAccess.getOrDefault("roles", List.of());
-        return nombres.stream().map(Rol::fromExternalName).toList();
-    }
-}
-```
-
-**Capa infrastructure — el config de Spring solo cablea:**
-
-```java
-// seguridad/infrastructure/config/KeycloakJwtConverterConfig.java
-@Configuration
-@RequiredArgsConstructor
-public class KeycloakJwtConverterConfig {
-
-    private final TokenAuthoritiesPort tokenAuthoritiesPort;  // puerto inyectado
-
-    @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt ->
-            tokenAuthoritiesPort.extraerRoles(jwt).stream()
-                .map(Rol::asAuthority)                           // regla de negocio
-                .map(SimpleGrantedAuthority::new)
-                .toList()
-        );
-        return converter;
-    }
-}
-```
-
-Lo que se consiguió:
-- El `Config` **no tiene lógica de negocio**, solo cablea el puerto con Spring Security.
-- El **dominio decide** qué rol existe, cómo se parsea y cómo se representa.
-- El **adaptador** es la única clase que conoce la estructura de un JWT de Keycloak.
-- Test del dominio (`Rol.asAuthority()`) = Java puro, sin Spring.
-- Migrar a Auth0 = escribir `Auth0AuthoritiesAdapter`, cero cambios en dominio.
-
 ### Señales de alarma (si ves esto en código, hay que mover lógica)
+
 
 | Señal | Qué significa | Dónde debe ir |
 |---|---|---|
@@ -457,9 +342,9 @@ o un mock de `RabbitTemplate`/`Jwt`/`JpaRepository`, la lógica está en la capa
 
 ---
 
-## EventEmittingEntity — Regla Estricta
+## AggregateRoot — Regla Estricta
 
-> **Nota sobre el nombre:** `EventEmittingEntity` (en `shared:domain`) es la clase base
+> **Nota sobre el nombre:** `AggregateRoot` (en `shared:domain`) es la clase base
 > que gestiona **únicamente la emisión de eventos de dominio** en memoria. NO define
 > identidad, invariantes ni comportamiento de un Aggregate Root completo. Una entidad
 > es un Aggregate Root cuando, además de extender esta clase, define su identidad,
@@ -468,26 +353,26 @@ o un mock de `RabbitTemplate`/`Jwt`/`JpaRepository`, la lógica está en la capa
 
 ### Principio DDD
 
-En el proyecto Arquisoft, **toda entidad que sea raíz de su agregado DEBE extender `EventEmittingEntity` de `shared:domain`**, con una única excepción:
+En el proyecto Arquisoft, **toda entidad que sea raíz de su agregado DEBE extender `AggregateRoot` de `shared:domain`**, con una única excepción:
 
-- **Excepción:** el contexto `seguridad` no usa `EventEmittingEntity` porque es transversal y delega el estado en Keycloak.
+- **Excepción:** el contexto `seguridad` no usa `AggregateRoot` porque es transversal y delega el estado en Keycloak.
 
-En los otros 6 contextos, la ausencia de `EventEmittingEntity` en una entidad raíz es un **error bloqueante** que debe corregirse.
+En los otros 6 contextos, la ausencia de `AggregateRoot` en una entidad raíz es un **error bloqueante** que debe corregirse.
 
-> **Importante:** una entidad puede extender `EventEmittingEntity` y NO emitir eventos.
+> **Importante:** una entidad puede extender `AggregateRoot` y NO emitir eventos.
 > Si la HU es un CRUD simple sin consumidores conocidos del evento, el factory `build(...)`
 > simplemente no llama a `publishEvent(...)` y el use case no inyecta `EventPublisher`.
-> Extender `EventEmittingEntity` es por consistencia y para tener la maquinaria lista
+> Extender `AggregateRoot` es por consistencia y para tener la maquinaria lista
 > el día que aparezca la necesidad de emitir eventos. Ver sección "¿Cuándo emitir eventos
 > de dominio?" más abajo.
 
-### ¿Qué es EventEmittingEntity?
+### ¿Qué es AggregateRoot?
 
 Clase base en `shared:domain` que gestiona eventos de dominio acumulados en memoria hasta que el use case los drena tras persistir.
 
 ```java
 // Ya existe en shared:domain — no reimplementar, solo usar
-public abstract class EventEmittingEntity {
+public abstract class AggregateRoot {
     private final List<DomainEvent> unPublishedEvents = new ArrayList<>();
 
     protected void publishEvent(DomainEvent event) { unPublishedEvents.add(event); }
@@ -541,7 +426,7 @@ public abstract class DomainEvent {
 | `build(...)` | Crear entidad nueva desde un comando/DTO | Solo si la HU emite eventos (ver "¿Cuándo emitir eventos?") | ✅ Sí — `UUID.randomUUID()` |
 | `rebuild(...)` | Reconstruir entidad desde persistencia | ❌ Nunca | ❌ No — recibe el UUID de BD |
 
-**Regla dura:** un `RepositoryAdapter` SIEMPRE usa `rebuild(...)`, nunca `build(...)`.
+**Regla dura:** un `CommandOutputAdapter` SIEMPRE usa `rebuild(...)`, nunca `build(...)`.
 
 ### ¿Cuándo emitir eventos de dominio?
 
@@ -564,7 +449,7 @@ Una HU de Escritura puede emitir eventos o no. La decisión depende de si hay (o
 | **Con eventos** | Llama a `publishEvent(new {Entidad}{Accion}Event(...))` | Inyecta `EventPublisher`, drena con `getUnPublishedEvents()`, publica, llama a `clearUnPublishedEvents()` | Sección 4 lista los eventos emitidos con su `eventTopic` |
 | **Sin eventos (CRUD simple)** | NO llama a `publishEvent(...)` | NO inyecta `EventPublisher`, no hay drenado/limpieza | Sección 4 declara explícitamente "Esta HU no emite eventos: <razón>" |
 
-**Ambas opciones son válidas.** La entidad sigue extendiendo `EventEmittingEntity` por consistencia y para tener la maquinaria lista. Cuando aparezca la necesidad futura, solo añades la clase del evento, llamas a `publishEvent(...)` en `build(...)` e inyectas `EventPublisher` en el use case.
+**Ambas opciones son válidas.** La entidad sigue extendiendo `AggregateRoot` por consistencia y para tener la maquinaria lista. Cuando aparezca la necesidad futura, solo añades la clase del evento, llamas a `publishEvent(...)` en `build(...)` e inyectas `EventPublisher` en el use case.
 
 ### Firma de EventPublisher (shared:amqp)
 
@@ -810,224 +695,263 @@ y respeta el modelo de dominio en el código interno.
 
 ### Dos tipos de DTOs en el proyecto
 
+### Cuatro tipos de objetos de transferencia en el proyecto
+
 | Tipo | Idioma de campos | Ubicación | Ejemplos |
 |---|---|---|---|
-| **DTO técnico genérico** | **Inglés** (sigue convención de la industria) | `shared:web` | `ErrorResponseDTO`, `PageResponseDTO<T>`, futuros `HealthResponseDTO`, etc. |
-| **DTO de dominio** | **Español** (refleja el modelo enriquecido) | `{contexto}/application/dto/` | `FichaPerfilResumenDTO`, `CrearFichaPerfilRequestDTO`, `UsuarioResponseDTO` |
-
-### Razón de la separación
-
-- **DTOs técnicos** son envoltorios que no contienen conceptos de negocio. Pagina cualquier cosa, formatea cualquier error. Sus campos siguen convenciones universales (`content`, `totalElements`, `error`, `errorCode`) que los clientes esperan. Viven en `shared:web` para no duplicarlos.
-- **DTOs de dominio** modelan tu dominio académico. Sus campos (`tituloProyecto`, `asesorFichaId`, `nombreEstudiante`) reflejan el modelo enriquecido y se mantienen en español para consistencia con entidades, repositorios y eventos.
+| **`Command`** (intención de escritura) | **Español** (idéntico al aggregate) | `application/{entidad}/command/model/` | `CrearFichaPerfilCommand`, `AprobarFichaPerfilCommand` |
+| **`ReadModel`** (proyección de lectura) | **Español** (idéntico al aggregate) | `application/{entidad}/query/readmodel/` | `FichaPerfilReadModel` |
+| **`RequestDTO`** (entrada HTTP) | **Español** (idéntico al aggregate) | `infrastructure/{entidad}/command/adapter/in/web/dto/` | `CrearFichaPerfilRequestDTO` (con `@NotBlank`, `@Email`, etc.) |
+| **DTO técnico genérico** | **Inglés** (convención de la industria) | `shared:web` | `ErrorResponseDTO`, `PageResponseDTO<T>`, `QueryCriteriaRequestDTO`, `NodoFiltroDTO` |
 
 ### Reglas inviolables
 
-1. **NUNCA crees un `PageResponseDTO` o `ErrorResponseDTO` local en un contexto.** Importa desde `com.arquisoft.shared.web`.
-2. **Si necesitas un DTO técnico nuevo que vaya a usarse en más de un contexto** (ej. `FilterRequestDTO`, `ValidationErrorDTO` específico, etc.) → ponlo en `shared:web` con campos en inglés.
-3. **DTOs de dominio NO pueden tener campos en inglés** que renombren conceptos del modelo enriquecido. Si el modelo dice `tituloProyecto`, el DTO usa `tituloProyecto`, no `title`.
+1. **`Command` y `ReadModel` son `record`, no clases con Lombok.** Inmutables por construcción.
+2. **`RequestDTO` es `record` con anotaciones Jakarta** (`@NotBlank`, `@Email`, etc.). Tiene un método `toCommand()` que produce el `Command` correspondiente. Vive en **infrastructure**, no en application.
+3. **El UseCase NO devuelve un `ResponseDTO`.** Los UseCases write devuelven `UUID` (o nada → `VoidInputPort`); los read devuelven `ReadModel` o `PaginatedResult<ReadModel>`. No existe un "ResponseDTO" intermedio entre la capa de aplicación y el adaptador REST: el `InputAdapter` serializa directamente el `ReadModel` a JSON.
+4. **NUNCA crees un `PageResponseDTO` o `ErrorResponseDTO` local en un contexto.** Importa desde `com.arquisoft.shared.web`.
+5. **Campos en español, idénticos al aggregate.** Si el aggregate dice `tituloProyecto`, todo lo que lo transporte (Command, ReadModel, RequestDTO, JSON HTTP) usa `tituloProyecto`. **NO** se traduce a inglés ni se renombra.
 4. **No anotes campos con `@JsonProperty` para mezclar idiomas.** Si el JSON externo necesita un nombre específico, evalúa si el DTO debería ser técnico (en inglés) o de dominio (en español) — no ambos.
 
 ---
 
-## Paginación — Spring Data `Page<T>` en domain/application + `PageResponseDTO<T>` en HTTP
+## Paginación y Filtros — `PaginatedResult` + Criteria pattern
 
-> **Decisión arquitectónica:** Spring Data `spring-data-commons` (que provee `Page<T>` y `Pageable`) se trata como tipo estándar de la industria, al nivel de `java.util.List`. Es una librería ligera de tipos genéricos que NO arrastra Spring Boot, ORM ni autoconfiguración. Usarla en domain reduce drásticamente la complejidad sin romper la separación de responsabilidades real (lo que SÍ rompe DDD es importar `@Entity`, `JpaRepository`, `EntityManager` — eso NO ocurre con `Page<T>`/`Pageable`).
->
-> **No existe `Page<T>` propio en `shared:domain`.** Si ves un import desde `com.arquisoft.shared.domain.Page`, está obsoleto: debe ser `org.springframework.data.domain.Page`.
+> **Cuándo usar:** las HUs de **read** que requieren paginación, ordenamiento o filtros dinámicos. Si una HU de consulta no necesita ninguno de los tres, no se usa Criteria — la firma del puerto recibe parámetros simples y retorna `ReadModel` o `List<ReadModel>`.
 
-### Flujo canónico de paginación
+### Las piezas (todas opcionales por HU)
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ HTTP Client                                                     │
-│   ↓ JSON request con params (?page=0&size=20&sort=...)          │
-├─────────────────────────────────────────────────────────────────┤
-│ INFRASTRUCTURE ({contexto}/infrastructure)                      │
-│   • Controller recibe Pageable (Spring lo construye desde       │
-│     query params automáticamente)                               │
-│   • Llama al UseCase: Page<{Entidad}DTO> ejecutar(Pageable)     │
-│   • Convierte Page<{Entidad}DTO> → PageResponseDTO<{Entidad}DTO>│
-│     con PageResponseDTO.from(...)                               │
-│   • Adapter JPA: jpaRepository.findAll(pageable)                │
-│     .map(JpaEntity::toDomain) → Page<{Entidad}>                 │
-├─────────────────────────────────────────────────────────────────┤
-│ APPLICATION ({contexto}/application)                            │
-│   • UseCaseImpl orquesta lógica                                 │
-│   • Habla con Page<T>, Pageable de Spring Data — son tipos      │
-│     estándar de la industria, igual que List<T>                 │
-│   • Llama a RepositoryPort (interfaz del dominio)               │
-├─────────────────────────────────────────────────────────────────┤
-│ DOMAIN ({contexto}/domain + shared/domain)                      │
-│   • Define puertos (interfaces): UseCase, RepositoryPort        │
-│     que pueden retornar Page<{Entidad}> (Spring Data)           │
-│   • Define modelos de dominio                                   │
-│   • CERO conocimiento de @Entity, JpaRepository, ni             │
-│     PageResponseDTO                                             │
-└─────────────────────────────────────────────────────────────────┘
-```
+| Pieza | Ubicación | Cuándo se crea |
+|---|---|---|
+| `XxxCriteria extends QueryCriteria` | `application/{entidad}/query/criteria/` | HU con paginación, ordenamiento o filtros |
+| `XxxJpaSpecification extends QueryJpaSpecification<JpaEntity>` | `infrastructure/{entidad}/query/adapter/out/persistence/` | Si la HU tiene filtros (árbol `NodoFiltro`) |
+| `XxxSortMapper` | `infrastructure/{entidad}/query/adapter/out/persistence/` | Si los campos de ordenamiento del cliente difieren de los paths JPA (joins implícitos) |
 
-### Tipos involucrados — quién conoce qué
-
-| Tipo | Vive en | Usado por | Notas |
-|---|---|---|---|
-| `org.springframework.data.domain.Page<T>` | `spring-data-commons` | Puerto, use case, adapter | Tipo estándar — válido en domain, application e infrastructure |
-| `org.springframework.data.domain.Pageable` | `spring-data-commons` | Puerto, use case, controller | Tipo estándar — Spring lo construye desde query params automáticamente |
-| `PageResponseDTO<T>` | `shared:web` | Controller (response) | **SOLO** infrastructure. NUNCA aparece en domain ni application |
-
-### Reglas inviolables de paginación
-
-1. **`spring-data-commons` se declara como `api` en `shared:domain/build.gradle`** para exponer `Page<T>` y `Pageable` transitivamente a quien consuma el módulo.
-2. **El puerto retorna `Page<{Entidad}>` (Spring Data) y recibe `Pageable`.** El nombre del método NUNCA incluye "Paginadas" — la paginación se infiere del `Pageable`.
-3. **El use case usa `.map(...)` directo de Spring `Page`** para convertir entidades a DTOs (Spring `Page<T>` ya tiene método `map(Function<T, R>)` built-in).
-4. **El adapter del repositorio queda en una sola línea:** `jpaRepository.findAll(pageable).map(JpaEntity::toDomain)`. Cero conversiones manuales.
-5. **El controller convierte `Page<...>` → `PageResponseDTO<...>` con `PageResponseDTO.from(...)`** justo antes del `ResponseEntity.ok(...)`.
-6. **`PageResponseDTO` NUNCA aparece en `domain/` ni en `application/`.** Si aparece, es violación bloqueante.
-7. **Nombres de métodos:** usar `consultarTodas`, `listarTodas`, `buscarPor...` — la paginación es un parámetro, no parte del nombre. **`consultarPaginadas` es un anti-patrón.**
-
-### Configuración de `shared:domain/build.gradle`
-
-```gradle
-dependencies {
-    api 'org.springframework.data:spring-data-commons'
-    // ... resto de dependencias
-}
-```
-
-`api` (no `implementation`) expone los tipos transitivamente. Así `application` e `infrastructure` ven `Page<T>` y `Pageable` automáticamente sin redeclarar la dependencia.
-
-### Ejemplo completo — firmas correctas
+### Tipos en `shared:domain`
 
 ```java
-// ✅ Puerto de salida (domain)
-public interface FichaPerfilRepositoryPort {
-    Page<FichaPerfil> consultarTodas(Pageable pageable);
+// PaginatedResult — record inmutable
+public record PaginatedResult<T>(
+    List<T> content,
+    int page, int size, long totalElements, int totalPages
+) {
+    public <R> PaginatedResult<R> map(Function<T, R> mapper) { /* preserva metadatos */ }
 }
 
-// ✅ Use case (domain port in)
-public interface ConsultarFichasPerfilUseCase {
-    Page<FichaPerfilResumenDTO> ejecutar(Pageable pageable);
+// QueryCriteria — clase base con builder que valida en construcción
+public abstract class QueryCriteria {
+    private final int pagina;
+    private final int tamanio;
+    private final List<SortOrder> ordenamiento;
+    private final NodoFiltro raiz;
+    // builder valida: campos en whitelist, profundidad árbol ≤ 10, operadores con valor
 }
 
-// ✅ Use case impl (application) — usa .map() de Spring Page
-@Service
-@RequiredArgsConstructor
-public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilUseCase {
-    private final FichaPerfilRepositoryPort repository;
+// NodoFiltro — sealed: Predicado | Grupo
+public sealed interface NodoFiltro permits NodoFiltro.Predicado, NodoFiltro.Grupo {
+    record Predicado(String campo, Operador operador, Object valor) implements NodoFiltro {}
+    record Grupo(Conector conector, List<NodoFiltro> hijos) implements NodoFiltro {}
+}
+```
 
-    @Override
-    public Page<FichaPerfilResumenDTO> ejecutar(Pageable pageable) {
-        return repository.consultarTodas(pageable)
-                .map(FichaPerfilResumenDTO::from);
+### Tipos en `shared:web`
+
+```java
+// QueryCriteriaRequestDTO — input HTTP polimórfico vía Jackson
+public record QueryCriteriaRequestDTO(
+    int pagina, int tamanio,
+    List<String> ordenamiento,        // ["tituloProyecto:ASC", "asesorNombre:DESC"]
+    NodoFiltroDTO filtros              // árbol polimórfico
+) {}
+
+// PageResponseDTO — output HTTP
+public record PageResponseDTO<T>(
+    List<T> content, int page, int size,
+    long totalElements, int totalPages
+) {
+    public static <T> PageResponseDTO<T> from(PaginatedResult<T> result) { /* ... */ }
+}
+```
+
+### Tipos en `shared:postgres`
+
+```java
+// QueryJpaSpecification — recorre el árbol NodoFiltro y produce Specification<JpaEntity>
+public abstract class QueryJpaSpecification<E> {
+    protected abstract Map<String, CampoSpec<E>> camposFiltrables();
+    public Specification<E> desdeCriteria(QueryCriteria criteria) { /* recorre el árbol */ }
+}
+
+// CampoSpec — sealed con 7 variantes
+public sealed interface CampoSpec<E> {
+    Specification<E> construirSpec(Operador op, Object valor);
+    // Variantes: Texto, Uuid, Entero, Decimal, Fecha, FechaHora, Booleano
+    static <E> CampoSpec<E> texto(Function<Root<E>, Path<String>> path) { /* ... */ }
+    static <E> CampoSpec<E> uuid(Function<Root<E>, Path<UUID>> path) { /* ... */ }
+    // ... etc
+}
+```
+
+| Tipo de campo | Operadores válidos | SQL típico |
+|---|---|---|
+| `Texto` | `CONTIENE`, `NO_CONTIENE`, `EMPIEZA_CON`, `TERMINA_CON`, `ES`, `NO_ES`, `ES_NULO`, `NO_ES_NULO` | `LOWER(col) LIKE '%val%'` |
+| `Uuid` | `ES`, `NO_ES`, `ES_NULO`, `NO_ES_NULO` | `col = ?` |
+| `Entero` / `Decimal` | `ES`, `NO_ES`, `MAYOR_QUE`, `MENOR_QUE`, `MAYOR_IGUAL_QUE`, `MENOR_IGUAL_QUE`, `ES_NULO`, `NO_ES_NULO` | `col > ?` |
+| `Fecha` / `FechaHora` | Igual que `Entero` (ISO 8601 `yyyy-MM-dd` / `yyyy-MM-ddTHH:mm:ss`) | `col >= ?` |
+| `Booleano` | `ES`, `NO_ES`, `ES_NULO`, `NO_ES_NULO` | `col = true` |
+
+### Flujo completo de una HU read con Criteria
+
+```
+POST /api/fichas-perfil/query
+Body: { pagina, tamanio, ordenamiento, filtros: { tipo:GRUPO, conector:AND, nodos:[...] } }
+  │
+  ▼ QueryInputAdapter
+QueryCriteriaRequestDTO → solicitud.parsearAOrdenamiento()  → List<SortOrder>
+                       → solicitud.parsearFiltros()         → NodoFiltro (sealed tree)
+  │
+  ▼ FichaPerfilCriteria.builder().build()  ← valida: whitelist de campos, profundidad ≤ 10
+  │
+  ▼ ConsultarFichasPerfilInputPort.ejecutar(criteria)
+  │
+  ▼ ConsultarFichasPerfilQueryUseCase
+       fichaPerfilQueryOutputPort.consultarTodas(criteria)  ← delegación pura
+  │
+  ▼ FichaPerfilQueryOutputAdapter
+       1. SortMapper:  "asesorNombre" → "asesorFicha.nombre"  (joined entity)
+       2. Specification = FichaPerfilJpaSpecification.desdeCriteria(criteria)
+       3. jpaRepository.findAll(spec, pageable)               ← @EntityGraph evita N+1
+       4. .map(FichaPerfilMapper::toReadModel)
+       5. PaginationMapper.toResult(...)                      ← PaginatedResult<ReadModel>
+  │
+  ▼ InputAdapter retorna PageResponseDTO.from(paginatedResult)
+  │
+  ▼ HTTP 200 con JSON: { content, page, size, totalElements, totalPages }
+```
+
+### Plantilla `FichaPerfilCriteria`
+
+```java
+// application/fichaPerfil/query/criteria/FichaPerfilCriteria.java
+package com.arquisoft.fichas.application.fichaPerfil.query.criteria;
+
+import com.arquisoft.shared.domain.pagination.QueryCriteria;
+import com.arquisoft.shared.domain.pagination.NodoFiltro;
+import com.arquisoft.shared.domain.pagination.SortOrder;
+import java.util.List;
+import java.util.Set;
+
+public final class FichaPerfilCriteria extends QueryCriteria {
+
+    /** Whitelist de campos filtrables y ordenables (validados en el builder). */
+    public static final class Campo {
+        public static final String TITULO_PROYECTO = "tituloProyecto";
+        public static final String ASESOR_NOMBRE   = "asesorNombre";
+        public static final String ASESOR_EMAIL    = "asesorEmail";
+        public static final String ASESOR_ID       = "asesorId";
+
+        public static final Set<String> FILTRABLES = Set.of(
+            TITULO_PROYECTO, ASESOR_NOMBRE, ASESOR_EMAIL, ASESOR_ID);
+        public static final Set<String> ORDENABLES = Set.of(
+            TITULO_PROYECTO, ASESOR_NOMBRE);
+    }
+
+    private FichaPerfilCriteria(int pagina, int tamanio,
+                                List<SortOrder> ordenamiento, NodoFiltro raiz) {
+        super(pagina, tamanio, ordenamiento, raiz, Campo.FILTRABLES, Campo.ORDENABLES);
+    }
+
+    public static Builder builder() { return new Builder(); }
+
+    public static final class Builder {
+        // setters fluentes... y .build() invoca al constructor (valida vía super)
     }
 }
+```
 
-// ✅ Adapter (infrastructure) — una sola línea
+### Plantilla `FichaPerfilJpaSpecification`
+
+```java
+// infrastructure/fichaPerfil/query/adapter/out/persistence/FichaPerfilJpaSpecification.java
+package com.arquisoft.fichas.infrastructure.fichaPerfil.query.adapter.out.persistence;
+
+import com.arquisoft.shared.postgres.QueryJpaSpecification;
+import com.arquisoft.shared.postgres.CampoSpec;
+import com.arquisoft.fichas.infrastructure.fichaPerfil.persistence.FichaPerfilJpaEntity;
+import org.springframework.stereotype.Component;
+import java.util.Map;
+
+@Component
+public class FichaPerfilJpaSpecification
+        extends QueryJpaSpecification<FichaPerfilJpaEntity> {
+
+    @Override
+    protected Map<String, CampoSpec<FichaPerfilJpaEntity>> camposFiltrables() {
+        return Map.of(
+            "tituloProyecto", CampoSpec.texto(root -> root.get("tituloProyecto")),
+            "asesorNombre",   CampoSpec.texto(root -> root.get("asesorFicha").get("nombre")),
+            "asesorEmail",    CampoSpec.texto(root -> root.get("asesorFicha").get("email")),
+            "asesorId",       CampoSpec.uuid(root -> root.get("asesorFicha").get("id"))
+        );
+    }
+}
+```
+
+> El mapa traduce el nombre **de dominio** (`asesorNombre`) al **path JPA** (`asesorFicha.nombre`) para joins implícitos. Lo mismo aplica al `SortMapper` cuando el cliente ordena por un campo de una entidad joined.
+
+### Plantilla `FichaPerfilQueryOutputAdapter` con Criteria
+
+```java
+// infrastructure/fichaPerfil/query/adapter/out/persistence/FichaPerfilQueryOutputAdapter.java
 @Component
 @RequiredArgsConstructor
-public class FichaPerfilRepositoryAdapter implements FichaPerfilRepositoryPort {
+public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
+
     private final FichaPerfilJpaRepository jpaRepository;
+    private final FichaPerfilJpaSpecification specification;
+    private final FichaPerfilSortMapper sortMapper;
+    private final FichaPerfilMapper mapper;
 
     @Override
-    public Page<FichaPerfil> consultarTodas(Pageable pageable) {
-        return jpaRepository.findAll(pageable).map(FichaPerfilJpaEntity::toDomain);
+    public PaginatedResult<FichaPerfilReadModel> consultarTodas(FichaPerfilCriteria criteria) {
+        Specification<FichaPerfilJpaEntity> spec = specification.desdeCriteria(criteria);
+        PageRequest pageable = PageRequest.of(
+            criteria.getPagina(), criteria.getTamanio(),
+            sortMapper.aSort(criteria.getOrdenamiento())
+        );
+
+        return PaginationMapper.toResult(
+            jpaRepository.findAll(spec, pageable).map(mapper::toReadModel)
+        );
     }
 }
-
-// ✅ Controller (infrastructure) — Spring inyecta Pageable desde query params
-@GetMapping
-public ResponseEntity<PageResponseDTO<FichaPerfilResumenDTO>> consultar(Pageable pageable) {
-    return ResponseEntity.ok(PageResponseDTO.from(useCase.ejecutar(pageable)));
-}
 ```
 
-### Anti-patrones bloqueantes
+### `@EntityGraph` para evitar N+1
+
+Cuando el `ReadModel` incluye datos de una entidad relacionada (ej. `asesorNombre`), el `JpaRepository` declara `@EntityGraph(attributePaths = {"asesorFicha"})` en el método `findAll(Specification, Pageable)` para cargar la relación en una sola query con `JOIN FETCH`.
 
 ```java
-// ❌ MAL — Page propio del dominio (eliminado del proyecto)
-import com.arquisoft.shared.domain.Page;  // ya no existe
-Page<FichaPerfil> consultarTodas(...);
+public interface FichaPerfilJpaRepository extends JpaRepository<FichaPerfilJpaEntity, UUID>,
+        JpaSpecificationExecutor<FichaPerfilJpaEntity> {
 
-// ❌ MAL — nombre con "Paginadas"
-Page<FichaPerfil> consultarPaginadas(int page, int size);
-Page<FichaPerfil> consultarTodasPaginadas(int page, int size);
-
-// ❌ MAL — use case retornando PageResponseDTO (DTO técnico filtra a application)
-PageResponseDTO<FichaPerfilResumenDTO> ejecutar(Pageable pageable);
-
-// ❌ MAL — puerto retornando Page<JpaEntity>
-Page<FichaPerfilJpaEntity> consultarTodas(Pageable pageable);
-
-// ❌ MAL — controller con @RequestParam manuales en lugar de Pageable
-public ResponseEntity<...> consultar(@RequestParam int page, @RequestParam int size) {
-    // Spring ya construye Pageable solo. Hacerlo manual es redundante.
+    @Override
+    @EntityGraph(attributePaths = {"asesorFicha"})
+    Page<FichaPerfilJpaEntity> findAll(Specification<FichaPerfilJpaEntity> spec, Pageable pageable);
 }
 ```
+
+### Reglas inviolables
+
+1. **Whitelist obligatoria de campos.** Si el cliente envía un campo no permitido en `Criteria.Campo.FILTRABLES` o `ORDENABLES`, el builder lanza excepción. Nunca se confía en input del cliente para construir SQL.
+2. **`QueryJpaSpecification` y `CampoSpec` viven en `shared:postgres`.** Nunca se reimplementan en el contexto. El contexto solo declara su `XxxJpaSpecification` con su mapa de campos.
+3. **Validación de profundidad del árbol ≤ 10 niveles.** Previene ataques de árboles maliciosamente profundos. Validado en el constructor de `QueryCriteria`.
+4. **`PaginatedResult<T>` vive en `shared:domain.pagination`** y es el retorno canónico del read side cuando hay paginación.
+5. **`PageResponseDTO.from(PaginatedResult)`** es la única conversión válida hacia HTTP. Nunca serializar `PaginatedResult` directamente.
+6. **NO usar `Pageable` ni `org.springframework.data.domain.Page` en `application/` ni `domain/`.** Esos tipos solo viven en `infrastructure/{entidad}/query/adapter/out/persistence/`. El read side de application maneja `XxxCriteria` y `PaginatedResult`.
+7. **Cuando una HU de read NO necesita paginación, ordenamiento ni filtros**, NO se crean `Criteria`/`JpaSpecification`/`SortMapper`. El puerto recibe parámetros simples (ej. `UUID id`) y retorna `ReadModel` o `List<ReadModel>`.
 
 ---
-
-
-
-```java
-package com.arquisoft.fichas.domain.model;
-
-import com.arquisoft.shared.domain.EventEmittingEntity;
-import com.arquisoft.fichas.domain.event.FichaCreadaEvent;
-import java.util.UUID;
-
-public class Ficha extends EventEmittingEntity {
-    private final UUID id;
-    private final String titulo;
-    private final String estado;
-
-    private Ficha(UUID id, String titulo, String estado) {
-        this.id = id;
-        this.titulo = titulo;
-        this.estado = estado;
-    }
-
-    /** Crear una nueva ficha — genera UUID y publica evento. */
-    public static Ficha build(String titulo) {
-        Ficha ficha = new Ficha(UUID.randomUUID(), titulo, "BORRADOR");
-        ficha.publishEvent(new FichaCreadaEvent(ficha.id.toString(), titulo));
-        return ficha;
-    }
-
-    /** Reconstruir desde persistencia — sin UUID nuevo, sin eventos. */
-    public static Ficha rebuild(UUID id, String titulo, String estado) {
-        return new Ficha(id, titulo, estado);
-    }
-
-    public UUID getId() { return id; }
-    public String getTitulo() { return titulo; }
-    public String getEstado() { return estado; }
-}
-```
-
-### Evento de dominio
-
-```java
-package com.arquisoft.fichas.domain.event;
-
-import com.arquisoft.shared.domain.DomainEvent;
-
-public final class FichaCreadaEvent extends DomainEvent {
-    private final String titulo;
-
-    public FichaCreadaEvent(String aggregateId, String titulo) {
-        super(aggregateId);
-        this.titulo = titulo;
-    }
-
-    @Override
-    public String getEventTopic() {
-        return "fichas.ficha.creada";
-    }
-
-    public String getTitulo() { return titulo; }
-}
-```
-
-> **Obligatorio:** toda subclase de `DomainEvent` DEBE implementar `getEventTopic()` retornando un string con el formato `{contexto}.{entidad}.{accion}`. La firma del método es `public abstract String getEventTopic()` en la clase base. Sin esta implementación el código no compila.
 
 ### Value Object (usar `record`)
 
@@ -1046,190 +970,403 @@ public record Calificacion(double valor) {
 ### Excepción de dominio
 
 ```java
-package com.arquisoft.fichas.domain.exception;
+package com.arquisoft.fichas.domain.fichaPerfil.exception;
 
-import com.arquisoft.shared.exception.DomainException;
+import com.arquisoft.shared.domain.exception.DomainException;
 
-public class FichaNoEncontradaException extends DomainException {
-    public FichaNoEncontradaException(String id) {
-        super("FICHA_NO_ENCONTRADA", "No se encontró la ficha con id: " + id);
+public class FichaPerfilNoEncontradaException extends DomainException {
+    public FichaPerfilNoEncontradaException(String id) {
+        super("FICHA_PERFIL_NO_ENCONTRADA", "No se encontró la ficha con id: " + id);
     }
 }
 ```
 
-### Puerto de entrada (UseCase)
+> Toda excepción del contexto extiende uno de los 4 tipos base: `DomainException` (422), `ApplicationException` (400), `InfrastructureException` (503), `DomainValidationException` (422). **NUNCA** extender `RuntimeException` directamente. Ver sección "Jerarquía de excepciones" más abajo.
+
+### Plantilla completa de una HU write — InputPort + Command + UseCase + Aggregate
+
+A continuación, una HU de creación de un agregado (write side) de principio a fin con todos los archivos involucrados. Tomamos como referencia "crear una `FichaPerfil`" del contexto `fichas`.
+
+#### 1. Command (intención de negocio)
 
 ```java
-package com.arquisoft.fichas.domain.port.in;
+// application/fichaPerfil/command/model/CrearFichaPerfilCommand.java
+package com.arquisoft.fichas.application.fichaPerfil.command.model;
 
-import com.arquisoft.fichas.domain.model.Ficha;
+import java.util.UUID;
 
-public interface CrearFichaUseCase {
-    Ficha ejecutar(Ficha ficha);
+public record CrearFichaPerfilCommand(
+    String tituloProyecto,
+    UUID asesorFichaId
+) {}
+```
+
+> Los nombres de los campos del `Command` **coinciden exactamente** con los del aggregate. Nada se traduce ni se renombra.
+
+#### 2. Aggregate (con Notification Pattern + eventos)
+
+```java
+// domain/fichaPerfil/aggregate/FichaPerfilAggregate.java
+package com.arquisoft.fichas.domain.fichaPerfil.aggregate;
+
+import com.arquisoft.shared.domain.events.AggregateRoot;
+import com.arquisoft.shared.domain.validation.ValidationResult;
+import com.arquisoft.shared.domain.validation.DomainValidator;
+import com.arquisoft.fichas.domain.fichaPerfil.event.FichaPerfilCreadaEvent;
+import com.arquisoft.fichas.domain.fichaPerfil.message.FichaPerfilDomainMessages;
+import java.util.UUID;
+
+public final class FichaPerfilAggregate extends AggregateRoot {
+    private UUID id;
+    private String tituloProyecto;
+    private UUID asesorFichaId;
+    private String estado;
+
+    private FichaPerfilAggregate() {}
+
+    public static FichaPerfilAggregate crear(String tituloProyecto, UUID asesorFichaId) {
+        FichaPerfilAggregate aggregate = new FichaPerfilAggregate();
+        ValidationResult result = new ValidationResult();
+        aggregate.setTituloProyecto(tituloProyecto, result);
+        aggregate.setAsesorFichaId(asesorFichaId, result);
+        result.throwIfHasErrors();
+
+        aggregate.id = UUID.randomUUID();
+        aggregate.estado = "BORRADOR";
+        aggregate.publishEvent(new FichaPerfilCreadaEvent(
+            aggregate.id, aggregate.tituloProyecto, aggregate.asesorFichaId));
+        return aggregate;
+    }
+
+    public static FichaPerfilAggregate rebuild(UUID id, String titulo, UUID asesorId, String estado) {
+        FichaPerfilAggregate a = new FichaPerfilAggregate();
+        a.id = id; a.tituloProyecto = titulo; a.asesorFichaId = asesorId; a.estado = estado;
+        return a;
+    }
+
+    private void setTituloProyecto(String titulo, ValidationResult result) {
+        if (!DomainValidator.notBlank(titulo,
+                FichaPerfilDomainMessages.CAMPO_TITULO,
+                FichaPerfilDomainMessages.TITULO_REQUERIDO, result)) return;
+        this.tituloProyecto = titulo.trim();
+    }
+
+    private void setAsesorFichaId(UUID id, ValidationResult result) {
+        if (!DomainValidator.notNull(id,
+                FichaPerfilDomainMessages.CAMPO_ASESOR,
+                FichaPerfilDomainMessages.ASESOR_REQUERIDO, result)) return;
+        this.asesorFichaId = id;
+    }
+
+    public UUID getId() { return id; }
+    public String getTituloProyecto() { return tituloProyecto; }
+    public UUID getAsesorFichaId() { return asesorFichaId; }
+    public String getEstado() { return estado; }
 }
 ```
 
-### Puerto de salida (Repository)
+#### 3. Evento de dominio
 
 ```java
-package com.arquisoft.fichas.domain.port.out;
+// domain/fichaPerfil/event/FichaPerfilCreadaEvent.java
+package com.arquisoft.fichas.domain.fichaPerfil.event;
 
-import com.arquisoft.fichas.domain.model.Ficha;
+import com.arquisoft.shared.domain.events.DomainEvent;
+import java.util.UUID;
+
+public final class FichaPerfilCreadaEvent extends DomainEvent {
+
+    public static final String EVENT_TOPIC = "fichas.fichaPerfil.creada";
+    public static final String EVENT_TYPE  = "FichaPerfilCreadaEvent";
+
+    private final String tituloProyecto;
+    private final UUID asesorFichaId;
+
+    public FichaPerfilCreadaEvent(UUID aggregateId, String titulo, UUID asesorFichaId) {
+        super(aggregateId.toString(), EVENT_TOPIC, EVENT_TYPE);
+        this.tituloProyecto = titulo;
+        this.asesorFichaId = asesorFichaId;
+    }
+
+    public String getTituloProyecto() { return tituloProyecto; }
+    public UUID getAsesorFichaId() { return asesorFichaId; }
+}
+```
+
+#### 4. Puerto de salida (write — en `domain`)
+
+```java
+// domain/fichaPerfil/port/out/FichaPerfilOutputPort.java
+package com.arquisoft.fichas.domain.fichaPerfil.port.out;
+
+import com.arquisoft.fichas.domain.fichaPerfil.aggregate.FichaPerfilAggregate;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface FichaRepositoryPort {
-    Ficha guardar(Ficha ficha);
-    Optional<Ficha> buscarPorId(UUID id);
+public interface FichaPerfilOutputPort {
+    void save(FichaPerfilAggregate aggregate);
+    Optional<FichaPerfilAggregate> findById(UUID id);
 }
 ```
 
-### DTO Request
+#### 5. Puerto de entrada (write — en `application`)
 
 ```java
-package com.arquisoft.fichas.application.dto;
+// application/fichaPerfil/command/port/in/CrearFichaPerfilInputPort.java
+package com.arquisoft.fichas.application.fichaPerfil.command.port.in;
 
-import com.arquisoft.fichas.domain.model.Ficha;
-import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
-public class CrearFichaRequestDTO {
-    @NotBlank(message = "El título es obligatorio")
-    private String titulo;
-
-    public Ficha toDomain() {
-        return Ficha.build(this.titulo);
-    }
-}
-```
-
-### DTO Response
-
-```java
-package com.arquisoft.fichas.application.dto;
-
-import com.arquisoft.fichas.domain.model.Ficha;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.arquisoft.shared.domain.port.in.InputPort;
+import com.arquisoft.fichas.application.fichaPerfil.command.model.CrearFichaPerfilCommand;
 import java.util.UUID;
 
-@Data @NoArgsConstructor @AllArgsConstructor @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class FichaResponseDTO {
-    private UUID id;
-    private String titulo;
-    private String estado;
-
-    public static FichaResponseDTO fromDomain(Ficha ficha) {
-        return FichaResponseDTO.builder()
-            .id(ficha.getId())
-            .titulo(ficha.getTitulo())
-            .estado(ficha.getEstado())
-            .build();
-    }
-}
+public interface CrearFichaPerfilInputPort
+        extends InputPort<CrearFichaPerfilCommand, UUID> {}
 ```
 
-### UseCase Impl (drena eventos)
+> La interfaz queda **vacía**. Solo hereda `ejecutar(I) → O` de `InputPort<I, O>`. Si el comando no retorna nada, extiende `VoidInputPort<I>`.
+
+#### 6. UseCase (write — en `application`)
 
 ```java
-package com.arquisoft.fichas.application.usecase;
+// application/fichaPerfil/command/CrearFichaPerfilUseCase.java
+package com.arquisoft.fichas.application.fichaPerfil.command;
 
-import com.arquisoft.fichas.domain.model.Ficha;
-import com.arquisoft.fichas.domain.port.in.CrearFichaUseCase;
-import com.arquisoft.fichas.domain.port.out.FichaRepositoryPort;
+import com.arquisoft.fichas.application.fichaPerfil.command.model.CrearFichaPerfilCommand;
+import com.arquisoft.fichas.application.fichaPerfil.command.port.in.CrearFichaPerfilInputPort;
+import com.arquisoft.fichas.domain.fichaPerfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaPerfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.amqp.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.UUID;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CrearFichaUseCaseImpl implements CrearFichaUseCase {
+public class CrearFichaPerfilUseCase implements CrearFichaPerfilInputPort {
 
-    private final FichaRepositoryPort fichaRepository;
+    private final FichaPerfilOutputPort fichaPerfilOutputPort;
     private final EventPublisher eventPublisher;
 
     @Override
     @Transactional
-    public Ficha ejecutar(Ficha ficha) {
-        log.info("Creando ficha: {}", ficha.getTitulo());
-        Ficha guardada = fichaRepository.guardar(ficha);
+    public UUID ejecutar(CrearFichaPerfilCommand command) {
+        FichaPerfilAggregate aggregate = FichaPerfilAggregate.crear(
+            command.tituloProyecto(), command.asesorFichaId());
 
-        guardada.getUnPublishedEvents().forEach(eventPublisher::publish);
-        guardada.clearUnPublishedEvents();
+        fichaPerfilOutputPort.save(aggregate);
 
-        return guardada;
+        aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);
+
+        return aggregate.getId();
     }
 }
 ```
 
-### Controller REST (ADR-011)
+> **Patrón canónico:** `crear → persistir → drainUnPublishedEvents().forEach(publish) → retornar id`. El UseCase no decide qué eventos publicar; solo drena lo que el aggregate acumuló.
+
+#### 7. RequestDTO (en `infrastructure`)
 
 ```java
-package com.arquisoft.fichas.infrastructure.adapter.in.web;
+// infrastructure/fichaPerfil/command/adapter/in/web/dto/CrearFichaPerfilRequestDTO.java
+package com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.in.web.dto;
 
-import com.arquisoft.fichas.application.dto.CrearFichaRequestDTO;
-import com.arquisoft.fichas.application.dto.FichaResponseDTO;
-import com.arquisoft.fichas.domain.model.Ficha;
-import com.arquisoft.fichas.domain.port.in.CrearFichaUseCase;
+import com.arquisoft.fichas.application.fichaPerfil.command.model.CrearFichaPerfilCommand;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
+
+public record CrearFichaPerfilRequestDTO(
+    @NotBlank String tituloProyecto,
+    @NotNull UUID asesorFichaId
+) {
+    public CrearFichaPerfilCommand toCommand() {
+        return new CrearFichaPerfilCommand(tituloProyecto, asesorFichaId);
+    }
+}
+```
+
+> El `RequestDTO` vive en **infrastructure**, no en application. Validación Jakarta (`@NotBlank`, `@NotNull`) es responsabilidad del adaptador. Convención: campos del DTO **idénticos** al modelo (sin traducir a inglés).
+
+#### 8. InputAdapter (REST controller)
+
+```java
+// infrastructure/fichaPerfil/command/adapter/in/web/CrearFichaPerfilInputAdapter.java
+package com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.in.web;
+
+import com.arquisoft.fichas.application.fichaPerfil.command.port.in.CrearFichaPerfilInputPort;
+import com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.in.web.dto.CrearFichaPerfilRequestDTO;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import java.net.URI;
+import java.util.UUID;
 
-@Slf4j
 @RestController
-@RequestMapping("/api/fichas")
+@RequestMapping("/api/fichas-perfil")
 @RequiredArgsConstructor
-@Tag(name = "Fichas", description = "Gestion de fichas de perfil de proyectos de grado")
-public class FichaController {
+@Tag(name = "Fichas de Perfil")
+public class CrearFichaPerfilInputAdapter {
 
-    private final CrearFichaUseCase crearFichaUseCase;
+    private final CrearFichaPerfilInputPort crearFichaPerfilInputPort;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAuthority('fichas:ficha:create')")
-    @Operation(
-        summary = "Crear ficha de perfil",
-        description = "Crea una nueva ficha de perfil para un proyecto de grado",
-        security = @SecurityRequirement(name = "bearerAuth")
-    )
+    @PreAuthorize("hasAuthority('fichas:fichaPerfil:create')")
+    @Operation(summary = "Crear ficha de perfil",
+               security = @SecurityRequirement(name = "bearerAuth"))
     @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "Ficha creada exitosamente",
-            content = @Content(schema = @Schema(implementation = FichaResponseDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Datos invalidos"),
+        @ApiResponse(responseCode = "201", description = "Ficha creada"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
         @ApiResponse(responseCode = "401", description = "No autenticado"),
         @ApiResponse(responseCode = "403", description = "Sin permisos")
     })
-    public FichaResponseDTO crear(@Valid @RequestBody CrearFichaRequestDTO request) {
-        Ficha ficha = crearFichaUseCase.ejecutar(request.toDomain());
-        return FichaResponseDTO.fromDomain(ficha);
+    public ResponseEntity<Void> crear(@Valid @RequestBody CrearFichaPerfilRequestDTO request) {
+        UUID id = crearFichaPerfilInputPort.ejecutar(request.toCommand());
+        return ResponseEntity.created(URI.create("/api/fichas-perfil/" + id)).build();
     }
 }
 ```
+
+> **Convenciones del InputAdapter de escritura:**
+> - Inyecta el `InputPort` (interfaz vacía), no el `UseCase` directamente.
+> - Retorna `ResponseEntity<Void>` con `201 Created` + header `Location` apuntando al recurso. **No** devuelve el recurso completo — eso es responsabilidad de un endpoint de consulta separado (CQRS estricto).
+> - El `@PreAuthorize` usa client roles con formato `{contexto}:{entidad}:{accion}` con la entidad en camelCase (`fichas:fichaPerfil:create`).
+
+#### 9. CommandOutputAdapter (persistencia write)
+
+```java
+// infrastructure/fichaPerfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java
+package com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.out.persistence;
+
+import com.arquisoft.fichas.domain.fichaPerfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaPerfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.infrastructure.fichaPerfil.persistence.FichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.fichaPerfil.persistence.FichaPerfilMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import java.util.Optional;
+import java.util.UUID;
+
+@Component
+@RequiredArgsConstructor
+public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
+
+    private final FichaPerfilJpaRepository jpaRepository;
+    private final FichaPerfilMapper mapper;
+
+    @Override
+    public void save(FichaPerfilAggregate aggregate) {
+        jpaRepository.save(mapper.toJpaEntity(aggregate));
+    }
+
+    @Override
+    public Optional<FichaPerfilAggregate> findById(UUID id) {
+        return jpaRepository.findById(id).map(mapper::toAggregate);
+    }
+}
+```
+
+> **`JpaEntity`, `JpaRepository` y `Mapper`** viven en `infrastructure/{entidad}/persistence/` (compartido entre `command/` y `query/`).
+
+### Plantilla resumida de una HU read — QueryInputPort + ReadModel + QueryUseCase
+
+Cuando la HU es de consulta y NO necesita Criteria (consulta simple por id o por un campo):
+
+#### 1. ReadModel
+
+```java
+// application/fichaPerfil/query/readmodel/FichaPerfilReadModel.java
+public record FichaPerfilReadModel(
+    UUID id,
+    String tituloProyecto,
+    String estado,
+    String asesorNombre
+) {}
+```
+
+#### 2. QueryInputPort (vacío)
+
+```java
+// application/fichaPerfil/query/port/in/ConsultarFichaPerfilInputPort.java
+public interface ConsultarFichaPerfilInputPort
+        extends InputPort<UUID, FichaPerfilReadModel> {}
+```
+
+#### 3. QueryOutputPort (vive en `application`, NO en domain)
+
+```java
+// application/fichaPerfil/query/port/out/FichaPerfilQueryOutputPort.java
+public interface FichaPerfilQueryOutputPort {
+    Optional<FichaPerfilReadModel> findById(UUID id);
+}
+```
+
+#### 4. QueryUseCase
+
+```java
+// application/fichaPerfil/query/ConsultarFichaPerfilQueryUseCase.java
+@Component
+@RequiredArgsConstructor
+public class ConsultarFichaPerfilQueryUseCase implements ConsultarFichaPerfilInputPort {
+
+    private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
+
+    @Override
+    @Transactional(readOnly = true)
+    public FichaPerfilReadModel ejecutar(UUID id) {
+        return fichaPerfilQueryOutputPort.findById(id)
+            .orElseThrow(() -> new FichaPerfilNoEncontradaException(id.toString()));
+    }
+}
+```
+
+#### 5. QueryInputAdapter
+
+```java
+// infrastructure/fichaPerfil/query/adapter/in/web/ConsultarFichaPerfilQueryInputAdapter.java
+@RestController
+@RequestMapping("/api/fichas-perfil")
+@RequiredArgsConstructor
+public class ConsultarFichaPerfilQueryInputAdapter {
+
+    private final ConsultarFichaPerfilInputPort consultarFichaPerfilInputPort;
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('fichas:fichaPerfil:view')")
+    public FichaPerfilReadModel consultar(@PathVariable UUID id) {
+        return consultarFichaPerfilInputPort.ejecutar(id);
+    }
+}
+```
+
+#### 6. QueryOutputAdapter
+
+```java
+// infrastructure/fichaPerfil/query/adapter/out/persistence/FichaPerfilQueryOutputAdapter.java
+@Component
+@RequiredArgsConstructor
+public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
+
+    private final FichaPerfilJpaRepository jpaRepository;
+    private final FichaPerfilMapper mapper;
+
+    @Override
+    public Optional<FichaPerfilReadModel> findById(UUID id) {
+        return jpaRepository.findById(id).map(mapper::toReadModel);
+    }
+}
+```
+
+> **El read side NO usa el aggregate.** Consulta directa de la JPA Entity al `ReadModel`. No hay invariantes que validar — solo proyección de datos.
 
 ---
 
@@ -1291,7 +1428,7 @@ package com.arquisoft.
 
 import com.arquisoft.shared.web.ErrorResponseDTO;
 import com.arquisoft.{contexto}.domain.exception.{Entidad}NoEncontradaException;
-import com.arquisoft.shared.exception.DomainException;
+import com.arquisoft.shared.domain.exception.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -1429,6 +1566,223 @@ public ResponseEntity<FichaResponseDTO> crear(@Valid @RequestBody CrearFichaRequ
 
 ---
 
+## Almacenamiento — MinIO con presigned URLs
+
+> **Patrón:** el cliente habla **directo** con MinIO. El backend solo genera URLs firmadas temporales. Nunca proxy de bytes — eso ahorra ancho de banda y CPU.
+
+### Flujo (upload)
+
+```
+1. Cliente → backend:  GET /api/{entidad}/upload-url?key=...     ← solicita URL firmada
+2. Backend → MinIO:    generatePresignedUrl(PUT, key, 15 min)     ← SDK
+3. Backend → cliente:  { url: "http://minio/.../?X-Amz-Signature=..." }
+4. Cliente → MinIO:    PUT con el archivo                         ← directo, sin pasar por backend
+```
+
+Mismo patrón para descarga (`GET` firmado).
+
+### Interfaz `MinioStorageClient` (en `shared:minio`)
+
+```java
+public interface MinioStorageClient {
+    String generateUploadPresignedUrl(String bucket, String objectKey);    // PUT, 15 min
+    String generateDownloadPresignedUrl(String bucket, String objectKey);  // GET, 15 min
+    boolean objectExists(String bucket, String objectKey);
+    void deleteObject(String bucket, String objectKey);
+}
+```
+
+La implementación `MinioStorageClientImpl` (en `shared:minio`) usa el SDK `io.minio:minio` y:
+- Crea el bucket automáticamente al primer `generateUploadPresignedUrl` si no existe.
+- Envuelve toda excepción del SDK en `MinioOperationException` (extiende `InfrastructureException` → HTTP 503).
+
+### Estructura de almacenamiento
+
+| Concepto | Convención | Ejemplo |
+|---|---|---|
+| Bucket | Uno por contexto: `arquisoft-{contexto}` | `arquisoft-fichas`, `arquisoft-entregables` |
+| Object key | Ruta lógica con `/` simulando jerarquía | `documentos/2025/proyecto-123/informe.pdf` |
+| Expiración URL | 15 minutos (configurable) | upload + download |
+
+> MinIO es **flat storage** — no hay carpetas reales. Los `/` en el key simulan jerarquía para herramientas de exploración. El **backend** define la estructura de keys; el cliente no elige rutas arbitrariamente.
+
+### Configuración (`application.yml`)
+
+```yaml
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  presigned-url-expiry:
+    upload-minutes: 15
+    download-minutes: 15
+  trust-self-signed-certificates: false   # true solo en dev
+```
+
+### Uso desde un contexto
+
+`MinioStorageClient` es una **interfaz técnica de `shared:minio`**. Los casos de uso del contexto la inyectan **directamente** — no se crea un puerto adicional por contexto (excepción a la regla puerto/adaptador, ya documentada en la sección Puerto/Adaptador).
+
+```java
+// application/{entidad}/command/SubirDocumentoUseCase.java
+@Component
+@RequiredArgsConstructor
+public class SubirDocumentoUseCase implements SubirDocumentoInputPort {
+
+    private final MinioStorageClient minioStorageClient;  // inyección directa desde shared:minio
+
+    @Override
+    public String ejecutar(SubirDocumentoCommand command) {
+        String objectKey = "documentos/" + command.proyectoId() + "/" + command.nombreArchivo();
+        return minioStorageClient.generateUploadPresignedUrl(
+            "arquisoft-" + command.contexto(), objectKey);
+    }
+}
+```
+
+### Reglas inviolables
+
+1. **El backend NUNCA recibe bytes del archivo.** Solo genera URL firmada y la devuelve al cliente.
+2. **El backend define el `objectKey`**, nunca lo acepta del cliente sin sanitizar — un cliente malicioso podría usar `../../` para sobrescribir archivos de otros recursos.
+3. **Un bucket por contexto** (`arquisoft-fichas`, `arquisoft-entregables`, etc.). No mezclar archivos de bounded contexts distintos.
+4. **`MinioStorageClient` solo se inyecta en use cases** que necesitan storage. Nunca en domain ni en controllers directamente.
+5. **`trust-self-signed-certificates: true` solo en dev.** En producción siempre `false` (validación SSL normal con CA reconocida).
+
+---
+
+## Eventos asíncronos — RabbitMQ (publicación y consumo)
+
+### Topología
+
+```
+Exchange "arquisoft.events" (TopicExchange, durable)
+  │
+  ├── routing key "fichas.fichaPerfil.creada"
+  │     ├── Queue "proyectos.fichas.fichaPerfil.creada" (durable + DLX)
+  │     └── Queue "evaluaciones.fichas.fichaPerfil.creada" (durable + DLX)
+  │
+  └── ... otras routing keys
+```
+
+| Recurso | Convención | Ejemplo |
+|---|---|---|
+| Exchange único | `arquisoft.events` (Topic, durable) | — |
+| Routing key | `{contexto}.{entidad}.{accion}` (la constante `EVENT_TOPIC` del evento) | `fichas.fichaPerfil.creada` |
+| Cola por consumidor | `{contextoConsumidor}.{eventTopic}` durable | `proyectos.fichas.fichaPerfil.creada` |
+| DLX | `arquisoft.dlx` + routing key `{queue}.dead` | — |
+
+### Publicación — `RabbitMQEventPublisher` (en `shared:amqp`)
+
+Ya existe. Implementa `EventPublisher` de `shared:domain.events`. Tras `usuario.drainUnPublishedEvents().forEach(eventPublisher::publish)`, el publisher:
+
+1. Usa `event.getEventTopic()` como routing key sobre `arquisoft.events`.
+2. **Publisher Confirms** habilitados — si el broker rechaza, loguea el `correlationId`.
+3. **Reintento con backoff exponencial:** 3 intentos (500ms → 1s → 2s) **solo** ante `AmqpException` (error de conectividad). Errores de negocio NO se reintentan.
+4. **Propaga headers de trazabilidad** desde el MDC del request HTTP:
+   - `X-Trace-Id` (correlación de request → eventos → side-effects)
+   - `X-User-Id` (auditoría de quién originó el evento)
+
+### Consumo — `AbstractEventConsumer` (en `shared:amqp`)
+
+Clase base que encapsula 3 responsabilidades transversales del consumo:
+
+```java
+@Component
+public class FichaPerfilCreadaConsumerInputAdapter extends AbstractEventConsumer {
+
+    private final RegistrarFichaPerfilLocalInputPort registrarFichaPerfilLocalInputPort;
+
+    @RabbitListener(queues = ProyectosFichaPerfilQueueConfig.QUEUE_NAME)
+    public void onFichaPerfilCreada(Message message, Channel channel) throws IOException {
+        withCorrelation(message, channel, () -> {
+            // 1. Deserializar payload (record local, NO importa el evento del publicador)
+            FichaPerfilCreadaPayload payload = deserialize(message, FichaPerfilCreadaPayload.class);
+            // 2. Mapear a Command y ejecutar el caso de uso
+            registrarFichaPerfilLocalInputPort.ejecutar(new RegistrarFichaPerfilLocalCommand(
+                UUID.fromString(payload.aggregateId()), payload.tituloProyecto()));
+        });
+    }
+}
+```
+
+`withCorrelation(message, channel, runnable)` hace:
+
+1. **Lee headers** `X-Trace-Id` y `X-User-Id` del mensaje y los pone en el MDC.
+2. **Ejecuta el `runnable`** (lógica del consumer).
+3. **ACK manual** (`basicAck`) si la lógica termina sin excepción.
+4. **NACK manual** (`basicNack(requeue=false)`) si lanza excepción → mensaje al DLX (no se re-encola en loop infinito).
+5. **Limpia MDC** en `finally` (compatible con Virtual Threads).
+
+### Payload local — cero acoplamiento entre contextos
+
+> **Regla crítica:** el contexto consumidor **NO importa la clase del evento del contexto publicador**. Declara un `record` propio con los campos que necesita.
+
+```java
+// proyectos/infrastructure/fichaPerfil/command/adapter/in/amqp/FichaPerfilCreadaPayload.java
+public record FichaPerfilCreadaPayload(
+    String aggregateId,
+    String tituloProyecto,
+    String asesorFichaId
+) {}
+```
+
+Esto significa que `proyectos` **no depende** de `fichas:domain`. Si `fichas` cambia internamente su evento añadiendo campos nuevos, `proyectos` ignora los que no necesita. Aislamiento estricto entre bounded contexts.
+
+### Configuración de cola + binding + DLX
+
+Cada contexto consumidor declara su `@Configuration` en `infrastructure/config/`:
+
+```java
+@Configuration
+public class ProyectosFichaPerfilQueueConfig {
+
+    public static final String QUEUE_NAME = "proyectos.fichas.fichaPerfil.creada";
+
+    @Bean
+    public Queue proyectosFichaPerfilCreadaQueue() {
+        return QueueBuilder.durable(QUEUE_NAME)
+            .withArgument("x-dead-letter-exchange", "arquisoft.dlx")
+            .withArgument("x-dead-letter-routing-key", QUEUE_NAME + ".dead")
+            .build();
+    }
+
+    @Bean
+    public Binding binding(Queue proyectosFichaPerfilCreadaQueue,
+                            TopicExchange arquisoftEventsExchange) {
+        return BindingBuilder.bind(proyectosFichaPerfilCreadaQueue)
+            .to(arquisoftEventsExchange)
+            .with(FichaPerfilCreadaEvent.EVENT_TOPIC);
+    }
+}
+```
+
+> El routing key del binding usa la **constante `EVENT_TOPIC`** del evento, no un string literal. Si el contexto consumidor no quiere depender del módulo `fichas:domain`, duplica la constante localmente o usa el string literal documentado.
+
+### Resumen de responsabilidades
+
+| Pieza | Capa | Responsabilidad |
+|---|---|---|
+| Decide qué evento emitir | `domain/{entidad}/aggregate/` | Solo el aggregate decide qué pasó |
+| Acumula evento en memoria | `domain/{entidad}/aggregate/` | `publishEvent(...)` desde el factory |
+| Drena y publica | `application/{entidad}/command/` | `drainUnPublishedEvents().forEach(publish)` tras persistir |
+| Publica a RabbitMQ | `shared:amqp` (`RabbitMQEventPublisher`) | Routing key, reintentos, headers |
+| Configura cola + DLX | `{contextoConsumidor}/infrastructure/config/` | `@Configuration` con Queue + Binding |
+| Consume el mensaje | `{contextoConsumidor}/infrastructure/{entidad}/command/adapter/in/amqp/` | Extiende `AbstractEventConsumer` |
+| Payload del consumidor | mismo paquete del consumer | `record` local, **NO** importa el evento del publicador |
+
+### Reglas inviolables
+
+1. **`AggregateRoot` solo acumula eventos en memoria.** Nunca conoce `EventPublisher`.
+2. **El UseCase write drena con `drainUnPublishedEvents()`** (un solo método que retorna + limpia atómico). Nunca itera el aggregate manualmente.
+3. **El consumidor declara su propio `record` payload.** Nunca importa la clase del evento del publicador (cero acoplamiento entre contextos).
+4. **Toda cola tiene DLX configurado** (`x-dead-letter-exchange`). Sin DLX, mensajes en error se re-encolan eternamente.
+5. **El consumer extiende `AbstractEventConsumer`** y usa `withCorrelation(message, channel, runnable)`. No implementa ACK/NACK manualmente.
+6. **Deuda técnica conocida (a resolver con Outbox Pattern):** `save()` y `publish()` no son atómicos. Si el broker falla tras persistir, el evento se pierde. Es responsabilidad del implementador documentarlo si la HU tiene tolerancia cero a eventos perdidos.
+
+---
+
+
+
 ## Manejo de errores externos en `seguridad` (Keycloak)
 
 Una lección aprendida: el `SeguridadGlobalExceptionHandler` debe **distinguir entre fallos de credenciales del usuario y fallos de infraestructura externa** (Keycloak). Mezclarlos es un bug de seguridad.
@@ -1543,9 +1897,9 @@ parte natural de su contexto.
 | Paquete estructural | inglés | `domain`, `application`, `infrastructure` |
 | Término de negocio | español | `ProyectoGrado`, `crearFicha`, `EstadoFicha` |
 | Sufijo técnico | inglés | `UseCase`, `Port`, `DTO`, `Adapter`, `Config` |
-| Clase | PascalCase | `CrearFichaUseCaseImpl` |
+| Clase | PascalCase | `CrearFichaUseCase` |
 | Interfaz (puerto) | PascalCase, sin prefijo `I` | `FichaRepositoryPort` |
-| Implementación | sufijo `Impl` | `FichaRepositoryAdapter` (o `...Impl`) |
+| Implementación / Adaptador | sufijo `InputAdapter`, `OutputAdapter`, `UseCase` | `FichaPerfilCommandOutputAdapter`, `CrearFichaPerfilUseCase` |
 | DTO | sufijo `DTO` | `CrearFichaRequestDTO`, `FichaResponseDTO` |
 | Excepción | sufijo `Exception` | `FichaNoEncontradaException` |
 | Evento de dominio | sufijo `Event` | `FichaCreadaEvent`, `ProyectoFinalizadoEvent` |
@@ -1670,7 +2024,7 @@ Orden típico de consulta por subagente:
 3. **DDD estricto por capas:** el dominio es Java puro (sin Spring, JPA, Lombok, Jackson, RabbitMQ, Keycloak, Swagger). La aplicación solo conoce dominio + librerías permitidas. La infraestructura es la única que habla con tecnologías externas.
 4. **Cero reglas de negocio en `infrastructure/`:** si una decisión tiene sentido de negocio, vive en `domain/`. Los `@Configuration` solo cablean; los adaptadores solo traducen.
 5. **Patrón puerto/adaptador obligatorio** para toda integración externa (Keycloak, RabbitMQ, Redis, servicios HTTP, SMTP, S3). Puerto en `domain/port/out/`, adaptador en `infrastructure/adapter/out/{tipo}/`.
-6. Toda entidad raíz en los 6 contextos de negocio **DEBE** extender `EventEmittingEntity`. La única excepción documentada es `seguridad`.
+6. Toda entidad raíz en los 6 contextos de negocio **DEBE** extender `AggregateRoot`. La única excepción documentada es `seguridad`.
 7. Los IDs son **siempre `UUID`**. Cualquier uso de `Long`/`Integer` como ID es un error.
 8. La dirección de dependencias `domain ← application ← infrastructure` **no se negocia**.
 9. Los bounded contexts **no se importan entre sí** — solo eventos RabbitMQ.

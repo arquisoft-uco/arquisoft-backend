@@ -62,7 +62,7 @@ agente `@validator-report` que sí lo persistirá en disco.
 
 | Fuente | Propósito |
 |--------|-----------|
-| Skill `arquisoft-context` | Convenciones autoritativas del proyecto (DDD estricto, EventEmittingEntity, Java 21, mapeo contexto→BD, nomenclatura) — cargar en FASE 0 |
+| Skill `arquisoft-context` | Convenciones autoritativas del proyecto (DDD estricto, AggregateRoot, Java 21, mapeo contexto→BD, nomenclatura) — cargar en FASE 0 |
 | `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` | Qué debía implementarse (árbol de archivos, criterios de aceptación, eventos, endpoints, integraciones externas) |
 | Archivos `.java` y `.sql` generados | Verificación real del código producido — fuente primaria de verdad |
 | Archivos `*Test.java` en `src/test/` (si existen) | Tests generados por `03-test-agent` |
@@ -132,7 +132,7 @@ skill("arquisoft-context")
 2. Lee `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`.
 3. Extrae del plan:
    - Bounded context afectado
-   - Si usa EventEmittingEntity (sección 4)
+   - Si usa AggregateRoot (sección 4)
    - Eventos de dominio emitidos (sección 4)
    - Integraciones externas (sección 5, si existe)
    - Árbol completo de archivos (sección 6)
@@ -155,7 +155,7 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | ¿Existen TODOS los archivos del árbol del plan en sus rutas exactas? | ✅ |
 | ¿Los nombres de clase/interfaz coinciden? | ✅ |
 | ¿Los puertos tienen los métodos del plan? | ✅ |
-| ¿Los DTOs tienen los campos del plan y `toDomain()`/`fromDomain()`? | ✅ |
+| ¿`Command`, `ReadModel`, `RequestDTO` declarados en sus ubicaciones correctas? ¿`RequestDTO` tiene `toCommand()`? | ✅ |
 | ¿Cada criterio de aceptación tiene evidencia en el código? | ✅ |
 | ¿Endpoints REST con ruta y método HTTP del plan? | ✅ |
 | ¿Controller con `@Tag`, `@Operation`, `@ApiResponses` (ADR-011)? | ✅ |
@@ -176,7 +176,7 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Bounded contexts NO se importan entre sí | ✅ |
 | No hay `@Bean TaskExecutor` manual (ADR-008) | ✅ |
 
-**2.2 DDD — EventEmittingEntity y Eventos de Dominio:**
+**2.2 DDD — AggregateRoot y Eventos de Dominio:**
 
 > **Determina primero qué declara el plan en su sección 4 (Eventos de Dominio):**
 > - Si el plan lista eventos concretos → aplican TODOS los checks de "con eventos" abajo.
@@ -189,9 +189,9 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 
 | Check | Bloqueante |
 |-------|:---:|
-| En los 6 contextos de negocio: entidad raíz extiende `EventEmittingEntity` (incluso si la HU no emite eventos — es por consistencia) | ✅ |
+| En los 6 contextos de negocio: entidad raíz extiende `AggregateRoot` (incluso si la HU no emite eventos — es por consistencia) | ✅ |
 | Factory `rebuild(...)` NO publica eventos | ✅ |
-| `RepositoryAdapter` usa `rebuild(...)` al reconstruir | ✅ |
+| `CommandOutputAdapter` usa `rebuild(...)` al reconstruir | ✅ |
 | Dominio NO inyecta `EventPublisher` | ✅ |
 | Existencia de un `{Entidad}EventPublisher` local en algún contexto (en `adapter/out/messaging/` o similar) | ❌ violación bloqueante (la publicación está centralizada en `shared:amqp`) |
 
@@ -236,18 +236,21 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Excepción a las 3 reglas anteriores: el handler de `seguridad` puede manejar excepciones de su propio dominio (`InvalidCredentialsException`, `InvalidTokenException`, `AuthenticationException` propia del dominio → 401) | ✅ |
 | Importe de `ErrorResponseDTO` desde `com.arquisoft.shared.web` (no desde el paquete del contexto) | ✅ |
 
-**2.5 DTOs:**
+**2.5 Tipos de transporte (`Command`, `ReadModel`, `RequestDTO`, DTOs técnicos):**
 
 | Check | Bloqueante |
 |-------|:---:|
-| `@Data @NoArgsConstructor @AllArgsConstructor @Builder` | ⚠️ |
-| Validación Jakarta en request DTOs | ⚠️ |
-| `@JsonInclude(NON_NULL)` en response DTOs | ⚠️ |
-| Sufijo `DTO` | ✅ |
-| **DTOs de dominio** (Request, Response, Resumen específicos del contexto) en `{contexto}/application/dto/` con campos en **español** que reflejan el modelo enriquecido | ✅ |
-| **Existencia de `ErrorResponseDTO` o `PageResponseDTO` LOCAL en algún contexto** (en `application/dto/` o similar) | ❌ violación bloqueante (esos viven solo en `shared:web`) |
-| Imports de `ErrorResponseDTO` y `PageResponseDTO` desde `com.arquisoft.shared.web` (no desde el paquete del contexto) | ✅ |
-| DTOs de dominio renombrando atributos del modelo enriquecido a inglés (ej. campo `title` cuando el modelo dice `tituloProyecto`) | ❌ violación bloqueante |
+| `Command` es un `record` ubicado en `application/{entidad}/command/model/` | ✅ |
+| `ReadModel` es un `record` ubicado en `application/{entidad}/query/readmodel/` | ✅ |
+| `RequestDTO` es un `record` con anotaciones Jakarta (`@NotBlank`, `@Email`, etc.) ubicado en `infrastructure/{entidad}/command/adapter/in/web/dto/` | ✅ |
+| `RequestDTO` tiene método `toCommand()` que produce el `Command` correspondiente | ✅ |
+| Campos del `Command`, `ReadModel`, `RequestDTO` y JSON HTTP son **idénticos** a los del aggregate (en español, sin traducir) | ✅ |
+| Existencia de un "ResponseDTO" o similar como capa intermedia entre el UseCase y el adaptador REST | ❌ violación bloqueante (el adaptador serializa directamente el `ReadModel`) |
+| Existencia de `ErrorResponseDTO`, `PageResponseDTO` o `QueryCriteriaRequestDTO` LOCAL en algún contexto (en `application/` o similar) | ❌ violación bloqueante (viven solo en `shared:web`) |
+| Imports de DTOs técnicos desde `com.arquisoft.shared.web` (no desde el paquete del contexto) | ✅ |
+| Existencia de `application/dto/` (estructura vieja sin separar por entidad/CQRS) | ❌ violación bloqueante |
+| `Command`, `ReadModel` o `RequestDTO` con campos renombrados a inglés (ej. `title` cuando el aggregate dice `tituloProyecto`) | ❌ violación bloqueante |
+| Uso de Lombok (`@Data`, `@Builder`, etc.) en `Command` o `ReadModel` | ❌ violación bloqueante (son `record` puros) |
 
 **2.6 Use cases:**
 
@@ -300,7 +303,7 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | `@RestControllerAdvice` (advice global) ubicado en `infrastructure/adapter/in/web/` | ✅ |
 | Listeners RabbitMQ (`@RabbitListener`) ubicados en `infrastructure/adapter/in/messaging/` | ✅ |
 | `@RestController` o `@RestControllerAdvice` ubicado directamente en `infrastructure/adapter/in/` (sin subcarpeta `web/`) | ❌ violación bloqueante |
-| Entidades JPA (`@Entity`) y `RepositoryAdapter` ubicados en `infrastructure/adapter/out/persistence/` | ✅ |
+| Entidades JPA (`@Entity`) ubicadas en `infrastructure/{entidad}/persistence/`. `CommandOutputAdapter` en `infrastructure/{entidad}/command/adapter/out/persistence/` y `QueryOutputAdapter` en `infrastructure/{entidad}/query/adapter/out/persistence/` | ✅ |
 | Existencia de `infrastructure/adapter/out/messaging/` con publishers locales del contexto | ❌ violación bloqueante (la publicación está centralizada en `shared:amqp`) |
 | Adaptadores de integraciones externas (Keycloak, S3, SMTP) en `infrastructure/adapter/out/{tipo}/` con tipo descriptivo (`security/`, `storage/`, `notification/`) | ✅ |
 | Componentes de adapter ubicados directamente en `infrastructure/adapter/out/` (sin subcarpeta de tipo) | ❌ violación bloqueante |
@@ -448,60 +451,7 @@ revise. NO lo marques como bloqueante por sí solo.
 - Referencia: skill arquisoft-context, sección "Tipos de Use Case y sus Tests".
 ```
 
-**2.14 Paginación — Spring Data `Page<T>` en domain/application + `PageResponseDTO<T>` en HTTP (CRÍTICO si la HU es paginada):**
-
-Solo aplica si la HU es de Consulta paginada (paginación visible en el contrato HTTP).
-
-| Check | Bloqueante |
-|-------|:---:|
-| Puerto `{Entidad}RepositoryPort` retorna `org.springframework.data.domain.Page<{Entidad}>` y recibe `Pageable` | ✅ |
-| Existencia de cualquier import `com.arquisoft.shared.domain.Page` en cualquier archivo del proyecto | ❌ violación bloqueante (ese tipo ya no existe — eliminado del proyecto) |
-| Use case retorna `Page<{Entidad}ResponseDTO>` (Spring Data) y recibe `Pageable` | ✅ |
-| Existencia de `PageResponseDTO` en `domain/` o `application/` de cualquier contexto | ❌ violación bloqueante |
-| Adapter usa `.map(JpaEntity::toDomain)` directo de Spring Page (una sola línea), sin streams manuales ni `Page.of(...)` | ✅ |
-| Nombre del método con sufijo "Paginadas" / "Paginada" (ej. `consultarPaginadas`, `consultarTodasPaginadas`) | ❌ violación bloqueante (la paginación se infiere de `Pageable` — usar `consultarTodas`, `listarTodas`, `buscarPor...`) |
-| Controller recibe `Pageable` directo (no `@RequestParam("page") int page, @RequestParam("size") int size`) | ✅ |
-| Controller convierte `Page<...>` → `PageResponseDTO<...>` con `PageResponseDTO.from(page)` justo antes del `ResponseEntity` | ✅ |
-| `PageResponseDTO` se importa de `com.arquisoft.shared.web` (NO se crea local) | ✅ |
-
-**Cómo verificar:**
-
-1. Buscar imports residuales: `grep -r "com.arquisoft.shared.domain.Page" .` debe retornar cero coincidencias.
-2. Lee la firma del puerto (`{contexto}/domain/port/out/{Entidad}RepositoryPort.java`). Su tipo de retorno DEBE ser `org.springframework.data.domain.Page<{Entidad}>` y debe recibir `Pageable`.
-3. Lee el use case impl. Su tipo de retorno DEBE ser `Page<{Entidad}ResponseDTO>`. Su lógica usa `.map(...)` directo. NO debe importar `PageResponseDTO`.
-4. Lee el adapter del repositorio. Debe ser una línea: `jpaRepository.findAll(pageable).map(JpaEntity::toDomain)`. Si tiene streams manuales o construcción de `Page`, es violación.
-5. Lee el controller. DEBE recibir `Pageable` (no `@RequestParam` manuales), DEBE importar `PageResponseDTO` de `com.arquisoft.shared.web` y convertir con `PageResponseDTO.from(...)` justo antes del `ResponseEntity.ok(...)`.
-6. Lee el nombre del método del puerto: si contiene "Paginadas" / "Paginada", es violación.
-
-```
-[NIVEL 2.14] — Page propio del dominio (eliminado)
-- Archivo: {contexto}/.../{cualquier archivo con import obsoleto}
-- Problema: import com.arquisoft.shared.domain.Page detectado.
-  Ese tipo fue eliminado del proyecto. La paginación usa
-  org.springframework.data.domain.Page directamente.
-- Acción requerida: cambiar el import a org.springframework.data.domain.Page
-  y verificar que la firma sea consistente (recibe Pageable).
-- Referencia: skill arquisoft-context, sección "Paginación — Spring Data Page".
-
-[NIVEL 2.14] — Nombre con "Paginadas" en método
-- Archivo: {contexto}/domain/port/out/{Entidad}RepositoryPort.java
-- Problema: método declarado como consultarPaginadas / consultarTodasPaginadas.
-  La paginación se infiere del parámetro Pageable — el sufijo es redundante y
-  rompe la convención del proyecto.
-- Acción requerida: renombrar a consultarTodas, listarTodas, buscarPor... según
-  semántica. Aplicar el rename también en use case, adapter y tests.
-- Referencia: skill arquisoft-context, sección "Reglas inviolables de paginación".
-
-[NIVEL 2.14] — PageResponseDTO en capa equivocada
-- Archivo: {contexto}/application/dto/PageResponseDTO.java
-- Problema: PageResponseDTO es un DTO técnico genérico que vive en shared:web,
-  no en cada contexto.
-- Acción requerida: eliminar el archivo local. Usar import com.arquisoft.shared.web.PageResponseDTO
-  en el controller.
-- Referencia: skill arquisoft-context, sección "Convención de DTOs".
-```
-
-**2.15 Autorización — `@PreAuthorize` con client role (CRÍTICO en endpoints REST):**
+**2.14 Autorización — `@PreAuthorize` con client role (CRÍTICO en endpoints REST):**
 
 | Check | Bloqueante |
 |-------|:---:|
@@ -516,14 +466,14 @@ Solo aplica si la HU es de Consulta paginada (paginación visible en el contrato
 
 **Cómo verificar:**
 
-1. Lee cada `{Entidad}Controller.java` del contexto.
+1. Lee cada `{Entidad}InputAdapter.java` del contexto.
 2. Por cada método con `@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping`, `@PatchMapping`: verifica que tenga `@PreAuthorize("hasAuthority('...')")` con un único client role.
 3. Compara el client role usado con la sección 9 del plan (Seguridad y Autorización). Debe coincidir.
 4. Si encuentras `hasRole(...)`, `'ROLE_X'`, o roles realm directos como `'coordinador'` o `'COORDINADOR'`, es violación bloqueante.
 
 ```
-[NIVEL 2.15] — Autorización con hasRole (convención antigua)
-- Archivo: {contexto}/infrastructure/adapter/in/web/{Entidad}Controller.java
+[NIVEL 2.14] — Autorización con hasRole (convención antigua)
+- Archivo: {contexto}/infrastructure/adapter/in/web/{Entidad}InputAdapter.java
 - Línea: @PreAuthorize("hasRole('COORDINADOR')")
 - Problema: el proyecto usa autorización contra client roles de Keycloak vía
   hasAuthority('contexto:recurso:accion'), no contra roles realm directos.
@@ -531,6 +481,89 @@ Solo aplica si la HU es de Consulta paginada (paginación visible en el contrato
   con el client role declarado en sección 9 del plan.
 - Referencia: skill arquisoft-context, sección "Autorización — Roles realm + Client Roles".
 ```
+
+**2.15 Paginación y Filtros — Criteria pattern (CRÍTICO si la HU read los requiere):**
+
+> Solo aplica a HUs read con paginación, ordenamiento o filtros dinámicos.
+
+| Check | Bloqueante |
+|-------|:---:|
+| `XxxCriteria` ubicado en `application/{entidad}/query/criteria/` y extiende `QueryCriteria` | ✅ |
+| `XxxCriteria` declara whitelist `Campo.FILTRABLES` y `Campo.ORDENABLES` como `Set<String>` | ✅ |
+| `XxxJpaSpecification` ubicado en `infrastructure/{entidad}/query/adapter/out/persistence/` y extiende `QueryJpaSpecification<JpaEntity>` | ✅ |
+| `XxxJpaSpecification` declara `Map<String, CampoSpec<E>> camposFiltrables()` con paths JPA (joins implícitos: `root.get("asesor").get("nombre")`) | ✅ |
+| `QueryOutputPort` retorna `PaginatedResult<XxxReadModel>` (de `shared:domain.pagination`) | ✅ |
+| `QueryInputAdapter` recibe `QueryCriteriaRequestDTO` (de `shared:web`) y convierte con `PageResponseDTO.from(paginatedResult)` antes del response | ✅ |
+| Existencia de `Pageable` o `org.springframework.data.domain.Page` en `application/` o `domain/` | ❌ violación bloqueante (esos tipos solo viven en `QueryOutputAdapter` de infrastructure) |
+| Existencia de `PaginatedResult` en `infrastructure/` (fuera del adapter de salida) | ❌ violación bloqueante (es tipo de dominio, retornado por el puerto) |
+| Filtros del cliente que llegan a SQL sin pasar por whitelist (string concatenation, SpEL, etc.) | ❌ violación bloqueante (vulnerabilidad de inyección) |
+| Builder de `XxxCriteria` que NO valida el campo contra la whitelist en construcción | ❌ violación bloqueante |
+| Validación de profundidad del árbol de filtros (`NodoFiltro`) ≤ 10 niveles | ✅ |
+| `JpaRepository` declara `@EntityGraph(attributePaths = {...})` cuando el `ReadModel` incluye campos de entidades relacionadas (evita N+1) | ⚠️ |
+| HU read sin paginación/orden/filtros que crea innecesariamente `XxxCriteria`/`XxxJpaSpecification` | ⚠️ (no bloqueante pero indica sobreingeniería) |
+
+**Cómo verificar:**
+
+1. Lee la sección 6 del plan (Árbol de archivos). Si declara `XxxCriteria` o `XxxJpaSpecification`, la HU usa Criteria — aplica todos los checks.
+2. Lee `XxxCriteria.java`. Busca clase interna `Campo` con `FILTRABLES` y `ORDENABLES`. Si no existe, es violación.
+3. Lee `XxxJpaSpecification.java`. Verifica el override `camposFiltrables()` y que cada `CampoSpec` use el tipo correcto (`texto`, `uuid`, `entero`, `decimal`, `fecha`, `fechaHora`, `booleano`).
+4. Verifica que el `QueryOutputPort` (en `application/{entidad}/query/port/out/`) tenga tipo de retorno `PaginatedResult<XxxReadModel>`, no `Page<...>`.
+5. `grep -r "import org.springframework.data.domain.Page" {contexto}/application` debe retornar cero coincidencias. Lo mismo para `{contexto}/domain`.
+6. `grep -r "import org.springframework.data.domain.Pageable" {contexto}/application` debe retornar cero coincidencias.
+
+```
+[NIVEL 2.15] — Pageable filtrado a application
+- Archivo: {contexto}/application/{entidad}/query/.../{...}.java
+- Problema: Pageable / org.springframework.data.domain.Page detectado en application
+  o domain. Esos tipos son detalles de Spring Data y solo viven en
+  infrastructure/{entidad}/query/adapter/out/persistence/.
+- Acción requerida: el puerto debe recibir XxxCriteria y retornar
+  PaginatedResult<XxxReadModel>. El QueryOutputAdapter traduce Criteria → Pageable
+  internamente.
+- Referencia: skill arquisoft-context, sección "Paginación y Filtros — PaginatedResult + Criteria pattern".
+
+[NIVEL 2.15] — Criteria sin whitelist
+- Archivo: {contexto}/application/{entidad}/query/criteria/{Entidad}Criteria.java
+- Problema: el builder no valida los campos del filtro/ordenamiento contra una
+  whitelist. Esto permite que el cliente cree consultas sobre campos arbitrarios,
+  exponiendo internals o causando errores en runtime.
+- Acción requerida: declarar clase interna `Campo` con `FILTRABLES` y `ORDENABLES`
+  (Set<String>). Pasarlas al constructor padre QueryCriteria que valida en build.
+- Referencia: skill arquisoft-context, regla inviolable #1 de Criteria pattern.
+```
+
+**2.16 Consumo de eventos — `AbstractEventConsumer` (CRÍTICO si la HU consume eventos):**
+
+| Check | Bloqueante |
+|-------|:---:|
+| Consumer ubicado en `infrastructure/{entidad}/command/adapter/in/amqp/` con sufijo `ConsumerInputAdapter` | ✅ |
+| Consumer extiende `AbstractEventConsumer` de `shared:amqp` (no implementa ACK/NACK manual) | ✅ |
+| Usa `withCorrelation(message, channel, runnable)` para envolver la lógica | ✅ |
+| Existencia de `try/catch` con `basicAck`/`basicNack` manuales en el consumer | ❌ violación bloqueante (eso es responsabilidad de `AbstractEventConsumer`) |
+| Payload deserializado a un `record` **local** del contexto consumidor (en el mismo paquete del consumer) | ✅ |
+| Consumer importa la clase del evento del contexto publicador (ej. `import com.arquisoft.fichas.domain.fichaPerfil.event.FichaPerfilCreadaEvent`) | ❌ violación bloqueante (rompe aislamiento entre bounded contexts — duplicar el payload localmente) |
+| Configuración de cola en `infrastructure/config/{Contexto}{Entidad}QueueConfig.java` con `x-dead-letter-exchange` | ✅ |
+| Cola sin DLX configurado | ❌ violación bloqueante (mensajes en error se re-encolan en loop) |
+| Routing key del binding usa la constante `EVENT_TOPIC` del evento (o duplicado documentado), nunca string literal hardcoded en otro lugar | ⚠️ |
+
+**2.17 Almacenamiento — MinIO con presigned URLs (CRÍTICO si la HU sube/baja archivos):**
+
+| Check | Bloqueante |
+|-------|:---:|
+| Use case inyecta `MinioStorageClient` de `com.arquisoft.shared.minio` directamente (sin puerto adicional) | ✅ |
+| Backend recibe bytes del archivo en algún endpoint (`@RequestPart MultipartFile`, etc.) | ❌ violación bloqueante (debe usar presigned URLs — cliente sube directo a MinIO) |
+| `objectKey` aceptado del cliente sin sanitizar (puede contener `../`) | ❌ violación bloqueante (riesgo de path traversal) |
+| Bucket sigue convención `arquisoft-{contexto}` | ✅ |
+| `trust-self-signed-certificates: true` en `application.yml` de producción | ❌ violación bloqueante |
+
+**2.18 Endpoint existente vs nuevo (sección 8 del plan):**
+
+| Check | Bloqueante |
+|-------|:---:|
+| La sección 8 del plan marca explícitamente "Endpoint NUEVO" o "Endpoint EXISTENTE" | ✅ |
+| Si el plan dice "Endpoint EXISTENTE" y el implementador creó un `InputAdapter` nuevo (en vez de modificar el existente) | ❌ violación bloqueante (duplica controllers para la misma ruta) |
+| Si el plan dice "Endpoint NUEVO" y el `InputAdapter` no se creó | ❌ violación bloqueante |
+| Si el plan dice "Endpoint EXISTENTE", el archivo a modificar está declarado con su ruta completa | ✅ |
 
 ### FASE 3 — Estado de Tests (sin verificación filesystem)
 
@@ -581,7 +614,7 @@ Imprime el siguiente reporte completo en markdown (rellenando los placeholders):
 ## Metadata
 - **ID Historia:** {HU|HT}-{ID}
 - **Bounded Context:** {contexto}
-- **Usa EventEmittingEntity:** {Sí / No}
+- **Usa AggregateRoot:** {Sí / No}
 - **Fecha de análisis:** {fecha actual}
 - **Rama propuesta:** `feature/{HU|HT}-{ID}-{descripcion_snake_case}`
 - **Analizado por:** agente validator-analyze (04a-validator-analyze)
@@ -705,7 +738,7 @@ mensaje.
 6. **Empieza el mensaje final con "📋 Análisis de validación completado — ..."** sin preámbulo.
 7. **Un bloqueante = RECHAZADO**, sin importar el score total.
 8. **Referencia exacta** en cada error — cita textualmente el plan, el skill o las convenciones.
-9. **DDD estricto:** entidad raíz sin `EventEmittingEntity` en los 6 contextos de negocio = bloqueante. Imports de framework en `domain/` = bloqueante. Lógica de negocio en `infrastructure/` = bloqueante.
+9. **DDD estricto:** entidad raíz sin `AggregateRoot` en los 6 contextos de negocio = bloqueante. Imports de framework en `domain/` = bloqueante. Lógica de negocio en `infrastructure/` = bloqueante.
 10. **Integraciones externas:** si la sección 5 del plan lista una integración externa y falta el puerto en `domain/port/out/` o el adaptador, es bloqueante.
 11. **Estructura de carpetas en adapters (sección 2.10):** los componentes web (`@RestController`, `@RestControllerAdvice`) DEBEN estar en `infrastructure/adapter/in/web/`. Los listeners RabbitMQ en `adapter/in/messaging/`. Las implementaciones JPA en `adapter/out/persistence/`. Otras integraciones externas en `adapter/out/{tipo}/` con nombre descriptivo. **NO existe** `adapter/out/messaging/` en los contextos — la publicación de eventos está centralizada en `shared:amqp`. Una violación de esta estructura es bloqueante.
 12. **Anti-patrones de testing (sección 2.11):** los 7 anti-patrones definidos en el skill `arquisoft-context` son bloqueantes individualmente cuando se detectan. El conteo total de tests es informativo (no bloqueante por sí solo) — solo se reporta como observación si supera el presupuesto orientativo. Aplica solo si la fila Tests del plan dice ✅ Completado.

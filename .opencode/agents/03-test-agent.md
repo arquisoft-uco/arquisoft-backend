@@ -5,7 +5,7 @@ description: >-
    (02-dev-agent) haya completado la implementación de una Historia de Usuario.
    Recibe el ID del plan al ser invocado (ej: @tester genera los tests para HU-160).
    Carga el skill arquisoft-context (convenciones DDD y plantillas de tests de
-   EventEmittingEntity) y el skill context7-stack (APIs de testing actualizadas), lee el
+   AggregateRoot) y el skill context7-stack (APIs de testing actualizadas), lee el
    PLAN-{HU|HT}-{ID}.md y el código implementado, genera tests JUnit 6.0.3 + Mockito
    + AssertJ agrupados por capa (domain → application → infrastructure), con cobertura
    explícita del ciclo completo de eventos de dominio (publishEvent, getUnPublishedEvents,
@@ -55,7 +55,7 @@ por capa y con aprobación explícita del usuario entre cada capa.
 
 | Skill | Propósito | Cuándo usarlo |
 |---|---|---|
-| `arquisoft-context` | Convenciones de testing: patrón AAA, nomenclatura, tests de EventEmittingEntity + eventos de dominio | **FASE 0 (al inicio).** Y referencia constante. |
+| `arquisoft-context` | Convenciones de testing: patrón AAA, nomenclatura, tests de AggregateRoot + eventos de dominio | **FASE 0 (al inicio).** Y referencia constante. |
 | `context7-stack` | APIs actualizadas de testing (JUnit 6, Mockito, AssertJ, Spring Security Test, MockMvc, DataJpaTest) | **Antes de generar tests de cada capa.** |
 
 ---
@@ -87,7 +87,7 @@ en la capa equivocada**. Detente y reporta al usuario antes de escribir workarou
 | Capa | Framework en el test | Qué implica |
 |---|---|---|
 | `domain` (Aggregate Root, VOs, eventos, excepciones) | **Ninguno**. Solo JUnit + AssertJ | Java puro. Sin `@ExtendWith(SpringExtension)`, sin `@MockitoBean`, sin mocks de librerías externas (`Jwt`, `RabbitTemplate`, `AmazonS3`, `MimeMessage`). |
-| `application` (UseCaseImpl, DTOs) | JUnit + Mockito + AssertJ (`@ExtendWith(MockitoExtension.class)`) | Mocks **solo** de puertos del dominio (`FichaRepositoryPort`, `EventPublisher`). Nunca de APIs externas. |
+| `application` (UseCase, Command, ReadModel, DTOs) | JUnit + Mockito + AssertJ (`@ExtendWith(MockitoExtension.class)`) | Mocks **solo** de puertos del dominio (`FichaPerfilOutputPort`, `EventPublisher`). Nunca de APIs externas. |
 | `infrastructure` (adapters, controllers) | Spring Test completo (`@DataJpaTest`, `@WebMvcTest`) | Aquí sí se usa `@MockitoBean`, `MockMvc`, H2, `@WithMockUser`, etc. |
 
 **Señales de alarma al escribir tests:**
@@ -359,7 +359,7 @@ class CrearFichaUseCaseImplTest {
     @Mock private EventPublisher eventPublisher;
 
     @InjectMocks
-    private CrearFichaUseCaseImpl crearFichaUseCase;
+    private CrearFichaUseCase crearFichaUseCase;
 
     @Test
     void debeCrearFicha_cuandoDatosValidos() {
@@ -399,11 +399,11 @@ class CrearFichaUseCaseImplTest {
 class FichaRepositoryAdapterTest {
 
     @Autowired private FichaJpaRepository fichaJpaRepository;
-    private FichaRepositoryAdapter fichaRepositoryAdapter;
+    private FichaPerfilCommandOutputAdapter fichaCommandOutputAdapter;
 
     @BeforeEach
     void setUp() {
-        fichaRepositoryAdapter = new FichaRepositoryAdapter(fichaJpaRepository);
+        fichaCommandOutputAdapter = new FichaPerfilCommandOutputAdapter(fichaJpaRepository);
     }
 
     @Test
@@ -512,7 +512,7 @@ durante toda la sesión.
    Si no se indicó el ID, pregunta: **"¿Cuál es el ID del plan (HU o HT)?"**
 2. Lee el `PLAN-{HU|HT}-{ID}.md` completo — extrae:
    - Bounded context afectado
-   - Si usa EventEmittingEntity (sección 4 del plan)
+   - Si usa AggregateRoot (sección 4 del plan)
    - Eventos de dominio emitidos (sección 4 del plan)
    - Árbol de archivos implementados
    - **Tipo de Use Case** (Escritura / Consulta / Mixto) — está en la Metadata del plan
@@ -534,7 +534,7 @@ durante toda la sesión.
 
 Bounded context: {contexto}
 Tipo de Use Case: {Escritura / Consulta / Mixto}
-Usa EventEmittingEntity: Sí / No
+Usa AggregateRoot: Sí / No
 Eventos de dominio: {lista o "N/A — use case de consulta"}
 Archivos de producción encontrados: N
 Casos de prueba sugeridos en el plan: N
@@ -544,18 +544,28 @@ Casos de prueba sugeridos en el plan: N
 Distribución por capa:
 
   CAPA 1 — domain ({n1} tests)
-    → {Entidad}Test.java                 ({n} tests)
+    → {Entidad}AggregateTest.java        ({n} tests)
     {Si Escritura/Mixto:}
     → {Entidad}CreadaEventTest.java      ({n} tests, solo si el evento tiene lógica adicional)
 
   CAPA 2 — application ({n2} tests)
-    → {Accion}{Entidad}UseCaseImplTest.java  ({n} tests)
-      {Si Escritura/Mixto: incluye verificación de drenado de eventos}
-      {Si Consulta: incluye filtros, paginación, no-encontrado}
+    → {Accion}{Entidad}UseCaseTest.java  ({n} tests)       ← write side
+    → {Accion}{Entidad}QueryUseCaseTest.java  (si es read)
+      {Si Escritura/Mixto: incluye verificación de drenado de eventos vía drainUnPublishedEvents()}
+      {Si Consulta con Criteria: añade {Entidad}CriteriaTest.java — validación de whitelist
+       (campo fuera de FILTRABLES truena en builder), validación de profundidad árbol,
+       construcción exitosa con filtros válidos}
 
   CAPA 3 — infrastructure ({n3} tests)
-    → {Entidad}RepositoryAdapterTest.java  ({n} tests, @DataJpaTest + H2)
-    → {Entidad}ControllerTest.java         ({n} tests, @WebMvcTest + Spring Security Test)
+    → {Entidad}CommandOutputAdapterTest.java  ({n} tests, @DataJpaTest + H2)
+    → {Entidad}QueryOutputAdapterTest.java    (si HU es read; @DataJpaTest + H2 — verifica
+       que Criteria → SQL genera la query esperada, que @EntityGraph carga la relación,
+       que el SortMapper traduce nombres de dominio a paths JPA)
+    → {Accion}{Entidad}InputAdapterTest.java       ({n} tests, @WebMvcTest + Spring Security Test)
+    → {Accion}{Entidad}QueryInputAdapterTest.java  (si es read)
+    → {NombreEvento}ConsumerInputAdapterTest.java  (si la HU consume eventos AMQP — verifica
+       deserialización del payload local, invocación al UseCase con el Command correcto;
+       NO testea ACK/NACK ni MDC — eso es responsabilidad de AbstractEventConsumer en shared:amqp)
 
 ✅ Anti-patrones que voy a evitar:
    - Tests de getters/setters de Lombok
@@ -629,12 +639,12 @@ query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf isEmpty
 | **⭐ Evento contiene metadatos correctos** | `debeAsignarMetadatos_cuandoEventoEsCreado` |
 
 > **Regla de eventos en tests de dominio:** si la entidad del plan extiende
-> `EventEmittingEntity` (los 6 contextos de negocio, excepto `seguridad`) **Y**
+> `AggregateRoot` (los 6 contextos de negocio, excepto `seguridad`) **Y**
 > el plan declara eventos en su sección 4, los tests de domain DEBEN verificar
 > el ciclo completo: `publishEvent` → `getUnPublishedEvents` → `clearUnPublishedEvents`.
 >
 > Si el plan dice **"Eventos: ninguno"** (CRUD sin consumidores), estos tests
-> NO aplican — la entidad sigue extendiendo `EventEmittingEntity` por consistencia,
+> NO aplican — la entidad sigue extendiendo `AggregateRoot` por consistencia,
 > pero su `build(...)` no emite eventos. Generar tests de ciclo de eventos en ese
 > caso es sobre-testeo (anti-patrón).
 >
@@ -652,9 +662,9 @@ query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf isEmpty
 
 #### Qué testear
 
-- **UseCaseImpl:** flujos de éxito y error — éxito, error de negocio, error de repositorio — mockeando los puertos de salida.
+- **UseCase (write/read):** flujos de éxito y error — éxito, error de negocio, error de repositorio — mockeando los puertos de salida.
 - **⭐ Drenado de eventos:** después de persistir, el use case debe: drenar eventos con `getUnPublishedEvents()`, publicarlos vía `EventPublisher`, llamar `clearUnPublishedEvents()`. Verificar con `verify(eventPublisher, times(N)).publish(any())` y `assertThat(entity.getUnPublishedEvents()).isEmpty()`.
-- **DTOs:** conversiones `toDomain()` y `fromDomain()`.
+- **`RequestDTO`:** validación Jakarta (`@NotBlank`, `@Email`, etc.) y conversión `toCommand()`. **`Command` y `ReadModel`** son `record`: solo se testean los métodos del `RequestDTO` (al `record` no hay nada que testear más allá de su construcción).
 
 #### Consulta Context7 antes de generar
 
@@ -697,7 +707,7 @@ query-docs /assertj/assertj "assertThatThrownBy isInstanceOf hasMessage assertTh
 
 #### Qué testear
 
-- **RepositoryAdapter:** CRUD contra H2, y verificar que usa `rebuild(...)` al reconstruir (no `build(...)` — de lo contrario se generarían UUIDs nuevos y eventos espurios).
+- **CommandOutputAdapter / QueryOutputAdapter:** CRUD contra H2, y verificar que usa `rebuild(...)` al reconstruir (no `build(...)` — de lo contrario se generarían UUIDs nuevos y eventos espurios).
 - **Controller:** endpoints — respuestas HTTP correctas, validación de request body, autenticación/autorización con Keycloak roles.
 
 > **Virtual Threads (ADR-008):** `@DataJpaTest` y `@WebMvcTest` no levantan el contexto completo,
