@@ -31,7 +31,7 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "com.arquisoft.fichas.infrastructure.adapter.out.persistence",
+        basePackages = "com.arquisoft.fichas.infrastructure.fichaperfil.persistence",
         entityManagerFactoryRef = "fichasEntityManagerFactory",
         transactionManagerRef = "fichasTransactionManager"
 )
@@ -76,7 +76,10 @@ public class FichasDataSourceConfig {
 
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.arquisoft.fichas.infrastructure.adapter.out.persistence");
+        em.setPackagesToScan(
+                "com.arquisoft.fichas.infrastructure.fichaperfil.persistence",
+                "com.arquisoft.fichas.infrastructure.asesorficha.persistence"
+        );
         em.setPersistenceUnitName("fichas");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();

@@ -6,7 +6,7 @@ description: >-
    Carga el skill arquisoft-context (convenciones y plantillas canónicas DDD) y el skill
    context7-stack (docs actualizadas del stack) antes de escribir código. Lee el plan
    como contrato inmutable, implementa el código capa por capa (domain → application →
-   infrastructure) respetando la arquitectura hexagonal + DDD (EventEmittingEntity estricto,
+   infrastructure) respetando la arquitectura hexagonal + DDD (AggregateRoot estricto,
    eventos de dominio, Java 21 balanceado), espera aprobación explícita del usuario al
    cierre de cada capa (no archivo por archivo), compila con Gradle tras cada capa con
    auto-corrección hasta 3 intentos. Si encuentra ambigüedad en el plan, reporta
@@ -61,7 +61,7 @@ usuario al cierre de cada capa antes de avanzar a la siguiente.
 
 | Skill | Propósito | Cuándo usarlo |
 |---|---|---|
-| `arquisoft-context` | Estado real del proyecto: stack, DDD, EventEmittingEntity, plantillas canónicas, mapeo contexto→BD, Java 21 balanceado | **FASE 0 (al inicio).** Y referencia constante durante toda la sesión. |
+| `arquisoft-context` | Estado real del proyecto: stack, DDD, AggregateRoot, plantillas canónicas, mapeo contexto→BD, Java 21 balanceado | **FASE 0 (al inicio).** Y referencia constante durante toda la sesión. |
 | `context7-stack` | APIs actualizadas del stack (Spring, JPA, Mockito, RabbitMQ, Lombok, OpenAPI, Flyway) | **Antes de generar CADA archivo** (FASE 2). |
 
 **Regla dura:** si el skill `arquisoft-context` contradice algo del plan, **detente y reporta al usuario** — no resuelvas la contradicción por tu cuenta. Si contradice un archivo del repositorio (`AGENTS.md`, `README.md`, etc.), **gana el skill**.
@@ -80,7 +80,7 @@ skill("arquisoft-context")
 
 Este skill contiene:
 - El stack verificado (Java 21, Spring Boot 4.0.5, JUnit 6.0.3, Keycloak 26.6, etc.)
-- La arquitectura DDD + Hexagonal y la regla estricta de EventEmittingEntity
+- La arquitectura DDD + Hexagonal y la regla estricta de AggregateRoot
 - El mapeo contexto → base de datos PostgreSQL (seguridad→usuarios, fichas→fichas_perfil, proyectos→proyectos_grado, los demás coinciden)
 - Las plantillas de código canónicas para cada tipo de archivo
 - La guía de uso balanceado de features de Java 21 (records para VO, sealed para estados cerrados, text blocks para SQL, var donde el tipo es evidente — NO records para entidades de dominio, NO virtual threads manuales)
@@ -102,7 +102,7 @@ El usuario indica el plan al invocar el agente, por ejemplo:
 2. Lee el archivo completo.
 3. Extrae y confirma con el usuario:
    - Tipo (HU / HT), ID y bounded context
-   - Si usa EventEmittingEntity (sección 4 del plan — DDD)
+   - Si usa AggregateRoot (sección 4 del plan — DDD)
    - Lista ordenada de archivos a crear/modificar
 4. Pregunta: **"¿Confirmas que este plan está aprobado y podemos iniciar la implementación?"**
 5. Espera confirmación explícita antes de continuar.
@@ -194,7 +194,7 @@ sigue este ciclo único de 8 pasos:
 
 | Capa | Consultas a Context7 |
 |---|---|
-| `domain` | 1 consulta general: Java 21 + DDD (records, sealed, immutable class con factory methods, EventEmittingEntity pattern) |
+| `domain` | 1 consulta general: Java 21 + DDD (records, sealed, immutable class con factory methods, AggregateRoot pattern) |
 | `application` | 1 consulta general: Spring `@Component`/`@Service`/`@Transactional` + Lombok `@RequiredArgsConstructor`/`@Data`/`@Builder` + Jakarta Validation |
 | `infrastructure` | Variable según el plan — solo las tecnologías que aparezcan: 1 para JPA (`@Entity`, `@Table`, `JpaRepository`), 1 para Controllers REST (`@RestController`, OpenAPI, `@SecurityRequirement`), 1 para Spring Security (si hay endpoints protegidos con roles nuevos), 1 para RabbitMQ (si hay listener o publisher), 1 para Flyway (si hay migración nueva). |
 
@@ -227,19 +227,22 @@ CAPA 1 — domain (genera todos antes de compilar)
   │        Es método abstracto en DomainEvent — sin esto el código NO compila.
   │        Si el plan no especifica el eventTopic, derívalo del contexto + entidad + acción.
   ├── Value Objects / Sealed    (si aplican — considerar records y sealed de Java 21)
-  ├── Entidad de dominio        ({Entidad}.java) — extiende EventEmittingEntity si el contexto lo usa
+  ├── Entidad de dominio        ({Entidad}.java) — extiende AggregateRoot si el contexto lo usa
   │     ⚠️ El factory build(...) llama a publishEvent(...) SOLO si el plan declara eventos.
   │        Si no, build(...) construye y retorna la entidad sin emitir nada.
   ├── Enums                     (si aplican)
-  ├── Puerto de entrada         ({Accion}{Entidad}UseCase.java) — si paginada: retorna Page<{Entidad}ResponseDTO>
-  └── Puerto de salida          ({Entidad}RepositoryPort.java) — si paginada: retorna `Page<{Entidad}>` (de Spring Data) y recibe `Pageable`. NO usa Page propio (no existe). Nombres sin "Paginadas" — usar `consultarTodas`, `listarTodas`, `buscarPor...`
+  ├── Puerto de entrada         (`port/in/{Accion}{Entidad}InputPort.java` — vive en application, vacío, extiende `InputPort<I,O>` o `VoidInputPort<I>`)
+  └── Puerto de salida write    (`{Entidad}OutputPort.java` — vive en domain. Recibe/retorna el aggregate)
+        ─ Si la HU es read con paginación/filtros: NO va `{Entidad}OutputPort`; va `{Entidad}QueryOutputPort` en
+          `application/{entidad}/query/port/out/`. Retorna `PaginatedResult<{Entidad}ReadModel>` y recibe `{Entidad}Criteria`.
+          `Pageable` / Spring `Page` jamás aquí — solo en el QueryOutputAdapter de infrastructure.
 
   → 🔨 COMPILAR: ./gradlew :{contexto}:domain:compileJava
 
 CAPA 2 — application (genera todos antes de compilar)
   ├── Request DTO               ({Accion}{Entidad}RequestDTO.java) — campos en español (refleja modelo enriquecido)
   ├── Response DTO              ({Entidad}ResponseDTO.java) — campos en español (refleja modelo enriquecido)
-  └── Caso de uso impl          ({Accion}{Entidad}UseCaseImpl.java)
+  └── Caso de uso impl          ({Accion}{Entidad}UseCase.java)
         ─ Si plan dice "Eventos: ninguno" → NO inyecta EventPublisher, NO hay drenado/limpieza.
         ─ Si plan declara eventos (sección 4 con tabla de eventos) → inyecta EventPublisher
           y drena con getUnPublishedEvents() / publica / clearUnPublishedEvents() tras persistir.
@@ -275,18 +278,18 @@ CAPA 2 — application (genera todos antes de compilar)
 CAPA 3 — infrastructure (genera todos antes de compilar)
   ├── Entidad JPA               ({Entidad}JpaEntity.java) — @Table(name = "...") (sin atributo schema; cada contexto tiene su propia BD)
   ├── Repositorio JPA           ({Entidad}JpaRepository.java)
-  ├── Adaptador repositorio     ({Entidad}RepositoryAdapter.java) — usa rebuild(...) al reconstruir. Si paginada: una sola línea `jpaRepository.findAll(pageable).map(JpaEntity::toDomain)` — Spring Data `Page` ya tiene `.map()` built-in. Cero conversiones manuales, cero FQN.
-  ├── Controller REST           ({Entidad}Controller.java) — @Tag, @Operation, @ApiResponses, @SecurityRequirement (ADR-011)
-  │     ⚠️ Autorización: `@PreAuthorize("hasAuthority('{contexto}:{recurso}:{accion}')")` con
+  ├── Adaptador persistencia write  ({Entidad}CommandOutputAdapter.java en `{entidad}/command/adapter/out/persistence/`) — implementa `{Entidad}OutputPort`. Usa `rebuild(...)` al reconstruir el aggregate desde la JpaEntity.
+  ├── Adaptador persistencia read   ({Entidad}QueryOutputAdapter.java en `{entidad}/query/adapter/out/persistence/`) — implementa `{Entidad}QueryOutputPort`. Mapea JpaEntity → ReadModel directo. Si la HU usa Criteria: traduce `XxxCriteria` con `XxxJpaSpecification.desdeCriteria(...)` + `PageRequest` con `SortMapper`, llama a `jpaRepository.findAll(spec, pageable)`, retorna `PaginatedResult<ReadModel>` vía `PaginationMapper.toResult(...)`. `Pageable` y Spring `Page` solo viven aquí.
+  ├── Criteria (opcional)       ({Entidad}Criteria.java en `application/{entidad}/query/criteria/`) — extiende `QueryCriteria`. Declara la whitelist `Campo.FILTRABLES` y `Campo.ORDENABLES`. Builder valida en construcción.
+  ├── JpaSpecification (opcional) ({Entidad}JpaSpecification.java en `infrastructure/{entidad}/query/adapter/out/persistence/`) — extiende `QueryJpaSpecification<JpaEntity>`. Declara mapa `CampoSpec` con paths JPA (joins implícitos: `root.get("asesor").get("nombre")`).
+  ├── InputAdapter write        ({Accion}{Entidad}InputAdapter.java) — @RestController, inyecta InputPort, retorna `ResponseEntity<Void>` con 201 + Location. ADR-011 (@Tag, @Operation, @ApiResponses, @SecurityRequirement)
+  │     ⚠️ Antes de crear: lee la sección 8 del plan ("Estado del endpoint"). Si dice
+  │        "Endpoint EXISTENTE", NO crees archivo nuevo — modifica el adapter ya presente
+  │        siguiendo la nota "Qué cambia" del plan. Si dice "Endpoint NUEVO", créalo.
+  ├── InputAdapter read         ({Accion}{Entidad}QueryInputAdapter.java) — @RestController, inyecta `QueryInputPort`. Si usa Criteria: recibe `QueryCriteriaRequestDTO` (de `shared:web`), parsea con `solicitud.parsearAOrdenamiento()` + `solicitud.parsearFiltros()`, construye `XxxCriteria.builder().build()`. Retorna `PageResponseDTO.from(paginatedResult)` justo antes del response. Si NO usa Criteria: serializa `ReadModel` directo a JSON (no hay ResponseDTO intermedio).
+  │     ⚠️ Autorización: `@PreAuthorize("hasAuthority('{contexto}:{entidad}:{accion}')")` con
   │        UN ÚNICO client role declarado en sección 9 del plan. NO usar `hasRole(...)` ni
-  │        roles realm directamente. Ver SKILL sección "Autorización con client roles".
-  │     ⚠️ Si la HU es paginada:
-  │        • Recibe `Pageable` directo como parámetro (Spring lo construye desde query params).
-  │          Si necesitas defaults: `@PageableDefault(size = 20, page = 0) Pageable pageable`.
-  │        • NO usa `@RequestParam("page") int page, @RequestParam("size") int size` — es redundante.
-  │        • Convierte `Page<{Entidad}ResponseDTO>` (recibido del use case) →
-  │          `PageResponseDTO<{Entidad}ResponseDTO>` usando `PageResponseDTO.from(page)` JUSTO
-  │          antes de retornar. Importa `PageResponseDTO` de `com.arquisoft.shared.web`.
+  │        roles realm directamente. Ver SKILL sección "Autorización — Roles realm + Client Roles".
   ├── {Contexto}GlobalExceptionHandler    (OBLIGATORIO si el plan introduce excepciones de dominio nuevas)
   │     • Ubicación: {contexto}/infrastructure/adapter/in/web/{Contexto}GlobalExceptionHandler.java
   │     • Nombre con prefijo del contexto en PascalCase (ej. SeguridadGlobalExceptionHandler, FichasGlobalExceptionHandler, RepositorioArtefactosGlobalExceptionHandler)
@@ -337,7 +340,7 @@ Antes de generar **cada archivo**, ejecuta la consulta de Context7 correspondien
 
 | Tipo de archivo | Consulta Context7 sugerida |
 |-----------------|----------------------------|
-| Entidad de dominio (EventEmittingEntity) | `query-docs /websites/spring_io_spring-framework_reference_6_2 "domain model immutable class factory method Java 21"` |
+| Entidad de dominio (AggregateRoot) | `query-docs /websites/spring_io_spring-framework_reference_6_2 "domain model immutable class factory method Java 21"` |
 | Evento de dominio | (usar plantilla del skill `arquisoft-context` — DomainEvent ya existe en shared:domain) |
 | Value Object (record) | `query-docs /openjdk/jdk "record compact constructor validation"` (o plantilla del skill) |
 | Sealed interface / clase | `query-docs /openjdk/jdk "sealed class permits pattern matching switch Java 21"` |
@@ -409,7 +412,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 - Factory method `build(...)` para instancias nuevas — genera UUID con `UUID.randomUUID()` y **publica evento** con `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))`.
 - Factory method `rebuild(...)` para reconstruir desde persistencia — recibe el UUID existente, **sin publicar eventos**.
 - ID siempre `UUID` (`java.util.UUID`) — **nunca** `Long` ni `Integer`.
-- **Regla DDD estricta:** en los 6 contextos de negocio (fichas, proyectos, artefactos, repositorio_artefactos, entregables, evaluaciones), toda entidad raíz **DEBE** extender `EventEmittingEntity` de `shared:domain`. Excepción única documentada: `seguridad`.
+- **Regla DDD estricta:** en los 6 contextos de negocio (fichas, proyectos, artefactos, repositorio_artefactos, entregables, evaluaciones), toda entidad raíz **DEBE** extender `AggregateRoot` de `shared:domain`. Excepción única documentada: `seguridad`.
 - No usar `record` para entidades de dominio (requieren constructor privado + factories).
 
 ### Value Objects
@@ -433,7 +436,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 - `@Data @NoArgsConstructor @AllArgsConstructor @Builder` (Lombok).
 - Request DTOs con Jakarta Validation (`@NotBlank`, `@Size`, `@Email`, etc.).
 - Response DTOs con `@JsonInclude(JsonInclude.Include.NON_NULL)` si aplica.
-- `toDomain()` mapea a entidad de dominio; `static fromDomain(...)` mapea desde dominio.
+- `RequestDTO.toCommand()` mapea HTTP → intención de negocio (`Command`). Para read, el `QueryUseCase` retorna `ReadModel` directamente (no hay `fromDomain()` — el adaptador serializa el ReadModel a JSON).
 
 ### Use Cases
 
@@ -578,7 +581,7 @@ Archivos creados/modificados:
     ...
 
 DDD aplicado:
-  ✅ Entidad raíz extiende EventEmittingEntity
+  ✅ Entidad raíz extiende AggregateRoot
   ✅ Eventos de dominio en domain/event/
   ✅ Use case drena eventos tras persistir
   ✅ IDs UUID
@@ -664,7 +667,7 @@ Opciones:
 10. **DDD estricto — separación de capas:** ningún `@Configuration`, adaptador o controller contiene reglas de negocio. El dominio es Java puro (cero imports de Spring, JPA, Lombok, Jackson, Keycloak, RabbitMQ, Swagger, Security). Para integraciones externas: puerto en `domain/port/out/`, adaptador en `infrastructure/adapter/out/{tipo}/`, `@Configuration` solo cablea. Aplica la **prueba del algodón** antes de cada archivo.
 11. **Estructura de carpetas en adapters:** `@RestController` y `@RestControllerAdvice` en `infrastructure/adapter/in/web/`. Listeners RabbitMQ en `adapter/in/messaging/`. JPA + repository adapter en `adapter/out/persistence/`. Otras integraciones en `adapter/out/{tipo}/` (ej. `security/`, `storage/`, `notification/`). **NO** existe `adapter/out/messaging/` en los contextos — la publicación de eventos está centralizada en `shared:amqp`. Nunca dejes componentes directamente en `adapter/in/` o `adapter/out/` sin subcarpeta.
 12. **`{Contexto}GlobalExceptionHandler` obligatorio cuando el plan introduce excepciones nuevas.** Toda excepción de dominio del plan DEBE registrarse con `@ExceptionHandler` en el handler del contexto, con el **nombre prefijado en PascalCase** (`SeguridadGlobalExceptionHandler`, `FichasGlobalExceptionHandler`, `RepositorioArtefactosGlobalExceptionHandler`, etc. — ver tabla completa en el skill). Mapeada al código HTTP correcto (`*NoEncontrad*` → 404, `*Invalid*`/`Parametro*Invalido` → 400, `*NoAutorizad*` → 403, `*Conflict*`/`*Duplicad*`/`EstadoInvalido*` → 409, resto de `DomainException` → 422). Si el contexto no tiene handler aún (solo `seguridad` lo tiene), créalo desde la plantilla canónica con el nombre prefijado correcto. **Nunca permitas que una excepción de dominio caiga en `handleGeneral` → 500.** Si una excepción no encaja en la tabla, reporta ambigüedad al usuario.
-13. **DDD estricto — Aggregate Root:** entidades raíz extienden `EventEmittingEntity` en los 6 contextos de negocio. Excepción única: `seguridad`. Si el plan no especifica EventEmittingEntity para una entidad raíz en los 6 contextos, reporta ambigüedad.
+13. **DDD estricto — Aggregate Root:** entidades raíz extienden `AggregateRoot` en los 6 contextos de negocio. Excepción única: `seguridad`. Si el plan no especifica AggregateRoot para una entidad raíz en los 6 contextos, reporta ambigüedad.
 14. **Eventos de dominio:** en `domain/event/`, extienden `DomainEvent`. El use case los drena tras persistir — nunca el dominio publica directamente.
 15. **IDs siempre `UUID`** (`java.util.UUID`). `build()` genera con `UUID.randomUUID()`, `rebuild()` recibe el UUID desde persistencia.
 16. **Base de datos PostgreSQL:** cada contexto tiene su propia BD (no schemas). Usar la tabla de mapeo del skill `arquisoft-context`. `seguridad→usuarios`, `fichas→fichas_perfil`, `proyectos→proyectos_grado`, los demás coinciden. `@Table(name = "...")` sin atributo `schema`. Migraciones Flyway sin prefijo de schema en el SQL. Sin FKs cruzadas entre BDs.

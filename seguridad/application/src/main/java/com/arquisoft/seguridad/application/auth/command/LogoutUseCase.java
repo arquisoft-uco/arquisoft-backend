@@ -1,13 +1,17 @@
 package com.arquisoft.seguridad.application.auth.command;
 
-import com.arquisoft.seguridad.application.auth.dto.LogoutRequestDTO;
+import com.arquisoft.seguridad.application.auth.port.TokenBlacklistOutputPort;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
-public interface LogoutUseCase {
+@Service
+@RequiredArgsConstructor
+public class LogoutUseCase implements LogoutInputPort {
 
-    /**
-     * Invalida el token JWT representado por el DTO de solicitud.
-     *
-     * @param request DTO con el JTI del token y los segundos restantes de vida
-     */
-    void ejecutar(LogoutRequestDTO request);
+    private final TokenBlacklistOutputPort tokenBlacklistOutputPort;
+
+    @Override
+    public void ejecutar(LogoutCommand command) {
+        tokenBlacklistOutputPort.invalidarToken(command.jti(), command.ttlSegundos());
+    }
 }

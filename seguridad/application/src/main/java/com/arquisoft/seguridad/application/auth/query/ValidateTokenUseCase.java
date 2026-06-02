@@ -1,25 +1,42 @@
 package com.arquisoft.seguridad.application.auth.query;
 
+import com.arquisoft.seguridad.application.auth.port.TokenOutputPort;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
+
 /**
- * Caso de uso para validar un token JWT.
+ * Implementacion del caso de uso de validacion de token.
  */
-public interface ValidateTokenUseCase {
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class ValidateTokenUseCase implements ValidateTokenInputPort {
 
-    /**
-     * Resultado de la validacion del token.
-     */
-    record ValidationResult(
-            boolean valid,
-            String keycloakUserId,
-            String email,
-            String message
-    ) {}
+    private final TokenOutputPort tokenOutputPort;
 
-    /**
-     * Valida un token JWT y extrae informacion basica del usuario.
-     *
-     * @param token el token JWT a validar
-     * @return resultado de la validacion con informacion del usuario si es valido
-     */
-    ValidationResult validate(String token);
+    @Override
+    public ValidationResult ejecutar(String token) {
+        log.debug("Intento de validacion de token");
+
+        try {
+            if (tokenOutputPort.validateToken(token)) {
+                Map<String, Object> userInfo = tokenOutputPort.extractUserInfo(token);
+
+                return new ValidationResult(
+                        true,
+                        (String) userInfo.get("keycloakUserId"),
+                        (String) userInfo.get("email"),
+                        "Token valido"
+                );
+            } else {
+                return new ValidationResult(false, null, null, "Token invalido o expirado");
+            }
+        } catch (Exception e) {
+            log.debug("Validacion de token fallida: {}", e.getMessage());
+            return new ValidationResult(false, null, null, "Error al validar token: " + e.getMessage());
+        }
+    }
 }

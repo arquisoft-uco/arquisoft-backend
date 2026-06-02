@@ -63,19 +63,20 @@ Hexagonal Architecture (Ports & Adapters) with **7 bounded contexts** and **7 sh
 
 ```
 {context}/domain/
-├── model/           # Aggregate roots, value objects — no Spring
-├── port/in/         # Input port interfaces (use cases)
-├── port/out/        # Output port interfaces (repositories, services)
+├── model/           # Aggregate roots (suffix Aggregate), value objects — no Spring
+├── port/in/         # Input port interfaces (suffix InputPort)
+├── port/out/        # Output port interfaces (suffix OutputPort)
 ├── event/           # Domain events (extend DomainEvent)
 └── exception/       # Domain exceptions (extend DomainException)
 
 {context}/application/
-├── dto/             # DTOs with toDomain() / fromDomain() static methods
-└── usecase/         # UseCase implementations
+├── {feature}/command/   # Command use case interface (InputPort) + implementation (UseCaseImpl)
+├── {feature}/query/     # Query use case interface (InputPort) + implementation (UseCaseImpl)
+└── {feature}/dto/       # DTOs (suffix DTO), ReadModels (suffix ReadModel)
 
 {context}/infrastructure/
-├── adapter/in/      # REST controllers
-├── adapter/out/     # Repository and external service adapters
+├── adapter/in/      # REST controllers and AMQP consumers (suffix InputAdapter)
+├── adapter/out/     # Repository and external service adapters (suffix OutputAdapter)
 ├── config/          # Spring configuration
 ├── filter/          # HTTP filters
 └── db/migration/    # Flyway migrations
@@ -85,15 +86,27 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 ## Key Conventions
 
-**Entities:** Immutable, final fields, no public constructor. Use `build()` for new instances, `rebuild()` for reconstructing from DB.
+**Aggregate roots:** Immutable, final fields, no public constructor, suffix `Aggregate` (e.g., `UsuarioAggregate`, `FichaPerfilAggregate`). Use `build()` for new instances, `rebuild()` for reconstructing from DB.
 
 **IDs:** Always UUID — never `Long` or `Integer`.
 
 **Domain events:** Extend `DomainEvent`. After persisting an aggregate, drain its unpublished events and publish via `SharedEventPublisher` (RabbitMQ, publisher confirms, manual ACK, prefetch=1).
 
-**DTOs:** `@Data @NoArgsConstructor @AllArgsConstructor @Builder`, suffix `DTO`. DTOs own `toDomain()` and `fromDomain()`.
+**Input ports:** Interfaces in `application/{feature}/command/` or `application/{feature}/query/`, suffix `InputPort` (e.g., `CrearUsuarioInputPort`, `ConsultarFichasPerfilInputPort`).
 
-**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`UseCase`, `DTO`, `Controller`, `RepositoryPort`). Use case implementations: `{Action}{Entity}UseCaseImpl`.
+**Output ports:** Interfaces in `domain/port/out/` or `application/port/out/`, suffix `OutputPort` (e.g., `UsuarioOutputPort`, `FichaPerfilOutputPort`).
+
+**Input adapters:** REST controllers and AMQP consumers in `infrastructure/adapter/in/`, suffix `InputAdapter` (e.g., `AuthInputAdapter`, `UsuarioCreadoInputAdapter`).
+
+**Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/adapter/out/`, suffix `OutputAdapter` (e.g., `FichaPerfilOutputAdapter`, `JwtTokenOutputAdapter`). Implement the corresponding `OutputPort` interface.
+
+**Use case implementations:** `{Action}{Entity}UseCaseImpl` (e.g., `CrearUsuarioUseCaseImpl`), implement the corresponding `InputPort`.
+
+**ReadModels:** Flat query projections in `application/{feature}/dto/`, suffix `ReadModel` (e.g., `FichaPerfilReadModel`). Own a static `fromDomain(Aggregate)` factory method.
+
+**DTOs:** `@Data @NoArgsConstructor @AllArgsConstructor @Builder`, suffix `DTO`. Own `toDomain()` and `fromDomain()` static methods.
+
+**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Aggregate`, `InputPort`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `UseCaseImpl`, `ReadModel`, `DTO`).
 
 **Injection:** Always constructor injection via `@RequiredArgsConstructor` — never `@Autowired`.
 

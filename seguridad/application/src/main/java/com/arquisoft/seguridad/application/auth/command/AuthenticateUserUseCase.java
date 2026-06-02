@@ -1,32 +1,38 @@
 package com.arquisoft.seguridad.application.auth.command;
 
+import com.arquisoft.seguridad.application.auth.port.AuthenticationOutputPort;
+import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
+
 /**
- * Caso de uso para autenticar un usuario.
- * Recibe credenciales primitivas; la traduccion desde/hacia DTOs
- * ocurre en la implementacion de la capa de aplicacion.
+ * Implementacion del caso de uso de autenticacion.
+ * Orquesta la llamada al puerto de salida y mapea el resultado.
  */
-public interface AuthenticateUserUseCase {
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class AuthenticateUserUseCase implements AuthenticateUserInputPort {
 
-    /**
-     * Resultado de la autenticacion representado como record (Java 21).
-     * Tipo de aplicacion puro, sin dependencias de framework.
-     */
-    record AuthResult(
-            String accessToken,
-            String refreshToken,
-            long expiresIn,
-            String tokenType,
-            String scope
-    ) {}
+    private final AuthenticationOutputPort authenticationOutputPort;
 
-    /**
-     * Autentica al usuario con email y contrasena.
-     *
-     * @param email    email del usuario
-     * @param password contrasena del usuario
-     * @return resultado con los tokens de autenticacion
-     * @throws com.arquisoft.seguridad.domain.exception.InvalidCredentialsException
-     *         si las credenciales son invalidas
-     */
-    AuthResult authenticate(String email, String password);
+    @Override
+    public AuthResult ejecutar(AuthenticateUserCommand command) {
+        log.debug(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_DEBUG);
+
+        Map<String, Object> tokenResponse = authenticationOutputPort.authenticate(command.email(), command.password());
+
+        log.info(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_EXITOSO);
+
+        return new AuthResult(
+                (String) tokenResponse.get("access_token"),
+                (String) tokenResponse.get("refresh_token"),
+                ((Number) tokenResponse.getOrDefault("expires_in", 3600)).longValue(),
+                (String) tokenResponse.getOrDefault("token_type", "Bearer"),
+                (String) tokenResponse.getOrDefault("scope", "")
+        );
+    }
 }

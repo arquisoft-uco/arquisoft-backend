@@ -109,12 +109,12 @@ public final class SeguridadInfraestructureMessages {
     }
 
     // =========================================================================
-    // AuthController
+    // AuthInputAdapter
     // =========================================================================
 
-    public static final class AuthController {
+    public static final class AuthInputAdapter {
 
-        private AuthController() {}
+        private AuthInputAdapter() {}
 
         // --- Logs de refresh token ---
 
@@ -122,8 +122,8 @@ public final class SeguridadInfraestructureMessages {
         public static final String REFRESH_DEBUG = "Intento de refresco de token";
 
         /**
-         * log.debug — Refresco completado en el controlador.
-         * El caso de uso RefreshTokenUseCaseImpl ya emite log.info del exito del negocio;
+         * log.debug — Refresco completado en el adaptador de entrada.
+         * El caso de uso RefreshTokenUseCase ya emite log.info del exito del negocio;
          * este debug es a nivel de capa web para trazar el flujo del request.
          */
         public static final String REFRESH_EXITOSO_DEBUG = "Token refrescado exitosamente";

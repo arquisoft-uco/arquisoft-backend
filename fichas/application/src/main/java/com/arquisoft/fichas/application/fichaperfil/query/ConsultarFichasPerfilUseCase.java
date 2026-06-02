@@ -1,26 +1,31 @@
 package com.arquisoft.fichas.application.fichaperfil.query;
 
-import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilResponseDTO;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
+import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.pagination.PaginatedResult;
-import com.arquisoft.shared.pagination.PaginationRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-/**
- * Puerto de entrada para el caso de uso de consulta paginada de fichas de perfil.
- *
- * <p>Contrato que debe implementar la capa de aplicación.
- * Retorna entidades de dominio — la conversión al DTO de respuesta ocurre en
- * la capa de infraestructura (controller) mediante {@code PaginatedResult.map()}.</p>
- *
- * <p>Usa tipos propios del dominio ({@link PaginationRequest} y {@link PaginatedResult})
- * para mantener esta capa libre de dependencias de framework.</p>
- */
-public interface ConsultarFichasPerfilUseCase {
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class ConsultarFichasPerfilUseCase implements ConsultarFichasPerfilInputPort {
 
-    /**
-     * Retorna un listado paginado de todas las fichas de perfil registradas.
-     *
-     * @param request criterios de paginación y ordenamiento
-     * @return {@link PaginatedResult} con las fichas de la página solicitada
-     */
-    PaginatedResult<FichaPerfilResponseDTO> ejecutar(PaginationRequest request);
+    private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
+
+    @Override
+    @Transactional(readOnly = true)
+    public PaginatedResult<FichaPerfilReadModel> ejecutar(FichaPerfilCriteria criteria) {
+        log.debug("Consultando fichas de perfil — pagina={}, tamanio={}", criteria.getPagina(), criteria.getTamanio());
+
+        PaginatedResult<FichaPerfilReadModel> resultado = fichaPerfilQueryOutputPort.consultarTodas(criteria);
+
+        log.info("Consulta fichas-perfil completada — total={}, pagina={}, tamanio={}",
+                resultado.getTotalElements(), criteria.getPagina(), criteria.getTamanio());
+        return resultado;
+    }
 }

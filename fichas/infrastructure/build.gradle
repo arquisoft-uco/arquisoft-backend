@@ -5,6 +5,7 @@ dependencies {
     implementation project(':shared:amqp')
     implementation project(':shared:web')
     implementation project(':shared:minio')
+    implementation project(':shared:postgres')
 
     // Spring Security (para @PreAuthorize y @EnableMethodSecurity)
     implementation "org.springframework.boot:spring-boot-starter-security"
