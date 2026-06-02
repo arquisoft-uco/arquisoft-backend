@@ -1,187 +1,203 @@
+> [!WARNING]
+> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
+>
+> Este archivo es documentación de referencia para desarrolladores humanos.
+> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
+> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
+> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
+> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+
 # Arquisoft Backend - Arquitectura Hexagonal Modular
 
-Aplicación backend para Arquisoft basada en **Arquitectura Hexagonal Modular** con **11 contextos independientes** y **comunicación asincrónica** mediante RabbitMQ.
+Aplicación backend para Arquisoft basada en **Arquitectura Hexagonal Modular** con **7 contextos independientes** y **comunicación asincrónica** mediante RabbitMQ.
 
-## 📋 Índice
+## Índice
+
 1. [Contextos de Negocio](#contextos-de-negocio)
 2. [Estructura del Proyecto](#estructura-del-proyecto)
 3. [Stack Tecnológico](#stack-tecnológico)
 4. [Instalación y Configuración](#instalación-y-configuración)
 5. [Ejecución](#ejecución)
 6. [Arquitectura y Flujos](#arquitectura-y-flujos)
+7. [Perfiles de Ejecución](#perfiles-de-ejecución)
+8. [Testing](#testing)
+9. [Documentación Adicional](#documentación-adicional)
 
 ---
 
-## 🏢 Contextos de Negocio
+## Contextos de Negocio
 
-El proyecto está organizado en **11 contextos independientes**, cada uno representando un dominio de negocio específico:
+El proyecto está organizado en **7 contextos independientes**, cada uno representando un dominio de negocio específico:
 
 | # | Contexto | Descripción |
 |---|----------|-------------|
-| 1 | **Usuarios** | Gestión de usuarios, roles, permisos, autenticación |
+| 1 | **Seguridad** | Autenticación OAuth2/JWT (Keycloak), roles, permisos, rate limiting, auditoría |
 | 2 | **Fichas** | Fichas de caracterización de trabajos de grado |
 | 3 | **Proyectos** | Creación y gestión de proyectos de grado |
 | 4 | **Artefactos** | Gestión de documentos y artefactos de proyecto |
 | 5 | **Repositorio Artefactos** | Control de versiones y almacenamiento |
-| 6 | **Mapas de Ruta** | Planes de estudios y rutas de aprendizaje |
-| 7 | **Biblioteca** | Catálogo centralizado de recursos educativos |
-| 8 | **Entregables** | Gestión de entregables y hitos del proyecto |
-| 9 | **Evaluaciones** | Evaluaciones finales y calificaciones |
-| 10 | **Solicitudes** | Peticiones de cambio y aprobaciones |
-| 11 | **Notificaciones** | Envío de notificaciones (email, push, SMS) |
+| 6 | **Entregables** | Gestión de entregables y hitos del proyecto |
+| 7 | **Evaluaciones** | Evaluaciones finales y calificaciones |
 
 ---
 
-## 🏗️ Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 arquisoft-backend/
-├── shared/                              # Módulo compartido (eventos, config, etc.)
-│   ├── domain/                          # Clases base de dominio
-│   │   └── src/main/java/com/arquisoft/shared/
-│   │       ├── event/
-│   │       │   ├── DomainEvent.java      # Clase base de eventos
-│   │       │   ├── AggregateRoot.java    # Raíz de agregado base
-│   │       │   └── EventPublisher.java   # Interfaz publicador de eventos
-│   │       ├── exception/
-│   │       │   └── DomainException.java  # Excepción de negocio base
-│   │       └── value/
-│   │           ├── Email.java            # Value Object: Email
-│   │           └── UserId.java           # Value Object: UserId
-│   └── infrastructure/                  # Infraestructura compartida
-│       └── src/main/java/com/arquisoft/shared/
-│           ├── rabbitmq/
-│           │   ├── RabbitMQConfig.java
-│           │   └── RabbitMQEventPublisher.java
-│           ├── postgres/
-│           ├── logging/
-│           └── resources/
+├── shared/                              # Módulo compartido (7 sub-módulos)
+│   ├── domain/                          # Eventos base (DomainEvent, AggregateRoot)
+│   ├── exceptions/                      # DomainException base
+│   ├── amqp/                            # EventPublisher interface (RabbitMQ)
+│   ├── postgres/                        # BaseRepository (JPA)
+│   ├── redis/                           # RedisClient interface
+│   ├── web/                             # HttpClient interface
+│   └── validation/                      # Anotaciones de validación (@ValidEmail)
 │
-├── usuarios/                            # CONTEXTO 1: Usuarios
-│   ├── domain/                          # Lógica pura (modelos, puertos)
-│   │   └── src/main/java/com/arquisoft/usuarios/
-│   │       ├── model/                   # Entidades de negocio
-│   │       └── port/
-│   │           ├── in/                  # Puertos de entrada (casos de uso)
-│   │           └── out/                 # Puertos de salida (dependencias)
-│   ├── application/                     # Orquestación (casos de uso)
-│   │   └── src/main/java/com/arquisoft/usuarios/
-│   │       ├── dto/                     # Data Transfer Objects
-│   │       ├── usecase/                 # Implementación de casos de uso
-│   │       └── service/                 # Servicios de aplicación
-│   └── infrastructure/                  # Detalles técnicos (BD, APIs, etc.)
-│       └── src/main/java/com/arquisoft/usuarios/
-│           ├── adapter/
-│           │   ├── in/                  # Controllers REST
-│           │   └── out/                 # Repositorios, clientes
-│           ├── config/                  # Configuración RabbitMQ
-│           └── resources/
-│               └── db/migration/        # Migraciones Flyway
+├── seguridad/                           # CONTEXTO 1: Seguridad y Autenticación
+│   ├── domain/                          # UserRole, CurrentUserProvider, JwtTokenProvider
+│   ├── application/                     # DTOs (Login, Token, AuthenticatedUser)
+│   └── infrastructure/                  # SecurityConfig, AuthController, Keycloak, RateLimit
 │
-├── fichas/                              # CONTEXTO 2: Fichas
+├── fichas/                              # CONTEXTO 2: Fichas de Trabajo de Grado
 │   ├── domain/
 │   ├── application/
 │   └── infrastructure/
 │
-├── proyectos/                           # CONTEXTO 3: Proyectos
+├── proyectos/                           # CONTEXTO 3: Proyectos de Grado
 │   ├── domain/
 │   ├── application/
 │   └── infrastructure/
 │
 ├── artefactos/                          # CONTEXTO 4: Artefactos
-├── repositorio_artefactos/              # CONTEXTO 5: Repositorio Artefactos
-├── mapas_ruta/                          # CONTEXTO 6: Mapas de Ruta
-├── biblioteca/                          # CONTEXTO 7: Biblioteca
-├── entregables/                         # CONTEXTO 8: Entregables
-├── evaluaciones/                        # CONTEXTO 9: Evaluaciones
-├── solicitudes/                         # CONTEXTO 10: Solicitudes
-├── notificaciones/                      # CONTEXTO 11: Notificaciones
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+│
+├── repositorio_artefactos/              # CONTEXTO 5: Repositorio de Artefactos
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+│
+├── entregables/                         # CONTEXTO 6: Entregables
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+│
+├── evaluaciones/                        # CONTEXTO 7: Evaluaciones Definitivas
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
 │
 ├── src/
-│   ├── main/
-│   │   ├── java/com/arquisoft/
-│   │   │   └── ArquisoftApplication.java    # Punto de entrada
-│   │   └── resources/
-│   │       └── application.yml
-│   └── test/
+│   └── main/
+│       ├── java/com/arquisoft/
+│       │   └── ArquisoftApplication.java    # Punto de entrada Spring Boot
+│       └── resources/
+│           ├── application.yml              # Config base
+│           ├── application-dev.yml          # Perfil desarrollo
+│           └── application-prod.yml         # Perfil producción
 │
 ├── build.gradle                         # Build principal
-├── settings.gradle                      # Definición de módulos
+├── settings.gradle                      # Definición de módulos (7 contextos + shared)
 ├── gradle.properties                    # Versiones de dependencias
 ├── docker-compose.yml                   # Orquestación de servicios
 ├── Dockerfile                           # Imagen Docker multi-stage
-├── init-db.sql                          # Inicialización de BD
-└── README.md                            # Este archivo
-
+└── init-db.sql                          # Inicialización de BD (7 schemas)
 ```
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 ### Backend
-- **Framework**: Spring Boot 3.2.4
-- **Lenguaje**: Java 17
-- **Build**: Gradle 7+
-- **Patrón**: Arquitectura Hexagonal (Puertos y Adaptadores)
+
+| Componente | Tecnología | Versión |
+|-----------|-----------|---------|
+| Framework | Spring Boot | 4.0.5 |
+| Lenguaje | Java | 21 |
+| Build | Gradle | 9.0.0 |
+| Patrón | Hexagonal (Puertos y Adaptadores) | - |
+| Concurrencia | Virtual Threads | Java 21 (auto) |
 
 ### Base de Datos
-- **Motor**: PostgreSQL 15
-- **Migraciones**: Flyway
-- **ORM**: Spring Data JPA
+
+| Componente | Tecnología |
+|-----------|-----------|
+| Motor | PostgreSQL 18 |
+| Migraciones | Flyway 11.20.3 |
+| ORM | Spring Data JPA / JdbcTemplate |
 
 ### Mensajería y Eventos
-- **Message Broker**: RabbitMQ 3.12
-- **Modo**: Topic Exchange (desacoplamiento asincrónico)
-- **Dead Letter Queue**: Para manejo de errores
+
+| Componente | Tecnología |
+|-----------|-----------|
+| Message Broker | RabbitMQ 4.2.5 |
+| Modo | Topic Exchange (desacoplamiento asincrónico) |
+| Dead Letter Queue | Para manejo de errores |
 
 ### Cache y Sesiones
-- **Cache**: Redis 7
-- **Sesiones distribuidas**: Redis
+
+| Componente | Tecnología |
+|-----------|-----------|
+| Cache | Redis 7 |
+| Sesiones distribuidas | Redis |
 
 ### Autenticación y Autorización
-- **Servidor OAuth2**: Keycloak 22
-- **Protocolo**: OpenID Connect
+
+| Componente | Tecnología |
+|-----------|-----------|
+| Servidor OAuth2 | Keycloak 26.6 |
+| Protocolo | OpenID Connect |
+| JWT | spring-security-oauth2-jose |
+| Rate Limiting | Bucket4j 7.6.0 |
 
 ### Almacenamiento de Archivos
-- **Nextcloud**: 27
-- **Protocolo**: WebDAV
 
-### Monitoreo
-- **Métricas**: Prometheus (Spring Boot Actuator)
-- **Logs**: Spring Logging (SLF4J)
-- **Health Checks**: Spring Boot Actuator
+| Componente | Tecnología |
+|-----------|-----------|
+| Servidor | Nextcloud 27+ |
+| Protocolo | WebDAV |
 
 ### Testing
-- **Testing**: JUnit 5 + Mockito
-- **Assertions**: AssertJ (opcional)
+
+| Componente | Tecnología | Versión |
+|-----------|-----------|---------|
+| Tests | JUnit | 6.0.3 |
+| Mocking | Mockito + AssertJ | - |
+| BD Test | H2 | 2.3.232 |
 
 ### Utilidades
-- **Lombok**: Reducción de boilerplate
-- **Jackson**: Serialización JSON
+
+- **Lombok** 1.18.30 — Reducción de boilerplate
+- **Jackson** — Serialización JSON
+- **Spring Boot Actuator** — Métricas y health checks
 
 ---
 
-## 🚀 Instalación y Configuración
+## Instalación y Configuración
 
 ### Requisitos Previos
-- Java 17+
+
+- Java 21+
 - Docker y Docker Compose
 - Git
 
 ### Paso 1: Clonar el Repositorio
+
 ```bash
 git clone <repositorio-url>
 cd arquisoft-backend
 ```
 
 ### Paso 2: Levantar Servicios con Docker Compose
+
 ```bash
 docker-compose up -d
 ```
 
 Esto levantará:
-- PostgreSQL (puerto 5432)
+- PostgreSQL (puerto 5432) — con 7 schemas creados automáticamente
 - RabbitMQ (puertos 5672, 15672)
 - Redis (puerto 6379)
 - Keycloak (puerto 8081)
@@ -193,15 +209,18 @@ Esto levantará:
 # Construir el proyecto
 ./gradlew build
 
-# Ejecutar aplicación
-./gradlew bootRun
+# Ejecutar con perfil de desarrollo
+./gradlew bootRun --args='--spring.profiles.active=dev'
+
+# Ejecutar en producción
+./gradlew bootRun --args='--spring.profiles.active=prod'
 ```
 
 La aplicación estará disponible en: `http://localhost:8080/api`
 
 ---
 
-## 📡 Acceso a Servicios
+## Acceso a Servicios
 
 | Servicio | URL | Usuario | Contraseña |
 |----------|-----|--------|-----------|
@@ -214,16 +233,15 @@ La aplicación estará disponible en: `http://localhost:8080/api`
 
 ---
 
-## 🔄 Arquitectura de Eventos
+## Arquitectura de Eventos
 
 ### Flujo Asincrónico
 
 1. **Request Síncrono**: El cliente envía una solicitud HTTP
 2. **Respuesta Inmediata**: El contexto responde rápidamente (< 100ms)
 3. **Publicación de Evento**: El dominio emite un evento de negocio
-4. **RabbitMQ**: El evento se envía al exchange de eventos
+4. **RabbitMQ**: El evento se envía al exchange `arquisoft.events`
 5. **Consumo Asincrónico**: Otros contextos consumen el evento en background
-6. **Independencia**: Cada contexto procesa sin bloquear al usuario
 
 ```
 Usuario (HTTP)
@@ -238,230 +256,160 @@ HTTP 201 Created ✅ (Usuario satisfecho - ~100ms)
     
     ↓↓↓ (ASINCRÓNICO - Background)
     
-[RabbitMQ - Exchange]
+[RabbitMQ - Exchange: arquisoft.events]
     ↓
 [CONTEXTO B - EventListener]
 [CONTEXTO C - EventListener]
-[CONTEXTO D - EventListener]
     ↓
 [Procesamiento independiente]
 ```
 
-### Eventos Principales
+### Eventos Principales por Contexto
 
-Ver `ARQUITECTURA_ASINCRONICO_ARQUISOFT.md` para la tabla completa de eventos y routing keys.
+| Contexto | Eventos Emitidos | Routing Key |
+|----------|-----------------|-------------|
+| Fichas | FichaCreada, FichaAprobada | `fichas.creada`, `fichas.aprobada` |
+| Proyectos | ProyectoCreado, ProyectoFinalizado | `proyectos.creado`, `proyectos.finalizado` |
+| Artefactos | ArtefactoCreado, ArtefactoEvaluado | `artefactos.creado`, `artefactos.evaluado` |
+| Repositorio | VersionPublicada | `repositorio.version-publicada` |
+| Entregables | EntregableSubido, EntregableEvaluado | `entregables.subido`, `entregables.evaluado` |
+| Evaluaciones | EvaluacionCalificada | `evaluaciones.calificada` |
 
-Ejemplo:
-```
-Evento: UsuarioCreadoEvent
-Routing Key: usuarios.creado
-Publicador: Contexto Usuarios
-Subscribers: Proyectos, Fichas, Solicitudes, Notificaciones
-```
+Ver `ARQUITECTURA_ASINCRONICO_ARQUISOFT.md` para detalles completos.
 
 ---
 
-## 📦 Estructura de Módulos (Gradle)
+## Estructura de Módulos (Gradle)
 
-### Dependencias Entre Módulos
+### Dependencias Entre Capas
 
 ```
 shared:domain (base)
     ↓
-shared:infrastructure (usa shared:domain)
-    ↓
 {contexto}:domain (usa shared:domain)
     ↓
-{contexto}:application (usa {contexto}:domain + shared:infrastructure)
+{contexto}:application (usa {contexto}:domain)
     ↓
-{contexto}:infrastructure (usa {contexto}:application + shared:infrastructure)
+{contexto}:infrastructure (usa {contexto}:application + shared:*)
     ↓
-Aplicación Principal (usa todos los *:infrastructure)
+Aplicación Principal (incluye todos los *:infrastructure)
+```
+
+### Regla fundamental
+
+```
+Domain ← Application ← Infrastructure
+(sin deps)  (usa domain)  (usa todo + frameworks)
 ```
 
 ---
 
-## 🗄️ Base de Datos
+## Perfiles de Ejecución
+
+| Perfil | Archivo | Uso |
+|--------|---------|-----|
+| **default** | `application.yml` | Config base compartida |
+| **dev** | `application-dev.yml` | Desarrollo local (debug logs, localhost, rate limit deshabilitado) |
+| **prod** | `application-prod.yml` | Producción (env vars, rate limit, file logging) |
+
+```bash
+# Desarrollo
+./gradlew bootRun --args='--spring.profiles.active=dev'
+
+# Producción
+java -jar app.jar --spring.profiles.active=prod
+```
+
+---
+
+## Base de Datos
 
 ### Esquemas Separados por Contexto
 
-Cada contexto tiene su propio schema de PostgreSQL para garantizar independencia:
+Cada contexto tiene su propio schema en PostgreSQL:
 
 ```sql
-CREATE SCHEMA usuarios;
-CREATE SCHEMA fichas;
-CREATE SCHEMA proyectos;
--- ... etc para cada contexto
+-- NOTA: el nombre del schema NO coincide con el contexto en 3 casos
+CREATE SCHEMA IF NOT EXISTS usuarios;             -- contexto: seguridad
+CREATE SCHEMA IF NOT EXISTS fichas_perfil;        -- contexto: fichas
+CREATE SCHEMA IF NOT EXISTS proyectos_grado;      -- contexto: proyectos
+CREATE SCHEMA IF NOT EXISTS artefactos;
+CREATE SCHEMA IF NOT EXISTS repositorio_artefactos;
+CREATE SCHEMA IF NOT EXISTS entregables;
+CREATE SCHEMA IF NOT EXISTS evaluaciones;
 ```
 
 ### Migraciones con Flyway
 
-Cada módulo de infrastructure tiene migraciones en `src/main/resources/db/migration/`:
-
 ```
-usuarios/infrastructure/src/main/resources/db/migration/
-├── V1.0__usuarios_schema.sql
-├── V1.1__usuarios_initial_data.sql
-└── V2.0__usuarios_add_fields.sql
-
-fichas/infrastructure/src/main/resources/db/migration/
-├── V1.0__fichas_schema.sql
-└── V1.1__fichas_initial_data.sql
+{contexto}/infrastructure/src/main/resources/db/migration/
+├── V1.0__{contexto}_schema.sql
+└── V1.1__{contexto}_initial_data.sql
 ```
 
 ---
 
-## 🔌 RabbitMQ Configuration
-
-### Exchange Principal
-
-```properties
-Exchange Name: arquisoft.events
-Type: Topic
-Durable: true
-```
-
-### Queues por Contexto
-
-Cada contexto crea sus propias queues con bindings específicos:
-
-```properties
-# Ejemplo: Contexto Usuarios
-Queue: usuarios.events
-Binding: usuarios.*
-Exchange: arquisoft.events
-
-# Ejemplo: Contexto Proyectos (subscribed a eventos de usuarios)
-Queue: proyectos.usuarios-events
-Binding: usuarios.creado, usuarios.activado
-Exchange: arquisoft.events
-```
-
----
-
-## 🧪 Testing
-
-### Estructura de Tests
-
-```
-{contexto}/{capa}/src/test/java/com/arquisoft/{contexto}/...
-```
-
-### Ejecutar Tests
+## Testing
 
 ```bash
 # Tests de todo el proyecto
 ./gradlew test
 
 # Tests de un contexto específico
-./gradlew usuarios:test
+./gradlew fichas:test
 
 # Tests de una capa específica
-./gradlew usuarios:domain:test
-```
-
-### Ejemplo: Test de UseCase
-
-```java
-@ExtendWith(MockitoExtension.class)
-class CrearUsuarioUseCaseTest {
-    
-    @Mock
-    private UsuarioRepositoryPort usuarioRepository;
-    
-    @Mock
-    private EventPublisher eventPublisher;
-    
-    private CrearUsuarioUseCaseImpl useCase;
-    
-    @BeforeEach
-    void setUp() {
-        useCase = new CrearUsuarioUseCaseImpl(usuarioRepository, eventPublisher);
-    }
-    
-    @Test
-    void deberiaCrearUsuarioYPublicarEvento() {
-        // Arrange
-        Usuario usuario = Usuario.crear("user@example.com", "Usuario Test");
-        when(usuarioRepository.save(usuario)).thenReturn(usuario);
-        
-        // Act
-        Usuario resultado = useCase.crear(usuario);
-        
-        // Assert
-        assertThat(resultado.getId()).isNotNull();
-        verify(eventPublisher, times(1)).publish(any(UsuarioCreadoEvent.class));
-    }
-}
+./gradlew fichas:domain:test
 ```
 
 ---
 
-## 📊 Monitoreo
+## Convenciones de Código
 
-### Spring Boot Actuator
-
-Endpoints disponibles en `http://localhost:8080/api/actuator/`:
+### Paquete Base
 
 ```
-/health              - Estado de salud
-/metrics             - Métricas del sistema
-/metrics/jvm.memory  - Memoria JVM
-/metrics/http.server.requests - Métricas HTTP
-/prometheus          - Métricas en formato Prometheus
-```
-
-### Logs
-
-Los logs se guardan en `logs/arquisoft.log` y se muestran en consola.
-
-```yaml
-# application.yml
-logging:
-  level:
-    com.arquisoft: DEBUG
-    org.springframework: INFO
-```
-
----
-
-## 📝 Convenciones de Código
-
-### Nombres de Paquetes
-
-```
-com.arquisoft.{contexto}.domain.model       - Entidades
-com.arquisoft.{contexto}.domain.port.in     - Puertos entrada
-com.arquisoft.{contexto}.domain.port.out    - Puertos salida
-com.arquisoft.{contexto}.application.dto    - Data Transfer Objects
-com.arquisoft.{contexto}.application.usecase - Casos de uso
-com.arquisoft.{contexto}.infrastructure.adapter.in   - Controllers
-com.arquisoft.{contexto}.infrastructure.adapter.out  - Repositorios
+com.arquisoft.{contexto}.domain.model          # Entidades
+com.arquisoft.{contexto}.domain.port.in        # Puertos entrada (use cases)
+com.arquisoft.{contexto}.domain.port.out       # Puertos salida (repositories)
+com.arquisoft.{contexto}.application.dto       # Data Transfer Objects
+com.arquisoft.{contexto}.application.usecase   # Implementación use cases
+com.arquisoft.{contexto}.infrastructure.adapter.in   # Controllers REST
+com.arquisoft.{contexto}.infrastructure.adapter.out  # Repositorios, Clientes
+com.arquisoft.{contexto}.infrastructure.config       # Configuraciones
 ```
 
 ### Nombres de Clases
 
-- **UseCase Ports**: `{AccionNegocio}UseCase` (ej: `CrearUsuarioUseCase`)
-- **UseCase Impl**: `{AccionNegocio}UseCaseImpl`
-- **Repository Port**: `{Entidad}RepositoryPort`
-- **Repository Impl**: `{Entidad}RepositoryAdapter`
-- **Controller**: `{Entidad}Controller`
-- **DTO**: `{Entidad}DTO`
-- **Events**: `{EventoNegocio}Event`
-
-### Nombres de Eventos
-
-Formato: `{NombreEvento}Event`
-
-Ej: `UsuarioCreadoEvent`, `ProyectoFinalizadoEvent`
-
-La clase `DomainEvent` genera automáticamente el routing key:
-- `UsuarioCreadoEvent` → `usuario.creado`
-- `ProyectoFinalizadoEvent` → `proyecto.finalizado`
+| Tipo | Formato | Ejemplo |
+|------|---------|---------|
+| Entidad | `{Nombre}.java` | `Ficha.java` |
+| Puerto entrada | `{Accion}{Entidad}UseCase.java` | `CrearFichaUseCase.java` |
+| Puerto salida | `{Entidad}RepositoryPort.java` | `FichaRepositoryPort.java` |
+| DTO | `{Entidad}DTO.java` | `FichaDTO.java` |
+| Impl UseCase | `{Accion}{Entidad}UseCaseImpl.java` | `CrearFichaUseCaseImpl.java` |
+| Controller | `{Entidad}Controller.java` | `FichaController.java` |
+| Repo Adapter | `{Entidad}RepositoryAdapter.java` | `FichaRepositoryAdapter.java` |
+| Evento | `{Nombre}Event.java` | `FichaCreadaEvent.java` |
+| Migración | `V{ver}__{contexto}_{desc}.sql` | `V1.0__fichas_schema.sql` |
 
 ---
 
-## 🚢 Deploy (Producción)
+## Monitoreo
+
+### Spring Boot Actuator
+
+Endpoints en `http://localhost:8080/api/actuator/`:
+
+```
+/health              - Estado de salud
+/metrics             - Métricas del sistema
+/prometheus          - Métricas en formato Prometheus
+```
+
+---
+
+## Deploy
 
 ### Construir imagen Docker
 
@@ -469,53 +417,28 @@ La clase `DomainEvent` genera automáticamente el routing key:
 docker build -t arquisoft-backend:latest .
 ```
 
-### Ejecutar en Kubernetes (Ejemplo)
+### Ejecutar
 
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: arquisoft-backend
-spec:
-  replicas: 3
-  template:
-    spec:
-      containers:
-      - name: backend
-        image: arquisoft-backend:latest
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SPRING_DATASOURCE_URL
-          valueFrom:
-            secretKeyRef:
-              name: db-credentials
-              key: url
+```bash
+docker run -p 8080:8080 \
+  -e SPRING_PROFILES_ACTIVE=prod \
+  -e DATABASE_URL=jdbc:postgresql://db:5432/arquisoft \
+  arquisoft-backend:latest
 ```
 
 ---
 
-## 📚 Recursos Adicionales
+## Documentación Adicional
 
-- **Arquitectura Hexagonal**: `ARQUITECTURA_Y_ESTRUCTURA.md`
-- **Arquitectura Asincrónica Arquisoft**: `ARQUITECTURA_ASINCRONICO_ARQUISOFT.md`
-- **Spring Boot Docs**: https://spring.io/projects/spring-boot
-- **RabbitMQ Docs**: https://www.rabbitmq.com/documentation.html
-
----
-
-## 👥 Contribuir
-
-Ver CONTRIBUTING.md
+- **Arquitectura Asincronica**: `ARQUITECTURA_ASINCRONICO_ARQUISOFT.md`
+- **AggregateRoot y Eventos**: Ver sección `AggregateRoot y Eventos de Dominio` en `ARQUITECTURA_Y_ESTRUCTURA.md`
+- **Virtual Threads**: Ver sección `Virtual Threads (ADR-008)` en `ARQUITECTURA_Y_ESTRUCTURA.md`
+- **Estructura config/**: Ver sección `Separación entre config/ raíz y seguridad/infrastructure/config/` en `ARQUITECTURA_Y_ESTRUCTURA.md`
+- **Arquitectura y Estructura**: `ARQUITECTURA_Y_ESTRUCTURA.md`
+- **Guía de Inicio Rápido**: `QUICK_START.md`
+- **Contribuir**: `CONTRIBUTING.md`
 
 ---
 
-## 📄 Licencia
-
-Este proyecto está licenciado bajo MIT License.
-
----
-
-**Generado**: Enero 12, 2026  
-**Versión**: 1.0.0  
-**Arquitectura**: Hexagonal Modular + Eventos Asincronicos
+**Versión**: 1.0.0
+**Arquitectura**: Hexagonal Modular + Eventos Asincrónicos

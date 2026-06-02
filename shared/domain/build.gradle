@@ -1,5 +1,3 @@
-dependencies {
-    // Lombok (used in domain models)
-    compileOnly "org.projectlombok:lombok:${lombokVersion}"
-    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-}
+// java-library habilita la configuración 'api', que expone dependencias
+// transitivamente a los consumidores del módulo.
+apply plugin: 'java-library'

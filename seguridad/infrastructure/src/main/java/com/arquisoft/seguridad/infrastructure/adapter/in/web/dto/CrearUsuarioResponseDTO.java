@@ -1,0 +1,14 @@
+package com.arquisoft.seguridad.infrastructure.adapter.in.web.dto;
+
+import lombok.Builder;
+import lombok.Value;
+
+import java.util.UUID;
+
+@Value
+@Builder
+public class CrearUsuarioResponseDTO {
+    UUID id;
+    String email;
+    String rol;
+}

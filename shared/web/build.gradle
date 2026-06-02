@@ -1,16 +1,25 @@
 dependencies {
     implementation project(':shared:domain')
-    implementation project(':shared:exceptions')
-    
+    implementation project(':shared:logger')
+
     // Spring Web
-    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
-    
-    // REST Client
-    implementation "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}"
-    
-    // JSON processing
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.15.2"
-    
+    implementation "org.springframework.boot:spring-boot-starter-web"
+
+    // Spring Data Commons — requerido por PageResponseDTO.from(Page<T>)
+    implementation 'org.springframework.data:spring-data-commons'
+
+    // REST Client (WebFlux para WebClient)
+    implementation "org.springframework.boot:spring-boot-starter-webflux"
+
+    // JSON processing — Jackson 3.x viene transitivo de spring-boot-starter-web → spring-boot-starter-jackson
+
     // Validation
-    implementation "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+
+    // Spring Security Core (AuthorizationDeniedException, AccessDeniedException)
+    implementation "org.springframework.security:spring-security-core"
+
+    // Lombok
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }

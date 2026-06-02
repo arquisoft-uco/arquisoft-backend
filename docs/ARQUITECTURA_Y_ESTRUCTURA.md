@@ -1,23 +1,38 @@
+> [!WARNING]
+> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
+>
+> Este archivo es documentación de referencia para desarrolladores humanos.
+> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
+> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
+> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
+> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+
 # Arquitectura Hexagonal Modular - Documentación Completa
 
 ## Índice
+
 1. [Visión General](#visión-general)
 2. [Arquitectura Hexagonal (Puertos y Adaptadores)](#arquitectura-hexagonal-puertos-y-adaptadores)
 3. [Estructura del Proyecto](#estructura-del-proyecto)
-4. [Módulos: Ventas y Seguridad](#módulos-ventas-y-seguridad)
-5. [Ejemplos Prácticos](#ejemplos-prácticos)
-6. [Configuración y Build](#configuración-y-build)
-7. [Flujos de Datos](#flujos-de-datos)
+4. [Módulo Seguridad](#módulo-seguridad)
+5. [Módulo Shared](#módulo-shared)
+6. [AggregateRoot y Eventos de Dominio](#aggregateroot-y-eventos-de-dominio)
+7. [Virtual Threads (ADR-008)](#virtual-threads-adr-008)
+8. [Ejemplos Prácticos](#ejemplos-prácticos)
+9. [Configuración y Build](#configuración-y-build)
+10. [Flujos de Datos](#flujos-de-datos)
+11. [Perfiles de Ejecución](#perfiles-de-ejecución)
 
 ---
 
 ## Visión General
 
-Este proyecto implementa una **Arquitectura Hexagonal Modular** usando **Spring Boot 3.2.4** y **Gradle** como herramienta de construcción. La arquitectura se basa en el patrón de **Puertos y Adaptadores**, también conocido como arquitectura hexagonal, que proporciona:
+Este proyecto implementa una **Arquitectura Hexagonal Modular** usando **Spring Boot 4.0.5** y **Gradle 9.0.0** como herramienta de construcción. La arquitectura se basa en el patrón de **Puertos y Adaptadores** con **7 contextos independientes**, Java 21 y Virtual Threads habilitados.
 
 ### Ventajas Principales
+
 - **Independencia de frameworks**: La lógica de negocio es agnóstica a tecnologías externas
-- **Modularidad**: Cada dominio (ventas, seguridad) es completamente independiente
+- **Modularidad**: Cada contexto es completamente independiente
 - **Testabilidad**: Las dependencias se invierten, facilitando pruebas unitarias
 - **Escalabilidad**: Los módulos pueden crecer sin afectar otros
 - **Mantenibilidad**: El código está organizado por responsabilidades claras
@@ -28,7 +43,7 @@ Este proyecto implementa una **Arquitectura Hexagonal Modular** usando **Spring 
 
 ### Concepto Fundamental
 
-La arquitectura hexagonal divide una aplicación en tres capas principales:
+La arquitectura hexagonal divide cada contexto en tres capas principales:
 
 ```
 ┌─────────────────────────────────────────┐
@@ -59,732 +74,652 @@ La arquitectura hexagonal divide una aplicación en tres capas principales:
 
 ### Componentes Clave
 
-#### 1. **Dominio (Domain)**
+#### 1. Dominio (Domain)
+
 - Contiene la lógica de negocio pura
-- Modelos (entidades)
+- Modelos (entidades) y value objects
 - Puertos (interfaces) que definen contratos
 - **Sin dependencias** a frameworks o bases de datos
 
-#### 2. **Puertos de Entrada (In)**
-- Interfaces que definen casos de uso
-- Métodos que la aplicación debe ofrecer
-- Ejemplo: `CreateTaskUseCase`, `RetrieveTaskUseCase`
+#### 2. Puertos de Entrada (In)
 
-#### 3. **Puertos de Salida (Out)**
-- Interfaces que definen dependencias externas
-- Ejemplo: `TaskRepositoryPort`, `ExternalServicePort`
-- La implementación real viene de los adaptadores
+- Interfaces que definen casos de uso, sufijo `InputPort`
+- Ejemplo: `CrearFichaInputPort`, `ConsultarFichasPerfilInputPort`
 
-#### 4. **Aplicación (Application)**
+#### 3. Puertos de Salida (Out)
+
+- Interfaces que definen dependencias externas, sufijo `OutputPort`
+- Ejemplo: `FichaPerfilOutputPort`, `UsuarioOutputPort`
+
+#### 4. Aplicación (Application)
+
 - Implementa los puertos de entrada (casos de uso)
 - Orquesta la lógica de negocio
-- Se comunica con puertos de salida (inyección de dependencias)
 - Contiene DTOs para transformación de datos
 
-#### 5. **Infraestructura (Infrastructure)**
-- Implementa los puertos de salida
-- Contiene adaptadores de entrada (Controllers)
-- Gestiona bases de datos, APIs externas, etc.
-- Configuración de Spring Boot
+#### 5. Infraestructura (Infrastructure)
+
+- Implementa los puertos de salida mediante `OutputAdapter` (e.g., `FichaPerfilOutputAdapter`)
+- Contiene adaptadores de entrada (`InputAdapter`): REST controllers y AMQP consumers (e.g., `FichaPerfilInputAdapter`, `UsuarioCreadoInputAdapter`)
+- Configuración de Spring Boot, Flyway, etc.
 
 ---
 
 ## Estructura del Proyecto
 
 ```
-base-hexagonal-modular/
+arquisoft-backend/
 │
-├── build.gradle                          # Configuración principal de Gradle
+├── build.gradle                          # Config principal Gradle
 ├── settings.gradle                       # Definición de módulos
 ├── gradle.properties                     # Versiones de dependencias
 ├── docker-compose.yml                    # Orquestación de contenedores
+├── Dockerfile                            # Imagen Docker multi-stage
+├── init-db.sql                           # Creación de 7 schemas
 │
-├── gradle/
-│   └── wrapper/                          # Gradle Wrapper
+├── config/                               # Configuraciones GENERALES del proyecto
+│   └── checkstyle/
+│       └── checkstyle.xml                # Reglas de estilo de código
+│   # config/ contiene solo tooling del build (checkstyle, etc.)
+│   # OpenApiConfig.java GLOBAL está en src/main/java/com/arquisoft/config/ — NO en config/ ni en contextos individuales.
 │
 ├── src/
-│   ├── main/
-│   │   ├── java/com/demo/
-│   │   │   └── MainApplication.java      # Punto de entrada Spring Boot
-│   │   └── resources/
-│   │       └── application.yml           # Configuración global
-│   └── test/
+│   └── main/
+│       ├── java/com/arquisoft/
+│       │   └── ArquisoftApplication.java # Punto de entrada Spring Boot
+│       └── resources/
+│           ├── application.yml           # Config base
+│           ├── application-dev.yml       # Perfil desarrollo
+│           └── application-prod.yml      # Perfil producción
 │
-├── ventas/                               # MÓDULO 1: Gestión de Ventas
-│   ├── build.gradle
-│   ├── domain/                           # Capa de Dominio
-│   │   ├── build.gradle
-│   │   └── src/main/java/com/demo/domain/
+├── shared/                               # Módulo compartido
+│   ├── domain/                           # DomainEvent, AggregateRoot
+│   ├── exceptions/                       # DomainException
+│   ├── amqp/                             # EventPublisher
+│   ├── postgres/                         # BaseRepository
+│   ├── redis/                            # RedisClient
+│   ├── web/                              # HttpClient
+│   └── validation/                       # @ValidEmail, EmailValidator
+│
+├── seguridad/                            # CONTEXTO 1
+│   ├── domain/
+│   │   └── src/main/java/com/arquisoft/seguridad/domain/
 │   │       ├── model/
-│   │       │   ├── Task.java             # Entidad de negocio
-│   │       │   └── AdditionalTaskInfo.java
-│   │       └── port/
-│   │           ├── in/                   # Puertos de entrada (casos de uso)
-│   │           │   ├── CreateTaskUseCase.java
-│   │           │   ├── RetrieveTaskUseCase.java
-│   │           │   ├── UpdateTaskUseCase.java
-│   │           │   ├── DeleteTaskUseCase.java
-│   │           │   └── GetAdditionalTaskInfoUseCase.java
-│   │           └── out/                  # Puertos de salida (dependencias)
-│   │               ├── TaskRepositoryPort.java
-│   │               └── ExternalServicePort.java
-│   │
-│   ├── application/                      # Capa de Aplicación
-│   │   ├── build.gradle
-│   │   └── src/main/java/com/demo/application/
-│   │       ├── dto/
-│   │       │   └── TaskDTO.java          # Data Transfer Object
-│   │       ├── usecase/                  # Implementación de casos de uso
-│   │       │   ├── CreateTaskUseCaseImpl.java
-│   │       │   ├── RetrieveTaskUseCaseImpl.java
-│   │       │   ├── UpdateTaskUseCaseImpl.java
-│   │       │   ├── DeleteTaskUseCaseImpl.java
-│   │       │   └── GetAdditionalTaskInfoUseCaseImpl.java
-│   │       ├── facade/
-│   │       │   └── TaskFacade.java       # Fachada unificada
-│   │       └── service/                  # Servicios de aplicación
-│   │
-│   └── infrastructure/                   # Capa de Infraestructura
-│       ├── build.gradle
-│       └── src/main/java/com/demo/infrastructure/
-│           ├── adapter/
-│           │   ├── in/
-│           │   │   └── TaskController.java      # Adaptador de entrada (REST)
-│           │   └── out/
-│           │       ├── TaskRepositoryAdapter.java   # Implementa TaskRepositoryPort
-│           │       └── ExternalServiceAdapter.java  # Implementa ExternalServicePort
-│           ├── common/
-│           │   └── SqlLoader.java        # Utilidades comunes
-│           └── resources/
-│               ├── db/migration/         # Flyway migrations
-│               │   └── V1.0__schema.sql
-│               └── sql/
-│                   └── getAllTasks.sql
+│   │       │   ├── UsuarioAggregate.java  # Aggregate root con factory build()/rebuild()
+│   │       │   └── UserRole.java          # Enum: 8 roles
+│   │       ├── port/out/
+│   │       │   └── UsuarioOutputPort.java # OutputPort para persistencia de usuarios
+│   │       └── exception/
+│   │           ├── AuthenticationException.java
+│   │           ├── InvalidCredentialsException.java
+│   │           └── InvalidTokenException.java
+│   ├── application/
+│   │   └── src/main/java/com/arquisoft/seguridad/application/
+│   │       ├── auth/
+│   │       │   ├── AuthenticateUserInputPort.java   # InputPort (contiene inner record AuthResult)
+│   │       │   ├── AuthenticateUserUseCaseImpl.java
+│   │       │   ├── LogoutInputPort.java
+│   │       │   ├── LogoutUseCaseImpl.java
+│   │       │   ├── RefreshTokenInputPort.java       # InputPort (contiene inner record RefreshResult)
+│   │       │   ├── RefreshTokenUseCaseImpl.java
+│   │       │   ├── ValidateTokenInputPort.java      # InputPort (contiene inner record ValidationResult)
+│   │       │   └── ValidateTokenUseCaseImpl.java
+│   │       ├── usuario/
+│   │       │   ├── CrearUsuarioInputPort.java
+│   │       │   ├── CrearUsuarioUseCaseImpl.java
+│   │       │   ├── RegistrarUsuarioInputPort.java
+│   │       │   └── RegistrarUsuarioUseCaseImpl.java
+│   │       ├── port/out/
+│   │       │   ├── AuthenticationOutputPort.java   # Contrato Keycloak
+│   │       │   ├── TokenOutputPort.java             # Contrato validación JWT
+│   │       │   ├── TokenBlacklistOutputPort.java    # Contrato Redis blacklist
+│   │       │   └── CurrentUserOutputPort.java       # Contrato Spring Security context
+│   │       └── dto/
+│   │           ├── LoginRequestDTO.java
+│   │           ├── LoginResponseDTO.java
+│   │           ├── AuthenticatedUserDTO.java
+│   │           ├── RefreshTokenRequestDTO.java
+│   │           ├── TokenValidationReadModel.java    # ReadModel (sufijo ReadModel, no ResponseDTO)
+│   │           └── ErrorResponseDTO.java
+│   └── infrastructure/
+│       └── src/main/java/com/arquisoft/seguridad/infrastructure/
+│           ├── adapter/in/
+│           │   ├── AuthInputAdapter.java            # InputAdapter (ex AuthController)
+│           │   ├── UsuarioInputAdapter.java          # InputAdapter (ex UsuarioController)
+│           │   └── UsuarioCreadoInputAdapter.java    # InputAdapter AMQP (ex UsuarioCreadoConsumer)
+│           ├── adapter/out/
+│           │   ├── UsuarioOutputAdapter.java         # OutputAdapter (ex InMemoryUsuarioRepository)
+│           │   ├── JwtTokenOutputAdapter.java        # OutputAdapter (ex JwtTokenAdapter)
+│           │   ├── KeycloakAuthOutputAdapter.java    # OutputAdapter (ex KeycloakAuthAdapter)
+│           │   ├── CurrentUserOutputAdapter.java     # OutputAdapter (ex CurrentUserAdapter)
+│           │   └── RedisTokenBlacklistOutputAdapter.java  # OutputAdapter (ex RedisTokenBlacklistAdapter)
+│           ├── config/                   # Configuraciones de SEGURIDAD (no van en config/ raíz)
+│           │   ├── SecurityConfig.java    # JWT + OAuth2 Resource Server + método security
+│           │   ├── CorsConfig.java        # Orígenes, headers expuestos, credenciales
+│           │   ├── RateLimitConfig.java   # Bucket4j per-IP (100/min global, 5/min login)
+│           │   └── RestTemplateConfig.java # SimpleClientHttpRequestFactory (SB4 compat)
+│           └── filter/
+│               ├── RateLimitingFilter.java  # OncePerRequestFilter: evalúa límite por IP
+│               └── AuditFilter.java         # Registra METHOD, URI, USER, TIME, STATUS
 │
-└── seguridad/                            # MÓDULO 2: Gestión de Seguridad
-    ├── build.gradle
-    ├── dominio/                          # Capa de Dominio
-    │   ├── build.gradle
-    │   └── src/main/java/com/demo/seguridad/
-    │       ├── modelo/
-    │       │   ├── Usuario.java
-    │       │   ├── Rol.java
-    │       │   ├── Permiso.java
-    │       │   ├── Organizacion.java
-    │       │   ├── EstadoUsuario.java
-    │       │   └── EstadoPermiso.java
-    │       ├── puerto/entrada/          # Puertos de entrada
-    │       │   ├── usuario/
-    │       │   └── rol/
-    │       └── puerto/salida/           # Puertos de salida
-    │           ├── usuario/
-    │           ├── rol/
-    │           ├── permiso/
-    │           ├── credencial/
-    │           └── aplicacion/
-    │
-    ├── aplicacion/                       # Capa de Aplicación
-    │   ├── build.gradle
-    │   └── src/main/java/com/demo/seguridad/
-    │       ├── dto/
-    │       ├── servicio/
-    │       └── fachada/
-    │
-    └── infraestructura/                  # Capa de Infraestructura
-        ├── build.gradle
-        └── src/main/java/com/demo/seguridad/
-            ├── adaptador/
-            │   ├── in/
-            │   └── out/
-            └── comun/
+├── fichas/                               # CONTEXTO 2
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+│
+├── proyectos/                            # CONTEXTO 3
+├── artefactos/                           # CONTEXTO 4
+├── repositorio_artefactos/               # CONTEXTO 5
+├── entregables/                          # CONTEXTO 6
+└── evaluaciones/                         # CONTEXTO 7
 ```
 
 ### Convenciones de Nomenclatura
 
-| Capa | Nomenclatura (Español) | Nomenclatura (English) |
-|------|------------------------|----------------------|
-| **Domain** | `modelo/`, `puerto/entrada`, `puerto/salida` | `model/`, `port/in`, `port/out` |
-| **Application** | `dto/`, `servicio/`, `fachada/`, `casouso/` | `dto/`, `service/`, `facade/`, `usecase/` |
-| **Infrastructure** | `adaptador/`, `comun/` | `adapter/`, `common/` |
-
-**Nota**: El proyecto utiliza ambas convenciones (español para `seguridad`, inglés para `ventas`) como ejemplo de flexibilidad.
+| Capa | Paquete | Sufijo | Ejemplo |
+|------|---------|--------|---------|
+| **Domain - aggregate roots** | `model/` | `Aggregate` | `FichaPerfilAggregate.java` |
+| **Domain - puertos entrada** | `port/in/` | `InputPort` | `CrearFichaInputPort.java` |
+| **Domain - puertos salida** | `port/out/` | `OutputPort` | `FichaPerfilOutputPort.java` |
+| **Domain - excepciones** | `exception/` | `Exception` | `FichaNotFoundException.java` |
+| **Application - DTOs** | `{feature}/dto/` | `DTO` | `LoginRequestDTO.java` |
+| **Application - ReadModels** | `{feature}/dto/` | `ReadModel` | `FichaPerfilReadModel.java` |
+| **Application - input ports** | `{feature}/command/` o `{feature}/query/` | `InputPort` | `ConsultarFichasPerfilInputPort.java` |
+| **Application - use cases** | `{feature}/command/` o `{feature}/query/` | `UseCaseImpl` | `ConsultarFichasPerfilUseCaseImpl.java` |
+| **Infrastructure - entrada** | `adapter/in/` | `InputAdapter` | `FichaPerfilInputAdapter.java` |
+| **Infrastructure - salida** | `adapter/out/` | `OutputAdapter` | `FichaPerfilOutputAdapter.java` |
+| **Infrastructure - config** | `config/` | `Config` | `FichasConfig.java` |
 
 ---
 
-## Módulos: Ventas y Seguridad
+## Módulo Seguridad
 
-### Módulo Ventas (English Convention)
+El contexto **seguridad** maneja toda la autenticación y autorización de la aplicación.
 
-#### Estructura Modular
-```
-ventas/
-├── domain          # Independiente
-├── application     # Depende de domain
-└── infrastructure  # Depende de application y domain
-```
+### Responsabilidades
 
-#### Dependencias Gradle
+- Autenticación OAuth2/JWT via Keycloak
+- Gestión de roles (`ADMINISTRADOR`, `COORDINADOR`, `ASESOR_FICHA`, `ASESOR`, `JURADO`, `ESTUDIANTE`, `BIBLIOTECARIO`, `REPRESENTANTE_COMITE_CURRICULUM`)
+- Rate limiting con Bucket4j
+- Auditoría de requests
+- CORS configuration
+- Global exception handling
+
+### Endpoints
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/auth/login` | Login con Keycloak |
+| POST | `/api/auth/refresh` | Renovar token |
+| POST | `/api/auth/logout` | Cerrar sesión |
+| POST | `/api/auth/validate` | Validar token |
+
+### Dependencias
+
 ```gradle
-// ventas:application depende de ventas:domain
+// seguridad/infrastructure/build.gradle
 dependencies {
-    implementation project(':ventas:domain')
-}
-
-// ventas:infrastructure depende de application y domain
-dependencies {
-    implementation project(':ventas:domain')
-    implementation project(':ventas:application')
-    implementation "org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}"
-    implementation "org.flywaydb:flyway-core:${flywaydbVersion}"
-    runtimeOnly 'org.postgresql:postgresql:42.7.2'
+    implementation project(':seguridad:domain')
+    implementation project(':seguridad:application')
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+    implementation 'org.keycloak:keycloak-admin-client:25.0.3'
+    implementation 'com.bucket4j:bucket4j-core:7.6.0'
 }
 ```
-
-#### Tecnologías
-- **Base de Datos**: PostgreSQL (producción) / H2 (testing)
-- **Migraciones**: Flyway
-- **ORM**: JdbcTemplate (bajo nivel, control explícito)
 
 ---
 
-### Módulo Seguridad (Spanish Convention)
+## Módulo Shared
 
-#### Estructura Modular
+El módulo `shared` contiene **7 sub-módulos** reutilizables por cualquier contexto:
+
+| Sub-módulo | Contenido | Uso |
+|-----------|-----------|-----|
+| `domain` | DomainEvent, AggregateRoot | Clases base para entidades con eventos |
+| `exceptions` | DomainException | Excepción base de negocio |
+| `amqp` | EventPublisher (interface) | Publicar eventos a RabbitMQ |
+| `postgres` | BaseRepository (JpaRepository) | Repositorios base JPA |
+| `redis` | RedisClient (interface) | Operaciones de cache |
+| `web` | HttpClient (interface) | Llamadas HTTP entre contextos |
+| `validation` | @ValidEmail, EmailValidator | Anotaciones de validación |
+
+### Ejemplo de Uso
+
+```gradle
+// fichas/domain/build.gradle
+dependencies {
+    implementation project(':shared:domain')  // Para usar DomainEvent, AggregateRoot
+}
+
+// fichas/infrastructure/build.gradle
+dependencies {
+    implementation project(':shared:amqp')    // Para publicar eventos
+    implementation project(':shared:postgres') // Para repositorios JPA
+}
 ```
-seguridad/
-├── dominio         # Independiente
-├── aplicacion      # Depende de dominio
-└── infraestructura # Depende de aplicacion y dominio
+
+---
+
+## AggregateRoot y Eventos de Dominio
+
+### ¿Qué es AggregateRoot?
+
+`AggregateRoot` (en `shared/domain`) es la clase base para entidades de dominio que necesitan **emitir eventos de negocio**. Gestiona una lista interna de eventos no publicados que el use case drena después de persistir.
+
+```java
+// shared/domain — clase existente
+public abstract class AggregateRoot {
+    private final List<DomainEvent> unPublishedEvents = new ArrayList<>();
+
+    protected void publishEvent(DomainEvent event) {
+        unPublishedEvents.add(event);         // acumula el evento en memoria
+    }
+
+    public List<DomainEvent> getUnPublishedEvents() {
+        return new ArrayList<>(unPublishedEvents);
+    }
+
+    public void clearUnPublishedEvents() {
+        unPublishedEvents.clear();
+    }
+}
 ```
 
-#### Conceptos de Dominio
-- **Usuario**: Entidad principal del sistema
-- **Rol**: Agrupación de permisos
-- **Permiso**: Acciones autorizadas
-- **Organizacion**: Contexto empresarial
-- **Credencial**: Autenticación (usuario/contraseña)
+### ¿Cuándo extender AggregateRoot?
 
-#### Flujos Principales
-1. **Registro de Administrador** → `RegistrarAdministradorImpl`
-2. **Gestión de Usuarios** → Activar, Inactivar, Modificar, Listar
-3. **Asignación de Roles** → `AsignarRol`
-4. **Gestión de Permisos** → Control granular de acceso
+| Contexto | ¿Usa AggregateRoot? | Razón |
+|---|---|---|
+| `fichas` | ✅ Sí | Emite `FichaCreadaEvent`, `FichaAprobadaEvent` |
+| `proyectos` | ✅ Sí | Emite `ProyectoCreadoEvent`, `ProyectoFinalizadoEvent` |
+| `artefactos` | ✅ Sí | Emite `ArtefactoCreadoEvent`, `ArtefactoEvaluadoEvent` |
+| `entregables` | ✅ Sí | Emite `EntregableCreadoEvent`, `EntregableSubidoEvent` |
+| `evaluaciones` | ✅ Sí | Emite `EvaluacionCalificadaEvent` |
+| `repositorio_artefactos` | ✅ Sí | Emite `VersionPublicadaEvent` |
+| `seguridad` | ❌ No | Contexto transversal, delega a Keycloak, sin estado propio |
+
+### Estructura de carpetas en domain (con eventos)
+
+```
+{contexto}/domain/src/main/java/com/arquisoft/{contexto}/domain/
+├── model/
+│   └── {Entidad}Aggregate.java    ← extends AggregateRoot
+├── event/                         ← carpeta para eventos de dominio
+│   ├── {Entidad}CreadaEvent.java
+│   ├── {Entidad}AprobadaEvent.java
+│   └── {Entidad}FinalizadaEvent.java
+├── port/
+│   ├── in/                        ← InputPort interfaces (o en application layer)
+│   └── out/                       ← OutputPort interfaces
+└── exception/
+```
+
+### Ejemplo completo: aggregate con AggregateRoot
+
+```java
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/model/FichaPerfilAggregate.java
+package com.arquisoft.fichas.domain.model;
+
+import com.arquisoft.shared.domain.AggregateRoot;
+import com.arquisoft.fichas.domain.event.FichaPerfilCreadaEvent;
+import java.util.UUID;
+
+public class FichaPerfilAggregate extends AggregateRoot {  // ← sufijo Aggregate
+
+    private final UUID id;
+    private final String tituloProyecto;
+    private final AsesorFicha asesorFicha;
+
+    private FichaPerfilAggregate(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
+        this.id = id;
+        this.tituloProyecto = tituloProyecto;
+        this.asesorFicha = asesorFicha;
+    }
+
+    // Factory para NUEVA ficha — genera UUID y registra evento
+    public static FichaPerfilAggregate build(String tituloProyecto, AsesorFicha asesorFicha) {
+        FichaPerfilAggregate ficha = new FichaPerfilAggregate(UUID.randomUUID(), tituloProyecto, asesorFicha);
+        ficha.publishEvent(new FichaPerfilCreadaEvent(ficha.id.toString(), tituloProyecto));
+        return ficha;
+    }
+
+    // Factory para RECONSTRUIR desde persistencia — sin evento
+    public static FichaPerfilAggregate rebuild(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
+        return new FichaPerfilAggregate(id, tituloProyecto, asesorFicha);
+    }
+
+    public UUID getId()                   { return id; }
+    public String getTituloProyecto()     { return tituloProyecto; }
+    public AsesorFicha getAsesorFicha()   { return asesorFicha; }
+}
+```
+
+```java
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/event/FichaCreadaEvent.java
+package com.arquisoft.fichas.domain.event;
+
+import com.arquisoft.shared.domain.DomainEvent;
+
+public class FichaCreadaEvent extends DomainEvent {
+    private final String titulo;
+
+    public FichaCreadaEvent(String aggregateId, String titulo) {
+        super(aggregateId);   // eventId, occurredAt y eventType se generan automáticamente
+        this.titulo = titulo;
+    }
+
+    public String getTitulo() { return titulo; }
+}
+```
+
+### Use Case: drenar y publicar eventos tras persistir
+
+El **use case** es el único responsable de drenar los eventos del aggregate y entregarlos a RabbitMQ. Nunca lo hace el controller ni el repositorio.
+
+```java
+// fichas/application/.../fichaperfil/command/CrearFichaPerfilUseCaseImpl.java
+@Component
+@RequiredArgsConstructor
+public class CrearFichaPerfilUseCaseImpl implements CrearFichaPerfilInputPort {
+
+    private final FichaPerfilOutputPort fichaPerfilOutputPort;
+    private final EventPublisher eventPublisher;      // shared:amqp
+
+    @Override
+    public FichaPerfilAggregate crear(FichaPerfilAggregate ficha) {
+        FichaPerfilAggregate guardada = fichaPerfilOutputPort.save(ficha);  // 1. persistir
+
+        guardada.getUnPublishedEvents()                // 2. drenar eventos acumulados
+                .forEach(eventPublisher::publish);     // 3. publicar a RabbitMQ
+        guardada.clearUnPublishedEvents();             // 4. limpiar lista
+
+        return guardada;
+    }
+}
+```
+
+### Regla importante
+
+- `build(...)` → para **crear** una entidad nueva: genera UUID + registra eventos.
+- `rebuild(...)` → para **reconstruir** desde BD: sin UUID nuevo, sin eventos.
+- El dominio **nunca** inyecta `EventPublisher` — solo acumula eventos en memoria.
+
+---
+
+## Virtual Threads (ADR-008)
+
+### Configuración
+
+> **Spring Boot 4.0.x (versión actual del proyecto):** Virtual Threads se activan **automáticamente** cuando la JVM es Java 21+. La propiedad `spring.threads.virtual.enabled=true` ya **no es necesaria** y fue eliminada de `application.yml` con la migración a Boot 4.0.5 (ADR-008).
+>
+> Si el proyecto estuviera en Spring Boot 3.x, la propiedad requerida sería:
+> ```yaml
+> spring:
+>   threads:
+>     virtual:
+>       enabled: true
+> ```
+> En Boot 4.x esto ocurre sin configuración adicional.
+
+Esta configuración hace que Spring Boot reemplace automáticamente los executors de OS threads en **Tomcat**, **`@Async`** y **RabbitMQ listeners**.
+
+### ¿Qué cubre automáticamente?
+
+| Componente del proyecto | Efecto |
+|---|---|
+| Todos los **InputAdapters** REST (requests HTTP) | Cada request corre en un virtual thread |
+| **`KeycloakAuthOutputAdapter`** (HTTP a Keycloak) | Bloqueo I/O sin consumir OS thread |
+| **`JwtTokenOutputAdapter`** (decodificación JWT) | Igual |
+| **`FichaPerfilOutputAdapter`** y todos los OutputAdapters JPA/JDBC | Queries a BD sin bloquear OS thread |
+| **`@RabbitListener`** en InputAdapters AMQP | Mensajes procesados en virtual threads |
+| **`AuditFilter`**, **`RateLimitingFilter`** | Mismo virtual thread del request |
+
+No hay que modificar ningún método ni clase — el beneficio es completamente transparente para el código de negocio.
+
+### La única excepción: `@Async` con `TaskExecutor` manual
+
+Si en algún use case se declara un `TaskExecutor` propio en un `@Configuration`, ese bean **no hereda** la configuración global y debe ajustarse explícitamente:
+
+```java
+// ❌ NO hereda virtual threads — usa OS threads del pool
+@Bean
+public TaskExecutor miExecutor() {
+    return new ThreadPoolTaskExecutor();
+}
+
+// ✅ SÍ usa virtual threads
+@Bean
+public TaskExecutor miExecutor() {
+    return new SimpleAsyncTaskExecutor(Thread.ofVirtual().factory());
+}
+```
+
+En este proyecto no hay ningún `TaskExecutor` declarado manualmente, por lo que toda la concurrencia queda cubierta con la propiedad ya configurada.
+
+### Separación entre `config/` raíz y `seguridad/infrastructure/config/`
+
+| Carpeta | Qué va aquí |
+|---|---|
+| `config/` *(raíz del proyecto)* | Configuraciones **transversales** del build/tooling: `checkstyle.xml`, reglas de análisis estático. |
+| `src/main/java/com/arquisoft/` | Punto de entrada (`ArquisoftApplication`) y configuraciones **globales de la API ensamblada**: `config/OpenApiConfig` con `@OpenAPIDefinition` y `@SecurityScheme`. Reside aquí porque es el único módulo con visibilidad de todos los contextos. |
+| `seguridad/infrastructure/config/` | Configuraciones **de runtime de Spring Security**: `SecurityConfig`, `CorsConfig`, `RateLimitConfig`, `RestTemplateConfig`. Solo pertenecen al contexto de seguridad. |
 
 ---
 
 ## Ejemplos Prácticos
 
-### Ejemplo 1: Crear una Tarea (Módulo Ventas)
+### Ejemplo: Crear una Ficha
 
 #### Flujo Completo
 
 ```
-HTTP Request
+HTTP POST /api/fichas
     ↓
-TaskController.createTask() [Adapter IN]
+FichaPerfilInputAdapter.crear(FichaDTO)          [InputAdapter IN]
     ↓
-TaskFacade.createTask() [Facade]
+FichaDTO.toDomain() → FichaPerfilAggregate
     ↓
-CreateTaskUseCaseImpl.createTask() [Use Case Implementation]
+CrearFichaUseCaseImpl.crear(FichaPerfilAggregate) [Use Case]
     ↓
-TaskRepositoryPort.save() [Port OUT - Interface]
+FichaPerfilOutputPort.save(FichaPerfilAggregate)  [OutputPort - Interface]
     ↓
-TaskRepositoryAdapter.save() [Adapter OUT - Implementation]
+FichaPerfilOutputAdapter.save(FichaPerfilAggregate) [OutputAdapter - Implementation]
     ↓
-JdbcTemplate.update() [Database]
+JpaRepository.save()                              [Database INSERT]
     ↓
-HTTP Response
+HTTP 201 Created
 ```
 
-#### Código Completo
+#### Código
 
-**1. Definir la Entidad en Domain**
+**1. Aggregate de Dominio**
+
 ```java
-// ventas/domain/src/main/java/com/demo/domain/model/Task.java
-package com.demo.domain.model;
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/model/FichaPerfilAggregate.java
+package com.arquisoft.fichas.domain.model;
 
-import java.time.LocalDateTime;
+import com.arquisoft.shared.domain.AggregateRoot;
+import java.util.UUID;
 
-public class Task {
-    private final Long id;
-    private final String title;
-    private final String description;
-    private final LocalDateTime creationDate;
-    private final boolean completed;
+public class FichaPerfilAggregate extends AggregateRoot {
+    private final UUID id;
+    private final String tituloProyecto;
+    private final AsesorFicha asesorFicha;
 
-    private Task(Long id, String title, String description, LocalDateTime creationDate, boolean completed) {
+    private FichaPerfilAggregate(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
         this.id = id;
-        this.title = title;
-        this.description = description;
-        this.creationDate = creationDate;
-        this.completed = completed;
+        this.tituloProyecto = tituloProyecto;
+        this.asesorFicha = asesorFicha;
     }
 
-    // Factory method para crear nuevas tareas
-    public static Task build(Long id, String title, String description, LocalDateTime creationDate, boolean completed) {
-        return new Task(id, title, description, creationDate, completed);
+    // Factory para NUEVA ficha — genera UUID y puede registrar evento
+    public static FichaPerfilAggregate build(String tituloProyecto, AsesorFicha asesorFicha) {
+        return new FichaPerfilAggregate(UUID.randomUUID(), tituloProyecto, asesorFicha);
     }
 
-    // Factory method para reconstruir desde persistencia
-    public static Task rebuild(Long id, String title, String description, LocalDateTime creationDate, boolean completed) {
-        return new Task(id, title, description, creationDate, completed);
+    // Factory para RECONSTRUIR desde persistencia — sin evento
+    public static FichaPerfilAggregate rebuild(UUID id, String tituloProyecto, AsesorFicha asesorFicha) {
+        return new FichaPerfilAggregate(id, tituloProyecto, asesorFicha);
     }
 
-    // Getters
-    public Long getId() { return id; }
-    public String getTitle() { return title; }
-    public String getDescription() { return description; }
-    public LocalDateTime getCreationDate() { return creationDate; }
-    public boolean isCompleted() { return completed; }
+    public UUID getId() { return id; }
+    public String getTituloProyecto() { return tituloProyecto; }
+    public AsesorFicha getAsesorFicha() { return asesorFicha; }
 }
 ```
 
-**2. Definir Puertos en Domain**
+**2. Puerto de Entrada (InputPort)**
 
 ```java
-// ventas/domain/src/main/java/com/demo/domain/port/in/CreateTaskUseCase.java
-package com.demo.domain.port.in;
+// fichas/application/src/main/java/com/arquisoft/fichas/application/fichaperfil/query/ConsultarFichasPerfilInputPort.java
+package com.arquisoft.fichas.application.fichaperfil.query;
 
-import com.demo.domain.model.Task;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.PaginationRequest;
 
-public interface CreateTaskUseCase {
-    Task createTask(Task task);
+public interface ConsultarFichasPerfilInputPort {
+    PaginatedResult<FichaPerfilReadModel> ejecutar(PaginationRequest request);
 }
 ```
 
+**3. Puerto de Salida (OutputPort)**
+
 ```java
-// ventas/domain/src/main/java/com/demo/domain/port/out/TaskRepositoryPort.java
-package com.demo.domain.port.out;
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/port/out/FichaPerfilOutputPort.java
+package com.arquisoft.fichas.domain.port.out;
 
-import com.demo.domain.model.Task;
-import java.util.List;
-import java.util.Optional;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
+import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.PaginationRequest;
 
-public interface TaskRepositoryPort {
-    Task save(Task task);
-    Optional<Task> findById(Long id);
-    List<Task> findAll();
-    Optional<Task> update(Task task);
-    boolean deleteById(Long id);
+public interface FichaPerfilOutputPort {
+    PaginatedResult<FichaPerfilAggregate> consultarTodas(PaginationRequest request);
 }
 ```
 
-**3. Implementar en Application**
+**4. Implementación UseCaseImpl**
 
 ```java
-// ventas/application/src/main/java/com/demo/application/usecase/CreateTaskUseCaseImpl.java
-package com.demo.application.usecase;
+// fichas/application/.../fichaperfil/query/ConsultarFichasPerfilUseCaseImpl.java
+package com.arquisoft.fichas.application.fichaperfil.query;
 
-import com.demo.domain.model.Task;
-import com.demo.domain.port.in.CreateTaskUseCase;
-import com.demo.domain.port.out.TaskRepositoryPort;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.fichas.domain.port.out.FichaPerfilOutputPort;
+import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.PaginationRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class CreateTaskUseCaseImpl implements CreateTaskUseCase {
-    private final TaskRepositoryPort taskRepositoryPort;
+public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilInputPort {
+    private final FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Override
-    public Task createTask(Task task) {
-        // Aquí iría lógica de validación/negocio
-        return taskRepositoryPort.save(task);
+    public PaginatedResult<FichaPerfilReadModel> ejecutar(PaginationRequest request) {
+        return fichaPerfilOutputPort.consultarTodas(request)
+                .map(FichaPerfilReadModel::fromDomain);
     }
 }
 ```
 
-**4. Crear DTO para transferencia de datos**
+**5. InputAdapter (REST Controller)**
 
 ```java
-// ventas/application/src/main/java/com/demo/application/dto/TaskDTO.java
-package com.demo.application.dto;
+// fichas/infrastructure/.../adapter/in/web/FichaPerfilInputAdapter.java
+package com.arquisoft.fichas.infrastructure.adapter.in.web;
 
-import com.demo.domain.model.Task;
-import lombok.Data;
-import java.time.LocalDateTime;
-
-@Data
-public class TaskDTO {
-    private Long id;
-    private String title;
-    private String description;
-    private LocalDateTime creationDate;
-    private boolean completed;
-
-    // Transformar DTO a entidad de dominio
-    public Task toDomain() {
-        return Task.build(id, title, description, creationDate, completed);
-    }
-}
-```
-
-**5. Crear Fachada en Application**
-
-```java
-// ventas/application/src/main/java/com/demo/application/facade/TaskFacade.java
-package com.demo.application.facade;
-
-import com.demo.domain.model.Task;
-import com.demo.domain.port.in.*;
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
-@Service
+@RestController
+@RequestMapping("/fichas-perfil")
 @RequiredArgsConstructor
-public class TaskFacade implements CreateTaskUseCase, RetrieveTaskUseCase, 
-                                    UpdateTaskUseCase, DeleteTaskUseCase,
-                                    GetAdditionalTaskInfoUseCase {
+public class FichaPerfilInputAdapter {
+    private final ConsultarFichasPerfilInputPort consultarFichasPerfilInputPort;
 
-    private final CreateTaskUseCase createTaskUseCase;
-    private final RetrieveTaskUseCase retrieveTaskUseCase;
-    // ... otros casos de uso
-
-    @Override
-    public Task createTask(Task task) {
-        return createTaskUseCase.createTask(task);
+    @GetMapping("/coordinador")
+    @PreAuthorize("hasAuthority('ficha:ficha:view')")
+    public ResponseEntity<?> consultarTodas(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(consultarFichasPerfilInputPort.ejecutar(
+                PaginationRequest.of(page, size)));
     }
-
-    @Override
-    public Optional<Task> getTask(Long id) {
-        return retrieveTaskUseCase.getTask(id);
-    }
-
-    // ... otros métodos
 }
 ```
 
-**6. Implementar Adaptador en Infrastructure**
+**6. OutputAdapter (JPA)**
 
 ```java
-// ventas/infrastructure/src/main/java/com/demo/infrastructure/adapter/out/TaskRepositoryAdapter.java
-package com.demo.infrastructure.adapter.out;
+// fichas/infrastructure/.../adapter/out/persistence/fichaperfil/FichaPerfilOutputAdapter.java
+package com.arquisoft.fichas.infrastructure.adapter.out.persistence.fichaperfil;
 
-import com.demo.domain.model.Task;
-import com.demo.domain.port.out.TaskRepositoryPort;
-import com.demo.infrastructure.common.SqlLoader;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.port.out.FichaPerfilOutputPort;
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class TaskRepositoryAdapter implements TaskRepositoryPort {
-    private final SqlLoader sqlLoader;
-    private final JdbcTemplate jdbcTemplate;
+public class FichaPerfilOutputAdapter implements FichaPerfilOutputPort {
+    private final FichaPerfilJpaRepository fichaPerfilJpaRepository;
 
     @Override
-    public Task save(Task task) {
-        String sql = "INSERT INTO tasks (title, description, creation_date, completed) " +
-                     "VALUES (?, ?, ?, ?)";
-        
-        jdbcTemplate.update(sql, 
-            task.getTitle(),
-            task.getDescription(),
-            task.getCreationDate(),
-            task.isCompleted()
-        );
-        
-        return task;
-    }
-
-    @Override
-    public Optional<Task> findById(Long id) {
-        String sql = "SELECT * FROM tasks WHERE id = ?";
-        RowMapper<Task> rowMapper = (rs, rowNum) -> Task.rebuild(
-            rs.getLong("id"),
-            rs.getString("title"),
-            rs.getString("description"),
-            rs.getTimestamp("creation_date").toLocalDateTime(),
-            rs.getBoolean("completed")
-        );
-        
-        return Optional.ofNullable(
-            jdbcTemplate.queryForObject(sql, rowMapper, id)
-        );
-    }
-
-    @Override
-    public List<Task> findAll() {
-        String sql = sqlLoader.getSqlQuery("getAllTasks.sql");
-        RowMapper<Task> rowMapper = (rs, rowNum) -> Task.rebuild(
-            rs.getLong("id"),
-            rs.getString("title"),
-            rs.getString("description"),
-            rs.getTimestamp("creation_date").toLocalDateTime(),
-            rs.getBoolean("completed")
-        );
-        return jdbcTemplate.query(sql, rowMapper);
-    }
-
-    @Override
-    public Optional<Task> update(Task task) {
-        String sql = "UPDATE tasks SET title = ?, description = ?, completed = ? WHERE id = ?";
-        int rowsAffected = jdbcTemplate.update(sql,
-            task.getTitle(),
-            task.getDescription(),
-            task.isCompleted(),
-            task.getId()
-        );
-        
-        return rowsAffected > 0 ? Optional.of(task) : Optional.empty();
-    }
-
-    @Override
-    public boolean deleteById(Long id) {
-        String sql = "DELETE FROM tasks WHERE id = ?";
-        return jdbcTemplate.update(sql, id) > 0;
+    public PaginatedResult<FichaPerfilAggregate> consultarTodas(PaginationRequest request) {
+        Page<FichaPerfilJpaEntity> page = fichaPerfilJpaRepository.findAll(
+                PageRequest.of(request.getPage(), request.getSize()));
+        return PaginatedResult.of(
+                page.getContent().stream().map(FichaPerfilMapper::toDomain).toList(),
+                request.getPage(), request.getSize(), page.getTotalElements());
     }
 }
 ```
 
-**7. Crear Controlador en Infrastructure**
+### Test Unitario
 
 ```java
-// ventas/infrastructure/src/main/java/com/demo/infrastructure/adapter/in/TaskController.java
-package com.demo.infrastructure.adapter.in;
+// fichas/application/src/test/java/com/arquisoft/fichas/application/usecase/ConsultarFichasPerfilUseCaseImplTest.java
+package com.arquisoft.fichas.application.usecase;
 
-import com.demo.application.dto.TaskDTO;
-import com.demo.application.facade.TaskFacade;
-import com.demo.domain.model.Task;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import java.util.List;
-
-@RestController
-@RequestMapping("/api/task")
-@RequiredArgsConstructor
-public class TaskController {
-    private final TaskFacade taskFacade;
-
-    @PostMapping
-    public ResponseEntity<Task> createTask(@RequestBody TaskDTO task) {
-        Task createdTask = taskFacade.createTask(task.toDomain());
-        return new ResponseEntity<>(createdTask, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{taskId}")
-    public ResponseEntity<Task> getTaskById(@PathVariable Long taskId) {
-        return ResponseEntity.of(taskFacade.getTask(taskId));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Task>> getAllTasks() {
-        return ResponseEntity.ok(taskFacade.getAllTasks());
-    }
-
-    @PutMapping("/{taskId}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long taskId, @RequestBody TaskDTO task) {
-        return ResponseEntity.of(taskFacade.updateTask(taskId, task.toDomain()));
-    }
-
-    @DeleteMapping("/{taskId}")
-    public ResponseEntity<Void> deleteTaskById(@PathVariable Long taskId) {
-        if (taskFacade.deleteTask(taskId)) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    @GetMapping("/{taskId}/additionalInfo")
-    public ResponseEntity<AdditionalTaskInfo> getAdditionalInfo(@PathVariable Long taskId) {
-        return ResponseEntity.ok(taskFacade.getAdditionalTaskInfo(taskId));
-    }
-}
-```
-
-#### Request HTTP Ejemplo
-```bash
-curl -X POST http://localhost:8081/api/task \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Implementar módulo de reportes",
-    "description": "Crear reportes de ventas mensuales",
-    "completed": false
-  }'
-```
-
-#### Response
-```json
-{
-  "id": 1,
-  "title": "Implementar módulo de reportes",
-  "description": "Crear reportes de ventas mensuales",
-  "creationDate": "2026-01-08T10:30:00",
-  "completed": false
-}
-```
-
----
-
-### Ejemplo 2: Testabilidad - Test Unitario
-
-Un gran beneficio de la arquitectura hexagonal es que los tests son simples:
-
-```java
-// ventas/application/src/test/java/com/demo/application/usecase/CreateTaskUseCaseImplTest.java
-package com.demo.application.usecase;
-
-import com.demo.domain.model.Task;
-import com.demo.domain.port.out.TaskRepositoryPort;
-import org.junit.jupiter.api.BeforeEach;
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCaseImpl;
+import com.arquisoft.fichas.application.fichaperfil.dto.FichaPerfilReadModel;
+import com.arquisoft.fichas.domain.model.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.port.out.FichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CreateTaskUseCaseImplTest {
-
-    private CreateTaskUseCaseImpl createTaskUseCase;
+class ConsultarFichasPerfilUseCaseImplTest {
 
     @Mock
-    private TaskRepositoryPort taskRepositoryPort;
+    private FichaPerfilOutputPort fichaPerfilOutputPort;
 
-    @BeforeEach
-    void setUp() {
-        createTaskUseCase = new CreateTaskUseCaseImpl(taskRepositoryPort);
-    }
+    @InjectMocks
+    private ConsultarFichasPerfilUseCaseImpl consultarFichasPerfilUseCase;
 
     @Test
-    void shouldCreateTaskSuccessfully() {
-        // Arrange
-        Task taskToCreate = Task.build(
-            null,
-            "Nueva tarea",
-            "Descripción",
-            LocalDateTime.now(),
-            false
-        );
+    void debeRetornarVacio_cuandoNoHayFichas() {
+        PaginationRequest request = PaginationRequest.of(0, 10);
+        when(fichaPerfilOutputPort.consultarTodas(request))
+                .thenReturn(PaginatedResult.of(List.of(), 0, 10, 0L));
 
-        Task savedTask = Task.build(
-            1L,
-            "Nueva tarea",
-            "Descripción",
-            LocalDateTime.now(),
-            false
-        );
+        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilUseCase.ejecutar(request);
 
-        when(taskRepositoryPort.save(taskToCreate)).thenReturn(savedTask);
-
-        // Act
-        Task result = createTaskUseCase.createTask(taskToCreate);
-
-        // Assert
-        assertEquals(1L, result.getId());
-        assertEquals("Nueva tarea", result.getTitle());
+        assertThat(resultado.getContent()).isEmpty();
+        verify(fichaPerfilOutputPort, times(1)).consultarTodas(request);
     }
 }
-```
-
-**Ventajas del Testing**:
-- El mock de `TaskRepositoryPort` es simple
-- La lógica de negocio se prueba aislada
-- No requiere base de datos real
-
----
-
-### Ejemplo 3: Agregar una Nueva Funcionalidad
-
-Supongamos que queremos agregar una **búsqueda de tareas por título**:
-
-#### Paso 1: Agregar Puerto de Entrada en Domain
-```java
-// ventas/domain/src/main/java/com/demo/domain/port/in/SearchTasksUseCase.java
-package com.demo.domain.port.in;
-
-import com.demo.domain.model.Task;
-import java.util.List;
-
-public interface SearchTasksUseCase {
-    List<Task> searchByTitle(String title);
-}
-```
-
-#### Paso 2: Actualizar Puerto de Salida en Domain
-```java
-// En TaskRepositoryPort, agregar:
-List<Task> findByTitle(String title);
-```
-
-#### Paso 3: Implementar en Application
-```java
-// ventas/application/src/main/java/com/demo/application/usecase/SearchTasksUseCaseImpl.java
-package com.demo.application.usecase;
-
-import com.demo.domain.model.Task;
-import com.demo.domain.port.in.SearchTasksUseCase;
-import com.demo.domain.port.out.TaskRepositoryPort;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-import java.util.List;
-
-@Component
-@RequiredArgsConstructor
-public class SearchTasksUseCaseImpl implements SearchTasksUseCase {
-    private final TaskRepositoryPort taskRepositoryPort;
-
-    @Override
-    public List<Task> searchByTitle(String title) {
-        if (title == null || title.isBlank()) {
-            throw new IllegalArgumentException("El título no puede estar vacío");
-        }
-        return taskRepositoryPort.findByTitle(title);
-    }
-}
-```
-
-#### Paso 4: Implementar en Infraestructura
-```java
-// En TaskRepositoryAdapter, agregar:
-@Override
-public List<Task> findByTitle(String title) {
-    String sql = "SELECT * FROM tasks WHERE LOWER(title) LIKE LOWER(?)";
-    RowMapper<Task> rowMapper = (rs, rowNum) -> Task.rebuild(
-        rs.getLong("id"),
-        rs.getString("title"),
-        rs.getString("description"),
-        rs.getTimestamp("creation_date").toLocalDateTime(),
-        rs.getBoolean("completed")
-    );
-    return jdbcTemplate.query(sql, rowMapper, "%" + title + "%");
-}
-```
-
-#### Paso 5: Agregar Endpoint en Controlador
-```java
-// En TaskController, agregar:
-@GetMapping("/search")
-public ResponseEntity<List<Task>> searchTasks(@RequestParam String title) {
-    List<Task> tasks = taskFacade.searchByTitle(title);
-    return ResponseEntity.ok(tasks);
-}
-```
-
-#### Paso 6: Actualizar Fachada
-```java
-// En TaskFacade, agregar:
-private final SearchTasksUseCase searchTasksUseCase;
-
-@Override
-public List<Task> searchByTitle(String title) {
-    return searchTasksUseCase.searchByTitle(title);
-}
-```
-
-**Request HTTP**:
-```bash
-curl http://localhost:8081/api/task/search?title=reportes
 ```
 
 ---
@@ -792,33 +727,45 @@ curl http://localhost:8081/api/task/search?title=reportes
 ## Configuración y Build
 
 ### Versiones de Dependencias (gradle.properties)
+
 ```properties
-javaVersion=17
-springBootVersion=3.2.4
-jUnitVersion=5.10.2
-lombokVersion=1.18.30
-h2Version=2.2.224
-flywaydbVersion=10.10.0
+javaVersion=21
+springBootVersion=4.0.5
+jUnitVersion=6.0.3
+lombokVersion=1.18.36
+h2Version=2.3.232
+flywaydbVersion=11.20.3
+keycloakVersion=25.0.3
+# postgresVersion, rabbitmqVersion, redisVersion están comentadas
+# Spring Boot BOM gestiona estas versiones automáticamente
 ```
 
-### Configuración Spring Boot (application.yml)
-```yaml
-server:
-  port: 8081
+### Dependencias entre Capas (build.gradle)
 
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: admin
-    password: admin
+```gradle
+// {contexto}/domain/build.gradle
+dependencies {
+    implementation project(':shared:domain')    // Solo si necesita DomainEvent/AggregateRoot
+}
 
-logging:
-  level:
-    com.demo: INFO
-    org.hibernate.SQL: DEBUG
+// {contexto}/application/build.gradle
+dependencies {
+    implementation project(':{contexto}:domain')
+}
+
+// {contexto}/infrastructure/build.gradle
+dependencies {
+    implementation project(':{contexto}:domain')
+    implementation project(':{contexto}:application')
+    implementation "org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}"
+    implementation "org.flywaydb:flyway-core:${flywaydbVersion}"
+    runtimeOnly 'org.postgresql:postgresql'
+    testImplementation "com.h2database:h2:${h2Version}"
+}
 ```
 
 ### Construir el Proyecto
+
 ```bash
 # Build completo
 ./gradlew build
@@ -830,179 +777,116 @@ logging:
 ./gradlew test
 
 # Run la aplicación
-./gradlew bootRun
-```
-
-### Docker Compose
-```yaml
-version: '3.8'
-services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-    ports:
-      - "5432:5432"
-```
-
-**Ejecutar**:
-```bash
-docker-compose up -d
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 ---
 
 ## Flujos de Datos
 
-### Flujo de Lectura (GET /api/task/1)
+### Flujo de Lectura (GET /fichas-perfil/coordinador)
 
 ```
-TaskController.getTaskById(1)
+FichaPerfilInputAdapter.consultarTodas(page, size)   [InputAdapter IN]
     ↓
-TaskFacade.getTask(1)
+ConsultarFichasPerfilUseCaseImpl.ejecutar(request)   [UseCaseImpl]
     ↓
-RetrieveTaskUseCaseImpl.getTask(1)
+FichaPerfilOutputPort.consultarTodas(request)        [OutputPort - interface]
     ↓
-TaskRepositoryPort.findById(1)  [interface]
+FichaPerfilOutputAdapter.consultarTodas(request)     [OutputAdapter - implementation]
     ↓
-TaskRepositoryAdapter.findById(1)  [implementation]
+FichaPerfilJpaRepository.findAll(PageRequest)
     ↓
-JdbcTemplate.queryForObject()
+FichaPerfilMapper.toDomain() → FichaPerfilAggregate
     ↓
-Mapeo SQL → Task (entidad)
+FichaPerfilReadModel.fromDomain(aggregate)           [ReadModel projection]
     ↓
-Task [dominio]
-    ↓
-HTTP Response 200 OK
+HTTP Response 200 OK [PaginatedResult<FichaPerfilReadModel>]
 ```
 
-### Flujo de Escritura (POST /api/task)
+### Flujo de Escritura (POST /fichas-perfil)
 
 ```
 HTTP Request [JSON]
     ↓
-TaskController.createTask(TaskDTO)
+FichaPerfilInputAdapter.crear(FichaDTO)              [InputAdapter IN]
     ↓
-TaskDTO.toDomain() → Task
+FichaDTO.toDomain() → FichaPerfilAggregate
     ↓
-TaskFacade.createTask(Task)
+CrearFichaPerfilUseCaseImpl.crear(aggregate)         [UseCaseImpl]
+    ↓ [Validaciones de negocio en el aggregate]
+FichaPerfilOutputPort.save(aggregate)                [OutputPort - interface]
     ↓
-CreateTaskUseCaseImpl.createTask(Task)
-    ↓ [Validaciones de negocio aquí]
+FichaPerfilOutputAdapter.save(aggregate)             [OutputAdapter - implementation]
     ↓
-TaskRepositoryPort.save(Task)  [interface]
-    ↓
-TaskRepositoryAdapter.save(Task)  [implementation]
-    ↓
-JdbcTemplate.update()
-    ↓
-Insert en BD
-    ↓
-Task [actualizado]
+INSERT en BD (schema fichas_perfil)
     ↓
 HTTP Response 201 CREATED
 ```
 
-### Flujo de Eliminación (DELETE /api/task/1)
+---
 
-```
-TaskController.deleteTaskById(1)
-    ↓
-TaskFacade.deleteTask(1)
-    ↓
-DeleteTaskUseCaseImpl.deleteTask(1)
-    ↓
-TaskRepositoryPort.deleteById(1)
-    ↓
-TaskRepositoryAdapter.deleteById(1)
-    ↓
-JdbcTemplate.update("DELETE FROM tasks WHERE id = ?")
-    ↓
-Verificar rowsAffected > 0
-    ↓
-HTTP Response 204 NO CONTENT (éxito)
-HTTP Response 404 NOT FOUND (no existía)
-```
+## Perfiles de Ejecución
+
+### Perfil `dev` (application-dev.yml)
+
+- Logging en nivel DEBUG para `com.arquisoft`
+- Servicios en localhost
+- Rate limiting deshabilitado
+- CORS permisivo (localhost:3000, 4200, 5173)
+- Keycloak en localhost:8081
+
+### Perfil `prod` (application-prod.yml)
+
+- Todas las credenciales por variables de entorno
+- Rate limiting activo (60 req/min, 3 login/min)
+- CORS configurado para dominio de producción
+- Logging a archivo (`/var/log/arquisoft/`)
+- Pool de conexiones mayores
 
 ---
 
-## Principios de Diseño Aplicados
+## Principios de Diseño
 
-### 1. **Separación de Responsabilidades**
-- Cada capa tiene una responsabilidad clara
-- Domain: Lógica pura
-- Application: Orquestación
-- Infrastructure: Detalles técnicos
+### 1. Separación de Responsabilidades
 
-### 2. **Inversión de Dependencias**
+- **Domain**: Lógica pura de negocio
+- **Application**: Orquestación y DTOs
+- **Infrastructure**: Detalles técnicos
+
+### 2. Inversión de Dependencias
+
 ```
 sin hexagonal:  Controller → Repository → Database
 con hexagonal:  Controller → Port (interface) ← Repository
 ```
 
-### 3. **Independencia de Frameworks**
+### 3. Independencia de Frameworks
+
 - El dominio NO importa Spring
-- Los casos de uso son POJOs
-- Fácil cambiar de BD, framework, etc.
+- Los puertos son interfaces puras
+- Facilita cambio de BD, framework, etc.
 
-### 4. **Testabilidad**
-- Mocks simples de puertos
-- Lógica de negocio aislada
-- Tests rápidos y confiables
+### 4. Comunicación entre Contextos
 
-### 5. **Escalabilidad Modular**
-- Nuevos módulos sin afectar existentes
-- Cada módulo es un mini-proyecto
-- Reutilización de patrones
+- Los contextos **nunca** dependen directamente entre sí
+- Comunicación exclusivamente via **eventos RabbitMQ**
+- Cada contexto tiene su propio schema de BD
 
 ---
 
-## Checklist para Agregar un Nuevo Módulo
+## Checklist: Agregar un Nuevo Contexto
 
-1. **Crear estructura básica**
-   ```
-   nuevo_modulo/
-   ├── domain/build.gradle
-   ├── application/build.gradle
-   └── infrastructure/build.gradle
-   ```
-
-2. **Definir entidades en domain**
-   - Crear modelo (entidad)
-   - Usar factory methods (`build`, `rebuild`)
-
-3. **Definir puertos**
-   - Puertos IN: casos de uso (interfaces)
-   - Puertos OUT: dependencias (interfaces)
-
-4. **Implementar casos de uso en application**
-   - Una clase por caso de uso
-   - Inyectar puertos de salida
-   - Orquestar lógica de negocio
-
-5. **Crear adaptadores en infrastructure**
-   - Adaptadores IN: Controllers
-   - Adaptadores OUT: Repositories, External Services
-   - Configuración de Spring
-
-6. **Registrar en settings.gradle**
-   ```gradle
-   include 'nuevo_modulo'
-   include 'nuevo_modulo:domain'
-   include 'nuevo_modulo:application'
-   include 'nuevo_modulo:infrastructure'
-   ```
-
-7. **Agregar dependencias en build.gradle raíz**
-   ```gradle
-   subprojects.each { subproject ->
-       if (subproject.name.endsWith('infrastructure')) {
-           implementation project(subproject.path)
-       }
-   }
-   ```
+1. Crear estructura `{contexto}/domain/`, `application/`, `infrastructure/`
+2. Agregar `build.gradle` en cada sub-módulo
+3. Registrar en `settings.gradle`
+4. Agregar schema en `init-db.sql`
+5. Definir entidades en domain
+6. Definir puertos (in/out)
+7. Implementar use cases en application
+8. Crear adaptadores en infrastructure
+9. Agregar migraciones Flyway
+10. Crear tests unitarios
 
 ---
 
@@ -1010,29 +894,28 @@ con hexagonal:  Controller → Port (interface) ← Repository
 
 | Aspecto | Descripción |
 |--------|-------------|
-| **Patrón** | Arquitectura Hexagonal (Puertos y Adaptadores) |
-| **Modularidad** | Multi-módulo Gradle (ventas, seguridad) |
+| **Patrón** | Hexagonal (Puertos y Adaptadores) |
+| **Contextos** | 7 independientes |
+| **Módulo compartido** | shared (7 sub-módulos) |
 | **Capas** | Domain → Application → Infrastructure |
-| **Framework** | Spring Boot 3.2.4 |
-| **BD** | PostgreSQL (producción) / H2 (testing) |
-| **Migraciones** | Flyway |
-| **ORM** | JdbcTemplate (bajo nivel) |
-| **Build** | Gradle 7+ con Wrapper |
-| **Java** | 17+ |
-| **Testing** | JUnit 5 + Mockito |
-| **Inyección Depencias** | Spring (@Component, @Service) |
+| **Framework** | Spring Boot 4.0.5 |
+| **BD** | PostgreSQL 18 (1 schema por contexto) |
+| **Migraciones** | Flyway 11.20.3 |
+| **Build** | Gradle 9.0.0 con Wrapper |
+| **Java** | 21 (Virtual Threads habilitados) |
+| **Testing** | JUnit 6.0.3 + Mockito + AssertJ |
+| **Auth** | Keycloak 26.6 (OAuth2/OIDC Resource Server) |
+| **Rate Limiting** | Bucket4j 7.6.0 |
+| **Concurrencia** | Virtual Threads (`spring.threads.virtual.enabled=true`) |
 
 ---
 
-## Referencias y Lecturas Recomendadas
+## Referencias
 
 - **Arquitectura Hexagonal**: https://alistair.cockburn.us/hexagonal-architecture/
-- **Domain-Driven Design**: Eric Evans, "Domain-Driven Design" (2003)
-- **Clean Architecture**: Robert C. Martin, "Clean Architecture" (2017)
-- **Spring Documentation**: https://spring.io/projects/spring-boot
+- **Clean Architecture**: Robert C. Martin (2017)
+- **Spring Boot Documentation**: https://spring.io/projects/spring-boot
 
 ---
 
-**Documento generado**: Enero 8, 2026  
-**Versión del Proyecto**: 0.0.1-SNAPSHOT  
-**Autor**: Análisis Automatizado
+**Versión**: 1.0.0

@@ -1,0 +1,51 @@
+# ====================================================================================
+# .dockerignore — Excluye archivos innecesarios y sensibles del contexto de build
+# CRÍTICO: archivos de credenciales NUNCA deben quedar en la imagen
+# ====================================================================================
+
+# --- Secretos y credenciales (OWASP A02: Cryptographic Failures) ---
+.env.properties
+.env
+*.env
+.env.*
+**/secret*
+**/credentials*
+
+# --- Historial de Git (no necesario en la imagen) ---
+.git/
+.gitignore
+.gitattributes
+
+# --- Artefactos de build (se reconstruyen dentro de Docker) ---
+build/
+*/build/
+**/build/
+/out/
+
+# --- IDE y herramientas de desarrollo ---
+.idea/
+*.iml
+.vscode/
+*.code-workspace
+opencode.json
+.gradle/
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db
+
+# --- Scripts de Windows (build es en Linux) ---
+gradlew.bat
+
+# --- Documentación e infraestructura externa (no necesaria en runtime) ---
+docs/
+infra/
+AGENTS.md
+CONTRIBUTING.md
+README.md
+*.md
+
+# --- Reportes de tests y cobertura ---
+**/reports/
+**/test-results/
+**/.jacoco/

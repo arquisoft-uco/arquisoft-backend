@@ -1,0 +1,263 @@
+<mxfile host="65bd71144e">
+    <diagram id="clean-arch-cqrs-seq" name="CQRS — Secuencia">
+        <mxGraphModel dx="1141" dy="795" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1150" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="Clean Architecture — CQRS: Secuencia COMMAND (write) y QUERY (read)" style="text;html=1;fontSize=14;fontStyle=1;align=left;verticalAlign=middle;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="8" width="1100" height="26" as="geometry"/>
+                </mxCell>
+                <mxCell id="cmd_hdr" value="WRITE — COMMAND  |  XxxInputPort.ejecutar(cmd): void  |  validaciones en application, sin retorno de datos" style="text;html=1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="38" width="1470" height="22" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_client" value="Client&#xa;«UI / externo»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=44;fillColor=#f5f5f5;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="63" width="110" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_cmd_adp" value=":XxxCommandAdapter&#xa;«Input Adapter — infrastructure»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=60;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="165" y="63" width="155" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="m4" value="4: ejecutar(cmd)   [via XxxInputPort]" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;fontStyle=1;" parent="ll_cmd_adp" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="84" y="207" as="sourcePoint"/>
+                        <mxPoint x="285" y="207" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ll_ipi" value=":XxxUseCase&lt;br&gt;«impl. XxxInputPort — application»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=60;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="375" y="63" width="165" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="m5" value="5: buscarPorId(id)   [via XxxOutputPort]" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;fontStyle=1;" parent="ll_ipi" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="89" y="220" as="sourcePoint"/>
+                        <mxPoint x="491" y="220" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m11" value="9: guardar(agregado)   [via XxxOutputPort]" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;fontStyle=1;" parent="ll_ipi" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="89" y="383" as="sourcePoint"/>
+                        <mxPoint x="491" y="383" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="ll_agg" value=":XxxAggregate&#xa;«domain»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=44;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="598" y="63" width="135" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_opi" value=":XxxOutputAdapter&#xa;«impl. XxxOutputPort — infrastructure»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=60;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="790" y="63" width="165" height="500" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_cmd_adp" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="235" y="172" width="14" height="360" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_ipi" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="248" width="14" height="280" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_opi1" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="866" y="283" width="14" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_agg" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="659" y="363" width="14" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_opi2" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="866" y="438" width="14" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="m1" value="1: HTTP POST /xxx (JSON body)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="65" y="172" as="sourcePoint"/>
+                        <mxPoint x="235" y="172" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m2" value="2: parsea HTTP -&gt; XxxRequestDTO" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="249" y="192" as="sourcePoint"/>
+                        <mxPoint x="249" y="215" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="318" y="192"/>
+                            <mxPoint x="318" y="215"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m3" value="3: mapea RequestDTO -&gt; XxxCommand" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="249" y="220" as="sourcePoint"/>
+                        <mxPoint x="249" y="243" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="318" y="220"/>
+                            <mxPoint x="318" y="243"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m6" value="6: consulta BD; rebuild(entidad) -&gt; Dominio" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="880" y="298" as="sourcePoint"/>
+                        <mxPoint x="880" y="323" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="948" y="298"/>
+                            <mxPoint x="948" y="323"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m7" value="XxxAggregate (rebuild)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;endSize=8;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="866" y="343" as="sourcePoint"/>
+                        <mxPoint x="464" y="343" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m8" value="7: operacionNegocio(cmd.campos)   [orquesta DOMINIO]" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;fontStyle=1;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="464" y="363" as="sourcePoint"/>
+                        <mxPoint x="659" y="363" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m9" value="8: valida invariantes / muta estado" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="673" y="378" as="sourcePoint"/>
+                        <mxPoint x="673" y="403" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="739" y="378"/>
+                            <mxPoint x="739" y="403"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m10" value="(estado actualizado)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;endSize=8;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="659" y="423" as="sourcePoint"/>
+                        <mxPoint x="464" y="423" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m12" value="10: map Dominio -&gt; JpaEntity; persiste" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="880" y="453" as="sourcePoint"/>
+                        <mxPoint x="880" y="475" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="948" y="453"/>
+                            <mxPoint x="948" y="475"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m13" value="(ok)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;endSize=8;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="866" y="498" as="sourcePoint"/>
+                        <mxPoint x="464" y="498" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m14" value="11: (void)   [sin retorno de datos]" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;endSize=8;fontStyle=1;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="450" y="515" as="sourcePoint"/>
+                        <mxPoint x="249" y="515" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="m15" value="HTTP 204 No Content" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;endSize=8;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="235" y="530" as="sourcePoint"/>
+                        <mxPoint x="65" y="530" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="n1" value="1) XxxCommandAdapter (infrastructure — Input)&#xa;Construye XxxRequestDTO, mapea a XxxCommand,&#xa;invoca XxxInputPort. No referencia dominio.&#xa;Retorna HTTP 204 (sin cuerpo)." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacing=6;size=14;" parent="1" vertex="1">
+                    <mxGeometry x="1010" y="162" width="360" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="n2" value="2) XxxUseCase (application)&lt;br&gt;Implementa XxxInputPort. Retorna VOID.&lt;br&gt;Orquesta dominio via XxxOutputPort (DIP).&lt;br&gt;Sin ResponseDTO — CQRS: write no devuelve datos." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacing=6;size=14;" parent="1" vertex="1">
+                    <mxGeometry x="1010" y="254" width="360" height="85" as="geometry"/>
+                </mxCell>
+                <mxCell id="n3" value="3) XxxAggregate (domain)&#xa;operacionNegocio() valida invariantes.&#xa;Solo se llama desde application (DIP).&#xa;build() / rebuild() sin Spring, sin Lombok." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacing=6;size=14;" parent="1" vertex="1">
+                    <mxGeometry x="1010" y="354" width="360" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="n4" value="4) XxxOutputAdapter (infrastructure — Output)&#xa;Implementa XxxOutputPort (domain). DIP.&#xa;Aqui (y SOLO aqui) se mapea&#xa;Dominio &lt;-&gt; JpaEntity." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacing=6;size=14;" parent="1" vertex="1">
+                    <mxGeometry x="1010" y="470" width="360" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="sep" value="" style="line;strokeColor=#888888;strokeWidth=2;fillColor=none;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="600" width="1470" height="8" as="geometry"/>
+                </mxCell>
+                <mxCell id="qry_hdr" value="READ — QUERY  |  XxxQueryInputPort.consultar(params): XxxReadModel  |  sin agregado de dominio, proyeccion directa" style="text;html=1;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="610" width="1470" height="22" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_client_q" value="Client&#xa;«UI / externo»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=44;fillColor=#f5f5f5;strokeColor=#666666;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="635" width="110" height="370" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_qry_adp" value=":XxxQueryAdapter&#xa;«Input Adapter — infrastructure»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=60;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="165" y="635" width="155" height="370" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_qport_impl" value=":XxxQueryUseCase&lt;br&gt;«impl. XxxQueryInputPort — application»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=60;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="375" y="635" width="165" height="370" as="geometry"/>
+                </mxCell>
+                <mxCell id="ll_read_repo" value=":XxxReadOutputAdapter&#xa;«impl. XxxReadOutputPort — infrastructure»" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;size=60;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="598" y="635" width="165" height="370" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_qry_adp" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="235" y="700" width="14" height="240" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_qport" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="450" y="735" width="14" height="175" as="geometry"/>
+                </mxCell>
+                <mxCell id="act_read_repo" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="673" y="768" width="14" height="65" as="geometry"/>
+                </mxCell>
+                <mxCell id="q1" value="1: HTTP GET /xxx?params" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="65" y="700" as="sourcePoint"/>
+                        <mxPoint x="235" y="700" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="q2" value="2: consultar(params)   [via XxxQueryInputPort]" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;fontStyle=1;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="249" y="735" as="sourcePoint"/>
+                        <mxPoint x="450" y="735" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="q3" value="3: readRepo.consultar(params)   [via XxxReadOutputPort]" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;fontStyle=1;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="464" y="768" as="sourcePoint"/>
+                        <mxPoint x="673" y="768" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="q4" value="4: SQL / JPQL directo; map -&gt; XxxReadModel" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="687" y="783" as="sourcePoint"/>
+                        <mxPoint x="687" y="808" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="755" y="783"/>
+                            <mxPoint x="755" y="808"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="q5" value="XxxReadModel" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;endSize=8;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="673" y="833" as="sourcePoint"/>
+                        <mxPoint x="464" y="833" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="q6" value="XxxReadModel   [via XxxQueryInputPort]" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;endSize=8;fontStyle=1;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="450" y="858" as="sourcePoint"/>
+                        <mxPoint x="249" y="858" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="q7" value="5: serializa XxxReadModel -&gt; JSON" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="249" y="875" as="sourcePoint"/>
+                        <mxPoint x="249" y="898" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="318" y="875"/>
+                            <mxPoint x="318" y="898"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="q8" value="HTTP 200 OK (JSON)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;rounded=0;endSize=8;" parent="1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="235" y="915" as="sourcePoint"/>
+                        <mxPoint x="65" y="915" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="n5" value="5) XxxQueryAdapter (infrastructure — Input)&#xa;Extrae params HTTP, invoca XxxQueryInputPort.&#xa;Serializa XxxReadModel como JSON.&#xa;Sin dominio, sin XxxAggregate." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacing=6;size=14;" parent="1" vertex="1">
+                    <mxGeometry x="1010" y="692" width="360" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="n6" value="6) XxxQueryUseCase (application)&lt;br&gt;Implementa XxxQueryInputPort. Delega a&lt;br&gt;XxxReadOutputPort (DIP).&lt;br&gt;Sin logica de negocio, sin validaciones." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;verticalAlign=top;spacing=6;size=14;" parent="1" vertex="1">
+                    <mxGeometry x="1010" y="784" width="360" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="n7" value="7) XxxReadOutputAdapter (infrastructure — Output)&#xa;Implementa XxxReadOutputPort (DIP).&#xa;Query SQL/JPQL directa, sin XxxAggregate.&#xa;Retorna XxxReadModel (proyeccion plana)." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacing=6;size=14;" parent="1" vertex="1">
+                    <mxGeometry x="1010" y="876" width="360" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend" value="LEYENDA&lt;br&gt;Flecha solida = llamada sincrona.   Flecha discontinua = retorno.   Colores: azul=domain, verde=application, naranja=infrastructure.&lt;br&gt;COMMAND: orden de lifelines izq→der: InputAdapter | UseCase | Aggregate (domain) | OutputAdapter. Las llamadas a OutputPort (buscarPorId, guardar) cruzan visualmente el Aggregate — es correcto: el UseCase orquesta ambos.&lt;br&gt;QUERY: sin agregado de dominio. InputAdapter | QueryUseCase | ReadOutputAdapter. ReadOutputAdapter hace SQL/JPQL directo y retorna proyeccion plana.&lt;br&gt;DIP (rojo en diagrama de clases): XxxOutputAdapter implementa XxxOutputPort (domain). XxxReadOutputAdapter implementa XxxReadOutputPort (application)." style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;spacing=8;" parent="1" vertex="1">
+                    <mxGeometry x="10" y="1025" width="1470" height="100" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

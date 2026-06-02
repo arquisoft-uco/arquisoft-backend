@@ -1,87 +1,243 @@
+# ==============================================================================
+# CONFIGURACION BASE DE ARQUISOFT
+# ==============================================================================
+# Importa credenciales desde .env o .env.properties (archivos locales, NO versionados).
+# Se pueden usar indistintamente — ambos están en .gitignore.
+#   - .env          → formato Docker (recomendado, compatible con --env-file)
+#   - .env.properties → formato Spring legado (compatibilidad con setups anteriores)
+#   - .env-${spring.profiles.active:dev}.properties → formato compatible desde consola
+# Para crear el tuyo: cp .env.example .env
+# ==============================================================================
+
 spring:
+  config:
+    import:
+      - "optional:file:./.env[.properties]"
+      - "optional:file:./.env.properties"
+      - "optional:file:./.env-${spring.profiles.active:dev}.properties"
+  banner:
+    location: classpath:banner.txt
   application:
     name: arquisoft
-  
-  # ==================== BASE DE DATOS ====================
-  datasource:
-    url: jdbc:postgresql://localhost:5432/arquisoft
-    username: arquisoft
-    password: arquisoft123
-    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 20
-      minimum-idle: 5
-      connection-timeout: 20000
-  
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-        jdbc:
-          batch_size: 25
-  
-  # ==================== FLYWAY ====================
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
-    baseline-on-migrate: true
-  
+    version: 1.0.0
+
+  # ==================== VIRTUAL THREADS (ADR-008) ====================
+  # Java 21 + Spring Boot 4.x: habilita virtual threads en Tomcat, @Async y RabbitMQ listeners.
+  # Beneficio: I/O bloqueante (Keycloak, JDBC, Redis) sin consumo de OS threads.
+  threads:
+    virtual:
+      enabled: true
+
+  # ==================== DESHABILITAR AUTOCONFIGURACIÓN DE DATASOURCE GLOBAL ====================
+  # Cada bounded context configura su propio DataSource, EntityManagerFactory y Flyway
+  # en su clase *DataSourceConfig.java dentro de infrastructure/config/.
+  # Sin esta exclusión, Spring Boot intentaría autoconfigurar un DataSource primario
+  # y fallaría con NoUniqueBeanDefinitionException al encontrar 7 beans DataSource.
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+
   # ==================== RABBITMQ ====================
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
     virtual-host: /
+    # Publisher Confirms: el broker confirma (ACK) o rechaza (NACK) cada mensaje publicado.
+    # Requerido para que RabbitMQEventPublisher detecte mensajes no entregados al broker.
+    publisher-confirm-type: correlated
+    # Publisher Returns: si el broker no puede enrutar el mensaje a ninguna cola, lo devuelve.
+    publisher-returns: true
     listener:
       simple:
-        acknowledge-mode: auto
+        # Manual ACK: el mensaje permanece en 'unacknowledged' hasta que el consumer
+        # llama basicAck. Si el consumer falla o muere, RabbitMQ re-entrega el mensaje.
+        acknowledge-mode: manual
+        # prefetch=1: el broker envía un mensaje a la vez por consumer.
+        # Garantiza backpressure — un consumer lento no acumula mensajes sin procesar.
+        prefetch: 1
         concurrency: 5
         max-concurrency: 10
-  
+
   # ==================== REDIS ====================
-  redis:
-    host: localhost
-    port: 6379
-    timeout: 2000
-    jedis:
-      pool:
-        max-active: 10
-        max-idle: 5
-        min-idle: 0
-  
-  # ==================== JPA/HIBERNATE ====================
-  jpa:
-    open-in-view: false
-    show-sql: false
-  
+  # CORRECCIÓN: En Spring Boot 3.x+ la clave cambió de spring.redis a spring.data.redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      username: ${REDIS_USER:default}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 10
+          max-idle: 5
+          min-idle: 0
+
+  # ==================== OAUTH2 / KEYCLOAK (Spring Boot 3.x+) ====================
+  # En tu SecurityConfig debes usar: http.oauth2ResourceServer(oauth2 -> oauth2.jwt(...))
+  spring:
+    security:
+      oauth2:
+        # ── Resource Server ──────────────────────────────────────────────
+        # Valida los tokens JWT que llegan en los requests entrantes.
+        # Keycloak expone automáticamente el JWKS en el issuer-uri/.well-known/openid-configuration
+        resourceserver:
+          jwt:
+            issuer-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}
+            jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/certs
+
+        # ── Client ───────────────────────────────────────────────────────
+        # Permite al backend llamar al endpoint /token de Keycloak
+        # para login, refresh y validación directa.
+        client:
+          provider:
+            keycloak:
+              issuer-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}
+              token-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/token
+              jwk-set-uri: ${KEYCLOAK_URL:http://localhost:8081}/realms/${KEYCLOAK_REALM:arquisoft}/protocol/openid-connect/certs
+          registration:
+            keycloak:
+              provider: keycloak
+              client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
+              client-secret: ${KEYCLOAK_CLIENT_SECRET}
+              authorization-grant-type: password
+              scope: openid, profile, email
+
+# ==================== MINIO (Object Storage) ====================
+# Presigned URLs permiten subir/descargar archivos directamente desde el cliente,
+# sin que el backend actúe como proxy — conserva recursos en servidores limitados.
+minio:
+  endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+  access-key: ${MINIO_ACCESS_KEY:minioadmin}
+  secret-key: ${MINIO_SECRET_KEY:minioadmin}
+  presigned-url-expiry:
+    upload-minutes: ${MINIO_UPLOAD_EXPIRY_MINUTES:15}
+    download-minutes: ${MINIO_DOWNLOAD_EXPIRY_MINUTES:15}
+  trust-self-signed-certificates: ${MINIO_TRUST_SELF_SIGNED_CERTS:false}
+
+# ==================== DATASOURCES POR BOUNDED CONTEXT ====================
+# Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
+# usando @ConfigurationProperties("datasource.{contexto}").
+datasource:
+  seguridad:
+    url: ${DB_SEGURIDAD_URL:jdbc:postgresql://localhost:5432/usuarios}
+    username: ${DB_SEGURIDAD_USERNAME:arquisoft_user}
+    password: ${DB_SEGURIDAD_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Seguridad
+
+  fichas:
+    url: ${DB_FICHAS_URL:jdbc:postgresql://localhost:5432/fichas_perfil}
+    username: ${DB_FICHAS_USERNAME:arquisoft_user}
+    password: ${DB_FICHAS_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Fichas
+
+  proyectos:
+    url: ${DB_PROYECTOS_URL:jdbc:postgresql://localhost:5432/proyectos_grado}
+    username: ${DB_PROYECTOS_USERNAME:arquisoft_user}
+    password: ${DB_PROYECTOS_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Proyectos
+
+  artefactos:
+    url: ${DB_ARTEFACTOS_URL:jdbc:postgresql://localhost:5432/artefactos}
+    username: ${DB_ARTEFACTOS_USERNAME:arquisoft_user}
+    password: ${DB_ARTEFACTOS_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Artefactos
+
+  repositorio_artefactos:
+    url: ${DB_REPO_ARTEFACTOS_URL:jdbc:postgresql://localhost:5432/repositorio_artefactos}
+    username: ${DB_REPO_ARTEFACTOS_USERNAME:arquisoft_user}
+    password: ${DB_REPO_ARTEFACTOS_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-RepositorioArtefactos
+
+  entregables:
+    url: ${DB_ENTREGABLES_URL:jdbc:postgresql://localhost:5432/entregables}
+    username: ${DB_ENTREGABLES_USERNAME:arquisoft_user}
+    password: ${DB_ENTREGABLES_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Entregables
+
+  evaluaciones:
+    url: ${DB_EVALUACIONES_URL:jdbc:postgresql://localhost:5432/evaluaciones}
+    username: ${DB_EVALUACIONES_USERNAME:arquisoft_user}
+    password: ${DB_EVALUACIONES_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Evaluaciones
+
+# ==================== KEYCLOAK ====================
+# Propiedades propias para KeycloakAuthAdapter y SecurityConfig.
+# No se usa el adapter keycloak-spring-boot-adapter (removido en SB3+).
+# La validación JWT usa Spring Security OAuth2 Resource Server de forma nativa.
+arquisoft:
+  keycloak:
+    server-url: ${KEYCLOAK_URL:http://localhost:8081}
+    realm: ${KEYCLOAK_REALM:arquisoft}
+    client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-app}
+    client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+
+  security:
+    cors:
+      allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
+    rate-limit:
+      enabled: ${RATE_LIMIT_ENABLED:true}
+
 # ==================== SERVER ====================
 server:
   port: 8080
   servlet:
     context-path: /api
+  # ForwardedHeaderFilter de Spring valida X-Forwarded-For/X-Real-IP contra trusted-proxies
+  # antes de reescribir request.getRemoteAddr() — evita IP spoofing desde internet.
+  # AuditFilter lee solo request.getRemoteAddr() y obtiene la IP real del cliente.
+  forward-headers-strategy: FRAMEWORK
   compression:
     enabled: true
     min-response-size: 1024
 
 # ==================== LOGGING ====================
+# logback-spring.xml gestiona appenders, formato, rotación y AsyncAppender.
+# Aquí solo se declaran niveles — el resto (file.name, pattern.*, logback.rollingpolicy.*)
+# no tiene efecto cuando existe un logback-spring.xml custom y genera confusión.
 logging:
   level:
     root: INFO
-    com.arquisoft: DEBUG
     org.springframework.web: INFO
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
-  pattern:
-    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
-    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  file:
-    name: logs/arquisoft.log
-    max-size: 10MB
-    max-history: 10
 
 # ==================== ACTUATOR ====================
 management:
@@ -96,3 +252,11 @@ management:
     export:
       prometheus:
         enabled: true
+
+# ==================== SPRINGDOCS ====================
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true
+  default-flat-param-object: true

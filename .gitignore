@@ -35,3 +35,13 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Logs ###
+logs/
+*.log
+
+### Configuracion local sensible ###
+.env.properties
+.env*.properties
+.env
+*.key

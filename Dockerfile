@@ -1,42 +1,44 @@
 # ==================== STAGE 1: BUILD ====================
-FROM eclipse-temurin:17-jdk-alpine AS builder
-
+FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /build
 
-# Copy gradle files
-COPY gradle ./gradle
-COPY gradlew gradlew.bat gradle.properties ./
-
-# Copy source code
+# Copiar todo el proyecto (.dockerignore excluye secretos, .git, build/, *.bat, etc.)
 COPY . .
 
-# Build the application
-RUN ./gradlew build -x test --no-daemon
+# chmod + build en un solo RUN para minimizar capas.
+# find excluye el artefacto *-plain.jar que Spring Boot también genera,
+# evitando que el COPY del stage 2 falle por múltiples coincidencias.
+RUN sed -i 's/\r$//' gradlew && chmod +x gradlew && \
+    ./gradlew build -x test --no-daemon && \
+    find build/libs -maxdepth 1 -name "*.jar" ! -name "*-plain.jar" \
+         -exec cp {} app.jar \;
 
 # ==================== STAGE 2: RUNTIME ====================
-FROM eclipse-temurin:17-jre-alpine
-
+# JRE-only: reduce superficie de ataque al eliminar el compilador y herramientas de build
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup -g 1000 arquisoft && \
-    adduser -D -u 1000 -G arquisoft arquisoft
+# Crear grupo y usuario de sistema sin contraseña ni shell interactivo (OWASP A05)
+# /app/logs      → perfil dev/base (application.yml: logs/arquisoft.log)
+# /var/log/arquisoft → perfil prod  (application-prod.yml: /var/log/arquisoft/arquisoft.log)
+RUN addgroup -S arquisoft && \
+        adduser -S -u 1000 -G arquisoft arquisoft && \
+        mkdir -p /app/logs /var/log/arquisoft && \
+        chown arquisoft:arquisoft /app/logs /var/log/arquisoft
+# --chown evita un RUN chown separado (menos capas, sin ejecutar como root tras el COPY)
+COPY --chown=arquisoft:arquisoft --from=builder /build/app.jar app.jar
 
-# Copy JAR from builder
-COPY --from=builder /build/build/libs/*.jar app.jar
-
-# Change ownership
-RUN chown -R arquisoft:arquisoft /app
-
-# Switch to non-root user
+# Ejecutar como usuario no-root (OWASP A05: Security Misconfiguration)
 USER arquisoft
 
-# Expose port
 EXPOSE 8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+# start-period=60s: tiempo real de arranque de Spring Boot con múltiples DBs y Flyway
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD wget -q --spider http://localhost:8080/api/actuator/health || exit 1
 
-# Run application
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+ENTRYPOINT ["java", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-jar", "app.jar"]

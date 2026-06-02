@@ -1,80 +1,93 @@
-# 🚀 Guía de Inicio Rápido - Arquisoft Backend
+> [!WARNING]
+> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
+>
+> Este archivo es documentación de referencia para desarrolladores humanos.
+> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
+> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
+> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
+> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+
+# Guía de Inicio Rápido - Arquisoft Backend
 
 Esta guía te ayudará a comenzar con el desarrollo del backend de Arquisoft basado en Arquitectura Hexagonal Modular.
 
-## ⚡ 5 Pasos para Empezar
+## 5 Pasos para Empezar
 
 ### Paso 1: Clonar el Repositorio
+
 ```bash
 git clone <url-del-repo>
 cd arquisoft-backend
 ```
 
-### Paso 2: Limpiar Módulos Antiguos (Opcional)
-Los módulos `ventas/` y `seguridad/` del prototipo anterior aún existen. Puedes eliminarlos:
+### Paso 2: Levantar Servicios con Docker Compose
 
-```bash
-# En Windows (PowerShell)
-Remove-Item -Recurse -Force "ventas"
-Remove-Item -Recurse -Force "seguridad"
-
-# En Linux/Mac
-./cleanup-old-modules.sh
-```
-
-O simplemente ignóralos en tu branch de trabajo.
-
-### Paso 3: Levantar Servicios con Docker Compose
 ```bash
 docker-compose up -d
 ```
 
 Espera ~30 segundos para que todos los servicios se inicien:
-- PostgreSQL: `localhost:5432`
+- PostgreSQL: `localhost:5432` (7 schemas creados automáticamente)
 - RabbitMQ: `localhost:5672` (UI: `localhost:15672`)
 - Redis: `localhost:6379`
 - Keycloak: `localhost:8081`
 - Nextcloud: `localhost:8082`
 
-### Paso 4: Compilar el Proyecto
-```bash
-# Windows/Mac
-./gradlew build
+### Paso 3: Compilar el Proyecto
 
-# Linux
+```bash
+# Windows
+.\gradlew.bat build
+
+# Linux/Mac
 chmod +x gradlew && ./gradlew build
 ```
 
-### Paso 5: Ejecutar la Aplicación
+### Paso 4: Ejecutar la Aplicación
+
 ```bash
-./gradlew bootRun
+# Con perfil de desarrollo (recomendado)
+./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
 La aplicación estará disponible en: **http://localhost:8080/api**
 
----
+### Paso 5: Verificar que Funciona
 
-## 🏗️ Estructura Rápida
-
-```
-shared/              ← Componentes reutilizables
-├── domain/          ← Eventos, excepciones, value objects
-└── infrastructure/  ← RabbitMQ, BD, logging
-
-usuarios/            ← CONTEXTO 1: Usuarios
-├── domain/          ← Modelos, puertos
-├── application/     ← Casos de uso, DTOs
-└── infrastructure/  ← Controladores, repositorios
-
-fichas/              ← CONTEXTO 2: Fichas
-proyectos/          ← CONTEXTO 3: Proyectos
-artefactos/         ← CONTEXTO 4: Artefactos
-... (8 contextos más)
+```bash
+curl http://localhost:8080/api/actuator/health
 ```
 
 ---
 
-## 📊 Acceso a Servicios
+## Estructura Rápida
+
+```
+shared/                          ← Componentes reutilizables (7 sub-módulos)
+├── domain/                      ← DomainEvent, AggregateRoot
+├── exceptions/                  ← DomainException base
+├── amqp/                        ← EventPublisher (RabbitMQ)
+├── postgres/                    ← BaseRepository (JPA)
+├── redis/                       ← RedisClient
+├── web/                         ← HttpClient
+├── validation/                  ← @ValidEmail
+
+seguridad/                       ← CONTEXTO 1: Autenticación/Autorización
+├── domain/                      ← UserRole, JWT, CurrentUser ports
+├── application/                 ← LoginDTO, AuthenticatedUserDTO
+└── infrastructure/              ← SecurityConfig, AuthController, Keycloak
+
+fichas/                          ← CONTEXTO 2: Fichas
+proyectos/                       ← CONTEXTO 3: Proyectos
+artefactos/                      ← CONTEXTO 4: Artefactos
+repositorio_artefactos/          ← CONTEXTO 5: Repositorio Artefactos
+entregables/                     ← CONTEXTO 6: Entregables
+evaluaciones/                    ← CONTEXTO 7: Evaluaciones
+```
+
+---
+
+## Acceso a Servicios
 
 | Servicio | URL | Usuario | Contraseña |
 |----------|-----|--------|-----------|
@@ -85,232 +98,213 @@ artefactos/         ← CONTEXTO 4: Artefactos
 
 ---
 
-## 💻 Comandos Útiles
+## Comandos Útiles
 
 ```bash
 # Compilar
 ./gradlew build
 
-# Ejecutar
-./gradlew bootRun
+# Ejecutar (desarrollo)
+./gradlew bootRun --args='--spring.profiles.active=dev'
 
 # Tests
 ./gradlew test
 
 # Compilar un módulo específico
-./gradlew usuarios:build
+./gradlew fichas:build
 
 # Ver estructura de módulos
 ./gradlew projects
 
-# Limpar caché
+# Limpiar caché
 ./gradlew clean
-
-# Ver logs
-docker logs -f arquisoft-backend
 ```
 
 ---
 
-## 🧪 Crear un Nuevo Caso de Uso
+## Crear un Nuevo Caso de Uso (Ejemplo: Fichas)
 
-### Ejemplo: Crear usuario
+### 1. Definir Entidad en Domain
 
-#### 1. Definir Puerto de Entrada en Domain
 ```java
-// usuarios/domain/src/main/.../port/in/CrearUsuarioUseCase.java
-public interface CrearUsuarioUseCase {
-    Usuario crear(Usuario usuario);
-}
-```
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/model/Ficha.java
+package com.arquisoft.fichas.domain.model;
 
-#### 2. Definir Entidad en Domain
-```java
-// usuarios/domain/src/main/.../model/Usuario.java
-public class Usuario extends AggregateRoot {
-    private Long id;
-    private Email email;
-    private String nombre;
-    
-    public static Usuario crear(Email email, String nombre) {
-        Usuario usuario = new Usuario();
-        usuario.registerEvent(new UsuarioCreadoEvent(
-            usuario.getId(), email.getValue(), nombre
-        ));
-        return usuario;
+import java.util.UUID;
+
+public class Ficha {
+    private final UUID id;
+    private final String titulo;
+    private final String descripcion;
+    private final String areaConocimiento;
+
+    private Ficha(UUID id, String titulo, String descripcion, String areaConocimiento) {
+        this.id = id;
+        this.titulo = titulo;
+        this.descripcion = descripcion;
+        this.areaConocimiento = areaConocimiento;
     }
+
+    // Factory para NUEVA ficha
+    public static Ficha build(String titulo, String descripcion, String areaConocimiento) {
+        return new Ficha(UUID.randomUUID(), titulo, descripcion, areaConocimiento);
+    }
+
+    // Factory para RECONSTRUIR desde persistencia
+    public static Ficha rebuild(UUID id, String titulo, String descripcion, String areaConocimiento) {
+        return new Ficha(id, titulo, descripcion, areaConocimiento);
+    }
+
+    public UUID getId() { return id; }
+    public String getTitulo() { return titulo; }
+    public String getDescripcion() { return descripcion; }
+    public String getAreaConocimiento() { return areaConocimiento; }
 }
 ```
 
-#### 3. Implementar UseCase en Application
+### 2. Definir Puerto de Entrada
+
 ```java
-// usuarios/application/src/main/.../usecase/CrearUsuarioUseCaseImpl.java
-@Service
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/port/in/CrearFichaUseCase.java
+public interface CrearFichaUseCase {
+    Ficha crearFicha(Ficha ficha);
+}
+```
+
+### 3. Definir Puerto de Salida
+
+```java
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/port/out/FichaRepositoryPort.java
+public interface FichaRepositoryPort {
+    Ficha save(Ficha ficha);
+    Optional<Ficha> findById(UUID id);
+    List<Ficha> findAll();
+}
+```
+
+### 4. Implementar UseCase en Application
+
+```java
+// fichas/application/src/main/java/com/arquisoft/fichas/application/usecase/CrearFichaUseCaseImpl.java
+@Component
 @RequiredArgsConstructor
-public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
-    private final UsuarioRepositoryPort repository;
-    private final EventPublisher eventPublisher;
-    
+public class CrearFichaUseCaseImpl implements CrearFichaUseCase {
+    private final FichaRepositoryPort fichaRepositoryPort;
+
     @Override
-    public Usuario crear(Usuario usuario) {
-        Usuario saved = repository.save(usuario);
-        eventPublisher.publishAll(saved.pullDomainEvents());
-        return saved;
+    public Ficha crearFicha(Ficha ficha) {
+        return fichaRepositoryPort.save(ficha);
     }
 }
 ```
 
-#### 4. Crear Controller en Infrastructure
+### 5. Crear Controller en Infrastructure
+
 ```java
-// usuarios/infrastructure/src/main/.../adapter/in/UsuarioController.java
+// fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/adapter/in/FichaController.java
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api/fichas")
 @RequiredArgsConstructor
-public class UsuarioController {
-    private final CrearUsuarioUseCase crearUsuarioUseCase;
-    
+public class FichaController {
+    private final CrearFichaUseCase crearFichaUseCase;
+
     @PostMapping
-    public ResponseEntity<UsuarioDTO> crear(@RequestBody UsuarioDTO dto) {
-        Usuario usuario = crearUsuarioUseCase.crear(dto.toDomain());
-        return ResponseEntity.status(201).body(UsuarioDTO.fromDomain(usuario));
+    public ResponseEntity<FichaDTO> crear(@RequestBody FichaDTO dto) {
+        Ficha ficha = crearFichaUseCase.crearFicha(dto.toDomain());
+        return ResponseEntity.status(HttpStatus.CREATED).body(FichaDTO.fromDomain(ficha));
     }
 }
 ```
 
-#### 5. Crear Repositorio en Infrastructure
+### 6. Crear Repository Adapter en Infrastructure
+
 ```java
-// usuarios/infrastructure/src/main/.../adapter/out/UsuarioRepositoryAdapter.java
+// fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/adapter/out/FichaRepositoryAdapter.java
 @Repository
 @RequiredArgsConstructor
-public class UsuarioRepositoryAdapter implements UsuarioRepositoryPort {
+public class FichaRepositoryAdapter implements FichaRepositoryPort {
     private final JdbcTemplate jdbcTemplate;
-    
+
     @Override
-    public Usuario save(Usuario usuario) {
-        String sql = "INSERT INTO usuarios.usuario (nombre, email) VALUES (?, ?)";
-        jdbcTemplate.update(sql, usuario.getNombre(), usuario.getEmail().getValue());
-        return usuario;
+    public Ficha save(Ficha ficha) {
+        String sql = "INSERT INTO fichas_perfil.ficha (id, titulo, descripcion, area) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.update(sql, ficha.getId(), ficha.getTitulo(), ficha.getDescripcion(), ficha.getAreaConocimiento());
+        return ficha;
     }
 }
 ```
 
-#### 6. Event Listener en Otro Contexto (Opcional)
+### 7. Event Listener en Otro Contexto (Opcional)
+
 ```java
-// proyectos/infrastructure/src/main/.../adapter/in/ProyectosEventListener.java
+// proyectos/infrastructure/src/main/java/com/arquisoft/proyectos/infrastructure/adapter/in/ProyectosEventListener.java
 @Component
 @RequiredArgsConstructor
 public class ProyectosEventListener {
-    
+
     @RabbitListener(bindings = @QueueBinding(
-        value = @Queue("proyectos.usuarios-events"),
+        value = @Queue("proyectos.fichas-events"),
         exchange = @Exchange("arquisoft.events"),
-        key = "usuarios.creado"
+        key = "fichas.creada"
     ))
-    public void onUsuarioCreado(String message) {
-        // Procesar evento de usuario creado
-        // Ej: crear proyecto inicial, enviar email, etc.
+    public void onFichaCreada(String message) {
+        // Procesar evento de ficha creada
     }
 }
 ```
 
 ---
 
-## 🐛 Solucionar Problemas
+## Solucionar Problemas
 
 ### "Connection refused" en BD
-```bash
-# Verifica que PostgreSQL está levantado
-docker ps | grep postgres
 
-# Si no está levantado
+```bash
+docker ps | grep postgres
 docker-compose up -d postgres
 ```
 
 ### "Cannot get a connection, pool error"
+
 Espera un minuto para que PostgreSQL esté listo, luego reinicia la aplicación.
 
 ### RabbitMQ no responde
+
 ```bash
-# Reiniciar RabbitMQ
 docker-compose restart rabbitmq
 ```
 
 ### Puertos ocupados
-Si un puerto está ocupado, modifica `docker-compose.yml`:
+
+Modifica `docker-compose.yml`:
 ```yaml
 ports:
-  - "5433:5432"  # Cambiar puerto local de 5432 a 5433
+  - "5433:5432"  # Cambiar puerto local
 ```
 
 ---
 
-## 📚 Documentación Completa
-
-- **README.md** - Documentación completa del proyecto
-- **ARQUITECTURA_Y_ESTRUCTURA.md** - Arquitectura hexagonal y ejemplos
-- **ARQUITECTURA_ASINCRONICO_ARQUISOFT.md** - Arquitectura asincrónica con eventos
-- **RESTRUCTURACION_COMPLETADA.md** - Resumen de cambios realizados
-
----
-
-## 🎯 Checklist de Desarrollo
+## Checklist de Desarrollo
 
 - [ ] Clonar el repositorio
 - [ ] Levantar Docker Compose
 - [ ] Compilar el proyecto
-- [ ] Ejecutar la aplicación
-- [ ] Verificar que la aplicación responde (GET /api/actuator/health)
-- [ ] Leer la arquitectura en los documentos
-- [ ] Crear primer modelo de dominio
+- [ ] Ejecutar la aplicación con perfil `dev`
+- [ ] Verificar health check (GET /api/actuator/health)
+- [ ] Crear primer modelo de dominio en tu contexto
 - [ ] Crear primer caso de uso
 - [ ] Crear tests unitarios
-- [ ] Crear evento de dominio
-- [ ] Configurar listener de eventos
+- [ ] Crear evento de dominio (si aplica)
 
 ---
 
-## 🤔 Preguntas Frecuentes
+## Documentación Completa
 
-**P: ¿Por dónde empiezo a implementar?**
-R: Comienza con el contexto `usuarios/` que ya tiene estructura base. Implementa los modelos, puertos y casos de uso básicos.
+- **README.md** — Documentación completa del proyecto
+- **ARQUITECTURA_Y_ESTRUCTURA.md** — Arquitectura hexagonal y ejemplos
+- **ARQUITECTURA_ASINCRONICO_ARQUISOFT.md** — Arquitectura asincrónica con eventos
 
-**P: ¿Cómo agrego un nuevo contexto?**
-R: Copia la estructura de `usuarios/` a un nuevo directorio, cambia los nombres de paquetes. Actualiza `settings.gradle`.
-
-**P: ¿Qué es RabbitMQ?**
-R: Es un message broker que permite comunicación asincrónica entre contextos. Los eventos se publican en RabbitMQ y otros contextos los consumen sin bloqueo.
-
-**P: ¿Necesito modificar application.yml?**
-R: Solo si cambias las credenciales de BD o puertos de servicios. Por defecto, está configurado para localhost.
-
-**P: ¿Cómo testeo?**
-R: Usa JUnit 5 + Mockito. Los tests deben mockear los puertos de salida. Ver ejemplos en ARQUITECTURA_Y_ESTRUCTURA.md.
 
 ---
 
-## 🚢 Deploy
-
-Cuando estés listo para producción:
-
-1. **Build Docker Image**:
-   ```bash
-   docker build -t arquisoft-backend:1.0.0 .
-   ```
-
-2. **Push a Registry**:
-   ```bash
-   docker push myregistry/arquisoft-backend:1.0.0
-   ```
-
-3. **Deploy a Kubernetes** (ver ejemplo en README.md)
-
----
-
-## 📞 Soporte
-
-Consulta la documentación completa en los archivos markdown del proyecto.
-
----
-
-**Generado**: 12 de Enero, 2026  
 **Versión**: 1.0.0

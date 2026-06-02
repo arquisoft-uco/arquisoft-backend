@@ -28,11 +28,11 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v4
 
-      # ── Setup Java 17 ──
-      - name: Setup Java 17 (Temurin)
+      # ── Setup Java 21 ──
+      - name: Setup Java 21 (Temurin)
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
 
       # ── Cache Gradle ──

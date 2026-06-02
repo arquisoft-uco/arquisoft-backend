@@ -1,2 +1,0 @@
-INSERT VALUES(?,?,?,?)
-INTO task;

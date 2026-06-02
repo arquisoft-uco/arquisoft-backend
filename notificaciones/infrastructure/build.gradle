@@ -1,6 +1,0 @@
-dependencies {
-    implementation project(':notificaciones:domain')
-    implementation project(':notificaciones:application')
-}
-
-

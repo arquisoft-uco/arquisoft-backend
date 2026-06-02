@@ -1,0 +1,8 @@
+dependencies {
+    // SLF4J + Logback — transitivos de spring-boot-starter-logging.
+    // Se declara explícitamente para garantizar que logback-spring.xml sea reconocido
+    // como configuración de Spring Boot en cualquier contexto que importe este módulo.
+    // El perfil prod usa StructuredLogEncoder (nativo de Spring Boot 4.x) para JSON
+    // en stdout — sin dependencias de terceros para logging JSON.
+    implementation "org.springframework.boot:spring-boot-starter-logging"
+}

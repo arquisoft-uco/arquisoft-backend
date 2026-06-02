@@ -1,6 +1,0 @@
-dependencies {
-    implementation project(':mapas_ruta:domain')
-    implementation project(':mapas_ruta:application')
-}
-
-

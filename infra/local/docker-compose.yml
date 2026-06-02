@@ -1,0 +1,19 @@
+services:
+  alloy:
+    image: grafana/alloy:v1.5.1
+    container_name: alloy-local
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy
+      # Docker socket: permite a Alloy capturar logs de todos los contenedores
+      # directamente del motor Docker, sin volumen compartido con el backend.
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "12345:12345"  # UI y health de Alloy — http://localhost:12345
+    command: run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    restart: unless-stopped
+
+
+# docker compose -f infra/local/docker-compose.yml up -d
+# docker ps
+# docker logs -f alloy-local
+# docker compose -f infra/local/docker-compose.yml restart alloy

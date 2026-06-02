@@ -1,0 +1,205 @@
+# ==============================================================================
+# PERFIL PRODUCCIÓN (PROD)
+# ==============================================================================
+# Activa: application.yml + application-prod.yml
+# Activar con: --spring.profiles.active=prod
+#
+# NOTAS DE ARQUITECTURA:
+# - Sin spring.datasource global: cada bounded context tiene su propio DataSource.
+# - Sin spring.jpa global: cada *DataSourceConfig.java configura su EntityManagerFactory.
+# - Sin spring.flyway global: cada *DataSourceConfig.java configura su instancia Flyway.
+# - Sin defaults en datasources ni en Keycloak: todas las variables son obligatorias en producción.
+# ==============================================================================
+
+spring:
+  # ==================== RABBITMQ ====================
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+    listener:
+      simple:
+        concurrency: 10
+        max-concurrency: 20
+
+  # ==================== REDIS ====================
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      username: ${REDIS_USER}
+      password: ${REDIS_PASSWORD}
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+
+  # ==================== OAUTH2 / KEYCLOAK (Spring Boot 3.x+) ====================
+  # Resource Server: valida tokens JWT entrantes.
+  # Client: permite al backend llamar al endpoint /token de Keycloak.
+  # En producción todas las variables son obligatorias — sin defaults.
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}
+          jwk-set-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+      client:
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}
+            token-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/token
+            jwk-set-uri: ${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: ${KEYCLOAK_CLIENT_ID}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET}
+            authorization-grant-type: password
+            scope: openid, profile, email
+
+# ==================== DATASOURCES POR BOUNDED CONTEXT (PROD) ====================
+datasource:
+  seguridad:
+    url: ${DB_SEGURIDAD_URL}
+    username: ${DB_SEGURIDAD_USERNAME}
+    password: ${DB_SEGURIDAD_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      pool-name: HikariPool-Seguridad-Prod
+
+  fichas:
+    url: ${DB_FICHAS_URL}
+    username: ${DB_FICHAS_USERNAME}
+    password: ${DB_FICHAS_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      pool-name: HikariPool-Fichas-Prod
+
+  proyectos:
+    url: ${DB_PROYECTOS_URL}
+    username: ${DB_PROYECTOS_USERNAME}
+    password: ${DB_PROYECTOS_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      pool-name: HikariPool-Proyectos-Prod
+
+  artefactos:
+    url: ${DB_ARTEFACTOS_URL}
+    username: ${DB_ARTEFACTOS_USERNAME}
+    password: ${DB_ARTEFACTOS_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      pool-name: HikariPool-Artefactos-Prod
+
+  repositorio_artefactos:
+    url: ${DB_REPO_ARTEFACTOS_URL}
+    username: ${DB_REPO_ARTEFACTOS_USERNAME}
+    password: ${DB_REPO_ARTEFACTOS_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      pool-name: HikariPool-RepositorioArtefactos-Prod
+
+  entregables:
+    url: ${DB_ENTREGABLES_URL}
+    username: ${DB_ENTREGABLES_USERNAME}
+    password: ${DB_ENTREGABLES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      pool-name: HikariPool-Entregables-Prod
+
+  evaluaciones:
+    url: ${DB_EVALUACIONES_URL}
+    username: ${DB_EVALUACIONES_USERNAME}
+    password: ${DB_EVALUACIONES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      pool-name: HikariPool-Evaluaciones-Prod
+
+# ==================== KEYCLOAK (propiedades propias) ====================
+# Leídas por KeycloakAuthAdapter y SecurityConfig via @Value("${arquisoft.keycloak.*}").
+# Sin defaults — obligatorias en producción.
+arquisoft:
+  keycloak:
+    server-url: ${KEYCLOAK_URL}
+    realm: ${KEYCLOAK_REALM}
+    client-id: ${KEYCLOAK_CLIENT_ID}
+    client-secret: ${KEYCLOAK_CLIENT_SECRET}
+
+# ==================== CORS Y RATE LIMITING (PROD) ====================
+# Leídas por CorsConfig y RateLimitConfig via @Value("${security.cors.*}") y @Value("${security.rate-limit.*}")
+security:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:60}
+    login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:3}
+    # RATE_LIMIT_MAX_TRACKED_IPS eliminado — propiedad removida al migrar a RedisBucketResolver
+
+# ==================== LOGGING ====================
+# logback-spring.xml gestiona TODOS los appenders (ASYNC_STDOUT + ASYNC_FILE_PROD).
+# NO configurar logging.file.name aquí: Spring Boot crearía un FileAppender adicional
+# en texto plano que conflictaría con el LogstashEncoder de logback-spring.xml.
+logging:
+  level:
+    root: WARN
+    # Código propio: INFO — captura eventos de negocio y errores de dominio en Loki
+    com.arquisoft: INFO
+    # Framework: solo WARN/ERROR — el ruido de inicialización no genera valor en Loki
+    org.springframework.security: WARN
+    org.springframework.web: WARN
+    org.springframework.amqp: WARN
+    org.springframework.data: WARN
+    com.zaxxer.hikari: WARN
+    org.flywaydb: WARN
+    org.apache.tomcat: WARN
+    com.rabbitmq: WARN
+    io.micrometer: WARN
+    # Hibernate SQL: OFF en prod — demasiado verboso, sin valor en Loki, usar traceId para debug
+    org.hibernate: WARN
+    org.hibernate.SQL: OFF
+    org.hibernate.type: OFF
+    # SpringDoc deshabilitado en prod — suprimir sus logs también
+    springdoc: OFF
+
+# ==================== ACTUATOR ====================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# ==================== SPRINGDOCS ====================
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false

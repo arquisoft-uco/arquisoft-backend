@@ -1,0 +1,12 @@
+dependencies {
+    implementation project(':shared:domain')
+
+    // Spring Boot — provee @Configuration, @Component, @ConfigurationProperties, etc.
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    // MinIO Java SDK — incluye OkHttp y Guava transitivamente
+    implementation "io.minio:minio:${minioVersion}"
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+}

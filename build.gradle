@@ -2,7 +2,14 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'org.springframework.boot' version "${springBootVersion}"
-    id 'io.spring.dependency-management' version '1.1.3'
+    id 'io.spring.dependency-management' version "${springManagement}"
+    id "org.springdoc.openapi-gradle-plugin" version "${openapiVersion}"
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
 }
 
 group = 'com.arquisoft'
@@ -30,12 +37,44 @@ repositories {
     mavenCentral()
 }
 
+// ==================== DEPENDENCY MANAGEMENT (BOM + OVERRIDES PUNTUALES) ====================
+// El BOM de Spring Boot 4.0.5 gobierna la mayoria de versiones. Los overrides aqui son
+// para librerias que el BOM no gestiona o donde el equipo necesita una version especifica
+// por razones de trazabilidad/compatibilidad documentada.
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+    }
+    dependencies {
+        // PostgreSQL driver: pin explicito por compatibilidad con PostgreSQL 18.x del docker-compose
+        dependency "org.postgresql:postgresql:${postgresVersion}"
+
+        // OpenAPI / Swagger UI: el BOM no gestiona springdoc
+        dependency "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+
+        // Rate Limiting (no gestionado por el BOM). Fuente: Maven Central (com.bucket4j).
+        // bucket4j_jdk17-core: artefacto oficial para Java 17+, compatible con Java 21 y Virtual Threads.
+        dependency "com.bucket4j:bucket4j_jdk17-core:${bucket4jVersion}"
+    }
+}
+
 // ==================== APLICACIÓN PRINCIPAL ====================
 dependencies {
-    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-amqp:${springBootVersion}"
-    implementation "org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}"
-    
+    implementation "org.springframework.boot:spring-boot-starter-web"
+    implementation "org.springframework.boot:spring-boot-starter-amqp"
+    implementation "org.springframework.boot:spring-boot-starter-actuator"
+
+    // Logging estructurado (ADR-005): JSON encoder con traceId/userId en MDC via AuditFilter
+    implementation project(':shared:logger')
+
+    // Flyway — version gestionada por el BOM de Spring Boot 4.0.5 (12.4.0).
+    // flyway-database-postgresql es necesario en Flyway 11+ para soportar PostgreSQL.
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
+
+    // OpenAPI / Swagger UI (ADR-011) — describe la API ensamblada completa
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
+
     // Incluir todos los módulos de infraestructura (contextos)
     subprojects.each { subproject ->
         if (subproject.name.endsWith('infrastructure')) {
@@ -43,7 +82,7 @@ dependencies {
         }
     }
 
-    testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.junit.jupiter:junit-jupiter:${jUnitVersion}"
 }
 
@@ -61,6 +100,20 @@ bootJar {
 subprojects { subproject ->
     apply plugin: 'java'
     apply plugin: 'checkstyle'
+    apply plugin: 'io.spring.dependency-management'
+
+    // Mismos BOM y overrides en cada subproyecto para garantizar consistencia transversal.
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        }
+        dependencies {
+            dependency "org.postgresql:postgresql:${postgresVersion}"
+            dependency "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springdocVersion}"
+            // bucket4j_jdk17-core: artefacto oficial Maven Central para Java 17+ / Java 21 / Virtual Threads
+            dependency "com.bucket4j:bucket4j_jdk17-core:${bucket4jVersion}"
+        }
+    }
 
     checkstyle {
         toolVersion = '10.12.5'
@@ -71,17 +124,26 @@ subprojects { subproject ->
 
     if (subproject.name.endsWith('application') || subproject.name.endsWith('infrastructure')) {
         dependencies {
-            implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+            implementation "org.springframework.boot:spring-boot-starter-web"
 
             compileOnly "org.projectlombok:lombok:${lombokVersion}"
-
             annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-            testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+            testImplementation "org.springframework.boot:spring-boot-starter-test"
         }
     }
 
-    group = parent.group
+    // Unique GAV per context: e.g. com.arquisoft.seguridad:domain
+    // evita colision con com.arquisoft.shared:domain
+    if (subproject.parent != rootProject) {
+        group = "${rootProject.group}.${subproject.parent.name}"
+        // Unique JAR name: e.g. seguridad-infrastructure-1.0.0.jar
+        base {
+            archivesName = "${subproject.parent.name}-${subproject.name}"
+        }
+    } else {
+        group = rootProject.group
+    }
     version = parent.version
 
     java {
@@ -94,7 +156,7 @@ subprojects { subproject ->
 
     dependencies {
         testImplementation platform("org.junit:junit-bom:${jUnitVersion}")
-        testImplementation "org.junit.jupiter:junit-jupiter:${jUnitVersion}"
+        testImplementation "org.junit.jupiter:junit-jupiter"
     }
 
     test {
@@ -105,5 +167,9 @@ subprojects { subproject ->
         compileOnly {
             extendsFrom annotationProcessor
         }
+    }
+
+    compileJava {
+        options.compilerArgs.addAll(['-parameters', '-Xlint:deprecation'])
     }
 }
