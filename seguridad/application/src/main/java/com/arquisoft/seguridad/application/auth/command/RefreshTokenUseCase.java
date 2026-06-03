@@ -1,12 +1,12 @@
 package com.arquisoft.seguridad.application.auth.command;
 
-import com.arquisoft.seguridad.application.auth.port.AuthenticationOutputPort;
+import com.arquisoft.seguridad.application.auth.command.port.in.RefreshTokenInputPort;
 import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
+import com.arquisoft.seguridad.domain.auth.model.CredencialesToken;
+import com.arquisoft.seguridad.domain.auth.port.out.AuthenticationOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * Implementacion del caso de uso de refresco de token.
@@ -22,16 +22,16 @@ public class RefreshTokenUseCase implements RefreshTokenInputPort {
     public RefreshResult ejecutar(String refreshToken) {
         log.debug(SeguridadApplicationMessages.RefreshTokenUseCase.REFRESH_DEBUG);
 
-        Map<String, Object> tokenResponse = authenticationOutputPort.refreshToken(refreshToken);
+        CredencialesToken credenciales = authenticationOutputPort.refresh(refreshToken);
 
         log.info(SeguridadApplicationMessages.RefreshTokenUseCase.REFRESH_EXITOSO);
 
         return new RefreshResult(
-                (String) tokenResponse.get("access_token"),
-                (String) tokenResponse.get("refresh_token"),
-                ((Number) tokenResponse.getOrDefault("expires_in", 3600)).longValue(),
-                (String) tokenResponse.getOrDefault("token_type", "Bearer"),
-                (String) tokenResponse.getOrDefault("scope", "")
+                credenciales.accessToken(),
+                credenciales.refreshToken(),
+                credenciales.expiresIn(),
+                credenciales.tokenType(),
+                credenciales.scope()
         );
     }
 }

@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.keycloak;
 
-import com.arquisoft.seguridad.domain.model.UsuarioRole;
+import com.arquisoft.seguridad.domain.usuario.model.UsuarioRole;
 
 import java.util.List;
 import java.util.Optional;

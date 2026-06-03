@@ -109,12 +109,12 @@ public final class SeguridadInfraestructureMessages {
     }
 
     // =========================================================================
-    // AuthInputAdapter
+    // AuthCommandInputAdapter
     // =========================================================================
 
-    public static final class AuthInputAdapter {
+    public static final class AuthCommandInputAdapter {
 
-        private AuthInputAdapter() {}
+        private AuthCommandInputAdapter() {}
 
         // --- Logs de refresh token ---
 

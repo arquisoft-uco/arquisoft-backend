@@ -1,6 +1,8 @@
 package com.arquisoft.seguridad.application.auth.command;
 
-import com.arquisoft.seguridad.application.auth.port.TokenBlacklistOutputPort;
+import com.arquisoft.seguridad.application.auth.command.model.LogoutCommand;
+import com.arquisoft.seguridad.application.auth.command.port.in.LogoutInputPort;
+import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

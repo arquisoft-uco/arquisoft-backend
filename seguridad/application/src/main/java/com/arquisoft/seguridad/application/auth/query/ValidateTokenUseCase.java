@@ -1,11 +1,12 @@
 package com.arquisoft.seguridad.application.auth.query;
 
-import com.arquisoft.seguridad.application.auth.port.TokenOutputPort;
+import com.arquisoft.seguridad.application.auth.query.criteria.ValidateTokenCriteria;
+import com.arquisoft.seguridad.application.auth.query.model.TokenInfoDTO;
+import com.arquisoft.seguridad.application.auth.query.port.in.ValidateTokenInputPort;
+import com.arquisoft.seguridad.application.auth.query.port.out.TokenQueryOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * Implementacion del caso de uso de validacion de token.
@@ -15,20 +16,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ValidateTokenUseCase implements ValidateTokenInputPort {
 
-    private final TokenOutputPort tokenOutputPort;
+    private final TokenQueryOutputPort tokenQueryOutputPort;
 
     @Override
-    public ValidationResult ejecutar(String token) {
+    public ValidationResult ejecutar(ValidateTokenCriteria criteria) {
         log.debug("Intento de validacion de token");
 
         try {
-            if (tokenOutputPort.validateToken(token)) {
-                Map<String, Object> userInfo = tokenOutputPort.extractUserInfo(token);
+            if (tokenQueryOutputPort.validateToken(criteria.token())) {
+                TokenInfoDTO info = tokenQueryOutputPort.extractUserInfo(criteria.token());
 
                 return new ValidationResult(
                         true,
-                        (String) userInfo.get("keycloakUserId"),
-                        (String) userInfo.get("email"),
+                        info.keycloakUserId(),
+                        info.email(),
                         "Token valido"
                 );
             } else {

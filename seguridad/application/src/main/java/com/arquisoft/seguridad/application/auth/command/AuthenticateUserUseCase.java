@@ -1,12 +1,13 @@
 package com.arquisoft.seguridad.application.auth.command;
 
-import com.arquisoft.seguridad.application.auth.port.AuthenticationOutputPort;
+import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCommand;
+import com.arquisoft.seguridad.application.auth.command.port.in.AuthenticateUserInputPort;
 import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
+import com.arquisoft.seguridad.domain.auth.model.CredencialesToken;
+import com.arquisoft.seguridad.domain.auth.port.out.AuthenticationOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * Implementacion del caso de uso de autenticacion.
@@ -23,16 +24,16 @@ public class AuthenticateUserUseCase implements AuthenticateUserInputPort {
     public AuthResult ejecutar(AuthenticateUserCommand command) {
         log.debug(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_DEBUG);
 
-        Map<String, Object> tokenResponse = authenticationOutputPort.authenticate(command.email(), command.password());
+        CredencialesToken credenciales = authenticationOutputPort.authenticate(command.email(), command.password());
 
         log.info(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_EXITOSO);
 
         return new AuthResult(
-                (String) tokenResponse.get("access_token"),
-                (String) tokenResponse.get("refresh_token"),
-                ((Number) tokenResponse.getOrDefault("expires_in", 3600)).longValue(),
-                (String) tokenResponse.getOrDefault("token_type", "Bearer"),
-                (String) tokenResponse.getOrDefault("scope", "")
+                credenciales.accessToken(),
+                credenciales.refreshToken(),
+                credenciales.expiresIn(),
+                credenciales.tokenType(),
+                credenciales.scope()
         );
     }
 }

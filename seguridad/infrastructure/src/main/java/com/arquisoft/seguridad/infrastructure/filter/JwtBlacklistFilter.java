@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
-import com.arquisoft.seguridad.application.auth.port.TokenBlacklistOutputPort;
+import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
 import com.arquisoft.seguridad.infrastructure.util.message.SeguridadInfraestructureMessages;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
