@@ -1,0 +1,45 @@
+package com.arquisoft.seguridad.infrastructure.usuario.command.adapter.in.web.dto;
+
+import com.arquisoft.seguridad.application.usuario.command.model.CrearUsuarioCommand;
+import com.arquisoft.seguridad.domain.usuario.model.UsuarioRole;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CrearUsuarioRequestDTO {
+
+    @NotBlank(message = "El email es obligatorio")
+    @Email(message = "El email debe tener formato valido")
+    private String email;
+
+    @NotNull(message = "El rol es obligatorio")
+    private RolUsuarioDTO rol;
+
+    public CrearUsuarioCommand toCommand() {
+        return new CrearUsuarioCommand(this.email, this.rol.toDomain());
+    }
+
+    public enum RolUsuarioDTO {
+        ESTUDIANTE, ASESOR, ASESOR_FICHA, COORDINADOR,
+        JURADO, BIBLIOTECARIO, REPRESENTANTE_COMITE_CURRICULUM, ADMINISTRADOR;
+
+        public UsuarioRole toDomain() {
+            return switch (this) {
+                case ESTUDIANTE -> UsuarioRole.ESTUDIANTE;
+                case ASESOR -> UsuarioRole.ASESOR;
+                case ASESOR_FICHA -> UsuarioRole.ASESOR_FICHA;
+                case COORDINADOR -> UsuarioRole.COORDINADOR;
+                case JURADO -> UsuarioRole.JURADO;
+                case BIBLIOTECARIO -> UsuarioRole.BIBLIOTECARIO;
+                case REPRESENTANTE_COMITE_CURRICULUM -> UsuarioRole.REPRESENTANTE_COMITE_CURRICULUM;
+                case ADMINISTRADOR -> UsuarioRole.ADMINISTRADOR;
+            };
+        }
+    }
+}

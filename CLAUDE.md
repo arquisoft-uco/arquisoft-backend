@@ -63,23 +63,54 @@ Hexagonal Architecture (Ports & Adapters) with **7 bounded contexts** and **7 sh
 
 ```
 {context}/domain/
-├── model/           # Aggregate roots (suffix Aggregate), value objects — no Spring
-├── port/in/         # Input port interfaces (suffix InputPort)
-├── port/out/        # Output port interfaces (suffix OutputPort)
-├── event/           # Domain events (extend DomainEvent)
-└── exception/       # Domain exceptions (extend DomainException)
+└── {feature}/
+    ├── aggregate/   # Aggregate roots (suffix Aggregate) — no Lombok, no Spring
+    ├── port/out/    # Output port interfaces write-side (suffix OutputPort)
+    ├── model/       # Value objects (optional) — no Lombok, no Spring
+    └── message/     # Domain message constants (optional)
+event/               # Domain events shared across features (extend DomainEvent)
+exception/           # Domain exceptions shared across features (extend DomainException)
 
 {context}/application/
-├── {feature}/command/   # Command use case interface (InputPort) + implementation (UseCaseImpl)
-├── {feature}/query/     # Query use case interface (InputPort) + implementation (UseCaseImpl)
-└── {feature}/dto/       # DTOs (suffix DTO), ReadModels (suffix ReadModel)
+└── {feature}/
+    ├── command/
+    │   ├── {Action}{Entity}UseCase.java       # Use case implementation
+    │   ├── port/in/
+    │   │   └── {Action}{Entity}InputPort.java
+    │   └── model/
+    │       └── {Action}{Entity}Command.java
+    └── query/
+        ├── {Consult}{Entity}UseCase.java
+        ├── port/in/
+        │   └── {Consult}{Entity}InputPort.java
+        ├── port/out/
+        │   └── {Feature}QueryOutputPort.java  # Output port read-side
+        ├── criteria/
+        │   └── {Feature}Criteria.java
+        └── readmodel/
+            └── {Feature}ReadModel.java
 
 {context}/infrastructure/
-├── adapter/in/      # REST controllers and AMQP consumers (suffix InputAdapter)
-├── adapter/out/     # Repository and external service adapters (suffix OutputAdapter)
-├── config/          # Spring configuration
-├── filter/          # HTTP filters
-└── db/migration/    # Flyway migrations
+└── {feature}/
+    ├── command/
+    │   ├── adapter/in/web/
+    │   │   ├── {Action}{Entity}InputAdapter.java
+    │   │   └── dto/
+    │   │       └── {Action}{Entity}RequestDTO.java
+    │   └── adapter/out/persistence/
+    │       └── {Feature}CommandOutputAdapter.java
+    ├── query/
+    │   ├── adapter/in/web/
+    │   │   └── {Consult}{Entity}InputAdapter.java
+    │   └── adapter/out/persistence/
+    │       └── {Feature}QueryOutputAdapter.java
+    └── persistence/
+        ├── {Feature}JpaEntity.java
+        ├── {Feature}JpaRepository.java
+        └── {Feature}Mapper.java
+config/              # Spring configuration shared within context
+filter/              # HTTP filters (if applicable to context)
+db/migration/        # Flyway migrations
 ```
 
 Dependency direction is strictly enforced: `domain ← application ← infrastructure`.
@@ -92,21 +123,23 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Domain events:** Extend `DomainEvent`. After persisting an aggregate, drain its unpublished events and publish via `SharedEventPublisher` (RabbitMQ, publisher confirms, manual ACK, prefetch=1).
 
-**Input ports:** Interfaces in `application/{feature}/command/` or `application/{feature}/query/`, suffix `InputPort` (e.g., `CrearUsuarioInputPort`, `ConsultarFichasPerfilInputPort`).
+**Input ports:** Interfaces in `application/{feature}/command/port/in/` or `application/{feature}/query/port/in/`, suffix `InputPort` (e.g., `RegistrarFichaPerfilInputPort`, `ConsultarFichasPerfilInputPort`).
 
-**Output ports:** Interfaces in `domain/port/out/` or `application/port/out/`, suffix `OutputPort` (e.g., `UsuarioOutputPort`, `FichaPerfilOutputPort`).
+**Output ports:** Write-side in `domain/{feature}/port/out/`; read-side in `application/{feature}/query/port/out/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`).
 
-**Input adapters:** REST controllers and AMQP consumers in `infrastructure/adapter/in/`, suffix `InputAdapter` (e.g., `AuthInputAdapter`, `UsuarioCreadoInputAdapter`).
+**Input adapters:** REST controllers in `infrastructure/{feature}/command/adapter/in/web/`; AMQP consumers in `infrastructure/{feature}/command/adapter/in/amqp/`, suffix `InputAdapter` (e.g., `RegistrarFichaPerfilInputAdapter`, `UsuarioCreadoInputAdapter`).
 
-**Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/adapter/out/`, suffix `OutputAdapter` (e.g., `FichaPerfilOutputAdapter`, `JwtTokenOutputAdapter`). Implement the corresponding `OutputPort` interface.
+**Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/{feature}/command/adapter/out/persistence/` (or appropriate sub-package for non-JPA), suffix `OutputAdapter` (e.g., `FichaPerfilCommandOutputAdapter`, `KeycloakAuthOutputAdapter`). Implement the corresponding `OutputPort` interface.
 
-**Use case implementations:** `{Action}{Entity}UseCaseImpl` (e.g., `CrearUsuarioUseCaseImpl`), implement the corresponding `InputPort`.
+**Use case implementations:** `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCase`, `AutenticarUsuarioUseCase`), implement the corresponding `InputPort`.
 
-**ReadModels:** Flat query projections in `application/{feature}/dto/`, suffix `ReadModel` (e.g., `FichaPerfilReadModel`). Own a static `fromDomain(Aggregate)` factory method.
+**Commands:** Input data for use cases in `application/{feature}/command/model/`, suffix `Command` (e.g., `RegistrarFichaPerfilCommand`). Implemented as Java `record`. DTOs in `infrastructure/{feature}/command/adapter/in/web/dto/` own a `toCommand()` factory method.
+
+**ReadModels:** Flat query projections in `application/{feature}/query/readmodel/`, suffix `ReadModel` (e.g., `FichaPerfilReadModel`). Own a static `fromDomain(Aggregate)` factory method.
 
 **DTOs:** `@Data @NoArgsConstructor @AllArgsConstructor @Builder`, suffix `DTO`. Own `toDomain()` and `fromDomain()` static methods.
 
-**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Aggregate`, `InputPort`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `UseCaseImpl`, `ReadModel`, `DTO`).
+**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Aggregate`, `InputPort`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `UseCase`, `ReadModel`, `DTO`, `Command`).
 
 **Injection:** Always constructor injection via `@RequiredArgsConstructor` — never `@Autowired`.
 

@@ -45,3 +45,5 @@ logs/
 .env*.properties
 .env
 *.key
+
+.claude/

@@ -1,7 +1,9 @@
 package com.arquisoft.seguridad.application.usuario.command;
 
-import com.arquisoft.seguridad.domain.model.UsuarioAggregate;
-import com.arquisoft.seguridad.domain.port.out.UsuarioOutputPort;
+import com.arquisoft.seguridad.application.usuario.command.model.CrearUsuarioCommand;
+import com.arquisoft.seguridad.application.usuario.command.port.in.CrearUsuarioInputPort;
+import com.arquisoft.seguridad.domain.usuario.aggregate.UsuarioAggregate;
+import com.arquisoft.seguridad.domain.usuario.port.out.UsuarioOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

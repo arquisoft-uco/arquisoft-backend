@@ -18,43 +18,19 @@ public final class SeguridadApplicationMessages {
     private SeguridadApplicationMessages() {}
 
     // =========================================================================
-    // LogoutCommand
+    // LogoutUseCase
     // =========================================================================
 
-    public static final class LogoutCommand {
+    public static final class LogoutUseCase {
 
-        private LogoutCommand() {}
-
-        // --- Logs (tecnicos, solo visibles en los logs del servidor) ---
+        private LogoutUseCase() {}
 
         /**
-         * log.warn — El campo 'jti' llego null al construir el DTO.
-         * Indica un fallo en la guardia previa del controlador.
+         * log.info — Token invalidado exitosamente en la blacklist.
+         * Parametros: identificador del token, TTL en segundos.
          */
-        public static final String JTI_NULL_LOG =
-                "LogoutRequestDTO: campo 'jti' es null — la guardia del controlador no funciono correctamente";
-
-        /**
-         * log.warn — El campo 'ttlSegundos' es <= 0.
-         * Parametro {}: valor recibido para orientar el diagnostico.
-         */
-        public static final String TTL_INVALIDO_LOG =
-                "LogoutRequestDTO: ttlSegundos debe ser > 0, recibido: {}";
-
-        // --- ApplicationException (mensaje generico para el cliente, codigo para el desarrollador) ---
-
-        /**
-         * Mensaje generico expuesto al cliente en la respuesta HTTP (HTTP 400).
-         * No revela nombres internos de campos ni detalles del JWT.
-         */
-        public static final String DATOS_SESION_INVALIDOS =
-                "Datos de sesion invalidos. Intente autenticarse nuevamente.";
-
-        /**
-         * Codigo de error unico para identificar el fallo en la capa de aplicacion.
-         * Mapeado por GlobalAppExceptionHandler a HTTP 400.
-         */
-        public static final String CODIGO_SESION_INVALIDA = "LOGOUT_SESION_INVALIDA";
+        public static final String LOGOUT_EXITOSO =
+                "Logout — token invalidado en blacklist: identificador='{}', TTL={}s";
     }
 
     // =========================================================================
@@ -85,5 +61,29 @@ public final class SeguridadApplicationMessages {
 
         /** log.info — Evento de negocio completado: nuevo access token emitido por Keycloak. */
         public static final String REFRESH_EXITOSO = "Token refrescado exitosamente";
+    }
+
+    // =========================================================================
+    // ValidateTokenUseCase
+    // =========================================================================
+
+    public static final class ValidateTokenUseCase {
+
+        private ValidateTokenUseCase() {}
+
+        /** log.debug — Entrada al caso de uso. El token no se loggea (dato sensible). */
+        public static final String VALIDAR_DEBUG = "Intento de validacion de token";
+
+        /** Mensaje de resultado cuando el token es valido. */
+        public static final String TOKEN_VALIDO = "Token valido";
+
+        /** Mensaje de resultado cuando el token es invalido o expirado. */
+        public static final String TOKEN_INVALIDO = "Token invalido o expirado";
+
+        /** log.debug — Token con error inesperado al validar. Parametro {}: detalle del error. */
+        public static final String ERROR_VALIDAR = "Validacion de token fallida: {}";
+
+        /** Prefijo del mensaje de resultado cuando ocurre un error inesperado. */
+        public static final String ERROR_VALIDAR_PREFIJO = "Error al validar token: ";
     }
 }

@@ -109,12 +109,12 @@ public final class SeguridadInfraestructureMessages {
     }
 
     // =========================================================================
-    // AuthInputAdapter
+    // AuthCommandInputAdapter
     // =========================================================================
 
-    public static final class AuthInputAdapter {
+    public static final class AuthCommandInputAdapter {
 
-        private AuthInputAdapter() {}
+        private AuthCommandInputAdapter() {}
 
         // --- Logs de refresh token ---
 
@@ -133,27 +133,5 @@ public final class SeguridadInfraestructureMessages {
         /** log.debug — Entrada al endpoint de validacion. El token no se loggea (dato sensible). */
         public static final String VALIDATE_DEBUG = "Intento de validacion de token";
 
-        // --- Logs de logout ---
-
-        /**
-         * log.warn — Token presentado en logout no contiene claim 'jti'.
-         * No deberia ocurrir con tokens Keycloak validos; indica un token no estandar.
-         */
-        public static final String LOGOUT_SIN_JTI =
-                "Logout con token sin claim 'jti' — invalidacion omitida";
-
-        /**
-         * log.warn — Token ya expirado al momento del logout.
-         * No es necesario agregar a blacklist; expiro de forma natural.
-         */
-        public static final String LOGOUT_TOKEN_EXPIRADO =
-                "Logout con token ya expirado o sin expiracion: JTI='{}'";
-
-        /**
-         * log.info — Evento de negocio completado: token invalidado exitosamente en Redis.
-         * Parametros: JTI del token, TTL en segundos hasta expiracion natural.
-         */
-        public static final String LOGOUT_EXITOSO =
-                "Logout — token invalidado en blacklist: JTI='{}', TTL={}s";
     }
 }
