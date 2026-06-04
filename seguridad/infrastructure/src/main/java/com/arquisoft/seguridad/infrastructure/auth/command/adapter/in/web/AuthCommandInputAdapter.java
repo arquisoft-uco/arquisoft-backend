@@ -1,15 +1,17 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
-import com.arquisoft.seguridad.application.auth.command.model.LogoutCommand;
+import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
 import com.arquisoft.seguridad.application.auth.command.port.in.AuthenticateUserInputPort;
 import com.arquisoft.seguridad.application.auth.command.port.in.LogoutInputPort;
 import com.arquisoft.seguridad.application.auth.command.port.in.RefreshTokenInputPort;
+import com.arquisoft.seguridad.application.auth.command.port.in.ValidateTokenInputPort;
+import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginRequestDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginResponseDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LogoutResponseDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.RefreshTokenRequestDTO;
+import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.ValidateTokenResponseDTO;
 import com.arquisoft.seguridad.infrastructure.util.message.SeguridadInfraestructureMessages;
-import com.arquisoft.shared.util.UtilObject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,6 +28,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
@@ -41,6 +44,7 @@ public class AuthCommandInputAdapter {
     private final AuthenticateUserInputPort authenticateUserInputPort;
     private final RefreshTokenInputPort refreshTokenInputPort;
     private final LogoutInputPort logoutInputPort;
+    private final ValidateTokenInputPort validateTokenInputPort;
 
     @PostMapping("/login")
     @Operation(
@@ -118,31 +122,48 @@ public class AuthCommandInputAdapter {
             @ApiResponse(responseCode = "200", description = "Sesion cerrada",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = LogoutResponseDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Token de sesion invalido o ya expirado"),
             @ApiResponse(responseCode = "401", description = "No autenticado")
     })
     public ResponseEntity<LogoutResponseDTO> logout(@AuthenticationPrincipal Jwt jwt) {
-        String jti = jwt.getId();
-
-        if (UtilObject.isNull(jti)) {
-            log.warn(SeguridadInfraestructureMessages.AuthCommandInputAdapter.LOGOUT_SIN_JTI);
-            return ResponseEntity.ok(LogoutResponseDTO.builder().build());
-        }
-
-        Instant expiresAt = jwt.getExpiresAt();
-        long remainingSeconds = 0;
-        if (!UtilObject.isNull(expiresAt)) {
-            remainingSeconds = Instant.now().isAfter(expiresAt)
-                    ? 0
-                    : Math.max(1, Duration.between(Instant.now(), expiresAt).toSeconds());
-        }
-
-        if (remainingSeconds <= 0) {
-            log.warn(SeguridadInfraestructureMessages.AuthCommandInputAdapter.LOGOUT_TOKEN_EXPIRADO, jti);
-            return ResponseEntity.ok(LogoutResponseDTO.builder().build());
-        }
-
-        logoutInputPort.ejecutar(new LogoutCommand(jti, remainingSeconds));
-        log.info(SeguridadInfraestructureMessages.AuthCommandInputAdapter.LOGOUT_EXITOSO, jti, remainingSeconds);
+        Instant expiracion = jwt.getExpiresAt();
+        long tiempoVida = (expiracion != null && Instant.now().isBefore(expiracion))
+                ? Math.max(1L, Duration.between(Instant.now(), expiracion).toSeconds())
+                : 0L;
+        logoutInputPort.ejecutar(new TokenSesionCommand(jwt.getId(), tiempoVida));
         return ResponseEntity.ok(LogoutResponseDTO.builder().build());
+    }
+
+    @PostMapping("/validate")
+    @Operation(
+            summary = "Validar token JWT",
+            description = "Valida un token JWT sin requerirlo en el header Authorization. "
+                    + "Util para validaciones internas entre servicios."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Resultado de la validacion del token",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ValidateTokenResponseDTO.class))
+            ),
+            @ApiResponse(responseCode = "400", description = "Parametro token ausente",
+                    content = @Content(mediaType = "application/json"))
+    })
+    public ResponseEntity<ValidateTokenResponseDTO> validateToken(@RequestParam String token) {
+        log.debug(SeguridadInfraestructureMessages.AuthCommandInputAdapter.VALIDATE_DEBUG);
+
+        ValidateTokenInputPort.ValidationResult result = validateTokenInputPort.ejecutar(
+                TokenAggregate.de(token)
+        );
+
+        ValidateTokenResponseDTO response = ValidateTokenResponseDTO.builder()
+                .valido(result.valido())
+                .identidadId(result.identidadId())
+                .correo(result.correo())
+                .mensaje(result.mensaje())
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 }

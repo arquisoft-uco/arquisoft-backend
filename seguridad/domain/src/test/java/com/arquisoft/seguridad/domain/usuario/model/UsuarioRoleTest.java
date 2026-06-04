@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.domain.usuario.model;
 
+import com.arquisoft.shared.exception.DomainException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,7 +32,7 @@ class UsuarioRoleTest {
         String codigoInexistente = "admin";
 
         assertThatThrownBy(() -> UsuarioRole.fromCode(codigoInexistente))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(DomainException.class)
                 .hasMessageContaining("admin");
     }
 

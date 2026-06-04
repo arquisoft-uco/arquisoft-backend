@@ -1,8 +1,8 @@
-package com.arquisoft.seguridad.infrastructure.auth.query.adapter.out.jwt;
+package com.arquisoft.seguridad.infrastructure.auth.command.adapter.out.jwt;
 
-import com.arquisoft.seguridad.application.auth.query.model.TokenInfoDTO;
-import com.arquisoft.seguridad.application.auth.query.port.out.TokenQueryOutputPort;
-import com.arquisoft.seguridad.infrastructure.exception.InvalidTokenException;
+import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
+import com.arquisoft.seguridad.domain.auth.port.out.TokenValidationOutputPort;
+import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -18,30 +18,28 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class JwtTokenOutputAdapter implements TokenQueryOutputPort {
+public class JwtTokenOutputAdapter implements TokenValidationOutputPort {
 
     private final JwtDecoder jwtDecoder;
 
     @Override
-    public TokenInfoDTO extractUserInfo(String token) {
+    public IdentidadToken extraerInfo(String token) {
         try {
             Jwt jwt = jwtDecoder.decode(token);
-            return new TokenInfoDTO(
+            return IdentidadToken.de(
                     jwt.getSubject(),
                     jwt.getClaimAsString("email"),
                     jwt.getClaimAsString("name"),
-                    extractRealmRoles(jwt),
-                    jwt.getIssuedAt()  != null ? jwt.getIssuedAt().toEpochMilli()  : 0L,
-                    jwt.getExpiresAt() != null ? jwt.getExpiresAt().toEpochMilli() : 0L
+                    extraerRolesRealm(jwt)
             );
         } catch (Exception e) {
             log.error("Error al extraer informacion del token: {}", e.getMessage());
-            throw new InvalidTokenException("Token invalido: " + e.getMessage(), e);
+            throw new TokenInvalidoException("Token invalido: " + e.getMessage(), e);
         }
     }
 
     @Override
-    public boolean validateToken(String token) {
+    public boolean validarToken(String token) {
         try {
             jwtDecoder.decode(token);
             return true;
@@ -51,7 +49,7 @@ public class JwtTokenOutputAdapter implements TokenQueryOutputPort {
         }
     }
 
-    private List<String> extractRealmRoles(Jwt jwt) {
+    private List<String> extraerRolesRealm(Jwt jwt) {
         if (jwt.getClaim("realm_access") instanceof Map<?, ?> realmAccess
                 && realmAccess.get("roles") instanceof List<?> rawRoles) {
             return rawRoles.stream()

@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.keycloak;
 
 import com.arquisoft.seguridad.domain.usuario.model.UsuarioRole;
+import com.arquisoft.shared.exception.DomainException;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +24,7 @@ public final class RoleAuthorityMapper {
         try {
             UsuarioRole role = UsuarioRole.fromCode(roleCode);
             return Optional.of(role.getCode());
-        } catch (IllegalArgumentException e) {
+        } catch (DomainException e) {
             return Optional.empty();
         }
     }

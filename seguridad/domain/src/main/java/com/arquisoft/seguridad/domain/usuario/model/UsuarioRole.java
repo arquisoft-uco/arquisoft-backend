@@ -1,5 +1,7 @@
 package com.arquisoft.seguridad.domain.usuario.model;
 
+import com.arquisoft.shared.exception.DomainException;
+
 /**
  * Roles contextuales del sistema definidos en Keycloak (ADR-003).
  * El código de cada rol coincide exactamente con el nombre emitido
@@ -43,6 +45,6 @@ public enum UsuarioRole {
                 return role;
             }
         }
-        throw new IllegalArgumentException("Rol desconocido: " + code);
+        throw new DomainException("Rol desconocido: " + code, "ROL_DESCONOCIDO");
     }
 }

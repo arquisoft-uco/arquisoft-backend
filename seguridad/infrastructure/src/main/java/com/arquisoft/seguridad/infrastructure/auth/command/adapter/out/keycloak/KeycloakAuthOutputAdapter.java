@@ -1,11 +1,11 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.out.keycloak;
 
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
-import com.arquisoft.seguridad.domain.auth.model.CredencialesToken;
+import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
 import com.arquisoft.seguridad.domain.auth.port.out.AuthenticationOutputPort;
-import com.arquisoft.seguridad.infrastructure.exception.IdentityProviderUnavailableException;
-import com.arquisoft.seguridad.infrastructure.exception.InvalidCredentialsException;
-import com.arquisoft.seguridad.infrastructure.exception.InvalidTokenException;
+import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
+import com.arquisoft.seguridad.infrastructure.exception.ProveedorIdentidadNoDisponibleException;
+import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,15 +42,15 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
     private String clientSecret;
 
     @Override
-    public CredencialesToken authenticate(String email, String password) {
+    public CredencialesSesion autenticar(String correo, String contrasena) {
         try {
             String tokenEndpoint = buildTokenEndpoint();
 
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
             body.add("grant_type", "password");
             body.add("client_id", clientId);
-            body.add("username", email);
-            body.add("password", password);
+            body.add("username", correo);
+            body.add("password", contrasena);
 
             addClientSecretIfPresent(body);
 
@@ -60,17 +60,17 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
                 return mapToCredenciales(response.getBody());
             }
 
-            throw new InvalidCredentialsException("Error al autenticar con Keycloak");
+            throw new CredencialesInvalidasException("Error al autenticar con Keycloak");
 
         } catch (HttpClientErrorException.Unauthorized e) {
             log.warn("Credenciales invalidas");
-            throw new InvalidCredentialsException("Credenciales invalidas");
+            throw new CredencialesInvalidasException("Credenciales invalidas");
         } catch (HttpClientErrorException e) {
             log.error("Error de autenticacion en Keycloak: {} - {}", e.getStatusCode(), e.getMessage());
             throw new AuthenticationException("Error al comunicarse con Keycloak: " + e.getMessage());
         } catch (ResourceAccessException e) {
             log.error("Keycloak no disponible (timeout/red) al autenticar: {}", e.getMessage());
-            throw new IdentityProviderUnavailableException("Servicio de autenticacion no disponible temporalmente", e);
+            throw new ProveedorIdentidadNoDisponibleException("Servicio de autenticacion no disponible temporalmente", e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {
@@ -80,14 +80,14 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
     }
 
     @Override
-    public CredencialesToken refresh(String refreshToken) {
+    public CredencialesSesion refrescar(String tokenRefresco) {
         try {
             String tokenEndpoint = buildTokenEndpoint();
 
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
             body.add("grant_type", "refresh_token");
             body.add("client_id", clientId);
-            body.add("refresh_token", refreshToken);
+            body.add("refresh_token", tokenRefresco);
 
             addClientSecretIfPresent(body);
 
@@ -97,17 +97,17 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
                 return mapToCredenciales(response.getBody());
             }
 
-            throw new InvalidTokenException("Error al refrescar el token");
+            throw new TokenInvalidoException("Error al refrescar el token");
 
         } catch (HttpClientErrorException.BadRequest e) {
             log.warn("Refresh token invalido");
-            throw new InvalidTokenException("Refresh token invalido o expirado");
+            throw new TokenInvalidoException("Refresh token invalido o expirado");
         } catch (HttpClientErrorException e) {
             log.error("Error de refresco de token en Keycloak: {} - {}", e.getStatusCode(), e.getMessage());
             throw new AuthenticationException("Error al refrescar el token: " + e.getMessage());
         } catch (ResourceAccessException e) {
             log.error("Keycloak no disponible (timeout/red) al refrescar token: {}", e.getMessage());
-            throw new IdentityProviderUnavailableException("Servicio de autenticacion no disponible temporalmente", e);
+            throw new ProveedorIdentidadNoDisponibleException("Servicio de autenticacion no disponible temporalmente", e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {
@@ -117,9 +117,9 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
     }
 
     @Override
-    public boolean validateRefreshToken(String refreshToken) {
+    public boolean validarTokenRefresco(String tokenRefresco) {
         try {
-            refresh(refreshToken);
+            refrescar(tokenRefresco);
             return true;
         } catch (Exception e) {
             log.debug("Validacion de refresh token fallida: {}", e.getMessage());
@@ -127,8 +127,8 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
         }
     }
 
-    private CredencialesToken mapToCredenciales(Map<String, Object> body) {
-        return new CredencialesToken(
+    private CredencialesSesion mapToCredenciales(Map<String, Object> body) {
+        return CredencialesSesion.de(
                 (String) body.get("access_token"),
                 (String) body.get("refresh_token"),
                 ((Number) body.getOrDefault("expires_in", 3600)).longValue(),

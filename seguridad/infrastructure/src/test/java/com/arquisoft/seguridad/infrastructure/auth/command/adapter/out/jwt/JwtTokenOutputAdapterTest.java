@@ -1,6 +1,6 @@
-package com.arquisoft.seguridad.infrastructure.auth.query.adapter.out.jwt;
+package com.arquisoft.seguridad.infrastructure.auth.command.adapter.out.jwt;
 
-import com.arquisoft.seguridad.application.auth.query.model.TokenInfoDTO;
+import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +19,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class JwtTokenAdapterTest {
+class JwtTokenOutputAdapterTest {
 
     @Mock
     private JwtDecoder jwtDecoder;
@@ -46,7 +46,7 @@ class JwtTokenAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        TokenInfoDTO info = jwtTokenAdapter.extractUserInfo("token-de-prueba");
+        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
 
         assertThat(info).isNotNull();
         assertThat(info.roles()).containsExactly("estudiante");
@@ -61,7 +61,7 @@ class JwtTokenAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        TokenInfoDTO info = jwtTokenAdapter.extractUserInfo("token-de-prueba");
+        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
 
         assertThat(info.roles()).containsExactly("asesor-ficha");
     }
@@ -75,7 +75,7 @@ class JwtTokenAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        TokenInfoDTO info = jwtTokenAdapter.extractUserInfo("token-de-prueba");
+        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
 
         assertThat(info.roles()).hasSize(2).containsExactlyInAnyOrder("estudiante", "coordinador");
     }
@@ -88,7 +88,7 @@ class JwtTokenAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        TokenInfoDTO info = jwtTokenAdapter.extractUserInfo("token-de-prueba");
+        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
 
         assertThat(info.roles()).isEmpty();
     }
@@ -105,14 +105,14 @@ class JwtTokenAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        TokenInfoDTO info = jwtTokenAdapter.extractUserInfo("token-de-prueba");
+        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
 
         assertThat(info.roles()).containsExactly("jurado");
         assertThat(info.roles()).doesNotContain("manage-account");
     }
 
     @Test
-    void debeExtraerKeycloakUserId_cuandoTokenValido() {
+    void debeExtraerIdentidadId_cuandoTokenValido() {
         Jwt jwt = buildJwt(Map.of(
                 "email", "usuario@uco.edu.co",
                 "name", "Usuario UCO",
@@ -120,17 +120,17 @@ class JwtTokenAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        TokenInfoDTO info = jwtTokenAdapter.extractUserInfo("token-de-prueba");
+        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
 
-        assertThat(info.keycloakUserId()).isEqualTo("uuid-usuario");
-        assertThat(info.email()).isEqualTo("usuario@uco.edu.co");
+        assertThat(info.identidadId()).isEqualTo("uuid-usuario");
+        assertThat(info.correo()).isEqualTo("usuario@uco.edu.co");
     }
 
     @Test
     void debeRetornarFalso_cuandoTokenEsMalformado() {
         when(jwtDecoder.decode(anyString())).thenThrow(new JwtException("Token malformado"));
 
-        boolean resultado = jwtTokenAdapter.validateToken("token-basura");
+        boolean resultado = jwtTokenAdapter.validarToken("token-basura");
 
         assertThat(resultado).isFalse();
     }

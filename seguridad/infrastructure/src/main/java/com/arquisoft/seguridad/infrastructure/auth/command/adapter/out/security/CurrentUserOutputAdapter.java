@@ -1,6 +1,6 @@
-package com.arquisoft.seguridad.infrastructure.auth.query.adapter.out.security;
+package com.arquisoft.seguridad.infrastructure.auth.command.adapter.out.security;
 
-import com.arquisoft.seguridad.application.auth.query.port.out.CurrentUserOutputPort;
+import com.arquisoft.seguridad.domain.auth.port.out.CurrentUserOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,19 +17,19 @@ import java.util.stream.Collectors;
 public class CurrentUserOutputAdapter implements CurrentUserOutputPort {
 
     @Override
-    public String getCurrentUserId() {
+    public String obtenerIdUsuario() {
         Jwt jwt = extractJwt();
         return jwt != null ? jwt.getSubject() : null;
     }
 
     @Override
-    public String getCurrentEmail() {
+    public String obtenerCorreo() {
         Jwt jwt = extractJwt();
         return jwt != null ? jwt.getClaimAsString("email") : null;
     }
 
     @Override
-    public String getCurrentUsername() {
+    public String obtenerNombreUsuario() {
         Jwt jwt = extractJwt();
         if (jwt == null) {
             return null;
@@ -39,18 +39,18 @@ public class CurrentUserOutputAdapter implements CurrentUserOutputPort {
     }
 
     @Override
-    public boolean hasRole(String role) {
+    public boolean tieneRol(String rol) {
         Authentication auth = getAuthentication();
         if (auth == null) {
             return false;
         }
         return auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .anyMatch(role::equals);
+                .anyMatch(rol::equals);
     }
 
     @Override
-    public List<String> getCurrentUserRoles() {
+    public List<String> obtenerRoles() {
         Authentication auth = getAuthentication();
         if (auth == null) {
             return Collections.emptyList();

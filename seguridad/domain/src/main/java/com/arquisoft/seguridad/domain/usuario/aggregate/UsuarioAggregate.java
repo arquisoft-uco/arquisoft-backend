@@ -3,6 +3,7 @@ package com.arquisoft.seguridad.domain.usuario.aggregate;
 import com.arquisoft.seguridad.domain.usuario.event.UsuarioCreadoEvent;
 import com.arquisoft.seguridad.domain.usuario.model.UsuarioRole;
 import com.arquisoft.shared.events.AggregateRoot;
+import com.arquisoft.shared.exception.DomainException;
 
 import java.util.UUID;
 
@@ -42,10 +43,10 @@ public final class UsuarioAggregate extends AggregateRoot {
      */
     public static UsuarioAggregate crear(String email, UsuarioRole rol) {
         if (email == null || email.isBlank()) {
-            throw new IllegalArgumentException("El email del usuario no puede ser vacío");
+            throw new DomainException("El email del usuario no puede ser vacio", "USUARIO_EMAIL_REQUERIDO");
         }
         if (rol == null) {
-            throw new IllegalArgumentException("El rol del usuario no puede ser nulo");
+            throw new DomainException("El rol del usuario no puede ser nulo", "USUARIO_ROL_REQUERIDO");
         }
 
         UsuarioAggregate usuario = new UsuarioAggregate(UUID.randomUUID(), email.trim().toLowerCase(), rol);

@@ -1,8 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.web;
 
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
-import com.arquisoft.seguridad.infrastructure.exception.InvalidCredentialsException;
-import com.arquisoft.seguridad.infrastructure.exception.InvalidTokenException;
+import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
+import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class SeguridadGlobalExceptionHandler {
 
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ErrorResponseDTO> handleInvalidCredentials(
-            InvalidCredentialsException ex,
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ResponseEntity<ErrorResponseDTO> handleCredencialesInvalidas(
+            CredencialesInvalidasException ex,
             HttpServletRequest request) {
 
         log.warn("Credenciales invalidas en {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
@@ -29,9 +29,9 @@ public class SeguridadGlobalExceptionHandler {
                 .body(ErrorResponseDTO.fromBaseException(ex, "Unauthorized", HttpStatus.UNAUTHORIZED, request.getRequestURI()));
     }
 
-    @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<ErrorResponseDTO> handleInvalidToken(
-            InvalidTokenException ex,
+    @ExceptionHandler(TokenInvalidoException.class)
+    public ResponseEntity<ErrorResponseDTO> handleTokenInvalido(
+            TokenInvalidoException ex,
             HttpServletRequest request) {
 
         log.warn("Token invalido en {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
@@ -41,11 +41,11 @@ public class SeguridadGlobalExceptionHandler {
     }
 
     @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ErrorResponseDTO> handleAuthentication(
+    public ResponseEntity<ErrorResponseDTO> handleAutenticacion(
             AuthenticationException ex,
             HttpServletRequest request) {
 
-        log.warn("Authentication exception in {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+        log.warn("Excepcion de autenticacion en {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponseDTO.fromBaseException(ex, "Unauthorized", HttpStatus.UNAUTHORIZED, request.getRequestURI()));
