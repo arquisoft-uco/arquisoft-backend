@@ -25,7 +25,8 @@ seguridad/
 │   └── src/main/java/.../seguridad/domain/
 │       ├── auth/
 │       │   ├── aggregate/
-│       │   │   └── TokenAggregate.java          Aggregate para validar un JWT (solo campo valor)
+│       │   │   ├── TokenAggregate.java          Aggregate para validar un JWT (solo campo valor)
+│       │   │   └── SesionAggregate.java         Aggregate de sesión activa; guarda invariantes del logout (jti no vacío, TTL > 0)
 │       │   ├── model/
 │       │   │   ├── CredencialesSesion.java       Value object: resultado de autenticar/refrescar
 │       │   │   └── IdentidadToken.java           Value object: identidad extraída de un JWT validado
@@ -59,7 +60,7 @@ seguridad/
 │       │       ├── port/in/
 │       │       │   └── LogoutInputPort.java
 │       │       ├── model/
-│       │       │   └── TokenSesionCommand.java    Comando con jti y TTL; validaciones de dominio
+│       │       │   └── TokenSesionCommand.java    Record plano: jti y TTL calculado por el adaptador; invariantes en SesionAggregate
 │       │       ├── RefreshTokenUseCase.java       Caso de uso: obtener nuevo access token
 │       │       ├── port/in/
 │       │       │   └── RefreshTokenInputPort.java
