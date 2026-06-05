@@ -142,8 +142,8 @@ o generamos los tests tal cual están las clases (deuda técnica) y reportamos?
 // ❌ MAL — testea Lombok, no tu código
 @Test
 void debeRetornarTitulo_cuandoGetTituloEsLlamado() {
-    Ficha ficha = Ficha.build("Mi título");
-    assertThat(ficha.getTitulo()).isEqualTo("Mi título");
+   Ficha ficha = Ficha.build("Mi título");
+   assertThat(ficha.getTitulo()).isEqualTo("Mi título");
 }
 ```
 
@@ -159,9 +159,9 @@ void debeRetornarTitulo_cuandoGetTituloEsLlamado() {
 // ✅ BIEN — un solo test global de validación
 @Test
 void debeRechazarRequest_cuandoCamposObligatoriosFaltan() {
-    CrearFichaRequestDTO req = new CrearFichaRequestDTO();
-    Set<ConstraintViolation<CrearFichaRequestDTO>> violations = validator.validate(req);
-    assertThat(violations).isNotEmpty();
+   CrearFichaRequestDTO req = new CrearFichaRequestDTO();
+   Set<ConstraintViolation<CrearFichaRequestDTO>> violations = validator.validate(req);
+   assertThat(violations).isNotEmpty();
 }
 ```
 
@@ -178,8 +178,8 @@ void debeRechazarRequest_cuandoCamposObligatoriosFaltan() {
 // ✅ BIEN — el comportamiento se valida desde el use case que llama al helper
 @Test
 void debeConsultarConEstadoActivo_cuandoFiltroEsValido() {
-    useCase.ejecutar(Map.of("estado", "ACTIVO"));
-    // assert sobre el resultado, no sobre el helper interno
+   useCase.ejecutar(Map.of("estado", "ACTIVO"));
+   // assert sobre el resultado, no sobre el helper interno
 }
 ```
 
@@ -189,26 +189,26 @@ void debeConsultarConEstadoActivo_cuandoFiltroEsValido() {
 // ❌ MAL — dos tests para el mismo escenario
 @Test
 void debeLanzarExcepcion_cuandoEstadoFiltroEsInvalido() {
-    assertThatThrownBy(() -> useCase.ejecutar("BLOQUEADO"))
-        .isInstanceOf(ParametroFiltroInvalidoException.class);
+   assertThatThrownBy(() -> useCase.ejecutar("BLOQUEADO"))
+           .isInstanceOf(ParametroFiltroInvalidoException.class);
 }
 
 @Test
 void debeLanzarExcepcionConErrorCode_cuandoEstadoFiltroEsInvalido() {
-    Throwable ex = catchThrowable(() -> useCase.ejecutar("BLOQUEADO"));
-    assertThat(((DomainException) ex).getErrorCode()).isEqualTo("PARAMETRO_FILTRO_INVALIDO");
+   Throwable ex = catchThrowable(() -> useCase.ejecutar("BLOQUEADO"));
+   assertThat(((DomainException) ex).getErrorCode()).isEqualTo("PARAMETRO_FILTRO_INVALIDO");
 }
 
 // ✅ BIEN — un solo test con asserts agrupados
 @Test
 void debeLanzarExcepcion_cuandoEstadoFiltroEsInvalido() {
-    Throwable ex = catchThrowable(() -> useCase.ejecutar("BLOQUEADO"));
+   Throwable ex = catchThrowable(() -> useCase.ejecutar("BLOQUEADO"));
 
-    assertThat(ex)
-        .isInstanceOf(ParametroFiltroInvalidoException.class)
-        .hasMessageContaining("BLOQUEADO");
-    assertThat(((DomainException) ex).getErrorCode())
-        .isEqualTo("PARAMETRO_FILTRO_INVALIDO");
+   assertThat(ex)
+           .isInstanceOf(ParametroFiltroInvalidoException.class)
+           .hasMessageContaining("BLOQUEADO");
+   assertThat(((DomainException) ex).getErrorCode())
+           .isEqualTo("PARAMETRO_FILTRO_INVALIDO");
 }
 ```
 
@@ -227,22 +227,56 @@ void debeLanzarExcepcion_cuandoEstadoFiltroEsInvalido() {
 | Grande (4+ endpoints o flujo complejo) | 50 - 80 |
 | Más de 80 tests | revisar — casi siempre indica sobre-testeo |
 
+### Sin Javadoc descriptivo en tests (regla del proyecto)
+
+> **NUNCA generes bloques `/** ... */` con `@param`, `@return` o descripciones largas** en las clases de test ni en los métodos de test. Los nombres de método siguen el patrón `debeHacerAlgo_cuandoCondicion()` que ya describe el escenario por sí mismo.
+
+**Prohibido:**
+
+```java
+// ❌ NO generar — descripción redundante
+/**
+ * Verifica que el caso de uso registra una ficha de perfil cuando recibe datos válidos.
+ */
+@Test
+void debeRegistrar_cuandoDatosValidos() { ... }
+
+// ❌ NO generar — Javadoc en clase de test
+/**
+ * Tests unitarios para RegistrarFichaPerfilUseCase.
+ */
+class RegistrarFichaPerfilUseCaseTest { ... }
+```
+
+**Permitido (excepcional):** un comentario de una línea con `//` solo cuando el "por qué" del escenario no es evidente:
+
+```java
+@Test
+void debeUsarRebuild_cuandoCargaDesdeBd() {
+    // build() generaría un UUID nuevo y emitiría un evento espurio; rebuild() preserva el UUID de BD.
+    Optional<FichaPerfilAggregate> resultado = adapter.buscarPorId(uuidExistente);
+    ...
+}
+```
+
+**No se incluye Javadoc en tests del proyecto Arquisoft.** Los comentarios `// Arrange / // Act / // Assert` del patrón AAA SÍ se mantienen — son separadores estructurales, no documentación.
+
 ### Patrón AAA obligatorio
 
 ```java
 @Test
 void debeCrearFicha_cuandoDatosValidos() {
-    // Arrange
-    Ficha fichaEsperada = Ficha.build("Título de prueba");
-    when(fichaRepositoryPort.guardar(any())).thenReturn(fichaEsperada);
+   // Arrange
+   Ficha fichaEsperada = Ficha.build("Título de prueba");
+   when(fichaRepositoryPort.guardar(any())).thenReturn(fichaEsperada);
 
-    // Act
-    Ficha resultado = crearFichaUseCase.ejecutar(fichaEsperada);
+   // Act
+   Ficha resultado = crearFichaUseCase.ejecutar(fichaEsperada);
 
-    // Assert
-    assertThat(resultado).isNotNull();
-    assertThat(resultado.getTitulo()).isEqualTo("Título de prueba");
-    verify(fichaRepositoryPort, times(1)).guardar(any());
+   // Assert
+   assertThat(resultado).isNotNull();
+   assertThat(resultado.getTitulo()).isEqualTo("Título de prueba");
+   verify(fichaRepositoryPort, times(1)).guardar(any());
 }
 ```
 
@@ -273,51 +307,51 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FichaTest {
 
-    @Test
-    void debeConstruirEntidad_cuandoDatosValidos() {
-        // Arrange / Act
-        Ficha ficha = Ficha.build("Título de prueba");
+   @Test
+   void debeConstruirEntidad_cuandoDatosValidos() {
+      // Arrange / Act
+      Ficha ficha = Ficha.build("Título de prueba");
 
-        // Assert
-        assertThat(ficha.getId()).isNotNull();
-        assertThat(ficha.getTitulo()).isEqualTo("Título de prueba");
-    }
+      // Assert
+      assertThat(ficha.getId()).isNotNull();
+      assertThat(ficha.getTitulo()).isEqualTo("Título de prueba");
+   }
 
-    @Test
-    void debePublicarEvento_cuandoBuildEsInvocado() {
-        // Arrange / Act
-        Ficha ficha = Ficha.build("Título de prueba");
+   @Test
+   void debePublicarEvento_cuandoBuildEsInvocado() {
+      // Arrange / Act
+      Ficha ficha = Ficha.build("Título de prueba");
 
-        // Assert
-        assertThat(ficha.getUnPublishedEvents()).hasSize(1);
-        assertThat(ficha.getUnPublishedEvents().get(0)).isInstanceOf(FichaCreadaEvent.class);
-    }
+      // Assert
+      assertThat(ficha.getUnPublishedEvents()).hasSize(1);
+      assertThat(ficha.getUnPublishedEvents().get(0)).isInstanceOf(FichaCreadaEvent.class);
+   }
 
-    @Test
-    void debeNoPublicarEvento_cuandoRebuildEsInvocado() {
-        // Arrange
-        UUID id = UUID.randomUUID();
+   @Test
+   void debeNoPublicarEvento_cuandoRebuildEsInvocado() {
+      // Arrange
+      UUID id = UUID.randomUUID();
 
-        // Act — reconstrucción desde persistencia NO debe emitir eventos
-        Ficha ficha = Ficha.rebuild(id, "Título", "BORRADOR");
+      // Act — reconstrucción desde persistencia NO debe emitir eventos
+      Ficha ficha = Ficha.rebuild(id, "Título", "BORRADOR");
 
-        // Assert
-        assertThat(ficha.getId()).isEqualTo(id);
-        assertThat(ficha.getUnPublishedEvents()).isEmpty();
-    }
+      // Assert
+      assertThat(ficha.getId()).isEqualTo(id);
+      assertThat(ficha.getUnPublishedEvents()).isEmpty();
+   }
 
-    @Test
-    void debeLimpiarEventos_cuandoClearUnPublishedEventsEsInvocado() {
-        // Arrange
-        Ficha ficha = Ficha.build("Título de prueba");
-        assertThat(ficha.getUnPublishedEvents()).hasSize(1);
+   @Test
+   void debeLimpiarEventos_cuandoClearUnPublishedEventsEsInvocado() {
+      // Arrange
+      Ficha ficha = Ficha.build("Título de prueba");
+      assertThat(ficha.getUnPublishedEvents()).hasSize(1);
 
-        // Act
-        ficha.clearUnPublishedEvents();
+      // Act
+      ficha.clearUnPublishedEvents();
 
-        // Assert
-        assertThat(ficha.getUnPublishedEvents()).isEmpty();
-    }
+      // Assert
+      assertThat(ficha.getUnPublishedEvents()).isEmpty();
+   }
 }
 ```
 
@@ -331,19 +365,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FichaCreadaEventTest {
 
-    @Test
-    void debeAsignarMetadatos_cuandoEventoEsCreado() {
-        // Arrange / Act
-        String aggregateId = UUID.randomUUID().toString();
-        FichaCreadaEvent evento = new FichaCreadaEvent(aggregateId, "Mi título");
+   @Test
+   void debeAsignarMetadatos_cuandoEventoEsCreado() {
+      // Arrange / Act
+      String aggregateId = UUID.randomUUID().toString();
+      FichaCreadaEvent evento = new FichaCreadaEvent(aggregateId, "Mi título");
 
-        // Assert
-        assertThat(evento.getEventId()).isNotNull();
-        assertThat(evento.getOccurredAt()).isNotNull();
-        assertThat(evento.getEventType()).isEqualTo("FichaCreadaEvent");
-        assertThat(evento.getAggregateId()).isEqualTo(aggregateId);
-        assertThat(evento.getTitulo()).isEqualTo("Mi título");
-    }
+      // Assert
+      assertThat(evento.getEventId()).isNotNull();
+      assertThat(evento.getOccurredAt()).isNotNull();
+      assertThat(evento.getEventType()).isEqualTo("FichaCreadaEvent");
+      assertThat(evento.getAggregateId()).isEqualTo(aggregateId);
+      assertThat(evento.getTitulo()).isEqualTo("Mi título");
+   }
 }
 ```
 
@@ -355,39 +389,39 @@ Verifica que el use case drena eventos correctamente tras persistir:
 @ExtendWith(MockitoExtension.class)
 class CrearFichaUseCaseImplTest {
 
-    @Mock private FichaRepositoryPort fichaRepositoryPort;
-    @Mock private EventPublisher eventPublisher;
+   @Mock private FichaRepositoryPort fichaRepositoryPort;
+   @Mock private EventPublisher eventPublisher;
 
-    @InjectMocks
-    private CrearFichaUseCase crearFichaUseCase;
+   @InjectMocks
+   private CrearFichaUseCase crearFichaUseCase;
 
-    @Test
-    void debeCrearFicha_cuandoDatosValidos() {
-        // Arrange
-        Ficha ficha = Ficha.build("Título");
-        when(fichaRepositoryPort.guardar(any())).thenReturn(ficha);
+   @Test
+   void debeCrearFicha_cuandoDatosValidos() {
+      // Arrange
+      Ficha ficha = Ficha.build("Título");
+      when(fichaRepositoryPort.guardar(any())).thenReturn(ficha);
 
-        // Act
-        Ficha resultado = crearFichaUseCase.ejecutar(ficha);
+      // Act
+      Ficha resultado = crearFichaUseCase.ejecutar(ficha);
 
-        // Assert
-        assertThat(resultado).isNotNull();
-        verify(fichaRepositoryPort, times(1)).guardar(any());
-    }
+      // Assert
+      assertThat(resultado).isNotNull();
+      verify(fichaRepositoryPort, times(1)).guardar(any());
+   }
 
-    @Test
-    void debePublicarEventosDrenados_cuandoEjecutaExitoso() {
-        // Arrange
-        Ficha ficha = Ficha.build("Título"); // acumula FichaCreadaEvent en build()
-        when(fichaRepositoryPort.guardar(any())).thenReturn(ficha);
+   @Test
+   void debePublicarEventosDrenados_cuandoEjecutaExitoso() {
+      // Arrange
+      Ficha ficha = Ficha.build("Título"); // acumula FichaCreadaEvent en build()
+      when(fichaRepositoryPort.guardar(any())).thenReturn(ficha);
 
-        // Act
-        crearFichaUseCase.ejecutar(ficha);
+      // Act
+      crearFichaUseCase.ejecutar(ficha);
 
-        // Assert — verifica que el use case drenó el evento y lo publicó
-        verify(eventPublisher, times(1)).publish(any(DomainEvent.class));
-        assertThat(ficha.getUnPublishedEvents()).isEmpty(); // fue limpiado
-    }
+      // Assert — verifica que el use case drenó el evento y lo publicó
+      verify(eventPublisher, times(1)).publish(any(DomainEvent.class));
+      assertThat(ficha.getUnPublishedEvents()).isEmpty(); // fue limpiado
+   }
 }
 ```
 
@@ -398,24 +432,24 @@ class CrearFichaUseCaseImplTest {
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class FichaRepositoryAdapterTest {
 
-    @Autowired private FichaJpaRepository fichaJpaRepository;
-    private FichaPerfilCommandOutputAdapter fichaCommandOutputAdapter;
+   @Autowired private FichaJpaRepository fichaJpaRepository;
+   private FichaPerfilCommandOutputAdapter fichaCommandOutputAdapter;
 
-    @BeforeEach
-    void setUp() {
-        fichaCommandOutputAdapter = new FichaPerfilCommandOutputAdapter(fichaJpaRepository);
-    }
+   @BeforeEach
+   void setUp() {
+      fichaCommandOutputAdapter = new FichaPerfilCommandOutputAdapter(fichaJpaRepository);
+   }
 
-    @Test
-    void debeGuardarFicha_cuandoEntidadEsValida() {
-        // Arrange / Act / Assert
-    }
+   @Test
+   void debeGuardarFicha_cuandoEntidadEsValida() {
+      // Arrange / Act / Assert
+   }
 
-    @Test
-    void debeReconstruirConRebuild_cuandoFindByIdExiste() {
-        // Verifica que el adapter usa rebuild(...) al leer de BD,
-        // por lo que la entidad retornada NO tiene eventos pendientes.
-    }
+   @Test
+   void debeReconstruirConRebuild_cuandoFindByIdExiste() {
+      // Verifica que el adapter usa rebuild(...) al leer de BD,
+      // por lo que la entidad retornada NO tiene eventos pendientes.
+   }
 }
 ```
 
@@ -425,31 +459,31 @@ class FichaRepositoryAdapterTest {
 @WebMvcTest(FichaController.class)
 class FichaControllerTest {
 
-    @Autowired private MockMvc mockMvc;
+   @Autowired private MockMvc mockMvc;
 
-    @MockitoBean                          // Spring Boot 4.x: @MockitoBean reemplaza @MockBean
-    private CrearFichaUseCase crearFichaUseCase;
+   @MockitoBean                          // Spring Boot 4.x: @MockitoBean reemplaza @MockBean
+   private CrearFichaUseCase crearFichaUseCase;
 
-    @Autowired private ObjectMapper objectMapper;
+   @Autowired private ObjectMapper objectMapper;
 
-    @Test
-    @WithMockUser(roles = "ASESOR_FICHA")
-    void debeCrearFicha_cuandoPeticionEsValida() throws Exception {
-        // Arrange / Act & Assert
-        mockMvc.perform(post("/api/fichas")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.id").exists());
-    }
+   @Test
+   @WithMockUser(roles = "ASESOR_FICHA")
+   void debeCrearFicha_cuandoPeticionEsValida() throws Exception {
+      // Arrange / Act & Assert
+      mockMvc.perform(post("/api/fichas")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content(objectMapper.writeValueAsString(request)))
+              .andExpect(status().isCreated())
+              .andExpect(jsonPath("$.id").exists());
+   }
 
-    @Test
-    void debeRechazarPeticion_cuandoNoEstaAutenticado() throws Exception {
-        mockMvc.perform(post("/api/fichas")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-            .andExpect(status().isUnauthorized());
-    }
+   @Test
+   void debeRechazarPeticion_cuandoNoEstaAutenticado() throws Exception {
+      mockMvc.perform(post("/api/fichas")
+                      .contentType(MediaType.APPLICATION_JSON)
+                      .content("{}"))
+              .andExpect(status().isUnauthorized());
+   }
 }
 ```
 
@@ -595,11 +629,9 @@ Distribución por capa:
 
 #### Qué testear
 
-- **Aggregate Root:** factory methods `build()` (con evento) y `rebuild()` (sin evento), getters, comportamientos de negocio, ciclo completo de eventos (`getUnPublishedEvents`, `clearUnPublishedEvents`).
-- **Eventos de dominio:** constructor asigna `eventId`, `occurredAt`, `eventType`; campos del payload se propagan correctamente.
+- **Aggregate Root:** factory methods `crear()` / `build()` (con evento si la HU emite) y `rebuild()` (sin evento), getters, comportamientos de negocio, ciclo de eventos (`publishEvent`, `drainUnPublishedEvents`).
+- **Eventos de dominio:** constructor asigna `eventId`, `occurredAt`, `eventType`, `eventTopic`; campos del payload se propagan correctamente.
 - **Excepciones:** que se lanzan con el mensaje correcto y el `errorCode` esperado.
-- **Value Objects (records):** validación en constructor compacto.
-- **Enums / Sealed:** validaciones y comportamientos si aplica.
 
 #### Consulta Context7 antes de generar
 
@@ -904,4 +936,5 @@ de modificar cualquier archivo de producción.
 15. **Confirmación previa obligatoria.** Antes de generar el primer test, presenta al usuario la estimación de tests por capa con la distribución desglosada y los anti-patrones que vas a evitar. Espera respuesta explícita ("sí" / "ajustar") antes de continuar. Si la estimación supera los 80 tests, advierte explícitamente sobre posible sobre-testeo.
 16. **Java 21** — usa `./gradlew`, nunca `mvn` ni `javac` directo.
 17. **Imports explícitos** — nunca wildcard `*`.
+18. **Sin Javadoc en tests** — los nombres `debeHacerAlgo_cuandoCondicion()` ya describen el escenario. Solo se permiten comentarios de una línea con `//` cuando el "por qué" del escenario no es obvio. Los marcadores `// Arrange / // Act / // Assert` SÍ se mantienen.
 18. **Al finalizar** actualiza la fila `Tests` en la sección 13 del plan e indica siempre invocar `@validator-analyze` con el comando exacto.

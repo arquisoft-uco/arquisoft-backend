@@ -138,7 +138,7 @@ Si el contexto usa AggregateRoot, busca el archivo `{contexto}/src/main/java/com
 | **La entidad ya existe** (creada en HU previa) | NO se incluye en el árbol de archivos a CREAR. Si la HU la modifica, va en "Archivos a MODIFICAR". |
 | **La entidad NO existe** (esta es la primera HU del contexto que la toca) | DEBE incluirse en el árbol como archivo a CREAR, **incluso si la HU es de Consulta**. Sin la entidad raíz, el puerto del repositorio no puede retornarla, el adapter no puede usar `rebuild(...)`, y la arquitectura queda rota. |
 
-> **Regla dura:** una HU de consulta NO emite eventos NI tiene tests de ciclo de eventos, **pero SÍ requiere que la entidad raíz exista** para que el puerto `{Entidad}OutputPort` retorne `Page<{Entidad}>` (de Spring Data) y el adapter use `rebuild(...)`. Si esta es la primera HU del contexto, la entidad raíz, sus value objects y al menos un evento (`{Entidad}CreadaEvent`) deben crearse aquí — aunque el use case actual no los emita. El evento queda disponible para futuras HUs de escritura.
+> **Regla dura:** una HU de consulta NO emite eventos NI tiene tests de ciclo de eventos, **pero SÍ requiere que el aggregate exista** para que el puerto write (`{Entidad}OutputPort`) reciba/retorne el aggregate y el `CommandOutputAdapter` use `rebuild(...)`. Si esta es la primera HU del contexto, el aggregate raíz y al menos un evento (`{Entidad}CreadaEvent`) deben crearse aquí — aunque el use case actual no los emita. El evento queda disponible para futuras HUs de escritura.
 
 > **Cómo verificar existencia:** mediante `bash` o `view` sobre el filesystem local del proyecto. Si el módulo `{contexto}/` aún no tiene carpeta `domain/model/`, asume que la entidad NO existe.
 
@@ -211,8 +211,14 @@ Espera las respuestas del usuario antes de continuar.
    Convención del proyecto: cada endpoint REST se autoriza con `@PreAuthorize("hasAuthority('contexto:recurso:accion')")`. La autorización va contra **client roles** de Keycloak, no contra roles realm directamente.
 
    Por cada acción de la HU, decide:
-    - **Nombre del client role:** formato `{contexto}:{recurso}:{accion}` (ej. `fichas:ficha:create`, `proyectos:proyecto:approve`).
+    - **Nombre del client role:** formato `{contexto}:{recurso}:{accion}` **en kebab-case** (todo en minúsculas, palabras del recurso separadas por guiones). Ejemplos válidos: `fichas:ficha-perfil:create`, `proyectos:proyecto-grado:approve`, `repositorio-artefactos:artefacto:upload`. **Inválidos:** `fichas:fichaPerfil:create` (camelCase), `Fichas:Ficha-Perfil:CREATE` (MAYÚSCULAS), `repositorio_artefactos:artefacto:upload` (underscore).
     - **A qué roles realm se asignará** (uno o varios pueden compartir el mismo client role). Roles realm en kebab-case: `coordinador`, `asesor`, `asesor-ficha`, `jurado`, `bibliotecario`, `representante-comite`, `estudiante`, `administrador`.
+
+   **Reglas de naming del client role (inviolables):**
+    - Todo en minúsculas. Nunca MAYÚSCULAS ni Camel/Pascal.
+    - Palabras del recurso unidas por guiones, NO concatenadas en camelCase. Si la entidad es `FichaPerfilAggregate`, el recurso es `ficha-perfil` (no `fichaPerfil`).
+    - Si el contexto Gradle tiene underscore (`repositorio_artefactos`), en el client role se convierte a guión (`repositorio-artefactos`).
+    - Verbo de acción en una sola palabra inglesa (`create`, `view`, `update`, `delete`, `approve`, `submit`, `upload`).
 
    El plan debe documentar este mapeo en la sección 9 (Seguridad y Autorización) para que el equipo de Keycloak pueda configurarlo en paralelo.
 4. ¿Hay reglas de negocio implícitas que no están explícitas en la HU?
@@ -239,8 +245,8 @@ Espera las respuestas del usuario antes de continuar.
 **Preguntas adicionales según tipo de HU:**
 - **Listados / búsquedas:** ¿Requiere paginación? ¿Filtros? ¿Ordenamiento?
 - **Archivos / artefactos:** ¿Qué formatos son válidos? ¿Hay límite de tamaño?
-- **Estados / flujos:** ¿Cuáles son todas las transiciones de estado posibles? (Considera modelarlos con `sealed interface` Java 21 si la cantidad es cerrada.)
-- **Evaluaciones / calificaciones:** ¿Cuál es el rango válido? ¿Quién puede modificar? (Considera `record` como Value Object con validación en el constructor compacto.)
+- **Estados / flujos:** ¿Cuáles son todas las transiciones de estado posibles? Se modelan como `String` o `enum` en el aggregate.
+- **Evaluaciones / calificaciones:** ¿Cuál es el rango válido? ¿Quién puede modificar? La validación va en el setter privado del aggregate (Notification Pattern).
 - **Autenticación / seguridad:** ¿Qué scopes o claims de Keycloak se validan?
 
 **Preguntas derivadas del Event Storming (si aplica):**
@@ -378,8 +384,6 @@ produce el documento en el formato a continuación y guárdalo como
 ### Aggregate Root
 - **Entidad raíz:** `{Entidad}` (extiende `AggregateRoot` de `shared:domain`)
 - **ID:** `UUID`
-- **Value Objects:** {listar si aplican, ej. `Calificacion` como `record` con validación en constructor compacto}
-- **Enums / Sealed types:** {listar si aplican, ej. `sealed interface EstadoFicha permits Borrador, EnRevision, Aprobada` si el dominio lo justifica}
 
 ### Atributos por objeto de dominio (extraídos del modelo enriquecido)
 
@@ -512,28 +516,44 @@ Para cada integración externa, documenta:
 >
 > **Saltarse el dominio en consultas (JPA Entity → DTO directamente) es una violación de DDD estricto** — aunque sea tentador "para optimizar". Si el contexto usa AggregateRoot, **toda lectura desde BD pasa por la entidad de dominio**. La conversión a DTO es responsabilidad exclusiva del use case, nunca del adapter de repositorio.
 
-### Manejo de Errores HTTP (`@ExceptionHandler`) — OBLIGATORIO si se introducen excepciones nuevas
+### Manejo de Errores HTTP — `GlobalAppExceptionHandler` centralizado (por defecto, sin handler de contexto)
 
-> Toda excepción de dominio definida en este plan debe tener su `@ExceptionHandler`
-> en el `{Contexto}GlobalExceptionHandler` del contexto, mapeada al código HTTP correcto.
-> **No registrar la excepción = caída en `handleGeneral` = 500**, lo cual es siempre
-> incorrecto para una violación de regla de negocio.
+> **Regla del proyecto:** las excepciones del dominio se manejan **centralizadamente** en `GlobalAppExceptionHandler` (`shared:web`) por jerarquía de la clase base. **Por defecto, los contextos de negocio NO crean handlers propios.** La excepción es `seguridad`, que tiene `SeguridadGlobalExceptionHandler` por colisión de nombres con Spring Security.
 
-**Estado actual del proyecto:**
-- `seguridad` ya tiene `SeguridadGlobalExceptionHandler` → solo añadir `@ExceptionHandler` para la nueva excepción.
-- Otros contextos (`fichas`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones`) **no lo tienen** → crear el handler completo si esta HU introduce la primera excepción de dominio.
+#### Cómo se mapea cada excepción a HTTP (sin tocar shared:web ni crear handlers)
 
-| Capa | Ruta | Tipo | Acción | Mapeo HTTP |
-|------|------|------|--------|------------|
-| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/adapter/in/web/{Contexto}GlobalExceptionHandler.java` | Handler | {CREAR si el contexto no lo tiene / MODIFICAR si ya existe} | añadir `@ExceptionHandler({Entidad}{Tipo}Exception.class)` → {código HTTP según tabla del skill}. Nombre del archivo y clase con prefijo del contexto en PascalCase (ej. `SeguridadGlobalExceptionHandler`, `FichasGlobalExceptionHandler`). Ver tabla completa en el skill. |
+| Semántica del error | Clase base | HTTP |
+|---|---|---|
+| Recurso duplicado / ya existe | `ApplicationException` | **400** Bad Request |
+| Recurso no encontrado | `ApplicationException` | **400** Bad Request |
+| Parámetro o filtro inválido | `ApplicationException` | **400** Bad Request |
+| Invariante del aggregate violada | `DomainException` | **422** Unprocessable Content |
+| Estado inválido / transición prohibida | `DomainException` | **422** Unprocessable Content |
+| Validación multi-campo (Notification Pattern) | `DomainValidationException` | **422** + `fieldErrors[]` |
+| Fallo de infraestructura (BD, RabbitMQ, Keycloak caído) | `InfrastructureException` | **503** Service Unavailable |
 
-> **Mapeo estándar** (ver sección "{Contexto}GlobalExceptionHandler — Patrón Canónico" del skill):
-> - `*NoEncontrad*Exception` → 404
-> - `*Invalid*Exception` / `Parametro*Invalido` → 400
-> - `*NoAutorizad*Exception` → 403
-> - `*Conflict*Exception` / `*Duplicad*Exception` / `EstadoInvalido*` → 409
-> - Resto de `DomainException` → 422
-> - Las excepciones cross-cutting (`Exception` fallback, `MethodArgumentNotValidException`, `AuthorizationDeniedException`, `AccessDeniedException`, `ConstraintViolationException`, `MissingServletRequestParameterException`, `HttpMessageNotReadableException`) son responsabilidad de `GlobalAppExceptionHandler` en `shared:web`. **NO** se incluyen en handlers de contexto.
+El `GlobalAppExceptionHandler` resuelve el HTTP recorriendo la jerarquía de la excepción hasta encontrar la clase base. El **mensaje al cliente proviene de `getMessage()` y el código de `getErrorCode()`** — ambos vienen del constructor de la excepción, así que el cuerpo de error es informativo automáticamente.
+
+**Implicación para el plan:** las excepciones de dominio nuevas declaradas en este plan solo necesitan extender la clase base correcta. **NO se planifica creación de handler de contexto** salvo en los dos casos excepcionales descritos abajo.
+
+#### Cuándo SÍ crear handler propio del contexto (casos excepcionales)
+
+Solo en estos dos casos, el plan debe declarar la creación/modificación del `{Contexto}GlobalExceptionHandler`:
+
+1. **Colisión con clases del framework.** Caso real: `seguridad` define su propio `AuthenticationException` que choca con `org.springframework.security.core.AuthenticationException`.
+2. **HTTP status fuera del mapeo de la jerarquía base.** Ej. si una excepción de duplicado debe responder 409 Conflict en vez de 400, o "no encontrado" debe ser 404 explícito.
+
+En estos casos, el plan declara:
+
+| Capa | Ruta | Tipo | Acción | Detalles |
+|------|------|------|--------|----------|
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/exception/{Contexto}GlobalExceptionHandler.java` | Handler | CREAR (si el contexto no lo tiene) / MODIFICAR (si ya existe) | Anotaciones: `@RestControllerAdvice`, `@Slf4j`, `@Order(Ordered.HIGHEST_PRECEDENCE)`. Solo handlers de las excepciones que requieran HTTP especial — sin fallback de `DomainException` ni `Exception.class`. Nombre del archivo y clase con prefijo del contexto en PascalCase (ej. `FichasGlobalExceptionHandler`). Ver plantilla canónica en el skill. |
+
+> **NUNCA** incluyas en un handler de contexto: `@ExceptionHandler(Exception.class)`, `@ExceptionHandler(MethodArgumentNotValidException.class)`, `@ExceptionHandler(AccessDeniedException.class)` ni `@ExceptionHandler(AuthorizationDeniedException.class)`. Esas viven en `GlobalAppExceptionHandler` de `shared:web`.
+
+#### Pregunta de clarificación obligatoria al usuario
+
+Si una excepción de dominio del plan requiere HTTP distinto al que da su clase base (ej. el usuario quiere 409 para duplicado en lugar del 400 default), **pregúntalo explícitamente en FASE 3** antes de planificar el handler de contexto. Si la respuesta es "el 400 default está bien", el plan NO incluye handler de contexto.
 
 ### DTOs técnicos genéricos (NO se crean por HU)
 
@@ -577,7 +597,7 @@ Los siguientes DTOs viven en `shared:web` y se importan, **nunca se crean ni dup
 - **Paquete:** `com.arquisoft.{contexto}.{capa}.{...}`
 - **Tipo:** {Entidad / AggregateRoot / Evento / Interface / DTO / UseCase / Controller / etc.}
 - **Responsabilidad:** {descripción}
-- **Features Java 21 aplicables:** {si aplica — ej. "Value Object como `record`", "estados como `sealed interface`", "SQL con text blocks"; omitir si no aplica}
+- **Features Java 21 aplicables:** {si aplica — ej. "`record` para Command/ReadModel/RequestDTO", "SQL con text blocks", "`var` para variables locales evidentes"; omitir si no aplica}
 - **Métodos principales:**
     - `{metodo}({parametros}): {retorno}` — {descripción breve}
 - **Dependencias:** {lista de clases/interfaces que usa}
@@ -592,7 +612,7 @@ Para cada archivo de tipo Controller, añadir además:
 - **Endpoints documentados:**
 
   | Método del Controller | `@Operation(summary)` | Códigos `@ApiResponse` | `@SecurityRequirement` |
-              |-----------------------|-----------------------|------------------------|------------------------|
+                |-----------------------|-----------------------|------------------------|------------------------|
   | `{metodo}` | `"{resumen corto < 10 palabras}"` | 200/201, 400, 401, 403, 404 | `bearerAuth` (omitir si es público) |
 
 - **Nota:** Los endpoints públicos (login, refresh, validate) omiten `@SecurityRequirement`.
@@ -607,16 +627,16 @@ Marcar **una** opción según la respuesta a la pregunta 10 de FASE 3:
 
 - [ ] **Endpoint NUEVO** — crear `{Accion}{Entidad}InputAdapter.java` (o `QueryInputAdapter.java`) desde cero.
 - [ ] **Endpoint EXISTENTE** — modificar el adapter ya presente en el proyecto.
-  - **Archivo a modificar:** `{ruta exacta al InputAdapter existente}`
-  - **Qué cambia:** {nuevo parámetro / nueva validación / nuevo campo del `RequestDTO` / cambio en `@PreAuthorize` / etc.}
+    - **Archivo a modificar:** `{ruta exacta al InputAdapter existente}`
+    - **Qué cambia:** {nuevo parámetro / nueva validación / nuevo campo del `RequestDTO` / cambio en `@PreAuthorize` / etc.}
 
 ### Contrato del endpoint
 
 | Método | Ruta | Request Body / Params | Response | Código HTTP | Client role requerido | Anotaciones Swagger (ADR-011) |
 |--------|------|----------------------|----------|-------------|----------------------|-------------------------------|
-| POST | `/api/{contexto}/{recurso}` | `{Accion}{Entidad}RequestDTO` | `Void` (write: 201 + `Location`) | 201 | `{contexto}:{entidad}:{accion}` | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
-| GET | `/api/{contexto}/{recurso}/{id}` | — | `{Entidad}ReadModel` | 200 | `{contexto}:{entidad}:view` | idem |
-| POST | `/api/{contexto}/{recurso}/query` | `QueryCriteriaRequestDTO` (si usa Criteria) | `PageResponseDTO<{Entidad}ReadModel>` | 200 | `{contexto}:{entidad}:view` | idem |
+| POST | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `Void` (write: 201 + `Location`) | 201 | `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
+| GET | `/api/{recurso-kebab}/{id}` | — | `{Entidad}ReadModel` | 200 | `{contexto}:{recurso-kebab}:view` (ej. `fichas:ficha-perfil:view`) | idem |
+| POST | `/api/{recurso-kebab}/query` | `QueryCriteriaRequestDTO` (si usa Criteria) | `PageResponseDTO<{Entidad}ReadModel>` | 200 | `{contexto}:{recurso-kebab}:view` | idem |
 
 > **Convención de respuesta:**
 > - **Write** retorna `ResponseEntity<Void>` con `201 Created` + header `Location` apuntando al recurso. No incluye el recurso en el body (CQRS estricto).
@@ -634,15 +654,18 @@ Por cada endpoint nuevo, declara el **client role** que requiere y a qué **role
 
 | Client role | Roles realm que lo poseen | Endpoint(s) que lo requieren | Descripción funcional |
 |---|---|---|---|
-| `{contexto}:{recurso}:{accion}` | `coordinador`, `asesor-ficha` | `POST /api/...` | {qué permite hacer este client role} |
+| `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `coordinador`, `asesor-ficha` | `POST /api/...` | {qué permite hacer este client role} |
 
 ### Reglas de uso
 
-1. **Formato del client role:** `{contexto}:{recurso}:{accion}` — todo en minúscula, separado por dos puntos.
-2. **Roles realm en kebab-case:** `coordinador`, `asesor`, `asesor-ficha`, `jurado`, `bibliotecario`, `representante-comite`, `estudiante`, `administrador`.
-3. **Un client role puede pertenecer a varios roles realm.** Si dos roles realm distintos pueden ejecutar la misma acción, ambos tendrán asignado el mismo client role en Keycloak — NO se hace OR en `@PreAuthorize`.
-4. **Cada endpoint REST tiene exactamente un `@PreAuthorize("hasAuthority('...')")`** con un único client role.
-5. **NO se usa `hasRole(...)`** ni roles realm directamente en endpoints — siempre `hasAuthority(...)` con client role.
+1. **Formato del client role:** `{contexto}:{recurso}:{accion}` **en kebab-case** — todo en minúscula, palabras del recurso separadas por guiones (`-`), no por mayúsculas ni underscores. Ejemplos válidos: `fichas:ficha-perfil:create`, `repositorio-artefactos:artefacto:upload`. **Inválidos:** `fichas:fichaPerfil:create` (camelCase), `Fichas:Ficha-Perfil:CREATE` (mayúsculas), `repositorio_artefactos:artefacto:upload` (underscore).
+2. **Conversión de nombres:**
+    - Si el contexto Gradle tiene underscore (`repositorio_artefactos`), en el client role se convierte a guión (`repositorio-artefactos`).
+    - Si la entidad tiene varias palabras (`FichaPerfilAggregate`), el recurso del client role usa guiones (`ficha-perfil`), nunca camelCase.
+3. **Roles realm en kebab-case:** `coordinador`, `asesor`, `asesor-ficha`, `jurado`, `bibliotecario`, `representante-comite`, `estudiante`, `administrador`.
+4. **Un client role puede pertenecer a varios roles realm.** Si dos roles realm distintos pueden ejecutar la misma acción, ambos tendrán asignado el mismo client role en Keycloak — NO se hace OR en `@PreAuthorize`.
+5. **Cada endpoint REST tiene exactamente un `@PreAuthorize("hasAuthority('...')")`** con un único client role.
+6. **NO se usa `hasRole(...)`** ni roles realm directamente en endpoints — siempre `hasAuthority(...)` con client role.
 
 ### Configuración requerida en Keycloak (instrucciones para equipo de seguridad)
 
@@ -743,19 +766,14 @@ Para cada client role nuevo de la tabla anterior:
 > `publishEvent`, `getUnPublishedEvents`, `clearUnPublishedEvents`, ni de
 > `verify(eventPublisher).publish(...)` — no aplican.
 
-#### Tests capa `domain` (solo si la HU introduce nuevos Value Objects)
-| Clase de test | Método | Escenario |
-|---------------|--------|-----------|
-| `{ValueObject}Test` | `debeRechazarValor_cuandoEsInvalido` | record con validación en constructor compacto |
-
-> Si la consulta solo lee entidades existentes y devuelve datos, **probablemente no necesitas tests de domain en absoluto** para esta HU.
+> Si la consulta solo lee datos existentes y los devuelve, **no necesita tests de domain en absoluto** — el aggregate no se invoca en el read side.
 
 #### Tests capa `application`
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `{Accion}{Entidad}UseCaseImplTest` | `debeRetornarLista_cuandoFiltrosValidos` | flujo principal con resultados |
-| `{Accion}{Entidad}UseCaseImplTest` | `debeRetornarVacio_cuandoNoHayResultados` | sin coincidencias |
-| `{Accion}{Entidad}UseCaseImplTest` | `debeLanzarExcepcion_cuandoFiltrosInvalidos` | filtros mal formados (consolidado: tipo + errorCode en un solo test) |
+| `{Accion}{Entidad}QueryUseCaseTest` | `debeRetornarLista_cuandoFiltrosValidos` | flujo principal con resultados |
+| `{Accion}{Entidad}QueryUseCaseTest` | `debeRetornarVacio_cuandoNoHayResultados` | sin coincidencias |
+| `{Accion}{Entidad}QueryUseCaseTest` | `debeLanzarExcepcion_cuandoFiltrosInvalidos` | filtros mal formados (consolidado: tipo + errorCode en un solo test) |
 
 > NO crear tests separados para "errorCode correcto" cuando ya hay un test del mismo escenario que lanza la excepción — consolidar asserts en un solo test (ver anti-patrón 4 del skill).
 
@@ -801,10 +819,10 @@ ejemplos detallados.
 - [ ] Puerto de entrada (`{Accion}{Entidad}UseCase`) definido
 - [ ] Puerto de salida (`{Entidad}OutputPort`) definido
 - [ ] Excepciones de dominio definidas, extienden `DomainException` y tienen `errorCode`
-- [ ] **Toda excepción nueva registrada en `{Contexto}GlobalExceptionHandler` del contexto** con `@ExceptionHandler` y código HTTP correcto (ver mapeo en el skill). Si el contexto no tenía handler aún, se creó con el nombre prefijado correcto. Ningún test de controller espera 500 para inputs inválidos.
+- [ ] **Cada excepción nueva extiende la clase base correcta** (`DomainException` → 422, `ApplicationException` → 400, `InfrastructureException` → 503) para que `GlobalAppExceptionHandler` de `shared:web` resuelva su HTTP automáticamente. **NO se crea handler de contexto** salvo en los dos casos excepcionales (colisión de nombres con Spring / HTTP status fuera del default de la jerarquía). Ningún test de controller espera 500 para inputs inválidos.
 - [ ] `Command` (`record` en `application/{entidad}/command/model/`) y `RequestDTO` (`record` en `infrastructure/{entidad}/command/adapter/in/web/dto/`) creados. `RequestDTO` con anotaciones Jakarta + método `toCommand()`. Use cases read retornan `ReadModel` (no DTO). Campos en español idénticos al aggregate.
 - [ ] Caso de uso (`{Accion}{Entidad}UseCase`) con `@RequiredArgsConstructor`, `@Transactional` y drenado de eventos
-- [ ] Controller REST con `@Valid @RequestBody` y autorización vía `@PreAuthorize("hasAuthority('{contexto}:{recurso}:{accion}')")` (client role declarado en sección 9 del plan)
+- [ ] Controller REST con `@Valid @RequestBody` y autorización vía `@PreAuthorize("hasAuthority('{contexto}:{recurso-kebab}:{accion}')")` **en kebab-case** (ej. `fichas:ficha-perfil:create`) — client role declarado en sección 9 del plan, sin camelCase ni MAYÚSCULAS
 - [ ] Controller documentado con `@Tag`, `@Operation`, `@ApiResponses` y `@SecurityRequirement` (ADR-011)
 - [ ] Entidad JPA con `@Table(name = "...")` (sin atributo `schema`) y adaptador de repositorio creados
 - [ ] Migración Flyway (`V{n}__{descripcion}.sql`) en la BD correcta según tabla de mapeo, sin prefijo de schema en el SQL

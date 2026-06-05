@@ -226,7 +226,6 @@ CAPA 1 — domain (genera todos antes de compilar)
   │        "{contexto}.{entidad}.{accion}" (ej. "fichas.ficha.creada").
   │        Es método abstracto en DomainEvent — sin esto el código NO compila.
   │        Si el plan no especifica el eventTopic, derívalo del contexto + entidad + acción.
-  ├── Value Objects / Sealed    (si aplican — considerar records y sealed de Java 21)
   ├── Entidad de dominio        ({Entidad}.java) — extiende AggregateRoot si el contexto lo usa
   │     ⚠️ El factory build(...) llama a publishEvent(...) SOLO si el plan declara eventos.
   │        Si no, build(...) construye y retorna la entidad sin emitir nada.
@@ -290,19 +289,20 @@ CAPA 3 — infrastructure (genera todos antes de compilar)
   │     ⚠️ Autorización: `@PreAuthorize("hasAuthority('{contexto}:{entidad}:{accion}')")` con
   │        UN ÚNICO client role declarado en sección 9 del plan. NO usar `hasRole(...)` ni
   │        roles realm directamente. Ver SKILL sección "Autorización — Roles realm + Client Roles".
-  ├── {Contexto}GlobalExceptionHandler    (OBLIGATORIO si el plan introduce excepciones de dominio nuevas)
-  │     • Ubicación: {contexto}/infrastructure/adapter/in/web/{Contexto}GlobalExceptionHandler.java
-  │     • Nombre con prefijo del contexto en PascalCase (ej. SeguridadGlobalExceptionHandler, FichasGlobalExceptionHandler, RepositorioArtefactosGlobalExceptionHandler)
-  │     • Si el contexto YA TIENE handler → modificarlo: añadir un @ExceptionHandler por cada excepción nueva
-  │     • Si el contexto NO TIENE handler → crearlo desde la plantilla canónica del skill, con el nombre prefijado correcto
-  │     • Estado actual del proyecto: solo `seguridad` lo tiene (como SeguridadGlobalExceptionHandler); los demás contextos lo crearán cuando aparezca su primera excepción
-  │     • Cada @ExceptionHandler debe mapear al código HTTP correcto según la tabla del skill
-  │       (NoEncontrad* → 404, Invalid*/ParametroInvalido* → 400, NoAutorizad* → 403,
-  │        Conflict*/Duplicad*/EstadoInvalido* → 409, resto de DomainException → 422)
-  │     • Si una excepción no encaja claramente en la tabla → reportar AMBIGÜEDAD al usuario, nunca asumir 500
-  │     • Razón del prefijo: evita conflicto en runtime cuando Spring escanea múltiples @RestControllerAdvice con el mismo nombre simple de clase entre módulos
-  │     • Importa ErrorResponseDTO desde com.arquisoft.shared.web (NO crear local)
-  │     • NO incluye @ExceptionHandler(Exception.class) ni cross-cutting (esas viven en GlobalAppExceptionHandler de shared:web)
+  ├── {Contexto}GlobalExceptionHandler    (SOLO si el plan lo declara explícitamente como archivo a crear/modificar — caso excepcional)
+  │     • Por defecto, las excepciones del contexto las maneja GlobalAppExceptionHandler de shared:web por jerarquía de su clase base.
+  │       DomainException → 422, ApplicationException → 400, InfrastructureException → 503. El mensaje al cliente viene del constructor de la excepción.
+  │     • Solo se crea handler de contexto si el plan lo lista explícitamente. Dos casos válidos:
+  │         1. Colisión con clases del framework (caso real: seguridad con AuthenticationException).
+  │         2. HTTP status fuera del default de la jerarquía (ej. 409 Conflict para duplicado en lugar de 400).
+  │     • Si el plan NO declara handler de contexto, NO lo crees — verifica que cada excepción extienda la clase base correcta y termina.
+  │     • Si el plan SÍ lo declara:
+  │         - Ubicación: {contexto}/infrastructure/exception/{Contexto}GlobalExceptionHandler.java
+  │         - Nombre con prefijo del contexto en PascalCase (ej. SeguridadGlobalExceptionHandler, FichasGlobalExceptionHandler)
+  │         - Anotaciones: @RestControllerAdvice, @Slf4j, @Order(Ordered.HIGHEST_PRECEDENCE)
+  │         - Solo @ExceptionHandler para las excepciones que requieren HTTP especial. NO incluir fallback de DomainException.
+  │         - Importa ErrorResponseDTO desde com.arquisoft.shared.web.dto (NO crear local)
+  │         - NUNCA @ExceptionHandler(Exception.class), MethodArgumentNotValidException, AccessDeniedException, AuthorizationDeniedException → cross-cutting, van en shared:web
   ├── Listener RabbitMQ         (si aplica — solo si el contexto consume eventos) — en adapter/in/messaging/
   ├── Config Spring             (si aplica) — en infrastructure/config/, sin lógica de negocio
   └── Migración Flyway          (V{n}__{descripcion}.sql) — tablas sin prefijo de schema; BD correcta según tabla de mapeo
@@ -316,8 +316,10 @@ CAPA 3 — infrastructure (genera todos antes de compilar)
   → 🔨 COMPILAR: ./gradlew :{contexto}:infrastructure:compileJava
 
   → ✅ VERIFICACIÓN antes del resumen al usuario:
-     Toda excepción de dominio listada en el plan tiene su @ExceptionHandler en
-     {Contexto}GlobalExceptionHandler. Ninguna queda mapeada implícitamente a 500.
+     Toda excepción de dominio del plan extiende la clase base correcta
+     (DomainException → 422, ApplicationException → 400, InfrastructureException → 503).
+     El constructor de cada excepción produce un mensaje claro (es el que verá el cliente).
+     Solo se creó {Contexto}GlobalExceptionHandler si el plan lo declaró explícitamente.
      ErrorResponseDTO se importa de shared:web, no se duplica en el contexto.
      Si la HU es paginada, PageResponseDTO se importa de shared:web y se usa
      SOLO en el controller (nunca en domain ni application).
@@ -342,12 +344,10 @@ Antes de generar **cada archivo**, ejecuta la consulta de Context7 correspondien
 |-----------------|----------------------------|
 | Entidad de dominio (AggregateRoot) | `query-docs /websites/spring_io_spring-framework_reference_6_2 "domain model immutable class factory method Java 21"` |
 | Evento de dominio | (usar plantilla del skill `arquisoft-context` — DomainEvent ya existe en shared:domain) |
-| Value Object (record) | `query-docs /openjdk/jdk "record compact constructor validation"` (o plantilla del skill) |
-| Sealed interface / clase | `query-docs /openjdk/jdk "sealed class permits pattern matching switch Java 21"` |
 | Excepción de dominio | `query-docs /websites/spring_io_spring-framework_reference_6_2 "custom exception DomainException errorCode"` |
 | Puerto de entrada/salida | `query-docs /spring-projects/spring-data-jpa "repository interface port out hexagonal"` |
-| DTO con Lombok | `query-docs /projectlombok/lombok "Builder Data NoArgsConstructor AllArgsConstructor toDomain fromDomain"` |
-| UseCase Impl | `query-docs /websites/spring_io_spring-framework_reference_6_2 "Transactional service component use case"` |
+| Command / ReadModel / RequestDTO | `query-docs /openjdk/jdk "record compact constructor validation"` (todos son `record`) |
+| UseCase | `query-docs /websites/spring_io_spring-framework_reference_6_2 "Transactional service component use case"` |
 | Entidad JPA | `query-docs /spring-projects/spring-data-jpa "Entity Table schema Column mapping PostgreSQL"` |
 | Repositorio JPA | `query-docs /spring-projects/spring-data-jpa "JpaRepository save findById custom query adapter"` |
 | Controller REST | `query-docs /websites/spring_io_spring-framework_reference_6_2 "RestController RequestMapping PostMapping Valid RequestBody ResponseEntity"` |
@@ -415,20 +415,16 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 - **Regla DDD estricta:** en los 6 contextos de negocio (fichas, proyectos, artefactos, repositorio_artefactos, entregables, evaluaciones), toda entidad raíz **DEBE** extender `AggregateRoot` de `shared:domain`. Excepción única documentada: `seguridad`.
 - No usar `record` para entidades de dominio (requieren constructor privado + factories).
 
-### Value Objects
-
-- **Usar `record`** cuando el VO es inmutable con equals/hashCode basados en valor.
-- Validación en constructor compacto: `public record Calificacion(double valor) { public Calificacion { if (valor < 0 || valor > 5) throw new IllegalArgumentException(...); } }`
-
 ### Eventos de Dominio
 
-- Extienden `DomainEvent` de `shared:domain`. El constructor recibe `aggregateId` como `String` y `super(aggregateId)` asigna automáticamente `eventId`, `occurredAt` y `eventType`.
-- Se ubican en `{contexto}/domain/event/`.
-- Considera marcarlos `final` (no se extienden).
+- Extienden `DomainEvent` de `shared:domain.events`. El constructor recibe `aggregateId`, `eventTopic`, `eventType` y los pasa al `super(...)`. La clase base asigna automáticamente `eventId` y `occurredAt`.
+- Declaran constantes `public static final String EVENT_TOPIC` (formato `{contexto}.{entidad}.{accion}`) y `EVENT_TYPE`.
+- Se ubican en `{contexto}/domain/{entidad}/event/`.
+- Marcarlos `final` (no se extienden).
 
 ### Excepciones de Dominio
 
-- Extienden `DomainException` de `shared:exceptions`, **nunca** `RuntimeException` directamente.
+- Extienden uno de los 4 tipos base de `shared:domain.exception`: `DomainException` (422), `ApplicationException` (400), `InfrastructureException` (503), `DomainValidationException` (422). **NUNCA** `RuntimeException` directamente.
 - Tienen campo `errorCode` (lo asigna `super(errorCode, mensaje)`).
 
 ### DTOs
@@ -450,7 +446,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 - `@Tag(name="...", description="...")` a nivel de clase.
 - Cada endpoint: `@Operation(summary="...", description="...", security = @SecurityRequirement(name="bearerAuth"))` + `@ApiResponses({...})`.
 - Endpoints públicos (login, refresh, validate): omitir `@SecurityRequirement`.
-- `@PreAuthorize("hasAuthority('{contexto}:{recurso}:{accion}')")` con el client role declarado en sección 9 del plan. **NO** usar `hasRole(...)` ni roles realm directamente.
+- `@PreAuthorize("hasAuthority('{contexto}:{recurso-kebab}:{accion}')")` **en kebab-case** (ej. `fichas:ficha-perfil:create`) con el client role declarado en sección 9 del plan. **Nunca** camelCase (`fichas:fichaPerfil:create`) ni MAYÚSCULAS. **NO** usar `hasRole(...)` ni roles realm directamente.
 - `@Valid @RequestBody` para requests.
 - No accede directamente a repositorios — solo a puertos de entrada (use cases).
 
@@ -473,13 +469,52 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 
 ### Java 21 — Uso Balanceado
 
-- Records → Value Objects y payloads de eventos de dominio.
-- Sealed interfaces → estados cerrados de dominio (ej. `sealed interface EstadoFicha permits Borrador, EnRevision, Aprobada`).
-- Pattern matching para `switch` → ramificación limpia sobre sealed types.
+- Records → `Command`, `ReadModel`, `RequestDTO`, payloads de eventos de dominio.
+- Pattern matching para `switch` → ramificación sobre `sealed interface` técnicos (`NodoFiltro`, `CampoSpec` de `shared:postgres`).
 - Pattern matching para `instanceof` → donde antes había `instanceof` + cast explícito.
 - Text blocks (`"""..."""`) → SQL inline, plantillas largas.
 - `var` → solo donde el tipo es evidente por el RHS.
 - **Regla de oro:** si la feature no aporta claridad al código específico, no la uses.
+
+### Sin Javadoc descriptivo (regla del proyecto)
+
+> **NUNCA generes bloques `/** ... */` con `@param`, `@return` o descripciones largas** en clases, interfaces, métodos, constructores ni campos de los 7 contextos. El código del proyecto es autodescriptivo — nombres de clases, métodos y variables ya comunican la intención.
+
+**Prohibido:**
+
+```java
+// ❌ NO generar — Javadoc redundante
+/**
+ * Ejecuta el caso de uso con el input dado y retorna el resultado.
+ *
+ * @param input comando o criterio que dispara el caso de uso
+ * @return resultado producido por el caso de uso
+ */
+O ejecutar(I input);
+
+// ❌ NO generar — Javadoc en clase trivial
+/** DTO de request para crear una ficha de perfil. */
+public record CrearFichaPerfilRequestDTO(...) {}
+
+// ❌ NO generar — descripción que repite el nombre del método
+/**
+ * Guarda la ficha en la base de datos.
+ * @param ficha la ficha a guardar
+ */
+void guardar(FichaPerfilAggregate ficha);
+```
+
+**Permitido (solo cuando el "por qué" no es obvio):** un comentario de una línea con `//`:
+
+```java
+// ✅ Permitido — aclara una decisión no obvia
+// Se usa rebuild() en lugar de build() porque el UUID viene de BD; build() generaría uno nuevo.
+return jpaRepository.findById(id).map(FichaPerfilMapper::toDomain);
+```
+
+**Excepciones (Javadoc completo SÍ permitido):** clases base del módulo `shared` (`AggregateRoot`, `DomainEvent`, `QueryCriteria`, `EventPublisher`) y métodos abstractos del `shared` que cada subclase DEBE implementar (ej. `DomainEvent.getEventTopic()`). En estos casos el Javadoc documenta el contrato del framework interno.
+
+**En los 7 contextos de negocio (`fichas`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones`, `seguridad`), no se genera Javadoc descriptivo.**
 
 ---
 
@@ -666,7 +701,7 @@ Opciones:
 9. **Sin interacción con git.** Ni commits, ni ramas, ni stage.
 10. **DDD estricto — separación de capas:** ningún `@Configuration`, adaptador o controller contiene reglas de negocio. El dominio es Java puro (cero imports de Spring, JPA, Lombok, Jackson, Keycloak, RabbitMQ, Swagger, Security). Para integraciones externas: puerto en `domain/port/out/`, adaptador en `infrastructure/adapter/out/{tipo}/`, `@Configuration` solo cablea. Aplica la **prueba del algodón** antes de cada archivo.
 11. **Estructura de carpetas en adapters:** `@RestController` y `@RestControllerAdvice` en `infrastructure/adapter/in/web/`. Listeners RabbitMQ en `adapter/in/messaging/`. JPA + repository adapter en `adapter/out/persistence/`. Otras integraciones en `adapter/out/{tipo}/` (ej. `security/`, `storage/`, `notification/`). **NO** existe `adapter/out/messaging/` en los contextos — la publicación de eventos está centralizada en `shared:amqp`. Nunca dejes componentes directamente en `adapter/in/` o `adapter/out/` sin subcarpeta.
-12. **`{Contexto}GlobalExceptionHandler` obligatorio cuando el plan introduce excepciones nuevas.** Toda excepción de dominio del plan DEBE registrarse con `@ExceptionHandler` en el handler del contexto, con el **nombre prefijado en PascalCase** (`SeguridadGlobalExceptionHandler`, `FichasGlobalExceptionHandler`, `RepositorioArtefactosGlobalExceptionHandler`, etc. — ver tabla completa en el skill). Mapeada al código HTTP correcto (`*NoEncontrad*` → 404, `*Invalid*`/`Parametro*Invalido` → 400, `*NoAutorizad*` → 403, `*Conflict*`/`*Duplicad*`/`EstadoInvalido*` → 409, resto de `DomainException` → 422). Si el contexto no tiene handler aún (solo `seguridad` lo tiene), créalo desde la plantilla canónica con el nombre prefijado correcto. **Nunca permitas que una excepción de dominio caiga en `handleGeneral` → 500.** Si una excepción no encaja en la tabla, reporta ambigüedad al usuario.
+12. **Manejo de excepciones centralizado por defecto.** Las excepciones del contexto las maneja `GlobalAppExceptionHandler` de `shared:web` por jerarquía de su clase base — `DomainException` → 422, `ApplicationException` → 400, `InfrastructureException` → 503. El cliente recibe el `getMessage()` y el `getErrorCode()` que pone el constructor de la excepción. **NO crees `{Contexto}GlobalExceptionHandler` salvo que el plan lo declare explícitamente** (solo dos casos válidos: colisión de nombres con clases del framework, o HTTP status fuera del default de la jerarquía). Si lo declara, anota: `@RestControllerAdvice` + `@Order(Ordered.HIGHEST_PRECEDENCE)`, solo handlers de las excepciones específicas, sin fallback de `DomainException` ni `Exception.class`. **Nunca permitas que una excepción de dominio caiga en `handleGeneral` → 500.** Si una excepción no encaja en ninguna clase base correctamente, reporta ambigüedad al usuario.
 13. **DDD estricto — Aggregate Root:** entidades raíz extienden `AggregateRoot` en los 6 contextos de negocio. Excepción única: `seguridad`. Si el plan no especifica AggregateRoot para una entidad raíz en los 6 contextos, reporta ambigüedad.
 14. **Eventos de dominio:** en `domain/event/`, extienden `DomainEvent`. El use case los drena tras persistir — nunca el dominio publica directamente.
 15. **IDs siempre `UUID`** (`java.util.UUID`). `build()` genera con `UUID.randomUUID()`, `rebuild()` recibe el UUID desde persistencia.
