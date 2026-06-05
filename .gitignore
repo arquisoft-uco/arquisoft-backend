@@ -46,4 +46,4 @@ logs/
 .env
 *.key
 
-.claude/
+.claude/settings.local.json

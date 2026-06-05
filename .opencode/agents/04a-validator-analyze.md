@@ -225,16 +225,21 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 
 **2.4 Excepciones de dominio:**
 
+> **Política del proyecto:** las excepciones del dominio se manejan **centralizadamente** en `GlobalAppExceptionHandler` (`shared:web`) por jerarquía de la clase base. Los contextos **NO crean handlers propios** salvo en dos casos excepcionales: (1) colisión de nombres con clases del framework (caso `seguridad`); (2) HTTP status fuera del default de la jerarquía. La validación se centra en que cada excepción extienda la clase base correcta.
+
 | Check | Bloqueante |
 |-------|:---:|
-| Extienden `DomainException` y tienen `errorCode` | ✅ |
-| Ubicadas en `domain/exception/` | ✅ |
-| Registradas en `{Contexto}GlobalExceptionHandler` (con nombre prefijado, ej. `SeguridadGlobalExceptionHandler`) | ⚠️ |
-| **El handler de un contexto distinto de `seguridad` contiene `@ExceptionHandler(Exception.class)`** | ❌ violación bloqueante (cross-cutting va en `GlobalAppExceptionHandler` de `shared:web`) |
-| **El handler de un contexto distinto de `seguridad` contiene handlers de Spring Security (`AccessDeniedException`, `AuthorizationDeniedException`)** | ❌ violación bloqueante |
-| **El handler de un contexto distinto de `seguridad` contiene `MethodArgumentNotValidException`, `ConstraintViolationException`, `MissingServletRequestParameterException` o `HttpMessageNotReadableException`** | ❌ violación bloqueante |
-| Excepción a las 3 reglas anteriores: el handler de `seguridad` puede manejar excepciones de su propio dominio (`InvalidCredentialsException`, `InvalidTokenException`, `AuthenticationException` propia del dominio → 401) | ✅ |
-| Importe de `ErrorResponseDTO` desde `com.arquisoft.shared.web` (no desde el paquete del contexto) | ✅ |
+| Cada excepción extiende la clase base correcta según su semántica: `DomainException` (invariante violada → 422), `ApplicationException` (recurso no encontrado / duplicado / parámetro inválido → 400), `InfrastructureException` (fallo de BD/RabbitMQ/Keycloak → 503), `DomainValidationException` (Notification Pattern → 422 + fieldErrors) | ✅ |
+| Excepción extiende `RuntimeException` directamente sin pasar por la jerarquía (`BaseException` / sus 4 subclases) | ❌ violación bloqueante (caerá en fallback Exception → 500) |
+| Tiene `errorCode` trazable (formato `ENTIDAD_ACCION` en SCREAMING_SNAKE_CASE, ej. `FICHA_PERFIL_DUPLICADA`) | ✅ |
+| Ubicación: excepciones del aggregate en `domain/{entidad}/exception/`; excepciones de use case en `application/{entidad}/{command|query}/exception/`; excepciones de infra en `infrastructure/exception/` | ⚠️ |
+| El constructor produce un mensaje claro y útil para el cliente (no filtra PII, no expone detalles internos) | ✅ |
+| Se creó `{Contexto}GlobalExceptionHandler` sin que el plan lo declare explícitamente | ❌ violación bloqueante (la regla por defecto es NO crearlo) |
+| `{Contexto}GlobalExceptionHandler` declarado por el plan: tiene `@RestControllerAdvice`, `@Slf4j`, `@Order(Ordered.HIGHEST_PRECEDENCE)` | ✅ |
+| `{Contexto}GlobalExceptionHandler` declarado por el plan: contiene `@ExceptionHandler(Exception.class)` o handlers cross-cutting (`MethodArgumentNotValidException`, `AccessDeniedException`, `AuthorizationDeniedException`, `ConstraintViolationException`, `MissingServletRequestParameterException`, `HttpMessageNotReadableException`) | ❌ violación bloqueante (cross-cutting solo en `GlobalAppExceptionHandler` de `shared:web`) |
+| `{Contexto}GlobalExceptionHandler` declarado por el plan: contiene fallback `@ExceptionHandler(DomainException.class)` que duplica el comportamiento del global | ❌ violación bloqueante (sin fallback — solo handlers específicos) |
+| Excepción al check anterior: el handler de `seguridad` puede manejar excepciones de su propio dominio (`InvalidCredentialsException`, `InvalidTokenException`, `AuthenticationException` propia → 401) | ✅ |
+| Importe de `ErrorResponseDTO` desde `com.arquisoft.shared.web.dto` (no desde el paquete del contexto) | ✅ |
 
 **2.5 Tipos de transporte (`Command`, `ReadModel`, `RequestDTO`, DTOs técnicos):**
 
@@ -385,25 +390,20 @@ revise. NO lo marques como bloqueante por sí solo.
 
 **2.12 Tests de Controller que afirman 500 para inputs inválidos (CRÍTICO):**
 
-> Este check detecta el patrón "deuda técnica documentada" en tests de controller. Cuando
-> un test afirma que un input inválido retorna 500 (`Internal Server Error`), indica que
-> el `{Contexto}GlobalExceptionHandler` no tiene un `@ExceptionHandler` para la excepción de dominio
-> correspondiente, y la excepción cae en `handleGeneral` → 500. Esto es **siempre incorrecto**
-> para violaciones de regla de negocio.
+> Este check detecta el patrón "deuda técnica documentada" en tests de controller. Cuando un test afirma 500 (`Internal Server Error`) para un input inválido, indica que la excepción está mal categorizada (no extiende ninguna clase base de `BaseException`) y cae en el fallback `Exception.class` de `GlobalAppExceptionHandler` → 500. Esto es **siempre incorrecto** para violaciones de regla de negocio.
 
 | Check | Bloqueante |
 |-------|:---:|
 | Test de controller con `andExpect(status().isInternalServerError())` o `andExpect(status().is(500))` para inputs inválidos (request body mal formado, parámetros de filtro inválidos, recurso no encontrado, etc.) | ✅ |
-| Comentarios como `// DEUDA TÉCNICA: {Contexto}GlobalExceptionHandler no mapea XYZException` en tests de controller | ✅ |
-| Existencia de `{Entidad}NoEncontradaException` o similar sin su `@ExceptionHandler` correspondiente en el `{Contexto}GlobalExceptionHandler` del contexto | ✅ |
-| Excepciones de dominio definidas en el plan (sección 6) que NO aparecen registradas en el handler con `@ExceptionHandler` | ✅ |
+| Comentarios como `// DEUDA TÉCNICA: la excepción no se mapea, devuelve 500` en tests | ✅ |
+| Excepción de dominio que extiende `RuntimeException` directo en lugar de `DomainException` / `ApplicationException` / `InfrastructureException` | ✅ |
 
 **Cómo detectar:**
 
 1. Lee el archivo del controller test. Busca patrones `andExpect(status().isInternalServerError())` o equivalente.
-2. Para cada test que use ese patrón, mira qué excepción se lanza en el "Arrange" (`when(...).thenThrow(new XYZException(...))`). Esa excepción debería tener un `@ExceptionHandler` específico.
-3. Lee el `{Contexto}GlobalExceptionHandler` del contexto (`{contexto}/infrastructure/adapter/in/web/{Contexto}GlobalExceptionHandler.java`, con nombre prefijado en PascalCase). Verifica que cada excepción de dominio del plan tenga su `@ExceptionHandler` con el código HTTP correcto según la tabla de mapeo del skill (404, 400, 403, 409, 422).
-4. Si el contexto no tiene `{Contexto}GlobalExceptionHandler` y el plan introduce excepciones de dominio nuevas, es bloqueante (debió crearse con el nombre prefijado correcto, ej. `FichasGlobalExceptionHandler` para el contexto `fichas`).
+2. Para cada test que use ese patrón, mira qué excepción se lanza en el "Arrange" (`when(...).thenThrow(new XYZException(...))`).
+3. Lee la definición de la excepción. Verifica que extienda la clase base correcta según su semántica (ver tabla en sección 2.4). Si extiende `RuntimeException` directamente o una clase no registrada en `GlobalAppExceptionHandler.EXCEPTION_MAPPINGS`, ese es el bug.
+4. Si el plan declaró `{Contexto}GlobalExceptionHandler` por requerir HTTP especial, verifica que ese handler tenga el `@ExceptionHandler` correspondiente con `@Order(HIGHEST_PRECEDENCE)`.
 
 **Reporta como bloqueante** con esta estructura:
 
@@ -411,8 +411,11 @@ revise. NO lo marques como bloqueante por sí solo.
 [NIVEL 2.12] — Test de controller afirma 500 para input inválido
 - Archivo: {controller test}.java
 - Problema: el test espera 500 cuando una excepción de dominio debería mapearse a 4xx
-- Excepción afectada: XYZException
-- Acción requerida: añadir @ExceptionHandler(XYZException.class) en {Contexto}GlobalExceptionHandler con código HTTP correcto, y actualizar el test para esperar el código correcto.
+- Excepción afectada: XYZException (clase base actual: {clase})
+- Acción requerida: cambiar la clase base de XYZException a la correcta según su semántica
+  (ApplicationException → 400 / DomainException → 422 / InfrastructureException → 503).
+  GlobalAppExceptionHandler de shared:web resolverá el HTTP automáticamente sin crear handler local.
+  Actualizar el test para esperar el código correcto.
 ```
 
 **2.13 Tests de Tipo Incorrecto Según Use Case (CRÍTICO):**
@@ -451,12 +454,15 @@ revise. NO lo marques como bloqueante por sí solo.
 - Referencia: skill arquisoft-context, sección "Tipos de Use Case y sus Tests".
 ```
 
-**2.14 Autorización — `@PreAuthorize` con client role (CRÍTICO en endpoints REST):**
+**2.14 Autorización — `@PreAuthorize` con client role en kebab-case (CRÍTICO en endpoints REST):**
 
 | Check | Bloqueante |
 |-------|:---:|
 | Cada endpoint REST tiene exactamente un `@PreAuthorize("hasAuthority('...')")` | ✅ |
-| El argumento de `hasAuthority` sigue el formato `{contexto}:{recurso}:{accion}` (todo en minúscula, separado por dos puntos) | ✅ |
+| El argumento de `hasAuthority` sigue el formato `{contexto}:{recurso}:{accion}` **en kebab-case** (todo en minúscula, palabras del recurso separadas por guiones, ej. `fichas:ficha-perfil:create`) | ✅ |
+| El recurso del client role aparece en camelCase (ej. `fichas:fichaPerfil:create`) | ❌ violación bloqueante (debe ser kebab-case: `fichas:ficha-perfil:create`) |
+| El client role contiene MAYÚSCULAS en cualquier parte (ej. `Fichas:Ficha-Perfil:CREATE`) | ❌ violación bloqueante (debe ser todo minúscula) |
+| El contexto tiene underscore en lugar de guión (ej. `repositorio_artefactos:artefacto:upload`) | ❌ violación bloqueante (kebab-case: `repositorio-artefactos:artefacto:upload`) |
 | El client role usado coincide con el declarado en sección 9 del plan | ✅ |
 | Uso de `hasRole(...)` en lugar de `hasAuthority(...)` | ❌ violación bloqueante (convención antigua) |
 | Uso de roles realm en MAYÚSCULAS o con prefijo `ROLE_` (ej. `'COORDINADOR'`, `'ROLE_COORDINADOR'`) | ❌ violación bloqueante (los roles realm son kebab-case y NO se evalúan directamente) |
@@ -476,9 +482,10 @@ revise. NO lo marques como bloqueante por sí solo.
 - Archivo: {contexto}/infrastructure/adapter/in/web/{Entidad}InputAdapter.java
 - Línea: @PreAuthorize("hasRole('COORDINADOR')")
 - Problema: el proyecto usa autorización contra client roles de Keycloak vía
-  hasAuthority('contexto:recurso:accion'), no contra roles realm directos.
-- Acción requerida: cambiar a @PreAuthorize("hasAuthority('{contexto}:{recurso}:{accion}')")
-  con el client role declarado en sección 9 del plan.
+  hasAuthority('contexto:recurso:accion') en kebab-case, no contra roles realm directos.
+- Acción requerida: cambiar a @PreAuthorize("hasAuthority('{contexto}:{recurso-kebab}:{accion}')")
+  en kebab-case (ej. 'fichas:ficha-perfil:create'), con el client role declarado en sección 9 del plan.
+  Nunca camelCase ni MAYÚSCULAS.
 - Referencia: skill arquisoft-context, sección "Autorización — Roles realm + Client Roles".
 ```
 
@@ -742,7 +749,7 @@ mensaje.
 10. **Integraciones externas:** si la sección 5 del plan lista una integración externa y falta el puerto en `domain/port/out/` o el adaptador, es bloqueante.
 11. **Estructura de carpetas en adapters (sección 2.10):** los componentes web (`@RestController`, `@RestControllerAdvice`) DEBEN estar en `infrastructure/adapter/in/web/`. Los listeners RabbitMQ en `adapter/in/messaging/`. Las implementaciones JPA en `adapter/out/persistence/`. Otras integraciones externas en `adapter/out/{tipo}/` con nombre descriptivo. **NO existe** `adapter/out/messaging/` en los contextos — la publicación de eventos está centralizada en `shared:amqp`. Una violación de esta estructura es bloqueante.
 12. **Anti-patrones de testing (sección 2.11):** los 7 anti-patrones definidos en el skill `arquisoft-context` son bloqueantes individualmente cuando se detectan. El conteo total de tests es informativo (no bloqueante por sí solo) — solo se reporta como observación si supera el presupuesto orientativo. Aplica solo si la fila Tests del plan dice ✅ Completado.
-13. **Tests que afirman 500 (sección 2.12):** un test de controller que afirma `status().isInternalServerError()` para inputs inválidos es bloqueante — indica que falta el `@ExceptionHandler` correspondiente. Verifica que toda excepción de dominio del plan tenga su entrada en el `{Contexto}GlobalExceptionHandler` del contexto (con nombre prefijado en PascalCase, ej. `SeguridadGlobalExceptionHandler`).
+13. **Tests que afirman 500 (sección 2.12):** un test de controller que afirma `status().isInternalServerError()` para inputs inválidos es bloqueante — indica que la excepción está mal categorizada (no extiende `DomainException` / `ApplicationException` / `InfrastructureException`) y cae en el fallback de `GlobalAppExceptionHandler`. La solución por defecto es corregir la clase base de la excepción, no crear handler local. Solo se crea `{Contexto}GlobalExceptionHandler` si el plan lo declara explícitamente (colisión con framework o HTTP fuera del default de la jerarquía).
 14. **Tests inapropiados para el Tipo de Use Case (sección 2.13):** si la Metadata del plan declara Tipo de Use Case = Consulta, los tests NO deben incluir ciclo de eventos del Aggregate ni `verify(eventPublisher)`. Si declara Escritura, esos tests SÍ son obligatorios. Si el plan no declara el campo, repórtalo como ⚠️ menor (versión vieja del planificador).
 15. **Si APROBADO** → indica al usuario el comando exacto para invocar `@validator-report` con el contenido del reporte.
 16. **Si RECHAZADO** → no sugieras `@validator-report`, indica corrección.
