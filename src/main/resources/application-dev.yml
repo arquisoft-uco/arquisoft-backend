@@ -25,3 +25,5 @@ logging:
     com.arquisoft: DEBUG
     org.springframework.security: DEBUG
     org.hibernate.SQL: DEBUG
+    # Spring Modulith: ciclo de vida de eventos (registro, publicación, completado, retry)
+    org.springframework.modulith: DEBUG

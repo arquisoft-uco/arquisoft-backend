@@ -136,6 +136,9 @@ services:
       DB_EVALUACIONES_URL: jdbc:postgresql://postgres:5432/evaluaciones
       DB_EVALUACIONES_USERNAME: arquisoft_user
       DB_EVALUACIONES_PASSWORD: arquisoft123
+      DB_ARQUISOFT_EVENTS_URL: jdbc:postgresql://postgres:5432/arquisoft_events
+      DB_ARQUISOFT_EVENTS_USERNAME: arquisoft_user
+      DB_ARQUISOFT_EVENTS_PASSWORD: arquisoft123
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_REDIS_HOST: redis
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080

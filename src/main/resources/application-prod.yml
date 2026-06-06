@@ -140,6 +140,15 @@ datasource:
       connection-timeout: 30000
       pool-name: HikariPool-Evaluaciones-Prod
 
+  arquisoft-events:
+    url: ${DB_ARQUISOFT_EVENTS_URL}
+    username: ${DB_ARQUISOFT_EVENTS_USERNAME}
+    password: ${DB_ARQUISOFT_EVENTS_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
 # ==================== KEYCLOAK (propiedades propias) ====================
 # Leídas por KeycloakAuthAdapter y SecurityConfig via @Value("${arquisoft.keycloak.*}").
 # Sin defaults — obligatorias en producción.
