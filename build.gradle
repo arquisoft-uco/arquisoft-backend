@@ -79,6 +79,8 @@ dependencies {
 
     // Spring Modulith core: habilita el runtime de publicación de eventos (Outbox Pattern).
     implementation "org.springframework.modulith:spring-modulith-starter-core"
+    // API pública de Spring Modulith Events: FailedEventPublications, ResubmissionOptions.
+    implementation "org.springframework.modulith:spring-modulith-events-api"
 
     // JDBC para ArquisoftEventsDataSourceConfig (DataSource centralizado de Spring Modulith).
     implementation "org.springframework.boot:spring-boot-starter-jdbc"

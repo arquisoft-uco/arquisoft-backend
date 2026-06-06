@@ -63,13 +63,13 @@ spring:
         schema-initialization.enabled: false
       staleness:
         # Frecuencia con la que Spring Modulith revisa si hay eventos atascados.
-        # Default del framework: 1 minuto. Se declara explícitamente para visibilidad.
         check-intervall: 1m
-        # Tiempo máximo que un evento puede estar en estado PROCESSING antes de
-        # considerarse atascado y reintentarse. Cubre el caso en que RabbitMQ cae
-        # mientras la app sigue corriendo — sin esta propiedad el checker corre pero
-        # nunca resubmite nada.
+        # Marca como FAILED los eventos que llevan más de 2m en estado PROCESSING
+        # (e.g. app crasheó durante la publicación).
         processing: 2m
+        # Marca como FAILED los eventos que llevan más de 10m en estado RESUBMITTED
+        # (e.g. app crasheó durante un reintento iniciado por FailedEventRetryConfig).
+        resubmission: 10m
 
   # ==================== RABBITMQ ====================
   rabbitmq:
@@ -260,6 +260,11 @@ arquisoft:
       allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
     rate-limit:
       enabled: ${RATE_LIMIT_ENABLED:true}
+
+  events:
+    # Intervalo entre reintentos de eventos con estado FAILED.
+    # Formato ISO-8601: PT5M = 5 minutos, PT30S = 30 segundos.
+    failed-retry-interval: PT5M
 
 # ==================== SERVER ====================
 server:
