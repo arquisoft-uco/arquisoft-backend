@@ -34,10 +34,10 @@ public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
             UsuarioCreadoPayload payload = deserialize(message, UsuarioCreadoPayload.class);
 
             log.info("[FICHAS] UsuarioCreado recibido: usuarioId={} email={} rol={}",
-                    payload.aggregateId(), payload.email(), payload.rol());
+                    payload.usuarioId(), payload.email(), payload.rol());
 
             registrarUsuarioInputPort.ejecutar(new RegistrarUsuarioCommand(
-                    UUID.fromString(payload.aggregateId()),
+                    UUID.fromString(payload.usuarioId()),
                     payload.email(),
                     payload.rol()));
         });
