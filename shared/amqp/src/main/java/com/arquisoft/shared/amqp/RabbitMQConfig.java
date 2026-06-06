@@ -1,8 +1,11 @@
 package com.arquisoft.shared.amqp;
 
+import com.arquisoft.shared.logger.MdcKeys;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.ExchangeBuilder;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -12,6 +15,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
+
+import java.util.UUID;
 
 /**
  * Configuración de RabbitMQ para el exchange central de eventos de dominio.
@@ -87,13 +92,39 @@ public class RabbitMQConfig {
         return new JacksonJsonMessageConverter(rabbitObjectMapper);
     }
 
+    /**
+     * Inyecta headers de traza ({@code X-Trace-Id}, {@code X-User-Id}) en todos los mensajes
+     * AMQP publicados, tanto desde {@link SpringModulithEventPublisher} (vía Spring Modulith)
+     * como desde {@link RabbitMQEventPublisher} (fallback).
+     *
+     * <p>En escenarios de retry de Spring Modulith (eventos republished desde BD), el MDC puede
+     * estar vacío: se generan valores de fallback (UUID aleatorio / "SYSTEM") de forma idéntica
+     * a la lógica preexistente en {@link RabbitMQEventPublisher}.
+     */
+    @Bean
+    public MessagePostProcessor traceHeadersPostProcessor() {
+        return message -> {
+            String traceId = MDC.get(MdcKeys.TRACE_ID);
+            String userId  = MDC.get(MdcKeys.USER_ID);
+            message.getMessageProperties().setHeader("X-Trace-Id",
+                    traceId != null ? traceId : UUID.randomUUID().toString().replace("-", ""));
+            message.getMessageProperties().setHeader("X-User-Id",
+                    userId != null ? userId : "SYSTEM");
+            return message;
+        };
+    }
+
     @Bean
     public RabbitTemplate rabbitTemplate(
             ConnectionFactory connectionFactory,
-            JacksonJsonMessageConverter messageConverter) {
+            JacksonJsonMessageConverter messageConverter,
+            MessagePostProcessor traceHeadersPostProcessor) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(messageConverter);
         template.setExchange(EXCHANGE_NAME);
+        // Aplica traza en todos los mensajes publicados, incluidos los enviados
+        // por Spring Modulith tras el commit de transacción (Outbox retry incluido).
+        template.setBeforePublishPostProcessors(traceHeadersPostProcessor);
 
         // Publisher Returns: si el broker no puede enrutar el mensaje a ninguna cola,
         // lo devuelve al publicador en lugar de descartarlo silenciosamente.
