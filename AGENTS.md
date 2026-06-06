@@ -44,13 +44,66 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 |---|---|
 | Entidades de dominio | Inmutables, constructor privado, campos `final`, solo getters. `build(UUID.randomUUID())` para nuevas, `rebuild(uuid)` desde persistencia. Sin Lombok ni Spring. |
 | Aggregate Root | Entidades raíz extienden `AggregateRoot` de `shared:domain` (`com.arquisoft.shared.domain`). Gestiona eventos de dominio no publicados via `publishEvent(DomainEvent)`. |
-| Eventos de dominio | Extienden `DomainEvent` de `shared:domain`. Constructor recibe `aggregateId`; asigna `eventId` (UUID), `occurredAt` y `eventType` automáticamente. |
+| Eventos de dominio | Extienden `DomainEvent` de `shared:domain`. Cada subclase declara sus **propios campos** con nombres semánticamente correctos (e.g. `usuarioId`, `fichaId`). `DomainEvent` asigna `eventId` (UUID), `occurredAt`, `eventType` y `eventTopic` automáticamente. El constructor recibe `(eventTopic, eventType)` — sin `aggregateId` genérico. |
 | Puertos de entrada | `{Accion}{Entidad}UseCase` en `domain/port/in/` |
 | Puertos de salida | `{Entidad}RepositoryPort` en `domain/port/out/` |
 | Use cases | `{Accion}{Entidad}UseCaseImpl` en `application/usecase/` |
 | DTOs | Sufijo `DTO`, con `toDomain()` y `static fromDomain(...)`. `@Data @NoArgsConstructor @AllArgsConstructor @Builder`. |
 | Excepciones de dominio | Extienden `DomainException` (shared) con campo `errorCode` |
 | IDs | Siempre `UUID` — nunca `Long` ni `Integer` |
+
+## Outbox Pattern — Spring Modulith 2.0.0
+
+Los eventos de dominio se publican usando el **Event Publication Registry** de Spring Modulith, que garantiza atomicidad entre el `save` del aggregate y la publicación al broker.
+
+### Flujo obligatorio en use cases que publican eventos
+
+```java
+@Transactional  // REQUERIDO — misma transacción para save + outbox
+@Override
+public UUID ejecutar(CrearXxxCommand command) {
+    XxxAggregate aggregate = XxxAggregate.crear(...);
+    xxxOutputPort.save(aggregate);
+    aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);
+    return aggregate.getId();
+}
+```
+
+- `eventPublisher` es `SpringModulithEventPublisher` (en `shared/amqp`), que delega a `ApplicationEventPublisher`.
+- Spring Modulith intercepta el `publishEvent` y persiste el evento en `arquisoft_events.event_publication` **dentro de la misma transacción**.
+- Tras el commit, lo publica a RabbitMQ con el `eventTopic` como routing key.
+
+### BD centralizada `arquisoft_events`
+
+Todos los contextos comparten esta BD para el outbox. Definida en `ArquisoftEventsDataSourceConfig` (DataSource `@Primary`). Las variables de entorno requeridas son `DB_ARQUISOFT_EVENTS_URL`, `DB_ARQUISOFT_EVENTS_USERNAME`, `DB_ARQUISOFT_EVENTS_PASSWORD`.
+
+### Convención de eventos de dominio
+
+```java
+public class UsuarioCreadoEvent extends DomainEvent {
+    public static final String EVENT_TOPIC = "seguridad.usuario.creado";
+    public static final String EVENT_TYPE  = "UsuarioCreadoEvent";
+
+    private final UUID usuarioId;  // campo propio tipado — no usar aggregateId del padre
+    private final String email;
+    private final String rol;
+
+    public UsuarioCreadoEvent(UUID usuarioId, String email, String rol) {
+        super(EVENT_TOPIC, EVENT_TYPE);  // sin aggregateId — DomainEvent ya no lo recibe
+        this.usuarioId = usuarioId;
+        this.email = email;
+        this.rol = rol;
+    }
+}
+```
+
+`DomainEvent` **no** tiene campo `aggregateId`. Cada evento declara sus propios campos.
+
+### Retry automático
+
+`FailedEventRetryConfig` (`src/main/config`) llama a `FailedEventPublications.resubmit()` cada 5 minutos para reintentar eventos con estado `FAILED` (e.g., broker caído). El staleness checker de Spring Modulith solo **marca** eventos como `FAILED` — no los reintenta.
+
+---
 
 ## Configuracion: Virtual Threads (ADR-008)
 
