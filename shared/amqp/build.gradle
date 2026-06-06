@@ -8,6 +8,14 @@ dependencies {
     // Jackson 3.x — gestionado por Spring Boot 4.x BOM (tools.jackson.core:jackson-databind:3.1.0)
     implementation "org.springframework.boot:spring-boot-starter-jackson"
 
+    // Spring Modulith: externalización de eventos de dominio a RabbitMQ y almacenamiento JDBC (Outbox).
+    // spring-modulith-events-amqp: publica eventos del ApplicationEventPublisher al exchange de RabbitMQ.
+    // spring-modulith-events-jdbc: persiste eventos en event_publication antes de publicar (atomicidad).
+    // spring-modulith-events-jackson: EventSerializer basado en Jackson 3 para serializar en event_publication.
+    implementation "org.springframework.modulith:spring-modulith-events-amqp"
+    implementation "org.springframework.modulith:spring-modulith-events-jdbc"
+    implementation "org.springframework.modulith:spring-modulith-events-jackson"
+
     // spring-retry está disponible transitivamente via spring-boot-starter-amqp (spring-rabbit → spring-retry).
     // Se usa RetryTemplate directamente — sin @Retryable ni AOP para evitar dependencias innecesarias.
 

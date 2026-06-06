@@ -44,6 +44,8 @@ repositories {
 dependencyManagement {
     imports {
         mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        // Spring Modulith BOM: gestiona versiones de spring-modulith-* de forma consistente.
+        mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
     }
     dependencies {
         // PostgreSQL driver: pin explicito por compatibilidad con PostgreSQL 18.x del docker-compose
@@ -74,6 +76,12 @@ dependencies {
 
     // OpenAPI / Swagger UI (ADR-011) — describe la API ensamblada completa
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
+
+    // Spring Modulith core: habilita el runtime de publicación de eventos (Outbox Pattern).
+    implementation "org.springframework.modulith:spring-modulith-starter-core"
+
+    // JDBC para ArquisoftEventsDataSourceConfig (DataSource centralizado de Spring Modulith).
+    implementation "org.springframework.boot:spring-boot-starter-jdbc"
 
     // Incluir todos los módulos de infraestructura (contextos)
     subprojects.each { subproject ->
@@ -106,6 +114,7 @@ subprojects { subproject ->
     dependencyManagement {
         imports {
             mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+            mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
         }
         dependencies {
             dependency "org.postgresql:postgresql:${postgresVersion}"
