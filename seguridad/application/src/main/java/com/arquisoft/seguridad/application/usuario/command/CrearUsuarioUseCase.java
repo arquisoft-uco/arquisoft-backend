@@ -8,23 +8,26 @@ import com.arquisoft.shared.events.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 /**
  * Implementación del caso de uso de creación de usuario.
  *
- * <p>Orquesta el patrón aggregate-driven de publicación de eventos:
+ * <p>Orquesta el patrón aggregate-driven de publicación de eventos con Outbox Pattern:
  * <ol>
  *   <li>El aggregate {@link UsuarioAggregate#crear} decide qué evento emitir y lo acumula
  *       internamente — sin saber que existe RabbitMQ.</li>
  *   <li>Este use case persiste el aggregate.</li>
- *   <li>Drena mecánicamente los eventos acumulados y los entrega a {@link EventPublisher}
- *       (implementado en infraestructura por {@code RabbitMQEventPublisher}).</li>
+ *   <li>Drena los eventos y los entrega a {@link EventPublisher} ({@code SpringModulithEventPublisher}),
+ *       que los persiste en {@code event_publication} dentro de la misma transacción.</li>
+ *   <li>Tras el commit, Spring Modulith publica al exchange RabbitMQ de forma asíncrona.
+ *       Si falla, el evento queda en BD y se reintenta automáticamente.</li>
  * </ol>
  *
- * <p>La decisión de <i>qué</i> publicar y <i>cuándo</i> la tomó el aggregate.
- * Este use case solo orquesta: crea → persiste → drena.
+ * <p>La anotación {@code @Transactional} garantiza que el {@code save} del aggregate y la
+ * inserción en {@code event_publication} sean atómicos (usando {@code seguridadTransactionManager}).
  */
 @Slf4j
 @Component
@@ -35,6 +38,7 @@ public class CrearUsuarioUseCase implements CrearUsuarioInputPort {
     private final EventPublisher eventPublisher;
 
     @Override
+    @Transactional
     public UUID ejecutar(CrearUsuarioCommand command) {
         // 1. El aggregate valida invariantes y acumula UsuarioCreadoEvent en memoria
         UsuarioAggregate usuario = UsuarioAggregate.crear(command.email(), command.rol());
@@ -42,16 +46,9 @@ public class CrearUsuarioUseCase implements CrearUsuarioInputPort {
         // 2. Persistir el aggregate (mock en memoria por ahora)
         usuarioOutputPort.save(usuario);
 
-        // 3. Drenar y publicar los eventos que el aggregate acumuló — operación atómica:
-        //    drainUnPublishedEvents() retorna y limpia en un solo paso, evitando
-        //    que se olvide la limpieza o que se limpie sin publicar.
-        //
-        //    DEUDA TÉCNICA (Outbox Pattern): los pasos 2 y 3 no son atómicos.
-        //    Si el broker RabbitMQ está caído y los 3 reintentos de RabbitMQEventPublisher
-        //    se agotan, el usuario quedará persistido pero fichas no recibirá el evento.
-        //    Solución correcta: persistir el evento en tabla domain_events dentro de la
-        //    misma transacción JDBC (Outbox Pattern), y publicar desde un scheduler/CDC.
-        //    Pendiente de implementar cuando UsuarioOutputAdapter sea reemplazado por JPA.
+        // 3. Drenar y entregar eventos a SpringModulithEventPublisher, que los persiste en
+        //    event_publication (misma transacción). Spring Modulith los publica al broker
+        //    tras el commit — si falla, los reintenta desde BD automáticamente.
         usuario.drainUnPublishedEvents().forEach(eventPublisher::publish);
 
         log.info("Usuario creado: id={} email={} rol={}", usuario.getId(), command.email(), command.rol().getCode());

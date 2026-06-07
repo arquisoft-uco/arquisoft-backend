@@ -400,16 +400,27 @@ public class FichaPerfilAggregate extends AggregateRoot {  // ← sufijo Aggrega
 package com.arquisoft.fichas.domain.event;
 
 import com.arquisoft.shared.domain.DomainEvent;
+import java.util.UUID;
 
 public class FichaCreadaEvent extends DomainEvent {
+
+    public static final String EVENT_TOPIC = "fichas.ficha.creada";
+    public static final String EVENT_TYPE  = "FichaCreadaEvent";
+
+    // Cada evento declara sus propios campos con nombres semánticamente correctos.
+    // DomainEvent NO tiene aggregateId genérico — el ID del objeto de dominio
+    // pertenece al evento concreto, no a la clase base.
+    private final UUID fichaId;
     private final String titulo;
 
-    public FichaCreadaEvent(String aggregateId, String titulo) {
-        super(aggregateId);   // eventId, occurredAt y eventType se generan automáticamente
-        this.titulo = titulo;
+    public FichaCreadaEvent(UUID fichaId, String titulo) {
+        super(EVENT_TOPIC, EVENT_TYPE);  // eventId, occurredAt se generan automáticamente
+        this.fichaId = fichaId;
+        this.titulo  = titulo;
     }
 
-    public String getTitulo() { return titulo; }
+    public UUID getFichaId()    { return fichaId; }
+    public String getTitulo()   { return titulo;  }
 }
 ```
 

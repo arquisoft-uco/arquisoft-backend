@@ -79,7 +79,7 @@ Cada contexto es un **módulo hexagonal independiente** con su propio:
 
 | # | Contexto | Responsabilidad | Entidades Principales | Eventos que Emite |
 |---|----------|----------------|----------------------|-------------------|
-| 1 | **Seguridad** | Autenticación, autorización, roles, rate limiting | UserRole, Token, Session | (Transversal - no emite eventos de dominio) |
+| 1 | **Seguridad** | Autenticación, autorización, roles, rate limiting | UserRole, Token, Session | `seguridad.usuario.creado` |
 | 2 | **Fichas** | Fichas de caracterización de trabajos de grado | Ficha, TemaProyecto, AreaConocimiento | `FichaCreada`, `FichaAprobada`, `FichaRechazada` |
 | 3 | **Proyectos** | Creación y gestión de proyectos de grado | Proyecto, EstadoProyecto, Línea | `ProyectoCreado`, `ProyectoAsignado`, `ProyectoFinalizado` |
 | 4 | **Artefactos** | Gestión de documentos y artefactos | Artefacto, VersionArtefacto, Observacion | `ArtefactoCreado`, `ArtefactoCatalogado`, `ArtefactoEvaluado` |
@@ -580,13 +580,54 @@ docker run -p 8080:8080 \
 
 ---
 
-## Referencias
+## Outbox Pattern — Atomicidad entre BD y Broker
 
-- **Arquitectura y Estructura**: `ARQUITECTURA_Y_ESTRUCTURA.md`
-- **Arquitectura Hexagonal**: Alistair Cockburn
-- **Event-Driven DDD**: Chris Richardson, "Microservices Patterns"
-- **Spring Boot & RabbitMQ**: Spring Official Documentation
+Sin el Outbox Pattern, `save(aggregate)` y `eventPublisher.publish(event)` son dos operaciones independientes. Si el broker cae después del `save`, el evento se pierde y el sistema queda inconsistente.
+
+### Solución: Spring Modulith 2.0.0 Event Publication Registry
+
+```
+[UseCase] @Transactional
+    │
+    ├── BEGIN TX
+    │     ├── INSERT aggregate en BD del contexto
+    │     └── INSERT event_publication en arquisoft_events  ← misma TX
+    └── COMMIT
+            │
+    [Spring Modulith — post-commit]
+            ├── Publica a RabbitMQ (routing key = eventTopic)
+            │     ├── OK   → borra fila de event_publication
+            │     └── FAIL → status = FAILED, fila permanece
+            │
+    [FailedEventRetryConfig — cada 5 min]
+            └── Reintenta todos los eventos con status FAILED
+```
+
+### BD centralizada `arquisoft_events`
+
+Todos los contextos comparten la tabla `event_publication` en la base de datos `arquisoft_events`. Cada evento persistido incluye el JSON completo del objeto, lo que permite republicarlo sin intervención manual.
+
+### Configuración de retries
+
+| Mecanismo | Cuándo actúa | Qué hace |
+|---|---|---|
+| `republish-outstanding-events-on-restart` | Al arrancar la app | Republica TODO lo que no tenga `completion_date` |
+| Staleness checker (`processing: 2m`) | Cada 1 minuto | Marca como `FAILED` eventos atascados en `PROCESSING` |
+| Staleness checker (`resubmission: 10m`) | Cada 1 minuto | Marca como `FAILED` eventos atascados en `RESUBMITTED` |
+| `FailedEventRetryConfig` | Cada 5 minutos | Reintenta eventos con status `FAILED` |
+
+> El staleness checker **no reintenta** — solo marca. El reintento real lo hace `FailedEventRetryConfig`.
 
 ---
 
-**Versión**: 1.0.0
+## Referencias
+
+- **Arquitectura y Estructura**: `ARQUITECTURA_Y_ESTRUCTURA.md`
+- **Deuda Técnica Outbox (resuelta)**: `DEUDA_TECNICA_OUTBOX_PATTERN.md`
+- **Arquitectura Hexagonal**: Alistair Cockburn
+- **Event-Driven DDD**: Chris Richardson, "Microservices Patterns"
+- **Spring Modulith**: https://docs.spring.io/spring-modulith/docs/current/reference/html/#events
+
+---
+
+**Versión**: 2.0.0

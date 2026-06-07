@@ -33,11 +33,43 @@ spring:
   # en su clase *DataSourceConfig.java dentro de infrastructure/config/.
   # Sin esta exclusión, Spring Boot intentaría autoconfigurar un DataSource primario
   # y fallaría con NoUniqueBeanDefinitionException al encontrar 7 beans DataSource.
+  # ==================== DESHABILITAR AUTOCONFIGURACIÓN DE DATASOURCE GLOBAL ====================
+  # Spring Boot 4.x movió la autoconfiguración a jars/paquetes separados respecto a SB 3.x.
+  # Los nombres SB 3.x (org.springframework.boot.autoconfigure.*) ya NO existen y se ignoran
+  # silenciosamente — causan que los beans se activen aunque estén "excluidos".
   autoconfigure:
     exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+      # spring-boot-jdbc (era spring-boot-autoconfigure.jdbc en SB 3.x)
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      # spring-boot-hibernate (era spring-boot-autoconfigure.orm.jpa en SB 3.x)
+      - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
+      # spring-boot-data-jpa — cada contexto configura sus repos via @EnableJpaRepositories
+      - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
+      # FlywayAutoConfiguration: no existe en classpath (no hay spring-boot-starter-flyway).
+      # Cada contexto instancia su propio Flyway bean en su *DataSourceConfig.
+
+  # ==================== SPRING MODULITH (Outbox Pattern) ====================
+  # Spring Modulith persiste los DomainEvents en event_publication (misma transacción
+  # que el save del aggregate) y los publica al broker tras el commit.
+  modulith:
+    events:
+      # delete: borra las filas exitosas — la tabla solo contiene pendientes/fallidos.
+      # Alternativa: archive (conserva todo para auditoría, pero la tabla crece indefinidamente).
+      completion-mode: delete
+      # Al reiniciar, republica los eventos con completion_date = NULL que quedaron
+      # pendientes por caída del broker u otro fallo en publicación.
+      republish-outstanding-events-on-restart: true
+      jdbc:
+        schema-initialization.enabled: false
+      staleness:
+        # Frecuencia con la que Spring Modulith revisa si hay eventos atascados.
+        check-intervall: 1m
+        # Marca como FAILED los eventos que llevan más de 2m en estado PROCESSING
+        # (e.g. app crasheó durante la publicación).
+        processing: 2m
+        # Marca como FAILED los eventos que llevan más de 10m en estado RESUBMITTED
+        # (e.g. app crasheó durante un reintento iniciado por FailedEventRetryConfig).
+        resubmission: 10m
 
   # ==================== RABBITMQ ====================
   rabbitmq:
@@ -200,6 +232,18 @@ datasource:
       connection-timeout: 20000
       pool-name: HikariPool-Evaluaciones
 
+  # Spring Modulith Event Publication Registry (Outbox Pattern centralizado).
+  # Todos los bounded contexts comparten esta BD para almacenar eventos de dominio
+  # pendientes de publicar en RabbitMQ. Ver ArquisoftEventsDataSourceConfig.
+  arquisoft-events:
+    url: ${DB_ARQUISOFT_EVENTS_URL:jdbc:postgresql://localhost:5432/arquisoft_events}
+    username: ${DB_ARQUISOFT_EVENTS_USERNAME:arquisoft_user}
+    password: ${DB_ARQUISOFT_EVENTS_PASSWORD:arquisoft123}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      connection-timeout: 20000
+
 # ==================== KEYCLOAK ====================
 # Propiedades propias para KeycloakAuthAdapter y SecurityConfig.
 # No se usa el adapter keycloak-spring-boot-adapter (removido en SB3+).
@@ -216,6 +260,11 @@ arquisoft:
       allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
     rate-limit:
       enabled: ${RATE_LIMIT_ENABLED:true}
+
+  events:
+    # Intervalo entre reintentos de eventos con estado FAILED.
+    # Formato ISO-8601: PT5M = 5 minutos, PT30S = 30 segundos.
+    failed-retry-interval: PT5M
 
 # ==================== SERVER ====================
 server:
