@@ -220,7 +220,7 @@ CAPA 1 — domain (genera todos antes de compilar)
   ├── Eventos de dominio        ({Entidad}CreadaEvent.java, etc.) — extienden DomainEvent
   │     ⚠️ SOLO si el plan declara eventos en su sección 4. Si el plan dice
   │        "Eventos: ninguno" (CRUD sin consumidores), NO se generan archivos
-  │        de evento ni se llama a publishEvent(...) en build(...).
+  │        de evento ni se llama a publishEvent(...) en crear(...).
   │     ⚠️ Cuando se generan: TODO evento DEBE implementar
   │        @Override public String getEventTopic() retornando
   │        "{contexto}.{entidad}.{accion}" (ej. "fichas.ficha.creada").
@@ -233,8 +233,8 @@ CAPA 1 — domain (genera todos antes de compilar)
   │        no tiene getUnPublishedEvents/clearUnPublishedEvents, no necesita la maquinaria.
   │        Forzar `extends AggregateRoot` "por consistencia futura" cuando el plan no
   │        declara eventos es VIOLACIÓN del plan — detente y reporta ambigüedad.
-  │     ⚠️ El factory build(...) llama a publishEvent(...) SOLO si la entidad extiende
-  │        AggregateRoot (y por tanto el plan declara eventos). Si no, build(...) construye
+  │     ⚠️ El factory crear(...) llama a publishEvent(...) SOLO si la entidad extiende
+  │        AggregateRoot (y por tanto el plan declara eventos). Si no, crear(...) construye
   │        y retorna la entidad sin emitir nada.
   ├── Enums                     (si aplican)
   ├── Puerto de entrada         (`port/in/{Accion}{Entidad}InputPort.java` — vive en application, vacío, extiende `InputPort<I,O>` o `VoidInputPort<I>`)
@@ -312,7 +312,7 @@ CAPA 2 — application (genera todos antes de compilar)
 CAPA 3 — infrastructure (genera todos antes de compilar)
   ├── Entidad JPA               ({Entidad}JpaEntity.java) — @Table(name = "...") (sin atributo schema; cada contexto tiene su propia BD)
   ├── Repositorio JPA           ({Entidad}JpaRepository.java)
-  ├── Adaptador persistencia write  ({Entidad}CommandOutputAdapter.java en `{entidad}/command/adapter/out/persistence/`) — implementa `{Entidad}OutputPort`. Usa `rebuild(...)` al reconstruir el aggregate desde la JpaEntity.
+  ├── Adaptador persistencia write  ({Entidad}CommandOutputAdapter.java en `{entidad}/command/adapter/out/persistence/`) — implementa `{Entidad}OutputPort`. Usa `reconstruir(...)` al reconstruir el aggregate desde la JpaEntity.
   ├── Adaptador persistencia read   ({Entidad}QueryOutputAdapter.java en `{entidad}/query/adapter/out/persistence/`) — implementa `{Entidad}QueryOutputPort`. Mapea JpaEntity → ReadModel directo. Si la HU usa Criteria: traduce `XxxCriteria` con `XxxJpaSpecification.desdeCriteria(...)` + `PageRequest` con `SortMapper`, llama a `jpaRepository.findAll(spec, pageable)`, retorna `PaginatedResult<ReadModel>` vía `PaginationMapper.toResult(...)`. `Pageable` y Spring `Page` solo viven aquí.
   ├── Criteria (opcional)       ({Entidad}Criteria.java en `application/{entidad}/query/criteria/`) — extiende `QueryCriteria`. Declara la whitelist `Campo.FILTRABLES` y `Campo.ORDENABLES`. Builder valida en construcción.
   ├── JpaSpecification (opcional) ({Entidad}JpaSpecification.java en `infrastructure/{entidad}/query/adapter/out/persistence/`) — extiende `QueryJpaSpecification<JpaEntity>`. Declara mapa `CampoSpec` con paths JPA (joins implícitos: `root.get("asesor").get("nombre")`).
@@ -444,8 +444,8 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 ### Entidades de Dominio (Aggregate Root)
 
 - Constructor **privado**, campos `final`, solo getters — Java puro, sin Lombok, sin framework.
-- Factory method `build(...)` para instancias nuevas — genera UUID con `UUID.randomUUID()` y **publica evento** con `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))`.
-- Factory method `rebuild(...)` para reconstruir desde persistencia — recibe el UUID existente, **sin publicar eventos**.
+- Factory method `crear(...)` para instancias nuevas — genera UUID con `UUID.randomUUID()` y **publica evento** con `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))`.
+- Factory method `reconstruir(...)` para reconstruir desde persistencia — recibe el UUID existente, **sin publicar eventos**.
 - ID siempre `UUID` (`java.util.UUID`) — **nunca** `Long` ni `Integer`.
 - **Regla DDD estricta:** en los 6 contextos de negocio (fichas, proyectos, artefactos, repositorio_artefactos, entregables, evaluaciones), toda entidad raíz **DEBE** extender `AggregateRoot` de `shared:domain`. Excepción única documentada: `seguridad`.
 - No usar `record` para entidades de dominio (requieren constructor privado + factories).
@@ -585,7 +585,7 @@ void guardar(FichaPerfilAggregate ficha);
 
 ```java
 // ✅ Permitido — aclara una decisión no obvia
-// Se usa rebuild() en lugar de build() porque el UUID viene de BD; build() generaría uno nuevo.
+// Se usa reconstruir() en lugar de crear() porque el UUID viene de BD; crear() generaría uno nuevo.
 return jpaRepository.findById(id).map(FichaPerfilMapper::toDomain);
 ```
 
@@ -781,7 +781,7 @@ Opciones:
 12. **Manejo de excepciones centralizado por defecto.** Las excepciones del contexto las maneja `GlobalAppExceptionHandler` de `shared:web` por jerarquía de su clase base — `DomainException` → 422, `ApplicationException` → 400, `InfrastructureException` → 503. El cliente recibe el `getMessage()` y el `getErrorCode()` que pone el constructor de la excepción. **NO crees `{Contexto}GlobalExceptionHandler` salvo que el plan lo declare explícitamente** (solo dos casos válidos: colisión de nombres con clases del framework, o HTTP status fuera del default de la jerarquía). Si lo declara, anota: `@RestControllerAdvice` + `@Order(Ordered.HIGHEST_PRECEDENCE)`, solo handlers de las excepciones específicas, sin fallback de `DomainException` ni `Exception.class`. **Nunca permitas que una excepción de dominio caiga en `handleGeneral` → 500.** Si una excepción no encaja en ninguna clase base correctamente, reporta ambigüedad al usuario.
 13. **DDD estricto — Aggregate Root condicional a eventos:** en los 6 contextos de negocio, la entidad raíz extiende `AggregateRoot` **SOLO si el plan declara eventos en su sección 4** (respuesta A o B a la pregunta 5 del planificador). Si el plan dice "Eventos: ninguno" (respuesta C), la entidad raíz es una `final class` plana SIN `extends AggregateRoot` — sin maquinaria de eventos. El contexto `seguridad` nunca usa `AggregateRoot`. Si el plan es ambiguo sobre la extensión (declara "Eventos: ninguno" pero también pide `extends AggregateRoot`, o viceversa), reporta ambigüedad con el Protocolo correspondiente antes de generar la entidad.
 14. **Eventos de dominio:** en `domain/event/`, extienden `DomainEvent`. El use case los drena tras persistir — nunca el dominio publica directamente.
-15. **IDs siempre `UUID`** (`java.util.UUID`). `build()` genera con `UUID.randomUUID()`, `rebuild()` recibe el UUID desde persistencia.
+15. **IDs siempre `UUID`** (`java.util.UUID`). `crear()` genera con `UUID.randomUUID()`, `reconstruir()` recibe el UUID desde persistencia.
 16. **Base de datos PostgreSQL:** cada contexto tiene su propia BD (no schemas). Usar la tabla de mapeo del skill `arquisoft-context`. `seguridad→usuarios`, `fichas→fichas_perfil`, `proyectos→proyectos_grado`, los demás coinciden. `@Table(name = "...")` sin atributo `schema`. Migraciones Flyway sin prefijo de schema en el SQL. Sin FKs cruzadas entre BDs.
 17. **Java 21 balanceado:** records para VO y payloads, sealed para estados cerrados, text blocks para SQL, var donde el tipo es evidente. **NO** records para entidades, **NO** virtual threads manuales.
 18. **Java 21** — siempre `./gradlew`, nunca `mvn` ni `javac` directo.

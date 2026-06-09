@@ -10,7 +10,7 @@ public final class FichaPerfilMapper {
     private FichaPerfilMapper() {}
 
     public static FichaPerfilAggregate toDomain(FichaPerfilJpaEntity entity) {
-        return FichaPerfilAggregate.rebuild(
+        return FichaPerfilAggregate.reconstruir(
                 entity.getId(),
                 entity.getTituloProyecto(),
                 entity.getAsesorFicha().getId()

@@ -142,7 +142,7 @@ o generamos los tests tal cual están las clases (deuda técnica) y reportamos?
 // ❌ MAL — testea Lombok, no tu código
 @Test
 void debeRetornarTitulo_cuandoGetTituloEsLlamado() {
-   Ficha ficha = Ficha.build("Mi título");
+   Ficha ficha = Ficha.crear("Mi título");
    assertThat(ficha.getTitulo()).isEqualTo("Mi título");
 }
 ```
@@ -253,7 +253,7 @@ class RegistrarFichaPerfilUseCaseTest { ... }
 ```java
 @Test
 void debeUsarRebuild_cuandoCargaDesdeBd() {
-    // build() generaría un UUID nuevo y emitiría un evento espurio; rebuild() preserva el UUID de BD.
+    // crear() generaría un UUID nuevo y emitiría un evento espurio; reconstruir() preserva el UUID de BD.
     Optional<FichaPerfilAggregate> resultado = adapter.buscarPorId(uuidExistente);
     ...
 }
@@ -313,7 +313,7 @@ assertThat(ex.getErrorCode()).isEqualTo("FICHA_TITULO_DUPLICADO");  // ← códi
 @Test
 void debeCrearFicha_cuandoDatosValidos() {
    // Arrange
-   Ficha fichaEsperada = Ficha.build("Título de prueba");
+   Ficha fichaEsperada = Ficha.crear("Título de prueba");
    when(fichaRepositoryPort.guardar(any())).thenReturn(fichaEsperada);
 
    // Act
@@ -333,7 +333,7 @@ debe{ResultadoEsperado}_cuando{Condicion}
 
 Ejemplos:
   debeCrearFicha_cuandoDatosValidos
-  debePublicarEvento_cuandoBuildEsInvocado
+  debePublicarEvento_cuandoCrearEsInvocado
   debeLimpiarEventos_cuandoClearEsInvocado
   debeLanzarExcepcion_cuandoFichaNoExiste
   debeRechazarPeticion_cuandoTokenInvalido
@@ -356,7 +356,7 @@ class FichaTest {
    @Test
    void debeConstruirEntidad_cuandoDatosValidos() {
       // Arrange / Act
-      Ficha ficha = Ficha.build("Título de prueba");
+      Ficha ficha = Ficha.crear("Título de prueba");
 
       // Assert
       assertThat(ficha.getId()).isNotNull();
@@ -364,9 +364,9 @@ class FichaTest {
    }
 
    @Test
-   void debePublicarEvento_cuandoBuildEsInvocado() {
+   void debePublicarEvento_cuandoCrearEsInvocado() {
       // Arrange / Act
-      Ficha ficha = Ficha.build("Título de prueba");
+      Ficha ficha = Ficha.crear("Título de prueba");
 
       // Assert
       assertThat(ficha.getUnPublishedEvents()).hasSize(1);
@@ -374,12 +374,12 @@ class FichaTest {
    }
 
    @Test
-   void debeNoPublicarEvento_cuandoRebuildEsInvocado() {
+   void debeNoPublicarEvento_cuandoReconstruirEsInvocado() {
       // Arrange
       UUID id = UUID.randomUUID();
 
       // Act — reconstrucción desde persistencia NO debe emitir eventos
-      Ficha ficha = Ficha.rebuild(id, "Título", "BORRADOR");
+      Ficha ficha = Ficha.reconstruir(id, "Título", "BORRADOR");
 
       // Assert
       assertThat(ficha.getId()).isEqualTo(id);
@@ -389,7 +389,7 @@ class FichaTest {
    @Test
    void debeDrenarYLimpiarEventos_cuandoDrainEsInvocado() {
       // Arrange
-      Ficha ficha = Ficha.build("Título de prueba");
+      Ficha ficha = Ficha.crear("Título de prueba");
       assertThat(ficha.getUnPublishedEvents()).hasSize(1);
 
       // Act — drainUnPublishedEvents() retorna la lista Y limpia internamente
@@ -453,7 +453,7 @@ class CrearFichaUseCaseImplTest {
    @Test
    void debeCrearFicha_cuandoDatosValidos() {
       // Arrange
-      Ficha ficha = Ficha.build("Título");
+      Ficha ficha = Ficha.crear("Título");
       when(fichaRepositoryPort.guardar(any())).thenReturn(ficha);
 
       // Act
@@ -467,7 +467,7 @@ class CrearFichaUseCaseImplTest {
    @Test
    void debePublicarEventosDrenados_cuandoEjecutaExitoso() {
       // Arrange
-      Ficha ficha = Ficha.build("Título"); // acumula FichaCreadaEvent en build()
+      Ficha ficha = Ficha.crear("Título"); // acumula FichaCreadaEvent en crear()
       when(fichaRepositoryPort.guardar(any())).thenReturn(ficha);
 
       // Act
@@ -503,8 +503,8 @@ class FichaRepositoryAdapterTest {
    }
 
    @Test
-   void debeReconstruirConRebuild_cuandoFindByIdExiste() {
-      // Verifica que el adapter usa rebuild(...) al leer de BD,
+   void debeReconstruirConReconstruir_cuandoFindByIdExiste() {
+      // Verifica que el adapter usa reconstruir(...) al leer de BD,
       // por lo que la entidad retornada NO tiene eventos pendientes.
    }
 }
@@ -611,7 +611,7 @@ durante toda la sesión.
    - Reglas de negocio y criterios de aceptación
 3. Lee cada archivo de código de producción implementado para entender
    los métodos, dependencias y comportamientos a testear. **Presta especial atención
-   a los factory methods `build`/`rebuild` y a los `publishEvent(...)` del Aggregate Root
+   a los factory methods `crear`/`reconstruir` y a los `publishEvent(...)` del Aggregate Root
    (solo si el tipo de use case es Escritura o Mixto).**
 4. **Estima la cantidad de tests** que vas a generar usando el presupuesto orientativo:
    - HU pequeña (1 endpoint, 1 entidad): 15-25 tests
@@ -686,7 +686,7 @@ Distribución por capa:
 
 #### Qué testear
 
-- **Aggregate Root:** factory methods `crear()` / `build()` (con evento si la HU emite) y `rebuild()` (sin evento), getters, comportamientos de negocio, ciclo de eventos (`publishEvent`, `drainUnPublishedEvents`).
+- **Aggregate Root:** factory methods `crear()` / `crear()` (con evento si la HU emite) y `reconstruir()` (sin evento), getters, comportamientos de negocio, ciclo de eventos (`publishEvent`, `drainUnPublishedEvents`).
 - **Eventos de dominio:** constructor asigna `eventId`, `occurredAt`, `eventType`, `eventTopic`; campos del payload se propagan correctamente.
 - **Excepciones:** que se lanzan con el mensaje correcto y el `errorCode` esperado.
 
@@ -721,8 +721,8 @@ query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf isEmpty
 | Lanzar excepción con datos inválidos | `debeLanzarExcepcion_cuando{Campo}EsNulo` |
 | Excepción con mensaje correcto | `debeContenerMensajeCorrecto_cuandoSeLanzaExcepcion` |
 | Excepción extiende DomainException con errorCode | `debeContenerErrorCode_cuandoSeLanzaExcepcion` |
-| **⭐ Aggregate Root publica evento en `build()`** | `debePublicarEvento_cuandoBuildEsInvocado` |
-| **⭐ Aggregate Root NO publica evento en `rebuild()`** | `debeNoPublicarEvento_cuandoRebuildEsInvocado` |
+| **⭐ Aggregate Root publica evento en `crear()`** | `debePublicarEvento_cuandoCrearEsInvocado` |
+| **⭐ Aggregate Root NO publica evento en `reconstruir()`** | `debeNoPublicarEvento_cuandoReconstruirEsInvocado` |
 | **⭐ Aggregate Root acumula múltiples eventos** | `debeAcumularEventos_cuandoVariasAccionesSonEjecutadas` |
 | **⭐ Limpiar eventos publicados** | `debeLimpiarEventos_cuandoClearUnPublishedEventsEsInvocado` |
 | **⭐ Evento contiene metadatos correctos** | `debeAsignarMetadatos_cuandoEventoEsCreado` |
@@ -734,7 +734,7 @@ query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf isEmpty
 >
 > Si el plan dice **"Eventos: ninguno"** (CRUD sin consumidores), estos tests
 > NO aplican — la entidad sigue extendiendo `AggregateRoot` por consistencia,
-> pero su `build(...)` no emite eventos. Generar tests de ciclo de eventos en ese
+> pero su `crear(...)` no emite eventos. Generar tests de ciclo de eventos en ese
 > caso es sobre-testeo (anti-patrón).
 >
 > **Regla DomainEvent:** verificar que el constructor asigna automáticamente
@@ -796,7 +796,7 @@ query-docs /assertj/assertj "assertThatThrownBy isInstanceOf hasMessage assertTh
 
 #### Qué testear
 
-- **CommandOutputAdapter / QueryOutputAdapter:** CRUD contra H2, y verificar que usa `rebuild(...)` al reconstruir (no `build(...)` — de lo contrario se generarían UUIDs nuevos y eventos espurios).
+- **CommandOutputAdapter / QueryOutputAdapter:** CRUD contra H2, y verificar que usa `reconstruir(...)` al reconstruir (no `crear(...)` — de lo contrario se generarían UUIDs nuevos y eventos espurios).
 - **Controller:** endpoints — respuestas HTTP correctas, validación de request body, autenticación/autorización con Keycloak roles.
 
 > **Virtual Threads (ADR-008):** `@DataJpaTest` y `@WebMvcTest` no levantan el contexto completo,
@@ -986,7 +986,7 @@ de modificar cualquier archivo de producción.
 8. **Cobertura 75% mínimo.** Advertir si no se alcanza, pero no bloquear.
 9. **Spring Boot 4.x:** usar `@MockitoBean`, nunca `@MockBean`.
 10. **DDD estricto — tests aislados por capa:** los tests de `domain` son Java puro (solo JUnit + AssertJ, sin mocks de Spring/Keycloak/RabbitMQ); los tests de `application` solo mockean puertos del dominio, nunca APIs externas. Si un test de domain o application requiere framework externo, **detente y reporta violación de capas** antes de escribir el test — la lógica está en la capa equivocada.
-11. **DDD en tests de domain (solo si el plan declara eventos en sección 4):** el test del Aggregate Root verifica el ciclo (`publishEvent` interno del factory → `drainUnPublishedEvents()` retorna y limpia) y que `rebuild(...)` NO emite eventos. `getUnPublishedEvents()` es `protected` — solo accesible desde tests del mismo paquete del aggregate (typical: `{contexto}/domain/src/test/java/...{entidad}/aggregate/`). **NO uses `clearUnPublishedEvents()` — no existe**. **Si el plan dice "Eventos: ninguno", la entidad raíz no extiende `AggregateRoot` y NO se generan estos tests.**
+11. **DDD en tests de domain (solo si el plan declara eventos en sección 4):** el test del Aggregate Root verifica el ciclo (`publishEvent` interno del factory → `drainUnPublishedEvents()` retorna y limpia) y que `reconstruir(...)` NO emite eventos. `getUnPublishedEvents()` es `protected` — solo accesible desde tests del mismo paquete del aggregate (typical: `{contexto}/domain/src/test/java/...{entidad}/aggregate/`). **NO uses `clearUnPublishedEvents()` — no existe**. **Si el plan dice "Eventos: ninguno", la entidad raíz no extiende `AggregateRoot` y NO se generan estos tests.**
 12. **DDD en tests de application (solo si el plan declara eventos):** verifica que el use case publica los eventos tras persistir con `verify(eventPublisher, times(N)).publish(any())`. **NO uses `assertThat(entity.getUnPublishedEvents()).isEmpty()`** desde application — el método es `protected`. **Si el plan dice "Eventos: ninguno", NO incluyas `EventPublisher` mock ni `verify(eventPublisher)...`** — el use case no inyecta ese puerto.
 13. **Anti-patrones — nunca generes:** tests de getters/setters de Lombok (anti-patrón 1), tests de validaciones Jakarta una por una (anti-patrón 2), tests de métodos privados (anti-patrón 3), tests duplicados con asserts complementarios sin consolidar (anti-patrón 4), tests de delegación pura sin lógica (anti-patrón 5), tests propios de excepciones simples sin lógica adicional al `super(...)` (anti-patrón 6), tests de equals/hashCode/toString generados por Lombok (anti-patrón 7).
 14. **Regla de consolidación:** si dos tests tienen el mismo "Act" pero asserts complementarios, consolídalos en un solo test con múltiples asserts.

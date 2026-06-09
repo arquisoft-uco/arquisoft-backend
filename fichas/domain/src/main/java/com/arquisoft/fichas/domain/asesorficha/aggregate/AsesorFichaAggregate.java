@@ -16,7 +16,7 @@ public final class AsesorFichaAggregate {
         this.email = email;
     }
 
-    public static AsesorFichaAggregate rebuild(UUID id, String identificador, String nombre, String email) {
+    public static AsesorFichaAggregate reconstruir(UUID id, String identificador, String nombre, String email) {
         return new AsesorFichaAggregate(id, identificador, nombre, email);
     }
 

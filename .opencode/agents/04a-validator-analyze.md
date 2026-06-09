@@ -189,8 +189,8 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 
 | Check | Bloqueante |
 |-------|:---:|
-| Factory `rebuild(...)` NO publica eventos (aun si la entidad extiende `AggregateRoot`) | ✅ |
-| `CommandOutputAdapter` usa `rebuild(...)` al reconstruir | ✅ |
+| Factory `reconstruir(...)` NO publica eventos (aun si la entidad extiende `AggregateRoot`) | ✅ |
+| `CommandOutputAdapter` usa `reconstruir(...)` al reconstruir | ✅ |
 | Dominio NO inyecta `EventPublisher` | ✅ |
 | Existencia de un `{Entidad}EventPublisher` local en algún contexto (en `adapter/out/messaging/` o similar) | ❌ violación bloqueante (la publicación está centralizada en `shared:amqp`) |
 
@@ -201,7 +201,7 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Entidad raíz **extiende `AggregateRoot`** de `com.arquisoft.shared.domain` | ✅ |
 | Eventos en `{contexto}/domain/{entidad}/event/` y extienden `DomainEvent` | ✅ |
 | Cada `DomainEvent` implementa `getEventTopic()` con formato `{contexto}.{entidad}.{accion}` | ✅ |
-| Factory `build(...)` publica evento con `publishEvent(...)` | ✅ |
+| Factory `crear(...)` publica evento con `publishEvent(...)` | ✅ |
 | Use case inyecta `EventPublisher` de `com.arquisoft.shared.events` (interfaz en shared:domain; NO una implementación local del contexto, NO `SpringModulithEventPublisher` ni `RabbitMQEventPublisher` directamente) | ✅ |
 | Use case drena eventos tras persistir con `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` — UN solo método, no dos pasos | ✅ |
 | Use case llama `clearUnPublishedEvents()` (método inexistente — no compila) | ❌ violación bloqueante |
@@ -210,10 +210,10 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 
 | Check | Bloqueante |
 |-------|:---:|
-| Entidad raíz **NO extiende `AggregateRoot`** — es una `final class` plana con factories `build`/`rebuild` | ✅ |
+| Entidad raíz **NO extiende `AggregateRoot`** — es una `final class` plana con factories `crear`/`reconstruir` | ✅ |
 | Entidad raíz extiende `AggregateRoot` "por consistencia" cuando el plan no declara eventos | ❌ violación bloqueante (arrastra maquinaria de eventos no usada) |
 | NO existen archivos en `{contexto}/domain/{entidad}/event/` para esta HU | ✅ |
-| Factory `build(...)` NO llama a `publishEvent(...)` (el método no existe en una clase plana) | ✅ |
+| Factory `crear(...)` NO llama a `publishEvent(...)` (el método no existe en una clase plana) | ✅ |
 | Use case NO inyecta `EventPublisher` | ✅ |
 | Use case NO drena eventos (no llama a `drainUnPublishedEvents()` — no hay nada que drenar en una entidad plana) | ✅ |
 
@@ -222,7 +222,7 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Check | Bloqueante |
 |-------|:---:|
 | Constructor privado, campos `final`, no Lombok, no anotaciones de framework | ✅ |
-| Factories `build(...)` y `rebuild(...)` presentes | ✅ |
+| Factories `crear(...)` y `reconstruir(...)` presentes | ✅ |
 | IDs siempre `UUID` (nunca `Long`/`Integer`) | ✅ |
 | Entidad no es `record` (incompatible con factories) | ✅ |
 
@@ -437,7 +437,7 @@ revise. NO lo marques como bloqueante por sí solo.
 |---|---|:---:|
 | **Consulta** | Tests de `publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents` en `{Entidad}Test.java` | ✅ |
 | **Consulta** | `verify(eventPublisher).publish(...)` en `{Accion}{Entidad}UseCaseImplTest.java` | ✅ |
-| **Consulta** | Test `debeReconstruirSinEventos_cuandoRebuildEsInvocado` (la consulta no debería estar testeando `rebuild`) | ✅ |
+| **Consulta** | Test `debeReconstruirSinEventos_cuandoReconstruirEsInvocado` (la consulta no debería estar testeando `reconstruir`) | ✅ |
 | **Escritura** | AUSENCIA de tests de ciclo de eventos (`publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents`) cuando el plan declara que la HU emite eventos | ✅ |
 | **Cualquier tipo** | Cualquier llamada a `clearUnPublishedEvents()` (método inexistente — código no compila) | ❌ violación bloqueante |
 | **Escritura** | AUSENCIA de `verify(eventPublisher).publish(...)` en `{Accion}{Entidad}UseCaseImplTest.java` | ✅ |
