@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCo
 import com.arquisoft.fichas.application.usuario.command.port.in.RegistrarUsuarioInputPort;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
+import com.arquisoft.shared.message.FichasMessages;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -33,7 +34,7 @@ public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
         withCorrelation(message, channel, () -> {
             UsuarioCreadoPayload payload = deserialize(message, UsuarioCreadoPayload.class);
 
-            log.info("[FICHAS] UsuarioCreado recibido: usuarioId={} email={} rol={}",
+            log.info(FichasMessages.Usuario.LOG_USUARIO_CREADO_RECIBIDO,
                     payload.usuarioId(), payload.email(), payload.rol());
 
             registrarUsuarioInputPort.ejecutar(new RegistrarUsuarioCommand(

@@ -125,20 +125,23 @@ el comando que coincide con la HU, que contiene:
 
 **Paso 4 — Identificar si el bounded context usa AggregateRoot y verificar si la entidad raíz YA EXISTE en el código.**
 
-**4.1 — Determinar si aplica AggregateRoot:** consulta la tabla en la sección "Bounded Contexts" del skill `arquisoft-context`:
-- `seguridad` → **NO** usa AggregateRoot (delega en Keycloak).
-- Los otros 6 contextos → **SÍ** usan AggregateRoot obligatoriamente para la entidad raíz.
+**4.1 — Determinar si la entidad raíz extiende `AggregateRoot`:** esta decisión depende del bounded context Y de si la HU emite eventos (se confirma en la pregunta 5 de FASE 3). Regla:
+
+- `seguridad` → **NO** extiende `AggregateRoot` (delega en Keycloak).
+- Los otros 6 contextos:
+    - Si la HU **emite eventos** (respuesta A o B a la pregunta 5) → la entidad raíz **DEBE** extender `AggregateRoot`.
+    - Si la HU **NO emite eventos** (respuesta C a la pregunta 5) → la entidad raíz **NO** extiende `AggregateRoot`. Es una clase Java plana con factories `build`/`rebuild` y sin la maquinaria de eventos. Forzar la extensión "por consistencia futura" es **error** — cuando aparezca el primer evento, esa HU añadirá `extends AggregateRoot`.
 
 **4.2 — Verificar si la entidad raíz YA EXISTE en el código** (CRÍTICO para evitar planes incoherentes):
 
-Si el contexto usa AggregateRoot, busca el archivo `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/model/{Entidad}.java` y `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/event/{Entidad}CreadaEvent.java`.
+Busca el archivo `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/aggregate/{Entidad}Aggregate.java` y, si la HU emite eventos, `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/event/{Entidad}{Accion}Event.java`.
 
 | Caso | Acción en el plan |
 |---|---|
-| **La entidad ya existe** (creada en HU previa) | NO se incluye en el árbol de archivos a CREAR. Si la HU la modifica, va en "Archivos a MODIFICAR". |
+| **La entidad ya existe** (creada en HU previa) | NO se incluye en el árbol de archivos a CREAR. Si la HU la modifica, va en "Archivos a MODIFICAR". Si la entidad existente NO extiende `AggregateRoot` y esta HU sí emite eventos, el plan declara explícitamente "Modificar `{Entidad}Aggregate.java` para añadir `extends AggregateRoot`". |
 | **La entidad NO existe** (esta es la primera HU del contexto que la toca) | DEBE incluirse en el árbol como archivo a CREAR, **incluso si la HU es de Consulta**. Sin la entidad raíz, el puerto del repositorio no puede retornarla, el adapter no puede usar `rebuild(...)`, y la arquitectura queda rota. |
 
-> **Regla dura:** una HU de consulta NO emite eventos NI tiene tests de ciclo de eventos, **pero SÍ requiere que el aggregate exista** para que el puerto write (`{Entidad}OutputPort`) reciba/retorne el aggregate y el `CommandOutputAdapter` use `rebuild(...)`. Si esta es la primera HU del contexto, el aggregate raíz y al menos un evento (`{Entidad}CreadaEvent`) deben crearse aquí — aunque el use case actual no los emita. El evento queda disponible para futuras HUs de escritura.
+> **Regla dura para HUs de consulta:** una HU de consulta NO emite eventos NI tiene tests de ciclo de eventos. Si esta es la primera HU del contexto y la entidad debe crearse aquí, créala **sin** `extends AggregateRoot` y **sin** clase de evento — la HU de escritura que aparezca primero la promoverá si lo necesita.
 
 > **Cómo verificar existencia:** mediante `bash` o `view` sobre el filesystem local del proyecto. Si el módulo `{contexto}/` aún no tiene carpeta `domain/model/`, asume que la entidad NO existe.
 
@@ -223,11 +226,11 @@ Espera las respuestas del usuario antes de continuar.
    El plan debe documentar este mapeo en la sección 9 (Seguridad y Autorización) para que el equipo de Keycloak pueda configurarlo en paralelo.
 4. ¿Hay reglas de negocio implícitas que no están explícitas en la HU?
 5. **¿Esta HU debe emitir eventos de dominio?** (Solo aplica si pregunta 2 = Escritura o Mixta — las consultas nunca emiten eventos).
-    - **A) Sí, hay consumidores conocidos.** Otro bounded context necesita reaccionar a este hecho. Anotar: qué contexto consume y qué payload espera.
-    - **B) Sí, aunque hoy no hay consumidores.** Se anticipa razonablemente que aparecerán pronto, o hay un caso de auditoría/observabilidad que lo justifica. Anotar el caso.
-    - **C) No, es CRUD interno sin consumidores ni casos de auditoría.** No emite eventos. La entidad sigue extendiendo `AggregateRoot` por consistencia, pero su `build(...)` NO llama a `publishEvent(...)` y el use case NO inyecta `EventPublisher`.
+    - **A) Sí, hay consumidores conocidos.** Otro bounded context necesita reaccionar a este hecho. Anotar: qué contexto consume y qué payload espera. → La entidad raíz **extiende `AggregateRoot`**.
+    - **B) Sí, aunque hoy no hay consumidores.** Se anticipa razonablemente que aparecerán pronto, o hay un caso de auditoría/observabilidad que lo justifica. Anotar el caso. → La entidad raíz **extiende `AggregateRoot`**.
+    - **C) No, es CRUD interno sin consumidores ni casos de auditoría.** No emite eventos. La entidad raíz **NO extiende `AggregateRoot`** — es una clase plana con factories `build`/`rebuild`. El use case NO inyecta `EventPublisher`.
 
-   > Esta decisión determina si se generan archivos de evento (`{Entidad}{Accion}Event extends DomainEvent` con `getEventTopic()`), si el use case inyecta `EventPublisher`, y si hay drenado/limpieza tras persistir. Una decisión incorrecta aquí infla el código innecesariamente o deja casos sin consumir. Ver sección "¿Cuándo emitir eventos de dominio?" del skill `arquisoft-context`.
+   > Esta decisión determina TRES cosas: (1) si la entidad raíz extiende `AggregateRoot` (A/B = sí, C = no — forzar la extensión "por consistencia futura" es error); (2) si se generan archivos de evento (`{Entidad}{Accion}Event extends DomainEvent` con `getEventTopic()`); (3) si el use case inyecta `EventPublisher` y hay drenado/limpieza tras persistir. Una decisión incorrecta aquí infla el código innecesariamente o deja casos sin consumir. Ver sección "AggregateRoot — Regla Estricta" y "¿Cuándo emitir eventos de dominio?" del skill `arquisoft-context`.
 6. ¿Se requiere persistencia nueva (tabla/columna) o se reutiliza la existente?
 7. ¿Hay casos de error relevantes que debemos manejar explícitamente?
 8. ¿La entidad raíz afectada es un Aggregate Root nuevo o ya existe? Si es nuevo, **y la pregunta 5 fue A o B**, ¿qué eventos de dominio debe emitir esta acción y cuál es el `eventTopic` de cada uno (formato `{contexto}.{entidad}.{accion}`)?
@@ -241,6 +244,13 @@ Espera las respuestas del usuario antes de continuar.
     - **B) Endpoint existente.** Anotar la ruta exacta (ej. `POST /api/fichas-perfil`) y el archivo del `InputAdapter` que se modifica. La sección 8 del plan describe **qué cambia** (nuevo parámetro, nueva validación, nuevo campo del `RequestDTO`, etc.) sin duplicar el adapter.
 
     > Si la respuesta es B, el implementador NO crea un `InputAdapter` nuevo — extiende el existente. Esto evita duplicación de controllers para la misma ruta y mantiene consistencia OpenAPI.
+
+11. **¿Qué retorna esta HU de escritura?** (Solo aplica si pregunta 2 = Escritura o Mixta — las consultas devuelven `ReadModel` o `PaginatedResult<ReadModel>` automáticamente).
+    - **A) UUID del recurso creado/afectado** (recomendado por defecto). El use case retorna `UUID`, el `InputPort` extiende `InputPort<Command, UUID>`, y el `InputAdapter` retorna `ResponseEntity<UUID>` con `201 Created` + header `Location: /api/{recurso}/{uuid}` + body con el UUID. Es el caso más común — el frontend necesita el ID para referenciar el recurso recién creado.
+    - **B) Void** (no devuelve nada). El use case implementa `VoidInputPort<Command>` (de `shared:domain.port.in`), y el `InputAdapter` retorna `ResponseEntity<Void>` con `201 Created` + header `Location`, **sin body**. Aplica cuando el cliente conoce el recurso por otra vía o cuando la acción es una actualización/eliminación sin necesidad de devolver datos.
+    - **C) Objeto específico** (típicamente un `ReadModel` del recurso completo). El use case retorna el objeto declarado (ej. `FichaPerfilReadModel`), el `InputPort` extiende `InputPort<Command, {Tipo}>`, y el `InputAdapter` lo serializa directamente a JSON con `201 Created`. **Justifica en el plan (sección 8) por qué este endpoint rompe la convención por defecto** — típicamente porque el cliente necesita el recurso completo tras crearlo en una sola llamada (patrón REST común para evitar GET subsiguiente). Indicar exactamente qué tipo (`{Entidad}ReadModel`, DTO custom, etc.) y por qué.
+
+   > Esta decisión se documenta en la sección 8 del plan (Contrato del endpoint, columna Response) y en los nombres del `InputPort` y `UseCase`. La opción A es el default; usar B o C requiere explicación. Ver regla 3 de "Convención de DTOs" en el skill `arquisoft-context`.
 
 **Preguntas adicionales según tipo de HU:**
 - **Listados / búsquedas:** ¿Requiere paginación? ¿Filtros? ¿Ordenamiento?
@@ -379,10 +389,11 @@ produce el documento en el formato a continuación y guárdalo como
 
 ---
 
-## 4. Modelo DDD del Contexto (si el contexto usa AggregateRoot)
+## 4. Modelo DDD del Contexto
 
 ### Aggregate Root
-- **Entidad raíz:** `{Entidad}` (extiende `AggregateRoot` de `shared:domain`)
+- **Entidad raíz:** `{Entidad}Aggregate`
+- **¿Extiende `AggregateRoot` de `shared:domain`?:** {Sí — la HU emite eventos / No — la HU no emite eventos, es una clase plana con factories `build`/`rebuild` / No aplica — contexto `seguridad`}
 - **ID:** `UUID`
 
 ### Atributos por objeto de dominio (extraídos del modelo enriquecido)
@@ -430,17 +441,26 @@ Las características de cada atributo se traducen así en cada capa:
 > Eventos: ninguno.
 > Razón: {razón concreta — ej. "CRUD interno sin consumidores conocidos ni
 >         casos de auditoría identificados"}.
-> Implicación: el factory build(...) NO llama a publishEvent(...). El use case
->              NO inyecta EventPublisher.
+> Implicaciones:
+>   - La entidad raíz {Entidad}Aggregate NO extiende AggregateRoot — es una
+>     clase plana con factories build/rebuild.
+>   - El factory build(...) NO acumula eventos (no existe publishEvent).
+>   - El use case NO inyecta EventPublisher, no hay drenado de eventos.
+>   - No se crean archivos en domain/{entidad}/event/.
 > ```
 
 | Evento | Clase | `eventTopic` | Consumidor(es) conocido(s) | Cuándo se emite |
 |---|---|---|---|---|
 | {EntidadCreada} | `{Entidad}CreadaEvent` (extiende `DomainEvent`) | `{contexto}.{entidad}.creada` | {contexto consumidor o "ninguno aún" si fue B} | En `build(...)` o tras acción de negocio |
 
-> **Regla cuando hay eventos:** el dominio solo acumula eventos con `publishEvent(...)`.
-> El use case los drena con `getUnPublishedEvents()` tras persistir, los publica vía
-> `EventPublisher` (shared:amqp) y llama a `clearUnPublishedEvents()`.
+> **Regla cuando hay eventos:** el dominio solo acumula eventos con `publishEvent(...)` desde el
+> factory. El use case los drena y publica en una sola línea tras persistir:
+> `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);`. `drainUnPublishedEvents()`
+> retorna la lista y la limpia internamente en una operación atómica — **NO existe**
+> `clearUnPublishedEvents()` separado. El `EventPublisher` lo inyecta el use case desde
+> `com.arquisoft.shared.events` (interfaz en shared:domain); Spring Modulith elige la
+> implementación concreta (`SpringModulithEventPublisher` por defecto, con Outbox vía tabla
+> `event_publication`).
 
 ---
 
@@ -479,9 +499,10 @@ Para cada integración externa, documenta:
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/aggregate/{Entidad}Aggregate.java` | Aggregate Root | Extiende `AggregateRoot`. Factory `crear(...)` con Notification Pattern + `rebuild(...)` sin validar |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/event/{Entidad}CreadaEvent.java` | Evento de dominio | Extiende `DomainEvent`. Declara constantes `EVENT_TOPIC` y `EVENT_TYPE` (solo si la HU emite eventos) |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/port/out/{Entidad}OutputPort.java` | Interface | Puerto de salida write. Recibe/retorna el aggregate, nunca DTOs ni JPA Entities |
-| domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/exception/{Entidad}NoEncontradoException.java` | Exception | Extiende uno de los 4 tipos base de `shared:domain.exception` |
+| domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/exception/{Entidad}{ReglaInvariante}Exception.java` | Exception del aggregate | Extiende **`DomainException`** (invariante violada → 422) o **`DomainValidationException`** (Notification Pattern → 422 + fieldErrors). SOLO va aquí si la lanza el aggregate en su constructor o método de negocio sin ayuda de un repositorio. **NO crear si la excepción es duplicado/no encontrado/inválido orquestal** — esas van en `application/`. |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/command/model/{Accion}{Entidad}Command.java` | `record` | Intención de negocio. Campos en español idénticos al aggregate |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/command/port/in/{Accion}{Entidad}InputPort.java` | Interface (vacía) | Extiende `InputPort<Command, Result>` o `VoidInputPort<Command>` de `shared:domain` |
+| application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/exception/{Entidad}DuplicadaException.java` `{Entidad}NoEncontradaException.java` etc. | Exception del use case | Extiende **`ApplicationException`** (duplicado, no encontrado, parámetro inválido → 400). Va aquí porque la decide el use case tras consultar un puerto (repositorio, servicio externo), NO el aggregate. **Ubicación directa bajo `{entidad}/exception/`, sin anidar `command/` o `query/`** — la excepción pertenece al concepto entidad, no al slice CQRS. **Si la ubicas en `domain/` rompes la dirección de dependencias** — `domain/` no puede importar `ApplicationException` de `shared:exception`. |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/command/{Accion}{Entidad}UseCase.java` | UseCase | `@Component` que implementa el `InputPort`. Patrón: `crear → save → drainUnPublishedEvents().forEach(publish) → retornar id` |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/in/web/dto/{Accion}{Entidad}RequestDTO.java` | `record` | `record` con anotaciones Jakarta (`@NotBlank`, etc.). Método `toCommand()` que produce el `Command` |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/in/web/{Accion}{Entidad}InputAdapter.java` | `@RestController` | Inyecta el `InputPort`. Retorna `ResponseEntity<Void>` con `201 Created` + `Location`. ADR-011 (`@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement`) |
@@ -566,6 +587,28 @@ Los siguientes DTOs viven en `shared:web` y se importan, **nunca se crean ni dup
 
 > **Convención de tipos:** `Command` (intención write) vive en `application/{entidad}/command/model/`. `ReadModel` (proyección read) vive en `application/{entidad}/query/readmodel/`. `RequestDTO` (HTTP, con anotaciones Jakarta) vive en `infrastructure/{entidad}/command/adapter/in/web/dto/`. Los tres son `record` con campos **en español idénticos al aggregate** (sin traducir). **DTOs técnicos** (`ErrorResponseDTO`, `PageResponseDTO<T>`, `QueryCriteriaRequestDTO`) viven en `shared:web` con campos en inglés y nunca se duplican localmente.
 
+### Catálogo de mensajes (`shared:message`) — fila obligatoria si la HU introduce texto nuevo
+
+> **Regla del proyecto:** todo string que aparezca en código de producción (mensaje de excepción, código de error, mensaje de validación de dominio, mensaje de log, nombre de campo para reporting, límite numérico de negocio) **DEBE** vivir como constante en `shared:message`. Nunca como literal embebido. Ver sección "Mensajes y textos — Message Catalog" del skill.
+
+Si la HU introduce al menos un mensaje, código, log o límite nuevo, el plan declara una fila MODIFICAR para el archivo del contexto correspondiente. Los 7 archivos `{Contexto}Messages.java` ya existen — nunca se crean desde cero, solo se modifican.
+
+| Capa | Ruta completa | Tipo | Acción | Detalles |
+|------|---------------|------|--------|----------|
+| shared | `shared/message/src/main/java/com/arquisoft/shared/message/{Contexto}Messages.java` | Catálogo | MODIFICAR | Agregar `public static final class {Entidad}` con constructor privado vacío **si no existe**, y dentro las constantes nuevas en el orden de las 5 secciones: `// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`. Solo las secciones con al menos una constante. Nada de JavaDoc. |
+
+Inventario de constantes a agregar al catálogo en esta HU (el agente lo llena al planificar):
+
+| Constante | Sección | Tipo | Valor | Usado por |
+|---|---|---|---|---|
+| `FichasMessages.FichaPerfil.CAMPO_TITULO` | Campos | `String` | `"tituloProyecto"` | `DomainValidator.notBlank` en `FichaPerfilAggregate` |
+| `FichasMessages.FichaPerfil.TITULO_MAX` | Límites | `int` | `100` | `DomainValidator.maxLength` en `FichaPerfilAggregate` |
+| `FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO` | Códigos de error | `String` | `"FICHA_TITULO_DUPLICADO"` | `FichaTituloDuplicadoException` (errorCode) |
+| `FichasMessages.FichaPerfil.TITULO_DUPLICADO` | Mensajes de error | `String` | `"El título ya existe: %s"` | `FichaTituloDuplicadoException` (mensaje, `.formatted(titulo)`) |
+| `FichasMessages.FichaPerfil.LOG_REGISTRADA` | Logs | `String` | `"Ficha de perfil registrada — id={}"` | `log.info` en `RegistrarFichaPerfilUseCase` |
+
+> **Si la HU NO introduce ningún texto, código o límite nuevo (típico en HUs read sin filtros nuevos o handlers que solo orquestan llamadas existentes), omite esta sub-sección entera.** Pero documentalo explícitamente: "Sin cambios al catálogo `shared:message` — la HU no introduce textos, códigos ni límites nuevos."
+
 ### Archivos a MODIFICAR (si aplica)
 
 | Ruta completa | Cambio requerido |
@@ -579,10 +622,14 @@ Los siguientes DTOs viven en `shared:web` y se importan, **nunca se crean ni dup
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/config/RabbitMQ{Entidad}Config.java` | Config | Exchange / Queue / Bindings — **solo si el contexto consume eventos**. Para publicación, NO se crea config: usa `shared:amqp`. |
 
 > **PUBLICACIÓN de eventos:** ya NO se crea un `{Entidad}EventPublisher` por contexto.
-> La publicación a RabbitMQ está centralizada en `shared:amqp` (con `RabbitMQEventPublisher`).
-> El use case inyecta directamente la interfaz `EventPublisher` (`com.arquisoft.shared.amqp.EventPublisher`)
-> y la invoca pasando un `DomainEvent`. Cada evento expone su propia routing key vía
-> `getEventTopic()` (método abstracto obligatorio en `DomainEvent`).
+> La publicación está centralizada en `shared:amqp` usando **Spring Modulith Events + Outbox Pattern**
+> (publicador principal: `SpringModulithEventPublisher`; fallback con `@ConditionalOnMissingBean`:
+> `RabbitMQEventPublisher`). El use case inyecta directamente la interfaz `EventPublisher`
+> (`com.arquisoft.shared.events.EventPublisher`, vive en `shared:domain`) y la invoca pasando un
+> `DomainEvent`. Cada evento expone su propia routing key vía `getEventTopic()` (método obligatorio
+> en `DomainEvent` que valida formato `{contexto}.{entidad}.{accion}` en el constructor).
+> El plan NO declara archivos de Spring Modulith ni `event_publication` — esa infraestructura
+> ya existe globalmente en `shared:amqp` + `ArquisoftEventsDataSourceConfig`.
 >
 > **CONSUMO de eventos:** sí se crea config y listener locales en el contexto consumidor,
 > en `infrastructure/config/RabbitMQ{Entidad}Config.java` (declara queue + binding al exchange
@@ -632,15 +679,23 @@ Marcar **una** opción según la respuesta a la pregunta 10 de FASE 3:
 
 ### Contrato del endpoint
 
+> **Columna Response:** rellénala con base en la respuesta a la pregunta 11 de FASE 3 (para writes) o por la firma del read use case (`ReadModel` / `PaginatedResult<ReadModel>`).
+
 | Método | Ruta | Request Body / Params | Response | Código HTTP | Client role requerido | Anotaciones Swagger (ADR-011) |
 |--------|------|----------------------|----------|-------------|----------------------|-------------------------------|
-| POST | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `Void` (write: 201 + `Location`) | 201 | `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
+| POST (write A) | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `UUID` (body: id generado) + header `Location: /api/{recurso}/{uuid}` | 201 | `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
+| POST (write B) | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `Void` (sin body) + header `Location` | 201 | idem | idem |
+| POST (write C) | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `{Entidad}ReadModel` u objeto específico (justificar) | 201 | idem | idem |
 | GET | `/api/{recurso-kebab}/{id}` | — | `{Entidad}ReadModel` | 200 | `{contexto}:{recurso-kebab}:view` (ej. `fichas:ficha-perfil:view`) | idem |
 | POST | `/api/{recurso-kebab}/query` | `QueryCriteriaRequestDTO` (si usa Criteria) | `PageResponseDTO<{Entidad}ReadModel>` | 200 | `{contexto}:{recurso-kebab}:view` | idem |
 
-> **Convención de respuesta:**
-> - **Write** retorna `ResponseEntity<Void>` con `201 Created` + header `Location` apuntando al recurso. No incluye el recurso en el body (CQRS estricto).
-> - **Read** serializa `ReadModel` directo a JSON (sin DTO intermedio). Si usa Criteria, envuelve en `PageResponseDTO.from(paginatedResult)`.
+> **Convención de respuesta (write):**
+> - **Opción A (default):** `ResponseEntity<UUID>` con `201 Created`, header `Location` y el UUID en el body. El use case retorna `UUID` y el `InputPort` extiende `InputPort<Command, UUID>`.
+> - **Opción B:** `ResponseEntity<Void>` con `201 Created` + header `Location`, sin body. El use case implementa `VoidInputPort<Command>` de `shared:domain.port.in`.
+> - **Opción C:** `ResponseEntity<{Tipo}>` con el objeto justificado en sección 8 del plan. El use case retorna ese tipo y el `InputPort` extiende `InputPort<Command, {Tipo}>`.
+>
+> **Convención de respuesta (read):**
+> - Serializa `ReadModel` directo a JSON (sin DTO intermedio). Si usa Criteria, envuelve en `PageResponseDTO.from(paginatedResult)`.
 >
 > **Autorización canónica:** `@PreAuthorize("hasAuthority('{contexto}:{entidad}:{accion}')")` — uno solo por endpoint, contra un único client role. Ver sección 9 para el mapeo a roles realm.
 
@@ -735,7 +790,7 @@ Para cada client role nuevo de la tabla anterior:
 |---------------|--------|-----------|
 | `{Entidad}Test` | `debeConstruirEntidad_cuandoDatosValidos` | `build(...)` crea entidad con UUID no nulo |
 | `{Entidad}Test` | `debePublicarEvento_cuandoBuildEsInvocado` | tras `build(...)` hay 1 evento en `getUnPublishedEvents()` |
-| `{Entidad}Test` | `debeLimpiarEventos_cuandoClearEsInvocado` | `clearUnPublishedEvents()` deja la lista vacía |
+| `{Entidad}Test` | `debeDrenarYLimpiarEventos_cuandoDrainEsInvocado` | `drainUnPublishedEvents()` retorna la lista de eventos Y deja vacía la lista interna en una sola operación |
 | `{Entidad}Test` | `debeReconstruirSinEventos_cuandoRebuildEsInvocado` | `rebuild(...)` no acumula eventos |
 | `{Entidad}Test` | `debeLanzarExcepcion_cuando{InvarianteViolada}` | constructor lanza si datos inválidos |
 
@@ -745,7 +800,7 @@ Para cada client role nuevo de la tabla anterior:
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
 | `{Accion}{Entidad}UseCaseImplTest` | `debe{Accion}_cuandoDatosValidos` | flujo exitoso completo |
-| `{Accion}{Entidad}UseCaseImplTest` | `debePublicarEventosDrenados_cuandoEjecutaExitoso` | verify `eventPublisher.publish(...)` y `clearUnPublishedEvents()` |
+| `{Accion}{Entidad}UseCaseImplTest` | `debePublicarEventosDrenados_cuandoEjecutaExitoso` | verify `eventPublisher.publish(...)` se llamó N veces (uno por cada evento esperado). NO se verifica el estado interno del aggregate desde application — `getUnPublishedEvents()` es protected. |
 | `{Accion}{Entidad}UseCaseImplTest` | `debeLanzarExcepcion_cuandoRepositorioFalla` | propaga error de repositorio |
 
 #### Tests capa `infrastructure`
@@ -763,7 +818,7 @@ Para cada client role nuevo de la tabla anterior:
 ### Caso B — Use Case de CONSULTA (listar, buscar, obtener)
 
 > ⚠️ **Use cases de consulta NO tienen ciclo de eventos.** No incluyas tests de
-> `publishEvent`, `getUnPublishedEvents`, `clearUnPublishedEvents`, ni de
+> `publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents`, ni de
 > `verify(eventPublisher).publish(...)` — no aplican.
 
 > Si la consulta solo lee datos existentes y los devuelve, **no necesita tests de domain en absoluto** — el aggregate no se invoca en el read side.
@@ -860,15 +915,16 @@ ejemplos detallados.
 5. **La pregunta de observaciones** es la última de FASE 3 — nunca la omitas.
 6. **Usa rutas absolutas** desde la raíz del monorepo en todos los archivos.
 7. **Respeta la dirección de dependencias:** Domain ← Application ← Infrastructure.
-8. **DDD estricto:** toda entidad raíz debe extender `AggregateRoot` (excepto `seguridad`). Documenta siempre en el plan (sección 4) qué eventos emite.
-9. **Verificación de existencia de la entidad raíz (Paso 4.2 del Protocolo de Carga):** antes de generar el árbol de archivos, verifica si `domain/model/{Entidad}.java` ya existe en el código del contexto. Si NO existe (primera HU del contexto que la toca), inclúyela como archivo a CREAR junto con su `{Entidad}CreadaEvent` — incluso si la HU es de Consulta. Sin la entidad raíz, el puerto del repositorio no puede retornarla y el adapter no puede usar `rebuild(...)`.
+8. **DDD estricto — `AggregateRoot` condicional a eventos:** en los 6 contextos de negocio, la entidad raíz extiende `AggregateRoot` **SOLO si la HU emite eventos** (respuesta A o B a la pregunta 5). Si la HU NO emite eventos (respuesta C), la entidad raíz **NO** extiende `AggregateRoot` y es una clase plana con factories `build`/`rebuild`. El contexto `seguridad` nunca usa `AggregateRoot`. Documenta en la sección 4 del plan: (a) si la entidad extiende o no `AggregateRoot` con su justificación, y (b) qué eventos emite (o "ninguno: <razón>").
+9. **Verificación de existencia de la entidad raíz (Paso 4.2 del Protocolo de Carga):** antes de generar el árbol de archivos, verifica si `domain/{entidad}/aggregate/{Entidad}Aggregate.java` ya existe en el código del contexto. Si NO existe (primera HU del contexto que la toca), inclúyela como archivo a CREAR — incluso si la HU es de Consulta. Si la HU emite eventos, incluye también `{Entidad}{Accion}Event`. Si la HU NO emite eventos, NO incluyas archivos en `domain/{entidad}/event/`. Si la entidad existente NO extiende `AggregateRoot` y esta HU SÍ emite eventos, el plan declara "Modificar `{Entidad}Aggregate.java` para añadir `extends AggregateRoot`" en la sección "Archivos a MODIFICAR".
 10. **Flujo de datos JPA → dominio → DTO (regla DDD inviolable):** el puerto `{Entidad}OutputPort` retorna entidades de dominio (`{Entidad}` o `Page<{Entidad}>` de Spring Data), nunca DTOs ni JPA Entities. El adapter convierte JPA Entity → entidad de dominio con `rebuild(...)` o vía `JpaEntity::toDomain`. El use case convierte entidad de dominio → DTO de respuesta. **Ningún plan puede saltarse este flujo, ni siquiera para optimizar consultas.** Si una HU justifica saltarse el dominio (CQRS query side), debe documentarse explícitamente en la sección 5 como decisión arquitectónica, no asumirse silenciosamente.
 11. **Paginación y filtros con Criteria pattern (opcional, solo HUs read que lo requieran):** si la HU es read y necesita paginación, ordenamiento o filtros dinámicos, el plan declara: `XxxCriteria` (`application/{entidad}/query/criteria/`, extiende `QueryCriteria` con whitelist de campos filtrables/ordenables), `XxxJpaSpecification` (`infrastructure/.../query/adapter/out/persistence/`, extiende `QueryJpaSpecification<JpaEntity>` con mapa de `CampoSpec`), y opcionalmente `XxxSortMapper` para traducir nombres de dominio a paths JPA. El `QueryOutputPort` retorna `PaginatedResult<XxxReadModel>` (de `shared:domain.pagination`); el `QueryInputAdapter` convierte con `PageResponseDTO.from(...)` antes del response. **`Pageable` / `org.springframework.data.domain.Page` NO pueden aparecer en `application/` ni `domain/`** — solo en el `QueryOutputAdapter` de infrastructure. Si la HU read NO necesita ninguno de los tres (paginación, orden, filtros), no se crean estos archivos; el puerto recibe parámetros simples y retorna `ReadModel` directamente. Ver SKILL sección "Paginación y Filtros — `PaginatedResult` + Criteria pattern".
-11. **Integraciones externas:** si la HU toca Keycloak, SMTP, S3, Redis con lógica propia, o servicios HTTP externos, el plan **debe** incluir la sección 5 con el puerto abstracto (`domain/port/out/`) y el adaptador concreto (`infrastructure/adapter/out/{tipo}/`). Ninguna regla de negocio puede vivir en el adaptador — solo traducción entre mundos.
-12. **Si la HU toca más de un bounded context**, genera una sección del plan por cada contexto afectado.
-13. **Comunicación entre contextos = evento RabbitMQ.** Nunca dependencia directa.
-14. **Valida nombres** contra las convenciones del skill `arquisoft-context` antes de incluirlos en el plan.
-15. **El plan es el contrato:** debe ser suficientemente detallado para implementarse sin ambigüedades.
-16. **Guarda el plan** como `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` al finalizar.
-17. **Incluye en el Metadata** qué archivos del repo de documentación fueron consultados y la confirmación `Skill arquisoft-context cargado: ✅`.
-18. **La sección 14 (Trazabilidad)** se incluye siempre con todas las etapas en estado `⏳ Pendiente`.
+12. **Integraciones externas:** si la HU toca Keycloak, SMTP, S3, Redis con lógica propia, o servicios HTTP externos, el plan **debe** incluir la sección 5 con el puerto abstracto (`domain/port/out/`) y el adaptador concreto (`infrastructure/adapter/out/{tipo}/`). Ninguna regla de negocio puede vivir en el adaptador — solo traducción entre mundos.
+13. **Catálogo de mensajes obligatorio (`shared:message`):** todo string, código de error, nombre de campo, mensaje de log o límite numérico de negocio que introduzca la HU **DEBE** declararse como constante en `shared:message`. Nunca como literal embebido en código. En la sección 6 del plan, si la HU introduce al menos uno, incluye la sub-sección "Catálogo de mensajes" con: (a) fila MODIFICAR para `shared/message/.../{Contexto}Messages.java`, y (b) inventario tabular de las constantes a agregar — agrupadas por las 5 secciones (`// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`). Si la HU no introduce ninguno, documenta explícitamente: "Sin cambios al catálogo `shared:message`". Nunca crear paquetes `{entidad}/message/` dentro de un contexto — esa convención fue retirada. Ver SKILL sección "Mensajes y textos — Message Catalog (`shared:message`)".
+14. **Si la HU toca más de un bounded context**, genera una sección del plan por cada contexto afectado.
+15. **Comunicación entre contextos = evento RabbitMQ.** Nunca dependencia directa.
+16. **Valida nombres** contra las convenciones del skill `arquisoft-context` antes de incluirlos en el plan.
+17. **El plan es el contrato:** debe ser suficientemente detallado para implementarse sin ambigüedades.
+18. **Guarda el plan** como `/.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` al finalizar.
+19. **Incluye en el Metadata** qué archivos del repo de documentación fueron consultados y la confirmación `Skill arquisoft-context cargado: ✅`.
+20. **La sección 14 (Trazabilidad)** se incluye siempre con todas las etapas en estado `⏳ Pendiente`.

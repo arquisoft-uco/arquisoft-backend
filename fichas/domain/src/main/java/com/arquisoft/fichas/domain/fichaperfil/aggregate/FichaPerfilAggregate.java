@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.domain.fichaperfil.aggregate;
 
-import com.arquisoft.fichas.domain.fichaperfil.message.FichaPerfilMessages;
+import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
-import com.arquisoft.shared.util.UtilText;
 
 import java.util.UUID;
 
@@ -53,8 +53,8 @@ public final class FichaPerfilAggregate {
 
     private void setId(UUID id, ValidationResult result) {
         if (!DomainValidator.notNull(id,
-                FichaPerfilMessages.CAMPO_ID,
-                FichaPerfilMessages.ID_REQUERIDO, result)) {
+                FichasMessages.FichaPerfil.CAMPO_ID,
+                FichasMessages.FichaPerfil.ID_REQUERIDO, result)) {
             return;
         }
         this.id = id;
@@ -62,13 +62,13 @@ public final class FichaPerfilAggregate {
 
     private void setTituloProyecto(String titulo, ValidationResult result) {
         if (!DomainValidator.notBlank(titulo,
-                FichaPerfilMessages.CAMPO_TITULO,
-                FichaPerfilMessages.TITULO_REQUERIDO, result)) {
+                FichasMessages.FichaPerfil.CAMPO_TITULO,
+                FichasMessages.FichaPerfil.TITULO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.maxLength(titulo, FichaPerfilMessages.TITULO_MAX,
-                FichaPerfilMessages.CAMPO_TITULO,
-                FichaPerfilMessages.TITULO_DEMASIADO_LARGO, result)) {
+        if (!DomainValidator.maxLength(titulo, FichasMessages.FichaPerfil.TITULO_MAX,
+                FichasMessages.FichaPerfil.CAMPO_TITULO,
+                FichasMessages.FichaPerfil.TITULO_DEMASIADO_LARGO, result)) {
             return;
         }
         this.tituloProyecto = UtilText.applyTrim(titulo);
@@ -76,8 +76,8 @@ public final class FichaPerfilAggregate {
 
     private void setAsesorFichaId(UUID asesorFichaId, ValidationResult result) {
         if (!DomainValidator.notNull(asesorFichaId,
-                FichaPerfilMessages.CAMPO_ASESOR_FICHA_ID,
-                FichaPerfilMessages.ASESOR_REQUERIDO, result)) {
+                FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+                FichasMessages.FichaPerfil.ASESOR_REQUERIDO, result)) {
             return;
         }
         this.asesorFichaId = asesorFichaId;

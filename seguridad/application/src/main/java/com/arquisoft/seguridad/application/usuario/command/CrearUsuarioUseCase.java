@@ -5,6 +5,7 @@ import com.arquisoft.seguridad.application.usuario.command.port.in.CrearUsuarioI
 import com.arquisoft.seguridad.domain.usuario.aggregate.UsuarioAggregate;
 import com.arquisoft.seguridad.domain.usuario.port.out.UsuarioOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.shared.message.SeguridadMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -51,7 +52,7 @@ public class CrearUsuarioUseCase implements CrearUsuarioInputPort {
         //    tras el commit — si falla, los reintenta desde BD automáticamente.
         usuario.drainUnPublishedEvents().forEach(eventPublisher::publish);
 
-        log.info("Usuario creado: id={} email={} rol={}", usuario.getId(), command.email(), command.rol().getCode());
+        log.info(SeguridadMessages.Usuario.LOG_CREADO, usuario.getId(), command.email(), command.rol().getCode());
         return usuario.getId();
     }
 }

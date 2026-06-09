@@ -9,7 +9,7 @@ description: >-
    PLAN-{HU|HT}-{ID}.md y el código implementado, genera tests JUnit 6.0.3 + Mockito
    + AssertJ agrupados por capa (domain → application → infrastructure), con cobertura
    explícita del ciclo completo de eventos de dominio (publishEvent, getUnPublishedEvents,
-   clearUnPublishedEvents). Espera aprobación por capa completa antes de continuar.
+   drainUnPublishedEvents). Espera aprobación por capa completa antes de continuar.
    Ejecuta ./gradlew test al finalizar cada capa. No modifica código de producción.
 mode: subagent
 hidden: true
@@ -261,6 +261,52 @@ void debeUsarRebuild_cuandoCargaDesdeBd() {
 
 **No se incluye Javadoc en tests del proyecto Arquisoft.** Los comentarios `// Arrange / // Act / // Assert` del patrón AAA SÍ se mantienen — son separadores estructurales, no documentación.
 
+### Catálogo de Mensajes en Tests (`shared:message`)
+
+> **Política del proyecto:** todo string que el código de producción referencia desde `{Contexto}Messages.{Entidad}.*` (en `shared:message`) **debe ser referenciado por las mismas constantes en los tests** cuando el test verifica el valor del mensaje, código de error, nombre de campo o límite numérico. NO se duplican strings literales entre producción y tests.
+
+**Regla:** si el test compara contra un mensaje, código o nombre de campo que vive en el catálogo, importa la constante. Si compara contra un fragmento parcial (assertion de tipo `hasMessageContaining`), puede usar literal solo si ese fragmento es genérico (ej. `"nulo ni vacío"` del `AppMessages.DomainValidator.NOT_BLANK`).
+
+**Caso típico — verificación de excepción con código y mensaje del catálogo:**
+
+```java
+// ✅ Correcto — import del catálogo, sin duplicar strings
+import com.arquisoft.shared.message.FichasMessages;
+
+@Test
+void debeLanzarExcepcion_cuandoTituloYaExiste() {
+    // Arrange
+    when(repo.existePorTitulo("Mi título")).thenReturn(true);
+
+    // Act + Assert
+    assertThatThrownBy(() -> useCase.ejecutar(comando("Mi título")))
+            .isInstanceOf(FichaTituloDuplicadoException.class)
+            .hasMessage(FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted("Mi título"));
+
+    // Verifica que el código de error sea el del catálogo
+    FichaTituloDuplicadoException ex = catchThrowableOfType(
+            () -> useCase.ejecutar(comando("Mi título")),
+            FichaTituloDuplicadoException.class);
+    assertThat(ex.getErrorCode())
+            .isEqualTo(FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
+}
+```
+
+**Anti-patrón (duplicación de strings literales):**
+
+```java
+// ❌ NO generar — duplica el string del catálogo
+assertThatThrownBy(() -> useCase.ejecutar(comando("Mi título")))
+        .hasMessage("El título ya existe: Mi título");  // ← string literal duplicado
+
+assertThat(ex.getErrorCode()).isEqualTo("FICHA_TITULO_DUPLICADO");  // ← código literal duplicado
+```
+
+**Excepciones permitidas (literal en test sin importar del catálogo):**
+
+- `hasMessageContaining("fragmento generico")` — fragmentos parciales del mensaje (ej. `"nulo ni vacío"`, `"caracteres"`) que sirven para asertar la categoría del error sin atar el test al mensaje exacto. Útil para tests de aggregates que validan vía `AppMessages.DomainValidator.*`.
+- Strings literales que representan **valores de prueba**, no mensajes del sistema (ej. `comando("Mi título de prueba")` — el título es un input, no un mensaje del catálogo).
+
 ### Patrón AAA obligatorio
 
 ```java
@@ -341,19 +387,28 @@ class FichaTest {
    }
 
    @Test
-   void debeLimpiarEventos_cuandoClearUnPublishedEventsEsInvocado() {
+   void debeDrenarYLimpiarEventos_cuandoDrainEsInvocado() {
       // Arrange
       Ficha ficha = Ficha.build("Título de prueba");
       assertThat(ficha.getUnPublishedEvents()).hasSize(1);
 
-      // Act
-      ficha.clearUnPublishedEvents();
+      // Act — drainUnPublishedEvents() retorna la lista Y limpia internamente
+      List<DomainEvent> drenados = ficha.drainUnPublishedEvents();
 
       // Assert
+      assertThat(drenados).hasSize(1);
+      assertThat(drenados.get(0)).isInstanceOf(FichaCreadaEvent.class);
       assertThat(ficha.getUnPublishedEvents()).isEmpty();
    }
 }
 ```
+
+> **Acceso a `getUnPublishedEvents()`:** el método es `protected` en `AggregateRoot`. Solo
+> es accesible desde un test que viva en el **mismo paquete** que el aggregate (la convención
+> de tests por capa lo garantiza: `FichaPerfilAggregateTest` vive en
+> `fichas/domain/src/test/java/com/arquisoft/fichas/domain/fichaperfil/aggregate/`). Desde
+> tests de application o infrastructure NO se puede llamar — usa `verify(eventPublisher)`
+> para verificar el drenado indirectamente.
 
 ### Estructura — Test de Evento de Dominio (capa domain)
 
@@ -418,9 +473,11 @@ class CrearFichaUseCaseImplTest {
       // Act
       crearFichaUseCase.ejecutar(ficha);
 
-      // Assert — verifica que el use case drenó el evento y lo publicó
+      // Assert — verifica que el use case drenó el evento y lo publicó.
+      // Desde application NO se puede inspeccionar getUnPublishedEvents() (protected del
+      // paquete de domain). Se verifica indirectamente vía el mock del EventPublisher:
+      // el use case llamó publish(...) la cantidad de veces esperada.
       verify(eventPublisher, times(1)).publish(any(DomainEvent.class));
-      assertThat(ficha.getUnPublishedEvents()).isEmpty(); // fue limpiado
    }
 }
 ```
@@ -673,7 +730,7 @@ query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf isEmpty
 > **Regla de eventos en tests de dominio:** si la entidad del plan extiende
 > `AggregateRoot` (los 6 contextos de negocio, excepto `seguridad`) **Y**
 > el plan declara eventos en su sección 4, los tests de domain DEBEN verificar
-> el ciclo completo: `publishEvent` → `getUnPublishedEvents` → `clearUnPublishedEvents`.
+> el ciclo: `publishEvent(...)` interno del factory → `drainUnPublishedEvents()` retorna la lista y la limpia en una sola operación (no hay `clearUnPublishedEvents()` separado).
 >
 > Si el plan dice **"Eventos: ninguno"** (CRUD sin consumidores), estos tests
 > NO aplican — la entidad sigue extendiendo `AggregateRoot` por consistencia,
@@ -695,7 +752,7 @@ query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf isEmpty
 #### Qué testear
 
 - **UseCase (write/read):** flujos de éxito y error — éxito, error de negocio, error de repositorio — mockeando los puertos de salida.
-- **⭐ Drenado de eventos:** después de persistir, el use case debe: drenar eventos con `getUnPublishedEvents()`, publicarlos vía `EventPublisher`, llamar `clearUnPublishedEvents()`. Verificar con `verify(eventPublisher, times(N)).publish(any())` y `assertThat(entity.getUnPublishedEvents()).isEmpty()`.
+- **⭐ Drenado de eventos (solo si el plan declara eventos):** después de persistir, el use case llama `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)`. **NO existen** `clearUnPublishedEvents()` en `AggregateRoot` — `drainUnPublishedEvents()` ya retorna y limpia en un solo paso. Desde el test de application se verifica indirectamente con `verify(eventPublisher, times(N)).publish(any())`. **NO uses `assertThat(entity.getUnPublishedEvents())`** en tests de application — el método es `protected`, accesible solo desde tests del mismo paquete del aggregate (domain).
 - **`RequestDTO`:** validación Jakarta (`@NotBlank`, `@Email`, etc.) y conversión `toCommand()`. **`Command` y `ReadModel`** son `record`: solo se testean los métodos del `RequestDTO` (al `record` no hay nada que testear más allá de su construcción).
 
 #### Consulta Context7 antes de generar
@@ -929,12 +986,13 @@ de modificar cualquier archivo de producción.
 8. **Cobertura 75% mínimo.** Advertir si no se alcanza, pero no bloquear.
 9. **Spring Boot 4.x:** usar `@MockitoBean`, nunca `@MockBean`.
 10. **DDD estricto — tests aislados por capa:** los tests de `domain` son Java puro (solo JUnit + AssertJ, sin mocks de Spring/Keycloak/RabbitMQ); los tests de `application` solo mockean puertos del dominio, nunca APIs externas. Si un test de domain o application requiere framework externo, **detente y reporta violación de capas** antes de escribir el test — la lógica está en la capa equivocada.
-11. **DDD en tests de domain (solo si el use case es Escritura o Mixto):** toda entidad Aggregate Root tiene tests que verifican el ciclo completo de eventos (`publishEvent` → `getUnPublishedEvents` → `clearUnPublishedEvents`) y que `rebuild(...)` NO emite eventos. **Para use cases de Consulta, NO incluyas estos tests** — no hay eventos que verificar.
-12. **DDD en tests de application (solo si el use case es Escritura o Mixto):** el test del use case verifica que los eventos del Aggregate se drenan tras persistir y se publican vía `EventPublisher`. **Para use cases de Consulta, NO incluyas `verify(eventPublisher).publish(...)`** — no se publica nada.
+11. **DDD en tests de domain (solo si el plan declara eventos en sección 4):** el test del Aggregate Root verifica el ciclo (`publishEvent` interno del factory → `drainUnPublishedEvents()` retorna y limpia) y que `rebuild(...)` NO emite eventos. `getUnPublishedEvents()` es `protected` — solo accesible desde tests del mismo paquete del aggregate (typical: `{contexto}/domain/src/test/java/...{entidad}/aggregate/`). **NO uses `clearUnPublishedEvents()` — no existe**. **Si el plan dice "Eventos: ninguno", la entidad raíz no extiende `AggregateRoot` y NO se generan estos tests.**
+12. **DDD en tests de application (solo si el plan declara eventos):** verifica que el use case publica los eventos tras persistir con `verify(eventPublisher, times(N)).publish(any())`. **NO uses `assertThat(entity.getUnPublishedEvents()).isEmpty()`** desde application — el método es `protected`. **Si el plan dice "Eventos: ninguno", NO incluyas `EventPublisher` mock ni `verify(eventPublisher)...`** — el use case no inyecta ese puerto.
 13. **Anti-patrones — nunca generes:** tests de getters/setters de Lombok (anti-patrón 1), tests de validaciones Jakarta una por una (anti-patrón 2), tests de métodos privados (anti-patrón 3), tests duplicados con asserts complementarios sin consolidar (anti-patrón 4), tests de delegación pura sin lógica (anti-patrón 5), tests propios de excepciones simples sin lógica adicional al `super(...)` (anti-patrón 6), tests de equals/hashCode/toString generados por Lombok (anti-patrón 7).
 14. **Regla de consolidación:** si dos tests tienen el mismo "Act" pero asserts complementarios, consolídalos en un solo test con múltiples asserts.
 15. **Confirmación previa obligatoria.** Antes de generar el primer test, presenta al usuario la estimación de tests por capa con la distribución desglosada y los anti-patrones que vas a evitar. Espera respuesta explícita ("sí" / "ajustar") antes de continuar. Si la estimación supera los 80 tests, advierte explícitamente sobre posible sobre-testeo.
 16. **Java 21** — usa `./gradlew`, nunca `mvn` ni `javac` directo.
 17. **Imports explícitos** — nunca wildcard `*`.
 18. **Sin Javadoc en tests** — los nombres `debeHacerAlgo_cuandoCondicion()` ya describen el escenario. Solo se permiten comentarios de una línea con `//` cuando el "por qué" del escenario no es obvio. Los marcadores `// Arrange / // Act / // Assert` SÍ se mantienen.
-18. **Al finalizar** actualiza la fila `Tests` en la sección 13 del plan e indica siempre invocar `@validator-analyze` con el comando exacto.
+19. **Catálogo de mensajes (`shared:message`) en tests:** cuando un test compara contra un mensaje, código de error, nombre de campo o límite numérico que vive en `{Contexto}Messages.{Entidad}.*`, importa la constante en el test — NO dupliques el string literal. Aplica a `hasMessage(...)`, `assertThat(ex.getErrorCode()).isEqualTo(...)`, `assertThat(campo).isEqualTo(...)`. Excepciones: `hasMessageContaining("fragmento")` con fragmentos genéricos del mensaje, y strings que representan inputs/valores de prueba (no mensajes del sistema). Ver "Catálogo de Mensajes en Tests" en Reglas de Escritura.
+20. **Al finalizar** actualiza la fila `Tests` en la sección 13 del plan e indica siempre invocar `@validator-analyze` con el comando exacto.

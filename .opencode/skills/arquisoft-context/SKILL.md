@@ -108,6 +108,7 @@ Domain  ←  Application  ←  Infrastructure
 | `shared:postgres` | `com.arquisoft.shared.postgres` | `QueryJpaSpecification<JpaEntity>`, `CampoSpec` (sealed: `Texto`, `Uuid`, `Entero`, `Decimal`, `Fecha`, `FechaHora`, `Booleano`). Utilería para traducir `Criteria` → `Specification` |
 | `shared:minio` | `com.arquisoft.shared.minio` | `MinioStorageClient` (presigned URLs PUT/GET, `objectExists`, `deleteObject`), `MinioConfig`, `MinioProperties` |
 | `shared:redis` | `com.arquisoft.shared.redis` | Esqueleto sin implementación |
+| `shared:message` | `com.arquisoft.shared.message` | **Catálogo central de mensajes** (Message Catalog Pattern). `AppMessages` (transversal) + `{Contexto}Messages` × 7 (uno por bounded context) con nested classes por entidad. Java puro, sin Spring ni Jakarta. Expuesto transitivamente vía `shared:domain` (`api project(':shared:message')`). Ver [shared/message/README.md](../../shared/message/README.md) |
 
 ### Estructura estándar por contexto — CQRS + Vertical Slice
 
@@ -117,14 +118,14 @@ Domain  ←  Application  ←  Infrastructure
 {contexto}/
 ├── domain/
 │   └── {entidad}/
-│       ├── aggregate/         # XxxAggregate (extiende AggregateRoot)
+│       ├── aggregate/         # XxxAggregate (extiende AggregateRoot solo si emite eventos — ver sección AggregateRoot)
 │       ├── port/out/          # XxxOutputPort (interfaces de persistencia del write side)
 │       ├── event/             # Eventos de dominio (extiende DomainEvent)
-│       ├── exception/         # Excepciones del agregado
-│       └── message/           # Constantes de mensajes de dominio
+│       └── exception/         # Excepciones del agregado (extienden DomainException)
 │
 ├── application/
 │   └── {entidad}/
+│       ├── exception/         # XxxDuplicadaException, XxxNoEncontradaException (extienden ApplicationException)
 │       ├── command/
 │       │   ├── model/         # XxxCommand (record con la intención de negocio)
 │       │   ├── port/in/       # XxxInputPort (extends InputPort<Command, Result> o VoidInputPort)
@@ -187,6 +188,129 @@ Domain  ←  Application  ←  Infrastructure
 | `OpenApiConfig`, `SecurityConfig`, `RabbitMQConfig` | `infrastructure/config/` | `@Configuration` |
 
 **Regla:** un componente está en `adapter/in/web/` si **solo se activa durante una request REST**. Si es transversal a más cosas (filtros que también aplican a actuator, configs globales), va en `filter/` o `config/`.
+
+---
+
+## Mensajes y textos — Message Catalog (`shared:message`)
+
+> **Regla dura:** ningún string literal puede vivir embebido en código de producción si entra en alguna de estas categorías: mensaje de excepción, código de error, mensaje de validación de dominio, mensaje de log, nombre de campo para reporting, o límite numérico de negocio. **Debe vivir como constante en `shared:message`.**
+
+### Ubicación y disponibilidad
+
+- Módulo Gradle: `shared:message` (paquete `com.arquisoft.shared.message`).
+- **No tiene dependencias externas** — Java puro, sin Spring, sin Jakarta.
+- Expuesto **transitivamente** desde `shared:domain` con `api project(':shared:message')`. Cualquier capa (`domain`, `application`, `infrastructure`) de cualquier contexto puede importarlo sin tocar su propio `build.gradle`.
+- Documentación de convención completa: [shared/message/README.md](../../shared/message/README.md).
+
+### Estructura
+
+Una clase por bounded context. Dentro de cada clase, una `public static final class` por aggregate/entidad/agrupador funcional.
+
+```
+shared/message/src/main/java/com/arquisoft/shared/message/
+├── AppMessages.java                       ← transversal (DomainValidator, PaginationRequest)
+├── FichasMessages.java
+├── SeguridadMessages.java
+├── ProyectosMessages.java
+├── ArtefactosMessages.java
+├── RepositorioArtefactosMessages.java
+├── EntregablesMessages.java
+└── EvaluacionesMessages.java
+```
+
+### 5 secciones por nested class de entidad (orden obligatorio)
+
+| # | Sección | Prefijo / Patrón | Tipo Java | Ejemplo |
+|---|---|---|---|---|
+| 1 | **Campos** | `CAMPO_{NOMBRE}` | `String` | `CAMPO_TITULO = "tituloProyecto"` |
+| 2 | **Límites** | `{CAMPO}_{TIPO_LIMITE}` | `int`/`long` | `TITULO_MAX = 100` |
+| 3 | **Códigos de error** | `{ENTIDAD}_{DESCRIPCION}` UPPER_SNAKE (valor = nombre) | `String` | `FICHA_TITULO_DUPLICADO = "FICHA_TITULO_DUPLICADO"` |
+| 4 | **Mensajes de error** | descripción UPPER_SNAKE, con `%s`/`%d` | `String` | `TITULO_DUPLICADO = "El título ya existe: %s"` |
+| 5 | **Logs** | `LOG_{ACCION}` con `{}` SLF4J | `String` | `LOG_REGISTRADA = "Ficha registrada — id={}"` |
+
+Las secciones se separan con comentarios `// Campos`, `// Límites`, `// Códigos de error`, `// Mensajes de error`, `// Logs` — solo las secciones con al menos una constante.
+
+### Plantilla canónica de archivo por contexto
+
+```java
+package com.arquisoft.shared.message;
+
+public final class FichasMessages {
+
+    private FichasMessages() {}
+
+    public static final class FichaPerfil {
+
+        private FichaPerfil() {}
+
+        // Campos
+        public static final String CAMPO_TITULO = "tituloProyecto";
+
+        // Límites
+        public static final int TITULO_MAX = 100;
+
+        // Códigos de error
+        public static final String FICHA_TITULO_REQUERIDO = "FICHA_TITULO_REQUERIDO";
+
+        // Mensajes de error
+        public static final String TITULO_DUPLICADO = "El título ya existe: %s";
+
+        // Logs
+        public static final String LOG_REGISTRADA = "Ficha de perfil registrada — id={}";
+    }
+}
+```
+
+### Reglas inviolables
+
+1. **Clase outer** `public final` con constructor privado vacío.
+2. **Nested class** `public static final` con constructor privado vacío.
+3. Todas las constantes `public static final`.
+4. **Prohibido JavaDoc** en cualquier archivo de `shared:message` — los nombres son autoexplicativos. La convención completa vive en `shared/message/README.md`.
+5. **Nunca** se crea un paquete `{entidad}/message/` dentro de un contexto. Las constantes específicas de una entidad viven SOLO en `{Contexto}Messages.{Entidad}` dentro de `shared:message`.
+
+### Uso desde código
+
+```java
+// Validación de dominio
+DomainValidator.notBlank(titulo,
+        FichasMessages.FichaPerfil.CAMPO_TITULO,
+        FichasMessages.FichaPerfil.FICHA_TITULO_REQUERIDO,
+        result);
+
+// Excepción con mensaje parametrizado
+throw new FichaTituloDuplicadoException(
+        FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted(titulo),
+        FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
+
+// Log SLF4J — la plantilla del catálogo, los valores como varargs
+log.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
+```
+
+### Cuándo agregar al catálogo (decisión obligatoria al implementar)
+
+| Veo este patrón en el código… | …acción obligatoria |
+|---|---|
+| `log.info("texto literal", ...)` | extraer a `{Contexto}Messages.{Entidad}.LOG_*` |
+| `super("mensaje literal", ...)` en `*Exception` | extraer a `{Contexto}Messages.{Entidad}.{NOMBRE_DESCRIPTIVO}` o `MENSAJE_*` |
+| `result.addError("campo", "CODIGO", "mensaje literal", ...)` | los 3 argumentos van al catálogo: `CAMPO_*`, código UPPER_SNAKE, y mensaje parametrizado |
+| `if (valor.length() > 100)` con literal numérico de negocio | extraer límite a `{Contexto}Messages.{Entidad}.{CAMPO}_MAX` |
+| `new ApplicationException("texto", "CODIGO")` | mensaje y código al catálogo |
+
+### Cuándo NO entra al catálogo
+
+- Strings técnicos de configuración: nombres de queues/colas/beans/headers HTTP, valores de `@RequestMapping`, claves de propiedades YAML.
+- Constantes propias de módulos `shared:*` que NO representan mensajes (ej. nombres de tipos de eventos AMQP viven en `shared:amqp`).
+- Literales en tests (los tests pueden importar del catálogo para evitar duplicación, pero no es obligatorio).
+- JavaDocs / comentarios.
+
+### Agregar entidad nueva
+
+1. Identificar el bounded context (`fichas`, `seguridad`, etc.).
+2. Abrir `{Contexto}Messages.java` en `shared:message`.
+3. Agregar `public static final class {NombreEntidad}` con constructor privado vacío.
+4. Añadir constantes en el orden de las 5 secciones, separadas por los comentarios estándar.
+5. **No** crear archivos sueltos `{NombreEntidad}Messages.java` — todo va dentro de la clase del contexto.
 
 ---
 
@@ -265,6 +389,7 @@ lombok.*                           ← Lombok PROHIBIDO en dominio
 y clases del propio proyecto:
 - `com.arquisoft.{contexto}.domain.*` (mismo contexto, capa propia)
 - `com.arquisoft.shared.domain.*` (incluye subpaquetes `events/`, `exception/`, `pagination/`, `validation/`, `util/`)
+- `com.arquisoft.shared.message.*` (catálogo central de mensajes — Java puro, sin framework)
 
 > **NUNCA** en `domain/`: `com.arquisoft.shared.amqp.*`, `com.arquisoft.shared.web.*`, `com.arquisoft.shared.postgres.*`, `com.arquisoft.shared.minio.*`. Esos son adaptadores técnicos.
 
@@ -352,18 +477,16 @@ o un mock de `RabbitTemplate`/`Jwt`/`JpaRepository`, la lógica está en la capa
 
 ### Principio DDD
 
-En el proyecto Arquisoft, **toda entidad que sea raíz de su agregado DEBE extender `AggregateRoot` de `shared:domain`**, con una única excepción:
+En el proyecto Arquisoft, **una entidad raíz extiende `AggregateRoot` de `shared:domain` SOLO si la HU emite eventos de dominio**. La extensión es función directa de la decisión de eventos, no de "consistencia futura".
 
-- **Excepción:** el contexto `seguridad` no usa `AggregateRoot` porque es transversal y delega el estado en Keycloak.
+**Reglas duras:**
 
-En los otros 6 contextos, la ausencia de `AggregateRoot` en una entidad raíz es un **error bloqueante** que debe corregirse.
+- **`seguridad`:** nunca usa `AggregateRoot` (delega el estado en Keycloak).
+- **Los otros 6 contextos:**
+    - HU **emite eventos** (consumidores conocidos o auditoría justificada) → la entidad raíz **DEBE** extender `AggregateRoot`. Su ausencia es **error bloqueante**.
+    - HU **NO emite eventos** (CRUD interno sin consumidores ni casos de auditoría) → la entidad raíz **NO** extiende `AggregateRoot`. Es solo un `class` con factories `build`/`rebuild`. Forzar la extensión "por consistencia" es un **error bloqueante** porque arrastra maquinaria muerta (lista de eventos, métodos `getUnPublishedEvents`/`clearUnPublishedEvents`) que nadie usa.
 
-> **Importante:** una entidad puede extender `AggregateRoot` y NO emitir eventos.
-> Si la HU es un CRUD simple sin consumidores conocidos del evento, el factory `build(...)`
-> simplemente no llama a `publishEvent(...)` y el use case no inyecta `EventPublisher`.
-> Extender `AggregateRoot` es por consistencia y para tener la maquinaria lista
-> el día que aparezca la necesidad de emitir eventos. Ver sección "¿Cuándo emitir eventos
-> de dominio?" más abajo.
+> **Migración cuando aparezca el primer evento:** si una HU futura introduce un evento sobre una entidad que hoy no extiende `AggregateRoot`, esa HU es la que añade `extends AggregateRoot` y crea la clase del evento. No se anticipa.
 
 ### ¿Qué es AggregateRoot?
 
@@ -422,10 +545,10 @@ public abstract class DomainEvent {
 
 | Método | Cuándo usar | ¿Emite evento? | ¿Genera UUID? |
 |---|---|---|---|
-| `build(...)` | Crear entidad nueva desde un comando/DTO | Solo si la HU emite eventos (ver "¿Cuándo emitir eventos?") | ✅ Sí — `UUID.randomUUID()` |
+| `build(...)` | Crear entidad nueva desde un comando/DTO | Solo si la entidad extiende `AggregateRoot` Y la HU emite eventos | ✅ Sí — `UUID.randomUUID()` |
 | `rebuild(...)` | Reconstruir entidad desde persistencia | ❌ Nunca | ❌ No — recibe el UUID de BD |
 
-**Regla dura:** un `CommandOutputAdapter` SIEMPRE usa `rebuild(...)`, nunca `build(...)`.
+**Regla dura:** un `CommandOutputAdapter` SIEMPRE usa `rebuild(...)`, nunca `build(...)`. Aplica tanto si la entidad extiende `AggregateRoot` como si no — el factory `build` queda reservado para la creación inicial desde el use case.
 
 ### ¿Cuándo emitir eventos de dominio?
 
@@ -443,12 +566,12 @@ Una HU de Escritura puede emitir eventos o no. La decisión depende de si hay (o
 
 **Implicaciones de la decisión:**
 
-| Decisión | `build(...)` | Use case | Plan declara |
-|---|---|---|---|
-| **Con eventos** | Llama a `publishEvent(new {Entidad}{Accion}Event(...))` | Inyecta `EventPublisher`, drena con `getUnPublishedEvents()`, publica, llama a `clearUnPublishedEvents()` | Sección 4 lista los eventos emitidos con su `eventTopic` |
-| **Sin eventos (CRUD simple)** | NO llama a `publishEvent(...)` | NO inyecta `EventPublisher`, no hay drenado/limpieza | Sección 4 declara explícitamente "Esta HU no emite eventos: <razón>" |
+| Decisión | Entidad raíz | `build(...)` | Use case | Plan declara |
+|---|---|---|---|---|
+| **Con eventos** | `extends AggregateRoot` | Llama a `publishEvent(new {Entidad}{Accion}Event(...))` | Inyecta `EventPublisher`, drena con `getUnPublishedEvents()`, publica, llama a `clearUnPublishedEvents()` | Sección 4 lista los eventos emitidos con su `eventTopic` |
+| **Sin eventos (CRUD simple)** | **NO extiende `AggregateRoot`** — es un `class` plano con factories `build`/`rebuild` | NO existe `publishEvent(...)` ni se llama | NO inyecta `EventPublisher`, no hay drenado/limpieza | Sección 4 declara explícitamente "Esta HU no emite eventos: <razón>" + "Entidad raíz NO extiende `AggregateRoot`" |
 
-**Ambas opciones son válidas.** La entidad sigue extendiendo `AggregateRoot` por consistencia y para tener la maquinaria lista. Cuando aparezca la necesidad futura, solo añades la clase del evento, llamas a `publishEvent(...)` en `build(...)` e inyectas `EventPublisher` en el use case.
+**Cuando aparezca la primera necesidad de evento futuro:** la HU que introduzca el evento añade `extends AggregateRoot` a la entidad, crea la clase del evento (`{Entidad}{Accion}Event extends DomainEvent` con `getEventTopic()`), llama a `publishEvent(...)` en el factory correspondiente e inyecta `EventPublisher` en el use case. No se anticipa.
 
 ### Firma de EventPublisher (shared:amqp)
 
@@ -777,7 +900,7 @@ y respeta el modelo de dominio en el código interno.
 
 1. **`Command` y `ReadModel` son `record`, no clases con Lombok.** Inmutables por construcción.
 2. **`RequestDTO` es `record` con anotaciones Jakarta** (`@NotBlank`, `@Email`, etc.). Tiene un método `toCommand()` que produce el `Command` correspondiente. Vive en **infrastructure**, no en application.
-3. **El UseCase NO devuelve un `ResponseDTO`.** Los UseCases write devuelven `UUID` (o nada → `VoidInputPort`); los read devuelven `ReadModel` o `PaginatedResult<ReadModel>`. No existe un "ResponseDTO" intermedio entre la capa de aplicación y el adaptador REST: el `InputAdapter` serializa directamente el `ReadModel` a JSON.
+3. **El UseCase NO devuelve un `ResponseDTO`.** Los UseCases write devuelven una de tres opciones declarada por el plan: **(A) `UUID`** del recurso creado (caso por defecto, el más común), **(B) `void`** vía `VoidInputPort<Command>` (no hay nada útil que devolver al cliente), o **(C) un objeto específico** del dominio o `application` (típicamente un `ReadModel` cuando el cliente necesita el recurso completo tras crearlo — patrón REST común). Los UseCases read devuelven `ReadModel` o `PaginatedResult<ReadModel>`. **No existe un "ResponseDTO" intermedio** entre la capa de aplicación y el adaptador REST: el `InputAdapter` serializa directamente el valor retornado a JSON. La opción C requiere justificación explícita en el plan (sección 8) porque rompe la simetría con la convención por defecto (A).
 4. **NUNCA crees un `PageResponseDTO` o `ErrorResponseDTO` local en un contexto.** Importa desde `com.arquisoft.shared.web`.
 5. **Campos en español, idénticos al aggregate.** Si el aggregate dice `tituloProyecto`, todo lo que lo transporte (Command, ReadModel, RequestDTO, JSON HTTP) usa `tituloProyecto`. **NO** se traduce a inglés ni se renombra.
 4. **No anotes campos con `@JsonProperty` para mezclar idiomas.** Si el JSON externo necesita un nombre específico, evalúa si el DTO debería ser técnico (en inglés) o de dominio (en español) — no ambos.
@@ -1488,9 +1611,27 @@ Sin crear handler propio. Sin tocar `shared:web`.
 
 #### Ubicación de excepciones en el contexto
 
-- Excepciones **del aggregate** (invariantes del dominio, estado inválido) → `domain/{entidad}/exception/` → suelen extender `DomainException`.
-- Excepciones **del use case** (recurso no encontrado, duplicado, regla de orquestación) → `application/{entidad}/{command|query}/exception/` → suelen extender `ApplicationException`.
-- Excepciones de **infraestructura** (parsing JPA, BD caída) → `infrastructure/exception/` → extienden `InfrastructureException`.
+> **Regla dura — La ubicación de la excepción la determina la clase base que extiende, NO el archivo donde se lanza.** Si una excepción extiende `ApplicationException`, va en `application/`, aunque también la consuma un controller. Si extiende `DomainException`, va en `domain/`, aunque la lance el use case. Mezclar esto (ej. `ApplicationException` ubicada en `domain/`) es **violación bloqueante**: rompe la dirección de dependencias del proyecto — la capa `domain` no puede conocer clases base de `application`/`infrastructure`.
+
+| Clase base que extiende | Ubicación obligatoria | Por qué |
+|---|---|---|
+| `DomainException` | `domain/{entidad}/exception/` | Invariantes del aggregate o estado inválido — viven con la entidad raíz. La clase base `DomainException` vive en `shared:domain.exception` (capa `domain`). |
+| `DomainValidationException` | `domain/{entidad}/exception/` | Notification Pattern multi-campo — también es del dominio. |
+| `ApplicationException` | `application/{entidad}/exception/` | Recurso no encontrado / duplicado / regla de orquestación que **no es invariante del aggregate** — la decisión la toma el use case. La clase base vive en `shared:exception` (consumida desde `application`). **Ubicación directa bajo `{entidad}/`, sin anidar `command/` o `query/`**: la excepción pertenece al concepto entidad, no al slice CQRS. |
+| `InfrastructureException` | `infrastructure/exception/` | Fallos técnicos (JPA, RabbitMQ caído, Keycloak inaccesible) — solo conocidos en `infrastructure`. |
+
+**Casos típicos por tipo y dónde duele si se ubica mal:**
+
+| Excepción ejemplo | Extiende | Ubicación correcta | Si se ubica en `domain/` por error |
+|---|---|---|---|
+| `FichaPerfilDuplicadaException` | `ApplicationException` | `application/fichaPerfil/exception/` | La capa `domain` no debe conocer la regla "ya existe en BD" (eso es decisión del use case tras consultar el repositorio). Además, importar `ApplicationException` desde `domain/` viola la dirección de dependencias. |
+| `AsesorFichaNoEncontradoException` | `ApplicationException` | `application/asesorFicha/exception/` | Igual: "no encontrado en BD" es decisión del use case, no del aggregate. Vive bajo la entidad `asesorFicha` aunque la lance el use case de `fichaPerfil`. |
+| `FichaPerfilEstadoInvalidoException` | `DomainException` | `domain/fichaPerfil/exception/` | Esta sí va en `domain/` porque "no se puede aprobar una ficha en estado BORRADOR" es invariante del aggregate. |
+| `FichaPerfilTituloInvalidoException` | `DomainValidationException` | `domain/fichaPerfil/exception/` | Notification Pattern aplicado en el constructor del aggregate — invariante de dominio. |
+
+**Cómo decidir rápido:** pregúntate "¿esta excepción la lanza el aggregate en su propio constructor / método de negocio, sin ayuda de un repositorio?"
+- **Sí** → invariante del dominio → extiende `DomainException` → vive en `domain/{entidad}/exception/`.
+- **No, el use case la lanza tras consultar un puerto** (repositorio, servicio externo) → es decisión de orquestación → extiende `ApplicationException` → vive en `application/{entidad}/exception/` (directamente bajo la entidad, sin anidar `command/` o `query/`).
 
 #### Cuándo SÍ crear un handler propio del contexto
 
@@ -1764,16 +1905,28 @@ Exchange "arquisoft.events" (TopicExchange, durable)
 | Cola por consumidor | `{contextoConsumidor}.{eventTopic}` durable | `proyectos.fichas.fichaPerfil.creada` |
 | DLX | `arquisoft.dlx` + routing key `{queue}.dead` | — |
 
-### Publicación — `RabbitMQEventPublisher` (en `shared:amqp`)
+### Publicación — `SpringModulithEventPublisher` (Spring Modulith + Outbox Pattern)
 
-Ya existe. Implementa `EventPublisher` de `shared:domain.events`. Tras `usuario.drainUnPublishedEvents().forEach(eventPublisher::publish)`, el publisher:
+El publicador principal del proyecto es **`SpringModulithEventPublisher`** (en `shared:amqp`), que implementa el puerto `EventPublisher` de `shared:domain.events`. Internamente delega a `ApplicationEventPublisher.publishEvent(...)`, y Spring Modulith intercepta esa publicación para aplicar **Outbox Pattern**:
 
-1. Usa `event.getEventTopic()` como routing key sobre `arquisoft.events`.
-2. **Publisher Confirms** habilitados — si el broker rechaza, loguea el `correlationId`.
-3. **Reintento con backoff exponencial:** 3 intentos (500ms → 1s → 2s) **solo** ante `AmqpException` (error de conectividad). Errores de negocio NO se reintentan.
-4. **Propaga headers de trazabilidad** desde el MDC del request HTTP:
-   - `X-Trace-Id` (correlación de request → eventos → side-effects)
-   - `X-User-Id` (auditoría de quién originó el evento)
+1. **Dentro de la transacción del use case:** persiste el evento en la tabla `event_publication` (BD `arquisoft_events`) con `completion_date = NULL`. El INSERT está en la misma transacción que el `save()` del aggregate.
+2. **Tras el commit:** publica al exchange `arquisoft.events` usando `event.getEventTopic()` como routing key, vía la configuración `ModulithAmqpExternalizationConfig`.
+3. **Si el broker rechaza o está caído:** el evento queda en `event_publication` con `completion_date = NULL`. El bean `FailedEventRetryConfig` reintenta cada 5 min mediante `FailedEventPublications.resubmit(...)` con `withMinAge(2m)`.
+
+Existe además un **fallback `RabbitMQEventPublisher`** anotado con `@ConditionalOnMissingBean(EventPublisher.class)` — solo se activa si Spring Modulith no está en el classpath. Maneja publish directo con backoff exponencial 3× (500ms → 1s → 2s) ante `AmqpException`. En la operación normal del proyecto NO se usa este fallback.
+
+**Headers de trazabilidad** (inyectados por `traceHeadersPostProcessor` en `RabbitTemplate`, válidos para ambos publicadores):
+
+- `X-Trace-Id` (correlación de request → eventos → side-effects). Si el MDC está vacío (caso retry de Modulith), se genera un UUID.
+- `X-User-Id` (auditoría de quién originó el evento). Fallback: `"SYSTEM"`.
+
+**Implicación para el use case:** inyecta la interfaz `EventPublisher` de `com.arquisoft.shared.events` (vive en `shared:domain`). NO conoce que hay Outbox por debajo — eso es responsabilidad de `shared:amqp`. El patrón es:
+
+```java
+aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);
+```
+
+`drainUnPublishedEvents()` retorna y limpia la lista en una sola operación atómica. **NO existe `clearUnPublishedEvents()`** — no llamar a un método con ese nombre.
 
 ### Consumo — `AbstractEventConsumer` (en `shared:amqp`)
 
@@ -1858,7 +2011,9 @@ public class ProyectosFichaPerfilQueueConfig {
 | Decide qué evento emitir | `domain/{entidad}/aggregate/` | Solo el aggregate decide qué pasó |
 | Acumula evento en memoria | `domain/{entidad}/aggregate/` | `publishEvent(...)` desde el factory |
 | Drena y publica | `application/{entidad}/command/` | `drainUnPublishedEvents().forEach(publish)` tras persistir |
-| Publica a RabbitMQ | `shared:amqp` (`RabbitMQEventPublisher`) | Routing key, reintentos, headers |
+| Publica a RabbitMQ | `shared:amqp` (`SpringModulithEventPublisher`) | Delega a `ApplicationEventPublisher`; Modulith persiste en `event_publication` y publica tras commit |
+| Outbox + reintentos | `arquisoft_events` BD + `FailedEventRetryConfig` | Tabla `event_publication` (Outbox); scheduler reintenta cada 5 min |
+| Externalización a exchange | `shared:amqp` (`ModulithAmqpExternalizationConfig`) | `EventExternalizationConfiguration` con routing por `getEventTopic()` |
 | Configura cola + DLX | `{contextoConsumidor}/infrastructure/config/` | `@Configuration` con Queue + Binding |
 | Consume el mensaje | `{contextoConsumidor}/infrastructure/{entidad}/command/adapter/in/amqp/` | Extiende `AbstractEventConsumer` |
 | Payload del consumidor | mismo paquete del consumer | `record` local, **NO** importa el evento del publicador |
@@ -1866,11 +2021,12 @@ public class ProyectosFichaPerfilQueueConfig {
 ### Reglas inviolables
 
 1. **`AggregateRoot` solo acumula eventos en memoria.** Nunca conoce `EventPublisher`.
-2. **El UseCase write drena con `drainUnPublishedEvents()`** (un solo método que retorna + limpia atómico). Nunca itera el aggregate manualmente.
-3. **El consumidor declara su propio `record` payload.** Nunca importa la clase del evento del publicador (cero acoplamiento entre contextos).
-4. **Toda cola tiene DLX configurado** (`x-dead-letter-exchange`). Sin DLX, mensajes en error se re-encolan eternamente.
-5. **El consumer extiende `AbstractEventConsumer`** y usa `withCorrelation(message, channel, runnable)`. No implementa ACK/NACK manualmente.
-6. **Deuda técnica conocida (a resolver con Outbox Pattern):** `save()` y `publish()` no son atómicos. Si el broker falla tras persistir, el evento se pierde. Es responsabilidad del implementador documentarlo si la HU tiene tolerancia cero a eventos perdidos.
+2. **El UseCase write drena con `drainUnPublishedEvents()`** (un solo método que retorna + limpia atómico). Nunca itera el aggregate manualmente. **NO existe `clearUnPublishedEvents()`** en `AggregateRoot` — código que lo use NO compila.
+3. **El use case inyecta `EventPublisher`** (interfaz de `shared:domain.events`). Quién la provee (`SpringModulithEventPublisher` en operación normal, `RabbitMQEventPublisher` como fallback) lo decide Spring — el use case no conoce la implementación.
+4. **El consumidor declara su propio `record` payload.** Nunca importa la clase del evento del publicador (cero acoplamiento entre contextos).
+5. **Toda cola tiene DLX configurado** (`x-dead-letter-exchange`). Sin DLX, mensajes en error se re-encolan eternamente.
+6. **El consumer extiende `AbstractEventConsumer`** y usa `withCorrelation(message, channel, runnable)`. No implementa ACK/NACK manualmente.
+7. **Atomicidad práctica garantizada vía Outbox Pattern de Spring Modulith.** El INSERT en `event_publication` viaja en la misma transacción que el `save()` del aggregate (mismo `JdbcTemplate` de `arquisoftEventsDataSource`). Si el broker está caído al commit, el evento queda persistido y `FailedEventRetryConfig` lo reintenta cada 5 min.
 
 ---
 

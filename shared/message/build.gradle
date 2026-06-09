@@ -1,0 +1,11 @@
+// java-library habilita la configuración 'api', que expone las constantes
+// transitivamente a los consumidores del módulo.
+//
+// shared:message es el catálogo central de mensajes del proyecto (Message Catalog Pattern).
+// Contiene todos los textos del sistema — mensajes de error, validaciones, logs,
+// códigos de error — como constantes Java type-safe.
+//
+// No tiene dependencias externas: solo constantes Java puras. Cualquier capa
+// (domain, application, infrastructure) de cualquier contexto puede importarlo
+// sin violar la regla "domain sin Spring ni Jakarta".
+apply plugin: 'java-library'

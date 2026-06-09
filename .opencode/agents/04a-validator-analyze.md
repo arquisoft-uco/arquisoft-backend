@@ -189,30 +189,33 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 
 | Check | Bloqueante |
 |-------|:---:|
-| En los 6 contextos de negocio: entidad raíz extiende `AggregateRoot` (incluso si la HU no emite eventos — es por consistencia) | ✅ |
-| Factory `rebuild(...)` NO publica eventos | ✅ |
+| Factory `rebuild(...)` NO publica eventos (aun si la entidad extiende `AggregateRoot`) | ✅ |
 | `CommandOutputAdapter` usa `rebuild(...)` al reconstruir | ✅ |
 | Dominio NO inyecta `EventPublisher` | ✅ |
 | Existencia de un `{Entidad}EventPublisher` local en algún contexto (en `adapter/out/messaging/` o similar) | ❌ violación bloqueante (la publicación está centralizada en `shared:amqp`) |
 
-**Checks aplicables SOLO si el plan declara eventos en sección 4:**
+**Checks aplicables SOLO si el plan declara eventos en sección 4 (respuesta A o B a la pregunta 5):**
 
 | Check | Bloqueante |
 |-------|:---:|
-| Eventos en `{contexto}/domain/event/` y extienden `DomainEvent` | ✅ |
+| Entidad raíz **extiende `AggregateRoot`** de `com.arquisoft.shared.domain` | ✅ |
+| Eventos en `{contexto}/domain/{entidad}/event/` y extienden `DomainEvent` | ✅ |
 | Cada `DomainEvent` implementa `getEventTopic()` con formato `{contexto}.{entidad}.{accion}` | ✅ |
 | Factory `build(...)` publica evento con `publishEvent(...)` | ✅ |
-| Use case inyecta `EventPublisher` de `com.arquisoft.shared.amqp` (NO una implementación local del contexto) | ✅ |
-| Use case drena eventos tras persistir y llama `clearUnPublishedEvents()` | ✅ |
+| Use case inyecta `EventPublisher` de `com.arquisoft.shared.events` (interfaz en shared:domain; NO una implementación local del contexto, NO `SpringModulithEventPublisher` ni `RabbitMQEventPublisher` directamente) | ✅ |
+| Use case drena eventos tras persistir con `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` — UN solo método, no dos pasos | ✅ |
+| Use case llama `clearUnPublishedEvents()` (método inexistente — no compila) | ❌ violación bloqueante |
 
-**Checks aplicables SOLO si el plan declara "Eventos: ninguno":**
+**Checks aplicables SOLO si el plan declara "Eventos: ninguno" (respuesta C a la pregunta 5):**
 
 | Check | Bloqueante |
 |-------|:---:|
-| NO existen archivos en `{contexto}/domain/event/` para esta HU | ✅ |
-| Factory `build(...)` NO llama a `publishEvent(...)` | ✅ |
+| Entidad raíz **NO extiende `AggregateRoot`** — es una `final class` plana con factories `build`/`rebuild` | ✅ |
+| Entidad raíz extiende `AggregateRoot` "por consistencia" cuando el plan no declara eventos | ❌ violación bloqueante (arrastra maquinaria de eventos no usada) |
+| NO existen archivos en `{contexto}/domain/{entidad}/event/` para esta HU | ✅ |
+| Factory `build(...)` NO llama a `publishEvent(...)` (el método no existe en una clase plana) | ✅ |
 | Use case NO inyecta `EventPublisher` | ✅ |
-| Use case NO drena ni limpia eventos | ✅ |
+| Use case NO drena eventos (no llama a `drainUnPublishedEvents()` — no hay nada que drenar en una entidad plana) | ✅ |
 
 **2.3 Entidades de dominio:**
 
@@ -232,7 +235,13 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Cada excepción extiende la clase base correcta según su semántica: `DomainException` (invariante violada → 422), `ApplicationException` (recurso no encontrado / duplicado / parámetro inválido → 400), `InfrastructureException` (fallo de BD/RabbitMQ/Keycloak → 503), `DomainValidationException` (Notification Pattern → 422 + fieldErrors) | ✅ |
 | Excepción extiende `RuntimeException` directamente sin pasar por la jerarquía (`BaseException` / sus 4 subclases) | ❌ violación bloqueante (caerá en fallback Exception → 500) |
 | Tiene `errorCode` trazable (formato `ENTIDAD_ACCION` en SCREAMING_SNAKE_CASE, ej. `FICHA_PERFIL_DUPLICADA`) | ✅ |
-| Ubicación: excepciones del aggregate en `domain/{entidad}/exception/`; excepciones de use case en `application/{entidad}/{command|query}/exception/`; excepciones de infra en `infrastructure/exception/` | ⚠️ |
+| Excepción que extiende `DomainException` o `DomainValidationException` ubicada en `domain/{entidad}/exception/` | ✅ |
+| Excepción que extiende `ApplicationException` ubicada en `application/{entidad}/exception/` (directamente bajo la entidad, sin anidar `command/` o `query/`) | ✅ |
+| Excepción que extiende `InfrastructureException` ubicada en `infrastructure/exception/` | ✅ |
+| Excepción que extiende `ApplicationException` ubicada en `domain/` (cualquier subpaquete) | ❌ violación bloqueante (rompe la dirección de dependencias — `domain/` no puede importar `ApplicationException` de `shared:exception`. Mover a `application/{entidad}/exception/`) |
+| Excepción que extiende `ApplicationException` ubicada en `application/{entidad}/command/exception/` o `application/{entidad}/query/exception/` (anidada en el slice CQRS) | ❌ violación bloqueante (la excepción pertenece al concepto entidad, no al slice — mover a `application/{entidad}/exception/` directamente) |
+| Excepción que extiende `DomainException` ubicada en `application/` o `infrastructure/` | ❌ violación bloqueante (las invariantes del aggregate viven con el aggregate — moverla a `domain/{entidad}/exception/`) |
+| Excepción que extiende `InfrastructureException` ubicada en `domain/` o `application/` | ❌ violación bloqueante (los fallos técnicos solo existen en infrastructure) |
 | El constructor produce un mensaje claro y útil para el cliente (no filtra PII, no expone detalles internos) | ✅ |
 | Se creó `{Contexto}GlobalExceptionHandler` sin que el plan lo declare explícitamente | ❌ violación bloqueante (la regla por defecto es NO crearlo) |
 | `{Contexto}GlobalExceptionHandler` declarado por el plan: tiene `@RestControllerAdvice`, `@Slf4j`, `@Order(Ordered.HIGHEST_PRECEDENCE)` | ✅ |
@@ -426,10 +435,11 @@ revise. NO lo marques como bloqueante por sí solo.
 
 | Tipo de UC declarado en plan | Check | Bloqueante |
 |---|---|:---:|
-| **Consulta** | Tests de `publishEvent`, `getUnPublishedEvents`, `clearUnPublishedEvents` en `{Entidad}Test.java` | ✅ |
+| **Consulta** | Tests de `publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents` en `{Entidad}Test.java` | ✅ |
 | **Consulta** | `verify(eventPublisher).publish(...)` en `{Accion}{Entidad}UseCaseImplTest.java` | ✅ |
 | **Consulta** | Test `debeReconstruirSinEventos_cuandoRebuildEsInvocado` (la consulta no debería estar testeando `rebuild`) | ✅ |
-| **Escritura** | AUSENCIA de tests de ciclo de eventos (`publishEvent`, `getUnPublishedEvents`, `clearUnPublishedEvents`) cuando el plan declara que la HU emite eventos | ✅ |
+| **Escritura** | AUSENCIA de tests de ciclo de eventos (`publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents`) cuando el plan declara que la HU emite eventos | ✅ |
+| **Cualquier tipo** | Cualquier llamada a `clearUnPublishedEvents()` (método inexistente — código no compila) | ❌ violación bloqueante |
 | **Escritura** | AUSENCIA de `verify(eventPublisher).publish(...)` en `{Accion}{Entidad}UseCaseImplTest.java` | ✅ |
 | (cualquier tipo) | Plan no declara el campo "Tipo de Use Case" en la Metadata | ⚠️ menor (advertencia, no bloqueante — el plan puede ser de versión vieja) |
 
@@ -438,7 +448,7 @@ revise. NO lo marques como bloqueante por sí solo.
 1. Extrae de la Metadata del plan el campo "Tipo de Use Case" (si existe).
 2. Lee los archivos de test relevantes (`{Entidad}Test.java`, `{Accion}{Entidad}UseCaseImplTest.java`).
 3. Busca patrones de eventos en su contenido:
-   - Llamadas a `publishEvent`, `getUnPublishedEvents`, `clearUnPublishedEvents`.
+   - Llamadas a `publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents`.
    - `verify(eventPublisher)`, `verify(...EventPublisher)`.
 4. Compara con el Tipo de Use Case declarado y aplica la tabla.
 
@@ -450,7 +460,7 @@ revise. NO lo marques como bloqueante por sí solo.
 - Tipo de UC declarado en plan: Consulta
 - Problema: el test contiene verificaciones de ciclo de eventos del Aggregate Root,
   que no aplican a use cases de consulta (no hay eventos que verificar).
-- Acción requerida: eliminar tests de publishEvent, getUnPublishedEvents y clearUnPublishedEvents.
+- Acción requerida: eliminar tests de publishEvent, getUnPublishedEvents y drainUnPublishedEvents.
 - Referencia: skill arquisoft-context, sección "Tipos de Use Case y sus Tests".
 ```
 
@@ -571,6 +581,70 @@ revise. NO lo marques como bloqueante por sí solo.
 | Si el plan dice "Endpoint EXISTENTE" y el implementador creó un `InputAdapter` nuevo (en vez de modificar el existente) | ❌ violación bloqueante (duplica controllers para la misma ruta) |
 | Si el plan dice "Endpoint NUEVO" y el `InputAdapter` no se creó | ❌ violación bloqueante |
 | Si el plan dice "Endpoint EXISTENTE", el archivo a modificar está declarado con su ruta completa | ✅ |
+
+**2.19 Catálogo de Mensajes (`shared:message`) — cero strings literales (CRÍTICO):**
+
+> **Política del proyecto:** todo string que aparezca en código de producción (mensaje de excepción, código de error, mensaje de validación de dominio, mensaje de log, nombre de campo para reporting, límite numérico de negocio) DEBE vivir como constante en `shared:message`. La convención antigua `{contexto}/domain/{entidad}/message/` y `{contexto}/application/{entidad}/message/` está **descontinuada** — el catálogo es centralizado.
+
+Verificación: lee los archivos cambiados/creados por el implementador (use cases, aggregates, adapters, excepciones) y aplica los siguientes checks. Un mismo archivo puede disparar varias violaciones.
+
+| Check | Bloqueante |
+|-------|:---:|
+| `log.{info\|warn\|error\|debug}("...texto literal...", ...)` con string literal como primer argumento — el primer argumento debe ser una constante `{Contexto}Messages.{Entidad}.LOG_*` | ❌ violación bloqueante |
+| `super("mensaje literal", "CODIGO_LITERAL")` en el constructor de cualquier excepción del contexto que extiende `DomainException`, `ApplicationException`, `InfrastructureException` o `DomainValidationException` — ambos argumentos deben venir del catálogo | ❌ violación bloqueante |
+| `throw new XxxException("texto literal", ...)` — el mensaje y el código deben venir del catálogo (acepta `.formatted(...)` para parametrizar) | ❌ violación bloqueante |
+| `DomainValidator.{notNull\|notBlank\|maxLength\|minLength\|validEmail}(..., "campoLiteral", "CODIGO_LITERAL", ...)` con literales en los argumentos `fieldName` y `errorCode` — deben venir de `{Contexto}Messages.{Entidad}.CAMPO_*` y `{Contexto}Messages.{Entidad}.{CODIGO}` | ❌ violación bloqueante |
+| `result.addError("campo literal", "CODIGO_LITERAL", "mensaje literal")` con cualquiera de los 3 argumentos como literal | ❌ violación bloqueante |
+| Comparación / condición con literal numérico de negocio (ej. `if (titulo.length() > 100)`, `if (intentos >= 5)`) sin pasar por una constante `{Contexto}Messages.{Entidad}.{CAMPO}_MAX` o similar | ❌ violación bloqueante |
+| Existencia de paquete `{contexto}/domain/{entidad}/message/` con cualquier archivo `*Messages.java` (convención retirada) | ❌ violación bloqueante (mover constantes al catálogo `{Contexto}Messages.{Entidad}` en `shared:message` y borrar el paquete) |
+| Existencia de paquete `{contexto}/application/{entidad}/message/` o `{contexto}/application/{entidad}/command/message/` o `{contexto}/application/{entidad}/query/message/` con cualquier archivo `*Messages.java` | ❌ violación bloqueante (mover al catálogo) |
+| Constante del catálogo declarada con JavaDoc `/** ... */` en `shared/message/.../{Contexto}Messages.java` | ❌ violación bloqueante (regla del catálogo: cero JavaDocs) |
+| Nested class de entidad dentro del catálogo SIN constructor privado vacío | ❌ violación bloqueante |
+| Sección del nested class con comentario separador (`// Campos`, `// Límites`, `// Códigos de error`, `// Mensajes de error`, `// Logs`) pero VACÍA (sin constantes) | ⚠️ menor (limpiar el comentario o agregar constantes) |
+| Constante de código de error en formato distinto a UPPER_SNAKE (ej. `fichaTituloDuplicado`, `Ficha-Titulo-Duplicado`) | ❌ violación bloqueante |
+| Constante de log NO tiene prefijo `LOG_` o usa marcadores `%s`/`%d` en vez de `{}` SLF4J | ❌ violación bloqueante |
+| Constante de mensaje de error usa marcadores `{}` SLF4J en vez de `%s`/`%d` (para `.formatted()`) | ❌ violación bloqueante |
+| Constante de nombre de campo NO tiene prefijo `CAMPO_` | ❌ violación bloqueante |
+| Import de `com.arquisoft.shared.util.message.AppMessages` (paquete antiguo, ya borrado) | ❌ violación bloqueante (debe ser `com.arquisoft.shared.message.AppMessages`) |
+| Archivo nuevo en `shared:message` con dependencias de Spring, Jakarta, Lombok o cualquier framework | ❌ violación bloqueante (`shared:message` es Java puro) |
+
+**Cómo verificar (mental, sin tool calls extra):**
+
+Cuando leas con `view` los archivos del plan (use cases, aggregates, adapters, excepciones), busca patrones de string literal embebido. Ejemplo de violación bloqueante:
+
+```java
+// ❌ Archivo: fichas/application/.../RegistrarFichaPerfilUseCase.java
+log.info("Ficha de perfil registrada — id={}", ficha.getId());
+//        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//        STRING LITERAL — violación bloqueante 2.19
+
+// ❌ Archivo: fichas/application/.../FichaTituloDuplicadoException.java
+public FichaTituloDuplicadoException(String titulo) {
+    super("El título ya existe: " + titulo, "FICHA_TITULO_DUPLICADO");
+    //    ^^^^^^^^^^^^^^^^^^^^^^^           ^^^^^^^^^^^^^^^^^^^^^^^^
+    //    LITERAL en mensaje                LITERAL en código
+    //    DOS violaciones bloqueantes 2.19
+}
+```
+
+**Forma correcta:**
+
+```java
+// ✅ Archivo: fichas/application/.../RegistrarFichaPerfilUseCase.java
+log.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
+
+// ✅ Archivo: fichas/application/.../FichaTituloDuplicadoException.java
+public FichaTituloDuplicadoException(String titulo) {
+    super(FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted(titulo),
+          FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
+}
+```
+
+**Excepción a la regla (no son bloqueantes):**
+
+- Strings técnicos de configuración (nombres de queues, exchanges, beans, headers HTTP, `@RequestMapping`, claves YAML, anotaciones `@Tag(name="...")`, `@Operation(summary="...")`).
+- Literales en tests (los tests pueden duplicar strings o importar del catálogo — preferible importar pero no bloqueante).
+- Strings en JavaDoc o comentarios.
 
 ### FASE 3 — Estado de Tests (sin verificación filesystem)
 
