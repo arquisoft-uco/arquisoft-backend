@@ -58,7 +58,7 @@ public final class UsuarioAggregate extends AggregateRoot {
      * Reconstruye un usuario desde persistencia sin emitir eventos.
      * Usado por el repositorio cuando carga un aggregate ya existente.
      */
-    public static UsuarioAggregate rebuild(UUID id, String email, UsuarioRole rol) {
+    public static UsuarioAggregate reconstruir(UUID id, String email, UsuarioRole rol) {
         return new UsuarioAggregate(id, email, rol);
     }
 

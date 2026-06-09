@@ -130,7 +130,7 @@ el comando que coincide con la HU, que contiene:
 - `seguridad` → **NO** extiende `AggregateRoot` (delega en Keycloak).
 - Los otros 6 contextos:
     - Si la HU **emite eventos** (respuesta A o B a la pregunta 5) → la entidad raíz **DEBE** extender `AggregateRoot`.
-    - Si la HU **NO emite eventos** (respuesta C a la pregunta 5) → la entidad raíz **NO** extiende `AggregateRoot`. Es una clase Java plana con factories `build`/`rebuild` y sin la maquinaria de eventos. Forzar la extensión "por consistencia futura" es **error** — cuando aparezca el primer evento, esa HU añadirá `extends AggregateRoot`.
+    - Si la HU **NO emite eventos** (respuesta C a la pregunta 5) → la entidad raíz **NO** extiende `AggregateRoot`. Es una clase Java plana con factories `crear`/`reconstruir` y sin la maquinaria de eventos. Forzar la extensión "por consistencia futura" es **error** — cuando aparezca el primer evento, esa HU añadirá `extends AggregateRoot`.
 
 **4.2 — Verificar si la entidad raíz YA EXISTE en el código** (CRÍTICO para evitar planes incoherentes):
 
@@ -139,7 +139,7 @@ Busca el archivo `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{enti
 | Caso | Acción en el plan |
 |---|---|
 | **La entidad ya existe** (creada en HU previa) | NO se incluye en el árbol de archivos a CREAR. Si la HU la modifica, va en "Archivos a MODIFICAR". Si la entidad existente NO extiende `AggregateRoot` y esta HU sí emite eventos, el plan declara explícitamente "Modificar `{Entidad}Aggregate.java` para añadir `extends AggregateRoot`". |
-| **La entidad NO existe** (esta es la primera HU del contexto que la toca) | DEBE incluirse en el árbol como archivo a CREAR, **incluso si la HU es de Consulta**. Sin la entidad raíz, el puerto del repositorio no puede retornarla, el adapter no puede usar `rebuild(...)`, y la arquitectura queda rota. |
+| **La entidad NO existe** (esta es la primera HU del contexto que la toca) | DEBE incluirse en el árbol como archivo a CREAR, **incluso si la HU es de Consulta**. Sin la entidad raíz, el puerto del repositorio no puede retornarla, el adapter no puede usar `reconstruir(...)`, y la arquitectura queda rota. |
 
 > **Regla dura para HUs de consulta:** una HU de consulta NO emite eventos NI tiene tests de ciclo de eventos. Si esta es la primera HU del contexto y la entidad debe crearse aquí, créala **sin** `extends AggregateRoot` y **sin** clase de evento — la HU de escritura que aparezca primero la promoverá si lo necesita.
 
@@ -228,13 +228,13 @@ Espera las respuestas del usuario antes de continuar.
 5. **¿Esta HU debe emitir eventos de dominio?** (Solo aplica si pregunta 2 = Escritura o Mixta — las consultas nunca emiten eventos).
     - **A) Sí, hay consumidores conocidos.** Otro bounded context necesita reaccionar a este hecho. Anotar: qué contexto consume y qué payload espera. → La entidad raíz **extiende `AggregateRoot`**.
     - **B) Sí, aunque hoy no hay consumidores.** Se anticipa razonablemente que aparecerán pronto, o hay un caso de auditoría/observabilidad que lo justifica. Anotar el caso. → La entidad raíz **extiende `AggregateRoot`**.
-    - **C) No, es CRUD interno sin consumidores ni casos de auditoría.** No emite eventos. La entidad raíz **NO extiende `AggregateRoot`** — es una clase plana con factories `build`/`rebuild`. El use case NO inyecta `EventPublisher`.
+    - **C) No, es CRUD interno sin consumidores ni casos de auditoría.** No emite eventos. La entidad raíz **NO extiende `AggregateRoot`** — es una clase plana con factories `crear`/`reconstruir`. El use case NO inyecta `EventPublisher`.
 
    > Esta decisión determina TRES cosas: (1) si la entidad raíz extiende `AggregateRoot` (A/B = sí, C = no — forzar la extensión "por consistencia futura" es error); (2) si se generan archivos de evento (`{Entidad}{Accion}Event extends DomainEvent` con `getEventTopic()`); (3) si el use case inyecta `EventPublisher` y hay drenado/limpieza tras persistir. Una decisión incorrecta aquí infla el código innecesariamente o deja casos sin consumir. Ver sección "AggregateRoot — Regla Estricta" y "¿Cuándo emitir eventos de dominio?" del skill `arquisoft-context`.
 6. ¿Se requiere persistencia nueva (tabla/columna) o se reutiliza la existente?
 7. ¿Hay casos de error relevantes que debemos manejar explícitamente?
 8. ¿La entidad raíz afectada es un Aggregate Root nuevo o ya existe? Si es nuevo, **y la pregunta 5 fue A o B**, ¿qué eventos de dominio debe emitir esta acción y cuál es el `eventTopic` de cada uno (formato `{contexto}.{entidad}.{accion}`)?
-   (Si pregunta 5 fue C, omite la parte de eventos — el factory `build(...)` no emitirá ninguno.)
+   (Si pregunta 5 fue C, omite la parte de eventos — el factory `crear(...)` no emitirá ninguno.)
 9. ¿La HU requiere hablar con algún sistema externo (Keycloak, servicios HTTP,
    SMTP, S3, etc.) más allá de PostgreSQL y RabbitMQ? Si sí, anotar: el plan debe incluir
    un **puerto** en `domain/port/out/` y un **adaptador** en `infrastructure/adapter/out/{tipo}/`
@@ -393,7 +393,7 @@ produce el documento en el formato a continuación y guárdalo como
 
 ### Aggregate Root
 - **Entidad raíz:** `{Entidad}Aggregate`
-- **¿Extiende `AggregateRoot` de `shared:domain`?:** {Sí — la HU emite eventos / No — la HU no emite eventos, es una clase plana con factories `build`/`rebuild` / No aplica — contexto `seguridad`}
+- **¿Extiende `AggregateRoot` de `shared:domain`?:** {Sí — la HU emite eventos / No — la HU no emite eventos, es una clase plana con factories `crear`/`reconstruir` / No aplica — contexto `seguridad`}
 - **ID:** `UUID`
 
 ### Atributos por objeto de dominio (extraídos del modelo enriquecido)
@@ -427,8 +427,8 @@ Las características de cada atributo se traducen así en cada capa:
 | Longitud mínima/máxima | `@Size(min=N, max=M)` en DTO + `@Column(length=M)` en JPA + `VARCHAR(M)` en Flyway + validación en constructor del Aggregate |
 | Obligatorio | `@NotBlank` o `@NotNull` en DTO + `@Column(nullable=false)` en JPA + `NOT NULL` en Flyway + validación en constructor |
 | No modificable | NO se genera setter ni método `cambiar{Atributo}()` en la entidad |
-| Autogenerado (UUID) | `UUID.randomUUID()` dentro de `build(...)` |
-| Limpiar espacios | `.trim()` en el factory `build(...)` antes de validar |
+| Autogenerado (UUID) | `UUID.randomUUID()` dentro de `crear(...)` |
+| Limpiar espacios | `.trim()` en el factory `crear(...)` antes de validar |
 | Sensible | No se incluye en `toString()`, no se loguea, no se devuelve en DTOs salvo necesidad explícita |
 | Combinación única | `UNIQUE` constraint en Flyway + validación de unicidad en use case antes de persistir |
 
@@ -443,15 +443,15 @@ Las características de cada atributo se traducen así en cada capa:
 >         casos de auditoría identificados"}.
 > Implicaciones:
 >   - La entidad raíz {Entidad}Aggregate NO extiende AggregateRoot — es una
->     clase plana con factories build/rebuild.
->   - El factory build(...) NO acumula eventos (no existe publishEvent).
+>     clase plana con factories crear/reconstruir.
+>   - El factory crear(...) NO acumula eventos (no existe publishEvent).
 >   - El use case NO inyecta EventPublisher, no hay drenado de eventos.
 >   - No se crean archivos en domain/{entidad}/event/.
 > ```
 
 | Evento | Clase | `eventTopic` | Consumidor(es) conocido(s) | Cuándo se emite |
 |---|---|---|---|---|
-| {EntidadCreada} | `{Entidad}CreadaEvent` (extiende `DomainEvent`) | `{contexto}.{entidad}.creada` | {contexto consumidor o "ninguno aún" si fue B} | En `build(...)` o tras acción de negocio |
+| {EntidadCreada} | `{Entidad}CreadaEvent` (extiende `DomainEvent`) | `{contexto}.{entidad}.creada` | {contexto consumidor o "ninguno aún" si fue B} | En `crear(...)` o tras acción de negocio |
 
 > **Regla cuando hay eventos:** el dominio solo acumula eventos con `publishEvent(...)` desde el
 > factory. El use case los drena y publica en una sola línea tras persistir:
@@ -496,7 +496,7 @@ Para cada integración externa, documenta:
 
 | Capa | Ruta completa desde raíz del monorepo | Tipo | Responsabilidad |
 |------|---------------------------------------|------|-----------------|
-| domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/aggregate/{Entidad}Aggregate.java` | Aggregate Root | Extiende `AggregateRoot`. Factory `crear(...)` con Notification Pattern + `rebuild(...)` sin validar |
+| domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/aggregate/{Entidad}Aggregate.java` | Aggregate Root | Extiende `AggregateRoot`. Factory `crear(...)` con Notification Pattern + `reconstruir(...)` sin validar |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/event/{Entidad}CreadaEvent.java` | Evento de dominio | Extiende `DomainEvent`. Declara constantes `EVENT_TOPIC` y `EVENT_TYPE` (solo si la HU emite eventos) |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/port/out/{Entidad}OutputPort.java` | Interface | Puerto de salida write. Recibe/retorna el aggregate, nunca DTOs ni JPA Entities |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/exception/{Entidad}{ReglaInvariante}Exception.java` | Exception del aggregate | Extiende **`DomainException`** (invariante violada → 422) o **`DomainValidationException`** (Notification Pattern → 422 + fieldErrors). SOLO va aquí si la lanza el aggregate en su constructor o método de negocio sin ayuda de un repositorio. **NO crear si la excepción es duplicado/no encontrado/inválido orquestal** — esas van en `application/`. |
@@ -509,7 +509,7 @@ Para cada integración externa, documenta:
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/persistence/{Entidad}JpaEntity.java` | JPA Entity | `@Table(name = "...")` (sin atributo `schema` — cada contexto tiene su propia BD) |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/persistence/{Entidad}JpaRepository.java` | `JpaRepository` | Compartido entre command y query |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/persistence/{Entidad}Mapper.java` | `@Component` | Mapea Aggregate ↔ JpaEntity y JpaEntity → ReadModel (compartido) |
-| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/out/persistence/{Entidad}CommandOutputAdapter.java` | Adapter | Implementa `{Entidad}OutputPort`. Usa `rebuild(...)` al reconstruir |
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/out/persistence/{Entidad}CommandOutputAdapter.java` | Adapter | Implementa `{Entidad}OutputPort`. Usa `reconstruir(...)` al reconstruir |
 | infrastructure | `{contexto}/src/main/resources/db/migration/V{n}__{descripcion}.sql` | Flyway | Tablas sin prefijo de schema — cada contexto tiene su propia BD |
 
 ### Archivos NUEVOS — caso de uso read (Consultar/Listar/Buscar)
@@ -530,9 +530,9 @@ Para cada integración externa, documenta:
 > En **toda HU** (escritura, consulta o mixta), el flujo de datos respeta esta cadena:
 >
 > ```
-> JPA Entity  →  {Entidad} (dominio, vía rebuild)  →  {Entidad}ResponseDTO o ResumenDTO
->      ↑                    ↑                                   ↑
->   adapter             adapter (rebuild)                    use case
+> JPA Entity  →  {Entidad} (dominio, vía reconstruir)  →  {Entidad}ResponseDTO o ResumenDTO
+>      ↑                    ↑                                       ↑
+>   adapter             adapter (reconstruir)                    use case
 > ```
 >
 > **Saltarse el dominio en consultas (JPA Entity → DTO directamente) es una violación de DDD estricto** — aunque sea tentador "para optimizar". Si el contexto usa AggregateRoot, **toda lectura desde BD pasa por la entidad de dominio**. La conversión a DTO es responsabilidad exclusiva del use case, nunca del adapter de repositorio.
@@ -788,10 +788,10 @@ Para cada client role nuevo de la tabla anterior:
 #### Tests capa `domain` (Aggregate Root + Eventos)
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `{Entidad}Test` | `debeConstruirEntidad_cuandoDatosValidos` | `build(...)` crea entidad con UUID no nulo |
-| `{Entidad}Test` | `debePublicarEvento_cuandoBuildEsInvocado` | tras `build(...)` hay 1 evento en `getUnPublishedEvents()` |
+| `{Entidad}Test` | `debeConstruirEntidad_cuandoDatosValidos` | `crear(...)` crea entidad con UUID no nulo |
+| `{Entidad}Test` | `debePublicarEvento_cuandoCrearEsInvocado` | tras `crear(...)` hay 1 evento en `getUnPublishedEvents()` |
 | `{Entidad}Test` | `debeDrenarYLimpiarEventos_cuandoDrainEsInvocado` | `drainUnPublishedEvents()` retorna la lista de eventos Y deja vacía la lista interna en una sola operación |
-| `{Entidad}Test` | `debeReconstruirSinEventos_cuandoRebuildEsInvocado` | `rebuild(...)` no acumula eventos |
+| `{Entidad}Test` | `debeReconstruirSinEventos_cuandoReconstruirEsInvocado` | `reconstruir(...)` no acumula eventos |
 | `{Entidad}Test` | `debeLanzarExcepcion_cuando{InvarianteViolada}` | constructor lanza si datos inválidos |
 
 > **Solo crear `{Entidad}CreadaEventTest`** si el evento tiene lógica adicional al constructor base. Una clase que solo hace `super(aggregateId)` y guarda 2 campos NO necesita test propio — sus metadatos se verifican implícitamente al testear `publishEvent` en el Aggregate.
@@ -807,7 +807,7 @@ Para cada client role nuevo de la tabla anterior:
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
 | `{Entidad}RepositoryAdapterTest` | `debeGuardar_cuandoEntidadEsValida` | persistencia OK |
-| `{Entidad}RepositoryAdapterTest` | `debeReconstruirConRebuild_cuandoFindByIdExiste` | adapter usa `rebuild(...)` |
+| `{Entidad}RepositoryAdapterTest` | `debeReconstruirConReconstruir_cuandoFindByIdExiste` | adapter usa `reconstruir(...)` |
 | `{Entidad}ControllerTest` | `debe201_cuandoPeticionValida` | created OK |
 | `{Entidad}ControllerTest` | `debe400_cuandoRequestInvalido` | validación falla |
 | `{Entidad}ControllerTest` | `debe401_cuandoNoAutenticado` | sin token |
@@ -867,9 +867,9 @@ ejemplos detallados.
 ## 13. Checklist de Implementación
 
 - [ ] **DDD:** Entidad de dominio extiende `AggregateRoot` (salvo `seguridad`)
-- [ ] Entidad inmutable: constructor privado, campos `final`, factory methods `build` / `rebuild`, sin Lombok
+- [ ] Entidad inmutable: constructor privado, campos `final`, factory methods `crear` / `reconstruir`, sin Lombok
 - [ ] Eventos de dominio en `domain/event/`, extienden `DomainEvent`
-- [ ] Factory `build(...)` llama `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))`
+- [ ] Factory `crear(...)` llama `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))`
 - [ ] IDs siempre `UUID` (nunca `Long` / `Integer`)
 - [ ] Puerto de entrada (`{Accion}{Entidad}UseCase`) definido
 - [ ] Puerto de salida (`{Entidad}OutputPort`) definido
@@ -915,9 +915,9 @@ ejemplos detallados.
 5. **La pregunta de observaciones** es la última de FASE 3 — nunca la omitas.
 6. **Usa rutas absolutas** desde la raíz del monorepo en todos los archivos.
 7. **Respeta la dirección de dependencias:** Domain ← Application ← Infrastructure.
-8. **DDD estricto — `AggregateRoot` condicional a eventos:** en los 6 contextos de negocio, la entidad raíz extiende `AggregateRoot` **SOLO si la HU emite eventos** (respuesta A o B a la pregunta 5). Si la HU NO emite eventos (respuesta C), la entidad raíz **NO** extiende `AggregateRoot` y es una clase plana con factories `build`/`rebuild`. El contexto `seguridad` nunca usa `AggregateRoot`. Documenta en la sección 4 del plan: (a) si la entidad extiende o no `AggregateRoot` con su justificación, y (b) qué eventos emite (o "ninguno: <razón>").
+8. **DDD estricto — `AggregateRoot` condicional a eventos:** en los 6 contextos de negocio, la entidad raíz extiende `AggregateRoot` **SOLO si la HU emite eventos** (respuesta A o B a la pregunta 5). Si la HU NO emite eventos (respuesta C), la entidad raíz **NO** extiende `AggregateRoot` y es una clase plana con factories `crear`/`reconstruir`. El contexto `seguridad` nunca usa `AggregateRoot`. Documenta en la sección 4 del plan: (a) si la entidad extiende o no `AggregateRoot` con su justificación, y (b) qué eventos emite (o "ninguno: <razón>").
 9. **Verificación de existencia de la entidad raíz (Paso 4.2 del Protocolo de Carga):** antes de generar el árbol de archivos, verifica si `domain/{entidad}/aggregate/{Entidad}Aggregate.java` ya existe en el código del contexto. Si NO existe (primera HU del contexto que la toca), inclúyela como archivo a CREAR — incluso si la HU es de Consulta. Si la HU emite eventos, incluye también `{Entidad}{Accion}Event`. Si la HU NO emite eventos, NO incluyas archivos en `domain/{entidad}/event/`. Si la entidad existente NO extiende `AggregateRoot` y esta HU SÍ emite eventos, el plan declara "Modificar `{Entidad}Aggregate.java` para añadir `extends AggregateRoot`" en la sección "Archivos a MODIFICAR".
-10. **Flujo de datos JPA → dominio → DTO (regla DDD inviolable):** el puerto `{Entidad}OutputPort` retorna entidades de dominio (`{Entidad}` o `Page<{Entidad}>` de Spring Data), nunca DTOs ni JPA Entities. El adapter convierte JPA Entity → entidad de dominio con `rebuild(...)` o vía `JpaEntity::toDomain`. El use case convierte entidad de dominio → DTO de respuesta. **Ningún plan puede saltarse este flujo, ni siquiera para optimizar consultas.** Si una HU justifica saltarse el dominio (CQRS query side), debe documentarse explícitamente en la sección 5 como decisión arquitectónica, no asumirse silenciosamente.
+10. **Flujo de datos JPA → dominio → DTO (regla DDD inviolable):** el puerto `{Entidad}OutputPort` retorna entidades de dominio (`{Entidad}` o `Page<{Entidad}>` de Spring Data), nunca DTOs ni JPA Entities. El adapter convierte JPA Entity → entidad de dominio con `reconstruir(...)` o vía `JpaEntity::toDomain`. El use case convierte entidad de dominio → DTO de respuesta. **Ningún plan puede saltarse este flujo, ni siquiera para optimizar consultas.** Si una HU justifica saltarse el dominio (CQRS query side), debe documentarse explícitamente en la sección 5 como decisión arquitectónica, no asumirse silenciosamente.
 11. **Paginación y filtros con Criteria pattern (opcional, solo HUs read que lo requieran):** si la HU es read y necesita paginación, ordenamiento o filtros dinámicos, el plan declara: `XxxCriteria` (`application/{entidad}/query/criteria/`, extiende `QueryCriteria` con whitelist de campos filtrables/ordenables), `XxxJpaSpecification` (`infrastructure/.../query/adapter/out/persistence/`, extiende `QueryJpaSpecification<JpaEntity>` con mapa de `CampoSpec`), y opcionalmente `XxxSortMapper` para traducir nombres de dominio a paths JPA. El `QueryOutputPort` retorna `PaginatedResult<XxxReadModel>` (de `shared:domain.pagination`); el `QueryInputAdapter` convierte con `PageResponseDTO.from(...)` antes del response. **`Pageable` / `org.springframework.data.domain.Page` NO pueden aparecer en `application/` ni `domain/`** — solo en el `QueryOutputAdapter` de infrastructure. Si la HU read NO necesita ninguno de los tres (paginación, orden, filtros), no se crean estos archivos; el puerto recibe parámetros simples y retorna `ReadModel` directamente. Ver SKILL sección "Paginación y Filtros — `PaginatedResult` + Criteria pattern".
 12. **Integraciones externas:** si la HU toca Keycloak, SMTP, S3, Redis con lógica propia, o servicios HTTP externos, el plan **debe** incluir la sección 5 con el puerto abstracto (`domain/port/out/`) y el adaptador concreto (`infrastructure/adapter/out/{tipo}/`). Ninguna regla de negocio puede vivir en el adaptador — solo traducción entre mundos.
 13. **Catálogo de mensajes obligatorio (`shared:message`):** todo string, código de error, nombre de campo, mensaje de log o límite numérico de negocio que introduzca la HU **DEBE** declararse como constante en `shared:message`. Nunca como literal embebido en código. En la sección 6 del plan, si la HU introduce al menos uno, incluye la sub-sección "Catálogo de mensajes" con: (a) fila MODIFICAR para `shared/message/.../{Contexto}Messages.java`, y (b) inventario tabular de las constantes a agregar — agrupadas por las 5 secciones (`// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`). Si la HU no introduce ninguno, documenta explícitamente: "Sin cambios al catálogo `shared:message`". Nunca crear paquetes `{entidad}/message/` dentro de un contexto — esa convención fue retirada. Ver SKILL sección "Mensajes y textos — Message Catalog (`shared:message`)".

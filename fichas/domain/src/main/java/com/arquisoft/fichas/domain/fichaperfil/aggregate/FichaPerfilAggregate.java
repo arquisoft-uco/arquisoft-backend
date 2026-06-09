@@ -21,9 +21,9 @@ public final class FichaPerfilAggregate {
         this.asesorFichaId = asesorFichaId;
     }
 
-    // ─── Factory: build ───────────────────────────────────────────────────────
+    // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
 
-    public static FichaPerfilAggregate build(String titulo, UUID asesorFichaId) {
+    public static FichaPerfilAggregate crear(String titulo, UUID asesorFichaId) {
         FichaPerfilAggregate ficha = new FichaPerfilAggregate();
         ValidationResult result = new ValidationResult();
 
@@ -35,9 +35,9 @@ public final class FichaPerfilAggregate {
         return ficha;
     }
 
-    // ─── Factory: rebuild (desde persistencia — dato confiable) ──────────────
+    // ─── Factory: reconstruir (desde persistencia — dato confiable) ──────────
 
-    public static FichaPerfilAggregate rebuild(UUID id, String titulo, UUID asesorFichaId) {
+    public static FichaPerfilAggregate reconstruir(UUID id, String titulo, UUID asesorFichaId) {
         return new FichaPerfilAggregate(id, titulo, asesorFichaId);
     }
 

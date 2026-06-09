@@ -22,7 +22,7 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
     @Override
     @Transactional
     public UUID ejecutar(RegistrarFichaPerfilCommand command) {
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.build(
+        FichaPerfilAggregate ficha = FichaPerfilAggregate.crear(
                 command.tituloProyecto(),
                 command.asesorFichaId()
         );

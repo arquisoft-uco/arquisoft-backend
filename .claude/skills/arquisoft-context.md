@@ -473,7 +473,7 @@ o un mock de `RabbitTemplate`/`Jwt`/`JpaRepository`, la lógica está en la capa
 > identidad, invariantes ni comportamiento de un Aggregate Root completo. Una entidad
 > es un Aggregate Root cuando, además de extender esta clase, define su identidad,
 > sus invariantes (validaciones en el constructor) y su comportamiento de negocio
-> (factories `build`/`rebuild`, métodos de acción).
+> (factories `crear`/`reconstruir`, métodos de acción).
 
 ### Principio DDD
 
@@ -484,7 +484,7 @@ En el proyecto Arquisoft, **una entidad raíz extiende `AggregateRoot` de `share
 - **`seguridad`:** nunca usa `AggregateRoot` (delega el estado en Keycloak).
 - **Los otros 6 contextos:**
     - HU **emite eventos** (consumidores conocidos o auditoría justificada) → la entidad raíz **DEBE** extender `AggregateRoot`. Su ausencia es **error bloqueante**.
-    - HU **NO emite eventos** (CRUD interno sin consumidores ni casos de auditoría) → la entidad raíz **NO** extiende `AggregateRoot`. Es solo un `class` con factories `build`/`rebuild`. Forzar la extensión "por consistencia" es un **error bloqueante** porque arrastra maquinaria muerta (lista de eventos, métodos `getUnPublishedEvents`/`clearUnPublishedEvents`) que nadie usa.
+    - HU **NO emite eventos** (CRUD interno sin consumidores ni casos de auditoría) → la entidad raíz **NO** extiende `AggregateRoot`. Es solo un `class` con factories `crear`/`reconstruir`. Forzar la extensión "por consistencia" es un **error bloqueante** porque arrastra maquinaria muerta (lista de eventos, métodos `getUnPublishedEvents`/`drainUnPublishedEvents`) que nadie usa.
 
 > **Migración cuando aparezca el primer evento:** si una HU futura introduce un evento sobre una entidad que hoy no extiende `AggregateRoot`, esa HU es la que añade `extends AggregateRoot` y crea la clase del evento. No se anticipa.
 
@@ -535,7 +535,7 @@ public abstract class DomainEvent {
 
 ### Ciclo completo: emisión y drenado
 
-1. **Dominio:** la entidad raíz acumula eventos con `publishEvent(...)` en sus métodos de negocio (incluido el factory `build`).
+1. **Dominio:** la entidad raíz acumula eventos con `publishEvent(...)` en sus métodos de negocio (incluido el factory `crear`).
 2. **Use case:** tras persistir, drena los eventos con `getUnPublishedEvents()`, los entrega a `EventPublisher` (puerto `shared:amqp` con firma `void publish(DomainEvent event)`) y llama a `clearUnPublishedEvents()`.
 3. **`EventPublisher` lee internamente `event.getEventTopic()`** y publica al exchange `arquisoft.events`. La implementación concreta `RabbitMQEventPublisher` ya vive en `shared:amqp`.
 4. **El dominio NUNCA** inyecta `EventPublisher`. Solo acumula eventos en memoria.
@@ -545,10 +545,12 @@ public abstract class DomainEvent {
 
 | Método | Cuándo usar | ¿Emite evento? | ¿Genera UUID? |
 |---|---|---|---|
-| `build(...)` | Crear entidad nueva desde un comando/DTO | Solo si la entidad extiende `AggregateRoot` Y la HU emite eventos | ✅ Sí — `UUID.randomUUID()` |
-| `rebuild(...)` | Reconstruir entidad desde persistencia | ❌ Nunca | ❌ No — recibe el UUID de BD |
+| `crear(...)` | Crear entidad nueva desde un comando/DTO | Solo si la entidad extiende `AggregateRoot` Y la HU emite eventos | ✅ Sí — `UUID.randomUUID()` |
+| `reconstruir(...)` | Reconstruir entidad desde persistencia | ❌ Nunca | ❌ No — recibe el UUID de BD |
 
-**Regla dura:** un `CommandOutputAdapter` SIEMPRE usa `rebuild(...)`, nunca `build(...)`. Aplica tanto si la entidad extiende `AggregateRoot` como si no — el factory `build` queda reservado para la creación inicial desde el use case.
+**Regla dura:** un `CommandOutputAdapter` SIEMPRE usa `reconstruir(...)`, nunca `crear(...)`. Aplica tanto si la entidad extiende `AggregateRoot` como si no — el factory `crear` queda reservado para la creación inicial desde el use case.
+
+**Convención de nombres bilingüe:** los factories del aggregate son **conceptos de negocio** (crear una ficha, reconstruir una ficha desde BD), no sufijos técnicos como el `Builder.build()` de Lombok. Por eso van en español junto con los demás métodos de negocio del aggregate (`aprobar`, `rechazar`, `actualizarTitulo`, etc.). No usar `build`/`rebuild` en inglés — código antiguo con esa convención debe migrarse.
 
 ### ¿Cuándo emitir eventos de dominio?
 
@@ -566,10 +568,10 @@ Una HU de Escritura puede emitir eventos o no. La decisión depende de si hay (o
 
 **Implicaciones de la decisión:**
 
-| Decisión | Entidad raíz | `build(...)` | Use case | Plan declara |
+| Decisión | Entidad raíz | `crear(...)` | Use case | Plan declara |
 |---|---|---|---|---|
-| **Con eventos** | `extends AggregateRoot` | Llama a `publishEvent(new {Entidad}{Accion}Event(...))` | Inyecta `EventPublisher`, drena con `getUnPublishedEvents()`, publica, llama a `clearUnPublishedEvents()` | Sección 4 lista los eventos emitidos con su `eventTopic` |
-| **Sin eventos (CRUD simple)** | **NO extiende `AggregateRoot`** — es un `class` plano con factories `build`/`rebuild` | NO existe `publishEvent(...)` ni se llama | NO inyecta `EventPublisher`, no hay drenado/limpieza | Sección 4 declara explícitamente "Esta HU no emite eventos: <razón>" + "Entidad raíz NO extiende `AggregateRoot`" |
+| **Con eventos** | `extends AggregateRoot` | Llama a `publishEvent(new {Entidad}{Accion}Event(...))` | Inyecta `EventPublisher` y drena tras persistir con `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` | Sección 4 lista los eventos emitidos con su `eventTopic` |
+| **Sin eventos (CRUD simple)** | **NO extiende `AggregateRoot`** — es un `class` plano con factories `crear`/`reconstruir` | NO existe `publishEvent(...)` ni se llama | NO inyecta `EventPublisher`, no hay drenado | Sección 4 declara explícitamente "Esta HU no emite eventos: <razón>" + "Entidad raíz NO extiende `AggregateRoot`" |
 
 **Cuando aparezca la primera necesidad de evento futuro:** la HU que introduzca el evento añade `extends AggregateRoot` a la entidad, crea la clase del evento (`{Entidad}{Accion}Event extends DomainEvent` con `getEventTopic()`), llama a `publishEvent(...)` en el factory correspondiente e inyecta `EventPublisher` en el use case. No se anticipa.
 
@@ -603,13 +605,13 @@ Aplicar features de Java 21 **cuando aporten claridad o seguridad**, no por moda
 | Pattern matching para `switch` | Ramificación sobre `sealed interface` (típicamente sobre `NodoFiltro` o `CampoSpec`) | `return switch (campo) { case CampoSpec.Texto t -> ...; case CampoSpec.Uuid u -> ...; };` |
 | Pattern matching para `instanceof` | Donde antes había `instanceof` + cast | `if (evento instanceof FichaCreadaEvent f) { use(f.getTitulo()); }` |
 | Text blocks (`"""..."""`) | SQL inline, JSON de test, plantillas | `String sql = """ SELECT ... """;` |
-| `var` | Variables locales con tipo evidente por RHS | `var ficha = Ficha.build("titulo");` |
+| `var` | Variables locales con tipo evidente por RHS | `var ficha = Ficha.crear("titulo");` |
 
 ### Features NO recomendadas en este proyecto
 
 | Feature | Motivo |
 |---|---|
-| **`record` para entidades de dominio** | Las entidades Arquisoft requieren constructor privado + factory methods `build`/`rebuild`. Un `record` tiene constructor público y no permite el patrón. Usar `class` inmutable con campos `final`. |
+| **`record` para entidades de dominio** | Las entidades Arquisoft requieren constructor privado + factory methods `crear`/`reconstruir`. Un `record` tiene constructor público y no permite el patrón. Usar `class` inmutable con campos `final`. |
 | **Virtual threads manuales (`Thread.ofVirtual`, `Executors.newVirtualThreadPerTaskExecutor`)** | `spring.threads.virtual.enabled: true` ya los gestiona para Tomcat, `@Async` y RabbitMQ listeners. Crear executors manuales es innecesario y a menudo perjudicial. |
 | **`record` + Lombok mezclados** | Redundante y confuso — si es `record`, no usar `@Data`/`@Builder`. |
 
@@ -656,7 +658,7 @@ public record CrearFichaPerfilRequestDTO(...) {}
 
 ```java
 // ✅ BIEN — comentario breve que aclara una decisión no obvia
-// Se usa rebuild() en lugar de build() porque el UUID viene de BD; build() generaría uno nuevo.
+// Se usa reconstruir() en lugar de crear() porque el UUID viene de BD; crear() generaría uno nuevo.
 return jpaRepository.findById(id).map(FichaPerfilMapper::toDomain);
 
 // ✅ BIEN — comentario que justifica una excepción a una regla del proyecto
@@ -698,13 +700,13 @@ Antes de planificar tests, identifica qué tipo de use case estás trabajando:
 
 Características:
 - Modifica el estado del Aggregate Root.
-- Genera eventos de dominio (`build()` los acumula, `update()` los acumula).
+- Genera eventos de dominio (`crear()` los acumula, métodos de negocio como `aprobar()` también).
 - El use case drena los eventos tras persistir y los publica vía `EventPublisher`.
 
 Tests apropiados:
-- **domain:** ciclo completo de eventos (`publishEvent` → `getUnPublishedEvents` → `clearUnPublishedEvents`), `rebuild()` no emite eventos, invariantes del constructor.
+- **domain:** ciclo completo de eventos (`publishEvent` interno del factory → `drainUnPublishedEvents()` retorna y limpia), `reconstruir()` no emite eventos, invariantes del constructor.
 - **application:** flujo exitoso, error de repositorio, drenado de eventos verificado con `verify(eventPublisher).publish(...)`.
-- **infrastructure:** controller con códigos HTTP correctos (201, 400, 401, 403), repositorio guarda y reconstruye con `rebuild()`.
+- **infrastructure:** controller con códigos HTTP correctos (201, 400, 401, 403), repositorio guarda y reconstruye con `reconstruir()`.
 
 ### Use Case de Consulta (listar, buscar, obtener)
 
@@ -722,8 +724,8 @@ Tests apropiados:
 **Tests que NO aplican a use cases de consulta:**
 - ❌ Ciclo de eventos del Aggregate Root (no hay eventos).
 - ❌ Verificación de `eventPublisher.publish(...)` (no se publica nada).
-- ❌ `clearUnPublishedEvents()` / `getUnPublishedEvents()`.
-- ❌ Validación de que `rebuild()` no emite eventos (irrelevante en flujo de lectura).
+- ❌ `drainUnPublishedEvents()` / `getUnPublishedEvents()`.
+- ❌ Validación de que `reconstruir()` no emite eventos (irrelevante en flujo de lectura).
 
 ### Use Case Mixto (raro, requiere cuidado)
 
@@ -745,7 +747,7 @@ Algunos use cases hacen ambas cosas (ej. "buscar entidad y marcarla como vista" 
 // ❌ MAL — testea Lombok, no tu código
 @Test
 void debeRetornarTitulo_cuandoGetTituloEsLlamado() {
-    Ficha ficha = Ficha.build("Mi título");
+    Ficha ficha = Ficha.crear("Mi título");
     assertThat(ficha.getTitulo()).isEqualTo("Mi título");
 }
 ```
@@ -1216,7 +1218,7 @@ public final class FichaPerfilAggregate extends AggregateRoot {
       return aggregate;
    }
 
-   public static FichaPerfilAggregate rebuild(UUID id, String titulo, UUID asesorId, String estado) {
+   public static FichaPerfilAggregate reconstruir(UUID id, String titulo, UUID asesorId, String estado) {
       FichaPerfilAggregate a = new FichaPerfilAggregate();
       a.id = id; a.tituloProyecto = titulo; a.asesorFichaId = asesorId; a.estado = estado;
       return a;
@@ -2160,8 +2162,8 @@ parte natural de su contexto.
 ### IDs
 
 - **Siempre `UUID`** (`java.util.UUID`). **Nunca** `Long`, `Integer` o autoincrementales de BD.
-- `build(...)` genera el UUID con `UUID.randomUUID()`.
-- `rebuild(...)` recibe el UUID desde persistencia.
+- `crear(...)` genera el UUID con `UUID.randomUUID()`.
+- `reconstruir(...)` recibe el UUID desde persistencia.
 
 ### Imports
 

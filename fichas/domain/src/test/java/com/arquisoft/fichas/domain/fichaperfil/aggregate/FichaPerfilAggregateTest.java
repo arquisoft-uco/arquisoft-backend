@@ -11,11 +11,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class FichaPerfilAggregateTest {
 
     @Test
-    void debeReconstruirCorrectamente_cuandoRebuildEsInvocado() {
+    void debeReconstruirCorrectamente_cuandoReconstruirEsInvocado() {
         UUID id = UUID.randomUUID();
         UUID asesorFichaId = UUID.randomUUID();
 
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.rebuild(id, "Proyecto de Grado", asesorFichaId);
+        FichaPerfilAggregate ficha = FichaPerfilAggregate.reconstruir(id, "Proyecto de Grado", asesorFichaId);
 
         assertThat(ficha.getId()).isEqualTo(id);
         assertThat(ficha.getTituloProyecto()).isEqualTo("Proyecto de Grado");
@@ -23,18 +23,18 @@ class FichaPerfilAggregateTest {
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoTituloEsNuloOVacioEnBuild() {
+    void debeLanzarExcepcion_cuandoTituloEsNuloOVacioEnCrear() {
         UUID asesorFichaId = UUID.randomUUID();
 
-        assertThatThrownBy(() -> FichaPerfilAggregate.build(null, asesorFichaId))
+        assertThatThrownBy(() -> FichaPerfilAggregate.crear(null, asesorFichaId))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
 
-        assertThatThrownBy(() -> FichaPerfilAggregate.build("   ", asesorFichaId))
+        assertThatThrownBy(() -> FichaPerfilAggregate.crear("   ", asesorFichaId))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
 
-        assertThatThrownBy(() -> FichaPerfilAggregate.build("", asesorFichaId))
+        assertThatThrownBy(() -> FichaPerfilAggregate.crear("", asesorFichaId))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("nulo ni vacío");
     }
@@ -44,21 +44,21 @@ class FichaPerfilAggregateTest {
         UUID asesorFichaId = UUID.randomUUID();
         String tituloLargo = "A".repeat(101);
 
-        assertThatThrownBy(() -> FichaPerfilAggregate.build(tituloLargo, asesorFichaId))
+        assertThatThrownBy(() -> FichaPerfilAggregate.crear(tituloLargo, asesorFichaId))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("100 caracteres");
     }
 
     @Test
-    void debeGenerarIdNoNulo_cuandoBuildEsInvocado() {
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.build("Título válido", UUID.randomUUID());
+    void debeGenerarIdNoNulo_cuandoCrearEsInvocado() {
+        FichaPerfilAggregate ficha = FichaPerfilAggregate.crear("Título válido", UUID.randomUUID());
 
         assertThat(ficha.getId()).isNotNull();
     }
 
     @Test
     void debeLanzarExcepcion_cuandoAsesorFichaIdEsNulo() {
-        assertThatThrownBy(() -> FichaPerfilAggregate.build("Título válido", null))
+        assertThatThrownBy(() -> FichaPerfilAggregate.crear("Título válido", null))
                 .isInstanceOf(DomainValidationException.class);
     }
 }
