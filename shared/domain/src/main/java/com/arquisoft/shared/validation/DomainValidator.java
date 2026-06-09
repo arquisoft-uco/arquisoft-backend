@@ -1,8 +1,8 @@
 package com.arquisoft.shared.validation;
 
+import com.arquisoft.shared.message.AppMessages;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.util.UtilText;
-import com.arquisoft.shared.util.message.AppMessages;
 
 /**
  * Guard central de invariantes de dominio — Notification Pattern.

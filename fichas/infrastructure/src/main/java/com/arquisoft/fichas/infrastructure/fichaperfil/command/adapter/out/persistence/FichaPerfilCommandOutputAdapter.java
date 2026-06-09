@@ -5,6 +5,7 @@ import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
+import com.arquisoft.shared.message.FichasMessages;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +29,7 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     public void guardar(FichaPerfilAggregate ficha) {
         AsesorFichaJpaEntity asesorRef = entityManager.getReference(AsesorFichaJpaEntity.class, ficha.getAsesorFichaId());
         fichaPerfilJpaRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));
-        log.debug("FichaPerfil guardada: id={}", ficha.getId());
+        log.debug(FichasMessages.FichaPerfil.LOG_GUARDADA, ficha.getId());
     }
 
     @Override

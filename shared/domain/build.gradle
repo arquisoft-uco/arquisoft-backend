@@ -1,3 +1,11 @@
 // java-library habilita la configuración 'api', que expone dependencias
 // transitivamente a los consumidores del módulo.
 apply plugin: 'java-library'
+
+dependencies {
+    // shared:message — catálogo central de mensajes del proyecto (Message Catalog Pattern).
+    // Se expone con 'api' para que todos los consumidores de shared:domain (y por tanto,
+    // de todos los contextos) tengan acceso transitivo a las constantes del catálogo sin
+    // necesidad de declarar la dependencia explícitamente en cada módulo.
+    api project(':shared:message')
+}

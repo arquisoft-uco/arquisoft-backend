@@ -7,6 +7,7 @@ import com.arquisoft.fichas.infrastructure.exception.OrdenamientoInvalidoExcepti
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
+import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.SortDirection;
 import com.arquisoft.shared.postgres.util.PaginationMapper;
@@ -40,10 +41,10 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
                     fichaPerfilJpaRepository.findAll(spec, pageable)
                             .map(FichaPerfilMapper::toReadModel));
         } catch (PropertyReferenceException ex) {
-            log.warn("Campo de ordenamiento inválido: {}", ex.getPropertyName());
+            log.warn(FichasMessages.FichaPerfil.LOG_ORDENAMIENTO_INVALIDO, ex.getPropertyName());
             throw new OrdenamientoInvalidoException(ex.getPropertyName(), ex);
         } catch (InvalidDataAccessApiUsageException ex) {
-            log.warn("Uso inválido de la API de acceso a datos al ordenar: {}", ex.getMessage());
+            log.warn(FichasMessages.FichaPerfil.LOG_USO_INVALIDO_API_ORDEN, ex.getMessage());
             throw new OrdenamientoInvalidoException(pageable.getSort().toString(), ex);
         }
     }

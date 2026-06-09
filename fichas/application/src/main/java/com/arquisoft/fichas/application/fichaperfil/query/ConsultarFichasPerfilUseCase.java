@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCr
 import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
+import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +21,11 @@ public class ConsultarFichasPerfilUseCase implements ConsultarFichasPerfilInputP
     @Override
     @Transactional(readOnly = true)
     public PaginatedResult<FichaPerfilReadModel> ejecutar(FichaPerfilCriteria criteria) {
-        log.debug("Consultando fichas de perfil — pagina={}, tamanio={}", criteria.getPagina(), criteria.getTamanio());
+        log.debug(FichasMessages.FichaPerfil.LOG_CONSULTANDO, criteria.getPagina(), criteria.getTamanio());
 
         PaginatedResult<FichaPerfilReadModel> resultado = fichaPerfilQueryOutputPort.consultarTodas(criteria);
 
-        log.info("Consulta fichas-perfil completada — total={}, pagina={}, tamanio={}",
+        log.info(FichasMessages.FichaPerfil.LOG_CONSULTA_COMPLETADA,
                 resultado.getTotalElements(), criteria.getPagina(), criteria.getTamanio());
         return resultado;
     }

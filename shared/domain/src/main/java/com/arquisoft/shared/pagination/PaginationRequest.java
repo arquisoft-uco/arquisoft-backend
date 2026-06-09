@@ -1,9 +1,9 @@
 package com.arquisoft.shared.pagination;
 
 import com.arquisoft.shared.exception.ApplicationException;
+import com.arquisoft.shared.message.AppMessages;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.util.UtilText;
-import com.arquisoft.shared.util.message.AppMessages;
 
 /**
  * Solicitud de consulta paginada — valor inmutable.

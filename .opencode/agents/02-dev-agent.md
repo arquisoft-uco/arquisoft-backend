@@ -226,9 +226,16 @@ CAPA 1 — domain (genera todos antes de compilar)
   │        "{contexto}.{entidad}.{accion}" (ej. "fichas.ficha.creada").
   │        Es método abstracto en DomainEvent — sin esto el código NO compila.
   │        Si el plan no especifica el eventTopic, derívalo del contexto + entidad + acción.
-  ├── Entidad de dominio        ({Entidad}.java) — extiende AggregateRoot si el contexto lo usa
-  │     ⚠️ El factory build(...) llama a publishEvent(...) SOLO si el plan declara eventos.
-  │        Si no, build(...) construye y retorna la entidad sin emitir nada.
+  ├── Entidad de dominio        ({Entidad}Aggregate.java)
+  │     ⚠️ `extends AggregateRoot` SOLO si el plan declara eventos en su sección 4.
+  │        Si el plan dice "Eventos: ninguno" (CRUD sin consumidores), la entidad
+  │        es una `final class` plana SIN heredar de AggregateRoot — no acumula eventos,
+  │        no tiene getUnPublishedEvents/clearUnPublishedEvents, no necesita la maquinaria.
+  │        Forzar `extends AggregateRoot` "por consistencia futura" cuando el plan no
+  │        declara eventos es VIOLACIÓN del plan — detente y reporta ambigüedad.
+  │     ⚠️ El factory build(...) llama a publishEvent(...) SOLO si la entidad extiende
+  │        AggregateRoot (y por tanto el plan declara eventos). Si no, build(...) construye
+  │        y retorna la entidad sin emitir nada.
   ├── Enums                     (si aplican)
   ├── Puerto de entrada         (`port/in/{Accion}{Entidad}InputPort.java` — vive en application, vacío, extiende `InputPort<I,O>` o `VoidInputPort<I>`)
   └── Puerto de salida write    (`{Entidad}OutputPort.java` — vive en domain. Recibe/retorna el aggregate)
@@ -239,35 +246,63 @@ CAPA 1 — domain (genera todos antes de compilar)
   → 🔨 COMPILAR: ./gradlew :{contexto}:domain:compileJava
 
 CAPA 2 — application (genera todos antes de compilar)
+  ├── Excepciones de aplicación ({Entidad}DuplicadaException.java, {Entidad}NoEncontradaException.java, etc.)
+  │     ⚠️ Ubicación: application/{entidad}/exception/ (directamente bajo la entidad,
+  │        SIN anidar command/ o query/ — la excepción pertenece al concepto entidad,
+  │        no al slice CQRS, aunque hoy solo la use el lado write).
+  │        Extienden ApplicationException (de shared:exception) → HTTP 400.
+  │        REGLA DURA: si una excepción extiende ApplicationException, va en
+  │        application/{entidad}/exception/, NUNCA en domain/ ni en
+  │        application/{entidad}/command/exception/. Si el plan declara una
+  │        ApplicationException en una ruta de domain/ o anidada en command/exception/
+  │        o query/exception/, es BUG del plan — reporta ambigüedad antes de crearla
+  │        y propón la ruta correcta application/{entidad}/exception/.
+  │        Razón ubicación application/: domain/ no puede importar la clase base
+  │        ApplicationException sin romper la dirección de dependencias.
+  │        Razón sin command/query: evitar carpetas anidadas innecesarias cuando la
+  │        excepción pertenece al concepto entidad.
+  │        Las excepciones del aggregate (DomainException / DomainValidationException)
+  │        ya las generaste en CAPA 1 - domain.
   ├── Request DTO               ({Accion}{Entidad}RequestDTO.java) — campos en español (refleja modelo enriquecido)
   ├── Response DTO              ({Entidad}ResponseDTO.java) — campos en español (refleja modelo enriquecido)
   └── Caso de uso impl          ({Accion}{Entidad}UseCase.java)
-        ─ Si plan dice "Eventos: ninguno" → NO inyecta EventPublisher, NO hay drenado/limpieza.
-        ─ Si plan declara eventos (sección 4 con tabla de eventos) → inyecta EventPublisher
-          y drena con getUnPublishedEvents() / publica / clearUnPublishedEvents() tras persistir.
+        ─ Si plan dice "Eventos: ninguno" (respuesta C a la pregunta 5 del planificador) →
+          NO inyecta EventPublisher, NO hay drenado. El use case solo persiste y retorna.
+        ─ Si plan declara eventos (respuesta A o B con tabla de eventos en sección 4) →
+          inyecta EventPublisher (interfaz `com.arquisoft.shared.events.EventPublisher` de
+          shared:domain) y, tras persistir, drena con:
+              aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);
+          ⚠️ NO uses `clearUnPublishedEvents()` — ese método NO existe en AggregateRoot.
+          `drainUnPublishedEvents()` ya retorna la lista Y limpia internamente en una
+          sola operación atómica. Tampoco uses `getUnPublishedEvents()` desde el use case
+          (es `protected`, accesible solo desde tests en el mismo paquete del aggregate).
 
   ⚠️ DTOs técnicos genéricos (PageResponseDTO, ErrorResponseDTO) NO se crean aquí —
      se importan de com.arquisoft.shared.web. Son inglés. Si la HU es paginada,
      el use case retorna Page<{Entidad}ResponseDTO> (Page de dominio, NO PageResponseDTO).
 
   ⚠️ VERIFICACIÓN PRE-GENERACIÓN — solo si el plan declara EVENTOS en sección 4:
-     Antes de generar el archivo del use case, confirma que shared:amqp esté
-     funcional. Comprueba que existan:
-       • shared/amqp/.../EventPublisher.java (interfaz con firma void publish(DomainEvent))
-       • shared/amqp/.../RabbitMQEventPublisher.java (@Component que implementa la interfaz)
-       • shared/amqp/.../RabbitMQConfig.java (con TopicExchange "arquisoft.events")
-     Si falta cualquiera de los 3 archivos, PAUSA la generación de la capa application
-     y AVISA al usuario:
+     El proyecto usa Spring Modulith Events + Outbox Pattern. El publicador principal
+     es `SpringModulithEventPublisher` (delega a ApplicationEventPublisher; Modulith
+     persiste en `event_publication` y publica al exchange tras el commit). Existe
+     un `RabbitMQEventPublisher` de fallback con `@ConditionalOnMissingBean` que se
+     activa solo si Modulith no está. Antes de generar el use case, comprueba que existan:
+       • shared/domain/.../events/EventPublisher.java (interfaz `void publish(DomainEvent)`)
+       • shared/amqp/.../SpringModulithEventPublisher.java (publicador principal)
+       • shared/amqp/.../RabbitMQConfig.java (con TopicExchange "arquisoft.events" + DLX)
+       • shared/amqp/.../ModulithAmqpExternalizationConfig.java (routing por getEventTopic())
 
-       "El use case de escritura va a inyectar EventPublisher (shared:amqp), pero
-        no encuentro la implementación RabbitMQEventPublisher en shared:amqp.
-        Sin ella, el ApplicationContext de Spring fallará al arrancar el contexto.
-        ¿Quieres que pause la generación de application hasta que shared:amqp
-        esté implementado, o continúo y dejo el riesgo documentado?"
+     Si falta la interfaz `EventPublisher` o faltan AMBOS publicadores (Spring Modulith
+     y el fallback), PAUSA y AVISA:
 
-     Si el usuario confirma "continuar", procede pero registra esta nota en
-     el resumen final de la capa.
-     Si el usuario dice "pausar", detén el agente y termina la sesión.
+       "El use case va a inyectar EventPublisher pero no encuentro ninguna implementación
+        en shared:amqp (ni SpringModulithEventPublisher ni RabbitMQEventPublisher de
+        fallback). Sin alguna de las dos, el ApplicationContext fallará al arrancar.
+        ¿Quieres que pause hasta que shared:amqp esté implementado, o continúo y dejo
+        el riesgo documentado?"
+
+     Si el usuario confirma "continuar", procede y registra la nota en el resumen.
+     Si dice "pausar", detén el agente.
 
      Si el plan dice "Eventos: ninguno" o la HU es de SOLO consulta, OMITE esta
      verificación — el use case no inyecta EventPublisher.
@@ -427,6 +462,48 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 - Extienden uno de los 4 tipos base de `shared:domain.exception`: `DomainException` (422), `ApplicationException` (400), `InfrastructureException` (503), `DomainValidationException` (422). **NUNCA** `RuntimeException` directamente.
 - Tienen campo `errorCode` (lo asigna `super(errorCode, mensaje)`).
 
+### Catálogo de Mensajes (`shared:message`) — regla universal
+
+> **Cero strings literales en código de producción.** Antes de escribir cualquier archivo, identifica todos los strings, códigos de error, nombres de campo, mensajes de log y límites numéricos de negocio que vayan a aparecer. Todos viven como constantes en `shared:message` — nunca embebidos.
+
+**Reglas duras:**
+
+- Cualquier `log.{info|warn|error|debug}(...)` usa `{Contexto}Messages.{Entidad}.LOG_*` como primer argumento. Nunca string literal.
+- Cualquier `super(mensaje, codigo)` de excepción del contexto referencia el catálogo: mensaje desde `{Contexto}Messages.{Entidad}.{NOMBRE}` (parametrizable con `.formatted(...)`), código desde `{Contexto}Messages.{Entidad}.{ENTIDAD}_{DESCRIPCION}` (donde el valor de la constante es UPPER_SNAKE idéntico al nombre).
+- Cualquier `DomainValidator.{notNull|notBlank|maxLength|minLength|validEmail}(...)` usa `{Contexto}Messages.{Entidad}.CAMPO_*` y `{Contexto}Messages.{Entidad}.{CODIGO}` en los argumentos `fieldName` y `errorCode`.
+- Cualquier `result.addError(...)` usa constantes del catálogo en sus 3 argumentos.
+- Límites numéricos de negocio (`length > 100`, `count >= 5`) usan `{Contexto}Messages.{Entidad}.{CAMPO}_MAX` o equivalente.
+
+**Verificación antes de escribir cada archivo:**
+
+1. ¿Las constantes que voy a usar existen ya en `shared/message/.../{Contexto}Messages.java`?
+2. Si NO → ANTES de escribir el archivo de la capa, edita `{Contexto}Messages.java` agregando la `public static final class {Entidad}` (si no existe) y las constantes en el orden de las 5 secciones: `// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`. Solo las secciones con contenido. Sin JavaDoc.
+3. Si SÍ → procede.
+
+**El catálogo se modifica como parte de la capa que primero lo necesita** (típicamente CAPA 1 — domain, cuando el aggregate llama a `DomainValidator.*`). Si la HU NO introduce constantes nuevas (caso raro: HU read pura sin filtros nuevos), salta esta regla.
+
+**Plantilla de uso:**
+
+```java
+// Validación con Notification Pattern
+DomainValidator.notBlank(titulo,
+        FichasMessages.FichaPerfil.CAMPO_TITULO,
+        FichasMessages.FichaPerfil.FICHA_TITULO_REQUERIDO,
+        result);
+
+// Excepción con mensaje parametrizado
+throw new FichaTituloDuplicadoException(
+        FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted(titulo),
+        FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
+
+// Log SLF4J
+log.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
+```
+
+**Ubicación retirada (NO usar):** la convención antigua `{contexto}/domain/{entidad}/message/{Entidad}Messages.java` y `{contexto}/application/{entidad}/message/{Entidad}ApplicationMessages.java` está descontinuada. Si encuentras código que la sigue, NO la repliques — extrae las constantes al archivo del contexto en `shared:message`. Si el plan declara archivos en esas rutas, es bug del plan: reporta ambigüedad.
+
+Ver detalle completo en `shared/message/README.md` y en el skill `arquisoft-context` sección "Mensajes y textos — Message Catalog (`shared:message`)".
+
 ### DTOs
 
 - `@Data @NoArgsConstructor @AllArgsConstructor @Builder` (Lombok).
@@ -437,7 +514,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 ### Use Cases
 
 - `@Component @RequiredArgsConstructor @Slf4j` + `@Transactional` cuando hay persistencia.
-- Orquestan: persistir → drenar eventos del Aggregate → publicar vía `EventPublisher` → `clearUnPublishedEvents()` → retornar.
+- Orquestan: persistir → `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` → retornar. **Solo si el plan declara eventos** (respuesta A o B a la pregunta 5 del planificador). Si "Eventos: ninguno" (respuesta C), el use case ni inyecta `EventPublisher` ni hace drenado. `drainUnPublishedEvents()` retorna + limpia en una sola operación atómica — no llames a `clearUnPublishedEvents()` (no existe).
 - Inyectan puertos (interfaces de `domain/port/out/`), nunca implementaciones.
 
 ### Controllers (ADR-011)
@@ -702,7 +779,7 @@ Opciones:
 10. **DDD estricto — separación de capas:** ningún `@Configuration`, adaptador o controller contiene reglas de negocio. El dominio es Java puro (cero imports de Spring, JPA, Lombok, Jackson, Keycloak, RabbitMQ, Swagger, Security). Para integraciones externas: puerto en `domain/port/out/`, adaptador en `infrastructure/adapter/out/{tipo}/`, `@Configuration` solo cablea. Aplica la **prueba del algodón** antes de cada archivo.
 11. **Estructura de carpetas en adapters:** `@RestController` y `@RestControllerAdvice` en `infrastructure/adapter/in/web/`. Listeners RabbitMQ en `adapter/in/messaging/`. JPA + repository adapter en `adapter/out/persistence/`. Otras integraciones en `adapter/out/{tipo}/` (ej. `security/`, `storage/`, `notification/`). **NO** existe `adapter/out/messaging/` en los contextos — la publicación de eventos está centralizada en `shared:amqp`. Nunca dejes componentes directamente en `adapter/in/` o `adapter/out/` sin subcarpeta.
 12. **Manejo de excepciones centralizado por defecto.** Las excepciones del contexto las maneja `GlobalAppExceptionHandler` de `shared:web` por jerarquía de su clase base — `DomainException` → 422, `ApplicationException` → 400, `InfrastructureException` → 503. El cliente recibe el `getMessage()` y el `getErrorCode()` que pone el constructor de la excepción. **NO crees `{Contexto}GlobalExceptionHandler` salvo que el plan lo declare explícitamente** (solo dos casos válidos: colisión de nombres con clases del framework, o HTTP status fuera del default de la jerarquía). Si lo declara, anota: `@RestControllerAdvice` + `@Order(Ordered.HIGHEST_PRECEDENCE)`, solo handlers de las excepciones específicas, sin fallback de `DomainException` ni `Exception.class`. **Nunca permitas que una excepción de dominio caiga en `handleGeneral` → 500.** Si una excepción no encaja en ninguna clase base correctamente, reporta ambigüedad al usuario.
-13. **DDD estricto — Aggregate Root:** entidades raíz extienden `AggregateRoot` en los 6 contextos de negocio. Excepción única: `seguridad`. Si el plan no especifica AggregateRoot para una entidad raíz en los 6 contextos, reporta ambigüedad.
+13. **DDD estricto — Aggregate Root condicional a eventos:** en los 6 contextos de negocio, la entidad raíz extiende `AggregateRoot` **SOLO si el plan declara eventos en su sección 4** (respuesta A o B a la pregunta 5 del planificador). Si el plan dice "Eventos: ninguno" (respuesta C), la entidad raíz es una `final class` plana SIN `extends AggregateRoot` — sin maquinaria de eventos. El contexto `seguridad` nunca usa `AggregateRoot`. Si el plan es ambiguo sobre la extensión (declara "Eventos: ninguno" pero también pide `extends AggregateRoot`, o viceversa), reporta ambigüedad con el Protocolo correspondiente antes de generar la entidad.
 14. **Eventos de dominio:** en `domain/event/`, extienden `DomainEvent`. El use case los drena tras persistir — nunca el dominio publica directamente.
 15. **IDs siempre `UUID`** (`java.util.UUID`). `build()` genera con `UUID.randomUUID()`, `rebuild()` recibe el UUID desde persistencia.
 16. **Base de datos PostgreSQL:** cada contexto tiene su propia BD (no schemas). Usar la tabla de mapeo del skill `arquisoft-context`. `seguridad→usuarios`, `fichas→fichas_perfil`, `proyectos→proyectos_grado`, los demás coinciden. `@Table(name = "...")` sin atributo `schema`. Migraciones Flyway sin prefijo de schema en el SQL. Sin FKs cruzadas entre BDs.
@@ -711,3 +788,4 @@ Opciones:
 19. **Imports explícitos** — nunca wildcard `*`.
 20. **Inyección por constructor** via `@RequiredArgsConstructor` — nunca `@Autowired`.
 21. **Al finalizar (después de FASE 5 verde):** actualiza la fila `Desarrollo` en la sección 13 del plan, presenta el resumen de archivos + compilación reales, y **pregunta activamente** al usuario si continúa con `@tester` (recomendado) o `@validator-analyze` (directo). Espera respuesta antes de cerrar.
+22. **Catálogo de mensajes (`shared:message`) — cero strings literales en código de producción.** Toda constante de texto, código de error, nombre de campo, mensaje de log o límite numérico de negocio se referencia desde `{Contexto}Messages.{Entidad}.*` (en `shared:message`). Antes de escribir cualquier archivo, edita el `{Contexto}Messages.java` correspondiente agregando las constantes que el archivo va a usar — en el orden de 5 secciones (`// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`). NUNCA crees paquetes `{entidad}/message/` dentro de un contexto (convención retirada). Si el plan declara archivos en esa ruta antigua, reporta ambigüedad. Ver Reglas de Código → "Catálogo de Mensajes" y SKILL sección "Mensajes y textos — Message Catalog (`shared:message`)".

@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.minio.adapter.in.web;
 
+import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.minio.MinioStorageClient;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -45,7 +46,7 @@ public class MinioGuiaInputAdapter {
             @Parameter(description = "Clave del objeto (ruta + nombre)", example = "documentos/mi-archivo.pdf")
             @RequestParam String key) {
 
-        log.debug("GET /fichas/minio/guia/upload-url — bucket={}, key={}", bucket, key);
+        log.debug(FichasMessages.MinioGuia.LOG_UPLOAD_URL, bucket, key);
         String url = minioStorageClient.generateUploadPresignedUrl(bucket, key);
         return ResponseEntity.ok(Map.of(
                 "bucket", bucket,
@@ -69,7 +70,7 @@ public class MinioGuiaInputAdapter {
             @Parameter(description = "Clave del objeto", example = "documentos/mi-archivo.pdf")
             @RequestParam String key) {
 
-        log.debug("GET /fichas/minio/guia/download-url — bucket={}, key={}", bucket, key);
+        log.debug(FichasMessages.MinioGuia.LOG_DOWNLOAD_URL, bucket, key);
         String url = minioStorageClient.generateDownloadPresignedUrl(bucket, key);
         return ResponseEntity.ok(Map.of(
                 "bucket", bucket,
@@ -107,7 +108,7 @@ public class MinioGuiaInputAdapter {
             @RequestParam String bucket,
             @RequestParam String key) {
 
-        log.debug("DELETE /fichas/minio/guia/objeto — bucket={}, key={}", bucket, key);
+        log.debug(FichasMessages.MinioGuia.LOG_DELETE, bucket, key);
         minioStorageClient.deleteObject(bucket, key);
         return ResponseEntity.noContent().build();
     }

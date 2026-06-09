@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFicha
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInputPort;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,7 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
 
         fichaPerfilOutputPort.guardar(ficha);
 
-        log.info("Ficha de perfil registrada — id={}", ficha.getId());
+        log.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
         return ficha.getId();
     }
 }
