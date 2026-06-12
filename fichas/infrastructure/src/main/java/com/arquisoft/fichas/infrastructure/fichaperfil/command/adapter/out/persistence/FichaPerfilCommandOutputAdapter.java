@@ -36,4 +36,9 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     public Optional<FichaPerfilAggregate> buscarPorId(UUID id) {
         return fichaPerfilJpaRepository.findById(id).map(FichaPerfilMapper::toDomain);
     }
+
+    @Override
+    public boolean existsByTituloProyecto(String titulo) {
+        return fichaPerfilJpaRepository.existsByTituloProyecto(titulo);
+    }
 }

@@ -2092,13 +2092,15 @@ Todas las BDs viven en el mismo servidor PostgreSQL pero son aisladas entre sí.
 
 | Contexto Gradle | Base de Datos PostgreSQL |
 |---|---|
-| `seguridad` | `usuarios` |
+| `seguridad` | `arquisoft_seguridad` ⁽¹⁾ |
 | `fichas` | `fichas_perfil` |
 | `proyectos` | `proyectos_grado` |
 | `artefactos` | `artefactos` |
 | `repositorio_artefactos` | `repositorio_artefactos` |
 | `entregables` | `entregables` |
 | `evaluaciones` | `evaluaciones` |
+
+⁽¹⁾ BD de **configuración** (Keycloak/JWT/rate-limit). NO es contexto de usuarios de negocio — el contexto `usuarios` no se implementa en esta versión.
 
 ### Configuración del DataSource (ya existe, NO se crea por HU)
 
@@ -2120,17 +2122,74 @@ por contexto. El implementador **no toca configuración de DataSource**.
   no `CREATE TABLE fichas_perfil.ficha (...)`).
 - **NO hay FKs cruzadas entre BDs.** Cada contexto es totalmente autónomo a nivel de datos.
 
-### Réplicas locales de entidades de otros contextos
+### Vistas materializadas (réplicas locales) entre contextos
 
-Cuando un contexto necesita información de otro (ej. `fichas_perfil` necesita conocer
-`nombre`, `identificador` y `email` de un estudiante que vive en `usuarios`), **modela
-una entidad propia con esos atributos denormalizados** dentro de su BD.
+Cuando un contexto necesita información de otro, **modela una entidad propia con esos
+atributos denormalizados en su BD**. La fuente autoritativa vive en el contexto origen;
+la copia local solo expone lo que este contexto necesita.
 
-Ejemplo: en la BD `fichas_perfil` existe una tabla `estudiante` con columnas
-`id`, `identificador`, `nombre`, `email` — **réplica local**, no FK a `usuarios.estudiante`.
-La consistencia entre la copia local y la fuente real **no es preocupación del implementador
-de la HU** — se gestiona fuera del contexto. El implementador trata la tabla local como
-parte natural de su contexto.
+**Inventario por contexto** (versión actual: todas pobladas **manualmente en BD**;
+el flujo CDC vía eventos RabbitMQ + Spring Modulith está habilitado a nivel técnico
+pero los consumers aún no escriben):
+
+| Contexto | Vista materializada | Origen |
+|---|---|---|
+| `fichas` | `RepresentanteComiteCurriculum`, `Estudiante`, `AsesorFicha` | `usuarios` (no implementado) |
+| `proyectos` | `FichaPerfil` | `fichas` |
+| `proyectos` | `Coordinador`, `Asesor`, `Estudiante` | `usuarios` (no implementado) |
+| `artefactos` | `ProyectoGrado` | `proyectos` |
+| `artefactos` | `VersionRepositorioArtefacto` | `repositorio_artefactos` |
+| `artefactos` | `Asesor`, `Estudiante` | `usuarios` (no implementado) |
+| `repositorio_artefactos` | `Administrador` | `usuarios` (no implementado) |
+| `entregables` | `ProyectoGrado` | `proyectos` |
+| `entregables` | `Artefacto` | `artefactos` |
+| `entregables` | `Asesor` | `usuarios` (no implementado) |
+| `evaluaciones` | `Entregable` | `entregables` |
+| `evaluaciones` | `Asesor`, `Jurado` | `usuarios` (no implementado) |
+
+**Aggregates propios por contexto** (write-side completo iniciado por HU):
+`fichas` → `FichaPerfil` · `proyectos` → `ProyectoGrado` · `artefactos` → `Artefacto`
+· `repositorio_artefactos` → `VersionRepositorioArtefacto` · `entregables` → `Entregable`
+· `evaluaciones` → `Evaluacion`. `seguridad` no tiene aggregates de negocio.
+
+> **Nota sobre `Asesor` vs `AsesorFicha`:** son **roles distintos**. `AsesorFicha`
+> asesora la ficha perfil (solo en `fichas`). `Asesor` asesora el proyecto, los
+> artefactos, los entregables y las evaluaciones (en los otros contextos).
+
+> **Nota sobre código `usuario`/`UsuarioCreado` en `seguridad` y `fichas`:** existe
+> físicamente como **ejemplo práctico** del flujo asíncrono Spring Modulith → RabbitMQ.
+> No es contexto de negocio activo y será removido cuando el usuario lo indique.
+> NO usarlo como referencia canónica al planificar / implementar / validar HUs.
+
+### Convención de estructura para vistas materializadas
+
+Las vistas materializadas usan la **misma estructura CQRS estándar** que cualquier
+aggregate (`command/` + `query/`), aunque su origen sea pasivo:
+
+- `domain/{vista}/aggregate/` — clase plana, **NUNCA** extiende `AggregateRoot` (no emite eventos propios).
+- `domain/{vista}/port/out/{Vista}OutputPort` — write desde el consumer AMQP del evento origen.
+- `application/{vista}/command/` — `Registrar{Vista}UseCase` invocado por el consumer.
+- `application/{vista}/query/port/out/{Vista}QueryOutputPort` — `existsById`, `findById`, etc.
+- `application/{vista}/query/readmodel/{Vista}ReadModel` — solo si hay HU read HTTP.
+- `infrastructure/{vista}/persistence/` — JpaEntity, JpaRepository, Mapper.
+- `infrastructure/{vista}/command/adapter/in/amqp/` — `*ConsumerInputAdapter`.
+- `infrastructure/{vista}/command/adapter/out/persistence/` — `{Vista}CommandOutputAdapter`.
+- `infrastructure/{vista}/query/adapter/out/persistence/` — `{Vista}QueryOutputAdapter`.
+
+Mientras no haya consumer real (v1 actual: poblado manual), las carpetas `command/` pueden
+quedar vacías. El lado `query/` SÍ se implementa cuando otro use case necesita lookup FK.
+
+### Regla — qué puede contener un `{Entidad}OutputPort`
+
+**Solo métodos que operan sobre su propio aggregate.** Si un use case write necesita
+verificar la existencia de **otro** aggregate (típica validación de FK), inyecta el
+`{OtroAggregate}QueryOutputPort` de ese otro aggregate — NUNCA mezclar métodos de
+distintos aggregates en un mismo puerto.
+
+**Ejemplo correcto** (HU-208): `RegistrarFichaPerfilUseCase` inyecta dos puertos —
+`FichaPerfilOutputPort` (write propio + `existsByTituloProyecto` que es invariante
+sobre el propio aggregate) y `AsesorFichaQueryOutputPort` (lookup `existsById` sobre
+la vista materializada de `AsesorFicha`).
 
 ### Convención de nombres de tablas
 

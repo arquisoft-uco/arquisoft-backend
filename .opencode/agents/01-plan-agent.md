@@ -235,6 +235,7 @@ Espera las respuestas del usuario antes de continuar.
 7. ¿Hay casos de error relevantes que debemos manejar explícitamente?
 8. ¿La entidad raíz afectada es un Aggregate Root nuevo o ya existe? Si es nuevo, **y la pregunta 5 fue A o B**, ¿qué eventos de dominio debe emitir esta acción y cuál es el `eventTopic` de cada uno (formato `{contexto}.{entidad}.{accion}`)?
    (Si pregunta 5 fue C, omite la parte de eventos — el factory `crear(...)` no emitirá ninguno.)
+8b. **¿La HU lee o escribe alguna vista materializada (réplica local de otro contexto)?** Consulta la tabla "Vistas materializadas" del skill `arquisoft-context`. Si la HU necesita validar FK contra una vista materializada, inyecta el `{Vista}QueryOutputPort` correspondiente (NUNCA mezclar lookups de otro aggregate en `{Entidad}OutputPort` propio). Si la vista no aparece en la tabla del skill, pregúntalo al usuario explícitamente y registra la respuesta en la sección 4 del plan.
 9. ¿La HU requiere hablar con algún sistema externo (Keycloak, servicios HTTP,
    SMTP, S3, etc.) más allá de PostgreSQL y RabbitMQ? Si sí, anotar: el plan debe incluir
    un **puerto** en `domain/port/out/` y un **adaptador** en `infrastructure/adapter/out/{tipo}/`

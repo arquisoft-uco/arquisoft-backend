@@ -274,6 +274,8 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | `@Transactional` si persiste | ⚠️ |
 | Inyectan puertos (interfaces), no implementaciones | ✅ |
 | Drenan y publican eventos del Aggregate tras persistir | ✅ |
+| `{Entidad}OutputPort` declara un método que opera sobre **otro aggregate distinto** (ej. `existsAsesorById` en `FichaPerfilOutputPort`) | ❌ violación bloqueante (mover a `{OtroAggregate}QueryOutputPort` — ver "Vistas materializadas" del skill) |
+| Use case usa el `OutputPort` de su propio aggregate para hacer lookup sobre otro (mezclando responsabilidades de aggregates distintos) | ❌ violación bloqueante (inyectar el `{OtroAggregate}QueryOutputPort` correspondiente) |
 
 **2.7 Inyección de dependencias:**
 

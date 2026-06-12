@@ -516,6 +516,7 @@ Ver detalle completo en `shared/message/README.md` y en el skill `arquisoft-cont
 - `@Component @RequiredArgsConstructor @Slf4j` + `@Transactional` cuando hay persistencia.
 - Orquestan: persistir → `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` → retornar. **Solo si el plan declara eventos** (respuesta A o B a la pregunta 5 del planificador). Si "Eventos: ninguno" (respuesta C), el use case ni inyecta `EventPublisher` ni hace drenado. `drainUnPublishedEvents()` retorna + limpia en una sola operación atómica — no llames a `clearUnPublishedEvents()` (no existe).
 - Inyectan puertos (interfaces de `domain/port/out/`), nunca implementaciones.
+- **`{Entidad}OutputPort` solo opera sobre su propio aggregate.** Para validar FK contra otro aggregate (típicamente vista materializada de otro contexto), inyecta el `{OtroAggregate}QueryOutputPort` correspondiente — NUNCA mezcles lookups de otro aggregate dentro de tu `OutputPort`. Ver sección "Vistas materializadas" del skill.
 
 ### Controllers (ADR-011)
 
