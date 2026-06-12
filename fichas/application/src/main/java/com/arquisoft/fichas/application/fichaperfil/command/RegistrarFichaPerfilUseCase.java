@@ -20,7 +20,7 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Override
-    @Transactional
+    @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(RegistrarFichaPerfilCommand command) {
         FichaPerfilAggregate ficha = FichaPerfilAggregate.crear(
                 command.tituloProyecto(),

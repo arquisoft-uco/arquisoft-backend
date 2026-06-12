@@ -29,12 +29,6 @@ CREATE DATABASE proyectos_grado OWNER arquisoft_user;
 CREATE DATABASE entregables OWNER arquisoft_user;
 CREATE DATABASE evaluaciones OWNER arquisoft_user;
 
--- ==================== BASE DE DATOS EVENTOS COMPARTIDOS ====================
--- Base de datos centralizada para Spring Modulith Event Publication Registry.
--- Almacena event_publication de todos los bounded contexts que publican eventos.
--- Ver: shared/amqp/.../SpringModulithEventPublisher y ArquisoftEventsDataSourceConfig.
-CREATE DATABASE arquisoft_events OWNER arquisoft_user;
-
 -- ==================== BASE DE DATOS KEYCLOAK ====================
 
 CREATE DATABASE keycloak OWNER arquisoft;

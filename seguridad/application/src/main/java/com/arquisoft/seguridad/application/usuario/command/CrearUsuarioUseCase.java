@@ -27,8 +27,11 @@ import java.util.UUID;
  *       Si falla, el evento queda en BD y se reintenta automáticamente.</li>
  * </ol>
  *
- * <p>La anotación {@code @Transactional} garantiza que el {@code save} del aggregate y la
- * inserción en {@code event_publication} sean atómicos (usando {@code seguridadTransactionManager}).
+ * <p>La anotación {@code @Transactional(transactionManager = "seguridadTransactionManager")}
+ * garantiza que el {@code save} del aggregate y la inserción en {@code event_publication}
+ * sean atómicos. Con el nuevo Outbox distribuido, cada contexto tiene su propia tabla
+ * {@code event_publication} en su BD dedicada, y Spring Modulith detecta el DataSource
+ * activo automáticamente vía {@code ContextAwareEventPublicationRepository}.
  */
 @Slf4j
 @Component
@@ -39,7 +42,7 @@ public class CrearUsuarioUseCase implements CrearUsuarioInputPort {
     private final EventPublisher eventPublisher;
 
     @Override
-    @Transactional
+    @Transactional(transactionManager = "seguridadTransactionManager")
     public UUID ejecutar(CrearUsuarioCommand command) {
         // 1. El aggregate valida invariantes y acumula UsuarioCreadoEvent en memoria
         UsuarioAggregate usuario = UsuarioAggregate.crear(command.email(), command.rol());

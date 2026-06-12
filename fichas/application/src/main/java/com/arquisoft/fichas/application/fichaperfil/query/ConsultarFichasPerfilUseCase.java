@@ -9,7 +9,6 @@ import com.arquisoft.shared.pagination.PaginatedResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +18,6 @@ public class ConsultarFichasPerfilUseCase implements ConsultarFichasPerfilInputP
     private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
 
     @Override
-    @Transactional(readOnly = true)
     public PaginatedResult<FichaPerfilReadModel> ejecutar(FichaPerfilCriteria criteria) {
         log.debug(FichasMessages.FichaPerfil.LOG_CONSULTANDO, criteria.getPagina(), criteria.getTamanio());
 

@@ -81,9 +81,13 @@ dependencies {
     implementation "org.springframework.modulith:spring-modulith-starter-core"
     // API pública de Spring Modulith Events: FailedEventPublications, ResubmissionOptions.
     implementation "org.springframework.modulith:spring-modulith-events-api"
+    // Spring Modulith JDBC: interfaces de EventPublicationRepository y EventSerializer.
+    implementation "org.springframework.modulith:spring-modulith-events-jdbc"
 
-    // JDBC para ArquisoftEventsDataSourceConfig (DataSource centralizado de Spring Modulith).
+    // JDBC para ContextAwareEventPublicationRepository (DataSource distribuido por contexto).
     implementation "org.springframework.boot:spring-boot-starter-jdbc"
+    // JPA para EntityManagerFactory en OutboxContext.
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
 
     // Incluir todos los módulos de infraestructura (contextos)
     subprojects.each { subproject ->
