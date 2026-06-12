@@ -19,7 +19,7 @@ chmod +x gradlew
 docker-compose up postgres rabbitmq redis keycloak
 ```
 
-El script `init-db.sql` crea automáticamente todas las bases de datos al iniciar el contenedor de Postgres, incluyendo `arquisoft_events` (usada por Spring Modulith para el Outbox Pattern).
+El script `init-db.sql` crea automáticamente todas las bases de datos al iniciar el contenedor de Postgres. Cada contexto tiene su propia BD — no existe una BD centralizada para el Outbox Pattern.
 
 **3. Correr el proyecto**
 
@@ -38,8 +38,5 @@ Copia `.env.example` a `.env`. Las variables clave son:
 | Variable | Descripción |
 |---|---|
 | `DB_SEGURIDAD_URL` | JDBC URL de la BD del contexto seguridad |
-| `DB_ARQUISOFT_EVENTS_URL` | JDBC URL de `arquisoft_events` (Outbox Pattern) |
-| `DB_ARQUISOFT_EVENTS_USERNAME` | Usuario de `arquisoft_events` |
-| `DB_ARQUISOFT_EVENTS_PASSWORD` | Contraseña de `arquisoft_events` |
 | `RABBITMQ_HOST` / `RABBITMQ_PORT` | Conexión al broker |
 | `KEYCLOAK_URL` / `KEYCLOAK_REALM` | Servidor de autenticación |
