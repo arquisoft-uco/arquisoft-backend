@@ -31,7 +31,7 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "com.arquisoft.fichas.infrastructure.fichaperfil.persistence",
+        basePackages = "com.arquisoft.fichas.infrastructure",
         entityManagerFactoryRef = "fichasEntityManagerFactory",
         transactionManagerRef = "fichasTransactionManager"
 )
