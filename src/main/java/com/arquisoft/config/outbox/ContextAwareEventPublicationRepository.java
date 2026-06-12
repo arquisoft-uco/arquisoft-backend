@@ -2,7 +2,7 @@ package com.arquisoft.config.outbox;
 
 import jakarta.persistence.EntityManagerFactory;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.modulith.events.EventPublication.Status;
@@ -12,6 +12,7 @@ import org.springframework.modulith.events.core.PublicationTargetIdentifier;
 import org.springframework.modulith.events.core.TargetEventPublication;
 import org.springframework.modulith.events.support.CompletionMode;
 import org.springframework.orm.jpa.EntityManagerFactoryInfo;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.util.ClassUtils;
 
@@ -30,17 +31,19 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class ContextAwareEventPublicationRepository implements EventPublicationRepository {
+public class ContextAwareEventPublicationRepository implements EventPublicationRepository, SmartInitializingSingleton {
 
     private static final String SQL_COLS =
             "id, listener_id, event_type, serialized_event, publication_date, "
             + "completion_date, status, completion_attempts, last_resubmission_date";
 
-    private final List<OutboxEntry> entries;
+    private final Map<String, DataSource> allDataSources;
+    private final Map<DataSource, EntityManagerFactory> dsToEmf;
     private final EventSerializer serializer;
     private final CompletionMode completionMode;
     private final ClassLoader classLoader;
     private final Map<DataSource, String> dataSourceNames;
+    private volatile List<OutboxEntry> entries = List.of();
 
     public ContextAwareEventPublicationRepository(
             Map<String, DataSource> allDataSources,
@@ -48,19 +51,27 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
             EventSerializer serializer,
             Environment environment) {
 
+        this.allDataSources = allDataSources;
         this.serializer = serializer;
         this.completionMode = CompletionMode.from(environment);
         this.classLoader = ClassUtils.getDefaultClassLoader();
         this.dataSourceNames = allDataSources.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey, (a, b) -> a));
-
-        Map<DataSource, EntityManagerFactory> dsToEmf = allEntityManagerFactories.values().stream()
+        this.dsToEmf = allEntityManagerFactories.values().stream()
                 .filter(emf -> emf instanceof EntityManagerFactoryInfo)
                 .collect(Collectors.toMap(
                         emf -> ((EntityManagerFactoryInfo) emf).getDataSource(),
                         emf -> emf,
                         (a, b) -> a));
+    }
 
+    /**
+     * Se ejecuta después de que TODOS los beans están inicializados, garantizando
+     * que Flyway ya aplicó las migraciones antes de verificar qué DataSources
+     * tienen tabla event_publication.
+     */
+    @Override
+    public void afterSingletonsInstantiated() {
         this.entries = allDataSources.entrySet().stream()
                 .filter(e -> hasEventPublicationTable(e.getValue()))
                 .map(e -> new OutboxEntry(dsToEmf.get(e.getValue()), e.getValue(),
@@ -68,6 +79,11 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
                 .peek(e -> log.info("Outbox habilitado: DataSource '{}'",
                         dataSourceNames.getOrDefault(e.dataSource(), "desconocido")))
                 .toList();
+
+        if (entries.isEmpty()) {
+            log.warn("Outbox: ningún DataSource tiene tabla event_publication. "
+                    + "Agrega la migración V{N}__crear_event_publication.sql en el contexto correspondiente.");
+        }
     }
 
     private JdbcTemplate resolveActiveTemplate() {
