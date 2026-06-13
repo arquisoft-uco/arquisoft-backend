@@ -49,8 +49,8 @@ Extraídas del Event Storming — políticas del comando "Registrar Nueva inform
 
 **Traducción a código:**
 - POL-01 → validaciones Jakarta (`@NotBlank`, `@Size`) en `RegistrarFichaPerfilRequestDTO` + Notification Pattern en el constructor de `FichaPerfilAggregate` con `DomainValidator`.
-- POL-02 → validación de unicidad en `RegistrarFichaPerfilUseCase` consultando el `FichaPerfilOutputPort` antes de persistir.
-- POL-03 → validación de existencia del asesor en `RegistrarFichaPerfilUseCase` consultando el `FichaPerfilOutputPort` antes de crear el aggregate.
+- POL-02 → validación de unicidad en `RegistrarFichaPerfilUseCase` consultando el `FichaPerfilOutputPort.existsByTituloProyecto(...)` antes de persistir (invariante sobre el propio aggregate).
+- POL-03 → validación de existencia del asesor en `RegistrarFichaPerfilUseCase` consultando el **`AsesorFichaQueryOutputPort.existsById(...)`** antes de crear el aggregate. `AsesorFicha` es una **vista materializada** en el contexto `fichas` (origen futuro: contexto `usuarios`), por lo que el lookup va contra su lado query — no contra `FichaPerfilOutputPort`.
 
 ---
 
@@ -74,9 +74,9 @@ Extraídas del Event Storming — políticas del comando "Registrar Nueva inform
 **Combinaciones únicas (Restricciones):**
 - **Título de Ficha Perfil único:** el `tituloProyecto` nunca se repite → traducción: `UNIQUE` constraint en Flyway (`uq_ficha_perfil_titulo`), validación de unicidad previa en use case consultando `FichaPerfilOutputPort.existsByTituloProyecto(String)`.
 
-#### `AsesorFicha` (Réplica local del contexto `seguridad/usuarios`)
+#### `AsesorFicha` (Vista materializada del contexto `usuarios` — no implementado)
 
-> **Nota:** `AsesorFicha` NO es un aggregate del contexto `fichas` — es una réplica local de los datos del asesor necesarios para el contexto. La entidad autoritativa vive en el contexto `usuarios` (o en Keycloak). Esta réplica solo contiene los atributos mínimos necesarios.
+> **Nota:** `AsesorFicha` es una **vista materializada** dentro del contexto `fichas`. La entidad autoritativa vive en el contexto `usuarios` (no implementado en esta versión — se poblará manualmente en BD). En el código se modela con su propio aggregate plano (sin `AggregateRoot`), puerto write futuro (`AsesorFichaOutputPort`) cuando llegue el consumer AMQP del evento `UsuarioCreado`, y puerto query (`AsesorFichaQueryOutputPort`) que ya usamos para lookup FK desde este use case.
 
 | Atributo | Tipo | Longitud | Obligatorio | Modificable | Autogenerado | Notas |
 |---|---|---|---|---|---|---|
@@ -122,7 +122,10 @@ Extraídas del Event Storming — políticas del comando "Registrar Nueva inform
 
 ### Archivos NUEVOS
 
-**Ninguno.** Esta HU completa código parcialmente implementado — todos los archivos del write side ya existen desde una HU previa. Solo se modifican archivos existentes.
+| Ruta completa | Tipo | Responsabilidad |
+|---|---|---|
+| `fichas/application/src/main/java/com/arquisoft/fichas/application/asesorficha/query/port/out/AsesorFichaQueryOutputPort.java` | Interface (query side de la vista materializada) | Expone `boolean existsById(UUID id)` para lookup FK desde use cases write de otros aggregates. |
+| `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/asesorficha/query/adapter/out/persistence/AsesorFichaQueryOutputAdapter.java` | `@Component` (implementa el puerto) | Delega a `AsesorFichaJpaRepository.existsById(...)`. |
 
 ### Archivos a MODIFICAR
 
@@ -130,9 +133,9 @@ Extraídas del Event Storming — políticas del comando "Registrar Nueva inform
 |---------------|-----------------|
 | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/fichaperfil/command/adapter/in/web/RegistrarFichaPerfilInputAdapter.java` | **Corregir `@PreAuthorize`:** cambiar `hasAuthority('ficha:ficha:create')` por `hasAuthority('fichas:ficha-perfil:create')`. El authority actual está mal — debe ser `{contexto}:{recurso-kebab}:{accion}` en kebab-case. |
 | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/fichaperfil/aggregate/FichaPerfilAggregate.java` | **Validar que NO extienda `AggregateRoot`** (la HU no emite eventos). Verificar que `crear(...)` use Notification Pattern con `DomainValidator` para validar `tituloProyecto` y `asesorFichaId`. Verificar que `reconstruir(...)` reconstruya sin validar. |
-| `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaperfil/command/RegistrarFichaPerfilUseCase.java` | **Validar flujo completo:** (1) verificar que el asesor exista consultando `fichaPerfilOutputPort.existsAsesorById(asesorId)`, (2) verificar unicidad del título consultando `fichaPerfilOutputPort.existsByTituloProyecto(titulo)`, (3) crear aggregate con `FichaPerfilAggregate.crear(...)`, (4) persistir con `fichaPerfilOutputPort.save(...)`, (5) retornar UUID (NO hay drenado de eventos porque la HU no emite). |
-| `fichas/domain/src/main/java/com/arquisoft/fichas/domain/fichaperfil/port/out/FichaPerfilOutputPort.java` | **Añadir métodos si no existen:** `boolean existsAsesorById(UUID asesorId)` y `boolean existsByTituloProyecto(String titulo)` — necesarios para validaciones POL-02 y POL-03 en el use case. |
-| `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/fichaperfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java` | **Implementar métodos del puerto si no existen:** `existsAsesorById(...)` consultando `AsesorFichaJpaRepository.existsById(...)` y `existsByTituloProyecto(...)` consultando `FichaPerfilJpaRepository.existsByTituloProyecto(...)`. |
+| `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaperfil/command/RegistrarFichaPerfilUseCase.java` | **Validar flujo completo:** (1) verificar que el asesor exista consultando `asesorFichaQueryOutputPort.existsById(asesorId)`, (2) verificar unicidad del título consultando `fichaPerfilOutputPort.existsByTituloProyecto(titulo)`, (3) crear aggregate con `FichaPerfilAggregate.crear(...)`, (4) persistir con `fichaPerfilOutputPort.guardar(...)`, (5) retornar UUID (NO hay drenado de eventos porque la HU no emite). Inyecta DOS puertos: `FichaPerfilOutputPort` y `AsesorFichaQueryOutputPort`. |
+| `fichas/domain/src/main/java/com/arquisoft/fichas/domain/fichaperfil/port/out/FichaPerfilOutputPort.java` | **Solo operaciones sobre el propio aggregate:** `guardar`, `buscarPorId`, `existsByTituloProyecto`. **NO** declarar `existsAsesorById` aquí (lookup de otro aggregate → puerto separado). |
+| `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/fichaperfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java` | **Implementar solo los métodos del puerto propio.** NO inyectar `AsesorFichaJpaRepository`. La validación FK del asesor la hace `AsesorFichaQueryOutputAdapter` (puerto separado). |
 | `shared/message/src/main/java/com/arquisoft/shared/message/FichasMessages.java` | **Añadir nested class `FichaPerfil` con constantes** (si no existe): campos (`CAMPO_TITULO`, `CAMPO_ASESOR`), límites (`TITULO_MAX=100`), códigos de error (`FICHA_TITULO_DUPLICADO`, `ASESOR_NO_ENCONTRADO`, `FICHA_TITULO_REQUERIDO`, `ASESOR_REQUERIDO`), mensajes parametrizados (`TITULO_DUPLICADO = "El título ya existe: %s"`, `ASESOR_NO_ENCONTRADO_MSG = "Asesor Ficha no encontrado: %s"`), logs (`LOG_REGISTRADA = "Ficha de perfil registrada — id={}"`). Ver inventario completo en la sub-sección siguiente. |
 
 **Sub-sección obligatoria: Catálogo de mensajes (`shared:message`)**
@@ -190,33 +193,42 @@ Esta HU introduce textos, códigos y límites nuevos. El plan declara modificaci
 - **Paquete:** `com.arquisoft.fichas.application.fichaperfil.command`
 - **Tipo:** UseCase (`@Component`, `@Transactional`)
 - **Responsabilidad:** Orquestar el flujo de registro: validar asesor existe, validar título único, crear aggregate, persistir, retornar UUID. **NO drena eventos** porque la HU no emite.
-- **Cambio principal:** verificar que implemente el flujo completo: (1) `fichaPerfilOutputPort.existsAsesorById(asesorId)` → lanzar `AsesorFichaNoEncontradoException` si no existe, (2) `fichaPerfilOutputPort.existsByTituloProyecto(titulo)` → lanzar `FichaTituloDuplicadoException` si ya existe, (3) `FichaPerfilAggregate.crear(...)`, (4) `fichaPerfilOutputPort.save(...)`, (5) `log.info` con constante del catálogo, (6) retornar `ficha.getId()`. **NO** hay drenado de eventos ni inyección de `EventPublisher`.
+- **Cambio principal:** verificar que implemente el flujo completo: (1) `asesorFichaQueryOutputPort.existsById(asesorId)` → lanzar `AsesorFichaNoEncontradoException` si no existe, (2) `fichaPerfilOutputPort.existsByTituloProyecto(titulo)` → lanzar `FichaTituloDuplicadoException` si ya existe, (3) `FichaPerfilAggregate.crear(...)`, (4) `fichaPerfilOutputPort.guardar(...)`, (5) `log.info` con constante del catálogo, (6) retornar `ficha.getId()`. **NO** hay drenado de eventos ni inyección de `EventPublisher`.
 - **Métodos principales:**
     - `ejecutar(RegistrarFichaPerfilCommand): UUID` — flujo principal descrito arriba.
-- **Dependencias:** `RegistrarFichaPerfilInputPort` (implementa), `FichaPerfilOutputPort` (persistencia + validaciones), `FichaPerfilAggregate`, excepciones (`AsesorFichaNoEncontradoException`, `FichaTituloDuplicadoException`), `FichasMessages.FichaPerfil` (constantes).
+- **Dependencias:** `RegistrarFichaPerfilInputPort` (implementa), `FichaPerfilOutputPort` (persistencia del propio aggregate), `AsesorFichaQueryOutputPort` (lookup FK sobre la vista materializada), `FichaPerfilAggregate`, excepciones (`AsesorFichaNoEncontradoException`, `FichaTituloDuplicadoException`), `FichasMessages.FichaPerfil` (constantes).
 
-### `FichaPerfilOutputPort.java` (a VALIDAR y posiblemente MODIFICAR)
+### `FichaPerfilOutputPort.java` (a MODIFICAR)
 - **Paquete:** `com.arquisoft.fichas.domain.fichaperfil.port.out`
-- **Tipo:** Interface (puerto de salida write)
-- **Responsabilidad:** Contrato para persistencia del aggregate y validaciones de existencia (POL-02, POL-03).
-- **Cambio principal:** verificar que declare los métodos `boolean existsAsesorById(UUID asesorId)` y `boolean existsByTituloProyecto(String titulo)`. Si no existen, añadirlos.
+- **Tipo:** Interface (puerto de salida write — solo opera sobre el propio aggregate)
+- **Responsabilidad:** Contrato para persistencia del aggregate y validaciones de invariantes sobre el propio aggregate.
+- **Cambio principal:** **quitar `existsAsesorById`** del puerto (es lookup de otro aggregate — viola la regla del skill "OutputPort solo opera sobre su propio aggregate"). Dejar solo `guardar`, `buscarPorId`, `existsByTituloProyecto`.
 - **Métodos principales:**
-    - `save(FichaPerfilAggregate): void` — persiste el aggregate (ya debe existir).
-    - `Optional<FichaPerfilAggregate> findById(UUID): Optional<FichaPerfilAggregate>` — reconstruye aggregate desde BD (ya debe existir).
-    - `boolean existsAsesorById(UUID asesorId)` — valida POL-03 (asesor debe existir).
-    - `boolean existsByTituloProyecto(String titulo)` — valida POL-02 (título único).
+    - `guardar(FichaPerfilAggregate): void` — persiste el aggregate.
+    - `Optional<FichaPerfilAggregate> buscarPorId(UUID)` — reconstruye aggregate desde BD.
+    - `boolean existsByTituloProyecto(String titulo)` — valida POL-02 (invariante de unicidad sobre el propio aggregate).
 
-### `FichaPerfilCommandOutputAdapter.java` (a VALIDAR y posiblemente MODIFICAR)
+### `FichaPerfilCommandOutputAdapter.java` (a MODIFICAR)
 - **Paquete:** `com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.persistence`
 - **Tipo:** Adapter de persistencia write (`@Component`)
-- **Responsabilidad:** Implementa `FichaPerfilOutputPort` usando `FichaPerfilJpaRepository`, `AsesorFichaJpaRepository` y `FichaPerfilMapper`. Usa `reconstruir(...)` al reconstruir desde BD.
-- **Cambio principal:** verificar que implemente `existsAsesorById(...)` (delegando a `asesorFichaJpaRepository.existsById(...)`) y `existsByTituloProyecto(...)` (delegando a `fichaPerfilJpaRepository.existsByTituloProyecto(...)`). Si los métodos no existen en el adapter, crearlos.
+- **Responsabilidad:** Implementa `FichaPerfilOutputPort` usando `FichaPerfilJpaRepository` y `FichaPerfilMapper`. Usa `reconstruir(...)` al reconstruir desde BD.
+- **Cambio principal:** **quitar dependencia de `AsesorFichaJpaRepository`** y el método `existsAsesorById`. Esa lógica se traslada al nuevo `AsesorFichaQueryOutputAdapter` (puerto separado).
 - **Métodos principales:**
-    - `save(FichaPerfilAggregate): void` — convierte aggregate → JPA Entity con `mapper.toJpaEntity(...)`, persiste con `jpaRepository.save(...)`.
-    - `findById(UUID): Optional<FichaPerfilAggregate>` — consulta JPA, convierte JPA Entity → aggregate con `mapper.toAggregate(...)` (usa `reconstruir(...)`).
-    - `existsAsesorById(UUID): boolean` — delega a `asesorFichaJpaRepository.existsById(...)`.
+    - `guardar(FichaPerfilAggregate): void` — persiste el aggregate.
+    - `buscarPorId(UUID): Optional<FichaPerfilAggregate>` — usa `reconstruir(...)`.
     - `existsByTituloProyecto(String): boolean` — delega a `fichaPerfilJpaRepository.existsByTituloProyecto(...)`.
-- **Dependencias:** `FichaPerfilJpaRepository`, `AsesorFichaJpaRepository`, `FichaPerfilMapper`, `FichaPerfilAggregate`.
+- **Dependencias:** `FichaPerfilJpaRepository`, `FichaPerfilMapper`, `FichaPerfilAggregate`. Mantiene `EntityManager` (`@PersistenceContext`) para `getReference(AsesorFichaJpaEntity.class, ...)` al armar la FK del `guardar(...)` — esto NO viola la regla porque solo usa la referencia JPA, no consulta el aggregate.
+
+### `AsesorFichaQueryOutputPort.java` (NUEVO)
+- **Paquete:** `com.arquisoft.fichas.application.asesorficha.query.port.out`
+- **Tipo:** Interface (query side de la vista materializada `AsesorFicha`)
+- **Responsabilidad:** Exponer lookups sobre la vista materializada para uso de otros aggregates del contexto.
+- **Métodos principales:** `boolean existsById(UUID id)`.
+
+### `AsesorFichaQueryOutputAdapter.java` (NUEVO)
+- **Paquete:** `com.arquisoft.fichas.infrastructure.asesorficha.query.adapter.out.persistence`
+- **Tipo:** `@Component` que implementa `AsesorFichaQueryOutputPort`.
+- **Responsabilidad:** Delega a `AsesorFichaJpaRepository.existsById(...)`.
 
 ### Excepciones de aplicación (a VALIDAR y posiblemente CREAR)
 
@@ -359,7 +371,7 @@ CREATE TABLE ficha_perfil (
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
 | `RegistrarFichaPerfilUseCaseTest` | `debeRegistrar_cuandoDatosValidos` | flujo exitoso completo: asesor existe, título único, retorna UUID no nulo |
-| `RegistrarFichaPerfilUseCaseTest` | `debeLanzarExcepcion_cuandoAsesorNoExiste` | `existsAsesorById(asesorId)` retorna `false` → lanza `AsesorFichaNoEncontradoException` con errorCode `ASESOR_NO_ENCONTRADO` |
+| `RegistrarFichaPerfilUseCaseTest` | `debeLanzarExcepcion_cuandoAsesorNoExiste` | `asesorFichaQueryOutputPort.existsById(asesorId)` retorna `false` → lanza `AsesorFichaNoEncontradoException` con errorCode `ASESOR_NO_ENCONTRADO` |
 | `RegistrarFichaPerfilUseCaseTest` | `debeLanzarExcepcion_cuandoTituloDuplicado` | `existsByTituloProyecto(titulo)` retorna `true` → lanza `FichaTituloDuplicadoException` con errorCode `FICHA_TITULO_DUPLICADO` |
 | `RegistrarFichaPerfilUseCaseTest` | `debeGuardarFicha_cuandoValidacionesExitosas` | verify `fichaPerfilOutputPort.save(any())` se llamó exactamente 1 vez |
 | `RegistrarFichaPerfilUseCaseTest` | `debeLanzarExcepcion_cuandoRepositorioFalla` | `save(...)` lanza `InfrastructureException` → se propaga |
@@ -373,8 +385,8 @@ CREATE TABLE ficha_perfil (
 |---------------|--------|-----------|
 | `FichaPerfilCommandOutputAdapterTest` | `debeGuardar_cuandoFichaEsValida` | persistencia OK — JPA Entity guardado |
 | `FichaPerfilCommandOutputAdapterTest` | `debeReconstruirConReconstruir_cuandoFindByIdExiste` | `findById(id)` retorna `Optional` con aggregate usando `reconstruir(...)` |
-| `FichaPerfilCommandOutputAdapterTest` | `debeRetornarTrue_cuandoAsesorExiste` | `existsAsesorById(id)` retorna `true` si `asesorFichaJpaRepository.existsById(id)` es `true` |
-| `FichaPerfilCommandOutputAdapterTest` | `debeRetornarFalse_cuandoAsesorNoExiste` | `existsAsesorById(id)` retorna `false` si no existe |
+| `AsesorFichaQueryOutputAdapterTest` | `debeRetornarTrue_cuandoAsesorExiste` | `existsById(id)` retorna `true` si `asesorFichaJpaRepository.existsById(id)` es `true` |
+| `AsesorFichaQueryOutputAdapterTest` | `debeRetornarFalse_cuandoAsesorNoExiste` | `existsById(id)` retorna `false` si no existe |
 | `FichaPerfilCommandOutputAdapterTest` | `debeRetornarTrue_cuandoTituloExiste` | `existsByTituloProyecto(titulo)` retorna `true` si ya existe ficha con ese título |
 | `FichaPerfilCommandOutputAdapterTest` | `debeRetornarFalse_cuandoTituloNoExiste` | `existsByTituloProyecto(titulo)` retorna `false` |
 | `RegistrarFichaPerfilInputAdapterTest` | `debe201_cuandoPeticionValida` | POST con DTO válido → `201 Created` + UUID en body |
@@ -405,7 +417,9 @@ Ver sección "Anti-patrones de Testing en Arquisoft" del skill `arquisoft-contex
 - [ ] Factory `crear(...)` usa Notification Pattern con `DomainValidator` y lanza `DomainValidationException` si hay errores. **NO acumula eventos** (no existe `publishEvent`).
 - [ ] IDs siempre `UUID` (autogenerado en `crear(...)` con `UUID.randomUUID()`)
 - [ ] Puerto de entrada (`RegistrarFichaPerfilInputPort`) definido (ya existe)
-- [ ] Puerto de salida (`FichaPerfilOutputPort`) define `save`, `findById`, `existsAsesorById`, `existsByTituloProyecto`
+- [ ] Puerto de salida `FichaPerfilOutputPort` define `guardar`, `buscarPorId`, `existsByTituloProyecto` (solo sobre el propio aggregate)
+- [ ] Puerto de salida `AsesorFichaQueryOutputPort` define `existsById` (lookup FK sobre la vista materializada)
+- [ ] El use case inyecta **ambos** puertos (`FichaPerfilOutputPort` + `AsesorFichaQueryOutputPort`)
 - [ ] Excepciones de aplicación (`FichaTituloDuplicadoException`, `AsesorFichaNoEncontradoException`) extienden `ApplicationException` (400) y usan constantes del catálogo
 - [ ] `RegistrarFichaPerfilCommand` (`record` en `application/fichaperfil/command/model/`) y `RegistrarFichaPerfilRequestDTO` (`record` en `infrastructure/.../dto/`) con anotaciones Jakarta + método `toCommand()`. Campos en español idénticos al aggregate.
 - [ ] Caso de uso (`RegistrarFichaPerfilUseCase`) con `@RequiredArgsConstructor`, `@Transactional` y flujo completo (validar asesor, validar título, crear, persistir, loguear, retornar UUID). **NO drena eventos** (no inyecta `EventPublisher`).
@@ -430,7 +444,7 @@ Ver sección "Anti-patrones de Testing en Arquisoft" del skill `arquisoft-contex
 
 | Etapa      | Agente              | Estado       | Fecha | Notas |
 |------------|---------------------|--------------|-------|-------|
-| Desarrollo | @implementador      | ⏳ Pendiente |       |       |
+| Desarrollo | @implementador      | ✅ Completado | 2026-06-11 | Build -x test: sin errores |
 | Tests      | @tester             | ⏳ Pendiente |       |       |
 | Validación | @validator-analyze  | ⏳ Pendiente |       |       |
 | Reporte    | @validator-report   | ⏳ Pendiente |       |       |
