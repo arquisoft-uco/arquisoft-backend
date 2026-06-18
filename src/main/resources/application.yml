@@ -47,6 +47,9 @@ spring:
       - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
       # FlywayAutoConfiguration: no existe en classpath (no hay spring-boot-starter-flyway).
       # Cada contexto instancia su propio Flyway bean en su *DataSourceConfig.
+      # JdbcEventPublicationAutoConfiguration: excluir el bean por defecto de Modulith
+      # porque usamos ContextAwareEventPublicationRepository personalizado.
+      - org.springframework.modulith.events.jdbc.JdbcEventPublicationAutoConfiguration
 
   # ==================== SPRING MODULITH (Outbox Pattern) ====================
   # Spring Modulith persiste los DomainEvents en event_publication (misma transacción
@@ -231,18 +234,6 @@ datasource:
       minimum-idle: 2
       connection-timeout: 20000
       pool-name: HikariPool-Evaluaciones
-
-  # Spring Modulith Event Publication Registry (Outbox Pattern centralizado).
-  # Todos los bounded contexts comparten esta BD para almacenar eventos de dominio
-  # pendientes de publicar en RabbitMQ. Ver ArquisoftEventsDataSourceConfig.
-  arquisoft-events:
-    url: ${DB_ARQUISOFT_EVENTS_URL:jdbc:postgresql://localhost:5432/arquisoft_events}
-    username: ${DB_ARQUISOFT_EVENTS_USERNAME:arquisoft_user}
-    password: ${DB_ARQUISOFT_EVENTS_PASSWORD:arquisoft123}
-    hikari:
-      maximum-pool-size: 5
-      minimum-idle: 1
-      connection-timeout: 20000
 
 # ==================== KEYCLOAK ====================
 # Propiedades propias para KeycloakAuthAdapter y SecurityConfig.
