@@ -272,6 +272,8 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 |-------|:---:|
 | `@Component`/`@Service` + `@RequiredArgsConstructor` | ✅ |
 | `@Transactional` si persiste | ⚠️ |
+| Si el use case emite eventos: `@Transactional` lleva qualifier explícito `transactionManager = "{contexto}TransactionManager"` | ✅ |
+| Use case que emite eventos sin qualifier en `@Transactional` (riesgo de outbox en BD equivocada) | ❌ violación bloqueante |
 | Inyectan puertos (interfaces), no implementaciones | ✅ |
 | Drenan y publican eventos del Aggregate tras persistir | ✅ |
 
