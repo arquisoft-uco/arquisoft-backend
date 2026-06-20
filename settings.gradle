@@ -54,3 +54,9 @@ include 'evaluaciones'
 include 'evaluaciones:domain'
 include 'evaluaciones:application'
 include 'evaluaciones:infrastructure'
+
+// Contexto 8: Usuarios (Gestión de usuarios y publicación de UsuarioCreadoEvent)
+include 'usuarios'
+include 'usuarios:domain'
+include 'usuarios:application'
+include 'usuarios:infrastructure'

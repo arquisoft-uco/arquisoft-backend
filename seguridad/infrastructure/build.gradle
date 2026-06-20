@@ -30,19 +30,11 @@ dependencies {
     implementation "com.bucket4j:bucket4j_jdk17-redis-common:${bucket4jVersion}"
     implementation "com.bucket4j:bucket4j_jdk17-lettuce:${bucket4jVersion}"
 
-    // Database
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
-    implementation "org.flywaydb:flyway-core"
-    implementation "org.flywaydb:flyway-database-postgresql"
-    runtimeOnly "org.postgresql:postgresql"
-
     // OpenAPI / Swagger (ADR-011)
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
 
-    // Testing — Spring Boot 4.x: @DataJpaTest y @WebMvcTest requieren modulos separados
-    testImplementation "org.springframework.boot:spring-boot-starter-data-jpa-test"
+    // Testing — Spring Boot 4.x: @WebMvcTest requiere modulo separado
     testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
     testImplementation "org.springframework.security:spring-security-test"
-    testImplementation "com.h2database:h2"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

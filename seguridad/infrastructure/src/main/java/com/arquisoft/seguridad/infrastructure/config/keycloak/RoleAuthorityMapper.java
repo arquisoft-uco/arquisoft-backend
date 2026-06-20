@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.keycloak;
 
-import com.arquisoft.seguridad.domain.usuario.model.UsuarioRole;
+import com.arquisoft.shared.model.UsuarioRole;
 import com.arquisoft.shared.exception.DomainException;
 
 import java.util.List;
