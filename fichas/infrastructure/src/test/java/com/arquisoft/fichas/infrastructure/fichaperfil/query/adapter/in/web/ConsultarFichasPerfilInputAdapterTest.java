@@ -63,7 +63,7 @@ class ConsultarFichasPerfilInputAdapterTest {
         mockMvc.perform(post("/fichas-perfil/coordinador")
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority("ficha:ficha:view"))))
+                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:view"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(0));
@@ -91,7 +91,7 @@ class ConsultarFichasPerfilInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority("ficha:ficha:view"))))
+                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:view"))))
                 .andExpect(status().isOk());
     }
 
@@ -120,7 +120,7 @@ class ConsultarFichasPerfilInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority("ficha:ficha:view"))))
+                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:view"))))
                 .andExpect(status().isOk());
     }
 
