@@ -41,13 +41,14 @@ docker-compose up postgres rabbitmq redis keycloak  # infra only
 
 ## Architecture
 
-Hexagonal Architecture (Ports & Adapters) with **7 bounded contexts** and **7 shared modules**. Contexts communicate exclusively via RabbitMQ domain events — they never import each other.
+Hexagonal Architecture (Ports & Adapters) with **8 bounded contexts** and **7 shared modules**. Contexts communicate exclusively via RabbitMQ domain events — they never import each other.
 
 ### Bounded Contexts
 
 | Context | DB Schema |
 |---------|-----------|
-| `seguridad` | `usuarios` |
+| `seguridad` | *(sin DB — auth vía Keycloak + Redis)* |
+| `usuarios` | `usuarios` |
 | `fichas` | `fichas_perfil` |
 | `proyectos` | `proyectos_grado` |
 | `artefactos` | `artefactos` |

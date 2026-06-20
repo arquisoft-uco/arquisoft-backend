@@ -24,11 +24,10 @@ import org.springframework.stereotype.Component;
  * <p>Esta clase tiene prioridad sobre {@link RabbitMQEventPublisher} (que lleva
  * {@code @ConditionalOnMissingBean}) mientras Spring Modulith esté en el classpath.
  *
- * <p><b>Alcance de atomicidad:</b> la atomicidad es garantizada únicamente cuando el use case
- * caller ejecuta dentro de una transacción que usa el mismo {@code DataSource} que el
- * {@code JdbcEventPublicationRepository} (actualmente {@code seguridadDataSource}).
- * Cuando otros contextos implementen JPA y publiquen eventos, deberán configurar su propio
- * {@code JdbcEventPublicationRepository} con su {@code DataSource} correspondiente.
+ * <p><b>Alcance de atomicidad:</b> la atomicidad es garantizada cuando el use case
+ * ejecuta dentro de una transacción cuyo {@code DataSource} tiene la tabla
+ * {@code event_publication}. {@code ContextAwareEventPublicationRepository} detecta
+ * automáticamente qué DataSource tiene la transacción activa.
  */
 @Component
 @RequiredArgsConstructor

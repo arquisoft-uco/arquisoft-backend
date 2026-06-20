@@ -25,8 +25,8 @@ import java.util.Map;
  * <p>Registra DataSource, EntityManagerFactory, TransactionManager y Flyway
  * para la base de datos {@code fichas_perfil}.
  *
- * <p>Sin {@code @Primary} — {@code seguridadTransactionManager} es el primario
- * mientras sea el único TransactionManager JPA activo en la app principal.
+ * <p>Sin {@code @Primary} — {@code usuariosTransactionManager} es el primario
+ * (declarado en {@code UsuariosDataSourceConfig}).
  */
 @Configuration
 @EnableTransactionManagement

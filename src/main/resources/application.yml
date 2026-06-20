@@ -158,16 +158,16 @@ minio:
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
 # usando @ConfigurationProperties("datasource.{contexto}").
 datasource:
-  seguridad:
-    url: ${DB_SEGURIDAD_URL:jdbc:postgresql://localhost:5432/usuarios}
-    username: ${DB_SEGURIDAD_USERNAME:arquisoft_user}
-    password: ${DB_SEGURIDAD_PASSWORD:arquisoft123}
+  usuarios:
+    url: ${DB_USUARIOS_URL:jdbc:postgresql://localhost:5432/usuarios}
+    username: ${DB_USUARIOS_USERNAME:arquisoft_user}
+    password: ${DB_USUARIOS_PASSWORD:arquisoft123}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
       connection-timeout: 20000
-      pool-name: HikariPool-Seguridad
+      pool-name: HikariPool-Usuarios
 
   fichas:
     url: ${DB_FICHAS_URL:jdbc:postgresql://localhost:5432/fichas_perfil}

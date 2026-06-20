@@ -27,6 +27,14 @@ checkstyle {
     maxErrors = 0
 }
 
+// El reporte HTML requiere Xalan (procesador XSLT) que no está en el classpath de Checkstyle.
+// Solo se genera XML — suficiente para CI y herramientas de análisis.
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        html.required = false
+    }
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -138,6 +146,12 @@ subprojects { subproject ->
         configFile = rootProject.file("config/checkstyle/checkstyle.xml")
         maxWarnings = 0
         maxErrors = 0
+    }
+
+    tasks.withType(Checkstyle).configureEach {
+        reports {
+            html.required = false
+        }
     }
 
     if (subproject.name.endsWith('application') || subproject.name.endsWith('infrastructure')) {
