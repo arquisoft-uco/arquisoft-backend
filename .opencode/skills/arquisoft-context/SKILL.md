@@ -46,7 +46,7 @@ Valores tomados de `gradle.properties` y `build.gradle` reales. **No inventar ve
 |---|---|---|
 | Java | 21 | Virtual Threads habilitados globalmente |
 | Spring Boot | 4.0.5 | `@MockitoBean` reemplaza a `@MockBean`; `RestTemplateBuilder` eliminado |
-| Gradle | 9.0.0 | Multi-módulo, 28 subproyectos |
+| Gradle | 9.0.0 | Multi-módulo (8 contextos + `shared` con sus submódulos) |
 | PostgreSQL | 18 | Driver gestionado por Spring Boot BOM |
 | RabbitMQ | 4.2.5 | Topic Exchange `arquisoft.events` |
 | Redis | 7 | Caché y sesiones distribuidas |
@@ -84,7 +84,8 @@ Domain  ←  Application  ←  Infrastructure
 
 | Contexto Gradle | GroupId base | Estado actual | ¿Usa AggregateRoot? |
 |---|---|---|---|
-| `seguridad` | `com.arquisoft.seguridad` | **Solo configuración** (login/refresh con Keycloak, rate-limit, JWT). No tiene HUs de negocio | ❌ No |
+| `seguridad` | `com.arquisoft.seguridad` | **Solo configuración** (login/refresh con Keycloak, rate-limit, JWT, blacklist Redis). No tiene HUs de negocio ni BD propia | ❌ No |
+| `usuarios` | `com.arquisoft.usuarios` | **Ejemplo demostrativo** del patrón asíncrono Spring Modulith + RabbitMQ. `UsuarioAggregate` + `UsuarioCreadoEvent` (topic `usuarios.usuario.creado`) sirven como referencia canónica para HUs que emiten eventos. NO implementa HUs reales en esta versión | ✅ Sí (para el ejemplo) |
 | `fichas` | `com.arquisoft.fichas` | Activo | ✅ Sí |
 | `proyectos` | `com.arquisoft.proyectos` | Pendiente | ✅ Sí |
 | `artefactos` | `com.arquisoft.artefactos` | Pendiente | ✅ Sí |
@@ -92,18 +93,18 @@ Domain  ←  Application  ←  Infrastructure
 | `entregables` | `com.arquisoft.entregables` | Pendiente | ✅ Sí |
 | `evaluaciones` | `com.arquisoft.evaluaciones` | Pendiente | ✅ Sí |
 
-> **El contexto `usuarios` NO se implementa en esta versión.** Los usuarios y roles viven en Keycloak — los demás contextos consumen el JWT directamente.
+> **`seguridad` no implementa HUs de negocio ni tiene aggregates propios.** Solo expone `/auth/login`, `/auth/refresh`, `/auth/validate` y la configuración global (rate-limit, JWT decoder, blacklist en Redis). Tampoco tiene BD PostgreSQL propia.
 >
-> **`seguridad` no implementa HUs de negocio.** Solo expone `/auth/login`, `/auth/refresh`, `/auth/validate` y la configuración global (rate-limit, JWT decoder). No tiene aggregates, eventos ni casos de uso CQRS.
+> **`usuarios` es contexto de ejemplo.** El `UsuarioAggregate`, `UsuarioCreadoEvent`, `CrearUsuarioUseCase` y la migración `event_publication` que ahí viven son la **referencia canónica del patrón eventos+outbox** del proyecto — se mantienen vivos como guía pero NO representan HUs de negocio activas. Las HUs reales del proyecto se planifican e implementan en los 6 contextos restantes (`fichas`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones`).
 >
-> En documentación y ejemplos del SKILL/agentes, los aggregates publicadores de eventos se ilustran con `fichas` (ej. `FichaPerfilAggregate.crear()` publica `FichaPerfilCreadaEvent`), **no** con `seguridad/usuarios`.
+> En documentación y ejemplos del SKILL/agentes, los aggregates publicadores de eventos se ilustran indistintamente con `fichas` (ej. `FichaPerfilAggregate.crear()` publica `FichaPerfilCreadaEvent`) o con `usuarios` (ej. `UsuarioAggregate.crear()` publica `UsuarioCreadoEvent`).
 
 ### Módulos shared
 
 | Módulo | Paquete base | Clases/Interfaces clave |
 |---|---|---|
-| `shared:domain` | `com.arquisoft.shared.domain` | `AggregateRoot`, `DomainEvent`, `InputPort<I, O>`, `VoidInputPort<I>`, `PaginatedResult<T>`, jerarquía base de excepciones |
-| `shared:amqp` | `com.arquisoft.shared.amqp` | `EventPublisher` (interfaz), `RabbitMQEventPublisher`, `AbstractEventConsumer`, `RabbitMQConfig` |
+| `shared:domain` | `com.arquisoft.shared.*` (`events`, `validation`, `inputport`, `exception`, `pagination`, `query`, `util`, `model`) | `AggregateRoot`, `DomainEvent`, `EventPublisher` (interfaz), `InputPort<I, O>`, `VoidInputPort<I>`, `PaginatedResult<T>`, `QueryCriteria`, jerarquía base de excepciones |
+| `shared:amqp` | `com.arquisoft.shared.amqp` | `SpringModulithEventPublisher` (impl principal), `RabbitMQEventPublisher` (fallback), `AbstractEventConsumer`, `RabbitMQConfig`, `ModulithAmqpExternalizationConfig` |
 | `shared:web` | `com.arquisoft.shared.web` | `GlobalAppExceptionHandler`, `ErrorResponseDTO`, `PageResponseDTO<T>`, `QueryCriteriaRequestDTO`, `NodoFiltroDTO` (Jackson polimórfico) |
 | `shared:postgres` | `com.arquisoft.shared.postgres` | `QueryJpaSpecification<JpaEntity>`, `CampoSpec` (sealed: `Texto`, `Uuid`, `Entero`, `Decimal`, `Fecha`, `FechaHora`, `Booleano`). Utilería para traducir `Criteria` → `Specification` |
 | `shared:minio` | `com.arquisoft.shared.minio` | `MinioStorageClient` (presigned URLs PUT/GET, `objectExists`, `deleteObject`), `MinioConfig`, `MinioProperties` |
@@ -388,7 +389,7 @@ lombok.*                           ← Lombok PROHIBIDO en dominio
 **Permitido en `domain/`:** solo `java.*`, `java.util.*`, `java.time.*`, `java.util.UUID`,
 y clases del propio proyecto:
 - `com.arquisoft.{contexto}.domain.*` (mismo contexto, capa propia)
-- `com.arquisoft.shared.domain.*` (incluye subpaquetes `events/`, `exception/`, `pagination/`, `validation/`, `util/`)
+- `com.arquisoft.shared.*` (subpaquetes `events/`, `validation/`, `inputport/`, `exception/`, `pagination/`, `query/`, `util/`, `model/`)
 - `com.arquisoft.shared.message.*` (catálogo central de mensajes — Java puro, sin framework)
 
 > **NUNCA** en `domain/`: `com.arquisoft.shared.amqp.*`, `com.arquisoft.shared.web.*`, `com.arquisoft.shared.postgres.*`, `com.arquisoft.shared.minio.*`. Esos son adaptadores técnicos.
@@ -428,8 +429,8 @@ Toda integración con un sistema externo (RabbitMQ, MinIO, Redis, SMTP, HTTP ext
 ```java
 // domain/fichaPerfil/port/out/FichaPerfilOutputPort.java
 public interface FichaPerfilOutputPort {
-    void save(FichaPerfilAggregate aggregate);
-    Optional<FichaPerfilAggregate> findById(UUID id);
+    void guardar(FichaPerfilAggregate aggregate);
+    Optional<FichaPerfilAggregate> buscarPorId(UUID id);
 }
 
 // infrastructure/fichaPerfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java
@@ -498,48 +499,48 @@ public abstract class AggregateRoot {
     private final List<DomainEvent> unPublishedEvents = new ArrayList<>();
 
     protected void publishEvent(DomainEvent event) { unPublishedEvents.add(event); }
-    public List<DomainEvent> getUnPublishedEvents() { return new ArrayList<>(unPublishedEvents); }
-    public void clearUnPublishedEvents() { unPublishedEvents.clear(); }
+
+    // Retorna la lista Y la limpia en una sola operación. Lo llama el use case tras
+    // persistir. NO existe clearUnPublishedEvents() — código que lo invoque no compila.
+    public List<DomainEvent> drainUnPublishedEvents() { /* drena + limpia */ }
+
+    // protected — solo accesible desde tests del mismo paquete del aggregate.
+    protected List<DomainEvent> getUnPublishedEvents() { /* copia de la lista */ }
 }
 ```
 
 ### ¿Qué es DomainEvent?
 
-Clase base en `shared:domain` que asigna automáticamente `eventId` (UUID), `occurredAt` (Instant) y `eventType` (simpleName de la subclase). Define el método abstracto `getEventTopic()` que cada subclase DEBE implementar.
+Clase base en `shared:domain`. El constructor recibe `eventTopic` y `eventType`, valida que el topic cumpla el formato `{contexto}.{entidad}.{accion}`, y asigna automáticamente `eventId` (UUID) y `occurredAt` (`Instant`). **`getEventTopic()` es `final`** — la subclase NO lo sobreescribe: declara su constante `EVENT_TOPIC` y la pasa al `super(...)`.
 
 ```java
 // Ya existe en shared:domain
 public abstract class DomainEvent {
-    private final String eventId;
-    private final String aggregateId;
-    private final LocalDateTime occurredAt;
-    private final String eventType;
-
-    protected DomainEvent(String aggregateId) {
-        this.eventId = UUID.randomUUID().toString();
-        this.aggregateId = aggregateId;
-        this.occurredAt = LocalDateTime.now();
-        this.eventType = this.getClass().getSimpleName();
+    protected DomainEvent(String eventTopic, String eventType) {
+        validateTopic(eventTopic);                  // formato {contexto}.{entidad}.{accion}
+        this.eventId    = UUID.randomUUID().toString();
+        this.occurredAt = Instant.now();
+        this.eventType  = eventType;
+        this.eventTopic = eventTopic;
     }
+    public final String getEventTopic() { return eventTopic; }  // final — no se sobreescribe
+    // getEventId(), getOccurredAt(), getEventType()
+}
 
-    /**
-     * Routing key con la que este evento se publica al exchange arquisoft.events.
-     * Formato esperado: "{contexto}.{entidad}.{accion}" (ej. "fichas.ficha.creada").
-     * Cada subclase de DomainEvent DEBE implementar este método.
-     */
-    public abstract String getEventTopic();
-
-    // getters...
+// Cada evento concreto declara sus constantes y las pasa al super:
+public class UsuarioCreadoEvent extends DomainEvent {
+    public static final String EVENT_TOPIC = "usuarios.usuario.creado";
+    public static final String EVENT_TYPE  = "UsuarioCreadoEvent";
+    public UsuarioCreadoEvent(UUID usuarioId, String email, String rol) {
+        super(EVENT_TOPIC, EVENT_TYPE);
+        // ...campos propios del evento
+    }
 }
 ```
 
-### Ciclo completo: emisión y drenado
+### Ciclo de emisión y drenado
 
-1. **Dominio:** la entidad raíz acumula eventos con `publishEvent(...)` en sus métodos de negocio (incluido el factory `crear`).
-2. **Use case:** tras persistir, drena los eventos con `getUnPublishedEvents()`, los entrega a `EventPublisher` (puerto `shared:amqp` con firma `void publish(DomainEvent event)`) y llama a `clearUnPublishedEvents()`.
-3. **`EventPublisher` lee internamente `event.getEventTopic()`** y publica al exchange `arquisoft.events`. La implementación concreta `RabbitMQEventPublisher` ya vive en `shared:amqp`.
-4. **El dominio NUNCA** inyecta `EventPublisher`. Solo acumula eventos en memoria.
-5. **El controller NUNCA** drena eventos directamente. Solo lo hace el use case.
+El aggregate acumula eventos con `publishEvent(...)` en sus factories/métodos de negocio. El use case, tras persistir, drena y publica en una línea: `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)`. El dominio NUNCA inyecta `EventPublisher`; el controller NUNCA drena. Mecánica completa (Outbox por contexto, Spring Modulith) en **"Eventos asíncronos — RabbitMQ"**.
 
 ### Factory methods obligatorios
 
@@ -573,22 +574,11 @@ Una HU de Escritura puede emitir eventos o no. La decisión depende de si hay (o
 | **Con eventos** | `extends AggregateRoot` | Llama a `publishEvent(new {Entidad}{Accion}Event(...))` | Inyecta `EventPublisher` y drena tras persistir con `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` | Sección 4 lista los eventos emitidos con su `eventTopic` |
 | **Sin eventos (CRUD simple)** | **NO extiende `AggregateRoot`** — es un `class` plano con factories `crear`/`reconstruir` | NO existe `publishEvent(...)` ni se llama | NO inyecta `EventPublisher`, no hay drenado | Sección 4 declara explícitamente "Esta HU no emite eventos: <razón>" + "Entidad raíz NO extiende `AggregateRoot`" |
 
-**Cuando aparezca la primera necesidad de evento futuro:** la HU que introduzca el evento añade `extends AggregateRoot` a la entidad, crea la clase del evento (`{Entidad}{Accion}Event extends DomainEvent` con `getEventTopic()`), llama a `publishEvent(...)` en el factory correspondiente e inyecta `EventPublisher` en el use case. No se anticipa.
+**Cuando aparezca la primera necesidad de evento futuro:** la HU que introduzca el evento añade `extends AggregateRoot` a la entidad, crea la clase del evento (`{Entidad}{Accion}Event extends DomainEvent` con su constante `EVENT_TOPIC` pasada al `super(...)`), llama a `publishEvent(...)` en el factory correspondiente e inyecta `EventPublisher` en el use case. No se anticipa.
 
-### Firma de EventPublisher (shared:amqp)
+### Firma de EventPublisher
 
-```java
-// Ya existe en shared:amqp
-public interface EventPublisher {
-    /**
-     * Publica un evento de dominio al exchange arquisoft.events
-     * usando la routing key que devuelve event.getEventTopic().
-     */
-    void publish(DomainEvent event);
-}
-```
-
-**Una sola firma con type safety.** Recibe `DomainEvent` (no `Object`) — el compilador garantiza que solo se publican eventos de dominio.
+`void publish(DomainEvent event)` (interfaz en `shared:domain.events`). Type-safe: recibe `DomainEvent`, no `Object`. El use case la inyecta como interfaz; Spring resuelve la implementación (`SpringModulithEventPublisher` por defecto, `RabbitMQEventPublisher` como fallback). Detalle en **"Eventos asíncronos — RabbitMQ"**.
 
 ---
 
@@ -1029,9 +1019,9 @@ QueryCriteriaRequestDTO → solicitud.parsearAOrdenamiento()  → List<SortOrder
 // application/fichaPerfil/query/criteria/FichaPerfilCriteria.java
 package com.arquisoft.fichas.application.fichaPerfil.query.criteria;
 
-import com.arquisoft.shared.domain.pagination.QueryCriteria;
-import com.arquisoft.shared.domain.pagination.NodoFiltro;
-import com.arquisoft.shared.domain.pagination.SortOrder;
+import com.arquisoft.shared.query.QueryCriteria;
+import com.arquisoft.shared.query.NodoFiltro;
+import com.arquisoft.shared.query.SortOrder;
 import java.util.List;
 import java.util.Set;
 
@@ -1152,7 +1142,7 @@ public interface FichaPerfilJpaRepository extends JpaRepository<FichaPerfilJpaEn
 ```java
 package com.arquisoft.fichas.domain.fichaPerfil.exception;
 
-import com.arquisoft.shared.domain.exception.DomainException;
+import com.arquisoft.shared.exception.DomainException;
 
 public class FichaPerfilNoEncontradaException extends DomainException {
    public FichaPerfilNoEncontradaException(String id) {
@@ -1189,11 +1179,11 @@ public record CrearFichaPerfilCommand(
 // domain/fichaPerfil/aggregate/FichaPerfilAggregate.java
 package com.arquisoft.fichas.domain.fichaPerfil.aggregate;
 
-import com.arquisoft.shared.domain.events.AggregateRoot;
-import com.arquisoft.shared.domain.validation.ValidationResult;
-import com.arquisoft.shared.domain.validation.DomainValidator;
+import com.arquisoft.shared.events.AggregateRoot;
+import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.fichas.domain.fichaPerfil.event.FichaPerfilCreadaEvent;
-import com.arquisoft.fichas.domain.fichaPerfil.message.FichaPerfilDomainMessages;
+import com.arquisoft.shared.message.FichasMessages;
 import java.util.UUID;
 
 public final class FichaPerfilAggregate extends AggregateRoot {
@@ -1226,15 +1216,15 @@ public final class FichaPerfilAggregate extends AggregateRoot {
 
    private void setTituloProyecto(String titulo, ValidationResult result) {
       if (!DomainValidator.notBlank(titulo,
-              FichaPerfilDomainMessages.CAMPO_TITULO,
-              FichaPerfilDomainMessages.TITULO_REQUERIDO, result)) return;
+              FichasMessages.FichaPerfil.CAMPO_TITULO,
+              FichasMessages.FichaPerfil.TITULO_REQUERIDO, result)) return;
       this.tituloProyecto = titulo.trim();
    }
 
    private void setAsesorFichaId(UUID id, ValidationResult result) {
       if (!DomainValidator.notNull(id,
-              FichaPerfilDomainMessages.CAMPO_ASESOR,
-              FichaPerfilDomainMessages.ASESOR_REQUERIDO, result)) return;
+              FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+              FichasMessages.FichaPerfil.ASESOR_REQUERIDO, result)) return;
       this.asesorFichaId = id;
    }
 
@@ -1251,23 +1241,26 @@ public final class FichaPerfilAggregate extends AggregateRoot {
 // domain/fichaPerfil/event/FichaPerfilCreadaEvent.java
 package com.arquisoft.fichas.domain.fichaPerfil.event;
 
-import com.arquisoft.shared.domain.events.DomainEvent;
+import com.arquisoft.shared.events.DomainEvent;
 import java.util.UUID;
 
 public final class FichaPerfilCreadaEvent extends DomainEvent {
 
-    public static final String EVENT_TOPIC = "fichas.fichaPerfil.creada";
+    public static final String EVENT_TOPIC = "fichas.ficha_perfil.creada";
     public static final String EVENT_TYPE  = "FichaPerfilCreadaEvent";
 
+    private final UUID fichaPerfilId;
     private final String tituloProyecto;
     private final UUID asesorFichaId;
 
-    public FichaPerfilCreadaEvent(UUID aggregateId, String titulo, UUID asesorFichaId) {
-        super(aggregateId.toString(), EVENT_TOPIC, EVENT_TYPE);
+    public FichaPerfilCreadaEvent(UUID fichaPerfilId, String titulo, UUID asesorFichaId) {
+        super(EVENT_TOPIC, EVENT_TYPE);          // base solo recibe (eventTopic, eventType)
+        this.fichaPerfilId  = fichaPerfilId;
         this.tituloProyecto = titulo;
-        this.asesorFichaId = asesorFichaId;
+        this.asesorFichaId  = asesorFichaId;
     }
 
+    public UUID getFichaPerfilId() { return fichaPerfilId; }
     public String getTituloProyecto() { return tituloProyecto; }
     public UUID getAsesorFichaId() { return asesorFichaId; }
 }
@@ -1284,8 +1277,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface FichaPerfilOutputPort {
-    void save(FichaPerfilAggregate aggregate);
-    Optional<FichaPerfilAggregate> findById(UUID id);
+    void guardar(FichaPerfilAggregate aggregate);
+    Optional<FichaPerfilAggregate> buscarPorId(UUID id);
 }
 ```
 
@@ -1295,7 +1288,7 @@ public interface FichaPerfilOutputPort {
 // application/fichaPerfil/command/port/in/CrearFichaPerfilInputPort.java
 package com.arquisoft.fichas.application.fichaPerfil.command.port.in;
 
-import com.arquisoft.shared.domain.port.in.InputPort;
+import com.arquisoft.shared.inputport.InputPort;
 import com.arquisoft.fichas.application.fichaPerfil.command.model.CrearFichaPerfilCommand;
 import java.util.UUID;
 
@@ -1315,7 +1308,7 @@ import com.arquisoft.fichas.application.fichaPerfil.command.model.CrearFichaPerf
 import com.arquisoft.fichas.application.fichaPerfil.command.port.in.CrearFichaPerfilInputPort;
 import com.arquisoft.fichas.domain.fichaPerfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaPerfil.port.out.FichaPerfilOutputPort;
-import com.arquisoft.shared.amqp.EventPublisher;
+import com.arquisoft.shared.events.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -1331,12 +1324,12 @@ public class CrearFichaPerfilUseCase implements CrearFichaPerfilInputPort {
    private final EventPublisher eventPublisher;
 
    @Override
-   @Transactional
+   @Transactional(transactionManager = "fichasTransactionManager")  // qualifier obligatorio si emite eventos
    public UUID ejecutar(CrearFichaPerfilCommand command) {
       FichaPerfilAggregate aggregate = FichaPerfilAggregate.crear(
               command.tituloProyecto(), command.asesorFichaId());
 
-      fichaPerfilOutputPort.save(aggregate);
+      fichaPerfilOutputPort.guardar(aggregate);
 
       aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);
 
@@ -1444,12 +1437,12 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
    private final FichaPerfilMapper mapper;
 
    @Override
-   public void save(FichaPerfilAggregate aggregate) {
+   public void guardar(FichaPerfilAggregate aggregate) {
       jpaRepository.save(mapper.toJpaEntity(aggregate));
    }
 
    @Override
-   public Optional<FichaPerfilAggregate> findById(UUID id) {
+   public Optional<FichaPerfilAggregate> buscarPorId(UUID id) {
       return jpaRepository.findById(id).map(mapper::toAggregate);
    }
 }
@@ -1893,27 +1886,35 @@ public class SubirDocumentoUseCase implements SubirDocumentoInputPort {
 ```
 Exchange "arquisoft.events" (TopicExchange, durable)
   │
-  ├── routing key "fichas.fichaPerfil.creada"
-  │     ├── Queue "proyectos.fichas.fichaPerfil.creada" (durable + DLX)
-  │     └── Queue "evaluaciones.fichas.fichaPerfil.creada" (durable + DLX)
+  ├── routing key "fichas.ficha_perfil.creada"
+  │     ├── Queue "proyectos.fichas.ficha_perfil.creada" (durable + DLX)
+  │     └── Queue "evaluaciones.fichas.ficha_perfil.creada" (durable + DLX)
   │
   └── ... otras routing keys
 ```
 
+> **Formato del topic:** `{contexto}.{entidad}.{accion}`, **todo en minúsculas y `snake_case`** (tres segmentos `[a-z][a-z_]*`). `DomainEvent` valida este formato en el constructor — un topic con camelCase (ej. `fichas.fichaPerfil.creada`) lanza `IllegalArgumentException`.
+
 | Recurso | Convención | Ejemplo |
 |---|---|---|
 | Exchange único | `arquisoft.events` (Topic, durable) | — |
-| Routing key | `{contexto}.{entidad}.{accion}` (la constante `EVENT_TOPIC` del evento) | `fichas.fichaPerfil.creada` |
-| Cola por consumidor | `{contextoConsumidor}.{eventTopic}` durable | `proyectos.fichas.fichaPerfil.creada` |
+| Routing key | `{contexto}.{entidad}.{accion}` (la constante `EVENT_TOPIC` del evento) | `fichas.ficha_perfil.creada` |
+| Cola por consumidor | `{contextoConsumidor}.{eventTopic}` durable | `proyectos.fichas.ficha_perfil.creada` |
 | DLX | `arquisoft.dlx` + routing key `{queue}.dead` | — |
 
 ### Publicación — `SpringModulithEventPublisher` (Spring Modulith + Outbox Pattern)
 
-El publicador principal del proyecto es **`SpringModulithEventPublisher`** (en `shared:amqp`), que implementa el puerto `EventPublisher` de `shared:domain.events`. Internamente delega a `ApplicationEventPublisher.publishEvent(...)`, y Spring Modulith intercepta esa publicación para aplicar **Outbox Pattern**:
+El publicador principal del proyecto es **`SpringModulithEventPublisher`** (en `shared:amqp`), que implementa el puerto `EventPublisher` de `shared:domain.events`. Internamente delega a `ApplicationEventPublisher.publishEvent(...)`, y Spring Modulith intercepta esa publicación para aplicar **Outbox Pattern con tabla `event_publication` por contexto**:
 
-1. **Dentro de la transacción del use case:** persiste el evento en la tabla `event_publication` (BD `arquisoft_events`) con `completion_date = NULL`. El INSERT está en la misma transacción que el `save()` del aggregate.
+1. **Dentro de la transacción del use case:** persiste el evento en la tabla `event_publication` **de la BD del contexto** (mismo `DataSource` del aggregate) con `completion_date = NULL`. El INSERT está en la misma transacción que el `save()` del aggregate — atomicidad real, no práctica.
 2. **Tras el commit:** publica al exchange `arquisoft.events` usando `event.getEventTopic()` como routing key, vía la configuración `ModulithAmqpExternalizationConfig`.
 3. **Si el broker rechaza o está caído:** el evento queda en `event_publication` con `completion_date = NULL`. El bean `FailedEventRetryConfig` reintenta cada 5 min mediante `FailedEventPublications.resubmit(...)` con `withMinAge(2m)`.
+
+**Cómo Modulith sabe a qué BD escribir:** el proyecto reemplaza el `JdbcEventPublicationRepository` por un componente custom — **`ContextAwareEventPublicationRepository`** (en `src/main/java/com/arquisoft/config/outbox/`). En el arranque detecta automáticamente qué `DataSource`s tienen tabla `event_publication`; al publicar un evento, busca la transacción activa (vía `TransactionSynchronizationManager`) y enruta el INSERT al `JdbcTemplate` correspondiente. Las queries de estado (incompletos, fallidos, conteos) hacen fan-out a todas las tablas detectadas. La autoconfig de Modulith para JDBC está **explícitamente excluida** en `application.yml` (`JdbcEventPublicationAutoConfiguration` en la lista de `spring.autoconfigure.exclude`).
+
+**Implicación para el use case:** la anotación `@Transactional` debe llevar el **qualifier explícito** del transaction manager del contexto, para que Modulith escriba en la BD correcta. Ejemplo: `@Transactional(transactionManager = "usuariosTransactionManager")` en `usuarios`, `@Transactional(transactionManager = "fichasTransactionManager")` en `fichas`. Sin el qualifier puede fallar el routing si hay otro `@Primary` en el contexto.
+
+**Implicación para el plan/implementación:** todo contexto que emita eventos necesita la migración Flyway `V{n}__crear_event_publication.sql` en `db/migration/{contexto}/`. Los contextos que NO emiten eventos no necesitan la tabla — el `ContextAwareEventPublicationRepository` los ignora.
 
 Existe además un **fallback `RabbitMQEventPublisher`** anotado con `@ConditionalOnMissingBean(EventPublisher.class)` — solo se activa si Spring Modulith no está en el classpath. Maneja publish directo con backoff exponencial 3× (500ms → 1s → 2s) ante `AmqpException`. En la operación normal del proyecto NO se usa este fallback.
 
@@ -1984,7 +1985,7 @@ Cada contexto consumidor declara su `@Configuration` en `infrastructure/config/`
 @Configuration
 public class ProyectosFichaPerfilQueueConfig {
 
-   public static final String QUEUE_NAME = "proyectos.fichas.fichaPerfil.creada";
+   public static final String QUEUE_NAME = "proyectos.fichas.ficha_perfil.creada";
 
    @Bean
    public Queue proyectosFichaPerfilCreadaQueue() {
@@ -2014,7 +2015,8 @@ public class ProyectosFichaPerfilQueueConfig {
 | Acumula evento en memoria | `domain/{entidad}/aggregate/` | `publishEvent(...)` desde el factory |
 | Drena y publica | `application/{entidad}/command/` | `drainUnPublishedEvents().forEach(publish)` tras persistir |
 | Publica a RabbitMQ | `shared:amqp` (`SpringModulithEventPublisher`) | Delega a `ApplicationEventPublisher`; Modulith persiste en `event_publication` y publica tras commit |
-| Outbox + reintentos | `arquisoft_events` BD + `FailedEventRetryConfig` | Tabla `event_publication` (Outbox); scheduler reintenta cada 5 min |
+| Outbox por contexto | `ContextAwareEventPublicationRepository` (`src/main/java/com/arquisoft/config/outbox/`) | Detecta DataSources con tabla `event_publication` en el arranque; enruta INSERT a la transacción activa; fan-out en queries de estado |
+| Reintentos de FAILED | `FailedEventRetryConfig` | Scheduler `@Scheduled` cada 5 min: `FailedEventPublications.resubmit(...)` con `withMinAge(2m)` |
 | Externalización a exchange | `shared:amqp` (`ModulithAmqpExternalizationConfig`) | `EventExternalizationConfiguration` con routing por `getEventTopic()` |
 | Configura cola + DLX | `{contextoConsumidor}/infrastructure/config/` | `@Configuration` con Queue + Binding |
 | Consume el mensaje | `{contextoConsumidor}/infrastructure/{entidad}/command/adapter/in/amqp/` | Extiende `AbstractEventConsumer` |
@@ -2025,6 +2027,7 @@ public class ProyectosFichaPerfilQueueConfig {
 1. **`AggregateRoot` solo acumula eventos en memoria.** Nunca conoce `EventPublisher`.
 2. **El UseCase write drena con `drainUnPublishedEvents()`** (un solo método que retorna + limpia atómico). Nunca itera el aggregate manualmente. **NO existe `clearUnPublishedEvents()`** en `AggregateRoot` — código que lo use NO compila.
 3. **El use case inyecta `EventPublisher`** (interfaz de `shared:domain.events`). Quién la provee (`SpringModulithEventPublisher` en operación normal, `RabbitMQEventPublisher` como fallback) lo decide Spring — el use case no conoce la implementación.
+   **Si el use case emite eventos**, el `@Transactional` lleva qualifier explícito: `@Transactional(transactionManager = "{contexto}TransactionManager")`. Sin qualifier, el outbox puede romperse silenciosamente al escribir en una BD equivocada.
 4. **El consumidor declara su propio `record` payload.** Nunca importa la clase del evento del publicador (cero acoplamiento entre contextos).
 5. **Toda cola tiene DLX configurado** (`x-dead-letter-exchange`). Sin DLX, mensajes en error se re-encolan eternamente.
 6. **El consumer extiende `AbstractEventConsumer`** y usa `withCorrelation(message, channel, runnable)`. No implementa ACK/NACK manualmente.
@@ -2092,15 +2095,13 @@ Todas las BDs viven en el mismo servidor PostgreSQL pero son aisladas entre sí.
 
 | Contexto Gradle | Base de Datos PostgreSQL |
 |---|---|
-| `seguridad` | `arquisoft_seguridad` ⁽¹⁾ |
+| `seguridad` | `usuarios` |
 | `fichas` | `fichas_perfil` |
 | `proyectos` | `proyectos_grado` |
 | `artefactos` | `artefactos` |
 | `repositorio_artefactos` | `repositorio_artefactos` |
 | `entregables` | `entregables` |
 | `evaluaciones` | `evaluaciones` |
-
-⁽¹⁾ BD de **configuración** (Keycloak/JWT/rate-limit). NO es contexto de usuarios de negocio — el contexto `usuarios` no se implementa en esta versión.
 
 ### Configuración del DataSource (ya existe, NO se crea por HU)
 
@@ -2122,74 +2123,17 @@ por contexto. El implementador **no toca configuración de DataSource**.
   no `CREATE TABLE fichas_perfil.ficha (...)`).
 - **NO hay FKs cruzadas entre BDs.** Cada contexto es totalmente autónomo a nivel de datos.
 
-### Vistas materializadas (réplicas locales) entre contextos
+### Réplicas locales de entidades de otros contextos
 
-Cuando un contexto necesita información de otro, **modela una entidad propia con esos
-atributos denormalizados en su BD**. La fuente autoritativa vive en el contexto origen;
-la copia local solo expone lo que este contexto necesita.
+Cuando un contexto necesita información de otro (ej. `fichas_perfil` necesita conocer
+`nombre`, `identificador` y `email` de un estudiante que vive en `usuarios`), **modela
+una entidad propia con esos atributos denormalizados** dentro de su BD.
 
-**Inventario por contexto** (versión actual: todas pobladas **manualmente en BD**;
-el flujo CDC vía eventos RabbitMQ + Spring Modulith está habilitado a nivel técnico
-pero los consumers aún no escriben):
-
-| Contexto | Vista materializada | Origen |
-|---|---|---|
-| `fichas` | `RepresentanteComiteCurriculum`, `Estudiante`, `AsesorFicha` | `usuarios` (no implementado) |
-| `proyectos` | `FichaPerfil` | `fichas` |
-| `proyectos` | `Coordinador`, `Asesor`, `Estudiante` | `usuarios` (no implementado) |
-| `artefactos` | `ProyectoGrado` | `proyectos` |
-| `artefactos` | `VersionRepositorioArtefacto` | `repositorio_artefactos` |
-| `artefactos` | `Asesor`, `Estudiante` | `usuarios` (no implementado) |
-| `repositorio_artefactos` | `Administrador` | `usuarios` (no implementado) |
-| `entregables` | `ProyectoGrado` | `proyectos` |
-| `entregables` | `Artefacto` | `artefactos` |
-| `entregables` | `Asesor` | `usuarios` (no implementado) |
-| `evaluaciones` | `Entregable` | `entregables` |
-| `evaluaciones` | `Asesor`, `Jurado` | `usuarios` (no implementado) |
-
-**Aggregates propios por contexto** (write-side completo iniciado por HU):
-`fichas` → `FichaPerfil` · `proyectos` → `ProyectoGrado` · `artefactos` → `Artefacto`
-· `repositorio_artefactos` → `VersionRepositorioArtefacto` · `entregables` → `Entregable`
-· `evaluaciones` → `Evaluacion`. `seguridad` no tiene aggregates de negocio.
-
-> **Nota sobre `Asesor` vs `AsesorFicha`:** son **roles distintos**. `AsesorFicha`
-> asesora la ficha perfil (solo en `fichas`). `Asesor` asesora el proyecto, los
-> artefactos, los entregables y las evaluaciones (en los otros contextos).
-
-> **Nota sobre código `usuario`/`UsuarioCreado` en `seguridad` y `fichas`:** existe
-> físicamente como **ejemplo práctico** del flujo asíncrono Spring Modulith → RabbitMQ.
-> No es contexto de negocio activo y será removido cuando el usuario lo indique.
-> NO usarlo como referencia canónica al planificar / implementar / validar HUs.
-
-### Convención de estructura para vistas materializadas
-
-Las vistas materializadas usan la **misma estructura CQRS estándar** que cualquier
-aggregate (`command/` + `query/`), aunque su origen sea pasivo:
-
-- `domain/{vista}/aggregate/` — clase plana, **NUNCA** extiende `AggregateRoot` (no emite eventos propios).
-- `domain/{vista}/port/out/{Vista}OutputPort` — write desde el consumer AMQP del evento origen.
-- `application/{vista}/command/` — `Registrar{Vista}UseCase` invocado por el consumer.
-- `application/{vista}/query/port/out/{Vista}QueryOutputPort` — `existsById`, `findById`, etc.
-- `application/{vista}/query/readmodel/{Vista}ReadModel` — solo si hay HU read HTTP.
-- `infrastructure/{vista}/persistence/` — JpaEntity, JpaRepository, Mapper.
-- `infrastructure/{vista}/command/adapter/in/amqp/` — `*ConsumerInputAdapter`.
-- `infrastructure/{vista}/command/adapter/out/persistence/` — `{Vista}CommandOutputAdapter`.
-- `infrastructure/{vista}/query/adapter/out/persistence/` — `{Vista}QueryOutputAdapter`.
-
-Mientras no haya consumer real (v1 actual: poblado manual), las carpetas `command/` pueden
-quedar vacías. El lado `query/` SÍ se implementa cuando otro use case necesita lookup FK.
-
-### Regla — qué puede contener un `{Entidad}OutputPort`
-
-**Solo métodos que operan sobre su propio aggregate.** Si un use case write necesita
-verificar la existencia de **otro** aggregate (típica validación de FK), inyecta el
-`{OtroAggregate}QueryOutputPort` de ese otro aggregate — NUNCA mezclar métodos de
-distintos aggregates en un mismo puerto.
-
-**Ejemplo correcto** (HU-208): `RegistrarFichaPerfilUseCase` inyecta dos puertos —
-`FichaPerfilOutputPort` (write propio + `existsByTituloProyecto` que es invariante
-sobre el propio aggregate) y `AsesorFichaQueryOutputPort` (lookup `existsById` sobre
-la vista materializada de `AsesorFicha`).
+Ejemplo: en la BD `fichas_perfil` existe una tabla `estudiante` con columnas
+`id`, `identificador`, `nombre`, `email` — **réplica local**, no FK a `usuarios.estudiante`.
+La consistencia entre la copia local y la fuente real **no es preocupación del implementador
+de la HU** — se gestiona fuera del contexto. El implementador trata la tabla local como
+parte natural de su contexto.
 
 ### Convención de nombres de tablas
 
@@ -2247,10 +2191,7 @@ la vista materializada de `AsesorFicha`).
 
 ### Eventos RabbitMQ
 
-- Exchange único: `arquisoft.events` (Topic Exchange).
-- Routing keys: `{contexto}.{entidad}.{accion}` (ej. `fichas.ficha.creada`).
-- Cada contexto declara sus propias queues y bindings en `{contexto}/infrastructure/config/RabbitMQ{Entidad}Config.java`.
-- Puerto: `EventPublisher` de `shared:amqp`.
+Exchange único `arquisoft.events` (Topic); routing key `{contexto}.{entidad}.{accion}`. Topología completa, publicación (Spring Modulith + Outbox por contexto), consumo y reglas en **"Eventos asíncronos — RabbitMQ"**.
 
 ### Swagger / OpenAPI (ADR-011)
 
@@ -2262,12 +2203,10 @@ la vista materializada de `AsesorFicha`).
 
 ### Seguridad
 
-- JWT decodificado vía JWK Set URI de Keycloak.
-- `@EnableMethodSecurity(prePostEnabled = true)` → usar `@PreAuthorize("hasAuthority('contexto:recurso:accion')")` en controllers (ver sección "Autorización con client roles" más abajo).
-- **NO** se usa `hasRole('NOMBRE_ROL')` — los roles realm de Keycloak (`coordinador`, `asesor-ficha`, etc.) **no se evalúan directamente en endpoints**; en su lugar, cada rol tiene asignados unos *client roles* (formato `contexto:recurso:accion`) y la autorización del endpoint se hace contra esos client roles vía `hasAuthority(...)`.
+- JWT decodificado vía JWK Set URI de Keycloak. `@EnableMethodSecurity(prePostEnabled = true)`.
+- Autorización con `@PreAuthorize("hasAuthority('contexto:recurso:accion')")` — convención de client roles, mapeo y reglas en **"Autorización — Roles realm + Client Roles"**.
 - Endpoints públicos permit-all: `/auth/login`, `/auth/refresh`, `/auth/validate`, `/actuator/health/**`, `/swagger-ui/**`, `/v3/api-docs/**`.
-- CSRF deshabilitado, sesiones stateless.
-- Rate limiting (Bucket4j) habilitado en prod: 60/min global, 3/min login.
+- CSRF deshabilitado, sesiones stateless. Rate limiting (Bucket4j) en prod: 60/min global, 3/min login.
 
 ### Logging
 
@@ -2300,7 +2239,7 @@ la vista materializada de `AsesorFicha`).
 ./gradlew jacocoTestReport
 ./gradlew :{contexto}:jacocoTestReport
 
-# Listar los 28 subproyectos
+# Listar todos los subproyectos
 ./gradlew projects
 ```
 
@@ -2334,7 +2273,7 @@ Orden típico de consulta por subagente:
 3. **DDD estricto por capas:** el dominio es Java puro (sin Spring, JPA, Lombok, Jackson, RabbitMQ, Keycloak, Swagger). La aplicación solo conoce dominio + librerías permitidas. La infraestructura es la única que habla con tecnologías externas.
 4. **Cero reglas de negocio en `infrastructure/`:** si una decisión tiene sentido de negocio, vive en `domain/`. Los `@Configuration` solo cablean; los adaptadores solo traducen.
 5. **Patrón puerto/adaptador obligatorio** para toda integración externa (Keycloak, RabbitMQ, Redis, servicios HTTP, SMTP, S3). Puerto en `domain/port/out/`, adaptador en `infrastructure/adapter/out/{tipo}/`.
-6. Toda entidad raíz en los 6 contextos de negocio **DEBE** extender `AggregateRoot`. La única excepción documentada es `seguridad`.
+6. **`AggregateRoot` es condicional a eventos:** una entidad raíz extiende `AggregateRoot` SOLO si su HU emite eventos de dominio (ver "AggregateRoot — Regla Estricta"). Sin eventos = clase plana con factories `crear`/`reconstruir`. `seguridad` nunca usa `AggregateRoot`.
 7. Los IDs son **siempre `UUID`**. Cualquier uso de `Long`/`Integer` como ID es un error.
 8. La dirección de dependencias `domain ← application ← infrastructure` **no se negocia**.
 9. Los bounded contexts **no se importan entre sí** — solo eventos RabbitMQ.

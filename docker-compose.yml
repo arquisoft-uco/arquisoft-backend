@@ -115,9 +115,9 @@ services:
       dockerfile: Dockerfile
     container_name: arquisoft-backend
     environment:
-      DB_SEGURIDAD_URL: jdbc:postgresql://postgres:5432/usuarios
-      DB_SEGURIDAD_USERNAME: arquisoft_user
-      DB_SEGURIDAD_PASSWORD: arquisoft123
+      DB_USUARIOS_URL: jdbc:postgresql://postgres:5432/usuarios
+      DB_USUARIOS_USERNAME: arquisoft_user
+      DB_USUARIOS_PASSWORD: arquisoft123
       DB_FICHAS_URL: jdbc:postgresql://postgres:5432/fichas_perfil
       DB_FICHAS_USERNAME: arquisoft_user
       DB_FICHAS_PASSWORD: arquisoft123
@@ -136,9 +136,6 @@ services:
       DB_EVALUACIONES_URL: jdbc:postgresql://postgres:5432/evaluaciones
       DB_EVALUACIONES_USERNAME: arquisoft_user
       DB_EVALUACIONES_PASSWORD: arquisoft123
-      DB_ARQUISOFT_EVENTS_URL: jdbc:postgresql://postgres:5432/arquisoft_events
-      DB_ARQUISOFT_EVENTS_USERNAME: arquisoft_user
-      DB_ARQUISOFT_EVENTS_PASSWORD: arquisoft123
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_REDIS_HOST: redis
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080

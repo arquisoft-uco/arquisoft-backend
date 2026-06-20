@@ -63,16 +63,16 @@ spring:
 
 # ==================== DATASOURCES POR BOUNDED CONTEXT (PROD) ====================
 datasource:
-  seguridad:
-    url: ${DB_SEGURIDAD_URL}
-    username: ${DB_SEGURIDAD_USERNAME}
-    password: ${DB_SEGURIDAD_PASSWORD}
+  usuarios:
+    url: ${DB_USUARIOS_URL}
+    username: ${DB_USUARIOS_USERNAME}
+    password: ${DB_USUARIOS_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
       connection-timeout: 30000
-      pool-name: HikariPool-Seguridad-Prod
+      pool-name: HikariPool-Usuarios-Prod
 
   fichas:
     url: ${DB_FICHAS_URL}

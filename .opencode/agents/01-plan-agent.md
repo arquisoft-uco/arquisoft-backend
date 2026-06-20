@@ -629,8 +629,13 @@ Inventario de constantes a agregar al catálogo en esta HU (el agente lo llena a
 > (`com.arquisoft.shared.events.EventPublisher`, vive en `shared:domain`) y la invoca pasando un
 > `DomainEvent`. Cada evento expone su propia routing key vía `getEventTopic()` (método obligatorio
 > en `DomainEvent` que valida formato `{contexto}.{entidad}.{accion}` en el constructor).
-> El plan NO declara archivos de Spring Modulith ni `event_publication` — esa infraestructura
-> ya existe globalmente en `shared:amqp` + `ArquisoftEventsDataSourceConfig`.
+> El plan NO declara archivos de Spring Modulith ni el `ContextAwareEventPublicationRepository`
+> — esa infraestructura ya existe globalmente en `shared:amqp` y `src/main/java/com/arquisoft/config/outbox/`.
+> **Sí debe declarar** dos cosas cuando la HU emite eventos: (1) la migración Flyway
+> `V{n}__crear_event_publication.sql` en `db/migration/{contexto}/` si el contexto aún
+> no la tiene (la tabla `event_publication` vive en la BD del propio contexto, no en una
+> BD central); (2) que el use case use `@Transactional(transactionManager = "{contexto}TransactionManager")`
+> con qualifier explícito — sin él, el outbox puede escribir en una BD equivocada o fallar.
 >
 > **CONSUMO de eventos:** sí se crea config y listener locales en el contexto consumidor,
 > en `infrastructure/config/RabbitMQ{Entidad}Config.java` (declara queue + binding al exchange

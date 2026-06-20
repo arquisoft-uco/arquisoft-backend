@@ -24,7 +24,7 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
     private final AsesorFichaQueryOutputPort asesorFichaQueryOutputPort;
 
     @Override
-    @Transactional
+    @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(RegistrarFichaPerfilCommand command) {
         // POL-03: validar que el asesor ficha exista (lookup vía query side de la vista materializada)
         if (!asesorFichaQueryOutputPort.existsById(command.asesorFichaId())) {

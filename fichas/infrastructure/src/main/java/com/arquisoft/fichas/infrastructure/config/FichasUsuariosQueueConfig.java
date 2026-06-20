@@ -28,22 +28,22 @@ import org.springframework.context.annotation.Configuration;
 public class FichasUsuariosQueueConfig {
 
     /**
-     * Nombre de la cola donde Fichas recibe eventos {@code seguridad.usuario.creado}.
+     * Nombre de la cola donde Fichas recibe eventos {@code usuarios.usuario.creado}.
      * Debe coincidir con el routing key definido en
-     * {@link com.arquisoft.fichas.infrastructure.adapter.in.amqp.UsuarioCreadoConsumer}.
+     * {@link com.arquisoft.fichas.infrastructure.usuario.command.adapter.in.amqp.UsuarioCreadoInputAdapter}.
      */
-    public static final String USUARIO_CREADO_QUEUE = "fichas.seguridad.usuario.creado";
+    public static final String USUARIO_CREADO_QUEUE = "fichas.usuarios.usuario.creado";
 
     /**
-     * Routing key del evento publicado por el contexto {@code seguridad}.
+     * Routing key del evento publicado por el contexto {@code usuarios}.
      *
      * <p><b>Duplicación intencional:</b> este valor duplica {@code UsuarioCreadoEvent#EVENT_TOPIC}
-     * del contexto {@code seguridad:domain}. No se importa esa clase para preservar el
-     * aislamiento entre bounded contexts — fichas no puede depender de seguridad:domain.
+     * del contexto {@code usuarios:domain}. No se importa esa clase para preservar el
+     * aislamiento entre bounded contexts — fichas no puede depender de usuarios:domain.
      * El routing key es el contrato de mensajería; si cambia en el productor, debe
      * actualizarse aquí manualmente.
      */
-    public static final String USUARIO_CREADO_ROUTING_KEY = "seguridad.usuario.creado";
+    public static final String USUARIO_CREADO_ROUTING_KEY = "usuarios.usuario.creado";
 
     @Bean
     public Queue fichasUsuarioCreadoQueue() {

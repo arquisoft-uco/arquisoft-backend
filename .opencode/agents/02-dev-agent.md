@@ -513,7 +513,7 @@ Ver detalle completo en `shared/message/README.md` y en el skill `arquisoft-cont
 
 ### Use Cases
 
-- `@Component @RequiredArgsConstructor @Slf4j` + `@Transactional` cuando hay persistencia.
+- `@Component @RequiredArgsConstructor @Slf4j` + `@Transactional` cuando hay persistencia. **Si el use case emite eventos**, el `@Transactional` debe llevar qualifier explícito del transaction manager del contexto: `@Transactional(transactionManager = "{contexto}TransactionManager")` (ej. `usuariosTransactionManager`, `fichasTransactionManager`). Sin el qualifier, el `ContextAwareEventPublicationRepository` puede escribir el registro de outbox en una BD equivocada o lanzar `IllegalStateException` por no encontrar transacción activa.
 - Orquestan: persistir → `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` → retornar. **Solo si el plan declara eventos** (respuesta A o B a la pregunta 5 del planificador). Si "Eventos: ninguno" (respuesta C), el use case ni inyecta `EventPublisher` ni hace drenado. `drainUnPublishedEvents()` retorna + limpia en una sola operación atómica — no llames a `clearUnPublishedEvents()` (no existe).
 - Inyectan puertos (interfaces de `domain/port/out/`), nunca implementaciones.
 - **`{Entidad}OutputPort` solo opera sobre su propio aggregate.** Para validar FK contra otro aggregate (típicamente vista materializada de otro contexto), inyecta el `{OtroAggregate}QueryOutputPort` correspondiente — NUNCA mezcles lookups de otro aggregate dentro de tu `OutputPort`. Ver sección "Vistas materializadas" del skill.

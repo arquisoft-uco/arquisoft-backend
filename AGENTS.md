@@ -59,7 +59,7 @@ Los eventos de dominio se publican usando el **Event Publication Registry** de S
 ### Flujo obligatorio en use cases que publican eventos
 
 ```java
-@Transactional  // REQUERIDO — misma transacción para save + outbox
+@Transactional(transactionManager = "xxxTransactionManager")  // qualifier explícito obligatorio
 @Override
 public UUID ejecutar(CrearXxxCommand command) {
     XxxAggregate aggregate = XxxAggregate.crear(...);
@@ -70,12 +70,26 @@ public UUID ejecutar(CrearXxxCommand command) {
 ```
 
 - `eventPublisher` es `SpringModulithEventPublisher` (en `shared/amqp`), que delega a `ApplicationEventPublisher`.
-- Spring Modulith intercepta el `publishEvent` y persiste el evento en `arquisoft_events.event_publication` **dentro de la misma transacción**.
+- Spring Modulith intercepta el `publishEvent` y persiste el evento en la tabla `event_publication` de la BD del propio contexto **dentro de la misma transacción** — atomicidad garantizada.
 - Tras el commit, lo publica a RabbitMQ con el `eventTopic` como routing key.
 
-### BD centralizada `arquisoft_events`
+### Outbox por contexto — `event_publication` distribuida
 
-Todos los contextos comparten esta BD para el outbox. Definida en `ArquisoftEventsDataSourceConfig` (DataSource `@Primary`). Las variables de entorno requeridas son `DB_ARQUISOFT_EVENTS_URL`, `DB_ARQUISOFT_EVENTS_USERNAME`, `DB_ARQUISOFT_EVENTS_PASSWORD`.
+Cada contexto que publique eventos tiene su propia tabla `event_publication` en su BD. No existe una BD centralizada para el outbox. `ContextAwareEventPublicationRepository` (`src/main/config/outbox`) auto-detecta al arranque qué DataSources tienen la tabla y enruta el INSERT a la transacción activa.
+
+Para habilitar el outbox en un nuevo contexto, agregar la migración Flyway en su BD:
+
+```sql
+-- {contexto}/infrastructure/.../db/migration/{contexto}/V{N}__crear_event_publication.sql
+CREATE TABLE event_publication (
+    id UUID NOT NULL, listener_id TEXT NOT NULL, event_type TEXT NOT NULL,
+    serialized_event TEXT NOT NULL, publication_date TIMESTAMPTZ NOT NULL,
+    completion_date TIMESTAMPTZ, status TEXT, completion_attempts INT,
+    last_resubmission_date TIMESTAMPTZ, PRIMARY KEY (id)
+);
+```
+
+Sin cambios en código Java — la detección es automática.
 
 ### Convención de eventos de dominio
 

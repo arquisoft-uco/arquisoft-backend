@@ -41,13 +41,14 @@ docker-compose up postgres rabbitmq redis keycloak  # infra only
 
 ## Architecture
 
-Hexagonal Architecture (Ports & Adapters) with **7 bounded contexts** and **7 shared modules**. Contexts communicate exclusively via RabbitMQ domain events — they never import each other.
+Hexagonal Architecture (Ports & Adapters) with **8 bounded contexts** and **7 shared modules**. Contexts communicate exclusively via RabbitMQ domain events — they never import each other.
 
 ### Bounded Contexts
 
 | Context | DB Schema |
 |---------|-----------|
-| `seguridad` | `usuarios` |
+| `seguridad` | *(sin DB — auth vía Keycloak + Redis)* |
+| `usuarios` | `usuarios` |
 | `fichas` | `fichas_perfil` |
 | `proyectos` | `proyectos_grado` |
 | `artefactos` | `artefactos` |
@@ -121,7 +122,11 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **IDs:** Always UUID — never `Long` or `Integer`.
 
-**Domain events:** Extend `DomainEvent`. After persisting an aggregate, drain its unpublished events and publish via `SharedEventPublisher` (RabbitMQ, publisher confirms, manual ACK, prefetch=1).
+**Domain events:** Extend `DomainEvent`. After persisting an aggregate, drain its unpublished events and publish via `EventPublisher` (RabbitMQ, publisher confirms, manual ACK, prefetch=1).
+
+**Transactional (command):** Always use `@Transactional(transactionManager = "{context}TransactionManager")` with explicit qualifier in command use cases that publish events — required for outbox atomicity. Example: `@Transactional(transactionManager = "seguridadTransactionManager")`.
+
+**Transactional (query):** Query use cases do NOT use `@Transactional` — read-only operations have no side effects requiring transaction management.
 
 **Input ports:** Interfaces in `application/{feature}/command/port/in/` or `application/{feature}/query/port/in/`, suffix `InputPort` (e.g., `RegistrarFichaPerfilInputPort`, `ConsultarFichasPerfilInputPort`).
 

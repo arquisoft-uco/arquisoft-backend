@@ -1,0 +1,12 @@
+dependencies {
+    implementation project(':shared:domain')
+
+    // Domain puro: sin dependencias de framework
+    // - Las excepciones de dominio extienden DomainException (shared:domain → exceptions)
+    // - UsuarioRole reside en shared:domain (compartido con seguridad)
+
+    // Test: AssertJ + JUnit launcher (versiones gestionadas por BOM heredado del raiz)
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+}

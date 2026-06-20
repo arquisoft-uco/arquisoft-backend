@@ -1,0 +1,10 @@
+dependencies {
+    implementation project(':usuarios:domain')
+    implementation project(':shared:domain')   // EventPublisher (puerto de salida de eventos)
+
+    // Transactional — solo necesitamos @Transactional, no todo el starter
+    implementation 'org.springframework:spring-tx'
+
+    // Testing — junit-platform-launcher requerido explicitamente por Gradle 9
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
