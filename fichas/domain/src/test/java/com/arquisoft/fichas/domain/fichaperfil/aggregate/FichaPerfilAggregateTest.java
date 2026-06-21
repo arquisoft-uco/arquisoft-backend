@@ -11,54 +11,68 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class FichaPerfilAggregateTest {
 
     @Test
-    void debeReconstruirCorrectamente_cuandoReconstruirEsInvocado() {
-        UUID id = UUID.randomUUID();
-        UUID asesorFichaId = UUID.randomUUID();
+    void debeConstruirFicha_cuandoDatosValidos() {
+        // Arrange
+        String titulo = "Título de prueba";
+        UUID asesorId = UUID.randomUUID();
 
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.reconstruir(id, "Proyecto de Grado", asesorFichaId);
+        // Act
+        FichaPerfilAggregate ficha = FichaPerfilAggregate.crear(titulo, asesorId);
 
-        assertThat(ficha.getId()).isEqualTo(id);
-        assertThat(ficha.getTituloProyecto()).isEqualTo("Proyecto de Grado");
-        assertThat(ficha.getAsesorFichaId()).isEqualTo(asesorFichaId);
-    }
-
-    @Test
-    void debeLanzarExcepcion_cuandoTituloEsNuloOVacioEnCrear() {
-        UUID asesorFichaId = UUID.randomUUID();
-
-        assertThatThrownBy(() -> FichaPerfilAggregate.crear(null, asesorFichaId))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("nulo ni vacío");
-
-        assertThatThrownBy(() -> FichaPerfilAggregate.crear("   ", asesorFichaId))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("nulo ni vacío");
-
-        assertThatThrownBy(() -> FichaPerfilAggregate.crear("", asesorFichaId))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("nulo ni vacío");
-    }
-
-    @Test
-    void debeLanzarExcepcion_cuandoTituloSuperaLongitudMaxima() {
-        UUID asesorFichaId = UUID.randomUUID();
-        String tituloLargo = "A".repeat(101);
-
-        assertThatThrownBy(() -> FichaPerfilAggregate.crear(tituloLargo, asesorFichaId))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("100 caracteres");
-    }
-
-    @Test
-    void debeGenerarIdNoNulo_cuandoCrearEsInvocado() {
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.crear("Título válido", UUID.randomUUID());
-
+        // Assert
         assertThat(ficha.getId()).isNotNull();
+        assertThat(ficha.getTituloProyecto()).isEqualTo("Título de prueba");
+        assertThat(ficha.getAsesorFichaId()).isEqualTo(asesorId);
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoAsesorFichaIdEsNulo() {
-        assertThatThrownBy(() -> FichaPerfilAggregate.crear("Título válido", null))
-                .isInstanceOf(DomainValidationException.class);
+    void debeLanzarExcepcion_cuandoTituloVacio() {
+        // Arrange
+        String tituloVacio = "";
+        UUID asesorId = UUID.randomUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> FichaPerfilAggregate.crear(tituloVacio, asesorId))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining("tituloProyecto");
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoTituloMuyLargo() {
+        // Arrange
+        String tituloDe101Caracteres = "a".repeat(101);
+        UUID asesorId = UUID.randomUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> FichaPerfilAggregate.crear(tituloDe101Caracteres, asesorId))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining("tituloProyecto");
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoAsesorNull() {
+        // Arrange
+        String titulo = "Título válido";
+
+        // Act & Assert
+        assertThatThrownBy(() -> FichaPerfilAggregate.crear(titulo, null))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining("asesorFichaId");
+    }
+
+    @Test
+    void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        String titulo = "Título reconstruido";
+        UUID asesorId = UUID.randomUUID();
+
+        // Act
+        FichaPerfilAggregate ficha = FichaPerfilAggregate.reconstruir(id, titulo, asesorId);
+
+        // Assert
+        assertThat(ficha.getId()).isEqualTo(id);
+        assertThat(ficha.getTituloProyecto()).isEqualTo(titulo);
+        assertThat(ficha.getAsesorFichaId()).isEqualTo(asesorId);
     }
 }

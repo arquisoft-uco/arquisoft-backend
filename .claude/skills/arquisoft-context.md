@@ -2124,67 +2124,17 @@ por contexto. El implementador **no toca configuración de DataSource**.
   no `CREATE TABLE fichas_perfil.ficha (...)`).
 - **NO hay FKs cruzadas entre BDs.** Cada contexto es totalmente autónomo a nivel de datos.
 
-### Vistas materializadas (réplicas locales) entre contextos
+### Réplicas locales de entidades de otros contextos
 
-Cuando un contexto necesita información de otro, **modela una entidad propia con esos
-atributos denormalizados en su BD**. La fuente autoritativa vive en el contexto origen;
-la copia local solo expone lo que este contexto necesita.
+Cuando un contexto necesita información de otro (ej. `fichas_perfil` necesita conocer
+`nombre`, `identificador` y `email` de un estudiante que vive en `usuarios`), **modela
+una entidad propia con esos atributos denormalizados** dentro de su BD.
 
-**Inventario por contexto** (v1 actual: las vistas se pueblan **manualmente en BD**.
-El consumer AMQP que las pueblará automáticamente vía evento se planifica HU por HU
-cuando se necesite — el patrón canónico de referencia es `UsuarioCreadoEvent` en
-`usuarios`):
-
-| Contexto | Vista materializada | Origen |
-|---|---|---|
-| `fichas` | `RepresentanteComiteCurriculum`, `Estudiante`, `AsesorFicha` | `usuarios` |
-| `proyectos` | `FichaPerfil` | `fichas` |
-| `proyectos` | `Coordinador`, `Asesor`, `Estudiante` | `usuarios` |
-| `artefactos` | `ProyectoGrado` | `proyectos` |
-| `artefactos` | `VersionRepositorioArtefacto` | `repositorio_artefactos` |
-| `artefactos` | `Asesor`, `Estudiante` | `usuarios` |
-| `repositorio_artefactos` | `Administrador` | `usuarios` |
-| `entregables` | `ProyectoGrado` | `proyectos` |
-| `entregables` | `Artefacto` | `artefactos` |
-| `entregables` | `Asesor` | `usuarios` |
-| `evaluaciones` | `Entregable` | `entregables` |
-| `evaluaciones` | `Asesor`, `Jurado` | `usuarios` |
-
-**Aggregates propios por contexto** (write-side completo iniciado por HU):
-`fichas` → `FichaPerfil` · `proyectos` → `ProyectoGrado` · `artefactos` → `Artefacto`
-· `repositorio_artefactos` → `VersionRepositorioArtefacto` · `entregables` → `Entregable`
-· `evaluaciones` → `Evaluacion`. `seguridad` no tiene aggregates; `usuarios` tiene
-`Usuario` (ejemplo del patrón eventos+outbox, no HU activa).
-
-> **`Asesor` vs `AsesorFicha`:** son **roles distintos**. `AsesorFicha` asesora la
-> ficha perfil (solo en `fichas`). `Asesor` asesora el proyecto, los artefactos, los
-> entregables y las evaluaciones (en los otros contextos).
-
-### Convención de estructura para vistas materializadas
-
-Las vistas materializadas usan la **misma estructura CQRS estándar** que cualquier
-aggregate (`command/` + `query/`):
-
-- `domain/{vista}/aggregate/` — clase plana, **NUNCA** extiende `AggregateRoot` (no emite eventos propios).
-- `domain/{vista}/port/out/{Vista}OutputPort` — write desde el consumer AMQP del evento origen.
-- `application/{vista}/command/` — `Registrar{Vista}UseCase` invocado por el consumer.
-- `application/{vista}/query/port/out/{Vista}QueryOutputPort` — `existsById`, `findById`, etc.
-- `application/{vista}/query/readmodel/{Vista}ReadModel` — solo si hay HU read HTTP.
-- `infrastructure/{vista}/persistence/` — JpaEntity, JpaRepository, Mapper.
-- `infrastructure/{vista}/command/adapter/in/amqp/` — `*ConsumerInputAdapter`.
-- `infrastructure/{vista}/command/adapter/out/persistence/` — `{Vista}CommandOutputAdapter`.
-- `infrastructure/{vista}/query/adapter/out/persistence/` — `{Vista}QueryOutputAdapter`.
-
-Mientras no haya consumer real (v1 actual: poblado manual), las carpetas `command/`
-pueden quedar vacías. El lado `query/` SÍ se implementa cuando otro use case necesita
-lookup FK.
-
-### Regla — qué puede contener un `{Entidad}OutputPort`
-
-**Solo métodos que operan sobre su propio aggregate.** Si un use case write necesita
-verificar la existencia de **otro** aggregate (típica validación de FK), inyecta el
-`{OtroAggregate}QueryOutputPort` de ese otro aggregate — NUNCA mezclar métodos de
-distintos aggregates en un mismo puerto.
+Ejemplo: en la BD `fichas_perfil` existe una tabla `estudiante` con columnas
+`id`, `identificador`, `nombre`, `email` — **réplica local**, no FK a `usuarios.estudiante`.
+La consistencia entre la copia local y la fuente real **no es preocupación del implementador
+de la HU** — se gestiona fuera del contexto. El implementador trata la tabla local como
+parte natural de su contexto.
 
 ### Convención de nombres de tablas
 

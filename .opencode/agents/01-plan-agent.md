@@ -230,11 +230,12 @@ Espera las respuestas del usuario antes de continuar.
     - **B) Sí, aunque hoy no hay consumidores.** Se anticipa razonablemente que aparecerán pronto, o hay un caso de auditoría/observabilidad que lo justifica. Anotar el caso. → La entidad raíz **extiende `AggregateRoot`**.
     - **C) No, es CRUD interno sin consumidores ni casos de auditoría.** No emite eventos. La entidad raíz **NO extiende `AggregateRoot`** — es una clase plana con factories `crear`/`reconstruir`. El use case NO inyecta `EventPublisher`.
 
-   > Esta decisión determina TRES cosas: (1) si la entidad raíz extiende `AggregateRoot` (A/B = sí, C = no — forzar la extensión "por consistencia futura" es error); (2) si se generan archivos de evento (`{Entidad}{Accion}Event extends DomainEvent` con `getEventTopic()`); (3) si el use case inyecta `EventPublisher` y hay drenado/limpieza tras persistir. Una decisión incorrecta aquí infla el código innecesariamente o deja casos sin consumir. Ver sección "AggregateRoot — Regla Estricta" y "¿Cuándo emitir eventos de dominio?" del skill `arquisoft-context`.
+   > Esta decisión determina TRES cosas: (1) si la entidad raíz extiende `AggregateRoot` (A/B = sí, C = no — forzar la extensión "por consistencia futura" es error); (2) si se generan archivos de evento (`{Entidad}{Accion}Event extends DomainEvent` con su constante `EVENT_TOPIC`); (3) si el use case inyecta `EventPublisher` y hay drenado/limpieza tras persistir. Una decisión incorrecta aquí infla el código innecesariamente o deja casos sin consumir. Ver sección "AggregateRoot — Regla Estricta" y "¿Cuándo emitir eventos de dominio?" del skill `arquisoft-context`.
 6. ¿Se requiere persistencia nueva (tabla/columna) o se reutiliza la existente?
 7. ¿Hay casos de error relevantes que debemos manejar explícitamente?
 8. ¿La entidad raíz afectada es un Aggregate Root nuevo o ya existe? Si es nuevo, **y la pregunta 5 fue A o B**, ¿qué eventos de dominio debe emitir esta acción y cuál es el `eventTopic` de cada uno (formato `{contexto}.{entidad}.{accion}`)?
    (Si pregunta 5 fue C, omite la parte de eventos — el factory `crear(...)` no emitirá ninguno.)
+8b. **¿La HU lee o escribe alguna vista materializada (réplica local de otro contexto)?** Consulta la tabla "Vistas materializadas" del skill `arquisoft-context`. Si la HU necesita validar FK contra una vista materializada, inyecta el `{Vista}QueryOutputPort` correspondiente (NUNCA mezclar lookups de otro aggregate en `{Entidad}OutputPort` propio). Si la vista no aparece en la tabla del skill, pregúntalo al usuario explícitamente y registra la respuesta en la sección 4 del plan.
 9. ¿La HU requiere hablar con algún sistema externo (Keycloak, servicios HTTP,
    SMTP, S3, etc.) más allá de PostgreSQL y RabbitMQ? Si sí, anotar: el plan debe incluir
    un **puerto** en `domain/port/out/` y un **adaptador** en `infrastructure/adapter/out/{tipo}/`
@@ -626,8 +627,9 @@ Inventario de constantes a agregar al catálogo en esta HU (el agente lo llena a
 > (publicador principal: `SpringModulithEventPublisher`; fallback con `@ConditionalOnMissingBean`:
 > `RabbitMQEventPublisher`). El use case inyecta directamente la interfaz `EventPublisher`
 > (`com.arquisoft.shared.events.EventPublisher`, vive en `shared:domain`) y la invoca pasando un
-> `DomainEvent`. Cada evento expone su propia routing key vía `getEventTopic()` (método obligatorio
-> en `DomainEvent` que valida formato `{contexto}.{entidad}.{accion}` en el constructor).
+> `DomainEvent`. Cada evento declara su constante `EVENT_TOPIC` (routing key `{contexto}.{entidad}.{accion}`,
+> minúsculas + snake_case) y la pasa al `super(EVENT_TOPIC, EVENT_TYPE)`; el constructor de `DomainEvent`
+> valida el formato. `getEventTopic()` es `final` — no se sobreescribe.
 > El plan NO declara archivos de Spring Modulith ni el `ContextAwareEventPublicationRepository`
 > — esa infraestructura ya existe globalmente en `shared:amqp` y `src/main/java/com/arquisoft/config/outbox/`.
 > **Sí debe declarar** dos cosas cuando la HU emite eventos: (1) la migración Flyway
@@ -636,10 +638,10 @@ Inventario de constantes a agregar al catálogo en esta HU (el agente lo llena a
 > BD central); (2) que el use case use `@Transactional(transactionManager = "{contexto}TransactionManager")`
 > con qualifier explícito — sin él, el outbox puede escribir en una BD equivocada o fallar.
 >
-> **CONSUMO de eventos:** sí se crea config y listener locales en el contexto consumidor,
-> en `infrastructure/config/RabbitMQ{Entidad}Config.java` (declara queue + binding al exchange
-> `arquisoft.events`) y `infrastructure/adapter/in/messaging/{Entidad}ConsumerInputAdapter.java`
-> (con `@RabbitListener`).
+> **CONSUMO de eventos:** sí se crea config y consumer locales en el contexto consumidor,
+> en `infrastructure/config/{Contexto}{Entidad}QueueConfig.java` (declara queue + binding al exchange
+> `arquisoft.events` + DLX) y `infrastructure/{entidad}/command/adapter/in/amqp/{Entidad}ConsumerInputAdapter.java`
+> (extiende `AbstractEventConsumer`, con `@RabbitListener`). El consumer declara su propio `record` payload local — NO importa la clase del evento del publicador.
 
 ---
 
@@ -745,8 +747,8 @@ Para cada client role nuevo de la tabla anterior:
 
 > **Nota DDD:** el evento del dominio (`{Entidad}{Accion}Event` en `{contexto}/domain/event/`)
 > es el mismo que se publica en RabbitMQ. El use case lo drena del Aggregate Root y lo pasa
-> a `EventPublisher` (puerto `shared:amqp`). Cada evento implementa `getEventTopic()` retornando
-> la routing key `{contexto}.{entidad}.{accion}`.
+> a `EventPublisher` (interfaz de `shared:domain`, en `com.arquisoft.shared.events`). Cada evento declara
+> su `EVENT_TOPIC` (routing key `{contexto}.{entidad}.{accion}`) y lo pasa al `super(...)`.
 
 > **Si la HU es CRUD sin consumidores** (respuesta C en pregunta 5 de FASE 3): documenta
 > aquí "Eventos: ninguno" con razón explícita. El use case NO inyecta `EventPublisher`.
@@ -799,7 +801,7 @@ Para cada client role nuevo de la tabla anterior:
 | `{Entidad}Test` | `debeReconstruirSinEventos_cuandoReconstruirEsInvocado` | `reconstruir(...)` no acumula eventos |
 | `{Entidad}Test` | `debeLanzarExcepcion_cuando{InvarianteViolada}` | constructor lanza si datos inválidos |
 
-> **Solo crear `{Entidad}CreadaEventTest`** si el evento tiene lógica adicional al constructor base. Una clase que solo hace `super(aggregateId)` y guarda 2 campos NO necesita test propio — sus metadatos se verifican implícitamente al testear `publishEvent` en el Aggregate.
+> **Solo crear `{Entidad}CreadaEventTest`** si el evento tiene lógica adicional al constructor base. Una clase que solo hace `super(EVENT_TOPIC, EVENT_TYPE)` y guarda 2 campos NO necesita test propio — sus metadatos se verifican implícitamente al testear `publishEvent` en el Aggregate.
 
 #### Tests capa `application`
 | Clase de test | Método | Escenario |

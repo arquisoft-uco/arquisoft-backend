@@ -198,9 +198,10 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 
 | Check | Bloqueante |
 |-------|:---:|
-| Entidad raíz **extiende `AggregateRoot`** de `com.arquisoft.shared.domain` | ✅ |
+| Entidad raíz **extiende `AggregateRoot`** de `shared:domain` (paquete `com.arquisoft.shared.events`) | ✅ |
 | Eventos en `{contexto}/domain/{entidad}/event/` y extienden `DomainEvent` | ✅ |
-| Cada `DomainEvent` implementa `getEventTopic()` con formato `{contexto}.{entidad}.{accion}` | ✅ |
+| Cada `DomainEvent` declara su constante `EVENT_TOPIC` (formato `{contexto}.{entidad}.{accion}`, minúsculas + snake_case) y la pasa a `super(EVENT_TOPIC, EVENT_TYPE)` | ✅ |
+| Evento con `@Override` de `getEventTopic()`, o `super(...)` que pasa `aggregateId`/3 args (la base recibe solo `eventTopic, eventType`), o `EVENT_TOPIC` en camelCase | ❌ violación bloqueante (no compila / falla validación de topic en runtime) |
 | Factory `crear(...)` publica evento con `publishEvent(...)` | ✅ |
 | Use case inyecta `EventPublisher` de `com.arquisoft.shared.events` (interfaz en shared:domain; NO una implementación local del contexto, NO `SpringModulithEventPublisher` ni `RabbitMQEventPublisher` directamente) | ✅ |
 | Use case drena eventos tras persistir con `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` — UN solo método, no dos pasos | ✅ |
@@ -276,6 +277,8 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Use case que emite eventos sin qualifier en `@Transactional` (riesgo de outbox en BD equivocada) | ❌ violación bloqueante |
 | Inyectan puertos (interfaces), no implementaciones | ✅ |
 | Drenan y publican eventos del Aggregate tras persistir | ✅ |
+| `{Entidad}OutputPort` declara un método que opera sobre **otro aggregate distinto** (ej. `existsAsesorById` en `FichaPerfilOutputPort`) | ❌ violación bloqueante (mover a `{OtroAggregate}QueryOutputPort` — ver "Vistas materializadas" del skill) |
+| Use case usa el `OutputPort` de su propio aggregate para hacer lookup sobre otro (mezclando responsabilidades de aggregates distintos) | ❌ violación bloqueante (inyectar el `{OtroAggregate}QueryOutputPort` correspondiente) |
 
 **2.7 Inyección de dependencias:**
 
@@ -317,7 +320,7 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 |-------|:---:|
 | Controllers REST (`@RestController`) ubicados en `infrastructure/adapter/in/web/` | ✅ |
 | `@RestControllerAdvice` (advice global) ubicado en `infrastructure/adapter/in/web/` | ✅ |
-| Listeners RabbitMQ (`@RabbitListener`) ubicados en `infrastructure/adapter/in/messaging/` | ✅ |
+| Consumers RabbitMQ (`@RabbitListener`, extienden `AbstractEventConsumer`) ubicados en `infrastructure/{entidad}/command/adapter/in/amqp/` | ✅ |
 | `@RestController` o `@RestControllerAdvice` ubicado directamente en `infrastructure/adapter/in/` (sin subcarpeta `web/`) | ❌ violación bloqueante |
 | Entidades JPA (`@Entity`) ubicadas en `infrastructure/{entidad}/persistence/`. `CommandOutputAdapter` en `infrastructure/{entidad}/command/adapter/out/persistence/` y `QueryOutputAdapter` en `infrastructure/{entidad}/query/adapter/out/persistence/` | ✅ |
 | Existencia de `infrastructure/adapter/out/messaging/` con publishers locales del contexto | ❌ violación bloqueante (la publicación está centralizada en `shared:amqp`) |
@@ -821,9 +824,9 @@ mensaje.
 6. **Empieza el mensaje final con "📋 Análisis de validación completado — ..."** sin preámbulo.
 7. **Un bloqueante = RECHAZADO**, sin importar el score total.
 8. **Referencia exacta** en cada error — cita textualmente el plan, el skill o las convenciones.
-9. **DDD estricto:** entidad raíz sin `AggregateRoot` en los 6 contextos de negocio = bloqueante. Imports de framework en `domain/` = bloqueante. Lógica de negocio en `infrastructure/` = bloqueante.
+9. **DDD estricto (AggregateRoot condicional a eventos):** entidad raíz que extiende `AggregateRoot` SIN emitir eventos, o que NO lo extiende cuando el plan declara eventos = bloqueante. Imports de framework en `domain/` = bloqueante. Lógica de negocio en `infrastructure/` = bloqueante.
 10. **Integraciones externas:** si la sección 5 del plan lista una integración externa y falta el puerto en `domain/port/out/` o el adaptador, es bloqueante.
-11. **Estructura de carpetas en adapters (sección 2.10):** los componentes web (`@RestController`, `@RestControllerAdvice`) DEBEN estar en `infrastructure/adapter/in/web/`. Los listeners RabbitMQ en `adapter/in/messaging/`. Las implementaciones JPA en `adapter/out/persistence/`. Otras integraciones externas en `adapter/out/{tipo}/` con nombre descriptivo. **NO existe** `adapter/out/messaging/` en los contextos — la publicación de eventos está centralizada en `shared:amqp`. Una violación de esta estructura es bloqueante.
+11. **Estructura de carpetas en adapters (sección 2.10):** los componentes web (`@RestController`, `@RestControllerAdvice`) DEBEN estar en `infrastructure/adapter/in/web/`. Los consumers RabbitMQ en `{entidad}/command/adapter/in/amqp/`. Las implementaciones JPA en `adapter/out/persistence/`. Otras integraciones externas en `adapter/out/{tipo}/` con nombre descriptivo. **NO existe** `adapter/out/messaging/` en los contextos — la publicación de eventos está centralizada en `shared:amqp`. Una violación de esta estructura es bloqueante.
 12. **Anti-patrones de testing (sección 2.11):** los 7 anti-patrones definidos en el skill `arquisoft-context` son bloqueantes individualmente cuando se detectan. El conteo total de tests es informativo (no bloqueante por sí solo) — solo se reporta como observación si supera el presupuesto orientativo. Aplica solo si la fila Tests del plan dice ✅ Completado.
 13. **Tests que afirman 500 (sección 2.12):** un test de controller que afirma `status().isInternalServerError()` para inputs inválidos es bloqueante — indica que la excepción está mal categorizada (no extiende `DomainException` / `ApplicationException` / `InfrastructureException`) y cae en el fallback de `GlobalAppExceptionHandler`. La solución por defecto es corregir la clase base de la excepción, no crear handler local. Solo se crea `{Contexto}GlobalExceptionHandler` si el plan lo declara explícitamente (colisión con framework o HTTP fuera del default de la jerarquía).
 14. **Tests inapropiados para el Tipo de Use Case (sección 2.13):** si la Metadata del plan declara Tipo de Use Case = Consulta, los tests NO deben incluir ciclo de eventos del Aggregate ni `verify(eventPublisher)`. Si declara Escritura, esos tests SÍ son obligatorios. Si el plan no declara el campo, repórtalo como ⚠️ menor (versión vieja del planificador).

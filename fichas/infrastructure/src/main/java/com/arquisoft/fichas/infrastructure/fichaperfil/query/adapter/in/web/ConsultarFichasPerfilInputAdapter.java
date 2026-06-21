@@ -32,7 +32,7 @@ public class ConsultarFichasPerfilInputAdapter {
     private final ConsultarFichasPerfilInputPort consultarFichasPerfilInputPort;
 
     @PostMapping("/coordinador")
-    @PreAuthorize("hasAuthority('ficha:ficha:view')")
+    @PreAuthorize("hasAuthority('fichas:ficha-perfil:view')")
     @Operation(
             summary = "Consultar fichas de perfil con filtros dinámicos",
             description = """

@@ -25,6 +25,14 @@ public final class FichasMessages {
         public static final String TITULO_REQUERIDO        = "FICHA_TITULO_REQUERIDO";
         public static final String TITULO_DEMASIADO_LARGO  = "FICHA_TITULO_DEMASIADO_LARGO";
         public static final String ASESOR_REQUERIDO        = "FICHA_ASESOR_REQUERIDO";
+        public static final String FICHA_TITULO_DUPLICADO  = "FICHA_TITULO_DUPLICADO";
+        public static final String ASESOR_NO_ENCONTRADO    = "ASESOR_NO_ENCONTRADO";
+
+        // Mensajes de error
+        public static final String TITULO_DUPLICADO        = "El título ya existe: %s";
+        public static final String ASESOR_NO_ENCONTRADO_MSG = "Asesor Ficha no encontrado: %s";
+        public static final String TITULO_REQUERIDO_MSG    = "El título del proyecto es obligatorio";
+        public static final String ASESOR_REQUERIDO_MSG    = "El asesor ficha es obligatorio";
 
         // Logs
         public static final String LOG_REGISTRADA            = "Ficha de perfil registrada — id={}";

@@ -14,4 +14,6 @@ public interface FichaPerfilJpaRepository extends JpaRepository<FichaPerfilJpaEn
 
     @EntityGraph(attributePaths = "asesorFicha")
     Page<FichaPerfilJpaEntity> findAll(Specification<FichaPerfilJpaEntity> spec, Pageable pageable);
+
+    boolean existsByTituloProyecto(String tituloProyecto);
 }

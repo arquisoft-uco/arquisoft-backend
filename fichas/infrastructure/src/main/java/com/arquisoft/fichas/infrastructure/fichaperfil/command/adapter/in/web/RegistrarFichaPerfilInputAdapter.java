@@ -32,7 +32,7 @@ public class RegistrarFichaPerfilInputAdapter {
     private final RegistrarFichaPerfilInputPort registrarFichaPerfilInputPort;
 
     @PostMapping
-    @PreAuthorize("hasAuthority('ficha:ficha:create')")
+    @PreAuthorize("hasAuthority('fichas:ficha-perfil:create')")
     @Operation(
             summary = "Registrar ficha de perfil",
             description = "Crea una nueva ficha de perfil de proyecto de grado con el título y asesor indicados.",

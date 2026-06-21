@@ -87,7 +87,7 @@ en la capa equivocada**. Detente y reporta al usuario antes de escribir workarou
 | Capa | Framework en el test | Qué implica |
 |---|---|---|
 | `domain` (Aggregate Root, VOs, eventos, excepciones) | **Ninguno**. Solo JUnit + AssertJ | Java puro. Sin `@ExtendWith(SpringExtension)`, sin `@MockitoBean`, sin mocks de librerías externas (`Jwt`, `RabbitTemplate`, `AmazonS3`, `MimeMessage`). |
-| `application` (UseCase, Command, ReadModel, DTOs) | JUnit + Mockito + AssertJ (`@ExtendWith(MockitoExtension.class)`) | Mocks **solo** de puertos del dominio (`FichaPerfilOutputPort`, `EventPublisher`). Nunca de APIs externas. |
+| `application` (UseCase, Command, ReadModel, DTOs) | JUnit + Mockito + AssertJ (`@ExtendWith(MockitoExtension.class)`) | Mocks **solo** de puertos del dominio (`FichaPerfilOutputPort`, `AsesorFichaQueryOutputPort` u otros `{Vista}QueryOutputPort` cuando el use case valida FK sobre vistas materializadas, `EventPublisher`). Nunca de APIs externas. |
 | `infrastructure` (adapters, controllers) | Spring Test completo (`@DataJpaTest`, `@WebMvcTest`) | Aquí sí se usa `@MockitoBean`, `MockMvc`, H2, `@WithMockUser`, etc. |
 
 **Señales de alarma al escribir tests:**

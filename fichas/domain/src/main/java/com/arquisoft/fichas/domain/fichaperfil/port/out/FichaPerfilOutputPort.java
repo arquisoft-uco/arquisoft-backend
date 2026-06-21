@@ -10,4 +10,6 @@ public interface FichaPerfilOutputPort {
     void guardar(FichaPerfilAggregate ficha);
 
     Optional<FichaPerfilAggregate> buscarPorId(UUID id);
+
+    boolean existsByTituloProyecto(String titulo);
 }
