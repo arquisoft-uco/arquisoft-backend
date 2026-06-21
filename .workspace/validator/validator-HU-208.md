@@ -47,3 +47,6 @@ Sin anti-patrones. Sin tests de ciclo de eventos (aggregate no extiende Aggregat
 
 **Mensaje sugerido:** `feat(fichas): completar HU-208 registrar ficha perfil`
 **Rama:** `feature/HU-208-registrar-ficha-perfil`
+**Estado:** ✅ EJECUTADO
+**Hash:** cbeb352
+**Fecha de ejecución:** 2026-06-20

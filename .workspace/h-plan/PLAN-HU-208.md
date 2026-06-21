@@ -448,4 +448,4 @@ Ver sección "Anti-patrones de Testing en Arquisoft" del skill `arquisoft-contex
 | Tests      | @tester             | ✅ Completado | 2026-06-20 | 20 tests en verde — domain (5), application (6), infrastructure (9). Fix: añadida dep oauth2-resource-server para @WebMvcTest con JWT |
 | Validación | @validator-analyze  | ✅ Completado | 2026-06-20 | Score: 100/100 — APROBADO |
 | Reporte    | @validator-report   | ✅ Completado | 2026-06-20 | /.workspace/validator/validator-HU-208.md |
-| Commit     | @commit             | ⏳ Pendiente |       |       |
+| Commit     | @commit             | ✅ Completado | 2026-06-20 | Hash: cbeb352 |
