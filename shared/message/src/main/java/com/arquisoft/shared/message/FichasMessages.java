@@ -19,6 +19,7 @@ public final class FichasMessages {
 
         // Límites
         public static final int TITULO_MAX = 100;
+        public static final int ESTUDIANTES_MAX = 3;
 
         // Códigos de error
         public static final String ID_REQUERIDO            = "FICHA_ID_REQUERIDO";
@@ -87,5 +88,45 @@ public final class FichasMessages {
         public static final String LOG_UPLOAD_URL   = "GET /fichas/minio/guia/upload-url — bucket={}, key={}";
         public static final String LOG_DOWNLOAD_URL = "GET /fichas/minio/guia/download-url — bucket={}, key={}";
         public static final String LOG_DELETE       = "DELETE /fichas/minio/guia/objeto — bucket={}, key={}";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Estudiante (réplica local)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class Estudiante {
+
+        private Estudiante() {}
+
+        // Códigos de error
+        public static final String ESTUDIANTE_NO_ENCONTRADO = "ESTUDIANTE_NO_ENCONTRADO";
+
+        // Mensajes de error
+        public static final String NO_ENCONTRADO = "No se encontró el estudiante con id: %s";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // EstudianteFichaPerfil (relación)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class EstudianteFichaPerfil {
+
+        private EstudianteFichaPerfil() {}
+
+        // Campos
+        public static final String CAMPO_ID              = "id";
+        public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
+        public static final String CAMPO_ESTUDIANTE_ID   = "estudianteId";
+
+        // Códigos de error
+        public static final String ID_REQUERIDO                 = "ESTUDIANTE_FICHA_PERFIL_ID_REQUERIDO";
+        public static final String FICHA_PERFIL_ID_REQUERIDO    = "ESTUDIANTE_FICHA_PERFIL_FICHA_ID_REQUERIDO";
+        public static final String ESTUDIANTE_ID_REQUERIDO      = "ESTUDIANTE_FICHA_PERFIL_ESTUDIANTE_ID_REQUERIDO";
+        public static final String ESTUDIANTE_DUPLICADO         = "ESTUDIANTE_DUPLICADO";
+        public static final String LIMITE_ESTUDIANTES_EXCEDIDO  = "LIMITE_ESTUDIANTES_EXCEDIDO";
+
+        // Mensajes de error
+        public static final String DUPLICADO        = "El estudiante ya está asignado a esta ficha: %s";
+        public static final String LIMITE_EXCEDIDO  = "No se pueden asignar más de %d estudiantes a una ficha";
     }
 }

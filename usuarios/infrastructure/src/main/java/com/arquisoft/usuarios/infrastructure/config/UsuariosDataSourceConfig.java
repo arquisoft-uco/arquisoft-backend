@@ -33,7 +33,7 @@ import java.util.Map;
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
-        basePackages = "com.arquisoft.usuarios.infrastructure.usuario.persistence",
+        basePackages = "com.arquisoft.usuarios.infrastructure",
         entityManagerFactoryRef = "usuariosEntityManagerFactory",
         transactionManagerRef = "usuariosTransactionManager"
 )
@@ -78,7 +78,7 @@ public class UsuariosDataSourceConfig {
 
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.arquisoft.usuarios.infrastructure.usuario.persistence");
+        em.setPackagesToScan("com.arquisoft.usuarios.infrastructure");
         em.setPersistenceUnitName("usuarios");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();

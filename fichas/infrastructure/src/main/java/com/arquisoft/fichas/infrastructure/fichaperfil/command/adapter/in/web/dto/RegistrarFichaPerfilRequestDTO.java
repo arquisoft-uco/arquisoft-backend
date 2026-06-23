@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -24,7 +25,10 @@ public class RegistrarFichaPerfilRequestDTO {
     @NotNull(message = "El identificador del asesor es obligatorio")
     private UUID asesorFichaId;
 
+    @Size(max = 3, message = "No se pueden asignar más de 3 estudiantes")
+    private List<UUID> estudiantesIds;
+
     public RegistrarFichaPerfilCommand toCommand() {
-        return new RegistrarFichaPerfilCommand(tituloProyecto, asesorFichaId);
+        return new RegistrarFichaPerfilCommand(tituloProyecto, asesorFichaId, estudiantesIds);
     }
 }

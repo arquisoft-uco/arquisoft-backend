@@ -340,7 +340,7 @@ CAPA 3 — infrastructure (genera todos antes de compilar)
   │         - NUNCA @ExceptionHandler(Exception.class), MethodArgumentNotValidException, AccessDeniedException, AuthorizationDeniedException → cross-cutting, van en shared:web
   ├── Consumer AMQP             (si aplica — solo si el contexto consume eventos) — en {entidad}/command/adapter/in/amqp/ (extiende AbstractEventConsumer, payload record local)
   ├── Config Spring             (si aplica) — en infrastructure/config/, sin lógica de negocio
-  └── Migración Flyway          (V{n}__{descripcion}.sql) — tablas sin prefijo de schema; BD correcta según tabla de mapeo
+  └── Migración Flyway          (V{major}.{minor}__{descripcion}.sql en db/migration/{contexto}/) — versión = SIGUIENTE número tras la más alta del contexto (LEE el directorio, no adivines); una migración YA aplicada es INMUTABLE (nunca renombrar/editar); tablas sin prefijo de schema; BD correcta según tabla de mapeo
 
   ⚠️ NO se crea {Entidad}EventPublisher en cada contexto — la publicación está
      centralizada en shared:amqp (Spring Modulith + Outbox por contexto; impl principal

@@ -1,24 +1,35 @@
 package com.arquisoft.fichas.application.fichaperfil.command;
 
 import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQueryOutputPort;
+import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
+import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
+import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
+import com.arquisoft.fichas.application.estudiantefichaperfil.exception.LimiteEstudiantesExcedidoException;
 import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.InfrastructureException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,6 +44,12 @@ class RegistrarFichaPerfilUseCaseTest {
     @Mock
     private AsesorFichaQueryOutputPort asesorFichaQueryOutputPort;
 
+    @Mock
+    private EstudianteQueryOutputPort estudianteQueryOutputPort;
+
+    @Mock
+    private EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+
     @InjectMocks
     private RegistrarFichaPerfilUseCase registrarFichaPerfilUseCase;
 
@@ -42,7 +59,8 @@ class RegistrarFichaPerfilUseCaseTest {
         UUID asesorId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título de prueba",
-                asesorId
+                asesorId,
+                null
         );
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
@@ -62,7 +80,8 @@ class RegistrarFichaPerfilUseCaseTest {
         UUID asesorId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título de prueba",
-                asesorId
+                asesorId,
+                null
         );
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(false);
@@ -79,7 +98,7 @@ class RegistrarFichaPerfilUseCaseTest {
         // Arrange
         UUID asesorId = UUID.randomUUID();
         String titulo = "Título duplicado";
-        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(titulo, asesorId);
+        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(titulo, asesorId, null);
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
         when(fichaPerfilOutputPort.existsByTituloProyecto(titulo)).thenReturn(true);
@@ -97,7 +116,8 @@ class RegistrarFichaPerfilUseCaseTest {
         UUID asesorId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título válido",
-                asesorId
+                asesorId,
+                null
         );
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
@@ -116,7 +136,8 @@ class RegistrarFichaPerfilUseCaseTest {
         UUID asesorId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título de prueba",
-                asesorId
+                asesorId,
+                null
         );
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
@@ -135,7 +156,8 @@ class RegistrarFichaPerfilUseCaseTest {
         UUID asesorId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título de prueba",
-                asesorId
+                asesorId,
+                null
         );
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
@@ -146,5 +168,195 @@ class RegistrarFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(resultado).isNotNull();
+    }
+
+    @Test
+    void debeAsignarUnEstudiante_cuandoListaValida() {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+        List<UUID> estudiantesIds = List.of(estudianteId);
+        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
+                "Título de prueba",
+                asesorId,
+                estudiantesIds
+        );
+
+        when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
+        when(fichaPerfilOutputPort.existsByTituloProyecto("Título de prueba")).thenReturn(false);
+        when(estudianteQueryOutputPort.existsById(estudianteId)).thenReturn(true);
+
+        // Act
+        UUID resultado = registrarFichaPerfilUseCase.ejecutar(command);
+
+        // Assert
+        assertThat(resultado).isNotNull();
+        verify(estudianteFichaPerfilOutputPort, times(1)).guardar(any(EstudianteFichaPerfilAggregate.class));
+    }
+
+    @Test
+    void debeAsignarTresEstudiantes_cuandoListaValida() {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        UUID estudiante1 = UUID.randomUUID();
+        UUID estudiante2 = UUID.randomUUID();
+        UUID estudiante3 = UUID.randomUUID();
+        List<UUID> estudiantesIds = List.of(estudiante1, estudiante2, estudiante3);
+        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
+                "Título de prueba",
+                asesorId,
+                estudiantesIds
+        );
+
+        when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
+        when(fichaPerfilOutputPort.existsByTituloProyecto("Título de prueba")).thenReturn(false);
+        when(estudianteQueryOutputPort.existsById(estudiante1)).thenReturn(true);
+        when(estudianteQueryOutputPort.existsById(estudiante2)).thenReturn(true);
+        when(estudianteQueryOutputPort.existsById(estudiante3)).thenReturn(true);
+
+        // Act
+        UUID resultado = registrarFichaPerfilUseCase.ejecutar(command);
+
+        // Assert
+        assertThat(resultado).isNotNull();
+        verify(estudianteFichaPerfilOutputPort, times(3)).guardar(any(EstudianteFichaPerfilAggregate.class));
+    }
+
+    @Test
+    void debeCrearFichaSinEstudiantes_cuandoListaEsNull() {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
+                "Título de prueba",
+                asesorId,
+                null
+        );
+
+        when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
+        when(fichaPerfilOutputPort.existsByTituloProyecto("Título de prueba")).thenReturn(false);
+
+        // Act
+        UUID resultado = registrarFichaPerfilUseCase.ejecutar(command);
+
+        // Assert
+        assertThat(resultado).isNotNull();
+        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeCrearFichaSinEstudiantes_cuandoListaEsVacia() {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
+                "Título de prueba",
+                asesorId,
+                new ArrayList<>()
+        );
+
+        when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
+        when(fichaPerfilOutputPort.existsByTituloProyecto("Título de prueba")).thenReturn(false);
+
+        // Act
+        UUID resultado = registrarFichaPerfilUseCase.ejecutar(command);
+
+        // Assert
+        assertThat(resultado).isNotNull();
+        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeLanzarLimiteExcedido_cuandoMasDeTresEstudiantes() {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        List<UUID> estudiantesIds = Arrays.asList(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                UUID.randomUUID()
+        );
+        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
+                "Título de prueba",
+                asesorId,
+                estudiantesIds
+        );
+
+        when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
+        when(fichaPerfilOutputPort.existsByTituloProyecto("Título de prueba")).thenReturn(false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
+                .isInstanceOf(LimiteEstudiantesExcedidoException.class);
+
+        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeLanzarEstudianteNoEncontrado_cuandoUUIDNoExiste() {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+        List<UUID> estudiantesIds = List.of(estudianteId);
+        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
+                "Título de prueba",
+                asesorId,
+                estudiantesIds
+        );
+
+        when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
+        when(fichaPerfilOutputPort.existsByTituloProyecto("Título de prueba")).thenReturn(false);
+        when(estudianteQueryOutputPort.existsById(estudianteId)).thenReturn(false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
+                .isInstanceOf(EstudianteNoEncontradoException.class);
+
+        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeLanzarEstudianteDuplicado_cuandoUUIDRepetidoEnLista() {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+        List<UUID> estudiantesIds = Arrays.asList(estudianteId, estudianteId);
+        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
+                "Título de prueba",
+                asesorId,
+                estudiantesIds
+        );
+
+        when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
+        when(fichaPerfilOutputPort.existsByTituloProyecto("Título de prueba")).thenReturn(false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
+                .isInstanceOf(EstudianteDuplicadoException.class);
+
+        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debePersistirRelaciones_despuesDePersistirFicha() {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+        List<UUID> estudiantesIds = List.of(estudianteId);
+        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
+                "Título de prueba",
+                asesorId,
+                estudiantesIds
+        );
+
+        when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
+        when(fichaPerfilOutputPort.existsByTituloProyecto("Título de prueba")).thenReturn(false);
+        when(estudianteQueryOutputPort.existsById(estudianteId)).thenReturn(true);
+
+        // Act
+        registrarFichaPerfilUseCase.ejecutar(command);
+
+        // Assert
+        InOrder inOrder = inOrder(fichaPerfilOutputPort, estudianteFichaPerfilOutputPort);
+        inOrder.verify(fichaPerfilOutputPort).guardar(any(FichaPerfilAggregate.class));
+        inOrder.verify(estudianteFichaPerfilOutputPort).guardar(any(EstudianteFichaPerfilAggregate.class));
     }
 }
