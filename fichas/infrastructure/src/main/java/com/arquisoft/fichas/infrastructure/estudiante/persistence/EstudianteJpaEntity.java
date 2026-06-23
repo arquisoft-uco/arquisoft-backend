@@ -23,9 +23,12 @@ public class EstudianteJpaEntity {
     @Column(columnDefinition = "UUID")
     private UUID id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 30)
+    private String identificador;
+
+    @Column(nullable = false, length = 50)
     private String nombre;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String email;
 }

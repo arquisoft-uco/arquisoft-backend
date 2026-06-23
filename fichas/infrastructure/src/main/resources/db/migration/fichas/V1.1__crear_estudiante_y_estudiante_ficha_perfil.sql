@@ -1,8 +1,9 @@
 -- Tabla réplica local de estudiante (vista materializada del contexto usuarios)
 CREATE TABLE estudiante (
     id UUID PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    email VARCHAR(255) NOT NULL
+    identificador VARCHAR(30) NOT NULL,
+    nombre VARCHAR(50) NOT NULL,
+    email VARCHAR(50) NOT NULL
 );
 
 CREATE INDEX idx_estudiante_id ON estudiante(id);

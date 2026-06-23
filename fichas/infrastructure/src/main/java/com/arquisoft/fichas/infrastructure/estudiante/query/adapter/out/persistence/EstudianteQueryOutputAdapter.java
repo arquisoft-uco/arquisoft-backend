@@ -11,10 +11,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EstudianteQueryOutputAdapter implements EstudianteQueryOutputPort {
 
-    private final EstudianteJpaRepository jpaRepository;
+    private final EstudianteJpaRepository estudianteJpaRepository;
 
     @Override
     public boolean existsById(UUID id) {
-        return jpaRepository.existsById(id);
+        return estudianteJpaRepository.existsById(id);
     }
 }

@@ -9,6 +9,7 @@ public class EstudianteMapper {
     public EstudianteAggregate toDomain(EstudianteJpaEntity entity) {
         return EstudianteAggregate.reconstruir(
             entity.getId(),
+            entity.getIdentificador(),
             entity.getNombre(),
             entity.getEmail()
         );
@@ -17,6 +18,7 @@ public class EstudianteMapper {
     public EstudianteJpaEntity toJpaEntity(EstudianteAggregate aggregate) {
         return EstudianteJpaEntity.builder()
             .id(aggregate.getId())
+            .identificador(aggregate.getIdentificador())
             .nombre(aggregate.getNombre())
             .email(aggregate.getEmail())
             .build();
