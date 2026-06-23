@@ -74,7 +74,6 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 | `id` | `UUID` | — | Sí | No | Sí | PK autogenerado cuando se replica (no es autogenerado localmente — el UUID viene del evento `UsuarioCreadoEvent` publicado por el contexto `usuarios`) |
 | `nombre` | `String` | 1-100 | Sí | No | No | Nombre completo del estudiante |
 | `email` | `String` | — | Sí | No | No | Email institucional (único en el contexto origen, no validado como único localmente — no aplica `UNIQUE` en la tabla `estudiante` del contexto `fichas`) |
-| `rol` | `String` | — | Sí | No | No | Siempre `"estudiante"` — discriminante para réplica (solo se replican usuarios con rol `estudiante`) |
 
 **Combinaciones únicas (Restricciones):** NO aplica para esta réplica local — la unicidad de `email` la garantiza el contexto `usuarios` (origen). En el contexto `fichas`, `estudiante.email` NO tiene constraint `UNIQUE` porque la réplica es read-only para consultas y FKs locales.
 
@@ -95,7 +94,6 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 |---|---|
 | `Estudiante.nombre` obligatorio, max 100 | `@Column(nullable=false, length=100)` en JPA + `NOT NULL VARCHAR(100)` en Flyway |
 | `Estudiante.email` obligatorio, NO único local | `@Column(nullable=false)` en JPA + `NOT NULL VARCHAR(255)` en Flyway (SIN `UNIQUE`) |
-| `Estudiante.rol` obligatorio | `@Column(nullable=false)` en JPA + `NOT NULL VARCHAR(50)` en Flyway |
 | Límite 3 estudiantes por ficha | `FichasMessages.FichaPerfil.ESTUDIANTES_MAX = 3` en catálogo + validación en use case `if (estudiantesIds.size() > 3)` |
 | Unicidad `(fichaPerfilId, estudianteId)` | `UNIQUE (ficha_perfil_id, estudiante_id)` en Flyway + validación de duplicados en use case antes de persistir (protección defensiva) |
 
@@ -179,7 +177,7 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 | `fichas/src/main/java/com/arquisoft/fichas/application/fichaPerfil/command/RegistrarFichaPerfilUseCase.java` | Añadir inyección de `EstudianteQueryOutputPort` (para validar existencia vía query side de la vista materializada — **NO** inyectar `EstudianteJpaRepository`, eso rompería `application ← infrastructure`) y `EstudianteFichaPerfilOutputPort` (para persistir relaciones). Tras persistir `FichaPerfilAggregate`, iterar sobre la lista `command.estudiantesIds()` (si no es null ni vacía): validar existencia de cada estudiante, validar que no se repita dentro de la lista, validar límite ≤ 3, crear cada `EstudianteFichaPerfilAggregate` con `crear(fichaId, estudianteId)` y persistir vía puerto. **La lógica de asignación va DESPUÉS de `fichaPerfil.save()` y ANTES de `drainUnPublishedEvents()`**. |
 | `fichas/src/main/java/com/arquisoft/fichas/infrastructure/fichaPerfil/command/adapter/in/web/dto/RegistrarFichaPerfilRequestDTO.java` | Añadir campo `List<UUID> estudiantesIds` (nullable — puede ser `null` o vacío si no se asignan estudiantes) con anotación `@Size(max = 3, message = "No se pueden asignar más de 3 estudiantes")`. En el método `toCommand()`, pasar este campo al `RegistrarFichaPerfilCommand`. |
 | `fichas/src/main/java/com/arquisoft/fichas/application/fichaPerfil/command/model/RegistrarFichaPerfilCommand.java` | Añadir campo `List<UUID> estudiantesIds` (nullable). |
-| `fichas/src/main/resources/db/migration/V3__crear_estudiante_y_estudiante_ficha_perfil.sql` | Crear tabla `estudiante` (réplica local sin `UNIQUE` en `email`). Crear tabla `estudiante_ficha_perfil` con FKs a `ficha_perfil` y `estudiante`, y constraint `UNIQUE (ficha_perfil_id, estudiante_id)`. |
+| `fichas/infrastructure/src/main/resources/db/migration/fichas/V1.1__crear_estudiante_y_estudiante_ficha_perfil.sql` (siguiente versión tras `V1.0`; `1.1 > 1` baseline → se ejecuta) | Crear tabla `estudiante` (réplica local sin `UNIQUE` en `email`). Crear tabla `estudiante_ficha_perfil` con FKs a `ficha_perfil` y `estudiante`, y constraint `UNIQUE (ficha_perfil_id, estudiante_id)`. **La migración va en el subdirectorio `db/migration/fichas/`** — el Flyway del contexto carga `classpath:db/migration/fichas`. |
 
 ---
 
@@ -191,7 +189,7 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 - **Responsabilidad:** Modelo de dominio de la vista materializada de `Estudiante` del contexto `usuarios`. Solo se usa para validaciones FK locales en el contexto `fichas`. NO emite eventos ni tiene comportamiento de negocio — es una proyección read-only replicada desde eventos del contexto `usuarios`.
 - **Features Java 21 aplicables:** `var` para variables locales evidentes, campos `final` inmutables
 - **Métodos principales:**
-    - `reconstruir(UUID id, String nombre, String email, String rol): EstudianteAggregate` — factory para materializar desde JPA. NO valida (asume datos ya válidos de BD). NO genera UUID — recibe el UUID original del contexto `usuarios`.
+    - `reconstruir(UUID id, String nombre, String email): EstudianteAggregate` — factory para materializar desde JPA. NO valida (asume datos ya válidos de BD). NO genera UUID — recibe el UUID original del contexto `usuarios`.
 - **Dependencias:** `com.arquisoft.shared.validation.ValidationResult`, `com.arquisoft.shared.message.FichasMessages.Estudiante`, `java.util.UUID`
 
 ### `EstudianteFichaPerfilAggregate.java` (NUEVO)
@@ -378,7 +376,6 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
     - `@Id @Column(columnDefinition = "UUID") UUID id`
     - `@Column(nullable = false, length = 100) String nombre`
     - `@Column(nullable = false) String email` (SIN `unique = true` — la unicidad la garantiza el contexto origen `usuarios`)
-    - `@Column(nullable = false, length = 50) String rol` (siempre `"estudiante"` en esta tabla)
 - **Dependencias:** `jakarta.persistence.*`, `lombok.*`, `java.util.UUID`
 
 ### `EstudianteJpaRepository.java` (NUEVO)
@@ -442,7 +439,7 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 
 ## 11. Migración de Base de Datos
 
-- **Archivo:** `V3__crear_estudiante_y_estudiante_ficha_perfil.sql`
+- **Archivo:** `fichas/infrastructure/src/main/resources/db/migration/fichas/V1.1__crear_estudiante_y_estudiante_ficha_perfil.sql` (siguiente número secuencial tras la `V1.0` existente; `1.1 > 1` baseline → se ejecuta. En el subdirectorio `fichas/` — el `FichasDataSourceConfig` carga `classpath:db/migration/fichas`; una migración fuera de ese subdir NO se ejecuta)
 - **Base de datos:** `fichas_perfil` (BD del contexto `fichas` según tabla de mapeo del skill)
 - **Sin schemas:** las tablas se crean sin prefijo
 - **Sin FKs cruzadas entre BDs:** las tablas `estudiante` y `estudiante_ficha_perfil` viven en la misma BD que `ficha_perfil` — todas las FKs son intra-BD (no hay dependencia de otro contexto en Flyway).
@@ -452,8 +449,7 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
         CREATE TABLE estudiante (
             id UUID PRIMARY KEY,
             nombre VARCHAR(100) NOT NULL,
-            email VARCHAR(255) NOT NULL,
-            rol VARCHAR(50) NOT NULL
+            email VARCHAR(255) NOT NULL
         );
         CREATE INDEX idx_estudiante_id ON estudiante(id);
         ```
@@ -570,7 +566,7 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 - [ ] Lógica de asignación de estudiantes va DESPUÉS de `fichaPerfil.guardar(...)`, dentro de la misma transacción (no hay drenado de eventos — la ficha no emite)
 - [ ] Controller REST sin cambios de firma HTTP (sigue siendo `POST /api/fichas-perfil` con `201 Created` + UUID + header `Location`)
 - [ ] Entidades JPA (`EstudianteFichaPerfilJpaEntity`, `EstudianteJpaEntity`) con constraints correctos (`UNIQUE` en par ficha-estudiante, NO unique en `estudiante.email`)
-- [ ] Migración Flyway (`V3__crear_estudiante_y_estudiante_ficha_perfil.sql`) crea tablas sin prefijo de schema, con FKs y constraint `UNIQUE`
+- [ ] Migración Flyway (`V1.1__crear_estudiante_y_estudiante_ficha_perfil.sql`) en `db/migration/fichas/`, crea tablas sin prefijo de schema, con FKs y constraint `UNIQUE`
 - [ ] Catálogo `shared:message` modificado con nested classes `Estudiante` y `EstudianteFichaPerfil` + constantes de límites, códigos y mensajes
 - [ ] Sin eventos RabbitMQ (la HU no emite eventos propios y `FichaPerfilAggregate` tampoco — es una clase plana sin `AggregateRoot`)
 - [ ] Tests unitarios con patrón AAA: domain (7), application (8), infrastructure (17) = ~32 tests (cobertura ≥ 75%)
@@ -587,7 +583,7 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 
 | Etapa      | Agente              | Estado       | Fecha | Notas |
 |------------|---------------------|--------------|-------|-------|
-| Desarrollo | @implementador      | ⏳ Pendiente |       |       |
+| Desarrollo | @implementador      | ✅ Completado | 2026-06-22 | Build -x test: sin errores |
 | Tests      | @tester             | ⏳ Pendiente |       |       |
 | Validación | @validator-analyze  | ⏳ Pendiente |       |       |
 | Reporte    | @validator-report   | ⏳ Pendiente |       |       |

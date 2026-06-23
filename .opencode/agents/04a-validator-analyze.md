@@ -161,7 +161,10 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | ¿Controller con `@Tag`, `@Operation`, `@ApiResponses` (ADR-011)? | ✅ |
 | ¿Endpoints protegidos con `@SecurityRequirement(name="bearerAuth")`? | ✅ |
 | ¿Eventos RabbitMQ con routing key y exchange del plan? | ✅ |
-| ¿Migración Flyway con nombre `V{n}__{descripcion}.sql`? | ✅ |
+| ¿Migración Flyway con versión secuencial `V{major}.{minor}__{descripcion}.sql`, usando el SIGUIENTE número tras la versión más alta existente del contexto (sin huecos como un `V3` sin `V2`, sin reutilizar)? | ✅ |
+| ¿La HU renombra o edita una migración Flyway preexistente (ya aplicada en algún entorno)? Debe agregar una NUEVA, nunca tocar las existentes | ❌ violación bloqueante (rompe `flyway_schema_history` / checksum) |
+| ¿Migración Flyway ubicada en el subdirectorio `db/migration/{contexto}/` (no directamente en `db/migration/`)? El `{Contexto}DataSourceConfig` carga `classpath:db/migration/{contexto}`; fuera de ese subdir la migración NO se ejecuta | ✅ |
+| ¿Las columnas de cada tabla coinciden con los atributos del plan (sin columnas extra inventadas como `rol`/`tipo`/`fecha*` no documentadas)? | ✅ |
 | ¿Migración Flyway sin atributo schema (tablas sin prefijo) y `@Table` sin `schema` en JPA Entity? | ✅ |
 
 #### Nivel 2 — Convenciones Arquisoft + DDD Estricto

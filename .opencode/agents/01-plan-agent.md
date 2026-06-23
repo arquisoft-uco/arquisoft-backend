@@ -403,7 +403,9 @@ produce el documento en el formato a continuación y guárdalo como
 
 > Una tabla por cada objeto de dominio que la HU afecte (entidad raíz + entidades hijas + réplicas locales).
 
-> **Solo atributos documentados — PROHIBIDO inventar columnas.** Cada atributo DEBE provenir del modelo enriquecido / MER citado en la Metadata. **No agregues campos no documentados** — ni timestamps de auditoría (`fechaAsignacion`, `fechaCreacion`, `fechaActualizacion`), ni flags, ni contadores — salvo que aparezcan explícitamente en la documentación fuente. Si crees que falta un campo (ej. una fecha), NO lo inventes: anótalo como pregunta abierta para el usuario en la sección de observaciones. Una columna inventada termina en Flyway + JPA + el aggregate y corrompe el esquema contra la documentación.
+> **Solo atributos documentados — PROHIBIDO inventar columnas.** Cada atributo DEBE provenir del modelo enriquecido / MER citado en la Metadata. **No agregues campos no documentados**: ni timestamps de auditoría (`fechaAsignacion`, `fechaCreacion`, `fechaActualizacion`), ni discriminadores de `rol`/`tipo`/`estado`, ni flags, ni contadores — salvo que aparezcan **explícitamente** en la documentación fuente. Cada fila de la tabla de atributos debe poder rastrearse a una columna del MER; si no está en el MER, NO va. Si crees que falta un campo, NO lo inventes: anótalo como pregunta abierta para el usuario en la sección de observaciones. Una columna inventada termina en Flyway + JPA + el aggregate y corrompe el esquema contra la documentación.
+>
+> **Vistas materializadas / réplicas locales:** una réplica copia **solo** los atributos que (a) existen en el MER del contexto origen Y (b) este contexto realmente consume. No agregues un `rol`/`tipo` "para discriminar qué se replica" — el filtro de qué se replica vive en la lógica del consumer del evento, no como columna de la tabla réplica.
 
 #### `{Objeto de Dominio 1}`
 
@@ -515,7 +517,7 @@ Para cada integración externa, documenta:
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/persistence/{Entidad}JpaRepository.java` | `JpaRepository` | Compartido entre command y query |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/persistence/{Entidad}Mapper.java` | `@Component` | Mapea Aggregate ↔ JpaEntity y JpaEntity → ReadModel (compartido) |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/out/persistence/{Entidad}CommandOutputAdapter.java` | Adapter | Implementa `{Entidad}OutputPort`. Usa `reconstruir(...)` al reconstruir |
-| infrastructure | `{contexto}/src/main/resources/db/migration/V{n}__{descripcion}.sql` | Flyway | Tablas sin prefijo de schema — cada contexto tiene su propia BD |
+| infrastructure | `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/V{major}.{minor}__{descripcion}.sql` | Flyway | Versión = **siguiente número** tras la más alta del contexto (LEE `db/migration/{contexto}/`, no adivines ni dejes huecos). Va en el subdir `{contexto}/`. Tablas sin prefijo de schema — cada contexto tiene su propia BD |
 
 ### Archivos NUEVOS — caso de uso read (Consultar/Listar/Buscar)
 
@@ -637,7 +639,7 @@ Inventario de constantes a agregar al catálogo en esta HU (el agente lo llena a
 > El plan NO declara archivos de Spring Modulith ni el `ContextAwareEventPublicationRepository`
 > — esa infraestructura ya existe globalmente en `shared:amqp` y `src/main/java/com/arquisoft/config/outbox/`.
 > **Sí debe declarar** dos cosas cuando la HU emite eventos: (1) la migración Flyway
-> `V{n}__crear_event_publication.sql` en `db/migration/{contexto}/` si el contexto aún
+> `V{major}.{minor}__crear_event_publication.sql` (siguiente número del contexto) en `db/migration/{contexto}/` si el contexto aún
 > no la tiene (la tabla `event_publication` vive en la BD del propio contexto, no en una
 > BD central); (2) que el use case use `@Transactional(transactionManager = "{contexto}TransactionManager")`
 > con qualifier explícito — sin él, el outbox puede escribir en una BD equivocada o fallar.
@@ -770,7 +772,7 @@ Para cada client role nuevo de la tabla anterior:
 
 ## 11. Migración de Base de Datos (si aplica)
 
-- **Archivo:** `V{n}__{descripcion}.sql`
+- **Archivo:** `V{major}.{minor}__{descripcion}.sql` (en `db/migration/{contexto}/`. Versión = el SIGUIENTE número tras la más alta existente — **LEE el directorio `db/migration/{contexto}/`, no adivines ni dejes huecos**. Una migración ya aplicada es INMUTABLE: nunca la renombres ni edites; para cambiar una tabla, agrega una migración nueva)
 - **Base de datos:** la migración se ejecuta dentro de la BD propia del contexto. Usar
   la tabla de mapeo del skill `arquisoft-context` (el nombre de la BD NO coincide con
   el nombre del contexto en tres casos: `seguridad→usuarios`, `fichas→fichas_perfil`,
@@ -900,7 +902,7 @@ ejemplos detallados.
 - [ ] Controller REST con `@Valid @RequestBody` y autorización vía `@PreAuthorize("hasAuthority('{contexto}:{recurso-kebab}:{accion}')")` **en kebab-case** (ej. `fichas:ficha-perfil:create`) — client role declarado en sección 9 del plan, sin camelCase ni MAYÚSCULAS
 - [ ] Controller documentado con `@Tag`, `@Operation`, `@ApiResponses` y `@SecurityRequirement` (ADR-011)
 - [ ] Entidad JPA con `@Table(name = "...")` (sin atributo `schema`) y adaptador de repositorio creados
-- [ ] Migración Flyway (`V{n}__{descripcion}.sql`) en la BD correcta según tabla de mapeo, sin prefijo de schema en el SQL
+- [ ] Migración Flyway (`V{major}.{minor}__{descripcion}.sql`, siguiente número secuencial del contexto) en `db/migration/{contexto}/`, BD correcta según tabla de mapeo, sin prefijo de schema en el SQL
 - [ ] Eventos RabbitMQ publicados/consumidos (si aplica)
 - [ ] Tests unitarios con patrón AAA (cobertura ≥ 75%), incluyen ciclo completo de eventos del Aggregate Root
 - [ ] Tests de repositorio con H2

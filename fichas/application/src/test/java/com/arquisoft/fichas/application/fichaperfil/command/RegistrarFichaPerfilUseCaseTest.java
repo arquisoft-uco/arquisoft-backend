@@ -42,7 +42,8 @@ class RegistrarFichaPerfilUseCaseTest {
         UUID asesorId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título de prueba",
-                asesorId
+                asesorId,
+                null
         );
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
@@ -62,7 +63,8 @@ class RegistrarFichaPerfilUseCaseTest {
         UUID asesorId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título de prueba",
-                asesorId
+                asesorId,
+                null
         );
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(false);
@@ -79,7 +81,7 @@ class RegistrarFichaPerfilUseCaseTest {
         // Arrange
         UUID asesorId = UUID.randomUUID();
         String titulo = "Título duplicado";
-        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(titulo, asesorId);
+        RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(titulo, asesorId, null);
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
         when(fichaPerfilOutputPort.existsByTituloProyecto(titulo)).thenReturn(true);
@@ -97,7 +99,8 @@ class RegistrarFichaPerfilUseCaseTest {
         UUID asesorId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título válido",
-                asesorId
+                asesorId,
+                null
         );
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
@@ -116,7 +119,8 @@ class RegistrarFichaPerfilUseCaseTest {
         UUID asesorId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título de prueba",
-                asesorId
+                asesorId,
+                null
         );
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
@@ -135,7 +139,8 @@ class RegistrarFichaPerfilUseCaseTest {
         UUID asesorId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título de prueba",
-                asesorId
+                asesorId,
+                null
         );
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);

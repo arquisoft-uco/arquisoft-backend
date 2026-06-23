@@ -1914,7 +1914,7 @@ El publicador principal del proyecto es **`SpringModulithEventPublisher`** (en `
 
 **Implicación para el use case:** la anotación `@Transactional` debe llevar el **qualifier explícito** del transaction manager del contexto, para que Modulith escriba en la BD correcta. Ejemplo: `@Transactional(transactionManager = "usuariosTransactionManager")` en `usuarios`, `@Transactional(transactionManager = "fichasTransactionManager")` en `fichas`. Sin el qualifier puede fallar el routing si hay otro `@Primary` en el contexto.
 
-**Implicación para el plan/implementación:** todo contexto que emita eventos necesita la migración Flyway `V{n}__crear_event_publication.sql` en `db/migration/{contexto}/`. Los contextos que NO emiten eventos no necesitan la tabla — el `ContextAwareEventPublicationRepository` los ignora.
+**Implicación para el plan/implementación:** todo contexto que emita eventos necesita la migración Flyway `crear_event_publication.sql` (con el siguiente número de versión del contexto) en `db/migration/{contexto}/`. Los contextos que NO emiten eventos no necesitan la tabla — el `ContextAwareEventPublicationRepository` los ignora.
 
 Existe además un **fallback `RabbitMQEventPublisher`** anotado con `@ConditionalOnMissingBean(EventPublisher.class)` — solo se activa si Spring Modulith no está en el classpath. Maneja publish directo con backoff exponencial 3× (500ms → 1s → 2s) ante `AmqpException`. En la operación normal del proyecto NO se usa este fallback.
 
@@ -2118,8 +2118,11 @@ por contexto. El implementador **no toca configuración de DataSource**.
 
 - **`@Table` SIN atributo `schema`.** Todas las tablas viven en el `public` de su BD propia.
   Usa solo `@Table(name = "ficha_perfil")`. **Nunca** `@Table(schema = "...", name = "...")`.
-- **Migraciones Flyway** en `{contexto}/infrastructure/src/main/resources/db/migration/`.
-- **Nomenclatura Flyway:** `V{n}__{descripcion}.sql` (ej. `V1.0__crear_tabla_ficha_perfil.sql`).
+- **Migraciones Flyway** en `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` — el `{Contexto}DataSourceConfig` carga `classpath:db/migration/{contexto}` (ej. `classpath:db/migration/fichas`), así que el SQL DEBE ir en ese subdirectorio `{contexto}/`. Una migración fuera de ese subdir NO se ejecuta.
+- **Nomenclatura Flyway (versionado secuencial por contexto):** `V{major}.{minor}__{descripcion_snake_case}.sql` (ej. `V1.0__crear_tablas_fichas_perfil.sql`, luego `V1.1__crear_estudiante.sql`). Cada contexto tiene su **propia secuencia** (su propio Flyway). La migración nueva usa el **siguiente número** tras la versión más alta existente en `db/migration/{contexto}/`: **LEE el directorio antes de elegir el número — no lo adivines (eso causa huecos como un `V3` sin `V2`) ni reutilices uno existente.**
+- **Minor por defecto, major reservado:** el proyecto está en el esquema **v1**, así que toda migración nueva **incrementa el minor** (`V1.0` → `V1.1` → `V1.2`…). El salto a un **major** (`V2.0`) se reserva para un **cambio grande de esquema / nueva versión del proyecto** y es una **decisión humana explícita** — el agente **nunca** lo decide: siempre incrementa el minor.
+- **Inmutabilidad de migraciones aplicadas (regla dura):** una migración que YA se aplicó a cualquier entorno (local, servidor de pruebas, prod) es **inmutable**. **NUNCA** la renombres (cambia su versión → Flyway la trata como nueva y la re-ejecuta → `relation already exists`) ni edites su contenido (cambia el checksum → Flyway falla la validación). Para modificar una tabla existente se agrega una migración NUEVA (`ALTER`) con la siguiente versión — nunca se edita la anterior.
+- **Baseline (`baselineOnMigrate=true`):** todos los `{Contexto}DataSourceConfig` usan baseline. Si Flyway corre por primera vez contra una BD que **ya tenía tablas**, crea una baseline (ej. versión `1`) y **omite** toda migración con versión ≤ baseline (`V1.0` == `1` → omitida en esa BD; las tablas ya están). Una migración nueva debe tener versión **mayor** que la baseline para ejecutarse (ej. `V1.1` corre porque `1.1 > 1`).
 - **El SQL referencia tablas sin prefijo de schema** (ej. `CREATE TABLE ficha_perfil (...)`,
   no `CREATE TABLE fichas_perfil.ficha (...)`).
 - **NO hay FKs cruzadas entre BDs.** Cada contexto es totalmente autónomo a nivel de datos.
