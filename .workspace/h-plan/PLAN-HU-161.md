@@ -72,8 +72,9 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 | Atributo | Tipo | Longitud | Obligatorio | Modificable | Autogenerado | Notas |
 |---|---|---|---|---|---|---|
 | `id` | `UUID` | — | Sí | No | Sí | PK autogenerado cuando se replica (no es autogenerado localmente — el UUID viene del evento `UsuarioCreadoEvent` publicado por el contexto `usuarios`) |
-| `nombre` | `String` | 1-100 | Sí | No | No | Nombre completo del estudiante |
-| `email` | `String` | — | Sí | No | No | Email institucional (único en el contexto origen, no validado como único localmente — no aplica `UNIQUE` en la tabla `estudiante` del contexto `fichas`) |
+| `identificador` | `String` | 1-30 | Sí | No | No | Código/documento de identidad del estudiante (ej. código estudiantil) |
+| `nombre` | `String` | 1-50 | Sí | No | No | Nombre completo del estudiante |
+| `email` | `String` | 1-50 | Sí | No | No | Email institucional (único en el contexto origen, no validado como único localmente — no aplica `UNIQUE` en la tabla `estudiante` del contexto `fichas`) |
 
 **Combinaciones únicas (Restricciones):** NO aplica para esta réplica local — la unicidad de `email` la garantiza el contexto `usuarios` (origen). En el contexto `fichas`, `estudiante.email` NO tiene constraint `UNIQUE` porque la réplica es read-only para consultas y FKs locales.
 
@@ -92,8 +93,9 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 
 | Característica del modelo | Traducción en código |
 |---|---|
-| `Estudiante.nombre` obligatorio, max 100 | `@Column(nullable=false, length=100)` en JPA + `NOT NULL VARCHAR(100)` en Flyway |
-| `Estudiante.email` obligatorio, NO único local | `@Column(nullable=false)` en JPA + `NOT NULL VARCHAR(255)` en Flyway (SIN `UNIQUE`) |
+| `Estudiante.identificador` obligatorio, max 30 | `@Column(nullable=false, length=30)` en JPA + `NOT NULL VARCHAR(30)` en Flyway |
+| `Estudiante.nombre` obligatorio, max 50 | `@Column(nullable=false, length=50)` en JPA + `NOT NULL VARCHAR(50)` en Flyway |
+| `Estudiante.email` obligatorio, max 50, NO único local | `@Column(nullable=false, length=50)` en JPA + `NOT NULL VARCHAR(50)` en Flyway (SIN `UNIQUE`) |
 | Límite 3 estudiantes por ficha | `FichasMessages.FichaPerfil.ESTUDIANTES_MAX = 3` en catálogo + validación en use case `if (estudiantesIds.size() > 3)` |
 | Unicidad `(fichaPerfilId, estudianteId)` | `UNIQUE (ficha_perfil_id, estudiante_id)` en Flyway + validación de duplicados en use case antes de persistir (protección defensiva) |
 
@@ -126,31 +128,31 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 
 | Capa | Ruta completa desde raíz del monorepo | Tipo | Responsabilidad |
 |------|---------------------------------------|------|-----------------|
-| domain | `fichas/src/main/java/com/arquisoft/fichas/domain/estudiante/aggregate/EstudianteAggregate.java` | Aggregate (sin extender `AggregateRoot` — réplica read-only) | Factory `reconstruir(...)` para materializar desde JPA — NO emite eventos. Esta es una vista materializada del contexto `usuarios`, solo para validaciones FK locales. |
-| infrastructure | `fichas/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteJpaEntity.java` | JPA Entity | `@Table(name = "estudiante")` sin unique en `email` |
-| infrastructure | `fichas/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteJpaRepository.java` | `JpaRepository` | `JpaRepository<EstudianteJpaEntity, UUID>` con método `existsById(UUID)` |
-| infrastructure | `fichas/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteMapper.java` | `@Component` | Mapea `EstudianteJpaEntity` ↔ `EstudianteAggregate` (solo `reconstruir`, no `crear`) |
-| application | `fichas/src/main/java/com/arquisoft/fichas/application/estudiante/query/port/out/EstudianteQueryOutputPort.java` | Interface (query side de la vista materializada) | `boolean existsById(UUID id)` — lookup FK del estudiante desde el use case write, sin acoplar `application` a JPA. Espejo de `AsesorFichaQueryOutputPort` (HU-208). |
-| infrastructure | `fichas/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/query/adapter/out/persistence/EstudianteQueryOutputAdapter.java` | `@Component` (implementa el puerto) | Delega a `EstudianteJpaRepository.existsById(...)`. |
+| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudiante/aggregate/EstudianteAggregate.java` | Aggregate (sin extender `AggregateRoot` — réplica read-only) | Factory `reconstruir(...)` para materializar desde JPA — NO emite eventos. Esta es una vista materializada del contexto `usuarios`, solo para validaciones FK locales. |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteJpaEntity.java` | JPA Entity | `@Table(name = "estudiante")` sin unique en `email` |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteJpaRepository.java` | `JpaRepository` | `JpaRepository<EstudianteJpaEntity, UUID>` con método `existsById(UUID)` |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteMapper.java` | `@Component` | Mapea `EstudianteJpaEntity` ↔ `EstudianteAggregate` (solo `reconstruir`, no `crear`) |
+| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estudiante/query/port/out/EstudianteQueryOutputPort.java` | Interface (query side de la vista materializada) | `boolean existsById(UUID id)` — lookup FK del estudiante desde el use case write, sin acoplar `application` a JPA. Espejo de `AsesorFichaQueryOutputPort` (HU-208). |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/query/adapter/out/persistence/EstudianteQueryOutputAdapter.java` | `@Component` (implementa el puerto) | Delega a `EstudianteJpaRepository.existsById(...)`. |
 
 #### Entidad `EstudianteFichaPerfil` (relación)
 
 | Capa | Ruta completa desde raíz del monorepo | Tipo | Responsabilidad |
 |------|---------------------------------------|------|-----------------|
-| domain | `fichas/src/main/java/com/arquisoft/fichas/domain/estudianteFichaPerfil/aggregate/EstudianteFichaPerfilAggregate.java` | Aggregate (sin extender `AggregateRoot` — relación CRUD) | Factory `crear(fichaPerfilId, estudianteId)` genera UUID + validaciones de nulls (Notification Pattern). Factory `reconstruir(...)` para leer desde BD. |
-| domain | `fichas/src/main/java/com/arquisoft/fichas/domain/estudianteFichaPerfil/port/out/EstudianteFichaPerfilOutputPort.java` | Interface | Puerto de salida write. Métodos: `guardar(EstudianteFichaPerfilAggregate)`, `existePorFichaYEstudiante(UUID fichaId, UUID estudianteId)` (validación defensiva contra duplicados) |
-| application | `fichas/src/main/java/com/arquisoft/fichas/application/estudianteFichaPerfil/exception/EstudianteDuplicadoException.java` | Exception | Extiende `ApplicationException` (400). Código `ESTUDIANTE_DUPLICADO`. Mensaje parametrizado con ID del estudiante duplicado. |
-| application | `fichas/src/main/java/com/arquisoft/fichas/application/estudianteFichaPerfil/exception/LimiteEstudiantesExcedidoException.java` | Exception | Extiende `ApplicationException` (400). Código `LIMITE_ESTUDIANTES_EXCEDIDO`. Mensaje parametrizado con límite (3). |
-| infrastructure | `fichas/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilJpaEntity.java` | JPA Entity | `@Table(name = "estudiante_ficha_perfil", uniqueConstraints = @UniqueConstraint(columnNames = {"ficha_perfil_id", "estudiante_id"}))` |
-| infrastructure | `fichas/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilJpaRepository.java` | `JpaRepository` | `JpaRepository<EstudianteFichaPerfilJpaEntity, UUID>` con `existsByFichaPerfilIdAndEstudianteId(UUID, UUID)` |
-| infrastructure | `fichas/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilMapper.java` | `@Component` | Mapea `EstudianteFichaPerfilJpaEntity` ↔ `EstudianteFichaPerfilAggregate` |
-| infrastructure | `fichas/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/command/adapter/out/persistence/EstudianteFichaPerfilCommandOutputAdapter.java` | Adapter | Implementa `EstudianteFichaPerfilOutputPort`. Usa `reconstruir(...)` en lookups. |
+| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudianteFichaPerfil/aggregate/EstudianteFichaPerfilAggregate.java` | Aggregate (sin extender `AggregateRoot` — relación CRUD) | Factory `crear(fichaPerfilId, estudianteId)` genera UUID + validaciones de nulls (Notification Pattern). Factory `reconstruir(...)` para leer desde BD. |
+| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudianteFichaPerfil/port/out/EstudianteFichaPerfilOutputPort.java` | Interface | Puerto de salida write. Métodos: `guardar(EstudianteFichaPerfilAggregate)`, `existePorFichaYEstudiante(UUID fichaId, UUID estudianteId)` (validación defensiva contra duplicados) |
+| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estudianteFichaPerfil/exception/EstudianteDuplicadoException.java` | Exception | Extiende `ApplicationException` (400). Código `ESTUDIANTE_DUPLICADO`. Mensaje parametrizado con ID del estudiante duplicado. |
+| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estudianteFichaPerfil/exception/LimiteEstudiantesExcedidoException.java` | Exception | Extiende `ApplicationException` (400). Código `LIMITE_ESTUDIANTES_EXCEDIDO`. Mensaje parametrizado con límite (3). |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilJpaEntity.java` | JPA Entity | `@Table(name = "estudiante_ficha_perfil", uniqueConstraints = @UniqueConstraint(columnNames = {"ficha_perfil_id", "estudiante_id"}))` |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilJpaRepository.java` | `JpaRepository` | `JpaRepository<EstudianteFichaPerfilJpaEntity, UUID>` con `existsByFichaPerfilIdAndEstudianteId(UUID, UUID)` |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilMapper.java` | `@Component` | Mapea `EstudianteFichaPerfilJpaEntity` ↔ `EstudianteFichaPerfilAggregate` |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/command/adapter/out/persistence/EstudianteFichaPerfilCommandOutputAdapter.java` | Adapter | Implementa `EstudianteFichaPerfilOutputPort`. Usa `reconstruir(...)` en lookups. |
 
 #### Excepción nueva (estudiante no encontrado)
 
 | Capa | Ruta completa | Tipo | Responsabilidad |
 |------|---------------|------|-----------------|
-| application | `fichas/src/main/java/com/arquisoft/fichas/application/estudiante/exception/EstudianteNoEncontradoException.java` | Exception | Extiende `ApplicationException` (400). Código `ESTUDIANTE_NO_ENCONTRADO`. Mensaje parametrizado con UUID del estudiante no encontrado. |
+| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estudiante/exception/EstudianteNoEncontradoException.java` | Exception | Extiende `ApplicationException` (400). Código `ESTUDIANTE_NO_ENCONTRADO`. Mensaje parametrizado con UUID del estudiante no encontrado. |
 
 ### Catálogo de mensajes (`shared:message`) — MODIFICAR
 
@@ -174,9 +176,9 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 
 | Ruta completa | Cambio requerido |
 |---------------|-----------------|
-| `fichas/src/main/java/com/arquisoft/fichas/application/fichaPerfil/command/RegistrarFichaPerfilUseCase.java` | Añadir inyección de `EstudianteQueryOutputPort` (para validar existencia vía query side de la vista materializada — **NO** inyectar `EstudianteJpaRepository`, eso rompería `application ← infrastructure`) y `EstudianteFichaPerfilOutputPort` (para persistir relaciones). Tras persistir `FichaPerfilAggregate`, iterar sobre la lista `command.estudiantesIds()` (si no es null ni vacía): validar existencia de cada estudiante, validar que no se repita dentro de la lista, validar límite ≤ 3, crear cada `EstudianteFichaPerfilAggregate` con `crear(fichaId, estudianteId)` y persistir vía puerto. **La lógica de asignación va DESPUÉS de `fichaPerfil.save()` y ANTES de `drainUnPublishedEvents()`**. |
-| `fichas/src/main/java/com/arquisoft/fichas/infrastructure/fichaPerfil/command/adapter/in/web/dto/RegistrarFichaPerfilRequestDTO.java` | Añadir campo `List<UUID> estudiantesIds` (nullable — puede ser `null` o vacío si no se asignan estudiantes) con anotación `@Size(max = 3, message = "No se pueden asignar más de 3 estudiantes")`. En el método `toCommand()`, pasar este campo al `RegistrarFichaPerfilCommand`. |
-| `fichas/src/main/java/com/arquisoft/fichas/application/fichaPerfil/command/model/RegistrarFichaPerfilCommand.java` | Añadir campo `List<UUID> estudiantesIds` (nullable). |
+| `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaPerfil/command/RegistrarFichaPerfilUseCase.java` | Añadir inyección de `EstudianteQueryOutputPort` (para validar existencia vía query side de la vista materializada — **NO** inyectar `EstudianteJpaRepository`, eso rompería `application ← infrastructure`) y `EstudianteFichaPerfilOutputPort` (para persistir relaciones). Tras persistir `FichaPerfilAggregate`, iterar sobre la lista `command.estudiantesIds()` (si no es null ni vacía): validar existencia de cada estudiante, validar que no se repita dentro de la lista, validar límite ≤ 3, crear cada `EstudianteFichaPerfilAggregate` con `crear(fichaId, estudianteId)` y persistir vía puerto. **La lógica de asignación va DESPUÉS de `fichaPerfil.save()` y ANTES de `drainUnPublishedEvents()`**. |
+| `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/fichaPerfil/command/adapter/in/web/dto/RegistrarFichaPerfilRequestDTO.java` | Añadir campo `List<UUID> estudiantesIds` (nullable — puede ser `null` o vacío si no se asignan estudiantes) con anotación `@Size(max = 3, message = "No se pueden asignar más de 3 estudiantes")`. En el método `toCommand()`, pasar este campo al `RegistrarFichaPerfilCommand`. |
+| `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaPerfil/command/model/RegistrarFichaPerfilCommand.java` | Añadir campo `List<UUID> estudiantesIds` (nullable). |
 | `fichas/infrastructure/src/main/resources/db/migration/fichas/V1.1__crear_estudiante_y_estudiante_ficha_perfil.sql` (siguiente versión tras `V1.0`; `1.1 > 1` baseline → se ejecuta) | Crear tabla `estudiante` (réplica local sin `UNIQUE` en `email`). Crear tabla `estudiante_ficha_perfil` con FKs a `ficha_perfil` y `estudiante`, y constraint `UNIQUE (ficha_perfil_id, estudiante_id)`. **La migración va en el subdirectorio `db/migration/fichas/`** — el Flyway del contexto carga `classpath:db/migration/fichas`. |
 
 ---
@@ -189,7 +191,7 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 - **Responsabilidad:** Modelo de dominio de la vista materializada de `Estudiante` del contexto `usuarios`. Solo se usa para validaciones FK locales en el contexto `fichas`. NO emite eventos ni tiene comportamiento de negocio — es una proyección read-only replicada desde eventos del contexto `usuarios`.
 - **Features Java 21 aplicables:** `var` para variables locales evidentes, campos `final` inmutables
 - **Métodos principales:**
-    - `reconstruir(UUID id, String nombre, String email): EstudianteAggregate` — factory para materializar desde JPA. NO valida (asume datos ya válidos de BD). NO genera UUID — recibe el UUID original del contexto `usuarios`.
+    - `reconstruir(UUID id, String identificador, String nombre, String email): EstudianteAggregate` — factory para materializar desde JPA. NO valida (asume datos ya válidos de BD). NO genera UUID — recibe el UUID original del contexto `usuarios`.
 - **Dependencias:** `com.arquisoft.shared.validation.ValidationResult`, `com.arquisoft.shared.message.FichasMessages.Estudiante`, `java.util.UUID`
 
 ### `EstudianteFichaPerfilAggregate.java` (NUEVO)
@@ -374,8 +376,9 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
     ```
 - **Columnas:**
     - `@Id @Column(columnDefinition = "UUID") UUID id`
-    - `@Column(nullable = false, length = 100) String nombre`
-    - `@Column(nullable = false) String email` (SIN `unique = true` — la unicidad la garantiza el contexto origen `usuarios`)
+    - `@Column(nullable = false, length = 30) String identificador`
+    - `@Column(nullable = false, length = 50) String nombre`
+    - `@Column(nullable = false, length = 50) String email` (SIN `unique = true` — la unicidad la garantiza el contexto origen `usuarios`)
 - **Dependencias:** `jakarta.persistence.*`, `lombok.*`, `java.util.UUID`
 
 ### `EstudianteJpaRepository.java` (NUEVO)
@@ -401,7 +404,7 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 ### Estado del endpoint
 
 - [x] **Endpoint EXISTENTE** — modificar el adapter ya presente en el proyecto.
-    - **Archivo a modificar:** `fichas/src/main/java/com/arquisoft/fichas/infrastructure/fichaPerfil/command/adapter/in/web/RegistrarFichaPerfilInputAdapter.java`
+    - **Archivo a modificar:** `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/fichaPerfil/command/adapter/in/web/RegistrarFichaPerfilInputAdapter.java`
     - **Qué cambia:** el `RegistrarFichaPerfilRequestDTO` (input del endpoint) se extiende con el campo `List<UUID> estudiantesIds` (nullable, máx. 3 elementos). El endpoint ya existente NO cambia en firma HTTP (sigue siendo `POST /api/fichas-perfil` con `201 Created` + `UUID` en body + header `Location`), pero ahora acepta la lista de UUIDs de estudiantes en el request body. La lógica de validación y persistencia de las relaciones se maneja en el use case (ya documentada en sección 7), no en el controller.
 
 ### Contrato del endpoint
@@ -448,8 +451,9 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
         ```sql
         CREATE TABLE estudiante (
             id UUID PRIMARY KEY,
-            nombre VARCHAR(100) NOT NULL,
-            email VARCHAR(255) NOT NULL
+            identificador VARCHAR(30) NOT NULL,
+            nombre VARCHAR(50) NOT NULL,
+            email VARCHAR(50) NOT NULL
         );
         CREATE INDEX idx_estudiante_id ON estudiante(id);
         ```
@@ -584,7 +588,7 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 | Etapa      | Agente              | Estado       | Fecha | Notas |
 |------------|---------------------|--------------|-------|-------|
 | Desarrollo | @implementador      | ✅ Completado | 2026-06-22 | Build -x test: sin errores |
-| Tests      | @tester             | ⏳ Pendiente |       |       |
-| Validación | @validator-analyze  | ⏳ Pendiente |       |       |
-| Reporte    | @validator-report   | ⏳ Pendiente |       |       |
+| Tests      | @tester             | ✅ Completado | 2026-06-23 | domain (6), application (8 ext), infrastructure (5) — todos pasan |
+| Validación | @validator-analyze  | ✅ Completado | 2026-06-23 | Score: 99/100 — APROBADO |
+| Reporte    | @validator-report   | ✅ Completado | 2026-06-23 | /.workspace/validator/validator-HU-161.md |
 | Commit     | @commit             | ⏳ Pendiente |       |       |
