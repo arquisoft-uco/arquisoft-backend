@@ -149,8 +149,9 @@ Solo tras confirmación explícita del usuario en FASE 3, ejecuta esta secuencia
 (en este orden y SIN comandos adicionales después):
 
 ```bash
-git status
+git status -s
 git add {archivos de código del reporte} .workspace/h-plan/PLAN-{HU|HT}-{ID}.md .workspace/validator/validator-{HU|HT}-{ID}.md
+git status -s
 git commit -m "{tipo}({contexto}): {descripcion corta en español}"
 git log --oneline -5
 ```
@@ -159,10 +160,12 @@ git log --oneline -5
 > - Los **archivos de código** vienen del reporte (lista en sección "Archivos a incluir").
 > - Los **dos archivos de workspace** se añaden SIEMPRE al commit, sin que el reporte tenga que listarlos.
 > - Todas las rutas son **relativas a la raíz del repo** (sin barra inicial). El `git add` se ejecuta desde la raíz del repositorio.
+> - **CRÍTICO — archivos sin trackear (`??`):** el primer `git status -s` puede mostrar directorios o archivos nuevos marcados con `??` que el reporte no lista explícitamente (ej. nuevos directorios de tests). Estos archivos forman parte de la HU y **DEBEN incluirse en el `git add`**. Añade todos los paths `??` que pertenezcan al bounded context de la HU junto a los archivos del reporte. Si tienes duda sobre si un archivo `??` pertenece a la HU, inclúyelo.
+> - El segundo `git status -s` **antes del commit** verifica que el área de staging esté completa. Si aún hay archivos `M` sin stagear o `??` nuevos relacionados con la HU, añádelos con un `git add` adicional antes de hacer el commit.
 
 Captura del output:
 - El **hash** del commit (de `git log --oneline -5`)
-- La **rama** confirmada (de `git status`)
+- La **rama** confirmada (de `git status -s`)
 
 **Si `git add` falla** porque alguno de los archivos de workspace está en `.gitignore`
 o no existe, detén la ejecución sin hacer commit y notifica al usuario:
