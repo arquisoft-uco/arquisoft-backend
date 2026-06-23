@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
+import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
+import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInputPort;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
@@ -173,6 +175,133 @@ class RegistrarFichaPerfilInputAdapterTest {
 
         when(registrarFichaPerfilInputPort.ejecutar(any()))
                 .thenThrow(new AsesorFichaNoEncontradoException(asesorId));
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void debe201_cuandoPeticionValidaConEstudiantes() throws Exception {
+        // Arrange
+        UUID fichaId = UUID.randomUUID();
+        UUID asesorId = UUID.randomUUID();
+        UUID estudiante1 = UUID.randomUUID();
+        UUID estudiante2 = UUID.randomUUID();
+        String body = String.format("""
+                {
+                  "tituloProyecto": "Título válido",
+                  "asesorFichaId": "%s",
+                  "estudiantesIds": ["%s", "%s"]
+                }
+                """, asesorId, estudiante1, estudiante2);
+
+        when(registrarFichaPerfilInputPort.ejecutar(any())).thenReturn(fichaId);
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$").value(fichaId.toString()));
+    }
+
+    @Test
+    void debe201_cuandoPeticionValidaSinEstudiantes() throws Exception {
+        // Arrange
+        UUID fichaId = UUID.randomUUID();
+        UUID asesorId = UUID.randomUUID();
+        String body = String.format("""
+                {
+                  "tituloProyecto": "Título válido",
+                  "asesorFichaId": "%s",
+                  "estudiantesIds": []
+                }
+                """, asesorId);
+
+        when(registrarFichaPerfilInputPort.ejecutar(any())).thenReturn(fichaId);
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$").value(fichaId.toString()));
+    }
+
+    @Test
+    void debe400_cuandoMasDeTresEstudiantes() throws Exception {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        UUID e1 = UUID.randomUUID();
+        UUID e2 = UUID.randomUUID();
+        UUID e3 = UUID.randomUUID();
+        UUID e4 = UUID.randomUUID();
+        String body = String.format("""
+                {
+                  "tituloProyecto": "Título válido",
+                  "asesorFichaId": "%s",
+                  "estudiantesIds": ["%s", "%s", "%s", "%s"]
+                }
+                """, asesorId, e1, e2, e3, e4);
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void debe400_cuandoEstudianteNoExiste() throws Exception {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+        String body = String.format("""
+                {
+                  "tituloProyecto": "Título válido",
+                  "asesorFichaId": "%s",
+                  "estudiantesIds": ["%s"]
+                }
+                """, asesorId, estudianteId);
+
+        when(registrarFichaPerfilInputPort.ejecutar(any()))
+                .thenThrow(new EstudianteNoEncontradoException(estudianteId));
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void debe400_cuandoEstudianteDuplicadoEnLista() throws Exception {
+        // Arrange
+        UUID asesorId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+        String body = String.format("""
+                {
+                  "tituloProyecto": "Título válido",
+                  "asesorFichaId": "%s",
+                  "estudiantesIds": ["%s", "%s"]
+                }
+                """, asesorId, estudianteId, estudianteId);
+
+        when(registrarFichaPerfilInputPort.ejecutar(any()))
+                .thenThrow(new EstudianteDuplicadoException(estudianteId));
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")

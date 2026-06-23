@@ -591,4 +591,4 @@ Lo que NO cubre: cambio de estudiantes asignados (es otra HU), remoción de estu
 | Tests      | @tester             | ✅ Completado | 2026-06-23 | domain (6), application (8 ext), infrastructure (5) — todos pasan |
 | Validación | @validator-analyze  | ✅ Completado | 2026-06-23 | Score: 99/100 — APROBADO |
 | Reporte    | @validator-report   | ✅ Completado | 2026-06-23 | /.workspace/validator/validator-HU-161.md |
-| Commit     | @commit             | ⏳ Pendiente |       |       |
+| Commit     | @commit             | ✅ Completado | 2026-06-23 | Hash: 69193a8 |
