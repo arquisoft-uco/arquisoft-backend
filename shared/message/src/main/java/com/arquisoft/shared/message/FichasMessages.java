@@ -129,4 +129,43 @@ public final class FichasMessages {
         public static final String DUPLICADO        = "El estudiante ya está asignado a esta ficha: %s";
         public static final String LIMITE_EXCEDIDO  = "No se pueden asignar más de %d estudiantes a una ficha";
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // EstadoFichaPerfil (trazabilidad)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class EstadoFichaPerfil {
+
+        private EstadoFichaPerfil() {}
+
+        // Campos
+        public static final String CAMPO_ID                  = "id";
+        public static final String CAMPO_FICHA_PERFIL_ID     = "fichaPerfilId";
+        public static final String CAMPO_ESTADO_FICHA        = "estadoFicha";
+        public static final String CAMPO_FECHA_ACTUALIZACION = "fechaActualizacion";
+
+        // Códigos de error
+        public static final String ID_REQUERIDO                    = "ESTADO_FICHA_PERFIL_ID_REQUERIDO";
+        public static final String FICHA_PERFIL_ID_REQUERIDO       = "ESTADO_FICHA_PERFIL_FICHA_PERFIL_ID_REQUERIDO";
+        public static final String ESTADO_FICHA_REQUERIDO          = "ESTADO_FICHA_PERFIL_ESTADO_FICHA_REQUERIDO";
+        public static final String FECHA_ACTUALIZACION_REQUERIDA   = "ESTADO_FICHA_PERFIL_FECHA_ACTUALIZACION_REQUERIDA";
+
+        // Logs
+        public static final String LOG_CREADO = "Estado ficha perfil creado — id={}, fichaPerfilId={}, estadoFicha={}";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // EstadoFicha (catálogo)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class EstadoFicha {
+
+        private EstadoFicha() {}
+
+        // Códigos de error
+        public static final String ESTADO_NO_ENCONTRADO = "ESTADO_FICHA_NO_ENCONTRADO";
+
+        // Mensajes de error
+        public static final String NOMBRE_NO_ENCONTRADO_MENSAJE = "No se encontró el estado: %s";
+    }
 }

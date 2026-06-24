@@ -448,6 +448,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 - Factory method `crear(...)` para instancias nuevas — genera UUID con `UUID.randomUUID()` y **publica evento** con `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))`.
 - Factory method `reconstruir(...)` para reconstruir desde persistencia — recibe el UUID existente, **sin publicar eventos**.
 - ID siempre `UUID` (`java.util.UUID`) — **nunca** `Long` ni `Integer`.
+- Para campos `Instant` autogenerados en `crear(...)` (ej. `fechaActualizacion`), usar `UtilDate.generateNewInstantNow()` de `com.arquisoft.shared.util.UtilDate` (`shared:domain`). **Nunca** `Instant.now()` directamente en código de dominio.
 - **Regla DDD estricta — AggregateRoot condicional a eventos:** en los 6 contextos de negocio (fichas, proyectos, artefactos, repositorio_artefactos, entregables, evaluaciones), la entidad raíz extiende `AggregateRoot` de `shared:domain` **solo si el plan declara eventos**; si "Eventos: ninguno", es una `final class` plana sin `AggregateRoot`. `seguridad` nunca lo usa; `usuarios` lo usa en su ejemplo del patrón eventos+outbox.
 - No usar `record` para entidades de dominio (requieren constructor privado + factories).
 

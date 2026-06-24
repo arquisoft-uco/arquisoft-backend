@@ -435,6 +435,7 @@ Las características de cada atributo se traducen así en cada capa:
 | Obligatorio | `@NotBlank` o `@NotNull` en DTO + `@Column(nullable=false)` en JPA + `NOT NULL` en Flyway + validación en constructor |
 | No modificable | NO se genera setter ni método `cambiar{Atributo}()` en la entidad |
 | Autogenerado (UUID) | `UUID.randomUUID()` dentro de `crear(...)` |
+| Autogenerado (Instant) | `UtilDate.generateNewInstantNow()` (de `com.arquisoft.shared.util.UtilDate`, en `shared:domain`) dentro de `crear(...)`. **Nunca** `Instant.now()` directamente — todo timestamp autogenerado en dominio pasa por `UtilDate`. |
 | Limpiar espacios | `.trim()` en el factory `crear(...)` antes de validar |
 | Sensible | No se incluye en `toString()`, no se loguea, no se devuelve en DTOs salvo necesidad explícita |
 | Combinación única | `UNIQUE` constraint en Flyway + validación de unicidad en use case antes de persistir |

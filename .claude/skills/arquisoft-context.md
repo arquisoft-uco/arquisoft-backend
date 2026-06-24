@@ -549,6 +549,8 @@ El aggregate acumula eventos con `publishEvent(...)` en sus factories/métodos d
 | `crear(...)` | Crear entidad nueva desde un comando/DTO | Solo si la entidad extiende `AggregateRoot` Y la HU emite eventos | ✅ Sí — `UUID.randomUUID()` |
 | `reconstruir(...)` | Reconstruir entidad desde persistencia | ❌ Nunca | ❌ No — recibe el UUID de BD |
 
+> **Valores autogenerados en `crear(...)`:** `UUID` → `UUID.randomUUID()` · `Instant` → `UtilDate.generateNewInstantNow()` (de `com.arquisoft.shared.util.UtilDate`, en `shared:domain`). **Nunca** `Instant.now()` directamente en código de dominio.
+
 **Regla dura:** un `CommandOutputAdapter` SIEMPRE usa `reconstruir(...)`, nunca `crear(...)`. Aplica tanto si la entidad extiende `AggregateRoot` como si no — el factory `crear` queda reservado para la creación inicial desde el use case.
 
 **Convención de nombres bilingüe:** los factories del aggregate son **conceptos de negocio** (crear una ficha, reconstruir una ficha desde BD), no sufijos técnicos como el `Builder.build()` de Lombok. Por eso van en español junto con los demás métodos de negocio del aggregate (`aprobar`, `rechazar`, `actualizarTitulo`, etc.). No usar `build`/`rebuild` en inglés — código antiguo con esa convención debe migrarse.
@@ -2171,6 +2173,7 @@ parte natural de su contexto.
 - **Siempre `UUID`** (`java.util.UUID`). **Nunca** `Long`, `Integer` o autoincrementales de BD.
 - `crear(...)` genera el UUID con `UUID.randomUUID()`.
 - `reconstruir(...)` recibe el UUID desde persistencia.
+- Para campos `Instant` autogenerados en `crear(...)` (ej. `fechaActualizacion`), usar `UtilDate.generateNewInstantNow()` de `com.arquisoft.shared.util.UtilDate` (`shared:domain`). **Nunca** `Instant.now()` directamente en código de dominio.
 
 ### Imports
 
