@@ -9,6 +9,8 @@ import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFicha
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInputPort;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
+import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
@@ -31,6 +33,7 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
     private final AsesorFichaQueryOutputPort asesorFichaQueryOutputPort;
     private final EstudianteQueryOutputPort estudianteQueryOutputPort;
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+    private final EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
 
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
@@ -51,6 +54,7 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
         );
 
         fichaPerfilOutputPort.guardar(ficha);
+        asignarEstadoInicial(ficha.getId());
 
         // Asignar estudiantes (si aplica)
         if (command.estudiantesIds() != null && !command.estudiantesIds().isEmpty()) {
@@ -83,5 +87,14 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
 
         log.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
         return ficha.getId();
+    }
+
+    private void asignarEstadoInicial(UUID fichaPerfilId) {
+        var estadoInicial = EstadoFichaPerfilAggregate.crear(fichaPerfilId);
+        estadoFichaPerfilOutputPort.guardar(estadoInicial);
+        log.info(FichasMessages.EstadoFichaPerfil.LOG_CREADO,
+                estadoInicial.getId(),
+                estadoInicial.getFichaPerfilId(),
+                estadoInicial.getEstadoFicha().getNombre());
     }
 }

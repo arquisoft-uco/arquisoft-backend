@@ -8,6 +8,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.exception.LimiteEs
 import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
+import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
@@ -49,6 +50,9 @@ class RegistrarFichaPerfilUseCaseTest {
 
     @Mock
     private EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+
+    @Mock
+    private EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
 
     @InjectMocks
     private RegistrarFichaPerfilUseCase registrarFichaPerfilUseCase;

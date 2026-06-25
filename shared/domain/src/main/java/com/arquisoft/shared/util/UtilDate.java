@@ -1,5 +1,6 @@
 package com.arquisoft.shared.util;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -22,6 +23,11 @@ public final class UtilDate {
     /** Retorna la fecha actual del sistema. */
     public static LocalDate generateNewFechaNow() {
         return LocalDate.now();
+    }
+
+    /** Retorna el instante actual del sistema (timestamp UTC). */
+    public static Instant generateNewInstantNow() {
+        return Instant.now();
     }
 
     // ─── Validación ───────────────────────────────────────────────────────────
