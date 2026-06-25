@@ -67,3 +67,6 @@ Ninguno.
 **Mensaje:** `feat(fichas): implementar estado inicial de ficha perfil (HU-206)`
 **Tipo:** `feat`
 **Rama:** `feature/HU-206-agregar-estado-ficha-perfil`
+**Estado:** ✅ EJECUTADO
+**Hash:** 0961be2
+**Fecha de ejecución:** 2026-06-24
