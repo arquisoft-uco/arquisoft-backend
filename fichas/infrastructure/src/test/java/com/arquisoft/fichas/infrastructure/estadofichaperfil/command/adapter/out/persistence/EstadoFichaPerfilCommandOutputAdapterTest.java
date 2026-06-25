@@ -30,12 +30,10 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
     private EstadoFichaJpaRepository estadoFichaJpaRepository;
 
     private EstadoFichaPerfilCommandOutputAdapter adapter;
-    private EstadoFichaPerfilMapper mapper;
 
     @BeforeEach
     void setUp() {
-        mapper = new EstadoFichaPerfilMapper(estadoFichaJpaRepository);
-        adapter = new EstadoFichaPerfilCommandOutputAdapter(estadoFichaPerfilJpaRepository, mapper);
+        adapter = new EstadoFichaPerfilCommandOutputAdapter(estadoFichaPerfilJpaRepository, estadoFichaJpaRepository);
 
         var estadoFicha = new EstadoFichaJpaEntity();
         estadoFicha.setId(UUID.randomUUID());
@@ -77,7 +75,7 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
         estadoFichaPerfilJpaRepository.save(entity);
 
         // Act
-        EstadoFichaPerfilAggregate resultado = mapper.toDomain(entity);
+        EstadoFichaPerfilAggregate resultado = EstadoFichaPerfilMapper.toDomain(entity, "En Construccion");
 
         // Assert
         assertThat(resultado).isNotNull();

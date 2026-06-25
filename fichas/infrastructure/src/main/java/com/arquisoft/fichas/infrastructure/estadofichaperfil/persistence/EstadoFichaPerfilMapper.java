@@ -5,7 +5,7 @@ import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfil
 
 import java.util.UUID;
 
-public class EstadoFichaPerfilMapper {
+public final class EstadoFichaPerfilMapper {
 
     private EstadoFichaPerfilMapper() {}
 

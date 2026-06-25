@@ -2,7 +2,6 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.adapter.ou
 
 import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilMapper;
