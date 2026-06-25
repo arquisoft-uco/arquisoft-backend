@@ -7,7 +7,7 @@
 -- Catálogo de estados del ciclo de vida de una ficha de perfil
 CREATE TABLE estado_ficha (
     id UUID PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL,
+    nombre VARCHAR(30) NOT NULL,
     descripcion VARCHAR(200) NOT NULL,
     CONSTRAINT uk_estado_ficha_nombre UNIQUE (nombre)
 );

@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command;
 
 import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQueryOutputPort;
-import com.arquisoft.fichas.application.estadoficha.query.port.out.EstadoFichaQueryOutputPort;
 import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
@@ -16,7 +15,6 @@ import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFic
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
-import com.arquisoft.shared.exception.ApplicationException;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +34,6 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
     private final EstudianteQueryOutputPort estudianteQueryOutputPort;
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
-    private final EstadoFichaQueryOutputPort estadoFichaQueryOutputPort;
 
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
@@ -94,16 +91,7 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
 
     private void asignarEstadoInicial(UUID fichaPerfilId) {
         var estadoInicial = EstadoFichaPerfilAggregate.crear(fichaPerfilId);
-
-        estadoFichaQueryOutputPort.buscarPorNombre(estadoInicial.getEstadoFicha().getNombre())
-                .orElseThrow(() -> new ApplicationException(
-                        FichasMessages.EstadoFicha.NOMBRE_NO_ENCONTRADO_MENSAJE.formatted(
-                                estadoInicial.getEstadoFicha().getNombre()),
-                        FichasMessages.EstadoFicha.ESTADO_NO_ENCONTRADO
-                ));
-
         estadoFichaPerfilOutputPort.guardar(estadoInicial);
-
         log.info(FichasMessages.EstadoFichaPerfil.LOG_CREADO,
                 estadoInicial.getId(),
                 estadoInicial.getFichaPerfilId(),

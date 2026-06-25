@@ -23,7 +23,7 @@ public class EstadoFichaJpaEntity {
     @Column(nullable = false)
     private UUID id;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(nullable = false, unique = true, length = 30)
     private String nombre;
 
     @Column(nullable = false, length = 200)

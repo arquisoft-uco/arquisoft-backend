@@ -1,0 +1,46 @@
+package com.arquisoft.fichas.infrastructure.estadoficha.persistence;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+class EstadoFichaJpaRepositoryTest {
+
+    @Autowired
+    private EstadoFichaJpaRepository estadoFichaJpaRepository;
+
+    @Test
+    void debeBuscarPorNombre_cuandoEstadoExiste() {
+        // Arrange
+        var estadoFicha = new EstadoFichaJpaEntity();
+        estadoFicha.setId(UUID.randomUUID());
+        estadoFicha.setNombre("En Construccion");
+        estadoFicha.setDescripcion("Estado inicial");
+        estadoFichaJpaRepository.save(estadoFicha);
+
+        // Act
+        Optional<EstadoFichaJpaEntity> resultado = estadoFichaJpaRepository.findByNombre("En Construccion");
+
+        // Assert
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().getNombre()).isEqualTo("En Construccion");
+        assertThat(resultado.get().getDescripcion()).isEqualTo("Estado inicial");
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoEstadoNoExiste() {
+        // Arrange / Act
+        Optional<EstadoFichaJpaEntity> resultado = estadoFichaJpaRepository.findByNombre("Estado Inexistente");
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+}

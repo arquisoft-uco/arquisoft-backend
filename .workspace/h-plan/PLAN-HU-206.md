@@ -87,10 +87,11 @@ El estado se modela en dos capas:
 | `APROBADA_CON_OBSERVACIONES` | `"Aprobada Con Observaciones"` | **(referencial)** |
 | `NO_APROBADA` | `"No Aprobada"` | **(referencial)** |
 
-**Flujo de resolución en el use case:**
+**Flujo de resolución (implementado):**
 1. `var efp = EstadoFichaPerfilAggregate.crear(fichaPerfilId)` — el aggregate asigna internamente `this.estadoFicha = EstadoFicha.EN_CONSTRUCCION`
-2. `estadoFichaQueryOutputPort.buscarPorNombre(efp.getEstadoFicha().getNombre())` — valida existencia en catálogo usando el nombre expuesto por la instancia del aggregate (sin magic strings en el use case)
-3. `estadoFichaPerfilOutputPort.guardar(efp)` — el mapper de infraestructura (`EstadoFichaPerfilMapper`) resuelve el UUID desde el enum al construir el `EstadoFichaPerfilJpaEntity`
+2. `estadoFichaPerfilOutputPort.guardar(efp)` — el adapter (`EstadoFichaPerfilCommandOutputAdapter`) resuelve el UUID del catálogo llamando a `EstadoFichaJpaRepository.findByNombre(nombre)`, luego el mapper estático construye la entidad JPA
+
+> **Nota de diseño:** la validación previa de existencia del estado en el use case fue eliminada. La existencia de `EN_CONSTRUCCION` en el catálogo es una garantía de infraestructura (Flyway), no una regla de negocio del usuario. Si el catálogo está incompleto, el adapter lanza `IllegalStateException`. Esto elimina una consulta redundante al catálogo.
 
 ### Traducción del modelo enriquecido a código
 
@@ -148,7 +149,7 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 
 | Ruta completa | Cambio requerido |
 |---------------|-----------------|
-| `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaperfil/command/RegistrarFichaPerfilUseCase.java` | **Inyectar:** `EstadoFichaPerfilOutputPort` y `EstadoFichaQueryOutputPort`. **Modificar:** tras `fichaPerfilOutputPort.guardar(ficha)`, llamar `estadoFichaQueryOutputPort.buscarPorNombre(EstadoFicha.EN_CONSTRUCCION.getNombre())` para obtener el UUID, crear `EstadoFichaPerfilAggregate.crear(ficha.getId(), estadoId, UtilDate.generateNewInstantNow())` y persistir vía `estadoFichaPerfilOutputPort.guardar(...)`. Todo dentro del mismo `@Transactional`. |
+| `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaperfil/command/RegistrarFichaPerfilUseCase.java` | **Inyectar:** solo `EstadoFichaPerfilOutputPort`. **Modificar:** tras `fichaPerfilOutputPort.guardar(ficha)`, crear `EstadoFichaPerfilAggregate.crear(ficha.getId())` y persistir vía `estadoFichaPerfilOutputPort.guardar(...)`. El adapter resuelve el UUID del catálogo internamente. Todo dentro del mismo `@Transactional`. |
 | `shared/message/src/main/java/com/arquisoft/shared/message/FichasMessages.java` | **Agregar:** nested class `EstadoFichaPerfil` con constantes de campos, errores y logs. **Agregar:** nested class `EstadoFicha` con constantes de error para el caso de estado no encontrado en BD. |
 
 ### Catálogo de mensajes (`shared:message`) — constantes a agregar
@@ -221,18 +222,18 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 
 ### `EstadoFichaPerfilMapper.java`
 - **Paquete:** `com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence`
-- **Tipo:** `@Component`
-- **Responsabilidad:** Mapea `EstadoFichaPerfilAggregate` ↔ `EstadoFichaPerfilJpaEntity`. En `toJpaEntity(...)` resuelve el UUID del estado llamando a `EstadoFichaJpaRepository.findByNombre(aggregate.getEstadoFicha().getNombre())`. En `toDomain(...)` convierte el UUID de vuelta a `EstadoFicha` usando `EstadoFicha.valueOf(...)` o búsqueda por nombre.
+- **Tipo:** Clase utilitaria estática (sin `@Component`, sin inyección Spring)
+- **Responsabilidad:** Conversión pura entre `EstadoFichaPerfilAggregate` ↔ `EstadoFichaPerfilJpaEntity`. NO realiza consultas a BD — recibe los datos ya resueltos como parámetros.
 - **Métodos principales:**
-    - `toJpaEntity(EstadoFichaPerfilAggregate): EstadoFichaPerfilJpaEntity` — resuelve `estadoFichaId` desde `aggregate.getEstadoFicha().getNombre()`
-    - `toDomain(EstadoFichaPerfilJpaEntity): EstadoFichaPerfilAggregate` — llama a `EstadoFichaPerfilAggregate.reconstruir(...)`, convirtiendo el UUID a `EstadoFicha`
-- **Dependencias:** `EstadoFichaJpaRepository`
+    - `static toJpaEntity(EstadoFichaPerfilAggregate aggregate, UUID estadoFichaId): EstadoFichaPerfilJpaEntity` — mapping simple de campos
+    - `static toDomain(EstadoFichaPerfilJpaEntity entity, String estadoFichaNombre): EstadoFichaPerfilAggregate` — resuelve el enum via `EstadoFicha.desdeCatalogo(nombre)` y llama a `reconstruir(...)`
+- **Dependencias:** ninguna (clase pura de mapeo)
 
 ### `EstadoFichaPerfilCommandOutputAdapter.java`
 - **Paquete:** `com.arquisoft.fichas.infrastructure.estadofichaperfil.command.adapter.out.persistence`
 - **Tipo:** Adapter (`@Component`)
-- **Responsabilidad:** Implementa `EstadoFichaPerfilOutputPort`. Traduce entre el dominio y la persistencia JPA.
-- **Dependencias:** `EstadoFichaPerfilJpaRepository`, `EstadoFichaPerfilMapper`
+- **Responsabilidad:** Implementa `EstadoFichaPerfilOutputPort`. Resuelve el UUID del catálogo (`estadoFichaId`) llamando a `EstadoFichaJpaRepository.findByNombre(nombre)`, luego delega al mapper estático para construir la entidad JPA. El mensaje de error usa `FichasMessages.EstadoFicha.NOMBRE_NO_ENCONTRADO_MENSAJE`.
+- **Dependencias:** `EstadoFichaPerfilJpaRepository`, `EstadoFichaJpaRepository`
 
 ### `EstadoFichaJpaEntity.java`
 - **Paquete:** `com.arquisoft.fichas.infrastructure.estadoficha.persistence`
@@ -263,13 +264,12 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 - **Paquete:** `com.arquisoft.fichas.application.fichaperfil.command`
 - **Tipo:** UseCase (`@Component`)
 - **Responsabilidad:** Orquesta el registro de una ficha perfil Y la asignación del estado inicial.
-- **Cambio requerido:** Inyectar `EstadoFichaPerfilOutputPort` y `EstadoFichaQueryOutputPort`. Tras persistir `FichaPerfilAggregate`, el flujo es:
+- **Cambio requerido:** Inyectar solo `EstadoFichaPerfilOutputPort`. Tras persistir `FichaPerfilAggregate`, el flujo es:
     1. `var efp = EstadoFichaPerfilAggregate.crear(ficha.getId())` — el aggregate asigna `estadoFicha = EN_CONSTRUCCION` internamente
-    2. `estadoFichaQueryOutputPort.buscarPorNombre(efp.getEstadoFicha().getNombre()).orElseThrow(...)` — valida que el estado existe en el catálogo usando el nombre obtenido del aggregate (sin magic strings)
-    3. `estadoFichaPerfilOutputPort.guardar(efp)` — persiste; el mapper de infra resuelve el UUID del catálogo internamente
-    4. Loguear con `FichasMessages.EstadoFichaPerfil.LOG_CREADO`
-- **Ventaja del enfoque:** si el estado inicial cambia en el domain, el use case no requiere cambios — solo el aggregate.
-- **Dependencias nuevas:** `EstadoFichaPerfilOutputPort`, `EstadoFichaQueryOutputPort`
+    2. `estadoFichaPerfilOutputPort.guardar(efp)` — el adapter resuelve el UUID del catálogo; el mapper construye la entidad JPA
+    3. Loguear con `FichasMessages.EstadoFichaPerfil.LOG_CREADO`
+- **`EstadoFichaQueryOutputPort` NO se inyecta en el use case** — la validación de existencia del catálogo es responsabilidad del adapter (garantía de infraestructura/Flyway, no regla de negocio).
+- **Dependencias nuevas:** `EstadoFichaPerfilOutputPort`
 
 ### `V1.2__crear_estado_ficha_y_estado_ficha_perfil.sql`
 - **Ubicación:** `fichas/infrastructure/src/main/resources/db/migration/fichas/`
@@ -312,7 +312,7 @@ Razón: CRUD interno sin consumidores conocidos ni casos de auditoría identific
 - **Base de datos:** `fichas_perfil` (BD del contexto `fichas` según tabla de mapeo del skill `arquisoft-context`)
 - **Sin schemas:** las tablas se crean sin prefijo (ej. `CREATE TABLE estado_ficha (...)`)
 - **Cambios:**
-    - Crear tabla `estado_ficha` (catálogo consultado en runtime): `id UUID PRIMARY KEY`, `nombre VARCHAR(20) NOT NULL`, `descripcion VARCHAR(200) NOT NULL`, `CONSTRAINT uk_estado_ficha_nombre UNIQUE (nombre)`
+    - Crear tabla `estado_ficha` (catálogo consultado en runtime): `id UUID PRIMARY KEY`, `nombre VARCHAR(30) NOT NULL`, `descripcion VARCHAR(200) NOT NULL`, `CONSTRAINT uk_estado_ficha_nombre UNIQUE (nombre)`
     - Poblar `estado_ficha` con **5 filas** (datos exactos del MER):
         ```sql
         INSERT INTO estado_ficha (id, nombre, descripcion) VALUES
@@ -403,12 +403,13 @@ Razón: CRUD interno sin consumidores conocidos ni casos de auditoría identific
 - [ ] `EstadoFichaPerfilAggregate` tiene campo `estadoFicha: EstadoFicha` (enum) — **NO** tiene `estadoFichaId: UUID`
 - [ ] Factory `crear(UUID fichaPerfilId)` asigna `estadoFicha = EN_CONSTRUCCION` internamente
 - [ ] `EstadoFichaPerfilJpaEntity` tiene `estadoFichaId: UUID` — la conversión enum ↔ UUID la hace el mapper
-- [ ] `EstadoFichaPerfilMapper.toJpaEntity(...)` resuelve el UUID llamando a `EstadoFichaJpaRepository.findByNombre(aggregate.getEstadoFicha().getNombre())`
+- [ ] `EstadoFichaPerfilMapper` es clase utilitaria estática (sin `@Component`, sin JPA). `toJpaEntity(aggregate, estadoFichaId)` recibe el UUID ya resuelto. `toDomain(entity, nombre)` usa `EstadoFicha.desdeCatalogo(nombre)`
+- [ ] `EstadoFichaPerfilCommandOutputAdapter` resuelve el UUID llamando a `EstadoFichaJpaRepository.findByNombre(nombre)` antes de invocar el mapper. El mensaje de error usa `FichasMessages.EstadoFicha.NOMBRE_NO_ENCONTRADO_MENSAJE`
 - [ ] **NO hay eventos de dominio** — no se crean archivos en `domain/estadofichaperfil/event/`
 - [ ] IDs siempre `UUID` (nunca `Long` / `Integer`)
 - [ ] Puerto de salida write (`EstadoFichaPerfilOutputPort`) definido en `domain/estadofichaperfil/port/out/`
 - [ ] Puerto de salida read (`EstadoFichaQueryOutputPort`) definido en `application/estadoficha/query/port/out/`
-- [ ] `RegistrarFichaPerfilUseCase` inyecta `EstadoFichaPerfilOutputPort` **y** `EstadoFichaQueryOutputPort`
+- [ ] `RegistrarFichaPerfilUseCase` inyecta `EstadoFichaPerfilOutputPort` únicamente — **NO** inyecta `EstadoFichaQueryOutputPort`
 - [ ] Use case usa `efp.getEstadoFicha().getNombre()` para el lookup — no hay magic strings en el use case
 - [ ] Use case usa `@Transactional(transactionManager = "fichasTransactionManager")` con qualifier explícito
 - [ ] Use case **NO inyecta `EventPublisher`**, no hay drenado de eventos
@@ -431,7 +432,7 @@ Razón: CRUD interno sin consumidores conocidos ni casos de auditoría identific
 | Etapa      | Agente              | Estado       | Fecha | Notas |
 |------------|---------------------|--------------|-------|-------|
 | Desarrollo | @implementador      | ✅ Completado | 2026-06-23 | Build -x test: sin errores |
-| Tests      | @tester             | ⏳ Pendiente |       |       |
-| Validación | @validator-analyze  | ⏳ Pendiente |       |       |
-| Reporte    | @validator-report   | ⏳ Pendiente |       |       |
+| Tests      | @tester             | ✅ Completado | 2026-06-24 | 10 tests generados: 6 domain (ya existentes) + 4 infrastructure. Todos pasan. |
+| Validación | @validator-analyze  | ✅ Completado | 2026-06-24 | Score: 99/100 — APROBADO |
+| Reporte    | @validator-report   | ✅ Completado | 2026-06-24 | /.workspace/validator/validator-HU-206.md |
 | Commit     | @commit             | ⏳ Pendiente |       |       |

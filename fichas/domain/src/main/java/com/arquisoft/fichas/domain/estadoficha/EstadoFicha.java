@@ -18,4 +18,13 @@ public enum EstadoFicha {
     public String getNombre() {
         return nombre;
     }
+
+    public static EstadoFicha desdeCatalogo(String nombre) {
+        for (EstadoFicha ef : values()) {
+            if (ef.nombre.equals(nombre)) {
+                return ef;
+            }
+        }
+        throw new IllegalArgumentException("Estado de ficha desconocido: " + nombre);
+    }
 }

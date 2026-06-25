@@ -1,8 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command;
 
 import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQueryOutputPort;
-import com.arquisoft.fichas.application.estadoficha.query.port.out.EstadoFichaQueryOutputPort;
-import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
@@ -16,7 +14,6 @@ import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFich
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.InfrastructureException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -27,16 +24,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -60,18 +54,8 @@ class RegistrarFichaPerfilUseCaseTest {
     @Mock
     private EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
 
-    @Mock
-    private EstadoFichaQueryOutputPort estadoFichaQueryOutputPort;
-
     @InjectMocks
     private RegistrarFichaPerfilUseCase registrarFichaPerfilUseCase;
-
-    @BeforeEach
-    void setUp() {
-        lenient().when(estadoFichaQueryOutputPort.buscarPorNombre(anyString()))
-                .thenReturn(Optional.of(new EstadoFichaReadModel(
-                        UUID.randomUUID(), "En Construccion", "Estado inicial")));
-    }
 
     @Test
     void debeRegistrar_cuandoDatosValidos() {
