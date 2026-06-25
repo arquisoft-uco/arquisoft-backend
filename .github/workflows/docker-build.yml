@@ -1,17 +1,30 @@
 # ==============================================================================
 # Arquisoft Backend — Docker Build & Push
 # ==============================================================================
-# Construye imagen Docker y la publica en GitHub Container Registry (GHCR)
-# Trigger: merge a develop/main o tag de versión
+# Construye imagen Docker y la publica en GitHub Container Registry (GHCR).
+# Trigger: push a CUALQUIER rama o tag de versión.
 # Runner: GitHub-hosted (ubuntu-latest) — gratis
+#
+# Seguridad:
+#   - La imagen NO contiene credenciales: el .dockerignore excluye .env/secretos
+#     y la config se inyecta en runtime (docker run --env-file .env).
+#   - Este workflow no imprime secretos en los logs (no usa `echo` de variables
+#     sensibles; el login usa el GITHUB_TOKEN efímero del runner).
+#   - La imagen se publica PÚBLICA: tras el primer push, fijar la visibilidad del
+#     paquete a "Public" una sola vez (ver README/instrucciones del repo).
 # ==============================================================================
 
 name: Docker Build & Push
 
 on:
   push:
-    branches: [develop, main]
+    branches: ['**']
     tags: ['v*']
+
+# Cancela builds en curso de la misma rama/tag (ahorra minutos al construir en todas las ramas)
+concurrency:
+  group: docker-build-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   REGISTRY: ghcr.io
@@ -50,12 +63,15 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # El nombre del paquete se normaliza a minúsculas (requisito de GHCR)
           tags: |
-            # develop branch → dev-<sha>
-            type=sha,prefix=dev-,enable=${{ github.ref == 'refs/heads/develop' }}
-            # main branch → latest
+            # cualquier rama → <slug-de-rama>  (feature/hu-206 → feature-hu-206)
+            type=ref,event=branch
+            # trazabilidad: sha-<sha-corto> en cada push (prefijo estático válido)
+            type=sha,prefix=sha-,format=short
+            # main → latest
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            # version tags → v1.0.0
+            # tags de versión → v1.0.0 y v1.0
             type=semver,pattern=v{{version}}
             type=semver,pattern=v{{major}}.{{minor}}
 
