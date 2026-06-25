@@ -440,6 +440,19 @@ Las características de cada atributo se traducen así en cada capa:
 | Sensible | No se incluye en `toString()`, no se loguea, no se devuelve en DTOs salvo necesidad explícita |
 | Combinación única | `UNIQUE` constraint en Flyway + validación de unicidad en use case antes de persistir |
 
+### Estados y tipos: planearlos como enum de dominio
+
+Cuando un atributo es un **estado** o **tipo** con un conjunto **cerrado y conocido** de valores documentados (ej. `EstadoFicha`, `TipoProyecto`), planéalo como **enum en el dominio** (`domain/{feature}/{Nombre}.java`), **no** como un aggregate de catálogo con query port / query adapter / read model propios.
+
+**Razón:** un catálogo de estados/tipos solo tiene casos de uso de **consulta**, nunca de **escritura** — sin caso de uso de escritura no hay aggregate (el aggregate existe para encapsular invariantes de escritura). El enum es suficiente. El plan debe reflejar:
+
+- El **aggregate guarda el enum directamente** (`EstadoFicha estadoFicha`), nunca un `UUID {estado}Id`.
+- **El dominio asigna el valor:** el estado/tipo inicial dentro de `crear(...)`; las transiciones en métodos de negocio del aggregate. El use case **no** recibe ni resuelve el estado/tipo.
+- Si el enum se respalda con tabla catálogo (FK por id), el lookup nombre→id va en el **`CommandOutputAdapter`**, nunca en el use case (un query port para esto es un viaje a BD de más).
+- El **`Mapper` es mapeo puro**: NO llama a `JpaRepository`. El adapter resuelve el valor y lo pasa como parámetro al mapper (`toJpaEntity(aggregate, estadoId)`, `toDomain(entity, nombre)`).
+
+> Para un catálogo de estados/tipos NO planees `{Estado}Aggregate`, `{Estado}QueryOutputPort`, `{Estado}QueryOutputAdapter` ni `{Estado}ReadModel` — el enum los reemplaza. Detalle completo en el skill `arquisoft-context`, sección "Estados y tipos: enum de dominio + catálogo en BD".
+
 ### Eventos de Dominio que emite
 
 > **Solo aplica si la respuesta a la pregunta 5 (FASE 3) fue A o B.**

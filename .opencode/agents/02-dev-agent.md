@@ -452,6 +452,13 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 - **Regla DDD estricta — AggregateRoot condicional a eventos:** en los 6 contextos de negocio (fichas, proyectos, artefactos, repositorio_artefactos, entregables, evaluaciones), la entidad raíz extiende `AggregateRoot` de `shared:domain` **solo si el plan declara eventos**; si "Eventos: ninguno", es una `final class` plana sin `AggregateRoot`. `seguridad` nunca lo usa; `usuarios` lo usa en su ejemplo del patrón eventos+outbox.
 - No usar `record` para entidades de dominio (requieren constructor privado + factories).
 
+### Estados y tipos (enum) · catálogo · mappers
+
+- Un **estado** o **tipo** con valores cerrados y conocidos (ej. `EstadoFicha`, `TipoProyecto`) se implementa como **enum en `domain/{feature}/{Nombre}.java`**, no como aggregate de catálogo — un catálogo solo se consulta, nunca se escribe, y sin caso de uso de escritura no hay aggregate. El enum expone `getNombre()` (valor de catálogo) y un factory `desde{X}(String)` para reconstruir desde el valor persistido.
+- El **aggregate guarda el enum directamente** (`EstadoFicha estadoFicha`), nunca un `UUID {estado}Id`. **El dominio asigna el valor:** el estado/tipo inicial dentro de `crear(...)`; las transiciones en métodos de negocio del aggregate. El use case solo invoca `crear(...)` y `guardar(...)` — no resuelve el estado.
+- **Lookup del catálogo (nombre→id) en el `CommandOutputAdapter`, nunca en el use case.** Si el enum se respalda con tabla catálogo (FK por id), el adapter inyecta el `JpaRepository` del catálogo, resuelve el id justo antes del insert y lo pasa al mapper. Resolverlo en el use case añade un query port y un segundo viaje a BD.
+- **El `Mapper` es mapeo puro: NO inyecta ni llama a `JpaRepository`.** Si necesita un valor resuelto (id del catálogo al guardar, nombre al reconstruir), el adapter lo pasa como parámetro: `toJpaEntity(aggregate, estadoId)`, `toDomain(entity, nombre)`.
+
 ### Eventos de Dominio
 
 - Extienden `DomainEvent` de `shared:domain.events`. El constructor recibe `aggregateId`, `eventTopic`, `eventType` y los pasa al `super(...)`. La clase base asigna automáticamente `eventId` y `occurredAt`.

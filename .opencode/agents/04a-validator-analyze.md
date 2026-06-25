@@ -654,6 +654,22 @@ public FichaTituloDuplicadoException(String titulo) {
 - Literales en tests (los tests pueden duplicar strings o importar del catálogo — preferible importar pero no bloqueante).
 - Strings en JavaDoc o comentarios.
 
+**2.20 Estados/tipos como enum · lookup de catálogo · mapper puro (CRÍTICO si la HU maneja un estado o tipo):**
+
+> Patrón canónico del skill `arquisoft-context`, sección "Estados y tipos: enum de dominio + catálogo en BD". Aplica solo cuando la HU introduce o usa un estado/tipo con valores cerrados y conocidos (ej. `EstadoFicha`, `TipoProyecto`).
+>
+> **Principio:** un catálogo de estados/tipos solo se consulta, nunca se escribe — sin caso de uso de escritura no hay aggregate. Por eso es un enum y no un `{Estado}Aggregate`.
+
+| Check | Bloqueante |
+|-------|:---:|
+| Estado/tipo de valores cerrados modelado como aggregate de catálogo (`{Estado}Aggregate` + `{Estado}QueryOutputPort` + `{Estado}QueryOutputAdapter` + `{Estado}ReadModel`) en vez de un enum de dominio | ❌ violación bloqueante |
+| Aggregate que guarda el estado/tipo como `UUID {estado}Id` en vez del enum directamente | ❌ violación bloqueante |
+| Use case que resuelve el estado/tipo del catálogo (inyecta un query port del catálogo o hace lookup por nombre) en vez de delegarlo al `CommandOutputAdapter` | ❌ violación bloqueante |
+| `Mapper` de persistencia que inyecta o llama a un `JpaRepository` (busca el nombre/id dentro del método mapper) | ❌ violación bloqueante (el mapeo es puro; el adapter resuelve y pasa el valor como parámetro) |
+| Estado/tipo inicial asignado en el use case o el DTO en vez de dentro de `crear(...)` del aggregate (el dominio asigna el estado) | ⚠️ menor |
+
+**Cómo verificar (mental):** lee el aggregate (¿enum o `UUID id`?), el use case (¿inyecta un query port de catálogo?), el `CommandOutputAdapter` (¿hace el lookup ahí?) y el `Mapper` (¿inyecta `JpaRepository`?). Una sola de estas señales en el archivo equivocado dispara la violación.
+
 ### FASE 3 — Estado de Tests (sin verificación filesystem)
 
 > Esta fase es mental. Cero tool calls.

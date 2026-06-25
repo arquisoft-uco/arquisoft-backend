@@ -1452,6 +1452,60 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
 > **`JpaEntity`, `JpaRepository` y `Mapper`** viven en `infrastructure/{entidad}/persistence/` (compartido entre `command/` y `query/`).
 
+### Estados y tipos: enum de dominio + catálogo en BD
+
+Cuando una HU maneja un **estado** o **tipo** con un conjunto **cerrado y conocido** de valores (ej. `EstadoFicha`, `TipoProyecto`), se modela como **enum en el dominio**, NO como un aggregate de catálogo con su propio query port / query adapter / read model.
+
+**Por qué no lleva aggregate:** un catálogo de estados/tipos solo se **consulta**, nunca se escribe desde la aplicación — sus valores se fijan en código vía el enum y, si hay tabla, se poblan por Flyway. Un aggregate existe para encapsular invariantes de **escritura**; sin caso de uso de escritura no hay nada que encapsular, así que el catálogo es un enum y punto. (La entidad que *referencia* el estado/tipo — ej. `EstadoFichaPerfilAggregate`, que sí se escribe — puede ser aggregate; el catálogo en sí no.)
+
+El enum vive en `domain/{feature}/{Nombre}.java` (en el paquete de la feature, no en `aggregate/`): expone el nombre de catálogo y un factory `desde{X}(String)` para reconstruir desde el valor persistido:
+
+```java
+// domain/estadoficha/EstadoFicha.java
+public enum EstadoFicha {
+    EN_CONSTRUCCION("En Construccion"),
+    APROBADA("Aprobada");
+
+    private final String nombre;
+    EstadoFicha(String nombre) { this.nombre = nombre; }
+    public String getNombre() { return nombre; }
+
+    public static EstadoFicha desdeCatalogo(String nombre) {
+        for (EstadoFicha e : values()) {
+            if (e.getNombre().equals(nombre)) return e;
+        }
+        throw new IllegalArgumentException("Estado desconocido: " + nombre);
+    }
+}
+```
+
+**El aggregate guarda el enum directamente** (`EstadoFicha estadoFicha`), nunca un `UUID estadoFichaId`. **El dominio asigna el valor:** el estado/tipo inicial se fija dentro de `crear(...)`; las transiciones van en métodos de negocio del aggregate. El use case **no** recibe ni resuelve el estado/tipo — solo invoca `crear(...)` y `outputPort.guardar(...)`.
+
+```java
+public static EstadoFichaPerfilAggregate crear(UUID fichaPerfilId) {
+    // ...validación...
+    return new EstadoFichaPerfilAggregate(
+            UUID.randomUUID(), fichaPerfilId,
+            EstadoFicha.EN_CONSTRUCCION,          // ← el dominio asigna el estado inicial
+            UtilDate.generateNewInstantNow());
+}
+```
+
+**Lookup del catálogo en el adapter, nunca en el use case.** Si el enum se respalda con una tabla catálogo (FK por id), la resolución nombre→id ocurre dentro del `CommandOutputAdapter`, justo antes del insert. Resolverlo en el use case (vía un query port adicional) es un segundo viaje a BD innecesario:
+
+```java
+@Override
+public void guardar(EstadoFichaPerfilAggregate aggregate) {
+    var nombre = aggregate.getEstadoFicha().getNombre();
+    var estadoId = estadoFichaJpaRepository.findByNombre(nombre)
+            .orElseThrow(() -> new IllegalStateException(...))
+            .getId();
+    jpaRepository.save(EstadoFichaPerfilMapper.toJpaEntity(aggregate, estadoId));
+}
+```
+
+**El `Mapper` es mapeo puro: NO inyecta ni llama a `JpaRepository`.** Si el mapeo necesita un valor resuelto (el id del catálogo al guardar, el nombre al reconstruir), el **adapter lo resuelve y lo pasa como parámetro** al método del mapper: `toJpaEntity(aggregate, estadoId)`, `toDomain(entity, nombre)`. Un mapper que consulta un repositorio mezcla responsabilidades (mapeo + acceso a datos) — bloqueante.
+
 ### Plantilla resumida de una HU read — QueryInputPort + ReadModel + QueryUseCase
 
 Cuando la HU es de consulta y NO necesita Criteria (consulta simple por id o por un campo):
