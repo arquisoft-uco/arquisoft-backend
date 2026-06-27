@@ -68,7 +68,9 @@ Ninguno.
 
 ## Datos para el commit
 
-**Mensaje:** `feat(fichas): agregar estado inicial a ficha perfil`
+**Mensaje:** `feat(fichas): agregar estado inicial de ficha perfil y refactorizar EstadoFicha`
 **Tipo:** `feat`
 **Rama:** `feature/HU-206-agregar-estado-ficha-perfil`
-**Estado:** Pendiente de ejecución
+**Estado:** ✅ EJECUTADO
+**Hash:** 3b0c80d
+**Fecha de ejecución:** 2026-06-26
