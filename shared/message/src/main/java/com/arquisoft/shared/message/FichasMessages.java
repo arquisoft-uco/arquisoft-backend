@@ -154,18 +154,4 @@ public final class FichasMessages {
         public static final String LOG_CREADO = "Estado ficha perfil creado — id={}, fichaPerfilId={}, estadoFicha={}";
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // EstadoFicha (catálogo)
-    // ─────────────────────────────────────────────────────────────────────────
-
-    public static final class EstadoFicha {
-
-        private EstadoFicha() {}
-
-        // Códigos de error
-        public static final String ESTADO_NO_ENCONTRADO = "ESTADO_FICHA_NO_ENCONTRADO";
-
-        // Mensajes de error
-        public static final String NOMBRE_NO_ENCONTRADO_MENSAJE = "No se encontró el estado: %s";
-    }
 }

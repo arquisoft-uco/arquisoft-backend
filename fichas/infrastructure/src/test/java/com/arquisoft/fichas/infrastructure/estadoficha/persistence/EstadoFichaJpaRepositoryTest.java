@@ -6,7 +6,6 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,7 +20,7 @@ class EstadoFichaJpaRepositoryTest {
     void debeBuscarPorNombre_cuandoEstadoExiste() {
         // Arrange
         var estadoFicha = new EstadoFichaJpaEntity();
-        estadoFicha.setId(UUID.randomUUID());
+        estadoFicha.setId("EN_CONSTRUCCION");
         estadoFicha.setNombre("En Construccion");
         estadoFicha.setDescripcion("Estado inicial");
         estadoFichaJpaRepository.save(estadoFicha);

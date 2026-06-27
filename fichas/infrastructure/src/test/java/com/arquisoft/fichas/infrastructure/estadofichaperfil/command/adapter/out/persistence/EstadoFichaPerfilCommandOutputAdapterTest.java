@@ -7,11 +7,13 @@ import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJp
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilMapper;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -29,14 +31,18 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
     @Autowired
     private EstadoFichaJpaRepository estadoFichaJpaRepository;
 
+    @Autowired
+    private EntityManager entityManager;
+
     private EstadoFichaPerfilCommandOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EstadoFichaPerfilCommandOutputAdapter(estadoFichaPerfilJpaRepository, estadoFichaJpaRepository);
+        adapter = new EstadoFichaPerfilCommandOutputAdapter(estadoFichaPerfilJpaRepository);
+        ReflectionTestUtils.setField(adapter, "entityManager", entityManager);
 
         var estadoFicha = new EstadoFichaJpaEntity();
-        estadoFicha.setId(UUID.randomUUID());
+        estadoFicha.setId("EN_CONSTRUCCION");
         estadoFicha.setNombre("En Construccion");
         estadoFicha.setDescripcion("Estado inicial");
         estadoFichaJpaRepository.save(estadoFicha);
@@ -55,7 +61,7 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
         Optional<EstadoFichaPerfilJpaEntity> resultado = estadoFichaPerfilJpaRepository.findById(aggregate.getId());
         assertThat(resultado).isPresent();
         assertThat(resultado.get().getFichaPerfilId()).isEqualTo(fichaPerfilId);
-        assertThat(resultado.get().getEstadoFichaId()).isNotNull();
+        assertThat(resultado.get().getEstadoFicha().getId()).isEqualTo("EN_CONSTRUCCION");
         assertThat(resultado.get().getFechaActualizacion()).isNotNull();
     }
 
@@ -63,19 +69,19 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
     void debeReconstruirConReconstruir_cuandoMapperConvierte() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        UUID estadoFichaId = estadoFichaJpaRepository.findByNombre("En Construccion")
-                .orElseThrow().getId();
+        EstadoFichaJpaEntity estadoFichaEntity = estadoFichaJpaRepository.findByNombre("En Construccion")
+                .orElseThrow();
         Instant fechaActualizacion = Instant.now();
 
         var entity = new EstadoFichaPerfilJpaEntity();
         entity.setId(UUID.randomUUID());
         entity.setFichaPerfilId(fichaPerfilId);
-        entity.setEstadoFichaId(estadoFichaId);
+        entity.setEstadoFicha(estadoFichaEntity);
         entity.setFechaActualizacion(fechaActualizacion);
         estadoFichaPerfilJpaRepository.save(entity);
 
         // Act
-        EstadoFichaPerfilAggregate resultado = EstadoFichaPerfilMapper.toDomain(entity, "En Construccion");
+        EstadoFichaPerfilAggregate resultado = EstadoFichaPerfilMapper.toDomain(entity);
 
         // Assert
         assertThat(resultado).isNotNull();

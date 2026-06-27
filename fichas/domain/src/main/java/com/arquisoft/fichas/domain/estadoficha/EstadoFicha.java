@@ -9,22 +9,20 @@ public enum EstadoFicha {
     APROBADA_CON_OBSERVACIONES("Aprobada Con Observaciones"),
     NO_APROBADA("No Aprobada");
 
+    private final String id;
     private final String nombre;
 
     EstadoFicha(String nombre) {
+        this.id = this.name();
         this.nombre = nombre;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getNombre() {
         return nombre;
     }
 
-    public static EstadoFicha desdeCatalogo(String nombre) {
-        for (EstadoFicha ef : values()) {
-            if (ef.nombre.equals(nombre)) {
-                return ef;
-            }
-        }
-        throw new IllegalArgumentException("Estado de ficha desconocido: " + nombre);
-    }
 }

@@ -24,16 +24,15 @@ class EstadoFichaPerfilJpaRepositoryTest {
     @Autowired
     private EstadoFichaJpaRepository estadoFichaJpaRepository;
 
-    private UUID estadoFichaId;
+    private EstadoFichaJpaEntity estadoFicha;
 
     @BeforeEach
     void setUp() {
-        var estadoFicha = new EstadoFichaJpaEntity();
-        estadoFicha.setId(UUID.randomUUID());
+        estadoFicha = new EstadoFichaJpaEntity();
+        estadoFicha.setId("EN_CONSTRUCCION");
         estadoFicha.setNombre("En Construccion");
         estadoFicha.setDescripcion("Estado inicial");
         estadoFichaJpaRepository.save(estadoFicha);
-        estadoFichaId = estadoFicha.getId();
     }
 
     @Test
@@ -43,7 +42,7 @@ class EstadoFichaPerfilJpaRepositoryTest {
         var entity = new EstadoFichaPerfilJpaEntity();
         entity.setId(UUID.randomUUID());
         entity.setFichaPerfilId(fichaPerfilId);
-        entity.setEstadoFichaId(estadoFichaId);
+        entity.setEstadoFicha(estadoFicha);
         entity.setFechaActualizacion(Instant.now());
 
         // Act
@@ -53,7 +52,7 @@ class EstadoFichaPerfilJpaRepositoryTest {
         assertThat(resultado).isNotNull();
         assertThat(resultado.getId()).isEqualTo(entity.getId());
         assertThat(resultado.getFichaPerfilId()).isEqualTo(fichaPerfilId);
-        assertThat(resultado.getEstadoFichaId()).isEqualTo(estadoFichaId);
+        assertThat(resultado.getEstadoFicha().getId()).isEqualTo("EN_CONSTRUCCION");
     }
 
     @Test
@@ -63,7 +62,7 @@ class EstadoFichaPerfilJpaRepositoryTest {
         var entity = new EstadoFichaPerfilJpaEntity();
         entity.setId(UUID.randomUUID());
         entity.setFichaPerfilId(fichaPerfilId);
-        entity.setEstadoFichaId(estadoFichaId);
+        entity.setEstadoFicha(estadoFicha);
         entity.setFechaActualizacion(Instant.now());
         estadoFichaPerfilJpaRepository.save(entity);
 

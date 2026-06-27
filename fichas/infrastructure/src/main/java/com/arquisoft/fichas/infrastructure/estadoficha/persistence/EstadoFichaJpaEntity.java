@@ -9,8 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Entity
 @Table(name = "estado_ficha")
 @Data
@@ -20,8 +18,8 @@ import java.util.UUID;
 public class EstadoFichaJpaEntity {
 
     @Id
-    @Column(nullable = false)
-    private UUID id;
+    @Column(nullable = false, length = 50)
+    private String id;
 
     @Column(nullable = false, unique = true, length = 30)
     private String nombre;
