@@ -6,7 +6,7 @@
 - **Tipo de Use Case:** Escritura (extensión de use case existente, sin endpoint propio)
 - **¿Usa AggregateRoot?:** No — `FichaPerfilAggregate` no extiende `AggregateRoot` (CRUD interno sin eventos, clase plana con factories `crear`/`reconstruir`)
 - **Módulos Gradle afectados:** `fichas:domain`, `fichas:application`, `fichas:infrastructure`
-- **Fecha de plan:** 2026-06-23
+- **Fecha de plan:** 2026-06-23 (revisado 2026-06-26 — ADR-012: PK semántica `VARCHAR(50)` en `estado_ficha`)
 - **Rama sugerida:** `feature/HU-206-agregar-estado-ficha-perfil`
 - **Fuentes consultadas del repo de documentación:**
     - `artefactos/estrategicos/propuestas-hu/historias_usuario_priorizadas.md`
@@ -66,7 +66,7 @@ Esta HU extiende el flujo de creación de una Ficha Perfil (HU-208) para que, tr
 |---|---|---|---|---|---|---|
 | `id` | `UUID` | — | Sí | No | Sí (`UUID.randomUUID()`) | Identifica el registro de trazabilidad |
 | `fichaPerfilId` | `UUID` | — | Sí | No | No | FK a `ficha_perfil.id` |
-| `estadoFicha` | `EstadoFicha` | — | Sí | No | No | Enum Java del domain. El mapper de infraestructura resuelve el UUID del catálogo al persistir. |
+| `estadoFicha` | `EstadoFicha` | — | Sí | No | No | Enum Java del domain. El adapter usa `estadoFicha.getId()` + `EntityManager.getReference()` para construir la FK `VARCHAR(50)` sin SELECT (ADR-012). |
 | `fechaActualizacion` | `Instant` | — | Sí | No | Sí (`UtilDate.generateNewInstantNow()`) | Timestamp del registro |
 
 **Combinaciones únicas (Restricciones):**
@@ -75,23 +75,23 @@ Esta HU extiende el flujo de creación de una Ficha Perfil (HU-208) para que, tr
 #### `EstadoFicha` (enum Java en domain + tabla de catálogo en BD)
 
 El estado se modela en dos capas:
-- **Domain:** enum `EstadoFicha` con el `nombre` que coincide con la columna `nombre` de la tabla `estado_ficha`. Permite al use case evitar magic strings al hacer el lookup (`EstadoFicha.EN_CONSTRUCCION.getNombre()`).
-- **Base de datos:** tabla `estado_ficha` con `id UUID PK`, `nombre VARCHAR(20) UNIQUE`, `descripcion VARCHAR(200)`. La tabla SÍ se consulta en runtime — el use case resuelve el UUID del estado por nombre antes de crear el aggregate.
+- **Domain:** enum `EstadoFicha` con campos `id: String` (= constante del enum, e.g. `"EN_CONSTRUCCION"`) y `nombre: String` (legible, e.g. `"En Construccion"`). `getId()` expone la clave semántica que coincide con `estado_ficha.id` en BD; `getNombre()` expone el nombre legible.
+- **Base de datos:** tabla `estado_ficha` con `id VARCHAR(50) PK` (valor = constante del enum, e.g. `EN_CONSTRUCCION`), `nombre VARCHAR(20) NOT NULL`, `descripcion VARCHAR(200) NOT NULL`. **NO se consulta en runtime para el comando** — el adapter usa `EntityManager.getReference(EstadoFichaJpaEntity.class, estadoFicha.getId())` para construir la FK sin SELECT (PK semántica, ADR-012).
 
-| Valor enum | `getNombre()` (coincide con `estado_ficha.nombre`) | Descripción |
-|---|---|---|
-| `EN_CONSTRUCCION` | `"En Construccion"` | La ficha de perfil se encuentra en construcción o desarrollo |
-| `EN_REVISION` | `"En Revision"` | **(si aplica en esta HU — referencial)** |
-| `DISPONIBLE_PARA_EVALUACION` | `"Disponible Para Evaluacion"` | **(referencial)** |
-| `APROBADA` | `"Aprobada"` | **(referencial)** |
-| `APROBADA_CON_OBSERVACIONES` | `"Aprobada Con Observaciones"` | **(referencial)** |
-| `NO_APROBADA` | `"No Aprobada"` | **(referencial)** |
+| Constante enum | `getId()` (= `estado_ficha.id` en BD) | `getNombre()` (= `estado_ficha.nombre`) | Descripción |
+|---|---|---|---|
+| `EN_CONSTRUCCION` | `"EN_CONSTRUCCION"` | `"En Construccion"` | La ficha de perfil se encuentra en construcción o desarrollo |
+| `EN_REVISION` | `"EN_REVISION"` | `"En Revision"` | **(referencial)** |
+| `DISPONIBLE_PARA_EVALUACION` | `"DISPONIBLE_PARA_EVALUACION"` | `"Disponible Para Evaluacion"` | **(referencial)** |
+| `APROBADA` | `"APROBADA"` | `"Aprobada"` | **(referencial)** |
+| `APROBADA_CON_OBSERVACIONES` | `"APROBADA_CON_OBSERVACIONES"` | `"Aprobada Con Observaciones"` | **(referencial)** |
+| `NO_APROBADA` | `"NO_APROBADA"` | `"No Aprobada"` | **(referencial)** |
 
-**Flujo de resolución (implementado):**
+**Flujo de resolución (implementado — ADR-012):**
 1. `var efp = EstadoFichaPerfilAggregate.crear(fichaPerfilId)` — el aggregate asigna internamente `this.estadoFicha = EstadoFicha.EN_CONSTRUCCION`
-2. `estadoFichaPerfilOutputPort.guardar(efp)` — el adapter (`EstadoFichaPerfilCommandOutputAdapter`) resuelve el UUID del catálogo llamando a `EstadoFichaJpaRepository.findByNombre(nombre)`, luego el mapper estático construye la entidad JPA
+2. `estadoFichaPerfilOutputPort.guardar(efp)` — el adapter (`EstadoFichaPerfilCommandOutputAdapter`) llama a `entityManager.getReference(EstadoFichaJpaEntity.class, efp.getEstadoFicha().getId())` para obtener un proxy JPA sin SELECT. El mapper construye la entidad JPA usando el proxy en el campo `@ManyToOne`.
 
-> **Nota de diseño:** la validación previa de existencia del estado en el use case fue eliminada. La existencia de `EN_CONSTRUCCION` en el catálogo es una garantía de infraestructura (Flyway), no una regla de negocio del usuario. Si el catálogo está incompleto, el adapter lanza `IllegalStateException`. Esto elimina una consulta redundante al catálogo.
+> **Nota de diseño (ADR-012):** la PK de `estado_ficha` es semántica (`VARCHAR(50)` = constante del enum). Esto elimina por completo el `findByNombre` del adapter. `EntityManager.getReference()` crea un proxy sin emitir SELECT, garantizando una FK válida. Si el catálogo no contiene la fila, `jpaRepository.save(...)` lanzará `ConstraintViolationException` en commit (garantía de Flyway, no regla de negocio).
 
 ### Traducción del modelo enriquecido a código
 
@@ -101,7 +101,7 @@ El estado se modela en dos capas:
 | No modificable | NO se genera setter ni método `cambiar{Atributo}()` |
 | Autogenerado (UUID) | `UUID.randomUUID()` dentro de `crear(...)` |
 | Autogenerado (Instant) | `UtilDate.generateNewInstantNow()` dentro de `crear(...)` |
-| FK a catálogo | Lookup previo en use case contra `EstadoFichaQueryOutputPort.buscarPorNombre(EstadoFicha.EN_CONSTRUCCION.getNombre())` para resolver el UUID |
+| FK a catálogo | `entityManager.getReference(EstadoFichaJpaEntity.class, estadoFicha.getId())` en el adapter — sin SELECT, sin lookup previo. PK semántica `VARCHAR(50)` garantiza FK válida si el catálogo existe (Flyway). |
 
 ### Eventos de Dominio que emite
 
@@ -129,18 +129,18 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 
 | Capa | Ruta completa desde raíz del monorepo | Tipo | Responsabilidad |
 |------|---------------------------------------|------|-----------------|
-| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoficha/EstadoFicha.java` | `enum` | Enum Java con los 6 valores de estado y su `nombre` correspondiente (coincide con `estado_ficha.nombre` en BD). Permite al use case evitar magic strings en el lookup. |
-| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadofichaperfil/aggregate/EstadoFichaPerfilAggregate.java` | Aggregate (NO extiende `AggregateRoot`) | Factory `crear(UUID fichaPerfilId)` asigna `estado = EN_CONSTRUCCION` internamente. `getEstado().getNombre()` expone el nombre para el lookup en el use case. `asignarEstadoFichaId(UUID)` completa el aggregate con el UUID resuelto. `reconstruir(...)` desde persistencia. |
+| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoficha/EstadoFicha.java` | `enum` | Enum Java con los 6 valores de estado, campo `id: String` (= constante del enum, e.g. `"EN_CONSTRUCCION"`) y `nombre: String` legible. `getId()` expone la clave semántica para `EntityManager.getReference()`; `getNombre()` para trazabilidad. |
+| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadofichaperfil/aggregate/EstadoFichaPerfilAggregate.java` | Aggregate (NO extiende `AggregateRoot`) | Factory `crear(UUID fichaPerfilId)` asigna `estadoFicha = EN_CONSTRUCCION` internamente. `getEstadoFicha().getId()` expone el id semántico para `EntityManager.getReference()` en el adapter. `reconstruir(...)` desde persistencia. |
 | domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadofichaperfil/port/out/EstadoFichaPerfilOutputPort.java` | Interface | Puerto de salida write. Método `guardar(EstadoFichaPerfilAggregate): void` |
-| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoficha/aggregate/EstadoFichaAggregate.java` | Aggregate (catálogo — NO extiende `AggregateRoot`) | Factory `reconstruir(...)` únicamente. Representa una fila del catálogo `estado_ficha`. |
-| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoficha/query/readmodel/EstadoFichaReadModel.java` | `record` | Proyección plana del catálogo: `UUID id`, `String nombre`, `String descripcion`. |
+| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoficha/aggregate/EstadoFichaAggregate.java` | Aggregate (catálogo — NO extiende `AggregateRoot`) | Factory `reconstruir(String id, String nombre, String descripcion)` únicamente. `id` es `String` (PK semántica ADR-012). Representa una fila del catálogo `estado_ficha`. |
+| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoficha/query/readmodel/EstadoFichaReadModel.java` | `record` | Proyección plana del catálogo: `String id`, `String nombre`, `String descripcion`. `id` es `String` (PK semántica ADR-012). |
 | application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoficha/query/port/out/EstadoFichaQueryOutputPort.java` | Interface | Puerto de salida read. Método `buscarPorNombre(String nombre): Optional<EstadoFichaReadModel>` |
-| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadofichaperfil/persistence/EstadoFichaPerfilJpaEntity.java` | JPA Entity | `@Table(name = "estado_ficha_perfil")`. Campo `estadoFichaId UUID` (`@Column(nullable=false)`). Sin `@ManyToOne` — FK simple. |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadofichaperfil/persistence/EstadoFichaPerfilJpaEntity.java` | JPA Entity | `@Table(name = "estado_ficha_perfil")`. Campo `estadoFicha: EstadoFichaJpaEntity` con `@ManyToOne(fetch=LAZY) @JoinColumn(name="estado_ficha_id", nullable=false)`. FK `VARCHAR(50)` resuelta vía `EntityManager.getReference()` (ADR-012). |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadofichaperfil/persistence/EstadoFichaPerfilJpaRepository.java` | `JpaRepository` | Repositorio JPA para `EstadoFichaPerfilJpaEntity` |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadofichaperfil/persistence/EstadoFichaPerfilMapper.java` | `@Component` | Mapea `EstadoFichaPerfilAggregate` ↔ `EstadoFichaPerfilJpaEntity`. |
-| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadofichaperfil/command/adapter/out/persistence/EstadoFichaPerfilCommandOutputAdapter.java` | Adapter | Implementa `EstadoFichaPerfilOutputPort`. Usa `reconstruir(...)` al mapear desde JPA. |
-| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoficha/persistence/EstadoFichaJpaEntity.java` | JPA Entity | `@Table(name = "estado_ficha")`. Campos: `UUID id`, `String nombre`, `String descripcion`. |
-| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoficha/persistence/EstadoFichaJpaRepository.java` | `JpaRepository` | Repositorio JPA para `EstadoFichaJpaEntity`. Método: `Optional<EstadoFichaJpaEntity> findByNombre(String nombre)` |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadofichaperfil/command/adapter/out/persistence/EstadoFichaPerfilCommandOutputAdapter.java` | Adapter | Implementa `EstadoFichaPerfilOutputPort`. Inyecta `EntityManager` (jakarta.persistence). Usa `entityManager.getReference(EstadoFichaJpaEntity.class, aggregate.getEstadoFicha().getId())` sin SELECT. `EstadoFichaJpaRepository` ya NO es dependencia. |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoficha/persistence/EstadoFichaJpaEntity.java` | JPA Entity | `@Table(name = "estado_ficha")`. Campos: `String id` (`@Id @Column(nullable=false, length=50)` — valor = constante del enum, e.g. `"EN_CONSTRUCCION"`), `String nombre`, `String descripcion`. PK semántica ADR-012. |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoficha/persistence/EstadoFichaJpaRepository.java` | `JpaRepository<EstadoFichaJpaEntity, String>` | Repositorio JPA para `EstadoFichaJpaEntity`. PK es `String` (ADR-012). Método: `Optional<EstadoFichaJpaEntity> findByNombre(String nombre)` (usado únicamente por `EstadoFichaQueryOutputAdapter`). |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoficha/persistence/EstadoFichaMapper.java` | `@Component` | Mapea `EstadoFichaJpaEntity` → `EstadoFichaReadModel`. |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoficha/query/adapter/out/persistence/EstadoFichaQueryOutputAdapter.java` | Adapter | Implementa `EstadoFichaQueryOutputPort`. Método `buscarPorNombre(String)`. |
 | infrastructure | `fichas/infrastructure/src/main/resources/db/migration/fichas/V1.2__crear_estado_ficha_y_estado_ficha_perfil.sql` | Flyway | Crea tabla `estado_ficha` (5 filas iniciales del MER) y tabla `estado_ficha_perfil` con FK a `estado_ficha.id` y FK a `ficha_perfil.id`. |
@@ -149,8 +149,8 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 
 | Ruta completa | Cambio requerido |
 |---------------|-----------------|
-| `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaperfil/command/RegistrarFichaPerfilUseCase.java` | **Inyectar:** solo `EstadoFichaPerfilOutputPort`. **Modificar:** tras `fichaPerfilOutputPort.guardar(ficha)`, crear `EstadoFichaPerfilAggregate.crear(ficha.getId())` y persistir vía `estadoFichaPerfilOutputPort.guardar(...)`. El adapter resuelve el UUID del catálogo internamente. Todo dentro del mismo `@Transactional`. |
-| `shared/message/src/main/java/com/arquisoft/shared/message/FichasMessages.java` | **Agregar:** nested class `EstadoFichaPerfil` con constantes de campos, errores y logs. **Agregar:** nested class `EstadoFicha` con constantes de error para el caso de estado no encontrado en BD. |
+| `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaperfil/command/RegistrarFichaPerfilUseCase.java` | **Inyectar:** solo `EstadoFichaPerfilOutputPort`. **Modificar:** tras `fichaPerfilOutputPort.guardar(ficha)`, crear `EstadoFichaPerfilAggregate.crear(ficha.getId())` y persistir vía `estadoFichaPerfilOutputPort.guardar(...)`. El adapter resuelve la FK `VARCHAR(50)` vía `EntityManager.getReference()` internamente. Todo dentro del mismo `@Transactional`. |
+| `shared/message/src/main/java/com/arquisoft/shared/message/FichasMessages.java` | **Agregar:** nested class `EstadoFichaPerfil` con constantes de campos, errores y logs. La nested class `EstadoFicha` **ya no se necesita** — el adapter no hace lookup y no lanza excepción de dominio por estado no encontrado. |
 
 ### Catálogo de mensajes (`shared:message`) — constantes a agregar
 
@@ -165,8 +165,8 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 | `FichasMessages.EstadoFichaPerfil.ESTADO_FICHA_ID_REQUERIDO` | Códigos de error | `String` | `"ESTADO_FICHA_PERFIL_ESTADO_FICHA_ID_REQUERIDO"` | Constructor de `EstadoFichaPerfilAggregate` |
 | `FichasMessages.EstadoFichaPerfil.FECHA_ACTUALIZACION_REQUERIDA` | Códigos de error | `String` | `"ESTADO_FICHA_PERFIL_FECHA_ACTUALIZACION_REQUERIDA"` | Constructor de `EstadoFichaPerfilAggregate` |
 | `FichasMessages.EstadoFichaPerfil.LOG_CREADO` | Logs | `String` | `"Estado ficha perfil creado — id={}, fichaPerfilId={}, estadoFichaId={}"` | `log.info` en `RegistrarFichaPerfilUseCase` tras persistir |
-| `FichasMessages.EstadoFicha.ESTADO_NO_ENCONTRADO` | Códigos de error | `String` | `"ESTADO_FICHA_NO_ENCONTRADO"` | Excepción si no se encuentra el nombre en `estado_ficha` |
-| `FichasMessages.EstadoFicha.NOMBRE_NO_ENCONTRADO_MENSAJE` | Mensajes de error | `String` | `"No se encontró el estado: %s"` | Excepción en `RegistrarFichaPerfilUseCase` |
+
+> **Nota ADR-012:** las constantes `FichasMessages.EstadoFicha.ESTADO_NO_ENCONTRADO` y `NOMBRE_NO_ENCONTRADO_MENSAJE` **fueron eliminadas**. Con PK semántica el adapter ya no hace `findByNombre` y no lanza excepción de dominio. La nested class `EstadoFicha` en `FichasMessages` **no se crea**.
 
 ---
 
@@ -175,24 +175,24 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 ### `EstadoFicha.java`
 - **Paquete:** `com.arquisoft.fichas.domain.estadoficha`
 - **Tipo:** `enum`
-- **Responsabilidad:** Enum Java que nombra semánticamente los estados del ciclo de vida de una ficha perfil. Cada valor expone `getNombre()` con el string exacto que coincide con `estado_ficha.nombre` en BD. Permite al use case evitar magic strings al hacer el lookup.
-- **Campo:** `private final String nombre` — inicializado en el constructor del enum.
-- **Método:** `getNombre(): String`
+- **Responsabilidad:** Enum Java que nombra semánticamente los estados del ciclo de vida de una ficha perfil. Expone `getId()` con la clave semántica que coincide con `estado_ficha.id` en BD (ADR-012) y `getNombre()` con el nombre legible.
+- **Campos:** `private final String id` (= constante del enum, inicializado con `this.name()`), `private final String nombre`.
+- **Métodos:** `getId(): String`, `getNombre(): String`
 - **Valores:**
 
-| Constante enum | `getNombre()` |
-|---|---|
-| `EN_CONSTRUCCION` | `"En Construccion"` |
-| `EN_REVISION` | `"En Revision"` |
-| `DISPONIBLE_PARA_EVALUACION` | `"Disponible Para Evaluacion"` |
-| `APROBADA` | `"Aprobada"` |
-| `APROBADA_CON_OBSERVACIONES` | `"Aprobada Con Observaciones"` |
-| `NO_APROBADA` | `"No Aprobada"` |
+| Constante enum | `getId()` (= `estado_ficha.id`) | `getNombre()` (= `estado_ficha.nombre`) |
+|---|---|---|
+| `EN_CONSTRUCCION` | `"EN_CONSTRUCCION"` | `"En Construccion"` |
+| `EN_REVISION` | `"EN_REVISION"` | `"En Revision"` |
+| `DISPONIBLE_PARA_EVALUACION` | `"DISPONIBLE_PARA_EVALUACION"` | `"Disponible Para Evaluacion"` |
+| `APROBADA` | `"APROBADA"` | `"Aprobada"` |
+| `APROBADA_CON_OBSERVACIONES` | `"APROBADA_CON_OBSERVACIONES"` | `"Aprobada Con Observaciones"` |
+| `NO_APROBADA` | `"NO_APROBADA"` | `"No Aprobada"` |
 
 ### `EstadoFichaPerfilAggregate.java`
 - **Paquete:** `com.arquisoft.fichas.domain.estadofichaperfil.aggregate`
 - **Tipo:** Aggregate (NO extiende `AggregateRoot` — clase plana con factories)
-- **Responsabilidad:** Representa un registro de trazabilidad de estado. El aggregate almacena el enum `EstadoFicha` — la resolución del UUID para la FK en BD la realiza el mapper de infraestructura.
+- **Responsabilidad:** Representa un registro de trazabilidad de estado. El aggregate almacena el enum `EstadoFicha` — la resolución de la FK `VARCHAR(50)` para la BD la realiza el adapter de infraestructura vía `EntityManager.getReference()` (ADR-012).
 - **Campos:** `UUID id`, `UUID fichaPerfilId`, `EstadoFicha estadoFicha`, `Instant fechaActualizacion`
 - **Métodos principales:**
     - `crear(UUID fichaPerfilId): EstadoFichaPerfilAggregate` — factory que genera UUID, asigna `this.estadoFicha = EstadoFicha.EN_CONSTRUCCION` y `this.fechaActualizacion = UtilDate.generateNewInstantNow()`. Valida con Notification Pattern.
@@ -211,9 +211,9 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 - **Paquete:** `com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence`
 - **Tipo:** JPA Entity
 - **Responsabilidad:** Mapeo de la tabla `estado_ficha_perfil` en PostgreSQL.
-- **Anotaciones:** `@Entity`, `@Table(name = "estado_ficha_perfil")`, `@Id`, `@Column(nullable = false)` en todos los campos
-- **Campos:** `UUID id`, `UUID fichaPerfilId`, `UUID estadoFichaId`, `Instant fechaActualizacion`
-- **Nota:** `estadoFichaId` es la FK a `estado_ficha.id`. La JPA entity trabaja con el UUID — el mapper es quien hace la conversión entre `EstadoFicha` (enum del aggregate) y `UUID` (FK de la entidad JPA).
+- **Anotaciones:** `@Entity`, `@Table(name = "estado_ficha_perfil")`, `@Id`, `@Column(nullable = false)` en campos escalares
+- **Campos:** `UUID id`, `UUID fichaPerfilId`, `EstadoFichaJpaEntity estadoFicha` (`@ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="estado_ficha_id", nullable=false)`), `Instant fechaActualizacion`
+- **Nota (ADR-012):** `estadoFicha` apunta al catálogo con PK `VARCHAR(50)`. El adapter inyecta un proxy vía `entityManager.getReference(EstadoFichaJpaEntity.class, estadoFicha.getId())` sin emitir SELECT. El mapper `toDomain` reconstruye el enum vía `EstadoFicha.valueOf(entity.getEstadoFicha().getId())`.
 
 ### `EstadoFichaPerfilJpaRepository.java`
 - **Paquete:** `com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence`
@@ -225,27 +225,28 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 - **Tipo:** Clase utilitaria estática (sin `@Component`, sin inyección Spring)
 - **Responsabilidad:** Conversión pura entre `EstadoFichaPerfilAggregate` ↔ `EstadoFichaPerfilJpaEntity`. NO realiza consultas a BD — recibe los datos ya resueltos como parámetros.
 - **Métodos principales:**
-    - `static toJpaEntity(EstadoFichaPerfilAggregate aggregate, UUID estadoFichaId): EstadoFichaPerfilJpaEntity` — mapping simple de campos
-    - `static toDomain(EstadoFichaPerfilJpaEntity entity, String estadoFichaNombre): EstadoFichaPerfilAggregate` — resuelve el enum via `EstadoFicha.desdeCatalogo(nombre)` y llama a `reconstruir(...)`
+    - `static toJpaEntity(EstadoFichaPerfilAggregate aggregate, EstadoFichaJpaEntity estadoFichaRef): EstadoFichaPerfilJpaEntity` — recibe el proxy JPA (`getReference`) y lo asigna al campo `@ManyToOne`. NO recibe UUID.
+    - `static toDomain(EstadoFichaPerfilJpaEntity entity): EstadoFichaPerfilAggregate` — resuelve el enum vía `EstadoFicha.valueOf(entity.getEstadoFicha().getId())` y llama a `reconstruir(...)`. No requiere parámetro `nombre` adicional.
 - **Dependencias:** ninguna (clase pura de mapeo)
 
 ### `EstadoFichaPerfilCommandOutputAdapter.java`
 - **Paquete:** `com.arquisoft.fichas.infrastructure.estadofichaperfil.command.adapter.out.persistence`
 - **Tipo:** Adapter (`@Component`)
-- **Responsabilidad:** Implementa `EstadoFichaPerfilOutputPort`. Resuelve el UUID del catálogo (`estadoFichaId`) llamando a `EstadoFichaJpaRepository.findByNombre(nombre)`, luego delega al mapper estático para construir la entidad JPA. El mensaje de error usa `FichasMessages.EstadoFicha.NOMBRE_NO_ENCONTRADO_MENSAJE`.
-- **Dependencias:** `EstadoFichaPerfilJpaRepository`, `EstadoFichaJpaRepository`
+- **Responsabilidad:** Implementa `EstadoFichaPerfilOutputPort`. Usa `entityManager.getReference(EstadoFichaJpaEntity.class, aggregate.getEstadoFicha().getId())` para obtener un proxy sin SELECT (PK semántica ADR-012). Delega al mapper estático para construir la entidad JPA. Sin `findByNombre`, sin manejo de `Optional`.
+- **Dependencias:** `EstadoFichaPerfilJpaRepository`, `EntityManager` (jakarta.persistence)
+- **Nota:** `EstadoFichaJpaRepository` ya **NO** es dependencia de este adapter.
 
 ### `EstadoFichaJpaEntity.java`
 - **Paquete:** `com.arquisoft.fichas.infrastructure.estadoficha.persistence`
 - **Tipo:** JPA Entity
 - **Responsabilidad:** Mapeo de la tabla `estado_ficha` (catálogo).
-- **Campos:** `UUID id`, `String nombre`, `String descripcion`
+- **Campos:** `String id` (`@Id @Column(nullable=false, length=50)` — valor = constante del enum, e.g. `"EN_CONSTRUCCION"`), `String nombre`, `String descripcion`
 - **Anotaciones:** `@Entity`, `@Table(name = "estado_ficha")`, `@Column(unique = true)` en `nombre`
 
 ### `EstadoFichaJpaRepository.java`
 - **Paquete:** `com.arquisoft.fichas.infrastructure.estadoficha.persistence`
-- **Tipo:** `JpaRepository<EstadoFichaJpaEntity, UUID>`
-- **Responsabilidad:** Repositorio Spring Data JPA para el catálogo.
+- **Tipo:** `JpaRepository<EstadoFichaJpaEntity, String>` — PK es `String` (ADR-012)
+- **Responsabilidad:** Repositorio Spring Data JPA para el catálogo. Usado únicamente por `EstadoFichaQueryOutputAdapter` — el command adapter ya no lo necesita.
 - **Métodos:** `Optional<EstadoFichaJpaEntity> findByNombre(String nombre)`
 
 ### `EstadoFichaMapper.java`
@@ -266,7 +267,7 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 - **Responsabilidad:** Orquesta el registro de una ficha perfil Y la asignación del estado inicial.
 - **Cambio requerido:** Inyectar solo `EstadoFichaPerfilOutputPort`. Tras persistir `FichaPerfilAggregate`, el flujo es:
     1. `var efp = EstadoFichaPerfilAggregate.crear(ficha.getId())` — el aggregate asigna `estadoFicha = EN_CONSTRUCCION` internamente
-    2. `estadoFichaPerfilOutputPort.guardar(efp)` — el adapter resuelve el UUID del catálogo; el mapper construye la entidad JPA
+    2. `estadoFichaPerfilOutputPort.guardar(efp)` — el adapter usa `entityManager.getReference(EstadoFichaJpaEntity.class, efp.getEstadoFicha().getId())` para obtener un proxy sin SELECT; el mapper construye la entidad JPA con el proxy en el campo `@ManyToOne`
     3. Loguear con `FichasMessages.EstadoFichaPerfil.LOG_CREADO`
 - **`EstadoFichaQueryOutputPort` NO se inyecta en el use case** — la validación de existencia del catálogo es responsabilidad del adapter (garantía de infraestructura/Flyway, no regla de negocio).
 - **Dependencias nuevas:** `EstadoFichaPerfilOutputPort`
@@ -312,24 +313,31 @@ Razón: CRUD interno sin consumidores conocidos ni casos de auditoría identific
 - **Base de datos:** `fichas_perfil` (BD del contexto `fichas` según tabla de mapeo del skill `arquisoft-context`)
 - **Sin schemas:** las tablas se crean sin prefijo (ej. `CREATE TABLE estado_ficha (...)`)
 - **Cambios:**
-    - Crear tabla `estado_ficha` (catálogo consultado en runtime): `id UUID PRIMARY KEY`, `nombre VARCHAR(30) NOT NULL`, `descripcion VARCHAR(200) NOT NULL`, `CONSTRAINT uk_estado_ficha_nombre UNIQUE (nombre)`
-    - Poblar `estado_ficha` con **5 filas** (datos exactos del MER):
+    - Crear tabla `estado_ficha` (catálogo — PK semántica `VARCHAR(50)` según ADR-012): `id VARCHAR(50) PRIMARY KEY` (valor = constante del enum), `nombre VARCHAR(20) NOT NULL`, `descripcion VARCHAR(200) NOT NULL`, `CONSTRAINT uk_estado_ficha_nombre UNIQUE (nombre)`
+    - Poblar `estado_ficha` con **5 filas** (PK semántica: id = constante del enum):
         ```sql
+        CREATE TABLE estado_ficha (
+            id          VARCHAR(50)  PRIMARY KEY,
+            nombre      VARCHAR(20)  NOT NULL,
+            descripcion VARCHAR(200) NOT NULL,
+            CONSTRAINT uk_estado_ficha_nombre UNIQUE (nombre)
+        );
+
         INSERT INTO estado_ficha (id, nombre, descripcion) VALUES
-        (gen_random_uuid(), 'Aprobada',                   'Se refiere a que la ficha de perfil paso por revisión del comite de curriculum y tuvo una calificación mayor de 3.0'),
-        (gen_random_uuid(), 'Aprobada Con Observaciones', 'Se refiere a que la ficha de perfil paso por la revisión del comite del curriculum, pero debe ser revisado debido a que necesita una mejora'),
-        (gen_random_uuid(), 'No Aprobada',                'Se refiere a que la ficha de perfil paso por la revisión del comite del curriculum, pero la ficha de perfil no obtuvo una calificación mayor a 3.0'),
-        (gen_random_uuid(), 'En Construccion',            'Se refiere a que la ficha de pérfil se encuentra en construcción o desarrollo.'),
-        (gen_random_uuid(), 'Disponible Para Evaluacion', 'Se refiere a que la ficha de pérfil se encuentra disponible para ser evaluada por los representantes del comite de curriculum.');
+        ('APROBADA',                   'Aprobada',                   'Se refiere a que la ficha de perfil paso por revisión del comite de curriculum y tuvo una calificación mayor de 3.0'),
+        ('APROBADA_CON_OBSERVACIONES', 'Aprobada Con Observaciones', 'Se refiere a que la ficha de perfil paso por la revisión del comite del curriculum, pero debe ser revisado debido a que necesita una mejora'),
+        ('NO_APROBADA',                'No Aprobada',                'Se refiere a que la ficha de perfil paso por la revisión del comite del curriculum, pero la ficha de perfil no obtuvo una calificación mayor a 3.0'),
+        ('EN_CONSTRUCCION',            'En Construccion',            'Se refiere a que la ficha de perfil se encuentra en construcción o desarrollo.'),
+        ('DISPONIBLE_PARA_EVALUACION', 'Disponible Para Evaluacion', 'Se refiere a que la ficha de perfil se encuentra disponible para ser evaluada por los representantes del comite de curriculum.');
         ```
-    - Crear tabla `estado_ficha_perfil` (trazabilidad) — exactamente como el MER:
+    - Crear tabla `estado_ficha_perfil` (trazabilidad) — FK `VARCHAR(50)` según ADR-012:
         ```sql
         CREATE TABLE estado_ficha_perfil (
-            id UUID PRIMARY KEY,
-            ficha_perfil_id UUID NOT NULL,
-            estado_ficha_id UUID NOT NULL,
-            fecha_actualizacion TIMESTAMP NOT NULL,
-            CONSTRAINT fk_efp_traz_ficha FOREIGN KEY (ficha_perfil_id) REFERENCES ficha_perfil(id) ON DELETE CASCADE,
+            id                  UUID        PRIMARY KEY,
+            ficha_perfil_id     UUID        NOT NULL,
+            estado_ficha_id     VARCHAR(50) NOT NULL,
+            fecha_actualizacion TIMESTAMP   NOT NULL,
+            CONSTRAINT fk_efp_traz_ficha  FOREIGN KEY (ficha_perfil_id) REFERENCES ficha_perfil(id) ON DELETE CASCADE,
             CONSTRAINT fk_efp_traz_estado FOREIGN KEY (estado_ficha_id) REFERENCES estado_ficha(id)
             -- CONSTRAINT uk_trazabilidad_ficha_estado UNIQUE (ficha_perfil_id, estado_ficha_id, fecha_actualizacion) -- irrelevante según MER
         );
@@ -368,8 +376,7 @@ Razón: CRUD interno sin consumidores conocidos ni casos de auditoría identific
 
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `RegistrarFichaPerfilUseCaseTest` | `debeCrearEstadoInicial_cuandoFichaEsRegistrada` | flujo exitoso: persiste ficha Y persiste estado usando UUID resuelto de `buscarPorNombre(EstadoFicha.EN_CONSTRUCCION.getNombre())` |
-| `RegistrarFichaPerfilUseCaseTest` | `debeLanzarExcepcion_cuandoEstadoEnConstruccionNoExiste` | si `buscarPorNombre(...)` retorna `Optional.empty()`, lanza excepción |
+| `RegistrarFichaPerfilUseCaseTest` | `debeCrearEstadoInicial_cuandoFichaEsRegistrada` | flujo exitoso: persiste ficha Y persiste estado; el adapter usa `getReference()` con `EstadoFicha.EN_CONSTRUCCION.getId()` — sin `buscarPorNombre` |
 | `RegistrarFichaPerfilUseCaseTest` | `debeLanzarExcepcion_cuandoRepositorioEstadoFalla` | propaga error de `estadoFichaPerfilOutputPort.guardar(...)` |
 
 ---
@@ -378,8 +385,8 @@ Razón: CRUD interno sin consumidores conocidos ni casos de auditoría identific
 
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `EstadoFichaPerfilCommandOutputAdapterTest` | `debeGuardar_cuandoEntidadEsValida` | persistencia OK |
-| `EstadoFichaPerfilCommandOutputAdapterTest` | `debeReconstruirConReconstruir_cuandoMapperConvierte` | mapper usa `reconstruir(...)` |
+| `EstadoFichaPerfilCommandOutputAdapterTest` | `debeGuardar_cuandoEntidadEsValida` | persistencia OK — mock de `EntityManager.getReference()` retorna proxy de `EstadoFichaJpaEntity` |
+| `EstadoFichaPerfilCommandOutputAdapterTest` | `debeUsarGetReference_conIdSemantico_cuandoGuarda` | verifica que se llama `entityManager.getReference(EstadoFichaJpaEntity.class, "EN_CONSTRUCCION")` sin `findByNombre` |
 | `EstadoFichaQueryOutputAdapterTest` | `debeBuscarPorNombre_cuandoEstadoExiste` | `buscarPorNombre("En Construccion")` retorna `Optional.of(...)` |
 | `EstadoFichaQueryOutputAdapterTest` | `debeRetornarVacio_cuandoEstadoNoExiste` | `buscarPorNombre("NoExiste")` retorna `Optional.empty()` |
 | `EstadoFichaPerfilJpaRepositoryTest` | `debeGuardar_cuandoEntidadJpaEsValida` | test de integración con H2 |
@@ -397,25 +404,25 @@ Razón: CRUD interno sin consumidores conocidos ni casos de auditoría identific
 
 ## 13. Checklist de Implementación
 
-- [ ] **Enum `EstadoFicha`** creado en `fichas/domain/.../estadoficha/EstadoFicha.java` con 6 valores y campo `nombre` con `getNombre()` que coincide con `estado_ficha.nombre` en BD
+- [ ] **Enum `EstadoFicha`** creado en `fichas/domain/.../estadoficha/EstadoFicha.java` con 6 valores, campo `id: String` (= constante del enum, `getId()`) que coincide con `estado_ficha.id` en BD, y `nombre: String` (`getNombre()`) que coincide con `estado_ficha.nombre` (ADR-012)
 - [ ] **DDD:** `EstadoFichaPerfilAggregate` NO extiende `AggregateRoot` (clase plana con factories `crear`/`reconstruir`)
 - [ ] Aggregate inmutable: constructor privado, campos `final`, sin Lombok
 - [ ] `EstadoFichaPerfilAggregate` tiene campo `estadoFicha: EstadoFicha` (enum) — **NO** tiene `estadoFichaId: UUID`
 - [ ] Factory `crear(UUID fichaPerfilId)` asigna `estadoFicha = EN_CONSTRUCCION` internamente
-- [ ] `EstadoFichaPerfilJpaEntity` tiene `estadoFichaId: UUID` — la conversión enum ↔ UUID la hace el mapper
-- [ ] `EstadoFichaPerfilMapper` es clase utilitaria estática (sin `@Component`, sin JPA). `toJpaEntity(aggregate, estadoFichaId)` recibe el UUID ya resuelto. `toDomain(entity, nombre)` usa `EstadoFicha.desdeCatalogo(nombre)`
-- [ ] `EstadoFichaPerfilCommandOutputAdapter` resuelve el UUID llamando a `EstadoFichaJpaRepository.findByNombre(nombre)` antes de invocar el mapper. El mensaje de error usa `FichasMessages.EstadoFicha.NOMBRE_NO_ENCONTRADO_MENSAJE`
+- [ ] `EstadoFichaPerfilJpaEntity` tiene `estadoFicha: EstadoFichaJpaEntity` con `@ManyToOne(fetch=LAZY) @JoinColumn(name="estado_ficha_id")` — la FK `VARCHAR(50)` se resuelve vía `EntityManager.getReference()` en el adapter (ADR-012)
+- [ ] `EstadoFichaPerfilMapper` es clase utilitaria estática (sin `@Component`, sin JPA). `toJpaEntity(aggregate, estadoFichaRef)` recibe el proxy `EstadoFichaJpaEntity` ya resuelto vía `getReference()`. `toDomain(entity)` usa `EstadoFicha.valueOf(entity.getEstadoFicha().getId())` — sin parámetro `nombre`
+- [ ] `EstadoFichaPerfilCommandOutputAdapter` inyecta `EntityManager` (jakarta.persistence) — **NO** inyecta `EstadoFichaJpaRepository`. Usa `entityManager.getReference(EstadoFichaJpaEntity.class, aggregate.getEstadoFicha().getId())` para obtener proxy sin SELECT
 - [ ] **NO hay eventos de dominio** — no se crean archivos en `domain/estadofichaperfil/event/`
-- [ ] IDs siempre `UUID` (nunca `Long` / `Integer`)
+- [ ] IDs de aggregates de trazabilidad siempre `UUID` (nunca `Long` / `Integer`). Excepción permitida por ADR-012: catálogos con PK semántica usan `String` (`estado_ficha.id`)
 - [ ] Puerto de salida write (`EstadoFichaPerfilOutputPort`) definido en `domain/estadofichaperfil/port/out/`
 - [ ] Puerto de salida read (`EstadoFichaQueryOutputPort`) definido en `application/estadoficha/query/port/out/`
 - [ ] `RegistrarFichaPerfilUseCase` inyecta `EstadoFichaPerfilOutputPort` únicamente — **NO** inyecta `EstadoFichaQueryOutputPort`
-- [ ] Use case usa `efp.getEstadoFicha().getNombre()` para el lookup — no hay magic strings en el use case
+- [ ] Use case **NO hace lookup**: delega todo al adapter. No hay magic strings en el use case
 - [ ] Use case usa `@Transactional(transactionManager = "fichasTransactionManager")` con qualifier explícito
 - [ ] Use case **NO inyecta `EventPublisher`**, no hay drenado de eventos
-- [ ] `EstadoFichaPerfilJpaEntity` tiene `estadoFichaId: UUID` con `@Column(nullable=false)` — **no** `@Enumerated`
-- [ ] Migración `V1.2__crear_estado_ficha_y_estado_ficha_perfil.sql`: crea `estado_ficha` (5 filas del MER, `nombre VARCHAR(20)`), crea `estado_ficha_perfil` con `estado_ficha_id UUID FK` a `estado_ficha.id` y FK a `ficha_perfil.id`
-- [ ] Constantes de mensajes en `FichasMessages.java`: nested class `EstadoFichaPerfil` + nested class `EstadoFicha` (para el error de estado no encontrado)
+- [ ] `EstadoFichaPerfilJpaEntity` tiene `estadoFicha: EstadoFichaJpaEntity` con `@ManyToOne(fetch=LAZY) @JoinColumn(name="estado_ficha_id", nullable=false)` — **no** `@Enumerated`, **no** campo `UUID estadoFichaId`
+- [ ] Migración `V1.2__crear_estado_ficha_y_estado_ficha_perfil.sql`: crea `estado_ficha` (`id VARCHAR(50) PK` semántica, `nombre VARCHAR(20)`, 5 filas con id = constante del enum), crea `estado_ficha_perfil` con `estado_ficha_id VARCHAR(50) FK` a `estado_ficha.id` y FK a `ficha_perfil.id` (ADR-012)
+- [ ] Constantes de mensajes en `FichasMessages.java`: solo nested class `EstadoFichaPerfil` (campos, errores, logs). La nested class `EstadoFicha` **no se crea** — el adapter ya no hace lookup ni lanza excepción de dominio
 - [ ] Tests unitarios con patrón AAA (cobertura ≥ 75%)
 - [ ] **NO testear el enum directamente** — no necesita tests propios
 - [ ] **NO crear tests del controller** — HU-208 ya los tiene
@@ -431,8 +438,9 @@ Razón: CRUD interno sin consumidores conocidos ni casos de auditoría identific
 
 | Etapa      | Agente              | Estado       | Fecha | Notas |
 |------------|---------------------|--------------|-------|-------|
-| Desarrollo | @implementador      | ✅ Completado | 2026-06-23 | Build -x test: sin errores |
+| Desarrollo | @implementador      | ✅ Completado | 2026-06-26 | ADR-012 aplicado: PK semántica VARCHAR(50), EntityManager.getReference, @ManyToOne en EstadoFichaPerfilJpaEntity. Build -x test: sin errores |
 | Tests      | @tester             | ✅ Completado | 2026-06-24 | 10 tests generados: 6 domain (ya existentes) + 4 infrastructure. Todos pasan. |
-| Validación | @validator-analyze  | ✅ Completado | 2026-06-24 | Score: 99/100 — APROBADO |
-| Reporte    | @validator-report   | ✅ Completado | 2026-06-24 | /.workspace/validator/validator-HU-206.md |
+| Validación | @validator-analyze  | ✅ Completado | 2026-06-26 | Score: 99/100 — APROBADO |
+| Reporte    | @validator-report   | ✅ Completado | 2026-06-26 | /.workspace/validator/validator-HU-206.md |
 | Commit     | @commit             | ✅ Completado | 2026-06-24 | Hash: 0961be2 |
+| Revisión   | usuario             | 🔄 Pendiente  | 2026-06-26 | Cambios ADR-012: PK semántica `VARCHAR(50)` en `estado_ficha`. Requiere reimplementación de `EstadoFichaJpaEntity`, `EstadoFichaPerfilJpaEntity`, `EstadoFichaPerfilCommandOutputAdapter`, migración Flyway y enum `EstadoFicha`. |

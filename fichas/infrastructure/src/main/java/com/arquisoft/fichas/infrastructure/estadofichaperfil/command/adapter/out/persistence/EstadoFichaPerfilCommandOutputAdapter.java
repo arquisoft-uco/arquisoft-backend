@@ -2,29 +2,32 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.adapter.ou
 
 import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaRepository;
+import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilMapper;
-import com.arquisoft.shared.message.FichasMessages;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EstadoFichaPerfilCommandOutputAdapter implements EstadoFichaPerfilOutputPort {
 
     private final EstadoFichaPerfilJpaRepository jpaRepository;
-    private final EstadoFichaJpaRepository estadoFichaJpaRepository;
+
+    @PersistenceContext(unitName = "fichas")
+    private EntityManager entityManager;
 
     @Override
     public void guardar(EstadoFichaPerfilAggregate aggregate) {
-        var nombre = aggregate.getEstadoFicha().getNombre();
-        var estadoFichaEntity = estadoFichaJpaRepository
-                .findByNombre(nombre)
-                .orElseThrow(() -> new IllegalStateException(
-                        FichasMessages.EstadoFicha.NOMBRE_NO_ENCONTRADO_MENSAJE.formatted(nombre)
-                ));
-        var entity = EstadoFichaPerfilMapper.toJpaEntity(aggregate, estadoFichaEntity.getId());
+        var estadoFichaRef = entityManager.getReference(
+                EstadoFichaJpaEntity.class,
+                aggregate.getEstadoFicha().getId()
+        );
+        var entity = EstadoFichaPerfilMapper.toJpaEntity(aggregate, estadoFichaRef);
         jpaRepository.save(entity);
     }
 }
