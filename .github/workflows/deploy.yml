@@ -32,11 +32,11 @@ name: CD Deploy (SSH)
 
 on:
   push:
-    branches: [develop]
-    # NOTA TEMPORAL DE PRUEBA: descomentar la rama feature para validar el
-    # despliegue completo desde ella antes de fusionar a develop. Quitar antes
-    # del merge (workflow_run/workflow_dispatch no corren desde ramas no-default).
-    # branches: [develop, feature/cd-deploy-ssh]
+    # NOTA TEMPORAL DE PRUEBA: la rama feature está incluida para validar el
+    # despliegue completo desde ella antes de fusionar a develop. ⚠️ Revertir a
+    # `branches: [develop]` ANTES del merge (workflow_run/workflow_dispatch no
+    # corren desde ramas no-default, por eso aquí se prueba vía push).
+    branches: [develop, feature/cd-deploy-ssh]
   workflow_dispatch:
     inputs:
       image_tag:
