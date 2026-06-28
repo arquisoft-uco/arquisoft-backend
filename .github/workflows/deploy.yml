@@ -1,0 +1,164 @@
+# ==============================================================================
+# Arquisoft Backend — CD Deploy (SSH)
+# ==============================================================================
+# Despliega el backend en un servidor remoto por SSH usando la imagen Docker
+# publicada en GHCR por el workflow "Docker Build & Push" (docker-build.yml).
+#
+# Flujo:
+#   1. push a develop  →  docker-build.yml construye y publica ghcr.io/<repo>:sha-<short>
+#   2. este workflow se conecta por SSH al servidor, espera a que la imagen
+#      sha-<short> esté disponible, escribe el .env (desde el secreto ENV_FILE)
+#      y levanta el contenedor con `docker run --env-file`.
+#
+# Por qué se despliega por SHA (sha-<short>) y no por el tag de rama (develop):
+#   El tag `develop` es mutable y podría apuntar a una imagen vieja si el deploy
+#   corre antes de que termine el build. El tag sha-<short> es inmutable y único
+#   por commit: el pull se reintenta hasta que ese tag exista, lo que serializa
+#   "build terminó" → "deploy" sin condiciones de carrera.
+#
+# Secretos requeridos (Settings → Secrets and variables → Actions):
+#   SSH_HOST          IP o dominio del servidor              (ej. 203.0.113.10)
+#   SSH_USER          usuario SSH                            (ej. deploy)
+#   SSH_PORT          puerto SSH                             (ej. 22)
+#   SSH_PRIVATE_KEY   clave privada SSH (formato OpenSSH, multilínea)
+#   ENV_FILE          contenido COMPLETO del archivo .env de runtime
+#   GHCR_USERNAME     (opcional) usuario GHCR — solo si el paquete es PRIVADO
+#   GHCR_TOKEN        (opcional) PAT con read:packages — solo si es PRIVADO
+#
+# Cómo apuntar a otro servidor: ver docs/DESPLIEGUE_CD_SSH.md
+# ==============================================================================
+
+name: CD Deploy (SSH)
+
+on:
+  push:
+    branches: [develop]
+    # NOTA TEMPORAL DE PRUEBA: descomentar la rama feature para validar el
+    # despliegue completo desde ella antes de fusionar a develop. Quitar antes
+    # del merge (workflow_run/workflow_dispatch no corren desde ramas no-default).
+    # branches: [develop, feature/cd-deploy-ssh]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Tag de imagen GHCR a desplegar (vacío = sha-<short> del commit)'
+        required: false
+        default: ''
+
+# Un despliegue a la vez por rama; NO cancelar uno en curso (evita dejar el
+# servidor a mitad de un reemplazo de contenedor).
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy a servidor remoto
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      # ── Resolver imagen a desplegar ──
+      - name: Resolver referencia de imagen
+        id: image
+        run: |
+          set -euo pipefail
+          REPO_LC="$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+            TAG="${{ github.event.inputs.image_tag }}"
+          else
+            TAG="sha-$(echo '${{ github.sha }}' | cut -c1-7)"
+          fi
+          echo "ref=ghcr.io/${REPO_LC}:${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Imagen objetivo: ghcr.io/${REPO_LC}:${TAG}"
+
+      # ── Codificar .env a una sola línea ──
+      # appleboy/ssh-action puede romper variables multilínea al forwardearlas.
+      # base64 -w0 convierte el .env (multilínea) en una sola línea segura.
+      - name: Codificar ENV_FILE (base64)
+        id: env
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ENV_FILE:-}" ]; then
+            echo "✖ El secreto ENV_FILE está vacío o no existe"; exit 1
+          fi
+          B64="$(printf '%s' "$ENV_FILE" | base64 -w0)"
+          echo "::add-mask::$B64"
+          echo "b64=$B64" >> "$GITHUB_OUTPUT"
+
+      # ── Despliegue por SSH ──
+      - name: Desplegar contenedor por SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Variables forwardeadas a la sesión remota (no se imprimen en logs).
+          envs: IMAGE,ENV_B64,GHCR_USERNAME,GHCR_TOKEN
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            APP_DIR="/opt/arquisoft"
+            CONTAINER="arquisoft-backend"
+            APP_PORT="8080"
+
+            sudo mkdir -p "$APP_DIR" 2>/dev/null || mkdir -p "$APP_DIR"
+
+            # 1) Escribir el .env de runtime (ENV_B64 = base64 del secreto ENV_FILE; umask 077 → 600)
+            ( umask 077; printf '%s' "$ENV_B64" | base64 -d > "$APP_DIR/.env" )
+            echo "✔ .env escrito en $APP_DIR/.env"
+
+            # 2) Login a GHCR solo si el paquete es privado (credenciales provistas)
+            if [ -n "${GHCR_TOKEN:-}" ]; then
+              echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USERNAME" --password-stdin
+              echo "✔ Login GHCR realizado"
+            fi
+
+            # 3) Esperar a que la imagen (tag inmutable sha-<short>) esté publicada
+            echo "Esperando imagen $IMAGE ..."
+            PULLED=0
+            for i in $(seq 1 30); do
+              if docker pull "$IMAGE"; then PULLED=1; break; fi
+              echo "  imagen aún no disponible (intento $i/30), espero 10s..."
+              sleep 10
+            done
+            if [ "$PULLED" -ne 1 ]; then
+              echo "✖ La imagen $IMAGE no se publicó a tiempo"; exit 1
+            fi
+
+            # 4) Reemplazar el contenedor
+            docker rm -f "$CONTAINER" 2>/dev/null || true
+            docker run -d \
+              --name "$CONTAINER" \
+              --restart unless-stopped \
+              --env-file "$APP_DIR/.env" \
+              -p "${APP_PORT}:8080" \
+              --add-host=host.docker.internal:host-gateway \
+              "$IMAGE"
+            echo "✔ Contenedor $CONTAINER levantado con $IMAGE"
+
+            # 5) Verificar health (Spring Boot tarda ~60s con Flyway y varias DBs)
+            echo "Verificando health en http://localhost:${APP_PORT}/api/actuator/health ..."
+            OK=0
+            for i in $(seq 1 30); do
+              if curl -fsS "http://localhost:${APP_PORT}/api/actuator/health" >/dev/null 2>&1; then
+                OK=1; break
+              fi
+              sleep 5
+            done
+            if [ "$OK" -ne 1 ]; then
+              echo "✖ Health check falló. Últimos logs:"; docker logs --tail 80 "$CONTAINER"; exit 1
+            fi
+            echo "✔ Backend saludable"
+
+            # 6) Limpieza de imágenes colgadas
+            docker image prune -f >/dev/null 2>&1 || true
+            if [ -n "${GHCR_TOKEN:-}" ]; then docker logout ghcr.io >/dev/null 2>&1 || true; fi
+        env:
+          IMAGE: ${{ steps.image.outputs.ref }}
+          ENV_B64: ${{ steps.env.outputs.b64 }}
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
