@@ -33,9 +33,8 @@ name: CD Deploy (SSH)
 on:
   push:
     # NOTA TEMPORAL DE PRUEBA: la rama feature está incluida para validar el
-    # despliegue completo desde ella antes de fusionar a develop. ⚠️ Revertir a
-    # `branches: [develop]` ANTES del merge (workflow_run/workflow_dispatch no
-    # corren desde ramas no-default, por eso aquí se prueba vía push).
+    # despliegue desde ella antes de fusionar. ⚠️ Revertir a `branches: [develop]`
+    # ANTES del merge (workflow_run/workflow_dispatch no corren desde ramas no-default).
     branches: [develop, feature/cd-deploy-ssh]
   workflow_dispatch:
     inputs:
@@ -101,11 +100,11 @@ jobs:
           script: |
             set -euo pipefail
 
-            APP_DIR="/opt/arquisoft"
+            APP_DIR="$HOME/arquisoft"
             CONTAINER="arquisoft-backend"
             APP_PORT="8080"
 
-            sudo mkdir -p "$APP_DIR" 2>/dev/null || mkdir -p "$APP_DIR"
+            mkdir -p "$APP_DIR"
 
             # 1) Escribir el .env de runtime (ENV_B64 = base64 del secreto ENV_FILE; umask 077 → 600)
             ( umask 077; printf '%s' "$ENV_B64" | base64 -d > "$APP_DIR/.env" )
