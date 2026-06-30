@@ -578,7 +578,7 @@ CREATE TABLE item (
 | Etapa      | Agente              | Estado       | Fecha | Notas |
 |------------|---------------------|--------------|-------|-------|
 | Desarrollo | @implementador      | ✅ Completado | 2026-06-29 | Build -x test: sin errores. Agregado spring-boot-starter-oauth2-resource-server a fichas:infrastructure |
-| Tests      | @tester             | ⏳ Pendiente  | — | — |
+| Tests      | @tester             | ✅ Completado | 2026-06-30 | Tests unitarios completados |
 | Validación | @validator-analyze  | ✅ Completado | 2026-06-30 | Score: 98/100 — APROBADO |
 | Reporte    | @validator-report   | ✅ Completado | 2026-06-30 | /.workspace/validator/validator-HU-31.md |
-| Commit     | @commit             | ⏳ Pendiente  | — | — |
+| Commit     | @commit             | ✅ Completado | 2026-06-30 | Hash: 718a6e1 |
