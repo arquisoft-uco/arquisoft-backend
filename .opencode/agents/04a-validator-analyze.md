@@ -654,21 +654,41 @@ public FichaTituloDuplicadoException(String titulo) {
 - Literales en tests (los tests pueden duplicar strings o importar del catálogo — preferible importar pero no bloqueante).
 - Strings en JavaDoc o comentarios.
 
-**2.20 Estados/tipos como enum · lookup de catálogo · mapper puro (CRÍTICO si la HU maneja un estado o tipo):**
+**2.20 Estados/tipos como enum · PK semántica · persistencia sin consulta · mapper puro (CRÍTICO si la HU maneja un estado o tipo):**
 
-> Patrón canónico del skill `arquisoft-context`, sección "Estados y tipos: enum de dominio + catálogo en BD". Aplica solo cuando la HU introduce o usa un estado/tipo con valores cerrados y conocidos (ej. `EstadoFicha`, `TipoProyecto`).
+> Patrón canónico del skill `arquisoft-context`, sección "Estados y tipos: enum de dominio + catálogo con PK semántica (ADR-012)". Aplica solo cuando la HU introduce o usa un estado/tipo con valores cerrados y conocidos (ej. `EstadoFicha`, `TipoProyecto`).
 >
-> **Principio:** un catálogo de estados/tipos solo se consulta, nunca se escribe — sin caso de uso de escritura no hay aggregate. Por eso es un enum y no un `{Estado}Aggregate`.
+> **Principio:** un catálogo de estados/tipos solo se consulta, nunca se escribe — sin caso de uso de escritura no hay aggregate, es un enum. Y como sus valores son fijos, su PK es la **constante del enum en SCREAMING_CASE** (`VARCHAR`), no un `UUID`: así no hace falta consultar BD para resolver el FK.
 
 | Check | Bloqueante |
 |-------|:---:|
 | Estado/tipo de valores cerrados modelado como aggregate de catálogo (`{Estado}Aggregate` + `{Estado}QueryOutputPort` + `{Estado}QueryOutputAdapter` + `{Estado}ReadModel`) en vez de un enum de dominio | ❌ violación bloqueante |
-| Aggregate que guarda el estado/tipo como `UUID {estado}Id` en vez del enum directamente | ❌ violación bloqueante |
-| Use case que resuelve el estado/tipo del catálogo (inyecta un query port del catálogo o hace lookup por nombre) en vez de delegarlo al `CommandOutputAdapter` | ❌ violación bloqueante |
-| `Mapper` de persistencia que inyecta o llama a un `JpaRepository` (busca el nombre/id dentro del método mapper) | ❌ violación bloqueante (el mapeo es puro; el adapter resuelve y pasa el valor como parámetro) |
+| Catálogo (tabla `estado_*`/`tipo_*` y su `JpaEntity`) con PK `UUID` en vez de `VARCHAR` = constante del enum (ADR-012) | ❌ violación bloqueante |
+| FK al catálogo (columna `*_id` y `@JoinColumn`) tipada como `UUID` en vez de `VARCHAR`/`String` | ❌ violación bloqueante |
+| Aggregate que guarda el estado/tipo como `String {estado}Id` o `UUID {estado}Id` en vez del enum directamente | ❌ violación bloqueante |
+| `CommandOutputAdapter` que resuelve el catálogo con `findByNombre`/`findById` (viaje a BD) en vez de `entityManager.getReference(CatalogoJpaEntity.class, enum.getId())` | ❌ violación bloqueante |
+| Use case que resuelve el estado/tipo del catálogo (inyecta un query port del catálogo o hace lookup) en vez de delegarlo al `CommandOutputAdapter` | ❌ violación bloqueante |
+| `Mapper` de persistencia que inyecta o llama a un `JpaRepository` (busca el nombre/id dentro del método mapper) | ❌ violación bloqueante (el mapeo es puro; el adapter resuelve y pasa la referencia como parámetro) |
 | Estado/tipo inicial asignado en el use case o el DTO en vez de dentro de `crear(...)` del aggregate (el dominio asigna el estado) | ⚠️ menor |
 
-**Cómo verificar (mental):** lee el aggregate (¿enum o `UUID id`?), el use case (¿inyecta un query port de catálogo?), el `CommandOutputAdapter` (¿hace el lookup ahí?) y el `Mapper` (¿inyecta `JpaRepository`?). Una sola de estas señales en el archivo equivocado dispara la violación.
+**Cómo verificar (mental):** lee el enum (¿tiene `id = name()` además de `nombre`?), la `JpaEntity` del catálogo (¿PK `String`/`VARCHAR`?), la `JpaEntity` referenciante (¿FK `@ManyToOne` con `String`, no `UUID`?), el aggregate (¿enum o `*Id`?), el `CommandOutputAdapter` (¿`getReference` o `findByNombre`?) y el `Mapper` (¿inyecta `JpaRepository`?). Una sola de estas señales en el archivo equivocado dispara la violación.
+
+**2.21 Construcción del aggregate — setters privados, Util de `shared:domain`, enum vía `valueOf` + `addError` (CRÍTICO en aggregates con `crear(...)`):**
+
+> El factory `crear(...)` orquesta **setters privados** (uno por atributo, nombrados como el atributo) y cierra con `result.throwIfHasErrors()`. La generación de valores autogenerados y la conversión de enums desde un código externo ocurren **dentro del setter**, no en el cuerpo de `crear`. Ejemplos en el skill `arquisoft-context` (aggregate canónico y sección "Estados y tipos").
+
+| Check | Bloqueante |
+|-------|:---:|
+| Setter privado nombrado por el parámetro de entrada y no por el atributo (ej. `setTipoItemCode` en vez de `setTipoItem`, `setIdRandom` en vez de `setId`) | ❌ violación bloqueante |
+| Valor autogenerado (`UUID`, `Instant`) generado en el cuerpo de `crear(...)` en vez de dentro de su setter | ❌ violación bloqueante |
+| `UUID.randomUUID()` directo en el dominio en vez de `UtilUUID.generateNewUUID()` (de `shared:domain`) | ❌ violación bloqueante |
+| `Instant.now()` / `LocalDate.now()` directo en vez de `UtilDate.generateNewInstantNow()` / `generateNewFechaNow()` | ❌ violación bloqueante |
+| `.trim()` directo en el dominio en vez de `UtilText.applyTrim(...)` | ❌ violación bloqueante |
+| Conversión `Enum.valueOf(...)` de un código externo (String) fuera del setter del atributo, o fuera del bloque validado (ej. después de `throwIfHasErrors()`) | ❌ violación bloqueante |
+| `Enum.valueOf(...)` de un código externo sin `try/catch`, o que lanza una excepción dedicada en vez de acumular con `result.addError(CAMPO, CODIGO_INVALIDO, MENSAJE.formatted(code))` | ❌ violación bloqueante |
+| Texto literal (campo, código o mensaje) en el `result.addError(...)` del enum en vez de constantes del catálogo `shared:message` | ❌ violación bloqueante |
+
+**Cómo verificar (mental):** abre el aggregate y revisa `crear(...)`: ¿cada asignación pasa por un setter nombrado como el atributo? ¿los valores autogenerados y los `valueOf` de códigos externos están dentro del setter, no en el cuerpo de `crear`? ¿el `valueOf` está en `try/catch` con `result.addError(...)` usando el catálogo? ¿se usan los Util (`UtilUUID`, `UtilDate`, `UtilText`) en vez de `UUID.randomUUID()`/`Instant.now()`/`.trim()`? **Nota:** un enum asignado como **constante de dominio** (ej. estado inicial) se asigna directo en el setter — el `valueOf`+`addError` aplica solo cuando el enum llega como **código externo** (String de un `Command`/DTO).
 
 ### FASE 3 — Estado de Tests (sin verificación filesystem)
 
@@ -806,12 +826,22 @@ Nota: las secciones 2.11, 2.12 y 2.13 se omiten porque no hay tests que validar.
 ## Datos para el commit
 
 **Mensaje:** {tipo}({contexto}): {descripcion corta en español}
+
+**Cuerpo del mensaje:**
+{bullet points con los cambios implementados — uno por cada aspecto relevante:
+- Qué se implementó (endpoint, caso de uso, evento RabbitMQ, migración Flyway)
+- Capas afectadas y archivos principales creados/modificados
+- Eventos de dominio emitidos con su eventTopic (si aplica)
+- Migraciones Flyway ejecutadas (si aplica)}
+
 **Tipo:** `feat` / `fix` / `refactor` / `docs` / `style` / `test` / `chore`
 **Rama:** `feature/{HU|HT}-{ID}-{descripcion_snake_case}`
 **Archivos a incluir:**
 - `{ruta archivo 1}`
 - `{ruta archivo 2}`
 - ...
+- `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`
+- `.workspace/validator/validator-{HU|HT}-{ID}.md`
 
 ---
 

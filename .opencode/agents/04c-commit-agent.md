@@ -75,7 +75,8 @@ Si no se indicó el ID, pregunta: **"¿Cuál es el ID del plan a commitear (HU o
    > `@validator-analyze` seguido de `@validator-report`."
    Y termina sin ejecutar nada más.
 4. Extrae del reporte:
-    - Mensaje de commit propuesto
+    - Mensaje de commit propuesto (título)
+    - Cuerpo del mensaje (bullet points bajo "Cuerpo del mensaje:" en el reporte)
     - Lista de archivos de código a incluir (`git add`)
     - Nombre de la rama (`feature/{HU|HT}-{ID}-{descripcion_snake_case}`)
 5. **Construye la lista FINAL de archivos del commit** combinando:
@@ -124,6 +125,9 @@ Rama destino: feature/{HU|HT}-{ID}-{descripcion}
 
 Mensaje: {tipo}({contexto}): {descripcion}
 
+Cuerpo del mensaje:
+{boddy bullets — una línea por cada bullet point del reporte}
+
 Archivos de código:
   - {archivo 1}
   - {archivo 2}
@@ -136,8 +140,8 @@ Archivos de trazabilidad (auditoría de la {HU|HT}):
 ¿Confirmas la ejecución? (sí / no / ajustar mensaje)
 ```
 
-Espera confirmación explícita. Si el usuario dice "ajustar mensaje", recibe el
-nuevo mensaje y muestra la confirmación actualizada antes de proceder.
+Espera confirmación explícita. Si el usuario dice "ajustar mensaje" o "ajustar cuerpo", recibe el
+nuevo mensaje/cuerpo y muestra la confirmación actualizada antes de proceder.
 Si el usuario dice "no", termina sin ejecutar nada.
 
 ### FASE 4 — Ejecución del Commit (⚠️ ÚLTIMA FASE QUE EJECUTA BASH)
@@ -152,13 +156,13 @@ Solo tras confirmación explícita del usuario en FASE 3, ejecuta esta secuencia
 git status -s
 git add {archivos de código del reporte} .workspace/h-plan/PLAN-{HU|HT}-{ID}.md .workspace/validator/validator-{HU|HT}-{ID}.md
 git status -s
-git commit -m "{tipo}({contexto}): {descripcion corta en español}"
+git commit -m "{tipo}({contexto}): {descripcion corta en español}" -m "{cuerpo del mensaje — bullet points del reporte, unidos con saltos de línea}"
 git log --oneline -5
 ```
 
 > **Importante:**
 > - Los **archivos de código** vienen del reporte (lista en sección "Archivos a incluir").
-> - Los **dos archivos de workspace** se añaden SIEMPRE al commit, sin que el reporte tenga que listarlos.
+> - Los **archivos de workspace** (plan y reporte del validator) son listados por el reporte en "Archivos a incluir" y también se añaden siempre al commit como respaldo.
 > - Todas las rutas son **relativas a la raíz del repo** (sin barra inicial). El `git add` se ejecuta desde la raíz del repositorio.
 > - **CRÍTICO — archivos sin trackear (`??`):** el primer `git status -s` puede mostrar directorios o archivos nuevos marcados con `??` que el reporte no lista explícitamente (ej. nuevos directorios de tests). Estos archivos forman parte de la HU y **DEBEN incluirse en el `git add`**. Añade todos los paths `??` que pertenezcan al bounded context de la HU junto a los archivos del reporte. Si tienes duda sobre si un archivo `??` pertenece a la HU, inclúyelo.
 > - El segundo `git status -s` **antes del commit** verifica que el área de staging esté completa. Si aún hay archivos `M` sin stagear o `??` nuevos relacionados con la HU, añádelos con un `git add` adicional antes de hacer el commit.
