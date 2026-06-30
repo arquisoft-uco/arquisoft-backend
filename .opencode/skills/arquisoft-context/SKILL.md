@@ -549,7 +549,7 @@ El aggregate acumula eventos con `publishEvent(...)` en sus factories/métodos d
 | `crear(...)` | Crear entidad nueva desde un comando/DTO | Solo si la entidad extiende `AggregateRoot` Y la HU emite eventos | ✅ Sí — `UUID.randomUUID()` |
 | `reconstruir(...)` | Reconstruir entidad desde persistencia | ❌ Nunca | ❌ No — recibe el UUID de BD |
 
-> **Valores autogenerados en `crear(...)`:** `UUID` → `UUID.randomUUID()` · `Instant` → `UtilDate.generateNewInstantNow()` (de `com.arquisoft.shared.util.UtilDate`, en `shared:domain`). **Nunca** `Instant.now()` directamente en código de dominio.
+> **Valores autogenerados (`UUID`, `Instant`):** se generan **dentro del setter** que lleva el nombre del atributo (`setId()`, `setFechaActualizacion()`), no en el cuerpo de `crear(...)`. Usan los Util de `shared:domain`: `UUID` → `UtilUUID.generateNewUUID()` · `Instant` → `UtilDate.generateNewInstantNow()`. **Nunca** `UUID.randomUUID()` ni `Instant.now()` directamente en código de dominio.
 
 **Regla dura:** un `CommandOutputAdapter` SIEMPRE usa `reconstruir(...)`, nunca `crear(...)`. Aplica tanto si la entidad extiende `AggregateRoot` como si no — el factory `crear` queda reservado para la creación inicial desde el use case.
 
@@ -1184,6 +1184,8 @@ package com.arquisoft.fichas.domain.fichaPerfil.aggregate;
 import com.arquisoft.shared.events.AggregateRoot;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.DomainValidator;
+import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.fichas.domain.fichaPerfil.event.FichaPerfilCreadaEvent;
 import com.arquisoft.shared.message.FichasMessages;
 import java.util.UUID;
@@ -1192,35 +1194,39 @@ public final class FichaPerfilAggregate extends AggregateRoot {
    private UUID id;
    private String tituloProyecto;
    private UUID asesorFichaId;
-   private String estado;
 
    private FichaPerfilAggregate() {}
 
    public static FichaPerfilAggregate crear(String tituloProyecto, UUID asesorFichaId) {
       FichaPerfilAggregate aggregate = new FichaPerfilAggregate();
       ValidationResult result = new ValidationResult();
+      aggregate.setId();                                   // el UUID se genera dentro del setter
       aggregate.setTituloProyecto(tituloProyecto, result);
       aggregate.setAsesorFichaId(asesorFichaId, result);
       result.throwIfHasErrors();
 
-      aggregate.id = UUID.randomUUID();
-      aggregate.estado = "BORRADOR";
       aggregate.publishEvent(new FichaPerfilCreadaEvent(
               aggregate.id, aggregate.tituloProyecto, aggregate.asesorFichaId));
       return aggregate;
    }
 
-   public static FichaPerfilAggregate reconstruir(UUID id, String titulo, UUID asesorId, String estado) {
+   public static FichaPerfilAggregate reconstruir(UUID id, String titulo, UUID asesorId) {
       FichaPerfilAggregate a = new FichaPerfilAggregate();
-      a.id = id; a.tituloProyecto = titulo; a.asesorFichaId = asesorId; a.estado = estado;
+      a.id = id; a.tituloProyecto = titulo; a.asesorFichaId = asesorId;
       return a;
+   }
+
+   // El valor autogenerado se produce DENTRO del setter (vía Util de shared:domain),
+   // no en el cuerpo de crear(...). El setter lleva el nombre del atributo: setId, no setIdRandom.
+   private void setId() {
+      this.id = UtilUUID.generateNewUUID();
    }
 
    private void setTituloProyecto(String titulo, ValidationResult result) {
       if (!DomainValidator.notBlank(titulo,
               FichasMessages.FichaPerfil.CAMPO_TITULO,
               FichasMessages.FichaPerfil.TITULO_REQUERIDO, result)) return;
-      this.tituloProyecto = titulo.trim();
+      this.tituloProyecto = UtilText.applyTrim(titulo);
    }
 
    private void setAsesorFichaId(UUID id, ValidationResult result) {
@@ -1233,7 +1239,6 @@ public final class FichaPerfilAggregate extends AggregateRoot {
    public UUID getId() { return id; }
    public String getTituloProyecto() { return tituloProyecto; }
    public UUID getAsesorFichaId() { return asesorFichaId; }
-   public String getEstado() { return estado; }
 }
 ```
 
@@ -1452,13 +1457,13 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
 > **`JpaEntity`, `JpaRepository` y `Mapper`** viven en `infrastructure/{entidad}/persistence/` (compartido entre `command/` y `query/`).
 
-### Estados y tipos: enum de dominio + catálogo en BD
+### Estados y tipos: enum de dominio + catálogo con PK semántica (ADR-012)
 
 Cuando una HU maneja un **estado** o **tipo** con un conjunto **cerrado y conocido** de valores (ej. `EstadoFicha`, `TipoProyecto`), se modela como **enum en el dominio**, NO como un aggregate de catálogo con su propio query port / query adapter / read model.
 
-**Por qué no lleva aggregate:** un catálogo de estados/tipos solo se **consulta**, nunca se escribe desde la aplicación — sus valores se fijan en código vía el enum y, si hay tabla, se poblan por Flyway. Un aggregate existe para encapsular invariantes de **escritura**; sin caso de uso de escritura no hay nada que encapsular, así que el catálogo es un enum y punto. (La entidad que *referencia* el estado/tipo — ej. `EstadoFichaPerfilAggregate`, que sí se escribe — puede ser aggregate; el catálogo en sí no.)
+**Por qué no lleva aggregate:** un catálogo de estados/tipos solo se **consulta**, nunca se escribe desde la aplicación — sus valores se fijan en código vía el enum y se poblan por Flyway. Un aggregate existe para encapsular invariantes de **escritura**; sin caso de uso de escritura no hay nada que encapsular, así que el catálogo es un enum y punto. (La entidad que *referencia* el estado/tipo — ej. `EstadoFichaPerfilAggregate`, que sí se escribe — puede ser aggregate; el catálogo en sí no.)
 
-El enum vive en `domain/{feature}/{Nombre}.java` (en el paquete de la feature, no en `aggregate/`): expone el nombre de catálogo y un factory `desde{X}(String)` para reconstruir desde el valor persistido:
+**PK semántica `VARCHAR`, no `UUID` (ADR-012).** El `id` del catálogo es el **nombre de la constante del enum en SCREAMING_CASE** (`"EN_CONSTRUCCION"`), no un UUID. Como estos valores son fijos (no se crean ni modifican en runtime), usar la constante como PK **elimina la consulta a BD** para resolver el id, hace el FK legible al depurar y simplifica el mapeo. El enum vive en `domain/{feature}/{Nombre}.java` y lleva dos campos: `id` (= `name()`, la PK) y `nombre` (el texto legible):
 
 ```java
 // domain/estadoficha/EstadoFicha.java
@@ -1466,45 +1471,106 @@ public enum EstadoFicha {
     EN_CONSTRUCCION("En Construccion"),
     APROBADA("Aprobada");
 
+    private final String id;
     private final String nombre;
-    EstadoFicha(String nombre) { this.nombre = nombre; }
-    public String getNombre() { return nombre; }
 
-    public static EstadoFicha desdeCatalogo(String nombre) {
-        for (EstadoFicha e : values()) {
-            if (e.getNombre().equals(nombre)) return e;
-        }
-        throw new IllegalArgumentException("Estado desconocido: " + nombre);
+    EstadoFicha(String nombre) {
+        this.id = this.name();   // PK semántica = constante SCREAMING_CASE
+        this.nombre = nombre;    // texto legible para UI/reporting
+    }
+
+    public String getId() { return id; }
+    public String getNombre() { return nombre; }
+}
+```
+
+> No se necesita un factory `desde{X}(String)`: como el `id` ES la constante del enum, la reconstrucción usa `EstadoFicha.valueOf(id)` directamente.
+
+**Asignar el enum dentro del aggregate.** Si el estado/tipo se asigna como **constante de dominio** (ej. estado inicial), el setter lo asigna directo (`this.estadoFicha = EstadoFicha.EN_CONSTRUCCION;`) — no hay nada que parsear. Si llega como **código externo** (un `String` del `Command`/DTO), la conversión va **dentro del setter del atributo** con `valueOf` + `result.addError(...)` desde el catálogo, nunca con texto quemado ni una excepción dedicada:
+
+```java
+private void setTipoItem(String tipoItemCode, ValidationResult result) {
+    if (!DomainValidator.notBlank(tipoItemCode,
+            FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM_CODE,
+            FichasMessages.ItemFichaPerfil.TIPO_ITEM_CODE_REQUERIDO, result)) {
+        return;
+    }
+    try {
+        this.tipoItem = TipoItem.valueOf(UtilText.applyTrim(tipoItemCode));
+    } catch (IllegalArgumentException e) {
+        result.addError(
+                FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM_CODE,
+                FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
+                FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO_MSG.formatted(tipoItemCode));
     }
 }
 ```
 
-**El aggregate guarda el enum directamente** (`EstadoFicha estadoFicha`), nunca un `UUID estadoFichaId`. **El dominio asigna el valor:** el estado/tipo inicial se fija dentro de `crear(...)`; las transiciones van en métodos de negocio del aggregate. El use case **no** recibe ni resuelve el estado/tipo — solo invoca `crear(...)` y `outputPort.guardar(...)`.
+**El aggregate guarda el enum directamente** (`EstadoFicha estadoFicha`), nunca un `String estadoFichaId`. **El dominio asigna el valor:** el estado/tipo inicial se fija dentro de `crear(...)`; las transiciones van en métodos de negocio del aggregate. El use case **no** recibe ni resuelve el estado/tipo — solo invoca `crear(...)` y `outputPort.guardar(...)`.
 
 ```java
 public static EstadoFichaPerfilAggregate crear(UUID fichaPerfilId) {
-    // ...validación...
-    return new EstadoFichaPerfilAggregate(
-            UUID.randomUUID(), fichaPerfilId,
-            EstadoFicha.EN_CONSTRUCCION,          // ← el dominio asigna el estado inicial
-            UtilDate.generateNewInstantNow());
+    var aggregate = new EstadoFichaPerfilAggregate();
+    var result = new ValidationResult();
+
+    aggregate.setId();                  // UUID generado dentro del setter (UtilUUID)
+    aggregate.setFichaPerfilId(fichaPerfilId, result);
+    aggregate.setEstadoFicha();         // el dominio asigna el estado inicial (EN_CONSTRUCCION)
+    aggregate.setFechaActualizacion();  // Instant generado dentro del setter (UtilDate)
+
+    result.throwIfHasErrors();
+    return aggregate;
 }
 ```
 
-**Lookup del catálogo en el adapter, nunca en el use case.** Si el enum se respalda con una tabla catálogo (FK por id), la resolución nombre→id ocurre dentro del `CommandOutputAdapter`, justo antes del insert. Resolverlo en el use case (vía un query port adicional) es un segundo viaje a BD innecesario:
+**Persistencia sin consulta al catálogo.** Como el `id` del catálogo es la constante del enum (ya conocida en memoria), el `CommandOutputAdapter` obtiene una **referencia** a la fila del catálogo con `entityManager.getReference(...)` — sin viaje a BD para resolver el id (lo opuesto a un `findByNombre`). La `JpaEntity` referencia el catálogo con `@ManyToOne` + `@JoinColumn` (FK `VARCHAR`), no con un id crudo:
 
 ```java
+// CommandOutputAdapter — NO consulta el catálogo
+@PersistenceContext(unitName = "fichas")
+private EntityManager entityManager;
+
 @Override
 public void guardar(EstadoFichaPerfilAggregate aggregate) {
-    var nombre = aggregate.getEstadoFicha().getNombre();
-    var estadoId = estadoFichaJpaRepository.findByNombre(nombre)
-            .orElseThrow(() -> new IllegalStateException(...))
-            .getId();
-    jpaRepository.save(EstadoFichaPerfilMapper.toJpaEntity(aggregate, estadoId));
+    var estadoFichaRef = entityManager.getReference(
+            EstadoFichaJpaEntity.class, aggregate.getEstadoFicha().getId());
+    jpaRepository.save(EstadoFichaPerfilMapper.toJpaEntity(aggregate, estadoFichaRef));
 }
 ```
 
-**El `Mapper` es mapeo puro: NO inyecta ni llama a `JpaRepository`.** Si el mapeo necesita un valor resuelto (el id del catálogo al guardar, el nombre al reconstruir), el **adapter lo resuelve y lo pasa como parámetro** al método del mapper: `toJpaEntity(aggregate, estadoId)`, `toDomain(entity, nombre)`. Un mapper que consulta un repositorio mezcla responsabilidades (mapeo + acceso a datos) — bloqueante.
+**El `Mapper` es mapeo puro: NO inyecta ni llama a `JpaRepository`.** Recibe la referencia del catálogo como parámetro y reconstruye el enum con `valueOf` sobre el `id` (que ES la constante del enum):
+
+```java
+public static EstadoFichaPerfilJpaEntity toJpaEntity(
+        EstadoFichaPerfilAggregate a, EstadoFichaJpaEntity estadoFichaRef) {
+    return EstadoFichaPerfilJpaEntity.builder()
+            .id(a.getId()).fichaPerfilId(a.getFichaPerfilId())
+            .estadoFicha(estadoFichaRef)
+            .fechaActualizacion(a.getFechaActualizacion()).build();
+}
+
+public static EstadoFichaPerfilAggregate toDomain(EstadoFichaPerfilJpaEntity e) {
+    return EstadoFichaPerfilAggregate.reconstruir(
+            e.getId(), e.getFichaPerfilId(),
+            EstadoFicha.valueOf(e.getEstadoFicha().getId()),   // id == constante del enum
+            e.getFechaActualizacion());
+}
+```
+
+**En la migración Flyway** la tabla catálogo tiene PK `VARCHAR` poblada con las constantes del enum, y la tabla que la referencia usa FK `VARCHAR`:
+
+```sql
+CREATE TABLE estado_ficha (
+    id          VARCHAR(50)  PRIMARY KEY,    -- = constante del enum Java
+    nombre      VARCHAR(30)  NOT NULL,
+    descripcion VARCHAR(200) NOT NULL,
+    CONSTRAINT uk_estado_ficha_nombre UNIQUE (nombre)
+);
+INSERT INTO estado_ficha (id, nombre, descripcion) VALUES
+('EN_CONSTRUCCION', 'En Construccion', '...'),
+('APROBADA',        'Aprobada',        '...');
+-- tabla referenciante:  estado_ficha_id VARCHAR(50) NOT NULL REFERENCES estado_ficha(id)
+```
 
 ### Plantilla resumida de una HU read — QueryInputPort + ReadModel + QueryUseCase
 
@@ -2224,8 +2290,9 @@ parte natural de su contexto.
 
 ### IDs
 
-- **Siempre `UUID`** (`java.util.UUID`). **Nunca** `Long`, `Integer` o autoincrementales de BD.
-- `crear(...)` genera el UUID con `UUID.randomUUID()`.
+- **Siempre `UUID`** (`java.util.UUID`) para entidades y aggregates. **Nunca** `Long`, `Integer` o autoincrementales de BD.
+- **Excepción — catálogos de estados/tipos:** su PK es semántica, un `VARCHAR` = constante del enum en SCREAMING_CASE (ADR-012), no un `UUID`. Ver "Estados y tipos: enum de dominio + catálogo con PK semántica (ADR-012)".
+- `crear(...)` genera el UUID dentro del setter `setId()` con `UtilUUID.generateNewUUID()` (de `shared:domain`), no en el cuerpo de `crear`.
 - `reconstruir(...)` recibe el UUID desde persistencia.
 - Para campos `Instant` autogenerados en `crear(...)` (ej. `fechaActualizacion`), usar `UtilDate.generateNewInstantNow()` de `com.arquisoft.shared.util.UtilDate` (`shared:domain`). **Nunca** `Instant.now()` directamente en código de dominio.
 

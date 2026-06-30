@@ -28,12 +28,14 @@ public final class FichasMessages {
         public static final String ASESOR_REQUERIDO        = "FICHA_ASESOR_REQUERIDO";
         public static final String FICHA_TITULO_DUPLICADO  = "FICHA_TITULO_DUPLICADO";
         public static final String ASESOR_NO_ENCONTRADO    = "ASESOR_NO_ENCONTRADO";
+        public static final String FICHA_NO_ENCONTRADA     = "FICHA_NO_ENCONTRADA";
 
         // Mensajes de error
         public static final String TITULO_DUPLICADO        = "El título ya existe: %s";
         public static final String ASESOR_NO_ENCONTRADO_MSG = "Asesor Ficha no encontrado: %s";
         public static final String TITULO_REQUERIDO_MSG    = "El título del proyecto es obligatorio";
         public static final String ASESOR_REQUERIDO_MSG    = "El asesor ficha es obligatorio";
+        public static final String FICHA_NO_ENCONTRADA_MSG = "No se encontró la ficha de perfil con id: %s";
 
         // Logs
         public static final String LOG_REGISTRADA            = "Ficha de perfil registrada — id={}";
@@ -42,6 +44,40 @@ public final class FichasMessages {
         public static final String LOG_CONSULTA_COMPLETADA   = "Consulta fichas-perfil completada — total={}, pagina={}, tamanio={}";
         public static final String LOG_ORDENAMIENTO_INVALIDO  = "Campo de ordenamiento inválido: {}";
         public static final String LOG_USO_INVALIDO_API_ORDEN = "Uso inválido de la API de acceso a datos al ordenar: {}";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // ItemFichaPerfil
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class ItemFichaPerfil {
+
+        private ItemFichaPerfil() {}
+
+        // Campos
+        public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
+        public static final String CAMPO_TIPO_ITEM_CODE  = "tipoItemCode";
+        public static final String CAMPO_CONTENIDO       = "contenido";
+
+        // Límites
+        public static final int CONTENIDO_MAX = 7000;
+
+        // Códigos de error
+        public static final String FICHA_PERFIL_ID_REQUERIDO     = "ITEM_FICHA_PERFIL_ID_REQUERIDO";
+        public static final String TIPO_ITEM_CODE_REQUERIDO      = "ITEM_TIPO_ITEM_CODE_REQUERIDO";
+        public static final String CONTENIDO_REQUERIDO           = "ITEM_CONTENIDO_REQUERIDO";
+        public static final String CONTENIDO_DEMASIADO_LARGO     = "ITEM_CONTENIDO_DEMASIADO_LARGO";
+        public static final String ITEM_TIPO_DUPLICADO           = "ITEM_TIPO_DUPLICADO";
+        public static final String ITEM_FICHA_NO_AUTORIZADA      = "ITEM_FICHA_NO_AUTORIZADA";
+        public static final String TIPO_ITEM_INVALIDO            = "TIPO_ITEM_INVALIDO";
+
+        // Mensajes de error
+        public static final String TIPO_ITEM_INVALIDO_MSG        = "El tipo de ítem '%s' no es válido";
+        public static final String TIPO_ITEM_DUPLICADO_MSG       = "La ficha ya tiene un ítem del tipo: %s";
+        public static final String FICHA_NO_AUTORIZADA_MSG       = "El estudiante no es propietario de la ficha: %s";
+
+        // Logs
+        public static final String LOG_AGREGADO = "Ítem agregado — id={}, fichaPerfilId={}, tipoItem={}";
     }
 
     // ─────────────────────────────────────────────────────────────────────────

@@ -27,7 +27,8 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
     @Override
     public void guardar(FichaPerfilAggregate ficha) {
-        AsesorFichaJpaEntity asesorRef = entityManager.getReference(AsesorFichaJpaEntity.class, ficha.getAsesorFichaId());
+        AsesorFichaJpaEntity asesorRef = entityManager.getReference(AsesorFichaJpaEntity.class,
+                ficha.getAsesorFichaId());
         fichaPerfilJpaRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));
         log.debug(FichasMessages.FichaPerfil.LOG_GUARDADA, ficha.getId());
     }
@@ -35,6 +36,11 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     @Override
     public Optional<FichaPerfilAggregate> buscarPorId(UUID id) {
         return fichaPerfilJpaRepository.findById(id).map(FichaPerfilMapper::toDomain);
+    }
+
+    @Override
+    public boolean existsById(UUID id) {
+        return fichaPerfilJpaRepository.existsById(id);
     }
 
     @Override

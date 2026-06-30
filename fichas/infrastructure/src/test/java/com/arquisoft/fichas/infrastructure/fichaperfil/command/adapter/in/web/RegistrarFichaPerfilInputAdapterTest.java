@@ -78,7 +78,7 @@ class RegistrarFichaPerfilInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$").value(fichaId.toString()));
+                .andExpect(jsonPath("$.id").value(fichaId.toString()));
     }
 
     @Test
@@ -209,7 +209,7 @@ class RegistrarFichaPerfilInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$").value(fichaId.toString()));
+                .andExpect(jsonPath("$.id").value(fichaId.toString()));
     }
 
     @Test
@@ -234,7 +234,7 @@ class RegistrarFichaPerfilInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$").value(fichaId.toString()));
+                .andExpect(jsonPath("$.id").value(fichaId.toString()));
     }
 
     @Test

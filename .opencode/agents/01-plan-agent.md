@@ -434,9 +434,9 @@ Las características de cada atributo se traducen así en cada capa:
 | Longitud mínima/máxima | `@Size(min=N, max=M)` en DTO + `@Column(length=M)` en JPA + `VARCHAR(M)` en Flyway + validación en constructor del Aggregate |
 | Obligatorio | `@NotBlank` o `@NotNull` en DTO + `@Column(nullable=false)` en JPA + `NOT NULL` en Flyway + validación en constructor |
 | No modificable | NO se genera setter ni método `cambiar{Atributo}()` en la entidad |
-| Autogenerado (UUID) | `UUID.randomUUID()` dentro de `crear(...)` |
-| Autogenerado (Instant) | `UtilDate.generateNewInstantNow()` (de `com.arquisoft.shared.util.UtilDate`, en `shared:domain`) dentro de `crear(...)`. **Nunca** `Instant.now()` directamente — todo timestamp autogenerado en dominio pasa por `UtilDate`. |
-| Limpiar espacios | `.trim()` en el factory `crear(...)` antes de validar |
+| Autogenerado (UUID) | `UtilUUID.generateNewUUID()` (de `shared:domain`) dentro del setter `setId()`, no en el cuerpo de `crear(...)`. **Nunca** `UUID.randomUUID()` directo en el dominio. |
+| Autogenerado (Instant) | `UtilDate.generateNewInstantNow()` (de `com.arquisoft.shared.util.UtilDate`, en `shared:domain`) dentro del setter `setFechaActualizacion()`. **Nunca** `Instant.now()` directo. |
+| Limpiar espacios | `UtilText.applyTrim(...)` (de `shared:domain`) dentro del setter del atributo, no `.trim()` directo. |
 | Sensible | No se incluye en `toString()`, no se loguea, no se devuelve en DTOs salvo necesidad explícita |
 | Combinación única | `UNIQUE` constraint en Flyway + validación de unicidad en use case antes de persistir |
 
@@ -446,12 +446,12 @@ Cuando un atributo es un **estado** o **tipo** con un conjunto **cerrado y conoc
 
 **Razón:** un catálogo de estados/tipos solo tiene casos de uso de **consulta**, nunca de **escritura** — sin caso de uso de escritura no hay aggregate (el aggregate existe para encapsular invariantes de escritura). El enum es suficiente. El plan debe reflejar:
 
-- El **aggregate guarda el enum directamente** (`EstadoFicha estadoFicha`), nunca un `UUID {estado}Id`.
+- El **aggregate guarda el enum directamente** (`EstadoFicha estadoFicha`), nunca un `String {estado}Id`.
+- **PK semántica `VARCHAR`, no `UUID` (ADR-012):** el `id` del catálogo es la constante del enum en SCREAMING_CASE (`"EN_CONSTRUCCION"`). El enum lleva `id` (= `name()`) y `nombre` (texto legible). La tabla catálogo se planea con PK `VARCHAR` poblada por Flyway con esas constantes; la tabla que la referencia usa FK `VARCHAR` (`@ManyToOne`), nunca `UUID`.
 - **El dominio asigna el valor:** el estado/tipo inicial dentro de `crear(...)`; las transiciones en métodos de negocio del aggregate. El use case **no** recibe ni resuelve el estado/tipo.
-- Si el enum se respalda con tabla catálogo (FK por id), el lookup nombre→id va en el **`CommandOutputAdapter`**, nunca en el use case (un query port para esto es un viaje a BD de más).
-- El **`Mapper` es mapeo puro**: NO llama a `JpaRepository`. El adapter resuelve el valor y lo pasa como parámetro al mapper (`toJpaEntity(aggregate, estadoId)`, `toDomain(entity, nombre)`).
+- **Persistencia sin consulta al catálogo:** como el id ya es la constante del enum, el `CommandOutputAdapter` usa `entityManager.getReference(CatalogoJpaEntity.class, enum.getId())` — sin `findByNombre` ni viaje a BD. El **`Mapper` es mapeo puro** (no llama a `JpaRepository`): recibe la referencia del catálogo y reconstruye con `Enum.valueOf(entity.getCatalogo().getId())`.
 
-> Para un catálogo de estados/tipos NO planees `{Estado}Aggregate`, `{Estado}QueryOutputPort`, `{Estado}QueryOutputAdapter` ni `{Estado}ReadModel` — el enum los reemplaza. Detalle completo en el skill `arquisoft-context`, sección "Estados y tipos: enum de dominio + catálogo en BD".
+> Para un catálogo de estados/tipos NO planees `{Estado}Aggregate`, `{Estado}QueryOutputPort`, `{Estado}QueryOutputAdapter` ni `{Estado}ReadModel` — el enum los reemplaza. Detalle completo en el skill `arquisoft-context`, sección "Estados y tipos: enum de dominio + catálogo con PK semántica (ADR-012)".
 
 ### Eventos de Dominio que emite
 
