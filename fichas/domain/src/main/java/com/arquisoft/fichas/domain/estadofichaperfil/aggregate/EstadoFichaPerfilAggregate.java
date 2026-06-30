@@ -3,6 +3,7 @@ package com.arquisoft.fichas.domain.estadofichaperfil.aggregate;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.util.UtilDate;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
 
@@ -11,42 +12,65 @@ import java.util.UUID;
 
 public final class EstadoFichaPerfilAggregate {
 
-    private final UUID id;
-    private final UUID fichaPerfilId;
-    private final EstadoFicha estadoFicha;
-    private final Instant fechaActualizacion;
+    private UUID id;
+    private UUID fichaPerfilId;
+    private EstadoFicha estadoFicha;
+    private Instant fechaActualizacion;
 
-    private EstadoFichaPerfilAggregate(UUID id, UUID fichaPerfilId, EstadoFicha estadoFicha,
-                                       Instant fechaActualizacion) {
-        this.id = id;
-        this.fichaPerfilId = fichaPerfilId;
-        this.estadoFicha = estadoFicha;
-        this.fechaActualizacion = fechaActualizacion;
-    }
+    private EstadoFichaPerfilAggregate() {}
+
+    // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
 
     public static EstadoFichaPerfilAggregate crear(UUID fichaPerfilId) {
+        var aggregate = new EstadoFichaPerfilAggregate();
         var result = new ValidationResult();
 
-        DomainValidator.notNull(fichaPerfilId,
-                FichasMessages.EstadoFichaPerfil.CAMPO_FICHA_PERFIL_ID,
-                FichasMessages.EstadoFichaPerfil.FICHA_PERFIL_ID_REQUERIDO,
-                result);
+        aggregate.setId();
+        aggregate.setFichaPerfilId(fichaPerfilId, result);
+        aggregate.setEstadoFicha();
+        aggregate.setFechaActualizacion();
 
         result.throwIfHasErrors();
-
-        return new EstadoFichaPerfilAggregate(
-                UUID.randomUUID(),
-                fichaPerfilId,
-                EstadoFicha.EN_CONSTRUCCION,
-                UtilDate.generateNewInstantNow()
-        );
+        return aggregate;
     }
+
+    // ─── Factory: reconstruir (desde persistencia — dato confiable) ──────────
 
     public static EstadoFichaPerfilAggregate reconstruir(UUID id, UUID fichaPerfilId,
                                                          EstadoFicha estadoFicha,
                                                          Instant fechaActualizacion) {
-        return new EstadoFichaPerfilAggregate(id, fichaPerfilId, estadoFicha, fechaActualizacion);
+        var aggregate = new EstadoFichaPerfilAggregate();
+        aggregate.id = id;
+        aggregate.fichaPerfilId = fichaPerfilId;
+        aggregate.estadoFicha = estadoFicha;
+        aggregate.fechaActualizacion = fechaActualizacion;
+        return aggregate;
     }
+
+    // ─── Private setters ──────────────────────────────────────────────────────
+
+    private void setId() {
+        this.id = UtilUUID.generateNewUUID();
+    }
+
+    private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
+        if (!DomainValidator.notNull(fichaPerfilId,
+                FichasMessages.EstadoFichaPerfil.CAMPO_FICHA_PERFIL_ID,
+                FichasMessages.EstadoFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
+            return;
+        }
+        this.fichaPerfilId = fichaPerfilId;
+    }
+
+    private void setEstadoFicha() {
+        this.estadoFicha = EstadoFicha.EN_CONSTRUCCION;
+    }
+
+    private void setFechaActualizacion() {
+        this.fechaActualizacion = UtilDate.generateNewInstantNow();
+    }
+
+    // ─── Getters ──────────────────────────────────────────────────────────────
 
     public UUID getId() {
         return id;

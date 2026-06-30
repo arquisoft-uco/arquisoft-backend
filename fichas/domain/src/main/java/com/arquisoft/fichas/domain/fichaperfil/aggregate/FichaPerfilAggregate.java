@@ -2,6 +2,7 @@ package com.arquisoft.fichas.domain.fichaperfil.aggregate;
 
 import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
 
@@ -27,7 +28,7 @@ public final class FichaPerfilAggregate {
         FichaPerfilAggregate ficha = new FichaPerfilAggregate();
         ValidationResult result = new ValidationResult();
 
-        ficha.setId(UUID.randomUUID(), result);
+        ficha.setId();
         ficha.setTituloProyecto(titulo, result);
         ficha.setAsesorFichaId(asesorFichaId, result);
 
@@ -51,13 +52,8 @@ public final class FichaPerfilAggregate {
 
     // ─── Private setters ──────────────────────────────────────────────────────
 
-    private void setId(UUID id, ValidationResult result) {
-        if (!DomainValidator.notNull(id,
-                FichasMessages.FichaPerfil.CAMPO_ID,
-                FichasMessages.FichaPerfil.ID_REQUERIDO, result)) {
-            return;
-        }
-        this.id = id;
+    private void setId() {
+        this.id = UtilUUID.generateNewUUID();
     }
 
     private void setTituloProyecto(String titulo, ValidationResult result) {
