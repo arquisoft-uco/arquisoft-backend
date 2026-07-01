@@ -38,7 +38,7 @@ on:
     # NOTA TEMPORAL DE PRUEBA: la rama feature está incluida para validar el
     # despliegue desde ella antes de fusionar. ⚠️ Revertir a `branches: [develop]`
     # ANTES del merge (workflow_run/workflow_dispatch no corren desde ramas no-default).
-    branches: [develop, feature/cd-deploy-ssh]
+    branches: [develop]
   workflow_dispatch:
     inputs:
       image_tag:
