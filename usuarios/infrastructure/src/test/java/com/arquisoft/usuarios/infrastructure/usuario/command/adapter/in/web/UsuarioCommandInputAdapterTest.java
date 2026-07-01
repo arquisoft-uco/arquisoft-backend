@@ -1,0 +1,74 @@
+package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web;
+
+import com.arquisoft.shared.model.UsuarioRole;
+import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioCommand;
+import com.arquisoft.usuarios.application.usuario.command.port.in.CrearUsuarioInputPort;
+import com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web.dto.CrearUsuarioRequestDTO;
+import com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web.dto.CrearUsuarioResponseDTO;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class UsuarioCommandInputAdapterTest {
+
+    @Mock
+    private CrearUsuarioInputPort crearUsuarioInputPort;
+
+    @InjectMocks
+    private UsuarioCommandInputAdapter adapter;
+
+    @Test
+    void debeRetornar201_cuandoRequestValido() {
+        // Arrange
+        UUID expectedId = UUID.randomUUID();
+        CrearUsuarioRequestDTO request = new CrearUsuarioRequestDTO(
+                "test@example.com",
+                CrearUsuarioRequestDTO.RolUsuarioDTO.ESTUDIANTE
+        );
+        when(crearUsuarioInputPort.ejecutar(any(CrearUsuarioCommand.class))).thenReturn(expectedId);
+
+        // Act
+        ResponseEntity<CrearUsuarioResponseDTO> response = adapter.crear(request);
+
+        // Assert
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getId()).isEqualTo(expectedId);
+        assertThat(response.getBody().getEmail()).isEqualTo("test@example.com");
+        assertThat(response.getBody().getRol()).isEqualTo("estudiante");
+    }
+
+    @Test
+    void debeInvocarInputPort_cuandoCrear() {
+        // Arrange
+        UUID expectedId = UUID.randomUUID();
+        CrearUsuarioRequestDTO request = new CrearUsuarioRequestDTO(
+                "admin@example.com",
+                CrearUsuarioRequestDTO.RolUsuarioDTO.ADMINISTRADOR
+        );
+        when(crearUsuarioInputPort.ejecutar(any(CrearUsuarioCommand.class))).thenReturn(expectedId);
+        ArgumentCaptor<CrearUsuarioCommand> captor = ArgumentCaptor.forClass(CrearUsuarioCommand.class);
+
+        // Act
+        adapter.crear(request);
+
+        // Assert
+        verify(crearUsuarioInputPort).ejecutar(captor.capture());
+        CrearUsuarioCommand command = captor.getValue();
+        assertThat(command.email()).isEqualTo("admin@example.com");
+        assertThat(command.rol()).isEqualTo(UsuarioRole.ADMINISTRADOR);
+    }
+}
