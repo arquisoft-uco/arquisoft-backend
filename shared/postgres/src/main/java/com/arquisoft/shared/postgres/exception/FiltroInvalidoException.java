@@ -10,7 +10,7 @@ import com.arquisoft.shared.exception.BaseError;
  * Extiende ApplicationException (HTTP 400) porque el origen es siempre
  * un parámetro inválido enviado por el consumidor de la API.
  */
-public class FiltroInvalidoException extends ApplicationException {
+public final class FiltroInvalidoException extends ApplicationException {
 
     public FiltroInvalidoException(String mensaje) {
         super(BaseError.of("FILTRO_INVALIDO", mensaje));

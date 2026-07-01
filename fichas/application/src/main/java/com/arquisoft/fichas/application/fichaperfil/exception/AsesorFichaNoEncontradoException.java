@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.FichasMessages;
 
 import java.util.UUID;
 
-public class AsesorFichaNoEncontradoException extends ApplicationException {
+public final class AsesorFichaNoEncontradoException extends ApplicationException {
 
     public AsesorFichaNoEncontradoException(UUID id) {
         super(
