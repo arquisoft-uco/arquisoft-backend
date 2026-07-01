@@ -83,7 +83,6 @@ public class FichasDataSourceConfig {
         em.setJpaVendorAdapter(vendorAdapter);
 
         Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         properties.put("hibernate.hbm2ddl.auto", "validate");
         properties.put("hibernate.format_sql", "true");
         properties.put("hibernate.jdbc.batch_size", "25");
