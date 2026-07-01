@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command;
 
-import com.arquisoft.fichas.application.estudiantefichaperfil.query.port.out.EstudianteFichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaNoPropiaException;
@@ -37,7 +37,7 @@ class AgregarItemFichaPerfilUseCaseTest {
     private FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Mock
-    private EstudianteFichaPerfilQueryOutputPort estudianteFichaPerfilQueryOutputPort;
+    private EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
 
     @Mock
     private ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
@@ -58,7 +58,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         );
 
         when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(estudianteId, fichaPerfilId))
+        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(true);
         when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
                 .thenReturn(false);
@@ -107,7 +107,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         );
 
         when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(estudianteId, fichaPerfilId))
+        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(false);
 
         // Act
@@ -134,7 +134,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         );
 
         when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(estudianteId, fichaPerfilId))
+        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(true);
         when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, tipoItemCode))
                 .thenReturn(true);
@@ -164,7 +164,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         );
 
         when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(estudianteId, fichaPerfilId))
+        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(true);
         when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
                 .thenReturn(false);
@@ -189,7 +189,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         );
 
         when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(estudianteId, fichaPerfilId))
+        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(true);
         when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
                 .thenReturn(false);
@@ -200,11 +200,11 @@ class AgregarItemFichaPerfilUseCaseTest {
         // Assert
         InOrder inOrder = inOrder(
                 fichaPerfilOutputPort,
-                estudianteFichaPerfilQueryOutputPort,
+                estudianteFichaPerfilOutputPort,
                 itemFichaPerfilOutputPort
         );
         inOrder.verify(fichaPerfilOutputPort).existsById(fichaPerfilId);
-        inOrder.verify(estudianteFichaPerfilQueryOutputPort).existePorEstudianteYFicha(estudianteId, fichaPerfilId);
+        inOrder.verify(estudianteFichaPerfilOutputPort).existePorFichaYEstudiante(fichaPerfilId, estudianteId);
         inOrder.verify(itemFichaPerfilOutputPort).existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL");
         inOrder.verify(itemFichaPerfilOutputPort).guardar(any(ItemFichaPerfilAggregate.class));
     }
@@ -222,7 +222,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         );
 
         when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(estudianteId, fichaPerfilId))
+        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(true);
         when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
                 .thenReturn(false);
@@ -247,7 +247,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         );
 
         when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(estudianteId, fichaPerfilId))
+        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(true);
         when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
                 .thenReturn(false);
@@ -272,7 +272,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         );
 
         when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(estudianteId, fichaPerfilId))
+        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(true);
         when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
                 .thenReturn(false);

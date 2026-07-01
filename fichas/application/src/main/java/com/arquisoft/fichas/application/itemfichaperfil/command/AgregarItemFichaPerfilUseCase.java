@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command;
 
-import com.arquisoft.fichas.application.estudiantefichaperfil.query.port.out.EstudianteFichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.AgregarItemFichaPerfilInputPort;
@@ -23,7 +23,7 @@ import java.util.UUID;
 public class AgregarItemFichaPerfilUseCase implements AgregarItemFichaPerfilInputPort {
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
-    private final EstudianteFichaPerfilQueryOutputPort estudianteFichaPerfilQueryOutputPort;
+    private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
 
     @Override
@@ -33,8 +33,8 @@ public class AgregarItemFichaPerfilUseCase implements AgregarItemFichaPerfilInpu
             throw new FichaPerfilNoEncontradaException(agregarItemFichaPerfilCommand.fichaPerfilId());
         }
 
-        if (!estudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(agregarItemFichaPerfilCommand
-                .estudianteId(), agregarItemFichaPerfilCommand.fichaPerfilId())) {
+        if (!estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(agregarItemFichaPerfilCommand
+                .fichaPerfilId(), agregarItemFichaPerfilCommand.estudianteId())) {
             throw new ItemFichaNoPropiaException(agregarItemFichaPerfilCommand.fichaPerfilId());
         }
 
