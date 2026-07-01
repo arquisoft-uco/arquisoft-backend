@@ -8,4 +8,7 @@ dependencies {
     // de todos los contextos) tengan acceso transitivo a las constantes del catálogo sin
     // necesidad de declarar la dependencia explícitamente en cada módulo.
     api project(':shared:message')
+
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
