@@ -154,6 +154,58 @@ subprojects { subproject ->
         }
     }
 
+    // ==================== JACOCO ====================
+    // Aplica a todos los contextos de negocio; 'shared:*' queda excluido porque son
+    // librerías transversales sin lógica de dominio propia que justifique el umbral.
+    if (!subproject.path.startsWith(':shared:')) {
+        apply plugin: 'jacoco'
+
+        jacoco {
+            toolVersion = '0.8.12'
+        }
+
+        def jacocoExcludes = [
+            '**/*Aggregate.class',
+            '**/*DTO.class',
+            '**/*Command.class',
+            '**/*ReadModel.class',
+            '**/*Application.class',
+            '**/config/**',
+            '**/*JpaEntity.class'
+        ]
+
+        jacocoTestReport {
+            dependsOn test
+            reports {
+                xml.required = true
+                html.required = true
+            }
+            afterEvaluate {
+                classDirectories.setFrom(files(classDirectories.files.collect {
+                    fileTree(dir: it, excludes: jacocoExcludes)
+                }))
+            }
+        }
+
+        jacocoTestCoverageVerification {
+            dependsOn jacocoTestReport
+            afterEvaluate {
+                classDirectories.setFrom(files(classDirectories.files.collect {
+                    fileTree(dir: it, excludes: jacocoExcludes)
+                }))
+            }
+            violationRules {
+                rule {
+                    limit {
+                        minimum = 0.75
+                    }
+                }
+            }
+        }
+
+        check.dependsOn jacocoTestCoverageVerification
+    }
+
     if (subproject.name.endsWith('application') || subproject.name.endsWith('infrastructure')) {
         dependencies {
             implementation "org.springframework.boot:spring-boot-starter-web"
