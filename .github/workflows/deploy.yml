@@ -22,8 +22,11 @@
 #   SSH_PORT          puerto SSH                             (ej. 22)
 #   SSH_PRIVATE_KEY   clave privada SSH (formato OpenSSH, multilínea)
 #   ENV_FILE          contenido COMPLETO del archivo .env de runtime
+#   BASE_DOMAIN       dominio base (ej. midominio.com). El backend se expone en
+#                     api.<BASE_DOMAIN> vía Traefik (el subdominio "api" es fijo).
 #   GHCR_USERNAME     (opcional) usuario GHCR — solo si el paquete es PRIVADO
 #   GHCR_TOKEN        (opcional) PAT con read:packages — solo si es PRIVADO
+#   DOCKER_NETWORK    (opcional) red Docker de la infra (default: arquisoft-network)
 #
 # Cómo apuntar a otro servidor: ver docs/DESPLIEGUE_CD_SSH.md
 # ==============================================================================
@@ -95,7 +98,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           # Variables forwardeadas a la sesión remota (no se imprimen en logs).
-          envs: IMAGE,ENV_B64,GHCR_USERNAME,GHCR_TOKEN,DOCKER_NETWORK,APP_DOMAIN
+          envs: IMAGE,ENV_B64,GHCR_USERNAME,GHCR_TOKEN,DOCKER_NETWORK,BASE_DOMAIN
           script_stop: true
           script: |
             set -euo pipefail
@@ -106,8 +109,12 @@ jobs:
             # Red Docker donde viven postgres/redis/rabbitmq/keycloak/minio.
             # El backend se une a ella para alcanzarlos por NOMBRE de contenedor.
             NETWORK="${DOCKER_NETWORK:-arquisoft-network}"
-            # Dominio público que Traefik enruta hacia el backend (entrypoint websecure + TLS).
-            APP_DOMAIN="${APP_DOMAIN:-api.unyai.duckdns.org}"
+            # Subdominio FIJO del backend + dominio base OBLIGATORIO → api.<dominio>
+            # Traefik enruta ese host al backend (entrypoint websecure + TLS).
+            if [ -z "${BASE_DOMAIN:-}" ]; then
+              echo "✖ Falta el secreto BASE_DOMAIN (dominio base, ej. midominio.com)"; exit 1
+            fi
+            APP_DOMAIN="api.${BASE_DOMAIN}"
 
             mkdir -p "$APP_DIR"
 
@@ -177,4 +184,4 @@ jobs:
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           DOCKER_NETWORK: ${{ secrets.DOCKER_NETWORK }}
-          APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
+          BASE_DOMAIN: ${{ secrets.BASE_DOMAIN }}
