@@ -29,6 +29,7 @@ public final class FichasMessages {
         public static final String FICHA_TITULO_DUPLICADO  = "FICHA_TITULO_DUPLICADO";
         public static final String ASESOR_NO_ENCONTRADO    = "ASESOR_NO_ENCONTRADO";
         public static final String FICHA_NO_ENCONTRADA     = "FICHA_NO_ENCONTRADA";
+        public static final String FICHA_NO_PROPIETARIO    = "FICHA_NO_PROPIETARIO";
 
         // Mensajes de error
         public static final String TITULO_DUPLICADO        = "El título ya existe: %s";
@@ -36,9 +37,12 @@ public final class FichasMessages {
         public static final String TITULO_REQUERIDO_MSG    = "El título del proyecto es obligatorio";
         public static final String ASESOR_REQUERIDO_MSG    = "El asesor ficha es obligatorio";
         public static final String FICHA_NO_ENCONTRADA_MSG = "No se encontró la ficha de perfil con id: %s";
+        public static final String FICHA_NO_PROPIETARIO_MSG =
+                "El estudiante %s no es propietario de la ficha %s";
 
         // Logs
         public static final String LOG_REGISTRADA            = "Ficha de perfil registrada — id={}";
+        public static final String LOG_MODIFICADA            = "Ficha de perfil modificada — id={}";
         public static final String LOG_GUARDADA              = "FichaPerfil guardada: id={}";
         public static final String LOG_CONSULTANDO           = "Consultando fichas de perfil — pagina={}, tamanio={}";
         public static final String LOG_CONSULTA_COMPLETADA   = "Consulta fichas-perfil completada — total={}, pagina={}, tamanio={}";
