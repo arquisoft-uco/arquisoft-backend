@@ -95,7 +95,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           # Variables forwardeadas a la sesión remota (no se imprimen en logs).
-          envs: IMAGE,ENV_B64,GHCR_USERNAME,GHCR_TOKEN
+          envs: IMAGE,ENV_B64,GHCR_USERNAME,GHCR_TOKEN,DOCKER_NETWORK,APP_DOMAIN
           script_stop: true
           script: |
             set -euo pipefail
@@ -103,6 +103,11 @@ jobs:
             APP_DIR="$HOME/arquisoft"
             CONTAINER="arquisoft-backend"
             APP_PORT="8080"
+            # Red Docker donde viven postgres/redis/rabbitmq/keycloak/minio.
+            # El backend se une a ella para alcanzarlos por NOMBRE de contenedor.
+            NETWORK="${DOCKER_NETWORK:-arquisoft-network}"
+            # Dominio público que Traefik enruta hacia el backend (entrypoint websecure + TLS).
+            APP_DOMAIN="${APP_DOMAIN:-api.unyai.duckdns.org}"
 
             mkdir -p "$APP_DIR"
 
@@ -130,12 +135,22 @@ jobs:
 
             # 4) Reemplazar el contenedor
             docker rm -f "$CONTAINER" 2>/dev/null || true
+            # Puerto publicado SOLO en loopback: el health check del host funciona,
+            # pero el tráfico externo entra por Traefik (443), no directo al 8080.
             docker run -d \
               --name "$CONTAINER" \
               --restart unless-stopped \
               --env-file "$APP_DIR/.env" \
-              -p "${APP_PORT}:8080" \
+              --network "$NETWORK" \
+              -p "127.0.0.1:${APP_PORT}:8080" \
               --add-host=host.docker.internal:host-gateway \
+              --label "traefik.enable=true" \
+              --label "traefik.docker.network=${NETWORK}" \
+              --label "traefik.http.routers.arquisoft-backend.rule=Host(\`${APP_DOMAIN}\`)" \
+              --label "traefik.http.routers.arquisoft-backend.entrypoints=websecure" \
+              --label "traefik.http.routers.arquisoft-backend.tls=true" \
+              --label "traefik.http.routers.arquisoft-backend.tls.certresolver=letsencrypt" \
+              --label "traefik.http.services.arquisoft-backend.loadbalancer.server.port=8080" \
               "$IMAGE"
             echo "✔ Contenedor $CONTAINER levantado con $IMAGE"
 
@@ -161,3 +176,5 @@ jobs:
           ENV_B64: ${{ steps.env.outputs.b64 }}
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          DOCKER_NETWORK: ${{ secrets.DOCKER_NETWORK }}
+          APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
