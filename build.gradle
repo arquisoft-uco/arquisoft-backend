@@ -176,6 +176,11 @@ subprojects { subproject ->
 
         jacocoTestReport {
             dependsOn test
+            // classDirectories se reconstruye abajo con fileTree() para aplicar exclusiones,
+            // lo que rompe el rastreo automático de dependencias de Gradle (fileTree() no sabe
+            // qué tarea produjo esos directorios) — se declara explícita para evitar el error
+            // de validación "implicit dependency" en builds limpios (CI).
+            dependsOn tasks.named('compileJava'), tasks.named('processResources')
             reports {
                 xml.required = true
                 html.required = true
@@ -189,6 +194,7 @@ subprojects { subproject ->
 
         jacocoTestCoverageVerification {
             dependsOn jacocoTestReport
+            dependsOn tasks.named('compileJava'), tasks.named('processResources')
             afterEvaluate {
                 classDirectories.setFrom(files(classDirectories.files.collect {
                     fileTree(dir: it, excludes: jacocoExcludes)
