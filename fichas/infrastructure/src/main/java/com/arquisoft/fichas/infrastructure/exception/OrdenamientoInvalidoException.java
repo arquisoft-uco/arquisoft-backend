@@ -11,7 +11,7 @@ import com.arquisoft.shared.exception.BaseError;
  * del error es un parámetro inválido enviado por el cliente — aunque sea Spring Data
  * quien lo detecte, la causa raíz es una entrada incorrecta del consumidor de la API.</p>
  */
-public class OrdenamientoInvalidoException extends ApplicationException {
+public final class OrdenamientoInvalidoException extends ApplicationException {
 
     public OrdenamientoInvalidoException(String propertyName) {
         super("El campo de ordenamiento '" + propertyName + "' no es válido", "ORDENAMIENTO_INVALIDO");

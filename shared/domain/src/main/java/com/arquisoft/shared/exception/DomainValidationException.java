@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  *
  * <p>Lanzada exclusivamente por {@link ValidationResult#throwIfHasErrors()}.</p>
  */
-public class DomainValidationException extends DomainException {
+public final class DomainValidationException extends DomainException {
 
     private final ValidationResult validationResult;
 
