@@ -164,6 +164,35 @@ Domain  ←  Application  ←  Infrastructure
 4. **Vertical Slice por agregado:** todo lo de `FichaPerfil` vive bajo `domain/fichaPerfil/`, `application/fichaPerfil/`, `infrastructure/fichaPerfil/`. NO hay carpeta genérica `domain/model/` con todos los agregados.
 5. **Subcarpetas obligatorias siempre**, aunque solo haya un tipo: `adapter/in/web/`, `adapter/out/persistence/`, etc. Nunca componentes directamente en `adapter/in/` o `adapter/out/`.
 
+### Ubicación de `exists()` y lookups cross-aggregate en puertos de salida
+
+El criterio es **de qué aggregate se consulta la existencia**, no quién consume el puerto.
+
+| Caso | Lo invoca | Dónde vive el `exists()` | Razón |
+|---|---|---|---|
+| **1. Invariante del propio aggregate** (unicidad antes de guardar) | command use case | `domain/{entidad}/port/out/{Entidad}OutputPort` — junto a `guardar()` | Validación write-side; el booleano nunca sale al cliente |
+| **2. Precondición de lectura** (404 antes de proyectar) | query use case | `application/{entidad}/query/port/out/{Entidad}QueryOutputPort` | El read side NUNCA toca un puerto write-side de `domain/` (segregación CQRS) — el método se duplica aquí, no se reutiliza el del dominio |
+| **3. Lookup de OTRA feature** (validar FK ajena) | command **o** query use case | `application/{otraEntidad}/query/port/out/{OtraEntidad}QueryOutputPort` | El dominio que escribe no conoce puertos de otra feature; es lectura pura sin efecto. UN puerto, N consumidores (no se duplica el método) |
+
+```java
+// Caso 1 — en el puerto write-side, junto a guardar()
+public interface FichaPerfilOutputPort {
+    void guardar(FichaPerfilAggregate ficha);
+    boolean existsByTituloProyecto(String titulo);
+}
+// Caso 2 — en el QueryOutputPort; NO se reutiliza FichaPerfilOutputPort
+public interface FichaPerfilQueryOutputPort {
+    boolean existsById(UUID id);
+    Optional<FichaPerfilReadModel> findById(UUID id);
+}
+// Caso 3 — puerto query de la otra feature, inyectado por command y query
+public interface AsesorFichaQueryOutputPort {
+    boolean existsById(UUID id);
+}
+```
+
+**Prohibido en el caso 3:** crear un `OutputPort` en `domain/{otraEntidad}/port/out/` para que otra feature lo consuma, o importar `domain/{otraEntidad}/` desde `domain/{entidadQueEscribe}/`. El cross-aggregate lookup vive SIEMPRE en un `QueryOutputPort` de `application/`, nunca en el dominio.
+
 ### Convención de sufijos de clases
 
 | Tipo | Sufijo | Anotación |
@@ -1146,7 +1175,7 @@ package com.arquisoft.fichas.domain.fichaPerfil.exception;
 
 import com.arquisoft.shared.exception.DomainException;
 
-public class FichaPerfilNoEncontradaException extends DomainException {
+public final class FichaPerfilNoEncontradaException extends DomainException {
    public FichaPerfilNoEncontradaException(String id) {
       super("FICHA_PERFIL_NO_ENCONTRADA", "No se encontró la ficha con id: " + id);
    }
@@ -1154,6 +1183,8 @@ public class FichaPerfilNoEncontradaException extends DomainException {
 ```
 
 > Toda excepción del contexto extiende uno de los 4 tipos base: `DomainException` (422), `ApplicationException` (400), `InfrastructureException` (503), `DomainValidationException` (422). **NUNCA** extender `RuntimeException` directamente. Ver sección "Jerarquía de excepciones" más abajo.
+>
+> **Excepción hoja → `final`.** Toda excepción concreta de un contexto (la que nadie hereda) se declara `public final class`. Solo las clases base de `shared:exception` (`DomainException`, `ApplicationException`, etc.), pensadas para ser extendidas, NO llevan `final`.
 
 ### Plantilla completa de una HU write — InputPort + Command + UseCase + Aggregate
 
@@ -1705,7 +1736,7 @@ package com.arquisoft.fichas.application.fichaPerfil.exception;
 
 import com.arquisoft.shared.exception.ApplicationException;
 
-public class FichaPerfilDuplicadaException extends ApplicationException {
+public final class FichaPerfilDuplicadaException extends ApplicationException {
     public FichaPerfilDuplicadaException(String titulo) {
         super("Ya existe una ficha de perfil con el título: " + titulo, "FICHA_PERFIL_DUPLICADA");
     }
