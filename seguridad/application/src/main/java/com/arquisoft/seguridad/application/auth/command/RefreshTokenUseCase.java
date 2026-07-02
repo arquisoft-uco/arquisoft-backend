@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command;
 
 import com.arquisoft.seguridad.application.auth.command.port.in.RefreshTokenInputPort;
-import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
+import com.arquisoft.shared.message.SeguridadMessages;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
 import com.arquisoft.seguridad.domain.auth.port.out.AuthenticationOutputPort;
 import lombok.RequiredArgsConstructor;
@@ -17,11 +17,11 @@ public class RefreshTokenUseCase implements RefreshTokenInputPort {
 
     @Override
     public RefreshResult ejecutar(String tokenRefresco) {
-        log.debug(SeguridadApplicationMessages.RefreshTokenUseCase.REFRESH_DEBUG);
+        log.debug(SeguridadMessages.Token.REFRESH_DEBUG);
 
         CredencialesSesion credenciales = authenticationOutputPort.refrescar(tokenRefresco);
 
-        log.info(SeguridadApplicationMessages.RefreshTokenUseCase.REFRESH_EXITOSO);
+        log.info(SeguridadMessages.Token.REFRESH_EXITOSO);
 
         return new RefreshResult(
                 credenciales.tokenAcceso(),

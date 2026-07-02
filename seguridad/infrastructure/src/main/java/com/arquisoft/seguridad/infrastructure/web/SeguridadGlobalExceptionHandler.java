@@ -3,6 +3,7 @@ package com.arquisoft.seguridad.infrastructure.web;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
+import com.arquisoft.shared.message.SeguridadMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +24,11 @@ public class SeguridadGlobalExceptionHandler {
             CredencialesInvalidasException ex,
             HttpServletRequest request) {
 
-        log.warn("Credenciales invalidas en {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+        log.warn(SeguridadMessages.Login.LOG_CREDENCIALES_INVALIDAS_HANDLER, request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponseDTO.fromBaseException(ex, "Unauthorized", HttpStatus.UNAUTHORIZED, request.getRequestURI()));
+                .body(ErrorResponseDTO.fromBaseException(
+                        ex, SeguridadMessages.Login.HTTP_401_ERROR, HttpStatus.UNAUTHORIZED, request.getRequestURI()));
     }
 
     @ExceptionHandler(TokenInvalidoException.class)
@@ -34,10 +36,11 @@ public class SeguridadGlobalExceptionHandler {
             TokenInvalidoException ex,
             HttpServletRequest request) {
 
-        log.warn("Token invalido en {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+        log.warn(SeguridadMessages.Token.LOG_TOKEN_INVALIDO_HANDLER, request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponseDTO.fromBaseException(ex, "Unauthorized", HttpStatus.UNAUTHORIZED, request.getRequestURI()));
+                .body(ErrorResponseDTO.fromBaseException(
+                        ex, SeguridadMessages.Login.HTTP_401_ERROR, HttpStatus.UNAUTHORIZED, request.getRequestURI()));
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -45,9 +48,10 @@ public class SeguridadGlobalExceptionHandler {
             AuthenticationException ex,
             HttpServletRequest request) {
 
-        log.warn("Excepcion de autenticacion en {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+        log.warn(SeguridadMessages.Login.LOG_EXCEPCION_AUTENTICACION, request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponseDTO.fromBaseException(ex, "Unauthorized", HttpStatus.UNAUTHORIZED, request.getRequestURI()));
+                .body(ErrorResponseDTO.fromBaseException(
+                        ex, SeguridadMessages.Login.HTTP_401_ERROR, HttpStatus.UNAUTHORIZED, request.getRequestURI()));
     }
 }

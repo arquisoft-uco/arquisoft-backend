@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
 import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
+import com.arquisoft.shared.message.SeguridadMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,7 +51,7 @@ public class SecurityConfig {
                 "%s/realms/%s/protocol/openid-connect/certs",
                 keycloakServerUrl, realm
         );
-        log.info("Configuring JWT decoder with JWK Set URI: {}", jwkSetUri);
+        log.info(SeguridadMessages.Login.LOG_JWT_DECODER_CONFIG, jwkSetUri);
         return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
     }
 

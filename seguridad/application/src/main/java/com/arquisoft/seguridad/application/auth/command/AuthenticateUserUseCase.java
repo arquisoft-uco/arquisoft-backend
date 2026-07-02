@@ -2,7 +2,7 @@ package com.arquisoft.seguridad.application.auth.command;
 
 import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCommand;
 import com.arquisoft.seguridad.application.auth.command.port.in.AuthenticateUserInputPort;
-import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
+import com.arquisoft.shared.message.SeguridadMessages;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
 import com.arquisoft.seguridad.domain.auth.port.out.AuthenticationOutputPort;
 import lombok.RequiredArgsConstructor;
@@ -18,11 +18,11 @@ public class AuthenticateUserUseCase implements AuthenticateUserInputPort {
 
     @Override
     public AuthResult ejecutar(AuthenticateUserCommand command) {
-        log.debug(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_DEBUG);
+        log.debug(SeguridadMessages.Autenticacion.AUTENTICAR_DEBUG);
 
         CredencialesSesion credenciales = authenticationOutputPort.autenticar(command.email(), command.password());
 
-        log.info(SeguridadApplicationMessages.AuthenticateUserUseCase.AUTENTICAR_EXITOSO);
+        log.info(SeguridadMessages.Autenticacion.AUTENTICAR_EXITOSO);
 
         return new AuthResult(
                 credenciales.tokenAcceso(),

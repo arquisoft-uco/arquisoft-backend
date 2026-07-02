@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.domain.auth.model;
 
 import com.arquisoft.shared.exception.DomainException;
+import com.arquisoft.shared.message.SeguridadMessages;
 
 import java.util.List;
 
@@ -12,12 +13,12 @@ public record IdentidadToken(
 
     public IdentidadToken {
         if (identidadId == null || identidadId.isBlank()) {
-            throw new DomainException("El identificador de identidad no puede ser nulo ni vacio",
-                    "IDENTIDAD_ID_REQUERIDO");
+            throw new DomainException(SeguridadMessages.Identidad.ID_REQUERIDO,
+                    SeguridadMessages.Identidad.IDENTIDAD_ID_REQUERIDO);
         }
         if (correo == null || correo.isBlank()) {
-            throw new DomainException("El correo no puede ser nulo ni vacio",
-                    "IDENTIDAD_CORREO_REQUERIDO");
+            throw new DomainException(SeguridadMessages.Identidad.CORREO_REQUERIDO,
+                    SeguridadMessages.Identidad.IDENTIDAD_CORREO_REQUERIDO);
         }
         roles = roles != null ? List.copyOf(roles) : List.of();
     }

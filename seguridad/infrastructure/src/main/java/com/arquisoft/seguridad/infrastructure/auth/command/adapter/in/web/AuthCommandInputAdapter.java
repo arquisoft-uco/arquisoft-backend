@@ -11,7 +11,7 @@ import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.Lo
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LogoutResponseDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.RefreshTokenRequestDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.ValidateTokenResponseDTO;
-import com.arquisoft.seguridad.infrastructure.util.message.SeguridadInfraestructureMessages;
+import com.arquisoft.shared.message.SeguridadMessages;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -94,7 +94,7 @@ public class AuthCommandInputAdapter {
     })
     public ResponseEntity<LoginResponseDTO> refreshToken(
             @Valid @RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
-        log.debug(SeguridadInfraestructureMessages.AuthCommandInputAdapter.REFRESH_DEBUG);
+        log.debug(SeguridadMessages.Token.REFRESH_DEBUG);
 
         RefreshTokenInputPort.RefreshResult result = refreshTokenInputPort.ejecutar(
                 refreshTokenRequest.getRefreshToken()
@@ -108,7 +108,7 @@ public class AuthCommandInputAdapter {
                 .scope(result.scope())
                 .build();
 
-        log.debug(SeguridadInfraestructureMessages.AuthCommandInputAdapter.REFRESH_EXITOSO_DEBUG);
+        log.debug(SeguridadMessages.Autenticacion.REFRESH_EXITOSO_DEBUG);
         return ResponseEntity.ok(response);
     }
 
@@ -151,7 +151,7 @@ public class AuthCommandInputAdapter {
                     content = @Content(mediaType = "application/json"))
     })
     public ResponseEntity<ValidateTokenResponseDTO> validateToken(@RequestParam String token) {
-        log.debug(SeguridadInfraestructureMessages.AuthCommandInputAdapter.VALIDATE_DEBUG);
+        log.debug(SeguridadMessages.Autenticacion.VALIDATE_DEBUG);
 
         ValidateTokenInputPort.ValidationResult result = validateTokenInputPort.ejecutar(
                 TokenAggregate.de(token)

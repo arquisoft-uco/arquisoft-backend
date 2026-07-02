@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
+import com.arquisoft.shared.message.SeguridadMessages;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ public class SecurityAccessDeniedHandler implements AccessDeniedHandler {
                        HttpServletResponse response,
                        AccessDeniedException accessDeniedException) {
 
-        log.warn("Access denied (filter-level) in {}: {}", request.getRequestURI(), accessDeniedException.getMessage());
+        log.warn(SeguridadMessages.Login.LOG_ACCESS_DENIED, request.getRequestURI(), accessDeniedException.getMessage());
         resolver.resolveException(request, response, null, accessDeniedException);
     }
 }
