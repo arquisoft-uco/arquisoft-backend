@@ -1,16 +1,12 @@
-package com.arquisoft.shared.model;
+package com.arquisoft.usuarios.domain.usuario.model;
 
 import com.arquisoft.shared.exception.DomainException;
 
 /**
- * Roles del sistema definidos en Keycloak (ADR-003), compartidos entre los contextos
- * {@code usuarios} (creación) y {@code seguridad} (mapeo de autoridades JWT).
+ * Roles de negocio del usuario, definidos en Keycloak (ADR-003).
  *
  * <p>El código de cada rol coincide exactamente con el nombre emitido en el claim
  * {@code realm_access.roles} del token JWT (kebab-case).
- *
- * <p>Reside en {@code shared:domain} porque múltiples contextos lo necesitan
- * sin poder importarse entre sí.
  */
 public enum UsuarioRole {
     ESTUDIANTE("estudiante", "Estudiante que presenta proyecto de grado"),

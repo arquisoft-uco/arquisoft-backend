@@ -4,7 +4,6 @@ dependencies {
     // Domain puro: sin dependencias de framework
     // - Las excepciones de dominio extienden DomainException (shared:domain → exceptions)
     // - Los puertos usan solo tipos de Java stdlib (Map, List, String)
-    // - El enum UsuarioRole es Java puro
 
     // Test: AssertJ + JUnit launcher (versiones gestionadas por BOM heredado del raiz)
     // junit-platform-launcher requerido explicitamente por Gradle 9 en modulos sin

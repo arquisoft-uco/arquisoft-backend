@@ -22,6 +22,7 @@ permission:
       "./gradlew :*:test --tests *": allow
       "./gradlew jacocoTestReport": allow
       "./gradlew :*:jacocoTestReport": allow
+      "./gradlew :*:jacocoTestCoverageVerification": allow
    webfetch: deny
    skill:
       "arquisoft-context": allow
@@ -853,15 +854,18 @@ query-docs /websites/spring_io_spring-framework_reference_6_2 "MockMvc jsonPath 
 
 ### FASE 5 — Verificación Final y Reporte de Cobertura
 
-Antes de generar el reporte JaCoCo, ejecuta la suite completa del contexto:
+Antes de generar el reporte JaCoCo, ejecuta la suite completa del contexto y el gate de cobertura:
 
 ```bash
 ./gradlew :{contexto}:test
 ./gradlew :{contexto}:jacocoTestReport
+./gradlew :{contexto}:jacocoTestCoverageVerification   # gate del build — FALLA si < 75%
 ```
 
 Si la suite completa falla después de que las capas individuales pasaron,
 aplica el **Protocolo de Test Fallido** antes de continuar.
+
+> **El 75% es un gate del build, no un aviso.** En `build.gradle`, `check.dependsOn jacocoTestCoverageVerification` con `minimum = 0.75`: si el contexto queda por debajo, `jacocoTestCoverageVerification` (y por tanto `check`/`build`) **falla — el proyecto no compila para CI**. El gate aplica a los contextos de negocio (`shared:*` está excluido) y NO cuenta clases sin lógica (`*Aggregate`, `*DTO`, `*Command`, `*ReadModel`, `config/**`, `*JpaEntity`) — no persigas cobertura sobre ellas (coincide con los anti-patrones 1, 2 y 7).
 
 Presenta el resumen final al usuario:
 
@@ -888,8 +892,8 @@ DDD verificado:
   ✅ Use case drena y publica eventos vía EventPublisher
 
 Cobertura total del módulo {contexto}: XX%
-Mínimo requerido: 75%
-Estado: ✅ CUMPLE / ⚠️ POR DEBAJO DEL MÍNIMO
+Mínimo requerido: 75% (gate del build — jacocoTestCoverageVerification)
+Estado: ✅ CUMPLE / ⛔ POR DEBAJO — BUILD ROTO
 
 Siguiente paso sugerido:
 → Invocar @validator para validar la implementación completa
@@ -897,15 +901,13 @@ Siguiente paso sugerido:
   "@validator valida la implementacion de {HU|HT}-{ID}"
 ```
 
-Si la cobertura es menor al 75%, advierte pero no bloquea:
+Si `jacocoTestCoverageVerification` falla (cobertura < 75%), el build está roto y **debes corregirlo antes de entregar** — no es un aviso opcional:
 
 ```
-⚠️ ADVERTENCIA: Cobertura {XX}% — por debajo del mínimo requerido (75%)
-
-Opciones:
-  A) Agregar más escenarios de prueba ahora
-  B) Continuar con @validator-analyze (quedará registrado en el reporte)
+⛔ BUILD ROTO: Cobertura {XX}% — por debajo del gate obligatorio (75%)
 ```
+
+Agrega **tests significativos** sobre las ramas/líneas no cubiertas (mira el reporte HTML de JaCoCo para localizarlas) y vuelve a ejecutar el gate hasta que pase. **Nunca** bajes el umbral en `build.gradle` ni infles la cobertura con tests triviales que violen los anti-patrones — eso es responsabilidad de producción, fuera de tu alcance. Si tras cubrir todo lo significativo el gate sigue por debajo del 75%, **detente y reporta al usuario**: probablemente hay código de producción sin lógica testeable que debería excluirse o refactorizarse.
 
 ---
 
@@ -983,7 +985,7 @@ de modificar cualquier archivo de producción.
 5. **Nomenclatura obligatoria.** `debeHacerAlgo_cuandoCondicion` sin excepción.
 6. **No modificas producción.** Solo archivos en `src/test/java/` y `src/test/resources/`.
 7. **Ejecutar tests por capa.** `./gradlew :{contexto}:{capa}:test` tras cada aprobación.
-8. **Cobertura 75% mínimo.** Advertir si no se alcanza, pero no bloquear.
+8. **Cobertura 75% — gate del build, no aviso.** `check.dependsOn jacocoTestCoverageVerification` (`minimum = 0.75`): por debajo, el build falla. Ejecuta `./gradlew :{contexto}:jacocoTestCoverageVerification` en FASE 5 y, si falla, agrega tests significativos hasta que pase. Nunca bajes el umbral ni infles con tests triviales.
 9. **Spring Boot 4.x:** usar `@MockitoBean`, nunca `@MockBean`.
 10. **DDD estricto — tests aislados por capa:** los tests de `domain` son Java puro (solo JUnit + AssertJ, sin mocks de Spring/Keycloak/RabbitMQ); los tests de `application` solo mockean puertos del dominio, nunca APIs externas. Si un test de domain o application requiere framework externo, **detente y reporta violación de capas** antes de escribir el test — la lógica está en la capa equivocada.
 11. **DDD en tests de domain (solo si el plan declara eventos en sección 4):** el test del Aggregate Root verifica el ciclo (`publishEvent` interno del factory → `drainUnPublishedEvents()` retorna y limpia) y que `reconstruir(...)` NO emite eventos. `getUnPublishedEvents()` es `protected` — solo accesible desde tests del mismo paquete del aggregate (typical: `{contexto}/domain/src/test/java/...{entidad}/aggregate/`). **NO uses `clearUnPublishedEvents()` — no existe**. **Si el plan dice "Eventos: ninguno", la entidad raíz no extiende `AggregateRoot` y NO se generan estos tests.**

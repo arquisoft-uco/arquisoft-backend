@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web.dto;
 
-import com.arquisoft.shared.model.UsuarioRole;
+import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web.dto.CrearUsuarioRequestDTO.RolUsuarioDTO;
 import org.junit.jupiter.api.Test;
 
