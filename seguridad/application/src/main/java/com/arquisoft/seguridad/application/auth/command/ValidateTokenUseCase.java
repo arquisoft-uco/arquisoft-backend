@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command;
 
 import com.arquisoft.seguridad.application.auth.command.port.in.ValidateTokenInputPort;
-import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
+import com.arquisoft.shared.message.SeguridadMessages;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenValidationOutputPort;
@@ -18,7 +18,7 @@ public class ValidateTokenUseCase implements ValidateTokenInputPort {
 
     @Override
     public ValidationResult ejecutar(TokenAggregate tokenAggregate) {
-        log.debug(SeguridadApplicationMessages.ValidateTokenUseCase.VALIDAR_DEBUG);
+        log.debug(SeguridadMessages.Token.VALIDAR_DEBUG);
 
         try {
             if (tokenValidationOutputPort.validarToken(tokenAggregate.valor())) {
@@ -28,16 +28,16 @@ public class ValidateTokenUseCase implements ValidateTokenInputPort {
                         true,
                         identidad.identidadId(),
                         identidad.correo(),
-                        SeguridadApplicationMessages.ValidateTokenUseCase.TOKEN_VALIDO
+                        SeguridadMessages.Token.TOKEN_VALIDO
                 );
             } else {
                 return new ValidationResult(false, null, null,
-                        SeguridadApplicationMessages.ValidateTokenUseCase.TOKEN_INVALIDO);
+                        SeguridadMessages.Token.TOKEN_INVALIDO);
             }
         } catch (Exception e) {
-            log.debug(SeguridadApplicationMessages.ValidateTokenUseCase.ERROR_VALIDAR, e.getMessage());
+            log.debug(SeguridadMessages.Token.ERROR_VALIDAR, e.getMessage());
             return new ValidationResult(false, null, null,
-                    SeguridadApplicationMessages.ValidateTokenUseCase.ERROR_VALIDAR_PREFIJO + e.getMessage());
+                    SeguridadMessages.Token.ERROR_VALIDAR_PREFIJO + e.getMessage());
         }
     }
 }

@@ -6,6 +6,7 @@ import com.arquisoft.seguridad.domain.auth.port.out.AuthenticationOutputPort;
 import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
 import com.arquisoft.seguridad.infrastructure.exception.ProveedorIdentidadNoDisponibleException;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
+import com.arquisoft.shared.message.SeguridadMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,22 +61,22 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
                 return mapToCredenciales(response.getBody());
             }
 
-            throw new CredencialesInvalidasException("Error al autenticar con Keycloak");
+            throw new CredencialesInvalidasException(SeguridadMessages.Login.ERROR_AUTENTICAR_KEYCLOAK);
 
         } catch (HttpClientErrorException.Unauthorized e) {
-            log.warn("Credenciales invalidas");
-            throw new CredencialesInvalidasException("Credenciales invalidas");
+            log.warn(SeguridadMessages.Login.LOG_CREDENCIALES_INVALIDAS);
+            throw new CredencialesInvalidasException(SeguridadMessages.Login.CREDENCIALES_INVALIDAS_MSG);
         } catch (HttpClientErrorException e) {
-            log.error("Error de autenticacion en Keycloak: {} - {}", e.getStatusCode(), e.getMessage());
-            throw new AuthenticationException("Error al comunicarse con Keycloak: " + e.getMessage());
+            log.error(SeguridadMessages.Login.LOG_ERROR_AUTENTICACION_KEYCLOAK, e.getStatusCode(), e.getMessage());
+            throw new AuthenticationException(SeguridadMessages.Login.ERROR_COMUNICACION_KEYCLOAK + e.getMessage());
         } catch (ResourceAccessException e) {
-            log.error("Keycloak no disponible (timeout/red) al autenticar: {}", e.getMessage());
-            throw new ProveedorIdentidadNoDisponibleException("Servicio de autenticacion no disponible temporalmente", e);
+            log.error(SeguridadMessages.Login.LOG_KEYCLOAK_NO_DISPONIBLE, e.getMessage());
+            throw new ProveedorIdentidadNoDisponibleException(SeguridadMessages.Login.SERVICIO_NO_DISPONIBLE, e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Error inesperado durante la autenticacion: {}", e.getMessage());
-            throw new AuthenticationException("Error inesperado durante la autenticacion: " + e.getMessage(), e);
+            log.error(SeguridadMessages.Login.LOG_ERROR_INESPERADO, e.getMessage());
+            throw new AuthenticationException(SeguridadMessages.Login.ERROR_INESPERADO_AUTENTICACION + e.getMessage(), e);
         }
     }
 
@@ -97,22 +98,22 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
                 return mapToCredenciales(response.getBody());
             }
 
-            throw new TokenInvalidoException("Error al refrescar el token");
+            throw new TokenInvalidoException(SeguridadMessages.Token.ERROR_REFRESCAR);
 
         } catch (HttpClientErrorException.BadRequest e) {
-            log.warn("Refresh token invalido");
-            throw new TokenInvalidoException("Refresh token invalido o expirado");
+            log.warn(SeguridadMessages.Token.LOG_REFRESH_INVALIDO);
+            throw new TokenInvalidoException(SeguridadMessages.Token.REFRESH_INVALIDO_EXPIRADO);
         } catch (HttpClientErrorException e) {
-            log.error("Error de refresco de token en Keycloak: {} - {}", e.getStatusCode(), e.getMessage());
-            throw new AuthenticationException("Error al refrescar el token: " + e.getMessage());
+            log.error(SeguridadMessages.Token.LOG_ERROR_REFRESCO_KEYCLOAK, e.getStatusCode(), e.getMessage());
+            throw new AuthenticationException(SeguridadMessages.Token.ERROR_REFRESCAR_PREFIJO + e.getMessage());
         } catch (ResourceAccessException e) {
-            log.error("Keycloak no disponible (timeout/red) al refrescar token: {}", e.getMessage());
-            throw new ProveedorIdentidadNoDisponibleException("Servicio de autenticacion no disponible temporalmente", e);
+            log.error(SeguridadMessages.Token.LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO, e.getMessage());
+            throw new ProveedorIdentidadNoDisponibleException(SeguridadMessages.Login.SERVICIO_NO_DISPONIBLE, e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Error inesperado al refrescar el token: {}", e.getMessage());
-            throw new AuthenticationException("Error inesperado al refrescar el token: " + e.getMessage(), e);
+            log.error(SeguridadMessages.Token.LOG_ERROR_INESPERADO_REFRESCO, e.getMessage());
+            throw new AuthenticationException(SeguridadMessages.Token.ERROR_INESPERADO_REFRESCO_PREFIJO + e.getMessage(), e);
         }
     }
 
@@ -122,7 +123,7 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
             refrescar(tokenRefresco);
             return true;
         } catch (Exception e) {
-            log.debug("Validacion de refresh token fallida: {}", e.getMessage());
+            log.debug(SeguridadMessages.Token.LOG_VALIDACION_REFRESH_FALLIDA, e.getMessage());
             return false;
         }
     }

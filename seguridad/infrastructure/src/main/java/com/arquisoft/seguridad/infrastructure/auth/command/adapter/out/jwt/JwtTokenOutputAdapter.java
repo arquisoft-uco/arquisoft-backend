@@ -3,6 +3,7 @@ package com.arquisoft.seguridad.infrastructure.auth.command.adapter.out.jwt;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenValidationOutputPort;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
+import com.arquisoft.shared.message.SeguridadMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -33,8 +34,8 @@ public class JwtTokenOutputAdapter implements TokenValidationOutputPort {
                     extraerRolesRealm(jwt)
             );
         } catch (Exception e) {
-            log.error("Error al extraer informacion del token: {}", e.getMessage());
-            throw new TokenInvalidoException("Token invalido: " + e.getMessage(), e);
+            log.error(SeguridadMessages.Token.LOG_ERROR_EXTRAER_INFO, e.getMessage());
+            throw new TokenInvalidoException(SeguridadMessages.Token.TOKEN_INVALIDO_PREFIJO + e.getMessage(), e);
         }
     }
 
@@ -44,7 +45,7 @@ public class JwtTokenOutputAdapter implements TokenValidationOutputPort {
             jwtDecoder.decode(token);
             return true;
         } catch (Exception e) {
-            log.warn("Validacion de token fallida: {}", e.getMessage());
+            log.warn(SeguridadMessages.Token.LOG_VALIDACION_FALLIDA, e.getMessage());
             return false;
         }
     }

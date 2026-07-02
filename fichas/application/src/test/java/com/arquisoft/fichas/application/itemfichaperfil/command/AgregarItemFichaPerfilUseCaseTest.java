@@ -125,10 +125,10 @@ class AgregarItemFichaPerfilUseCaseTest {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
         AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 "Contenido válido",
                 estudianteId
         );
@@ -136,7 +136,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
         when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(true);
-        when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, tipoItemCode))
+        when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, tipoItem))
                 .thenReturn(true);
 
         // Act
@@ -147,7 +147,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         assertThat(((ApplicationException) exception).getErrorCode())
                 .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_TIPO_DUPLICADO);
         assertThat(exception.getMessage())
-                .isEqualTo(FichasMessages.ItemFichaPerfil.TIPO_ITEM_DUPLICADO_MSG.formatted(tipoItemCode));
+                .isEqualTo(FichasMessages.ItemFichaPerfil.TIPO_ITEM_DUPLICADO_MSG.formatted(tipoItem));
         verify(itemFichaPerfilOutputPort, never()).guardar(any());
     }
 

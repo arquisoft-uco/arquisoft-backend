@@ -20,13 +20,13 @@ public final class ItemFichaPerfilAggregate {
 
     // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
 
-    public static ItemFichaPerfilAggregate crear(UUID fichaPerfilId, String tipoItemCode, String contenido) {
+    public static ItemFichaPerfilAggregate crear(UUID fichaPerfilId, String tipoItem, String contenido) {
         var itemFichaPerfilAggregate = new ItemFichaPerfilAggregate();
         var result = new ValidationResult();
 
         itemFichaPerfilAggregate.setId();
         itemFichaPerfilAggregate.setFichaPerfilId(fichaPerfilId, result);
-        itemFichaPerfilAggregate.setTipoItem(tipoItemCode, result);
+        itemFichaPerfilAggregate.setTipoItem(tipoItem, result);
         itemFichaPerfilAggregate.setContenido(contenido, result);
 
         result.throwIfHasErrors();
@@ -60,19 +60,19 @@ public final class ItemFichaPerfilAggregate {
         this.fichaPerfilId = fichaPerfilId;
     }
 
-    private void setTipoItem(String tipoItemCode, ValidationResult result) {
-        if (!DomainValidator.notBlank(tipoItemCode,
-                FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM_CODE,
-                FichasMessages.ItemFichaPerfil.TIPO_ITEM_CODE_REQUERIDO, result)) {
+    private void setTipoItem(String tipoItem, ValidationResult result) {
+        if (!DomainValidator.notBlank(tipoItem,
+                FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM,
+                FichasMessages.ItemFichaPerfil.TIPO_ITEM_REQUERIDO, result)) {
             return;
         }
         try {
-            this.tipoItem = TipoItem.valueOf(UtilText.applyTrim(tipoItemCode));
+            this.tipoItem = TipoItem.valueOf(UtilText.applyTrim(tipoItem));
         } catch (IllegalArgumentException e) {
             result.addError(
-                    FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM_CODE,
+                    FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM,
                     FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
-                    FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO_MSG.formatted(tipoItemCode));
+                    FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO_MSG.formatted(tipoItem));
         }
     }
 

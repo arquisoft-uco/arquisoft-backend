@@ -17,7 +17,7 @@ import java.util.UUID;
 public class AgregarItemFichaPerfilRequestDTO {
 
     @NotBlank(message = "El tipo de ítem es obligatorio")
-    private String tipoItemCode;
+    private String tipoItem;
 
     @NotBlank(message = "El contenido es obligatorio")
     @Size(max = 7000, message = "El contenido no puede superar 7000 caracteres")
@@ -26,7 +26,7 @@ public class AgregarItemFichaPerfilRequestDTO {
     public AgregarItemFichaPerfilCommand toCommand(UUID fichaPerfilId, UUID estudianteId) {
         return new AgregarItemFichaPerfilCommand(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido,
                 estudianteId
         );

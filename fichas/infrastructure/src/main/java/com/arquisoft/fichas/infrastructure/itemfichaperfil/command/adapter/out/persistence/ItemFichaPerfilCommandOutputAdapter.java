@@ -34,7 +34,7 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     }
 
     @Override
-    public boolean existsPorFichaYTipoItem(UUID fichaPerfilId, String tipoItemCode) {
-        return jpaRepository.existsByFichaPerfilIdAndTipoItemId(fichaPerfilId, tipoItemCode);
+    public boolean existsPorFichaYTipoItem(UUID fichaPerfilId, String tipoItem) {
+        return jpaRepository.existsByFichaPerfilIdAndTipoItemId(fichaPerfilId, tipoItem);
     }
 }

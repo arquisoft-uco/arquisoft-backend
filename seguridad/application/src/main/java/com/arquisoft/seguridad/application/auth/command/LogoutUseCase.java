@@ -2,7 +2,7 @@ package com.arquisoft.seguridad.application.auth.command;
 
 import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
 import com.arquisoft.seguridad.application.auth.command.port.in.LogoutInputPort;
-import com.arquisoft.seguridad.application.util.message.SeguridadApplicationMessages;
+import com.arquisoft.shared.message.SeguridadMessages;
 import com.arquisoft.seguridad.domain.auth.aggregate.SesionAggregate;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class LogoutUseCase implements LogoutInputPort {
         tokenBlacklistOutputPort.invalidarToken(
                 sesion.identificadorToken(), sesion.tiempoVidaRestante());
 
-        log.info(SeguridadApplicationMessages.LogoutUseCase.LOGOUT_EXITOSO,
+        log.info(SeguridadMessages.Sesion.LOGOUT_EXITOSO,
                 sesion.identificadorToken(), sesion.tiempoVidaRestante());
     }
 }

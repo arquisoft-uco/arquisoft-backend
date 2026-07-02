@@ -8,5 +8,5 @@ public interface ItemFichaPerfilOutputPort {
 
     void guardar(ItemFichaPerfilAggregate item);
 
-    boolean existsPorFichaYTipoItem(UUID fichaPerfilId, String tipoItemCode);
+    boolean existsPorFichaYTipoItem(UUID fichaPerfilId, String tipoItem);
 }

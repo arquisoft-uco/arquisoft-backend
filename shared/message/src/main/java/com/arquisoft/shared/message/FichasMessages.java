@@ -60,7 +60,7 @@ public final class FichasMessages {
 
         // Campos
         public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
-        public static final String CAMPO_TIPO_ITEM_CODE  = "tipoItemCode";
+        public static final String CAMPO_TIPO_ITEM       = "tipoItem";
         public static final String CAMPO_CONTENIDO       = "contenido";
 
         // Límites
@@ -68,7 +68,7 @@ public final class FichasMessages {
 
         // Códigos de error
         public static final String FICHA_PERFIL_ID_REQUERIDO     = "ITEM_FICHA_PERFIL_ID_REQUERIDO";
-        public static final String TIPO_ITEM_CODE_REQUERIDO      = "ITEM_TIPO_ITEM_CODE_REQUERIDO";
+        public static final String TIPO_ITEM_REQUERIDO           = "ITEM_TIPO_ITEM_REQUERIDO";
         public static final String CONTENIDO_REQUERIDO           = "ITEM_CONTENIDO_REQUERIDO";
         public static final String CONTENIDO_DEMASIADO_LARGO     = "ITEM_CONTENIDO_DEMASIADO_LARGO";
         public static final String ITEM_TIPO_DUPLICADO           = "ITEM_TIPO_DUPLICADO";
