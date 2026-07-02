@@ -1,7 +1,6 @@
 package com.arquisoft.usuarios.domain.usuario.model;
 
 import com.arquisoft.shared.exception.DomainException;
-import com.arquisoft.shared.model.UsuarioRole;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.domain.usuario.aggregate;
 
 import com.arquisoft.shared.exception.DomainException;
-import com.arquisoft.shared.model.UsuarioRole;
+import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;

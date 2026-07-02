@@ -1,6 +1,6 @@
 # Módulo `seguridad`
 
-Contexto acotado responsable de la autenticación, autorización y gestión de usuarios del sistema. Delega la emisión de tokens a Keycloak y protege los recursos mediante JWT, blacklist Redis y rate limiting.
+Contexto acotado responsable de la autenticación y autorización del sistema. Delega la emisión de tokens a Keycloak y protege los recursos mediante JWT, blacklist Redis y rate limiting. La creación y gestión de usuarios vive en el contexto `usuarios` — `seguridad` es puramente command-side sobre autenticación (no tiene agregado de usuario propio).
 
 ---
 
@@ -12,8 +12,8 @@ Contexto acotado responsable de la autenticación, autorización y gestión de u
 | Refresco de tokens | Keycloak refresh_token flow |
 | Cierre de sesión | Blacklist JTI en Redis con TTL automático |
 | Validación de tokens entre servicios | JwtDecoder + JWK Set de Keycloak |
-| Creación de usuarios | Agrega dominio + evento `UsuarioCreadoEvent` vía RabbitMQ |
-| Protección de endpoints | JWT Resource Server, rate limiting por IP, CORS, AuditFilter |
+| Autorización de endpoints | Permisos finos (`resource_access.{clientId}.roles`) vía JWT Resource Server |
+| Protección de endpoints | Rate limiting por IP, CORS, AuditFilter |
 
 ---
 
@@ -23,57 +23,37 @@ Contexto acotado responsable de la autenticación, autorización y gestión de u
 seguridad/
 ├── domain/
 │   └── src/main/java/.../seguridad/domain/
-│       ├── auth/
-│       │   ├── aggregate/
-│       │   │   ├── TokenAggregate.java          Aggregate para validar un JWT (solo campo valor)
-│       │   │   └── SesionAggregate.java         Aggregate de sesión activa; guarda invariantes del logout (jti no vacío, TTL > 0)
-│       │   ├── model/
-│       │   │   ├── CredencialesSesion.java       Value object: resultado de autenticar/refrescar
-│       │   │   └── IdentidadToken.java           Value object: identidad extraída de un JWT validado
-│       │   ├── port/out/
-│       │   │   ├── AuthenticationOutputPort.java  Contrato con el proveedor de identidad (Keycloak)
-│       │   │   ├── TokenValidationOutputPort.java Contrato para validar y extraer info de un JWT
-│       │   │   ├── TokenBlacklistOutputPort.java  Contrato para blacklist de tokens revocados
-│       │   │   └── CurrentUserOutputPort.java     Contrato para leer el usuario autenticado del contexto
-│       │   └── exception/
-│       │       └── AuthenticationException.java   Excepción base de autenticación del dominio
-│       └── usuario/
+│       └── auth/
 │           ├── aggregate/
-│           │   └── UsuarioAggregate.java          Aggregate root del usuario; emite UsuarioCreadoEvent
+│           │   ├── TokenAggregate.java          Aggregate para validar un JWT (solo campo valor)
+│           │   └── SesionAggregate.java         Aggregate de sesión activa; guarda invariantes del logout (jti no vacío, TTL > 0)
 │           ├── model/
-│           │   └── UsuarioRole.java               Enum con los 8 roles del sistema
-│           ├── event/
-│           │   └── UsuarioCreadoEvent.java        Evento de dominio publicado al crear un usuario
-│           └── port/out/
-│               └── UsuarioOutputPort.java         Contrato de persistencia de usuarios
+│           │   ├── CredencialesSesion.java       Value object: resultado de autenticar/refrescar
+│           │   └── IdentidadToken.java           Value object: identidad extraída de un JWT validado
+│           ├── port/out/
+│           │   ├── AuthenticationOutputPort.java  Contrato con el proveedor de identidad (Keycloak)
+│           │   ├── TokenValidationOutputPort.java Contrato para validar y extraer info de un JWT
+│           │   ├── TokenBlacklistOutputPort.java  Contrato para blacklist de tokens revocados
+│           │   └── CurrentUserOutputPort.java     Contrato para leer el usuario autenticado del contexto
+│           └── exception/
+│               └── AuthenticationException.java   Excepción base de autenticación del dominio
 │
 ├── application/
 │   └── src/main/java/.../seguridad/application/
-│       ├── auth/
-│       │   └── command/
-│       │       ├── AuthenticateUserUseCase.java   Caso de uso: autenticar con email y contraseña
-│       │       ├── port/in/
-│       │       │   └── AuthenticateUserInputPort.java
-│       │       ├── model/
-│       │       │   └── AuthenticateUserCommand.java  Datos de entrada del login
-│       │       ├── LogoutUseCase.java             Caso de uso: invalidar token en blacklist Redis
-│       │       ├── port/in/
-│       │       │   └── LogoutInputPort.java
-│       │       ├── model/
-│       │       │   └── TokenSesionCommand.java    Record plano: jti y TTL calculado por el adaptador; invariantes en SesionAggregate
-│       │       ├── RefreshTokenUseCase.java       Caso de uso: obtener nuevo access token
-│       │       ├── port/in/
-│       │       │   └── RefreshTokenInputPort.java
-│       │       ├── ValidateTokenUseCase.java      Caso de uso: validar JWT y extraer identidad
-│       │       └── port/in/
-│       │           └── ValidateTokenInputPort.java
-│       └── usuario/
+│       └── auth/
 │           └── command/
-│               ├── CrearUsuarioUseCase.java       Caso de uso: crear usuario y publicar evento
-│               ├── port/in/
-│               │   └── CrearUsuarioInputPort.java
-│               └── model/
-│                   └── CrearUsuarioCommand.java
+│               ├── AuthenticateUserUseCase.java   Caso de uso: autenticar con email y contraseña
+│               ├── LogoutUseCase.java             Caso de uso: invalidar token en blacklist Redis
+│               ├── RefreshTokenUseCase.java        Caso de uso: obtener nuevo access token
+│               ├── ValidateTokenUseCase.java       Caso de uso: validar JWT y extraer identidad
+│               ├── model/
+│               │   ├── AuthenticateUserCommand.java  Datos de entrada del login
+│               │   └── TokenSesionCommand.java       Record plano: jti y TTL calculado por el adaptador; invariantes en SesionAggregate
+│               └── port/in/
+│                   ├── AuthenticateUserInputPort.java
+│                   ├── LogoutInputPort.java
+│                   ├── RefreshTokenInputPort.java
+│                   └── ValidateTokenInputPort.java
 │
 └── infrastructure/
     └── src/main/java/.../seguridad/infrastructure/
@@ -96,20 +76,11 @@ seguridad/
         │           │   └── JwtTokenOutputAdapter.java       Decodifica JWT con JwtDecoder de Spring
         │           └── security/
         │               └── CurrentUserOutputAdapter.java    Lee usuario del SecurityContextHolder
-        ├── usuario/
-        │   └── command/
-        │       ├── adapter/in/web/
-        │       │   ├── UsuarioCommandInputAdapter.java   Endpoint POST /usuarios
-        │       │   └── dto/
-        │       │       ├── CrearUsuarioRequestDTO.java
-        │       │       └── CrearUsuarioResponseDTO.java
-        │       └── adapter/out/persistence/
-        │           └── UsuarioCommandOutputAdapter.java
         ├── config/
         │   ├── security/      SecurityConfig, handlers de 401/403
-        │   ├── keycloak/      Extracción y mapeo de roles JWT
+        │   ├── keycloak/      KeycloakRoleExtractor + KeycloakJwtConverterConfig — mapeo de resource_access.roles a authorities
         │   ├── ratelimit/     Bucket4j + Redis distribuido
-        │   ├── datasource/    DataSource, JPA, Flyway del contexto
+        │   ├── cors/          CorsConfig
         │   ├── http/          RestTemplate para Keycloak
         │   └── scheduling/    @EnableScheduling
         ├── exception/
@@ -134,7 +105,8 @@ seguridad/
 | `POST` | `/auth/refresh` | No | Obtiene nuevo access token usando un refresh token válido |
 | `POST` | `/auth/logout` | Sí (Bearer) | Invalida el JWT actual en la blacklist de Redis |
 | `POST` | `/auth/validate` | No | Valida un JWT y retorna la identidad extraída; útil para validaciones entre servicios |
-| `POST` | `/usuarios` | Sí — `usuarios:usuario:create` | Crea un usuario en el sistema y publica `UsuarioCreadoEvent` |
+
+La creación de usuarios (`POST /usuarios`) vive en el contexto `usuarios`, no en `seguridad`.
 
 ---
 
@@ -142,7 +114,7 @@ seguridad/
 
 ### JWT / Keycloak
 - Tokens validados contra el JWK Set de Keycloak (configurado en `SecurityConfig`).
-- Roles extraídos exclusivamente de `realm_access.roles` (ADR-003).
+- Autorización basada en permisos finos del claim `resource_access.{KEYCLOAK_CLIENT_ID}.roles` (formato `contexto:recurso:accion`, ej. `usuarios:usuario:create`, `fichas:ficha-perfil:view`), extraídos por `KeycloakRoleExtractor` y mapeados 1:1 a `GrantedAuthority` sin prefijo `ROLE_` en `KeycloakJwtConverterConfig`. Los roles de `realm_access.roles` ya no se usan para autorización — cada contexto protege sus endpoints con `@PreAuthorize("hasAuthority('...')")` sobre estos permisos finos.
 - Sesión stateless — ningún estado HTTP del lado del servidor.
 
 ### Blacklist de tokens (logout)
