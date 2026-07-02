@@ -5,9 +5,9 @@ import com.arquisoft.shared.message.FichasMessages;
 
 public final class ItemTipoDuplicadoException extends ApplicationException {
 
-    public ItemTipoDuplicadoException(String tipoItemCode) {
+    public ItemTipoDuplicadoException(String tipoItem) {
         super(
-                FichasMessages.ItemFichaPerfil.TIPO_ITEM_DUPLICADO_MSG.formatted(tipoItemCode),
+                FichasMessages.ItemFichaPerfil.TIPO_ITEM_DUPLICADO_MSG.formatted(tipoItem),
                 FichasMessages.ItemFichaPerfil.ITEM_TIPO_DUPLICADO
         );
     }

@@ -4,7 +4,7 @@ import java.util.UUID;
 
 public record AgregarItemFichaPerfilCommand(
         UUID fichaPerfilId,
-        String tipoItemCode,
+        String tipoItem,
         String contenido,
         UUID estudianteId
 ) {}

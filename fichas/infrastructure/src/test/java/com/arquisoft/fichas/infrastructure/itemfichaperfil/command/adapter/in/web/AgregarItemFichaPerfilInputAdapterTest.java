@@ -60,7 +60,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
 
     private static final String BODY_VALIDO = """
             {
-              "tipoItemCode": "OBJETIVO_GENERAL",
+              "tipoItem": "OBJETIVO_GENERAL",
               "contenido": "Este es un objetivo general válido para el proyecto"
             }
             """;
@@ -84,7 +84,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
     void debe422_cuandoRequestInvalido() throws Exception {
         String bodyInvalido = """
                 {
-                  "tipoItemCode": null,
+                  "tipoItem": null,
                   "contenido": ""
                 }
                 """;

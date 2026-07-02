@@ -39,13 +39,13 @@ public class AgregarItemFichaPerfilUseCase implements AgregarItemFichaPerfilInpu
         }
 
         if (itemFichaPerfilOutputPort.existsPorFichaYTipoItem(agregarItemFichaPerfilCommand.fichaPerfilId(),
-                agregarItemFichaPerfilCommand.tipoItemCode())) {
-            throw new ItemTipoDuplicadoException(agregarItemFichaPerfilCommand.tipoItemCode());
+                agregarItemFichaPerfilCommand.tipoItem())) {
+            throw new ItemTipoDuplicadoException(agregarItemFichaPerfilCommand.tipoItem());
         }
 
         var itemFichaPerfilAggregate = ItemFichaPerfilAggregate.crear(
                 agregarItemFichaPerfilCommand.fichaPerfilId(),
-                agregarItemFichaPerfilCommand.tipoItemCode(),
+                agregarItemFichaPerfilCommand.tipoItem(),
                 agregarItemFichaPerfilCommand.contenido()
         );
 

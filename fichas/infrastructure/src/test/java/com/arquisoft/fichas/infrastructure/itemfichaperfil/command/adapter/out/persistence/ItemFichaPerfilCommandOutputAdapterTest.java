@@ -103,9 +103,9 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeRetornarTrue_cuandoParExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
 
-        TipoItemJpaEntity tipoItemRef = entityManager.getReference(TipoItemJpaEntity.class, tipoItemCode);
+        TipoItemJpaEntity tipoItemRef = entityManager.getReference(TipoItemJpaEntity.class, tipoItem);
         ItemFichaPerfilJpaEntity entity = ItemFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
@@ -117,7 +117,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        boolean existe = adapter.existsPorFichaYTipoItem(fichaPerfilId, tipoItemCode);
+        boolean existe = adapter.existsPorFichaYTipoItem(fichaPerfilId, tipoItem);
 
         // Assert
         assertThat(existe).isTrue();
@@ -127,10 +127,10 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeRetornarFalse_cuandoParNoExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
 
         // Act
-        boolean existe = adapter.existsPorFichaYTipoItem(fichaPerfilId, tipoItemCode);
+        boolean existe = adapter.existsPorFichaYTipoItem(fichaPerfilId, tipoItem);
 
         // Assert
         assertThat(existe).isFalse();

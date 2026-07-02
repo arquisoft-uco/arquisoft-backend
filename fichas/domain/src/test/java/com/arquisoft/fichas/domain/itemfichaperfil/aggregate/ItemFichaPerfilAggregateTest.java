@@ -16,13 +16,13 @@ class ItemFichaPerfilAggregateTest {
     void debeConstruirItem_cuandoDatosValidos() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
         String contenido = "Este es un objetivo general válido";
 
         // Act
         ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         );
 
@@ -37,13 +37,13 @@ class ItemFichaPerfilAggregateTest {
     void debeLanzarExcepcion_cuandoFichaPerfilIdNulo() {
         // Arrange
         UUID fichaPerfilId = null;
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
         String contenido = "Contenido válido";
 
         // Act
         Throwable exception = catchThrowable(() -> ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         ));
 
@@ -57,33 +57,33 @@ class ItemFichaPerfilAggregateTest {
     void debeLanzarExcepcion_cuandoTipoItemCodeVacio() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "";
+        String tipoItem = "";
         String contenido = "Contenido válido";
 
         // Act
         Throwable exception = catchThrowable(() -> ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         ));
 
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM_CODE);
+                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM);
     }
 
     @Test
     void debeLanzarExcepcion_cuandoContenidoVacio() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
         String contenido = "";
 
         // Act
         Throwable exception = catchThrowable(() -> ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         ));
 
@@ -97,13 +97,13 @@ class ItemFichaPerfilAggregateTest {
     void debeLanzarExcepcion_cuandoContenidoMuyLargo() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
         String contenido = "x".repeat(7001);
 
         // Act
         Throwable exception = catchThrowable(() -> ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         ));
 
@@ -117,13 +117,13 @@ class ItemFichaPerfilAggregateTest {
     void debeLanzarExcepcion_cuandoTipoItemCodeInvalido() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "TIPO_INVALIDO";
+        String tipoItem = "TIPO_INVALIDO";
         String contenido = "Contenido válido";
 
         // Act
         Throwable exception = catchThrowable(() -> ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         ));
 
@@ -137,13 +137,13 @@ class ItemFichaPerfilAggregateTest {
     void debeAplicarTrim_cuandoContenidoTieneEspacios() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "  OBJETIVO_GENERAL  ";
+        String tipoItem = "  OBJETIVO_GENERAL  ";
         String contenido = "  Este es un contenido con espacios  ";
 
         // Act
         ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         );
 
