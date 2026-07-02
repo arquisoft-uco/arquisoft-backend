@@ -379,7 +379,7 @@ RazÃ³n: consulta pura de catÃ¡logo de solo lectura. El Event Storming mencio
 | PlanificaciÃ³n | @plan-agent     | âœ… Completado | 2026-07-01 | Plan generado |
 | Desarrollo | @implementador      | âœ… Completado | 2026-07-01 | 6 archivos nuevos (application: ReadModel, InputPort, OutputPort, UseCase; infrastructure: InputAdapter REST, OutputAdapter persistencia). Reutiliza EstadoFicha enum, EstadoFichaJpaEntity/Repository existentes. Sin migraciÃ³n ni eventos. Compila y pasa checkstyle. |
 | Tests      | @tester             | âœ… Completado | 2026-07-01 | 3 archivos de test generados: ConsultarEstadosFichaUseCaseTest (application, 2 tests), EstadoFichaQueryOutputAdapterTest (infrastructure, 3 tests), ConsultarEstadosFichaInputAdapterTest (infrastructure, 7 tests). Total: 12 tests unitarios. Suite completa pasa: `./gradlew fichas:application:test fichas:infrastructure:test` â€” BUILD SUCCESSFUL. Sin tests de domain (no aplica: EstadoFicha es enum, no AggregateRoot). PatrÃ³n AAA, nomenclatura `debeHacerAlgo_cuandoCondicion`, cobertura de casos exitosos + errores de autorizaciÃ³n (401/403) + lista vacÃ­a. |
-| ValidaciÃ³n | @validator-analyze  | â³ Pendiente |       |       | 2026-07-01 | Score: 98/100 — APROBADO |
-| Reporte    | @validator-report   | â³ Pendiente |       |       | 2026-07-01 | /.workspace/validator/validator-HU-036.md |
-| Commit     | @commit             | â³ Pendiente |       |       |
+| Validación | @validator-analyze  | ✅ Completado | 2026-07-01 | Score: 98/100 — APROBADO |
+| Reporte    | @validator-report   | ✅ Completado | 2026-07-01 | /.workspace/validator/validator-HU-036.md |
+| Commit     | @commit             | ✅ Completado | 2026-07-01 | Hash: 02b3759 |
 

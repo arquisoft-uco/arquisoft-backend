@@ -1,6 +1,8 @@
 # Análisis de Validación — HU-036
 
-**Estado:** APROBADO
+**Estado:** ✅ EJECUTADO
+**Hash:** 02b3759
+**Fecha de ejecución:** 2026-07-01
 **Score:** 98/100
 
 **Resumen ejecutivo:** La implementación de la HU-036 "Consultar todos los estados ficha" cumple con todos los criterios de aceptación del plan, sigue correctamente la arquitectura hexagonal + DDD del proyecto, y se alinea fielmente con las convenciones del skill arquisoft-context. Se detectaron cero errores bloqueantes. Los 6 archivos nuevos (4 de producción + 2 adapters con sus tests unitarios, total 12 tests) están correctamente ubicados, compilan sin errores, y respetan la separación CQRS read-side. La autorización usa el client role en kebab-case correcto.
