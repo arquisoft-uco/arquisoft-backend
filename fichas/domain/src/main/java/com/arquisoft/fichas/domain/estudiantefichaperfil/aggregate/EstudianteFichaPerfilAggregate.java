@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate;
 
 import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
 
@@ -24,7 +25,7 @@ public final class EstudianteFichaPerfilAggregate {
         EstudianteFichaPerfilAggregate relacion = new EstudianteFichaPerfilAggregate();
         ValidationResult result = new ValidationResult();
 
-        relacion.setId(UUID.randomUUID(), result);
+        relacion.setId();
         relacion.setFichaPerfilId(fichaPerfilId, result);
         relacion.setEstudianteId(estudianteId, result);
 
@@ -36,13 +37,8 @@ public final class EstudianteFichaPerfilAggregate {
         return new EstudianteFichaPerfilAggregate(id, fichaPerfilId, estudianteId);
     }
 
-    private void setId(UUID id, ValidationResult result) {
-        if (!DomainValidator.notNull(id,
-                FichasMessages.EstudianteFichaPerfil.CAMPO_ID,
-                FichasMessages.EstudianteFichaPerfil.ID_REQUERIDO, result)) {
-            return;
-        }
-        this.id = id;
+    private void setId() {
+        this.id = UtilUUID.generateNewUUID();
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {

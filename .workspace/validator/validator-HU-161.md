@@ -1,105 +1,80 @@
-# Reporte de Validación — HU-161
+# Reporte de Validación — HU-161 (v2)
 
 ## Metadata
 - **ID Historia:** HU-161
 - **Bounded Context:** fichas
-- **Usa AggregateRoot:** No (FichaPerfilAggregate es clase plana sin eventos; EstudianteFichaPerfilAggregate tampoco extiende AggregateRoot — relación CRUD sin eventos)
-- **Fecha de análisis:** 2026-06-23
-- **Rama propuesta:** `feature/HU-161-asignar-estudiantes-ficha-perfil`
+- **Usa AggregateRoot:** No
+- **Fecha de análisis:** 2026-07-02
+- **Rama propuesta:** `feature/HU-161-asignar-estudiantes-ficha-perfil-v2`
 - **Analizado por:** agente validator-analyze (04a-validator-analyze)
 - **Skill arquisoft-context cargado:** ✅
-
----
 
 ## Score
 
 | Nivel | Checks | Pasados | Fallados | Score |
 |-------|--------|---------|----------|-------|
-| Nivel 1 — Completitud del Plan | 19 | 19 | 0 | 100/100 |
-| Nivel 2 — Convenciones DDD + Arquisoft | 147 | 145 | 2 | 98/100 |
+| Nivel 1 — Completitud del Plan | 17 | 17 | 0 | 100/100 |
+| Nivel 2 — Convenciones DDD + Arquisoft | 45 | 45 | 0 | 100/100 |
 | Nivel 3 — Compilación | 4 | 4 | 0 | 100/100 |
-| Nivel 4 — Tests | 15 | 15 | 0 | 100/100 |
-| **Total** | **185** | **183** | **2** | **99/100** |
+| Nivel 4 — Tests | 16 | 16 | 0 | 100/100 |
+| **Total** | **82** | **82** | **0** | **100/100** |
 
 **Checks bloqueantes fallados:** 0
-**Checks menores fallados:** 2
-
----
+**Checks menores fallados:** 0
 
 ## Estado Final
 
-> ✅ APROBADO — Score: 99/100. Sin checks bloqueantes.
-
----
+> ✅ APROBADO — Score: 100/100. Sin checks bloqueantes.
 
 ## Errores Bloqueantes
-
 Ninguno detectado.
 
----
+## Errores Menores
+Ninguno detectado.
 
-## Errores Menores (se pueden corregir en PR o tarea separada)
-
-### [NIVEL 1.1] — Archivo de test de dominio ausente
-- **Archivo esperado:** `fichas/domain/src/test/java/com/arquisoft/fichas/domain/estudiante/aggregate/EstudianteTest.java`
-- **Problema:** El plan declara tests para `EstudianteAggregate` en la sección 12, pero el archivo no existe en el repositorio.
-- **Referencia:** Plan HU-161, sección 12 — tabla "Tests capa domain"
-
-### [NIVEL 1.2] — Archivo de test de dominio ausente
-- **Archivo esperado:** `fichas/domain/src/test/java/com/arquisoft/fichas/domain/estudianteFichaPerfil/aggregate/EstudianteFichaPerfilTest.java`
-- **Problema:** El plan declara tests para `EstudianteFichaPerfilAggregate` en la sección 12, pero el archivo no existe en el repositorio.
-- **Referencia:** Plan HU-161, sección 12 — tabla "Tests capa domain"
-
----
+## Verificación adicional (agente primario)
+- Build completo `./gradlew :fichas:domain:check :fichas:application:check :fichas:infrastructure:check` → BUILD SUCCESSFUL (test + checkstyle + cobertura ≥75%).
+- La query derivada `countByFichaPerfilId` quedó cubierta con test H2 real en `EstudianteFichaPerfilJpaRepositoryTest`.
+- Deuda preexistente v1 (helpers muertos en el repo test) eliminada.
 
 ## Tests
-
-✅ Tests ejecutados según trazabilidad del plan (sección 14).
-
-**Tests totales detectados:** 19 tests en 3 archivos
-- `RegistrarFichaPerfilUseCaseTest.java`: 14 tests
-- `EstudianteFichaPerfilCommandOutputAdapterTest.java`: 3 tests
-- `RegistrarFichaPerfilInputAdapterTest.java`: 12 tests (7 nuevos de HU-161)
-
-**Presupuesto orientativo:** 25-50 (HU mediana)
-**Estado de presupuesto:** dentro del rango
-
-**Anti-patrones detectados:** Ninguno
-**Tests que afirman 500:** Ninguno
-**Tests de ciclo de eventos:** No presentes (correcto — la HU no emite eventos)
-
----
+16 tests del delta: `AsignarEstudiantesFichaPerfilUseCaseTest` (6), `AsignarEstudiantesFichaPerfilInputAdapterTest` (9), + conteo en `EstudianteFichaPerfilCommandOutputAdapterTest` (1) y `EstudianteFichaPerfilJpaRepositoryTest` (1). Sin anti-patrones. Tipo UC: Escritura, sin eventos (coherente).
 
 ## Datos para el commit
 
-**Estado:** ✅ EJECUTADO
-**Hash:** 69193a8
-**Fecha de ejecución:** 2026-06-23
-**Mensaje:** `feat(fichas): asignar estudiantes a ficha de perfil (HU-161)`
-**Tipo:** `feat`
-**Rama:** `feature/HU-161-asignar-estudiantes-ficha-perfil`
+**Mensaje:** feat(fichas): endpoint dedicado para asignar estudiantes a ficha existente (HU-161 v2)
 
+**Cuerpo del mensaje:**
+- Añade `POST /api/fichas-perfil/{fichaPerfilId}/estudiantes` para asignar estudiantes a fichas YA existentes (1 a 3 estudiantes)
+- Patrón canónico: espejo de `AgregarItemFichaPerfilUseCase` (ruta con `@PathVariable` del ID padre)
+- Corrige BUG de la v1: el límite valida `(existentes_en_BD + nuevos) ≤ 3` con conteo vía `contarPorFichaPerfilId(UUID)`
+- `RegistrarFichaPerfilUseCase`: solo ajuste de convención (`!UtilObject.isNull(...)`), sin cambio de comportamiento
+- `EstudianteFichaPerfilAggregate`: `setId()` con `UtilUUID.generateNewUUID()` (convención de valores autogenerados)
+- Reutiliza todas las excepciones existentes de la v1
+- Añade constante de log `EstudianteFichaPerfil.LOG_ASIGNADO`
+- Client role: `fichas:estudiante-ficha-perfil:create`
+- Tests: 16 nuevos — cobertura ≥75%, build en verde (test + checkstyle)
+
+**Tipo:** `feat`
+**Rama:** `feature/HU-161-asignar-estudiantes-ficha-perfil-v2`
 **Archivos a incluir:**
-- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudiante/aggregate/EstudianteAggregate.java`
-- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudianteFichaPerfil/aggregate/EstudianteFichaPerfilAggregate.java`
-- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudianteFichaPerfil/port/out/EstudianteFichaPerfilOutputPort.java`
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudiante/exception/EstudianteNoEncontradoException.java`
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudiante/query/port/out/EstudianteQueryOutputPort.java`
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudianteFichaPerfil/exception/EstudianteDuplicadoException.java`
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudianteFichaPerfil/exception/LimiteEstudiantesExcedidoException.java`
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaPerfil/command/RegistrarFichaPerfilUseCase.java` (modificado)
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaPerfil/command/model/RegistrarFichaPerfilCommand.java` (modificado)
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/fichaPerfil/command/adapter/in/web/dto/RegistrarFichaPerfilRequestDTO.java` (modificado)
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteJpaEntity.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteJpaRepository.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteMapper.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/query/adapter/out/persistence/EstudianteQueryOutputAdapter.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilJpaEntity.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilJpaRepository.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilMapper.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/command/adapter/out/persistence/EstudianteFichaPerfilCommandOutputAdapter.java`
-- `fichas/infrastructure/src/main/resources/db/migration/fichas/V1.1__crear_estudiante_y_estudiante_ficha_perfil.sql`
-- `shared/message/src/main/java/com/arquisoft/shared/message/FichasMessages.java` (modificado)
-- `fichas/application/src/test/java/com/arquisoft/fichas/application/fichaPerfil/command/RegistrarFichaPerfilUseCaseTest.java` (modificado)
-- `fichas/infrastructure/src/test/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/command/adapter/out/persistence/EstudianteFichaPerfilCommandOutputAdapterTest.java`
-- `fichas/infrastructure/src/test/java/com/arquisoft/fichas/infrastructure/fichaPerfil/command/adapter/in/web/RegistrarFichaPerfilInputAdapterTest.java` (modificado)
+- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudiantefichaperfil/command/model/AsignarEstudiantesFichaPerfilCommand.java`
+- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudiantefichaperfil/command/port/in/AsignarEstudiantesFichaPerfilInputPort.java`
+- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudiantefichaperfil/command/AsignarEstudiantesFichaPerfilUseCase.java`
+- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiantefichaperfil/command/adapter/in/web/dto/AsignarEstudiantesFichaPerfilRequestDTO.java`
+- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiantefichaperfil/command/adapter/in/web/AsignarEstudiantesFichaPerfilInputAdapter.java`
+- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudiantefichaperfil/port/out/EstudianteFichaPerfilOutputPort.java`
+- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiantefichaperfil/persistence/EstudianteFichaPerfilJpaRepository.java`
+- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiantefichaperfil/command/adapter/out/persistence/EstudianteFichaPerfilCommandOutputAdapter.java`
+- `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaperfil/command/RegistrarFichaPerfilUseCase.java`
+- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudiantefichaperfil/aggregate/EstudianteFichaPerfilAggregate.java`
+- `shared/message/src/main/java/com/arquisoft/shared/message/FichasMessages.java`
+- `fichas/application/src/test/java/com/arquisoft/fichas/application/estudiantefichaperfil/command/AsignarEstudiantesFichaPerfilUseCaseTest.java`
+- `fichas/infrastructure/src/test/java/com/arquisoft/fichas/infrastructure/estudiantefichaperfil/command/adapter/in/web/AsignarEstudiantesFichaPerfilInputAdapterTest.java`
+- `fichas/infrastructure/src/test/java/com/arquisoft/fichas/infrastructure/estudiantefichaperfil/command/adapter/out/persistence/EstudianteFichaPerfilCommandOutputAdapterTest.java`
+- `fichas/infrastructure/src/test/java/com/arquisoft/fichas/infrastructure/estudiantefichaperfil/persistence/EstudianteFichaPerfilJpaRepositoryTest.java`
+- `.workspace/h-plan/PLAN-HU-161.md`
+- `.workspace/validator/validator-HU-161.md`
+
+## Próximos pasos
+→ Invocar @commit para HU-161.
