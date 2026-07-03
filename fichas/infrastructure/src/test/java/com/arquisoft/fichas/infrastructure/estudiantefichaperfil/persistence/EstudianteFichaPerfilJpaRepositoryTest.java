@@ -45,4 +45,25 @@ class EstudianteFichaPerfilJpaRepositoryTest {
         // Assert
         assertThat(resultado).isEqualTo(2);
     }
+
+    @Test
+    void debeEliminar_cuandoRelacionExisteEnBD() {
+        // Arrange
+        UUID fichaId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+        var entity = EstudianteFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaId)
+                .estudianteId(estudianteId)
+                .build();
+        repository.saveAndFlush(entity);
+
+        // Act
+        repository.deleteByFichaPerfilIdAndEstudianteId(fichaId, estudianteId);
+        repository.flush();
+
+        // Assert
+        boolean existe = repository.existsByFichaPerfilIdAndEstudianteId(fichaId, estudianteId);
+        assertThat(existe).isFalse();
+    }
 }

@@ -480,7 +480,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 **Reglas duras:**
 
 - Cualquier `log.{info|warn|error|debug}(...)` usa `{Contexto}Messages.{Entidad}.LOG_*` como primer argumento. Nunca string literal.
-- Cualquier `super(mensaje, codigo)` de excepción del contexto referencia el catálogo: mensaje desde `{Contexto}Messages.{Entidad}.{NOMBRE}` (parametrizable con `.formatted(...)`), código desde `{Contexto}Messages.{Entidad}.{ENTIDAD}_{DESCRIPCION}` (donde el valor de la constante es UPPER_SNAKE idéntico al nombre).
+- Cualquier `super(mensaje, codigo)` de excepción del contexto referencia el catálogo: mensaje desde `{Contexto}Messages.{Entidad}.{DESCRIPCION}_MSG` (sección 4, **siempre con sufijo `_MSG`**; parametrizable con `.formatted(...)`), código desde `{Contexto}Messages.{Entidad}.{ENTIDAD}_{DESCRIPCION}` (sección 3, sin sufijo, valor UPPER_SNAKE idéntico al nombre). El sufijo `_MSG` distingue el mensaje humano de su código hermano. **No lo llevan** las frases HTTP reason-phrase ni los fragmentos concatenables `_PREFIJO`/`_SUFIJO`.
 - Cualquier `DomainValidator.{notNull|notBlank|maxLength|minLength|validEmail}(...)` usa `{Contexto}Messages.{Entidad}.CAMPO_*` y `{Contexto}Messages.{Entidad}.{CODIGO}` en los argumentos `fieldName` y `errorCode`.
 - Cualquier `result.addError(...)` usa constantes del catálogo en sus 3 argumentos.
 - Límites numéricos de negocio (`length > 100`, `count >= 5`) usan `{Contexto}Messages.{Entidad}.{CAMPO}_MAX` o equivalente.
@@ -504,7 +504,7 @@ DomainValidator.notBlank(titulo,
 
 // Excepción con mensaje parametrizado
 throw new FichaTituloDuplicadoException(
-        FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted(titulo),
+        FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG.formatted(titulo),
         FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
 
 // Log SLF4J

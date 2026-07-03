@@ -61,7 +61,7 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
                 return mapToCredenciales(response.getBody());
             }
 
-            throw new CredencialesInvalidasException(SeguridadMessages.Login.ERROR_AUTENTICAR_KEYCLOAK);
+            throw new CredencialesInvalidasException(SeguridadMessages.Login.ERROR_AUTENTICAR_KEYCLOAK_MSG);
 
         } catch (HttpClientErrorException.Unauthorized e) {
             log.warn(SeguridadMessages.Login.LOG_CREDENCIALES_INVALIDAS);
@@ -71,7 +71,7 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
             throw new AuthenticationException(SeguridadMessages.Login.ERROR_COMUNICACION_KEYCLOAK + e.getMessage());
         } catch (ResourceAccessException e) {
             log.error(SeguridadMessages.Login.LOG_KEYCLOAK_NO_DISPONIBLE, e.getMessage());
-            throw new ProveedorIdentidadNoDisponibleException(SeguridadMessages.Login.SERVICIO_NO_DISPONIBLE, e);
+            throw new ProveedorIdentidadNoDisponibleException(SeguridadMessages.Login.SERVICIO_NO_DISPONIBLE_MSG, e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {
@@ -98,17 +98,17 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
                 return mapToCredenciales(response.getBody());
             }
 
-            throw new TokenInvalidoException(SeguridadMessages.Token.ERROR_REFRESCAR);
+            throw new TokenInvalidoException(SeguridadMessages.Token.ERROR_REFRESCAR_MSG);
 
         } catch (HttpClientErrorException.BadRequest e) {
             log.warn(SeguridadMessages.Token.LOG_REFRESH_INVALIDO);
-            throw new TokenInvalidoException(SeguridadMessages.Token.REFRESH_INVALIDO_EXPIRADO);
+            throw new TokenInvalidoException(SeguridadMessages.Token.REFRESH_INVALIDO_EXPIRADO_MSG);
         } catch (HttpClientErrorException e) {
             log.error(SeguridadMessages.Token.LOG_ERROR_REFRESCO_KEYCLOAK, e.getStatusCode(), e.getMessage());
             throw new AuthenticationException(SeguridadMessages.Token.ERROR_REFRESCAR_PREFIJO + e.getMessage());
         } catch (ResourceAccessException e) {
             log.error(SeguridadMessages.Token.LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO, e.getMessage());
-            throw new ProveedorIdentidadNoDisponibleException(SeguridadMessages.Login.SERVICIO_NO_DISPONIBLE, e);
+            throw new ProveedorIdentidadNoDisponibleException(SeguridadMessages.Login.SERVICIO_NO_DISPONIBLE_MSG, e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {

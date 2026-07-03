@@ -643,7 +643,7 @@ log.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
 
 // ✅ Archivo: fichas/application/.../FichaTituloDuplicadoException.java
 public FichaTituloDuplicadoException(String titulo) {
-    super(FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted(titulo),
+    super(FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG.formatted(titulo),
           FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
 }
 ```

@@ -18,10 +18,10 @@ public final class SeguridadMessages {
         public static final String PROVEEDOR_IDENTIDAD_NO_DISPONIBLE = "PROVEEDOR_IDENTIDAD_NO_DISPONIBLE";
 
         // Mensajes de error
-        public static final String ERROR_AUTENTICAR_KEYCLOAK       = "Error al autenticar con Keycloak";
+        public static final String ERROR_AUTENTICAR_KEYCLOAK_MSG   = "Error al autenticar con Keycloak";
         public static final String CREDENCIALES_INVALIDAS_MSG      = "Credenciales invalidas";
         public static final String ERROR_COMUNICACION_KEYCLOAK     = "Error al comunicarse con Keycloak: ";
-        public static final String SERVICIO_NO_DISPONIBLE          = "Servicio de autenticacion no disponible temporalmente";
+        public static final String SERVICIO_NO_DISPONIBLE_MSG      = "Servicio de autenticacion no disponible temporalmente";
         public static final String ERROR_INESPERADO_AUTENTICACION  = "Error inesperado durante la autenticacion: ";
         public static final String HTTP_401_ERROR                  = "Unauthorized";
 
@@ -50,9 +50,9 @@ public final class SeguridadMessages {
         public static final String TOKEN_INVALIDO_CODIGO = "TOKEN_INVALIDO";
 
         // Mensajes de error
-        public static final String VALOR_REQUERIDO       = "El token no puede ser nulo ni vacio";
-        public static final String ERROR_REFRESCAR        = "Error al refrescar el token";
-        public static final String REFRESH_INVALIDO_EXPIRADO = "Refresh token invalido o expirado";
+        public static final String VALOR_REQUERIDO_MSG   = "El token no puede ser nulo ni vacio";
+        public static final String ERROR_REFRESCAR_MSG    = "Error al refrescar el token";
+        public static final String REFRESH_INVALIDO_EXPIRADO_MSG = "Refresh token invalido o expirado";
         public static final String ERROR_REFRESCAR_PREFIJO = "Error al refrescar el token: ";
         public static final String ERROR_INESPERADO_REFRESCO_PREFIJO = "Error inesperado al refrescar el token: ";
         public static final String TOKEN_INVALIDO_PREFIJO  = "Token invalido: ";
@@ -88,8 +88,8 @@ public final class SeguridadMessages {
         public static final String SESION_TTL_INVALIDO            = "SESION_TTL_INVALIDO";
 
         // Mensajes de error
-        public static final String IDENTIFICADOR_REQUERIDO = "El identificador del token no puede ser nulo ni vacio";
-        public static final String TTL_INVALIDO             = "El tiempo de vida restante debe ser mayor a cero";
+        public static final String IDENTIFICADOR_REQUERIDO_MSG = "El identificador del token no puede ser nulo ni vacio";
+        public static final String TTL_INVALIDO_MSG         = "El tiempo de vida restante debe ser mayor a cero";
 
         // Logs
         public static final String LOGOUT_EXITOSO = "Logout — token invalidado en blacklist: identificador='{}', TTL={}s";
@@ -108,8 +108,8 @@ public final class SeguridadMessages {
         public static final String IDENTIDAD_CORREO_REQUERIDO = "IDENTIDAD_CORREO_REQUERIDO";
 
         // Mensajes de error
-        public static final String ID_REQUERIDO     = "El identificador de identidad no puede ser nulo ni vacio";
-        public static final String CORREO_REQUERIDO = "El correo no puede ser nulo ni vacio";
+        public static final String ID_REQUERIDO_MSG     = "El identificador de identidad no puede ser nulo ni vacio";
+        public static final String CORREO_REQUERIDO_MSG = "El correo no puede ser nulo ni vacio";
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -126,9 +126,9 @@ public final class SeguridadMessages {
         public static final String CREDENCIALES_TIPO_TOKEN_REQUERIDO   = "CREDENCIALES_TIPO_TOKEN_REQUERIDO";
 
         // Mensajes de error
-        public static final String TOKEN_ACCESO_REQUERIDO = "El token de acceso no puede ser nulo ni vacio";
-        public static final String EXPIRACION_INVALIDA     = "El tiempo de expiracion debe ser mayor a cero";
-        public static final String TIPO_TOKEN_REQUERIDO    = "El tipo de token no puede ser nulo ni vacio";
+        public static final String TOKEN_ACCESO_REQUERIDO_MSG = "El token de acceso no puede ser nulo ni vacio";
+        public static final String EXPIRACION_INVALIDA_MSG    = "El tiempo de expiracion debe ser mayor a cero";
+        public static final String TIPO_TOKEN_REQUERIDO_MSG   = "El tipo de token no puede ser nulo ni vacio";
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -162,7 +162,7 @@ public final class SeguridadMessages {
         public static final String LIMITE_EXCEDIDO_PREFIJO = "Has excedido el límite de solicitudes. Intenta de nuevo en ";
         public static final String LIMITE_EXCEDIDO_SUFIJO  = " segundos.";
         public static final String HTTP_TOO_MANY_REQUESTS  = "Too Many Requests";
-        public static final String CLIENTE_STANDALONE_EXCEPCION =
+        public static final String CLIENTE_STANDALONE_EXCEPCION_MSG =
                 "Error al inicializar el servicio de limitacion de peticiones. Contacte al administrador del sistema.";
 
         // Logs

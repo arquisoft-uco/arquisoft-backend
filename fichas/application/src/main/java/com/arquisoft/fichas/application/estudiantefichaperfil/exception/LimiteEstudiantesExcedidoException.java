@@ -7,7 +7,7 @@ public final class LimiteEstudiantesExcedidoException extends ApplicationExcepti
 
     public LimiteEstudiantesExcedidoException() {
         super(
-            FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO.formatted(
+            FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
                 FichasMessages.FichaPerfil.ESTUDIANTES_MAX
             ),
             FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO

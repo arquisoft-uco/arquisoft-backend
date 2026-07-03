@@ -12,15 +12,15 @@ public record CredencialesSesion(
 
     public CredencialesSesion {
         if (tokenAcceso == null || tokenAcceso.isBlank()) {
-            throw new DomainException(SeguridadMessages.Credenciales.TOKEN_ACCESO_REQUERIDO,
+            throw new DomainException(SeguridadMessages.Credenciales.TOKEN_ACCESO_REQUERIDO_MSG,
                     SeguridadMessages.Credenciales.CREDENCIALES_TOKEN_ACCESO_REQUERIDO);
         }
         if (expiraEn <= 0) {
-            throw new DomainException(SeguridadMessages.Credenciales.EXPIRACION_INVALIDA,
+            throw new DomainException(SeguridadMessages.Credenciales.EXPIRACION_INVALIDA_MSG,
                     SeguridadMessages.Credenciales.CREDENCIALES_EXPIRACION_INVALIDA);
         }
         if (tipoToken == null || tipoToken.isBlank()) {
-            throw new DomainException(SeguridadMessages.Credenciales.TIPO_TOKEN_REQUERIDO,
+            throw new DomainException(SeguridadMessages.Credenciales.TIPO_TOKEN_REQUERIDO_MSG,
                     SeguridadMessages.Credenciales.CREDENCIALES_TIPO_TOKEN_REQUERIDO);
         }
     }

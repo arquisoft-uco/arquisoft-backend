@@ -15,11 +15,11 @@ public final class SesionAggregate {
 
     public static SesionAggregate cerrar(String identificadorToken, long tiempoVidaRestante) {
         if (identificadorToken == null || identificadorToken.isBlank()) {
-            throw new DomainException(SeguridadMessages.Sesion.IDENTIFICADOR_REQUERIDO,
+            throw new DomainException(SeguridadMessages.Sesion.IDENTIFICADOR_REQUERIDO_MSG,
                     SeguridadMessages.Sesion.SESION_IDENTIFICADOR_REQUERIDO);
         }
         if (tiempoVidaRestante <= 0) {
-            throw new DomainException(SeguridadMessages.Sesion.TTL_INVALIDO,
+            throw new DomainException(SeguridadMessages.Sesion.TTL_INVALIDO_MSG,
                     SeguridadMessages.Sesion.SESION_TTL_INVALIDO);
         }
         return new SesionAggregate(identificadorToken, tiempoVidaRestante);

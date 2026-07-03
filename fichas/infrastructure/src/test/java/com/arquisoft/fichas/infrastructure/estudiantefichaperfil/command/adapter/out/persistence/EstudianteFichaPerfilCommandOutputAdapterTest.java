@@ -94,4 +94,5 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isEqualTo(2L);
     }
+
 }
