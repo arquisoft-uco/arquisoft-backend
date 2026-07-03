@@ -23,6 +23,9 @@ permission:
       "./gradlew jacocoTestReport": allow
       "./gradlew :*:jacocoTestReport": allow
       "./gradlew :*:jacocoTestCoverageVerification": allow
+      "./gradlew :*:checkstyleMain": allow
+      "./gradlew :*:checkstyleTest": allow
+      "./gradlew :*:check": allow
    webfetch: deny
    skill:
       "arquisoft-context": allow
@@ -859,11 +862,15 @@ Antes de generar el reporte JaCoCo, ejecuta la suite completa del contexto y el 
 ```bash
 ./gradlew :{contexto}:test
 ./gradlew :{contexto}:jacocoTestReport
-./gradlew :{contexto}:jacocoTestCoverageVerification   # gate del build — FALLA si < 75%
+
+# GATE FINAL equivalente a CI (test + checkstyle main/test + cobertura ≥75%) en las capas afectadas:
+./gradlew :{contexto}:domain:check :{contexto}:application:check :{contexto}:infrastructure:check
 ```
 
 Si la suite completa falla después de que las capas individuales pasaron,
 aplica el **Protocolo de Test Fallido** antes de continuar.
+
+> **Checkstyle también es gate del build — `check`, no solo `test`.** CI corre `./gradlew checkstyleMain checkstyleTest` y el `check` de cada módulo los incluye. Un **import sin usar**, una **variable/método muerto**, una **llave o espacio mal puesto** rompen el build aunque todos los tests pasen. **Reportar verde habiendo corrido solo `test`/`jacocoTestCoverageVerification` es un error** — el gate real es `check`. Si checkstyle falla: quita imports/variables/métodos sin usar, respeta llaves y espacios, y reejecuta hasta verde. Nunca desactives reglas de checkstyle.
 
 > **El 75% es un gate del build, no un aviso.** En `build.gradle`, `check.dependsOn jacocoTestCoverageVerification` con `minimum = 0.75`: si el contexto queda por debajo, `jacocoTestCoverageVerification` (y por tanto `check`/`build`) **falla — el proyecto no compila para CI**. El gate aplica a los contextos de negocio (`shared:*` está excluido) y NO cuenta clases sin lógica (`*Aggregate`, `*DTO`, `*Command`, `*ReadModel`, `config/**`, `*JpaEntity`) — no persigas cobertura sobre ellas (coincide con los anti-patrones 1, 2 y 7).
 
@@ -985,7 +992,7 @@ de modificar cualquier archivo de producción.
 5. **Nomenclatura obligatoria.** `debeHacerAlgo_cuandoCondicion` sin excepción.
 6. **No modificas producción.** Solo archivos en `src/test/java/` y `src/test/resources/`.
 7. **Ejecutar tests por capa.** `./gradlew :{contexto}:{capa}:test` tras cada aprobación.
-8. **Cobertura 75% — gate del build, no aviso.** `check.dependsOn jacocoTestCoverageVerification` (`minimum = 0.75`): por debajo, el build falla. Ejecuta `./gradlew :{contexto}:jacocoTestCoverageVerification` en FASE 5 y, si falla, agrega tests significativos hasta que pase. Nunca bajes el umbral ni infles con tests triviales.
+8. **El gate del build es `check` (test + checkstyle + cobertura ≥75%), no solo `test`.** `check` corre `checkstyleMain`, `checkstyleTest` y `jacocoTestCoverageVerification` (`minimum = 0.75`). En FASE 5 ejecuta `./gradlew :{contexto}:domain:check :{contexto}:application:check :{contexto}:infrastructure:check` — es lo que corre CI. Reportar verde habiendo corrido solo `test` es un error: un import sin usar o cobertura <75% rompen el build. Si falla: para cobertura, agrega tests significativos; para checkstyle, elimina imports/variables/métodos muertos y respeta el estilo. Nunca bajes el umbral, desactives reglas ni infles con tests triviales.
 9. **Spring Boot 4.x:** usar `@MockitoBean`, nunca `@MockBean`.
 10. **DDD estricto — tests aislados por capa:** los tests de `domain` son Java puro (solo JUnit + AssertJ, sin mocks de Spring/Keycloak/RabbitMQ); los tests de `application` solo mockean puertos del dominio, nunca APIs externas. Si un test de domain o application requiere framework externo, **detente y reporta violación de capas** antes de escribir el test — la lógica está en la capa equivocada.
 11. **DDD en tests de domain (solo si el plan declara eventos en sección 4):** el test del Aggregate Root verifica el ciclo (`publishEvent` interno del factory → `drainUnPublishedEvents()` retorna y limpia) y que `reconstruir(...)` NO emite eventos. `getUnPublishedEvents()` es `protected` — solo accesible desde tests del mismo paquete del aggregate (typical: `{contexto}/domain/src/test/java/...{entidad}/aggregate/`). **NO uses `clearUnPublishedEvents()` — no existe**. **Si el plan dice "Eventos: ninguno", la entidad raíz no extiende `AggregateRoot` y NO se generan estos tests.**
