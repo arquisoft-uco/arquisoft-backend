@@ -13,11 +13,11 @@ public record IdentidadToken(
 
     public IdentidadToken {
         if (identidadId == null || identidadId.isBlank()) {
-            throw new DomainException(SeguridadMessages.Identidad.ID_REQUERIDO,
+            throw new DomainException(SeguridadMessages.Identidad.ID_REQUERIDO_MSG,
                     SeguridadMessages.Identidad.IDENTIDAD_ID_REQUERIDO);
         }
         if (correo == null || correo.isBlank()) {
-            throw new DomainException(SeguridadMessages.Identidad.CORREO_REQUERIDO,
+            throw new DomainException(SeguridadMessages.Identidad.CORREO_REQUERIDO_MSG,
                     SeguridadMessages.Identidad.IDENTIDAD_CORREO_REQUERIDO);
         }
         roles = roles != null ? List.copyOf(roles) : List.of();

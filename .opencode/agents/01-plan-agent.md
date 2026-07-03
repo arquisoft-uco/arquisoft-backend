@@ -616,7 +616,7 @@ Si la HU introduce al menos un mensaje, código, log o límite nuevo, el plan de
 
 | Capa | Ruta completa | Tipo | Acción | Detalles |
 |------|---------------|------|--------|----------|
-| shared | `shared/message/src/main/java/com/arquisoft/shared/message/{Contexto}Messages.java` | Catálogo | MODIFICAR | Agregar `public static final class {Entidad}` con constructor privado vacío **si no existe**, y dentro las constantes nuevas en el orden de las 5 secciones: `// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`. Solo las secciones con al menos una constante. Nada de JavaDoc. |
+| shared | `shared/message/src/main/java/com/arquisoft/shared/message/{Contexto}Messages.java` | Catálogo | MODIFICAR | Agregar `public static final class {Entidad}` con constructor privado vacío **si no existe**, y dentro las constantes nuevas en el orden de las 5 secciones: `// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`. Solo las secciones con al menos una constante. Nada de JavaDoc. **Las constantes de la sección `Mensajes de error` (texto user-facing) terminan en `_MSG`** — excepto frases HTTP reason-phrase y fragmentos `_PREFIJO`/`_SUFIJO`. |
 
 Inventario de constantes a agregar al catálogo en esta HU (el agente lo llena al planificar):
 
@@ -625,7 +625,7 @@ Inventario de constantes a agregar al catálogo en esta HU (el agente lo llena a
 | `FichasMessages.FichaPerfil.CAMPO_TITULO` | Campos | `String` | `"tituloProyecto"` | `DomainValidator.notBlank` en `FichaPerfilAggregate` |
 | `FichasMessages.FichaPerfil.TITULO_MAX` | Límites | `int` | `100` | `DomainValidator.maxLength` en `FichaPerfilAggregate` |
 | `FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO` | Códigos de error | `String` | `"FICHA_TITULO_DUPLICADO"` | `FichaTituloDuplicadoException` (errorCode) |
-| `FichasMessages.FichaPerfil.TITULO_DUPLICADO` | Mensajes de error | `String` | `"El título ya existe: %s"` | `FichaTituloDuplicadoException` (mensaje, `.formatted(titulo)`) |
+| `FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG` | Mensajes de error | `String` | `"El título ya existe: %s"` | `FichaTituloDuplicadoException` (mensaje, `.formatted(titulo)`) |
 | `FichasMessages.FichaPerfil.LOG_REGISTRADA` | Logs | `String` | `"Ficha de perfil registrada — id={}"` | `log.info` en `RegistrarFichaPerfilUseCase` |
 
 > **Si la HU NO introduce ningún texto, código o límite nuevo (típico en HUs read sin filtros nuevos o handlers que solo orquestan llamadas existentes), omite esta sub-sección entera.** Pero documentalo explícitamente: "Sin cambios al catálogo `shared:message` — la HU no introduce textos, códigos ni límites nuevos."

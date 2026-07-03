@@ -255,10 +255,12 @@ shared/message/src/main/java/com/arquisoft/shared/message/
 | 1 | **Campos** | `CAMPO_{NOMBRE}` | `String` | `CAMPO_TITULO = "tituloProyecto"` |
 | 2 | **Límites** | `{CAMPO}_{TIPO_LIMITE}` | `int`/`long` | `TITULO_MAX = 100` |
 | 3 | **Códigos de error** | `{ENTIDAD}_{DESCRIPCION}` UPPER_SNAKE (valor = nombre) | `String` | `FICHA_TITULO_DUPLICADO = "FICHA_TITULO_DUPLICADO"` |
-| 4 | **Mensajes de error** | descripción UPPER_SNAKE, con `%s`/`%d` | `String` | `TITULO_DUPLICADO = "El título ya existe: %s"` |
+| 4 | **Mensajes de error** | `{DESCRIPCION}_MSG` UPPER_SNAKE, con `%s`/`%d` | `String` | `TITULO_DUPLICADO_MSG = "El título ya existe: %s"` |
 | 5 | **Logs** | `LOG_{ACCION}` con `{}` SLF4J | `String` | `LOG_REGISTRADA = "Ficha registrada — id={}"` |
 
 Las secciones se separan con comentarios `// Campos`, `// Límites`, `// Códigos de error`, `// Mensajes de error`, `// Logs` — solo las secciones con al menos una constante.
+
+> **Sufijo `_MSG` obligatorio en la sección 4.** Toda constante de **mensaje de error** (texto humano user-facing, con o sin `%s`/`%d`) termina en `_MSG`. Esto la distingue a simple vista de su **código de error** hermano en la sección 3 (mismo nombre base sin sufijo, cuyo valor = nombre): p. ej. código `FICHA_TITULO_DUPLICADO` ↔ mensaje `TITULO_DUPLICADO_MSG`. **Excepciones que NO llevan `_MSG`:** frases técnicas HTTP reason-phrase (`HTTP_401_ERROR = "Unauthorized"`) y fragmentos concatenables terminados en `_PREFIJO`/`_SUFIJO` (`ERROR_REFRESCAR_PREFIJO = "Error al refrescar: "`) — no son mensajes de negocio completos.
 
 ### Plantilla canónica de archivo por contexto
 
@@ -283,7 +285,7 @@ public final class FichasMessages {
         public static final String FICHA_TITULO_REQUERIDO = "FICHA_TITULO_REQUERIDO";
 
         // Mensajes de error
-        public static final String TITULO_DUPLICADO = "El título ya existe: %s";
+        public static final String TITULO_DUPLICADO_MSG = "El título ya existe: %s";
 
         // Logs
         public static final String LOG_REGISTRADA = "Ficha de perfil registrada — id={}";
@@ -310,7 +312,7 @@ DomainValidator.notBlank(titulo,
 
 // Excepción con mensaje parametrizado
 throw new FichaTituloDuplicadoException(
-        FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted(titulo),
+        FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG.formatted(titulo),
         FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
 
 // Log SLF4J — la plantilla del catálogo, los valores como varargs
@@ -322,7 +324,7 @@ log.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
 | Veo este patrón en el código… | …acción obligatoria |
 |---|---|
 | `log.info("texto literal", ...)` | extraer a `{Contexto}Messages.{Entidad}.LOG_*` |
-| `super("mensaje literal", ...)` en `*Exception` | extraer a `{Contexto}Messages.{Entidad}.{NOMBRE_DESCRIPTIVO}` o `MENSAJE_*` |
+| `super("mensaje literal", ...)` en `*Exception` | extraer a `{Contexto}Messages.{Entidad}.{DESCRIPCION}_MSG` |
 | `result.addError("campo", "CODIGO", "mensaje literal", ...)` | los 3 argumentos van al catálogo: `CAMPO_*`, código UPPER_SNAKE, y mensaje parametrizado |
 | `if (valor.length() > 100)` con literal numérico de negocio | extraer límite a `{Contexto}Messages.{Entidad}.{CAMPO}_MAX` |
 | `new ApplicationException("texto", "CODIGO")` | mensaje y código al catálogo |

@@ -191,7 +191,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         // Assert
         assertThat(ex)
                 .isInstanceOf(LimiteEstudiantesExcedidoException.class)
-                .hasMessage(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO.formatted(
+                .hasMessage(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
                         FichasMessages.FichaPerfil.ESTUDIANTES_MAX
                 ));
         assertThat(((LimiteEstudiantesExcedidoException) ex).getErrorCode())

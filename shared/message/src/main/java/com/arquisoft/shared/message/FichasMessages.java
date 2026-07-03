@@ -32,7 +32,7 @@ public final class FichasMessages {
         public static final String FICHA_NO_PROPIETARIO    = "FICHA_NO_PROPIETARIO";
 
         // Mensajes de error
-        public static final String TITULO_DUPLICADO        = "El título ya existe: %s";
+        public static final String TITULO_DUPLICADO_MSG    = "El título ya existe: %s";
         public static final String ASESOR_NO_ENCONTRADO_MSG = "Asesor Ficha no encontrado: %s";
         public static final String TITULO_REQUERIDO_MSG    = "El título del proyecto es obligatorio";
         public static final String ASESOR_REQUERIDO_MSG    = "El asesor ficha es obligatorio";
@@ -142,7 +142,7 @@ public final class FichasMessages {
         public static final String ESTUDIANTE_NO_ENCONTRADO = "ESTUDIANTE_NO_ENCONTRADO";
 
         // Mensajes de error
-        public static final String NO_ENCONTRADO = "No se encontró el estudiante con id: %s";
+        public static final String NO_ENCONTRADO_MSG = "No se encontró el estudiante con id: %s";
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -162,13 +162,16 @@ public final class FichasMessages {
         public static final String ESTUDIANTE_ID_REQUERIDO      = "ESTUDIANTE_FICHA_PERFIL_ESTUDIANTE_ID_REQUERIDO";
         public static final String ESTUDIANTE_DUPLICADO         = "ESTUDIANTE_DUPLICADO";
         public static final String LIMITE_ESTUDIANTES_EXCEDIDO  = "LIMITE_ESTUDIANTES_EXCEDIDO";
+        public static final String ESTUDIANTE_FICHA_PERFIL_NO_ENCONTRADO = "ESTUDIANTE_FICHA_PERFIL_NO_ENCONTRADO";
 
         // Mensajes de error
-        public static final String DUPLICADO        = "El estudiante ya está asignado a esta ficha: %s";
-        public static final String LIMITE_EXCEDIDO  = "No se pueden asignar más de %d estudiantes a una ficha";
+        public static final String DUPLICADO_MSG        = "El estudiante ya está asignado a esta ficha: %s";
+        public static final String LIMITE_EXCEDIDO_MSG  = "No se pueden asignar más de %d estudiantes a una ficha";
+        public static final String RELACION_NO_ENCONTRADA_MSG = "La relación entre el estudiante %s y la ficha perfil %s no existe";
 
         // Logs
         public static final String LOG_ASIGNADO = "Estudiantes asignados a ficha — fichaId={}, cantidad={}";
+        public static final String LOG_REMOVIDO = "Estudiante removido de ficha perfil — fichaPerfilId={}, estudianteId={}";
     }
 
     // ─────────────────────────────────────────────────────────────────────────

@@ -75,7 +75,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
             // InfrastructureException con mensaje generico: si llegara a la capa web
             // (improbable desde @PostConstruct), el cliente ve un mensaje sin detalles internos.
             throw new InfrastructureException(
-                    SeguridadMessages.RateLimit.CLIENTE_STANDALONE_EXCEPCION,
+                    SeguridadMessages.RateLimit.CLIENTE_STANDALONE_EXCEPCION_MSG,
                     SeguridadMessages.RateLimit.REDIS_CLIENTE_STANDALONE_REQUERIDO);
         }
     }

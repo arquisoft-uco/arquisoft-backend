@@ -285,7 +285,7 @@ void debeLanzarExcepcion_cuandoTituloYaExiste() {
     // Act + Assert
     assertThatThrownBy(() -> useCase.ejecutar(comando("Mi título")))
             .isInstanceOf(FichaTituloDuplicadoException.class)
-            .hasMessage(FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted("Mi título"));
+            .hasMessage(FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG.formatted("Mi título"));
 
     // Verifica que el código de error sea el del catálogo
     FichaTituloDuplicadoException ex = catchThrowableOfType(

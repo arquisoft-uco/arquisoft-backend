@@ -13,7 +13,7 @@ public final class TokenAggregate {
 
     public static TokenAggregate de(String valor) {
         if (valor == null || valor.isBlank()) {
-            throw new DomainException(SeguridadMessages.Token.VALOR_REQUERIDO, SeguridadMessages.Token.TOKEN_VALOR_REQUERIDO);
+            throw new DomainException(SeguridadMessages.Token.VALOR_REQUERIDO_MSG, SeguridadMessages.Token.TOKEN_VALOR_REQUERIDO);
         }
         return new TokenAggregate(valor);
     }
