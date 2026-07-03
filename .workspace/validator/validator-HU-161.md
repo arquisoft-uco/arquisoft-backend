@@ -76,5 +76,11 @@ Ninguno detectado.
 - `.workspace/h-plan/PLAN-HU-161.md`
 - `.workspace/validator/validator-HU-161.md`
 
+## Commit
+
+**Estado:** ✅ EJECUTADO
+**Hash:** 1c3dff5
+**Fecha de ejecución:** 2026-07-02
+
 ## Próximos pasos
-→ Invocar @commit para HU-161.
+→ Abrir Pull Request hacia `develop` usando `.github/PULL_REQUEST_TEMPLATE.md`

@@ -472,4 +472,4 @@ Lo que NO cubre: remoción de estudiantes (es otra HU), cambio de estado de la f
 | Tests      | @tester             | ✅ Completado | 2026-07-02 | application (6), infrastructure (10) — todos pasan. Gate cobertura: ✅ CUMPLE |
 | Validación | @validator-analyze  | ✅ Completado | 2026-07-02 | Score: 100/100 — APROBADO |
 | Reporte    | @validator-report   | ✅ Completado | 2026-07-02 | /.workspace/validator/validator-HU-161.md |
-| Commit     | @commit             | ⏸️ Pendiente | — | — |
+| Commit     | @commit             | ✅ Completado | 2026-07-02 | Hash: 1c3dff5 |
