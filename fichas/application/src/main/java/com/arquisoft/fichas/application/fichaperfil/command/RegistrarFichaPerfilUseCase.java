@@ -16,6 +16,7 @@ import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFich
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.util.UtilObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -57,7 +58,7 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
         asignarEstadoInicial(ficha.getId());
 
         // Asignar estudiantes (si aplica)
-        if (command.estudiantesIds() != null && !command.estudiantesIds().isEmpty()) {
+        if (!UtilObject.isNull(command.estudiantesIds()) && !command.estudiantesIds().isEmpty()) {
             // Validación de límite
             if (command.estudiantesIds().size() > FichasMessages.FichaPerfil.ESTUDIANTES_MAX) {
                 throw new LimiteEstudiantesExcedidoException();

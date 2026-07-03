@@ -154,12 +154,10 @@ public final class FichasMessages {
         private EstudianteFichaPerfil() {}
 
         // Campos
-        public static final String CAMPO_ID              = "id";
         public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
         public static final String CAMPO_ESTUDIANTE_ID   = "estudianteId";
 
         // Códigos de error
-        public static final String ID_REQUERIDO                 = "ESTUDIANTE_FICHA_PERFIL_ID_REQUERIDO";
         public static final String FICHA_PERFIL_ID_REQUERIDO    = "ESTUDIANTE_FICHA_PERFIL_FICHA_ID_REQUERIDO";
         public static final String ESTUDIANTE_ID_REQUERIDO      = "ESTUDIANTE_FICHA_PERFIL_ESTUDIANTE_ID_REQUERIDO";
         public static final String ESTUDIANTE_DUPLICADO         = "ESTUDIANTE_DUPLICADO";
@@ -168,6 +166,9 @@ public final class FichasMessages {
         // Mensajes de error
         public static final String DUPLICADO        = "El estudiante ya está asignado a esta ficha: %s";
         public static final String LIMITE_EXCEDIDO  = "No se pueden asignar más de %d estudiantes a una ficha";
+
+        // Logs
+        public static final String LOG_ASIGNADO = "Estudiantes asignados a ficha — fichaId={}, cantidad={}";
     }
 
     // ─────────────────────────────────────────────────────────────────────────

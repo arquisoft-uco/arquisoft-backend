@@ -80,4 +80,18 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isFalse();
     }
+
+    @Test
+    void debeRetornarConteo_cuandoContarPorFichaPerfilId() {
+        // Arrange
+        UUID fichaId = UUID.randomUUID();
+
+        when(jpaRepository.countByFichaPerfilId(fichaId)).thenReturn(2L);
+
+        // Act
+        long resultado = adapter.contarPorFichaPerfilId(fichaId);
+
+        // Assert
+        assertThat(resultado).isEqualTo(2L);
+    }
 }

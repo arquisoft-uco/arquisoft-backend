@@ -26,4 +26,9 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     public boolean existePorFichaYEstudiante(UUID fichaPerfilId, UUID estudianteId) {
         return jpaRepository.existsByFichaPerfilIdAndEstudianteId(fichaPerfilId, estudianteId);
     }
+
+    @Override
+    public long contarPorFichaPerfilId(UUID fichaPerfilId) {
+        return jpaRepository.countByFichaPerfilId(fichaPerfilId);
+    }
 }
