@@ -31,4 +31,9 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     public long contarPorFichaPerfilId(UUID fichaPerfilId) {
         return jpaRepository.countByFichaPerfilId(fichaPerfilId);
     }
+
+    @Override
+    public void eliminar(UUID fichaPerfilId, UUID estudianteId) {
+        jpaRepository.deleteByFichaPerfilIdAndEstudianteId(fichaPerfilId, estudianteId);
+    }
 }

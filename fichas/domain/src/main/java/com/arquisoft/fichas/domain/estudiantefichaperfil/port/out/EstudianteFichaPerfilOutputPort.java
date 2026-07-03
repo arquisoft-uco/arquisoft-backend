@@ -11,4 +11,6 @@ public interface EstudianteFichaPerfilOutputPort {
     boolean existePorFichaYEstudiante(UUID fichaPerfilId, UUID estudianteId);
 
     long contarPorFichaPerfilId(UUID fichaPerfilId);
+
+    void eliminar(UUID fichaPerfilId, UUID estudianteId);
 }
