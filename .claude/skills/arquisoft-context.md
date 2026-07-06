@@ -1427,7 +1427,7 @@ import java.net.URI;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/fichas-perfil")
+@RequestMapping("/fichas-perfil")
 @RequiredArgsConstructor
 @Tag(name = "Fichas de Perfil")
 public class CrearFichaPerfilInputAdapter {
@@ -1664,7 +1664,7 @@ public class ConsultarFichaPerfilQueryUseCase implements ConsultarFichaPerfilInp
 ```java
 // infrastructure/fichaPerfil/query/adapter/in/web/ConsultarFichaPerfilQueryInputAdapter.java
 @RestController
-@RequestMapping("/api/fichas-perfil")
+@RequestMapping("/fichas-perfil")
 @RequiredArgsConstructor
 public class ConsultarFichaPerfilQueryInputAdapter {
 

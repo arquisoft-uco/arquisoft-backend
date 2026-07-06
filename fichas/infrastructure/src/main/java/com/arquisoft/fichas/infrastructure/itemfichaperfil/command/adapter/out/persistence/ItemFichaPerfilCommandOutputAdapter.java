@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -36,5 +37,16 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     @Override
     public boolean existsPorFichaYTipoItem(UUID fichaPerfilId, String tipoItem) {
         return jpaRepository.existsByFichaPerfilIdAndTipoItemId(fichaPerfilId, tipoItem);
+    }
+
+    @Override
+    public boolean existsById(UUID itemId) {
+        return jpaRepository.existsById(itemId);
+    }
+
+    @Override
+    public Optional<ItemFichaPerfilAggregate> buscarPorId(UUID itemId) {
+        return jpaRepository.findById(itemId)
+                .map(ItemFichaPerfilMapper::toDomain);
     }
 }

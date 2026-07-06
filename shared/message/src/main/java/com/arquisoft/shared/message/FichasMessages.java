@@ -74,14 +74,17 @@ public final class FichasMessages {
         public static final String ITEM_TIPO_DUPLICADO           = "ITEM_TIPO_DUPLICADO";
         public static final String ITEM_FICHA_NO_AUTORIZADA      = "ITEM_FICHA_NO_AUTORIZADA";
         public static final String TIPO_ITEM_INVALIDO            = "TIPO_ITEM_INVALIDO";
+        public static final String ITEM_NO_ENCONTRADO            = "ITEM_NO_ENCONTRADO";
 
         // Mensajes de error
         public static final String TIPO_ITEM_INVALIDO_MSG        = "El tipo de ítem '%s' no es válido";
         public static final String TIPO_ITEM_DUPLICADO_MSG       = "La ficha ya tiene un ítem del tipo: %s";
         public static final String FICHA_NO_AUTORIZADA_MSG       = "El estudiante no es propietario de la ficha: %s";
+        public static final String ITEM_NO_ENCONTRADO_MSG        = "El ítem con id %s no existe";
 
         // Logs
-        public static final String LOG_AGREGADO = "Ítem agregado — id={}, fichaPerfilId={}, tipoItem={}";
+        public static final String LOG_AGREGADO   = "Ítem agregado — id={}, fichaPerfilId={}, tipoItem={}";
+        public static final String LOG_MODIFICADO = "Ítem modificado — id={}";
     }
 
     // ─────────────────────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persis
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.exception.OrdenamientoInvalidoException;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
@@ -22,15 +23,16 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
 
-
     private final FichaPerfilJpaRepository fichaPerfilJpaRepository;
     private final FichaPerfilJpaSpecification specification;
+    private final EstudianteFichaPerfilJpaRepository estudianteFichaPerfilJpaRepository;
 
     @Override
     public PaginatedResult<FichaPerfilReadModel> consultarTodas(FichaPerfilCriteria criteria) {
@@ -65,5 +67,13 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
             return PageRequest.of(criteria.getPagina(), criteria.getTamanio(), Sort.by(orders));
         }
         return PageRequest.of(criteria.getPagina(), criteria.getTamanio());
+    }
+
+    @Override
+    public boolean esEstudiantePropietario(UUID fichaPerfilId, UUID estudianteId) {
+        return estudianteFichaPerfilJpaRepository.existsByFichaPerfilIdAndEstudianteId(
+                fichaPerfilId,
+                estudianteId
+        );
     }
 }

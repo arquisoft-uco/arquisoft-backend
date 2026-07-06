@@ -135,4 +135,63 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         // Assert
         assertThat(existe).isFalse();
     }
+
+    @Test
+    void debeRetornarTrue_cuandoItemExiste() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        TipoItemJpaEntity tipoItemRef = entityManager.getReference(TipoItemJpaEntity.class, "OBJETIVO_GENERAL");
+        ItemFichaPerfilJpaEntity entity = ItemFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaPerfilId)
+                .tipoItem(tipoItemRef)
+                .contenido("Contenido existente")
+                .build();
+        ItemFichaPerfilJpaEntity saved = jpaRepository.save(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        boolean existe = adapter.existsById(saved.getId());
+
+        // Assert
+        assertThat(existe).isTrue();
+    }
+
+    @Test
+    void debeRetornarFalse_cuandoItemNoExiste() {
+        // Arrange
+        UUID itemIdInexistente = UUID.randomUUID();
+
+        // Act
+        boolean existe = adapter.existsById(itemIdInexistente);
+
+        // Assert
+        assertThat(existe).isFalse();
+    }
+
+    @Test
+    void debeGuardarCambios_cuandoModificarContenido() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+                fichaPerfilId,
+                "OBJETIVO_GENERAL",
+                "Contenido inicial"
+        );
+        adapter.guardar(aggregate);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        ItemFichaPerfilAggregate reconstruido = adapter.buscarPorId(aggregate.getId()).orElseThrow();
+        reconstruido.modificarContenido("Contenido modificado");
+        adapter.guardar(reconstruido);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        ItemFichaPerfilJpaEntity savedEntity = jpaRepository.findById(aggregate.getId()).orElseThrow();
+        assertThat(savedEntity.getContenido()).isEqualTo("Contenido modificado");
+    }
 }
