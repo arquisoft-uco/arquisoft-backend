@@ -151,4 +151,89 @@ class ItemFichaPerfilAggregateTest {
         assertThat(aggregate.getContenido()).isEqualTo("Este es un contenido con espacios");
         assertThat(aggregate.getTipoItem()).isEqualTo(TipoItem.OBJETIVO_GENERAL);
     }
+
+    @Test
+    void debeModificarContenido_cuandoContenidoValido() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        String tipoItem = "OBJETIVO_GENERAL";
+        String contenidoInicial = "Contenido inicial";
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+                fichaPerfilId,
+                tipoItem,
+                contenidoInicial
+        );
+        String nuevoContenido = "Contenido modificado";
+
+        // Act
+        aggregate.modificarContenido(nuevoContenido);
+
+        // Assert
+        assertThat(aggregate.getContenido()).isEqualTo(nuevoContenido);
+        assertThat(aggregate.getTipoItem()).isEqualTo(TipoItem.OBJETIVO_GENERAL);
+        assertThat(aggregate.getFichaPerfilId()).isEqualTo(fichaPerfilId);
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoModificarConContenidoVacio() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        String tipoItem = "OBJETIVO_GENERAL";
+        String contenidoInicial = "Contenido inicial";
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+                fichaPerfilId,
+                tipoItem,
+                contenidoInicial
+        );
+
+        // Act
+        Throwable exception = catchThrowable(() -> aggregate.modificarContenido(""));
+
+        // Assert
+        assertThat(exception)
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO);
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoModificarConContenidoDemasiado_largo() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        String tipoItem = "OBJETIVO_GENERAL";
+        String contenidoInicial = "Contenido inicial";
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+                fichaPerfilId,
+                tipoItem,
+                contenidoInicial
+        );
+        String contenidoLargo = "x".repeat(7001);
+
+        // Act
+        Throwable exception = catchThrowable(() -> aggregate.modificarContenido(contenidoLargo));
+
+        // Assert
+        assertThat(exception)
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO);
+    }
+
+    @Test
+    void debeLimpiarEspacios_cuandoModificarContenido() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        String tipoItem = "OBJETIVO_GENERAL";
+        String contenidoInicial = "Contenido inicial";
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+                fichaPerfilId,
+                tipoItem,
+                contenidoInicial
+        );
+        String nuevoContenido = "  Contenido con espacios  ";
+
+        // Act
+        aggregate.modificarContenido(nuevoContenido);
+
+        // Assert
+        assertThat(aggregate.getContenido()).isEqualTo("Contenido con espacios");
+    }
 }

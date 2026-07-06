@@ -91,6 +91,14 @@ public final class ItemFichaPerfilAggregate {
         this.contenido = UtilText.applyTrim(contenido);
     }
 
+    // ─── Método de negocio: modificar contenido ───────────────────────────────
+
+    public void modificarContenido(String nuevoContenido) {
+        var result = new ValidationResult();
+        setContenido(nuevoContenido, result);
+        result.throwIfHasErrors();
+    }
+
     // ─── Getters ──────────────────────────────────────────────────────────────
 
     public UUID getId() {

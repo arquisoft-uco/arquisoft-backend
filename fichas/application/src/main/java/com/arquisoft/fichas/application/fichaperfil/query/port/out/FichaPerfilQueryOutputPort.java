@@ -4,7 +4,11 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCr
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.pagination.PaginatedResult;
 
+import java.util.UUID;
+
 public interface FichaPerfilQueryOutputPort {
 
     PaginatedResult<FichaPerfilReadModel> consultarTodas(FichaPerfilCriteria criteria);
+
+    boolean esEstudiantePropietario(UUID fichaPerfilId, UUID estudianteId);
 }
