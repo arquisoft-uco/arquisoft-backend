@@ -531,7 +531,7 @@ Ver detalle completo en `shared/message/README.md` y en el skill `arquisoft-cont
 
 ### Controllers (ADR-011)
 
-- `@RestController`, `@RequestMapping("/api/{recurso}")`, `@RequiredArgsConstructor`, `@Slf4j`.
+- `@RestController`, `@RequestMapping("/{recurso}")`, `@RequiredArgsConstructor`, `@Slf4j`. **Nunca prefijar `/api`** — `server.servlet.context-path: /api` ya lo agrega globalmente (`application.yml`); repetirlo produce rutas duplicadas (`/api/api/{recurso}`).
 - `@Tag(name="...", description="...")` a nivel de clase.
 - Cada endpoint: `@Operation(summary="...", description="...", security = @SecurityRequirement(name="bearerAuth"))` + `@ApiResponses({...})`.
 - Endpoints públicos (login, refresh, validate): omitir `@SecurityRequirement`.
