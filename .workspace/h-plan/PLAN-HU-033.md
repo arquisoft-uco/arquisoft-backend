@@ -453,4 +453,4 @@ Esta HU es pequeña (1 endpoint, 1 entidad modificada). Presupuesto: **18-22 tes
 | Tests      | @tester             | ✅ Completado | 2026-07-03 | 19 tests generados/ampliados (domain 4, application 6, infrastructure 9). Fix aplicado: `ModificarItemFichaPerfilInputAdapterTest` inyectaba `ObjectMapper` (no disponible en el slice `@WebMvcTest`) — reemplazado por JSON literal, igual que `AgregarItemFichaPerfilInputAdapterTest`. `./gradlew :fichas:domain:test :fichas:application:test :fichas:infrastructure:test` y checkstyleTest en verde. |
 | Validación | @validator-analyze  | ✅ Completado | 2026-07-06 | Score: 100/100 — APROBADO |
 | Reporte    | @validator-report   | ✅ Completado | 2026-07-06 | /.workspace/validator/validator-HU-033.md |
-| Commit     | @commit             | ⏳ Pendiente |       |       |
+| Commit     | @commit             | ✅ Completado | 2026-07-06 | Hash: 5afa926 |
