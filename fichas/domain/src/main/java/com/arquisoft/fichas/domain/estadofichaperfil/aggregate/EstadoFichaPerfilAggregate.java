@@ -33,7 +33,7 @@ public final class EstadoFichaPerfilAggregate {
 
         aggregate.setId();
         aggregate.setFichaPerfilId(fichaPerfilId, result);
-        aggregate.setEstadoFicha();
+        aggregate.setEstadoFichaInicial();
         aggregate.setFechaActualizacion();
 
         result.throwIfHasErrors();
@@ -63,7 +63,7 @@ public final class EstadoFichaPerfilAggregate {
         this.fichaPerfilId = fichaPerfilId;
     }
 
-    private void setEstadoFicha() {
+    private void setEstadoFichaInicial() {
         this.estadoFicha = EstadoFicha.EN_CONSTRUCCION;
     }
 
