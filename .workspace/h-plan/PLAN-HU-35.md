@@ -383,10 +383,10 @@ Ya existen: `FICHA_NO_ENCONTRADA`, `FICHA_NO_ENCONTRADA_MSG`, `FICHA_TITULO_DUPL
 
 ## 14. Estados de Agentes
 
-| Agente | Estado | Fecha |
-|---|---|---|
+| Agente | Estado     | Fecha |
+|---|------------|---|
 | Planificador | Completado | 2026-06-30 |
 | Implementador | Completado | 2026-06-30 |
 | Tester | Completado | 2026-06-30 | 21/21 tests OK — Cobertura: N/D (JaCoCo no configurado en build.gradle) |
 | Validación | @validator-analyze | ✅ Completado | 2026-06-30 | Score: 100/100 — APROBADO |
-| Commit | Pendiente | — |
+| Commit | Completado | 2026-06-30 |
