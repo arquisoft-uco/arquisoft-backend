@@ -4,6 +4,7 @@ import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggr
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemJpaEntity;
+import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemJpaRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,23 +27,18 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     private ItemFichaPerfilJpaRepository jpaRepository;
 
     @Autowired
+    private TipoItemJpaRepository tipoItemJpaRepository;
+
+    @Autowired
     private EntityManager entityManager;
 
     private ItemFichaPerfilCommandOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new ItemFichaPerfilCommandOutputAdapter(jpaRepository);
-        // Inyección manual del EntityManager (en producción lo hace Spring)
-        try {
-            var field = ItemFichaPerfilCommandOutputAdapter.class.getDeclaredField("entityManager");
-            field.setAccessible(true);
-            field.set(adapter, entityManager);
-        } catch (Exception e) {
-            throw new RuntimeException("Error inyectando EntityManager en test", e);
-        }
+        adapter = new ItemFichaPerfilCommandOutputAdapter(jpaRepository, tipoItemJpaRepository);
 
-        // Seed: insertar tipo_item en H2 para que getReference funcione
+        // Seed: insertar tipo_item en H2 para que la referencia por id funcione
         entityManager.createNativeQuery(
                 "INSERT INTO tipo_item (id, nombre, descripcion) VALUES (?, ?, ?)"
         )
@@ -105,7 +101,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         UUID fichaPerfilId = UUID.randomUUID();
         String tipoItem = "OBJETIVO_GENERAL";
 
-        TipoItemJpaEntity tipoItemRef = entityManager.getReference(TipoItemJpaEntity.class, tipoItem);
+        TipoItemJpaEntity tipoItemRef = tipoItemJpaRepository.getReferenceById(tipoItem);
         ItemFichaPerfilJpaEntity entity = ItemFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
@@ -140,7 +136,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeRetornarTrue_cuandoItemExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        TipoItemJpaEntity tipoItemRef = entityManager.getReference(TipoItemJpaEntity.class, "OBJETIVO_GENERAL");
+        TipoItemJpaEntity tipoItemRef = tipoItemJpaRepository.getReferenceById("OBJETIVO_GENERAL");
         ItemFichaPerfilJpaEntity entity = ItemFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)

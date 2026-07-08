@@ -16,6 +16,13 @@ public final class ItemFichaPerfilAggregate {
     private TipoItem tipoItem;
     private String contenido;
 
+    private ItemFichaPerfilAggregate(UUID id, UUID fichaPerfilId, TipoItem tipoItem, String contenido) {
+        this.id = id;
+        this.fichaPerfilId = fichaPerfilId;
+        this.tipoItem = tipoItem;
+        this.contenido = contenido;
+    }
+
     private ItemFichaPerfilAggregate() {}
 
     // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
@@ -37,12 +44,7 @@ public final class ItemFichaPerfilAggregate {
 
     public static ItemFichaPerfilAggregate reconstruir(UUID id, UUID fichaPerfilId, TipoItem tipoItem,
                                                        String contenido) {
-        var itemFichaPerfilAggregate = new ItemFichaPerfilAggregate();
-        itemFichaPerfilAggregate.id = id;
-        itemFichaPerfilAggregate.fichaPerfilId = fichaPerfilId;
-        itemFichaPerfilAggregate.tipoItem = tipoItem;
-        itemFichaPerfilAggregate.contenido = contenido;
-        return itemFichaPerfilAggregate;
+        return new ItemFichaPerfilAggregate(id, fichaPerfilId,  tipoItem, contenido);
     }
 
     // ─── Private setters ──────────────────────────────────────────────────────

@@ -4,9 +4,7 @@ import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggr
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilMapper;
-import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemJpaEntity;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemJpaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,16 +18,11 @@ import java.util.UUID;
 public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutputPort {
 
     private final ItemFichaPerfilJpaRepository jpaRepository;
-
-    @PersistenceContext(unitName = "fichas")
-    private EntityManager entityManager;
+    private final TipoItemJpaRepository tipoItemJpaRepository;
 
     @Override
     public void guardar(ItemFichaPerfilAggregate aggregate) {
-        var tipoItemRef = entityManager.getReference(
-                TipoItemJpaEntity.class,
-                aggregate.getTipoItem().getId()
-        );
+        var tipoItemRef = tipoItemJpaRepository.getReferenceById(aggregate.getTipoItem().getId());
         var entity = ItemFichaPerfilMapper.toJpaEntity(aggregate, tipoItemRef);
         jpaRepository.save(entity);
     }

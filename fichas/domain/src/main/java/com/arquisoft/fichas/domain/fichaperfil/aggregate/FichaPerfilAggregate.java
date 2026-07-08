@@ -25,8 +25,8 @@ public final class FichaPerfilAggregate {
     // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
 
     public static FichaPerfilAggregate crear(String titulo, UUID asesorFichaId) {
-        FichaPerfilAggregate ficha = new FichaPerfilAggregate();
-        ValidationResult result = new ValidationResult();
+        var ficha = new FichaPerfilAggregate();
+        var result = new ValidationResult();
 
         ficha.setId();
         ficha.setTituloProyecto(titulo, result);

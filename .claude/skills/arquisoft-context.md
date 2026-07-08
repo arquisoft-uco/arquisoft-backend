@@ -1413,6 +1413,7 @@ package com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaPerfil.command.port.in.CrearFichaPerfilInputPort;
 import com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.in.web.dto.CrearFichaPerfilRequestDTO;
+import com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.in.web.dto.CrearFichaPerfilResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -1420,10 +1421,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.net.URI;
 import java.util.UUID;
 
 @RestController
@@ -1444,16 +1445,26 @@ public class CrearFichaPerfilInputAdapter {
            @ApiResponse(responseCode = "401", description = "No autenticado"),
            @ApiResponse(responseCode = "403", description = "Sin permisos")
    })
-   public ResponseEntity<Void> crear(@Valid @RequestBody CrearFichaPerfilRequestDTO request) {
+   public ResponseEntity<CrearFichaPerfilResponseDTO> crear(@Valid @RequestBody CrearFichaPerfilRequestDTO request) {
       UUID id = crearFichaPerfilInputPort.ejecutar(request.toCommand());
-      return ResponseEntity.created(URI.create("/api/fichas-perfil/" + id)).build();
+      return ResponseEntity.status(HttpStatus.CREATED)
+              .body(new CrearFichaPerfilResponseDTO(id));
    }
 }
 ```
 
+El `ResponseDTO` es un `record` de un solo componente en `.../command/adapter/in/web/dto/`:
+
+```java
+// infrastructure/fichaPerfil/command/adapter/in/web/dto/CrearFichaPerfilResponseDTO.java
+public record CrearFichaPerfilResponseDTO(UUID id) {}
+```
+
+Jackson lo serializa como `{"id": "b383883a-..."}`.
+
 > **Convenciones del InputAdapter de escritura:**
 > - Inyecta el `InputPort` (interfaz vacía), no el `UseCase` directamente.
-> - Retorna `ResponseEntity<Void>` con `201 Created` + header `Location` apuntando al recurso. **No** devuelve el recurso completo — eso es responsabilidad de un endpoint de consulta separado (CQRS estricto).
+> - Cuando el comando genera un recurso y devuelve su id, el adapter lo **envuelve en un `{Accion}{Entidad}ResponseDTO`** (record con `UUID id`) y retorna `ResponseEntity.status(HttpStatus.CREATED).body(dto)` → body `{"id": "..."}`. **Nunca** `ResponseEntity<UUID>` ni `.body(id)` directo: eso serializa como string crudo (`"b383883a-..."`) sin cuerpo. Solo devuelve el id, **no** el recurso completo — eso es responsabilidad de un endpoint de consulta separado (CQRS estricto). Para comandos sin valor de retorno (modificar/remover) sí usa `ResponseEntity<Void>` con `200`/`204`.
 > - El `@PreAuthorize` usa client roles con formato `{contexto}:{recurso}:{accion}` **en kebab-case** (todo minúsculas, guiones entre palabras del recurso, ej. `fichas:ficha-perfil:create`). **Nunca** camelCase ni MAYÚSCULAS.
 
 #### 9. CommandOutputAdapter (persistencia write)
@@ -1558,17 +1569,19 @@ public static EstadoFichaPerfilAggregate crear(UUID fichaPerfilId) {
 }
 ```
 
-**Persistencia sin consulta al catálogo.** Como el `id` del catálogo es la constante del enum (ya conocida en memoria), el `CommandOutputAdapter` obtiene una **referencia** a la fila del catálogo con `entityManager.getReference(...)` — sin viaje a BD para resolver el id (lo opuesto a un `findByNombre`). La `JpaEntity` referencia el catálogo con `@ManyToOne` + `@JoinColumn` (FK `VARCHAR`), no con un id crudo:
+**Persistencia sin consulta al catálogo.** Como el `id` del catálogo es la constante del enum (ya conocida en memoria), el `CommandOutputAdapter` obtiene una **referencia** a la fila del catálogo con `{catalogo}JpaRepository.getReferenceById(id)` — sin viaje a BD para resolver el id (lo opuesto a un `findByNombre`). La `JpaEntity` referencia el catálogo con `@ManyToOne` + `@JoinColumn` (FK `VARCHAR`), no con un id crudo:
 
 ```java
-// CommandOutputAdapter — NO consulta el catálogo
-@PersistenceContext(unitName = "fichas")
-private EntityManager entityManager;
+// CommandOutputAdapter — NO consulta el catálogo.
+// Inyecta el JpaRepository del catálogo por constructor (@RequiredArgsConstructor);
+// NUNCA usa EntityManager ni @PersistenceContext.
+private final EstadoFichaPerfilJpaRepository jpaRepository;
+private final EstadoFichaJpaRepository estadoFichaJpaRepository;
 
 @Override
 public void guardar(EstadoFichaPerfilAggregate aggregate) {
-    var estadoFichaRef = entityManager.getReference(
-            EstadoFichaJpaEntity.class, aggregate.getEstadoFicha().getId());
+    var estadoFichaRef =
+            estadoFichaJpaRepository.getReferenceById(aggregate.getEstadoFicha().getId());
     jpaRepository.save(EstadoFichaPerfilMapper.toJpaEntity(aggregate, estadoFichaRef));
 }
 ```
@@ -1606,6 +1619,29 @@ INSERT INTO estado_ficha (id, nombre, descripcion) VALUES
 ('APROBADA',        'Aprobada',        '...');
 -- tabla referenciante:  estado_ficha_id VARCHAR(50) NOT NULL REFERENCES estado_ficha(id)
 ```
+
+### Referencias al guardar (`getReferenceById`) — regla por situación, no por anotación
+
+**La referencia se construye SIEMPRE con el `JpaRepository` de la entidad referenciada: `{referida}JpaRepository.getReferenceById(id)`.** Nunca con `EntityManager` + `@PersistenceContext(unitName = "...")` — el repositorio ya expone `getReferenceById` (heredado de `JpaRepository`), así que el adapter solo inyecta repositorios por constructor (`@RequiredArgsConstructor`) y no toca el `EntityManager`.
+
+La regla **no depende de una anotación "mágica"**, sino de una **situación**: vas a **persistir** una entidad que tiene un campo de asociación a otra entidad y **solo tienes el `id`** de esa otra. Necesitas algo que poner en ese campo, y la referencia es la forma de ponerlo **sin pagar un SELECT** — `getReferenceById` devuelve un proxy cuya única data materializada es el id, que Hibernate escribe directo en la columna FK.
+
+Situaciones que la requieren — asociaciones **`*-to-one` del lado propietario** (la FK vive en TU tabla):
+
+| Anotación | ¿Requiere referencia al guardar? | Por qué |
+|---|---|---|
+| `@ManyToOne` | **Sí — el caso típico** | El campo es un objeto de la otra entidad; Hibernate toma su id para la columna FK |
+| `@OneToOne` con `@JoinColumn` (lado dueño) | **Sí — mismo mecanismo** | La FK vive en tu tabla, igual que `@ManyToOne` |
+| `@ManyToMany` (lado dueño) | **Sí, al agregar elementos a la colección** | Cada elemento agregado puede ser un proxy; se escribe en la tabla intermedia |
+| `@OneToMany` | Normalmente **no** | La FK vive en la tabla del "many"; es el hijo quien referencia al padre con su `@ManyToOne` |
+
+Casos donde **NO** aplica ninguna referencia:
+
+- **Columnas planas** (`UUID`, `String`, `@Enumerated`, `Instant`): se escriben directo.
+- **`@Embedded`/`@Embeddable`**: es parte de la misma fila, no hay otra entidad.
+- **Lecturas**: si haces `findById` de la entidad principal, Hibernate ya resuelve las asociaciones solo (lazy o eager); nunca llamas `getReferenceById` para leer.
+
+**Si NO tienes el `id`** para construir la referencia, entonces sí debes **consultar** (`findById`/`findByX`, pagando el SELECT) — la referencia solo evita el viaje a BD cuando ya conoces el id.
 
 ### Plantilla resumida de una HU read — QueryInputPort + ReadModel + QueryUseCase
 
@@ -1924,8 +1960,8 @@ Cada **rol realm** tiene asignados varios **client roles** según sus responsabi
 // ✅ CORRECTO — usa hasAuthority con client role en kebab-case
 @PostMapping
 @PreAuthorize("hasAuthority('fichas:ficha-perfil:create')")
-public ResponseEntity<UUID> crear(@Valid @RequestBody CrearFichaPerfilRequestDTO req) {
-    // ...
+public ResponseEntity<CrearFichaPerfilResponseDTO> crear(@Valid @RequestBody CrearFichaPerfilRequestDTO req) {
+    // ... retorna body {"id": "..."} vía ResponseDTO, nunca ResponseEntity<UUID>
 }
 
 // ❌ MAL — camelCase en el recurso
@@ -2275,6 +2311,7 @@ por contexto. El implementador **no toca configuración de DataSource**.
 
 - **`@Table` SIN atributo `schema`.** Todas las tablas viven en el `public` de su BD propia.
   Usa solo `@Table(name = "ficha_perfil")`. **Nunca** `@Table(schema = "...", name = "...")`.
+- **`@Column(name = "...")` explícito en TODA propiedad persistente — obligatorio.** Cada campo mapeado declara su nombre de columna de BD en `snake_case`, **incluido el `@Id`** (`@Column(name = "id")`). Las asociaciones declaran `@JoinColumn(name = "...")`. **Nunca** confíes en la estrategia de naming implícita de Hibernate (que deriva el nombre del campo Java): para campos de una sola palabra "funciona por coincidencia", pero un campo `camelCase` o un cambio de estrategia produce un desajuste silencioso columna↔campo. El nombre explícito hace el mapeo independiente de la configuración y elimina esa clase de error. El `name` debe coincidir **exacto** con la columna declarada en la migración Flyway.
 - **Migraciones Flyway** en `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` — el `{Contexto}DataSourceConfig` carga `classpath:db/migration/{contexto}` (ej. `classpath:db/migration/fichas`), así que el SQL DEBE ir en ese subdirectorio `{contexto}/`. Una migración fuera de ese subdir NO se ejecuta.
 - **Nomenclatura Flyway (versionado secuencial por contexto):** `V{major}.{minor}__{descripcion_snake_case}.sql` (ej. `V1.0__crear_tablas_fichas_perfil.sql`, luego `V1.1__crear_estudiante.sql`). Cada contexto tiene su **propia secuencia** (su propio Flyway). La migración nueva usa el **siguiente número** tras la versión más alta existente en `db/migration/{contexto}/`: **LEE el directorio antes de elegir el número — no lo adivines (eso causa huecos como un `V3` sin `V2`) ni reutilices uno existente.**
 - **Minor por defecto, major reservado:** el proyecto está en el esquema **v1**, así que toda migración nueva **incrementa el minor** (`V1.0` → `V1.1` → `V1.2`…). El salto a un **major** (`V2.0`) se reserva para un **cambio grande de esquema / nueva versión del proyecto** y es una **decisión humana explícita** — el agente **nunca** lo decide: siempre incrementa el minor.

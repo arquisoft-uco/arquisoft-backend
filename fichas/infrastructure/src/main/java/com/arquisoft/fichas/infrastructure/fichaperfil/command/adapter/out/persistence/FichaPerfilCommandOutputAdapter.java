@@ -3,11 +3,10 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.pers
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
 import com.arquisoft.shared.message.FichasMessages;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,14 +20,12 @@ import java.util.UUID;
 public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
     private final FichaPerfilJpaRepository fichaPerfilJpaRepository;
-
-    @PersistenceContext(unitName = "fichas")
-    private EntityManager entityManager;
+    private final AsesorFichaJpaRepository asesorFichaJpaRepository;
 
     @Override
     public void guardar(FichaPerfilAggregate ficha) {
-        AsesorFichaJpaEntity asesorRef = entityManager.getReference(AsesorFichaJpaEntity.class,
-                ficha.getAsesorFichaId());
+        AsesorFichaJpaEntity asesorRef =
+                asesorFichaJpaRepository.getReferenceById(ficha.getAsesorFichaId());
         fichaPerfilJpaRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));
         log.debug(FichasMessages.FichaPerfil.LOG_GUARDADA, ficha.getId());
     }

@@ -18,12 +18,12 @@ import lombok.NoArgsConstructor;
 public class TipoItemJpaEntity {
 
     @Id
-    @Column(nullable = false, length = 50)
+    @Column(name = "id", nullable = false, length = 50)
     private String id;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(name = "nombre", nullable = false, unique = true, length = 20)
     private String nombre;
 
-    @Column(nullable = false, length = 500)
+    @Column(name = "descripcion", nullable = false, length = 500)
     private String descripcion;
 }

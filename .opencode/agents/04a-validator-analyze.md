@@ -166,6 +166,7 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | ¿Migración Flyway ubicada en el subdirectorio `db/migration/{contexto}/` (no directamente en `db/migration/`)? El `{Contexto}DataSourceConfig` carga `classpath:db/migration/{contexto}`; fuera de ese subdir la migración NO se ejecuta | ✅ |
 | ¿Las columnas de cada tabla coinciden con los atributos del plan (sin columnas extra inventadas como `rol`/`tipo`/`fecha*` no documentadas)? | ✅ |
 | ¿Migración Flyway sin atributo schema (tablas sin prefijo) y `@Table` sin `schema` en JPA Entity? | ✅ |
+| ¿Toda propiedad persistente de la JPA Entity declara `@Column(name = "snake_case")` explícito — incluido el `@Id` — y las asociaciones `@JoinColumn(name = "...")`, coincidiendo exacto con la columna Flyway? Un `@Column`/`@Id` sin `name` (dependiendo del naming implícito de Hibernate) es hallazgo | ⚠️ menor (bloqueante si el nombre implícito NO coincide con la columna Flyway) |
 
 #### Nivel 2 — Convenciones Arquisoft + DDD Estricto
 
@@ -263,7 +264,8 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | `RequestDTO` es un `record` con anotaciones Jakarta (`@NotBlank`, `@Email`, etc.) ubicado en `infrastructure/{entidad}/command/adapter/in/web/dto/` | ✅ |
 | `RequestDTO` tiene método `toCommand()` que produce el `Command` correspondiente | ✅ |
 | Campos del `Command`, `ReadModel`, `RequestDTO` y JSON HTTP son **idénticos** a los del aggregate (en español, sin traducir) | ✅ |
-| Existencia de un "ResponseDTO" o similar como capa intermedia entre el UseCase y el adaptador REST | ❌ violación bloqueante (el adaptador serializa directamente el `ReadModel`) |
+| **Lado read (query):** existencia de un "ResponseDTO" o similar como capa intermedia entre el UseCase y el adaptador REST | ❌ violación bloqueante (el adaptador serializa directamente el `ReadModel`; esto NO aplica al ResponseDTO de escritura de la fila siguiente) |
+| **Lado write (command) respuesta A:** el `InputAdapter` retorna el id crudo (`ResponseEntity<UUID>` o `.body(uuid)`) en vez de envolverlo en un `{Accion}{Entidad}ResponseDTO` (record `(UUID id)` en `.../command/adapter/in/web/dto/`) → body `{"id": "..."}` | ❌ violación bloqueante (el id nunca se serializa como string suelto) |
 | Existencia de `ErrorResponseDTO`, `PageResponseDTO` o `QueryCriteriaRequestDTO` LOCAL en algún contexto (en `application/` o similar) | ❌ violación bloqueante (viven solo en `shared:web`) |
 | Imports de DTOs técnicos desde `com.arquisoft.shared.web` (no desde el paquete del contexto) | ✅ |
 | Existencia de `application/dto/` (estructura vieja sin separar por entidad/CQRS) | ❌ violación bloqueante |
@@ -666,12 +668,13 @@ public FichaTituloDuplicadoException(String titulo) {
 | Catálogo (tabla `estado_*`/`tipo_*` y su `JpaEntity`) con PK `UUID` en vez de `VARCHAR` = constante del enum (ADR-012) | ❌ violación bloqueante |
 | FK al catálogo (columna `*_id` y `@JoinColumn`) tipada como `UUID` en vez de `VARCHAR`/`String` | ❌ violación bloqueante |
 | Aggregate que guarda el estado/tipo como `String {estado}Id` o `UUID {estado}Id` en vez del enum directamente | ❌ violación bloqueante |
-| `CommandOutputAdapter` que resuelve el catálogo con `findByNombre`/`findById` (viaje a BD) en vez de `entityManager.getReference(CatalogoJpaEntity.class, enum.getId())` | ❌ violación bloqueante |
+| `CommandOutputAdapter` que resuelve el catálogo con `findByNombre`/`findById` (viaje a BD) en vez de `{catalogo}JpaRepository.getReferenceById(enum.getId())` | ❌ violación bloqueante |
+| `CommandOutputAdapter` que construye la referencia con `EntityManager`/`@PersistenceContext(unitName = "...")` + `entityManager.getReference(...)` en vez de `{catalogo}JpaRepository.getReferenceById(id)` inyectado por constructor | ❌ violación bloqueante |
 | Use case que resuelve el estado/tipo del catálogo (inyecta un query port del catálogo o hace lookup) en vez de delegarlo al `CommandOutputAdapter` | ❌ violación bloqueante |
 | `Mapper` de persistencia que inyecta o llama a un `JpaRepository` (busca el nombre/id dentro del método mapper) | ❌ violación bloqueante (el mapeo es puro; el adapter resuelve y pasa la referencia como parámetro) |
 | Estado/tipo inicial asignado en el use case o el DTO en vez de dentro de `crear(...)` del aggregate (el dominio asigna el estado) | ⚠️ menor |
 
-**Cómo verificar (mental):** lee el enum (¿tiene `id = name()` además de `nombre`?), la `JpaEntity` del catálogo (¿PK `String`/`VARCHAR`?), la `JpaEntity` referenciante (¿FK `@ManyToOne` con `String`, no `UUID`?), el aggregate (¿enum o `*Id`?), el `CommandOutputAdapter` (¿`getReference` o `findByNombre`?) y el `Mapper` (¿inyecta `JpaRepository`?). Una sola de estas señales en el archivo equivocado dispara la violación.
+**Cómo verificar (mental):** lee el enum (¿tiene `id = name()` además de `nombre`?), la `JpaEntity` del catálogo (¿PK `String`/`VARCHAR`?), la `JpaEntity` referenciante (¿FK `@ManyToOne` con `String`, no `UUID`?), el aggregate (¿enum o `*Id`?), el `CommandOutputAdapter` (¿`{catalogo}JpaRepository.getReferenceById(id)` inyectado por constructor, o `findByNombre`, o el prohibido `EntityManager`/`@PersistenceContext`?) y el `Mapper` (¿inyecta `JpaRepository`?). Una sola de estas señales en el archivo equivocado dispara la violación.
 
 **2.21 Construcción del aggregate — setters privados, Util de `shared:domain`, enum vía `valueOf` + `addError` (CRÍTICO en aggregates con `crear(...)`):**
 
