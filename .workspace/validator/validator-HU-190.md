@@ -61,3 +61,11 @@ Ninguno.
 Desglose: Nivel 1: 40/40 · Nivel 2: 56/58 (-2 por campos no final, observación menor aprobada) · Build & Tests: 2/2
 
 **Decisión:** ✅ APROBADO para commit.
+
+---
+
+## Commit
+
+**Estado:** ✅ EJECUTADO
+**Hash:** bca3e8c
+**Fecha de ejecución:** 2026-07-07
