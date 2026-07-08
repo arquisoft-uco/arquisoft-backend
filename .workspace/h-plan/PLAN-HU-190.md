@@ -13,7 +13,7 @@
     - `artefactos/estrategicos/modelo-dominio/enriquecido/documentacion/06_fichas_trabajos_grado_modelo_enriquecido.md`
     - `mer/03_tablas_fichas_perfil.sql`
 - **Skill arquisoft-context cargado:** ✅
-- **Observaciones del usuario:** Ninguna
+- **Observaciones del usuario:** El endpoint no recibe request body — el `fichaPerfilId` se toma únicamente del path param `{fichaId}` (se eliminó el `RequestDTO` redundante).
 
 ---
 
@@ -34,7 +34,7 @@ Esta HU permite al Representante del Comité de Currículum registrar una nueva 
 | 3 | Representante intenta evaluar ficha inexistente | Sistema rechaza con 400 Bad Request — ficha no encontrada |
 | 4 | Usuario autenticado no tiene rol `representante-comite` | Sistema rechaza con 403 Forbidden |
 | 5 | Usuario no autenticado intenta registrar evaluación | Sistema rechaza con 401 Unauthorized |
-| 6 | Datos del request inválidos (fichaId nulo o malformado) | Sistema rechaza con 400 Bad Request |
+| 6 | `fichaId` del path malformado (no es UUID válido) | Sistema rechaza con 400 Bad Request |
 
 ---
 
@@ -125,8 +125,8 @@ Esta HU permite al Representante del Comité de Currículum registrar una nueva 
 | application | `fichas/application/src/main/java/com/arquisoft/fichas/application/evaluacionfichaperfil/exception/RepresentanteComiteNoEncontradoException.java` | Exception | Extiende `ApplicationException` (no encontrado → 400). Constructor: `(UUID representanteId)` con mensaje parametrizado del catálogo. |
 | application | `fichas/application/src/main/java/com/arquisoft/fichas/application/evaluacionfichaperfil/command/RegistrarEvaluacionFichaPerfilUseCase.java` | UseCase | `@Component` + `@RequiredArgsConstructor` + `@Slf4j` + `@Transactional(transactionManager = "fichasTransactionManager")`. Implementa el `InputPort`. Patrón: validar existencia ficha → validar existencia representante → validar no duplicado → crear aggregate → guardar → log → retornar UUID |
 | application | `fichas/application/src/main/java/com/arquisoft/fichas/application/representantecomite/query/port/out/RepresentanteComiteQueryOutputPort.java` | Interface | Puerto de salida read (vive en `application`, no en domain). Método: `boolean existsById(UUID id)` |
-| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/evaluacionfichaperfil/command/adapter/in/web/dto/RegistrarEvaluacionFichaPerfilRequestDTO.java` | `record` | Campo único: `@NotNull UUID fichaPerfilId`. Método `toCommand(UUID representanteComiteId)` que recibe el ID extraído del JWT y produce el `Command`. **NO** incluye campo `representanteComiteId` — ese valor no viene del body. |
-| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/evaluacionfichaperfil/command/adapter/in/web/RegistrarEvaluacionFichaPerfilInputAdapter.java` | `@RestController` | Inyecta el `InputPort` + extrae `representanteComiteId` del `Authentication` Spring Security (`authentication.getName()` retorna el `sub` claim del JWT). Endpoint: `POST /fichas-perfil/{fichaId}/evaluaciones` con `@PreAuthorize("hasAuthority('fichas:evaluacion-ficha-perfil:create')")`. Retorna `ResponseEntity<UUID>` con `201 Created` + el UUID en el body. **SIN** header `Location` (según respuesta del usuario). ADR-011: `@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement`. |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/evaluacionfichaperfil/command/adapter/in/web/RegistrarEvaluacionFichaPerfilInputAdapter.java` | `@RestController` | Inyecta el `InputPort` + extrae `representanteComiteId` del JWT con `@AuthenticationPrincipal Jwt jwt` → `UUID.fromString(jwt.getSubject())` (mismo patrón de `ModificarFichaPerfilInputAdapter`). Endpoint: `POST /fichas-perfil/{fichaId}/evaluaciones` con `@PreAuthorize("hasAuthority('fichas:evaluacion-ficha-perfil:create')")`. **SIN request body ni RequestDTO** — el `fichaPerfilId` se toma del path param `{fichaId}`. Construye el `Command` directamente con `(fichaId, representanteComiteId)`. Retorna `ResponseEntity<RegistrarEvaluacionFichaPerfilResponseDTO>` con `201 Created` y body `{"id": "<uuid>"}` (mismo patrón que `RegistrarFichaPerfilResponseDTO`). **SIN** header `Location` (según respuesta del usuario). ADR-011: `@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement`. |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/evaluacionfichaperfil/command/adapter/in/web/dto/RegistrarEvaluacionFichaPerfilResponseDTO.java` | `record` | Response DTO: `record RegistrarEvaluacionFichaPerfilResponseDTO(UUID id)` — envuelve el UUID creado para responder `{"id": "<uuid>"}` |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/evaluacionfichaperfil/persistence/EvaluacionFichaPerfilJpaEntity.java` | JPA Entity | `@Table(name = "evaluacion_ficha_perfil")` (sin atributo `schema`). Campos: `id`, `representanteComiteId`, `fichaPerfilId`, `fechaCreacion`. Sin relaciones JPA `@ManyToOne` — solo UUIDs planos. |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/evaluacionfichaperfil/persistence/EvaluacionFichaPerfilJpaRepository.java` | `JpaRepository` | Extiende `JpaRepository<EvaluacionFichaPerfilJpaEntity, UUID>`. Métodos custom: `boolean existsByRepresentanteComiteIdAndFichaPerfilId(UUID representanteId, UUID fichaId)` |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/evaluacionfichaperfil/persistence/EvaluacionFichaPerfilMapper.java` | `@Component` | Mapea `EvaluacionFichaPerfilAggregate` ↔ `EvaluacionFichaPerfilJpaEntity`. Métodos: `toJpaEntity(aggregate)`, `toDomain(entity)` (usa `reconstruir(...)`). |
@@ -268,21 +268,10 @@ Esta HU permite al Representante del Comité de Currículum registrar una nueva 
     - `boolean existsById(UUID id)` — Valida si existe representante por ID
 - **Dependencias:** `UUID`
 
-### `RegistrarEvaluacionFichaPerfilRequestDTO.java`
-- **Paquete:** `com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.in.web.dto`
-- **Tipo:** `record` (DTO request HTTP)
-- **Responsabilidad:** Validación Jakarta del input HTTP
-- **Features Java 21 aplicables:** `record` para DTO inmutable
-- **Campos:**
-    - `@NotNull UUID fichaPerfilId` — ID de la ficha a evaluar
-- **Métodos principales:**
-    - `RegistrarEvaluacionFichaPerfilCommand toCommand(UUID representanteComiteId)` — Factory que recibe el ID extraído del JWT y produce el `Command`
-- **Dependencias:** `RegistrarEvaluacionFichaPerfilCommand`, `UUID`, `@NotNull` (Jakarta)
-
 ### `RegistrarEvaluacionFichaPerfilInputAdapter.java`
 - **Paquete:** `com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.in.web`
 - **Tipo:** `@RestController` (Adaptador REST de entrada)
-- **Responsabilidad:** Expone endpoint `POST /fichas-perfil/{fichaId}/evaluaciones`. Extrae `representanteComiteId` del JWT. Serializa `UUID` a JSON.
+- **Responsabilidad:** Expone endpoint `POST /fichas-perfil/{fichaId}/evaluaciones`. **Sin request body** — el `fichaPerfilId` se toma del path param y el `representanteComiteId` del JWT. Serializa `UUID` a JSON.
 - **`@Tag`:** `name = "Evaluaciones de Ficha de Perfil"`, `description = "Gestión de evaluaciones de fichas de perfil por el comité de currículum"`
 - **Endpoints documentados:**
 
@@ -291,8 +280,15 @@ Esta HU permite al Representante del Comité de Currículum registrar una nueva 
 | `registrarEvaluacion` | `"Registrar nueva evaluación de ficha de perfil"` | 201, 400, 401, 403 | `bearerAuth` |
 
 - **Métodos principales:**
-    - `ResponseEntity<UUID> registrarEvaluacion(@PathVariable UUID fichaId, @Valid @RequestBody RegistrarEvaluacionFichaPerfilRequestDTO request, Authentication authentication)` — Extrae `representanteComiteId` con `UUID.fromString(authentication.getName())` (el `sub` claim del JWT), llama al `InputPort`, retorna `201 Created` con UUID en body. **SIN** header `Location`.
-- **Dependencias:** `RegistrarEvaluacionFichaPerfilInputPort`, `RegistrarEvaluacionFichaPerfilRequestDTO`, `Authentication`, `UUID`, `@PreAuthorize`, ADR-011 annotations
+    - `ResponseEntity<RegistrarEvaluacionFichaPerfilResponseDTO> registrarEvaluacion(@PathVariable UUID fichaId, @AuthenticationPrincipal Jwt jwt)` — Extrae `representanteComiteId` con `UUID.fromString(jwt.getSubject())` (mismo patrón que `ModificarFichaPerfilInputAdapter` y `AgregarItemFichaPerfilInputAdapter`), construye `new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteComiteId)`, llama al `InputPort`, retorna `201 Created` con body `{"id": "<uuid>"}` vía `RegistrarEvaluacionFichaPerfilResponseDTO`. **SIN** header `Location`.
+- **Dependencias:** `RegistrarEvaluacionFichaPerfilInputPort`, `RegistrarEvaluacionFichaPerfilCommand`, `RegistrarEvaluacionFichaPerfilResponseDTO`, `Jwt` + `@AuthenticationPrincipal`, `UUID`, `@PreAuthorize`, ADR-011 annotations
+
+### `RegistrarEvaluacionFichaPerfilResponseDTO.java`
+- **Paquete:** `com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.in.web.dto`
+- **Tipo:** `record` (Response DTO)
+- **Responsabilidad:** Envuelve el UUID de la evaluación creada para responder `{"id": "<uuid>"}` — mismo patrón que `RegistrarFichaPerfilResponseDTO`
+- **Campos:** `UUID id`
+- **Dependencias:** `UUID`
 
 ### `EvaluacionFichaPerfilJpaEntity.java`
 - **Paquete:** `com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence`
@@ -385,9 +381,9 @@ Esta HU permite al Representante del Comité de Currículum registrar una nueva 
 
 | Método | Ruta | Request Body / Params | Response | Código HTTP | Client role requerido | Anotaciones Swagger (ADR-011) |
 |--------|------|----------------------|----------|-------------|----------------------|-------------------------------|
-| POST | `/fichas-perfil/{fichaId}/evaluaciones` | `RegistrarEvaluacionFichaPerfilRequestDTO` (body: `fichaPerfilId` único; path param: `fichaId` debe coincidir con body; `representanteComiteId` se extrae del JWT) | `UUID` (body: id de evaluación creada). **SIN** header `Location` | 201 | `fichas:evaluacion-ficha-perfil:create` | `@Operation(summary="Registrar nueva evaluación de ficha de perfil")` + `@ApiResponses(201, 400, 401, 403)` + `@SecurityRequirement(name="bearerAuth")` |
+| POST | `/fichas-perfil/{fichaId}/evaluaciones` | **Sin body.** Path param: `fichaId` (UUID de la ficha a evaluar); `representanteComiteId` se extrae del JWT | `RegistrarEvaluacionFichaPerfilResponseDTO` — body `{"id": "<uuid>"}`. **SIN** header `Location` | 201 | `fichas:evaluacion-ficha-perfil:create` | `@Operation(summary="Registrar nueva evaluación de ficha de perfil")` + `@ApiResponses(201, 400, 401, 403)` + `@SecurityRequirement(name="bearerAuth")` |
 
-**Validación de coherencia path vs body:** el `fichaId` del path parameter debe coincidir con el `fichaPerfilId` del body. Si difieren, rechazar con 400 Bad Request.
+**Sin request body:** el `fichaPerfilId` se toma exclusivamente del path parameter `{fichaId}`. No existe `RequestDTO` para este endpoint — el adapter construye el `Command` directamente.
 
 ---
 
@@ -458,7 +454,7 @@ Para el client role `fichas:evaluacion-ficha-perfil:create`:
 |---|---|
 | Pequeña (1 endpoint, 1 entidad) | 15 - 25 |
 
-**Esta HU es pequeña:** 1 endpoint POST, 1 entidad raíz (`EvaluacionFichaPerfilAggregate`), 1 réplica local (`RepresentanteComite`). Presupuesto: **18 - 22 tests**.
+**Esta HU es pequeña:** 1 endpoint POST, 1 entidad raíz (`EvaluacionFichaPerfilAggregate`), 1 réplica local (`RepresentanteComite`). Presupuesto: **17 - 22 tests**.
 
 ---
 
@@ -494,15 +490,14 @@ Para el client role `fichas:evaluacion-ficha-perfil:create`:
 | `EvaluacionFichaPerfilCommandOutputAdapterTest` | `debeGuardar_cuandoEntidadEsValida` | persistencia OK, mapper convierte aggregate → JPA entity, repository guarda |
 | `EvaluacionFichaPerfilCommandOutputAdapterTest` | `debeRetornarTrue_cuandoExistsByRepresentanteAndFicha` | `existsByRepresentanteAndFicha(...)` retorna true si hay registro con ese par |
 | `EvaluacionFichaPerfilCommandOutputAdapterTest` | `debeRetornarFalse_cuandoNoExistsByRepresentanteAndFicha` | `existsByRepresentanteAndFicha(...)` retorna false si no hay registro con ese par |
-| `RegistrarEvaluacionFichaPerfilInputAdapterTest` | `debe201_cuandoPeticionValida` | created OK — extrae `representanteComiteId` del JWT, llama al use case, retorna UUID con 201 |
-| `RegistrarEvaluacionFichaPerfilInputAdapterTest` | `debe400_cuandoRequestInvalido` | validación Jakarta falla (`fichaPerfilId` nulo) |
-| `RegistrarEvaluacionFichaPerfilInputAdapterTest` | `debe400_cuandoFichaIdPathDifiereDeBody` | el `fichaId` del path parameter no coincide con el `fichaPerfilId` del body |
+| `RegistrarEvaluacionFichaPerfilInputAdapterTest` | `debe201_cuandoPeticionValida` | created OK — extrae `representanteComiteId` del JWT, llama al use case, retorna 201 con body `{"id": "<uuid>"}` |
+| `RegistrarEvaluacionFichaPerfilInputAdapterTest` | `debe400_cuandoFichaIdMalformado` | el `fichaId` del path parameter no es un UUID válido |
 | `RegistrarEvaluacionFichaPerfilInputAdapterTest` | `debe401_cuandoNoAutenticado` | sin token JWT |
 | `RegistrarEvaluacionFichaPerfilInputAdapterTest` | `debe403_cuandoRolInsuficiente` | autenticado pero sin authority `fichas:evaluacion-ficha-perfil:create` |
 | `RepresentanteComiteQueryOutputAdapterTest` | `debeRetornarTrue_cuandoExistsById` | `existsById(...)` retorna true si existe representante |
 | `RepresentanteComiteQueryOutputAdapterTest` | `debeRetornarFalse_cuandoNoExistsById` | `existsById(...)` retorna false si no existe representante |
 
-**Total estimado:** 4 (domain) + 5 (application) + 9 (infrastructure) = **18 tests**.
+**Total estimado:** 4 (domain) + 5 (application) + 8 (infrastructure) = **17 tests**.
 
 ---
 
@@ -526,9 +521,10 @@ Para el client role `fichas:evaluacion-ficha-perfil:create`:
 - [ ] Puerto de salida write (`EvaluacionFichaPerfilOutputPort`) definido en `domain/evaluacionfichaperfil/port/out/`
 - [ ] Puerto de salida read (`RepresentanteComiteQueryOutputPort`) definido en `application/representantecomite/query/port/out/`
 - [ ] Excepciones de application definidas en `application/evaluacionfichaperfil/exception/` (sin anidar en `command/`), extienden `ApplicationException` para que `GlobalAppExceptionHandler` de `shared:web` resuelva su HTTP automáticamente (400). **NO se crea handler de contexto.**
-- [ ] `Command` (`record` en `application/evaluacionfichaperfil/command/model/`) y `RequestDTO` (`record` en `infrastructure/.../web/dto/`) creados. `RequestDTO` con anotaciones Jakarta + método `toCommand(UUID representanteComiteId)` que recibe el ID del JWT. Campos en español idénticos al aggregate.
+- [ ] `Command` (`record` en `application/evaluacionfichaperfil/command/model/`) creado. **NO se crea `RequestDTO`** — el endpoint no recibe body; el adapter construye el `Command` con el `fichaId` del path y el `representanteComiteId` del JWT. Campos en español idénticos al aggregate.
+- [ ] `ResponseDTO` (`record RegistrarEvaluacionFichaPerfilResponseDTO(UUID id)`) creado — la respuesta 201 es `{"id": "<uuid>"}`, no un UUID crudo.
 - [ ] Caso de uso (`RegistrarEvaluacionFichaPerfilUseCase`) con `@RequiredArgsConstructor`, `@Transactional(transactionManager = "fichasTransactionManager")` con qualifier explícito. **NO inyecta `EventPublisher`** (la HU no emite eventos).
-- [ ] Controller REST con `@Valid @RequestBody`, extrae `representanteComiteId` del JWT con `authentication.getName()`, y autorización vía `@PreAuthorize("hasAuthority('fichas:evaluacion-ficha-perfil:create')")` en kebab-case — client role declarado en sección 9 del plan.
+- [ ] Controller REST **sin `@RequestBody`** (solo `@PathVariable UUID fichaId` + `@AuthenticationPrincipal Jwt jwt`), extrae `representanteComiteId` con `UUID.fromString(jwt.getSubject())`, y autorización vía `@PreAuthorize("hasAuthority('fichas:evaluacion-ficha-perfil:create')")` en kebab-case — client role declarado en sección 9 del plan.
 - [ ] Controller documentado con `@Tag`, `@Operation`, `@ApiResponses(201, 400, 401, 403)` y `@SecurityRequirement(name = "bearerAuth")` (ADR-011)
 - [ ] Entidad JPA con `@Table(name = "evaluacion_ficha_perfil")` (sin atributo `schema`) y adaptadores de repositorio creados
 - [ ] Migración Flyway `V1.4__crear_evaluacion_ficha_perfil.sql` en `db/migration/fichas/`, BD `fichas_perfil`, sin prefijo de schema en el SQL, UNIQUE constraint `(representante_comite_id, ficha_perfil_id)`
@@ -547,10 +543,10 @@ Para el client role `fichas:evaluacion-ficha-perfil:create`:
 > Esta sección es actualizada automáticamente por cada agente al completar su etapa.
 > No modificar manualmente.
 
-| Etapa      | Agente              | Estado       | Fecha | Notas |
-|------------|---------------------|--------------|-------|-------|
-| Desarrollo | @implementador      | ⏳ Pendiente |       |       |
-| Tests      | @tester             | ⏳ Pendiente |       |       |
-| Validación | @validator-analyze  | ⏳ Pendiente |       |       |
-| Reporte    | @validator-report   | ⏳ Pendiente |       |       |
-| Commit     | @commit             | ⏳ Pendiente |       |       |
+| Etapa      | Agente              | Estado       | Fecha      | Notas |
+|------------|---------------------|--------------|------------|-------|
+| Desarrollo | @implementador      | ✅ Completado | 2026-07-06 | Build -x test: sin errores |
+| Tests      | @tester             | ✅ Completado | 2026-07-07 | 17 tests (4 domain + 5 application + 8 infrastructure) — Cobertura ≥75% CUMPLE |
+| Validación | @validator-analyze  | ✅ Completado | 2026-07-07 | Score: 98/100 — APROBADO |
+| Reporte    | @validator-report   | ✅ Completado | 2026-07-07 | /.workspace/validator/validator-HU-190.md |
+| Commit     | @commit             | 🚀 En ejecución | 2026-07-07 |       |

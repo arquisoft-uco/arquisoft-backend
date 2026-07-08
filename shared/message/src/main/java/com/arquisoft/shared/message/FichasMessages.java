@@ -201,4 +201,43 @@ public final class FichasMessages {
         public static final String LOG_CREADO = "Estado ficha perfil creado — id={}, fichaPerfilId={}, estadoFicha={}";
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // EvaluacionFichaPerfil
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class EvaluacionFichaPerfil {
+
+        private EvaluacionFichaPerfil() {}
+
+        // Campos
+        public static final String CAMPO_REPRESENTANTE_COMITE_ID = "representanteComiteId";
+        public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
+
+        // Códigos de error
+        public static final String EVALUACION_DUPLICADA = "EVALUACION_DUPLICADA";
+        public static final String REPRESENTANTE_REQUERIDO = "REPRESENTANTE_REQUERIDO";
+        public static final String FICHA_REQUERIDA = "FICHA_REQUERIDA";
+
+        // Mensajes de error
+        public static final String EVALUACION_DUPLICADA_MSG = "El representante %s ya tiene una evaluación para la ficha %s";
+
+        // Logs
+        public static final String LOG_REGISTRADA = "Evaluación de ficha de perfil registrada — id={}, representante={}, ficha={}";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // RepresentanteComite
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class RepresentanteComite {
+
+        private RepresentanteComite() {}
+
+        // Códigos de error
+        public static final String REPRESENTANTE_NO_ENCONTRADO = "REPRESENTANTE_NO_ENCONTRADO";
+
+        // Mensajes de error
+        public static final String REPRESENTANTE_NO_ENCONTRADO_MSG = "Representante del comité no encontrado: %s";
+    }
+
 }

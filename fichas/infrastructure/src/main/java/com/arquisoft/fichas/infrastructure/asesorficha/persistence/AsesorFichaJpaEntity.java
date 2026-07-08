@@ -20,15 +20,15 @@ import java.util.UUID;
 public class AsesorFichaJpaEntity {
 
     @Id
-    @Column(columnDefinition = "uuid")
+    @Column(name = "id", columnDefinition = "uuid")
     private UUID id;
 
-    @Column(nullable = false, length = 30)
+    @Column(name = "identificador", nullable = false, length = 30)
     private String identificador;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "email", nullable = false, length = 50)
     private String email;
 }

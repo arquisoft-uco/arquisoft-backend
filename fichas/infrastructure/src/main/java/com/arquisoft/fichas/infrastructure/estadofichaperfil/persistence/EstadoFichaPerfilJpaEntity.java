@@ -25,7 +25,7 @@ import java.util.UUID;
 public class EstadoFichaPerfilJpaEntity {
 
     @Id
-    @Column(nullable = false)
+    @Column(name = "id", nullable = false)
     private UUID id;
 
     @Column(name = "ficha_perfil_id", nullable = false)
