@@ -84,7 +84,7 @@ Esta HU implementa la trazabilidad completa de cambios de estado por los que pas
 |---|---|---|---|---|---|---|
 | `id` | `UUID` | — | Sí | No | Sí | Autogenerado con `UtilUUID.generateNewUUID()` dentro del setter `setId()` |
 | `evaluacionFichaPerfilId` | `UUID` | — | Sí | No | No | FK a `evaluacion_ficha_perfil` — valida existencia con `EvaluacionFichaPerfilQueryOutputPort.existsById(...)` en flujo manual (b); en flujo automático (a) se recibe el UUID recién creado |
-| `estadoEvaluacionId` | `String` (VARCHAR) | — | Sí | No | **Sí en flujo (a), No en flujo (b)** | En flujo automático: hardcodeado `"EN_EVALUACION"` en el factory `crear(UUID evaluacionId)`. En flujo manual: recibido del DTO y validado contra el catálogo |
+| `estadoEvaluacion` | `EstadoEvaluacion` (enum) | — | Sí | No | **Sí en flujo (a), No en flujo (b)** | En flujo automático: hardcodeado `EstadoEvaluacion.EN_EVALUACION` en el setter sin parámetro. En flujo manual: recibido como enum desde el use case (convertido con `EstadoEvaluacion.valueOf(...)`) |
 | `fechaActualizacion` | `Instant` | — | Sí | No | Sí | Autogenerado con `UtilDate.generateNewInstantNow()` dentro del setter `setFechaActualizacion()` |
 
 **Combinaciones únicas (Restricciones):**
@@ -100,7 +100,7 @@ El MER documenta una restricción única comentada como TODO revisar: `UNIQUE (e
 |---|---|
 | `id` autogenerado | `UtilUUID.generateNewUUID()` dentro del setter `setId()` del aggregate |
 | `evaluacionFichaPerfilId` obligatorio | `DomainValidator.notNull(...)` en el setter del aggregate + validación de existencia en use case manual con `EvaluacionFichaPerfilQueryOutputPort.existsById(...)` (flujo a no valida porque el UUID viene recién creado) |
-| `estadoEvaluacionId` obligatorio | **Flujo (a):** hardcodeado `"EN_EVALUACION"` en `setEstadoEvaluacionInicial()` sin parámetro (llamado desde factory `crear(UUID)`). **Flujo (b):** `DomainValidator.notNull(...)` en el setter con parámetro `setEstadoEvaluacion(String, ValidationResult)` (llamado desde factory `crearConEstado(UUID, String)`) + validación de existencia del catálogo con `EstadoEvaluacionJpaRepository.existsById(...)` en el use case |
+| `estadoEvaluacion` obligatorio | **Flujo (a):** hardcodeado `EstadoEvaluacion.EN_EVALUACION` (enum) en `setEstadoEvaluacionInicial()` sin parámetro (llamado desde factory `crear(UUID)`). **Flujo (b):** `DomainValidator.notNull(...)` en el setter con parámetro `setEstadoEvaluacion(EstadoEvaluacion, ValidationResult)` (llamado desde factory `crearConEstado(UUID, EstadoEvaluacion)`) — la conversión desde `String` del Command a enum se hace en el use case con `EstadoEvaluacion.valueOf(...)` + validación de existencia del catálogo |
 | `fechaActualizacion` autogenerado | `UtilDate.generateNewInstantNow()` dentro del setter `setFechaActualizacion()` del aggregate |
 | Duplicado (POL-04) | `EstadoEvaluacionFichaOutputPort.existsByEvaluacionAndEstado(...)` invocado en use case antes de persistir (aplica a ambos flujos — en flujo a valida que no exista ya `EN_EVALUACION`, aunque no debería) |
 | Estado terminal (POL-05) | `EvaluacionFichaPerfilQueryOutputPort.obtenerUltimoEstado(UUID evaluacionId): Optional<String>` retorna el ID del último estado; use case manual valida que no sea terminal |
@@ -111,8 +111,8 @@ El MER documenta una restricción única comentada como TODO revisar: `UNIQUE (e
 El catálogo `EstadoEvaluacion` es un conjunto cerrado de valores documentados. Se planea como **enum en el dominio** (`domain/estadoevaluacion/EstadoEvaluacion.java`) con PK semántica VARCHAR (ADR-012):
 
 - **Enum:** `EstadoEvaluacion` con constantes `EN_EVALUACION`, `APROBADA`, `APROBADA_CON_OBSERVACIONES`, `NO_APROBADA`, `DESCARTADA`. Cada constante tiene `id` (= `name()`) y `nombre` (texto legible).
-- **Tabla catálogo:** PK `VARCHAR(50)` poblada por Flyway con las constantes del enum. El aggregate guarda directamente el `String id` (ej. `"EN_EVALUACION"`), no un UUID.
-- **Persistencia sin consulta al catálogo:** el `CommandOutputAdapter` inyecta `EstadoEvaluacionJpaRepository` y usa `repository.getReferenceById(estadoEvaluacionId)` sin viaje a BD — el `Mapper` reconstruye con `EstadoEvaluacion.valueOf(entity.getEstadoEvaluacion().getId())`.
+- **Tabla catálogo:** PK `VARCHAR(50)` poblada por Flyway con las constantes del enum. El aggregate guarda el enum `EstadoEvaluacion`, el mapper JPA convierte a/desde String (columna VARCHAR).
+- **Persistencia sin consulta al catálogo:** el `CommandOutputAdapter` inyecta `EstadoEvaluacionJpaRepository` y usa `repository.getReferenceById(aggregate.getEstadoEvaluacion().name())` (conversión enum→String) sin viaje a BD — el `Mapper` reconstruye con `EstadoEvaluacion.valueOf(entity.getEstadoEvaluacion().getId())` (conversión String→enum).
 - **NO se planean:** `EstadoEvaluacionAggregate`, `EstadoEvaluacionQueryOutputPort`, `EstadoEvaluacionQueryOutputAdapter`, `EstadoEvaluacionReadModel` — el enum los reemplaza.
 
 ### Eventos de Dominio que emite
@@ -179,34 +179,34 @@ public static EstadoEvaluacionFichaAggregate crear(UUID evaluacionFichaPerfilId)
     var result = new ValidationResult();
     aggregate.setId();
     aggregate.setEvaluacionFichaPerfilId(evaluacionFichaPerfilId, result);
-    aggregate.setEstadoEvaluacionInicial();  // ← setter sin parámetro, hardcodea "EN_EVALUACION"
+    aggregate.setEstadoEvaluacionInicial();  // ← setter sin parámetro, hardcodea el enum
     aggregate.setFechaActualizacion();
     result.throwIfHasErrors();
     return aggregate;
 }
 
 private void setEstadoEvaluacionInicial() {
-    this.estadoEvaluacionId = "EN_EVALUACION";  // ← hardcodeado, sin parámetro
+    this.estadoEvaluacion = EstadoEvaluacion.EN_EVALUACION;  // ← asignación directa del enum
 }
 
 // Factory flujo (b) manual — estado parametrizado (OTRO NOMBRE, no sobrecarga)
-public static EstadoEvaluacionFichaAggregate crearConEstado(UUID evaluacionFichaPerfilId, String estadoEvaluacionId) {
+public static EstadoEvaluacionFichaAggregate crearConEstado(UUID evaluacionFichaPerfilId, EstadoEvaluacion estadoEvaluacion) {
     var aggregate = new EstadoEvaluacionFichaAggregate();
     var result = new ValidationResult();
     aggregate.setId();
     aggregate.setEvaluacionFichaPerfilId(evaluacionFichaPerfilId, result);
-    aggregate.setEstadoEvaluacion(estadoEvaluacionId, result);  // ← setter con parámetro
+    aggregate.setEstadoEvaluacion(estadoEvaluacion, result);  // ← setter con parámetro tipo enum
     aggregate.setFechaActualizacion();
     result.throwIfHasErrors();
     return aggregate;
 }
 
-private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult result) {
-    DomainValidator.notNull(estadoEvaluacionId,
-            FichasMessages.EstadoEvaluacionFicha.CAMPO_ESTADO_EVALUACION_ID,
+private void setEstadoEvaluacion(EstadoEvaluacion estadoEvaluacion, ValidationResult result) {
+    DomainValidator.notNull(estadoEvaluacion,
+            FichasMessages.EstadoEvaluacionFicha.CAMPO_ESTADO_EVALUACION,
             FichasMessages.EstadoEvaluacionFicha.ESTADO_REQUERIDO,
             result);
-    this.estadoEvaluacionId = estadoEvaluacionId;
+    this.estadoEvaluacion = estadoEvaluacion;
 }
 ```
 
@@ -215,8 +215,8 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 | Aspecto | Flujo (a) automático | Flujo (b) manual |
 |---|---|---|
 | **Invocador** | `RegistrarEvaluacionFichaPerfilUseCase.asignarEstadoInicialEvaluacion(UUID)` | `AgregarEstadoEvaluacionFichaUseCase.ejecutar(Command)` |
-| **Factory** | `crear(UUID evaluacionId)` — único factory sin parámetro de estado | `crearConEstado(UUID evaluacionId, String estadoId)` — factory con nombre distinto que recibe el estado |
-| **Estado asignado** | Hardcodeado `"EN_EVALUACION"` en setter privado `setEstadoEvaluacionInicial()` sin parámetro | Parametrizado desde el DTO, validado contra catálogo en setter `setEstadoEvaluacion(String, ValidationResult)` |
+| **Factory** | `crear(UUID evaluacionId)` — único factory sin parámetro de estado | `crearConEstado(UUID evaluacionId, EstadoEvaluacion estado)` — factory con nombre distinto que recibe el enum |
+| **Estado asignado** | Hardcodeado `EstadoEvaluacion.EN_EVALUACION` (enum) en setter privado `setEstadoEvaluacionInicial()` sin parámetro | Parametrizado como enum desde el use case (convertido con `EstadoEvaluacion.valueOf(...)`), validado en setter `setEstadoEvaluacion(EstadoEvaluacion, ValidationResult)` |
 | **Validaciones POL** | Solo obligatoriedad del UUID (no valida POL-04/05 — no debería haber estados previos) | POL-04 (duplicado), POL-05 (terminal), POL-01 (primer estado — aunque ya no aplica) |
 | **Inyecciones del use case** | `EstadoEvaluacionFichaOutputPort` | `EstadoEvaluacionFichaOutputPort`, `EvaluacionFichaPerfilQueryOutputPort`, `EstadoEvaluacionJpaRepository` |
 | **Autorización** | N/A (transacción interna del registro de evaluación) | `@PreAuthorize("hasAuthority('fichas:estado-evaluacion-ficha:create')")` |
@@ -236,15 +236,14 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 | Capa | Ruta completa desde raíz del monorepo | Tipo | Responsabilidad |
 |------|---------------------------------------|------|-----------------|
 | domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoevaluacion/EstadoEvaluacion.java` | Enum | Catálogo de estados de evaluación con PK semántica. Constantes: `EN_EVALUACION`, `APROBADA`, `APROBADA_CON_OBSERVACIONES`, `NO_APROBADA`, `DESCARTADA`. Métodos: `getId()` (= `name()`), `getNombre()`. |
-| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoevaluacionficha/aggregate/EstadoEvaluacionFichaAggregate.java` | Aggregate Root | **NO extiende `AggregateRoot`** (clase plana). **DOS factories sin sobrecarga:** `crear(UUID evaluacionId)` para flujo automático (estado hardcodeado `EN_EVALUACION` en setter sin parámetro) + `crearConEstado(UUID evaluacionId, String estadoId)` para flujo manual (estado parametrizado en setter con parámetro). Factory `reconstruir(...)` sin validar. |
+| domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoevaluacionficha/aggregate/EstadoEvaluacionFichaAggregate.java` | Aggregate Root | **NO extiende `AggregateRoot`** (clase plana). **DOS factories sin sobrecarga:** `crear(UUID evaluacionId)` para flujo automático (estado hardcodeado `EstadoEvaluacion.EN_EVALUACION` en setter sin parámetro) + `crearConEstado(UUID evaluacionId, EstadoEvaluacion estado)` para flujo manual (estado parametrizado como enum en setter con parámetro). Factory `reconstruir(...)` sin validar. Campo `EstadoEvaluacion estadoEvaluacion` (enum, no String). |
 | domain | `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoevaluacionficha/port/out/EstadoEvaluacionFichaOutputPort.java` | Interface | Puerto de salida write. Métodos: `guardar(EstadoEvaluacionFichaAggregate)`, `existsByEvaluacionAndEstado(UUID, String): boolean`, `contarEstadosPorEvaluacion(UUID): long`. |
 | application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoevaluacionficha/command/model/AgregarEstadoEvaluacionFichaCommand.java` | `record` | Intención de negocio (flujo manual). Campos: `UUID evaluacionFichaPerfilId`, `String estadoEvaluacionId` (PK semántica del catálogo). |
 | application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoevaluacionficha/command/port/in/AgregarEstadoEvaluacionFichaInputPort.java` | Interface (vacía) | Extiende `InputPort<AgregarEstadoEvaluacionFichaCommand, UUID>` de `shared:domain`. |
 | application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoevaluacionficha/exception/EvaluacionFichaPerfilNoEncontradaException.java` | Exception | Extiende `ApplicationException` (400). Lanzada cuando la evaluación no existe (flujo manual). |
 | application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoevaluacionficha/exception/EstadoEvaluacionNoEncontradoException.java` | Exception | Extiende `ApplicationException` (400). Lanzada cuando el estado del catálogo no existe (flujo manual). |
 | application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoevaluacionficha/exception/EstadoEvaluacionDuplicadoException.java` | Exception | Extiende `ApplicationException` (400). Lanzada cuando la evaluación ya tiene ese estado (violación POL-04 — aplica a ambos flujos). |
-| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoevaluacionficha/exception/TransicionEstadoInvalidaException.java` | Exception | Extiende `DomainException` (422). Lanzada cuando se intenta agregar un estado tras un terminal (POL-05 — solo flujo manual) o cuando el primer estado no es EN_EVALUACION (POL-01 — redundante). |
-| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoevaluacionficha/command/AgregarEstadoEvaluacionFichaUseCase.java` | UseCase | **Flujo manual (b).** `@Component` + `@Transactional(transactionManager = "fichasTransactionManager")`. Inyecta: `EstadoEvaluacionFichaOutputPort`, `EvaluacionFichaPerfilQueryOutputPort`, `EstadoEvaluacionJpaRepository`. Flujo: validar FK → validar POL-01/04/05 → crear aggregate con factory `crear(UUID, String)` → guardar → retornar id. **NO inyecta `EventPublisher`**. |
+| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoevaluacionficha/command/AgregarEstadoEvaluacionFichaUseCase.java` | UseCase | **Flujo manual (b).** `@Component` + `@Transactional(transactionManager = "fichasTransactionManager")`. Inyecta: `EstadoEvaluacionFichaOutputPort`, `EvaluacionFichaPerfilQueryOutputPort`. Flujo: validar FK → validar duplicado (POL-04) → convertir String a enum → pasar último estado al factory → crear aggregate con `crearConEstado(UUID, EstadoEvaluacion, EstadoEvaluacion)` (POL-04 y POL-05 validadas en aggregate via Notification Pattern) → guardar → retornar id. **NO inyecta `EventPublisher`**. Las validaciones de dominio (POL-04: no EN_EVALUACION manual, POL-05: no transición desde terminal) se realizan en el aggregate usando `ValidationResult.addError(...)` y lanzan `DomainValidationException` (422) genérica via `throwIfHasErrors()` — no existe clase de excepción custom. |
 | application | `fichas/application/src/main/java/com/arquisoft/fichas/application/evaluacionfichaperfil/query/port/out/EvaluacionFichaPerfilQueryOutputPort.java` | Interface | Puerto de salida read (cross-aggregate lookup). Métodos: `existsById(UUID): boolean`, `obtenerUltimoEstado(UUID): Optional<String>`. **Verificar si ya existe antes de crear — si ya existe, agregar solo `obtenerUltimoEstado`.** |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoevaluacionficha/command/adapter/in/web/dto/AgregarEstadoEvaluacionFichaRequestDTO.java` | `record` | Campos: `UUID evaluacionFichaPerfilId` (`@NotNull`), `String estadoEvaluacionId` (`@NotBlank @Size(max=50)`). Método `toCommand()`. |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoevaluacionficha/command/adapter/in/web/dto/AgregarEstadoEvaluacionFichaResponseDTO.java` | `record` | Un único campo: `UUID id`. Serializa como `{"id": "..."}`. |
@@ -253,7 +252,7 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoevaluacion/persistence/EstadoEvaluacionJpaRepository.java` | `JpaRepository` | `JpaRepository<EstadoEvaluacionJpaEntity, String>`. Compartido por todas las features que usan el catálogo. |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoevaluacionficha/persistence/EstadoEvaluacionFichaJpaEntity.java` | JPA Entity | `@Table(name = "estado_evaluacion_ficha")`. Campos: `@Id @Column(name = "id") UUID id`, `@ManyToOne @JoinColumn(name = "evaluacion_ficha_perfil_id") EvaluacionFichaPerfilJpaEntity evaluacionFichaPerfil`, `@ManyToOne @JoinColumn(name = "estado_evaluacion_id") EstadoEvaluacionJpaEntity estadoEvaluacion`, `@Column(name = "fecha_actualizacion") Instant fechaActualizacion`. |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoevaluacionficha/persistence/EstadoEvaluacionFichaJpaRepository.java` | `JpaRepository` | `JpaRepository<EstadoEvaluacionFichaJpaEntity, UUID>`. Métodos derivados: `existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(UUID, String): boolean`, `countByEvaluacionFichaPerfilId(UUID): long`. |
-| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoevaluacionficha/persistence/EstadoEvaluacionFichaMapper.java` | `@Component` | Mapea Aggregate ↔ JpaEntity. `toDomain(JpaEntity)` usa `reconstruir(...)`. `toEntity(Aggregate)` inyecta `EstadoEvaluacionJpaRepository` y usa `getReferenceById(...)` sin viaje a BD. |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoevaluacionficha/persistence/EstadoEvaluacionFichaMapper.java` | `@Component` | Mapea Aggregate ↔ JpaEntity. `toDomain(JpaEntity)` usa `reconstruir(...)` pasando `EstadoEvaluacion.valueOf(entity.getEstadoEvaluacion().getId())` (conversión String→enum). `toEntity(Aggregate)` inyecta `EstadoEvaluacionJpaRepository` y usa `getReferenceById(aggregate.getEstadoEvaluacion().name())` para obtener la entidad del catálogo. |
 | infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoevaluacionficha/command/adapter/out/persistence/EstadoEvaluacionFichaCommandOutputAdapter.java` | Adapter | Implementa `EstadoEvaluacionFichaOutputPort`. Inyecta `EstadoEvaluacionFichaJpaRepository` y `EstadoEvaluacionFichaMapper`. Usa `reconstruir(...)` al reconstruir. |
 | infrastructure | `fichas/infrastructure/src/main/resources/db/migration/fichas/V1.5__crear_estado_evaluacion_y_estado_evaluacion_ficha.sql` | Flyway | **Versión V1.5** (siguiente tras V1.4). Crea tabla catálogo `estado_evaluacion` (PK VARCHAR, poblada con INSERT) + tabla `estado_evaluacion_ficha` (UUID, FKs a evaluacion_ficha_perfil y estado_evaluacion). |
 
@@ -271,16 +270,17 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 | Constante | Sección | Tipo | Valor | Usado por |
 |---|---|---|---|---|
 | `FichasMessages.EstadoEvaluacionFicha.CAMPO_EVALUACION_ID` | Campos | `String` | `"evaluacionFichaPerfilId"` | `DomainValidator.notNull` en aggregate |
-| `FichasMessages.EstadoEvaluacionFicha.CAMPO_ESTADO_EVALUACION_ID` | Campos | `String` | `"estadoEvaluacionId"` | `DomainValidator.notNull` en aggregate (flujo manual) |
+| `FichasMessages.EstadoEvaluacionFicha.CAMPO_ESTADO_EVALUACION` | Campos | `String` | `"estadoEvaluacion"` | `DomainValidator.notNull` en aggregate (flujo manual) |
 | `FichasMessages.EstadoEvaluacionFicha.EVALUACION_NO_ENCONTRADA` | Códigos de error | `String` | `"EVALUACION_NO_ENCONTRADA"` | `EvaluacionFichaPerfilNoEncontradaException` (errorCode) |
 | `FichasMessages.EstadoEvaluacionFicha.EVALUACION_NO_ENCONTRADA_MSG` | Mensajes de error | `String` | `"Evaluación de ficha de perfil no encontrada con id: %s"` | `EvaluacionFichaPerfilNoEncontradaException` (mensaje, `.formatted(id)`) |
 | `FichasMessages.EstadoEvaluacionFicha.ESTADO_NO_ENCONTRADO` | Códigos de error | `String` | `"ESTADO_NO_ENCONTRADO"` | `EstadoEvaluacionNoEncontradoException` (errorCode) |
 | `FichasMessages.EstadoEvaluacionFicha.ESTADO_NO_ENCONTRADO_MSG` | Mensajes de error | `String` | `"Estado de evaluación no encontrado: %s"` | `EstadoEvaluacionNoEncontradoException` (mensaje, `.formatted(estadoId)`) |
 | `FichasMessages.EstadoEvaluacionFicha.ESTADO_DUPLICADO` | Códigos de error | `String` | `"ESTADO_DUPLICADO"` | `EstadoEvaluacionDuplicadoException` (errorCode) |
 | `FichasMessages.EstadoEvaluacionFicha.ESTADO_DUPLICADO_MSG` | Mensajes de error | `String` | `"La evaluación %s ya tiene el estado %s asignado"` | `EstadoEvaluacionDuplicadoException` (mensaje, `.formatted(evaluacionId, estadoId)`) |
-| `FichasMessages.EstadoEvaluacionFicha.TRANSICION_INVALIDA` | Códigos de error | `String` | `"TRANSICION_INVALIDA"` | `TransicionEstadoInvalidaException` (errorCode) |
-| `FichasMessages.EstadoEvaluacionFicha.TRANSICION_DESDE_TERMINAL_MSG` | Mensajes de error | `String` | `"No se puede agregar estado: la evaluación %s ya está en estado terminal %s"` | `TransicionEstadoInvalidaException` (mensaje POL-05, `.formatted(evaluacionId, estadoTerminal)`) |
-| `FichasMessages.EstadoEvaluacionFicha.PRIMER_ESTADO_DEBE_SER_EN_EVALUACION_MSG` | Mensajes de error | `String` | `"El primer estado de la evaluación %s debe ser EN_EVALUACION, recibido: %s"` | `TransicionEstadoInvalidaException` (mensaje POL-01 — redundante, no debería usarse) |
+| `FichasMessages.EstadoEvaluacionFicha.TRANSICION_INVALIDA` | Códigos de error | `String` | `"TRANSICION_INVALIDA"` | `ValidationResult.addError(...)` en aggregate (POL-05) → lanza `DomainValidationException` (422) |
+| `FichasMessages.EstadoEvaluacionFicha.TRANSICION_DESDE_TERMINAL_SIMPLE_MSG` | Mensajes de error | `String` | `"No se puede agregar un nuevo estado cuando la evaluación ya alcanzó un estado terminal"` | `ValidationResult.addError(...)` en aggregate POL-05 → lanza `DomainValidationException` (422) |
+| `FichasMessages.EstadoEvaluacionFicha.ESTADO_EN_EVALUACION_NO_MANUAL` | Códigos de error | `String` | `"ESTADO_EN_EVALUACION_NO_MANUAL"` | `ValidationResult.addError(...)` en aggregate (POL-04) → lanza `DomainValidationException` (422) |
+| `FichasMessages.EstadoEvaluacionFicha.ESTADO_EN_EVALUACION_NO_MANUAL_MSG` | Mensajes de error | `String` | `"El estado EN_EVALUACION se asigna al momento de registrar la evaluación y no puede volver a registrarse"` | `ValidationResult.addError(...)` en aggregate POL-04 → lanza `DomainValidationException` (422) |
 | `FichasMessages.EstadoEvaluacionFicha.EVALUACION_REQUERIDA` | Códigos de error | `String` | `"EVALUACION_REQUERIDA"` | Validación de dominio en aggregate |
 | `FichasMessages.EstadoEvaluacionFicha.ESTADO_REQUERIDO` | Códigos de error | `String` | `"ESTADO_REQUERIDO"` | Validación de dominio en aggregate (flujo manual) |
 | `FichasMessages.EstadoEvaluacionFicha.LOG_AGREGADO` | Logs | `String` | `"Estado evaluación ficha agregado manualmente — id={}, evaluacionId={}, estadoId={}"` | `log.info` en use case manual |
@@ -293,16 +293,16 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 ### `EstadoEvaluacionFichaAggregate.java`
 - **Paquete:** `com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate`
 - **Tipo:** Aggregate Root (clase plana — **NO extiende `AggregateRoot`**)
-- **Responsabilidad:** Entidad raíz con **DOS factories sin sobrecarga** (nombres distintos) para los dos flujos de creación — patrón del proyecto.
+- **Responsabilidad:** Entidad raíz con **DOS factories sin sobrecarga** (nombres distintos) para los dos flujos de creación — patrón del proyecto. **Campo tipo enum:** usa `EstadoEvaluacion estadoEvaluacion` (enum, NO String) siguiendo el patrón de `EstadoFichaPerfilAggregate`. El mapper JPA convierte entre String (columna BD VARCHAR) ↔ enum (campo domain).
 - **Features Java 21 aplicables:** N/A (clase inmutable con fields `final`)
 - **Métodos principales:**
-    - `crear(UUID evaluacionFichaPerfilId): EstadoEvaluacionFichaAggregate` — **Flujo (a) automático:** factory sin parámetro de estado, hardcodea `"EN_EVALUACION"` en setter privado `setEstadoEvaluacionInicial()` sin parámetro. Solo valida obligatoriedad del UUID. Análogo a `EstadoFichaPerfilAggregate.crear(UUID)`.
-    - `crearConEstado(UUID evaluacionFichaPerfilId, String estadoEvaluacionId): EstadoEvaluacionFichaAggregate` — **Flujo (b) manual:** factory con nombre distinto (no sobrecarga) que recibe estado parametrizado, valida obligatoriedad del UUID y del estado con `setEstadoEvaluacion(String, ValidationResult)` que llama a `DomainValidator.notNull`.
-    - `reconstruir(UUID id, UUID evaluacionFichaPerfilId, String estadoEvaluacionId, Instant fechaActualizacion): EstadoEvaluacionFichaAggregate` — factory sin validar, usado por el mapper.
-    - `setEstadoEvaluacionInicial()` (sin parámetro) — setter privado para flujo automático, hardcodea `this.estadoEvaluacionId = "EN_EVALUACION"`.
-    - `setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult result)` (con parámetro) — setter privado para flujo manual, valida y asigna.
-    - Getters: `getId()`, `getEvaluacionFichaPerfilId()`, `getEstadoEvaluacionId()`, `getFechaActualizacion()`
-- **Dependencias:** `com.arquisoft.shared.validation.*`, `com.arquisoft.shared.util.{UtilUUID, UtilDate}`, `com.arquisoft.shared.message.FichasMessages`
+    - `crear(UUID evaluacionFichaPerfilId): EstadoEvaluacionFichaAggregate` — **Flujo (a) automático:** factory sin parámetro de estado, hardcodea `EstadoEvaluacion.EN_EVALUACION` (enum) en setter privado `setEstadoEvaluacionInicial()` sin parámetro. Solo valida obligatoriedad del UUID. Análogo a `EstadoFichaPerfilAggregate.crear(UUID)`.
+    - `crearConEstado(UUID evaluacionFichaPerfilId, EstadoEvaluacion estadoEvaluacion): EstadoEvaluacionFichaAggregate` — **Flujo (b) manual:** factory con nombre distinto (no sobrecarga) que recibe estado como enum, valida obligatoriedad del UUID y del enum con `setEstadoEvaluacion(EstadoEvaluacion, ValidationResult)` que llama a `DomainValidator.notNull`.
+    - `reconstruir(UUID id, UUID evaluacionFichaPerfilId, EstadoEvaluacion estadoEvaluacion, Instant fechaActualizacion): EstadoEvaluacionFichaAggregate` — factory sin validar, usado por el mapper (recibe el enum directamente).
+    - `setEstadoEvaluacionInicial()` (sin parámetro) — setter privado para flujo automático, hardcodea `this.estadoEvaluacion = EstadoEvaluacion.EN_EVALUACION;`.
+    - `setEstadoEvaluacion(EstadoEvaluacion estadoEvaluacion, ValidationResult result)` (con parámetro) — setter privado para flujo manual, valida y asigna el enum.
+    - Getters: `getId()`, `getEvaluacionFichaPerfilId()`, `getEstadoEvaluacion()` (retorna `EstadoEvaluacion` enum), `getFechaActualizacion()`
+- **Dependencias:** `com.arquisoft.shared.validation.*`, `com.arquisoft.shared.util.{UtilUUID, UtilDate}`, `com.arquisoft.shared.message.FichasMessages`, `EstadoEvaluacion` (enum del mismo domain)
 
 ### `RegistrarEvaluacionFichaPerfilUseCase.java` (MODIFICAR)
 - **Paquete:** `com.arquisoft.fichas.application.evaluacionfichaperfil.command`
@@ -319,7 +319,7 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
            log.info(FichasMessages.EstadoEvaluacionFicha.LOG_CREADO_AUTOMATICO,
                     estadoInicial.getId(),
                     estadoInicial.getEvaluacionFichaPerfilId(),
-                    estadoInicial.getEstadoEvaluacionId());
+                    estadoInicial.getEstadoEvaluacion());  // retorna enum
        }
        ```
 - **Dependencias adicionales:** `EstadoEvaluacionFichaOutputPort`, `EstadoEvaluacionFichaAggregate`, `FichasMessages.EstadoEvaluacionFicha`
@@ -330,8 +330,8 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 - **Responsabilidad:** **Flujo (b) manual** — orquesta la creación de estado evaluación con validaciones POL-01, POL-04, POL-05.
 - **Anotaciones:** `@Component`, `@RequiredArgsConstructor`, `@Slf4j`, `@Transactional(transactionManager = "fichasTransactionManager")`
 - **Métodos principales:**
-    - `ejecutar(AgregarEstadoEvaluacionFichaCommand): UUID` — implementa `InputPort<Command, UUID>`. Flujo: validar FK evaluación → validar FK estado catálogo → validar POL-04 (duplicado) → validar POL-05 (terminal) → validar POL-01 (primer estado — aunque ya no debería serlo) → crear aggregate con factory `crearConEstado(UUID, String)` → guardar → loguear con `LOG_AGREGADO` → retornar id
-- **Dependencias:** `EstadoEvaluacionFichaOutputPort`, `EvaluacionFichaPerfilQueryOutputPort`, `EstadoEvaluacionJpaRepository`, excepciones del paquete, `EstadoEvaluacionFichaAggregate`, `FichasMessages`
+    - `ejecutar(AgregarEstadoEvaluacionFichaCommand): UUID` — implementa `InputPort<Command, UUID>`. Flujo: validar FK evaluación → convertir String del command a enum con `EstadoEvaluacion.valueOf(command.estadoEvaluacionId())` (throws `IllegalArgumentException` si no existe) → validar POL-04 (duplicado, query con String) → validar POL-05 (terminal, compara enum con constantes) → validar POL-01 (primer estado — aunque ya no debería serlo) → crear aggregate con factory `crearConEstado(UUID, EstadoEvaluacion enum)` → guardar → loguear con `LOG_AGREGADO` → retornar id
+- **Dependencias:** `EstadoEvaluacionFichaOutputPort`, `EvaluacionFichaPerfilQueryOutputPort`, `EstadoEvaluacionJpaRepository`, excepciones del paquete, `EstadoEvaluacionFichaAggregate`, `EstadoEvaluacion` (enum para conversión), `FichasMessages`
 - **NO inyecta `EventPublisher`** — sin eventos de dominio
 
 *(El resto de archivos siguen la descripción del plan inicial — se omiten por brevedad)*
@@ -416,12 +416,12 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `EstadoEvaluacionFichaAggregateTest` | `debeConstruirEntidadAutomatica_cuandoFactoryCrear` | `crear(UUID)` crea entidad con UUID e Instant no nulos, `estadoEvaluacionId == "EN_EVALUACION"` hardcodeado |
-| `EstadoEvaluacionFichaAggregateTest` | `debeConstruirEntidadManual_cuandoFactoryCrearConEstado` | `crearConEstado(UUID, String)` crea entidad con UUID, Instant y estadoId parametrizado no nulos |
+| `EstadoEvaluacionFichaAggregateTest` | `debeConstruirEntidadAutomatica_cuandoFactoryCrear` | `crear(UUID)` crea entidad con UUID e Instant no nulos, `estadoEvaluacion == EstadoEvaluacion.EN_EVALUACION` hardcodeado |
+| `EstadoEvaluacionFichaAggregateTest` | `debeConstruirEntidadManual_cuandoFactoryCrearConEstado` | `crearConEstado(UUID, EstadoEvaluacion)` crea entidad con UUID, Instant y enum parametrizado no nulos |
 | `EstadoEvaluacionFichaAggregateTest` | `debeReconstruirSinValidar_cuandoReconstruirEsInvocado` | `reconstruir(...)` no lanza excepción con datos inválidos (no valida) |
 | `EstadoEvaluacionFichaAggregateTest` | `debeLanzarExcepcion_cuandoEvaluacionIdEsNulEnFactoryCrear` | factory `crear(UUID)` con evaluacionId nulo lanza |
-| `EstadoEvaluacionFichaAggregateTest` | `debeLanzarExcepcion_cuandoEvaluacionIdEsNulEnFactoryCrearConEstado` | factory `crearConEstado(UUID, String)` con evaluacionId nulo lanza |
-| `EstadoEvaluacionFichaAggregateTest` | `debeLanzarExcepcion_cuandoEstadoIdEsNulEnFactoryCrearConEstado` | factory `crearConEstado(UUID, String)` con estadoId nulo lanza |
+| `EstadoEvaluacionFichaAggregateTest` | `debeLanzarExcepcion_cuandoEvaluacionIdEsNulEnFactoryCrearConEstado` | factory `crearConEstado(UUID, EstadoEvaluacion)` con evaluacionId nulo lanza |
+| `EstadoEvaluacionFichaAggregateTest` | `debeLanzarExcepcion_cuandoEstadoIdEsNulEnFactoryCrearConEstado` | factory `crearConEstado(UUID, EstadoEvaluacion)` con enum nulo lanza |
 
 **NO incluir:** tests de ciclo de eventos (`publishEvent`, `drainUnPublishedEvents`, `getUnPublishedEvents`) — el aggregate NO extiende `AggregateRoot`.
 
@@ -431,7 +431,7 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `RegistrarEvaluacionFichaPerfilUseCaseTest` | `debeCrearEstadoInicialAutomatico_cuandoRegistrarEvaluacion` | tras `ejecutar(command)`, verificar que `estadoEvaluacionFichaOutputPort.guardar(...)` fue llamado con aggregate con `estadoEvaluacionId == "EN_EVALUACION"` |
+| `RegistrarEvaluacionFichaPerfilUseCaseTest` | `debeCrearEstadoInicialAutomatico_cuandoRegistrarEvaluacion` | tras `ejecutar(command)`, verificar que `estadoEvaluacionFichaOutputPort.guardar(...)` fue llamado con aggregate con `estadoEvaluacion == EstadoEvaluacion.EN_EVALUACION` |
 
 *(Los tests existentes de HU-190 se mantienen — se agrega solo este test para el flujo automático)*
 
@@ -441,11 +441,11 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 |---------------|--------|-----------|
 | `AgregarEstadoEvaluacionFichaUseCaseTest` | `debeAgregar_cuandoDatosValidos` | flujo exitoso completo — retorna UUID no nulo |
 | `AgregarEstadoEvaluacionFichaUseCaseTest` | `debeLanzarEvaluacionNoEncontrada_cuandoEvaluacionNoExiste` | `existsById` retorna `false` → lanza `EvaluacionFichaPerfilNoEncontradaException` |
-| `AgregarEstadoEvaluacionFichaUseCaseTest` | `debeLanzarEstadoNoEncontrado_cuandoCatalogoNoExiste` | `estadoEvaluacionRepo.existsById` retorna `false` → lanza `EstadoEvaluacionNoEncontradoException` |
+| `AgregarEstadoEvaluacionFichaUseCaseTest` | `debeLanzarEstadoNoEncontrado_cuandoCatalogoNoExiste` | `IllegalArgumentException` al convertir String a enum → se captura y lanza `EstadoEvaluacionNoEncontradoException` |
 | `AgregarEstadoEvaluacionFichaUseCaseTest` | `debeLanzarEstadoDuplicado_cuandoYaExiste` | `existsByEvaluacionAndEstado` retorna `true` → lanza `EstadoEvaluacionDuplicadoException` |
-| `AgregarEstadoEvaluacionFichaUseCaseTest` | `debeLanzarTransicionInvalida_cuandoEstadoTerminal` | `obtenerUltimoEstado` retorna `"APROBADA"` → lanza `TransicionEstadoInvalidaException` con mensaje POL-05 |
-| `AgregarEstadoEvaluacionFichaUseCaseTest` | `debeLanzarTransicionInvalida_cuandoPrimerEstadoNoEsEnEvaluacion` | `contarEstadosPorEvaluacion` retorna `0` y `estadoId != "EN_EVALUACION"` → lanza `TransicionEstadoInvalidaException` con mensaje POL-01 (test redundante — el flujo automático ya garantiza esto) |
-| `AgregarEstadoEvaluacionFichaUseCaseTest` | `debePermitirSegundoEstado_cuandoYaExisteEnEvaluacion` | `contarEstadosPorEvaluacion` retorna `1` (ya existe EN_EVALUACION del flujo automático) y se agrega otro estado válido → OK |
+| `AgregarEstadoEvaluacionFichaUseCaseTest` | `debeLanzarDomainValidation_cuandoEstadoTerminal` | `obtenerUltimoEstado` retorna `"APROBADA"` (terminal) → aggregate valida con `result.addError(TRANSICION_INVALIDA, ...)` → lanza `DomainValidationException` con errorCode POL-05 |
+| `AgregarEstadoEvaluacionFichaUseCaseTest` | `debeLanzarDomainValidation_cuandoIntentaEnEvaluacionManual` | `estadoId == "EN_EVALUACION"` → aggregate valida con `result.addError(ESTADO_EN_EVALUACION_NO_MANUAL, ...)` → lanza `DomainValidationException` con errorCode POL-04 |
+| `AgregarEstadoEvaluacionFichaUseCaseTest` | `debePermitirSegundoEstado_cuandoYaExisteEnEvaluacion` | Ya existe EN_EVALUACION del flujo automático, se agrega otro estado válido (no EN_EVALUACION, no terminal previo) → OK |
 | `AgregarEstadoEvaluacionFichaUseCaseTest` | `debeLanzarExcepcion_cuandoRepositorioFalla` | propaga error de repositorio |
 
 **NO incluir:** `verify(eventPublisher).publish(...)` — ninguno de los dos use cases inyecta `EventPublisher`.
@@ -462,7 +462,7 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 | `AgregarEstadoEvaluacionFichaInputAdapterTest` | `debe400_cuandoRequestInvalido` | validación Jakarta falla (evaluacionId nulo o estadoId vacío) |
 | `AgregarEstadoEvaluacionFichaInputAdapterTest` | `debe400_cuandoEvaluacionNoExiste` | use case lanza `EvaluacionFichaPerfilNoEncontradaException` → GlobalAppExceptionHandler mapea a 400 |
 | `AgregarEstadoEvaluacionFichaInputAdapterTest` | `debe400_cuandoEstadoDuplicado` | use case lanza `EstadoEvaluacionDuplicadoException` → 400 |
-| `AgregarEstadoEvaluacionFichaInputAdapterTest` | `debe422_cuandoTransicionInvalida` | use case lanza `TransicionEstadoInvalidaException` → GlobalAppExceptionHandler mapea a 422 |
+| `AgregarEstadoEvaluacionFichaInputAdapterTest` | `debe422_cuandoValidacionDominio` | aggregate lanza `DomainValidationException` (POL-04 o POL-05) → GlobalAppExceptionHandler mapea a 422 |
 | `AgregarEstadoEvaluacionFichaInputAdapterTest` | `debe401_cuandoNoAutenticado` | sin token |
 | `AgregarEstadoEvaluacionFichaInputAdapterTest` | `debe403_cuandoRolInsuficiente` | autenticado pero sin `fichas:estado-evaluacion-ficha:create` |
 | `RegistrarEvaluacionFichaPerfilInputAdapterTest` | `debeCrearEstadoInicial_cuandoRegistrarEvaluacion` | **Test de integración adicional para HU-190:** tras registrar evaluación, verificar que existe un `EstadoEvaluacionFicha` con estado `EN_EVALUACION` asociado a la evaluación recién creada |
@@ -484,14 +484,14 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 - [ ] Entidad inmutable: constructor privado, campos `final`, **DOS factories sin sobrecarga** (nombres distintos) `crear(UUID)` / `crearConEstado(UUID, String)` + `reconstruir`, sin Lombok — patrón del proyecto
 - [ ] **NO se crean archivos en `domain/estadoevaluacionficha/event/`** — la HU no emite eventos
 - [ ] Factory automático `crear(UUID)` **NO llama `publishEvent`** — hardcodea `"EN_EVALUACION"` en setter privado `setEstadoEvaluacionInicial()` sin parámetro
-- [ ] Factory manual `crearConEstado(UUID, String)` **NO llama `publishEvent`** — valida estado parametrizado en setter privado `setEstadoEvaluacion(String, ValidationResult)` con `DomainValidator.notNull`
+- [ ] Factory manual `crearConEstado(UUID, EstadoEvaluacion)` **NO llama `publishEvent`** — valida enum parametrizado en setter privado `setEstadoEvaluacion(EstadoEvaluacion, ValidationResult)` con `DomainValidator.notNull`
 - [ ] IDs siempre `UUID` (nunca `Long` / `Integer`) — salvo PK semántica del catálogo (VARCHAR)
 - [ ] Puerto de entrada manual (`AgregarEstadoEvaluacionFichaInputPort`) extiende `InputPort<Command, UUID>`
 - [ ] Puerto de salida write (`EstadoEvaluacionFichaOutputPort`) definido en `domain/` con métodos `guardar`, `existsByEvaluacionAndEstado`, `contarEstadosPorEvaluacion`
 - [ ] Puerto de salida read (`EvaluacionFichaPerfilQueryOutputPort`) definido en `application/` (cross-aggregate lookup) con `existsById` + `obtenerUltimoEstado`
 - [ ] **Modificación de HU-190:** `RegistrarEvaluacionFichaPerfilUseCase` inyecta `EstadoEvaluacionFichaOutputPort` y llama a `asignarEstadoInicialEvaluacion(UUID)` tras persistir evaluación
 - [ ] Excepciones de aplicación extienden `ApplicationException` (400) — `EvaluacionFichaPerfilNoEncontradaException`, `EstadoEvaluacionNoEncontradoException`, `EstadoEvaluacionDuplicadoException`
-- [ ] Excepción de dominio extiende `DomainException` (422) — `TransicionEstadoInvalidaException` (POL-01 y POL-05 son reglas de flujo de estados)
+- [ ] Validaciones de dominio (POL-04: no EN_EVALUACION manual, POL-05: no transición desde terminal) usan Notification Pattern en aggregate: `ValidationResult.addError(...)` + `throwIfHasErrors()` → lanza `DomainValidationException` (422) genérica — **NO existe clase de excepción custom TransicionEstadoInvalidaException**.
 - [ ] **Cada excepción extiende la clase base correcta** para que `GlobalAppExceptionHandler` resuelva su HTTP automáticamente. **NO se crea handler de contexto** — el handler global de `shared:web` basta.
 - [ ] `Command` (`record` en `application/estadoevaluacionficha/command/model/`) y `RequestDTO` (`record` en `infrastructure/.../dto/`) creados con `toCommand()`. Campos en español idénticos al aggregate.
 - [ ] Caso de uso manual (`AgregarEstadoEvaluacionFichaUseCase`) con `@RequiredArgsConstructor`, `@Transactional(transactionManager = "fichasTransactionManager")` **sin drenado de eventos** (no inyecta `EventPublisher`)
@@ -517,10 +517,10 @@ private void setEstadoEvaluacion(String estadoEvaluacionId, ValidationResult res
 > Esta sección es actualizada automáticamente por cada agente al completar su etapa.
 > No modificar manualmente.
 
-| Etapa      | Agente              | Estado       | Fecha | Notas |
-|------------|---------------------|--------------|-------|-------|
-| Desarrollo | @implementador      | ⏳ Pendiente |       |       |
-| Tests      | @tester             | ⏳ Pendiente |       |       |
-| Validación | @validator-analyze  | ⏳ Pendiente |       |       |
-| Reporte    | @validator-report   | ⏳ Pendiente |       |       |
-| Commit     | @commit             | ⏳ Pendiente |       |       |
+| Etapa      | Agente              | Estado       | Fecha      | Notas |
+|------------|---------------------|--------------|------------|-------|
+| Desarrollo | @implementador      | ✅ Completado | 2026-07-08 | Build -x test -x jacocoTestCoverageVerification: sin errores. Cobertura JaCoCo pendiente de tests (fichas:domain 67%, fichas:application 64%). |
+| Tests      | @tester             | ✅ Completado | 2026-07-09 | 33 tests generados (6 domain + 9 application + 18 infrastructure). `check` completo (test + checkstyle + cobertura ≥75%): ✅ VERDE en las 3 capas. |
+| Validación | @validator-analyze  | ✅ Completado | 2026-07-09 | Score: 100/100 — APROBADO |
+| Reporte    | @validator-report   | ✅ Completado | 2026-07-09 | /.workspace/validator/validator-HU-191.md |
+| Commit     | @commit             | ⏳ Pendiente |            |       |

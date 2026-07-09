@@ -6,6 +6,8 @@ import com.arquisoft.fichas.application.evaluacionfichaperfil.exception.Evaluaci
 import com.arquisoft.fichas.application.evaluacionfichaperfil.exception.RepresentanteComiteNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.representantecomite.query.port.out.RepresentanteComiteQueryOutputPort;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
@@ -26,6 +28,7 @@ public class RegistrarEvaluacionFichaPerfilUseCase
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
     private final RepresentanteComiteQueryOutputPort representanteComiteQueryOutputPort;
     private final EvaluacionFichaPerfilOutputPort evaluacionFichaPerfilOutputPort;
+    private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
 
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
@@ -52,6 +55,7 @@ public class RegistrarEvaluacionFichaPerfilUseCase
                 command.fichaPerfilId());
 
         evaluacionFichaPerfilOutputPort.guardar(evaluacion);
+        asignarEstadoInicialEvaluacion(evaluacion.getId());
 
         log.info(
                 FichasMessages.EvaluacionFichaPerfil.LOG_REGISTRADA,
@@ -60,5 +64,16 @@ public class RegistrarEvaluacionFichaPerfilUseCase
                 evaluacion.getFichaPerfilId());
 
         return evaluacion.getId();
+    }
+
+    private void asignarEstadoInicialEvaluacion(UUID evaluacionFichaPerfilId) {
+        var estadoInicial = EstadoEvaluacionFichaAggregate
+                .crear(evaluacionFichaPerfilId);
+        estadoEvaluacionFichaOutputPort.guardar(estadoInicial);
+        log.info(
+                FichasMessages.EstadoEvaluacionFicha.LOG_CREADO_AUTOMATICO,
+                estadoInicial.getId(),
+                estadoInicial.getEvaluacionFichaPerfilId(),
+                estadoInicial.getEstadoEvaluacion());
     }
 }
