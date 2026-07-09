@@ -240,4 +240,42 @@ public final class FichasMessages {
         public static final String REPRESENTANTE_NO_ENCONTRADO_MSG = "Representante del comité no encontrado: %s";
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    // EstadoEvaluacionFicha
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class EstadoEvaluacionFicha {
+
+        private EstadoEvaluacionFicha() {}
+
+        // Campos
+        public static final String CAMPO_EVALUACION_ID = "evaluacionFichaPerfilId";
+        public static final String CAMPO_ESTADO_EVALUACION = "estadoEvaluacion";
+
+        // Códigos de error
+        public static final String EVALUACION_NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
+        public static final String ESTADO_NO_ENCONTRADO = "ESTADO_NO_ENCONTRADO";
+        public static final String ESTADO_DUPLICADO = "ESTADO_DUPLICADO";
+        public static final String TRANSICION_INVALIDA = "TRANSICION_INVALIDA";
+        public static final String EVALUACION_REQUERIDA = "EVALUACION_REQUERIDA";
+        public static final String ESTADO_REQUERIDO = "ESTADO_REQUERIDO";
+        public static final String ESTADO_EN_EVALUACION_NO_MANUAL = "ESTADO_EN_EVALUACION_NO_MANUAL";
+
+        // Mensajes de error
+        public static final String EVALUACION_NO_ENCONTRADA_MSG = "Evaluación de ficha de perfil no encontrada con id: %s";
+        public static final String ESTADO_NO_ENCONTRADO_MSG = "Estado de evaluación no encontrado: %s";
+        public static final String ESTADO_DUPLICADO_MSG = "La evaluación %s ya tiene el estado %s asignado";
+        public static final String TRANSICION_DESDE_TERMINAL_MSG = "No se puede agregar estado: la evaluación %s ya está en estado terminal %s";
+        public static final String TRANSICION_DESDE_TERMINAL_SIMPLE_MSG =
+                "No se puede agregar un nuevo estado cuando la evaluación ya alcanzó un estado terminal";
+        public static final String PRIMER_ESTADO_DEBE_SER_EN_EVALUACION_MSG =
+                "El primer estado de la evaluación %s debe ser EN_EVALUACION, recibido: %s";
+        public static final String ESTADO_EN_EVALUACION_NO_MANUAL_MSG =
+                "El estado EN_EVALUACION se asigna al momento de registrar la evaluación y no puede volver a registrarse";
+
+        // Logs
+        public static final String LOG_AGREGADO = "Estado evaluación ficha agregado manualmente — id={}, evaluacionId={}, estadoId={}";
+        public static final String LOG_CREADO_AUTOMATICO = "Estado evaluación ficha creado automáticamente — id={}, evaluacionId={}, estadoId={}";
+    }
+
 }

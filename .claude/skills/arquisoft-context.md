@@ -1022,7 +1022,7 @@ public sealed interface CampoSpec<E> {
 ### Flujo completo de una HU read con Criteria
 
 ```
-POST /api/fichas-perfil/query
+POST /fichas-perfil/query          ← ruta declarada en @RequestMapping (context-path /api implícito)
 Body: { pagina, tamanio, ordenamiento, filtros: { tipo:GRUPO, conector:AND, nodos:[...] } }
   │
   ▼ QueryInputAdapter
@@ -1463,6 +1463,7 @@ public record CrearFichaPerfilResponseDTO(UUID id) {}
 Jackson lo serializa como `{"id": "b383883a-..."}`.
 
 > **Convenciones del InputAdapter de escritura:**
+> - **La ruta NUNCA lleva el prefijo `/api`.** `server.servlet.context-path: /api` (en `application.yml`) lo antepone globalmente. `@RequestMapping` declara la ruta relativa (`"/fichas-perfil"`); escribir `"/api/fichas-perfil"` produce la URL duplicada `/api/api/fichas-perfil`. Esto aplica igual al `@RequestMapping` del adapter, a la ruta documentada en el plan y a las rutas de `mockMvc.perform(...)` en los tests (`@WebMvcTest` no aplica el context-path).
 > - Inyecta el `InputPort` (interfaz vacía), no el `UseCase` directamente.
 > - Cuando el comando genera un recurso y devuelve su id, el adapter lo **envuelve en un `{Accion}{Entidad}ResponseDTO`** (record con `UUID id`) y retorna `ResponseEntity.status(HttpStatus.CREATED).body(dto)` → body `{"id": "..."}`. **Nunca** `ResponseEntity<UUID>` ni `.body(id)` directo: eso serializa como string crudo (`"b383883a-..."`) sin cuerpo. Solo devuelve el id, **no** el recurso completo — eso es responsabilidad de un endpoint de consulta separado (CQRS estricto). Para comandos sin valor de retorno (modificar/remover) sí usa `ResponseEntity<Void>` con `200`/`204`.
 > - El `@PreAuthorize` usa client roles con formato `{contexto}:{recurso}:{accion}` **en kebab-case** (todo minúsculas, guiones entre palabras del recurso, ej. `fichas:ficha-perfil:create`). **Nunca** camelCase ni MAYÚSCULAS.

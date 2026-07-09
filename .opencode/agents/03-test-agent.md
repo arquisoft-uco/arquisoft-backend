@@ -531,7 +531,9 @@ class FichaControllerTest {
    @WithMockUser(roles = "ASESOR_FICHA")
    void debeCrearFicha_cuandoPeticionEsValida() throws Exception {
       // Arrange / Act & Assert
-      mockMvc.perform(post("/api/fichas")
+      // La ruta es la declarada en @RequestMapping, SIN el prefijo /api
+      // (el context-path global no aplica en @WebMvcTest).
+      mockMvc.perform(post("/fichas")
                       .contentType(MediaType.APPLICATION_JSON)
                       .content(objectMapper.writeValueAsString(request)))
               .andExpect(status().isCreated())
@@ -540,7 +542,7 @@ class FichaControllerTest {
 
    @Test
    void debeRechazarPeticion_cuandoNoEstaAutenticado() throws Exception {
-      mockMvc.perform(post("/api/fichas")
+      mockMvc.perform(post("/fichas")
                       .contentType(MediaType.APPLICATION_JSON)
                       .content("{}"))
               .andExpect(status().isUnauthorized());

@@ -158,6 +158,7 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | ¿`Command`, `ReadModel`, `RequestDTO` declarados en sus ubicaciones correctas? ¿`RequestDTO` tiene `toCommand()`? | ✅ |
 | ¿Cada criterio de aceptación tiene evidencia en el código? | ✅ |
 | ¿Endpoints REST con ruta y método HTTP del plan? | ✅ |
+| `@RequestMapping`/`@PostMapping`/`@GetMapping` (o la ruta del plan, o un `mockMvc.perform(...)`) que incluya el prefijo `/api` | ❌ violación bloqueante (`server.servlet.context-path: /api` ya lo antepone; repetirlo produce `/api/api/...`) |
 | ¿Controller con `@Tag`, `@Operation`, `@ApiResponses` (ADR-011)? | ✅ |
 | ¿Endpoints protegidos con `@SecurityRequirement(name="bearerAuth")`? | ✅ |
 | ¿Eventos RabbitMQ con routing key y exchange del plan? | ✅ |

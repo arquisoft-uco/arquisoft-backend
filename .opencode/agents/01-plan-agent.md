@@ -242,7 +242,7 @@ Espera las respuestas del usuario antes de continuar.
    para cada integración — **ninguna lógica de negocio puede vivir en el adaptador**.
 10. **¿Esta HU utiliza un endpoint REST existente del proyecto, o requiere crear uno nuevo?**
     - **A) Endpoint nuevo.** Crear `{Accion}{Entidad}InputAdapter.java` (o `QueryInputAdapter.java` si es read) en `infrastructure/{entidad}/{command|query}/adapter/in/web/`. Definir método HTTP, ruta, autorización (`@PreAuthorize`) y `RequestDTO`. La sección 8 del plan (Endpoints REST) documenta el endpoint nuevo.
-    - **B) Endpoint existente.** Anotar la ruta exacta (ej. `POST /api/fichas-perfil`) y el archivo del `InputAdapter` que se modifica. La sección 8 del plan describe **qué cambia** (nuevo parámetro, nueva validación, nuevo campo del `RequestDTO`, etc.) sin duplicar el adapter.
+    - **B) Endpoint existente.** Anotar la ruta exacta tal como está declarada en el controller, sin el prefijo `/api` (ej. `POST /fichas-perfil`) y el archivo del `InputAdapter` que se modifica. La sección 8 del plan describe **qué cambia** (nuevo parámetro, nueva validación, nuevo campo del `RequestDTO`, etc.) sin duplicar el adapter.
 
     > Si la respuesta es B, el implementador NO crea un `InputAdapter` nuevo — extiende el existente. Esto evita duplicación de controllers para la misma ruta y mantiene consistencia OpenAPI.
 
@@ -718,13 +718,15 @@ Marcar **una** opción según la respuesta a la pregunta 10 de FASE 3:
 
 > **Columna Response:** rellénala con base en la respuesta a la pregunta 11 de FASE 3 (para writes) o por la firma del read use case (`ReadModel` / `PaginatedResult<ReadModel>`).
 
+> **Columna Ruta — NUNCA escribas el prefijo `/api`.** El proyecto ya declara `server.servlet.context-path: /api` en `application.yml`, así que `/api` se antepone globalmente a toda ruta. La Ruta de esta tabla es **exactamente** el valor que irá en `@RequestMapping`/`@PostMapping` del `InputAdapter`: relativa y sin `/api`. Si lo escribes, el implementador lo copia al controller y la URL real queda duplicada (`/api/api/fichas-perfil`). La URL que ve el cliente es `/api` + esta ruta, pero eso no se documenta aquí.
+
 | Método | Ruta | Request Body / Params | Response | Código HTTP | Client role requerido | Anotaciones Swagger (ADR-011) |
 |--------|------|----------------------|----------|-------------|----------------------|-------------------------------|
-| POST (write A) | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `{Accion}{Entidad}ResponseDTO` (body `{"id": "..."}`) | 201 | `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
-| POST (write B) | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `Void` (sin body) + header `Location` | 201 | idem | idem |
-| POST (write C) | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `{Entidad}ReadModel` u objeto específico (justificar) | 201 | idem | idem |
-| GET | `/api/{recurso-kebab}/{id}` | — | `{Entidad}ReadModel` | 200 | `{contexto}:{recurso-kebab}:view` (ej. `fichas:ficha-perfil:view`) | idem |
-| POST | `/api/{recurso-kebab}/query` | `QueryCriteriaRequestDTO` (si usa Criteria) | `PageResponseDTO<{Entidad}ReadModel>` | 200 | `{contexto}:{recurso-kebab}:view` | idem |
+| POST (write A) | `/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `{Accion}{Entidad}ResponseDTO` (body `{"id": "..."}`) | 201 | `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
+| POST (write B) | `/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `Void` (sin body) + header `Location` | 201 | idem | idem |
+| POST (write C) | `/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `{Entidad}ReadModel` u objeto específico (justificar) | 201 | idem | idem |
+| GET | `/{recurso-kebab}/{id}` | — | `{Entidad}ReadModel` | 200 | `{contexto}:{recurso-kebab}:view` (ej. `fichas:ficha-perfil:view`) | idem |
+| POST | `/{recurso-kebab}/query` | `QueryCriteriaRequestDTO` (si usa Criteria) | `PageResponseDTO<{Entidad}ReadModel>` | 200 | `{contexto}:{recurso-kebab}:view` | idem |
 
 > **Convención de respuesta (write):**
 > - **Opción A (default):** `ResponseEntity<{Accion}{Entidad}ResponseDTO>` con `201 Created` y body `{"id": "..."}` (record de un único `UUID id`). El use case retorna `UUID` y el `InputPort` extiende `InputPort<Command, UUID>`; el adapter envuelve ese id en el ResponseDTO. **Nunca** `ResponseEntity<UUID>` (serializa el id como string crudo sin cuerpo).
@@ -746,7 +748,7 @@ Por cada endpoint nuevo, declara el **client role** que requiere y a qué **role
 
 | Client role | Roles realm que lo poseen | Endpoint(s) que lo requieren | Descripción funcional |
 |---|---|---|---|
-| `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `coordinador`, `asesor-ficha` | `POST /api/...` | {qué permite hacer este client role} |
+| `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `coordinador`, `asesor-ficha` | `POST /{recurso-kebab}` (sin `/api`) | {qué permite hacer este client role} |
 
 ### Reglas de uso
 
