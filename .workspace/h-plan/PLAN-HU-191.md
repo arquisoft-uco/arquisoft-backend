@@ -523,4 +523,4 @@ private void setEstadoEvaluacion(EstadoEvaluacion estadoEvaluacion, ValidationRe
 | Tests      | @tester             | ✅ Completado | 2026-07-09 | 33 tests generados (6 domain + 9 application + 18 infrastructure). `check` completo (test + checkstyle + cobertura ≥75%): ✅ VERDE en las 3 capas. |
 | Validación | @validator-analyze  | ✅ Completado | 2026-07-09 | Score: 100/100 — APROBADO |
 | Reporte    | @validator-report   | ✅ Completado | 2026-07-09 | /.workspace/validator/validator-HU-191.md |
-| Commit     | @commit             | ⏳ Pendiente |            |       |
+| Commit     | @commit             | ✅ Completado | 2026-07-09 | Hash: cc5842b |
