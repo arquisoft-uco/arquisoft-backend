@@ -4,6 +4,7 @@ import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,10 +20,12 @@ class EstudianteFichaPerfilAggregateTest {
         UUID estudianteId = UUID.randomUUID();
 
         // Act
-        EstudianteFichaPerfilAggregate relacion = EstudianteFichaPerfilAggregate.crear(fichaPerfilId, estudianteId);
+        List<EstudianteFichaPerfilAggregate> relaciones = EstudianteFichaPerfilAggregate.crear(
+                fichaPerfilId, List.of(estudianteId), 0L);
 
         // Assert
-        assertThat(relacion).isNotNull();
+        assertThat(relaciones).hasSize(1);
+        EstudianteFichaPerfilAggregate relacion = relaciones.get(0);
         assertThat(relacion.getId()).isNotNull();
         assertThat(relacion.getFichaPerfilId()).isEqualTo(fichaPerfilId);
         assertThat(relacion.getEstudianteId()).isEqualTo(estudianteId);
@@ -48,11 +51,10 @@ class EstudianteFichaPerfilAggregateTest {
     @Test
     void debeLanzarDomainValidationException_cuandoFichaIdEsNull() {
         // Arrange
-        UUID fichaPerfilId = null;
         UUID estudianteId = UUID.randomUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> EstudianteFichaPerfilAggregate.crear(fichaPerfilId, estudianteId))
+        assertThatThrownBy(() -> EstudianteFichaPerfilAggregate.crear(null, List.of(estudianteId), 0L))
                 .isInstanceOf(DomainValidationException.class);
     }
 
@@ -60,10 +62,9 @@ class EstudianteFichaPerfilAggregateTest {
     void debeLanzarDomainValidationException_cuandoEstudianteIdEsNull() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = null;
 
         // Act & Assert
-        assertThatThrownBy(() -> EstudianteFichaPerfilAggregate.crear(fichaPerfilId, estudianteId))
+        assertThatThrownBy(() -> EstudianteFichaPerfilAggregate.crear(fichaPerfilId, Arrays.asList((UUID) null), 0L))
                 .isInstanceOf(DomainValidationException.class);
     }
 
