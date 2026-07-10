@@ -4,10 +4,10 @@ import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontr
 import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
-import com.arquisoft.fichas.application.estudiantefichaperfil.exception.LimiteEstudiantesExcedidoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -168,7 +168,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debeLanzarLimiteExcedido_cuandoExistentes2MasNuevos2() {
+    void debeLanzarDomainValidationException_cuandoExistentes2MasNuevos2() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudiante1 = UUID.randomUUID();
@@ -190,12 +190,16 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(ex)
-                .isInstanceOf(LimiteEstudiantesExcedidoException.class)
-                .hasMessage(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
                         FichasMessages.FichaPerfil.ESTUDIANTES_MAX
                 ));
-        assertThat(((LimiteEstudiantesExcedidoException) ex).getErrorCode())
-                .isEqualTo(FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO);
+
+        DomainValidationException domainEx = (DomainValidationException) ex;
+        assertThat(domainEx.getValidationResult().getErrors())
+                .anyMatch(error -> error.errorCode().equals(
+                        FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO
+                ));
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
     }
 }

@@ -4,6 +4,9 @@ import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontr
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.AsignarEstudiantesFichaPerfilInputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +60,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
     private AsignarEstudiantesFichaPerfilInputPort asignarEstudiantesFichaPerfilInputPort;
 
     @Test
-    void debe201_cuandoPeticionValidaConListaDeUno() throws Exception {
+    void debe204_cuandoPeticionValidaConListaDeUno() throws Exception {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudiante1 = UUID.randomUUID();
@@ -74,11 +77,11 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
                                 .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isCreated());
+                .andExpect(status().isNoContent());
     }
 
     @Test
-    void debe201_cuandoPeticionValidaConListaDeTres() throws Exception {
+    void debe204_cuandoPeticionValidaConListaDeTres() throws Exception {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudiante1 = UUID.randomUUID();
@@ -97,7 +100,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
                                 .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isCreated());
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -244,5 +247,38 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void debe422_cuandoLimiteExcedido() throws Exception {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        UUID estudiante1 = UUID.randomUUID();
+        UUID estudiante2 = UUID.randomUUID();
+        String body = String.format("""
+                {
+                  "estudiantesIds": ["%s", "%s"]
+                }
+                """, estudiante1, estudiante2);
+
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.addError(
+                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES_IDS,
+                FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO,
+                FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
+                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX
+                )
+        );
+        DomainValidationException exception = new DomainValidationException(validationResult);
+
+        doThrow(exception).when(asignarEstudiantesFichaPerfilInputPort).ejecutar(any());
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnprocessableEntity());
     }
 }

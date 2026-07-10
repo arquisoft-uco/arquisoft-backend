@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQu
 import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
-import com.arquisoft.fichas.application.estudiantefichaperfil.exception.LimiteEstudiantesExcedidoException;
 import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
@@ -13,7 +12,9 @@ import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFic
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.exception.InfrastructureException;
+import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -269,15 +270,14 @@ class RegistrarFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debeLanzarLimiteExcedido_cuandoMasDeTresEstudiantes() {
+    void debeLanzarDomainValidationException_cuandoMasDeTresEstudiantes() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
-        List<UUID> estudiantesIds = Arrays.asList(
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID(),
-                UUID.randomUUID()
-        );
+        UUID estudiante1 = UUID.randomUUID();
+        UUID estudiante2 = UUID.randomUUID();
+        UUID estudiante3 = UUID.randomUUID();
+        UUID estudiante4 = UUID.randomUUID();
+        List<UUID> estudiantesIds = Arrays.asList(estudiante1, estudiante2, estudiante3, estudiante4);
         RegistrarFichaPerfilCommand command = new RegistrarFichaPerfilCommand(
                 "Título de prueba",
                 asesorId,
@@ -286,11 +286,26 @@ class RegistrarFichaPerfilUseCaseTest {
 
         when(asesorFichaQueryOutputPort.existsById(asesorId)).thenReturn(true);
         when(fichaPerfilOutputPort.existsByTituloProyecto("Título de prueba")).thenReturn(false);
+        when(estudianteQueryOutputPort.existsById(estudiante1)).thenReturn(true);
+        when(estudianteQueryOutputPort.existsById(estudiante2)).thenReturn(true);
+        when(estudianteQueryOutputPort.existsById(estudiante3)).thenReturn(true);
+        when(estudianteQueryOutputPort.existsById(estudiante4)).thenReturn(true);
 
-        // Act & Assert
-        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
-                .isInstanceOf(LimiteEstudiantesExcedidoException.class);
+        // Act
+        Throwable ex = org.assertj.core.api.Assertions.catchThrowable(() -> registrarFichaPerfilUseCase.ejecutar(command));
 
+        // Assert
+        assertThat(ex)
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
+                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX
+                ));
+
+        DomainValidationException domainEx = (DomainValidationException) ex;
+        assertThat(domainEx.getValidationResult().getErrors())
+                .anyMatch(error -> error.errorCode().equals(
+                        FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO
+                ));
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
     }
 

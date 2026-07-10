@@ -159,6 +159,7 @@ public final class FichasMessages {
         // Campos
         public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
         public static final String CAMPO_ESTUDIANTE_ID   = "estudianteId";
+        public static final String CAMPO_ESTUDIANTES_IDS = "estudiantesIds";
 
         // Códigos de error
         public static final String FICHA_PERFIL_ID_REQUERIDO    = "ESTUDIANTE_FICHA_PERFIL_FICHA_ID_REQUERIDO";

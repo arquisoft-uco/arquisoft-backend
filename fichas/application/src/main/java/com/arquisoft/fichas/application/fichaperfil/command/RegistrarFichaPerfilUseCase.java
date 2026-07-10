@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQu
 import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
-import com.arquisoft.fichas.application.estudiantefichaperfil.exception.LimiteEstudiantesExcedidoException;
 import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInputPort;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
@@ -59,11 +58,6 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
 
         // Asignar estudiantes (si aplica)
         if (!UtilObject.isNull(command.estudiantesIds()) && !command.estudiantesIds().isEmpty()) {
-            // Validación de límite
-            if (command.estudiantesIds().size() > FichasMessages.FichaPerfil.ESTUDIANTES_MAX) {
-                throw new LimiteEstudiantesExcedidoException();
-            }
-
             // Validación de duplicados en la lista
             var idsUnicos = new HashSet<>(command.estudiantesIds());
             if (idsUnicos.size() != command.estudiantesIds().size()) {
@@ -76,12 +70,22 @@ public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPor
                 throw new EstudianteDuplicadoException(duplicado);
             }
 
-            // Validación de existencia y asignación
+            // Validación de existencia
             for (UUID estudianteId : command.estudiantesIds()) {
                 if (!estudianteQueryOutputPort.existsById(estudianteId)) {
                     throw new EstudianteNoEncontradoException(estudianteId);
                 }
-                var relacion = EstudianteFichaPerfilAggregate.crear(ficha.getId(), estudianteId);
+            }
+
+            // Crear relaciones validando límite atómicamente
+            var relaciones = EstudianteFichaPerfilAggregate.crear(
+                    ficha.getId(),
+                    command.estudiantesIds(),
+                    0L
+            );
+
+            // Guardar cada relación
+            for (EstudianteFichaPerfilAggregate relacion : relaciones) {
                 estudianteFichaPerfilOutputPort.guardar(relacion);
             }
         }
