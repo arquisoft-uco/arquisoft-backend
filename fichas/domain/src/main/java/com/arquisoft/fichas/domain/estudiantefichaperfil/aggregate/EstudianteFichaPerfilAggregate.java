@@ -5,6 +5,7 @@ import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
 
+import java.util.List;
 import java.util.UUID;
 
 public final class EstudianteFichaPerfilAggregate {
@@ -21,9 +22,9 @@ public final class EstudianteFichaPerfilAggregate {
         this.estudianteId = estudianteId;
     }
 
-    public static EstudianteFichaPerfilAggregate crear(UUID fichaPerfilId, UUID estudianteId) {
-        EstudianteFichaPerfilAggregate relacion = new EstudianteFichaPerfilAggregate();
-        ValidationResult result = new ValidationResult();
+    private static EstudianteFichaPerfilAggregate crear(UUID fichaPerfilId, UUID estudianteId) {
+        var relacion = new EstudianteFichaPerfilAggregate();
+        var result = new ValidationResult();
 
         relacion.setId();
         relacion.setFichaPerfilId(fichaPerfilId, result);
@@ -31,6 +32,21 @@ public final class EstudianteFichaPerfilAggregate {
 
         result.throwIfHasErrors();
         return relacion;
+    }
+
+    public static List<EstudianteFichaPerfilAggregate> crear(
+            UUID fichaPerfilId,
+            List<UUID> nuevosEstudiantesIds,
+            long cantidadExistentes) {
+
+        var result = new ValidationResult();
+
+        validarLimiteEstudiantes(nuevosEstudiantesIds.size(), cantidadExistentes, result);
+        result.throwIfHasErrors();
+
+        return nuevosEstudiantesIds.stream()
+                .map(estudianteId -> crear(fichaPerfilId, estudianteId))
+                .toList();
     }
 
     public static EstudianteFichaPerfilAggregate reconstruir(UUID id, UUID fichaPerfilId, UUID estudianteId) {
@@ -57,6 +73,18 @@ public final class EstudianteFichaPerfilAggregate {
             return;
         }
         this.estudianteId = estudianteId;
+    }
+
+    private static void validarLimiteEstudiantes(int nuevos, long existentes, ValidationResult result) {
+        if (existentes + nuevos > FichasMessages.FichaPerfil.ESTUDIANTES_MAX) {
+            result.addError(
+                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES_IDS,
+                FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO,
+                FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
+                    FichasMessages.FichaPerfil.ESTUDIANTES_MAX
+                )
+            );
+        }
     }
 
     public UUID getId() {

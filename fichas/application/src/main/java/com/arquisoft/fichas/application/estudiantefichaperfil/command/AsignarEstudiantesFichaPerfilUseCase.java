@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQuer
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.AsignarEstudiantesFichaPerfilInputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
-import com.arquisoft.fichas.application.estudiantefichaperfil.exception.LimiteEstudiantesExcedidoException;
 import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
@@ -60,15 +59,12 @@ public class AsignarEstudiantesFichaPerfilUseCase implements AsignarEstudiantesF
             }
         }
 
-        // 4. Límite: (existentes + nuevos) <= ESTUDIANTES_MAX
+        // 4. Crear relaciones validando límite atómicamente
         long existentes = estudianteFichaPerfilOutputPort.contarPorFichaPerfilId(fichaPerfilId);
-        if (existentes + estudiantesIds.size() > FichasMessages.FichaPerfil.ESTUDIANTES_MAX) {
-            throw new LimiteEstudiantesExcedidoException();
-        }
+        var relaciones = EstudianteFichaPerfilAggregate.crear(fichaPerfilId, estudiantesIds, existentes);
 
-        // 5. Crear y guardar cada relación
-        for (UUID estudianteId : estudiantesIds) {
-            EstudianteFichaPerfilAggregate relacion = EstudianteFichaPerfilAggregate.crear(fichaPerfilId, estudianteId);
+        // 5. Guardar cada relación
+        for (EstudianteFichaPerfilAggregate relacion : relaciones) {
             estudianteFichaPerfilOutputPort.guardar(relacion);
         }
 

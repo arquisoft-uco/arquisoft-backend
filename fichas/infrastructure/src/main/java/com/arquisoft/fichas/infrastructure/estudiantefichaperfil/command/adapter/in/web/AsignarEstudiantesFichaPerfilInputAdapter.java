@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,12 +38,16 @@ public class AsignarEstudiantesFichaPerfilInputAdapter {
     )
     @ApiResponses({
             @ApiResponse(
-                    responseCode = "201",
+                    responseCode = "204",
                     description = "Estudiantes asignados exitosamente"
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Ficha no encontrada, estudiante no encontrado, duplicado en lista, ya asignado o límite excedido"
+                    description = "Ficha no encontrada, estudiante no encontrado, duplicado en lista o ya asignado"
+            ),
+            @ApiResponse(
+                    responseCode = "422",
+                    description = "Límite de estudiantes excedido"
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -61,6 +64,6 @@ public class AsignarEstudiantesFichaPerfilInputAdapter {
 
         asignarEstudiantesFichaPerfilInputPort.ejecutar(dto.toCommand(fichaPerfilId));
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.noContent().build();
     }
 }
