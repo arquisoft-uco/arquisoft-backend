@@ -101,10 +101,10 @@ class ModificarFichaPerfilInputAdapterTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // ── 3. Excepción de dominio: no propietario ──
+    // ── 3. Excepción de autorización: no propietario ──
 
     @Test
-    void debeRetornar400_cuandoNoEsPropietario() throws Exception {
+    void debeRetornar403_cuandoNoEsPropietario() throws Exception {
         // Arrange
         doThrow(new FichaNoPropietarioException(FICHA_ID, ESTUDIANTE_ID))
                 .when(modificarFichaPerfilInputPort)
@@ -117,7 +117,7 @@ class ModificarFichaPerfilInputAdapterTest {
                                 .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
     }
 
     // ── 4. Excepción de dominio: ficha no existe ──

@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.out.persistence;
 
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilJpaRepository;
@@ -181,7 +182,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
 
         // Act
         ItemFichaPerfilAggregate reconstruido = adapter.buscarPorId(aggregate.getId()).orElseThrow();
-        reconstruido.modificarContenido("Contenido modificado");
+        reconstruido.modificarContenido("Contenido modificado", EstadoFicha.EN_CONSTRUCCION);
         adapter.guardar(reconstruido);
         entityManager.flush();
         entityManager.clear();

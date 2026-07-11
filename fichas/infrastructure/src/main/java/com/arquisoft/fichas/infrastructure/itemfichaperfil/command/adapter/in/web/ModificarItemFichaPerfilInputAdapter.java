@@ -15,7 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,7 +31,7 @@ public class ModificarItemFichaPerfilInputAdapter {
 
     private final ModificarItemFichaPerfilInputPort modificarItemFichaPerfilInputPort;
 
-    @PutMapping("/{itemId}/items")
+    @PatchMapping("/{itemId}/items")
     @PreAuthorize("hasAuthority('fichas:item-ficha-perfil:update')")
     @Operation(
             summary = "Modificar contenido de ítem",
@@ -45,7 +45,7 @@ public class ModificarItemFichaPerfilInputAdapter {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Ítem no encontrado o estudiante no propietario"
+                    description = "Ítem no encontrado"
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -53,11 +53,11 @@ public class ModificarItemFichaPerfilInputAdapter {
             ),
             @ApiResponse(
                     responseCode = "403",
-                    description = "Sin permiso"
+                    description = "Sin permiso o estudiante no propietario de la ficha"
             ),
             @ApiResponse(
                     responseCode = "422",
-                    description = "Datos inválidos — fieldErrors"
+                    description = "Datos inválidos o ficha en estado no modificable — fieldErrors"
             )
     })
     public ResponseEntity<Void> modificarItem(

@@ -4,5 +4,6 @@ import java.util.UUID;
 
 public record AgregarEstadoEvaluacionFichaCommand(
         UUID evaluacionFichaPerfilId,
-        String estadoEvaluacionId) {
+        String estadoEvaluacionId,
+        UUID representanteComiteId) {
 }

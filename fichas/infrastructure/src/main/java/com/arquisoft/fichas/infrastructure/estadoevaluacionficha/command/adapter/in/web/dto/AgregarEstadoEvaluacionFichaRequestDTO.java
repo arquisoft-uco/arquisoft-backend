@@ -15,7 +15,8 @@ public record AgregarEstadoEvaluacionFichaRequestDTO(
         @Size(max = 50, message = "El ID del estado no puede exceder 50 caracteres")
         String estadoEvaluacionId) {
 
-    public AgregarEstadoEvaluacionFichaCommand toCommand() {
-        return new AgregarEstadoEvaluacionFichaCommand(evaluacionFichaPerfilId, estadoEvaluacionId);
+    public AgregarEstadoEvaluacionFichaCommand toCommand(UUID representanteComiteId) {
+        return new AgregarEstadoEvaluacionFichaCommand(
+                evaluacionFichaPerfilId, estadoEvaluacionId, representanteComiteId);
     }
 }

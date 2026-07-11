@@ -70,6 +70,11 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
     }
 
     @Override
+    public boolean existsById(UUID id) {
+        return fichaPerfilJpaRepository.existsById(id);
+    }
+
+    @Override
     public boolean esEstudiantePropietario(UUID fichaPerfilId, UUID estudianteId) {
         return estudianteFichaPerfilJpaRepository.existsByFichaPerfilIdAndEstudianteId(
                 fichaPerfilId,

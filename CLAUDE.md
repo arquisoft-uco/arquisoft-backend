@@ -41,7 +41,7 @@ docker-compose up postgres rabbitmq redis keycloak  # infra only
 
 ## Architecture
 
-Hexagonal Architecture (Ports & Adapters) with **8 bounded contexts** and **7 shared modules**. Contexts communicate exclusively via RabbitMQ domain events — they never import each other.
+Hexagonal Architecture (Ports & Adapters) with **8 bounded contexts** and **8 shared modules**. Contexts communicate exclusively via RabbitMQ domain events — they never import each other.
 
 ### Bounded Contexts
 
@@ -58,7 +58,9 @@ Hexagonal Architecture (Ports & Adapters) with **8 bounded contexts** and **7 sh
 
 ### Shared Modules
 
-`shared:domain`, `shared:amqp`, `shared:logger`, `shared:redis`, `shared:web`, `shared:validation`, `shared:postgres`
+`shared:domain`, `shared:amqp`, `shared:logger`, `shared:redis`, `shared:web`, `shared:minio`, `shared:postgres`, `shared:message`
+
+There is no `shared:validation` module — `DomainValidator` / `ValidationResult` live in the `com.arquisoft.shared.validation` **package** inside `shared:domain`.
 
 ### Layer Structure per Context
 
@@ -118,7 +120,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 ## Key Conventions
 
-**Aggregate roots:** Immutable, final fields, no public constructor, suffix `Aggregate` (e.g., `UsuarioAggregate`, `FichaPerfilAggregate`). Use `build()` for new instances, `rebuild()` for reconstructing from DB.
+**Aggregate roots:** No public constructor, private non-`final` fields assigned by private setters (Notification Pattern — a `final` field cannot be assigned from a method), only public getters, suffix `Aggregate` (e.g., `UsuarioAggregate`, `FichaPerfilAggregate`). Use `crear(...)` for new instances, `reconstruir(...)` for reconstructing from DB — **not** `build()`/`rebuild()`. Entity package segments are all-lowercase with no separators (`domain/fichaperfil/`, not `domain/fichaPerfil/`).
 
 **IDs:** Always UUID — never `Long` or `Integer`.
 
@@ -126,7 +128,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Transactional (command):** Always use `@Transactional(transactionManager = "{context}TransactionManager")` with explicit qualifier in command use cases that publish events — required for outbox atomicity. Example: `@Transactional(transactionManager = "seguridadTransactionManager")`.
 
-**Transactional (query):** Query use cases do NOT use `@Transactional` — read-only operations have no side effects requiring transaction management.
+**Transactional (query):** Query use cases annotate the class with `@Transactional(readOnly = true, transactionManager = "{context}TransactionManager")`. The qualifier is mandatory here too: `usuariosTransactionManager` is the `@Primary` bean, so a bare `@Transactional` does not fail at startup — it silently binds to the `usuarios` transaction manager.
 
 **Input ports:** Interfaces in `application/{feature}/command/port/in/` or `application/{feature}/query/port/in/`, suffix `InputPort` (e.g., `RegistrarFichaPerfilInputPort`, `ConsultarFichasPerfilInputPort`).
 
@@ -136,13 +138,17 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/{feature}/command/adapter/out/persistence/` (or appropriate sub-package for non-JPA), suffix `OutputAdapter` (e.g., `FichaPerfilCommandOutputAdapter`, `KeycloakAuthOutputAdapter`). Implement the corresponding `OutputPort` interface.
 
-**Use case implementations:** `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCase`, `AutenticarUsuarioUseCase`), implement the corresponding `InputPort`.
+**Use case implementations:** `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCase`, `AutenticarUsuarioUseCase`), implement the corresponding `InputPort`. Annotated `@Component` — **never `@Service`**, which is not used anywhere in this project.
 
 **Commands:** Input data for use cases in `application/{feature}/command/model/`, suffix `Command` (e.g., `RegistrarFichaPerfilCommand`). Implemented as Java `record`. DTOs in `infrastructure/{feature}/command/adapter/in/web/dto/` own a `toCommand()` factory method.
 
-**ReadModels:** Flat query projections in `application/{feature}/query/readmodel/`, suffix `ReadModel` (e.g., `FichaPerfilReadModel`). Own a static `fromDomain(Aggregate)` factory method.
+**ReadModels:** Flat query projections in `application/{feature}/query/readmodel/`, suffix `ReadModel` (e.g., `FichaPerfilReadModel`). Implemented as Java `record`. The read side projects straight from the JPA entity via the mapper — there is no `fromDomain(Aggregate)` factory.
 
-**DTOs:** `@Data @NoArgsConstructor @AllArgsConstructor @Builder`, suffix `DTO`. Own `toDomain()` and `fromDomain()` static methods.
+**DTOs:** `RequestDTO` is a Java `record` with Jakarta annotations (`@NotBlank`, `@NotNull`) and a `toCommand()` method, living in `infrastructure/{feature}/command/adapter/in/web/dto/`. Generic technical DTOs (`ErrorResponseDTO`, `PageResponseDTO<T>`) come from `shared:web` — never redefine them per context.
+
+**Exceptions:** Every context exception extends one of five bases from `com.arquisoft.shared.exception`: `DomainException` (422), `ApplicationException` (400), `AuthorizationException` (403), `InfrastructureException` (503), `DomainValidationException` (422 + `fieldErrors[]`). Never `RuntimeException` directly. The constructor signature is `super(message, errorCode)` — both are `String`, so swapping them compiles and silently swaps the two fields in the response. `GlobalAppExceptionHandler` (`shared:web`) resolves the HTTP status by walking the superclass chain; contexts do not define their own handler (only `seguridad` does, for a name clash with Spring Security).
+
+**Business rules:** Validated inside the aggregate (→ 422), never with `if/throw` in the use case. The use case reads the state a rule needs via a port and passes it as a parameter to the factory. Existence, DB-duplicate and resource-ownership checks do belong in the use case (→ 400 / 403).
 
 **Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Aggregate`, `InputPort`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `UseCase`, `ReadModel`, `DTO`, `Command`).
 
@@ -164,9 +170,15 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 | Redis | 7 (Lettuce) |
 | Keycloak | 26.6 (OAuth2/OIDC Resource Server) |
 | Flyway | 12.4.0 |
-| JUnit | 6 (Jupiter) |
+| JUnit | 6.0.3 (Jupiter) |
+| Spring Modulith | 2.0.0 |
+| Jackson | 3 — `tools.jackson.databind.*` |
+| Lombok | 1.18.36 |
+| Bucket4j | 8.18.0 (`com.bucket4j:bucket4j_jdk17-core`) |
 
-DataSource autoconfiguration is excluded globally — each context configures its own `DataSource`, `EntityManagerFactory`, and `Flyway` bean.
+DataSource autoconfiguration is excluded globally — each context configures its own `DataSource`, `EntityManagerFactory`, and `Flyway` bean. None is `@Primary` except `usuarios`, whose `usuariosTransactionManager` **is** `@Primary`.
+
+Jackson 3 moved `databind` to `tools.jackson.databind.*`; `com.fasterxml.jackson.databind.ObjectMapper` will not resolve. Jackson **annotations** remain at `com.fasterxml.jackson.annotation.*`.
 
 ## Security
 
@@ -179,7 +191,9 @@ DataSource autoconfiguration is excluded globally — each context configures it
 ## Testing
 
 - **Unit:** JUnit 6 + Mockito + AssertJ, `@ExtendWith(MockitoExtension.class)`, no Spring context loaded
-- **Integration:** `@SpringBootTest` with H2 for repositories
+- **Repository slice:** `@DataJpaTest` with H2 (`org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`). `@SpringBootTest` is not used anywhere in this repo
+- **Controller slice:** `@WebMvcTest` (`org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`) + `@Import(GlobalAppExceptionHandler.class)` — without that import every exception surfaces as 500. Mock the `InputPort` with `@MockitoBean` (not `@MockBean`), authenticate with `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` using the exact client role (not `@WithMockUser`)
+- Spring Boot 4 relocated the slice-test packages; the Spring Boot 3 `org.springframework.boot.test.autoconfigure.*` paths do not exist
 - Method naming: `debeHacerAlgo_cuandoCondicion()`
 - Pattern: Arrange / Act / Assert
 

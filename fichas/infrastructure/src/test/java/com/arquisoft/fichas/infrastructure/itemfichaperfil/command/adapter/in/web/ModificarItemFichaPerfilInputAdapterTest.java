@@ -29,8 +29,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ModificarItemFichaPerfilInputAdapter.class)
@@ -70,7 +69,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         doNothing().when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
-        mockMvc.perform(put("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
@@ -90,7 +89,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
                 .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
-        mockMvc.perform(put("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
@@ -100,7 +99,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
     }
 
     @Test
-    void debe400_cuandoEstudianteNoEsPropietario() throws Exception {
+    void debe403_cuandoEstudianteNoEsPropietario() throws Exception {
         // Arrange
         UUID itemId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
@@ -111,13 +110,13 @@ class ModificarItemFichaPerfilInputAdapterTest {
                 .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
-        mockMvc.perform(put("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -127,7 +126,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         String body = "{\"contenido\": \"Contenido modificado\"}";
 
         // Act & Assert
-        mockMvc.perform(put("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnauthorized());
@@ -141,7 +140,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         String body = "{\"contenido\": \"Contenido modificado\"}";
 
         // Act & Assert
-        mockMvc.perform(put("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:read")))
@@ -168,7 +167,34 @@ class ModificarItemFichaPerfilInputAdapterTest {
                 .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
-        mockMvc.perform(put("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .jwt(jwt -> jwt.subject(estudianteId.toString()))
+                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void debe422_cuandoFichaEnEstadoTerminal() throws Exception {
+        // Arrange
+        UUID itemId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+        String body = "{\"contenido\": \"Contenido modificado\"}";
+
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.addError(
+                FichasMessages.ItemFichaPerfil.CAMPO_ESTADO_FICHA,
+                FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
+                FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE_MSG.formatted("Aprobada")
+        );
+
+        doThrow(new DomainValidationException(validationResult))
+                .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
+
+        // Act & Assert
+        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))

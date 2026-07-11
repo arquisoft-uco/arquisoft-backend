@@ -1,11 +1,11 @@
 package com.arquisoft.fichas.application.itemfichaperfil.exception;
 
-import com.arquisoft.shared.exception.ApplicationException;
+import com.arquisoft.shared.exception.AuthorizationException;
 import com.arquisoft.shared.message.FichasMessages;
 
 import java.util.UUID;
 
-public final class ItemFichaNoPropiaException extends ApplicationException {
+public final class ItemFichaNoPropiaException extends AuthorizationException {
 
     public ItemFichaNoPropiaException(UUID fichaPerfilId) {
         super(

@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
@@ -44,7 +44,7 @@ import java.time.Duration;
  * </ul>
  */
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class RedisBucketResolver implements BucketResolver, DisposableBean {
 

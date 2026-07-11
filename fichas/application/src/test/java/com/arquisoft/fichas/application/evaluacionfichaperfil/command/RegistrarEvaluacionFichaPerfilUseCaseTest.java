@@ -9,7 +9,7 @@ import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluac
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 class RegistrarEvaluacionFichaPerfilUseCaseTest {
 
     @Mock
-    private FichaPerfilOutputPort fichaPerfilOutputPort;
+    private FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
 
     @Mock
     private RepresentanteComiteQueryOutputPort representanteComiteQueryOutputPort;
@@ -52,7 +52,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilOutputPort.existsById(fichaId)).thenReturn(true);
+        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(true);
         when(representanteComiteQueryOutputPort.existsById(representanteId)).thenReturn(true);
         when(evaluacionFichaPerfilOutputPort.existsByRepresentanteAndFicha(representanteId, fichaId))
                 .thenReturn(false);
@@ -62,7 +62,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(fichaPerfilOutputPort).existsById(fichaId);
+        verify(fichaPerfilQueryOutputPort).existsById(fichaId);
         verify(representanteComiteQueryOutputPort).existsById(representanteId);
         verify(evaluacionFichaPerfilOutputPort).existsByRepresentanteAndFicha(representanteId, fichaId);
         verify(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilAggregate.class));
@@ -76,13 +76,13 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilOutputPort.existsById(fichaId)).thenReturn(false);
+        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(false);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class);
 
-        verify(fichaPerfilOutputPort).existsById(fichaId);
+        verify(fichaPerfilQueryOutputPort).existsById(fichaId);
         verify(representanteComiteQueryOutputPort, never()).existsById(any());
         verify(evaluacionFichaPerfilOutputPort, never()).existsByRepresentanteAndFicha(any(), any());
         verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
@@ -95,14 +95,14 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilOutputPort.existsById(fichaId)).thenReturn(true);
+        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(true);
         when(representanteComiteQueryOutputPort.existsById(representanteId)).thenReturn(false);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(RepresentanteComiteNoEncontradoException.class);
 
-        verify(fichaPerfilOutputPort).existsById(fichaId);
+        verify(fichaPerfilQueryOutputPort).existsById(fichaId);
         verify(representanteComiteQueryOutputPort).existsById(representanteId);
         verify(evaluacionFichaPerfilOutputPort, never()).existsByRepresentanteAndFicha(any(), any());
         verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
@@ -115,7 +115,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilOutputPort.existsById(fichaId)).thenReturn(true);
+        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(true);
         when(representanteComiteQueryOutputPort.existsById(representanteId)).thenReturn(true);
         when(evaluacionFichaPerfilOutputPort.existsByRepresentanteAndFicha(representanteId, fichaId))
                 .thenReturn(true);
@@ -124,7 +124,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(EvaluacionFichaPerfilDuplicadaException.class);
 
-        verify(fichaPerfilOutputPort).existsById(fichaId);
+        verify(fichaPerfilQueryOutputPort).existsById(fichaId);
         verify(representanteComiteQueryOutputPort).existsById(representanteId);
         verify(evaluacionFichaPerfilOutputPort).existsByRepresentanteAndFicha(representanteId, fichaId);
         verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
@@ -137,7 +137,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilOutputPort.existsById(fichaId)).thenReturn(true);
+        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(true);
         when(representanteComiteQueryOutputPort.existsById(representanteId)).thenReturn(true);
         when(evaluacionFichaPerfilOutputPort.existsByRepresentanteAndFicha(representanteId, fichaId))
                 .thenReturn(false);
@@ -159,7 +159,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilOutputPort.existsById(fichaId)).thenReturn(true);
+        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(true);
         when(representanteComiteQueryOutputPort.existsById(representanteId)).thenReturn(true);
         when(evaluacionFichaPerfilOutputPort.existsByRepresentanteAndFicha(representanteId, fichaId))
                 .thenReturn(false);

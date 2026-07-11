@@ -158,6 +158,11 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | ¿`Command`, `ReadModel`, `RequestDTO` declarados en sus ubicaciones correctas? ¿`RequestDTO` tiene `toCommand()`? | ✅ |
 | ¿Cada criterio de aceptación tiene evidencia en el código? | ✅ |
 | ¿Endpoints REST con ruta y método HTTP del plan? | ✅ |
+| Endpoint de modificación con `@PutMapping` cuyo `RequestDTO` solo lleva un subconjunto de los atributos modificables | ❌ violación bloqueante (debe ser `@PatchMapping`; `PUT` es reemplazo total del recurso) |
+| Endpoint `@PatchMapping`/`@PutMapping`/`@DeleteMapping` que recibe el `id` del recurso en el body en vez de `@PathVariable` | ✅ |
+| El código HTTP y el body del endpoint coinciden con el contrato de la sección 8 del plan | ✅ |
+| Un `@PatchMapping`/`@PutMapping` que retorna body con 200/201 en lugar de `Void` con 204 | ✅ **no es violación por sí sola** — el código lo fija lo que retorna el use case, no el verbo. Solo repórtalo si contradice la sección 8 del plan |
+| Client role de un endpoint anidado que usa el primer segmento de la ruta en vez de la entidad afectada (ej. `fichas:ficha-perfil:delete` en `DELETE /fichas-perfil/{id}/estudiantes/{estudianteId}`, donde debe ser `fichas:estudiante-ficha-perfil:delete`) | ❌ violación bloqueante |
 | `@RequestMapping`/`@PostMapping`/`@GetMapping` (o la ruta del plan, o un `mockMvc.perform(...)`) que incluya el prefijo `/api` | ❌ violación bloqueante (`server.servlet.context-path: /api` ya lo antepone; repetirlo produce `/api/api/...`) |
 | ¿Controller con `@Tag`, `@Operation`, `@ApiResponses` (ADR-011)? | ✅ |
 | ¿Endpoints protegidos con `@SecurityRequirement(name="bearerAuth")`? | ✅ |
@@ -227,10 +232,16 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 
 | Check | Bloqueante |
 |-------|:---:|
-| Constructor privado, campos `final`, no Lombok, no anotaciones de framework | ✅ |
+| Constructor privado, campos privados, solo getters públicos (sin setters públicos), no Lombok, no anotaciones de framework | ✅ |
+| Ausencia de `final` en los campos del aggregate | ✅ **no es violación** — los asignan los setters privados del factory (Notification Pattern); con `final` no compilaría. No lo reportes |
 | Factories `crear(...)` y `reconstruir(...)` presentes | ✅ |
 | IDs siempre `UUID` (nunca `Long`/`Integer`) | ✅ |
 | Entidad no es `record` (incompatible con factories) | ✅ |
+| Cada regla de negocio de la sección 3 del plan se valida **dentro del aggregate** (en la factory o en un método de acción), no en el use case | ✅ |
+| Use case con `if (...) throw` que aplica una regla de negocio del plan (límite/cupo, transición de estado prohibida, invariante) sobre datos ya cargados | ❌ violación bloqueante (fuga de lógica del dominio — mover al aggregate: el use case lee el estado vía puerto y lo pasa como parámetro a la factory) |
+| **Tell, Don't Ask:** use case que lee un **getter del aggregate** para evaluar un invariante y luego decide/lanza afuera (ej. `if (item.getEstado() == APROBADA) throw ...`) en vez de invocar un método de comportamiento que valide adentro (`item.modificarContenido(...)`) | ❌ violación bloqueante (viola Tell, Don't Ask — el aggregate debe decidir; el use case le ordena) |
+
+> **Falso positivo a evitar en los checks anteriores:** (1) los chequeos de **existencia** (`existsById`), **duplicado en BD** (`existsByTitulo`) y **propiedad del recurso** (`esEstudiantePropietario`) SÍ pertenecen al use case — son orquestación tras consultar un puerto, no invariantes del aggregate (→ `ApplicationException` 400 / `AuthorizationException` 403). (2) Los getters del aggregate para **retornar/loguear el id**, construir el mensaje de una excepción, mapear a JPA o pasar el valor a otro paso NO son un "Ask" de negocio. La línea roja es leer estado del aggregate para tomar una **decisión de invariante** que le corresponde a él. No los reportes.
 
 **2.4 Excepciones de dominio:**
 
@@ -238,11 +249,12 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 
 | Check | Bloqueante |
 |-------|:---:|
-| Cada excepción extiende la clase base correcta según su semántica: `DomainException` (invariante violada → 422), `ApplicationException` (recurso no encontrado / duplicado / parámetro inválido → 400), `InfrastructureException` (fallo de BD/RabbitMQ/Keycloak → 503), `DomainValidationException` (Notification Pattern → 422 + fieldErrors) | ✅ |
-| Excepción extiende `RuntimeException` directamente sin pasar por la jerarquía (`BaseException` / sus 4 subclases) | ❌ violación bloqueante (caerá en fallback Exception → 500) |
+| Cada excepción extiende la clase base correcta según su semántica: `DomainException` (invariante violada → 422), `ApplicationException` (recurso no encontrado / duplicado / parámetro inválido → 400), `AuthorizationException` (actor sin potestad sobre la instancia del recurso → 403), `InfrastructureException` (fallo de BD/RabbitMQ/Keycloak → 503), `DomainValidationException` (Notification Pattern → 422 + fieldErrors) | ✅ |
+| Excepción de "recurso ajeno / no propietario" (ej. `FichaNoPropietarioException`, `ItemFichaNoPropiaException`) que extiende `ApplicationException` o `DomainException` en vez de `AuthorizationException` | ❌ violación bloqueante (responde 400/422 donde el contrato exige 403) |
+| Excepción extiende `RuntimeException` directamente sin pasar por la jerarquía (`BaseException` / sus 5 subclases) | ❌ violación bloqueante (caerá en fallback Exception → 500) |
 | Tiene `errorCode` trazable (formato `ENTIDAD_ACCION` en SCREAMING_SNAKE_CASE, ej. `FICHA_PERFIL_DUPLICADA`) | ✅ |
 | Excepción que extiende `DomainException` o `DomainValidationException` ubicada en `domain/{entidad}/exception/` | ✅ |
-| Excepción que extiende `ApplicationException` ubicada en `application/{entidad}/exception/` (directamente bajo la entidad, sin anidar `command/` o `query/`) | ✅ |
+| Excepción que extiende `ApplicationException` o `AuthorizationException` ubicada en `application/{entidad}/exception/` (directamente bajo la entidad, sin anidar `command/` o `query/`) | ✅ |
 | Excepción que extiende `InfrastructureException` ubicada en `infrastructure/exception/` | ✅ |
 | Excepción que extiende `ApplicationException` ubicada en `domain/` (cualquier subpaquete) | ❌ violación bloqueante (rompe la dirección de dependencias — `domain/` no puede importar `ApplicationException` de `shared:exception`. Mover a `application/{entidad}/exception/`) |
 | Excepción que extiende `ApplicationException` ubicada en `application/{entidad}/command/exception/` o `application/{entidad}/query/exception/` (anidada en el slice CQRS) | ❌ violación bloqueante (la excepción pertenece al concepto entidad, no al slice — mover a `application/{entidad}/exception/` directamente) |
@@ -277,7 +289,8 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 
 | Check | Bloqueante |
 |-------|:---:|
-| `@Component`/`@Service` + `@RequiredArgsConstructor` | ✅ |
+| `@Component` + `@RequiredArgsConstructor` | ✅ |
+| Use case anotado con `@Service` en lugar de `@Component` | ❌ violación bloqueante (`@Service` no se usa en el proyecto — sustituir por `@Component`) |
 | `@Transactional` si persiste | ⚠️ |
 | Si el use case emite eventos: `@Transactional` lleva qualifier explícito `transactionManager = "{contexto}TransactionManager"` | ✅ |
 | Use case que emite eventos sin qualifier en `@Transactional` (riesgo de outbox en BD equivocada) | ❌ violación bloqueante |
@@ -285,6 +298,8 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Drenan y publican eventos del Aggregate tras persistir | ✅ |
 | `{Entidad}OutputPort` declara un método que opera sobre **otro aggregate distinto** (ej. `existsAsesorById` en `FichaPerfilOutputPort`) | ❌ violación bloqueante (mover a `{OtroAggregate}QueryOutputPort` en `application/.../query/port/out/` — ver "Ubicación de `exists()` y lookups cross-aggregate" del skill) |
 | Use case usa el `OutputPort` de su propio aggregate para hacer lookup sobre otro (mezclando responsabilidades de aggregates distintos) | ❌ violación bloqueante (inyectar el `{OtroAggregate}QueryOutputPort` correspondiente) |
+| **Lectura cross-feature servida por el lado write** — un command use case de la feature `A` lee estado de la feature `B` a través del `{B}OutputPort` de `domain/` (o del `{B}CommandOutputAdapter`), en vez de un `{B}QueryOutputPort` de `application/`. Señal: el use case de `A` importa `{contexto}.domain.{B}.port.out.*`, o el `{B}OutputPort` de `domain/` declara un método de lectura (`obtener…`, `buscar…`, `find…`, `existsBy…` que retorna una proyección/estado para consumir) invocado desde otra feature | ❌ violación bloqueante (Caso 3 del skill: el cross-aggregate/cross-feature lookup vive SIEMPRE en un `QueryOutputPort` de `application`, nunca en un puerto write-side de dominio; crear `{B}QueryOutputPort` + `{B}QueryOutputAdapter` y dejar `{B}OutputPort` solo con `guardar()`) |
+| **Excepción — NO reportar:** un método de lectura en el `{Entidad}OutputPort` write-side que consulta el **propio aggregate del puerto** para validar un invariante antes de `guardar()` (Caso 1: `existsByTitulo` en `FichaPerfilOutputPort`, que consulta la propia ficha). El criterio es **de qué aggregate se consulta el estado**, no el nombre del método ni si el caller es command o query: el puerto consulta su propio aggregate → write-side OK; consulta el aggregate de otra feature → debe ser `QueryOutputPort` | ✅ |
 
 **2.7 Inyección de dependencias:**
 
@@ -433,7 +448,7 @@ revise. NO lo marques como bloqueante por sí solo.
 - Problema: el test espera 500 cuando una excepción de dominio debería mapearse a 4xx
 - Excepción afectada: XYZException (clase base actual: {clase})
 - Acción requerida: cambiar la clase base de XYZException a la correcta según su semántica
-  (ApplicationException → 400 / DomainException → 422 / InfrastructureException → 503).
+  (ApplicationException → 400 / AuthorizationException → 403 / DomainException → 422 / InfrastructureException → 503).
   GlobalAppExceptionHandler de shared:web resolverá el HTTP automáticamente sin crear handler local.
   Actualizar el test para esperar el código correcto.
 ```
@@ -521,7 +536,7 @@ revise. NO lo marques como bloqueante por sí solo.
 | `XxxJpaSpecification` ubicado en `infrastructure/{entidad}/query/adapter/out/persistence/` y extiende `QueryJpaSpecification<JpaEntity>` | ✅ |
 | `XxxJpaSpecification` declara `Map<String, CampoSpec<E>> camposFiltrables()` con paths JPA (joins implícitos: `root.get("asesor").get("nombre")`) | ✅ |
 | `QueryOutputPort` retorna `PaginatedResult<XxxReadModel>` (de `shared:domain.pagination`) | ✅ |
-| `QueryInputAdapter` recibe `QueryCriteriaRequestDTO` (de `shared:web`) y convierte con `PageResponseDTO.from(paginatedResult)` antes del response | ✅ |
+| El InputAdapter de lectura recibe `QueryCriteriaRequestDTO` (de `shared:web`) y convierte con `PageResponseDTO.from(paginatedResult)` antes del response | ✅ |
 | Existencia de `Pageable` o `org.springframework.data.domain.Page` en `application/` o `domain/` | ❌ violación bloqueante (esos tipos solo viven en `QueryOutputAdapter` de infrastructure) |
 | Existencia de `PaginatedResult` en `infrastructure/` (fuera del adapter de salida) | ❌ violación bloqueante (es tipo de dominio, retornado por el puerto) |
 | Filtros del cliente que llegan a SQL sin pasar por whitelist (string concatenation, SpEL, etc.) | ❌ violación bloqueante (vulnerabilidad de inyección) |
@@ -569,7 +584,7 @@ revise. NO lo marques como bloqueante por sí solo.
 | Usa `withCorrelation(message, channel, runnable)` para envolver la lógica | ✅ |
 | Existencia de `try/catch` con `basicAck`/`basicNack` manuales en el consumer | ❌ violación bloqueante (eso es responsabilidad de `AbstractEventConsumer`) |
 | Payload deserializado a un `record` **local** del contexto consumidor (en el mismo paquete del consumer) | ✅ |
-| Consumer importa la clase del evento del contexto publicador (ej. `import com.arquisoft.fichas.domain.fichaPerfil.event.FichaPerfilCreadaEvent`) | ❌ violación bloqueante (rompe aislamiento entre bounded contexts — duplicar el payload localmente) |
+| Consumer importa la clase del evento del contexto publicador (ej. `import com.arquisoft.fichas.domain.fichaperfil.event.FichaPerfilCreadaEvent`) | ❌ violación bloqueante (rompe aislamiento entre bounded contexts — duplicar el payload localmente) |
 | Configuración de cola en `infrastructure/config/{Contexto}{Entidad}QueueConfig.java` con `x-dead-letter-exchange` | ✅ |
 | Cola sin DLX configurado | ❌ violación bloqueante (mensajes en error se re-encolan en loop) |
 | Routing key del binding usa la constante `EVENT_TOPIC` del evento (o duplicado documentado), nunca string literal hardcoded en otro lugar | ⚠️ |
@@ -602,7 +617,7 @@ Verificación: lee los archivos cambiados/creados por el implementador (use case
 | Check | Bloqueante |
 |-------|:---:|
 | `log.{info\|warn\|error\|debug}("...texto literal...", ...)` con string literal como primer argumento — el primer argumento debe ser una constante `{Contexto}Messages.{Entidad}.LOG_*` | ❌ violación bloqueante |
-| `super("mensaje literal", "CODIGO_LITERAL")` en el constructor de cualquier excepción del contexto que extiende `DomainException`, `ApplicationException`, `InfrastructureException` o `DomainValidationException` — ambos argumentos deben venir del catálogo | ❌ violación bloqueante |
+| `super("mensaje literal", "CODIGO_LITERAL")` en el constructor de cualquier excepción del contexto que extiende `DomainException`, `ApplicationException`, `AuthorizationException`, `InfrastructureException` o `DomainValidationException` — ambos argumentos deben venir del catálogo | ❌ violación bloqueante |
 | `throw new XxxException("texto literal", ...)` — el mensaje y el código deben venir del catálogo (acepta `.formatted(...)` para parametrizar) | ❌ violación bloqueante |
 | `DomainValidator.{notNull\|notBlank\|maxLength\|minLength\|validEmail}(..., "campoLiteral", "CODIGO_LITERAL", ...)` con literales en los argumentos `fieldName` y `errorCode` — deben venir de `{Contexto}Messages.{Entidad}.CAMPO_*` y `{Contexto}Messages.{Entidad}.{CODIGO}` | ❌ violación bloqueante |
 | `result.addError("campo literal", "CODIGO_LITERAL", "mensaje literal")` con cualquiera de los 3 argumentos como literal | ❌ violación bloqueante |

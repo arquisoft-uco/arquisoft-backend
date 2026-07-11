@@ -108,3 +108,57 @@ Recomendación: invocar @tester para completar la cobertura antes de mergear.
 
 → Errores menores pueden corregirse en PR o tarea separada (no bloqueantes).
 → Invocar @tester para completar cobertura de domain y application antes de mergear.
+---
+
+# Revalidación post-auditoría — 2026-07-09
+
+## Motivo
+
+La auditoría batch de arquitectura detectó dos desalineaciones entre el PLAN-HU-31 y el código.
+Ambas eran de **mapeo HTTP**, no de lógica de negocio: el use case y el aggregate ya validaban
+las políticas en la capa correcta.
+
+## Hallazgos corregidos
+
+| # | Hallazgo | Severidad | Estado |
+|---|----------|-----------|--------|
+| 1 | Criterio #3 exigía 403 para ficha no propia, pero `ItemFichaNoPropiaException` extendía `ApplicationException` → el sistema devolvía **400** | 🔴 Bloqueante | ✅ Corregido |
+| 2 | Criterio #4 y POL-03 documentaban **400** para `TIPO_ITEM_INVALIDO`; `DomainValidationException` mapea a **422**. El plan era internamente incoherente (POL-03 decía "DomainValidationException … (400)") | 🟡 Menor | ✅ Corregido (el código era correcto; se corrigió el plan) |
+| 3 | El criterio #4 no tenía ningún test de controller que verificara el status | 🟡 Menor | ✅ Corregido |
+| 4 | `@ApiResponse(400)` listaba "Tipo inválido", contradiciendo el 422 real | 🟡 Menor | ✅ Corregido |
+
+## Cambio estructural asociado
+
+Se introdujo `com.arquisoft.shared.exception.AuthorizationException` (extiende `BaseException`)
+y se registró en `GlobalAppExceptionHandler.EXCEPTION_MAPPINGS` → `HttpStatus.FORBIDDEN`.
+Antes, el único camino a 403 era `AccessDeniedException` de Spring Security, que solo cubre
+autorización por *client role* (`@PreAuthorize`), no por instancia del recurso. Ese hueco
+estructural — no un descuido puntual de HU-31 — era la causa raíz del hallazgo #1.
+
+`ItemFichaNoPropiaException` pasa a extender `AuthorizationException`. Ningún use case cambió:
+la excepción ya se lanzaba en el sitio correcto.
+
+## Verificación de capas (sin cambios respecto a la validación original)
+
+- ✅ POL-02 (unicidad de tipo por ficha) → precondición con lookup a BD en el use case →
+  `ItemTipoDuplicadoException` (`ApplicationException`) → 400. **Correcto**, no es fuga.
+- ✅ POL-03 (tipo de ítem válido) → invariante resuelta dentro de
+  `ItemFichaPerfilAggregate.crear(...)` vía `TipoItem.valueOf` + `ValidationResult.addError` →
+  `DomainValidationException` → 422. **Dominio decide.** Sin fuga.
+- ✅ POL-04 (propiedad de la ficha) → autorización a nivel de recurso → 403.
+
+## Cobertura de tests
+
+| Capa | Test | Cambio |
+|---|---|---|
+| infrastructure | `debe403_cuandoFichaNoPropia` | renombrado desde `debe400_cuandoFichaNoPropia`; asserta `isForbidden()` |
+| infrastructure | `debe422_cuandoTipoItemInvalido` | **nuevo** — cubre el criterio #4, verifica `fieldErrors[0].field == tipoItem` |
+
+## Resultado
+
+| Verificación | Resultado |
+|---|---|
+| `:fichas:domain:test` / `:fichas:application:test` / `:fichas:infrastructure:test` | ✅ BUILD SUCCESSFUL |
+| `checkstyleMain` / `checkstyleTest` | ✅ BUILD SUCCESSFUL |
+
+> ✅ **APROBADO** — plan, código, Swagger y tests alineados. Criterio #4 cubierto por test.

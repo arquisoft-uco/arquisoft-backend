@@ -5,24 +5,18 @@ import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioComm
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class CrearUsuarioRequestDTO {
+public record CrearUsuarioRequestDTO(
 
-    @NotBlank(message = "El email es obligatorio")
-    @Email(message = "El email debe tener formato valido")
-    private String email;
+        @NotBlank(message = "El email es obligatorio")
+        @Email(message = "El email debe tener formato valido")
+        String email,
 
-    @NotNull(message = "El rol es obligatorio")
-    private RolUsuarioDTO rol;
+        @NotNull(message = "El rol es obligatorio")
+        RolUsuarioDTO rol) {
 
     public CrearUsuarioCommand toCommand() {
-        return new CrearUsuarioCommand(this.email, this.rol.toDomain());
+        return new CrearUsuarioCommand(email, rol.toDomain());
     }
 
     public enum RolUsuarioDTO {

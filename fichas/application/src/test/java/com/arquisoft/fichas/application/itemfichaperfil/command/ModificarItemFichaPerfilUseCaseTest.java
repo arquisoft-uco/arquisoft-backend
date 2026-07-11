@@ -1,9 +1,12 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command;
 
+import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemNoEncontradoException;
+import com.arquisoft.fichas.application.estadofichaperfil.query.port.out.EstadoFichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.exception.DomainValidationException;
@@ -34,6 +37,9 @@ class ModificarItemFichaPerfilUseCaseTest {
     @Mock
     private FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
 
+    @Mock
+    private EstadoFichaPerfilQueryOutputPort estadoFichaPerfilQueryOutputPort;
+
     @InjectMocks
     private ModificarItemFichaPerfilUseCase useCase;
 
@@ -61,6 +67,8 @@ class ModificarItemFichaPerfilUseCaseTest {
         when(itemFichaPerfilOutputPort.existsById(itemId)).thenReturn(true);
         when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
         when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId)).thenReturn(true);
+        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
+                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
 
         // Act
         useCase.ejecutar(command);
@@ -164,6 +172,8 @@ class ModificarItemFichaPerfilUseCaseTest {
         when(itemFichaPerfilOutputPort.existsById(itemId)).thenReturn(true);
         when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
         when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId)).thenReturn(true);
+        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
+                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
 
         // Act
         Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
@@ -176,6 +186,79 @@ class ModificarItemFichaPerfilUseCaseTest {
         verify(itemFichaPerfilOutputPort, times(1)).existsById(itemId);
         verify(itemFichaPerfilOutputPort, times(1)).buscarPorId(itemId);
         verify(fichaPerfilQueryOutputPort, times(1)).esEstudiantePropietario(fichaPerfilId, estudianteId);
+        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debePropagarDomainValidation_cuandoFichaEnEstadoTerminal() {
+        // Arrange
+        UUID itemId = UUID.randomUUID();
+        UUID fichaPerfilId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+
+        ItemFichaPerfilAggregate item = ItemFichaPerfilAggregate.reconstruir(
+                itemId,
+                fichaPerfilId,
+                com.arquisoft.fichas.domain.tipoitem.TipoItem.OBJETIVO_GENERAL,
+                "Contenido original"
+        );
+
+        ModificarItemFichaPerfilCommand command = new ModificarItemFichaPerfilCommand(
+                itemId,
+                "Contenido modificado",
+                estudianteId
+        );
+
+        when(itemFichaPerfilOutputPort.existsById(itemId)).thenReturn(true);
+        when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId)).thenReturn(true);
+        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
+                .thenReturn(Optional.of(EstadoFicha.APROBADA));
+
+        // Act
+        Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
+
+        // Assert
+        assertThatThrownBy(() -> {
+            throw exception;
+        }).isInstanceOf(DomainValidationException.class);
+
+        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeLanzarFichaPerfilNoEncontrada_cuandoFichaSinEstadoRegistrado() {
+        // Arrange
+        UUID itemId = UUID.randomUUID();
+        UUID fichaPerfilId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+
+        ItemFichaPerfilAggregate item = ItemFichaPerfilAggregate.reconstruir(
+                itemId,
+                fichaPerfilId,
+                com.arquisoft.fichas.domain.tipoitem.TipoItem.OBJETIVO_GENERAL,
+                "Contenido original"
+        );
+
+        ModificarItemFichaPerfilCommand command = new ModificarItemFichaPerfilCommand(
+                itemId,
+                "Contenido modificado",
+                estudianteId
+        );
+
+        when(itemFichaPerfilOutputPort.existsById(itemId)).thenReturn(true);
+        when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId)).thenReturn(true);
+        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId)).thenReturn(Optional.empty());
+
+        // Act
+        Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
+
+        // Assert
+        assertThatThrownBy(() -> {
+            throw exception;
+        }).isInstanceOf(FichaPerfilNoEncontradaException.class);
+
         verify(itemFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -203,6 +286,8 @@ class ModificarItemFichaPerfilUseCaseTest {
         when(itemFichaPerfilOutputPort.existsById(itemId)).thenReturn(true);
         when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
         when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId)).thenReturn(true);
+        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
+                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
 
         // Act
         useCase.ejecutar(command);
@@ -235,6 +320,8 @@ class ModificarItemFichaPerfilUseCaseTest {
         when(itemFichaPerfilOutputPort.existsById(itemId)).thenReturn(true);
         when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
         when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId)).thenReturn(true);
+        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
+                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
         doThrow(new RuntimeException("Error de BD")).when(itemFichaPerfilOutputPort).guardar(any());
 
         // Act

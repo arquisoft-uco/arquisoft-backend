@@ -97,7 +97,7 @@ public class AuthCommandInputAdapter {
         log.debug(SeguridadMessages.Token.REFRESH_DEBUG);
 
         RefreshTokenInputPort.RefreshResult result = refreshTokenInputPort.ejecutar(
-                refreshTokenRequest.getRefreshToken()
+                refreshTokenRequest.refreshToken()
         );
 
         LoginResponseDTO response = LoginResponseDTO.builder()

@@ -28,11 +28,9 @@ public final class AppMessages {
         private PaginationRequest() {}
 
         // Mensajes
-        public static final String MENSAJE_PAGE_MAYOR_CERO = "El número de página debe ser >= 0";
         public static final String MENSAJE_SIZE_MAYOR_CERO = "El tamaño de página debe ser > 0";
 
         // Códigos de error
-        public static final String PAGE_INVALIDA = "PAGINACION_PAGE_INVALIDA";
         public static final String SIZE_INVALIDA = "PAGINACION_SIZE_INVALIDA";
     }
 }

@@ -36,8 +36,8 @@ La HU crea un nuevo endpoint REST `POST /fichas-perfil/{fichaPerfilId}/items`, p
 |---|----------|--------------------|
 | 1 | Estudiante agrega un ítem válido a su propia ficha | Sistema retorna UUID del ítem con `201 Created` |
 | 2 | Estudiante intenta agregar un tipo de ítem que ya existe en su ficha | Sistema rechaza con `400 Bad Request` + errorCode `ITEM_TIPO_DUPLICADO` |
-| 3 | Estudiante intenta agregar un ítem a una ficha que no le pertenece | Sistema rechaza con `403 Forbidden` + errorCode `ITEM_FICHA_NO_AUTORIZADA` |
-| 4 | Estudiante envía un `tipoItemCode` que no corresponde a ningún valor del enum | Sistema rechaza con `400 Bad Request` + errorCode `TIPO_ITEM_INVALIDO` |
+| 3 | Estudiante intenta agregar un ítem a una ficha que no le pertenece | Sistema rechaza con `403 Forbidden` + errorCode `ITEM_FICHA_NO_AUTORIZADA`. `ItemFichaNoPropiaException` extiende `AuthorizationException` (base de `shared:domain` mapeada a 403 por `GlobalAppExceptionHandler`) |
+| 4 | Estudiante envía un `tipoItemCode` que no corresponde a ningún valor del enum | Sistema rechaza con `422 Unprocessable Content` + `fieldErrors[0].errorCode = TIPO_ITEM_INVALIDO`. Es invariante del aggregate (`DomainValidationException`) → 422, **no** 400 |
 | 5 | El `fichaPerfilId` del path no existe en el sistema | Sistema rechaza con `400 Bad Request` + errorCode `FICHA_NO_ENCONTRADA` |
 | 6 | Usuario no autenticado intenta agregar un ítem | Sistema rechaza con `401 Unauthorized` |
 | 7 | Usuario autenticado sin rol `estudiante` intenta agregar un ítem | Sistema rechaza con `403 Forbidden` |
@@ -49,14 +49,14 @@ La HU crea un nuevo endpoint REST `POST /fichas-perfil/{fichaPerfilId}/items`, p
 
 - **POL-01:** Validar que los datos requeridos sean válidos (tipo de dato, longitud, obligatoriedad).
 - **POL-02:** Una ficha perfil NO puede tener más de UN ítem del mismo `TipoItem` (unicidad de `(fichaPerfilId, tipoItemId)` a nivel de use case; sin constraint en BD per decisión de equipo).
-- **POL-03:** El `tipoItemCode` enviado debe corresponder a un valor del enum `TipoItem`. Validado en el aggregate via `TipoItem.valueOf(tipoItemCode)` — **sin consulta a BD**. Si lanza `IllegalArgumentException`, se acumula en el `ValidationResult` con `addError` (no se lanza excepción dedicada).
-- **POL-04:** El estudiante solo puede agregar ítems a **su propia** ficha (ownership via `userId` del JWT).
+- **POL-03:** El `tipoItemCode` enviado debe corresponder a un valor del enum `TipoItem`. Validado en el aggregate via `TipoItem.valueOf(tipoItemCode)` — **sin consulta a BD**. Si lanza `IllegalArgumentException`, se acumula en el `ValidationResult` con `addError` (no se lanza excepción dedicada) → `DomainValidationException` → **422**.
+- **POL-04:** El estudiante solo puede agregar ítems a **su propia** ficha (ownership via `userId` del JWT) → `AuthorizationException` → **403**.
 
 **Traducción a código:**
 - POL-01 → validaciones Jakarta en `AgregarItemFichaPerfilRequestDTO` + Notification Pattern en `ItemFichaPerfilAggregate.crear(...)`.
 - POL-02 → `ItemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, tipoItemCode)` en el use case antes de persistir.
-- POL-03 → `TipoItem.valueOf(tipoItemCode)` dentro de `ItemFichaPerfilAggregate.crear(...)`. Si lanza `IllegalArgumentException`, se acumula en `ValidationResult` con `result.addError(...)` y se lanza `DomainValidationException` al final (400).
-- POL-04 → `EstudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(estudianteId, fichaPerfilId)` en el use case; `estudianteId` viene del JWT.
+- POL-03 → `TipoItem.valueOf(tipoItemCode)` dentro de `ItemFichaPerfilAggregate.crear(...)`. Si lanza `IllegalArgumentException`, se acumula en `ValidationResult` con `result.addError(...)` y `throwIfHasErrors()` lanza `DomainValidationException` al final → **422** (no 400: es una invariante de dominio, y `DomainValidationException` está mapeada a `UNPROCESSABLE_CONTENT`).
+- POL-04 → `EstudianteFichaPerfilQueryOutputPort.existePorEstudianteYFicha(estudianteId, fichaPerfilId)` en el use case; `estudianteId` viene del JWT. Lanza `ItemFichaNoPropiaException` (`AuthorizationException`) → **403**.
 
 ---
 
@@ -582,3 +582,14 @@ CREATE TABLE item (
 | Validación | @validator-analyze  | ✅ Completado | 2026-06-30 | Score: 98/100 — APROBADO |
 | Reporte    | @validator-report   | ✅ Completado | 2026-06-30 | /.workspace/validator/validator-HU-31.md |
 | Commit     | @commit             | ✅ Completado | 2026-06-30 | Hash: 718a6e1 |
+
+### Revisión post-auditoría (2026-07-09)
+
+> La auditoría batch detectó dos desalineaciones entre plan y código: (1) el criterio #3 exigía 403 pero `ItemFichaNoPropiaException` extendía `ApplicationException` → 400; (2) el criterio #4 y POL-03 documentaban 400 para `TIPO_ITEM_INVALIDO`, pero `DomainValidationException` mapea a 422 — el código siempre devolvió 422 y no había test que lo cubriera.
+
+| Etapa      | Agente              | Estado       | Fecha | Notas |
+|------------|---------------------|--------------|-------|-------|
+| Planificación | @planificador    | ✅ Completado | 2026-07-09 | Criterio #4 y POL-03 corregidos a 422; criterio #3 y POL-04 documentan `AuthorizationException` → 403. |
+| Desarrollo | @implementador      | ✅ Completado | 2026-07-09 | `ItemFichaNoPropiaException` → `AuthorizationException`. Swagger: "Tipo inválido" movido de `@ApiResponse(400)` a `@ApiResponse(422)`. Sin cambios en el use case ni en el aggregate (el comportamiento ya era el correcto). |
+| Tests      | @tester             | ✅ Completado | 2026-07-09 | `debe400_cuandoFichaNoPropia` → `debe403_cuandoFichaNoPropia`. Nuevo `debe422_cuandoTipoItemInvalido` (cubre el criterio #4, que no tenía test de controller). |
+| Validación | @validator-analyze  | ✅ Completado | 2026-07-09 | Ver validator-HU-31.md |
