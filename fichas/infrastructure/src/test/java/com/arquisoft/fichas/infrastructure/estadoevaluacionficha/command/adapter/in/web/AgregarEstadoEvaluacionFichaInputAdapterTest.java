@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapte
 
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.port.in.AgregarEstadoEvaluacionFichaInputPort;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
+import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -72,7 +73,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
-                        .with(SecurityMockMvcRequestPostProcessors.user("user")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(resultadoId.toString()));
@@ -87,7 +88,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestInvalido)
-                        .with(SecurityMockMvcRequestPostProcessors.user("user")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
                 .andExpect(status().isBadRequest());
     }
@@ -107,7 +108,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
-                        .with(SecurityMockMvcRequestPostProcessors.user("user")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
                 .andExpect(status().isBadRequest());
     }
@@ -127,7 +128,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
-                        .with(SecurityMockMvcRequestPostProcessors.user("user")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
                 .andExpect(status().isBadRequest());
     }
@@ -151,7 +152,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
-                        .with(SecurityMockMvcRequestPostProcessors.user("user")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
                 .andExpect(status().isUnprocessableEntity());
     }
@@ -172,6 +173,27 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
     }
 
     @Test
+    void debe403_cuandoRepresentanteNoEsPropietario() throws Exception {
+        // Arrange
+        UUID evaluacionId = UUID.randomUUID();
+        String requestBody = String.format(
+                "{\"evaluacionFichaPerfilId\":\"%s\",\"estadoEvaluacionId\":\"APROBADA\"}",
+                evaluacionId);
+
+        when(agregarEstadoEvaluacionFichaInputPort.ejecutar(any()))
+                .thenThrow(new EvaluacionFichaNoPropiaException(evaluacionId));
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
+                                .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void debe403_cuandoRolInsuficiente() throws Exception {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
@@ -183,7 +205,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
-                        .with(SecurityMockMvcRequestPostProcessors.user("user")
+                        .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:otro-permiso"))))
                 .andExpect(status().isForbidden());
     }

@@ -17,4 +17,11 @@ public class EvaluacionFichaPerfilQueryOutputAdapter implements EvaluacionFichaP
     public boolean existsById(UUID evaluacionFichaPerfilId) {
         return evaluacionFichaPerfilJpaRepository.existsById(evaluacionFichaPerfilId);
     }
+
+    @Override
+    public boolean esRepresentantePropietario(UUID evaluacionFichaPerfilId, UUID representanteComiteId) {
+        return evaluacionFichaPerfilJpaRepository.existsByIdAndRepresentanteComiteId(
+                evaluacionFichaPerfilId,
+                representanteComiteId);
+    }
 }

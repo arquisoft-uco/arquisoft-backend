@@ -10,4 +10,8 @@ public interface EvaluacionFichaPerfilJpaRepository
     boolean existsByRepresentanteComiteIdAndFichaPerfilId(
             UUID representanteComiteId,
             UUID fichaPerfilId);
+
+    boolean existsByIdAndRepresentanteComiteId(
+            UUID id,
+            UUID representanteComiteId);
 }

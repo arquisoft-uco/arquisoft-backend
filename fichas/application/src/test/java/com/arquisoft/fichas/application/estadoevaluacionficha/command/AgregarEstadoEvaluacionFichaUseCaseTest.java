@@ -3,6 +3,7 @@ package com.arquisoft.fichas.application.estadoevaluacionficha.command;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionNoEncontradoException;
+import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.port.out.EvaluacionFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
@@ -22,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -41,9 +43,12 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
     void debeAgregar_cuandoDatosValidos() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA");
+        UUID representanteId = UUID.randomUUID();
+        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
         when(evaluacionFichaPerfilQueryOutputPort.existsById(evaluacionId)).thenReturn(true);
+        when(evaluacionFichaPerfilQueryOutputPort.esRepresentantePropietario(evaluacionId, representanteId))
+                .thenReturn(true);
         when(estadoEvaluacionFichaOutputPort.existsByEvaluacionAndEstado(evaluacionId, "APROBADA"))
                 .thenReturn(false);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionId))
@@ -55,6 +60,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         // Assert
         assertThat(resultado).isNotNull();
         verify(evaluacionFichaPerfilQueryOutputPort).existsById(evaluacionId);
+        verify(evaluacionFichaPerfilQueryOutputPort).esRepresentantePropietario(evaluacionId, representanteId);
         verify(estadoEvaluacionFichaOutputPort).existsByEvaluacionAndEstado(evaluacionId, "APROBADA");
         verify(estadoEvaluacionFichaOutputPort).obtenerUltimoEstado(evaluacionId);
         verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaAggregate.class));
@@ -64,7 +70,8 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
     void debeLanzarEvaluacionNoEncontrada_cuandoEvaluacionNoExiste() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA");
+        UUID representanteId = UUID.randomUUID();
+        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
         when(evaluacionFichaPerfilQueryOutputPort.existsById(evaluacionId)).thenReturn(false);
 
@@ -73,15 +80,39 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
                 .isInstanceOf(EvaluacionFichaPerfilNoEncontradaException.class);
 
         verify(evaluacionFichaPerfilQueryOutputPort).existsById(evaluacionId);
+        verify(evaluacionFichaPerfilQueryOutputPort, never())
+                .esRepresentantePropietario(any(), any());
+    }
+
+    @Test
+    void debeLanzarEvaluacionNoPropia_cuandoRepresentanteNoEsPropietario() {
+        // Arrange
+        UUID evaluacionId = UUID.randomUUID();
+        UUID representanteId = UUID.randomUUID();
+        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
+
+        when(evaluacionFichaPerfilQueryOutputPort.existsById(evaluacionId)).thenReturn(true);
+        when(evaluacionFichaPerfilQueryOutputPort.esRepresentantePropietario(evaluacionId, representanteId))
+                .thenReturn(false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(command))
+                .isInstanceOf(EvaluacionFichaNoPropiaException.class);
+
+        verify(evaluacionFichaPerfilQueryOutputPort).esRepresentantePropietario(evaluacionId, representanteId);
+        verify(estadoEvaluacionFichaOutputPort, never()).guardar(any());
     }
 
     @Test
     void debeLanzarEstadoNoEncontrado_cuandoCatalogoNoExiste() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "ESTADO_INVALIDO");
+        UUID representanteId = UUID.randomUUID();
+        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "ESTADO_INVALIDO", representanteId);
 
         when(evaluacionFichaPerfilQueryOutputPort.existsById(evaluacionId)).thenReturn(true);
+        when(evaluacionFichaPerfilQueryOutputPort.esRepresentantePropietario(evaluacionId, representanteId))
+                .thenReturn(true);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
@@ -94,9 +125,12 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
     void debeLanzarEstadoDuplicado_cuandoYaExiste() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA");
+        UUID representanteId = UUID.randomUUID();
+        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
         when(evaluacionFichaPerfilQueryOutputPort.existsById(evaluacionId)).thenReturn(true);
+        when(evaluacionFichaPerfilQueryOutputPort.esRepresentantePropietario(evaluacionId, representanteId))
+                .thenReturn(true);
         when(estadoEvaluacionFichaOutputPort.existsByEvaluacionAndEstado(evaluacionId, "APROBADA"))
                 .thenReturn(true);
 
@@ -112,9 +146,12 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
     void debeLanzarDomainValidation_cuandoEstadoTerminal() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "NO_APROBADA");
+        UUID representanteId = UUID.randomUUID();
+        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "NO_APROBADA", representanteId);
 
         when(evaluacionFichaPerfilQueryOutputPort.existsById(evaluacionId)).thenReturn(true);
+        when(evaluacionFichaPerfilQueryOutputPort.esRepresentantePropietario(evaluacionId, representanteId))
+                .thenReturn(true);
         when(estadoEvaluacionFichaOutputPort.existsByEvaluacionAndEstado(evaluacionId, "NO_APROBADA"))
                 .thenReturn(false);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionId))
@@ -134,9 +171,12 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
     void debeLanzarDomainValidation_cuandoIntentaEnEvaluacionManual() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "EN_EVALUACION");
+        UUID representanteId = UUID.randomUUID();
+        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "EN_EVALUACION", representanteId);
 
         when(evaluacionFichaPerfilQueryOutputPort.existsById(evaluacionId)).thenReturn(true);
+        when(evaluacionFichaPerfilQueryOutputPort.esRepresentantePropietario(evaluacionId, representanteId))
+                .thenReturn(true);
         when(estadoEvaluacionFichaOutputPort.existsByEvaluacionAndEstado(evaluacionId, "EN_EVALUACION"))
                 .thenReturn(false);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionId))
@@ -156,9 +196,13 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
     void debePermitirSegundoEstado_cuandoYaExisteEnEvaluacion() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA_CON_OBSERVACIONES");
+        UUID representanteId = UUID.randomUUID();
+        var command = new AgregarEstadoEvaluacionFichaCommand(
+                evaluacionId, "APROBADA_CON_OBSERVACIONES", representanteId);
 
         when(evaluacionFichaPerfilQueryOutputPort.existsById(evaluacionId)).thenReturn(true);
+        when(evaluacionFichaPerfilQueryOutputPort.esRepresentantePropietario(evaluacionId, representanteId))
+                .thenReturn(true);
         when(estadoEvaluacionFichaOutputPort.existsByEvaluacionAndEstado(
                 evaluacionId, "APROBADA_CON_OBSERVACIONES"))
                 .thenReturn(false);
@@ -177,9 +221,12 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
     void debeLanzarExcepcion_cuandoRepositorioFalla() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA");
+        UUID representanteId = UUID.randomUUID();
+        var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
         when(evaluacionFichaPerfilQueryOutputPort.existsById(evaluacionId)).thenReturn(true);
+        when(evaluacionFichaPerfilQueryOutputPort.esRepresentantePropietario(evaluacionId, representanteId))
+                .thenReturn(true);
         when(estadoEvaluacionFichaOutputPort.existsByEvaluacionAndEstado(evaluacionId, "APROBADA"))
                 .thenReturn(false);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionId))

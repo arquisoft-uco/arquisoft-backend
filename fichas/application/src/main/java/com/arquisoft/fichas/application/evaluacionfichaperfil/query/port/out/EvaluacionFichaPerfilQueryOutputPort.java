@@ -5,4 +5,6 @@ import java.util.UUID;
 public interface EvaluacionFichaPerfilQueryOutputPort {
 
     boolean existsById(UUID evaluacionFichaPerfilId);
+
+    boolean esRepresentantePropietario(UUID evaluacionFichaPerfilId, UUID representanteComiteId);
 }

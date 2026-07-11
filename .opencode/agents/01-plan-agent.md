@@ -253,6 +253,16 @@ Espera las respuestas del usuario antes de continuar.
 
    > Esta decisión se documenta en la sección 8 del plan (Contrato del endpoint, columna Response) y en los nombres del `InputPort` y `UseCase`. La opción A es el default; usar B o C requiere explicación. Ver regla 3 de "Convención de DTOs" en el skill `arquisoft-context`.
 
+12. **¿Esta HU actúa sobre un recurso EXISTENTE que tiene dueño?** (Solo aplica si pregunta 2 = Escritura o Mixta y la acción modifica/extiende un recurso ya creado — no aplica a creaciones desde cero.)
+    - Un recurso "tiene dueño" cuando fue creado por, o está asociado a, un usuario concreto (ej. la ficha pertenece a un estudiante; la evaluación la creó un representante del comité). El client role (`@PreAuthorize`, pregunta 3) autoriza **por rol**, pero NO impide que *otro* usuario con el mismo rol actúe sobre una instancia ajena.
+    - **Si SÍ tiene dueño:** el plan DEBE exigir un **chequeo de propiedad a nivel de instancia → 403**. Mecánica canónica:
+        - La identidad del actor viaja por el **JWT**: el `InputAdapter` extrae `UUID actorId = UUID.fromString(jwt.getSubject())` (vía `@AuthenticationPrincipal Jwt jwt`) y la pasa al `Command`. **Nunca** se confía en un id de actor que venga en el body.
+        - El use case valida la propiedad con una lectura cross-feature por `QueryOutputPort` (Caso 3): `esEstudiantePropietario(...)` / `esRepresentantePropietario(...)` — NO por el puerto write. Si es falso, lanza una excepción que **extiende `AuthorizationException` → 403** (ej. `FichaNoPropietarioException`, `ItemFichaNoPropiaException`, `EvaluacionFichaNoPropiaException`).
+        - Orden de checks en el use case: existencia del recurso (→ 400) **antes** de la propiedad (→ 403).
+    - **Si NO tiene dueño** (catálogo administrativo, creación nueva sin actor-propietario): el plan lo declara explícitamente y omite el chequeo. La sección 9 (Seguridad) documenta esta decisión.
+
+    > Este chequeo es **distinto** de `@PreAuthorize` (autorización por rol, cross-cutting) y del chequeo de existencia (400). Es autorización **por instancia** y es fácil de olvidar en el plan — de ahí esta pregunta obligatoria.
+
 **Preguntas adicionales según tipo de HU:**
 - **Listados / búsquedas:** ¿Requiere paginación? ¿Filtros? ¿Ordenamiento?
 - **Archivos / artefactos:** ¿Qué formatos son válidos? ¿Hay límite de tamaño?

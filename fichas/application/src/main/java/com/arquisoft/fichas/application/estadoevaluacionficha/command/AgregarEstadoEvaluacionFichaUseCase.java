@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.Agre
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.port.in.AgregarEstadoEvaluacionFichaInputPort;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionNoEncontradoException;
+import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.port.out.EvaluacionFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
@@ -32,6 +33,11 @@ public class AgregarEstadoEvaluacionFichaUseCase
 
         if (!evaluacionFichaPerfilQueryOutputPort.existsById(command.evaluacionFichaPerfilId())) {
             throw new EvaluacionFichaPerfilNoEncontradaException(command.evaluacionFichaPerfilId());
+        }
+
+        if (!evaluacionFichaPerfilQueryOutputPort.esRepresentantePropietario(
+                command.evaluacionFichaPerfilId(), command.representanteComiteId())) {
+            throw new EvaluacionFichaNoPropiaException(command.evaluacionFichaPerfilId());
         }
 
         EstadoEvaluacion estadoEvaluacionEnum;
