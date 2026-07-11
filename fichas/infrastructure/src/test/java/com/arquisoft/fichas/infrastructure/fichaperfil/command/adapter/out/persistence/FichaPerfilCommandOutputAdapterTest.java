@@ -100,32 +100,6 @@ class FichaPerfilCommandOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarTrue_cuandoExistePorId() {
-        // Arrange
-        when(fichaPerfilJpaRepository.existsById(fichaId)).thenReturn(true);
-
-        // Act
-        boolean existe = adapter.existsById(fichaId);
-
-        // Assert
-        assertThat(existe).isTrue();
-        verify(fichaPerfilJpaRepository, times(1)).existsById(fichaId);
-    }
-
-    @Test
-    void debeRetornarFalse_cuandoNoExistePorId() {
-        // Arrange
-        when(fichaPerfilJpaRepository.existsById(fichaId)).thenReturn(false);
-
-        // Act
-        boolean existe = adapter.existsById(fichaId);
-
-        // Assert
-        assertThat(existe).isFalse();
-        verify(fichaPerfilJpaRepository, times(1)).existsById(fichaId);
-    }
-
-    @Test
     void debeRetornarTrue_cuandoExistePorTitulo() {
         // Arrange
         String titulo = "Proyecto Unico";

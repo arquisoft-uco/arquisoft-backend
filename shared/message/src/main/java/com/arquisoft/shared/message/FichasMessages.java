@@ -62,6 +62,7 @@ public final class FichasMessages {
         public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
         public static final String CAMPO_TIPO_ITEM       = "tipoItem";
         public static final String CAMPO_CONTENIDO       = "contenido";
+        public static final String CAMPO_ESTADO_FICHA    = "estadoFicha";
 
         // Límites
         public static final int CONTENIDO_MAX = 7000;
@@ -75,12 +76,17 @@ public final class FichasMessages {
         public static final String ITEM_FICHA_NO_AUTORIZADA      = "ITEM_FICHA_NO_AUTORIZADA";
         public static final String TIPO_ITEM_INVALIDO            = "TIPO_ITEM_INVALIDO";
         public static final String ITEM_NO_ENCONTRADO            = "ITEM_NO_ENCONTRADO";
+        public static final String ESTADO_FICHA_REQUERIDO        = "ITEM_ESTADO_FICHA_REQUERIDO";
+        public static final String ESTADO_FICHA_NO_MODIFICABLE   = "ESTADO_FICHA_NO_MODIFICABLE";
 
         // Mensajes de error
         public static final String TIPO_ITEM_INVALIDO_MSG        = "El tipo de ítem '%s' no es válido";
         public static final String TIPO_ITEM_DUPLICADO_MSG       = "La ficha ya tiene un ítem del tipo: %s";
         public static final String FICHA_NO_AUTORIZADA_MSG       = "El estudiante no es propietario de la ficha: %s";
         public static final String ITEM_NO_ENCONTRADO_MSG        = "El ítem con id %s no existe";
+        public static final String ESTADO_FICHA_REQUERIDO_MSG    = "El estado actual de la ficha es obligatorio";
+        public static final String ESTADO_FICHA_NO_MODIFICABLE_MSG =
+                "No se puede modificar el ítem porque la ficha está en estado: %s";
 
         // Logs
         public static final String LOG_AGREGADO   = "Ítem agregado — id={}, fichaPerfilId={}, tipoItem={}";

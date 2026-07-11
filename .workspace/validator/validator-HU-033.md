@@ -115,3 +115,65 @@ Ninguno detectado.
 - `fichas/infrastructure/src/test/java/com/arquisoft/fichas/infrastructure/itemfichaperfil/command/adapter/in/web/ModificarItemFichaPerfilInputAdapterTest.java`
 - `.workspace/h-plan/PLAN-HU-033.md`
 - `.workspace/validator/validator-HU-033.md`
+
+---
+
+# Revalidación post-auditoría — 2026-07-09
+
+## Motivo
+
+La auditoría batch de arquitectura (DDD / Clean / CQRS) sobre los 13 planes detectó que el
+**criterio de aceptación #6 del PLAN-HU-033 nunca se implementó**. La validación original
+(score 100/100, 2026-07-06) no lo detectó porque contrastó el código contra la *sección 7 del
+plan* (flujo del use case), que ya omitía la regla — no contra la *sección 2* (criterios de
+aceptación). Es un falso negativo del check de completitud.
+
+## Hallazgos corregidos
+
+| # | Hallazgo | Severidad | Estado |
+|---|----------|-----------|--------|
+| 1 | Criterio #6 (ficha en estado modificable) sin implementar en `ModificarItemFichaPerfilUseCase` | 🔴 Bloqueante | ✅ Corregido |
+| 2 | Criterio #3 documentaba 400 para no-propietario; tras introducir `AuthorizationException` el comportamiento correcto es 403 | 🟡 Menor | ✅ Corregido |
+| 3 | El plan proponía la regla de estado con excepción 400 (semántica de aplicación) siendo una invariante de negocio | 🟡 Menor | ✅ Corregido → 422 |
+
+## Verificación de Tell, Don't Ask
+
+Check explícito sobre la regla de negocio validada en dominio:
+
+- ✅ `EstadoFicha.esTerminal()` / `permiteModificacion()` — el enum responde por sí mismo; el
+  llamador no compara constantes. Espejo de `EstadoEvaluacion.esTerminal()` (HU-191).
+- ✅ `ItemFichaPerfilAggregate.modificarContenido(contenido, estadoFichaActual)` — el aggregate
+  **decide**; acumula `ESTADO_FICHA_NO_MODIFICABLE` en el `ValidationResult` y **no** aplica el
+  cambio si el estado es terminal.
+- ✅ `ModificarItemFichaPerfilUseCase` — recupera el estado vía
+  `EstadoFichaPerfilOutputPort.obtenerEstadoActual(...)` y **lo entrega** al aggregate. No hay
+  ningún `if` sobre el estado en la capa de aplicación. **Sin fuga de lógica.**
+- ✅ Separación de excepciones: invariante de estado → `DomainValidationException` (422);
+  ficha sin trazabilidad de estado → `FichaPerfilNoEncontradaException` (400); propiedad del
+  recurso → `ItemFichaNoPropiaException` (403).
+
+## Cobertura de tests añadida
+
+| Capa | Test | Escenario |
+|---|---|---|
+| domain | `debeLanzarExcepcion_cuandoEstadoFichaEsTerminal` | `@ParameterizedTest` × 3 estados terminales → 422, contenido intacto |
+| domain | `debeModificarContenido_cuandoEstadoFichaNoEsTerminal` | `@ParameterizedTest` × 3 estados no terminales → OK |
+| domain | `debeLanzarExcepcion_cuandoEstadoFichaEsNulo` | `ESTADO_FICHA_REQUERIDO` |
+| application | `debePropagarDomainValidation_cuandoFichaEnEstadoTerminal` | propaga sin capturar; nunca llama `guardar` |
+| application | `debeLanzarFichaPerfilNoEncontrada_cuandoFichaSinEstadoRegistrado` | `Optional.empty()` → 400 |
+| infrastructure | `debeRetornarEstadoMasReciente_cuandoFichaTieneVariosEstados` | orden por `fechaActualizacion DESC` |
+| infrastructure | `debeRetornarVacio_cuandoFichaNoTieneEstados` | `Optional.empty()` |
+| infrastructure | `debe422_cuandoFichaEnEstadoTerminal` | controller → 422 + `fieldErrors` |
+| infrastructure | `debe403_cuandoEstudianteNoEsPropietario` | renombrado desde `debe400_...` |
+
+## Resultado
+
+| Verificación | Resultado |
+|---|---|
+| `:fichas:domain:test` | ✅ BUILD SUCCESSFUL |
+| `:fichas:application:test` | ✅ BUILD SUCCESSFUL |
+| `:fichas:infrastructure:test` | ✅ BUILD SUCCESSFUL |
+| `checkstyleMain` / `checkstyleTest` (domain, application, infrastructure, shared:message) | ✅ BUILD SUCCESSFUL |
+
+> ✅ **APROBADO** — criterio #6 implementado sin fuga de lógica, con la regla de negocio
+> resuelta en el dominio conforme a Tell, Don't Ask.

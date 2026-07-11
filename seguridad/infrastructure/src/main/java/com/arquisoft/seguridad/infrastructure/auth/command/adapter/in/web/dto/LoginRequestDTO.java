@@ -4,26 +4,18 @@ import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCo
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class LoginRequestDTO {
+public record LoginRequestDTO(
 
-    @NotBlank(message = "El email es requerido")
-    @Email(message = "El formato del email no es valido")
-    private String email;
+        @NotBlank(message = "El email es requerido")
+        @Email(message = "El formato del email no es valido")
+        String email,
 
-    @NotBlank(message = "La contrasena es requerida")
-    @Size(min = 6, message = "La contrasena debe tener al menos 6 caracteres")
-    private String password;
+        @NotBlank(message = "La contrasena es requerida")
+        @Size(min = 6, message = "La contrasena debe tener al menos 6 caracteres")
+        String password) {
 
     public AuthenticateUserCommand toCommand() {
-        return new AuthenticateUserCommand(this.email, this.password);
+        return new AuthenticateUserCommand(email, password);
     }
 }

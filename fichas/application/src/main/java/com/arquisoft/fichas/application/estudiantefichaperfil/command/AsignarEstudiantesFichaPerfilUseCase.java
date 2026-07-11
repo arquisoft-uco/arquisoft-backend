@@ -8,7 +8,7 @@ import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontr
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AsignarEstudiantesFichaPerfilUseCase implements AsignarEstudiantesFichaPerfilInputPort {
 
-    private final FichaPerfilOutputPort fichaPerfilOutputPort;
+    private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
     private final EstudianteQueryOutputPort estudianteQueryOutputPort;
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
 
@@ -34,7 +34,7 @@ public class AsignarEstudiantesFichaPerfilUseCase implements AsignarEstudiantesF
         var estudiantesIds = command.estudiantesIds();
 
         // 1. Ficha existe
-        if (!fichaPerfilOutputPort.existsById(fichaPerfilId)) {
+        if (!fichaPerfilQueryOutputPort.existsById(fichaPerfilId)) {
             throw new FichaPerfilNoEncontradaException(fichaPerfilId);
         }
 

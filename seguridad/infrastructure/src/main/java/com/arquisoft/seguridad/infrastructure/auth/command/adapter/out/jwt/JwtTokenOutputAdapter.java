@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,7 @@ import java.util.Map;
  * Los roles se leen exclusivamente de realm_access.roles (ADR-003).
  */
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class JwtTokenOutputAdapter implements TokenValidationOutputPort {
 

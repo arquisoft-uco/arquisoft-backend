@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command;
 
+import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.application.estadofichaperfil.query.port.out.EstadoFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.ModificarItemFichaPerfilInputPort;
@@ -18,6 +20,7 @@ public class ModificarItemFichaPerfilUseCase implements ModificarItemFichaPerfil
 
     private final ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
     private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
+    private final EstadoFichaPerfilQueryOutputPort estadoFichaPerfilQueryOutputPort;
 
     @Override
     public void ejecutar(ModificarItemFichaPerfilCommand command) {
@@ -32,7 +35,10 @@ public class ModificarItemFichaPerfilUseCase implements ModificarItemFichaPerfil
             throw new ItemFichaNoPropiaException(item.getFichaPerfilId());
         }
 
-        item.modificarContenido(command.contenido());
+        var estadoActual = estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(item.getFichaPerfilId())
+                .orElseThrow(() -> new FichaPerfilNoEncontradaException(item.getFichaPerfilId()));
+
+        item.modificarContenido(command.contenido(), estadoActual);
 
         itemFichaPerfilOutputPort.guardar(item);
 

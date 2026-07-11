@@ -241,7 +241,7 @@ Espera las respuestas del usuario antes de continuar.
    un **puerto** en `domain/port/out/` y un **adaptador** en `infrastructure/adapter/out/{tipo}/`
    para cada integración — **ninguna lógica de negocio puede vivir en el adaptador**.
 10. **¿Esta HU utiliza un endpoint REST existente del proyecto, o requiere crear uno nuevo?**
-    - **A) Endpoint nuevo.** Crear `{Accion}{Entidad}InputAdapter.java` (o `QueryInputAdapter.java` si es read) en `infrastructure/{entidad}/{command|query}/adapter/in/web/`. Definir método HTTP, ruta, autorización (`@PreAuthorize`) y `RequestDTO`. La sección 8 del plan (Endpoints REST) documenta el endpoint nuevo.
+    - **A) Endpoint nuevo.** Crear `{Accion}{Entidad}InputAdapter.java` (o `Consultar{Entidad}InputAdapter.java` si es read) en `infrastructure/{entidad}/{command|query}/adapter/in/web/`. Definir método HTTP, ruta, autorización (`@PreAuthorize`) y `RequestDTO`. La sección 8 del plan (Endpoints REST) documenta el endpoint nuevo.
     - **B) Endpoint existente.** Anotar la ruta exacta tal como está declarada en el controller, sin el prefijo `/api` (ej. `POST /fichas-perfil`) y el archivo del `InputAdapter` que se modifica. La sección 8 del plan describe **qué cambia** (nuevo parámetro, nueva validación, nuevo campo del `RequestDTO`, etc.) sin duplicar el adapter.
 
     > Si la respuesta es B, el implementador NO crea un `InputAdapter` nuevo — extiende el existente. Esto evita duplicación de controllers para la misma ruta y mantiene consistencia OpenAPI.
@@ -385,8 +385,21 @@ produce el documento en el formato a continuación y guárdalo como
 
 ## 3. Reglas de Negocio
 
-- {Regla identificada 1}
-- {Regla identificada 2}
+> **Todo invariante LOCAL del aggregate se valida DENTRO del aggregate** (→ 422). Invariante local = regla sobre la consistencia de **una sola instancia** (formato, cupo/límite propio, transición de estado). El use case únicamente **lee el estado** que la regla necesita (vía puerto) y lo **pasa como parámetro** a la factory; el aggregate compara, decide y lanza. Un `if (...) throw` de invariante local en el use case es fuga de lógica.
+>
+> **Distinción clave — regla de negocio ≠ invariante del aggregate.** No toda regla de negocio es invariante local; las que van en esta tabla (→ 422) son solo las locales. Estas OTRAS reglas de negocio **NO** pueden vivir en el aggregate y se validan en el use case:
+>
+> | Regla de negocio | Por qué no es invariante local | Dónde | HTTP |
+> |---|---|---|---|
+> | Unicidad / duplicado en BD (`existsByTitulo`) | Restricción **global de conjunto**: exige conocer TODAS las demás instancias, fuera de la frontera del aggregate | use case | 400 |
+> | Existencia de un recurso (`existsById`) | Requiere consultar el repositorio; el aggregate no accede a BD | use case | 400 |
+> | Propiedad del recurso (`esEstudiantePropietario`) | Depende de otra feature; el aggregate no la conoce | use case | 403 |
+>
+> Una restricción de unicidad **nunca** se lanza desde dentro del aggregate (a lo sumo desde un domain service, que este proyecto no usa). Que sea "regla de negocio" no la vuelve invariante local.
+
+| # | Regla | Dónde se valida (aggregate + factory/método) | Estado que el use case debe leer y pasarle | Excepción → HTTP |
+|---|-------|---|---|---|
+| 1 | {regla identificada} | `{Entidad}Aggregate.{crear\|crearConEstado\|accion}(...)` | {ej. `contarPorFicha(fichaId)` / `obtenerUltimoEstado(id)` / ninguno} | `{Xxx}Exception` → 422 |
 
 ---
 
@@ -541,8 +554,8 @@ Para cada integración externa, documenta:
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/query/readmodel/{Entidad}ReadModel.java` | `record` | Proyección plana del recurso |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/query/port/in/{Accion}{Entidad}InputPort.java` | Interface (vacía) | Extiende `InputPort<Input, ReadModel>` o variantes |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/query/port/out/{Entidad}QueryOutputPort.java` | Interface | Puerto de salida read. Vive en **application**, no en domain (el read side no usa aggregate) |
-| application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/query/{Accion}{Entidad}QueryUseCase.java` | UseCase | `@Component` + `@Transactional(readOnly = true)`. Delega al `QueryOutputPort` y retorna `ReadModel` |
-| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/query/adapter/in/web/{Accion}{Entidad}QueryInputAdapter.java` | `@RestController` | Serializa el `ReadModel` directamente a JSON (no hay ResponseDTO intermedio) |
+| application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/query/Consultar{Entidad}UseCase.java` | UseCase | `@Component` + `@Transactional(readOnly = true, transactionManager = "{contexto}TransactionManager")` (qualifier obligatorio: `usuariosTransactionManager` es `@Primary`). Delega al `QueryOutputPort` y retorna `ReadModel` |
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/query/adapter/in/web/Consultar{Entidad}InputAdapter.java` | `@RestController` | Serializa el `ReadModel` directamente a JSON (no hay ResponseDTO intermedio) |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/query/adapter/out/persistence/{Entidad}QueryOutputAdapter.java` | Adapter | Implementa `{Entidad}QueryOutputPort`. Mapea JpaEntity → ReadModel directamente |
 
 > Si la HU usa paginación o filtros dinámicos, añadir también un `{Entidad}Criteria` (`application/{entidad}/query/criteria/`) y un `{Entidad}JpaSpecification` (`infrastructure/{entidad}/query/adapter/out/persistence/`). Detalle en el **Bloque 3** (Criteria pattern) — se aplica en el plan solo si la HU lo requiere explícitamente.
@@ -570,6 +583,7 @@ Para cada integración externa, documenta:
 | Recurso duplicado / ya existe | `ApplicationException` | **400** Bad Request |
 | Recurso no encontrado | `ApplicationException` | **400** Bad Request |
 | Parámetro o filtro inválido | `ApplicationException` | **400** Bad Request |
+| Actor sin potestad sobre la instancia del recurso (no propietario, ficha ajena) | `AuthorizationException` | **403** Forbidden |
 | Invariante del aggregate violada | `DomainException` | **422** Unprocessable Content |
 | Estado inválido / transición prohibida | `DomainException` | **422** Unprocessable Content |
 | Validación multi-campo (Notification Pattern) | `DomainValidationException` | **422** + `fieldErrors[]` |
@@ -709,7 +723,7 @@ Para cada archivo de tipo Controller, añadir además:
 
 Marcar **una** opción según la respuesta a la pregunta 10 de FASE 3:
 
-- [ ] **Endpoint NUEVO** — crear `{Accion}{Entidad}InputAdapter.java` (o `QueryInputAdapter.java`) desde cero.
+- [ ] **Endpoint NUEVO** — crear `{Accion}{Entidad}InputAdapter.java` (o `Consultar{Entidad}InputAdapter.java`) desde cero.
 - [ ] **Endpoint EXISTENTE** — modificar el adapter ya presente en el proyecto.
     - **Archivo a modificar:** `{ruta exacta al InputAdapter existente}`
     - **Qué cambia:** {nuevo parámetro / nueva validación / nuevo campo del `RequestDTO` / cambio en `@PreAuthorize` / etc.}
@@ -725,8 +739,33 @@ Marcar **una** opción según la respuesta a la pregunta 10 de FASE 3:
 | POST (write A) | `/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `{Accion}{Entidad}ResponseDTO` (body `{"id": "..."}`) | 201 | `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
 | POST (write B) | `/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `Void` (sin body) + header `Location` | 201 | idem | idem |
 | POST (write C) | `/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `{Entidad}ReadModel` u objeto específico (justificar) | 201 | idem | idem |
+| PATCH | `/{recurso-kebab}/{id}` | `Modificar{Entidad}RequestDTO` (solo los campos que cambian) | según opción A/B/C | según opción A/B/C | `{contexto}:{recurso-kebab}:update` | idem |
+| PUT | `/{recurso-kebab}/{id}` | `Reemplazar{Entidad}RequestDTO` (**todos** los campos modificables) | según opción A/B/C | según opción A/B/C | `{contexto}:{recurso-kebab}:update` | idem |
+| DELETE | `/{recurso-padre-kebab}/{padreId}/{sub-recurso}/{id}` (o `/{recurso-kebab}/{id}` si no está anidado) | — | `Void` (sin body) | 204 | `{contexto}:{recurso-kebab}:delete` | idem |
 | GET | `/{recurso-kebab}/{id}` | — | `{Entidad}ReadModel` | 200 | `{contexto}:{recurso-kebab}:view` (ej. `fichas:ficha-perfil:view`) | idem |
 | POST | `/{recurso-kebab}/query` | `QueryCriteriaRequestDTO` (si usa Criteria) | `PageResponseDTO<{Entidad}ReadModel>` | 200 | `{contexto}:{recurso-kebab}:view` | idem |
+
+> **PATCH vs PUT en una HU de modificación — decide por el `RequestDTO`, no por el nombre de la HU.**
+> - El `RequestDTO` lleva **un subconjunto** de los atributos modificables (típicamente uno) → **PATCH**. Es el caso por defecto: las HUs de modificación del proyecto cambian un atributo puntual.
+> - El `RequestDTO` lleva **todos** los atributos modificables y el request los reemplaza en bloque → **PUT**.
+>
+> El `id` del recurso viaja siempre en la ruta (`@PathVariable`), nunca en el body.
+>
+> **El verbo NO determina el código de respuesta.** Éste sale de la opción A/B/C de "Convención de respuesta (write)", según lo que retorne el use case: `Void` → **204 No Content**; un id o un objeto → **200 OK** con body (o **201 Created** si la operación además crea un sub-recurso, ej. un nuevo estado o una nueva versión). No asumas 204 por ser PATCH/PUT: primero decide qué retorna el use case (pregunta 11 de FASE 3) y de ahí sale el código.
+>
+> Precedentes reales — los dos son PATCH porque su DTO tiene **un solo campo**, y ambos retornan `Void` → 204: `ModificarFichaPerfilInputAdapter` (`PATCH /fichas-perfil/{id}`, body `{tituloProyecto}`) y `ModificarItemFichaPerfilInputAdapter` (`PATCH /fichas-perfil/{itemId}/items`, body `{contenido}`). Hoy **no existe ningún PUT** en el proyecto: no lo elijas salvo que la HU pida explícitamente reemplazo total.
+
+> **Recursos anidados y client role.** Cuando la entidad afectada es una relación o un hijo del agregado, la ruta se anida bajo el recurso padre y el **`{recurso-kebab}` del client role es la entidad afectada, NO el primer segmento de la ruta**. Casos reales del contexto `fichas`, todos con `@RequestMapping("/fichas-perfil")` a nivel de clase:
+>
+> | Endpoint real | Client role real |
+> |---|---|
+> | `POST /fichas-perfil/{fichaPerfilId}/estudiantes` | `fichas:estudiante-ficha-perfil:create` |
+> | `DELETE /fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}` | `fichas:estudiante-ficha-perfil:delete` |
+> | `POST /fichas-perfil/{fichaPerfilId}/items` | `fichas:item-ficha-perfil:create` |
+> | `PATCH /fichas-perfil/{itemId}/items` | `fichas:item-ficha-perfil:update` |
+> | `PATCH /fichas-perfil/{id}` | `fichas:ficha-perfil:update` |
+>
+> La columna **Ruta** de la tabla es la ruta relativa **completa** (base de `@RequestMapping` + ruta del método), sin `/api`.
 
 > **Convención de respuesta (write):**
 > - **Opción A (default):** `ResponseEntity<{Accion}{Entidad}ResponseDTO>` con `201 Created` y body `{"id": "..."}` (record de un único `UUID id`). El use case retorna `UUID` y el `InputPort` extiende `InputPort<Command, UUID>`; el adapter envuelve ese id en el ResponseDTO. **Nunca** `ResponseEntity<UUID>` (serializa el id como string crudo sin cuerpo).
@@ -865,9 +904,9 @@ Para cada client role nuevo de la tabla anterior:
 #### Tests capa `application`
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `{Accion}{Entidad}QueryUseCaseTest` | `debeRetornarLista_cuandoFiltrosValidos` | flujo principal con resultados |
-| `{Accion}{Entidad}QueryUseCaseTest` | `debeRetornarVacio_cuandoNoHayResultados` | sin coincidencias |
-| `{Accion}{Entidad}QueryUseCaseTest` | `debeLanzarExcepcion_cuandoFiltrosInvalidos` | filtros mal formados (consolidado: tipo + errorCode en un solo test) |
+| `Consultar{Entidad}UseCaseTest` | `debeRetornarLista_cuandoFiltrosValidos` | flujo principal con resultados |
+| `Consultar{Entidad}UseCaseTest` | `debeRetornarVacio_cuandoNoHayResultados` | sin coincidencias |
+| `Consultar{Entidad}UseCaseTest` | `debeLanzarExcepcion_cuandoFiltrosInvalidos` | filtros mal formados (consolidado: tipo + errorCode en un solo test) |
 
 > NO crear tests separados para "errorCode correcto" cuando ya hay un test del mismo escenario que lanza la excepción — consolidar asserts en un solo test (ver anti-patrón 4 del skill).
 
@@ -906,14 +945,15 @@ ejemplos detallados.
 ## 13. Checklist de Implementación
 
 - [ ] **DDD:** Entidad de dominio extiende `AggregateRoot` (salvo `seguridad`)
-- [ ] Entidad inmutable: constructor privado, campos `final`, factory methods `crear` / `reconstruir`, sin Lombok
+- [ ] Entidad inmutable: constructor privado, campos privados sin `final` (los asignan los setters privados del factory), solo getters públicos, factory methods `crear` / `reconstruir`, sin Lombok
+- [ ] **Cada regla de negocio de la sección 3 se valida dentro del aggregate** (→ 422), no con `if/throw` en el use case. El use case solo lee el estado vía puerto y lo pasa como parámetro a la factory
 - [ ] Eventos de dominio en `domain/event/`, extienden `DomainEvent`
 - [ ] Factory `crear(...)` llama `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))`
 - [ ] IDs siempre `UUID` (nunca `Long` / `Integer`)
 - [ ] Puerto de entrada (`{Accion}{Entidad}UseCase`) definido
 - [ ] Puerto de salida (`{Entidad}OutputPort`) definido
 - [ ] Excepciones de dominio definidas, extienden `DomainException` y tienen `errorCode`
-- [ ] **Cada excepción nueva extiende la clase base correcta** (`DomainException` → 422, `ApplicationException` → 400, `InfrastructureException` → 503) para que `GlobalAppExceptionHandler` de `shared:web` resuelva su HTTP automáticamente. **NO se crea handler de contexto** salvo en los dos casos excepcionales (colisión de nombres con Spring / HTTP status fuera del default de la jerarquía). Ningún test de controller espera 500 para inputs inválidos.
+- [ ] **Cada excepción nueva extiende la clase base correcta** (`DomainException` → 422, `ApplicationException` → 400, `AuthorizationException` → 403, `InfrastructureException` → 503) para que `GlobalAppExceptionHandler` de `shared:web` resuelva su HTTP automáticamente. **NO se crea handler de contexto** salvo en los dos casos excepcionales (colisión de nombres con Spring / HTTP status fuera del default de la jerarquía). Ningún test de controller espera 500 para inputs inválidos.
 - [ ] `Command` (`record` en `application/{entidad}/command/model/`) y `RequestDTO` (`record` en `infrastructure/{entidad}/command/adapter/in/web/dto/`) creados. `RequestDTO` con anotaciones Jakarta + método `toCommand()`. Use cases read retornan `ReadModel` (no DTO). Campos en español idénticos al aggregate.
 - [ ] Caso de uso (`{Accion}{Entidad}UseCase`) con `@RequiredArgsConstructor`, `@Transactional` y drenado de eventos
 - [ ] Controller REST con `@Valid @RequestBody` y autorización vía `@PreAuthorize("hasAuthority('{contexto}:{recurso-kebab}:{accion}')")` **en kebab-case** (ej. `fichas:ficha-perfil:create`) — client role declarado en sección 9 del plan, sin camelCase ni MAYÚSCULAS
@@ -957,7 +997,7 @@ ejemplos detallados.
 8. **DDD estricto — `AggregateRoot` condicional a eventos:** en los 6 contextos de negocio, la entidad raíz extiende `AggregateRoot` **SOLO si la HU emite eventos** (respuesta A o B a la pregunta 5). Si la HU NO emite eventos (respuesta C), la entidad raíz **NO** extiende `AggregateRoot` y es una clase plana con factories `crear`/`reconstruir`. El contexto `seguridad` nunca usa `AggregateRoot`. Documenta en la sección 4 del plan: (a) si la entidad extiende o no `AggregateRoot` con su justificación, y (b) qué eventos emite (o "ninguno: <razón>"). **Coherencia dura:** "Eventos: ninguno" ⟺ entidad NO extiende `AggregateRoot` ⟺ el use case NO inyecta `EventPublisher` ni drena. Nunca declares una de las tres sin las otras dos.
 9. **Verificación de existencia de la entidad raíz (Paso 4.2 del Protocolo de Carga):** antes de generar el árbol de archivos, verifica si `domain/{entidad}/aggregate/{Entidad}Aggregate.java` ya existe en el código del contexto. Si NO existe (primera HU del contexto que la toca), inclúyela como archivo a CREAR — incluso si la HU es de Consulta. Si la HU emite eventos, incluye también `{Entidad}{Accion}Event`. Si la HU NO emite eventos, NO incluyas archivos en `domain/{entidad}/event/`. Si la entidad existente NO extiende `AggregateRoot` y esta HU SÍ emite eventos, el plan declara "Modificar `{Entidad}Aggregate.java` para añadir `extends AggregateRoot`" en la sección "Archivos a MODIFICAR". **Verifica leyendo, no asumiendo:** cuando el plan afirme algo sobre código ya existente (qué extiende una entidad, qué inyecta un use case, qué campos tiene un DTO/puerto), ABRE el archivo real y confírmalo antes de escribirlo. Afirmaciones no verificadas como "ya inyecta `EventPublisher`" o "ya extiende `AggregateRoot`" son la causa directa de planes incorrectos. **Lookups FK sobre otra entidad/vista materializada** (ej. validar existencia de un Estudiante) van por su `{Otro}QueryOutputPort` — NUNCA inyectes un `JpaRepository` de infrastructure dentro de un use case de application (rompe la dirección de dependencias).
 10. **Flujo de datos JPA → dominio → DTO (regla DDD inviolable):** el puerto `{Entidad}OutputPort` retorna entidades de dominio (`{Entidad}` o `Page<{Entidad}>` de Spring Data), nunca DTOs ni JPA Entities. El adapter convierte JPA Entity → entidad de dominio con `reconstruir(...)` o vía `JpaEntity::toDomain`. El use case convierte entidad de dominio → DTO de respuesta. **Ningún plan puede saltarse este flujo, ni siquiera para optimizar consultas.** Si una HU justifica saltarse el dominio (CQRS query side), debe documentarse explícitamente en la sección 5 como decisión arquitectónica, no asumirse silenciosamente.
-11. **Paginación y filtros con Criteria pattern (opcional, solo HUs read que lo requieran):** si la HU es read y necesita paginación, ordenamiento o filtros dinámicos, el plan declara: `XxxCriteria` (`application/{entidad}/query/criteria/`, extiende `QueryCriteria` con whitelist de campos filtrables/ordenables), `XxxJpaSpecification` (`infrastructure/.../query/adapter/out/persistence/`, extiende `QueryJpaSpecification<JpaEntity>` con mapa de `CampoSpec`), y opcionalmente `XxxSortMapper` para traducir nombres de dominio a paths JPA. El `QueryOutputPort` retorna `PaginatedResult<XxxReadModel>` (de `shared:domain.pagination`); el `QueryInputAdapter` convierte con `PageResponseDTO.from(...)` antes del response. **`Pageable` / `org.springframework.data.domain.Page` NO pueden aparecer en `application/` ni `domain/`** — solo en el `QueryOutputAdapter` de infrastructure. Si la HU read NO necesita ninguno de los tres (paginación, orden, filtros), no se crean estos archivos; el puerto recibe parámetros simples y retorna `ReadModel` directamente. Ver SKILL sección "Paginación y Filtros — `PaginatedResult` + Criteria pattern".
+11. **Paginación y filtros con Criteria pattern (opcional, solo HUs read que lo requieran):** si la HU es read y necesita paginación, ordenamiento o filtros dinámicos, el plan declara: `XxxCriteria` (`application/{entidad}/query/criteria/`, extiende `QueryCriteria` con whitelist de campos filtrables/ordenables), `XxxJpaSpecification` (`infrastructure/.../query/adapter/out/persistence/`, extiende `QueryJpaSpecification<JpaEntity>` con mapa de `CampoSpec`), y opcionalmente `XxxSortMapper` para traducir nombres de dominio a paths JPA. El `QueryOutputPort` retorna `PaginatedResult<XxxReadModel>` (de `shared:domain.pagination`); el InputAdapter de lectura convierte con `PageResponseDTO.from(...)` antes del response. **`Pageable` / `org.springframework.data.domain.Page` NO pueden aparecer en `application/` ni `domain/`** — solo en el `QueryOutputAdapter` de infrastructure. Si la HU read NO necesita ninguno de los tres (paginación, orden, filtros), no se crean estos archivos; el puerto recibe parámetros simples y retorna `ReadModel` directamente. Ver SKILL sección "Paginación y Filtros — `PaginatedResult` + Criteria pattern".
 12. **Integraciones externas:** si la HU toca Keycloak, SMTP, S3, Redis con lógica propia, o servicios HTTP externos, el plan **debe** incluir la sección 5 con el puerto abstracto (`domain/port/out/`) y el adaptador concreto (`infrastructure/adapter/out/{tipo}/`). Ninguna regla de negocio puede vivir en el adaptador — solo traducción entre mundos.
 13. **Catálogo de mensajes obligatorio (`shared:message`):** todo string, código de error, nombre de campo, mensaje de log o límite numérico de negocio que introduzca la HU **DEBE** declararse como constante en `shared:message`. Nunca como literal embebido en código. En la sección 6 del plan, si la HU introduce al menos uno, incluye la sub-sección "Catálogo de mensajes" con: (a) fila MODIFICAR para `shared/message/.../{Contexto}Messages.java`, y (b) inventario tabular de las constantes a agregar — agrupadas por las 5 secciones (`// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`). Si la HU no introduce ninguno, documenta explícitamente: "Sin cambios al catálogo `shared:message`". Nunca crear paquetes `{entidad}/message/` dentro de un contexto — esa convención fue retirada. Ver SKILL sección "Mensajes y textos — Message Catalog (`shared:message`)".
 14. **Si la HU toca más de un bounded context**, genera una sección del plan por cada contexto afectado.

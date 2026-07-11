@@ -195,7 +195,7 @@ sigue este ciclo único de 8 pasos:
 | Capa | Consultas a Context7 |
 |---|---|
 | `domain` | 1 consulta general: Java 21 + DDD (records, sealed, immutable class con factory methods, AggregateRoot pattern) |
-| `application` | 1 consulta general: Spring `@Component`/`@Service`/`@Transactional` + Lombok `@RequiredArgsConstructor`/`@Data`/`@Builder` + Jakarta Validation |
+| `application` | 1 consulta general: Spring `@Component` + `@Transactional` + Lombok `@RequiredArgsConstructor` + Jakarta Validation (nunca `@Service`) |
 | `infrastructure` | Variable según el plan — solo las tecnologías que aparezcan: 1 para JPA (`@Entity`, `@Table`, `JpaRepository`), 1 para Controllers REST (`@RestController`, OpenAPI, `@SecurityRequirement`), 1 para Spring Security (si hay endpoints protegidos con roles nuevos), 1 para RabbitMQ (si hay listener o publisher), 1 para Flyway (si hay migración nueva). |
 
 **Total típico:** 3 a 8 consultas a Context7 por HU completa.
@@ -250,7 +250,9 @@ CAPA 2 — application (genera todos antes de compilar)
   │     ⚠️ Ubicación: application/{entidad}/exception/ (directamente bajo la entidad,
   │        SIN anidar command/ o query/ — la excepción pertenece al concepto entidad,
   │        no al slice CQRS, aunque hoy solo la use el lado write).
-  │        Extienden ApplicationException (de shared:exception) → HTTP 400.
+  │        Extienden ApplicationException (de shared:exception) → HTTP 400, salvo las de
+  │        "recurso ajeno / no propietario" ({Entidad}NoPropiaException), que extienden
+  │        AuthorizationException → HTTP 403 y viven en la misma ubicación.
   │        REGLA DURA: si una excepción extiende ApplicationException, va en
   │        application/{entidad}/exception/, NUNCA en domain/ ni en
   │        application/{entidad}/command/exception/. Si el plan declara una
@@ -320,13 +322,13 @@ CAPA 3 — infrastructure (genera todos antes de compilar)
   │     ⚠️ Antes de crear: lee la sección 8 del plan ("Estado del endpoint"). Si dice
   │        "Endpoint EXISTENTE", NO crees archivo nuevo — modifica el adapter ya presente
   │        siguiendo la nota "Qué cambia" del plan. Si dice "Endpoint NUEVO", créalo.
-  ├── InputAdapter read         ({Accion}{Entidad}QueryInputAdapter.java) — @RestController, inyecta `QueryInputPort`. Si usa Criteria: recibe `QueryCriteriaRequestDTO` (de `shared:web`), parsea con `solicitud.parsearAOrdenamiento()` + `solicitud.parsearFiltros()`, construye `XxxCriteria.builder().build()`. Retorna `PageResponseDTO.from(paginatedResult)` justo antes del response. Si NO usa Criteria: serializa `ReadModel` directo a JSON (no hay ResponseDTO intermedio).
+  ├── InputAdapter read         (Consultar{Entidad}InputAdapter.java) — @RestController, inyecta el `Consultar{Entidad}InputPort`. Si usa Criteria: recibe `QueryCriteriaRequestDTO` (de `shared:web`), parsea con `solicitud.parsearAOrdenamiento()` + `solicitud.parsearFiltros()`, construye `XxxCriteria.builder().build()`. Retorna `PageResponseDTO.from(paginatedResult)` justo antes del response. Si NO usa Criteria: serializa `ReadModel` directo a JSON (no hay ResponseDTO intermedio).
   │     ⚠️ Autorización: `@PreAuthorize("hasAuthority('{contexto}:{entidad}:{accion}')")` con
   │        UN ÚNICO client role declarado en sección 9 del plan. NO usar `hasRole(...)` ni
   │        roles realm directamente. Ver SKILL sección "Autorización — Roles realm + Client Roles".
   ├── {Contexto}GlobalExceptionHandler    (SOLO si el plan lo declara explícitamente como archivo a crear/modificar — caso excepcional)
   │     • Por defecto, las excepciones del contexto las maneja GlobalAppExceptionHandler de shared:web por jerarquía de su clase base.
-  │       DomainException → 422, ApplicationException → 400, InfrastructureException → 503. El mensaje al cliente viene del constructor de la excepción.
+  │       DomainException → 422, ApplicationException → 400, AuthorizationException → 403, InfrastructureException → 503. El mensaje al cliente viene del constructor de la excepción.
   │     • Solo se crea handler de contexto si el plan lo lista explícitamente. Dos casos válidos:
   │         1. Colisión con clases del framework (caso real: seguridad con AuthenticationException).
   │         2. HTTP status fuera del default de la jerarquía (ej. 409 Conflict para duplicado en lugar de 400).
@@ -353,7 +355,7 @@ CAPA 3 — infrastructure (genera todos antes de compilar)
 
   → ✅ VERIFICACIÓN antes del resumen al usuario:
      Toda excepción de dominio del plan extiende la clase base correcta
-     (DomainException → 422, ApplicationException → 400, InfrastructureException → 503).
+     (DomainException → 422, ApplicationException → 400, AuthorizationException → 403, InfrastructureException → 503).
      El constructor de cada excepción produce un mensaje claro (es el que verá el cliente).
      Solo se creó {Contexto}GlobalExceptionHandler si el plan lo declaró explícitamente.
      ErrorResponseDTO se importa de shared:web, no se duplica en el contexto.
@@ -444,7 +446,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 
 ### Entidades de Dominio (Aggregate Root)
 
-- Constructor **privado**, campos `final`, solo getters — Java puro, sin Lombok, sin framework.
+- Constructor **privado**, campos privados **sin `final`**, solo getters públicos — Java puro, sin Lombok, sin framework. Los campos NO llevan `final` porque los asignan los **setters privados** que orquesta el factory (Notification Pattern): un campo `final` no puede asignarse desde un método. La inmutabilidad la garantizan el constructor privado y la ausencia de setters públicos, no el modificador `final`.
 - Factory method `crear(...)` para instancias nuevas — orquesta setters privados (uno por atributo, nombrado como el atributo: `setId`, `setContenido`, no `setIdRandom` ni `setTipoItemCode`) y luego `result.throwIfHasErrors()`. **Los valores autogenerados y conversiones se hacen DENTRO del setter, no en el cuerpo de `crear`:** `setId()` → `UtilUUID.generateNewUUID()`, `setFechaActualizacion()` → `UtilDate.generateNewInstantNow()`, conversión de enum/`valueOf` con su manejo de error vía catálogo dentro de su setter. Si la HU emite eventos, **publica** con `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))` tras validar.
 - Factory method `reconstruir(...)` para reconstruir desde persistencia — recibe el UUID existente, **sin publicar eventos**.
 - ID siempre `UUID` (`java.util.UUID`) — **nunca** `Long` ni `Integer`.
@@ -470,8 +472,9 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 
 ### Excepciones de Dominio
 
-- Extienden uno de los 4 tipos base de `shared:domain.exception`: `DomainException` (422), `ApplicationException` (400), `InfrastructureException` (503), `DomainValidationException` (422). **NUNCA** `RuntimeException` directamente.
-- Tienen campo `errorCode` (lo asigna `super(errorCode, mensaje)`).
+- Extienden uno de los 5 tipos base de `shared:domain.exception`: `DomainException` (422), `ApplicationException` (400), `AuthorizationException` (403), `InfrastructureException` (503), `DomainValidationException` (422). **NUNCA** `RuntimeException` directamente.
+- Tienen campo `errorCode`, que se pasa como **segundo** argumento: `super(mensaje, errorCode)`. La firma real de las clases base es `(String message, String errorCode)` — invertirlos **compila** y produce un bug silencioso (el cliente recibe el código como mensaje y viceversa). Ambos valores vienen del catálogo `shared:message`.
+- **Reglas de negocio del plan (sección 3) → se validan dentro del aggregate** (→ 422). El use case solo lee el estado vía puerto y lo pasa como parámetro a la factory (`crear(datos, existentes)`, `crearConEstado(datos, ultimoEstado)`). Un `if (...) throw` de regla de negocio en el use case es fuga de lógica. Existencia, duplicado en BD y propiedad del recurso SÍ van en el use case (400 / 403).
 
 ### Catálogo de Mensajes (`shared:message`) — regla universal
 
@@ -520,14 +523,15 @@ Ver detalle completo en `shared/message/README.md` y en el skill `arquisoft-cont
 - `@Data @NoArgsConstructor @AllArgsConstructor @Builder` (Lombok).
 - Request DTOs con Jakarta Validation (`@NotBlank`, `@Size`, `@Email`, etc.).
 - Response DTOs con `@JsonInclude(JsonInclude.Include.NON_NULL)` si aplica.
-- `RequestDTO.toCommand()` mapea HTTP → intención de negocio (`Command`). Para read, el `QueryUseCase` retorna `ReadModel` directamente (no hay `fromDomain()` — el adaptador serializa el ReadModel a JSON).
+- `RequestDTO.toCommand()` mapea HTTP → intención de negocio (`Command`). Para read, el use case de lectura retorna `ReadModel` directamente (no hay `fromDomain()` — el adaptador serializa el ReadModel a JSON).
 
 ### Use Cases
 
-- `@Component @RequiredArgsConstructor @Slf4j` + `@Transactional` cuando hay persistencia. **Si el use case emite eventos**, el `@Transactional` debe llevar qualifier explícito del transaction manager del contexto: `@Transactional(transactionManager = "{contexto}TransactionManager")` (ej. `usuariosTransactionManager`, `fichasTransactionManager`). Sin el qualifier, el `ContextAwareEventPublicationRepository` puede escribir el registro de outbox en una BD equivocada o lanzar `IllegalStateException` por no encontrar transacción activa.
+- `@Component @RequiredArgsConstructor @Slf4j` + `@Transactional` cuando hay persistencia. **Siempre `@Component`, nunca `@Service`** — `@Service` no se usa en ninguna capa del proyecto. **Si el use case emite eventos**, el `@Transactional` debe llevar qualifier explícito del transaction manager del contexto: `@Transactional(transactionManager = "{contexto}TransactionManager")` (ej. `usuariosTransactionManager`, `fichasTransactionManager`). Sin el qualifier, el `ContextAwareEventPublicationRepository` puede escribir el registro de outbox en una BD equivocada o lanzar `IllegalStateException` por no encontrar transacción activa.
 - Orquestan: persistir → `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` → retornar. **Solo si el plan declara eventos** (respuesta A o B a la pregunta 5 del planificador). Si "Eventos: ninguno" (respuesta C), el use case ni inyecta `EventPublisher` ni hace drenado. `drainUnPublishedEvents()` retorna + limpia en una sola operación atómica — no llames a `clearUnPublishedEvents()` (no existe).
 - Inyectan puertos (interfaces de `domain/port/out/`), nunca implementaciones.
 - **`{Entidad}OutputPort` solo opera sobre su propio aggregate.** Para validar FK contra otro aggregate (típicamente vista materializada de otro contexto), inyecta el `{OtroAggregate}QueryOutputPort` (en `application/{otraEntidad}/query/port/out/`) — NUNCA mezcles lookups de otro aggregate dentro de tu `OutputPort`. Ver "Ubicación de `exists()` y lookups cross-aggregate en puertos de salida" del skill.
+- **Tell, Don't Ask.** Al hablarle a un aggregate, invoca un método de comportamiento (`crear`, `actualizarTitulo`, `modificarContenido`) y deja que valide adentro. NO leas un getter del aggregate para evaluar un invariante y decidir/lanzar afuera. Getters permitidos solo para retornar/loguear el id, mensajes de excepción, mapeo JPA o pasar el valor a otro paso — nunca para tomar una decisión de negocio que le toca al aggregate.
 
 ### Controllers (ADR-011)
 

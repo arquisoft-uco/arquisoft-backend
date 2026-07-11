@@ -10,7 +10,7 @@ import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluac
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +25,7 @@ import java.util.UUID;
 public class RegistrarEvaluacionFichaPerfilUseCase
         implements RegistrarEvaluacionFichaPerfilInputPort {
 
-    private final FichaPerfilOutputPort fichaPerfilOutputPort;
+    private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
     private final RepresentanteComiteQueryOutputPort representanteComiteQueryOutputPort;
     private final EvaluacionFichaPerfilOutputPort evaluacionFichaPerfilOutputPort;
     private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
@@ -34,7 +34,7 @@ public class RegistrarEvaluacionFichaPerfilUseCase
     @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(RegistrarEvaluacionFichaPerfilCommand command) {
 
-        if (!fichaPerfilOutputPort.existsById(command.fichaPerfilId())) {
+        if (!fichaPerfilQueryOutputPort.existsById(command.fichaPerfilId())) {
             throw new FichaPerfilNoEncontradaException(command.fichaPerfilId());
         }
 

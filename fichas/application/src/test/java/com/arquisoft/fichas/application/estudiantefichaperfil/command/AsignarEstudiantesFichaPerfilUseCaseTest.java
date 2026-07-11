@@ -6,7 +6,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.Asig
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.never;
 class AsignarEstudiantesFichaPerfilUseCaseTest {
 
     @Mock
-    private FichaPerfilOutputPort fichaPerfilOutputPort;
+    private FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
 
     @Mock
     private EstudianteQueryOutputPort estudianteQueryOutputPort;
@@ -53,7 +53,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 estudiantesIds
         );
 
-        when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
+        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
         when(estudianteQueryOutputPort.existsById(estudiante1)).thenReturn(true);
         when(estudianteQueryOutputPort.existsById(estudiante2)).thenReturn(true);
         when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudiante1)).thenReturn(false);
@@ -77,7 +77,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 List.of(estudiante1)
         );
 
-        when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(false);
+        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(false);
 
         // Act
         Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
@@ -100,7 +100,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 List.of(estudiante1, estudiante2)
         );
 
-        when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
+        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
         when(estudianteQueryOutputPort.existsById(estudiante1)).thenReturn(true);
         when(estudianteQueryOutputPort.existsById(estudiante2)).thenReturn(false);
 
@@ -126,7 +126,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 List.of(estudiante1, estudiante1)
         );
 
-        when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
+        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
 
         // Act
         Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
@@ -151,7 +151,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 List.of(estudiante1, estudiante2)
         );
 
-        when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
+        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
         when(estudianteQueryOutputPort.existsById(estudiante1)).thenReturn(true);
         when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudiante1)).thenReturn(true);
 
@@ -178,7 +178,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 List.of(estudiante1, estudiante2)
         );
 
-        when(fichaPerfilOutputPort.existsById(fichaPerfilId)).thenReturn(true);
+        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
         when(estudianteQueryOutputPort.existsById(estudiante1)).thenReturn(true);
         when(estudianteQueryOutputPort.existsById(estudiante2)).thenReturn(true);
         when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudiante1)).thenReturn(false);

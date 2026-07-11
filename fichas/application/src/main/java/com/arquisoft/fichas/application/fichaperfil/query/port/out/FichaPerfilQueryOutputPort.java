@@ -10,5 +10,7 @@ public interface FichaPerfilQueryOutputPort {
 
     PaginatedResult<FichaPerfilReadModel> consultarTodas(FichaPerfilCriteria criteria);
 
+    boolean existsById(UUID id);
+
     boolean esEstudiantePropietario(UUID fichaPerfilId, UUID estudianteId);
 }

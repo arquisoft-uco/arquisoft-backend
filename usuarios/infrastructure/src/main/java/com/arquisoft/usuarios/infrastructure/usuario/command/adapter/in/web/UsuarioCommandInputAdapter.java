@@ -55,8 +55,8 @@ public class UsuarioCommandInputAdapter {
 
         CrearUsuarioResponseDTO response = CrearUsuarioResponseDTO.builder()
                 .id(id)
-                .email(request.getEmail())
-                .rol(request.getRol().toDomain().getCode())
+                .email(request.email())
+                .rol(request.rol().toDomain().getCode())
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

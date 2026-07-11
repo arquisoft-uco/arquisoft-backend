@@ -25,4 +25,12 @@ public enum EstadoFicha {
         return nombre;
     }
 
+    public boolean esTerminal() {
+        return this == APROBADA || this == APROBADA_CON_OBSERVACIONES || this == NO_APROBADA;
+    }
+
+    public boolean permiteModificacion() {
+        return !esTerminal();
+    }
+
 }

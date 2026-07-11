@@ -7,10 +7,10 @@ import com.arquisoft.seguridad.domain.auth.aggregate.SesionAggregate;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class LogoutUseCase implements LogoutInputPort {
 

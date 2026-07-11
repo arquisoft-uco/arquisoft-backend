@@ -7,7 +7,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.Re
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class RemoverEstudianteFichaPerfilUseCase implements RemoverEstudianteFichaPerfilInputPort {
 
-    private final FichaPerfilOutputPort fichaPerfilOutputPort;
+    private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
     private final EstudianteQueryOutputPort estudianteQueryOutputPort;
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
 
@@ -29,7 +29,7 @@ public class RemoverEstudianteFichaPerfilUseCase implements RemoverEstudianteFic
         var fichaPerfilId = command.fichaPerfilId();
         var estudianteId = command.estudianteId();
 
-        if (!fichaPerfilOutputPort.existsById(fichaPerfilId)) {
+        if (!fichaPerfilQueryOutputPort.existsById(fichaPerfilId)) {
             throw new FichaPerfilNoEncontradaException(fichaPerfilId);
         }
 

@@ -155,4 +155,34 @@ class FichaPerfilQueryOutputAdapterTest {
         // Assert
         assertThat(esPropietario).isFalse();
     }
+
+    @Test
+    void debeRetornarTrue_cuandoFichaExistePorId() {
+        // Arrange
+        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .identificador("DOC-002")
+                .nombre("Ana Ramirez")
+                .email("ana.ramirez@soyuco.edu.co")
+                .build();
+        entityManager.persist(asesor);
+
+        UUID fichaId = UUID.randomUUID();
+        FichaPerfilJpaEntity ficha = FichaPerfilJpaEntity.builder()
+                .id(fichaId)
+                .tituloProyecto("Proyecto Existente")
+                .asesorFicha(asesor)
+                .build();
+        entityManager.persist(ficha);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.existsById(fichaId)).isTrue();
+    }
+
+    @Test
+    void debeRetornarFalse_cuandoFichaNoExistePorId() {
+        // Act & Assert
+        assertThat(adapter.existsById(UUID.randomUUID())).isFalse();
+    }
 }

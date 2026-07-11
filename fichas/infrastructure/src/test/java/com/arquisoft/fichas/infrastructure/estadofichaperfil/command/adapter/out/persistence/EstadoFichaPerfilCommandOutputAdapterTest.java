@@ -39,6 +39,12 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
         estadoFicha.setNombre("En Construccion");
         estadoFicha.setDescripcion("Estado inicial");
         estadoFichaJpaRepository.save(estadoFicha);
+
+        var estadoAprobada = new EstadoFichaJpaEntity();
+        estadoAprobada.setId("APROBADA");
+        estadoAprobada.setNombre("Aprobada");
+        estadoAprobada.setDescripcion("Estado terminal");
+        estadoFichaJpaRepository.save(estadoAprobada);
     }
 
     @Test

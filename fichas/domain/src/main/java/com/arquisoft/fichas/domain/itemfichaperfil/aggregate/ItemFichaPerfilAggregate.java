@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.domain.itemfichaperfil.aggregate;
 
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.util.UtilText;
@@ -95,10 +96,32 @@ public final class ItemFichaPerfilAggregate {
 
     // ─── Método de negocio: modificar contenido ───────────────────────────────
 
-    public void modificarContenido(String nuevoContenido) {
+    public void modificarContenido(String nuevoContenido, EstadoFicha estadoFichaActual) {
         var result = new ValidationResult();
+
+        if (!esFichaModificable(estadoFichaActual, result)) {
+            result.throwIfHasErrors();
+        }
+
         setContenido(nuevoContenido, result);
         result.throwIfHasErrors();
+    }
+
+    private boolean esFichaModificable(EstadoFicha estadoFichaActual, ValidationResult result) {
+        if (!DomainValidator.notNull(estadoFichaActual,
+                FichasMessages.ItemFichaPerfil.CAMPO_ESTADO_FICHA,
+                FichasMessages.ItemFichaPerfil.ESTADO_FICHA_REQUERIDO, result)) {
+            return false;
+        }
+        if (!estadoFichaActual.permiteModificacion()) {
+            result.addError(
+                    FichasMessages.ItemFichaPerfil.CAMPO_ESTADO_FICHA,
+                    FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
+                    FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE_MSG
+                            .formatted(estadoFichaActual.getNombre()));
+            return false;
+        }
+        return true;
     }
 
     // ─── Getters ──────────────────────────────────────────────────────────────
