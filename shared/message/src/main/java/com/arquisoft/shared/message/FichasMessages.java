@@ -15,6 +15,7 @@ public final class FichasMessages {
         // Campos
         public static final String CAMPO_TITULO          = "tituloProyecto";
         public static final String CAMPO_ASESOR_FICHA_ID = "asesorFichaId";
+        public static final String CAMPO_ESTADO_FICHA    = "estadoFicha";
 
         // Límites
         public static final int TITULO_MAX = 100;
@@ -28,6 +29,8 @@ public final class FichasMessages {
         public static final String ASESOR_NO_ENCONTRADO    = "ASESOR_NO_ENCONTRADO";
         public static final String FICHA_NO_ENCONTRADA     = "FICHA_NO_ENCONTRADA";
         public static final String FICHA_NO_PROPIETARIO    = "FICHA_NO_PROPIETARIO";
+        public static final String MISMO_ASESOR            = "MISMO_ASESOR";
+        public static final String ESTADO_TERMINAL         = "ESTADO_TERMINAL";
 
         // Mensajes de error
         public static final String TITULO_DUPLICADO_MSG    = "El título ya existe: %s";
@@ -35,6 +38,8 @@ public final class FichasMessages {
         public static final String FICHA_NO_ENCONTRADA_MSG = "No se encontró la ficha de perfil con id: %s";
         public static final String FICHA_NO_PROPIETARIO_MSG =
                 "El estudiante %s no es propietario de la ficha %s";
+        public static final String MISMO_ASESOR_MSG = "El asesor nuevo no puede ser el mismo que el actual: %s";
+        public static final String ESTADO_TERMINAL_MSG = "No se puede cambiar el asesor porque la ficha está en estado terminal: %s";
 
         // Logs
         public static final String LOG_REGISTRADA            = "Ficha de perfil registrada — id={}";
@@ -44,6 +49,7 @@ public final class FichasMessages {
         public static final String LOG_CONSULTA_COMPLETADA   = "Consulta fichas-perfil completada — total={}, pagina={}, tamanio={}";
         public static final String LOG_ORDENAMIENTO_INVALIDO  = "Campo de ordenamiento inválido: {}";
         public static final String LOG_USO_INVALIDO_API_ORDEN = "Uso inválido de la API de acceso a datos al ordenar: {}";
+        public static final String LOG_ASESOR_CAMBIADO      = "Asesor de ficha cambiado — fichaId={}, nuevoAsesorId={}";
     }
 
     // ─────────────────────────────────────────────────────────────────────────
