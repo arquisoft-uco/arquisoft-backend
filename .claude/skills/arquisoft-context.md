@@ -551,6 +551,42 @@ if (existentes + command.estudiantesIds().size() > 3) {
 >
 > Una sola instancia no puede validar unicidad porque **no conoce a las demás** — pedírselo rompe su frontera. Por eso una restricción de unicidad/duplicado **nunca** se lanza desde el aggregate; a lo sumo desde un **domain service** (capa `domain`, coordina vía puerto de repositorio), patrón que **este proyecto no usa** — aquí va inline en el use case. La prueba rápida: *¿una instancia, con su estado + un dato escalar, puede decidir la regla?* Sí → aggregate (422). ¿Necesita mirar el conjunto entero? → use case (400).
 
+#### Cómo lanza el aggregate una invariante — Notification Pattern, sin excepción propia
+
+> **Regla dura.** El aggregate **no crea una clase de excepción por invariante** (`MismoAsesorException`, `EstadoTerminalException`, `LimiteEstudiantesExcedidoException`…). Acumula cada violación con `ValidationResult.addError(campo, errorCode, mensaje)` y lanza **una sola** `DomainValidationException` compartida (→ 422 + `fieldErrors[]`) con `result.throwIfHasErrors()` al final del método.
+>
+> - Reglas estándar → helpers de `DomainValidator` (`notNull`, `notBlank`, `maxLength`, `minLength`, `validEmail`), que ya llaman a `addError` por dentro.
+> - Invariante **sin helper** (igualdad "mismo valor que el actual", estado terminal, transición prohibida, comparación entre VOs) → `result.addError(...)` **directo**, con las 3 constantes del catálogo (`CAMPO_*`, código UPPER_SNAKE, `*_MSG` parametrizable con `.formatted(...)`).
+> - En el `domain/` de los contextos de negocio **no existe ninguna subclase de `DomainException`** (verificado; único caso: `seguridad/AuthenticationException`, por choque de nombre con Spring Security). Un plan que declare `domain/{entidad}/exception/{Entidad}{Regla}Exception.java` para una invariante es **error del plan**.
+
+```java
+// ✅ Invariante sin helper (POL-05 "mismo asesor" + estado terminal) — Notification Pattern
+public void cambiarAsesorFicha(UUID nuevoAsesorFichaId, EstadoFicha estadoActual) {
+    var result = new ValidationResult();
+    DomainValidator.notNull(nuevoAsesorFichaId,
+            FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+            FichasMessages.FichaPerfil.ASESOR_REQUERIDO, result);
+    if (nuevoAsesorFichaId != null && nuevoAsesorFichaId.equals(this.asesorFichaId)) {
+        result.addError(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+                FichasMessages.FichaPerfil.MISMO_ASESOR,
+                FichasMessages.FichaPerfil.MISMO_ASESOR_MSG.formatted(nuevoAsesorFichaId));
+    }
+    if (estadoActual.esTerminal()) {
+        result.addError(FichasMessages.FichaPerfil.CAMPO_ESTADO_FICHA,
+                FichasMessages.FichaPerfil.ESTADO_TERMINAL,
+                FichasMessages.FichaPerfil.ESTADO_TERMINAL_MSG.formatted(estadoActual));
+    }
+    result.throwIfHasErrors();     // 1 sola DomainValidationException → 422 + fieldErrors[]
+    setAsesorFichaId(nuevoAsesorFichaId, new ValidationResult());
+}
+```
+
+#### El dato para validar entra como PARÁMETRO, no como atributo nuevo
+
+> **Regla dura.** Cuando el aggregate necesita el valor de **otro objeto de dominio del mismo contexto** (un VO/enum como `EstadoFicha`) solo para **validar** —no para poseerlo como estado propio— lo **importa** y lo recibe como **parámetro** del método de negocio; el use case lo consulta vía `QueryOutputPort` y se lo pasa (`ficha.cambiarAsesorFicha(nuevoAsesor, estadoActual)`). El aggregate lo usa (`estadoActual.esTerminal()`) sin almacenarlo.
+>
+> **NO agregues un atributo nuevo al aggregate para validar.** Un atributo "solo para validar" arrastra un efecto en cascada innecesario —columna en la `JpaEntity` + migración Flyway + mapeo en el `Mapper`— y **falsea el modelo**: el aggregate pasaría a "poseer" un estado que gobierna otra parte del ciclo de vida. Solo agrega el atributo cuando el aggregate es su **dueño legítimo** (el MER lo lista como columna suya y el aggregate gobierna sus transiciones), nunca como insumo transitorio de una validación.
+
 ---
 
 ## AggregateRoot — Regla Estricta
@@ -1844,9 +1880,12 @@ El implementador elige la clase base según la semántica del error:
 | Parámetro inválido / filtro inválido | `ApplicationException` | 400 |
 | Actor sin potestad sobre la instancia del recurso (no es propietario, ficha ajena) | `AuthorizationException` | 403 |
 | Invariante **local** del aggregate violada (consistencia de una sola instancia) | `DomainException` | 422 |
+| Valor repetido sobre el **mismo** aggregate (ej. nuevo asesor = asesor actual, POL-05) — NO es unicidad global, es invariante local | `DomainException` | 422 |
 | Estado inválido / transición de estado prohibida | `DomainException` | 422 |
 | Validación multi-campo con Notification Pattern | `DomainValidationException` | 422 + `fieldErrors[]` |
 | Fallo de infraestructura (BD, RabbitMQ, Keycloak caído) | `InfrastructureException` | 503 |
+
+> **Las filas 422 por invariante de aggregate NO se implementan como subclase propia.** El aggregate acumula la violación con `ValidationResult.addError(campo, errorCode, mensaje)` (constantes del catálogo) y lanza la `DomainValidationException` **compartida** (`shared:domain.exception`, vía `throwIfHasErrors()`) → 422 + `fieldErrors[]`. No crees `{Entidad}{Regla}Exception extends DomainException`. Subclases propias solo para `ApplicationException` / `AuthorizationException` (400/403) del use case y el caso especial de `seguridad`. Ver §"Invariantes locales del aggregate".
 
 **Ejemplo de excepción de dominio bien definida:**
 
@@ -1883,8 +1922,8 @@ Sin crear handler propio. Sin tocar `shared:web`.
 
 | Clase base que extiende | Ubicación obligatoria | Por qué |
 |---|---|---|
-| `DomainException` | `domain/{entidad}/exception/` | Invariantes del aggregate o estado inválido — viven con la entidad raíz. La clase base `DomainException` vive en `shared:domain.exception` (capa `domain`). |
-| `DomainValidationException` | `domain/{entidad}/exception/` | Notification Pattern multi-campo — también es del dominio. |
+| `DomainValidationException` (compartida) | **No se crea por contexto** — es `final`, se lanza vía `ValidationResult.throwIfHasErrors()` | **Vehículo por defecto de TODA invariante del aggregate** (formato, igualdad "mismo valor actual", estado terminal, transición). El aggregate acumula con `addError(campo, errorCode, mensaje)` del catálogo. No se genera archivo en `domain/{entidad}/exception/`. |
+| `DomainException` (subclase propia) | `domain/{entidad}/exception/` (caso raro) | **Evítala.** Ningún contexto de negocio la usa hoy (único: `seguridad/AuthenticationException`, choque con Spring Security). Por defecto usa `addError` + `DomainValidationException`. |
 | `ApplicationException` | `application/{entidad}/exception/` | Recurso no encontrado / duplicado / regla de orquestación que **no es invariante del aggregate** — la decisión la toma el use case. La clase base vive en `shared:exception` (consumida desde `application`). **Ubicación directa bajo `{entidad}/`, sin anidar `command/` o `query/`**: la excepción pertenece al concepto entidad, no al slice CQRS. |
 | `AuthorizationException` | `application/{entidad}/exception/` | El use case comprueba la propiedad del recurso consultando un puerto (`esEstudiantePropietario(...)`) — es orquestación, igual que `ApplicationException`. Misma regla de ubicación directa bajo `{entidad}/`. |
 | `InfrastructureException` | `infrastructure/exception/` | Fallos técnicos (JPA, RabbitMQ caído, Keycloak inaccesible) — solo conocidos en `infrastructure`. |
@@ -1895,11 +1934,10 @@ Sin crear handler propio. Sin tocar `shared:web`.
 |---|---|---|---|
 | `FichaPerfilDuplicadaException` | `ApplicationException` | `application/fichaperfil/exception/` | La capa `domain` no debe conocer la regla "ya existe en BD" (eso es decisión del use case tras consultar el repositorio). Además, importar `ApplicationException` desde `domain/` viola la dirección de dependencias. |
 | `AsesorFichaNoEncontradoException` | `ApplicationException` | `application/asesorficha/exception/` | Igual: "no encontrado en BD" es decisión del use case, no del aggregate. Vive bajo la entidad `asesorficha` aunque la lance el use case de `fichaperfil`. |
-| `FichaPerfilEstadoInvalidoException` | `DomainException` | `domain/fichaperfil/exception/` | Esta sí va en `domain/` porque "no se puede aprobar una ficha en estado BORRADOR" es invariante del aggregate. |
-| `FichaPerfilTituloInvalidoException` | `DomainValidationException` | `domain/fichaperfil/exception/` | Notification Pattern aplicado en el constructor del aggregate — invariante de dominio. |
+| Invariante del aggregate (`estado terminal`, `mismo asesor`, `título en blanco`) | — (sin subclase) | se lanza como `DomainValidationException` compartida | El aggregate acumula con `ValidationResult.addError(...)` + `throwIfHasErrors()`; **no se crea archivo en `domain/`**. Un plan que liste `domain/{entidad}/exception/{Entidad}{Regla}Exception.java` es error del plan. |
 
 **Cómo decidir rápido:** pregúntate "¿esta excepción la lanza el aggregate en su propio constructor / método de negocio, sin ayuda de un repositorio?"
-- **Sí** → invariante del dominio → extiende `DomainException` → vive en `domain/{entidad}/exception/`.
+- **Sí** → invariante del dominio → **no crees subclase**: acumula con `ValidationResult.addError(...)` y lanza la `DomainValidationException` compartida vía `throwIfHasErrors()` → 422 + `fieldErrors[]`.
 - **No, el use case la lanza tras consultar un puerto** (repositorio, servicio externo) → es decisión de orquestación → extiende `ApplicationException` → vive en `application/{entidad}/exception/` (directamente bajo la entidad, sin anidar `command/` o `query/`).
 - **No, y además el motivo es "este usuario no tiene potestad sobre este recurso concreto"** (no es propietario de la ficha, el ítem pertenece a otro estudiante) → extiende `AuthorizationException` → misma ubicación en `application/{entidad}/exception/` → 403. Esto cubre lo que `@PreAuthorize` no puede: el usuario **sí** tiene el client role, pero no sobre **esa instancia**. Ejemplos reales: `FichaNoPropietarioException`, `ItemFichaNoPropiaException`.
 
