@@ -404,7 +404,7 @@ CREATE INDEX idx_ficha_perfil_asesor ON ficha_perfil(asesor_ficha_id);
 | Tests      | @tester            | ✅ Completado | 2026-07-15 | 18 tests generados (domain: 6, application: 5, infrastructure: 8). Cobertura: domain 94%, application 88%, infrastructure 88% — CUMPLE gate ≥75%. Build check: PASÓ. |
 | Validación | @validator-analyze | ✅ Completado | 2026-07-15 | Score: 100/100 — APROBADO |
 | Reporte    | @validator-report  | ✅ Completado | 2026-07-15 | ./.workspace/validator/validator-HU-164.md |
-| Commit     | @commit            | ⏳ Pendiente  | —     | —     |
+| Commit     | @commit            | ✅ Completado | 2026-07-15 | Hash: efd6737 |
 
 ---
 
