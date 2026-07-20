@@ -23,6 +23,9 @@ permission:
       "./gradlew jacocoTestReport": allow
       "./gradlew :*:jacocoTestReport": allow
       "./gradlew :*:jacocoTestCoverageVerification": allow
+      "./gradlew :*:checkstyleMain": allow
+      "./gradlew :*:checkstyleTest": allow
+      "./gradlew :*:check": allow
    webfetch: deny
    skill:
       "arquisoft-context": allow
@@ -89,7 +92,7 @@ en la capa equivocada**. Detente y reporta al usuario antes de escribir workarou
 |---|---|---|
 | `domain` (Aggregate Root, VOs, eventos, excepciones) | **Ninguno**. Solo JUnit + AssertJ | Java puro. Sin `@ExtendWith(SpringExtension)`, sin `@MockitoBean`, sin mocks de librerías externas (`Jwt`, `RabbitTemplate`, `AmazonS3`, `MimeMessage`). |
 | `application` (UseCase, Command, ReadModel, DTOs) | JUnit + Mockito + AssertJ (`@ExtendWith(MockitoExtension.class)`) | Mocks **solo** de puertos del dominio (`FichaPerfilOutputPort`, `AsesorFichaQueryOutputPort` u otros `{Vista}QueryOutputPort` cuando el use case valida FK sobre vistas materializadas, `EventPublisher`). Nunca de APIs externas. |
-| `infrastructure` (adapters, controllers) | Spring Test completo (`@DataJpaTest`, `@WebMvcTest`) | Aquí sí se usa `@MockitoBean`, `MockMvc`, H2, `@WithMockUser`, etc. |
+| `infrastructure` (adapters, controllers) | Spring Test completo (`@DataJpaTest`, `@WebMvcTest`) | Aquí sí se usa `@MockitoBean`, `MockMvc`, H2, `SecurityMockMvcRequestPostProcessors.jwt()`, etc. (no `@WithMockUser` — ver plantilla de controller) |
 
 **Señales de alarma al escribir tests:**
 
@@ -282,7 +285,7 @@ void debeLanzarExcepcion_cuandoTituloYaExiste() {
     // Act + Assert
     assertThatThrownBy(() -> useCase.ejecutar(comando("Mi título")))
             .isInstanceOf(FichaTituloDuplicadoException.class)
-            .hasMessage(FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted("Mi título"));
+            .hasMessage(FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG.formatted("Mi título"));
 
     // Verifica que el código de error sea el del catálogo
     FichaTituloDuplicadoException ex = catchThrowableOfType(
@@ -514,30 +517,41 @@ class FichaRepositoryAdapterTest {
 ### Estructura — Test de controller (capa infrastructure)
 
 ```java
-@WebMvcTest(FichaController.class)
-class FichaControllerTest {
+@WebMvcTest(CrearFichaPerfilInputAdapter.class)
+@Import({GlobalAppExceptionHandler.class,          // OBLIGATORIO — ver nota abajo
+         CrearFichaPerfilInputAdapterTest.TestSecurityConfig.class})
+class CrearFichaPerfilInputAdapterTest {
+
+   @TestConfiguration
+   @EnableWebSecurity
+   @EnableMethodSecurity(prePostEnabled = true)
+   static class TestSecurityConfig {
+      @Bean
+      SecurityFilterChain filterChain(HttpSecurity http) throws Exception { /* ... */ }
+   }
 
    @Autowired private MockMvc mockMvc;
 
    @MockitoBean                          // Spring Boot 4.x: @MockitoBean reemplaza @MockBean
-   private CrearFichaUseCase crearFichaUseCase;
-
-   @Autowired private ObjectMapper objectMapper;
+   private CrearFichaPerfilInputPort crearFichaPerfilInputPort;   // se mockea el InputPort, no el UseCase
 
    @Test
-   @WithMockUser(roles = "ASESOR_FICHA")
    void debeCrearFicha_cuandoPeticionEsValida() throws Exception {
       // Arrange / Act & Assert
-      mockMvc.perform(post("/api/fichas")
+      // La ruta es la declarada en @RequestMapping, SIN el prefijo /api
+      // (el context-path global no aplica en @WebMvcTest).
+      mockMvc.perform(post("/fichas-perfil")
+                      .with(SecurityMockMvcRequestPostProcessors.jwt()
+                          .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
                       .contentType(MediaType.APPLICATION_JSON)
-                      .content(objectMapper.writeValueAsString(request)))
+                      .content("{\"tituloProyecto\":\"...\",\"asesorFichaId\":\"...\"}"))
               .andExpect(status().isCreated())
               .andExpect(jsonPath("$.id").exists());
    }
 
    @Test
    void debeRechazarPeticion_cuandoNoEstaAutenticado() throws Exception {
-      mockMvc.perform(post("/api/fichas")
+      mockMvc.perform(post("/fichas-perfil")
                       .contentType(MediaType.APPLICATION_JSON)
                       .content("{}"))
               .andExpect(status().isUnauthorized());
@@ -545,9 +559,17 @@ class FichaControllerTest {
 }
 ```
 
-> **Spring Boot 4.x:** `@MockBean` fue reemplazado por `@MockitoBean`.
-> No usar `@Import(SecurityConfig.class)` en `@WebMvcTest` — el contexto de seguridad
-> se controla con `@WithMockUser` y `SecurityMockMvcRequestPostProcessors`.
+> **Todo módulo `{contexto}:infrastructure` necesita una `{Contexto}InfrastructureTestApplication` en sus test sources.** Los submódulos del monorepo no tienen `@SpringBootApplication` propia, y `@WebMvcTest` / `@DataJpaTest` fallan con `IllegalStateException: Unable to find a @SpringBootConfiguration` si no existe. Es una clase vacía anotada `@SpringBootApplication` en `src/test/java/com/arquisoft/{contexto}/infrastructure/`. Si no está, **créala** antes del primer slice test del módulo.
+>
+> **Filtros `@Component` del módulo.** `@WebMvcTest` registra los beans `Filter` del contexto. Si alguno depende de un puerto que el slice no levanta (caso `seguridad`: `JwtBlacklistFilter` → `TokenBlacklistOutputPort`, `RateLimitingFilter` → `BucketResolver`), el contexto no carga. Exclúyelos: `@WebMvcTest(controllers = X.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {...}))`.
+>
+> **`jwt()` solo si el módulo tiene `oauth2-resource-server` en el classpath.** `fichas` lo tiene; `usuarios` no. Si el adapter solo exige la authority vía `@PreAuthorize` y no usa el `Jwt` principal, autentica con `SecurityMockMvcRequestPostProcessors.user("...").authorities(...)` en vez de añadir la dependencia.
+>
+> **`@Import(GlobalAppExceptionHandler.class)` es OBLIGATORIO en todo `@WebMvcTest`.** El handler vive en `shared:web`, fuera del árbol de paquetes que `@WebMvcTest` escanea, así que **no se registra solo**. Sin él, cualquier excepción del use case mockeado escapa sin manejar y el test observa **500** en vez del 400/403/422 real. Ésta es la causa más común de un test que "documenta" un 500: el problema no siempre es la clase base de la excepción — a menudo es este `@Import` faltante. Si el contexto declara además un `{Contexto}GlobalExceptionHandler`, impórtalo también.
+>
+> **Spring Boot 4.x:** `@MockBean` fue reemplazado por `@MockitoBean`. Se mockea el **`InputPort`** (la interfaz que el adapter inyecta), no la clase `UseCase`.
+>
+> **Seguridad:** no importes el `SecurityConfig` de producción. Declara una `@TestConfiguration` local con `@EnableWebSecurity` + `@EnableMethodSecurity(prePostEnabled = true)` para que `@PreAuthorize` se evalúe, y autentica con `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` usando el **client role exacto** (`fichas:ficha-perfil:create`). `@WithMockUser(roles = "...")` genera authorities con prefijo `ROLE_` y **no** casa con `hasAuthority('fichas:ficha-perfil:create')`.
 
 ### Imports obligatorios por tipo de test
 
@@ -565,21 +587,33 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 
-// Test de repositorio (infrastructure)
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+// Test de repositorio (infrastructure) — Spring Boot 4.x
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;   // NO ...boot.test.autoconfigure.orm.jpa
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;  // solo si se usa
 import org.junit.jupiter.api.BeforeEach;
 
 // Test de controller (infrastructure) — Spring Boot 4.x
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;      // NO ...boot.test.autoconfigure.web.servlet
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;  // Spring Boot 4.x
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
+// Solo si el test serializa el body con ObjectMapper: Jackson 3, NO Jackson 2.
+import tools.jackson.databind.ObjectMapper;   // NO com.fasterxml.jackson.databind.ObjectMapper
 ```
+
+> **Spring Boot 4 reubicó los paquetes de las anotaciones de slice test.** Los paquetes de Spring Boot 3 (`org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest`, `...autoconfigure.orm.jpa.DataJpaTest`, `...autoconfigure.jdbc.AutoConfigureTestDatabase`) **no existen** en este proyecto: producen error de compilación. Usa exactamente los imports de arriba. `AutoConfigureTestDatabase` no se usa en el proyecto — `@DataJpaTest` ya levanta H2.
+>
+> **Jackson 3.** El `databind` vive en `tools.jackson.databind.*` (Jackson 2 solo entra transitivamente por springdoc). Las **anotaciones** siguen en `com.fasterxml.jackson.annotation.*` — ese import sí es el correcto.
 
 ---
 
@@ -642,7 +676,7 @@ Distribución por capa:
 
   CAPA 2 — application ({n2} tests)
     → {Accion}{Entidad}UseCaseTest.java  ({n} tests)       ← write side
-    → {Accion}{Entidad}QueryUseCaseTest.java  (si es read)
+    → Consultar{Entidad}UseCaseTest.java  (si es read)
       {Si Escritura/Mixto: incluye verificación de drenado de eventos vía drainUnPublishedEvents()}
       {Si Consulta con Criteria: añade {Entidad}CriteriaTest.java — validación de whitelist
        (campo fuera de FILTRABLES truena en builder), validación de profundidad árbol,
@@ -654,7 +688,7 @@ Distribución por capa:
        que Criteria → SQL genera la query esperada, que @EntityGraph carga la relación,
        que el SortMapper traduce nombres de dominio a paths JPA)
     → {Accion}{Entidad}InputAdapterTest.java       ({n} tests, @WebMvcTest + Spring Security Test)
-    → {Accion}{Entidad}QueryInputAdapterTest.java  (si es read)
+    → Consultar{Entidad}InputAdapterTest.java  (si es read)
     → {NombreEvento}ConsumerInputAdapterTest.java  (si la HU consume eventos AMQP — verifica
        deserialización del payload local, invocación al UseCase con el Command correcto;
        NO testea ACK/NACK ni MDC — eso es responsabilidad de AbstractEventConsumer en shared:amqp)
@@ -859,11 +893,15 @@ Antes de generar el reporte JaCoCo, ejecuta la suite completa del contexto y el 
 ```bash
 ./gradlew :{contexto}:test
 ./gradlew :{contexto}:jacocoTestReport
-./gradlew :{contexto}:jacocoTestCoverageVerification   # gate del build — FALLA si < 75%
+
+# GATE FINAL equivalente a CI (test + checkstyle main/test + cobertura ≥75%) en las capas afectadas:
+./gradlew :{contexto}:domain:check :{contexto}:application:check :{contexto}:infrastructure:check
 ```
 
 Si la suite completa falla después de que las capas individuales pasaron,
 aplica el **Protocolo de Test Fallido** antes de continuar.
+
+> **Checkstyle también es gate del build — `check`, no solo `test`.** CI corre `./gradlew checkstyleMain checkstyleTest` y el `check` de cada módulo los incluye. Un **import sin usar**, una **variable/método muerto**, una **llave o espacio mal puesto** rompen el build aunque todos los tests pasen. **Reportar verde habiendo corrido solo `test`/`jacocoTestCoverageVerification` es un error** — el gate real es `check`. Si checkstyle falla: quita imports/variables/métodos sin usar, respeta llaves y espacios, y reejecuta hasta verde. Nunca desactives reglas de checkstyle.
 
 > **El 75% es un gate del build, no un aviso.** En `build.gradle`, `check.dependsOn jacocoTestCoverageVerification` con `minimum = 0.75`: si el contexto queda por debajo, `jacocoTestCoverageVerification` (y por tanto `check`/`build`) **falla — el proyecto no compila para CI**. El gate aplica a los contextos de negocio (`shared:*` está excluido) y NO cuenta clases sin lógica (`*Aggregate`, `*DTO`, `*Command`, `*ReadModel`, `config/**`, `*JpaEntity`) — no persigas cobertura sobre ellas (coincide con los anti-patrones 1, 2 y 7).
 
@@ -985,7 +1023,7 @@ de modificar cualquier archivo de producción.
 5. **Nomenclatura obligatoria.** `debeHacerAlgo_cuandoCondicion` sin excepción.
 6. **No modificas producción.** Solo archivos en `src/test/java/` y `src/test/resources/`.
 7. **Ejecutar tests por capa.** `./gradlew :{contexto}:{capa}:test` tras cada aprobación.
-8. **Cobertura 75% — gate del build, no aviso.** `check.dependsOn jacocoTestCoverageVerification` (`minimum = 0.75`): por debajo, el build falla. Ejecuta `./gradlew :{contexto}:jacocoTestCoverageVerification` en FASE 5 y, si falla, agrega tests significativos hasta que pase. Nunca bajes el umbral ni infles con tests triviales.
+8. **El gate del build es `check` (test + checkstyle + cobertura ≥75%), no solo `test`.** `check` corre `checkstyleMain`, `checkstyleTest` y `jacocoTestCoverageVerification` (`minimum = 0.75`). En FASE 5 ejecuta `./gradlew :{contexto}:domain:check :{contexto}:application:check :{contexto}:infrastructure:check` — es lo que corre CI. Reportar verde habiendo corrido solo `test` es un error: un import sin usar o cobertura <75% rompen el build. Si falla: para cobertura, agrega tests significativos; para checkstyle, elimina imports/variables/métodos muertos y respeta el estilo. Nunca bajes el umbral, desactives reglas ni infles con tests triviales.
 9. **Spring Boot 4.x:** usar `@MockitoBean`, nunca `@MockBean`.
 10. **DDD estricto — tests aislados por capa:** los tests de `domain` son Java puro (solo JUnit + AssertJ, sin mocks de Spring/Keycloak/RabbitMQ); los tests de `application` solo mockean puertos del dominio, nunca APIs externas. Si un test de domain o application requiere framework externo, **detente y reporta violación de capas** antes de escribir el test — la lógica está en la capa equivocada.
 11. **DDD en tests de domain (solo si el plan declara eventos en sección 4):** el test del Aggregate Root verifica el ciclo (`publishEvent` interno del factory → `drainUnPublishedEvents()` retorna y limpia) y que `reconstruir(...)` NO emite eventos. `getUnPublishedEvents()` es `protected` — solo accesible desde tests del mismo paquete del aggregate (typical: `{contexto}/domain/src/test/java/...{entidad}/aggregate/`). **NO uses `clearUnPublishedEvents()` — no existe**. **Si el plan dice "Eventos: ninguno", la entidad raíz no extiende `AggregateRoot` y NO se generan estos tests.**

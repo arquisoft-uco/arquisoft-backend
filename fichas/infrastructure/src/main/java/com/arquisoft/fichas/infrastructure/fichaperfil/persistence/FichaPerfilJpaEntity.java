@@ -24,7 +24,7 @@ import java.util.UUID;
 public class FichaPerfilJpaEntity {
 
     @Id
-    @Column(columnDefinition = "uuid")
+    @Column(name = "id", columnDefinition = "uuid")
     private UUID id;
 
     @Column(name = "titulo_proyecto", nullable = false, length = 100)

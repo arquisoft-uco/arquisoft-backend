@@ -2,9 +2,9 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.pers
 
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +16,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
@@ -28,7 +27,7 @@ class FichaPerfilCommandOutputAdapterTest {
     private FichaPerfilJpaRepository fichaPerfilJpaRepository;
 
     @Mock
-    private EntityManager entityManager;
+    private AsesorFichaJpaRepository asesorFichaJpaRepository;
 
     private FichaPerfilCommandOutputAdapter adapter;
 
@@ -39,15 +38,7 @@ class FichaPerfilCommandOutputAdapterTest {
     void setUp() {
         fichaId = UUID.randomUUID();
         asesorId = UUID.randomUUID();
-        adapter = new FichaPerfilCommandOutputAdapter(fichaPerfilJpaRepository);
-        // Inject el EntityManager manualmente ya que @PersistenceContext no funciona con @InjectMocks
-        try {
-            java.lang.reflect.Field field = FichaPerfilCommandOutputAdapter.class.getDeclaredField("entityManager");
-            field.setAccessible(true);
-            field.set(adapter, entityManager);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        adapter = new FichaPerfilCommandOutputAdapter(fichaPerfilJpaRepository, asesorFichaJpaRepository);
     }
 
     @Test
@@ -62,7 +53,7 @@ class FichaPerfilCommandOutputAdapterTest {
         AsesorFichaJpaEntity asesorRef = new AsesorFichaJpaEntity();
         asesorRef.setId(asesorId);
 
-        when(entityManager.getReference(AsesorFichaJpaEntity.class, asesorId)).thenReturn(asesorRef);
+        when(asesorFichaJpaRepository.getReferenceById(asesorId)).thenReturn(asesorRef);
         when(fichaPerfilJpaRepository.save(any(FichaPerfilJpaEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -70,7 +61,7 @@ class FichaPerfilCommandOutputAdapterTest {
         adapter.guardar(aggregate);
 
         // Assert
-        verify(entityManager, times(1)).getReference(eq(AsesorFichaJpaEntity.class), eq(asesorId));
+        verify(asesorFichaJpaRepository, times(1)).getReferenceById(asesorId);
         verify(fichaPerfilJpaRepository, times(1)).save(any(FichaPerfilJpaEntity.class));
     }
 
@@ -106,32 +97,6 @@ class FichaPerfilCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isEmpty();
         verify(fichaPerfilJpaRepository, times(1)).findById(fichaId);
-    }
-
-    @Test
-    void debeRetornarTrue_cuandoExistePorId() {
-        // Arrange
-        when(fichaPerfilJpaRepository.existsById(fichaId)).thenReturn(true);
-
-        // Act
-        boolean existe = adapter.existsById(fichaId);
-
-        // Assert
-        assertThat(existe).isTrue();
-        verify(fichaPerfilJpaRepository, times(1)).existsById(fichaId);
-    }
-
-    @Test
-    void debeRetornarFalse_cuandoNoExistePorId() {
-        // Arrange
-        when(fichaPerfilJpaRepository.existsById(fichaId)).thenReturn(false);
-
-        // Act
-        boolean existe = adapter.existsById(fichaId);
-
-        // Assert
-        assertThat(existe).isFalse();
-        verify(fichaPerfilJpaRepository, times(1)).existsById(fichaId);
     }
 
     @Test

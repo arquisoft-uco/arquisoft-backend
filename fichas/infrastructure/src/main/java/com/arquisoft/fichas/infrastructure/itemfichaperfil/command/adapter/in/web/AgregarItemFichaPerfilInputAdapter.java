@@ -50,7 +50,7 @@ public class AgregarItemFichaPerfilInputAdapter {
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Tipo inválido, tipo duplicado o ficha no encontrada"
+                    description = "Tipo duplicado o ficha no encontrada"
             ),
             @ApiResponse(
                     responseCode = "401",
@@ -62,7 +62,7 @@ public class AgregarItemFichaPerfilInputAdapter {
             ),
             @ApiResponse(
                     responseCode = "422",
-                    description = "Datos inválidos — fieldErrors"
+                    description = "Datos inválidos o tipo de ítem inválido — fieldErrors"
             )
     })
     public ResponseEntity<AgregarItemFichaPerfilResponseDTO> agregarItem(

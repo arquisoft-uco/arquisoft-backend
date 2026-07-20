@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,7 +39,8 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        EstudianteFichaPerfilAggregate relacion = EstudianteFichaPerfilAggregate.crear(fichaId, estudianteId);
+        EstudianteFichaPerfilAggregate relacion = EstudianteFichaPerfilAggregate.crear(
+                fichaId, List.of(estudianteId), 0L).get(0);
         EstudianteFichaPerfilJpaEntity entity = new EstudianteFichaPerfilJpaEntity();
 
         when(mapper.toJpaEntity(relacion)).thenReturn(entity);
@@ -80,4 +82,19 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isFalse();
     }
+
+    @Test
+    void debeRetornarConteo_cuandoContarPorFichaPerfilId() {
+        // Arrange
+        UUID fichaId = UUID.randomUUID();
+
+        when(jpaRepository.countByFichaPerfilId(fichaId)).thenReturn(2L);
+
+        // Act
+        long resultado = adapter.contarPorFichaPerfilId(fichaId);
+
+        // Assert
+        assertThat(resultado).isEqualTo(2L);
+    }
+
 }

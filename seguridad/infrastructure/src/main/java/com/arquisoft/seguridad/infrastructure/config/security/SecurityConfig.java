@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
 import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
+import com.arquisoft.shared.message.SeguridadMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,8 +46,7 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
         String issuer = String.format("%s/realms/%s", keycloakServerUrl, realm);
-        log.info("Configuring JWT decoder with issuer: {} (expected audience: {})",
-                issuer, expectedAudience);
+        log.info(SeguridadMessages.Login.LOG_JWT_DECODER_CONFIG, issuer, expectedAudience);
 
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
         decoder.setJwtValidator(jwtValidator(issuer, expectedAudience));

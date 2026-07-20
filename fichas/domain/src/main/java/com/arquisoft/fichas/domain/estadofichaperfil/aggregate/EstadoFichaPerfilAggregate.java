@@ -19,7 +19,13 @@ public final class EstadoFichaPerfilAggregate {
 
     private EstadoFichaPerfilAggregate() {}
 
-    // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
+    private EstadoFichaPerfilAggregate(UUID id, UUID fichaPerfilId, EstadoFicha estadoFicha, Instant fechaActualizacion) {
+        this.id = id;
+        this.fichaPerfilId = fichaPerfilId;
+        this.estadoFicha = estadoFicha;
+        this.fechaActualizacion = fechaActualizacion;
+    }
+// ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
 
     public static EstadoFichaPerfilAggregate crear(UUID fichaPerfilId) {
         var aggregate = new EstadoFichaPerfilAggregate();
@@ -27,7 +33,7 @@ public final class EstadoFichaPerfilAggregate {
 
         aggregate.setId();
         aggregate.setFichaPerfilId(fichaPerfilId, result);
-        aggregate.setEstadoFicha();
+        aggregate.setEstadoFichaInicial();
         aggregate.setFechaActualizacion();
 
         result.throwIfHasErrors();
@@ -39,12 +45,7 @@ public final class EstadoFichaPerfilAggregate {
     public static EstadoFichaPerfilAggregate reconstruir(UUID id, UUID fichaPerfilId,
                                                          EstadoFicha estadoFicha,
                                                          Instant fechaActualizacion) {
-        var aggregate = new EstadoFichaPerfilAggregate();
-        aggregate.id = id;
-        aggregate.fichaPerfilId = fichaPerfilId;
-        aggregate.estadoFicha = estadoFicha;
-        aggregate.fechaActualizacion = fechaActualizacion;
-        return aggregate;
+        return new EstadoFichaPerfilAggregate(id, fichaPerfilId, estadoFicha, fechaActualizacion);
     }
 
     // ─── Private setters ──────────────────────────────────────────────────────
@@ -62,7 +63,7 @@ public final class EstadoFichaPerfilAggregate {
         this.fichaPerfilId = fichaPerfilId;
     }
 
-    private void setEstadoFicha() {
+    private void setEstadoFichaInicial() {
         this.estadoFicha = EstadoFicha.EN_CONSTRUCCION;
     }
 

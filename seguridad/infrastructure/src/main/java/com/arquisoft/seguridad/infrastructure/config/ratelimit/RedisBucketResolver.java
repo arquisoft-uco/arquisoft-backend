@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.ratelimit;
 
-import com.arquisoft.seguridad.infrastructure.util.message.SeguridadInfraestructureMessages;
+import com.arquisoft.shared.message.SeguridadMessages;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.util.UtilObject;
 import io.github.bucket4j.Bandwidth;
@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
@@ -44,7 +44,7 @@ import java.time.Duration;
  * </ul>
  */
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 public class RedisBucketResolver implements BucketResolver, DisposableBean {
 
@@ -66,17 +66,17 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
                     .expirationAfterWrite(ExpirationAfterWriteStrategy
                             .basedOnTimeForRefillingBucketUpToMax(Duration.ofMinutes(2)))
                     .build();
-            log.debug(SeguridadInfraestructureMessages.RedisBucketResolver.INIT_OK);
+            log.debug(SeguridadMessages.RateLimit.INIT_OK);
         } else {
             // log.error: detalle tecnico para el desarrollador — nunca llega al cliente.
             // El nombre de la clase del cliente obtenido orienta rapidamente el diagnostico.
-            log.error(SeguridadInfraestructureMessages.RedisBucketResolver.CLIENTE_STANDALONE_ERROR_LOG,
+            log.error(SeguridadMessages.RateLimit.CLIENTE_STANDALONE_ERROR_LOG,
                     !UtilObject.isNull(nativeClient) ? nativeClient.getClass().getSimpleName() : "null");
             // InfrastructureException con mensaje generico: si llegara a la capa web
             // (improbable desde @PostConstruct), el cliente ve un mensaje sin detalles internos.
             throw new InfrastructureException(
-                    SeguridadInfraestructureMessages.RedisBucketResolver.CLIENTE_STANDALONE_EXCEPCION,
-                    SeguridadInfraestructureMessages.RedisBucketResolver.CLIENTE_STANDALONE_CODIGO);
+                    SeguridadMessages.RateLimit.CLIENTE_STANDALONE_EXCEPCION_MSG,
+                    SeguridadMessages.RateLimit.REDIS_CLIENTE_STANDALONE_REQUERIDO);
         }
     }
 
@@ -94,7 +94,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
                                     .refillIntervally(properties.requestsPerMinute(), Duration.ofMinutes(1)))
                             .build());
         } catch (Exception e) {
-            log.error(SeguridadInfraestructureMessages.RedisBucketResolver.BUCKET_REDIS_ERROR,
+            log.error(SeguridadMessages.RateLimit.BUCKET_REDIS_ERROR,
                     ip, e.getMessage());
             return createExhaustedBucket();
         }
@@ -114,7 +114,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
                                     .refillGreedy(properties.loginRequestsPerMinute(), Duration.ofMinutes(1)))
                             .build());
         } catch (Exception e) {
-            log.error(SeguridadInfraestructureMessages.RedisBucketResolver.BUCKET_LOGIN_REDIS_ERROR,
+            log.error(SeguridadMessages.RateLimit.BUCKET_LOGIN_REDIS_ERROR,
                     ip, e.getMessage());
             return createExhaustedBucket();
         }

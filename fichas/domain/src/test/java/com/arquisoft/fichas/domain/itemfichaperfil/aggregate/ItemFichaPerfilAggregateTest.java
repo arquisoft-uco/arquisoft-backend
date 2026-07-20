@@ -1,9 +1,12 @@
 package com.arquisoft.fichas.domain.itemfichaperfil.aggregate;
 
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.util.UUID;
 
@@ -16,13 +19,13 @@ class ItemFichaPerfilAggregateTest {
     void debeConstruirItem_cuandoDatosValidos() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
         String contenido = "Este es un objetivo general válido";
 
         // Act
         ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         );
 
@@ -37,13 +40,13 @@ class ItemFichaPerfilAggregateTest {
     void debeLanzarExcepcion_cuandoFichaPerfilIdNulo() {
         // Arrange
         UUID fichaPerfilId = null;
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
         String contenido = "Contenido válido";
 
         // Act
         Throwable exception = catchThrowable(() -> ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         ));
 
@@ -57,33 +60,33 @@ class ItemFichaPerfilAggregateTest {
     void debeLanzarExcepcion_cuandoTipoItemCodeVacio() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "";
+        String tipoItem = "";
         String contenido = "Contenido válido";
 
         // Act
         Throwable exception = catchThrowable(() -> ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         ));
 
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM_CODE);
+                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM);
     }
 
     @Test
     void debeLanzarExcepcion_cuandoContenidoVacio() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
         String contenido = "";
 
         // Act
         Throwable exception = catchThrowable(() -> ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         ));
 
@@ -97,13 +100,13 @@ class ItemFichaPerfilAggregateTest {
     void debeLanzarExcepcion_cuandoContenidoMuyLargo() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
         String contenido = "x".repeat(7001);
 
         // Act
         Throwable exception = catchThrowable(() -> ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         ));
 
@@ -117,13 +120,13 @@ class ItemFichaPerfilAggregateTest {
     void debeLanzarExcepcion_cuandoTipoItemCodeInvalido() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "TIPO_INVALIDO";
+        String tipoItem = "TIPO_INVALIDO";
         String contenido = "Contenido válido";
 
         // Act
         Throwable exception = catchThrowable(() -> ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         ));
 
@@ -137,18 +140,170 @@ class ItemFichaPerfilAggregateTest {
     void debeAplicarTrim_cuandoContenidoTieneEspacios() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "  OBJETIVO_GENERAL  ";
+        String tipoItem = "  OBJETIVO_GENERAL  ";
         String contenido = "  Este es un contenido con espacios  ";
 
         // Act
         ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
                 fichaPerfilId,
-                tipoItemCode,
+                tipoItem,
                 contenido
         );
 
         // Assert
         assertThat(aggregate.getContenido()).isEqualTo("Este es un contenido con espacios");
         assertThat(aggregate.getTipoItem()).isEqualTo(TipoItem.OBJETIVO_GENERAL);
+    }
+
+    @Test
+    void debeModificarContenido_cuandoContenidoValido() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        String tipoItem = "OBJETIVO_GENERAL";
+        String contenidoInicial = "Contenido inicial";
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+                fichaPerfilId,
+                tipoItem,
+                contenidoInicial
+        );
+        String nuevoContenido = "Contenido modificado";
+
+        // Act
+        aggregate.modificarContenido(nuevoContenido, EstadoFicha.EN_CONSTRUCCION);
+
+        // Assert
+        assertThat(aggregate.getContenido()).isEqualTo(nuevoContenido);
+        assertThat(aggregate.getTipoItem()).isEqualTo(TipoItem.OBJETIVO_GENERAL);
+        assertThat(aggregate.getFichaPerfilId()).isEqualTo(fichaPerfilId);
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoModificarConContenidoVacio() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        String tipoItem = "OBJETIVO_GENERAL";
+        String contenidoInicial = "Contenido inicial";
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+                fichaPerfilId,
+                tipoItem,
+                contenidoInicial
+        );
+
+        // Act
+        Throwable exception = catchThrowable(
+                () -> aggregate.modificarContenido("", EstadoFicha.EN_CONSTRUCCION));
+
+        // Assert
+        assertThat(exception)
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO);
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoModificarConContenidoDemasiado_largo() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        String tipoItem = "OBJETIVO_GENERAL";
+        String contenidoInicial = "Contenido inicial";
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+                fichaPerfilId,
+                tipoItem,
+                contenidoInicial
+        );
+        String contenidoLargo = "x".repeat(7001);
+
+        // Act
+        Throwable exception = catchThrowable(
+                () -> aggregate.modificarContenido(contenidoLargo, EstadoFicha.EN_CONSTRUCCION));
+
+        // Assert
+        assertThat(exception)
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO);
+    }
+
+    @Test
+    void debeLimpiarEspacios_cuandoModificarContenido() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        String tipoItem = "OBJETIVO_GENERAL";
+        String contenidoInicial = "Contenido inicial";
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+                fichaPerfilId,
+                tipoItem,
+                contenidoInicial
+        );
+        String nuevoContenido = "  Contenido con espacios  ";
+
+        // Act
+        aggregate.modificarContenido(nuevoContenido, EstadoFicha.EN_CONSTRUCCION);
+
+        // Assert
+        assertThat(aggregate.getContenido()).isEqualTo("Contenido con espacios");
+    }
+
+    // ─── HU-033: la ficha debe estar en un estado que permita modificaciones ──
+
+    @ParameterizedTest
+    @EnumSource(value = EstadoFicha.class,
+            names = {"APROBADA", "APROBADA_CON_OBSERVACIONES", "NO_APROBADA"})
+    void debeLanzarExcepcion_cuandoEstadoFichaEsTerminal(EstadoFicha estadoTerminal) {
+        // Arrange
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.reconstruir(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                TipoItem.OBJETIVO_GENERAL,
+                "Contenido original"
+        );
+
+        // Act
+        Throwable exception = catchThrowable(
+                () -> aggregate.modificarContenido("Contenido nuevo", estadoTerminal));
+
+        // Assert
+        assertThat(exception)
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE);
+        assertThat(aggregate.getContenido()).isEqualTo("Contenido original");
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = EstadoFicha.class,
+            names = {"EN_CONSTRUCCION", "EN_REVISION", "DISPONIBLE_PARA_EVALUACION"})
+    void debeModificarContenido_cuandoEstadoFichaNoEsTerminal(EstadoFicha estadoModificable) {
+        // Arrange
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.reconstruir(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                TipoItem.OBJETIVO_GENERAL,
+                "Contenido original"
+        );
+
+        // Act
+        aggregate.modificarContenido("Contenido nuevo", estadoModificable);
+
+        // Assert
+        assertThat(aggregate.getContenido()).isEqualTo("Contenido nuevo");
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoEstadoFichaEsNulo() {
+        // Arrange
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.reconstruir(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                TipoItem.OBJETIVO_GENERAL,
+                "Contenido original"
+        );
+
+        // Act
+        Throwable exception = catchThrowable(
+                () -> aggregate.modificarContenido("Contenido nuevo", null));
+
+        // Assert
+        assertThat(exception)
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasMessages.ItemFichaPerfil.ESTADO_FICHA_REQUERIDO);
+        assertThat(aggregate.getContenido()).isEqualTo("Contenido original");
     }
 }

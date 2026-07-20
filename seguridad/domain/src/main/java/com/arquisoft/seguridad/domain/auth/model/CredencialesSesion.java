@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.domain.auth.model;
 
 import com.arquisoft.shared.exception.DomainException;
+import com.arquisoft.shared.message.SeguridadMessages;
 
 public record CredencialesSesion(
         String tokenAcceso,
@@ -11,16 +12,16 @@ public record CredencialesSesion(
 
     public CredencialesSesion {
         if (tokenAcceso == null || tokenAcceso.isBlank()) {
-            throw new DomainException("El token de acceso no puede ser nulo ni vacio",
-                    "CREDENCIALES_TOKEN_ACCESO_REQUERIDO");
+            throw new DomainException(SeguridadMessages.Credenciales.TOKEN_ACCESO_REQUERIDO_MSG,
+                    SeguridadMessages.Credenciales.CREDENCIALES_TOKEN_ACCESO_REQUERIDO);
         }
         if (expiraEn <= 0) {
-            throw new DomainException("El tiempo de expiracion debe ser mayor a cero",
-                    "CREDENCIALES_EXPIRACION_INVALIDA");
+            throw new DomainException(SeguridadMessages.Credenciales.EXPIRACION_INVALIDA_MSG,
+                    SeguridadMessages.Credenciales.CREDENCIALES_EXPIRACION_INVALIDA);
         }
         if (tipoToken == null || tipoToken.isBlank()) {
-            throw new DomainException("El tipo de token no puede ser nulo ni vacio",
-                    "CREDENCIALES_TIPO_TOKEN_REQUERIDO");
+            throw new DomainException(SeguridadMessages.Credenciales.TIPO_TOKEN_REQUERIDO_MSG,
+                    SeguridadMessages.Credenciales.CREDENCIALES_TIPO_TOKEN_REQUERIDO);
         }
     }
 

@@ -1,6 +1,8 @@
 package com.arquisoft.fichas.domain.fichaperfil.aggregate;
 
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
@@ -25,8 +27,8 @@ public final class FichaPerfilAggregate {
     // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
 
     public static FichaPerfilAggregate crear(String titulo, UUID asesorFichaId) {
-        FichaPerfilAggregate ficha = new FichaPerfilAggregate();
-        ValidationResult result = new ValidationResult();
+        var ficha = new FichaPerfilAggregate();
+        var result = new ValidationResult();
 
         ficha.setId();
         ficha.setTituloProyecto(titulo, result);
@@ -48,6 +50,35 @@ public final class FichaPerfilAggregate {
         ValidationResult result = new ValidationResult();
         setTituloProyecto(nuevoTitulo, result);
         result.throwIfHasErrors();
+    }
+
+    public void cambiarAsesorFicha(UUID nuevoAsesorFichaId, EstadoFicha estadoActual) {
+        var result = new ValidationResult();
+
+        DomainValidator.notNull(nuevoAsesorFichaId,
+                FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+                FichasMessages.FichaPerfil.ASESOR_REQUERIDO,
+                result);
+
+        if (!UtilObject.isNull(nuevoAsesorFichaId) && nuevoAsesorFichaId.equals(this.asesorFichaId)) {
+            result.addError(
+                    FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+                    FichasMessages.FichaPerfil.MISMO_ASESOR,
+                    FichasMessages.FichaPerfil.MISMO_ASESOR_MSG.formatted(nuevoAsesorFichaId)
+            );
+        }
+
+        if (estadoActual.esTerminal()) {
+            result.addError(
+                    FichasMessages.FichaPerfil.CAMPO_ESTADO_FICHA,
+                    FichasMessages.FichaPerfil.ESTADO_TERMINAL,
+                    FichasMessages.FichaPerfil.ESTADO_TERMINAL_MSG.formatted(estadoActual)
+            );
+        }
+
+        result.throwIfHasErrors();
+
+        this.asesorFichaId = nuevoAsesorFichaId;
     }
 
     // ─── Private setters ──────────────────────────────────────────────────────

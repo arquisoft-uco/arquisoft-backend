@@ -3,6 +3,9 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.w
 import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.AgregarItemFichaPerfilInputPort;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemTipoDuplicadoException;
+import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +63,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
 
     private static final String BODY_VALIDO = """
             {
-              "tipoItemCode": "OBJETIVO_GENERAL",
+              "tipoItem": "OBJETIVO_GENERAL",
               "contenido": "Este es un objetivo general válido para el proyecto"
             }
             """;
@@ -84,7 +87,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
     void debe422_cuandoRequestInvalido() throws Exception {
         String bodyInvalido = """
                 {
-                  "tipoItemCode": null,
+                  "tipoItem": null,
                   "contenido": ""
                 }
                 """;
@@ -132,7 +135,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
     }
 
     @Test
-    void debe400_cuandoFichaNoPropia() throws Exception {
+    void debe403_cuandoFichaNoPropia() throws Exception {
         when(agregarItemFichaPerfilInputPort.ejecutar(any()))
                 .thenThrow(new ItemFichaNoPropiaException(FICHA_PERFIL_ID));
 
@@ -142,6 +145,29 @@ class AgregarItemFichaPerfilInputAdapterTest {
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:create")))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void debe422_cuandoTipoItemInvalido() throws Exception {
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.addError(
+                FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM,
+                FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
+                FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO_MSG.formatted("TIPO_INEXISTENTE")
+        );
+
+        when(agregarItemFichaPerfilInputPort.ejecutar(any()))
+                .thenThrow(new DomainValidationException(validationResult));
+
+        mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
+                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:create")))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(BODY_VALIDO))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.fieldErrors[0].field")
+                        .value(FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM));
     }
 }

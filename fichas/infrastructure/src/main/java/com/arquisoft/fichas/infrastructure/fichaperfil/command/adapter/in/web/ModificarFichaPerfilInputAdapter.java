@@ -40,9 +40,9 @@ public class ModificarFichaPerfilInputAdapter {
     )
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Ficha modificada exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Título duplicado, ficha no encontrada, no es propietario o datos inválidos"),
+            @ApiResponse(responseCode = "400", description = "Título duplicado, ficha no encontrada o datos inválidos"),
             @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos — no posee la autoridad ficha:ficha-perfil:update")
+            @ApiResponse(responseCode = "403", description = "Sin la autoridad fichas:ficha-perfil:update, o no es propietario de la ficha")
     })
     public ResponseEntity<Void> modificar(
             @PathVariable UUID id,

@@ -241,17 +241,27 @@ Espera las respuestas del usuario antes de continuar.
    un **puerto** en `domain/port/out/` y un **adaptador** en `infrastructure/adapter/out/{tipo}/`
    para cada integración — **ninguna lógica de negocio puede vivir en el adaptador**.
 10. **¿Esta HU utiliza un endpoint REST existente del proyecto, o requiere crear uno nuevo?**
-    - **A) Endpoint nuevo.** Crear `{Accion}{Entidad}InputAdapter.java` (o `QueryInputAdapter.java` si es read) en `infrastructure/{entidad}/{command|query}/adapter/in/web/`. Definir método HTTP, ruta, autorización (`@PreAuthorize`) y `RequestDTO`. La sección 8 del plan (Endpoints REST) documenta el endpoint nuevo.
-    - **B) Endpoint existente.** Anotar la ruta exacta (ej. `POST /api/fichas-perfil`) y el archivo del `InputAdapter` que se modifica. La sección 8 del plan describe **qué cambia** (nuevo parámetro, nueva validación, nuevo campo del `RequestDTO`, etc.) sin duplicar el adapter.
+    - **A) Endpoint nuevo.** Crear `{Accion}{Entidad}InputAdapter.java` (o `Consultar{Entidad}InputAdapter.java` si es read) en `infrastructure/{entidad}/{command|query}/adapter/in/web/`. Definir método HTTP, ruta, autorización (`@PreAuthorize`) y `RequestDTO`. La sección 8 del plan (Endpoints REST) documenta el endpoint nuevo.
+    - **B) Endpoint existente.** Anotar la ruta exacta tal como está declarada en el controller, sin el prefijo `/api` (ej. `POST /fichas-perfil`) y el archivo del `InputAdapter` que se modifica. La sección 8 del plan describe **qué cambia** (nuevo parámetro, nueva validación, nuevo campo del `RequestDTO`, etc.) sin duplicar el adapter.
 
     > Si la respuesta es B, el implementador NO crea un `InputAdapter` nuevo — extiende el existente. Esto evita duplicación de controllers para la misma ruta y mantiene consistencia OpenAPI.
 
 11. **¿Qué retorna esta HU de escritura?** (Solo aplica si pregunta 2 = Escritura o Mixta — las consultas devuelven `ReadModel` o `PaginatedResult<ReadModel>` automáticamente).
-    - **A) UUID del recurso creado/afectado** (recomendado por defecto). El use case retorna `UUID`, el `InputPort` extiende `InputPort<Command, UUID>`, y el `InputAdapter` retorna `ResponseEntity<UUID>` con `201 Created` + header `Location: /api/{recurso}/{uuid}` + body con el UUID. Es el caso más común — el frontend necesita el ID para referenciar el recurso recién creado.
+    - **A) UUID del recurso creado/afectado** (recomendado por defecto). El use case retorna `UUID`, el `InputPort` extiende `InputPort<Command, UUID>`, y el `InputAdapter` **envuelve el id en un `{Accion}{Entidad}ResponseDTO`** (record con un único `UUID id`, en `.../command/adapter/in/web/dto/`) y retorna `ResponseEntity<{Accion}{Entidad}ResponseDTO>` con `201 Created` + body `{"id": "..."}`. **Nunca** `ResponseEntity<UUID>` con el UUID crudo en el body (se serializa como string suelto `"..."` sin cuerpo). Es el caso más común — el frontend necesita el ID para referenciar el recurso recién creado.
     - **B) Void** (no devuelve nada). El use case implementa `VoidInputPort<Command>` (de `shared:domain.port.in`), y el `InputAdapter` retorna `ResponseEntity<Void>` con `201 Created` + header `Location`, **sin body**. Aplica cuando el cliente conoce el recurso por otra vía o cuando la acción es una actualización/eliminación sin necesidad de devolver datos.
     - **C) Objeto específico** (típicamente un `ReadModel` del recurso completo). El use case retorna el objeto declarado (ej. `FichaPerfilReadModel`), el `InputPort` extiende `InputPort<Command, {Tipo}>`, y el `InputAdapter` lo serializa directamente a JSON con `201 Created`. **Justifica en el plan (sección 8) por qué este endpoint rompe la convención por defecto** — típicamente porque el cliente necesita el recurso completo tras crearlo en una sola llamada (patrón REST común para evitar GET subsiguiente). Indicar exactamente qué tipo (`{Entidad}ReadModel`, DTO custom, etc.) y por qué.
 
    > Esta decisión se documenta en la sección 8 del plan (Contrato del endpoint, columna Response) y en los nombres del `InputPort` y `UseCase`. La opción A es el default; usar B o C requiere explicación. Ver regla 3 de "Convención de DTOs" en el skill `arquisoft-context`.
+
+12. **¿Esta HU actúa sobre un recurso EXISTENTE que tiene dueño?** (Solo aplica si pregunta 2 = Escritura o Mixta y la acción modifica/extiende un recurso ya creado — no aplica a creaciones desde cero.)
+    - Un recurso "tiene dueño" cuando fue creado por, o está asociado a, un usuario concreto (ej. la ficha pertenece a un estudiante; la evaluación la creó un representante del comité). El client role (`@PreAuthorize`, pregunta 3) autoriza **por rol**, pero NO impide que *otro* usuario con el mismo rol actúe sobre una instancia ajena.
+    - **Si SÍ tiene dueño:** el plan DEBE exigir un **chequeo de propiedad a nivel de instancia → 403**. Mecánica canónica:
+        - La identidad del actor viaja por el **JWT**: el `InputAdapter` extrae `UUID actorId = UUID.fromString(jwt.getSubject())` (vía `@AuthenticationPrincipal Jwt jwt`) y la pasa al `Command`. **Nunca** se confía en un id de actor que venga en el body.
+        - El use case valida la propiedad con una lectura cross-feature por `QueryOutputPort` (Caso 3): `esEstudiantePropietario(...)` / `esRepresentantePropietario(...)` — NO por el puerto write. Si es falso, lanza una excepción que **extiende `AuthorizationException` → 403** (ej. `FichaNoPropietarioException`, `ItemFichaNoPropiaException`, `EvaluacionFichaNoPropiaException`).
+        - Orden de checks en el use case: existencia del recurso (→ 400) **antes** de la propiedad (→ 403).
+    - **Si NO tiene dueño** (catálogo administrativo, creación nueva sin actor-propietario): el plan lo declara explícitamente y omite el chequeo. La sección 9 (Seguridad) documenta esta decisión.
+
+    > Este chequeo es **distinto** de `@PreAuthorize` (autorización por rol, cross-cutting) y del chequeo de existencia (400). Es autorización **por instancia** y es fácil de olvidar en el plan — de ahí esta pregunta obligatoria.
 
 **Preguntas adicionales según tipo de HU:**
 - **Listados / búsquedas:** ¿Requiere paginación? ¿Filtros? ¿Ordenamiento?
@@ -385,8 +395,23 @@ produce el documento en el formato a continuación y guárdalo como
 
 ## 3. Reglas de Negocio
 
-- {Regla identificada 1}
-- {Regla identificada 2}
+> **Todo invariante LOCAL del aggregate se valida DENTRO del aggregate** (→ 422). Invariante local = regla sobre la consistencia de **una sola instancia** (formato, cupo/límite propio, transición de estado). El use case únicamente **lee el estado** que la regla necesita (vía puerto) y lo **pasa como parámetro** a la factory; el aggregate compara, decide y lanza. Un `if (...) throw` de invariante local en el use case es fuga de lógica.
+>
+> **Distinción clave — regla de negocio ≠ invariante del aggregate.** No toda regla de negocio es invariante local; las que van en esta tabla (→ 422) son solo las locales. Estas OTRAS reglas de negocio **NO** pueden vivir en el aggregate y se validan en el use case:
+>
+> | Regla de negocio | Por qué no es invariante local | Dónde | HTTP |
+> |---|---|---|---|
+> | Unicidad / duplicado en BD (`existsByTitulo`) | Restricción **global de conjunto**: exige conocer TODAS las demás instancias, fuera de la frontera del aggregate | use case | 400 |
+> | Existencia de un recurso (`existsById`) | Requiere consultar el repositorio; el aggregate no accede a BD | use case | 400 |
+> | Propiedad del recurso (`esEstudiantePropietario`) | Depende de otra feature; el aggregate no la conoce | use case | 403 |
+>
+> Una restricción de unicidad **nunca** se lanza desde dentro del aggregate (a lo sumo desde un domain service, que este proyecto no usa). Que sea "regla de negocio" no la vuelve invariante local.
+>
+> **Caso confusable — valor repetido sobre la MISMA instancia ≠ unicidad global.** Una regla como "el nuevo asesor no puede ser igual al actual" (POL-05) **suena** a unicidad, pero se decide con `nuevoValor.equals(this.valorActual)` sobre datos **ya cargados en el aggregate**, sin consultar el conjunto ni la BD: es **invariante local → aggregate → 422** (vía `ValidationResult.addError` → `DomainValidationException`), nunca use case/400. Contraste: unicidad global = "¿existe ALGUNA OTRA instancia con este valor?" (use case → 400); valor-repetido-sobre-sí-mismo = "¿este valor es el que YA tengo?" (aggregate → 422). Al llenar la tabla de la sección 3, clasifica estas reglas como invariante local (columna "Dónde": aggregate; "Excepción → HTTP": 422).
+
+| # | Regla | Dónde se valida (aggregate + factory/método) | Estado que el use case debe leer y pasarle | Excepción → HTTP |
+|---|-------|---|---|---|
+| 1 | {regla identificada} | `{Entidad}Aggregate.{crear\|crearConEstado\|accion}(...)` | {ej. `contarPorFicha(fichaId)` / `obtenerUltimoEstado(id)` / ninguno} | `DomainValidationException` (vía `ValidationResult.addError`) → 422 + `fieldErrors[]` |
 
 ---
 
@@ -406,6 +431,8 @@ produce el documento en el formato a continuación y guárdalo como
 > **Solo atributos documentados — PROHIBIDO inventar columnas.** Cada atributo DEBE provenir del modelo enriquecido / MER citado en la Metadata. **No agregues campos no documentados**: ni timestamps de auditoría (`fechaAsignacion`, `fechaCreacion`, `fechaActualizacion`), ni discriminadores de `rol`/`tipo`/`estado`, ni flags, ni contadores — salvo que aparezcan **explícitamente** en la documentación fuente. Cada fila de la tabla de atributos debe poder rastrearse a una columna del MER; si no está en el MER, NO va. Si crees que falta un campo, NO lo inventes: anótalo como pregunta abierta para el usuario en la sección de observaciones. Una columna inventada termina en Flyway + JPA + el aggregate y corrompe el esquema contra la documentación.
 >
 > **Vistas materializadas / réplicas locales:** una réplica copia **solo** los atributos que (a) existen en el MER del contexto origen Y (b) este contexto realmente consume. No agregues un `rol`/`tipo` "para discriminar qué se replica" — el filtro de qué se replica vive en la lógica del consumer del evento, no como columna de la tabla réplica.
+>
+> **No agregues un atributo SOLO para validar — pásalo como parámetro.** Si el aggregate necesita el valor de otro objeto de dominio del mismo contexto (un VO/enum como `EstadoFicha`) únicamente para **validar** una regla (ej. "no cambiar asesor si el estado es terminal"), **NO** lo modeles como atributo nuevo del aggregate. El aggregate **importa** el VO y lo recibe como **parámetro** del método de negocio (`cambiarAsesorFicha(nuevoAsesor, estadoActual)`); el use case lo consulta vía `QueryOutputPort` y se lo pasa. Un atributo "solo para validar" arrastra columna en `JpaEntity` + migración Flyway + mapeo en el `Mapper` sin necesidad, y falsea el modelo (el aggregate "poseería" un estado que no gobierna). Solo agrégalo si el aggregate es su **dueño legítimo** (el MER lo lista como columna suya y el aggregate gobierna sus transiciones). Ver skill `arquisoft-context` §"El dato para validar entra como PARÁMETRO".
 
 #### `{Objeto de Dominio 1}`
 
@@ -449,7 +476,7 @@ Cuando un atributo es un **estado** o **tipo** con un conjunto **cerrado y conoc
 - El **aggregate guarda el enum directamente** (`EstadoFicha estadoFicha`), nunca un `String {estado}Id`.
 - **PK semántica `VARCHAR`, no `UUID` (ADR-012):** el `id` del catálogo es la constante del enum en SCREAMING_CASE (`"EN_CONSTRUCCION"`). El enum lleva `id` (= `name()`) y `nombre` (texto legible). La tabla catálogo se planea con PK `VARCHAR` poblada por Flyway con esas constantes; la tabla que la referencia usa FK `VARCHAR` (`@ManyToOne`), nunca `UUID`.
 - **El dominio asigna el valor:** el estado/tipo inicial dentro de `crear(...)`; las transiciones en métodos de negocio del aggregate. El use case **no** recibe ni resuelve el estado/tipo.
-- **Persistencia sin consulta al catálogo:** como el id ya es la constante del enum, el `CommandOutputAdapter` usa `entityManager.getReference(CatalogoJpaEntity.class, enum.getId())` — sin `findByNombre` ni viaje a BD. El **`Mapper` es mapeo puro** (no llama a `JpaRepository`): recibe la referencia del catálogo y reconstruye con `Enum.valueOf(entity.getCatalogo().getId())`.
+- **Persistencia sin consulta al catálogo:** como el id ya es la constante del enum, el `CommandOutputAdapter` inyecta el `JpaRepository` del catálogo por constructor y usa `{catalogo}JpaRepository.getReferenceById(enum.getId())` — sin `findByNombre` ni viaje a BD, y **nunca** con `EntityManager`/`@PersistenceContext`. El **`Mapper` es mapeo puro** (no llama a `JpaRepository`): recibe la referencia del catálogo y reconstruye con `Enum.valueOf(entity.getCatalogo().getId())`.
 
 > Para un catálogo de estados/tipos NO planees `{Estado}Aggregate`, `{Estado}QueryOutputPort`, `{Estado}QueryOutputAdapter` ni `{Estado}ReadModel` — el enum los reemplaza. Detalle completo en el skill `arquisoft-context`, sección "Estados y tipos: enum de dominio + catálogo con PK semántica (ADR-012)".
 
@@ -520,14 +547,15 @@ Para cada integración externa, documenta:
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/aggregate/{Entidad}Aggregate.java` | Aggregate Root | Extiende `AggregateRoot`. Factory `crear(...)` con Notification Pattern + `reconstruir(...)` sin validar |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/event/{Entidad}CreadaEvent.java` | Evento de dominio | Extiende `DomainEvent`. Declara constantes `EVENT_TOPIC` y `EVENT_TYPE` (solo si la HU emite eventos) |
 | domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/port/out/{Entidad}OutputPort.java` | Interface | Puerto de salida write. Recibe/retorna el aggregate, nunca DTOs ni JPA Entities |
-| domain | `{contexto}/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/exception/{Entidad}{ReglaInvariante}Exception.java` | Exception del aggregate | Extiende **`DomainException`** (invariante violada → 422) o **`DomainValidationException`** (Notification Pattern → 422 + fieldErrors). SOLO va aquí si la lanza el aggregate en su constructor o método de negocio sin ayuda de un repositorio. **NO crear si la excepción es duplicado/no encontrado/inválido orquestal** — esas van en `application/`. |
+| domain | *(ningún archivo por defecto)* | Invariantes del aggregate | **Las invariantes del aggregate NO generan clase de excepción propia.** El aggregate las acumula con `ValidationResult.addError(campo, errorCode, mensaje)` (constantes del catálogo) y lanza la `DomainValidationException` **compartida** (`shared:domain.exception`) vía `throwIfHasErrors()` → 422 + `fieldErrors[]`. **NO planees** `domain/{entidad}/exception/{Entidad}{Regla}Exception.java` para reglas de negocio (mismo valor, estado terminal, formato, transición). Excepción rarísima (choque de nombre con el framework, tipo `seguridad`): solo si el usuario lo pide explícitamente. Las de duplicado/no-encontrado/orquestal van en `application/` (fila siguiente). |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/command/model/{Accion}{Entidad}Command.java` | `record` | Intención de negocio. Campos en español idénticos al aggregate |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/command/port/in/{Accion}{Entidad}InputPort.java` | Interface (vacía) | Extiende `InputPort<Command, Result>` o `VoidInputPort<Command>` de `shared:domain` |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/exception/{Entidad}DuplicadaException.java` `{Entidad}NoEncontradaException.java` etc. | Exception del use case | Extiende **`ApplicationException`** (duplicado, no encontrado, parámetro inválido → 400). Va aquí porque la decide el use case tras consultar un puerto (repositorio, servicio externo), NO el aggregate. **Ubicación directa bajo `{entidad}/exception/`, sin anidar `command/` o `query/`** — la excepción pertenece al concepto entidad, no al slice CQRS. **Si la ubicas en `domain/` rompes la dirección de dependencias** — `domain/` no puede importar `ApplicationException` de `shared:exception`. |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/command/{Accion}{Entidad}UseCase.java` | UseCase | `@Component` que implementa el `InputPort`. Patrón: `crear → save → drainUnPublishedEvents().forEach(publish) → retornar id` |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/in/web/dto/{Accion}{Entidad}RequestDTO.java` | `record` | `record` con anotaciones Jakarta (`@NotBlank`, etc.). Método `toCommand()` que produce el `Command` |
-| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/in/web/{Accion}{Entidad}InputAdapter.java` | `@RestController` | Inyecta el `InputPort`. Retorna `ResponseEntity<Void>` con `201 Created` + `Location`. ADR-011 (`@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement`) |
-| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/persistence/{Entidad}JpaEntity.java` | JPA Entity | `@Table(name = "...")` (sin atributo `schema` — cada contexto tiene su propia BD) |
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/in/web/dto/{Accion}{Entidad}ResponseDTO.java` | `record` | **Solo respuesta A (retorna id):** `record {Accion}{Entidad}ResponseDTO(UUID id) {}` — serializa como `{"id": "..."}`. No se crea para respuesta B (Void). |
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/in/web/{Accion}{Entidad}InputAdapter.java` | `@RestController` | Inyecta el `InputPort`. Respuesta A: `ResponseEntity<{Accion}{Entidad}ResponseDTO>` con `201` y body `{"id": "..."}` (nunca `ResponseEntity<UUID>` crudo). Respuesta B: `ResponseEntity<Void>` con `201`/`204`. ADR-011 (`@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement`) |
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/persistence/{Entidad}JpaEntity.java` | JPA Entity | `@Table(name = "...")` (sin atributo `schema` — cada contexto tiene su propia BD). Todo `@Column`/`@JoinColumn` con `name` explícito en `snake_case` (incluido el `@Id`), coincidiendo con la columna Flyway |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/persistence/{Entidad}JpaRepository.java` | `JpaRepository` | Compartido entre command y query |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/persistence/{Entidad}Mapper.java` | `@Component` | Mapea Aggregate ↔ JpaEntity y JpaEntity → ReadModel (compartido) |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/out/persistence/{Entidad}CommandOutputAdapter.java` | Adapter | Implementa `{Entidad}OutputPort`. Usa `reconstruir(...)` al reconstruir |
@@ -540,8 +568,8 @@ Para cada integración externa, documenta:
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/query/readmodel/{Entidad}ReadModel.java` | `record` | Proyección plana del recurso |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/query/port/in/{Accion}{Entidad}InputPort.java` | Interface (vacía) | Extiende `InputPort<Input, ReadModel>` o variantes |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/query/port/out/{Entidad}QueryOutputPort.java` | Interface | Puerto de salida read. Vive en **application**, no en domain (el read side no usa aggregate) |
-| application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/query/{Accion}{Entidad}QueryUseCase.java` | UseCase | `@Component` + `@Transactional(readOnly = true)`. Delega al `QueryOutputPort` y retorna `ReadModel` |
-| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/query/adapter/in/web/{Accion}{Entidad}QueryInputAdapter.java` | `@RestController` | Serializa el `ReadModel` directamente a JSON (no hay ResponseDTO intermedio) |
+| application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/query/Consultar{Entidad}UseCase.java` | UseCase | `@Component` + `@Transactional(readOnly = true, transactionManager = "{contexto}TransactionManager")` (qualifier obligatorio: `usuariosTransactionManager` es `@Primary`). Delega al `QueryOutputPort` y retorna `ReadModel` |
+| infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/query/adapter/in/web/Consultar{Entidad}InputAdapter.java` | `@RestController` | Serializa el `ReadModel` directamente a JSON (no hay ResponseDTO intermedio) |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/query/adapter/out/persistence/{Entidad}QueryOutputAdapter.java` | Adapter | Implementa `{Entidad}QueryOutputPort`. Mapea JpaEntity → ReadModel directamente |
 
 > Si la HU usa paginación o filtros dinámicos, añadir también un `{Entidad}Criteria` (`application/{entidad}/query/criteria/`) y un `{Entidad}JpaSpecification` (`infrastructure/{entidad}/query/adapter/out/persistence/`). Detalle en el **Bloque 3** (Criteria pattern) — se aplica en el plan solo si la HU lo requiere explícitamente.
@@ -569,6 +597,7 @@ Para cada integración externa, documenta:
 | Recurso duplicado / ya existe | `ApplicationException` | **400** Bad Request |
 | Recurso no encontrado | `ApplicationException` | **400** Bad Request |
 | Parámetro o filtro inválido | `ApplicationException` | **400** Bad Request |
+| Actor sin potestad sobre la instancia del recurso (no propietario, ficha ajena) | `AuthorizationException` | **403** Forbidden |
 | Invariante del aggregate violada | `DomainException` | **422** Unprocessable Content |
 | Estado inválido / transición prohibida | `DomainException` | **422** Unprocessable Content |
 | Validación multi-campo (Notification Pattern) | `DomainValidationException` | **422** + `fieldErrors[]` |
@@ -616,7 +645,7 @@ Si la HU introduce al menos un mensaje, código, log o límite nuevo, el plan de
 
 | Capa | Ruta completa | Tipo | Acción | Detalles |
 |------|---------------|------|--------|----------|
-| shared | `shared/message/src/main/java/com/arquisoft/shared/message/{Contexto}Messages.java` | Catálogo | MODIFICAR | Agregar `public static final class {Entidad}` con constructor privado vacío **si no existe**, y dentro las constantes nuevas en el orden de las 5 secciones: `// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`. Solo las secciones con al menos una constante. Nada de JavaDoc. |
+| shared | `shared/message/src/main/java/com/arquisoft/shared/message/{Contexto}Messages.java` | Catálogo | MODIFICAR | Agregar `public static final class {Entidad}` con constructor privado vacío **si no existe**, y dentro las constantes nuevas en el orden de las 5 secciones: `// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`. Solo las secciones con al menos una constante. Nada de JavaDoc. **Las constantes de la sección `Mensajes de error` (texto user-facing) terminan en `_MSG`** — excepto frases HTTP reason-phrase y fragmentos `_PREFIJO`/`_SUFIJO`. |
 
 Inventario de constantes a agregar al catálogo en esta HU (el agente lo llena al planificar):
 
@@ -625,7 +654,7 @@ Inventario de constantes a agregar al catálogo en esta HU (el agente lo llena a
 | `FichasMessages.FichaPerfil.CAMPO_TITULO` | Campos | `String` | `"tituloProyecto"` | `DomainValidator.notBlank` en `FichaPerfilAggregate` |
 | `FichasMessages.FichaPerfil.TITULO_MAX` | Límites | `int` | `100` | `DomainValidator.maxLength` en `FichaPerfilAggregate` |
 | `FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO` | Códigos de error | `String` | `"FICHA_TITULO_DUPLICADO"` | `FichaTituloDuplicadoException` (errorCode) |
-| `FichasMessages.FichaPerfil.TITULO_DUPLICADO` | Mensajes de error | `String` | `"El título ya existe: %s"` | `FichaTituloDuplicadoException` (mensaje, `.formatted(titulo)`) |
+| `FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG` | Mensajes de error | `String` | `"El título ya existe: %s"` | `FichaTituloDuplicadoException` (mensaje, `.formatted(titulo)`) |
 | `FichasMessages.FichaPerfil.LOG_REGISTRADA` | Logs | `String` | `"Ficha de perfil registrada — id={}"` | `log.info` en `RegistrarFichaPerfilUseCase` |
 
 > **Si la HU NO introduce ningún texto, código o límite nuevo (típico en HUs read sin filtros nuevos o handlers que solo orquestan llamadas existentes), omite esta sub-sección entera.** Pero documentalo explícitamente: "Sin cambios al catálogo `shared:message` — la HU no introduce textos, códigos ni límites nuevos."
@@ -708,7 +737,7 @@ Para cada archivo de tipo Controller, añadir además:
 
 Marcar **una** opción según la respuesta a la pregunta 10 de FASE 3:
 
-- [ ] **Endpoint NUEVO** — crear `{Accion}{Entidad}InputAdapter.java` (o `QueryInputAdapter.java`) desde cero.
+- [ ] **Endpoint NUEVO** — crear `{Accion}{Entidad}InputAdapter.java` (o `Consultar{Entidad}InputAdapter.java`) desde cero.
 - [ ] **Endpoint EXISTENTE** — modificar el adapter ya presente en el proyecto.
     - **Archivo a modificar:** `{ruta exacta al InputAdapter existente}`
     - **Qué cambia:** {nuevo parámetro / nueva validación / nuevo campo del `RequestDTO` / cambio en `@PreAuthorize` / etc.}
@@ -717,16 +746,43 @@ Marcar **una** opción según la respuesta a la pregunta 10 de FASE 3:
 
 > **Columna Response:** rellénala con base en la respuesta a la pregunta 11 de FASE 3 (para writes) o por la firma del read use case (`ReadModel` / `PaginatedResult<ReadModel>`).
 
+> **Columna Ruta — NUNCA escribas el prefijo `/api`.** El proyecto ya declara `server.servlet.context-path: /api` en `application.yml`, así que `/api` se antepone globalmente a toda ruta. La Ruta de esta tabla es **exactamente** el valor que irá en `@RequestMapping`/`@PostMapping` del `InputAdapter`: relativa y sin `/api`. Si lo escribes, el implementador lo copia al controller y la URL real queda duplicada (`/api/api/fichas-perfil`). La URL que ve el cliente es `/api` + esta ruta, pero eso no se documenta aquí.
+
 | Método | Ruta | Request Body / Params | Response | Código HTTP | Client role requerido | Anotaciones Swagger (ADR-011) |
 |--------|------|----------------------|----------|-------------|----------------------|-------------------------------|
-| POST (write A) | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `UUID` (body: id generado) + header `Location: /api/{recurso}/{uuid}` | 201 | `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
-| POST (write B) | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `Void` (sin body) + header `Location` | 201 | idem | idem |
-| POST (write C) | `/api/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `{Entidad}ReadModel` u objeto específico (justificar) | 201 | idem | idem |
-| GET | `/api/{recurso-kebab}/{id}` | — | `{Entidad}ReadModel` | 200 | `{contexto}:{recurso-kebab}:view` (ej. `fichas:ficha-perfil:view`) | idem |
-| POST | `/api/{recurso-kebab}/query` | `QueryCriteriaRequestDTO` (si usa Criteria) | `PageResponseDTO<{Entidad}ReadModel>` | 200 | `{contexto}:{recurso-kebab}:view` | idem |
+| POST (write A) | `/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `{Accion}{Entidad}ResponseDTO` (body `{"id": "..."}`) | 201 | `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `@Operation(summary="...")` + `@SecurityRequirement(name="bearerAuth")` |
+| POST (write B) | `/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `Void` (sin body) + header `Location` | 201 | idem | idem |
+| POST (write C) | `/{recurso-kebab}` | `{Accion}{Entidad}RequestDTO` | `{Entidad}ReadModel` u objeto específico (justificar) | 201 | idem | idem |
+| PATCH | `/{recurso-kebab}/{id}` | `Modificar{Entidad}RequestDTO` (solo los campos que cambian) | según opción A/B/C | según opción A/B/C | `{contexto}:{recurso-kebab}:update` | idem |
+| PUT | `/{recurso-kebab}/{id}` | `Reemplazar{Entidad}RequestDTO` (**todos** los campos modificables) | según opción A/B/C | según opción A/B/C | `{contexto}:{recurso-kebab}:update` | idem |
+| DELETE | `/{recurso-padre-kebab}/{padreId}/{sub-recurso}/{id}` (o `/{recurso-kebab}/{id}` si no está anidado) | — | `Void` (sin body) | 204 | `{contexto}:{recurso-kebab}:delete` | idem |
+| GET | `/{recurso-kebab}/{id}` | — | `{Entidad}ReadModel` | 200 | `{contexto}:{recurso-kebab}:view` (ej. `fichas:ficha-perfil:view`) | idem |
+| POST | `/{recurso-kebab}/query` | `QueryCriteriaRequestDTO` (si usa Criteria) | `PageResponseDTO<{Entidad}ReadModel>` | 200 | `{contexto}:{recurso-kebab}:view` | idem |
+
+> **PATCH vs PUT en una HU de modificación — decide por el `RequestDTO`, no por el nombre de la HU.**
+> - El `RequestDTO` lleva **un subconjunto** de los atributos modificables (típicamente uno) → **PATCH**. Es el caso por defecto: las HUs de modificación del proyecto cambian un atributo puntual.
+> - El `RequestDTO` lleva **todos** los atributos modificables y el request los reemplaza en bloque → **PUT**.
+>
+> El `id` del recurso viaja siempre en la ruta (`@PathVariable`), nunca en el body.
+>
+> **El verbo NO determina el código de respuesta.** Éste sale de la opción A/B/C de "Convención de respuesta (write)", según lo que retorne el use case: `Void` → **204 No Content**; un id o un objeto → **200 OK** con body (o **201 Created** si la operación además crea un sub-recurso, ej. un nuevo estado o una nueva versión). No asumas 204 por ser PATCH/PUT: primero decide qué retorna el use case (pregunta 11 de FASE 3) y de ahí sale el código.
+>
+> Precedentes reales — los dos son PATCH porque su DTO tiene **un solo campo**, y ambos retornan `Void` → 204: `ModificarFichaPerfilInputAdapter` (`PATCH /fichas-perfil/{id}`, body `{tituloProyecto}`) y `ModificarItemFichaPerfilInputAdapter` (`PATCH /fichas-perfil/{itemId}/items`, body `{contenido}`). Hoy **no existe ningún PUT** en el proyecto: no lo elijas salvo que la HU pida explícitamente reemplazo total.
+
+> **Recursos anidados y client role.** Cuando la entidad afectada es una relación o un hijo del agregado, la ruta se anida bajo el recurso padre y el **`{recurso-kebab}` del client role es la entidad afectada, NO el primer segmento de la ruta**. Casos reales del contexto `fichas`, todos con `@RequestMapping("/fichas-perfil")` a nivel de clase:
+>
+> | Endpoint real | Client role real |
+> |---|---|
+> | `POST /fichas-perfil/{fichaPerfilId}/estudiantes` | `fichas:estudiante-ficha-perfil:create` |
+> | `DELETE /fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}` | `fichas:estudiante-ficha-perfil:delete` |
+> | `POST /fichas-perfil/{fichaPerfilId}/items` | `fichas:item-ficha-perfil:create` |
+> | `PATCH /fichas-perfil/{itemId}/items` | `fichas:item-ficha-perfil:update` |
+> | `PATCH /fichas-perfil/{id}` | `fichas:ficha-perfil:update` |
+>
+> La columna **Ruta** de la tabla es la ruta relativa **completa** (base de `@RequestMapping` + ruta del método), sin `/api`.
 
 > **Convención de respuesta (write):**
-> - **Opción A (default):** `ResponseEntity<UUID>` con `201 Created`, header `Location` y el UUID en el body. El use case retorna `UUID` y el `InputPort` extiende `InputPort<Command, UUID>`.
+> - **Opción A (default):** `ResponseEntity<{Accion}{Entidad}ResponseDTO>` con `201 Created` y body `{"id": "..."}` (record de un único `UUID id`). El use case retorna `UUID` y el `InputPort` extiende `InputPort<Command, UUID>`; el adapter envuelve ese id en el ResponseDTO. **Nunca** `ResponseEntity<UUID>` (serializa el id como string crudo sin cuerpo).
 > - **Opción B:** `ResponseEntity<Void>` con `201 Created` + header `Location`, sin body. El use case implementa `VoidInputPort<Command>` de `shared:domain.port.in`.
 > - **Opción C:** `ResponseEntity<{Tipo}>` con el objeto justificado en sección 8 del plan. El use case retorna ese tipo y el `InputPort` extiende `InputPort<Command, {Tipo}>`.
 >
@@ -745,7 +801,7 @@ Por cada endpoint nuevo, declara el **client role** que requiere y a qué **role
 
 | Client role | Roles realm que lo poseen | Endpoint(s) que lo requieren | Descripción funcional |
 |---|---|---|---|
-| `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `coordinador`, `asesor-ficha` | `POST /api/...` | {qué permite hacer este client role} |
+| `{contexto}:{recurso-kebab}:{accion}` (ej. `fichas:ficha-perfil:create`) | `coordinador`, `asesor-ficha` | `POST /{recurso-kebab}` (sin `/api`) | {qué permite hacer este client role} |
 
 ### Reglas de uso
 
@@ -862,9 +918,9 @@ Para cada client role nuevo de la tabla anterior:
 #### Tests capa `application`
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
-| `{Accion}{Entidad}QueryUseCaseTest` | `debeRetornarLista_cuandoFiltrosValidos` | flujo principal con resultados |
-| `{Accion}{Entidad}QueryUseCaseTest` | `debeRetornarVacio_cuandoNoHayResultados` | sin coincidencias |
-| `{Accion}{Entidad}QueryUseCaseTest` | `debeLanzarExcepcion_cuandoFiltrosInvalidos` | filtros mal formados (consolidado: tipo + errorCode en un solo test) |
+| `Consultar{Entidad}UseCaseTest` | `debeRetornarLista_cuandoFiltrosValidos` | flujo principal con resultados |
+| `Consultar{Entidad}UseCaseTest` | `debeRetornarVacio_cuandoNoHayResultados` | sin coincidencias |
+| `Consultar{Entidad}UseCaseTest` | `debeLanzarExcepcion_cuandoFiltrosInvalidos` | filtros mal formados (consolidado: tipo + errorCode en un solo test) |
 
 > NO crear tests separados para "errorCode correcto" cuando ya hay un test del mismo escenario que lanza la excepción — consolidar asserts en un solo test (ver anti-patrón 4 del skill).
 
@@ -903,19 +959,20 @@ ejemplos detallados.
 ## 13. Checklist de Implementación
 
 - [ ] **DDD:** Entidad de dominio extiende `AggregateRoot` (salvo `seguridad`)
-- [ ] Entidad inmutable: constructor privado, campos `final`, factory methods `crear` / `reconstruir`, sin Lombok
+- [ ] Entidad inmutable: constructor privado, campos privados sin `final` (los asignan los setters privados del factory), solo getters públicos, factory methods `crear` / `reconstruir`, sin Lombok
+- [ ] **Cada regla de negocio de la sección 3 se valida dentro del aggregate** (→ 422), no con `if/throw` en el use case. El use case solo lee el estado vía puerto y lo pasa como parámetro a la factory
 - [ ] Eventos de dominio en `domain/event/`, extienden `DomainEvent`
 - [ ] Factory `crear(...)` llama `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))`
 - [ ] IDs siempre `UUID` (nunca `Long` / `Integer`)
 - [ ] Puerto de entrada (`{Accion}{Entidad}UseCase`) definido
 - [ ] Puerto de salida (`{Entidad}OutputPort`) definido
 - [ ] Excepciones de dominio definidas, extienden `DomainException` y tienen `errorCode`
-- [ ] **Cada excepción nueva extiende la clase base correcta** (`DomainException` → 422, `ApplicationException` → 400, `InfrastructureException` → 503) para que `GlobalAppExceptionHandler` de `shared:web` resuelva su HTTP automáticamente. **NO se crea handler de contexto** salvo en los dos casos excepcionales (colisión de nombres con Spring / HTTP status fuera del default de la jerarquía). Ningún test de controller espera 500 para inputs inválidos.
+- [ ] **Cada excepción nueva extiende la clase base correcta** (`DomainException` → 422, `ApplicationException` → 400, `AuthorizationException` → 403, `InfrastructureException` → 503) para que `GlobalAppExceptionHandler` de `shared:web` resuelva su HTTP automáticamente. **NO se crea handler de contexto** salvo en los dos casos excepcionales (colisión de nombres con Spring / HTTP status fuera del default de la jerarquía). Ningún test de controller espera 500 para inputs inválidos.
 - [ ] `Command` (`record` en `application/{entidad}/command/model/`) y `RequestDTO` (`record` en `infrastructure/{entidad}/command/adapter/in/web/dto/`) creados. `RequestDTO` con anotaciones Jakarta + método `toCommand()`. Use cases read retornan `ReadModel` (no DTO). Campos en español idénticos al aggregate.
 - [ ] Caso de uso (`{Accion}{Entidad}UseCase`) con `@RequiredArgsConstructor`, `@Transactional` y drenado de eventos
 - [ ] Controller REST con `@Valid @RequestBody` y autorización vía `@PreAuthorize("hasAuthority('{contexto}:{recurso-kebab}:{accion}')")` **en kebab-case** (ej. `fichas:ficha-perfil:create`) — client role declarado en sección 9 del plan, sin camelCase ni MAYÚSCULAS
 - [ ] Controller documentado con `@Tag`, `@Operation`, `@ApiResponses` y `@SecurityRequirement` (ADR-011)
-- [ ] Entidad JPA con `@Table(name = "...")` (sin atributo `schema`) y adaptador de repositorio creados
+- [ ] Entidad JPA con `@Table(name = "...")` (sin atributo `schema`) y **todo `@Column`/`@JoinColumn` con `name` explícito (incluido el `@Id`)** y adaptador de repositorio creados
 - [ ] Migración Flyway (`V{major}.{minor}__{descripcion}.sql`, siguiente número secuencial del contexto) en `db/migration/{contexto}/`, BD correcta según tabla de mapeo, sin prefijo de schema en el SQL
 - [ ] Eventos RabbitMQ publicados/consumidos (si aplica)
 - [ ] Tests unitarios con patrón AAA (cobertura ≥ 75%), incluyen ciclo completo de eventos del Aggregate Root
@@ -954,7 +1011,7 @@ ejemplos detallados.
 8. **DDD estricto — `AggregateRoot` condicional a eventos:** en los 6 contextos de negocio, la entidad raíz extiende `AggregateRoot` **SOLO si la HU emite eventos** (respuesta A o B a la pregunta 5). Si la HU NO emite eventos (respuesta C), la entidad raíz **NO** extiende `AggregateRoot` y es una clase plana con factories `crear`/`reconstruir`. El contexto `seguridad` nunca usa `AggregateRoot`. Documenta en la sección 4 del plan: (a) si la entidad extiende o no `AggregateRoot` con su justificación, y (b) qué eventos emite (o "ninguno: <razón>"). **Coherencia dura:** "Eventos: ninguno" ⟺ entidad NO extiende `AggregateRoot` ⟺ el use case NO inyecta `EventPublisher` ni drena. Nunca declares una de las tres sin las otras dos.
 9. **Verificación de existencia de la entidad raíz (Paso 4.2 del Protocolo de Carga):** antes de generar el árbol de archivos, verifica si `domain/{entidad}/aggregate/{Entidad}Aggregate.java` ya existe en el código del contexto. Si NO existe (primera HU del contexto que la toca), inclúyela como archivo a CREAR — incluso si la HU es de Consulta. Si la HU emite eventos, incluye también `{Entidad}{Accion}Event`. Si la HU NO emite eventos, NO incluyas archivos en `domain/{entidad}/event/`. Si la entidad existente NO extiende `AggregateRoot` y esta HU SÍ emite eventos, el plan declara "Modificar `{Entidad}Aggregate.java` para añadir `extends AggregateRoot`" en la sección "Archivos a MODIFICAR". **Verifica leyendo, no asumiendo:** cuando el plan afirme algo sobre código ya existente (qué extiende una entidad, qué inyecta un use case, qué campos tiene un DTO/puerto), ABRE el archivo real y confírmalo antes de escribirlo. Afirmaciones no verificadas como "ya inyecta `EventPublisher`" o "ya extiende `AggregateRoot`" son la causa directa de planes incorrectos. **Lookups FK sobre otra entidad/vista materializada** (ej. validar existencia de un Estudiante) van por su `{Otro}QueryOutputPort` — NUNCA inyectes un `JpaRepository` de infrastructure dentro de un use case de application (rompe la dirección de dependencias).
 10. **Flujo de datos JPA → dominio → DTO (regla DDD inviolable):** el puerto `{Entidad}OutputPort` retorna entidades de dominio (`{Entidad}` o `Page<{Entidad}>` de Spring Data), nunca DTOs ni JPA Entities. El adapter convierte JPA Entity → entidad de dominio con `reconstruir(...)` o vía `JpaEntity::toDomain`. El use case convierte entidad de dominio → DTO de respuesta. **Ningún plan puede saltarse este flujo, ni siquiera para optimizar consultas.** Si una HU justifica saltarse el dominio (CQRS query side), debe documentarse explícitamente en la sección 5 como decisión arquitectónica, no asumirse silenciosamente.
-11. **Paginación y filtros con Criteria pattern (opcional, solo HUs read que lo requieran):** si la HU es read y necesita paginación, ordenamiento o filtros dinámicos, el plan declara: `XxxCriteria` (`application/{entidad}/query/criteria/`, extiende `QueryCriteria` con whitelist de campos filtrables/ordenables), `XxxJpaSpecification` (`infrastructure/.../query/adapter/out/persistence/`, extiende `QueryJpaSpecification<JpaEntity>` con mapa de `CampoSpec`), y opcionalmente `XxxSortMapper` para traducir nombres de dominio a paths JPA. El `QueryOutputPort` retorna `PaginatedResult<XxxReadModel>` (de `shared:domain.pagination`); el `QueryInputAdapter` convierte con `PageResponseDTO.from(...)` antes del response. **`Pageable` / `org.springframework.data.domain.Page` NO pueden aparecer en `application/` ni `domain/`** — solo en el `QueryOutputAdapter` de infrastructure. Si la HU read NO necesita ninguno de los tres (paginación, orden, filtros), no se crean estos archivos; el puerto recibe parámetros simples y retorna `ReadModel` directamente. Ver SKILL sección "Paginación y Filtros — `PaginatedResult` + Criteria pattern".
+11. **Paginación y filtros con Criteria pattern (opcional, solo HUs read que lo requieran):** si la HU es read y necesita paginación, ordenamiento o filtros dinámicos, el plan declara: `XxxCriteria` (`application/{entidad}/query/criteria/`, extiende `QueryCriteria` con whitelist de campos filtrables/ordenables), `XxxJpaSpecification` (`infrastructure/.../query/adapter/out/persistence/`, extiende `QueryJpaSpecification<JpaEntity>` con mapa de `CampoSpec`), y opcionalmente `XxxSortMapper` para traducir nombres de dominio a paths JPA. El `QueryOutputPort` retorna `PaginatedResult<XxxReadModel>` (de `shared:domain.pagination`); el InputAdapter de lectura convierte con `PageResponseDTO.from(...)` antes del response. **`Pageable` / `org.springframework.data.domain.Page` NO pueden aparecer en `application/` ni `domain/`** — solo en el `QueryOutputAdapter` de infrastructure. Si la HU read NO necesita ninguno de los tres (paginación, orden, filtros), no se crean estos archivos; el puerto recibe parámetros simples y retorna `ReadModel` directamente. Ver SKILL sección "Paginación y Filtros — `PaginatedResult` + Criteria pattern".
 12. **Integraciones externas:** si la HU toca Keycloak, SMTP, S3, Redis con lógica propia, o servicios HTTP externos, el plan **debe** incluir la sección 5 con el puerto abstracto (`domain/port/out/`) y el adaptador concreto (`infrastructure/adapter/out/{tipo}/`). Ninguna regla de negocio puede vivir en el adaptador — solo traducción entre mundos.
 13. **Catálogo de mensajes obligatorio (`shared:message`):** todo string, código de error, nombre de campo, mensaje de log o límite numérico de negocio que introduzca la HU **DEBE** declararse como constante en `shared:message`. Nunca como literal embebido en código. En la sección 6 del plan, si la HU introduce al menos uno, incluye la sub-sección "Catálogo de mensajes" con: (a) fila MODIFICAR para `shared/message/.../{Contexto}Messages.java`, y (b) inventario tabular de las constantes a agregar — agrupadas por las 5 secciones (`// Campos` → `// Límites` → `// Códigos de error` → `// Mensajes de error` → `// Logs`). Si la HU no introduce ninguno, documenta explícitamente: "Sin cambios al catálogo `shared:message`". Nunca crear paquetes `{entidad}/message/` dentro de un contexto — esa convención fue retirada. Ver SKILL sección "Mensajes y textos — Message Catalog (`shared:message`)".
 14. **Si la HU toca más de un bounded context**, genera una sección del plan por cada contexto afectado.

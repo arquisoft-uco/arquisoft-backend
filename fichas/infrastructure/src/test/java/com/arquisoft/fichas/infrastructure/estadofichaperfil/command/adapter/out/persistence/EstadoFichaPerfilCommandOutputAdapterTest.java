@@ -7,12 +7,10 @@ import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJp
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilMapper;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -29,21 +27,24 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
     @Autowired
     private EstadoFichaJpaRepository estadoFichaJpaRepository;
 
-    @Autowired
-    private EntityManager entityManager;
-
     private EstadoFichaPerfilCommandOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EstadoFichaPerfilCommandOutputAdapter(estadoFichaPerfilJpaRepository);
-        ReflectionTestUtils.setField(adapter, "entityManager", entityManager);
+        adapter = new EstadoFichaPerfilCommandOutputAdapter(
+                estadoFichaPerfilJpaRepository, estadoFichaJpaRepository);
 
         var estadoFicha = new EstadoFichaJpaEntity();
         estadoFicha.setId("EN_CONSTRUCCION");
         estadoFicha.setNombre("En Construccion");
         estadoFicha.setDescripcion("Estado inicial");
         estadoFichaJpaRepository.save(estadoFicha);
+
+        var estadoAprobada = new EstadoFichaJpaEntity();
+        estadoAprobada.setId("APROBADA");
+        estadoAprobada.setNombre("Aprobada");
+        estadoAprobada.setDescripcion("Estado terminal");
+        estadoFichaJpaRepository.save(estadoAprobada);
     }
 
     @Test

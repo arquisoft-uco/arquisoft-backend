@@ -8,7 +8,7 @@ public final class EstudianteNoEncontradoException extends ApplicationException 
 
     public EstudianteNoEncontradoException(UUID estudianteId) {
         super(
-            FichasMessages.Estudiante.NO_ENCONTRADO.formatted(estudianteId),
+            FichasMessages.Estudiante.NO_ENCONTRADO_MSG.formatted(estudianteId),
             FichasMessages.Estudiante.ESTUDIANTE_NO_ENCONTRADO
         );
     }

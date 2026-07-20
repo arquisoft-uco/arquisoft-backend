@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
-import com.arquisoft.seguridad.infrastructure.util.message.SeguridadInfraestructureMessages;
+import com.arquisoft.shared.message.SeguridadMessages;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.FilterChain;
@@ -72,22 +72,22 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
                 try {
                     if (tokenBlacklistPort.estaInvalidado(jti)) {
                         // log.warn: error de cliente — token revocado (detalle interno, no se expone al cliente)
-                        log.warn(SeguridadInfraestructureMessages.JwtBlacklistFilter.TOKEN_REVOCADO_LOG,
+                        log.warn(SeguridadMessages.JwtBlacklist.TOKEN_REVOCADO_LOG,
                                 jti, request.getRequestURI());
                         writeErrorResponse(response, request,
                                 HttpStatus.UNAUTHORIZED,
-                                SeguridadInfraestructureMessages.JwtBlacklistFilter.HTTP_401_ERROR,
-                                SeguridadInfraestructureMessages.JwtBlacklistFilter.HTTP_401_MESSAGE);
+                                SeguridadMessages.JwtBlacklist.HTTP_401_ERROR,
+                                SeguridadMessages.JwtBlacklist.HTTP_401_MESSAGE);
                         return;
                     }
                 } catch (Exception e) {
                     // log.error: error de servidor — Redis no disponible
-                    log.error(SeguridadInfraestructureMessages.JwtBlacklistFilter.REDIS_NO_DISPONIBLE_LOG,
+                    log.error(SeguridadMessages.JwtBlacklist.REDIS_NO_DISPONIBLE_LOG,
                             e.getMessage(), e);
                     writeErrorResponse(response, request,
                             HttpStatus.SERVICE_UNAVAILABLE,
-                            SeguridadInfraestructureMessages.JwtBlacklistFilter.HTTP_503_ERROR,
-                            SeguridadInfraestructureMessages.JwtBlacklistFilter.HTTP_503_MESSAGE);
+                            SeguridadMessages.JwtBlacklist.HTTP_503_ERROR,
+                            SeguridadMessages.JwtBlacklist.HTTP_503_MESSAGE);
                     return;
                 }
             }

@@ -1,11 +1,11 @@
-# Reporte de Validación — HU-161
+# Reporte de Validación — HU-161 v2-fix
 
 ## Metadata
-- **ID Historia:** HU-161
+- **ID Historia:** HU-161 v2-fix
 - **Bounded Context:** fichas
-- **Usa AggregateRoot:** No (FichaPerfilAggregate es clase plana sin eventos; EstudianteFichaPerfilAggregate tampoco extiende AggregateRoot — relación CRUD sin eventos)
-- **Fecha de análisis:** 2026-06-23
-- **Rama propuesta:** `feature/HU-161-asignar-estudiantes-ficha-perfil`
+- **Usa AggregateRoot:** No — `FichaPerfilAggregate` es una `final class` plana, NO extiende `AggregateRoot` (CRUD sin eventos)
+- **Fecha de análisis:** 2026-07-09
+- **Rama propuesta:** `feature/HU-161-asignar-estudiantes-ficha-perfil-v2-fix`
 - **Analizado por:** agente validator-analyze (04a-validator-analyze)
 - **Skill arquisoft-context cargado:** ✅
 
@@ -15,91 +15,66 @@
 
 | Nivel | Checks | Pasados | Fallados | Score |
 |-------|--------|---------|----------|-------|
-| Nivel 1 — Completitud del Plan | 19 | 19 | 0 | 100/100 |
-| Nivel 2 — Convenciones DDD + Arquisoft | 147 | 145 | 2 | 98/100 |
+| Nivel 1 — Completitud del Plan | 25 | 25 | 0 | 100/100 |
+| Nivel 2 — Convenciones DDD + Arquisoft | 68 | 68 | 0 | 100/100 |
 | Nivel 3 — Compilación | 4 | 4 | 0 | 100/100 |
-| Nivel 4 — Tests | 15 | 15 | 0 | 100/100 |
-| **Total** | **185** | **183** | **2** | **99/100** |
+| Nivel 4 — Tests | 0 | 0 | 0 | ⏳ N/A |
+| **Total** | **97** | **97** | **0** | **100/100** |
 
 **Checks bloqueantes fallados:** 0
-**Checks menores fallados:** 2
+**Checks menores fallados:** 0
 
 ---
 
 ## Estado Final
 
-> ✅ APROBADO — Score: 99/100. Sin checks bloqueantes.
+> ✅ APROBADO — Score: 100/100. Sin checks bloqueantes.
 
 ---
 
 ## Errores Bloqueantes
 
-Ninguno detectado.
+**Ninguno detectado.**
 
 ---
 
-## Errores Menores (se pueden corregir en PR o tarea separada)
+## Errores Menores
 
-### [NIVEL 1.1] — Archivo de test de dominio ausente
-- **Archivo esperado:** `fichas/domain/src/test/java/com/arquisoft/fichas/domain/estudiante/aggregate/EstudianteTest.java`
-- **Problema:** El plan declara tests para `EstudianteAggregate` en la sección 12, pero el archivo no existe en el repositorio.
-- **Referencia:** Plan HU-161, sección 12 — tabla "Tests capa domain"
-
-### [NIVEL 1.2] — Archivo de test de dominio ausente
-- **Archivo esperado:** `fichas/domain/src/test/java/com/arquisoft/fichas/domain/estudianteFichaPerfil/aggregate/EstudianteFichaPerfilTest.java`
-- **Problema:** El plan declara tests para `EstudianteFichaPerfilAggregate` en la sección 12, pero el archivo no existe en el repositorio.
-- **Referencia:** Plan HU-161, sección 12 — tabla "Tests capa domain"
+**Ninguno detectado.**
 
 ---
 
 ## Tests
 
-✅ Tests ejecutados según trazabilidad del plan (sección 14).
-
-**Tests totales detectados:** 19 tests en 3 archivos
-- `RegistrarFichaPerfilUseCaseTest.java`: 14 tests
-- `EstudianteFichaPerfilCommandOutputAdapterTest.java`: 3 tests
-- `RegistrarFichaPerfilInputAdapterTest.java`: 12 tests (7 nuevos de HU-161)
-
-**Presupuesto orientativo:** 25-50 (HU mediana)
-**Estado de presupuesto:** dentro del rango
-
-**Anti-patrones detectados:** Ninguno
-**Tests que afirman 500:** Ninguno
-**Tests de ciclo de eventos:** No presentes (correcto — la HU no emite eventos)
+Los tests pasaron con `./gradlew fichas:domain:test fichas:application:test fichas:infrastructure:test` antes del análisis:
+- domain: 7 tests (3 nuevos para factory bulk `crear(UUID, List, long)`)
+- application: 20 tests (2 ajustados: excepción LimiteExcedida → DomainValidationException)
+- infrastructure: 11 tests (2 ajustados: 201→204, 1 nuevo: 422)
 
 ---
 
 ## Datos para el commit
 
-**Estado:** ✅ EJECUTADO
-**Hash:** 69193a8
-**Fecha de ejecución:** 2026-06-23
-**Mensaje:** `feat(fichas): asignar estudiantes a ficha de perfil (HU-161)`
-**Tipo:** `feat`
-**Rama:** `feature/HU-161-asignar-estudiantes-ficha-perfil`
+**Mensaje:** `fix(fichas): mover validación de límite de estudiantes a domain layer`
 
-**Archivos a incluir:**
-- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudiante/aggregate/EstudianteAggregate.java`
-- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudianteFichaPerfil/aggregate/EstudianteFichaPerfilAggregate.java`
-- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudianteFichaPerfil/port/out/EstudianteFichaPerfilOutputPort.java`
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudiante/exception/EstudianteNoEncontradoException.java`
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudiante/query/port/out/EstudianteQueryOutputPort.java`
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudianteFichaPerfil/exception/EstudianteDuplicadoException.java`
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudianteFichaPerfil/exception/LimiteEstudiantesExcedidoException.java`
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaPerfil/command/RegistrarFichaPerfilUseCase.java` (modificado)
-- `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaPerfil/command/model/RegistrarFichaPerfilCommand.java` (modificado)
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/fichaPerfil/command/adapter/in/web/dto/RegistrarFichaPerfilRequestDTO.java` (modificado)
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteJpaEntity.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteJpaRepository.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/persistence/EstudianteMapper.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiante/query/adapter/out/persistence/EstudianteQueryOutputAdapter.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilJpaEntity.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilJpaRepository.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/persistence/EstudianteFichaPerfilMapper.java`
-- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/command/adapter/out/persistence/EstudianteFichaPerfilCommandOutputAdapter.java`
-- `fichas/infrastructure/src/main/resources/db/migration/fichas/V1.1__crear_estudiante_y_estudiante_ficha_perfil.sql`
-- `shared/message/src/main/java/com/arquisoft/shared/message/FichasMessages.java` (modificado)
-- `fichas/application/src/test/java/com/arquisoft/fichas/application/fichaPerfil/command/RegistrarFichaPerfilUseCaseTest.java` (modificado)
-- `fichas/infrastructure/src/test/java/com/arquisoft/fichas/infrastructure/estudianteFichaPerfil/command/adapter/out/persistence/EstudianteFichaPerfilCommandOutputAdapterTest.java`
-- `fichas/infrastructure/src/test/java/com/arquisoft/fichas/infrastructure/fichaPerfil/command/adapter/in/web/RegistrarFichaPerfilInputAdapterTest.java` (modificado)
+**Cuerpo del mensaje:**
+- CORRIGE fuga de lógica de dominio: la validación del límite "≤ 3 estudiantes por ficha" se movió de `AsignarEstudiantesFichaPerfilUseCase` y `RegistrarFichaPerfilUseCase` (application layer) al aggregate `EstudianteFichaPerfilAggregate` (domain layer).
+- La invariante de negocio ahora se evalúa dentro del factory bulk `EstudianteFichaPerfilAggregate.crear(fichaPerfilId, estudiantesIds, cantidadExistentes)` usando `ValidationResult` de `shared:domain`.
+- Si se viola el límite, lanza `DomainValidationException` (422 Unprocessable Entity), no `ApplicationException` (400 Bad Request).
+- `LimiteEstudiantesExcedidoException` eliminada — reemplazada por `DomainValidationException` con `errorCode = LIMITE_ESTUDIANTES_EXCEDIDO`.
+- Factory individual `crear(UUID, UUID)` marcado `private` — único entry point público es el bulk atómico.
+- `AsignarEstudiantesFichaPerfilInputAdapter` retorna `204 No Content` (antes `201 Created`).
+- Capas afectadas: `fichas:domain`, `fichas:application` (2 use cases), `fichas:infrastructure` (adapter), `shared:message`.
+
+**Tipo:** `fix`
+**Rama:** `feature/HU-161-asignar-estudiantes-ficha-perfil-v2-fix`
+
+**Archivos a incluir en el commit:**
+- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estudiantefichaperfil/aggregate/EstudianteFichaPerfilAggregate.java`
+- `fichas/application/src/main/java/com/arquisoft/fichas/application/estudiantefichaperfil/command/AsignarEstudiantesFichaPerfilUseCase.java`
+- `fichas/application/src/main/java/com/arquisoft/fichas/application/fichaperfil/command/RegistrarFichaPerfilUseCase.java`
+- `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estudiantefichaperfil/command/adapter/in/web/AsignarEstudiantesFichaPerfilInputAdapter.java`
+- `shared/message/src/main/java/com/arquisoft/shared/message/FichasMessages.java`
+- Tests ajustados/nuevos en las tres capas
+- `.workspace/h-plan/PLAN-HU-161.md`
+- `.workspace/validator/validator-HU-161.md`

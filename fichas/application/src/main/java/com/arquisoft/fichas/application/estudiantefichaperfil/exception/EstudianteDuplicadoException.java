@@ -8,7 +8,7 @@ public final class EstudianteDuplicadoException extends ApplicationException {
 
     public EstudianteDuplicadoException(UUID estudianteId) {
         super(
-            FichasMessages.EstudianteFichaPerfil.DUPLICADO.formatted(estudianteId),
+            FichasMessages.EstudianteFichaPerfil.DUPLICADO_MSG.formatted(estudianteId),
             FichasMessages.EstudianteFichaPerfil.ESTUDIANTE_DUPLICADO
         );
     }

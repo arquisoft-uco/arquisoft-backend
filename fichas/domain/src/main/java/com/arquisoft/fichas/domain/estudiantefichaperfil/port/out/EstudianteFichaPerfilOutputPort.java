@@ -9,4 +9,8 @@ public interface EstudianteFichaPerfilOutputPort {
     void guardar(EstudianteFichaPerfilAggregate relacion);
 
     boolean existePorFichaYEstudiante(UUID fichaPerfilId, UUID estudianteId);
+
+    long contarPorFichaPerfilId(UUID fichaPerfilId);
+
+    void eliminar(UUID fichaPerfilId, UUID estudianteId);
 }

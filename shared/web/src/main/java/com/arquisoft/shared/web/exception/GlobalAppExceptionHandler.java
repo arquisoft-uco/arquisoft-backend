@@ -1,6 +1,7 @@
 package com.arquisoft.shared.web.exception;
 
 import com.arquisoft.shared.exception.ApplicationException;
+import com.arquisoft.shared.exception.AuthorizationException;
 import com.arquisoft.shared.exception.BaseException;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.exception.InfrastructureException;
@@ -53,6 +54,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Map<Class<? extends BaseException>, ExceptionMapping> EXCEPTION_MAPPINGS = Map.of(
             DomainException.class,        new ExceptionMapping(HttpStatus.UNPROCESSABLE_CONTENT, "Error de dominio",       false),
             ApplicationException.class,   new ExceptionMapping(HttpStatus.BAD_REQUEST,          "Error de aplicación",    false),
+            AuthorizationException.class, new ExceptionMapping(HttpStatus.FORBIDDEN,            "Acceso denegado",        false),
             InfrastructureException.class, new ExceptionMapping(HttpStatus.SERVICE_UNAVAILABLE,  "Servicio no disponible", true)
     );
 

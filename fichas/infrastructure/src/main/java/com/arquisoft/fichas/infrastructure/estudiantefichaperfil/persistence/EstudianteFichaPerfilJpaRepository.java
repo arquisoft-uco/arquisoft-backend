@@ -7,4 +7,8 @@ import java.util.UUID;
 public interface EstudianteFichaPerfilJpaRepository extends JpaRepository<EstudianteFichaPerfilJpaEntity, UUID> {
 
     boolean existsByFichaPerfilIdAndEstudianteId(UUID fichaPerfilId, UUID estudianteId);
+
+    long countByFichaPerfilId(UUID fichaPerfilId);
+
+    void deleteByFichaPerfilIdAndEstudianteId(UUID fichaPerfilId, UUID estudianteId);
 }

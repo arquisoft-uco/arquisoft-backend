@@ -1,9 +1,11 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.out.persistence;
 
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemJpaEntity;
+import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemJpaRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,23 +28,18 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     private ItemFichaPerfilJpaRepository jpaRepository;
 
     @Autowired
+    private TipoItemJpaRepository tipoItemJpaRepository;
+
+    @Autowired
     private EntityManager entityManager;
 
     private ItemFichaPerfilCommandOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new ItemFichaPerfilCommandOutputAdapter(jpaRepository);
-        // Inyección manual del EntityManager (en producción lo hace Spring)
-        try {
-            var field = ItemFichaPerfilCommandOutputAdapter.class.getDeclaredField("entityManager");
-            field.setAccessible(true);
-            field.set(adapter, entityManager);
-        } catch (Exception e) {
-            throw new RuntimeException("Error inyectando EntityManager en test", e);
-        }
+        adapter = new ItemFichaPerfilCommandOutputAdapter(jpaRepository, tipoItemJpaRepository);
 
-        // Seed: insertar tipo_item en H2 para que getReference funcione
+        // Seed: insertar tipo_item en H2 para que la referencia por id funcione
         entityManager.createNativeQuery(
                 "INSERT INTO tipo_item (id, nombre, descripcion) VALUES (?, ?, ?)"
         )
@@ -103,9 +100,9 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeRetornarTrue_cuandoParExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
 
-        TipoItemJpaEntity tipoItemRef = entityManager.getReference(TipoItemJpaEntity.class, tipoItemCode);
+        TipoItemJpaEntity tipoItemRef = tipoItemJpaRepository.getReferenceById(tipoItem);
         ItemFichaPerfilJpaEntity entity = ItemFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
@@ -117,7 +114,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        boolean existe = adapter.existsPorFichaYTipoItem(fichaPerfilId, tipoItemCode);
+        boolean existe = adapter.existsPorFichaYTipoItem(fichaPerfilId, tipoItem);
 
         // Assert
         assertThat(existe).isTrue();
@@ -127,12 +124,71 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeRetornarFalse_cuandoParNoExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        String tipoItemCode = "OBJETIVO_GENERAL";
+        String tipoItem = "OBJETIVO_GENERAL";
 
         // Act
-        boolean existe = adapter.existsPorFichaYTipoItem(fichaPerfilId, tipoItemCode);
+        boolean existe = adapter.existsPorFichaYTipoItem(fichaPerfilId, tipoItem);
 
         // Assert
         assertThat(existe).isFalse();
+    }
+
+    @Test
+    void debeRetornarTrue_cuandoItemExiste() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        TipoItemJpaEntity tipoItemRef = tipoItemJpaRepository.getReferenceById("OBJETIVO_GENERAL");
+        ItemFichaPerfilJpaEntity entity = ItemFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaPerfilId)
+                .tipoItem(tipoItemRef)
+                .contenido("Contenido existente")
+                .build();
+        ItemFichaPerfilJpaEntity saved = jpaRepository.save(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        boolean existe = adapter.existsById(saved.getId());
+
+        // Assert
+        assertThat(existe).isTrue();
+    }
+
+    @Test
+    void debeRetornarFalse_cuandoItemNoExiste() {
+        // Arrange
+        UUID itemIdInexistente = UUID.randomUUID();
+
+        // Act
+        boolean existe = adapter.existsById(itemIdInexistente);
+
+        // Assert
+        assertThat(existe).isFalse();
+    }
+
+    @Test
+    void debeGuardarCambios_cuandoModificarContenido() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+                fichaPerfilId,
+                "OBJETIVO_GENERAL",
+                "Contenido inicial"
+        );
+        adapter.guardar(aggregate);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        ItemFichaPerfilAggregate reconstruido = adapter.buscarPorId(aggregate.getId()).orElseThrow();
+        reconstruido.modificarContenido("Contenido modificado", EstadoFicha.EN_CONSTRUCCION);
+        adapter.guardar(reconstruido);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        ItemFichaPerfilJpaEntity savedEntity = jpaRepository.findById(aggregate.getId()).orElseThrow();
+        assertThat(savedEntity.getContenido()).isEqualTo("Contenido modificado");
     }
 }

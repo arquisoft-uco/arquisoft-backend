@@ -3,6 +3,8 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persis
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
 import com.arquisoft.shared.pagination.PaginatedResult;
@@ -25,11 +27,18 @@ class FichaPerfilQueryOutputAdapterTest {
     @Autowired
     private FichaPerfilJpaRepository fichaPerfilJpaRepository;
 
+    @Autowired
+    private EstudianteFichaPerfilJpaRepository estudianteFichaPerfilJpaRepository;
+
     private FichaPerfilQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new FichaPerfilQueryOutputAdapter(fichaPerfilJpaRepository, new FichaPerfilJpaSpecification());
+        adapter = new FichaPerfilQueryOutputAdapter(
+                fichaPerfilJpaRepository,
+                new FichaPerfilJpaSpecification(),
+                estudianteFichaPerfilJpaRepository
+        );
     }
 
     @Test
@@ -72,5 +81,108 @@ class FichaPerfilQueryOutputAdapterTest {
         assertThat(resultado.getTotalElements()).isZero();
         assertThat(resultado.getPage()).isEqualTo(0);
         assertThat(resultado.getSize()).isEqualTo(10);
+    }
+
+    @Test
+    void debeRetornarTrue_cuandoEstudianteEsPropietario() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+
+        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .identificador("DOC-001")
+                .nombre("Juan Salazar")
+                .email("juan.salazar@soyuco.edu.co")
+                .build();
+        entityManager.persist(asesor);
+
+        FichaPerfilJpaEntity ficha = FichaPerfilJpaEntity.builder()
+                .id(fichaPerfilId)
+                .tituloProyecto("Arquisoft Backend")
+                .asesorFicha(asesor)
+                .build();
+        entityManager.persist(ficha);
+
+        EstudianteFichaPerfilJpaEntity relacion = EstudianteFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaPerfilId)
+                .estudianteId(estudianteId)
+                .build();
+        entityManager.persist(relacion);
+        entityManager.flush();
+
+        // Act
+        boolean esPropietario = adapter.esEstudiantePropietario(fichaPerfilId, estudianteId);
+
+        // Assert
+        assertThat(esPropietario).isTrue();
+    }
+
+    @Test
+    void debeRetornarFalse_cuandoEstudianteNoEsPropietario() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+        UUID otroEstudianteId = UUID.randomUUID();
+
+        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .identificador("DOC-001")
+                .nombre("Juan Salazar")
+                .email("juan.salazar@soyuco.edu.co")
+                .build();
+        entityManager.persist(asesor);
+
+        FichaPerfilJpaEntity ficha = FichaPerfilJpaEntity.builder()
+                .id(fichaPerfilId)
+                .tituloProyecto("Arquisoft Backend")
+                .asesorFicha(asesor)
+                .build();
+        entityManager.persist(ficha);
+
+        EstudianteFichaPerfilJpaEntity relacion = EstudianteFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaPerfilId)
+                .estudianteId(otroEstudianteId)
+                .build();
+        entityManager.persist(relacion);
+        entityManager.flush();
+
+        // Act
+        boolean esPropietario = adapter.esEstudiantePropietario(fichaPerfilId, estudianteId);
+
+        // Assert
+        assertThat(esPropietario).isFalse();
+    }
+
+    @Test
+    void debeRetornarTrue_cuandoFichaExistePorId() {
+        // Arrange
+        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .identificador("DOC-002")
+                .nombre("Ana Ramirez")
+                .email("ana.ramirez@soyuco.edu.co")
+                .build();
+        entityManager.persist(asesor);
+
+        UUID fichaId = UUID.randomUUID();
+        FichaPerfilJpaEntity ficha = FichaPerfilJpaEntity.builder()
+                .id(fichaId)
+                .tituloProyecto("Proyecto Existente")
+                .asesorFicha(asesor)
+                .build();
+        entityManager.persist(ficha);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.existsById(fichaId)).isTrue();
+    }
+
+    @Test
+    void debeRetornarFalse_cuandoFichaNoExistePorId() {
+        // Act & Assert
+        assertThat(adapter.existsById(UUID.randomUUID())).isFalse();
     }
 }

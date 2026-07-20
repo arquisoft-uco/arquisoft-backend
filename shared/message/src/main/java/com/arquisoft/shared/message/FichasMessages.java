@@ -13,16 +13,15 @@ public final class FichasMessages {
         private FichaPerfil() {}
 
         // Campos
-        public static final String CAMPO_ID              = "id";
         public static final String CAMPO_TITULO          = "tituloProyecto";
         public static final String CAMPO_ASESOR_FICHA_ID = "asesorFichaId";
+        public static final String CAMPO_ESTADO_FICHA    = "estadoFicha";
 
         // Límites
         public static final int TITULO_MAX = 100;
         public static final int ESTUDIANTES_MAX = 3;
 
         // Códigos de error
-        public static final String ID_REQUERIDO            = "FICHA_ID_REQUERIDO";
         public static final String TITULO_REQUERIDO        = "FICHA_TITULO_REQUERIDO";
         public static final String TITULO_DEMASIADO_LARGO  = "FICHA_TITULO_DEMASIADO_LARGO";
         public static final String ASESOR_REQUERIDO        = "FICHA_ASESOR_REQUERIDO";
@@ -30,15 +29,17 @@ public final class FichasMessages {
         public static final String ASESOR_NO_ENCONTRADO    = "ASESOR_NO_ENCONTRADO";
         public static final String FICHA_NO_ENCONTRADA     = "FICHA_NO_ENCONTRADA";
         public static final String FICHA_NO_PROPIETARIO    = "FICHA_NO_PROPIETARIO";
+        public static final String MISMO_ASESOR            = "MISMO_ASESOR";
+        public static final String ESTADO_TERMINAL         = "ESTADO_TERMINAL";
 
         // Mensajes de error
-        public static final String TITULO_DUPLICADO        = "El título ya existe: %s";
+        public static final String TITULO_DUPLICADO_MSG    = "El título ya existe: %s";
         public static final String ASESOR_NO_ENCONTRADO_MSG = "Asesor Ficha no encontrado: %s";
-        public static final String TITULO_REQUERIDO_MSG    = "El título del proyecto es obligatorio";
-        public static final String ASESOR_REQUERIDO_MSG    = "El asesor ficha es obligatorio";
         public static final String FICHA_NO_ENCONTRADA_MSG = "No se encontró la ficha de perfil con id: %s";
         public static final String FICHA_NO_PROPIETARIO_MSG =
                 "El estudiante %s no es propietario de la ficha %s";
+        public static final String MISMO_ASESOR_MSG = "El asesor nuevo no puede ser el mismo que el actual: %s";
+        public static final String ESTADO_TERMINAL_MSG = "No se puede cambiar el asesor porque la ficha está en estado terminal: %s";
 
         // Logs
         public static final String LOG_REGISTRADA            = "Ficha de perfil registrada — id={}";
@@ -48,6 +49,7 @@ public final class FichasMessages {
         public static final String LOG_CONSULTA_COMPLETADA   = "Consulta fichas-perfil completada — total={}, pagina={}, tamanio={}";
         public static final String LOG_ORDENAMIENTO_INVALIDO  = "Campo de ordenamiento inválido: {}";
         public static final String LOG_USO_INVALIDO_API_ORDEN = "Uso inválido de la API de acceso a datos al ordenar: {}";
+        public static final String LOG_ASESOR_CAMBIADO      = "Asesor de ficha cambiado — fichaId={}, nuevoAsesorId={}";
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -60,28 +62,36 @@ public final class FichasMessages {
 
         // Campos
         public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
-        public static final String CAMPO_TIPO_ITEM_CODE  = "tipoItemCode";
+        public static final String CAMPO_TIPO_ITEM       = "tipoItem";
         public static final String CAMPO_CONTENIDO       = "contenido";
+        public static final String CAMPO_ESTADO_FICHA    = "estadoFicha";
 
         // Límites
         public static final int CONTENIDO_MAX = 7000;
 
         // Códigos de error
         public static final String FICHA_PERFIL_ID_REQUERIDO     = "ITEM_FICHA_PERFIL_ID_REQUERIDO";
-        public static final String TIPO_ITEM_CODE_REQUERIDO      = "ITEM_TIPO_ITEM_CODE_REQUERIDO";
+        public static final String TIPO_ITEM_REQUERIDO           = "ITEM_TIPO_ITEM_REQUERIDO";
         public static final String CONTENIDO_REQUERIDO           = "ITEM_CONTENIDO_REQUERIDO";
         public static final String CONTENIDO_DEMASIADO_LARGO     = "ITEM_CONTENIDO_DEMASIADO_LARGO";
         public static final String ITEM_TIPO_DUPLICADO           = "ITEM_TIPO_DUPLICADO";
         public static final String ITEM_FICHA_NO_AUTORIZADA      = "ITEM_FICHA_NO_AUTORIZADA";
         public static final String TIPO_ITEM_INVALIDO            = "TIPO_ITEM_INVALIDO";
+        public static final String ITEM_NO_ENCONTRADO            = "ITEM_NO_ENCONTRADO";
+        public static final String ESTADO_FICHA_REQUERIDO        = "ITEM_ESTADO_FICHA_REQUERIDO";
+        public static final String ESTADO_FICHA_NO_MODIFICABLE   = "ESTADO_FICHA_NO_MODIFICABLE";
 
         // Mensajes de error
         public static final String TIPO_ITEM_INVALIDO_MSG        = "El tipo de ítem '%s' no es válido";
         public static final String TIPO_ITEM_DUPLICADO_MSG       = "La ficha ya tiene un ítem del tipo: %s";
         public static final String FICHA_NO_AUTORIZADA_MSG       = "El estudiante no es propietario de la ficha: %s";
+        public static final String ITEM_NO_ENCONTRADO_MSG        = "El ítem con id %s no existe";
+        public static final String ESTADO_FICHA_NO_MODIFICABLE_MSG =
+                "No se puede modificar el ítem porque la ficha está en estado: %s";
 
         // Logs
-        public static final String LOG_AGREGADO = "Ítem agregado — id={}, fichaPerfilId={}, tipoItem={}";
+        public static final String LOG_AGREGADO   = "Ítem agregado — id={}, fichaPerfilId={}, tipoItem={}";
+        public static final String LOG_MODIFICADO = "Ítem modificado — id={}";
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -93,10 +103,6 @@ public final class FichasMessages {
         private AsesorFicha() {}
 
         // Campos
-        public static final String CAMPO_ID            = "id";
-        public static final String CAMPO_IDENTIFICADOR = "identificador";
-        public static final String CAMPO_NOMBRE        = "nombre";
-        public static final String CAMPO_EMAIL         = "email";
 
         // (Sin códigos ni logs por ahora — el aggregate solo expone rebuild.)
     }
@@ -142,7 +148,7 @@ public final class FichasMessages {
         public static final String ESTUDIANTE_NO_ENCONTRADO = "ESTUDIANTE_NO_ENCONTRADO";
 
         // Mensajes de error
-        public static final String NO_ENCONTRADO = "No se encontró el estudiante con id: %s";
+        public static final String NO_ENCONTRADO_MSG = "No se encontró el estudiante con id: %s";
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -154,20 +160,25 @@ public final class FichasMessages {
         private EstudianteFichaPerfil() {}
 
         // Campos
-        public static final String CAMPO_ID              = "id";
         public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
         public static final String CAMPO_ESTUDIANTE_ID   = "estudianteId";
+        public static final String CAMPO_ESTUDIANTES_IDS = "estudiantesIds";
 
         // Códigos de error
-        public static final String ID_REQUERIDO                 = "ESTUDIANTE_FICHA_PERFIL_ID_REQUERIDO";
         public static final String FICHA_PERFIL_ID_REQUERIDO    = "ESTUDIANTE_FICHA_PERFIL_FICHA_ID_REQUERIDO";
         public static final String ESTUDIANTE_ID_REQUERIDO      = "ESTUDIANTE_FICHA_PERFIL_ESTUDIANTE_ID_REQUERIDO";
         public static final String ESTUDIANTE_DUPLICADO         = "ESTUDIANTE_DUPLICADO";
         public static final String LIMITE_ESTUDIANTES_EXCEDIDO  = "LIMITE_ESTUDIANTES_EXCEDIDO";
+        public static final String ESTUDIANTE_FICHA_PERFIL_NO_ENCONTRADO = "ESTUDIANTE_FICHA_PERFIL_NO_ENCONTRADO";
 
         // Mensajes de error
-        public static final String DUPLICADO        = "El estudiante ya está asignado a esta ficha: %s";
-        public static final String LIMITE_EXCEDIDO  = "No se pueden asignar más de %d estudiantes a una ficha";
+        public static final String DUPLICADO_MSG        = "El estudiante ya está asignado a esta ficha: %s";
+        public static final String LIMITE_EXCEDIDO_MSG  = "No se pueden asignar más de %d estudiantes a una ficha";
+        public static final String RELACION_NO_ENCONTRADA_MSG = "La relación entre el estudiante %s y la ficha perfil %s no existe";
+
+        // Logs
+        public static final String LOG_ASIGNADO = "Estudiantes asignados a ficha — fichaId={}, cantidad={}";
+        public static final String LOG_REMOVIDO = "Estudiante removido de ficha perfil — fichaPerfilId={}, estudianteId={}";
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -179,19 +190,92 @@ public final class FichasMessages {
         private EstadoFichaPerfil() {}
 
         // Campos
-        public static final String CAMPO_ID                  = "id";
         public static final String CAMPO_FICHA_PERFIL_ID     = "fichaPerfilId";
         public static final String CAMPO_ESTADO_FICHA        = "estadoFicha";
-        public static final String CAMPO_FECHA_ACTUALIZACION = "fechaActualizacion";
 
         // Códigos de error
-        public static final String ID_REQUERIDO                    = "ESTADO_FICHA_PERFIL_ID_REQUERIDO";
         public static final String FICHA_PERFIL_ID_REQUERIDO       = "ESTADO_FICHA_PERFIL_FICHA_PERFIL_ID_REQUERIDO";
         public static final String ESTADO_FICHA_REQUERIDO          = "ESTADO_FICHA_PERFIL_ESTADO_FICHA_REQUERIDO";
-        public static final String FECHA_ACTUALIZACION_REQUERIDA   = "ESTADO_FICHA_PERFIL_FECHA_ACTUALIZACION_REQUERIDA";
 
         // Logs
         public static final String LOG_CREADO = "Estado ficha perfil creado — id={}, fichaPerfilId={}, estadoFicha={}";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // EvaluacionFichaPerfil
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class EvaluacionFichaPerfil {
+
+        private EvaluacionFichaPerfil() {}
+
+        // Campos
+        public static final String CAMPO_REPRESENTANTE_COMITE_ID = "representanteComiteId";
+        public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
+
+        // Códigos de error
+        public static final String EVALUACION_DUPLICADA = "EVALUACION_DUPLICADA";
+        public static final String REPRESENTANTE_REQUERIDO = "REPRESENTANTE_REQUERIDO";
+        public static final String FICHA_REQUERIDA = "FICHA_REQUERIDA";
+
+        // Mensajes de error
+        public static final String EVALUACION_DUPLICADA_MSG = "El representante %s ya tiene una evaluación para la ficha %s";
+
+        // Logs
+        public static final String LOG_REGISTRADA = "Evaluación de ficha de perfil registrada — id={}, representante={}, ficha={}";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // RepresentanteComite
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class RepresentanteComite {
+
+        private RepresentanteComite() {}
+
+        // Códigos de error
+        public static final String REPRESENTANTE_NO_ENCONTRADO = "REPRESENTANTE_NO_ENCONTRADO";
+
+        // Mensajes de error
+        public static final String REPRESENTANTE_NO_ENCONTRADO_MSG = "Representante del comité no encontrado: %s";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // EstadoEvaluacionFicha
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static final class EstadoEvaluacionFicha {
+
+        private EstadoEvaluacionFicha() {}
+
+        // Campos
+        public static final String CAMPO_EVALUACION_ID = "evaluacionFichaPerfilId";
+        public static final String CAMPO_ESTADO_EVALUACION = "estadoEvaluacion";
+
+        // Códigos de error
+        public static final String EVALUACION_NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
+        public static final String ESTADO_NO_ENCONTRADO = "ESTADO_NO_ENCONTRADO";
+        public static final String ESTADO_DUPLICADO = "ESTADO_DUPLICADO";
+        public static final String TRANSICION_INVALIDA = "TRANSICION_INVALIDA";
+        public static final String EVALUACION_REQUERIDA = "EVALUACION_REQUERIDA";
+        public static final String ESTADO_REQUERIDO = "ESTADO_REQUERIDO";
+        public static final String ESTADO_EN_EVALUACION_NO_MANUAL = "ESTADO_EN_EVALUACION_NO_MANUAL";
+        public static final String EVALUACION_NO_PROPIA = "EVALUACION_NO_PROPIA";
+
+        // Mensajes de error
+        public static final String EVALUACION_NO_ENCONTRADA_MSG = "Evaluación de ficha de perfil no encontrada con id: %s";
+        public static final String EVALUACION_NO_PROPIA_MSG =
+                "El representante del comité no es propietario de la evaluación: %s";
+        public static final String ESTADO_NO_ENCONTRADO_MSG = "Estado de evaluación no encontrado: %s";
+        public static final String ESTADO_DUPLICADO_MSG = "La evaluación %s ya tiene el estado %s asignado";
+        public static final String TRANSICION_DESDE_TERMINAL_SIMPLE_MSG =
+                "No se puede agregar un nuevo estado cuando la evaluación ya alcanzó un estado terminal";
+        public static final String ESTADO_EN_EVALUACION_NO_MANUAL_MSG =
+                "El estado EN_EVALUACION se asigna al momento de registrar la evaluación y no puede volver a registrarse";
+
+        // Logs
+        public static final String LOG_AGREGADO = "Estado evaluación ficha agregado manualmente — id={}, evaluacionId={}, estadoId={}";
+        public static final String LOG_CREADO_AUTOMATICO = "Estado evaluación ficha creado automáticamente — id={}, evaluacionId={}, estadoId={}";
     }
 
 }

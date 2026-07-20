@@ -47,7 +47,7 @@ prefijos consistentes que las hacen identificables a simple vista:
 | 1 | **Campos** | `CAMPO_{NOMBRE}` | `String` | `CAMPO_TITULO = "tituloProyecto"` |
 | 2 | **Límites** | `{NOMBRE}_{TIPO}` (sin prefijo) | `int` / `long` | `TITULO_MAX = 100` |
 | 3 | **Códigos de error** | `{ENTIDAD}_{DESCRIPCIÓN}` (UPPER_SNAKE) | `String` | `FICHA_TITULO_REQUERIDO = "FICHA_TITULO_REQUERIDO"` |
-| 4 | **Mensajes de error** | sin prefijo, descriptivo | `String` (con `%s`/`%d`) | `TITULO_DUPLICADO = "El título ya existe: %s"` |
+| 4 | **Mensajes de error** | `{DESCRIPCION}_MSG` (sufijo obligatorio) | `String` (con `%s`/`%d`) | `TITULO_DUPLICADO_MSG = "El título ya existe: %s"` |
 | 5 | **Logs** | `LOG_{ACCIÓN}` | `String` (con `{}` SLF4J) | `LOG_REGISTRADA = "Ficha registrada — id={}"` |
 
 ### 1. Campos — `CAMPO_*`
@@ -95,19 +95,26 @@ public static final String FICHA_TITULO_DUPLICADO       = "FICHA_TITULO_DUPLICAD
 - **Incluye el prefijo del contexto/entidad** (`FICHA_`, `USUARIO_`, etc.) porque
   estos códigos viajan al cliente y deben ser únicos globalmente.
 
-### 4. Mensajes de error — sin prefijo, descriptivo
+### 4. Mensajes de error — sufijo `_MSG` obligatorio
 
 Texto humano que ve el usuario final. Usa marcadores `%s` (string) y `%d`
 (entero) para parametrizar mediante `String.formatted(...)`.
 
 ```java
-public static final String TITULO_DUPLICADO = "El título ya existe: %s";
-public static final String LIMITE_EXCEDIDO  = "El campo '%s' no puede superar %d caracteres.";
+public static final String TITULO_DUPLICADO_MSG = "El título ya existe: %s";
+public static final String LIMITE_EXCEDIDO_MSG  = "El campo '%s' no puede superar %d caracteres.";
 ```
 
-- **Formato del nombre:** descripción concisa en UPPER_SNAKE.
+- **Formato del nombre:** `{DESCRIPCION}_MSG` en UPPER_SNAKE — el sufijo `_MSG`
+  es **obligatorio** y distingue el mensaje humano de su código de error hermano
+  en la sección 3 (mismo nombre base sin sufijo): código `FICHA_TITULO_DUPLICADO`
+  ↔ mensaje `TITULO_DUPLICADO_MSG`.
 - **Marcadores:** `%s`, `%d`, `%f` (formato de `String.formatted`).
 - **Idioma:** español (cambiar a `.properties` si se necesita i18n a futuro).
+- **Excepciones que NO llevan `_MSG`:** frases técnicas HTTP reason-phrase
+  (`HTTP_401_ERROR = "Unauthorized"`) y fragmentos concatenables terminados en
+  `_PREFIJO`/`_SUFIJO` (`ERROR_REFRESCAR_PREFIJO = "Error al refrescar: "`) —
+  no son mensajes de negocio completos.
 
 ### 5. Logs — `LOG_*`
 
@@ -155,7 +162,7 @@ public final class FichasMessages {
         public static final String FICHA_TITULO_DEMASIADO_LARGO = "FICHA_TITULO_DEMASIADO_LARGO";
 
         // Mensajes de error
-        public static final String TITULO_DUPLICADO = "El título ya existe: %s";
+        public static final String TITULO_DUPLICADO_MSG = "El título ya existe: %s";
 
         // Logs
         public static final String LOG_REGISTRADA = "Ficha de perfil registrada — id={}";
@@ -195,7 +202,7 @@ DomainValidator.maxLength(titulo,
 
 ```java
 throw new FichaTituloDuplicadoException(
-        FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted(titulo),
+        FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG.formatted(titulo),
         FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
 ```
 

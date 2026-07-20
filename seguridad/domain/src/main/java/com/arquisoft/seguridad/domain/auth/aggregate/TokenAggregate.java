@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.domain.auth.aggregate;
 
 import com.arquisoft.shared.exception.DomainException;
+import com.arquisoft.shared.message.SeguridadMessages;
 
 public final class TokenAggregate {
 
@@ -12,7 +13,7 @@ public final class TokenAggregate {
 
     public static TokenAggregate de(String valor) {
         if (valor == null || valor.isBlank()) {
-            throw new DomainException("El token no puede ser nulo ni vacio", "TOKEN_VALOR_REQUERIDO");
+            throw new DomainException(SeguridadMessages.Token.VALOR_REQUERIDO_MSG, SeguridadMessages.Token.TOKEN_VALOR_REQUERIDO);
         }
         return new TokenAggregate(valor);
     }

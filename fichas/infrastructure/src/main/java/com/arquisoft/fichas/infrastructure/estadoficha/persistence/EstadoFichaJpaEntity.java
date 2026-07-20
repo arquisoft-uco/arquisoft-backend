@@ -18,12 +18,12 @@ import lombok.NoArgsConstructor;
 public class EstadoFichaJpaEntity {
 
     @Id
-    @Column(nullable = false, length = 50)
+    @Column(name = "id", nullable = false, length = 50)
     private String id;
 
-    @Column(nullable = false, unique = true, length = 30)
+    @Column(name = "nombre", nullable = false, unique = true, length = 30)
     private String nombre;
 
-    @Column(nullable = false, length = 200)
+    @Column(name = "descripcion", nullable = false, length = 200)
     private String descripcion;
 }

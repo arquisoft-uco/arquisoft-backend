@@ -48,10 +48,7 @@ class AuthCommandInputAdapterTest {
     @Test
     void debeRetornar200_cuandoLoginExitoso() {
         // Arrange
-        LoginRequestDTO request = LoginRequestDTO.builder()
-                .email("estudiante@uco.edu.co")
-                .password("password123")
-                .build();
+        LoginRequestDTO request = new LoginRequestDTO("estudiante@uco.edu.co", "password123");
 
         AuthenticateUserInputPort.AuthResult authResult = new AuthenticateUserInputPort.AuthResult(
                 "eyJhbGc-access...",
@@ -78,9 +75,7 @@ class AuthCommandInputAdapterTest {
     @Test
     void debeRetornar200_cuandoRefreshExitoso() {
         // Arrange
-        RefreshTokenRequestDTO request = RefreshTokenRequestDTO.builder()
-                .refreshToken("eyJhbGc-refresh-old...")
-                .build();
+        RefreshTokenRequestDTO request = new RefreshTokenRequestDTO("eyJhbGc-refresh-old...");
 
         RefreshTokenInputPort.RefreshResult refreshResult = new RefreshTokenInputPort.RefreshResult(
                 "eyJhbGc-access-new...",

@@ -50,13 +50,15 @@ Valores tomados de `gradle.properties` y `build.gradle` reales. **No inventar ve
 | PostgreSQL | 18 | Driver gestionado por Spring Boot BOM |
 | RabbitMQ | 4.2.5 | Topic Exchange `arquisoft.events` |
 | Redis | 7 | Caché y sesiones distribuidas |
-| Keycloak | 26.6 (server) / 25.0.3 (adapter) | OAuth2/OIDC Resource Server |
-| Flyway | 11.20.3 | Migraciones SQL versionadas |
+| Keycloak | 26.6 (server) | OAuth2/OIDC Resource Server **nativo de Spring Security**. NO hay adapter ni `keycloak-admin-client`: el login va por HTTP directo al token endpoint |
+| Flyway | 12.4.0 | Gestionado por el BOM de Spring Boot 4.0.5 — no se declara versión |
+| Spring Modulith | 2.0.0 | Outbox por contexto + externalización AMQP |
 | JUnit | 6.0.3 | Jupiter API; IDs de Context7 de JUnit 5 son válidos |
 | Mockito + AssertJ | últimas | Patrón AAA obligatorio |
-| Lombok | 1.18.30 | Prohibido en capa domain |
+| Lombok | 1.18.36 | Prohibido en capa domain |
 | springdoc-openapi | 2.8.8 | ADR-011 — OpenAPI en todos los controllers |
-| Bucket4j | 7.6.0 | Rate limiting per-IP |
+| Bucket4j | 8.18.0 (`com.bucket4j:bucket4j_jdk17-core`) | Rate limiting per-IP |
+| Jackson | 3 (`tools.jackson.*`) | Jackson 2 (`com.fasterxml.jackson.*`) solo entra transitivamente vía springdoc |
 
 ### Consecuencias directas del stack
 
@@ -64,6 +66,9 @@ Valores tomados de `gradle.properties` y `build.gradle` reales. **No inventar ve
 2. **Spring Boot 4.x** → `RestTemplateBuilder` eliminado; si se necesita, usar `SimpleClientHttpRequestFactory` directamente.
 3. **Java 21** → Virtual Threads activos; **prohibido** declarar `@Bean TaskExecutor` o thread pools manuales salvo instrucción explícita del plan.
 4. **JUnit 6** → anotaciones Jupiter (`@Test`, `@ExtendWith`, `@BeforeEach`) compatibles con docs JUnit 5 de Context7.
+5. **Jackson 3** → `ObjectMapper`/`JsonMapper` se importan de `tools.jackson.databind.*`. Las **anotaciones** siguen en `com.fasterxml.jackson.annotation.*` (ese import sí es correcto). Nunca `com.fasterxml.jackson.databind.ObjectMapper`.
+6. **Spring Boot 4.x reubicó los slice tests** → `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest` y `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`. Los paquetes de Spring Boot 3 (`org.springframework.boot.test.autoconfigure.*`) no existen.
+7. **Cada contexto declara su propio `PlatformTransactionManager` y `usuariosTransactionManager` es `@Primary`** → todo `@Transactional` (write **y** read) lleva `transactionManager = "{contexto}TransactionManager"`. Omitirlo no falla al arrancar: enlaza silenciosamente al manager de `usuarios`.
 
 ---
 
@@ -109,6 +114,7 @@ Domain  ←  Application  ←  Infrastructure
 | `shared:postgres` | `com.arquisoft.shared.postgres` | `QueryJpaSpecification<JpaEntity>`, `CampoSpec` (sealed: `Texto`, `Uuid`, `Entero`, `Decimal`, `Fecha`, `FechaHora`, `Booleano`). Utilería para traducir `Criteria` → `Specification` |
 | `shared:minio` | `com.arquisoft.shared.minio` | `MinioStorageClient` (presigned URLs PUT/GET, `objectExists`, `deleteObject`), `MinioConfig`, `MinioProperties` |
 | `shared:redis` | `com.arquisoft.shared.redis` | Esqueleto sin implementación |
+| `shared:logger` | `com.arquisoft.shared.logger` | Logging estructurado JSON (`traceId`, `userId`). En perfil `prod` usa el `StructuredLogEncoder` nativo de Spring Boot 4 |
 | `shared:message` | `com.arquisoft.shared.message` | **Catálogo central de mensajes** (Message Catalog Pattern). `AppMessages` (transversal) + `{Contexto}Messages` × 7 (uno por bounded context) con nested classes por entidad. Java puro, sin Spring ni Jakarta. Expuesto transitivamente vía `shared:domain` (`api project(':shared:message')`). Ver [shared/message/README.md](../../shared/message/README.md) |
 
 ### Estructura estándar por contexto — CQRS + Vertical Slice
@@ -126,7 +132,7 @@ Domain  ←  Application  ←  Infrastructure
 │
 ├── application/
 │   └── {entidad}/
-│       ├── exception/         # XxxDuplicadaException, XxxNoEncontradaException (extienden ApplicationException)
+│       ├── exception/         # XxxDuplicadaException, XxxNoEncontradaException (ApplicationException); XxxNoPropiaException (AuthorizationException)
 │       ├── command/
 │       │   ├── model/         # XxxCommand (record con la intención de negocio)
 │       │   ├── port/in/       # XxxInputPort (extends InputPort<Command, Result> o VoidInputPort)
@@ -134,9 +140,9 @@ Domain  ←  Application  ←  Infrastructure
 │       └── query/
 │           ├── criteria/      # XxxCriteria (extiende QueryCriteria, opcional)
 │           ├── readmodel/     # XxxReadModel (proyección plana de solo lectura)
-│           ├── port/in/       # XxxQueryInputPort
+│           ├── port/in/       # Consultar{Entidad}InputPort
 │           ├── port/out/      # XxxQueryOutputPort (lectura — vive en application, no en domain)
-│           └── XxxQueryUseCase.java
+│           └── Consultar{Entidad}UseCase.java
 │
 └── infrastructure/
     └── {entidad}/
@@ -149,7 +155,7 @@ Domain  ←  Application  ←  Infrastructure
         │           └── persistence/   # XxxCommandOutputAdapter (implementa XxxOutputPort)
         ├── query/
         │   └── adapter/
-        │       ├── in/web/    # XxxQueryInputAdapter (@RestController)
+        │       ├── in/web/    # Consultar{Entidad}InputAdapter (@RestController)
         │       └── out/persistence/   # XxxQueryOutputAdapter + XxxJpaSpecification (si usa Criteria)
         ├── persistence/       # XxxJpaEntity, XxxJpaRepository, XxxMapper (compartido entre command y query)
         ├── config/            # @Configuration (cablea, sin lógica)
@@ -161,7 +167,7 @@ Domain  ←  Application  ←  Infrastructure
 1. **`port/in/` vive en `application`, NO en domain.** El dominio solo expone `port/out/` (write side). Las interfaces de entrada describen casos de uso, no son contratos puros del dominio.
 2. **`port/out/` se reparte entre dos sitios:** el **write side** (`XxxOutputPort`) en `domain/{entidad}/port/out/`. El **read side** (`XxxQueryOutputPort`) en `application/{entidad}/query/port/out/`. El read side no toca el agregado.
 3. **JPA Entities, repositorios y mappers viven en `infrastructure/{entidad}/persistence/`** (compartido entre command y query). Los adapters específicos van en `command/adapter/out/persistence/` y `query/adapter/out/persistence/`.
-4. **Vertical Slice por agregado:** todo lo de `FichaPerfil` vive bajo `domain/fichaPerfil/`, `application/fichaPerfil/`, `infrastructure/fichaPerfil/`. NO hay carpeta genérica `domain/model/` con todos los agregados.
+4. **Vertical Slice por agregado:** todo lo de `FichaPerfil` vive bajo `domain/fichaperfil/`, `application/fichaperfil/`, `infrastructure/fichaperfil/`. NO hay carpeta genérica `domain/model/` con todos los agregados.
 5. **Subcarpetas obligatorias siempre**, aunque solo haya un tipo: `adapter/in/web/`, `adapter/out/persistence/`, etc. Nunca componentes directamente en `adapter/in/` o `adapter/out/`.
 
 ### Ubicación de `exists()` y lookups cross-aggregate en puertos de salida
@@ -171,7 +177,7 @@ El criterio es **de qué aggregate se consulta la existencia**, no quién consum
 | Caso | Lo invoca | Dónde vive el `exists()` | Razón |
 |---|---|---|---|
 | **1. Invariante del propio aggregate** (unicidad antes de guardar) | command use case | `domain/{entidad}/port/out/{Entidad}OutputPort` — junto a `guardar()` | Validación write-side; el booleano nunca sale al cliente |
-| **2. Precondición de lectura** (404 antes de proyectar) | query use case | `application/{entidad}/query/port/out/{Entidad}QueryOutputPort` | El read side NUNCA toca un puerto write-side de `domain/` (segregación CQRS) — el método se duplica aquí, no se reutiliza el del dominio |
+| **2. Precondición de lectura** (recurso no encontrado antes de proyectar → `ApplicationException` **400** por defecto; 404 solo con handler de contexto) | query use case | `application/{entidad}/query/port/out/{Entidad}QueryOutputPort` | El read side NUNCA toca un puerto write-side de `domain/` (segregación CQRS) — el método se duplica aquí, no se reutiliza el del dominio. "Proyectar" = mapear la JPA entity al `ReadModel`. Hoy ningún query use case lo usa (los dos existentes retornan colecciones); es el patrón para un futuro `GET /{id}` de un solo recurso |
 | **3. Lookup de OTRA feature** (validar FK ajena) | command **o** query use case | `application/{otraEntidad}/query/port/out/{OtraEntidad}QueryOutputPort` | El dominio que escribe no conoce puertos de otra feature; es lectura pura sin efecto. UN puerto, N consumidores (no se duplica el método) |
 
 ```java
@@ -197,25 +203,28 @@ public interface AsesorFichaQueryOutputPort {
 
 | Tipo | Sufijo | Anotación |
 |---|---|---|
-| Adaptador REST de entrada | `XxxInputAdapter` | `@RestController` |
-| Adaptador REST de consulta | `XxxQueryInputAdapter` | `@RestController` |
+| Adaptador REST de entrada | `{Accion}{Entidad}InputAdapter` | `@RestController` |
+| Adaptador REST de consulta | `Consultar{Entidad}InputAdapter` | `@RestController` |
 | Adaptador AMQP consumidor | `XxxConsumerInputAdapter` | `@Component` + `@RabbitListener` (extiende `AbstractEventConsumer`) |
-| Adaptador persistencia write | `XxxCommandOutputAdapter` | `@Component` |
-| Adaptador persistencia read | `XxxQueryOutputAdapter` | `@Component` |
-| Caso de uso write | `XxxUseCase` | `@Component` |
-| Caso de uso read | `XxxQueryUseCase` | `@Component` |
-| Puerto de entrada write | `XxxInputPort` (interfaz, vacía) | — |
-| Puerto de entrada read | `XxxQueryInputPort` (interfaz, vacía) | — |
-| Puerto de salida write | `XxxOutputPort` (interfaz, en domain) | — |
-| Puerto de salida read | `XxxQueryOutputPort` (interfaz, en application) | — |
+| Adaptador persistencia write | `{Entidad}CommandOutputAdapter` | `@Component` |
+| Adaptador persistencia read | `{Entidad}QueryOutputAdapter` | `@Component` |
+| Caso de uso write | `{Accion}{Entidad}UseCase` | `@Component` |
+| Caso de uso read | `Consultar{Entidad}UseCase` | `@Component` |
+| Puerto de entrada write | `{Accion}{Entidad}InputPort` (interfaz, vacía) | — |
+| Puerto de entrada read | `Consultar{Entidad}InputPort` (interfaz, vacía) | — |
+| Puerto de salida write | `{Entidad}OutputPort` (interfaz, en domain) | — |
+| Puerto de salida read | `{Entidad}QueryOutputPort` (interfaz, en application) | — |
 | Comando | `XxxCommand` (`record`) | — |
 | Read model | `XxxReadModel` (`record`) | — |
 | Criteria | `XxxCriteria` (extiende `QueryCriteria`) | — |
-| Configuración | `XxxConfig` | `@Configuration` |
+| Configuración | `XxxConfig` (`OpenApiConfig`, `SecurityConfig`, `RabbitMQConfig`) — en `infrastructure/config/` | `@Configuration` |
 | Filtro HTTP | `XxxFilter` | `@Component` + implementa `Filter` |
 
+> **El infijo `Query` solo aparece en los adaptadores y puertos de SALIDA de lectura** (`{Entidad}QueryOutputAdapter`, `{Entidad}QueryOutputPort`). El use case, el input port y el input adapter de lectura **NO** lo llevan: la acción `Consultar` ya identifica el lado read. Es `ConsultarFichasPerfilUseCase`, **no** `ConsultarFichasPerfilQueryUseCase`.
+
 > **Ya NO se usan los sufijos `Controller`, `Listener`, `RepositoryAdapter`, `UseCaseImpl`.** Reemplazados por `InputAdapter`, `ConsumerInputAdapter`, `CommandOutputAdapter`/`QueryOutputAdapter`, `UseCase`.
-| `OpenApiConfig`, `SecurityConfig`, `RabbitMQConfig` | `infrastructure/config/` | `@Configuration` |
+
+> **Los segmentos de paquete de la entidad van en minúsculas, sin separadores.** El aggregate `FichaPerfilAggregate` vive bajo `domain/fichaperfil/`, no `domain/fichaPerfil/` ni `domain/ficha_perfil/`. Igual para `itemfichaperfil`, `estadoevaluacionficha`, `asesorficha`. Solo los **nombres de clase** llevan PascalCase y las **variables** camelCase.
 
 **Regla:** un componente está en `adapter/in/web/` si **solo se activa durante una request REST**. Si es transversal a más cosas (filtros que también aplican a actuator, configs globales), va en `filter/` o `config/`.
 
@@ -255,10 +264,12 @@ shared/message/src/main/java/com/arquisoft/shared/message/
 | 1 | **Campos** | `CAMPO_{NOMBRE}` | `String` | `CAMPO_TITULO = "tituloProyecto"` |
 | 2 | **Límites** | `{CAMPO}_{TIPO_LIMITE}` | `int`/`long` | `TITULO_MAX = 100` |
 | 3 | **Códigos de error** | `{ENTIDAD}_{DESCRIPCION}` UPPER_SNAKE (valor = nombre) | `String` | `FICHA_TITULO_DUPLICADO = "FICHA_TITULO_DUPLICADO"` |
-| 4 | **Mensajes de error** | descripción UPPER_SNAKE, con `%s`/`%d` | `String` | `TITULO_DUPLICADO = "El título ya existe: %s"` |
+| 4 | **Mensajes de error** | `{DESCRIPCION}_MSG` UPPER_SNAKE, con `%s`/`%d` | `String` | `TITULO_DUPLICADO_MSG = "El título ya existe: %s"` |
 | 5 | **Logs** | `LOG_{ACCION}` con `{}` SLF4J | `String` | `LOG_REGISTRADA = "Ficha registrada — id={}"` |
 
 Las secciones se separan con comentarios `// Campos`, `// Límites`, `// Códigos de error`, `// Mensajes de error`, `// Logs` — solo las secciones con al menos una constante.
+
+> **Sufijo `_MSG` obligatorio en la sección 4.** Toda constante de **mensaje de error** (texto humano user-facing, con o sin `%s`/`%d`) termina en `_MSG`. Esto la distingue a simple vista de su **código de error** hermano en la sección 3 (mismo nombre base sin sufijo, cuyo valor = nombre): p. ej. código `FICHA_TITULO_DUPLICADO` ↔ mensaje `TITULO_DUPLICADO_MSG`. **Excepciones que NO llevan `_MSG`:** frases técnicas HTTP reason-phrase (`HTTP_401_ERROR = "Unauthorized"`) y fragmentos concatenables terminados en `_PREFIJO`/`_SUFIJO` (`ERROR_REFRESCAR_PREFIJO = "Error al refrescar: "`) — no son mensajes de negocio completos.
 
 ### Plantilla canónica de archivo por contexto
 
@@ -283,7 +294,7 @@ public final class FichasMessages {
         public static final String FICHA_TITULO_REQUERIDO = "FICHA_TITULO_REQUERIDO";
 
         // Mensajes de error
-        public static final String TITULO_DUPLICADO = "El título ya existe: %s";
+        public static final String TITULO_DUPLICADO_MSG = "El título ya existe: %s";
 
         // Logs
         public static final String LOG_REGISTRADA = "Ficha de perfil registrada — id={}";
@@ -310,7 +321,7 @@ DomainValidator.notBlank(titulo,
 
 // Excepción con mensaje parametrizado
 throw new FichaTituloDuplicadoException(
-        FichasMessages.FichaPerfil.TITULO_DUPLICADO.formatted(titulo),
+        FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG.formatted(titulo),
         FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
 
 // Log SLF4J — la plantilla del catálogo, los valores como varargs
@@ -322,7 +333,7 @@ log.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
 | Veo este patrón en el código… | …acción obligatoria |
 |---|---|
 | `log.info("texto literal", ...)` | extraer a `{Contexto}Messages.{Entidad}.LOG_*` |
-| `super("mensaje literal", ...)` en `*Exception` | extraer a `{Contexto}Messages.{Entidad}.{NOMBRE_DESCRIPTIVO}` o `MENSAJE_*` |
+| `super("mensaje literal", ...)` en `*Exception` | extraer a `{Contexto}Messages.{Entidad}.{DESCRIPCION}_MSG` |
 | `result.addError("campo", "CODIGO", "mensaje literal", ...)` | los 3 argumentos van al catálogo: `CAMPO_*`, código UPPER_SNAKE, y mensaje parametrizado |
 | `if (valor.length() > 100)` con literal numérico de negocio | extraer límite a `{Contexto}Messages.{Entidad}.{CAMPO}_MAX` |
 | `new ApplicationException("texto", "CODIGO")` | mensaje y código al catálogo |
@@ -388,10 +399,10 @@ Si una misma clase responde "sí" a dos preguntas, está mezclando responsabilid
 | Read models (proyección plana) | `application/{entidad}/query/readmodel/` | `FichaPerfilReadModel` (record) |
 | Puertos de entrada read | `application/{entidad}/query/port/in/` | `ConsultarFichasPerfilInputPort` |
 | Puertos de salida read | `application/{entidad}/query/port/out/` | `FichaPerfilQueryOutputPort` (vive en application, no en domain) |
-| Casos de uso read | `application/{entidad}/query/` | `ConsultarFichasPerfilQueryUseCase` |
+| Casos de uso read | `application/{entidad}/query/` | `ConsultarFichasPerfilUseCase` |
 | Request DTOs HTTP | `infrastructure/{entidad}/command/adapter/in/web/dto/` | `CrearFichaPerfilRequestDTO` |
 | Adaptadores REST write | `infrastructure/{entidad}/command/adapter/in/web/` | `CrearFichaPerfilInputAdapter` (`@RestController`) |
-| Adaptadores REST read | `infrastructure/{entidad}/query/adapter/in/web/` | `ConsultarFichasPerfilQueryInputAdapter` (`@RestController`) |
+| Adaptadores REST read | `infrastructure/{entidad}/query/adapter/in/web/` | `ConsultarFichasPerfilInputAdapter` (`@RestController`) |
 | Consumidores AMQP | `infrastructure/{entidad}/command/adapter/in/amqp/` | `XxxConsumerInputAdapter` (extiende `AbstractEventConsumer`) |
 | Adaptadores persistencia write | `infrastructure/{entidad}/command/adapter/out/persistence/` | `FichaPerfilCommandOutputAdapter` (implementa `FichaPerfilOutputPort`) |
 | Adaptadores persistencia read | `infrastructure/{entidad}/query/adapter/out/persistence/` | `FichaPerfilQueryOutputAdapter` + `FichaPerfilJpaSpecification` (si usa Criteria) |
@@ -431,10 +442,11 @@ com.arquisoft.shared.*                     ← ok (compartido)
 jakarta.validation.*                       ← ok (validación declarativa de DTOs)
 com.fasterxml.jackson.annotation.*         ← ok (serialización de DTOs)
 lombok.*                                   ← ok (solo en DTOs)
-org.springframework.stereotype.Component   ← ok (para @Component en UseCases)
-org.springframework.stereotype.Service     ← ok
+org.springframework.stereotype.Component   ← ok (el estereotipo de TODO UseCase)
 org.springframework.transaction.annotation.Transactional ← ok
 ```
+
+> **`@Service` está prohibido en el proyecto.** Todo use case (write y read) se anota con **`@Component`**. Spring los trata igual — `@Service` es solo `@Component` con otro nombre — pero la convención del proyecto es única: `@Component`. Ver "Convención de sufijos de clases".
 
 **Prohibido en `application/`:** JPA (`@Entity`, `@Table`), controladores web
 (`@RestController`, `@RequestMapping`), clientes concretos de mensajería (`RabbitTemplate`),
@@ -456,13 +468,13 @@ Toda integración con un sistema externo (RabbitMQ, MinIO, Redis, SMTP, HTTP ext
 **Ejemplo 1 — Persistencia del aggregate:**
 
 ```java
-// domain/fichaPerfil/port/out/FichaPerfilOutputPort.java
+// domain/fichaperfil/port/out/FichaPerfilOutputPort.java
 public interface FichaPerfilOutputPort {
     void guardar(FichaPerfilAggregate aggregate);
     Optional<FichaPerfilAggregate> buscarPorId(UUID id);
 }
 
-// infrastructure/fichaPerfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java
+// infrastructure/fichaperfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java
 @Component
 public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     private final FichaPerfilJpaRepository jpaRepository;  // tecnología: JPA
@@ -486,13 +498,94 @@ MinIO ya tiene su cliente en `shared:minio` (`MinioStorageClient`). Los casos de
 |---|---|---|
 | `import org.springframework` en `domain/` | Framework filtrado al dominio | Mover a adaptador |
 | `@Configuration` con lógica de parseo o reglas | Regla de negocio en infra | Extraer a `domain/model/` |
-| `@Service` de application leyendo `jwt.getClaim(...)` | Application conoce detalles de seguridad | Crear puerto + adaptador |
+| Use case de application leyendo `jwt.getClaim(...)` | Application conoce detalles de seguridad | Crear puerto + adaptador |
+| `@Service` en cualquier clase | Estereotipo no usado en el proyecto | Sustituir por `@Component` |
 | Controller con `if (rol.equals("ADMIN"))` | Regla de negocio en web | Mover a entidad/VO del dominio |
+| `if (...) throw` en el use case aplicando una **regla de negocio de la HU** (límite/cupo, transición de estado prohibida, invariante) | Fuga de lógica del dominio | Mover al aggregate: el use case **lee el estado** vía puerto y lo **pasa como parámetro** a la factory; el aggregate decide y lanza (→ 422) |
 | Nombre de tabla/columna hardcodeado en use case | Application conoce persistencia | Queda en `@Entity` JPA del adaptador |
 | Test de dominio que requiere `@SpringBootTest` | Dominio tiene dependencias de framework | Quitar dependencias, usar Java puro |
 
 Regla general: **si tu test de dominio necesita un `@ExtendWith(...)` de Spring, Mockito de Spring,
 o un mock de `RabbitTemplate`/`Jwt`/`JpaRepository`, la lógica está en la capa equivocada.**
+
+#### Invariantes locales del aggregate → se validan SIEMPRE dentro del aggregate (→ 422)
+
+> **Regla dura.** Todo **invariante local** que la HU declare (sección "Reglas de Negocio" del plan, políticas `POL-xx`) se valida **dentro del aggregate**, nunca en el use case. *Invariante local* = regla sobre la consistencia de **una sola instancia** (formato, cupo/límite propio, transición de estado prohibida). El use case solo **reúne los datos** que la regla necesita (consultando puertos) y los **pasa como parámetro** a la factory; el aggregate es quien compara, decide y lanza. Así la regla queda cubierta por un test de dominio en Java puro y responde **422** vía `DomainException` / `DomainValidationException`.
+
+```java
+// ✅ El use case carga el estado; el aggregate decide.
+var ultimoEstado = estadoOutputPort.obtenerUltimoEstado(command.evaluacionId());   // dato
+EstadoEvaluacionFichaAggregate.crearConEstado(id, nuevoEstado, ultimoEstado);      // decisión → 422
+
+var existentes = estudianteFichaOutputPort.contarPorFicha(fichaId);                // dato
+EstudianteFichaPerfilAggregate.crear(fichaId, command.estudiantesIds(), existentes); // decisión → 422
+
+// ❌ Fuga: la regla "máximo N estudiantes" vive en el use case.
+if (existentes + command.estudiantesIds().size() > 3) {
+    throw new LimiteEstudiantesExcedidoException();
+}
+```
+
+> **Tell, Don't Ask — el use case le ORDENA al aggregate, no le pregunta su estado para decidir.** Al interactuar con un aggregate, el use case invoca un **método de comportamiento** (`crear`, `actualizarTitulo`, `modificarContenido`, `aprobar`) y deja que el aggregate valide y decida adentro. **Prohibido** leer un getter del aggregate para evaluar un invariante y decidir/lanzar desde el use case:
+>
+> ```java
+> // ❌ Ask: el use case pregunta el estado y decide afuera
+> if (item.getEstado() == EstadoFicha.APROBADA) { throw new ItemNoModificableException(); }
+> item.setContenido(nuevo);   // (y además setter público — prohibido en el aggregate)
+>
+> // ✅ Tell: el use case ordena; el aggregate decide y lanza
+> item.modificarContenido(nuevo, estadoActual);   // el aggregate valida el estado adentro
+> ```
+>
+> **Getters SÍ permitidos** (no son un "Ask" de negocio): retornar o loguear el id (`aggregate.getId()`), construir el mensaje de una excepción, mapear a JPA en el adapter, o pasar el valor a otro paso de orquestación. La línea roja es leer estado del aggregate para **tomar una decisión de invariante que le corresponde a él**.
+
+> **No confundir con orquestación.** Los chequeos de **existencia** (`existsById`), **duplicado en BD** (`existsByTitulo`) y **propiedad del recurso** (`esEstudiantePropietario`) **sí** viven en el use case: son decisiones que requieren consultar un puerto y no son invariantes del aggregate → `ApplicationException` (400) o `AuthorizationException` (403). Lo que nunca vive en el use case es la **decisión de negocio sobre datos ya cargados**.
+
+> **Regla de negocio ≠ invariante del aggregate — no las confundas.** *Todas* las reglas de arriba (unicidad, existencia, propiedad) **son** reglas de negocio; lo que las excluye del aggregate no es "no ser negocio", sino **no ser invariantes locales**. La distinción es de alcance:
+>
+> | | Invariante **local** | Restricción **global de conjunto** |
+> |---|---|---|
+> | Ejemplo | "una ficha no puede tener > 3 estudiantes", "un item no se modifica si la ficha está APROBADA" | "ningún otro proyecto tiene este título" (unicidad) |
+> | Qué necesita conocer | el estado de **una** instancia (+ un escalar que le pasa el use case) | **todas** las demás instancias del conjunto |
+> | ¿Cabe en la frontera del aggregate? | Sí → se valida dentro → **422** | No → imposible por definición → use case → **400** |
+>
+> Una sola instancia no puede validar unicidad porque **no conoce a las demás** — pedírselo rompe su frontera. Por eso una restricción de unicidad/duplicado **nunca** se lanza desde el aggregate; a lo sumo desde un **domain service** (capa `domain`, coordina vía puerto de repositorio), patrón que **este proyecto no usa** — aquí va inline en el use case. La prueba rápida: *¿una instancia, con su estado + un dato escalar, puede decidir la regla?* Sí → aggregate (422). ¿Necesita mirar el conjunto entero? → use case (400).
+
+#### Cómo lanza el aggregate una invariante — Notification Pattern, sin excepción propia
+
+> **Regla dura.** El aggregate **no crea una clase de excepción por invariante** (`MismoAsesorException`, `EstadoTerminalException`, `LimiteEstudiantesExcedidoException`…). Acumula cada violación con `ValidationResult.addError(campo, errorCode, mensaje)` y lanza **una sola** `DomainValidationException` compartida (→ 422 + `fieldErrors[]`) con `result.throwIfHasErrors()` al final del método.
+>
+> - Reglas estándar → helpers de `DomainValidator` (`notNull`, `notBlank`, `maxLength`, `minLength`, `validEmail`), que ya llaman a `addError` por dentro.
+> - Invariante **sin helper** (igualdad "mismo valor que el actual", estado terminal, transición prohibida, comparación entre VOs) → `result.addError(...)` **directo**, con las 3 constantes del catálogo (`CAMPO_*`, código UPPER_SNAKE, `*_MSG` parametrizable con `.formatted(...)`).
+> - En el `domain/` de los contextos de negocio **no existe ninguna subclase de `DomainException`** (verificado; único caso: `seguridad/AuthenticationException`, por choque de nombre con Spring Security). Un plan que declare `domain/{entidad}/exception/{Entidad}{Regla}Exception.java` para una invariante es **error del plan**.
+
+```java
+// ✅ Invariante sin helper (POL-05 "mismo asesor" + estado terminal) — Notification Pattern
+public void cambiarAsesorFicha(UUID nuevoAsesorFichaId, EstadoFicha estadoActual) {
+    var result = new ValidationResult();
+    DomainValidator.notNull(nuevoAsesorFichaId,
+            FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+            FichasMessages.FichaPerfil.ASESOR_REQUERIDO, result);
+    if (nuevoAsesorFichaId != null && nuevoAsesorFichaId.equals(this.asesorFichaId)) {
+        result.addError(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+                FichasMessages.FichaPerfil.MISMO_ASESOR,
+                FichasMessages.FichaPerfil.MISMO_ASESOR_MSG.formatted(nuevoAsesorFichaId));
+    }
+    if (estadoActual.esTerminal()) {
+        result.addError(FichasMessages.FichaPerfil.CAMPO_ESTADO_FICHA,
+                FichasMessages.FichaPerfil.ESTADO_TERMINAL,
+                FichasMessages.FichaPerfil.ESTADO_TERMINAL_MSG.formatted(estadoActual));
+    }
+    result.throwIfHasErrors();     // 1 sola DomainValidationException → 422 + fieldErrors[]
+    setAsesorFichaId(nuevoAsesorFichaId, new ValidationResult());
+}
+```
+
+#### El dato para validar entra como PARÁMETRO, no como atributo nuevo
+
+> **Regla dura.** Cuando el aggregate necesita el valor de **otro objeto de dominio del mismo contexto** (un VO/enum como `EstadoFicha`) solo para **validar** —no para poseerlo como estado propio— lo **importa** y lo recibe como **parámetro** del método de negocio; el use case lo consulta vía `QueryOutputPort` y se lo pasa (`ficha.cambiarAsesorFicha(nuevoAsesor, estadoActual)`). El aggregate lo usa (`estadoActual.esTerminal()`) sin almacenarlo.
+>
+> **NO agregues un atributo nuevo al aggregate para validar.** Un atributo "solo para validar" arrastra un efecto en cascada innecesario —columna en la `JpaEntity` + migración Flyway + mapeo en el `Mapper`— y **falsea el modelo**: el aggregate pasaría a "poseer" un estado que gobierna otra parte del ciclo de vida. Solo agrega el atributo cuando el aggregate es su **dueño legítimo** (el MER lo lista como columna suya y el aggregate gobierna sus transiciones), nunca como insumo transitorio de una validación.
 
 ---
 
@@ -580,6 +673,8 @@ El aggregate acumula eventos con `publishEvent(...)` en sus factories/métodos d
 
 > **Valores autogenerados (`UUID`, `Instant`):** se generan **dentro del setter** que lleva el nombre del atributo (`setId()`, `setFechaActualizacion()`), no en el cuerpo de `crear(...)`. Usan los Util de `shared:domain`: `UUID` → `UtilUUID.generateNewUUID()` · `Instant` → `UtilDate.generateNewInstantNow()`. **Nunca** `UUID.randomUUID()` ni `Instant.now()` directamente en código de dominio.
 
+> **Nulos y vacíos — nunca `== null` crudo.** Usa los helpers de `shared:domain` (disponibles en las 3 capas): para objetos → `UtilObject.isNull(x)`; para texto → `UtilText.isEmptyOrNull(s)` (cubre null + vacío + solo espacios). El trim canónico es `UtilText.applyTrim(...)`, no `.trim()`. La validación de *forma* del input (obligatorio / no vacío) va **preferentemente** en el DTO con Jakarta (`@NotEmpty`, `@NotBlank`); si además necesitas un chequeo en código (dominio o use case), hazlo con estos helpers, **nunca** con `x == null` ni `x.isEmpty()` crudos. Ej.: el `AsignarEstudiantesFichaPerfilUseCase` delega la lista obligatoria/no vacía al `@NotEmpty` del `RequestDTO` en vez de un `if (lista == null || lista.isEmpty())`.
+
 **Regla dura:** un `CommandOutputAdapter` SIEMPRE usa `reconstruir(...)`, nunca `crear(...)`. Aplica tanto si la entidad extiende `AggregateRoot` como si no — el factory `crear` queda reservado para la creación inicial desde el use case.
 
 **Convención de nombres bilingüe:** los factories del aggregate son **conceptos de negocio** (crear una ficha, reconstruir una ficha desde BD), no sufijos técnicos como el `Builder.build()` de Lombok. Por eso van en español junto con los demás métodos de negocio del aggregate (`aprobar`, `rechazar`, `actualizarTitulo`, etc.). No usar `build`/`rebuild` en inglés — código antiguo con esa convención debe migrarse.
@@ -632,7 +727,7 @@ Aplicar features de Java 21 **cuando aporten claridad o seguridad**, no por moda
 
 | Feature | Motivo |
 |---|---|
-| **`record` para entidades de dominio** | Las entidades Arquisoft requieren constructor privado + factory methods `crear`/`reconstruir`. Un `record` tiene constructor público y no permite el patrón. Usar `class` inmutable con campos `final`. |
+| **`record` para entidades de dominio** | Las entidades Arquisoft requieren constructor privado + factory methods `crear`/`reconstruir` que asignan vía setters privados. Un `record` tiene constructor público y componentes `final`, incompatible con el patrón. Usar `class` con campos privados **no** `final` y solo getters públicos — la inmutabilidad la da la ausencia de setters públicos. |
 | **Virtual threads manuales (`Thread.ofVirtual`, `Executors.newVirtualThreadPerTaskExecutor`)** | `spring.threads.virtual.enabled: true` ya los gestiona para Tomcat, `@Async` y RabbitMQ listeners. Crear executors manuales es innecesario y a menudo perjudicial. |
 | **`record` + Lombok mezclados** | Redundante y confuso — si es `record`, no usar `@Data`/`@Builder`. |
 
@@ -908,8 +1003,6 @@ Una excepción que solo hace `super("CODIGO", "mensaje")` no tiene lógica propi
 Esta convención evita duplicación, mantiene la API consistente con la industria
 y respeta el modelo de dominio en el código interno.
 
-### Dos tipos de DTOs en el proyecto
-
 ### Cuatro tipos de objetos de transferencia en el proyecto
 
 | Tipo | Idioma de campos | Ubicación | Ejemplos |
@@ -922,11 +1015,15 @@ y respeta el modelo de dominio en el código interno.
 ### Reglas inviolables
 
 1. **`Command` y `ReadModel` son `record`, no clases con Lombok.** Inmutables por construcción.
-2. **`RequestDTO` es `record` con anotaciones Jakarta** (`@NotBlank`, `@Email`, etc.). Tiene un método `toCommand()` que produce el `Command` correspondiente. Vive en **infrastructure**, no en application.
+2. **`RequestDTO` es `record` con anotaciones Jakarta** (`@NotBlank`, `@Email`, etc.). Tiene un método `toCommand()` que produce el `Command` correspondiente. Vive en **infrastructure**, no en application. **Sin Lombok:** un `record` no lleva `@Data`/`@Builder`/`@NoArgsConstructor`/`@AllArgsConstructor` — Jackson lo deserializa por su constructor canónico y las anotaciones Jakarta se aplican sobre los componentes.
+
+   > **Los 9 `RequestDTO` de los contextos ya son `record`.** Si encuentras uno escrito como `class` con `@Data @NoArgsConstructor @AllArgsConstructor [@Builder]`, ten presente que en esa forma **`@Data` es carga útil, no decoración**: Jackson enlaza el body vía el constructor sin argumentos + los **setters** que `@Data` genera. Borrar `@Data` de una `class` deja los campos en `null` y el request falla con 400. La única forma de eliminarlo es **convertir el DTO a `record`** y ajustar los call-sites (`getX()` → `x()`, `.builder()` → constructor canónico). No lo hagas a ciegas: primero asegura un `@WebMvcTest` que ejercite el binding real (un 2xx con body válido y un 400 con body inválido), compruébalo en verde con el `@Data` puesto, y solo entonces convierte.
+   >
+   > **`QueryCriteriaRequestDTO` de `shared:web` es la excepción** y seguirá siendo `@Data class`: es el DTO técnico polimórfico con `@JsonSubTypes`.
 3. **El UseCase NO devuelve un `ResponseDTO`.** Los UseCases write devuelven una de tres opciones declarada por el plan: **(A) `UUID`** del recurso creado (caso por defecto, el más común), **(B) `void`** vía `VoidInputPort<Command>` (no hay nada útil que devolver al cliente), o **(C) un objeto específico** del dominio o `application` (típicamente un `ReadModel` cuando el cliente necesita el recurso completo tras crearlo — patrón REST común). Los UseCases read devuelven `ReadModel` o `PaginatedResult<ReadModel>`. **No existe un "ResponseDTO" intermedio** entre la capa de aplicación y el adaptador REST: el `InputAdapter` serializa directamente el valor retornado a JSON. La opción C requiere justificación explícita en el plan (sección 8) porque rompe la simetría con la convención por defecto (A).
 4. **NUNCA crees un `PageResponseDTO` o `ErrorResponseDTO` local en un contexto.** Importa desde `com.arquisoft.shared.web`.
 5. **Campos en español, idénticos al aggregate.** Si el aggregate dice `tituloProyecto`, todo lo que lo transporte (Command, ReadModel, RequestDTO, JSON HTTP) usa `tituloProyecto`. **NO** se traduce a inglés ni se renombra.
-4. **No anotes campos con `@JsonProperty` para mezclar idiomas.** Si el JSON externo necesita un nombre específico, evalúa si el DTO debería ser técnico (en inglés) o de dominio (en español) — no ambos.
+6. **No anotes campos con `@JsonProperty` para mezclar idiomas.** Si el JSON externo necesita un nombre específico, evalúa si el DTO debería ser técnico (en inglés) o de dominio (en español) — no ambos.
 
 ---
 
@@ -945,12 +1042,12 @@ y respeta el modelo de dominio en el código interno.
 ### Tipos en `shared:domain`
 
 ```java
-// PaginatedResult — record inmutable
-public record PaginatedResult<T>(
-    List<T> content,
-    int page, int size, long totalElements, int totalPages
-) {
+// PaginatedResult — clase final inmutable (NO es record: se accede con getters)
+public final class PaginatedResult<T> {
+    // content, page, size, totalElements, totalPages, first, last, empty
+    public static <T> PaginatedResult<T> of(List<T> content, int page, int size, long totalElements) { /* deriva metadatos */ }
     public <R> PaginatedResult<R> map(Function<T, R> mapper) { /* preserva metadatos */ }
+    // getContent(), getPage(), getSize(), getTotalElements(), getTotalPages(), ...
 }
 
 // QueryCriteria — clase base con builder que valida en construcción
@@ -972,18 +1069,25 @@ public sealed interface NodoFiltro permits NodoFiltro.Predicado, NodoFiltro.Grup
 ### Tipos en `shared:web`
 
 ```java
-// QueryCriteriaRequestDTO — input HTTP polimórfico vía Jackson
-public record QueryCriteriaRequestDTO(
-    int pagina, int tamanio,
-    List<String> ordenamiento,        // ["tituloProyecto:ASC", "asesorNombre:DESC"]
-    NodoFiltroDTO filtros              // árbol polimórfico
-) {}
+// QueryCriteriaRequestDTO — input HTTP polimórfico vía Jackson.
+// DTO técnico de shared:web: @Data class, NO record (se accede con getters).
+@Data
+public class QueryCriteriaRequestDTO {
+    private int pagina;
+    private int tamanio;
+    private List<String> ordenamiento;   // ["tituloProyecto:ASC", "asesorNombre:DESC"]
+    private NodoFiltroDTO filtros;        // árbol polimórfico
+}
 
-// PageResponseDTO — output HTTP
-public record PageResponseDTO<T>(
-    List<T> content, int page, int size,
-    long totalElements, int totalPages
-) {
+// PageResponseDTO — output HTTP. También @Data + @Builder, NO record.
+@Data
+@Builder
+public class PageResponseDTO<T> {
+    private List<T> content;
+    private int page, size, totalPages;
+    private long totalElements;
+    // first, last, empty
+
     public static <T> PageResponseDTO<T> from(PaginatedResult<T> result) { /* ... */ }
 }
 ```
@@ -1018,10 +1122,10 @@ public sealed interface CampoSpec<E> {
 ### Flujo completo de una HU read con Criteria
 
 ```
-POST /api/fichas-perfil/query
+POST /fichas-perfil/query          ← ruta declarada en @RequestMapping (context-path /api implícito)
 Body: { pagina, tamanio, ordenamiento, filtros: { tipo:GRUPO, conector:AND, nodos:[...] } }
   │
-  ▼ QueryInputAdapter
+  ▼ ConsultarFichasPerfilInputAdapter
 QueryCriteriaRequestDTO → solicitud.parsearAOrdenamiento()  → List<SortOrder>
                        → solicitud.parsearFiltros()         → NodoFiltro (sealed tree)
   │
@@ -1029,7 +1133,7 @@ QueryCriteriaRequestDTO → solicitud.parsearAOrdenamiento()  → List<SortOrder
   │
   ▼ ConsultarFichasPerfilInputPort.ejecutar(criteria)
   │
-  ▼ ConsultarFichasPerfilQueryUseCase
+  ▼ ConsultarFichasPerfilUseCase
        fichaPerfilQueryOutputPort.consultarTodas(criteria)  ← delegación pura
   │
   ▼ FichaPerfilQueryOutputAdapter
@@ -1047,8 +1151,8 @@ QueryCriteriaRequestDTO → solicitud.parsearAOrdenamiento()  → List<SortOrder
 ### Plantilla `FichaPerfilCriteria`
 
 ```java
-// application/fichaPerfil/query/criteria/FichaPerfilCriteria.java
-package com.arquisoft.fichas.application.fichaPerfil.query.criteria;
+// application/fichaperfil/query/criteria/FichaPerfilCriteria.java
+package com.arquisoft.fichas.application.fichaperfil.query.criteria;
 
 import com.arquisoft.shared.query.QueryCriteria;
 import com.arquisoft.shared.query.NodoFiltro;
@@ -1087,12 +1191,12 @@ public final class FichaPerfilCriteria extends QueryCriteria {
 ### Plantilla `FichaPerfilJpaSpecification`
 
 ```java
-// infrastructure/fichaPerfil/query/adapter/out/persistence/FichaPerfilJpaSpecification.java
-package com.arquisoft.fichas.infrastructure.fichaPerfil.query.adapter.out.persistence;
+// infrastructure/fichaperfil/query/adapter/out/persistence/FichaPerfilJpaSpecification.java
+package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persistence;
 
 import com.arquisoft.shared.postgres.QueryJpaSpecification;
 import com.arquisoft.shared.postgres.CampoSpec;
-import com.arquisoft.fichas.infrastructure.fichaPerfil.persistence.FichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
 import org.springframework.stereotype.Component;
 import java.util.Map;
 
@@ -1117,7 +1221,7 @@ public class FichaPerfilJpaSpecification
 ### Plantilla `FichaPerfilQueryOutputAdapter` con Criteria
 
 ```java
-// infrastructure/fichaPerfil/query/adapter/out/persistence/FichaPerfilQueryOutputAdapter.java
+// infrastructure/fichaperfil/query/adapter/out/persistence/FichaPerfilQueryOutputAdapter.java
 @Component
 @RequiredArgsConstructor
 public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
@@ -1171,18 +1275,26 @@ public interface FichaPerfilJpaRepository extends JpaRepository<FichaPerfilJpaEn
 ### Excepción de dominio
 
 ```java
-package com.arquisoft.fichas.domain.fichaPerfil.exception;
+package com.arquisoft.fichas.domain.fichaperfil.exception;
 
 import com.arquisoft.shared.exception.DomainException;
+import com.arquisoft.shared.message.FichasMessages;
 
-public final class FichaPerfilNoEncontradaException extends DomainException {
-   public FichaPerfilNoEncontradaException(String id) {
-      super("FICHA_PERFIL_NO_ENCONTRADA", "No se encontró la ficha con id: " + id);
+public final class FichaPerfilEstadoInvalidoException extends DomainException {
+   public FichaPerfilEstadoInvalidoException(String estado) {
+      super(
+          FichasMessages.FichaPerfil.ESTADO_INVALIDO_MSG.formatted(estado),  // 1º mensaje
+          FichasMessages.FichaPerfil.FICHA_ESTADO_INVALIDO                   // 2º errorCode
+      );
    }
 }
 ```
 
-> Toda excepción del contexto extiende uno de los 4 tipos base: `DomainException` (422), `ApplicationException` (400), `InfrastructureException` (503), `DomainValidationException` (422). **NUNCA** extender `RuntimeException` directamente. Ver sección "Jerarquía de excepciones" más abajo.
+> **Orden de argumentos: `super(mensaje, errorCode)` — NUNCA al revés.** La firma real de las clases base es `(String message, String errorCode)`. Ambos parámetros son `String`, así que invertirlos **compila sin error** y produce un bug silencioso: el cliente recibe `errorCode: "No se encontró la ficha..."` y `message: "FICHA_NO_ENCONTRADA"`. Verifica el orden cada vez.
+>
+> El ejemplo usa un **estado inválido** (invariante del aggregate → `DomainException` → 422). Un "no encontrado" NO es excepción de dominio: extiende `ApplicationException` y vive en `application/{entidad}/exception/` (ver tabla de ubicación más abajo).
+
+> Toda excepción del contexto extiende uno de los 5 tipos base: `DomainException` (422), `ApplicationException` (400), `AuthorizationException` (403), `InfrastructureException` (503), `DomainValidationException` (422). **NUNCA** extender `RuntimeException` directamente. Ver sección "Jerarquía de excepciones" más abajo.
 >
 > **Excepción hoja → `final`.** Toda excepción concreta de un contexto (la que nadie hereda) se declara `public final class`. Solo las clases base de `shared:exception` (`DomainException`, `ApplicationException`, etc.), pensadas para ser extendidas, NO llevan `final`.
 
@@ -1193,8 +1305,8 @@ A continuación, una HU de creación de un agregado (write side) de principio a 
 #### 1. Command (intención de negocio)
 
 ```java
-// application/fichaPerfil/command/model/CrearFichaPerfilCommand.java
-package com.arquisoft.fichas.application.fichaPerfil.command.model;
+// application/fichaperfil/command/model/CrearFichaPerfilCommand.java
+package com.arquisoft.fichas.application.fichaperfil.command.model;
 
 import java.util.UUID;
 
@@ -1209,15 +1321,15 @@ public record CrearFichaPerfilCommand(
 #### 2. Aggregate (con Notification Pattern + eventos)
 
 ```java
-// domain/fichaPerfil/aggregate/FichaPerfilAggregate.java
-package com.arquisoft.fichas.domain.fichaPerfil.aggregate;
+// domain/fichaperfil/aggregate/FichaPerfilAggregate.java
+package com.arquisoft.fichas.domain.fichaperfil.aggregate;
 
 import com.arquisoft.shared.events.AggregateRoot;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.util.UtilText;
-import com.arquisoft.fichas.domain.fichaPerfil.event.FichaPerfilCreadaEvent;
+import com.arquisoft.fichas.domain.fichaperfil.event.FichaPerfilCreadaEvent;
 import com.arquisoft.shared.message.FichasMessages;
 import java.util.UUID;
 
@@ -1276,8 +1388,8 @@ public final class FichaPerfilAggregate extends AggregateRoot {
 #### 3. Evento de dominio
 
 ```java
-// domain/fichaPerfil/event/FichaPerfilCreadaEvent.java
-package com.arquisoft.fichas.domain.fichaPerfil.event;
+// domain/fichaperfil/event/FichaPerfilCreadaEvent.java
+package com.arquisoft.fichas.domain.fichaperfil.event;
 
 import com.arquisoft.shared.events.DomainEvent;
 import java.util.UUID;
@@ -1307,10 +1419,10 @@ public final class FichaPerfilCreadaEvent extends DomainEvent {
 #### 4. Puerto de salida (write — en `domain`)
 
 ```java
-// domain/fichaPerfil/port/out/FichaPerfilOutputPort.java
-package com.arquisoft.fichas.domain.fichaPerfil.port.out;
+// domain/fichaperfil/port/out/FichaPerfilOutputPort.java
+package com.arquisoft.fichas.domain.fichaperfil.port.out;
 
-import com.arquisoft.fichas.domain.fichaPerfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -1323,11 +1435,11 @@ public interface FichaPerfilOutputPort {
 #### 5. Puerto de entrada (write — en `application`)
 
 ```java
-// application/fichaPerfil/command/port/in/CrearFichaPerfilInputPort.java
-package com.arquisoft.fichas.application.fichaPerfil.command.port.in;
+// application/fichaperfil/command/port/in/CrearFichaPerfilInputPort.java
+package com.arquisoft.fichas.application.fichaperfil.command.port.in;
 
 import com.arquisoft.shared.inputport.InputPort;
-import com.arquisoft.fichas.application.fichaPerfil.command.model.CrearFichaPerfilCommand;
+import com.arquisoft.fichas.application.fichaperfil.command.model.CrearFichaPerfilCommand;
 import java.util.UUID;
 
 public interface CrearFichaPerfilInputPort
@@ -1339,13 +1451,13 @@ public interface CrearFichaPerfilInputPort
 #### 6. UseCase (write — en `application`)
 
 ```java
-// application/fichaPerfil/command/CrearFichaPerfilUseCase.java
-package com.arquisoft.fichas.application.fichaPerfil.command;
+// application/fichaperfil/command/CrearFichaPerfilUseCase.java
+package com.arquisoft.fichas.application.fichaperfil.command;
 
-import com.arquisoft.fichas.application.fichaPerfil.command.model.CrearFichaPerfilCommand;
-import com.arquisoft.fichas.application.fichaPerfil.command.port.in.CrearFichaPerfilInputPort;
-import com.arquisoft.fichas.domain.fichaPerfil.aggregate.FichaPerfilAggregate;
-import com.arquisoft.fichas.domain.fichaPerfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.model.CrearFichaPerfilCommand;
+import com.arquisoft.fichas.application.fichaperfil.command.port.in.CrearFichaPerfilInputPort;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -1381,10 +1493,10 @@ public class CrearFichaPerfilUseCase implements CrearFichaPerfilInputPort {
 #### 7. RequestDTO (en `infrastructure`)
 
 ```java
-// infrastructure/fichaPerfil/command/adapter/in/web/dto/CrearFichaPerfilRequestDTO.java
-package com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.in.web.dto;
+// infrastructure/fichaperfil/command/adapter/in/web/dto/CrearFichaPerfilRequestDTO.java
+package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto;
 
-import com.arquisoft.fichas.application.fichaPerfil.command.model.CrearFichaPerfilCommand;
+import com.arquisoft.fichas.application.fichaperfil.command.model.CrearFichaPerfilCommand;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
@@ -1404,11 +1516,12 @@ public record CrearFichaPerfilRequestDTO(
 #### 8. InputAdapter (REST controller)
 
 ```java
-// infrastructure/fichaPerfil/command/adapter/in/web/CrearFichaPerfilInputAdapter.java
-package com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.in.web;
+// infrastructure/fichaperfil/command/adapter/in/web/CrearFichaPerfilInputAdapter.java
+package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaPerfil.command.port.in.CrearFichaPerfilInputPort;
-import com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.in.web.dto.CrearFichaPerfilRequestDTO;
+import com.arquisoft.fichas.application.fichaperfil.command.port.in.CrearFichaPerfilInputPort;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.CrearFichaPerfilRequestDTO;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.CrearFichaPerfilResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -1416,14 +1529,14 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.net.URI;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/fichas-perfil")
+@RequestMapping("/fichas-perfil")
 @RequiredArgsConstructor
 @Tag(name = "Fichas de Perfil")
 public class CrearFichaPerfilInputAdapter {
@@ -1440,28 +1553,42 @@ public class CrearFichaPerfilInputAdapter {
            @ApiResponse(responseCode = "401", description = "No autenticado"),
            @ApiResponse(responseCode = "403", description = "Sin permisos")
    })
-   public ResponseEntity<Void> crear(@Valid @RequestBody CrearFichaPerfilRequestDTO request) {
+   public ResponseEntity<CrearFichaPerfilResponseDTO> crear(@Valid @RequestBody CrearFichaPerfilRequestDTO request) {
       UUID id = crearFichaPerfilInputPort.ejecutar(request.toCommand());
-      return ResponseEntity.created(URI.create("/api/fichas-perfil/" + id)).build();
+      return ResponseEntity.status(HttpStatus.CREATED)
+              .body(new CrearFichaPerfilResponseDTO(id));
    }
 }
 ```
 
+El `ResponseDTO` es un `record` de un solo componente en `.../command/adapter/in/web/dto/`:
+
+```java
+// infrastructure/fichaperfil/command/adapter/in/web/dto/CrearFichaPerfilResponseDTO.java
+public record CrearFichaPerfilResponseDTO(UUID id) {}
+```
+
+Jackson lo serializa como `{"id": "b383883a-..."}`.
+
 > **Convenciones del InputAdapter de escritura:**
+> - **La ruta NUNCA lleva el prefijo `/api`.** `server.servlet.context-path: /api` (en `application.yml`) lo antepone globalmente. `@RequestMapping` declara la ruta relativa (`"/fichas-perfil"`); escribir `"/api/fichas-perfil"` produce la URL duplicada `/api/api/fichas-perfil`. Esto aplica igual al `@RequestMapping` del adapter, a la ruta documentada en el plan y a las rutas de `mockMvc.perform(...)` en los tests (`@WebMvcTest` no aplica el context-path).
 > - Inyecta el `InputPort` (interfaz vacía), no el `UseCase` directamente.
-> - Retorna `ResponseEntity<Void>` con `201 Created` + header `Location` apuntando al recurso. **No** devuelve el recurso completo — eso es responsabilidad de un endpoint de consulta separado (CQRS estricto).
+> - Cuando el comando genera un recurso y devuelve su id, el adapter lo **envuelve en un `{Accion}{Entidad}ResponseDTO`** (record con `UUID id`) y retorna `ResponseEntity.status(HttpStatus.CREATED).body(dto)` → body `{"id": "..."}`. **Nunca** `ResponseEntity<UUID>` ni `.body(id)` directo: eso serializa como string crudo (`"b383883a-..."`) sin cuerpo. Solo devuelve el id, **no** el recurso completo — eso es responsabilidad de un endpoint de consulta separado (CQRS estricto). Para comandos sin valor de retorno (modificar/remover) sí usa `ResponseEntity<Void>` con `200`/`204`.
+> - **Verbo de una modificación: PATCH si el `RequestDTO` lleva un subconjunto de los atributos modificables (caso por defecto); PUT solo si los lleva todos y el request reemplaza el recurso en bloque.** El `id` viaja por `@PathVariable`, nunca en el body. Precedentes: `@PatchMapping("/{id}")` en `ModificarFichaPerfilInputAdapter` (body `{tituloProyecto}`) y `@PatchMapping("/{itemId}/items")` en `ModificarItemFichaPerfilInputAdapter` (body `{contenido}`). **No existe ningún `@PutMapping` en el proyecto.**
+> - **El verbo no fija el código de respuesta.** Éste depende de lo que retorne el use case: `Void` → `ResponseEntity<Void>` con **204 No Content** (lo que hacen hoy los dos PATCH); un id o un objeto → **200 OK** con body, o **201 Created** si la operación además crea un sub-recurso. Un PATCH/PUT con contenido de retorno es legítimo; no fuerces `Void` para justificar un 204.
+> - **Sub-recursos:** la ruta se anida bajo el recurso padre (`POST /fichas-perfil/{fichaPerfilId}/estudiantes`) y el `{recurso}` del client role es la **entidad afectada**, no el primer segmento de la URL (`fichas:estudiante-ficha-perfil:create`, no `fichas:ficha-perfil:create`). Igual en `DELETE /fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}` → `fichas:estudiante-ficha-perfil:delete`.
 > - El `@PreAuthorize` usa client roles con formato `{contexto}:{recurso}:{accion}` **en kebab-case** (todo minúsculas, guiones entre palabras del recurso, ej. `fichas:ficha-perfil:create`). **Nunca** camelCase ni MAYÚSCULAS.
 
 #### 9. CommandOutputAdapter (persistencia write)
 
 ```java
-// infrastructure/fichaPerfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java
-package com.arquisoft.fichas.infrastructure.fichaPerfil.command.adapter.out.persistence;
+// infrastructure/fichaperfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java
+package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.persistence;
 
-import com.arquisoft.fichas.domain.fichaPerfil.aggregate.FichaPerfilAggregate;
-import com.arquisoft.fichas.domain.fichaPerfil.port.out.FichaPerfilOutputPort;
-import com.arquisoft.fichas.infrastructure.fichaPerfil.persistence.FichaPerfilJpaRepository;
-import com.arquisoft.fichas.infrastructure.fichaPerfil.persistence.FichaPerfilMapper;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import java.util.Optional;
@@ -1554,17 +1681,19 @@ public static EstadoFichaPerfilAggregate crear(UUID fichaPerfilId) {
 }
 ```
 
-**Persistencia sin consulta al catálogo.** Como el `id` del catálogo es la constante del enum (ya conocida en memoria), el `CommandOutputAdapter` obtiene una **referencia** a la fila del catálogo con `entityManager.getReference(...)` — sin viaje a BD para resolver el id (lo opuesto a un `findByNombre`). La `JpaEntity` referencia el catálogo con `@ManyToOne` + `@JoinColumn` (FK `VARCHAR`), no con un id crudo:
+**Persistencia sin consulta al catálogo.** Como el `id` del catálogo es la constante del enum (ya conocida en memoria), el `CommandOutputAdapter` obtiene una **referencia** a la fila del catálogo con `{catalogo}JpaRepository.getReferenceById(id)` — sin viaje a BD para resolver el id (lo opuesto a un `findByNombre`). La `JpaEntity` referencia el catálogo con `@ManyToOne` + `@JoinColumn` (FK `VARCHAR`), no con un id crudo:
 
 ```java
-// CommandOutputAdapter — NO consulta el catálogo
-@PersistenceContext(unitName = "fichas")
-private EntityManager entityManager;
+// CommandOutputAdapter — NO consulta el catálogo.
+// Inyecta el JpaRepository del catálogo por constructor (@RequiredArgsConstructor);
+// NUNCA usa EntityManager ni @PersistenceContext.
+private final EstadoFichaPerfilJpaRepository jpaRepository;
+private final EstadoFichaJpaRepository estadoFichaJpaRepository;
 
 @Override
 public void guardar(EstadoFichaPerfilAggregate aggregate) {
-    var estadoFichaRef = entityManager.getReference(
-            EstadoFichaJpaEntity.class, aggregate.getEstadoFicha().getId());
+    var estadoFichaRef =
+            estadoFichaJpaRepository.getReferenceById(aggregate.getEstadoFicha().getId());
     jpaRepository.save(EstadoFichaPerfilMapper.toJpaEntity(aggregate, estadoFichaRef));
 }
 ```
@@ -1603,14 +1732,37 @@ INSERT INTO estado_ficha (id, nombre, descripcion) VALUES
 -- tabla referenciante:  estado_ficha_id VARCHAR(50) NOT NULL REFERENCES estado_ficha(id)
 ```
 
-### Plantilla resumida de una HU read — QueryInputPort + ReadModel + QueryUseCase
+### Referencias al guardar (`getReferenceById`) — regla por situación, no por anotación
+
+**La referencia se construye SIEMPRE con el `JpaRepository` de la entidad referenciada: `{referida}JpaRepository.getReferenceById(id)`.** Nunca con `EntityManager` + `@PersistenceContext(unitName = "...")` — el repositorio ya expone `getReferenceById` (heredado de `JpaRepository`), así que el adapter solo inyecta repositorios por constructor (`@RequiredArgsConstructor`) y no toca el `EntityManager`.
+
+La regla **no depende de una anotación "mágica"**, sino de una **situación**: vas a **persistir** una entidad que tiene un campo de asociación a otra entidad y **solo tienes el `id`** de esa otra. Necesitas algo que poner en ese campo, y la referencia es la forma de ponerlo **sin pagar un SELECT** — `getReferenceById` devuelve un proxy cuya única data materializada es el id, que Hibernate escribe directo en la columna FK.
+
+Situaciones que la requieren — asociaciones **`*-to-one` del lado propietario** (la FK vive en TU tabla):
+
+| Anotación | ¿Requiere referencia al guardar? | Por qué |
+|---|---|---|
+| `@ManyToOne` | **Sí — el caso típico** | El campo es un objeto de la otra entidad; Hibernate toma su id para la columna FK |
+| `@OneToOne` con `@JoinColumn` (lado dueño) | **Sí — mismo mecanismo** | La FK vive en tu tabla, igual que `@ManyToOne` |
+| `@ManyToMany` (lado dueño) | **Sí, al agregar elementos a la colección** | Cada elemento agregado puede ser un proxy; se escribe en la tabla intermedia |
+| `@OneToMany` | Normalmente **no** | La FK vive en la tabla del "many"; es el hijo quien referencia al padre con su `@ManyToOne` |
+
+Casos donde **NO** aplica ninguna referencia:
+
+- **Columnas planas** (`UUID`, `String`, `@Enumerated`, `Instant`): se escriben directo.
+- **`@Embedded`/`@Embeddable`**: es parte de la misma fila, no hay otra entidad.
+- **Lecturas**: si haces `findById` de la entidad principal, Hibernate ya resuelve las asociaciones solo (lazy o eager); nunca llamas `getReferenceById` para leer.
+
+**Si NO tienes el `id`** para construir la referencia, entonces sí debes **consultar** (`findById`/`findByX`, pagando el SELECT) — la referencia solo evita el viaje a BD cuando ya conoces el id.
+
+### Plantilla resumida de una HU read — InputPort + ReadModel + UseCase
 
 Cuando la HU es de consulta y NO necesita Criteria (consulta simple por id o por un campo):
 
 #### 1. ReadModel
 
 ```java
-// application/fichaPerfil/query/readmodel/FichaPerfilReadModel.java
+// application/fichaperfil/query/readmodel/FichaPerfilReadModel.java
 public record FichaPerfilReadModel(
     UUID id,
     String tituloProyecto,
@@ -1619,10 +1771,10 @@ public record FichaPerfilReadModel(
 ) {}
 ```
 
-#### 2. QueryInputPort (vacío)
+#### 2. InputPort de lectura (vacío)
 
 ```java
-// application/fichaPerfil/query/port/in/ConsultarFichaPerfilInputPort.java
+// application/fichaperfil/query/port/in/ConsultarFichaPerfilInputPort.java
 public interface ConsultarFichaPerfilInputPort
         extends InputPort<UUID, FichaPerfilReadModel> {}
 ```
@@ -1630,24 +1782,24 @@ public interface ConsultarFichaPerfilInputPort
 #### 3. QueryOutputPort (vive en `application`, NO en domain)
 
 ```java
-// application/fichaPerfil/query/port/out/FichaPerfilQueryOutputPort.java
+// application/fichaperfil/query/port/out/FichaPerfilQueryOutputPort.java
 public interface FichaPerfilQueryOutputPort {
    Optional<FichaPerfilReadModel> findById(UUID id);
 }
 ```
 
-#### 4. QueryUseCase
+#### 4. UseCase de lectura
 
 ```java
-// application/fichaPerfil/query/ConsultarFichaPerfilQueryUseCase.java
+// application/fichaperfil/query/ConsultarFichaPerfilUseCase.java
 @Component
 @RequiredArgsConstructor
-public class ConsultarFichaPerfilQueryUseCase implements ConsultarFichaPerfilInputPort {
+@Transactional(readOnly = true, transactionManager = "fichasTransactionManager")
+public class ConsultarFichaPerfilUseCase implements ConsultarFichaPerfilInputPort {
 
     private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
 
     @Override
-    @Transactional(readOnly = true)
     public FichaPerfilReadModel ejecutar(UUID id) {
         return fichaPerfilQueryOutputPort.findById(id)
             .orElseThrow(() -> new FichaPerfilNoEncontradaException(id.toString()));
@@ -1655,14 +1807,16 @@ public class ConsultarFichaPerfilQueryUseCase implements ConsultarFichaPerfilInp
 }
 ```
 
-#### 5. QueryInputAdapter
+> **El qualifier `transactionManager` es OBLIGATORIO también en los use cases de lectura.** Cada contexto declara su propio `PlatformTransactionManager` y **`usuariosTransactionManager` es el bean `@Primary`**. Un `@Transactional(readOnly = true)` sin qualifier en un contexto de negocio NO falla al arrancar: se enlaza silenciosamente al transaction manager de `usuarios`, contra el `EntityManagerFactory` equivocado. Siempre `transactionManager = "{contexto}TransactionManager"`.
+
+#### 5. InputAdapter de lectura
 
 ```java
-// infrastructure/fichaPerfil/query/adapter/in/web/ConsultarFichaPerfilQueryInputAdapter.java
+// infrastructure/fichaperfil/query/adapter/in/web/ConsultarFichaPerfilInputAdapter.java
 @RestController
-@RequestMapping("/api/fichas-perfil")
+@RequestMapping("/fichas-perfil")
 @RequiredArgsConstructor
-public class ConsultarFichaPerfilQueryInputAdapter {
+public class ConsultarFichaPerfilInputAdapter {
 
    private final ConsultarFichaPerfilInputPort consultarFichaPerfilInputPort;
 
@@ -1677,7 +1831,7 @@ public class ConsultarFichaPerfilQueryInputAdapter {
 #### 6. QueryOutputAdapter
 
 ```java
-// infrastructure/fichaPerfil/query/adapter/out/persistence/FichaPerfilQueryOutputAdapter.java
+// infrastructure/fichaperfil/query/adapter/out/persistence/FichaPerfilQueryOutputAdapter.java
 @Component
 @RequiredArgsConstructor
 public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
@@ -1708,6 +1862,7 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
 |---|---|---|
 | `DomainException` | **422** Unprocessable Content | "Error de dominio" |
 | `ApplicationException` | **400** Bad Request | "Error de aplicación" |
+| `AuthorizationException` | **403** Forbidden | "Acceso denegado" |
 | `InfrastructureException` | **503** Service Unavailable | "Servicio no disponible" |
 | `DomainValidationException` | **422** + `fieldErrors[]` | Notification Pattern |
 | fallback (`Exception`) | **500** Internal Server Error | "Error interno" |
@@ -1720,19 +1875,23 @@ El implementador elige la clase base según la semántica del error:
 
 | Semántica | Extiende | HTTP resultante |
 |---|---|---|
-| Recurso duplicado / ya existe en BD | `ApplicationException` | 400 |
+| Recurso duplicado / ya existe en BD (unicidad — restricción global, NO invariante local) | `ApplicationException` | 400 |
 | Recurso no encontrado | `ApplicationException` | 400 |
 | Parámetro inválido / filtro inválido | `ApplicationException` | 400 |
-| Invariante del aggregate violada (regla de negocio) | `DomainException` | 422 |
+| Actor sin potestad sobre la instancia del recurso (no es propietario, ficha ajena) | `AuthorizationException` | 403 |
+| Invariante **local** del aggregate violada (consistencia de una sola instancia) | `DomainException` | 422 |
+| Valor repetido sobre el **mismo** aggregate (ej. nuevo asesor = asesor actual, POL-05) — NO es unicidad global, es invariante local | `DomainException` | 422 |
 | Estado inválido / transición de estado prohibida | `DomainException` | 422 |
 | Validación multi-campo con Notification Pattern | `DomainValidationException` | 422 + `fieldErrors[]` |
 | Fallo de infraestructura (BD, RabbitMQ, Keycloak caído) | `InfrastructureException` | 503 |
 
+> **Las filas 422 por invariante de aggregate NO se implementan como subclase propia.** El aggregate acumula la violación con `ValidationResult.addError(campo, errorCode, mensaje)` (constantes del catálogo) y lanza la `DomainValidationException` **compartida** (`shared:domain.exception`, vía `throwIfHasErrors()`) → 422 + `fieldErrors[]`. No crees `{Entidad}{Regla}Exception extends DomainException`. Subclases propias solo para `ApplicationException` / `AuthorizationException` (400/403) del use case y el caso especial de `seguridad`. Ver §"Invariantes locales del aggregate".
+
 **Ejemplo de excepción de dominio bien definida:**
 
 ```java
-// fichas/application/.../fichaPerfil/exception/FichaPerfilDuplicadaException.java
-package com.arquisoft.fichas.application.fichaPerfil.exception;
+// fichas/application/.../fichaperfil/exception/FichaPerfilDuplicadaException.java
+package com.arquisoft.fichas.application.fichaperfil.exception;
 
 import com.arquisoft.shared.exception.ApplicationException;
 
@@ -1763,23 +1922,24 @@ Sin crear handler propio. Sin tocar `shared:web`.
 
 | Clase base que extiende | Ubicación obligatoria | Por qué |
 |---|---|---|
-| `DomainException` | `domain/{entidad}/exception/` | Invariantes del aggregate o estado inválido — viven con la entidad raíz. La clase base `DomainException` vive en `shared:domain.exception` (capa `domain`). |
-| `DomainValidationException` | `domain/{entidad}/exception/` | Notification Pattern multi-campo — también es del dominio. |
+| `DomainValidationException` (compartida) | **No se crea por contexto** — es `final`, se lanza vía `ValidationResult.throwIfHasErrors()` | **Vehículo por defecto de TODA invariante del aggregate** (formato, igualdad "mismo valor actual", estado terminal, transición). El aggregate acumula con `addError(campo, errorCode, mensaje)` del catálogo. No se genera archivo en `domain/{entidad}/exception/`. |
+| `DomainException` (subclase propia) | `domain/{entidad}/exception/` (caso raro) | **Evítala.** Ningún contexto de negocio la usa hoy (único: `seguridad/AuthenticationException`, choque con Spring Security). Por defecto usa `addError` + `DomainValidationException`. |
 | `ApplicationException` | `application/{entidad}/exception/` | Recurso no encontrado / duplicado / regla de orquestación que **no es invariante del aggregate** — la decisión la toma el use case. La clase base vive en `shared:exception` (consumida desde `application`). **Ubicación directa bajo `{entidad}/`, sin anidar `command/` o `query/`**: la excepción pertenece al concepto entidad, no al slice CQRS. |
+| `AuthorizationException` | `application/{entidad}/exception/` | El use case comprueba la propiedad del recurso consultando un puerto (`esEstudiantePropietario(...)`) — es orquestación, igual que `ApplicationException`. Misma regla de ubicación directa bajo `{entidad}/`. |
 | `InfrastructureException` | `infrastructure/exception/` | Fallos técnicos (JPA, RabbitMQ caído, Keycloak inaccesible) — solo conocidos en `infrastructure`. |
 
 **Casos típicos por tipo y dónde duele si se ubica mal:**
 
 | Excepción ejemplo | Extiende | Ubicación correcta | Si se ubica en `domain/` por error |
 |---|---|---|---|
-| `FichaPerfilDuplicadaException` | `ApplicationException` | `application/fichaPerfil/exception/` | La capa `domain` no debe conocer la regla "ya existe en BD" (eso es decisión del use case tras consultar el repositorio). Además, importar `ApplicationException` desde `domain/` viola la dirección de dependencias. |
-| `AsesorFichaNoEncontradoException` | `ApplicationException` | `application/asesorFicha/exception/` | Igual: "no encontrado en BD" es decisión del use case, no del aggregate. Vive bajo la entidad `asesorFicha` aunque la lance el use case de `fichaPerfil`. |
-| `FichaPerfilEstadoInvalidoException` | `DomainException` | `domain/fichaPerfil/exception/` | Esta sí va en `domain/` porque "no se puede aprobar una ficha en estado BORRADOR" es invariante del aggregate. |
-| `FichaPerfilTituloInvalidoException` | `DomainValidationException` | `domain/fichaPerfil/exception/` | Notification Pattern aplicado en el constructor del aggregate — invariante de dominio. |
+| `FichaPerfilDuplicadaException` | `ApplicationException` | `application/fichaperfil/exception/` | La capa `domain` no debe conocer la regla "ya existe en BD" (eso es decisión del use case tras consultar el repositorio). Además, importar `ApplicationException` desde `domain/` viola la dirección de dependencias. |
+| `AsesorFichaNoEncontradoException` | `ApplicationException` | `application/asesorficha/exception/` | Igual: "no encontrado en BD" es decisión del use case, no del aggregate. Vive bajo la entidad `asesorficha` aunque la lance el use case de `fichaperfil`. |
+| Invariante del aggregate (`estado terminal`, `mismo asesor`, `título en blanco`) | — (sin subclase) | se lanza como `DomainValidationException` compartida | El aggregate acumula con `ValidationResult.addError(...)` + `throwIfHasErrors()`; **no se crea archivo en `domain/`**. Un plan que liste `domain/{entidad}/exception/{Entidad}{Regla}Exception.java` es error del plan. |
 
 **Cómo decidir rápido:** pregúntate "¿esta excepción la lanza el aggregate en su propio constructor / método de negocio, sin ayuda de un repositorio?"
-- **Sí** → invariante del dominio → extiende `DomainException` → vive en `domain/{entidad}/exception/`.
+- **Sí** → invariante del dominio → **no crees subclase**: acumula con `ValidationResult.addError(...)` y lanza la `DomainValidationException` compartida vía `throwIfHasErrors()` → 422 + `fieldErrors[]`.
 - **No, el use case la lanza tras consultar un puerto** (repositorio, servicio externo) → es decisión de orquestación → extiende `ApplicationException` → vive en `application/{entidad}/exception/` (directamente bajo la entidad, sin anidar `command/` o `query/`).
+- **No, y además el motivo es "este usuario no tiene potestad sobre este recurso concreto"** (no es propietario de la ficha, el ítem pertenece a otro estudiante) → extiende `AuthorizationException` → misma ubicación en `application/{entidad}/exception/` → 403. Esto cubre lo que `@PreAuthorize` no puede: el usuario **sí** tiene el client role, pero no sobre **esa instancia**. Ejemplos reales: `FichaNoPropietarioException`, `ItemFichaNoPropiaException`.
 
 #### Cuándo SÍ crear un handler propio del contexto
 
@@ -1920,8 +2080,8 @@ Cada **rol realm** tiene asignados varios **client roles** según sus responsabi
 // ✅ CORRECTO — usa hasAuthority con client role en kebab-case
 @PostMapping
 @PreAuthorize("hasAuthority('fichas:ficha-perfil:create')")
-public ResponseEntity<UUID> crear(@Valid @RequestBody CrearFichaPerfilRequestDTO req) {
-    // ...
+public ResponseEntity<CrearFichaPerfilResponseDTO> crear(@Valid @RequestBody CrearFichaPerfilRequestDTO req) {
+    // ... retorna body {"id": "..."} vía ResponseDTO, nunca ResponseEntity<UUID>
 }
 
 // ❌ MAL — camelCase en el recurso
@@ -2046,7 +2206,7 @@ Exchange "arquisoft.events" (TopicExchange, durable)
   └── ... otras routing keys
 ```
 
-> **Formato del topic:** `{contexto}.{entidad}.{accion}`, **todo en minúsculas y `snake_case`** (tres segmentos `[a-z][a-z_]*`). `DomainEvent` valida este formato en el constructor — un topic con camelCase (ej. `fichas.fichaPerfil.creada`) lanza `IllegalArgumentException`.
+> **Formato del topic:** `{contexto}.{entidad}.{accion}`, **todo en minúsculas y `snake_case`** (tres segmentos `[a-z][a-z_]*`). `DomainEvent` valida este formato en el constructor — un topic con camelCase (ej. `fichas.fichaperfil.creada`) lanza `IllegalArgumentException`.
 
 | Recurso | Convención | Ejemplo |
 |---|---|---|
@@ -2120,7 +2280,7 @@ public class FichaPerfilCreadaConsumerInputAdapter extends AbstractEventConsumer
 > **Regla crítica:** el contexto consumidor **NO importa la clase del evento del contexto publicador**. Declara un `record` propio con los campos que necesita.
 
 ```java
-// proyectos/infrastructure/fichaPerfil/command/adapter/in/amqp/FichaPerfilCreadaPayload.java
+// proyectos/infrastructure/fichaperfil/command/adapter/in/amqp/FichaPerfilCreadaPayload.java
 public record FichaPerfilCreadaPayload(
     String aggregateId,
     String tituloProyecto,
@@ -2271,6 +2431,7 @@ por contexto. El implementador **no toca configuración de DataSource**.
 
 - **`@Table` SIN atributo `schema`.** Todas las tablas viven en el `public` de su BD propia.
   Usa solo `@Table(name = "ficha_perfil")`. **Nunca** `@Table(schema = "...", name = "...")`.
+- **`@Column(name = "...")` explícito en TODA propiedad persistente — obligatorio.** Cada campo mapeado declara su nombre de columna de BD en `snake_case`, **incluido el `@Id`** (`@Column(name = "id")`). Las asociaciones declaran `@JoinColumn(name = "...")`. **Nunca** confíes en la estrategia de naming implícita de Hibernate (que deriva el nombre del campo Java): para campos de una sola palabra "funciona por coincidencia", pero un campo `camelCase` o un cambio de estrategia produce un desajuste silencioso columna↔campo. El nombre explícito hace el mapeo independiente de la configuración y elimina esa clase de error. El `name` debe coincidir **exacto** con la columna declarada en la migración Flyway.
 - **Migraciones Flyway** en `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` — el `{Contexto}DataSourceConfig` carga `classpath:db/migration/{contexto}` (ej. `classpath:db/migration/fichas`), así que el SQL DEBE ir en ese subdirectorio `{contexto}/`. Una migración fuera de ese subdir NO se ejecuta.
 - **Nomenclatura Flyway (versionado secuencial por contexto):** `V{major}.{minor}__{descripcion_snake_case}.sql` (ej. `V1.0__crear_tablas_fichas_perfil.sql`, luego `V1.1__crear_estudiante.sql`). Cada contexto tiene su **propia secuencia** (su propio Flyway). La migración nueva usa el **siguiente número** tras la versión más alta existente en `db/migration/{contexto}/`: **LEE el directorio antes de elegir el número — no lo adivines (eso causa huecos como un `V3` sin `V2`) ni reutilices uno existente.**
 - **Minor por defecto, major reservado:** el proyecto está en el esquema **v1**, así que toda migración nueva **incrementa el minor** (`V1.0` → `V1.1` → `V1.2`…). El salto a un **major** (`V2.0`) se reserva para un **cambio grande de esquema / nueva versión del proyecto** y es una **decisión humana explícita** — el agente **nunca** lo decide: siempre incrementa el minor.
