@@ -46,11 +46,16 @@ public class AuthCommandInputAdapter {
     private final LogoutInputPort logoutInputPort;
     private final ValidateTokenInputPort validateTokenInputPort;
 
+    @Deprecated(since = "OAuth 2.1 / RFC 9700 — usar Authorization Code + PKCE en la SPA")
     @PostMapping("/login")
     @Operation(
-            summary = "Iniciar sesion",
-            description = "Autentica al usuario contra Keycloak usando email y contrasena. "
-                    + "Retorna access token, refresh token y metadatos de la sesion."
+            summary = "Iniciar sesion (ROPC — desaconsejado para navegadores)",
+            description = "Autentica al usuario contra Keycloak usando email y contrasena "
+                    + "(grant_type=password / ROPC). DESACONSEJADO por OAuth 2.1 y RFC 9700: "
+                    + "el flujo recomendado para la SPA es Authorization Code + PKCE contra "
+                    + "Keycloak. Este endpoint se mantiene solo para clientes internos de confianza. "
+                    + "Retorna access token, refresh token y metadatos de la sesion.",
+            deprecated = true
     )
     @ApiResponses({
             @ApiResponse(

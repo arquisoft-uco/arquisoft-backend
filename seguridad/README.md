@@ -101,9 +101,9 @@ seguridad/
 
 | Método | Ruta | Auth requerida | Descripción |
 |---|---|---|---|
-| `POST` | `/auth/login` | No | Autentica con email + contraseña; retorna access token y refresh token |
+| `POST` | `/auth/login` | No | **⚠️ ROPC — desaconsejado para navegadores** (OAuth 2.1 / RFC 9700). Autentica con email + contraseña. La SPA debe usar Authorization Code + PKCE contra Keycloak; este endpoint queda solo para clientes internos de confianza |
 | `POST` | `/auth/refresh` | No | Obtiene nuevo access token usando un refresh token válido |
-| `POST` | `/auth/logout` | Sí (Bearer) | Invalida el JWT actual en la blacklist de Redis |
+| `POST` | `/auth/logout` | Sí (Bearer) | Invalida el JWT actual en la blacklist de Redis (por su `jti`, con TTL = vida restante del token) |
 | `POST` | `/auth/validate` | No | Valida un JWT y retorna la identidad extraída; útil para validaciones entre servicios |
 
 La creación de usuarios (`POST /usuarios`) vive en el contexto `usuarios`, no en `seguridad`.
@@ -113,9 +113,32 @@ La creación de usuarios (`POST /usuarios`) vive en el contexto `usuarios`, no e
 ## Mecanismos de seguridad
 
 ### JWT / Keycloak
-- Tokens validados contra el JWK Set de Keycloak (configurado en `SecurityConfig`).
+- Tokens validados en `SecurityConfig` contra el **issuer** de Keycloak (`{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}`), que autodescubre el JWKS vía OIDC. Se valida **firma + expiración (nbf/exp) + `iss` + `aud`** (RFC 9700 / OAuth 2.1). Un token con issuer o audience incorrectos se rechaza con **401 `invalid_token`**.
 - Autorización basada en permisos finos del claim `resource_access.{KEYCLOAK_CLIENT_ID}.roles` (formato `contexto:recurso:accion`, ej. `usuarios:usuario:create`, `fichas:ficha-perfil:view`), extraídos por `KeycloakRoleExtractor` y mapeados 1:1 a `GrantedAuthority` sin prefijo `ROLE_` en `KeycloakJwtConverterConfig`. Los roles de `realm_access.roles` ya no se usan para autorización — cada contexto protege sus endpoints con `@PreAuthorize("hasAuthority('...')")` sobre estos permisos finos.
 - Sesión stateless — ningún estado HTTP del lado del servidor.
+
+#### Contrato de claims del access token
+
+La SPA `react-app` autentica con **Authorization Code + PKCE** (public client) y envía el access token como `Authorization: Bearer <token>`. Para que ese token pase la validación y la autorización, Keycloak DEBE emitirlo con:
+
+| Claim | Contenido esperado | Lo produce | Si falta → |
+|---|---|---|---|
+| `aud` | contiene `arquisoft-api` | **audience resolve mapper** (default) cuando el token porta client roles de `arquisoft-api` | **401** `invalid_token` (validación en `SecurityConfig`) |
+| `resource_access.arquisoft-api.roles` | permisos finos (`contexto:recurso:accion`) | **Full Scope Allowed** o **Client Roles mapper** en `react-app` + realm roles compuestos | **403** en `@PreAuthorize` (autentica pero sin authorities) |
+| `realm_access.roles` | roles de negocio (`estudiante`, `asesor`, `coordinador`, …) | default de Keycloak | el backend NO lo usa; solo gating de UI del frontend |
+
+> `arquisoft-api` es el client confidencial del backend (resource server) y `react-app` es el public client de la SPA. El valor esperado en `aud` es configurable con `KEYCLOAK_EXPECTED_AUDIENCE` y el client cuyos roles se leen con `KEYCLOAK_CLIENT_ID`.
+
+#### Configuración requerida en el realm `arquisoft` (Keycloak)
+
+1. **Client roles** en `arquisoft-api`: los permisos finos (`fichas:ficha-perfil:view`, `usuarios:usuario:create`, …).
+2. **Realm roles compuestos** de negocio (`estudiante`, `asesor`, `coordinador`, …) que **agrupan** (composite) los client roles anteriores de `arquisoft-api`.
+3. En el public client `react-app`:
+   - **Full Scope Allowed = ON** (o un **Client Roles mapper** apuntando a `arquisoft-api`) para que los client roles concedidos aparezcan en `resource_access.arquisoft-api.roles`. Con esto, el `audience resolve mapper` por defecto añade `arquisoft-api` al claim `aud` automáticamente (no se requiere un Audience mapper explícito).
+
+**Verificación end-to-end:** decodificar un access token real (jwt.io o `POST /auth/validate`) y confirmar que trae `aud` = `arquisoft-api`, `resource_access.arquisoft-api.roles` con los permisos, `realm_access.roles` con los roles de negocio, y `jti` (necesario para la blacklist de logout).
+
+**Variables de entorno relevantes:** `KEYCLOAK_URL`, `KEYCLOAK_REALM`, `KEYCLOAK_CLIENT_ID` (`arquisoft-api`), `KEYCLOAK_EXPECTED_AUDIENCE` (default `arquisoft-api`).
 
 ### Blacklist de tokens (logout)
 - Al cerrar sesión, el JTI del token se guarda en Redis con TTL igual al tiempo de vida restante.
@@ -129,7 +152,8 @@ La creación de usuarios (`POST /usuarios`) vive en el contexto `usuarios`, no e
 - Retorna `429 Too Many Requests` con cabecera `X-Rate-Limit-Retry-After-Seconds`.
 
 ### CORS
-- Orígenes permitidos configurables vía `CORS_ALLOWED_ORIGINS` (por defecto: `localhost:3000`, `4200`, `5173`).
+- Orígenes permitidos configurables vía `CORS_ALLOWED_ORIGINS` (por defecto: `localhost:3000`, `4200`, `5173`) — lista exacta, sin comodines.
+- La SPA autentica con **Bearer token (no cookies)**: `allow-credentials=false` (default) y `allowed-headers=Authorization,Content-Type` (sin `*`). Configurables vía `CORS_ALLOW_CREDENTIALS` y `CORS_ALLOWED_HEADERS`. En producción, incluir el origen real de la SPA en `CORS_ALLOWED_ORIGINS`.
 
 ### Auditoría
 - `AuditFilter` registra cada request: METHOD, URI, STATUS, duración (ms), IP y userId (del JWT si presente).

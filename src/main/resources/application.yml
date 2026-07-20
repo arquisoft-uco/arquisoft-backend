@@ -243,12 +243,15 @@ arquisoft:
   keycloak:
     server-url: ${KEYCLOAK_URL:http://localhost:8081}
     realm: ${KEYCLOAK_REALM:arquisoft}
-    client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-app}
+    client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
     client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+    expected-audience: ${KEYCLOAK_EXPECTED_AUDIENCE:arquisoft-api}
 
   security:
     cors:
       allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
+      allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type}
+      allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
     rate-limit:
       enabled: ${RATE_LIMIT_ENABLED:true}
 

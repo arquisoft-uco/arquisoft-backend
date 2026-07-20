@@ -34,7 +34,7 @@ public final class SeguridadMessages {
         public static final String LOG_EXCEPCION_AUTENTICACION     = "Excepcion de autenticacion en {}: [{}] {}";
         public static final String LOG_ACCESS_DENIED               = "Access denied (filter-level) in {}: {}";
         public static final String LOG_UNAUTHORIZED                = "Unauthorized (filter-level) in {}: {}";
-        public static final String LOG_JWT_DECODER_CONFIG          = "Configuring JWT decoder with JWK Set URI: {}";
+        public static final String LOG_JWT_DECODER_CONFIG          = "Configuring JWT decoder with issuer: {} (expected audience: {})";
     }
 
     // ─────────────────────────────────────────────────────────────────────────

@@ -27,13 +27,17 @@ public class CorsConfig {
     @Value("${security.cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS,PATCH}")
     private String allowedMethods;
     
-    @Value("${security.cors.allowed-headers:*}")
+    // La SPA autentica con Bearer token (header Authorization), NO con cookies:
+    // solo se necesitan estos headers en las requests entrantes. Evitamos "*".
+    @Value("${security.cors.allowed-headers:Authorization,Content-Type}")
     private String allowedHeaders;
-    
+
     @Value("${security.cors.max-age:3600}")
     private long maxAge;
-    
-    @Value("${security.cors.allow-credentials:true}")
+
+    // Bearer (no cookies) ⇒ credentials=false. Evita el modo credentialed de CORS
+    // y su restricción de no combinar con orígenes comodín.
+    @Value("${security.cors.allow-credentials:false}")
     private boolean allowCredentials;
 
     @Bean

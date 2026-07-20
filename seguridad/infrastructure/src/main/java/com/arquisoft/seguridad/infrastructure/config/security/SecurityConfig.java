@@ -12,21 +12,16 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
-/**
- * Configuración de Spring Security para OAuth2/JWT con Keycloak.
- * Configura:
- * - Validación de JWT basada en las claves públicas de Keycloak (JWK Set URI)
- * - Conversión de roles Keycloak a GrantedAuthority via KeycloakJwtConverterConfig
- * - Políticas de sesión stateless
- * - Protección CSRF deshabilitada (API REST)
- * - Rutas públicas y protegidas
- */
 @Slf4j
 @Configuration
 @EnableWebSecurity
@@ -45,14 +40,23 @@ public class SecurityConfig {
     @Value("${arquisoft.keycloak.realm}")
     private String realm;
 
+    @Value("${arquisoft.keycloak.expected-audience:arquisoft-api}")
+    private String expectedAudience;
+
     @Bean
     public JwtDecoder jwtDecoder() {
-        String jwkSetUri = String.format(
-                "%s/realms/%s/protocol/openid-connect/certs",
-                keycloakServerUrl, realm
-        );
-        log.info(SeguridadMessages.Login.LOG_JWT_DECODER_CONFIG, jwkSetUri);
-        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+        String issuer = String.format("%s/realms/%s", keycloakServerUrl, realm);
+        log.info(SeguridadMessages.Login.LOG_JWT_DECODER_CONFIG, issuer, expectedAudience);
+
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
+        decoder.setJwtValidator(jwtValidator(issuer, expectedAudience));
+        return decoder;
+    }
+
+    static OAuth2TokenValidator<Jwt> jwtValidator(String issuer, String expectedAudience) {
+        OAuth2TokenValidator<Jwt> withIssuer = JwtValidators.createDefaultWithIssuer(issuer);
+        return new DelegatingOAuth2TokenValidator<>(
+                withIssuer, new AudienceValidator(expectedAudience));
     }
 
     @Bean
