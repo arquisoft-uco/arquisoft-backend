@@ -751,7 +751,7 @@ Marcar **una** opción según la respuesta a la pregunta 10 de FASE 3:
 > | Naturaleza de la operación | Forma | Ejemplo real |
 > |---|---|---|
 > | Crear en la colección del padre | `POST /padres/{padreId}/hijos` + body | `POST /fichas-perfil/{fichaPerfilId}/items` |
-> | Instancia de sub-recurso (PK propia) | `{VERBO} /padres/{padreId}/hijos/{hijoId}` | `DELETE /fichas-perfil/{fichaPerfilId}/items/{itemId}` |
+> | Instancia de sub-recurso (PK propia) | **Anida SOLO si la operación usa el `{padreId}`.** Si no lo usa → `{VERBO} /hijos/{hijoId}` | `DELETE /fichas-perfil/items/{itemId}` — el use case deriva la ficha del propio ítem, el padre sobra |
 > | Relación con identidad compuesta (el use case usa LOS DOS ids) | `DELETE /padres/{padreId}/hijos/{hijoId}` | `DELETE /fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}` |
 > | Cambiar un campo/referencia del padre | `PATCH /padres/{padreId}/{campo}` + body con el valor | `PATCH /fichas-perfil/{id}/asesor-ficha` + `{"asesorFichaId":"…"}` |
 >
