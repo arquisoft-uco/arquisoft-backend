@@ -81,7 +81,7 @@ Ninguno detectado.
 
 **Cuerpo del mensaje:**
 - Implementado caso de uso `ModificarItemFichaPerfilUseCase` que permite a un estudiante modificar el contenido de un ítem de su propia ficha de perfil
-- Endpoint REST `PUT /fichas-perfil/{itemId}/items` con autorización `fichas:item-ficha-perfil:update` (kebab-case)
+- Endpoint REST `PATCH /fichas-perfil/items/{itemId}` con autorización `fichas:item-ficha-perfil:update` (kebab-case)
 - Método de negocio `modificarContenido(String)` agregado al aggregate `ItemFichaPerfilAggregate` con validación Notification Pattern (sin extensión de `AggregateRoot` — CRUD sin eventos)
 - Puerto de salida write `ItemFichaPerfilOutputPort` extendido con `existsById(UUID)` y `buscarPorId(UUID)`
 - Puerto de salida read `FichaPerfilQueryOutputPort` extendido con `esEstudiantePropietario(UUID, UUID)` para validar propiedad cross-aggregate
