@@ -48,7 +48,10 @@ class RemoverItemFichaPerfilInputAdapterTest {
         @Bean
         SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             http.csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                    .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
+                    .exceptionHandling(ex -> ex
+                            .authenticationEntryPoint((req, res, e) -> res.sendError(401, "Unauthorized"))
+                            .accessDeniedHandler((req, res, e) -> res.sendError(403, "Forbidden")));
             return http.build();
         }
     }
@@ -138,10 +141,8 @@ class RemoverItemFichaPerfilInputAdapterTest {
         UUID itemId = UUID.randomUUID();
 
         // Act & Assert
-        // Nota: sin JWT el @PreAuthorize lanza AuthorizationDeniedException → 403, no 401.
-        // Para obtener 401 se necesitaría configurar un AuthenticationEntryPoint explícito.
         mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

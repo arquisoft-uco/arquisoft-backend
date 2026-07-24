@@ -16,22 +16,26 @@
 | Nivel | Checks | Pasados | Fallados | Score |
 |-------|--------|---------|----------|-------|
 | Nivel 1 — Completitud del Plan | 28 | 28 | 0 | 100/100 |
-| Nivel 2 — Convenciones DDD + Arquisoft | 127 | 126 | 1 | 99/100 |
+| Nivel 2 — Convenciones DDD + Arquisoft | 127 | 127 | 0 | 100/100 |
 | Nivel 3 — Compilación | 3 | 3 | 0 | 100/100 |
 | Nivel 4 — Tests | 8 | 8 | 0 | 100/100 |
-| **Total** | **166** | **165** | **1** | **99/100** |
+| **Total** | **166** | **166** | **0** | **100/100** |
 
 **Checks bloqueantes fallados:** 0
-**Checks menores fallados:** 1
+**Checks menores fallados:** 0
 
 ---
 
 ## Estado Final
 
-> ✅ APROBADO — Score: 99/100. Sin checks bloqueantes.
+> ✅ APROBADO — Score: 100/100. Sin checks bloqueantes ni menores.
 > Análisis listo para persistir en disco.
 
-**Observación:** el único hallazgo menor (check 2.14 — autorización con `@PreAuthorize`) es informativo sobre el comportamiento real del framework y **no afecta el funcionamiento del endpoint** — la autorización se resuelve correctamente y el test documenta el comportamiento esperado. El plan esperaba HTTP 401 para usuario no autenticado (criterio de aceptación #6), pero sin un `AuthenticationEntryPoint` configurado, Spring Security con `@PreAuthorize` responde 403 cuando no hay JWT — esto es un patrón ya existente y aceptado en otros endpoints del proyecto. El tester documentó correctamente este comportamiento en el test `debe401_cuandoNoAutenticado` con el comentario inline, y el plan lo menciona en su sección 14 (Trazabilidad). **No es una desviación bloqueante.**
+**Estado:** ✅ EJECUTADO  
+**Hash:** 3fa0237  
+**Fecha de ejecución:** 2026-07-24
+
+**Corrección post-commit (2026-07-24):** el hallazgo menor original (check 2.14 — endpoint sin JWT respondía 403 en vez de 401) fue corregido. La causa raíz era el `TestSecurityConfig` de `RemoverItemFichaPerfilInputAdapterTest`, que usaba `.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())` — esto dejaba pasar la request sin autenticación hasta el `@PreAuthorize`, que ante un usuario anónimo lanza `AuthorizationDeniedException` → 403 en vez de disparar el flujo de autenticación. Se corrigió alineando el `TestSecurityConfig` con el patrón ya establecido en el proyecto (p. ej. `ModificarItemFichaPerfilInputAdapterTest`): `.anyRequest().authenticated()` + `.exceptionHandling(...)` con `authenticationEntryPoint` (401) y `accessDeniedHandler` (403) explícitos. Con el fix, `debe401_cuandoNoAutenticado` verifica `status().isUnauthorized()` y pasa correctamente. Verificado con `./gradlew :fichas:infrastructure:test --tests "*RemoverItemFichaPerfilInputAdapterTest*"` (6/6 tests OK) y `./gradlew :fichas:infrastructure:check` (BUILD SUCCESSFUL, gate de cobertura y checkstyle incluido).
 
 ---
 
@@ -43,13 +47,7 @@
 
 ## Errores Menores (se pueden corregir en PR o tarea separada)
 
-### [NIVEL 2.14] — Autorización: endpoint sin JWT responde 403 (no 401)
-
-- **Archivo:** `fichas/infrastructure/src/test/java/com/arquisoft/fichas/infrastructure/itemfichaperfil/command/adapter/in/web/RemoverItemFichaPerfilInputAdapterTest.java`
-- **Problema:** El test `debe401_cuandoNoAutenticado()` llama al endpoint sin JWT y espera HTTP 403 (no 401), documentado con comentario inline: "sin JWT el @PreAuthorize lanza AuthorizationDeniedException → 403, no 401. Para obtener 401 se necesitaría configurar un AuthenticationEntryPoint explícito". El plan esperaba 401 (criterio de aceptación #6, sección 2).
-- **Estado real:** este es el comportamiento estándar de Spring Security 6.x con `@PreAuthorize` cuando no hay un `AuthenticationEntryPoint` configurado. El endpoint sí responde 401 cuando hay un token inválido/expirado (lo resuelve el filtro JWT), pero sin token el `@PreAuthorize` lanza `AuthorizationDeniedException` → 403. **Verificado contra el patrón del proyecto:** otros endpoints (`RegistrarFichaPerfilInputAdapter`, `CambiarAsesorFichaInputAdapter`) tienen el mismo comportamiento — el test documenta 403 para "sin JWT", no 401.
-- **Acción sugerida:** ninguna acción de código requerida — el endpoint funciona como el resto del proyecto. Opcionalmente, el plan podría actualizarse para que el criterio de aceptación #6 diga "403 o 401 según configuración del entrypoint" en vez de "401" categórico. O bien, agregar un `AuthenticationEntryPoint` global en `FichasSecurityConfig` si se requiere 401 estricto para requests sin JWT (esto sería un cambio cross-cutting fuera del alcance de esta HU).
-- **Referencia:** Skill `arquisoft-context`, sección "Autorización — `@PreAuthorize` con client role en kebab-case", patrón existente en `fichas` y otros contextos del proyecto.
+**Ninguno.** El hallazgo original (check 2.14) fue corregido — ver "Corrección post-commit" en la sección Estado Final.
 
 ---
 
