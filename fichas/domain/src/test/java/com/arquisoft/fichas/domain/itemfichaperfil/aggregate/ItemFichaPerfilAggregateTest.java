@@ -306,4 +306,47 @@ class ItemFichaPerfilAggregateTest {
                 .hasMessageContaining(FichasMessages.ItemFichaPerfil.ESTADO_FICHA_REQUERIDO);
         assertThat(aggregate.getContenido()).isEqualTo("Contenido original");
     }
+
+    // ─── HU-034: validar invariante POL-05 (no remover ítem con revisiones) ──
+
+    @Test
+    void debeLanzarDomainValidationException_cuandoItemTieneRevisiones() {
+        // Arrange
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.reconstruir(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                TipoItem.OBJETIVO_GENERAL,
+                "Contenido existente"
+        );
+
+        // Act
+        Throwable exception = catchThrowable(() -> aggregate.removerse(1));
+
+        // Assert
+        assertThat(exception).isInstanceOf(DomainValidationException.class);
+
+        DomainValidationException validationException = (DomainValidationException) exception;
+        assertThat(validationException.getValidationResult().getErrors()).hasSize(1);
+        assertThat(validationException.getValidationResult().getErrors().get(0).field())
+                .isEqualTo(FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES);
+        assertThat(validationException.getValidationResult().getErrors().get(0).errorCode())
+                .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES);
+    }
+
+    @Test
+    void debePermitirRemover_cuandoSinRevisiones() {
+        // Arrange
+        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.reconstruir(
+                UUID.randomUUID(),
+                UUID.randomUUID(),
+                TipoItem.OBJETIVO_GENERAL,
+                "Contenido existente"
+        );
+
+        // Act
+        Throwable exception = catchThrowable(() -> aggregate.removerse(0));
+
+        // Assert
+        assertThat(exception).isNull();
+    }
 }

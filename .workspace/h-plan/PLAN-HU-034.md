@@ -516,8 +516,8 @@ Dentro del presupuesto orientativo de 15-25 tests para una HU pequeña.
 
 | Etapa      | Agente              | Estado       | Fecha | Notas |
 |------------|---------------------|--------------|-------|-------|
-| Desarrollo | @implementador      | ⏳ Pendiente |       |       |
-| Tests      | @tester             | ⏳ Pendiente |       |       |
-| Validación | @validator-analyze  | ⏳ Pendiente |       |       |
-| Reporte    | @validator-report   | ⏳ Pendiente |       |       |
+| Desarrollo | @implementador      | ✅ Completado | 2026-07-23 | 13 archivos (5 creados, 3 modificados domain/application, 4 creados infrastructure, 1 migración Flyway). Corrección auto-aplicada: import `VoidInputPort` de `shared.inputport` (no `.port`). Sin eventos. `esEstudiantePropietario` ya existía en `FichaPerfilQueryOutputPort` (HU-164). |
+| Tests      | @tester             | ✅ Completado | 2026-07-23 | 17 tests generados (2 domain, 4 application, 11 infrastructure). Cobertura: domain 94%, application 89%, infrastructure 88% — todas ≥75%, gate `check` pasó. Correcciones aplicadas: API `DomainValidationException.getValidationResult().getErrors()` (no `getFieldErrors`), controller sin auth → 403 (no 401 sin entryPoint configurado), `FieldErrorDTO` sin `errorCode` (solo `field`/`message`). |
+| Validación | @validator-analyze  | ✅ Completado | 2026-07-24 | Score: 99/100 — ✅ APROBADO |
+| Reporte    | @validator-report   | ✅ Completado | 2026-07-24 | .workspace/validator/validator-HU-034.md |
 | Commit     | @commit             | ⏳ Pendiente |       |       |

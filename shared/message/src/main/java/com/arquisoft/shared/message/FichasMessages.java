@@ -65,6 +65,7 @@ public final class FichasMessages {
         public static final String CAMPO_TIPO_ITEM       = "tipoItem";
         public static final String CAMPO_CONTENIDO       = "contenido";
         public static final String CAMPO_ESTADO_FICHA    = "estadoFicha";
+        public static final String CAMPO_REVISIONES      = "revisiones";
 
         // Límites
         public static final int CONTENIDO_MAX = 7000;
@@ -80,6 +81,7 @@ public final class FichasMessages {
         public static final String ITEM_NO_ENCONTRADO            = "ITEM_NO_ENCONTRADO";
         public static final String ESTADO_FICHA_REQUERIDO        = "ITEM_ESTADO_FICHA_REQUERIDO";
         public static final String ESTADO_FICHA_NO_MODIFICABLE   = "ESTADO_FICHA_NO_MODIFICABLE";
+        public static final String ITEM_CON_REVISIONES           = "ITEM_CON_REVISIONES";
 
         // Mensajes de error
         public static final String TIPO_ITEM_INVALIDO_MSG        = "El tipo de ítem '%s' no es válido";
@@ -88,10 +90,13 @@ public final class FichasMessages {
         public static final String ITEM_NO_ENCONTRADO_MSG        = "El ítem con id %s no existe";
         public static final String ESTADO_FICHA_NO_MODIFICABLE_MSG =
                 "No se puede modificar el ítem porque la ficha está en estado: %s";
+        public static final String ITEM_CON_REVISIONES_MSG       =
+                "No se puede eliminar el ítem porque tiene revisiones: %s";
 
         // Logs
         public static final String LOG_AGREGADO   = "Ítem agregado — id={}, fichaPerfilId={}, tipoItem={}";
         public static final String LOG_MODIFICADO = "Ítem modificado — id={}";
+        public static final String LOG_REMOVIDO   = "Ítem removido — id={}, fichaPerfilId={}";
     }
 
     // ─────────────────────────────────────────────────────────────────────────

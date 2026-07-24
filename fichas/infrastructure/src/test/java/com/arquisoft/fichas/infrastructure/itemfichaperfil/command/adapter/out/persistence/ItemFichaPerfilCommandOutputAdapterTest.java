@@ -191,4 +191,27 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         ItemFichaPerfilJpaEntity savedEntity = jpaRepository.findById(aggregate.getId()).orElseThrow();
         assertThat(savedEntity.getContenido()).isEqualTo("Contenido modificado");
     }
+
+    @Test
+    void debeEliminar_cuandoIdValido() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        TipoItemJpaEntity tipoItemRef = tipoItemJpaRepository.getReferenceById("OBJETIVO_GENERAL");
+        ItemFichaPerfilJpaEntity entity = ItemFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaPerfilId)
+                .tipoItem(tipoItemRef)
+                .contenido("Contenido a eliminar")
+                .build();
+        ItemFichaPerfilJpaEntity saved = jpaRepository.save(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminarPorId(saved.getId());
+        entityManager.flush();
+
+        // Assert
+        assertThat(jpaRepository.existsById(saved.getId())).isFalse();
+    }
 }
