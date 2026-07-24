@@ -42,4 +42,9 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
         return jpaRepository.findById(itemId)
                 .map(ItemFichaPerfilMapper::toDomain);
     }
+
+    @Override
+    public void eliminarPorId(UUID itemId) {
+        jpaRepository.deleteById(itemId);
+    }
 }

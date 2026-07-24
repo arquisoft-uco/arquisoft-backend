@@ -1027,6 +1027,35 @@ y respeta el modelo de dominio en el código interno.
 
 ---
 
+## Diseño de rutas REST — qué va en el path y qué va en el body
+
+> **Regla núcleo: el path IDENTIFICA, el body TRANSPORTA VALORES.** Ante cada id, una sola pregunta: *¿identifica el recurso sobre el que actúo, o es el dato que le mando?* **Identifica → path. Es el valor nuevo → body.**
+
+| Naturaleza de la operación | Forma | Ejemplo real del proyecto |
+|---|---|---|
+| Crear en la colección del padre | `POST /padres/{padreId}/hijos` + body | `POST /fichas-perfil/{fichaPerfilId}/items` |
+| Actuar sobre una **instancia** de sub-recurso (tiene PK propia) | **Anida SOLO si la operación usa el `{padreId}`.** Si no lo usa → `{VERBO} /hijos/{hijoId}` | `PATCH /fichas-perfil/items/{itemId}` — el use case deriva la ficha del propio ítem, el padre sobra |
+| Borrar una **relación** cuya identidad es el **par** (el use case usa LOS DOS ids) | `DELETE /padres/{padreId}/hijos/{hijoId}` | `DELETE /fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}` |
+| Cambiar un **campo/referencia** del padre | `PATCH /padres/{padreId}/{campo}` + body con el valor | `PATCH /fichas-perfil/{id}/asesor-ficha` + `{"asesorFichaId":"…"}` |
+
+**¿Sub-recurso o campo?** — es la pregunta que decide entre las dos últimas filas:
+
+- **Sub-recurso** = colección de hijos con vida propia y fila propia (`items`, `estudiantes`, `evaluaciones`) → el id del hijo va al **path**.
+- **Campo / referencia** = el padre *apunta a* algo (`asesor-ficha`); no es una colección del padre → el id del referido es un **valor** → va al **body**.
+
+> `PATCH /fichas-perfil/{id}/asesor-ficha/{asesorFichaId}` es **error de categoría**: diría "modifica el asesor identificado por ese id", pero la operación modifica la **ficha**, no al asesor. El `asesorFichaId` es el valor nuevo → body.
+
+**Reglas de apoyo:**
+
+- **El verbo restringe.** `DELETE` y `GET` no llevan body (la semántica HTTP lo desaconseja; clientes y proxies lo descartan). Si un `DELETE` necesita un id, va al path. `POST`/`PATCH`/`PUT` sí llevan body → los valores nuevos ahí.
+- **El body es extensible; el path no.** Si mañana la operación necesita un campo más (`motivoCambio`), en el body se agrega sin romper la URL ni los clientes.
+- **Posición = significado.** El segmento inmediatamente después de una colección es el id **de esa colección**: en `/fichas-perfil/{X}/items`, `X` es un `fichaPerfilId`. Colocar el id de otra entidad en esa posición hace que la URL diga algo distinto de lo que la operación hace, y colisiona con los endpoints hermanos que sí respetan la posición.
+- **Padre anidado pero no usado = peso muerto — no lo anides.** Si el use case ignora el `{padreId}` (porque el `hijoId` es UUID y basta para localizar), la forma correcta es `/hijos/{hijoId}`. Anidarlo te obliga a validar el emparejamiento (`hijo.getPadreId().equals(padreIdDelPath)` → 404) **solo para justificar un campo que tú mismo agregaste**.
+- **El `{padreId}` del path NO aporta seguridad — nunca lo anides "por autorización".** La autorización por instancia se resuelve sin él: el use case deriva el padre **desde el propio hijo** (`hijo.getPadreId()`, leído de BD) y la identidad del actor **desde el JWT** (`jwt.getSubject()`). El path no participa en esa decisión. Ejemplo real: `ModificarItemFichaPerfilUseCase` carga el ítem con `buscarPorId(itemId)` y llama `esEstudiantePropietario(item.getFichaPerfilId(), command.estudianteId())` → 403. Lo único que el cliente controla es el `{hijoId}`; padre y actor los deriva el servidor.
+- **Nunca datos sensibles o personales en el path ni en query params** — el `AuditFilter` loguea la URI de toda petición.
+
+---
+
 ## Paginación y Filtros — `PaginatedResult` + Criteria pattern
 
 > **Cuándo usar:** las HUs de **read** que requieren paginación, ordenamiento o filtros dinámicos. Si una HU de consulta no necesita ninguno de los tres, no se usa Criteria — la firma del puerto recibe parámetros simples y retorna `ReadModel` o `List<ReadModel>`.

@@ -317,9 +317,9 @@ Inventario de constantes a agregar al catálogo en esta HU:
 
 | Método | Ruta | Request Body / Params | Response | Código HTTP | Client role requerido | Anotaciones Swagger (ADR-011) |
 |--------|------|----------------------|----------|-------------|----------------------|-------------------------------|
-| PATCH | `/fichas-perfil/{itemId}/items/` | `ModificarItemFichaPerfilRequestDTO` (body: `contenido` String) + `itemId` (path param UUID) | `Void` (sin body) | 204 | `fichas:item-ficha-perfil:update` | `@Operation(summary="Modificar contenido de ítem", description="Permite a un estudiante modificar el contenido de un ítem de su propia ficha de perfil")` + `@SecurityRequirement(name="bearerAuth")` + `@ApiResponses` (204, 400, 401, 403, 422) — el 400 cubre tanto `ItemNoEncontradoException` como `ItemFichaNoPropiaException` (ambas extienden `ApplicationException`) |
+| PATCH | `/fichas-perfil/items/{itemId}` | `ModificarItemFichaPerfilRequestDTO` (body: `contenido` String) + `itemId` (path param UUID) | `Void` (sin body) | 204 | `fichas:item-ficha-perfil:update` | `@Operation(summary="Modificar contenido de ítem", description="Permite a un estudiante modificar el contenido de un ítem de su propia ficha de perfil")` + `@SecurityRequirement(name="bearerAuth")` + `@ApiResponses` (204, 400, 401, 403, 422) — el 400 cubre tanto `ItemNoEncontradoException` como `ItemFichaNoPropiaException` (ambas extienden `ApplicationException`) |
 
-> **Nota sobre el prefijo `/api`:** es global al proyecto (configurado en el `context-path` del servidor) — NO se declara explícitamente en `@RequestMapping`. La ruta declarada en el controller es relativa (`/fichas-perfil/{itemId}/items/`), sin prefijo `/api`, para evitar duplicarlo (`/api/api/...`).
+> **Nota sobre el prefijo `/api`:** es global al proyecto (configurado en el `context-path` del servidor) — NO se declara explícitamente en `@RequestMapping`. La ruta declarada en el controller es relativa (`/fichas-perfil/items/{itemId}`), sin prefijo `/api`, para evitar duplicarlo (`/api/api/...`).
 >
 > **Convención de respuesta (write):** Opción B — `ResponseEntity<Void>` con `204 No Content`, sin body. El use case implementa `VoidInputPort<ModificarItemFichaPerfilCommand>` de `shared:domain.port.in`. Es una actualización sin necesidad de devolver datos.
 
@@ -331,7 +331,7 @@ Inventario de constantes a agregar al catálogo en esta HU:
 
 | Client role | Roles realm que lo poseen | Endpoint(s) que lo requieren | Descripción funcional |
 |---|---|---|---|
-| `fichas:item-ficha-perfil:update` | `estudiante` | `PATCH /fichas-perfil/{itemId}/items/` | Permite al estudiante modificar el contenido de un ítem de su propia ficha de perfil |
+| `fichas:item-ficha-perfil:update` | `estudiante` | `PATCH /fichas-perfil/items/{itemId}` | Permite al estudiante modificar el contenido de un ítem de su propia ficha de perfil |
 
 ### Reglas de uso
 

@@ -107,6 +107,18 @@ public final class ItemFichaPerfilAggregate {
         result.throwIfHasErrors();
     }
 
+    // ─── Método de negocio: remover (valida invariante POL-05) ───────────────
+
+    public void removerse(long totalRevisiones) {
+        var result = new ValidationResult();
+        if (totalRevisiones > 0) {
+            result.addError(FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES,
+                    FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES,
+                    FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES_MSG.formatted(id));
+        }
+        result.throwIfHasErrors();
+    }
+
     private boolean esFichaModificable(EstadoFicha estadoFichaActual, ValidationResult result) {
         if (!DomainValidator.notNull(estadoFichaActual,
                 FichasMessages.ItemFichaPerfil.CAMPO_ESTADO_FICHA,

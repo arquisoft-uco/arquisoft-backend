@@ -746,6 +746,19 @@ Marcar **una** opción según la respuesta a la pregunta 10 de FASE 3:
 
 > **Columna Response:** rellénala con base en la respuesta a la pregunta 11 de FASE 3 (para writes) o por la firma del read use case (`ReadModel` / `PaginatedResult<ReadModel>`).
 
+> **Columna Ruta — el path IDENTIFICA, el body TRANSPORTA VALORES.** Ante cada id, una sola pregunta: *¿identifica el recurso sobre el que actúo, o es el dato que le mando?* Identifica → **path**. Es el valor nuevo → **body**.
+>
+> | Naturaleza de la operación | Forma | Ejemplo real |
+> |---|---|---|
+> | Crear en la colección del padre | `POST /padres/{padreId}/hijos` + body | `POST /fichas-perfil/{fichaPerfilId}/items` |
+> | Instancia de sub-recurso (PK propia) | **Anida SOLO si la operación usa el `{padreId}`.** Si no lo usa → `{VERBO} /hijos/{hijoId}` | `DELETE /fichas-perfil/items/{itemId}` — el use case deriva la ficha del propio ítem, el padre sobra |
+> | Relación con identidad compuesta (el use case usa LOS DOS ids) | `DELETE /padres/{padreId}/hijos/{hijoId}` | `DELETE /fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}` |
+> | Cambiar un campo/referencia del padre | `PATCH /padres/{padreId}/{campo}` + body con el valor | `PATCH /fichas-perfil/{id}/asesor-ficha` + `{"asesorFichaId":"…"}` |
+>
+> **Sub-recurso vs campo** decide entre las dos últimas filas: **sub-recurso** = colección de hijos con fila propia (`items`, `estudiantes`) → id al **path**; **campo/referencia** = el padre *apunta a* algo (`asesor-ficha`) → id al **body**, porque es un valor, no el objetivo. `PATCH /fichas-perfil/{id}/asesor-ficha/{asesorFichaId}` es error de categoría: la operación modifica la ficha, no al asesor.
+>
+> **Verificaciones al llenar la Ruta:** (1) `DELETE`/`GET` **no llevan body** → si necesitan un id, va al path. (2) **Posición = significado**: el segmento tras una colección es el id **de esa colección** (`/fichas-perfil/{X}/items` → `X` es `fichaPerfilId`, nunca `itemId`); revisa que no colisione con endpoints hermanos ya existentes. (3) **Si anidas `{padreId}` pero el use case NO lo usa**, el contrato miente: exige en el plan validar el emparejamiento (`hijo.getPadreId().equals(padreIdDelPath)` → 404, un `equals` sin query extra si ya cargas el aggregate) o no anides. Detalle en el skill `arquisoft-context` §"Diseño de rutas REST".
+
 > **Columna Ruta — NUNCA escribas el prefijo `/api`.** El proyecto ya declara `server.servlet.context-path: /api` en `application.yml`, así que `/api` se antepone globalmente a toda ruta. La Ruta de esta tabla es **exactamente** el valor que irá en `@RequestMapping`/`@PostMapping` del `InputAdapter`: relativa y sin `/api`. Si lo escribes, el implementador lo copia al controller y la URL real queda duplicada (`/api/api/fichas-perfil`). La URL que ve el cliente es `/api` + esta ruta, pero eso no se documenta aquí.
 
 | Método | Ruta | Request Body / Params | Response | Código HTTP | Client role requerido | Anotaciones Swagger (ADR-011) |

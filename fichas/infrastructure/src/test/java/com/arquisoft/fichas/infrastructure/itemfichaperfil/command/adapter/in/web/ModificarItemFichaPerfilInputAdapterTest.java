@@ -69,7 +69,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         doNothing().when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
-        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
@@ -89,7 +89,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
                 .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
-        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
@@ -110,7 +110,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
                 .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
-        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
@@ -126,7 +126,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         String body = "{\"contenido\": \"Contenido modificado\"}";
 
         // Act & Assert
-        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnauthorized());
@@ -140,7 +140,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         String body = "{\"contenido\": \"Contenido modificado\"}";
 
         // Act & Assert
-        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:read")))
@@ -167,7 +167,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
                 .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
-        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
@@ -194,7 +194,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
                 .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
-        mockMvc.perform(patch("/fichas-perfil/{itemId}/items", itemId)
+        mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))

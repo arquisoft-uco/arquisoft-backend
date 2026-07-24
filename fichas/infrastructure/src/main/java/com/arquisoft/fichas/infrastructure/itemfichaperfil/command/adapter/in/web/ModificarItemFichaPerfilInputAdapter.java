@@ -31,7 +31,7 @@ public class ModificarItemFichaPerfilInputAdapter {
 
     private final ModificarItemFichaPerfilInputPort modificarItemFichaPerfilInputPort;
 
-    @PatchMapping("/{itemId}/items")
+    @PatchMapping("/items/{itemId}")
     @PreAuthorize("hasAuthority('fichas:item-ficha-perfil:update')")
     @Operation(
             summary = "Modificar contenido de ítem",

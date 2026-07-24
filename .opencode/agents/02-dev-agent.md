@@ -216,7 +216,18 @@ Cuando el usuario responde `ajustar {nombre archivo}` o `ajustar {nombre archivo
 
 ```
 CAPA 1 — domain (genera todos antes de compilar)
-  ├── Excepciones de dominio    ({Entidad}NoEncontradaException, etc.) — extienden DomainException
+  ├── Excepciones de dominio    ⛔ NO se generan archivos. Las invariantes del aggregate NO tienen
+  │     clase de excepción propia: se acumulan con ValidationResult.addError(campo, errorCode,
+  │     mensaje) — las 3 constantes desde el catálogo shared:message — y se lanzan como la
+  │     DomainValidationException COMPARTIDA (shared:domain.exception) vía result.throwIfHasErrors()
+  │     → 422 + fieldErrors[].
+  │     ⚠️ Ningún contexto de negocio tiene subclase de DomainException (única en el proyecto:
+  │        seguridad/AuthenticationException, por choque de nombre con Spring Security). Si el plan
+  │        lista domain/{entidad}/exception/{Entidad}{Regla}Exception.java para una regla de negocio
+  │        (mismo valor, estado terminal, formato, transición), es BUG del plan: aplica el Protocolo
+  │        de Ambigüedad y propón addError + DomainValidationException en su lugar.
+  │     ⚠️ {Entidad}NoEncontradaException / {Entidad}DuplicadaException NO son de dominio —
+  │        extienden ApplicationException (400) y se generan en CAPA 2 (application/{entidad}/exception/).
   ├── Eventos de dominio        ({Entidad}CreadaEvent.java, etc.) — extienden DomainEvent
   │     ⚠️ SOLO si el plan declara eventos en su sección 4. Si el plan dice
   │        "Eventos: ninguno" (CRUD sin consumidores), NO se generan archivos
@@ -263,8 +274,9 @@ CAPA 2 — application (genera todos antes de compilar)
   │        ApplicationException sin romper la dirección de dependencias.
   │        Razón sin command/query: evitar carpetas anidadas innecesarias cuando la
   │        excepción pertenece al concepto entidad.
-  │        Las excepciones del aggregate (DomainException / DomainValidationException)
-  │        ya las generaste en CAPA 1 - domain.
+  │        Las invariantes del aggregate NO tienen clase de excepción propia: se validan
+  │        con ValidationResult.addError(...) + throwIfHasErrors() → DomainValidationException
+  │        compartida. En CAPA 1 - domain NO se generó ningún archivo de excepción.
   ├── Request DTO               ({Accion}{Entidad}RequestDTO.java) — campos en español (refleja modelo enriquecido)
   ├── Response DTO              ({Entidad}ResponseDTO.java) — campos en español (refleja modelo enriquecido)
   └── Caso de uso impl          ({Accion}{Entidad}UseCase.java)
@@ -354,8 +366,12 @@ CAPA 3 — infrastructure (genera todos antes de compilar)
   → 🔨 COMPILAR: ./gradlew :{contexto}:infrastructure:compileJava
 
   → ✅ VERIFICACIÓN antes del resumen al usuario:
-     Toda excepción de dominio del plan extiende la clase base correcta
-     (DomainException → 422, ApplicationException → 400, AuthorizationException → 403, InfrastructureException → 503).
+     NO se creó ninguna clase de excepción en domain/ — las invariantes del aggregate se validan
+     con ValidationResult.addError(...) + throwIfHasErrors() → DomainValidationException compartida
+     (422 + fieldErrors[]).
+     Toda excepción que SÍ se creó extiende la clase base correcta según su capa
+     (ApplicationException → 400 y AuthorizationException → 403 en application/{entidad}/exception/;
+     InfrastructureException → 503 en infrastructure/exception/).
      El constructor de cada excepción produce un mensaje claro (es el que verá el cliente).
      Solo se creó {Contexto}GlobalExceptionHandler si el plan lo declaró explícitamente.
      ErrorResponseDTO se importa de shared:web, no se duplica en el contexto.
@@ -382,7 +398,7 @@ Antes de generar **cada archivo**, ejecuta la consulta de Context7 correspondien
 |-----------------|----------------------------|
 | Entidad de dominio (AggregateRoot) | `query-docs /websites/spring_io_spring-framework_reference_6_2 "domain model immutable class factory method Java 21"` |
 | Evento de dominio | (usar plantilla del skill `arquisoft-context` — DomainEvent ya existe en shared:domain) |
-| Excepción de dominio | `query-docs /websites/spring_io_spring-framework_reference_6_2 "custom exception DomainException errorCode"` |
+| Excepción de aplicación (`ApplicationException` / `AuthorizationException`) | `query-docs /websites/spring_io_spring-framework_reference_6_2 "custom exception errorCode"` — (las invariantes de dominio NO generan clase: `ValidationResult.addError` + `DomainValidationException`) |
 | Puerto de entrada/salida | `query-docs /spring-projects/spring-data-jpa "repository interface port out hexagonal"` |
 | Command / ReadModel / RequestDTO | `query-docs /openjdk/jdk "record compact constructor validation"` (todos son `record`) |
 | UseCase | `query-docs /websites/spring_io_spring-framework_reference_6_2 "Transactional service component use case"` |
@@ -470,11 +486,12 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 - Se ubican en `{contexto}/domain/{entidad}/event/`.
 - Marcarlos `final` (no se extienden).
 
-### Excepciones de Dominio
+### Excepciones
 
-- Extienden uno de los 5 tipos base de `shared:domain.exception`: `DomainException` (422), `ApplicationException` (400), `AuthorizationException` (403), `InfrastructureException` (503), `DomainValidationException` (422). **NUNCA** `RuntimeException` directamente.
+- **Invariantes del aggregate → NO se crea clase de excepción.** El aggregate acumula cada violación con `ValidationResult.addError(campo, errorCode, mensaje)` (las 3 constantes desde `shared:message`) y lanza **una sola** `DomainValidationException` compartida con `result.throwIfHasErrors()` → 422 + `fieldErrors[]`. Para las reglas estándar usa los helpers de `DomainValidator` (`notNull`, `notBlank`, `maxLength`, `minLength`, `validEmail`); para una invariante **sin helper** (igualdad "mismo valor que el actual", estado terminal, transición prohibida) usa `result.addError(...)` **directo**. **No generes** `domain/{entidad}/exception/{Entidad}{Regla}Exception.java` — si el plan lo lista, es BUG del plan: reporta ambigüedad. `DomainValidationException` es `final` y compartida: nunca se subclasea ni se replica por contexto.
+- **Excepciones que SÍ se crean** (las decide el use case tras consultar un puerto): extienden `ApplicationException` (400 — no encontrado, duplicado, parámetro inválido) o `AuthorizationException` (403 — recurso ajeno / no propietario) y viven en `application/{entidad}/exception/`. `InfrastructureException` (503) vive en `infrastructure/exception/`. **NUNCA** `RuntimeException` directamente. Subclasear `DomainException` es caso rarísimo (choque de nombre con el framework, tipo `seguridad`) — solo si el plan lo declara explícitamente.
 - Tienen campo `errorCode`, que se pasa como **segundo** argumento: `super(mensaje, errorCode)`. La firma real de las clases base es `(String message, String errorCode)` — invertirlos **compila** y produce un bug silencioso (el cliente recibe el código como mensaje y viceversa). Ambos valores vienen del catálogo `shared:message`.
-- **Reglas de negocio del plan (sección 3) → se validan dentro del aggregate** (→ 422). El use case solo lee el estado vía puerto y lo pasa como parámetro a la factory (`crear(datos, existentes)`, `crearConEstado(datos, ultimoEstado)`). Un `if (...) throw` de regla de negocio en el use case es fuga de lógica. Existencia, duplicado en BD y propiedad del recurso SÍ van en el use case (400 / 403).
+- **Reglas de negocio del plan (sección 3) → se validan dentro del aggregate** (→ 422). El use case solo lee el estado vía puerto y lo pasa como parámetro a la factory (`crear(datos, existentes)`, `crearConEstado(datos, ultimoEstado)`) o al método de negocio (`cambiarAsesorFicha(nuevoAsesor, estadoActual)`). Un `if (...) throw` de regla de negocio en el use case es fuga de lógica. Existencia, duplicado en BD y propiedad del recurso SÍ van en el use case (400 / 403).
 
 ### Catálogo de Mensajes (`shared:message`) — regla universal
 

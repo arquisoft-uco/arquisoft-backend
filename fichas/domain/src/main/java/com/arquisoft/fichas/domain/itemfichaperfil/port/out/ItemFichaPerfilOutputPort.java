@@ -14,4 +14,6 @@ public interface ItemFichaPerfilOutputPort {
     boolean existsById(UUID itemId);
 
     Optional<ItemFichaPerfilAggregate> buscarPorId(UUID itemId);
+
+    void eliminarPorId(UUID itemId);
 }
