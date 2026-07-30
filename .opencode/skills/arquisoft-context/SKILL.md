@@ -1646,6 +1646,31 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
 ### Estados y tipos: enum de dominio + catálogo con PK semántica (ADR-012)
 
+> #### ⛔ Regla dura: de dónde salen los VALORES de un catálogo
+>
+> Los valores de un catálogo (las constantes del enum y las filas que los pueblan) se validan **SIEMPRE** contra el MER del repositorio `arquisoft-uco/arquisoft-docs`, usando el skill `gh-docs-reader`:
+>
+> - **Valores (filas del catálogo):** `mer/data/{NN}_data_{contexto}.sql`
+> - **Esquema (DDL de la tabla):** `mer/{NN}_tablas_{contexto}.sql`
+>
+> ```bash
+> gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/data/03_data_fichas_perfil.sql?ref=main" \
+>   --jq '.content' | base64 -d
+> ```
+>
+> **NUNCA** tomes los valores de:
+>
+> - un `PLAN-HU-*.md` previo, aunque describa la misma entidad;
+> - el enum ya existente en el código;
+> - el modelo de dominio enriquecido (define la *estructura* de la entidad — `id`, `nombre`, `descripcion` — pero **no enumera los valores**);
+> - los ejemplos de este mismo skill.
+>
+> Todos ellos son artefactos **derivados**. Si el MER y cualquier otra fuente se contradicen, **gana el MER**.
+>
+> **Por qué esta regla existe:** el plan de la HU-206 inventó dos valores para `estado_ficha` (`EN_REVISION` y `"Rechazada"`) que nunca estuvieron en el MER. `EN_REVISION` llegó a implementarse como constante del enum y sobrevivió a la revisión porque el error es silencioso: el código compila, Checkstyle pasa y los tests unitarios quedan en verde — mockean el enum en memoria y jamás tocan la BD. Pero el estado se deriva de la fila persistida (`EstadoFicha.valueOf(entity.getEstadoFicha().getId())`) y la FK del catálogo impide insertar un id inexistente, así que la constante era **inalcanzable en producción**: una rama muerta con cobertura falsa. Se detectó tres HU después, el 2026-07-30.
+>
+> **Al planificar o implementar cualquier HU que toque un catálogo, incluye la verificación explícita:** número de valores, `id` y `nombre` exactos de cada uno, contrastados contra `mer/data/*.sql`. Si el enum en código ya diverge del MER, **repórtalo en vez de replicarlo**.
+
 Cuando una HU maneja un **estado** o **tipo** con un conjunto **cerrado y conocido** de valores (ej. `EstadoFicha`, `TipoProyecto`), se modela como **enum en el dominio**, NO como un aggregate de catálogo con su propio query port / query adapter / read model.
 
 **Por qué no lleva aggregate:** un catálogo de estados/tipos solo se **consulta**, nunca se escribe desde la aplicación — sus valores se fijan en código vía el enum y se poblan por Flyway. Un aggregate existe para encapsular invariantes de **escritura**; sin caso de uso de escritura no hay nada que encapsular, así que el catálogo es un enum y punto. (La entidad que *referencia* el estado/tipo — ej. `EstadoFichaPerfilAggregate`, que sí se escribe — puede ser aggregate; el catálogo en sí no.)
@@ -2504,7 +2529,7 @@ parte natural de su contexto.
 | DTO | sufijo `DTO` | `CrearFichaRequestDTO`, `FichaResponseDTO` |
 | Excepción | sufijo `Exception` | `FichaNoEncontradaException` |
 | Evento de dominio | sufijo `Event` | `FichaCreadaEvent`, `ProyectoFinalizadoEvent` |
-| Enum | PascalCase, valores `SCREAMING_SNAKE_CASE` | `EstadoFicha.EN_REVISION` |
+| Enum | PascalCase, valores `SCREAMING_SNAKE_CASE` | `EstadoFicha.EN_CONSTRUCCION` |
 | Método de negocio | camelCase, verbo primero | `crearFicha`, `obtenerPorId` |
 | Método de test | `debeAlgo_cuandoCondicion` | `debeCrearFicha_cuandoDatosValidos` |
 | Commit | `feat({contexto}): ...` | `feat(fichas): crear ficha perfil` |

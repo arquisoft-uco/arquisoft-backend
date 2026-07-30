@@ -133,7 +133,7 @@ class CambiarAsesorFichaUseCaseTest {
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
         when(asesorFichaQueryOutputPort.existsById(asesorActualId)).thenReturn(true);
         when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaId))
-                .thenReturn(Optional.of(EstadoFicha.EN_REVISION));
+                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(command))

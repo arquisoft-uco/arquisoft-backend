@@ -1,5 +1,26 @@
 # PLAN: HU206 - Agregar Estado Ficha Perfil
 
+> ## ⚠️ CORRECCIÓN POSTERIOR (2026-07-30) — LEER ANTES DE USAR ESTE PLAN COMO REFERENCIA
+>
+> **Este plan contiene valores de catálogo que NO existen y que no deben reutilizarse.**
+>
+> El plan enumera para `estado_ficha` dos valores inventados:
+>
+> - **`EN_REVISION` / "En Revision"** — nunca existió en el MER. Llegó a implementarse como constante del enum `EstadoFicha`, quedó sin fila en la tabla (la migración V1.2 sí se hizo bien) y por tanto era inalcanzable en producción. **Eliminada del código el 2026-07-30.**
+> - **"Rechazada"** (criterio de aceptación #2) — no existe en el MER ni se implementó nunca. El estado equivalente real es `NO_APROBADA`.
+>
+> El catálogo autoritativo está en `mer/data/03_data_fichas_perfil.sql` del repositorio `arquisoft-uco/arquisoft-docs` y define **exactamente 5 estados**:
+>
+> | id | nombre |
+> |---|---|
+> | `EN_CONSTRUCCION` | En Construccion |
+> | `DISPONIBLE_PARA_EVALUACION` | Disponible Para Evaluacion |
+> | `APROBADA` | Aprobada |
+> | `APROBADA_CON_OBSERVACIONES` | Aprobada Con Observaciones |
+> | `NO_APROBADA` | No Aprobada |
+>
+> Las tablas de las secciones 2, 4 y 7 de este plan **no fueron editadas**: se conservan como registro histórico de lo que se planificó. No las copies. Valida siempre los catálogos contra `mer/data/*.sql`, nunca contra un plan previo.
+
 ## Metadata
 - **ID Historia:** HU-206
 - **Bounded Context:** fichas
@@ -35,7 +56,7 @@ Esta HU extiende el flujo de creación de una Ficha Perfil (HU-208) para que, tr
 | # | Criterio | Resultado esperado |
 |---|----------|--------------------|
 | 1 | Al registrar una ficha perfil, el sistema automáticamente crea un registro en `estado_ficha_perfil` con estado "En Construccion" | Tabla `estado_ficha_perfil` tiene una fila con `ficha_perfil_id`, `estado_ficha_id` (del catálogo) y `fecha_actualizacion = UtilDate.generateNewInstantNow()` |
-| 2 | El catálogo `estado_ficha` contiene las filas iniciales (datos de referencia) | Tabla `estado_ficha` poblada con los estados: "En Construccion", "En Revision", "Aprobada", "Rechazada" |
+| 2 | El catálogo `estado_ficha` contiene las filas iniciales (datos de referencia) | ⚠️ ~~Tabla `estado_ficha` poblada con los estados: "En Construccion", "En Revision", "Aprobada", "Rechazada"~~ **INCORRECTO — ver corrección al inicio.** Los estados reales son: "En Construccion", "Disponible Para Evaluacion", "Aprobada", "Aprobada Con Observaciones", "No Aprobada" |
 | 3 | La creación del estado inicial es transaccional con la creación de la ficha | Si falla la asignación del estado, se revierte la ficha completa |
 
 ---
@@ -81,7 +102,7 @@ El estado se modela en dos capas:
 | Constante enum | `getId()` (= `estado_ficha.id` en BD) | `getNombre()` (= `estado_ficha.nombre`) | Descripción |
 |---|---|---|---|
 | `EN_CONSTRUCCION` | `"EN_CONSTRUCCION"` | `"En Construccion"` | La ficha de perfil se encuentra en construcción o desarrollo |
-| `EN_REVISION` | `"EN_REVISION"` | `"En Revision"` | **(referencial)** |
+| ⚠️ ~~`EN_REVISION`~~ | ~~`"EN_REVISION"`~~ | ~~`"En Revision"`~~ | **NO EXISTE — eliminado el 2026-07-30, ver corrección al inicio** |
 | `DISPONIBLE_PARA_EVALUACION` | `"DISPONIBLE_PARA_EVALUACION"` | `"Disponible Para Evaluacion"` | **(referencial)** |
 | `APROBADA` | `"APROBADA"` | `"Aprobada"` | **(referencial)** |
 | `APROBADA_CON_OBSERVACIONES` | `"APROBADA_CON_OBSERVACIONES"` | `"Aprobada Con Observaciones"` | **(referencial)** |
@@ -183,7 +204,7 @@ Esta HU NO requiere integraciones externas más allá de PostgreSQL (ya gestiona
 | Constante enum | `getId()` (= `estado_ficha.id`) | `getNombre()` (= `estado_ficha.nombre`) |
 |---|---|---|
 | `EN_CONSTRUCCION` | `"EN_CONSTRUCCION"` | `"En Construccion"` |
-| `EN_REVISION` | `"EN_REVISION"` | `"En Revision"` |
+| ⚠️ ~~`EN_REVISION`~~ | ~~`"EN_REVISION"`~~ | ~~`"En Revision"`~~ **NO EXISTE — eliminado el 2026-07-30** |
 | `DISPONIBLE_PARA_EVALUACION` | `"DISPONIBLE_PARA_EVALUACION"` | `"Disponible Para Evaluacion"` |
 | `APROBADA` | `"APROBADA"` | `"Aprobada"` |
 | `APROBADA_CON_OBSERVACIONES` | `"APROBADA_CON_OBSERVACIONES"` | `"Aprobada Con Observaciones"` |

@@ -269,7 +269,7 @@ class ItemFichaPerfilAggregateTest {
 
     @ParameterizedTest
     @EnumSource(value = EstadoFicha.class,
-            names = {"EN_CONSTRUCCION", "EN_REVISION", "DISPONIBLE_PARA_EVALUACION"})
+            names = {"EN_CONSTRUCCION", "DISPONIBLE_PARA_EVALUACION"})
     void debeModificarContenido_cuandoEstadoFichaNoEsTerminal(EstadoFicha estadoModificable) {
         // Arrange
         ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.reconstruir(

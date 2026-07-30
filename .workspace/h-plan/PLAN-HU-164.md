@@ -80,7 +80,7 @@ Esta HU permite que el Coordinador cambie el Asesor Ficha asignado a una Ficha P
 
 ### Estados y tipos: planearlos como enum de dominio
 
-`EstadoFicha` ya existe como enum en `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoficha/EstadoFicha.java` con 6 valores: `EN_CONSTRUCCION`, `EN_REVISION`, `DISPONIBLE_PARA_EVALUACION`, `APROBADA`, `APROBADA_CON_OBSERVACIONES`, `NO_APROBADA`. La tabla catálogo `estado_ficha` tiene PK `VARCHAR(50)` poblada con las constantes del enum (`id` = `name()`). La tabla `ficha_perfil` referencia al catálogo con FK `VARCHAR` — no `UUID`. Esta HU **NO modifica** el enum (ya existe), solo lo consume en el aggregate para la validación de estado terminal.
+`EstadoFicha` ya existe como enum en `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoficha/EstadoFicha.java` con 5 valores: `EN_CONSTRUCCION`, `DISPONIBLE_PARA_EVALUACION`, `APROBADA`, `APROBADA_CON_OBSERVACIONES`, `NO_APROBADA`. *(Corregido el 2026-07-30: este plan listaba originalmente un sexto valor `EN_REVISION` que no existe en el MER y fue eliminado del enum. Ver PLAN-HU-206.)* La tabla catálogo `estado_ficha` tiene PK `VARCHAR(50)` poblada con las constantes del enum (`id` = `name()`). La tabla `ficha_perfil` referencia al catálogo con FK `VARCHAR` — no `UUID`. Esta HU **NO modifica** el enum (ya existe), solo lo consume en el aggregate para la validación de estado terminal.
 
 ### Eventos de Dominio que emite
 
@@ -344,7 +344,7 @@ CREATE INDEX idx_ficha_perfil_asesor ON ficha_perfil(asesor_ficha_id);
 | # | Nombre del test | Escenario | Resultado esperado |
 |---|-----------------|-----------|-------------------|
 | 1 | `debeCambiarAsesor_cuandoNuevoAsesorEsDiferenteYEstadoNoTerminal` | Aggregate con `asesorFichaId = UUID_A`, invocar `cambiarAsesorFicha(UUID_B, EstadoFicha.EN_CONSTRUCCION)` | No lanza excepción, `getAsesorFichaId()` retorna `UUID_B` |
-| 2 | `debeLanzarDomainValidationException_cuandoNuevoAsesorEsIgualAlActual` | Aggregate con `asesorFichaId = UUID_A`, invocar `cambiarAsesorFicha(UUID_A, EstadoFicha.EN_REVISION)` | Lanza `DomainValidationException` con `fieldErrors[{field: "asesorFichaId", errorCode: "MISMO_ASESOR"}]` |
+| 2 | `debeLanzarDomainValidationException_cuandoNuevoAsesorEsIgualAlActual` | Aggregate con `asesorFichaId = UUID_A`, invocar `cambiarAsesorFicha(UUID_A, EstadoFicha.EN_CONSTRUCCION)` | Lanza `DomainValidationException` con `fieldErrors[{field: "asesorFichaId", errorCode: "MISMO_ASESOR"}]` |
 | 3 | `debeLanzarDomainValidationException_cuandoEstadoEsAprobada` | Invocar `cambiarAsesorFicha(UUID_B, EstadoFicha.APROBADA)` | Lanza `DomainValidationException` con `fieldErrors[{field: "estadoFicha", errorCode: "ESTADO_TERMINAL"}]` |
 | 4 | `debeLanzarDomainValidationException_cuandoEstadoEsAprobadaConObservaciones` | Invocar `cambiarAsesorFicha(UUID_B, EstadoFicha.APROBADA_CON_OBSERVACIONES)` | Lanza `DomainValidationException` con `fieldErrors[{field: "estadoFicha", errorCode: "ESTADO_TERMINAL"}]` |
 | 5 | `debeLanzarDomainValidationException_cuandoEstadoEsNoAprobada` | Invocar `cambiarAsesorFicha(UUID_B, EstadoFicha.NO_APROBADA)` | Lanza `DomainValidationException` con `fieldErrors[{field: "estadoFicha", errorCode: "ESTADO_TERMINAL"}]` |

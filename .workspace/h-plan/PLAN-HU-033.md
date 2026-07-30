@@ -390,7 +390,7 @@ Esta HU es pequeña (1 endpoint, 1 entidad modificada). Presupuesto: **18-22 tes
 | `ItemFichaPerfilAggregateTest` | `debeLanzarExcepcion_cuandoContenidoDemasiado Largo` | `modificarContenido(cadena de 7001 caracteres)` lanza `DomainValidationException` con `fieldErrors` |
 | `ItemFichaPerfilAggregateTest` | `debeLimpiarEspacios_cuandoModificarContenido` | `modificarContenido("  texto  ", EN_CONSTRUCCION)` actualiza a `"texto"` (sin espacios inicio/fin) |
 | `ItemFichaPerfilAggregateTest` | `debeLanzarExcepcion_cuandoEstadoFichaEsTerminal` | `@ParameterizedTest` sobre `APROBADA`, `APROBADA_CON_OBSERVACIONES`, `NO_APROBADA` → `DomainValidationException` con `ESTADO_FICHA_NO_MODIFICABLE`; el contenido **no** cambia |
-| `ItemFichaPerfilAggregateTest` | `debeModificarContenido_cuandoEstadoFichaNoEsTerminal` | `@ParameterizedTest` sobre `EN_CONSTRUCCION`, `EN_REVISION`, `DISPONIBLE_PARA_EVALUACION` → modifica sin error |
+| `ItemFichaPerfilAggregateTest` | `debeModificarContenido_cuandoEstadoFichaNoEsTerminal` | `@ParameterizedTest` sobre `EN_CONSTRUCCION`, `DISPONIBLE_PARA_EVALUACION` → modifica sin error *(corregido el 2026-07-30: se retiró `EN_REVISION`, valor inexistente en el MER)* |
 | `ItemFichaPerfilAggregateTest` | `debeLanzarExcepcion_cuandoEstadoFichaEsNulo` | `modificarContenido(..., null)` → `DomainValidationException` con `ESTADO_FICHA_REQUERIDO` |
 
 > **NO se testean ciclo de eventos** (la entidad NO extiende `AggregateRoot`), ni `publishEvent`, ni `drainUnPublishedEvents`. Solo se testea el método de negocio `modificarContenido(...)`.

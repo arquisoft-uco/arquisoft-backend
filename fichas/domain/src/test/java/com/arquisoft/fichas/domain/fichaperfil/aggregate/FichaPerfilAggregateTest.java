@@ -148,7 +148,7 @@ class FichaPerfilAggregateTest {
 
         // Act
         Throwable excepcion = catchThrowable(() ->
-                ficha.cambiarAsesorFicha(null, EstadoFicha.EN_REVISION)
+                ficha.cambiarAsesorFicha(null, EstadoFicha.EN_CONSTRUCCION)
         );
 
         // Assert
@@ -173,7 +173,7 @@ class FichaPerfilAggregateTest {
 
         // Act
         Throwable excepcion = catchThrowable(() ->
-                ficha.cambiarAsesorFicha(asesorActualId, EstadoFicha.EN_REVISION)
+                ficha.cambiarAsesorFicha(asesorActualId, EstadoFicha.EN_CONSTRUCCION)
         );
 
         // Assert
