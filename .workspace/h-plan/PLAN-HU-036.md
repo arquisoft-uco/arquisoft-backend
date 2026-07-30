@@ -1,49 +1,54 @@
-﻿# PLAN: HU036-Consultar todos los estados ficha
+# PLAN HU-036 — Consultar todos los estados ficha
 
 ## Metadata
+
 - **ID Historia:** HU-036
 - **Bounded Context:** fichas
 - **Tipo de Use Case:** Consulta
-- **Â¿Usa AggregateRoot?:** No â€” `EstadoFicha` es un enum de dominio con catÃ¡logo en BD (ADR-012), no un Aggregate Root. La consulta lee directamente desde la tabla catÃ¡logo sin tocar el aggregate.
-- **MÃ³dulos Gradle afectados:** `fichas:application`, `fichas:infrastructure`
+- **¿Usa AggregateRoot?:** No. `EstadoFicha` es un enum de dominio con catálogo en base de datos (ADR-012), no un Aggregate Root. La consulta lee directamente de la tabla catálogo sin reconstruir un aggregate.
+- **Módulos Gradle afectados:** `fichas:application`, `fichas:infrastructure`
 - **Fecha de plan:** 2026-07-01
 - **Rama sugerida:** `feature/HU-036-consultar-estados-ficha`
-- **Fuentes consultadas del repo de documentaciÃ³n:**
+- **Fuentes consultadas del repositorio de documentación:**
     - `artefactos/estrategicos/propuestas-hu/historias_usuario_priorizadas.md`
     - `artefactos/estrategicos/event-storming/Ficha Perfil - Event Storming.md`
     - `artefactos/estrategicos/modelo-dominio/enriquecido/documentacion/06_fichas_trabajos_grado_modelo_enriquecido.md`
     - `mer/03_tablas_fichas_perfil.sql`
-- **Skill arquisoft-context cargado:** âœ…
-- **Observaciones del usuario:** Sin observaciones adicionales. Consulta pura sin filtro ni paginaciÃ³n, sin eventos de dominio, reutiliza tabla `estado_ficha` existente.
+- **Skill arquisoft-context cargado:** Sí
+- **Observaciones del usuario:** sin observaciones adicionales. Consulta pura, sin filtros ni paginación, sin eventos de dominio; reutiliza la tabla `estado_ficha` existente.
 
 ---
 
 ## 1. Resumen Funcional
 
-Esta HU expone un endpoint REST que retorna **todos los estados ficha** disponibles en el catÃ¡logo, sin paginaciÃ³n ni filtros. La tabla `estado_ficha` ya existe (creada en migraciÃ³n V1.2) y estÃ¡ poblada con 5 registros. El enum `EstadoFicha` en el dominio ya existe. Esta HU **no crea ni modifica** recursos â€” solo agrega la capa de consulta (`application/query` + `infrastructure/query`) para exponer el catÃ¡logo vÃ­a REST a los actores autorizados (Estudiante, RepresentanteComiteCurriculum, AsesorFicha). **No emite eventos de dominio** â€” es una consulta pura.
+Esta HU expone un endpoint REST que retorna **todos los estados ficha** disponibles en el catálogo, sin paginación ni filtros. La tabla `estado_ficha` ya existe (creada en la migración V1.2) y está poblada. El enum `EstadoFicha` del dominio también existe.
 
-**Lo que cubre:** endpoint `GET /fichas-perfil/estados-ficha` que retorna lista completa de estados.
+Esta HU **no crea ni modifica** recursos: solo agrega la capa de consulta (`application/query` + `infrastructure/query`) para exponer el catálogo vía REST a los actores autorizados (Estudiante, Representante del Comité de Currículum, Asesor de Ficha). **No emite eventos de dominio** porque es una consulta pura.
 
-**Lo que NO cubre:** filtros, paginaciÃ³n, creaciÃ³n de nuevos estados (el catÃ¡logo es fijo, poblado por migraciÃ³n).
+**Lo que cubre:** endpoint `GET /fichas-perfil/estados-ficha`, que retorna la lista completa de estados.
+
+**Lo que NO cubre:** filtros, paginación y creación de nuevos estados. El catálogo es fijo y se puebla por migración Flyway.
 
 ---
 
-## 2. Criterios de AceptaciÃ³n
+## 2. Criterios de Aceptación
 
 | # | Criterio | Resultado esperado |
 |---|----------|--------------------|
-| 1 | Usuario autenticado con client role `fichas:estado-ficha:view` solicita `GET /fichas-perfil/estados-ficha` | Retorna 200 OK con lista JSON de todos los estados ficha (5 registros: `EN_CONSTRUCCION`, `EN_REVISION`, `DISPONIBLE_PARA_EVALUACION`, `APROBADA`, `APROBADA_CON_OBSERVACIONES`, `NO_APROBADA`), cada uno con `id`, `nombre` y `descripcion` |
-| 2 | Usuario no autenticado solicita el endpoint | Retorna 401 Unauthorized |
-| 3 | Usuario autenticado sin el client role requerido solicita el endpoint | Retorna 403 Forbidden |
-| 4 | El orden de los estados en la respuesta es consistente | La consulta NO especifica ORDER BY â€” el orden depende del motor de BD (PostgreSQL). Si se requiere orden especÃ­fico, documentar en la secciÃ³n 8 |
+| 1 | Un usuario autenticado con el client role `fichas:estado-ficha:view` solicita `GET /fichas-perfil/estados-ficha` | Retorna `200 OK` con una lista JSON de todos los estados ficha presentes en la tabla catálogo. Cada elemento incluye `id`, `nombre` y `descripcion`. Actualmente la tabla contiene **5 registros**: `APROBADA`, `APROBADA_CON_OBSERVACIONES`, `NO_APROBADA`, `EN_CONSTRUCCION` y `DISPONIBLE_PARA_EVALUACION` |
+| 2 | Un usuario no autenticado solicita el endpoint | Retorna `401 Unauthorized` |
+| 3 | Un usuario autenticado sin el client role requerido solicita el endpoint | Retorna `403 Forbidden` |
+| 4 | El orden de los estados en la respuesta | La consulta **no** especifica `ORDER BY`, por lo que el orden lo determina el motor de base de datos. Si se necesita un orden determinístico, ver la nota de la sección 8 |
+
+> **Discrepancia detectada y resuelta (2026-07-30).** El enum `EstadoFicha` declaraba una constante `EN_REVISION` sin fila correspondiente en la tabla. Se validó contra `mer/data/03_data_fichas_perfil.sql` del repositorio `arquisoft-uco/arquisoft-docs`: el catálogo autoritativo define exactamente 5 estados y `EN_REVISION` no existe en él. La constante se eliminó del enum. La migración V1.2 ya era correcta y no se modificó.
 
 ---
 
 ## 3. Reglas de Negocio
 
-- El catÃ¡logo de estados ficha es **de solo lectura** vÃ­a endpoint REST â€” los valores se insertan/modifican Ãºnicamente por migraciones Flyway.
-- Todos los estados existentes se retornan sin excepciÃ³n (no hay filtro, no hay paginaciÃ³n).
-- El `id` del catÃ¡logo es la constante del enum (`EstadoFicha.name()`) en SCREAMING_CASE (ADR-012).
+- El catálogo de estados ficha es **de solo lectura** vía REST: sus valores se insertan o modifican únicamente mediante migraciones Flyway.
+- Se retornan todos los estados existentes, sin excepción: no hay filtro ni paginación.
+- El `id` del catálogo es la constante del enum (`EstadoFicha.name()`) en SCREAMING_SNAKE_CASE (ADR-012).
 
 ---
 
@@ -51,129 +56,125 @@ Esta HU expone un endpoint REST que retorna **todos los estados ficha** disponib
 
 ### Aggregate Root
 
-**No aplica** â€” `EstadoFicha` es un **enum de dominio + catÃ¡logo con PK semÃ¡ntica (ADR-012)**, no un Aggregate Root. El enum ya existe en `domain/estadoficha/EstadoFicha.java`. La consulta lee directamente desde la tabla catÃ¡logo sin reconstruir un aggregate.
+**No aplica.** `EstadoFicha` es un **enum de dominio con catálogo de PK semántica (ADR-012)**, no un Aggregate Root. El enum ya existe en `fichas/domain/src/main/java/com/arquisoft/fichas/domain/estadoficha/EstadoFicha.java`. La consulta lee directamente de la tabla catálogo.
 
-### Atributos por objeto de dominio
+### Atributos del catálogo `estado_ficha`
 
-#### `EstadoFicha` (catÃ¡logo de solo lectura)
+| Atributo | Tipo SQL | Longitud | Obligatorio | Modificable vía API | Notas |
+|---|---|---|---|---|---|
+| `id` | `VARCHAR(50)` | 50 | Sí | No | PK semántica. Valor = `EstadoFicha.name()` (por ejemplo `"EN_CONSTRUCCION"`) |
+| `nombre` | `VARCHAR(30)` | 30 | Sí | No | Nombre legible del estado (por ejemplo `"En Construccion"`) |
+| `descripcion` | `VARCHAR(200)` | 200 | Sí | No | Descripción breve del estado. Existe solo en base de datos: el enum **no** tiene este campo |
 
-| Atributo | Tipo | Longitud | Obligatorio | Modificable | Autogenerado | Notas |
-|---|---|---|---|---|---|---|
-| `id` | `VARCHAR(50)` | â€” | SÃ­ | No | SÃ­ (PK semÃ¡ntica = constante del enum) | Identifica el estado. Valor = `EstadoFicha.name()` (ej. `"EN_CONSTRUCCION"`) |
-| `nombre` | `String` | 1-20 | SÃ­ | No | No | Nombre legible del estado (ej. `"En Construccion"`) |
-| `descripcion` | `String` | 1-200 | SÃ­ | No | No | DescripciÃ³n breve del estado |
+**Restricciones de unicidad:**
 
-**Combinaciones Ãºnicas (Restricciones):**
-- Nombre Ãºnico: `nombre` â†’ traducciÃ³n: `UNIQUE` constraint `uk_estado_ficha_nombre` (ya existe en migraciÃ³n V1.2).
+- `UNIQUE (nombre)` → constraint `uk_estado_ficha_nombre`, ya creada en la migración V1.2.
 
-### TraducciÃ³n del modelo enriquecido a cÃ³digo
+### Traducción del modelo enriquecido a código
 
 **Esta HU no modifica el modelo de dominio.** Solo agrega la capa de consulta:
 
-| CaracterÃ­stica del modelo | TraducciÃ³n en cÃ³digo |
-|---|---|
-| Enum ya existente | `EstadoFicha.java` en `domain/estadoficha/` â€” **NO se modifica** |
-| JPA Entity ya existente | `EstadoFichaJpaEntity.java` â€” **NO se modifica** |
-| Tabla ya poblada | MigraciÃ³n V1.2 (`V1.2__crear_estado_ficha_y_estado_ficha_perfil.sql`) â€” **NO se modifica** |
-| ReadModel nuevo | `EstadoFichaReadModel` en `application/estadoficha/query/readmodel/` â€” **se crea** |
-| QueryOutputPort nuevo | `EstadoFichaQueryOutputPort` en `application/estadoficha/query/port/out/` â€” **se crea** |
-| QueryInputPort nuevo | `ConsultarEstadosFichaInputPort` en `application/estadoficha/query/port/in/` â€” **se crea** |
-| QueryUseCase nuevo | `ConsultarEstadosFichaUseCase` en `application/estadoficha/query/` â€” **se crea** |
-| QueryOutputAdapter nuevo | `EstadoFichaQueryOutputAdapter` en `infrastructure/estadoficha/query/adapter/out/persistence/` â€” **se crea** |
-| QueryInputAdapter nuevo | `ConsultarEstadosFichaInputAdapter` en `infrastructure/estadoficha/query/adapter/in/web/` â€” **se crea** |
+| Elemento | Traducción en código | Acción |
+|---|---|---|
+| Enum de dominio | `EstadoFicha.java` en `domain/estadoficha/` | Ya existe, no se modifica |
+| JPA Entity | `EstadoFichaJpaEntity.java` en `infrastructure/estadoficha/persistence/` | Ya existe, no se modifica |
+| JPA Repository | `EstadoFichaJpaRepository.java` en `infrastructure/estadoficha/persistence/` | Ya existe, no se modifica |
+| Tabla poblada | `V1.2__crear_estado_ficha_y_estado_ficha_perfil.sql` | Ya existe, no se modifica |
+| ReadModel | `EstadoFichaReadModel` en `application/estadoficha/query/readmodel/` | Se crea |
+| QueryOutputPort | `EstadoFichaQueryOutputPort` en `application/estadoficha/query/port/out/` | Se crea |
+| InputPort | `ConsultarEstadosFichaInputPort` en `application/estadoficha/query/port/in/` | Se crea |
+| UseCase | `ConsultarEstadosFichaUseCase` en `application/estadoficha/query/` | Se crea |
+| QueryOutputAdapter | `EstadoFichaQueryOutputAdapter` en `infrastructure/estadoficha/query/adapter/out/persistence/` | Se crea |
+| InputAdapter REST | `ConsultarEstadosFichaInputAdapter` en `infrastructure/estadoficha/query/adapter/in/web/` | Se crea |
 
-### Estados y tipos: planearlos como enum de dominio
+### Estados y tipos
 
-`EstadoFicha` ya estÃ¡ planificado como enum de dominio + catÃ¡logo con PK semÃ¡ntica (ADR-012) desde HU-206. Esta HU **no modifica** esa estructura â€” solo la expone vÃ­a REST.
+`EstadoFicha` ya está modelado como enum de dominio con catálogo de PK semántica (ADR-012) desde la HU-206. Esta HU **no modifica** esa estructura: únicamente la expone vía REST.
 
-### Eventos de Dominio que emite
+### Eventos de dominio que emite
 
-```
-Eventos: ninguno.
-RazÃ³n: consulta pura de catÃ¡logo de solo lectura sin consumidores conocidos ni
-        casos de auditorÃ­a identificados. El Event Storming menciona un evento
-        "Todos los estados ficha consultados", pero esto es solo un query endpoint
-        sin side effects â€” NO se publica evento RabbitMQ.
+**Ninguno.**
+
+Razón: es una consulta pura sobre un catálogo de solo lectura, sin consumidores conocidos ni necesidad de auditoría identificada. El Event Storming menciona un evento "Todos los estados ficha consultados", pero se trata de una lectura sin efectos secundarios, por lo que **no** se publica ningún evento en RabbitMQ.
+
 Implicaciones:
-  - `EstadoFicha` NO es un Aggregate Root que extienda `AggregateRoot` â€” es un
-    enum de dominio.
-  - El use case NO inyecta `EventPublisher`, no hay drenado de eventos.
-  - No se crean archivos en `domain/estadoficha/event/`.
-```
+
+- `EstadoFicha` no extiende `AggregateRoot`: es un enum de dominio.
+- El use case no inyecta `EventPublisher` ni drena eventos.
+- No se crean archivos en `domain/estadoficha/event/`.
 
 ---
 
-## 5. Integraciones Externas (solo si la HU lo requiere)
+## 5. Integraciones Externas
 
-**No aplica** â€” la HU solo lee de PostgreSQL (tabla `estado_ficha` ya existente). No requiere integraciones externas.
+**No aplica.** La HU solo lee de PostgreSQL (tabla `estado_ficha`, ya existente).
 
 ---
 
-## 6. Ãrbol de Archivos a Crear / Modificar
+## 6. Árbol de Archivos a Crear o Modificar
 
-### Archivos NUEVOS â€” caso de uso read (Consultar)
+### Archivos nuevos — caso de uso de consulta
 
-| Capa | Ruta completa desde raÃ­z del monorepo | Tipo | Responsabilidad |
-|------|---------------------------------------|------|-----------------|
-| application | `fichas/src/main/java/com/arquisoft/fichas/application/estadoficha/query/readmodel/EstadoFichaReadModel.java` | `record` | ProyecciÃ³n plana del estado ficha con `id`, `nombre`, `descripcion`. Factory `fromDomain(EstadoFicha enum)` que mapea `enum.getId()` â†’ `id`, `enum.getNombre()` â†’ `nombre` + `descripcion` hardcodeada (porque el enum NO tiene campo descripciÃ³n â€” la descripciÃ³n vive solo en BD). **Alternativa:** si el enum no tiene descripciÃ³n, el ReadModel se construye desde la JPA Entity directamente en el adapter, NO desde el enum. Ver secciÃ³n 7 para decisiÃ³n. |
-| application | `fichas/src/main/java/com/arquisoft/fichas/application/estadoficha/query/port/in/ConsultarEstadosFichaInputPort.java` | Interface (vacÃ­a) | Extiende `InputPort<Void, List<EstadoFichaReadModel>>` de `shared:domain` |
-| application | `fichas/src/main/java/com/arquisoft/fichas/application/estadoficha/query/port/out/EstadoFichaQueryOutputPort.java` | Interface | Puerto de salida read. MÃ©todo: `List<EstadoFichaReadModel> findAll()` |
-| application | `fichas/src/main/java/com/arquisoft/fichas/application/estadoficha/query/ConsultarEstadosFichaUseCase.java` | UseCase | `@Component` + `@Transactional(readOnly = true, transactionManager = "fichasTransactionManager")`. Inyecta `EstadoFichaQueryOutputPort`. Implementa `ConsultarEstadosFichaInputPort`. MÃ©todo `ejecutar(Void input)` delega a `port.findAll()` y retorna la lista |
-| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoficha/query/adapter/in/web/ConsultarEstadosFichaInputAdapter.java` | `@RestController` | Mapeo: `GET /fichas-perfil/estados-ficha`. Inyecta `ConsultarEstadosFichaInputPort`. Serializa `List<EstadoFichaReadModel>` directamente a JSON (sin DTO intermedio). ADR-011: `@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement(name="bearerAuth")` |
-| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoficha/query/adapter/out/persistence/EstadoFichaQueryOutputAdapter.java` | Adapter | Implementa `EstadoFichaQueryOutputPort`. Inyecta `EstadoFichaJpaRepository` (ya existe). MÃ©todo `findAll()` consulta todos los registros de la tabla catÃ¡logo, mapea cada `EstadoFichaJpaEntity` a `EstadoFichaReadModel` y retorna lista. **DecisiÃ³n de mapeo:** como el enum `EstadoFicha` NO tiene campo `descripcion`, el mapeo es JpaEntity â†’ ReadModel directamente (`new EstadoFichaReadModel(entity.getId(), entity.getNombre(), entity.getDescripcion())`), NO pasa por el enum. |
+| Capa | Ruta completa desde la raíz del monorepo | Tipo | Responsabilidad |
+|------|------------------------------------------|------|-----------------|
+| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoficha/query/readmodel/EstadoFichaReadModel.java` | `record` | Proyección plana con `id`, `nombre` y `descripcion`. **Sin factory `fromDomain`**: el enum no tiene el campo `descripcion`, por lo que el ReadModel se construye desde la JPA Entity en el adapter de salida |
+| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoficha/query/port/in/ConsultarEstadosFichaInputPort.java` | Interface (sin métodos propios) | Extiende `InputPort<Void, List<EstadoFichaReadModel>>` de `shared:domain` |
+| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoficha/query/port/out/EstadoFichaQueryOutputPort.java` | Interface | Puerto de salida de lectura. Método: `List<EstadoFichaReadModel> findAll()` |
+| application | `fichas/application/src/main/java/com/arquisoft/fichas/application/estadoficha/query/ConsultarEstadosFichaUseCase.java` | UseCase | `@Component` + `@RequiredArgsConstructor` + `@Transactional(readOnly = true, transactionManager = "fichasTransactionManager")`. Implementa `ConsultarEstadosFichaInputPort` y delega en `queryOutputPort.findAll()` |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoficha/query/adapter/in/web/ConsultarEstadosFichaInputAdapter.java` | `@RestController` | Expone `GET /fichas-perfil/estados-ficha`. Serializa `List<EstadoFichaReadModel>` directamente a JSON, sin DTO intermedio. Documentado según ADR-011 |
+| infrastructure | `fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/estadoficha/query/adapter/out/persistence/EstadoFichaQueryOutputAdapter.java` | OutputAdapter | Implementa `EstadoFichaQueryOutputPort`. Inyecta `EstadoFichaJpaRepository` (ya existe), invoca `findAll()` y mapea cada `EstadoFichaJpaEntity` a `EstadoFichaReadModel`. **El mapeo no pasa por el enum**, porque el enum carece del campo `descripcion` |
 
-### CatÃ¡logo de mensajes (`shared:message`) â€” fila obligatoria si la HU introduce texto nuevo
+### Catálogo de mensajes (`shared:message`)
 
-**Sin cambios al catÃ¡logo `shared:message`** â€” la HU no introduce ningÃºn mensaje de error, cÃ³digo, log ni lÃ­mite nuevo. Es una consulta pura que retorna el catÃ¡logo sin validaciones adicionales.
+**Sin cambios.** La HU no introduce mensajes de error, códigos, logs ni límites nuevos: es una consulta pura sin validaciones adicionales.
 
-### Archivos a MODIFICAR (si aplica)
+### Archivos a modificar
 
-**Ninguno** â€” todos los archivos necesarios son nuevos. La tabla, JPA Entity, JPA Repository y enum ya existen y NO requieren modificaciÃ³n.
+**Ninguno.** La tabla, la JPA Entity, el JPA Repository y el enum ya existen y no requieren cambios.
 
-### Archivos de MENSAJERÃA RabbitMQ (si aplica)
+### Archivos de mensajería RabbitMQ
 
-**No aplica** â€” la HU no publica ni consume eventos RabbitMQ.
+**No aplica.** La HU no publica ni consume eventos.
 
-### OrquestaciÃ³n de use cases (cuando una HU coordina varias acciones)
+### Orquestación de use cases
 
-**No aplica** â€” la HU solo coordina una acciÃ³n: consultar todos los estados ficha.
+**No aplica.** La HU ejecuta una sola acción: consultar todos los estados ficha.
 
 ---
 
 ## 7. Detalle por Archivo
 
 ### `EstadoFichaReadModel.java`
+
 - **Paquete:** `com.arquisoft.fichas.application.estadoficha.query.readmodel`
 - **Tipo:** `record`
-- **Responsabilidad:** ProyecciÃ³n plana del estado ficha con 3 campos: `id` (String), `nombre` (String), `descripcion` (String).
-- **Features Java 21 aplicables:** `record` para inmutabilidad + `equals`/`hashCode` gratis.
-- **MÃ©todos principales:**
-    - Constructor canÃ³nico: `EstadoFichaReadModel(String id, String nombre, String descripcion)`
-    - **NO tiene factory `fromDomain(EstadoFicha enum)`** porque el enum NO contiene el campo `descripcion`. El adapter construye el ReadModel directamente desde la JPA Entity.
+- **Responsabilidad:** proyección plana del estado ficha con tres campos: `id`, `nombre` y `descripcion` (todos `String`).
+- **Features de Java 21:** `record`, que aporta inmutabilidad y `equals`/`hashCode` automáticos.
+- **Métodos:** solo el constructor canónico `EstadoFichaReadModel(String id, String nombre, String descripcion)`. **No** define factory `fromDomain(EstadoFicha)`, porque el enum no contiene `descripcion`; el adapter de salida construye el ReadModel desde la JPA Entity.
 - **Dependencias:** ninguna (Java puro).
 
 ---
 
 ### `ConsultarEstadosFichaInputPort.java`
+
 - **Paquete:** `com.arquisoft.fichas.application.estadoficha.query.port.in`
-- **Tipo:** Interface (vacÃ­a)
-- **Responsabilidad:** Puerto de entrada para consultar todos los estados ficha. Extiende `InputPort<Void, List<EstadoFichaReadModel>>` de `shared:domain`.
-- **Features Java 21 aplicables:** ninguna.
-- **MÃ©todos principales:** hereda `List<EstadoFichaReadModel> ejecutar(Void input)` de `InputPort`.
+- **Tipo:** interface sin métodos propios
+- **Responsabilidad:** puerto de entrada para consultar todos los estados ficha. Extiende `InputPort<Void, List<EstadoFichaReadModel>>`.
+- **Métodos:** hereda `List<EstadoFichaReadModel> ejecutar(Void input)` de `InputPort`.
 - **Dependencias:**
-    - `com.arquisoft.shared.port.in.InputPort`
+    - `com.arquisoft.shared.inputport.InputPort`
     - `EstadoFichaReadModel`
     - `java.util.List`
 
 ---
 
 ### `EstadoFichaQueryOutputPort.java`
+
 - **Paquete:** `com.arquisoft.fichas.application.estadoficha.query.port.out`
-- **Tipo:** Interface
-- **Responsabilidad:** Puerto de salida read para consultar el catÃ¡logo de estados ficha.
-- **Features Java 21 aplicables:** ninguna.
-- **MÃ©todos principales:**
-    - `List<EstadoFichaReadModel> findAll()` â€” retorna todos los estados del catÃ¡logo sin filtro ni paginaciÃ³n.
+- **Tipo:** interface
+- **Responsabilidad:** puerto de salida de lectura para el catálogo de estados ficha.
+- **Métodos:**
+    - `List<EstadoFichaReadModel> findAll()` — retorna todos los estados del catálogo, sin filtro ni paginación.
 - **Dependencias:**
     - `EstadoFichaReadModel`
     - `java.util.List`
@@ -181,205 +182,214 @@ Implicaciones:
 ---
 
 ### `ConsultarEstadosFichaUseCase.java`
+
 - **Paquete:** `com.arquisoft.fichas.application.estadoficha.query`
 - **Tipo:** UseCase
-- **Responsabilidad:** Implementa el puerto de entrada. Delega al `EstadoFichaQueryOutputPort` y retorna la lista de ReadModels.
-- **Features Java 21 aplicables:** ninguna relevante.
-- **MÃ©todos principales:**
-    - `List<EstadoFichaReadModel> ejecutar(Void input)` â€” llama a `queryOutputPort.findAll()` y retorna la lista sin transformaciÃ³n adicional.
-- **Dependencias:**
-    - `ConsultarEstadosFichaInputPort` (implementa)
-    - `EstadoFichaQueryOutputPort` (inyectado)
-    - `EstadoFichaReadModel`
+- **Responsabilidad:** implementa el puerto de entrada, delega en `EstadoFichaQueryOutputPort` y retorna la lista de ReadModels sin transformarla.
+- **Métodos:**
+    - `List<EstadoFichaReadModel> ejecutar(Void input)` — invoca `queryOutputPort.findAll()` y retorna el resultado.
+- **Dependencias y anotaciones:**
+    - Implementa `ConsultarEstadosFichaInputPort`
+    - Inyecta `EstadoFichaQueryOutputPort`
     - `@Component`, `@RequiredArgsConstructor`, `@Transactional(readOnly = true, transactionManager = "fichasTransactionManager")`
 
 ---
 
 ### `ConsultarEstadosFichaInputAdapter.java`
+
 - **Paquete:** `com.arquisoft.fichas.infrastructure.estadoficha.query.adapter.in.web`
 - **Tipo:** `@RestController`
-- **Responsabilidad:** Endpoint REST `GET /fichas-perfil/estados-ficha`. Serializa la lista de ReadModels directamente a JSON.
-- **Features Java 21 aplicables:** ninguna.
-- **MÃ©todos principales:**
-    - `ResponseEntity<List<EstadoFichaReadModel>> consultarEstadosFicha()` â€” invoca `inputPort.ejecutar(null)`, retorna `200 OK` + lista JSON.
-- **Dependencias:**
-    - `ConsultarEstadosFichaInputPort` (inyectado)
-    - `EstadoFichaReadModel`
-    - `@RestController`, `@RequiredArgsConstructor`, `@RequestMapping("/fichas-perfil")`, `@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement`, `@PreAuthorize("hasAuthority('fichas:estado-ficha:view')")`, `@GetMapping("/estados-ficha")`
+- **Responsabilidad:** endpoint REST `GET /fichas-perfil/estados-ficha`. Serializa la lista de ReadModels directamente a JSON.
+- **Métodos:**
+    - `ResponseEntity<List<EstadoFichaReadModel>> consultarEstadosFicha()` — invoca `inputPort.ejecutar(null)` y retorna `200 OK` con la lista.
+- **Dependencias y anotaciones:**
+    - Inyecta `ConsultarEstadosFichaInputPort`
+    - `@RestController`, `@RequiredArgsConstructor`, `@RequestMapping("/fichas-perfil")`, `@GetMapping("/estados-ficha")`
+    - `@PreAuthorize("hasAuthority('fichas:estado-ficha:view')")`
+    - Documentación ADR-011: `@Tag`, `@Operation` (con `security = @SecurityRequirement(name = "bearerAuth")`), `@ApiResponses`
 
-#### Plantilla extendida para Controllers (ADR-011)
+#### Documentación Swagger (ADR-011)
 
-- **`@Tag`:** `name = "Fichas de Perfil"`, `description = "GestiÃ³n del ciclo de vida de las fichas de perfil"`
-- **Endpoints documentados:**
+- **`@Tag`:** `name = "Fichas de Perfil"`, `description = "Gestión del ciclo de vida de las fichas de perfil"`
 
-  | MÃ©todo del Controller | `@Operation(summary)` | CÃ³digos `@ApiResponse` | `@SecurityRequirement` |
-  |-----------------------|-----------------------|------------------------|------------------------|
-  | `consultarEstadosFicha` | `"Consultar todos los estados ficha"` | 200, 401, 403 | `bearerAuth` |
+| Método del controller | `@Operation(summary)` | Códigos `@ApiResponse` | Seguridad |
+|---|---|---|---|
+| `consultarEstadosFicha` | `"Consultar todos los estados ficha"` | 200, 401, 403 | `bearerAuth` |
 
-- **Nota:** Este controller NO maneja 404 â€” la consulta siempre retorna al menos la lista vacÃ­a (aunque en prÃ¡ctica retorna 5 registros porque la tabla estÃ¡ poblada por migraciÃ³n). Tampoco maneja 400 â€” no hay parÃ¡metros de entrada que puedan ser invÃ¡lidos.
+- **Nota:** el controller no documenta `404` porque la consulta siempre retorna al menos una lista vacía, ni `400` porque no recibe parámetros de entrada que puedan ser inválidos.
 
 ---
 
 ### `EstadoFichaQueryOutputAdapter.java`
+
 - **Paquete:** `com.arquisoft.fichas.infrastructure.estadoficha.query.adapter.out.persistence`
-- **Tipo:** Adapter
-- **Responsabilidad:** Implementa `EstadoFichaQueryOutputPort`. Consulta la tabla catÃ¡logo `estado_ficha` y mapea cada JPA Entity a ReadModel.
-- **Features Java 21 aplicables:** ninguna.
-- **MÃ©todos principales:**
-    - `List<EstadoFichaReadModel> findAll()` â€” invoca `jpaRepository.findAll()`, mapea cada `EstadoFichaJpaEntity` a `EstadoFichaReadModel` con `new EstadoFichaReadModel(entity.getId(), entity.getNombre(), entity.getDescripcion())` y retorna lista.
-- **Dependencias:**
-    - `EstadoFichaQueryOutputPort` (implementa)
-    - `EstadoFichaJpaRepository` (inyectado, ya existe)
-    - `EstadoFichaJpaEntity` (ya existe)
-    - `EstadoFichaReadModel`
+- **Tipo:** OutputAdapter
+- **Responsabilidad:** implementa `EstadoFichaQueryOutputPort`. Consulta la tabla catálogo `estado_ficha` y mapea cada JPA Entity a ReadModel.
+- **Métodos:**
+    - `List<EstadoFichaReadModel> findAll()` — invoca `jpaRepository.findAll()`, mapea con un método privado `toReadModel(EstadoFichaJpaEntity)` que construye `new EstadoFichaReadModel(entity.getId(), entity.getNombre(), entity.getDescripcion())` y devuelve la lista con `.toList()`.
+- **Dependencias y anotaciones:**
+    - Implementa `EstadoFichaQueryOutputPort`
+    - Inyecta `EstadoFichaJpaRepository` (ya existe)
+    - Usa `EstadoFichaJpaEntity` (ya existe)
     - `@Component`, `@RequiredArgsConstructor`
 
 ---
 
-## 8. Endpoints REST (si aplica)
+## 8. Endpoints REST
 
 ### Estado del endpoint
 
-- [x] **Endpoint NUEVO** â€” crear `ConsultarEstadosFichaInputAdapter.java` desde cero.
+- [x] **Endpoint nuevo** — se crea `ConsultarEstadosFichaInputAdapter.java` desde cero.
 
-### Contrato del endpoint
+### Contrato
 
-| MÃ©todo | Ruta | Request Body / Params | Response | CÃ³digo HTTP | Client role requerido | Anotaciones Swagger (ADR-011) |
-|--------|------|----------------------|----------|-------------|----------------------|-------------------------------|
-| GET | `/fichas-perfil/estados-ficha` | â€” | `List<EstadoFichaReadModel>` con 3 campos por estado: `id` (String), `nombre` (String), `descripcion` (String). Ejemplo: `[{"id":"EN_CONSTRUCCION","nombre":"En Construccion","descripcion":"Se refiere a que la ficha de perfil se encuentra en construcciÃ³n o desarrollo."},...]` | 200 | `fichas:estado-ficha:view` | `@Operation(summary="Consultar todos los estados ficha")` + `@SecurityRequirement(name="bearerAuth")` + `@ApiResponses`: 200 OK, 401 Unauthorized, 403 Forbidden |
+| Método | Ruta | Request | Response | Código HTTP | Client role |
+|--------|------|---------|----------|-------------|-------------|
+| `GET` | `/fichas-perfil/estados-ficha` | sin body ni parámetros | `List<EstadoFichaReadModel>`, con `id`, `nombre` y `descripcion` por elemento | 200 | `fichas:estado-ficha:view` |
 
-**Observaciones sobre orden:**
-- La consulta **NO especifica `ORDER BY`** â€” el orden de los registros depende del motor de BD (PostgreSQL). Si se requiere orden especÃ­fico (ej. alfabÃ©tico por `nombre`, o por severidad semÃ¡ntica), se debe agregar `.orderBy(...)` en el `JpaRepository` o especificar `@Query` con `ORDER BY`.
+**Ejemplo de respuesta:**
+
+```json
+[
+  {
+    "id": "EN_CONSTRUCCION",
+    "nombre": "En Construccion",
+    "descripcion": "Se refiere a que la ficha de perfil se encuentra en construcción o desarrollo."
+  }
+]
+```
+
+**Nota sobre el orden:** la consulta no especifica `ORDER BY`, por lo que el orden de los registros lo determina PostgreSQL y no está garantizado. Si se necesita un orden determinístico (alfabético por `nombre` o por secuencia semántica del ciclo de vida), debe declararse un método `findAllByOrderByNombreAsc()` en el `JpaRepository` o una `@Query` con `ORDER BY` explícito.
 
 ---
 
-## 9. Seguridad y AutorizaciÃ³n (Keycloak)
+## 9. Seguridad y Autorización (Keycloak)
 
-### Client roles nuevos a crear en Keycloak
+### Client role nuevo
 
-| Client role | Roles realm que lo poseen | Endpoint(s) que lo requieren | DescripciÃ³n funcional |
+| Client role | Roles de realm que lo poseen | Endpoint que lo requiere | Descripción funcional |
 |---|---|---|---|
-| `fichas:estado-ficha:view` | `estudiante`, `representante-comite`, `asesor-ficha` | `GET /fichas-perfil/estados-ficha` | Permite consultar el catÃ¡logo completo de estados ficha disponibles para asignar a una ficha de perfil |
+| `fichas:estado-ficha:view` | `estudiante`, `representante-comite`, `asesor-ficha` | `GET /fichas-perfil/estados-ficha` | Permite consultar el catálogo completo de estados ficha disponibles para asignar a una ficha de perfil |
 
 ### Reglas de uso
 
-1. **Formato del client role:** `fichas:estado-ficha:view` â€” todo en minÃºsculas, palabras separadas por guiones.
-2. **ConversiÃ³n de nombres:** el paquete Java es `estadoficha` (sin guiÃ³n), pero el client role usa guiÃ³n (`estado-ficha`) por convenciÃ³n REST/kebab-case.
-3. **Roles realm en kebab-case:** `estudiante`, `representante-comite`, `asesor-ficha`.
-4. Un client role pertenece a varios roles realm (los tres actores pueden ejecutar esta consulta).
-5. El endpoint tiene exactamente un `@PreAuthorize("hasAuthority('fichas:estado-ficha:view')")`.
-6. NO se usa `hasRole(...)` â€” siempre `hasAuthority(...)` con client role.
+1. **Formato del client role:** `fichas:estado-ficha:view`, todo en minúsculas y con palabras separadas por guiones.
+2. **Conversión de nombres:** el paquete Java es `estadoficha` (sin guion), pero el client role usa `estado-ficha` por convención kebab-case de REST.
+3. **Roles de realm en kebab-case:** `estudiante`, `representante-comite`, `asesor-ficha`.
+4. El mismo client role se asigna a varios roles de realm: los tres actores pueden ejecutar esta consulta.
+5. El endpoint declara exactamente un `@PreAuthorize("hasAuthority('fichas:estado-ficha:view')")`.
+6. Nunca se usa `hasRole(...)`: siempre `hasAuthority(...)` con el client role.
 
-### ConfiguraciÃ³n requerida en Keycloak (instrucciones para equipo de seguridad)
+### Configuración requerida en Keycloak
 
 Para el client role `fichas:estado-ficha:view`:
 
-1. En el cliente `arquisoft-api`: crear el client role con el nombre exacto `fichas:estado-ficha:view`.
-2. Asignar el client role a cada uno de los roles realm: `estudiante`, `representante-comite`, `asesor-ficha`.
-3. Verificar que los usuarios de prueba con esos roles realm reciban el client role en su JWT (`resource_access.arquisoft-api.roles`).
+1. En el cliente `arquisoft-api`, crear el client role con el nombre exacto `fichas:estado-ficha:view`.
+2. Asignarlo a los roles de realm `estudiante`, `representante-comite` y `asesor-ficha`.
+3. Verificar que los usuarios de prueba con esos roles reciban el client role en su JWT, bajo `resource_access.arquisoft-api.roles`.
 
 ---
 
-## 10. Eventos RabbitMQ (si aplica)
+## 10. Eventos RabbitMQ
 
-**Eventos: ninguno.**
+**Ninguno.**
 
-RazÃ³n: consulta pura de catÃ¡logo de solo lectura. El Event Storming menciona un evento "Todos los estados ficha consultados", pero esto NO se traduce en un evento RabbitMQ â€” es solo una acciÃ³n de lectura sin side effects.
-
----
-
-## 11. MigraciÃ³n de Base de Datos (si aplica)
-
-**No se requiere migraciÃ³n nueva.**
-
-- La tabla `estado_ficha` ya existe (creada en migraciÃ³n V1.2: `V1.2__crear_estado_ficha_y_estado_ficha_perfil.sql`).
-- La tabla estÃ¡ poblada con 5 registros: `APROBADA`, `APROBADA_CON_OBSERVACIONES`, `NO_APROBADA`, `EN_CONSTRUCCION`, `DISPONIBLE_PARA_EVALUACION`.
-- Esta HU solo agrega la capa de consulta â€” NO modifica el schema.
+Es una consulta pura sobre un catálogo de solo lectura. El Event Storming menciona "Todos los estados ficha consultados", pero eso no se traduce en un evento de RabbitMQ: es una lectura sin efectos secundarios.
 
 ---
 
-## 12. Casos de Prueba Sugeridos (condicional segÃºn tipo de Use Case)
+## 11. Migración de Base de Datos
+
+**No se requiere migración nueva.**
+
+- La tabla `estado_ficha` ya existe: se crea en `V1.2__crear_estado_ficha_y_estado_ficha_perfil.sql`.
+- Esa misma migración la puebla con 5 registros: `APROBADA`, `APROBADA_CON_OBSERVACIONES`, `NO_APROBADA`, `EN_CONSTRUCCION` y `DISPONIBLE_PARA_EVALUACION`.
+- Esta HU solo agrega la capa de consulta: no modifica el esquema.
+
+> **Resuelto (2026-07-30).** La constante `EN_REVISION` del enum no existía en el catálogo autoritativo del MER y fue eliminada del código. La tabla y su migración no requirieron cambios: ya coincidían con `mer/data/03_data_fichas_perfil.sql`. Ver la nota de la sección 2.
+
+---
+
+## 12. Casos de Prueba
 
 ### Presupuesto orientativo
 
-**Tipo de HU:** PequeÃ±a (1 endpoint read, 1 entidad de catÃ¡logo).
+**Tamaño de la HU:** pequeña (un endpoint de lectura sobre una entidad de catálogo).
 
-**Tests esperados:** 10 - 15.
+**Tests esperados:** entre 10 y 15.
+
+### Tests de la capa `domain`
+
+**No aplica.** `EstadoFicha` es un enum, no un Aggregate Root, y no se modifica en esta HU.
+
+### Tests de la capa `application`
+
+| Clase de test | Método | Escenario |
+|---------------|--------|-----------|
+| `ConsultarEstadosFichaUseCaseTest` | `debeRetornarListaCompleta_cuandoExistenEstados` | El mock de `EstadoFichaQueryOutputPort.findAll()` retorna una lista con varios elementos; se verifica que el use case devuelve la misma lista sin transformarla |
+| `ConsultarEstadosFichaUseCaseTest` | `debeRetornarListaVacia_cuandoNoHayEstados` | El mock retorna una lista vacía; se verifica que el use case devuelve una lista vacía. Es un caso improbable en producción (la tabla está poblada por migración), pero el código debe soportarlo |
+
+### Tests de la capa `infrastructure`
+
+| Clase de test | Método | Escenario |
+|---------------|--------|-----------|
+| `EstadoFichaQueryOutputAdapterTest` | `debeRetornarListaDeReadModels_cuandoFindAllEsInvocado` | El mock de `EstadoFichaJpaRepository.findAll()` retorna varias `EstadoFichaJpaEntity`; se verifica que el adapter las mapea a `EstadoFichaReadModel` con `id`, `nombre` y `descripcion` correctos |
+| `EstadoFichaQueryOutputAdapterTest` | `debeRetornarListaVacia_cuandoRepositorioRetornaVacio` | El mock retorna una lista vacía; se verifica que el adapter devuelve una lista vacía |
+| `EstadoFichaQueryOutputAdapterTest` | `debeMapearCorrectamente_cuandoConvierteJpaEntityAReadModel` | Se verifica campo por campo el mapeo de una entidad individual |
+| `ConsultarEstadosFichaInputAdapterTest` | `debe200_cuandoConsultaExitosa` | El mock de `inputPort.ejecutar(null)` retorna varios ReadModels; se verifica `200 OK` y el body JSON |
+| `ConsultarEstadosFichaInputAdapterTest` | `debe200ConListaVacia_cuandoNoHayEstados` | El mock retorna una lista vacía; se verifica `200 OK` con array JSON vacío |
+| `ConsultarEstadosFichaInputAdapterTest` | `debeRetornarJsonCorrecto_cuandoListaTieneElementos` | Se verifica la forma exacta del JSON (nombres de campos y valores) |
+| `ConsultarEstadosFichaInputAdapterTest` | `debe401_cuandoNoAutenticado` | Sin token JWT; se verifica `401 Unauthorized` |
+| `ConsultarEstadosFichaInputAdapterTest` | `debe403_cuandoRolInsuficiente` | Token JWT válido pero sin el client role `fichas:estado-ficha:view`; se verifica `403 Forbidden` |
+| `ConsultarEstadosFichaInputAdapterTest` | `debeInvocarInputPort_cuandoEndpointEsLlamado` | Se verifica que el controller delega efectivamente en el input port |
+| `ConsultarEstadosFichaInputAdapterTest` | `debeUsarPreAuthorizeConClientRole_cuandoEndpointRequiereAutorizacion` | Se verifica que la autorización se resuelve por client role y no por rol de realm |
+
+**Convenciones aplicables:**
+
+- Tests de use case y de adapter de salida: JUnit 6 + Mockito + AssertJ con `@ExtendWith(MockitoExtension.class)`, sin contexto de Spring.
+- Test de controller: `@WebMvcTest` (`org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`) + `@Import(GlobalAppExceptionHandler.class)`, mock del input port con `@MockitoBean` y autenticación con `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)`.
+- Test de slice de repositorio (si se agrega): `@DataJpaTest` de `org.springframework.boot.data.jpa.test.autoconfigure`. **No se usa `@SpringBootTest`** en este repositorio.
+
+### Reglas de consolidación
+
+- No se testean getters ni setters generados por Lombok: el ReadModel es un `record` sin lógica propia.
+- No se testean validaciones Jakarta: esta HU no tiene request DTO.
+- No se testean métodos privados de forma aislada: el mapeo del adapter se cubre a través de `findAll()`.
+- No se define ni se testea ninguna excepción nueva.
+- No se testea el ciclo de publicación de eventos: la HU no emite eventos.
 
 ---
 
-### Caso B â€” Use Case de CONSULTA (listar, buscar, obtener)
+## 13. Checklist de Implementación
 
-#### Tests capa `domain`
-
-**No aplica** â€” `EstadoFicha` es un enum, no un Aggregate Root. No hay lÃ³gica de dominio que testear en esta HU (el enum ya existe y NO se modifica).
-
-#### Tests capa `application`
-
-| Clase de test | MÃ©todo | Escenario |
-|---------------|--------|-----------|
-| `ConsultarEstadosFichaUseCaseTest` | `debeRetornarListaCompleta_cuandoExistenEstados` | El use case delega al `queryOutputPort.findAll()` y retorna la lista de ReadModels sin transformaciÃ³n. Mock del puerto retorna lista con 5 elementos, verificar que el use case retorna la misma lista |
-| `ConsultarEstadosFichaUseCaseTest` | `debeRetornarListaVacia_cuandoNoHayEstados` | Mock del puerto retorna lista vacÃ­a, verificar que el use case retorna lista vacÃ­a (caso improbable porque la tabla estÃ¡ poblada por migraciÃ³n, pero el cÃ³digo debe manejarlo) |
-
-#### Tests capa `infrastructure`
-
-| Clase de test | MÃ©todo | Escenario |
-|---------------|--------|-----------|
-| `EstadoFichaQueryOutputAdapterTest` | `debeRetornarListaDeReadModels_cuandoFindAllEsInvocado` | Mock de `EstadoFichaJpaRepository.findAll()` retorna lista de 3 `EstadoFichaJpaEntity`, verificar que el adapter mapea correctamente a 3 `EstadoFichaReadModel` con `id`, `nombre`, `descripcion` correctos |
-| `EstadoFichaQueryOutputAdapterTest` | `debeRetornarListaVacia_cuandoRepositorioRetornaVacio` | Mock retorna lista vacÃ­a, verificar que adapter retorna lista vacÃ­a |
-| `ConsultarEstadosFichaInputAdapterTest` | `debe200_cuandoConsultaExitosa` | Mock del `inputPort.ejecutar(null)` retorna lista con 2 ReadModels, verificar que controller retorna `200 OK` + body JSON con 2 elementos |
-| `ConsultarEstadosFichaInputAdapterTest` | `debe401_cuandoNoAutenticado` | Sin token JWT, verificar que controller retorna `401 Unauthorized` |
-| `ConsultarEstadosFichaInputAdapterTest` | `debe403_cuandoRolInsuficiente` | Token JWT vÃ¡lido pero sin el client role `fichas:estado-ficha:view`, verificar que controller retorna `403 Forbidden` |
-
-**Test de integraciÃ³n adicional (opcional, recomendado):**
-
-| Clase de test | MÃ©todo | Escenario |
-|---------------|--------|-----------|
-| `EstadoFichaJpaRepositoryIntegrationTest` | `debeBuscarTodosLosEstados_cuandoTablaEstaPoblada` | Test con `@SpringBootTest` + H2. Poblar tabla `estado_ficha` con 5 registros (replicando datos de migraciÃ³n V1.2), invocar `jpaRepository.findAll()`, verificar que retorna 5 elementos con IDs, nombres y descripciones correctas |
-
----
-
-### Reglas de consolidaciÃ³n
-
-- **No incluir tests de getters/setters** generados por Lombok â€” el ReadModel es un `record`, no tiene lÃ³gica custom.
-- **No incluir tests de validaciones Jakarta** â€” no hay validaciones en esta HU (no hay request DTO).
-- **No incluir tests de mÃ©todos `private`** â€” el adapter no tiene mÃ©todos privados relevantes.
-- **No incluir test propio de excepciÃ³n** â€” esta HU no define excepciones nuevas.
-- **No incluir tests de ciclo de eventos** â€” esta HU es consulta pura, NO emite eventos.
-
----
-
-## 13. Checklist de ImplementaciÃ³n
-
-- [x] **DDD:** `EstadoFicha` NO es un Aggregate Root â€” es un enum de dominio + catÃ¡logo con PK semÃ¡ntica (ADR-012). Ya existe, NO se modifica.
-- [x] IDs siempre `VARCHAR(50)` en catÃ¡logo (PK semÃ¡ntica = constante del enum), ya implementado en migraciÃ³n V1.2.
-- [x] Puerto de entrada (`ConsultarEstadosFichaInputPort`) definido â€” extiende `InputPort<Void, List<EstadoFichaReadModel>>`.
-- [x] Puerto de salida (`EstadoFichaQueryOutputPort`) definido â€” vive en `application/`, no en `domain/` (read side no toca aggregate).
-- [x] `ReadModel` (`record` en `application/estadoficha/query/readmodel/`) creado con 3 campos: `id`, `nombre`, `descripcion`.
-- [x] Caso de uso (`ConsultarEstadosFichaUseCase`) con `@RequiredArgsConstructor`, `@Transactional(readOnly = true, transactionManager = "fichasTransactionManager")`.
+- [x] **DDD:** `EstadoFicha` no es un Aggregate Root, sino un enum de dominio con catálogo de PK semántica (ADR-012). Ya existe y no se modifica.
+- [x] La PK del catálogo es `VARCHAR(50)` con valor igual a la constante del enum, ya implementada en la migración V1.2.
+- [x] Puerto de entrada `ConsultarEstadosFichaInputPort` definido, extendiendo `InputPort<Void, List<EstadoFichaReadModel>>`.
+- [x] Puerto de salida `EstadoFichaQueryOutputPort` definido en `application/`, no en `domain/` (el lado de lectura no toca el aggregate).
+- [x] `EstadoFichaReadModel` creado como `record` en `application/estadoficha/query/readmodel/` con los campos `id`, `nombre` y `descripcion`.
+- [x] `ConsultarEstadosFichaUseCase` anotado con `@Component`, `@RequiredArgsConstructor` y `@Transactional(readOnly = true, transactionManager = "fichasTransactionManager")`.
 - [x] Controller REST documentado con `@Tag`, `@Operation`, `@ApiResponses` y `@SecurityRequirement` (ADR-011).
-- [x] Controller con autorizaciÃ³n vÃ­a `@PreAuthorize("hasAuthority('fichas:estado-ficha:view')")` en kebab-case â€” client role declarado en secciÃ³n 9.
-- [x] JPA Entity (`EstadoFichaJpaEntity`) y JPA Repository (`EstadoFichaJpaRepository`) ya existen â€” NO se modifican.
-- [x] MigraciÃ³n Flyway NO requerida â€” tabla `estado_ficha` ya creada y poblada en V1.2.
-- [x] Eventos RabbitMQ: ninguno â€” esta HU no publica ni consume eventos.
-- [x] Tests unitarios con patrÃ³n AAA (cobertura â‰¥ 75%), **sin** tests de ciclo de eventos (no aplica a consultas).
-- [x] Tests de controller con Spring Security Test y `@MockitoBean` (Spring Boot 4.x).
-- [x] Sin `@Bean TaskExecutor` manual (Virtual Threads ya gestionados por Spring Boot).
+- [x] Autorización mediante `@PreAuthorize("hasAuthority('fichas:estado-ficha:view')")`, con el client role declarado en la sección 9.
+- [x] `EstadoFichaJpaEntity` y `EstadoFichaJpaRepository` ya existen y no se modifican.
+- [x] Sin migración Flyway nueva: la tabla `estado_ficha` ya está creada y poblada por V1.2.
+- [x] Sin eventos RabbitMQ: la HU no publica ni consume.
+- [x] Tests unitarios con patrón Arrange/Act/Assert y cobertura mínima del 75 %, sin tests de ciclo de eventos.
+- [x] Tests de controller con Spring Security Test y `@MockitoBean` (Spring Boot 4).
+- [x] Sin `@Bean TaskExecutor` manual: los Virtual Threads los gestiona Spring Boot.
 - [x] Commit: `feat(fichas): consultar todos los estados ficha sin filtro`
 
 ---
 
 ## 14. Trazabilidad del Flujo
 
-> Esta secciÃ³n es actualizada automÃ¡ticamente por cada agente al completar su etapa.
-> No modificar manualmente.
+> Esta sección la actualiza automáticamente cada agente al completar su etapa. No modificar manualmente.
 
-| Etapa      | Agente              | Estado       | Fecha | Notas |
-|------------|---------------------|--------------|-------|-------|
-| PlanificaciÃ³n | @plan-agent     | âœ… Completado | 2026-07-01 | Plan generado |
-| Desarrollo | @implementador      | âœ… Completado | 2026-07-01 | 6 archivos nuevos (application: ReadModel, InputPort, OutputPort, UseCase; infrastructure: InputAdapter REST, OutputAdapter persistencia). Reutiliza EstadoFicha enum, EstadoFichaJpaEntity/Repository existentes. Sin migraciÃ³n ni eventos. Compila y pasa checkstyle. |
-| Tests      | @tester             | âœ… Completado | 2026-07-01 | 3 archivos de test generados: ConsultarEstadosFichaUseCaseTest (application, 2 tests), EstadoFichaQueryOutputAdapterTest (infrastructure, 3 tests), ConsultarEstadosFichaInputAdapterTest (infrastructure, 7 tests). Total: 12 tests unitarios. Suite completa pasa: `./gradlew fichas:application:test fichas:infrastructure:test` â€” BUILD SUCCESSFUL. Sin tests de domain (no aplica: EstadoFicha es enum, no AggregateRoot). PatrÃ³n AAA, nomenclatura `debeHacerAlgo_cuandoCondicion`, cobertura de casos exitosos + errores de autorizaciÃ³n (401/403) + lista vacÃ­a. |
-| Validación | @validator-analyze  | ✅ Completado | 2026-07-01 | Score: 98/100 — APROBADO |
-| Reporte    | @validator-report   | ✅ Completado | 2026-07-01 | /.workspace/validator/validator-HU-036.md |
-| Commit     | @commit             | ✅ Completado | 2026-07-01 | Hash: 02b3759 |
-
+| Etapa | Agente | Estado | Fecha | Notas |
+|-------|--------|--------|-------|-------|
+| Planificación | @plan-agent | Completado | 2026-07-01 | Plan generado |
+| Desarrollo | @implementador | Completado | 2026-07-01 | 6 archivos nuevos: 4 en `application` (ReadModel, InputPort, OutputPort, UseCase) y 2 en `infrastructure` (InputAdapter REST, OutputAdapter de persistencia). Reutiliza el enum `EstadoFicha` y `EstadoFichaJpaEntity`/`EstadoFichaJpaRepository` existentes. Sin migración ni eventos. Compila y pasa Checkstyle |
+| Tests | @tester | Completado | 2026-07-01 | 3 archivos de test: `ConsultarEstadosFichaUseCaseTest` (2 tests), `EstadoFichaQueryOutputAdapterTest` (3 tests) y `ConsultarEstadosFichaInputAdapterTest` (7 tests). Total: 12 tests unitarios. `./gradlew fichas:application:test fichas:infrastructure:test` termina en BUILD SUCCESSFUL. Sin tests de `domain` (no aplica: `EstadoFicha` es un enum). Patrón AAA y nomenclatura `debeHacerAlgo_cuandoCondicion` |
+| Validación | @validator-analyze | Completado | 2026-07-01 | Score: 98/100 — aprobado |
+| Reporte | @validator-report | Completado | 2026-07-01 | `.workspace/validator/validator-HU-036.md` |
+| Commit | @commit | Completado | 2026-07-01 | Hash: `02b3759` |
+| Revisión editorial | — | Completado | 2026-07-29 | Reescritura completa: corregida la codificación (mojibake UTF-8 doble + BOM), la ortografía y las rutas y datos técnicos contrastados contra el código implementado |

@@ -3,7 +3,6 @@ package com.arquisoft.fichas.domain.estadoficha;
 public enum EstadoFicha {
 
     EN_CONSTRUCCION("En Construccion"),
-    EN_REVISION("En Revision"),
     DISPONIBLE_PARA_EVALUACION("Disponible Para Evaluacion"),
     APROBADA("Aprobada"),
     APROBADA_CON_OBSERVACIONES("Aprobada Con Observaciones"),
