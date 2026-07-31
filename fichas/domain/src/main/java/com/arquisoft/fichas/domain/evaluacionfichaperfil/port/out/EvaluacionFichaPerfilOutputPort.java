@@ -8,7 +8,7 @@ public interface EvaluacionFichaPerfilOutputPort {
 
     void guardar(EvaluacionFichaPerfilAggregate evaluacion);
 
-    boolean existsById(UUID id);
+    boolean existePorId(UUID id);
 
-    boolean existsByRepresentanteAndFicha(UUID representanteComiteId, UUID fichaPerfilId);
+    boolean existePorRepresentanteYFicha(UUID representanteComiteId, UUID fichaPerfilId);
 }

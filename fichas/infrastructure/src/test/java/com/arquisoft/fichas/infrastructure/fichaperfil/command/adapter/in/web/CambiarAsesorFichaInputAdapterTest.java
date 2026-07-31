@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorF
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.CambiarAsesorFichaInputPort;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -34,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(CambiarAsesorFichaInputAdapter.class)
-@Import({
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         CambiarAsesorFichaInputAdapterTest.TestSecurityConfig.class
 })
@@ -70,7 +71,7 @@ class CambiarAsesorFichaInputAdapterTest {
 
         String requestBody = String.format("""
                 {
-                    "asesorFichaId": "%s"
+                    "asesorFicha": "%s"
                 }
                 """, nuevoAsesorId);
 
@@ -79,7 +80,7 @@ class CambiarAsesorFichaInputAdapterTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update-asesor")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE_ASESOR)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isNoContent());
@@ -92,20 +93,21 @@ class CambiarAsesorFichaInputAdapterTest {
 
         String requestBody = """
                 {
-                    "asesorFichaId": null
+                    "asesorFicha": null
                 }
                 """;
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update-asesor")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE_ASESOR)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Error de validación en los datos enviados"))
-                .andExpect(jsonPath("$.fieldErrors[0].field").value("asesorFichaId"))
-                .andExpect(jsonPath("$.fieldErrors[0].message").value("El asesorFichaId es obligatorio"));
+                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA))
+                .andExpect(jsonPath("$.fieldErrors[0].message")
+                        .value(FichasMessages.FichaPerfil.ASESOR_OBLIGATORIO_MSG));
     }
 
     @Test
@@ -116,7 +118,7 @@ class CambiarAsesorFichaInputAdapterTest {
 
         String requestBody = String.format("""
                 {
-                    "asesorFichaId": "%s"
+                    "asesorFicha": "%s"
                 }
                 """, nuevoAsesorId);
 
@@ -126,7 +128,7 @@ class CambiarAsesorFichaInputAdapterTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update-asesor")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE_ASESOR)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
@@ -142,7 +144,7 @@ class CambiarAsesorFichaInputAdapterTest {
 
         String requestBody = String.format("""
                 {
-                    "asesorFichaId": "%s"
+                    "asesorFicha": "%s"
                 }
                 """, nuevoAsesorId);
 
@@ -152,7 +154,7 @@ class CambiarAsesorFichaInputAdapterTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update-asesor")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE_ASESOR)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
@@ -168,13 +170,13 @@ class CambiarAsesorFichaInputAdapterTest {
 
         String requestBody = String.format("""
                 {
-                    "asesorFichaId": "%s"
+                    "asesorFicha": "%s"
                 }
                 """, asesorId);
 
         ValidationResult result = new ValidationResult();
         result.addError(
-                FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+                FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA,
                 FichasMessages.FichaPerfil.MISMO_ASESOR,
                 FichasMessages.FichaPerfil.MISMO_ASESOR_MSG.formatted(asesorId)
         );
@@ -185,13 +187,13 @@ class CambiarAsesorFichaInputAdapterTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update-asesor")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE_ASESOR)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.errorCode").value("DOMAIN_VALIDATION_ERROR"))
-                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA))
                 .andExpect(jsonPath("$.fieldErrors[0].message").value(FichasMessages.FichaPerfil.MISMO_ASESOR_MSG.formatted(asesorId)));
     }
 
@@ -203,7 +205,7 @@ class CambiarAsesorFichaInputAdapterTest {
 
         String requestBody = String.format("""
                 {
-                    "asesorFichaId": "%s"
+                    "asesorFicha": "%s"
                 }
                 """, nuevoAsesorId);
 
@@ -220,7 +222,7 @@ class CambiarAsesorFichaInputAdapterTest {
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update-asesor")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE_ASESOR)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isUnprocessableEntity())
@@ -238,7 +240,7 @@ class CambiarAsesorFichaInputAdapterTest {
 
         String requestBody = String.format("""
                 {
-                    "asesorFichaId": "%s"
+                    "asesorFicha": "%s"
                 }
                 """, nuevoAsesorId);
 
@@ -257,7 +259,7 @@ class CambiarAsesorFichaInputAdapterTest {
 
         String requestBody = String.format("""
                 {
-                    "asesorFichaId": "%s"
+                    "asesorFicha": "%s"
                 }
                 """, nuevoAsesorId);
 

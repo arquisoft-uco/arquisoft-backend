@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.port.in.RegistrarEvaluacionFichaPerfilInputPort;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RegistrarEvaluacionFichaPerfilInputAdapter.class)
-@Import({GlobalAppExceptionHandler.class,
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+        GlobalAppExceptionHandler.class,
         RegistrarEvaluacionFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class RegistrarEvaluacionFichaPerfilInputAdapterTest {
 
@@ -65,7 +67,7 @@ class RegistrarEvaluacionFichaPerfilInputAdapterTest {
         mockMvc.perform(post("/fichas-perfil/{fichaId}/evaluaciones", fichaId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(representanteId.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:evaluacion-ficha-perfil:create"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.EVALUACION_FICHA_PERFIL_CREATE))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(evaluacionId.toString()));
     }
@@ -79,7 +81,7 @@ class RegistrarEvaluacionFichaPerfilInputAdapterTest {
         mockMvc.perform(post("/fichas-perfil/{fichaId}/evaluaciones", fichaIdMalformado)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:evaluacion-ficha-perfil:create"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.EVALUACION_FICHA_PERFIL_CREATE))))
                 .andExpect(status().isBadRequest());
     }
 

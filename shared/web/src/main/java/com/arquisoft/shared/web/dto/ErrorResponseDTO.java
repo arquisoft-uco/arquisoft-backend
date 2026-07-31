@@ -27,6 +27,9 @@ public class ErrorResponseDTO {
     private Integer status;
     private String path;
 
+    /** ID de correlación de la request (MDC) — permite reconstruir la transacción en los logs. */
+    private String traceId;
+
     @Builder.Default
     private Instant timestamp = Instant.now();
 

@@ -2,6 +2,10 @@ package com.arquisoft.fichas.infrastructure.estadoficha.query.adapter.in.web;
 
 import com.arquisoft.fichas.application.estadoficha.query.port.in.ConsultarEstadosFichaInputPort;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
+import com.arquisoft.shared.message.FichasApiDocs;
+import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,39 +23,33 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/fichas-perfil")
+@RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = "Fichas de Perfil", description = "Gestión del ciclo de vida de las fichas de perfil")
+@Tag(name = FichasApiDocs.EstadoFicha.TAG_NAME, description = FichasApiDocs.EstadoFicha.TAG_DESCRIPTION)
 public class ConsultarEstadosFichaInputAdapter {
 
     private final ConsultarEstadosFichaInputPort inputPort;
 
     @GetMapping("/estados-ficha")
-    @PreAuthorize("hasAuthority('fichas:estado-ficha:view')")
+    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_FICHA_VIEW)
     @Operation(
-            summary = "Consultar todos los estados ficha",
-            description = "Retorna todos los estados ficha disponibles en el catálogo sin filtros ni paginación",
-            security = @SecurityRequirement(name = "bearerAuth")
+            summary = FichasApiDocs.EstadoFicha.CONSULTAR_SUMMARY,
+            description = FichasApiDocs.EstadoFicha.CONSULTAR_DESCRIPTION,
+            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Lista de estados ficha retornada exitosamente",
+            @ApiResponse(responseCode = ApiCodes.OK,
+                    description = FichasApiDocs.EstadoFicha.CONSULTAR_RESP_200,
                     content = @Content(
-                            mediaType = "application/json",
+                            mediaType = org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = EstadoFichaReadModel.class)
-                    )
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "No autenticado - token JWT ausente o inválido",
-                    content = @Content
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "No autorizado - client role insuficiente",
-                    content = @Content
-            )
+                    )),
+            @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
+                    description = FichasApiDocs.EstadoFicha.CONSULTAR_RESP_401,
+                    content = @Content),
+            @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
+                    description = FichasApiDocs.EstadoFicha.CONSULTAR_RESP_403,
+                    content = @Content)
     })
     public ResponseEntity<List<EstadoFichaReadModel>> consultarEstadosFicha() {
         List<EstadoFichaReadModel> estados = inputPort.ejecutar(null);

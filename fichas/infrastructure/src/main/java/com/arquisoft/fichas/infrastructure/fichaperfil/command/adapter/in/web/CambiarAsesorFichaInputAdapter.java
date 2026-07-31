@@ -2,6 +2,10 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.CambiarAsesorFichaInputPort;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.CambiarAsesorFichaRequestDTO;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
+import com.arquisoft.shared.message.FichasApiDocs;
+import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -9,7 +13,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,28 +24,32 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/fichas-perfil")
+@RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Slf4j
-@Tag(name = "Fichas Perfil", description = "Gestión de fichas de perfil de proyectos de grado")
+@Tag(name = FichasApiDocs.FichaPerfil.TAG_NAME, description = FichasApiDocs.FichaPerfil.TAG_DESCRIPTION)
 public class CambiarAsesorFichaInputAdapter {
 
     private final CambiarAsesorFichaInputPort cambiarAsesorFichaInputPort;
 
     @PatchMapping("/{id}/asesor-ficha")
     @Operation(
-            summary = "Cambiar asesor de ficha perfil",
-            description = "Permite al Coordinador cambiar el asesor asignado a una ficha de perfil existente"
+            summary = FichasApiDocs.FichaPerfil.CAMBIAR_ASESOR_SUMMARY,
+            description = FichasApiDocs.FichaPerfil.CAMBIAR_ASESOR_DESCRIPTION
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Asesor cambiado exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Ficha o asesor no encontrado"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos para realizar esta acción"),
-            @ApiResponse(responseCode = "422", description = "Invariante violada (mismo asesor o estado terminal)")
+            @ApiResponse(responseCode = ApiCodes.NO_CONTENT,
+                    description = FichasApiDocs.FichaPerfil.CAMBIAR_ASESOR_RESP_204),
+            @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
+                    description = FichasApiDocs.FichaPerfil.CAMBIAR_ASESOR_RESP_400),
+            @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
+                    description = FichasApiDocs.Comun.RESP_401),
+            @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
+                    description = FichasApiDocs.Comun.RESP_403),
+            @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
+                    description = FichasApiDocs.FichaPerfil.CAMBIAR_ASESOR_RESP_422)
     })
-    @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasAuthority('fichas:ficha-perfil:update-asesor')")
+    @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_UPDATE_ASESOR)
     public ResponseEntity<Void> cambiarAsesor(
             @PathVariable UUID id,
             @Valid @RequestBody CambiarAsesorFichaRequestDTO request

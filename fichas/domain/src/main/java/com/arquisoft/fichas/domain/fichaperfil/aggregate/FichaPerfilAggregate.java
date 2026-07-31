@@ -56,13 +56,13 @@ public final class FichaPerfilAggregate {
         var result = new ValidationResult();
 
         DomainValidator.notNull(nuevoAsesorFichaId,
-                FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+                FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA,
                 FichasMessages.FichaPerfil.ASESOR_REQUERIDO,
                 result);
 
         if (!UtilObject.isNull(nuevoAsesorFichaId) && nuevoAsesorFichaId.equals(this.asesorFichaId)) {
             result.addError(
-                    FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+                    FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA,
                     FichasMessages.FichaPerfil.MISMO_ASESOR,
                     FichasMessages.FichaPerfil.MISMO_ASESOR_MSG.formatted(nuevoAsesorFichaId)
             );
@@ -103,7 +103,7 @@ public final class FichaPerfilAggregate {
 
     private void setAsesorFichaId(UUID asesorFichaId, ValidationResult result) {
         if (!DomainValidator.notNull(asesorFichaId,
-                FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID,
+                FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA,
                 FichasMessages.FichaPerfil.ASESOR_REQUERIDO, result)) {
             return;
         }

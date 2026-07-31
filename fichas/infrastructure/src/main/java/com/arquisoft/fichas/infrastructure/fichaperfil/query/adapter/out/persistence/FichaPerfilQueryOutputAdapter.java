@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persistence;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaRepository;
@@ -12,8 +13,8 @@ import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.SortDirection;
 import com.arquisoft.shared.postgres.util.PaginationMapper;
+import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.core.PropertyReferenceException;
 import org.springframework.data.domain.PageRequest;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
@@ -33,6 +33,7 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
     private final FichaPerfilJpaRepository fichaPerfilJpaRepository;
     private final FichaPerfilJpaSpecification specification;
     private final EstudianteFichaPerfilJpaRepository estudianteFichaPerfilJpaRepository;
+    private final AppLogger logger;
 
     @Override
     public PaginatedResult<FichaPerfilReadModel> consultarTodas(FichaPerfilCriteria criteria) {
@@ -43,10 +44,10 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
                     fichaPerfilJpaRepository.findAll(spec, pageable)
                             .map(FichaPerfilMapper::toReadModel));
         } catch (PropertyReferenceException ex) {
-            log.warn(FichasMessages.FichaPerfil.LOG_ORDENAMIENTO_INVALIDO, ex.getPropertyName());
+            logger.warn(FichasMessages.FichaPerfil.LOG_ORDENAMIENTO_INVALIDO, ex.getPropertyName());
             throw new OrdenamientoInvalidoException(ex.getPropertyName(), ex);
         } catch (InvalidDataAccessApiUsageException ex) {
-            log.warn(FichasMessages.FichaPerfil.LOG_USO_INVALIDO_API_ORDEN, ex.getMessage());
+            logger.warn(FichasMessages.FichaPerfil.LOG_USO_INVALIDO_API_ORDEN, ex.getMessage());
             throw new OrdenamientoInvalidoException(pageable.getSort().toString(), ex);
         }
     }
@@ -70,15 +71,15 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
     }
 
     @Override
-    public boolean existsById(UUID id) {
+    public boolean existePorId(UUID id) {
         return fichaPerfilJpaRepository.existsById(id);
     }
 
     @Override
-    public boolean esEstudiantePropietario(UUID fichaPerfilId, UUID estudianteId) {
+    public boolean esEstudiantePropietario(PropietarioFichaCriteria criteria) {
         return estudianteFichaPerfilJpaRepository.existsByFichaPerfilIdAndEstudianteId(
-                fichaPerfilId,
-                estudianteId
+                criteria.fichaPerfil(),
+                criteria.estudiante()
         );
     }
 }

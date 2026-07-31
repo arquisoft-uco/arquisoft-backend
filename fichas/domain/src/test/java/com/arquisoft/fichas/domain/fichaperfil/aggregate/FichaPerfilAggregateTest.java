@@ -60,7 +60,7 @@ class FichaPerfilAggregateTest {
         // Act & Assert
         assertThatThrownBy(() -> FichaPerfilAggregate.crear(titulo, null))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("asesorFichaId");
+                .hasMessageContaining(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA);
     }
 
     @Test
@@ -156,7 +156,7 @@ class FichaPerfilAggregateTest {
         DomainValidationException domainEx = (DomainValidationException) excepcion;
         assertThat(domainEx.getValidationResult().getErrors()).hasSize(1);
         assertThat(domainEx.getValidationResult().getErrors().get(0).field())
-                .isEqualTo(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID);
+                .isEqualTo(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA);
         assertThat(domainEx.getValidationResult().getErrors().get(0).errorCode())
                 .isEqualTo(FichasMessages.FichaPerfil.ASESOR_REQUERIDO);
     }
@@ -181,7 +181,7 @@ class FichaPerfilAggregateTest {
         DomainValidationException domainEx = (DomainValidationException) excepcion;
         assertThat(domainEx.getValidationResult().getErrors()).hasSize(1);
         assertThat(domainEx.getValidationResult().getErrors().get(0).field())
-                .isEqualTo(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA_ID);
+                .isEqualTo(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA);
         assertThat(domainEx.getValidationResult().getErrors().get(0).errorCode())
                 .isEqualTo(FichasMessages.FichaPerfil.MISMO_ASESOR);
         assertThat(domainEx.getValidationResult().getErrors().get(0).message())

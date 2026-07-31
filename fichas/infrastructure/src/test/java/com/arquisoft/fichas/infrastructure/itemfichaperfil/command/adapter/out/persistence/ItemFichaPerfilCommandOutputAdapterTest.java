@@ -114,7 +114,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        boolean existe = adapter.existsPorFichaYTipoItem(fichaPerfilId, tipoItem);
+        boolean existe = adapter.existePorFichaYTipoItem(fichaPerfilId, tipoItem);
 
         // Assert
         assertThat(existe).isTrue();
@@ -127,7 +127,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         String tipoItem = "OBJETIVO_GENERAL";
 
         // Act
-        boolean existe = adapter.existsPorFichaYTipoItem(fichaPerfilId, tipoItem);
+        boolean existe = adapter.existePorFichaYTipoItem(fichaPerfilId, tipoItem);
 
         // Assert
         assertThat(existe).isFalse();
@@ -149,7 +149,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        boolean existe = adapter.existsById(saved.getId());
+        boolean existe = adapter.existePorId(saved.getId());
 
         // Assert
         assertThat(existe).isTrue();
@@ -161,7 +161,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         UUID itemIdInexistente = UUID.randomUUID();
 
         // Act
-        boolean existe = adapter.existsById(itemIdInexistente);
+        boolean existe = adapter.existePorId(itemIdInexistente);
 
         // Assert
         assertThat(existe).isFalse();

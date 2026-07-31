@@ -13,7 +13,7 @@ import java.util.UUID;
 public final class UtilUUID {
 
     private static final String UUID_RE =
-            "[a-f0-9]{8}([-][a-f0-9]{4}){3}[-][a-f0-9]{12}";
+            "[a-fA-F0-9]{8}([-][a-fA-F0-9]{4}){3}[-][a-fA-F0-9]{12}";
 
     private UtilUUID() {}
 
@@ -28,7 +28,7 @@ public final class UtilUUID {
 
     /**
      * Retorna {@code true} si {@code uuidValue} tiene el formato estándar de UUID
-     * (8-4-4-4-12 hex en minúsculas).
+     * (8-4-4-4-12 hex, mayúsculas o minúsculas — RFC 4122).
      */
     public static boolean uuidStringIsValid(final String uuidValue) {
         return UtilText.matchPattern(uuidValue, UUID_RE);

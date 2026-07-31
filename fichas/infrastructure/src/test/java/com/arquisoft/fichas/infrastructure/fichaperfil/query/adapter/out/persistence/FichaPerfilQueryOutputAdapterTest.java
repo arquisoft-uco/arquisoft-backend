@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persistence;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaEntity;
@@ -37,7 +38,8 @@ class FichaPerfilQueryOutputAdapterTest {
         adapter = new FichaPerfilQueryOutputAdapter(
                 fichaPerfilJpaRepository,
                 new FichaPerfilJpaSpecification(),
-                estudianteFichaPerfilJpaRepository
+                estudianteFichaPerfilJpaRepository,
+                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class)
         );
     }
 
@@ -113,7 +115,7 @@ class FichaPerfilQueryOutputAdapterTest {
         entityManager.flush();
 
         // Act
-        boolean esPropietario = adapter.esEstudiantePropietario(fichaPerfilId, estudianteId);
+        boolean esPropietario = adapter.esEstudiantePropietario(new PropietarioFichaCriteria(fichaPerfilId, estudianteId));
 
         // Assert
         assertThat(esPropietario).isTrue();
@@ -150,7 +152,7 @@ class FichaPerfilQueryOutputAdapterTest {
         entityManager.flush();
 
         // Act
-        boolean esPropietario = adapter.esEstudiantePropietario(fichaPerfilId, estudianteId);
+        boolean esPropietario = adapter.esEstudiantePropietario(new PropietarioFichaCriteria(fichaPerfilId, estudianteId));
 
         // Assert
         assertThat(esPropietario).isFalse();
@@ -177,12 +179,12 @@ class FichaPerfilQueryOutputAdapterTest {
         entityManager.flush();
 
         // Act & Assert
-        assertThat(adapter.existsById(fichaId)).isTrue();
+        assertThat(adapter.existePorId(fichaId)).isTrue();
     }
 
     @Test
     void debeRetornarFalse_cuandoFichaNoExistePorId() {
         // Act & Assert
-        assertThat(adapter.existsById(UUID.randomUUID())).isFalse();
+        assertThat(adapter.existePorId(UUID.randomUUID())).isFalse();
     }
 }

@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.model;
 import java.util.UUID;
 
 public record ModificarItemFichaPerfilCommand(
-        UUID itemId,
+        UUID item,
         String contenido,
-        UUID estudianteId
+        UUID estudiante
 ) {}

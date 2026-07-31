@@ -3,46 +3,47 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command;
 import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.RemoverEstudianteFichaPerfilInputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
-public class RemoverEstudianteFichaPerfilUseCase implements RemoverEstudianteFichaPerfilInputPort {
+public class RemoverEstudianteFichaPerfilUseCase {
 
-    private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
     private final EstudianteQueryOutputPort estudianteQueryOutputPort;
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+    private final FichaPerfilValidator fichaPerfilValidator;
+    private final AppLogger logger;
 
-    @Override
-    @Transactional(transactionManager = "fichasTransactionManager")
     public void ejecutar(RemoverEstudianteFichaPerfilCommand command) {
-        var fichaPerfilId = command.fichaPerfilId();
-        var estudianteId = command.estudianteId();
+        UUID fichaPerfil = command.fichaPerfil();
+        UUID estudiante = command.estudiante();
 
-        if (!fichaPerfilQueryOutputPort.existsById(fichaPerfilId)) {
-            throw new FichaPerfilNoEncontradaException(fichaPerfilId);
+        fichaPerfilValidator.validarFichaExiste(fichaPerfil);
+        validarEstudianteExiste(estudiante);
+        validarVinculoExiste(fichaPerfil, estudiante);
+
+        estudianteFichaPerfilOutputPort.eliminar(fichaPerfil, estudiante);
+
+        logger.info(FichasMessages.EstudianteFichaPerfil.LOG_REMOVIDO, fichaPerfil, estudiante);
+    }
+
+    private void validarEstudianteExiste(UUID estudiante) {
+        if (!estudianteQueryOutputPort.existePorId(estudiante)) {
+            throw new EstudianteNoEncontradoException(estudiante);
         }
+    }
 
-        if (!estudianteQueryOutputPort.existsById(estudianteId)) {
-            throw new EstudianteNoEncontradoException(estudianteId);
+    private void validarVinculoExiste(UUID fichaPerfil, UUID estudiante) {
+        if (!estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfil, estudiante)) {
+            throw new EstudianteFichaPerfilNoEncontradoException(estudiante, fichaPerfil);
         }
-
-        if (!estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId)) {
-            throw new EstudianteFichaPerfilNoEncontradoException(estudianteId, fichaPerfilId);
-        }
-
-        estudianteFichaPerfilOutputPort.eliminar(fichaPerfilId, estudianteId);
-
-        log.info(FichasMessages.EstudianteFichaPerfil.LOG_REMOVIDO, fichaPerfilId, estudianteId);
     }
 }

@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command;
 
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoPropietarioException;
-import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
@@ -9,6 +10,7 @@ import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggr
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +24,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,10 +37,13 @@ class RemoverItemFichaPerfilUseCaseTest {
     private ItemFichaPerfilOutputPort itemOutputPort;
 
     @Mock
-    private FichaPerfilQueryOutputPort fichaQueryPort;
+    private RevisionItemQueryOutputPort revisionQueryPort;
 
     @Mock
-    private RevisionItemQueryOutputPort revisionQueryPort;
+    private FichaPerfilValidator fichaPerfilValidator;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private RemoverItemFichaPerfilUseCase useCase;
@@ -48,26 +54,20 @@ class RemoverItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
-
-        ItemFichaPerfilAggregate item = ItemFichaPerfilAggregate.reconstruir(
-                itemId,
-                fichaPerfilId,
-                TipoItem.OBJETIVO_GENERAL,
-                "Contenido del ítem"
-        );
+        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
 
         when(itemOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
-        when(fichaQueryPort.esEstudiantePropietario(fichaPerfilId, estudianteId)).thenReturn(true);
         when(revisionQueryPort.contarPorItem(itemId)).thenReturn(0L);
 
-        RemoverItemFichaPerfilCommand command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
+        var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
 
         // Act
         useCase.ejecutar(command);
 
         // Assert
         verify(itemOutputPort, times(1)).buscarPorId(itemId);
-        verify(fichaQueryPort, times(1)).esEstudiantePropietario(fichaPerfilId, estudianteId);
+        verify(fichaPerfilValidator, times(1)).validarEstudiantePropietario(
+                new PropietarioFichaCriteria(fichaPerfilId, estudianteId));
         verify(revisionQueryPort, times(1)).contarPorItem(itemId);
         verify(itemOutputPort, times(1)).eliminarPorId(itemId);
     }
@@ -80,7 +80,7 @@ class RemoverItemFichaPerfilUseCaseTest {
 
         when(itemOutputPort.buscarPorId(itemId)).thenReturn(Optional.empty());
 
-        RemoverItemFichaPerfilCommand command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
+        var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
 
         // Act
         Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
@@ -95,8 +95,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         assertThat(notFoundException.getErrorCode())
                 .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_NO_ENCONTRADO);
 
-        verify(itemOutputPort, times(1)).buscarPorId(itemId);
-        verify(fichaQueryPort, never()).esEstudiantePropietario(any(), any());
+        verify(fichaPerfilValidator, never()).validarEstudiantePropietario(any());
         verify(revisionQueryPort, never()).contarPorItem(any());
         verify(itemOutputPort, never()).eliminarPorId(any());
     }
@@ -107,32 +106,25 @@ class RemoverItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
-
-        ItemFichaPerfilAggregate item = ItemFichaPerfilAggregate.reconstruir(
-                itemId,
-                fichaPerfilId,
-                TipoItem.OBJETIVO_GENERAL,
-                "Contenido del ítem"
-        );
+        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
 
         when(itemOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
-        when(fichaQueryPort.esEstudiantePropietario(fichaPerfilId, estudianteId)).thenReturn(false);
+        doThrow(new FichaNoPropietarioException(fichaPerfilId, estudianteId))
+                .when(fichaPerfilValidator).validarEstudiantePropietario(
+                        new PropietarioFichaCriteria(fichaPerfilId, estudianteId));
 
-        RemoverItemFichaPerfilCommand command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
+        var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
 
         // Act
         Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
 
         // Assert
-        assertThat(exception)
-                .isInstanceOf(FichaNoPropietarioException.class);
+        assertThat(exception).isInstanceOf(FichaNoPropietarioException.class);
 
         FichaNoPropietarioException authException = (FichaNoPropietarioException) exception;
         assertThat(authException.getErrorCode())
                 .isEqualTo(FichasMessages.FichaPerfil.FICHA_NO_PROPIETARIO);
 
-        verify(itemOutputPort, times(1)).buscarPorId(itemId);
-        verify(fichaQueryPort, times(1)).esEstudiantePropietario(fichaPerfilId, estudianteId);
         verify(revisionQueryPort, never()).contarPorItem(any());
         verify(itemOutputPort, never()).eliminarPorId(any());
     }
@@ -143,19 +135,12 @@ class RemoverItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
-
-        ItemFichaPerfilAggregate item = ItemFichaPerfilAggregate.reconstruir(
-                itemId,
-                fichaPerfilId,
-                TipoItem.OBJETIVO_GENERAL,
-                "Contenido del ítem"
-        );
+        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
 
         when(itemOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
-        when(fichaQueryPort.esEstudiantePropietario(fichaPerfilId, estudianteId)).thenReturn(true);
         when(revisionQueryPort.contarPorItem(itemId)).thenReturn(2L);
 
-        RemoverItemFichaPerfilCommand command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
+        var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
 
         // Act
         Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
@@ -170,9 +155,15 @@ class RemoverItemFichaPerfilUseCaseTest {
         assertThat(validationException.getValidationResult().getErrors().get(0).errorCode())
                 .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES);
 
-        verify(itemOutputPort, times(1)).buscarPorId(itemId);
-        verify(fichaQueryPort, times(1)).esEstudiantePropietario(fichaPerfilId, estudianteId);
-        verify(revisionQueryPort, times(1)).contarPorItem(itemId);
         verify(itemOutputPort, never()).eliminarPorId(any());
+    }
+
+    private ItemFichaPerfilAggregate itemReconstruido(UUID itemId, UUID fichaPerfilId) {
+        return ItemFichaPerfilAggregate.reconstruir(
+                itemId,
+                fichaPerfilId,
+                TipoItem.OBJETIVO_GENERAL,
+                "Contenido del ítem"
+        );
     }
 }

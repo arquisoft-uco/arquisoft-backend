@@ -34,14 +34,21 @@ public final class EstudianteFichaPerfilAggregate {
         return relacion;
     }
 
+    /**
+     * Construye las relaciones validando la integridad de la petición: la colección debe
+     * traer elementos y cada relación se autovalida. No consulta estado externo, por lo
+     * que el caso de uso puede invocarla antes de tocar la base de datos.
+     */
     public static List<EstudianteFichaPerfilAggregate> crear(
             UUID fichaPerfilId,
-            List<UUID> nuevosEstudiantesIds,
-            long cantidadExistentes) {
+            List<UUID> nuevosEstudiantesIds) {
 
         var result = new ValidationResult();
 
-        validarLimiteEstudiantes(nuevosEstudiantesIds.size(), cantidadExistentes, result);
+        DomainValidator.notEmpty(nuevosEstudiantesIds,
+                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES,
+                FichasMessages.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS, result);
+
         result.throwIfHasErrors();
 
         return nuevosEstudiantesIds.stream()
@@ -59,7 +66,7 @@ public final class EstudianteFichaPerfilAggregate {
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
         if (!DomainValidator.notNull(fichaPerfilId,
-                FichasMessages.EstudianteFichaPerfil.CAMPO_FICHA_PERFIL_ID,
+                FichasMessages.EstudianteFichaPerfil.CAMPO_FICHA_PERFIL,
                 FichasMessages.EstudianteFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;
         }
@@ -68,23 +75,34 @@ public final class EstudianteFichaPerfilAggregate {
 
     private void setEstudianteId(UUID estudianteId, ValidationResult result) {
         if (!DomainValidator.notNull(estudianteId,
-                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTE_ID,
+                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTE,
                 FichasMessages.EstudianteFichaPerfil.ESTUDIANTE_ID_REQUERIDO, result)) {
             return;
         }
         this.estudianteId = estudianteId;
     }
 
-    private static void validarLimiteEstudiantes(int nuevos, long existentes, ValidationResult result) {
+    /**
+     * Regla de negocio del conjunto: los estudiantes ya vinculados más los que se pretende
+     * asignar no pueden superar {@code ESTUDIANTES_MAX}. Es una invariante de la ficha y no
+     * de una relación individual — de ahí que sea estática y se evalúe una sola vez.
+     * El conteo actual lo consulta el caso de uso y lo entrega como parámetro, porque el
+     * dominio no accede a la base de datos.
+     */
+    public static void validarCupoDisponible(int nuevos, long existentes) {
+        var result = new ValidationResult();
+
         if (existentes + nuevos > FichasMessages.FichaPerfil.ESTUDIANTES_MAX) {
             result.addError(
-                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES_IDS,
-                FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO,
-                FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
-                    FichasMessages.FichaPerfil.ESTUDIANTES_MAX
-                )
+                    FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES,
+                    FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO,
+                    FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
+                            FichasMessages.FichaPerfil.ESTUDIANTES_MAX
+                    )
             );
         }
+
+        result.throwIfHasErrors();
     }
 
     public UUID getId() {

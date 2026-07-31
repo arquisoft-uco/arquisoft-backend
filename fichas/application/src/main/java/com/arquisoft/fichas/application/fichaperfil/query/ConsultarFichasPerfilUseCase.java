@@ -6,24 +6,24 @@ import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQu
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
 public class ConsultarFichasPerfilUseCase implements ConsultarFichasPerfilInputPort {
 
     private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
+    private final AppLogger logger;
 
     @Override
     public PaginatedResult<FichaPerfilReadModel> ejecutar(FichaPerfilCriteria criteria) {
-        log.debug(FichasMessages.FichaPerfil.LOG_CONSULTANDO, criteria.getPagina(), criteria.getTamanio());
+        logger.debug(FichasMessages.FichaPerfil.LOG_CONSULTANDO, criteria.getPagina(), criteria.getTamanio());
 
         PaginatedResult<FichaPerfilReadModel> resultado = fichaPerfilQueryOutputPort.consultarTodas(criteria);
 
-        log.info(FichasMessages.FichaPerfil.LOG_CONSULTA_COMPLETADA,
+        logger.info(FichasMessages.FichaPerfil.LOG_CONSULTA_COMPLETADA,
                 resultado.getTotalElements(), criteria.getPagina(), criteria.getTamanio());
         return resultado;
     }

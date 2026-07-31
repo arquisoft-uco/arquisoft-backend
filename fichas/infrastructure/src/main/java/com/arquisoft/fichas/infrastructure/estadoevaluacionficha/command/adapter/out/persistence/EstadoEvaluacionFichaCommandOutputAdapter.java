@@ -31,7 +31,7 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
     }
 
     @Override
-    public boolean existsByEvaluacionAndEstado(UUID evaluacionFichaPerfilId, String estadoEvaluacionId) {
+    public boolean existePorEvaluacionYEstado(UUID evaluacionFichaPerfilId, String estadoEvaluacionId) {
         return estadoEvaluacionFichaJpaRepository
                 .existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(
                         evaluacionFichaPerfilId,
@@ -44,7 +44,7 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
     }
 
     @Override
-    public boolean existsEstadoEvaluacionById(String estadoEvaluacionId) {
+    public boolean existeEstadoEvaluacionPorId(String estadoEvaluacionId) {
         return estadoEvaluacionJpaRepository.existsById(estadoEvaluacionId);
     }
 

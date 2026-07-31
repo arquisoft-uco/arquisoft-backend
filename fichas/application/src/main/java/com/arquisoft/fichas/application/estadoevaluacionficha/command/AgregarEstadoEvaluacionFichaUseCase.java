@@ -1,85 +1,56 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command;
 
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.port.in.AgregarEstadoEvaluacionFichaInputPort;
-import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
-import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionNoEncontradoException;
-import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
-import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.query.port.out.EvaluacionFichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.EstadoEvaluacionFichaValidator;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.query.criteria.PropietarioEvaluacionCriteria;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
-public class AgregarEstadoEvaluacionFichaUseCase
-        implements AgregarEstadoEvaluacionFichaInputPort {
+public class AgregarEstadoEvaluacionFichaUseCase {
 
     private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
-    private final EvaluacionFichaPerfilQueryOutputPort evaluacionFichaPerfilQueryOutputPort;
+    private final EstadoEvaluacionFichaValidator estadoEvaluacionFichaValidator;
+    private final AppLogger logger;
 
-    @Override
-    @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(AgregarEstadoEvaluacionFichaCommand command) {
+        EstadoEvaluacion nuevoEstado =
+                estadoEvaluacionFichaValidator.resolverEstado(command.estadoEvaluacion());
 
-        if (!evaluacionFichaPerfilQueryOutputPort.existsById(command.evaluacionFichaPerfilId())) {
-            throw new EvaluacionFichaPerfilNoEncontradaException(command.evaluacionFichaPerfilId());
-        }
-
-        if (!evaluacionFichaPerfilQueryOutputPort.esRepresentantePropietario(
-                command.evaluacionFichaPerfilId(), command.representanteComiteId())) {
-            throw new EvaluacionFichaNoPropiaException(command.evaluacionFichaPerfilId());
-        }
-
-        EstadoEvaluacion estadoEvaluacionEnum;
-        try {
-            estadoEvaluacionEnum = EstadoEvaluacion.valueOf(command.estadoEvaluacionId());
-        } catch (IllegalArgumentException e) {
-            throw new EstadoEvaluacionNoEncontradoException(command.estadoEvaluacionId());
-        }
-
-        if (estadoEvaluacionFichaOutputPort.existsByEvaluacionAndEstado(
-                command.evaluacionFichaPerfilId(),
-                command.estadoEvaluacionId())) {
-            throw new EstadoEvaluacionDuplicadoException(
-                    command.evaluacionFichaPerfilId(),
-                    command.estadoEvaluacionId());
-        }
-
-        var ultimoEstadoOpt = estadoEvaluacionFichaOutputPort
-                .obtenerUltimoEstado(command.evaluacionFichaPerfilId());
-
-        EstadoEvaluacion ultimoEstadoEnum = null;
-        if (ultimoEstadoOpt.isPresent()) {
-            try {
-                ultimoEstadoEnum = EstadoEvaluacion.valueOf(ultimoEstadoOpt.get());
-            } catch (IllegalArgumentException e) {
-                throw new EstadoEvaluacionNoEncontradoException(ultimoEstadoOpt.get());
-            }
-        }
+        estadoEvaluacionFichaValidator.validarEvaluacionExiste(command.evaluacionFichaPerfil());
+        estadoEvaluacionFichaValidator.validarRepresentantePropietario(
+                new PropietarioEvaluacionCriteria(
+                        command.evaluacionFichaPerfil(), command.representanteComite()));
+        estadoEvaluacionFichaValidator.validarEstadoNoDuplicado(
+                command.evaluacionFichaPerfil(), command.estadoEvaluacion());
 
         var estadoEvaluacion = EstadoEvaluacionFichaAggregate.crearConEstado(
-                command.evaluacionFichaPerfilId(),
-                estadoEvaluacionEnum,
-                ultimoEstadoEnum);
+                command.evaluacionFichaPerfil(),
+                nuevoEstado,
+                obtenerUltimoEstado(command.evaluacionFichaPerfil()));
 
         estadoEvaluacionFichaOutputPort.guardar(estadoEvaluacion);
 
-        log.info(
+        logger.info(
                 FichasMessages.EstadoEvaluacionFicha.LOG_AGREGADO,
                 estadoEvaluacion.getId(),
                 estadoEvaluacion.getEvaluacionFichaPerfilId(),
                 estadoEvaluacion.getEstadoEvaluacion());
 
         return estadoEvaluacion.getId();
+    }
+
+    private EstadoEvaluacion obtenerUltimoEstado(UUID evaluacionFichaPerfil) {
+        return estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionFichaPerfil)
+                .map(estadoEvaluacionFichaValidator::resolverEstado)
+                .orElse(null);
     }
 }

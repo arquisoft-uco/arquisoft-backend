@@ -56,7 +56,7 @@ public final class ItemFichaPerfilAggregate {
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
         if (!DomainValidator.notNull(fichaPerfilId,
-                FichasMessages.ItemFichaPerfil.CAMPO_FICHA_PERFIL_ID,
+                FichasMessages.ItemFichaPerfil.CAMPO_FICHA_PERFIL,
                 FichasMessages.ItemFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;
         }
@@ -99,11 +99,10 @@ public final class ItemFichaPerfilAggregate {
     public void modificarContenido(String nuevoContenido, EstadoFicha estadoFichaActual) {
         var result = new ValidationResult();
 
-        if (!esFichaModificable(estadoFichaActual, result)) {
-            result.throwIfHasErrors();
+        if (esFichaModificable(estadoFichaActual, result)) {
+            setContenido(nuevoContenido, result);
         }
 
-        setContenido(nuevoContenido, result);
         result.throwIfHasErrors();
     }
 

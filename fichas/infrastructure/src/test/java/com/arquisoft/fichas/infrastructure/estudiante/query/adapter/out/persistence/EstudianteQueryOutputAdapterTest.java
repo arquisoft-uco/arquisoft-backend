@@ -30,7 +30,7 @@ class EstudianteQueryOutputAdapterTest {
         when(estudianteJpaRepository.existsById(estudianteId)).thenReturn(true);
 
         // Act
-        boolean existe = adapter.existsById(estudianteId);
+        boolean existe = adapter.existePorId(estudianteId);
 
         // Assert
         assertThat(existe).isTrue();
@@ -44,7 +44,7 @@ class EstudianteQueryOutputAdapterTest {
         when(estudianteJpaRepository.existsById(estudianteId)).thenReturn(false);
 
         // Act
-        boolean existe = adapter.existsById(estudianteId);
+        boolean existe = adapter.existePorId(estudianteId);
 
         // Assert
         assertThat(existe).isFalse();

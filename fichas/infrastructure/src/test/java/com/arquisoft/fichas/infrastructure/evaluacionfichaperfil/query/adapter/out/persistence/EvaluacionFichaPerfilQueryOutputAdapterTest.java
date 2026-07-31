@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.adapter.out.persistence;
 
+import com.arquisoft.fichas.application.evaluacionfichaperfil.query.criteria.PropietarioEvaluacionCriteria;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +44,7 @@ class EvaluacionFichaPerfilQueryOutputAdapterTest {
         UUID evaluacionId = persistirEvaluacion(representanteId);
 
         // Act & Assert
-        assertThat(adapter.esRepresentantePropietario(evaluacionId, representanteId)).isTrue();
+        assertThat(adapter.esRepresentantePropietario(new PropietarioEvaluacionCriteria(evaluacionId, representanteId))).isTrue();
     }
 
     @Test
@@ -52,7 +53,7 @@ class EvaluacionFichaPerfilQueryOutputAdapterTest {
         UUID evaluacionId = persistirEvaluacion(UUID.randomUUID());
 
         // Act & Assert — otro representante distinto al creador
-        assertThat(adapter.esRepresentantePropietario(evaluacionId, UUID.randomUUID())).isFalse();
+        assertThat(adapter.esRepresentantePropietario(new PropietarioEvaluacionCriteria(evaluacionId, UUID.randomUUID()))).isFalse();
     }
 
     @Test
@@ -61,12 +62,12 @@ class EvaluacionFichaPerfilQueryOutputAdapterTest {
         UUID evaluacionId = persistirEvaluacion(UUID.randomUUID());
 
         // Act & Assert
-        assertThat(adapter.existsById(evaluacionId)).isTrue();
+        assertThat(adapter.existePorId(evaluacionId)).isTrue();
     }
 
     @Test
     void debeRetornarFalse_cuandoEvaluacionNoExistePorId() {
         // Act & Assert
-        assertThat(adapter.existsById(UUID.randomUUID())).isFalse();
+        assertThat(adapter.existePorId(UUID.randomUUID())).isFalse();
     }
 }

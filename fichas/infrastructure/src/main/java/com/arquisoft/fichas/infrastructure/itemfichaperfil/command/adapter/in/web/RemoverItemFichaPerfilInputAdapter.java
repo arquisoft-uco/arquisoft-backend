@@ -2,6 +2,10 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.w
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.RemoverItemFichaPerfilInputPort;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
+import com.arquisoft.shared.message.FichasApiDocs;
+import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -20,27 +24,32 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/fichas-perfil")
+@RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = "Fichas", description = "Gestión de fichas de perfil")
+@Tag(name = FichasApiDocs.ItemFichaPerfil.TAG_NAME,
+        description = FichasApiDocs.ItemFichaPerfil.TAG_DESCRIPTION)
 public class RemoverItemFichaPerfilInputAdapter {
 
     private final RemoverItemFichaPerfilInputPort inputPort;
 
     @DeleteMapping("/items/{itemId}")
-    @PreAuthorize("hasAuthority('fichas:item-ficha-perfil:delete')")
+    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_DELETE)
     @Operation(
-            summary = "Remover un ítem de la ficha",
-            description = "Elimina físicamente un ítem de la ficha de perfil del estudiante autenticado. " +
-                    "Solo permite eliminar ítems sin revisiones asociadas.",
-            security = @SecurityRequirement(name = "bearerAuth")
+            summary = FichasApiDocs.ItemFichaPerfil.REMOVER_SUMMARY,
+            description = FichasApiDocs.ItemFichaPerfil.REMOVER_DESCRIPTION,
+            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Ítem eliminado correctamente"),
-            @ApiResponse(responseCode = "400", description = "El ítem no existe"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permiso o no es propietario de la ficha"),
-            @ApiResponse(responseCode = "422", description = "El ítem tiene revisiones y no puede eliminarse")
+            @ApiResponse(responseCode = ApiCodes.NO_CONTENT,
+                    description = FichasApiDocs.ItemFichaPerfil.REMOVER_RESP_204),
+            @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
+                    description = FichasApiDocs.ItemFichaPerfil.REMOVER_RESP_400),
+            @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
+                    description = FichasApiDocs.Comun.RESP_401),
+            @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
+                    description = FichasApiDocs.ItemFichaPerfil.REMOVER_RESP_403),
+            @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
+                    description = FichasApiDocs.ItemFichaPerfil.REMOVER_RESP_422)
     })
     public ResponseEntity<Void> remover(
             @PathVariable UUID itemId,

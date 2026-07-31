@@ -65,7 +65,7 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
                 .thenReturn(true);
 
         // Act
-        boolean existe = adapter.existsByRepresentanteAndFicha(representanteId, fichaId);
+        boolean existe = adapter.existePorRepresentanteYFicha(representanteId, fichaId);
 
         // Assert
         assertThat(existe).isTrue();
@@ -82,7 +82,7 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
                 .thenReturn(false);
 
         // Act
-        boolean existe = adapter.existsByRepresentanteAndFicha(representanteId, fichaId);
+        boolean existe = adapter.existePorRepresentanteYFicha(representanteId, fichaId);
 
         // Assert
         assertThat(existe).isFalse();

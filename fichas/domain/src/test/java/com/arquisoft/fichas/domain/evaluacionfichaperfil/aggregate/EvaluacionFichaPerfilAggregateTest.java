@@ -61,7 +61,7 @@ class EvaluacionFichaPerfilAggregateTest {
         // Act & Assert
         assertThatThrownBy(() -> EvaluacionFichaPerfilAggregate.crear(null, fichaPerfilId))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.EvaluacionFichaPerfil.CAMPO_REPRESENTANTE_COMITE_ID);
+                .hasMessageContaining(FichasMessages.EvaluacionFichaPerfil.CAMPO_REPRESENTANTE_COMITE);
     }
 
     @Test
@@ -72,6 +72,6 @@ class EvaluacionFichaPerfilAggregateTest {
         // Act & Assert
         assertThatThrownBy(() -> EvaluacionFichaPerfilAggregate.crear(representanteComiteId, null))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.EvaluacionFichaPerfil.CAMPO_FICHA_PERFIL_ID);
+                .hasMessageContaining(FichasMessages.EvaluacionFichaPerfil.CAMPO_FICHA_PERFIL);
     }
 }

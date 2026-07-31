@@ -1,22 +1,29 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.in.web.dto;
 
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
+import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.shared.web.validation.UuidValido;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.UUID;
 
 public record AgregarEstadoEvaluacionFichaRequestDTO(
-        @NotNull(message = "El ID de la evaluación es obligatorio")
-        UUID evaluacionFichaPerfilId,
 
-        @NotBlank(message = "El ID del estado es obligatorio")
-        @Size(max = 50, message = "El ID del estado no puede exceder 50 caracteres")
-        String estadoEvaluacionId) {
+        @NotBlank(message = FichasMessages.EstadoEvaluacionFicha.EVALUACION_OBLIGATORIA_MSG)
+        @UuidValido(message = FichasMessages.EstadoEvaluacionFicha.EVALUACION_FORMATO_UUID_MSG)
+        String evaluacionFichaPerfil,
 
-    public AgregarEstadoEvaluacionFichaCommand toCommand(UUID representanteComiteId) {
+        @NotBlank(message = FichasMessages.EstadoEvaluacionFicha.ESTADO_OBLIGATORIO_MSG)
+        @Size(max = FichasMessages.EstadoEvaluacionFicha.ESTADO_MAX,
+                message = FichasMessages.EstadoEvaluacionFicha.ESTADO_MAX_MSG)
+        String estadoEvaluacion) {
+
+    public AgregarEstadoEvaluacionFichaCommand toCommand(UUID representanteComite) {
         return new AgregarEstadoEvaluacionFichaCommand(
-                evaluacionFichaPerfilId, estadoEvaluacionId, representanteComiteId);
+                UtilUUID.generateUUIDFromString(evaluacionFichaPerfil),
+                estadoEvaluacion,
+                representanteComite);
     }
 }

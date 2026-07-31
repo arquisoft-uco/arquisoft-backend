@@ -34,7 +34,8 @@ class UsuarioCreadoInputAdapterTest {
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
-        adapter = new UsuarioCreadoInputAdapter(registrarUsuarioInputPort, objectMapper);
+        adapter = new UsuarioCreadoInputAdapter(registrarUsuarioInputPort, objectMapper,
+                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class));
     }
 
     @Test

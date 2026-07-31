@@ -1,105 +1,82 @@
 package com.arquisoft.fichas.application.fichaperfil.command;
 
-import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQueryOutputPort;
-import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
-import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
-import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.EstudiantesFichaValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
-import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInputPort;
-import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
-import com.arquisoft.shared.util.UtilObject;
+import com.arquisoft.shared.util.UtilCollection;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
+/**
+ * Registra una ficha de perfil con su estado inicial y, opcionalmente, sus estudiantes.
+ *
+ * <p>Las validaciones siguen el orden obligatorio: primero integridad de los datos
+ * recibidos, luego existencia y unicidad contra la base de datos y, por último,
+ * las reglas de negocio propias del agregado. La transacción la abre
+ * {@code RegistrarFichaPerfilInteractor}.</p>
+ */
 @Component
 @RequiredArgsConstructor
-@Slf4j
-public class RegistrarFichaPerfilUseCase implements RegistrarFichaPerfilInputPort {
+public class RegistrarFichaPerfilUseCase {
+
+    /** La ficha se está creando en esta misma operación: no puede tener estudiantes previos. */
+    private static final long SIN_ESTUDIANTES_PREVIOS = 0L;
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
-    private final AsesorFichaQueryOutputPort asesorFichaQueryOutputPort;
-    private final EstudianteQueryOutputPort estudianteQueryOutputPort;
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
+    private final FichaPerfilValidator fichaPerfilValidator;
+    private final EstudiantesFichaValidator estudiantesFichaValidator;
+    private final AppLogger logger;
 
-    @Override
-    @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(RegistrarFichaPerfilCommand command) {
-        // POL-03: validar que el asesor ficha exista (lookup vía query side de la vista materializada)
-        if (!asesorFichaQueryOutputPort.existsById(command.asesorFichaId())) {
-            throw new AsesorFichaNoEncontradoException(command.asesorFichaId());
-        }
+        List<UUID> estudiantes = command.estudiantes();
 
-        // POL-02: validar que el título sea único
-        if (fichaPerfilOutputPort.existsByTituloProyecto(command.tituloProyecto())) {
-            throw new FichaTituloDuplicadoException(command.tituloProyecto());
-        }
+        estudiantesFichaValidator.validarSinDuplicados(estudiantes);
+
+        fichaPerfilValidator.validarAsesorExiste(command.asesorFicha());
+        fichaPerfilValidator.validarTituloUnico(command.tituloProyecto());
+        estudiantesFichaValidator.validarExistencia(estudiantes);
 
         FichaPerfilAggregate ficha = FichaPerfilAggregate.crear(
                 command.tituloProyecto(),
-                command.asesorFichaId()
+                command.asesorFicha()
         );
 
         fichaPerfilOutputPort.guardar(ficha);
         asignarEstadoInicial(ficha.getId());
+        vincularEstudiantes(ficha.getId(), estudiantes);
 
-        // Asignar estudiantes (si aplica)
-        if (!UtilObject.isNull(command.estudiantesIds()) && !command.estudiantesIds().isEmpty()) {
-            // Validación de duplicados en la lista
-            var idsUnicos = new HashSet<>(command.estudiantesIds());
-            if (idsUnicos.size() != command.estudiantesIds().size()) {
-                // Identificar el primer duplicado para el mensaje de error
-                var visitados = new HashSet<UUID>();
-                var duplicado = command.estudiantesIds().stream()
-                    .filter(id -> !visitados.add(id))
-                    .findFirst()
-                    .orElseThrow();
-                throw new EstudianteDuplicadoException(duplicado);
-            }
-
-            // Validación de existencia
-            for (UUID estudianteId : command.estudiantesIds()) {
-                if (!estudianteQueryOutputPort.existsById(estudianteId)) {
-                    throw new EstudianteNoEncontradoException(estudianteId);
-                }
-            }
-
-            // Crear relaciones validando límite atómicamente
-            var relaciones = EstudianteFichaPerfilAggregate.crear(
-                    ficha.getId(),
-                    command.estudiantesIds(),
-                    0L
-            );
-
-            // Guardar cada relación
-            for (EstudianteFichaPerfilAggregate relacion : relaciones) {
-                estudianteFichaPerfilOutputPort.guardar(relacion);
-            }
-        }
-
-        log.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
+        logger.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
         return ficha.getId();
     }
 
-    private void asignarEstadoInicial(UUID fichaPerfilId) {
-        var estadoInicial = EstadoFichaPerfilAggregate.crear(fichaPerfilId);
+    private void asignarEstadoInicial(UUID fichaPerfil) {
+        var estadoInicial = EstadoFichaPerfilAggregate.crear(fichaPerfil);
         estadoFichaPerfilOutputPort.guardar(estadoInicial);
-        log.info(FichasMessages.EstadoFichaPerfil.LOG_CREADO,
+        logger.info(FichasMessages.EstadoFichaPerfil.LOG_CREADO,
                 estadoInicial.getId(),
                 estadoInicial.getFichaPerfilId(),
                 estadoInicial.getEstadoFicha().getNombre());
+    }
+
+    private void vincularEstudiantes(UUID fichaPerfil, List<UUID> estudiantes) {
+        if (UtilCollection.isEmptyOrNull(estudiantes)) {
+            return;
+        }
+        var relaciones = EstudianteFichaPerfilAggregate.crear(fichaPerfil, estudiantes);
+        EstudianteFichaPerfilAggregate.validarCupoDisponible(relaciones.size(), SIN_ESTUDIANTES_PREVIOS);
+        relaciones.forEach(estudianteFichaPerfilOutputPort::guardar);
     }
 }

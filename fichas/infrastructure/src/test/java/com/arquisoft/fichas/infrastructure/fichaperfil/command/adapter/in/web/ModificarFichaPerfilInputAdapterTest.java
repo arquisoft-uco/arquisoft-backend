@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.port.in.ModificarFic
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoEncontradaException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ModificarFichaPerfilInputAdapter.class)
-@Import({GlobalAppExceptionHandler.class,
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+        GlobalAppExceptionHandler.class,
         ModificarFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class ModificarFichaPerfilInputAdapterTest {
 
@@ -74,7 +76,7 @@ class ModificarFichaPerfilInputAdapterTest {
         mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isNoContent());
@@ -95,7 +97,7 @@ class ModificarFichaPerfilInputAdapterTest {
         mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyInvalido))
                 .andExpect(status().isBadRequest());
@@ -114,7 +116,7 @@ class ModificarFichaPerfilInputAdapterTest {
         mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isForbidden());
@@ -133,7 +135,7 @@ class ModificarFichaPerfilInputAdapterTest {
         mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isBadRequest());
@@ -152,7 +154,7 @@ class ModificarFichaPerfilInputAdapterTest {
         mockMvc.perform(patch("/fichas-perfil/{id}", FICHA_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(j -> j.subject(ESTUDIANTE_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:update")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
                 .andExpect(status().isBadRequest());

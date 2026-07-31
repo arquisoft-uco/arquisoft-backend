@@ -1,16 +1,18 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command;
 
 import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
-import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.EstudiantesFichaValidator;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,25 +20,31 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.never;
 
 @ExtendWith(MockitoExtension.class)
 class AsignarEstudiantesFichaPerfilUseCaseTest {
 
     @Mock
-    private FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
-
-    @Mock
-    private EstudianteQueryOutputPort estudianteQueryOutputPort;
-
-    @Mock
     private EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+
+    @Mock
+    private FichaPerfilValidator fichaPerfilValidator;
+
+    @Mock
+    private EstudiantesFichaValidator estudiantesFichaValidator;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private AsignarEstudiantesFichaPerfilUseCase useCase;
@@ -45,19 +53,11 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     void debeAsignarEstudiantes_cuandoListaValidaYLimiteNoExcedido() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudiante1 = UUID.randomUUID();
-        UUID estudiante2 = UUID.randomUUID();
-        List<UUID> estudiantesIds = List.of(estudiante1, estudiante2);
-        AsignarEstudiantesFichaPerfilCommand command = new AsignarEstudiantesFichaPerfilCommand(
+        var command = new AsignarEstudiantesFichaPerfilCommand(
                 fichaPerfilId,
-                estudiantesIds
+                List.of(UUID.randomUUID(), UUID.randomUUID())
         );
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudiante1)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudiante2)).thenReturn(true);
-        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudiante1)).thenReturn(false);
-        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudiante2)).thenReturn(false);
         when(estudianteFichaPerfilOutputPort.contarPorFichaPerfilId(fichaPerfilId)).thenReturn(1L);
 
         // Act
@@ -71,13 +71,11 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     void debeLanzarFichaNoEncontrada_cuandoFichaIdNoExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudiante1 = UUID.randomUUID();
-        AsignarEstudiantesFichaPerfilCommand command = new AsignarEstudiantesFichaPerfilCommand(
-                fichaPerfilId,
-                List.of(estudiante1)
-        );
+        var command = new AsignarEstudiantesFichaPerfilCommand(
+                fichaPerfilId, List.of(UUID.randomUUID()));
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(false);
+        doThrow(new FichaPerfilNoEncontradaException(fichaPerfilId))
+                .when(fichaPerfilValidator).validarFichaExiste(fichaPerfilId);
 
         // Act
         Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
@@ -92,17 +90,12 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     @Test
     void debeLanzarEstudianteNoEncontrado_cuandoUUIDNoExiste() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudiante1 = UUID.randomUUID();
-        UUID estudiante2 = UUID.randomUUID();
-        AsignarEstudiantesFichaPerfilCommand command = new AsignarEstudiantesFichaPerfilCommand(
-                fichaPerfilId,
-                List.of(estudiante1, estudiante2)
-        );
+        UUID estudianteInexistente = UUID.randomUUID();
+        var command = new AsignarEstudiantesFichaPerfilCommand(
+                UUID.randomUUID(), List.of(UUID.randomUUID(), estudianteInexistente));
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudiante1)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudiante2)).thenReturn(false);
+        doThrow(new EstudianteNoEncontradoException(estudianteInexistente))
+                .when(estudiantesFichaValidator).validarExistencia(anyList());
 
         // Act
         Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
@@ -110,23 +103,21 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         // Assert
         assertThat(ex)
                 .isInstanceOf(EstudianteNoEncontradoException.class)
-                .hasMessageContaining(estudiante2.toString());
+                .hasMessageContaining(estudianteInexistente.toString());
         assertThat(((EstudianteNoEncontradoException) ex).getErrorCode())
                 .isEqualTo(FichasMessages.Estudiante.ESTUDIANTE_NO_ENCONTRADO);
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
     }
 
     @Test
-    void debeLanzarEstudianteDuplicado_cuandoUUIDRepetidoEnLista() {
+    void debeValidarDuplicadosAntesDeConsultarLaBaseDeDatos_cuandoUUIDRepetidoEnLista() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudiante1 = UUID.randomUUID();
-        AsignarEstudiantesFichaPerfilCommand command = new AsignarEstudiantesFichaPerfilCommand(
-                fichaPerfilId,
-                List.of(estudiante1, estudiante1)
-        );
+        UUID estudiante = UUID.randomUUID();
+        var command = new AsignarEstudiantesFichaPerfilCommand(
+                UUID.randomUUID(), List.of(estudiante, estudiante));
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
+        doThrow(new EstudianteDuplicadoException(estudiante))
+                .when(estudiantesFichaValidator).validarSinDuplicados(anyList());
 
         // Act
         Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
@@ -134,9 +125,9 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         // Assert
         assertThat(ex)
                 .isInstanceOf(EstudianteDuplicadoException.class)
-                .hasMessageContaining(estudiante1.toString());
-        assertThat(((EstudianteDuplicadoException) ex).getErrorCode())
-                .isEqualTo(FichasMessages.EstudianteFichaPerfil.ESTUDIANTE_DUPLICADO);
+                .hasMessageContaining(estudiante.toString());
+        verify(fichaPerfilValidator, never()).validarFichaExiste(any());
+        verify(estudiantesFichaValidator, never()).validarExistencia(anyList());
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -144,16 +135,12 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     void debeLanzarEstudianteDuplicado_cuandoYaAsignadoEnBD() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudiante1 = UUID.randomUUID();
-        UUID estudiante2 = UUID.randomUUID();
-        AsignarEstudiantesFichaPerfilCommand command = new AsignarEstudiantesFichaPerfilCommand(
-                fichaPerfilId,
-                List.of(estudiante1, estudiante2)
-        );
+        UUID estudianteYaAsignado = UUID.randomUUID();
+        var command = new AsignarEstudiantesFichaPerfilCommand(
+                fichaPerfilId, List.of(estudianteYaAsignado, UUID.randomUUID()));
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudiante1)).thenReturn(true);
-        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudiante1)).thenReturn(true);
+        doThrow(new EstudianteDuplicadoException(estudianteYaAsignado))
+                .when(estudiantesFichaValidator).validarNoVinculados(any(), anyList());
 
         // Act
         Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
@@ -161,7 +148,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         // Assert
         assertThat(ex)
                 .isInstanceOf(EstudianteDuplicadoException.class)
-                .hasMessageContaining(estudiante1.toString());
+                .hasMessageContaining(estudianteYaAsignado.toString());
         assertThat(((EstudianteDuplicadoException) ex).getErrorCode())
                 .isEqualTo(FichasMessages.EstudianteFichaPerfil.ESTUDIANTE_DUPLICADO);
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
@@ -171,18 +158,9 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     void debeLanzarDomainValidationException_cuandoExistentes2MasNuevos2() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudiante1 = UUID.randomUUID();
-        UUID estudiante2 = UUID.randomUUID();
-        AsignarEstudiantesFichaPerfilCommand command = new AsignarEstudiantesFichaPerfilCommand(
-                fichaPerfilId,
-                List.of(estudiante1, estudiante2)
-        );
+        var command = new AsignarEstudiantesFichaPerfilCommand(
+                fichaPerfilId, List.of(UUID.randomUUID(), UUID.randomUUID()));
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudiante1)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudiante2)).thenReturn(true);
-        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudiante1)).thenReturn(false);
-        when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudiante2)).thenReturn(false);
         when(estudianteFichaPerfilOutputPort.contarPorFichaPerfilId(fichaPerfilId)).thenReturn(2L);
 
         // Act
@@ -201,5 +179,25 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                         FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO
                 ));
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeValidarIntegridadAntesQueExistencia() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        var command = new AsignarEstudiantesFichaPerfilCommand(
+                fichaPerfilId, List.of(UUID.randomUUID()));
+
+        when(estudianteFichaPerfilOutputPort.contarPorFichaPerfilId(fichaPerfilId)).thenReturn(0L);
+
+        // Act
+        useCase.ejecutar(command);
+
+        // Assert
+        InOrder inOrder = inOrder(estudiantesFichaValidator, fichaPerfilValidator);
+        inOrder.verify(estudiantesFichaValidator).validarSinDuplicados(anyList());
+        inOrder.verify(fichaPerfilValidator).validarFichaExiste(fichaPerfilId);
+        inOrder.verify(estudiantesFichaValidator).validarExistencia(anyList());
+        inOrder.verify(estudiantesFichaValidator).validarNoVinculados(any(), anyList());
     }
 }

@@ -3,9 +3,16 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.FichasApiDocs;
+import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
 import com.arquisoft.shared.web.dto.query.QueryCriteriaRequestDTO;
+import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -14,7 +21,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,40 +30,40 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/fichas-perfil")
+@RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Slf4j
-@Tag(name = "Fichas Perfil", description = "Gestión de fichas de perfil de proyectos de grado")
+@Tag(name = FichasApiDocs.FichaPerfil.TAG_NAME, description = FichasApiDocs.FichaPerfil.TAG_DESCRIPTION)
 public class ConsultarFichasPerfilInputAdapter {
 
     private final ConsultarFichasPerfilInputPort consultarFichasPerfilInputPort;
+    private final AppLogger logger;
 
     @PostMapping("/coordinador")
-    @PreAuthorize("hasAuthority('fichas:ficha-perfil:view')")
+    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_VIEW)
     @Operation(
-            summary = "Consultar fichas de perfil con filtros dinámicos",
-            description = """
-                    Retorna el listado paginado de fichas de perfil. Soporta filtros dinámicos
-                    con agrupación booleana (AND/OR anidados), ordenamiento multi-campo y paginación.
-                    El body es opcional: sin body devuelve todos los registros paginados.
-                    Acceso exclusivo para el rol coordinador.
-                    """,
-            security = @SecurityRequirement(name = "bearerAuth")
+            summary = FichasApiDocs.FichaPerfil.CONSULTAR_SUMMARY,
+            description = FichasApiDocs.FichaPerfil.CONSULTAR_DESCRIPTION,
+            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Listado obtenido exitosamente",
-                    content = @Content(mediaType = "application/json",
+            @ApiResponse(responseCode = ApiCodes.OK,
+                    description = FichasApiDocs.FichaPerfil.CONSULTAR_RESP_200,
+                    content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = PageResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Filtro, operador, campo o valor inválido",
-                    content = @Content(schema = @Schema(implementation = com.arquisoft.shared.web.dto.ErrorResponseDTO.class))),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos — se requiere rol coordinador")
+            @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
+                    description = FichasApiDocs.FichaPerfil.CONSULTAR_RESP_400,
+                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
+            @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
+                    description = FichasApiDocs.Comun.RESP_401),
+            @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
+                    description = FichasApiDocs.FichaPerfil.CONSULTAR_RESP_403)
     })
     public ResponseEntity<PageResponseDTO<FichaPerfilReadModel>> consultarFichasCoordinador(
             @RequestBody(required = false) QueryCriteriaRequestDTO request) {
 
         QueryCriteriaRequestDTO solicitud = request != null ? request : new QueryCriteriaRequestDTO();
-        log.debug("POST /fichas-perfil/coordinador — pagina={}, tamanio={}", solicitud.getPagina(), solicitud.getTamanio());
+        logger.debug(FichasMessages.FichaPerfil.LOG_CONSULTANDO,
+                solicitud.getPagina(), solicitud.getTamanio());
 
         FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
                 .pagina(solicitud.getPagina())

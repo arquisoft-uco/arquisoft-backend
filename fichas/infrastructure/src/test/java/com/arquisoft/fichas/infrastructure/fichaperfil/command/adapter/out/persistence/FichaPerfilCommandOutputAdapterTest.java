@@ -38,7 +38,8 @@ class FichaPerfilCommandOutputAdapterTest {
     void setUp() {
         fichaId = UUID.randomUUID();
         asesorId = UUID.randomUUID();
-        adapter = new FichaPerfilCommandOutputAdapter(fichaPerfilJpaRepository, asesorFichaJpaRepository);
+        adapter = new FichaPerfilCommandOutputAdapter(fichaPerfilJpaRepository, asesorFichaJpaRepository,
+                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class));
     }
 
     @Test
@@ -106,7 +107,7 @@ class FichaPerfilCommandOutputAdapterTest {
         when(fichaPerfilJpaRepository.existsByTituloProyecto(titulo)).thenReturn(true);
 
         // Act
-        boolean existe = adapter.existsByTituloProyecto(titulo);
+        boolean existe = adapter.existePorTituloProyecto(titulo);
 
         // Assert
         assertThat(existe).isTrue();
@@ -120,7 +121,7 @@ class FichaPerfilCommandOutputAdapterTest {
         when(fichaPerfilJpaRepository.existsByTituloProyecto(titulo)).thenReturn(false);
 
         // Act
-        boolean existe = adapter.existsByTituloProyecto(titulo);
+        boolean existe = adapter.existePorTituloProyecto(titulo);
 
         // Assert
         assertThat(existe).isFalse();

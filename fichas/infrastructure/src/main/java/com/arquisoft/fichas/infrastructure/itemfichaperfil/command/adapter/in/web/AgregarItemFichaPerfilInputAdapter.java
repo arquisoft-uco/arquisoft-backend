@@ -3,6 +3,10 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.w
 import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.AgregarItemFichaPerfilInputPort;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.dto.AgregarItemFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.dto.AgregarItemFichaPerfilResponseDTO;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
+import com.arquisoft.shared.message.FichasApiDocs;
+import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -12,7 +16,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,44 +29,34 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@Slf4j
 @RestController
-@RequestMapping("/fichas-perfil")
+@RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = "Fichas Perfil", description = "Gestión de fichas de perfil de proyectos de grado")
+@Tag(name = FichasApiDocs.ItemFichaPerfil.TAG_NAME,
+        description = FichasApiDocs.ItemFichaPerfil.TAG_DESCRIPTION)
 public class AgregarItemFichaPerfilInputAdapter {
 
     private final AgregarItemFichaPerfilInputPort agregarItemFichaPerfilInputPort;
 
     @PostMapping("/{fichaPerfilId}/items")
-    @PreAuthorize("hasAuthority('fichas:item-ficha-perfil:create')")
+    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_CREATE)
     @Operation(
-            summary = "Agregar ítem a ficha de perfil",
-            description = "Permite a un estudiante agregar un ítem de contenido (objetivo, estado del arte, etc.) a su propia ficha de perfil",
-            security = @SecurityRequirement(name = "bearerAuth")
+            summary = FichasApiDocs.ItemFichaPerfil.AGREGAR_SUMMARY,
+            description = FichasApiDocs.ItemFichaPerfil.AGREGAR_DESCRIPTION,
+            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Ítem agregado exitosamente",
-                    content = @Content(schema = @Schema(implementation = AgregarItemFichaPerfilResponseDTO.class))
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Tipo duplicado o ficha no encontrada"
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "No autenticado"
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Sin permiso o ficha no propia"
-            ),
-            @ApiResponse(
-                    responseCode = "422",
-                    description = "Datos inválidos o tipo de ítem inválido — fieldErrors"
-            )
+            @ApiResponse(responseCode = ApiCodes.CREATED,
+                    description = FichasApiDocs.ItemFichaPerfil.AGREGAR_RESP_201,
+                    content = @Content(schema = @Schema(implementation = AgregarItemFichaPerfilResponseDTO.class))),
+            @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
+                    description = FichasApiDocs.ItemFichaPerfil.AGREGAR_RESP_400),
+            @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
+                    description = FichasApiDocs.Comun.RESP_401),
+            @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
+                    description = FichasApiDocs.ItemFichaPerfil.AGREGAR_RESP_403),
+            @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
+                    description = FichasApiDocs.ItemFichaPerfil.AGREGAR_RESP_422)
     })
     public ResponseEntity<AgregarItemFichaPerfilResponseDTO> agregarItem(
             @PathVariable UUID fichaPerfilId,

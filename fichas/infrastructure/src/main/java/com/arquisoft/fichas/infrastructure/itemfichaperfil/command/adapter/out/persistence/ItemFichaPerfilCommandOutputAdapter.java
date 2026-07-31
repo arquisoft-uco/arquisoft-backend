@@ -6,13 +6,11 @@ import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFicha
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilMapper;
 import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemJpaRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.UUID;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutputPort {
@@ -28,12 +26,12 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     }
 
     @Override
-    public boolean existsPorFichaYTipoItem(UUID fichaPerfilId, String tipoItem) {
+    public boolean existePorFichaYTipoItem(UUID fichaPerfilId, String tipoItem) {
         return jpaRepository.existsByFichaPerfilIdAndTipoItemId(fichaPerfilId, tipoItem);
     }
 
     @Override
-    public boolean existsById(UUID itemId) {
+    public boolean existePorId(UUID itemId) {
         return jpaRepository.existsById(itemId);
     }
 

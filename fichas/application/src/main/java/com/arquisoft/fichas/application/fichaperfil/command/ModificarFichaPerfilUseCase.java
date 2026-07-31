@@ -1,45 +1,46 @@
 package com.arquisoft.fichas.application.fichaperfil.command;
 
 import com.arquisoft.fichas.application.fichaperfil.command.model.ModificarFichaPerfilCommand;
-import com.arquisoft.fichas.application.fichaperfil.command.port.in.ModificarFichaPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoEncontradaException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
-public class ModificarFichaPerfilUseCase implements ModificarFichaPerfilInputPort {
+public class ModificarFichaPerfilUseCase {
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
-    private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
+    private final FichaPerfilValidator fichaPerfilValidator;
+    private final AppLogger logger;
 
-    @Override
-    @Transactional(transactionManager = "fichasTransactionManager")
     public void ejecutar(ModificarFichaPerfilCommand command) {
-        if (!fichaPerfilQueryOutputPort.esEstudiantePropietario(
-                command.fichaId(), command.estudianteId())) {
-            throw new FichaNoPropietarioException(command.fichaId(), command.estudianteId());
-        }
+        fichaPerfilValidator.validarEstudiantePropietario(
+                new PropietarioFichaCriteria(command.fichaPerfil(), command.estudiante()));
 
-        var ficha = fichaPerfilOutputPort.buscarPorId(command.fichaId())
-            .orElseThrow(() -> new FichaNoEncontradaException(command.fichaId()));
+        var ficha = fichaPerfilOutputPort.buscarPorId(command.fichaPerfil())
+                .orElseThrow(() -> new FichaNoEncontradaException(command.fichaPerfil()));
 
-        if (!ficha.getTituloProyecto().equals(command.tituloProyecto())
-                && fichaPerfilOutputPort.existsByTituloProyecto(command.tituloProyecto())) {
-            throw new FichaTituloDuplicadoException(command.tituloProyecto());
-        }
+        validarTituloDisponible(ficha, command.tituloProyecto());
 
         ficha.actualizarTitulo(command.tituloProyecto());
         fichaPerfilOutputPort.guardar(ficha);
 
-        log.info(FichasMessages.FichaPerfil.LOG_MODIFICADA, ficha.getId());
+        logger.info(FichasMessages.FichaPerfil.LOG_MODIFICADA, ficha.getId());
+    }
+
+    private void validarTituloDisponible(FichaPerfilAggregate ficha, String nuevoTitulo) {
+        if (ficha.getTituloProyecto().equals(nuevoTitulo)) {
+            return;
+        }
+        if (fichaPerfilOutputPort.existePorTituloProyecto(nuevoTitulo)) {
+            throw new FichaTituloDuplicadoException(nuevoTitulo);
+        }
     }
 }

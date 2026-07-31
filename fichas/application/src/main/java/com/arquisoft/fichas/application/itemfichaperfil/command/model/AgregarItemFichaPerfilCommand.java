@@ -3,8 +3,8 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.model;
 import java.util.UUID;
 
 public record AgregarItemFichaPerfilCommand(
-        UUID fichaPerfilId,
+        UUID fichaPerfil,
         String tipoItem,
         String contenido,
-        UUID estudianteId
+        UUID estudiante
 ) {}

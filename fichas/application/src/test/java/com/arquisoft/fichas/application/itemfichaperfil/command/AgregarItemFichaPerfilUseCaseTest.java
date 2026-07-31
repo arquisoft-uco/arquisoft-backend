@@ -1,13 +1,15 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command;
 
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
+import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ItemFichaPerfilValidator;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemTipoDuplicadoException;
-import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.exception.ApplicationException;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,16 +29,24 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AgregarItemFichaPerfilUseCaseTest {
 
-    @Mock
-    private FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
+    private static final String TIPO_ITEM = "OBJETIVO_GENERAL";
+    private static final String CONTENIDO = "Contenido válido";
 
     @Mock
     private ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
+
+    @Mock
+    private FichaPerfilValidator fichaPerfilValidator;
+
+    @Mock
+    private ItemFichaPerfilValidator itemFichaPerfilValidator;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private AgregarItemFichaPerfilUseCase useCase;
@@ -44,20 +54,7 @@ class AgregarItemFichaPerfilUseCaseTest {
     @Test
     void debeAgregarItem_cuandoDatosValidos() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
-                fichaPerfilId,
-                "OBJETIVO_GENERAL",
-                "Este es un objetivo general válido",
-                estudianteId
-        );
-
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId))
-                .thenReturn(true);
-        when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
-                .thenReturn(false);
+        AgregarItemFichaPerfilCommand command = comando();
 
         // Act
         UUID resultado = useCase.ejecutar(command);
@@ -70,41 +67,25 @@ class AgregarItemFichaPerfilUseCaseTest {
     @Test
     void debeLanzarFichaNoEncontrada_cuandoFichaNoExiste() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
-                fichaPerfilId,
-                "OBJETIVO_GENERAL",
-                "Contenido válido",
-                estudianteId
-        );
-
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(false);
+        AgregarItemFichaPerfilCommand command = comando();
+        doThrow(new FichaPerfilNoEncontradaException(command.fichaPerfil()))
+                .when(fichaPerfilValidator).validarFichaExiste(command.fichaPerfil());
 
         // Act
         Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
 
         // Assert
-        assertThat(exception)
-                .isInstanceOf(FichaPerfilNoEncontradaException.class);
+        assertThat(exception).isInstanceOf(FichaPerfilNoEncontradaException.class);
         verify(itemFichaPerfilOutputPort, never()).guardar(any());
     }
 
     @Test
     void debeLanzarItemFichaNoPropia_cuandoEstudianteNoEsPropietario() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
-                fichaPerfilId,
-                "OBJETIVO_GENERAL",
-                "Contenido válido",
-                estudianteId
-        );
-
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId))
-                .thenReturn(false);
+        AgregarItemFichaPerfilCommand command = comando();
+        doThrow(new ItemFichaNoPropiaException(command.fichaPerfil()))
+                .when(itemFichaPerfilValidator)
+                .validarFichaPropia(command.fichaPerfil(), command.estudiante());
 
         // Act
         Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
@@ -112,28 +93,17 @@ class AgregarItemFichaPerfilUseCaseTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(ItemFichaNoPropiaException.class)
-                .hasMessageContaining(fichaPerfilId.toString());
+                .hasMessageContaining(command.fichaPerfil().toString());
         verify(itemFichaPerfilOutputPort, never()).guardar(any());
     }
 
     @Test
     void debeLanzarItemTipoDuplicado_cuandoTipoYaExisteEnFicha() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        String tipoItem = "OBJETIVO_GENERAL";
-        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
-                fichaPerfilId,
-                tipoItem,
-                "Contenido válido",
-                estudianteId
-        );
-
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId))
-                .thenReturn(true);
-        when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, tipoItem))
-                .thenReturn(true);
+        AgregarItemFichaPerfilCommand command = comando();
+        doThrow(new ItemTipoDuplicadoException(TIPO_ITEM))
+                .when(itemFichaPerfilValidator)
+                .validarTipoNoDuplicado(command.fichaPerfil(), TIPO_ITEM);
 
         // Act
         Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
@@ -143,84 +113,32 @@ class AgregarItemFichaPerfilUseCaseTest {
         assertThat(((ApplicationException) exception).getErrorCode())
                 .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_TIPO_DUPLICADO);
         assertThat(exception.getMessage())
-                .isEqualTo(FichasMessages.ItemFichaPerfil.TIPO_ITEM_DUPLICADO_MSG.formatted(tipoItem));
+                .isEqualTo(FichasMessages.ItemFichaPerfil.TIPO_ITEM_DUPLICADO_MSG.formatted(TIPO_ITEM));
         verify(itemFichaPerfilOutputPort, never()).guardar(any());
-    }
-
-    @Test
-    void debeGuardarItem_cuandoValidacionesExitosas() {
-        // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
-                fichaPerfilId,
-                "OBJETIVO_GENERAL",
-                "Contenido válido",
-                estudianteId
-        );
-
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId))
-                .thenReturn(true);
-        when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
-                .thenReturn(false);
-
-        // Act
-        useCase.ejecutar(command);
-
-        // Assert
-        verify(itemFichaPerfilOutputPort, times(1)).guardar(any(ItemFichaPerfilAggregate.class));
     }
 
     @Test
     void debeValidarEnOrdenCorrecto() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
-                fichaPerfilId,
-                "OBJETIVO_GENERAL",
-                "Contenido válido",
-                estudianteId
-        );
-
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId))
-                .thenReturn(true);
-        when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
-                .thenReturn(false);
+        AgregarItemFichaPerfilCommand command = comando();
 
         // Act
         useCase.ejecutar(command);
 
         // Assert
-        InOrder inOrder = inOrder(
-                fichaPerfilQueryOutputPort,
-                itemFichaPerfilOutputPort
-        );
-        inOrder.verify(fichaPerfilQueryOutputPort).existsById(fichaPerfilId);
-        inOrder.verify(fichaPerfilQueryOutputPort).esEstudiantePropietario(fichaPerfilId, estudianteId);
-        inOrder.verify(itemFichaPerfilOutputPort).existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL");
+        InOrder inOrder = inOrder(fichaPerfilValidator, itemFichaPerfilValidator, itemFichaPerfilOutputPort);
+        inOrder.verify(fichaPerfilValidator).validarFichaExiste(command.fichaPerfil());
+        inOrder.verify(itemFichaPerfilValidator)
+                .validarFichaPropia(command.fichaPerfil(), command.estudiante());
+        inOrder.verify(itemFichaPerfilValidator)
+                .validarTipoNoDuplicado(command.fichaPerfil(), TIPO_ITEM);
         inOrder.verify(itemFichaPerfilOutputPort).guardar(any(ItemFichaPerfilAggregate.class));
     }
 
     @Test
     void debeRetornarUUID_cuandoExitoso() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
-                fichaPerfilId,
-                "OBJETIVO_GENERAL",
-                "Contenido válido",
-                estudianteId
-        );
-
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId))
-                .thenReturn(true);
-        when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
-                .thenReturn(false);
+        AgregarItemFichaPerfilCommand command = comando();
 
         // Act
         UUID resultado = useCase.ejecutar(command);
@@ -232,20 +150,7 @@ class AgregarItemFichaPerfilUseCaseTest {
     @Test
     void debePropagar_cuandoRepositorioFalla() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
-                fichaPerfilId,
-                "OBJETIVO_GENERAL",
-                "Contenido válido",
-                estudianteId
-        );
-
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId))
-                .thenReturn(true);
-        when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
-                .thenReturn(false);
+        AgregarItemFichaPerfilCommand command = comando();
         doThrow(new RuntimeException("DB error")).when(itemFichaPerfilOutputPort).guardar(any());
 
         // Act & Assert
@@ -254,29 +159,12 @@ class AgregarItemFichaPerfilUseCaseTest {
                 .hasMessage("DB error");
     }
 
-    @Test
-    void debeLoguear_cuandoExitoso() {
-        // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
-                fichaPerfilId,
-                "OBJETIVO_GENERAL",
-                "Contenido válido",
-                estudianteId
+    private AgregarItemFichaPerfilCommand comando() {
+        return new AgregarItemFichaPerfilCommand(
+                UUID.randomUUID(),
+                TIPO_ITEM,
+                CONTENIDO,
+                UUID.randomUUID()
         );
-
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaPerfilId, estudianteId))
-                .thenReturn(true);
-        when(itemFichaPerfilOutputPort.existsPorFichaYTipoItem(fichaPerfilId, "OBJETIVO_GENERAL"))
-                .thenReturn(false);
-
-        // Act
-        useCase.ejecutar(command);
-
-        // Assert — log.info se ejecuta internamente con LOG_AGREGADO del catálogo
-        // No se puede verificar directamente sin LogCaptor/Appender, pero el método ejecuta sin error
-        verify(itemFichaPerfilOutputPort, times(1)).guardar(any());
     }
 }

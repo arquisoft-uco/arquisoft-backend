@@ -24,12 +24,12 @@ public class EvaluacionFichaPerfilCommandOutputAdapter
     }
 
     @Override
-    public boolean existsById(UUID id) {
+    public boolean existePorId(UUID id) {
         return jpaRepository.existsById(id);
     }
 
     @Override
-    public boolean existsByRepresentanteAndFicha(UUID representanteComiteId, UUID fichaPerfilId) {
+    public boolean existePorRepresentanteYFicha(UUID representanteComiteId, UUID fichaPerfilId) {
         return jpaRepository.existsByRepresentanteComiteIdAndFichaPerfilId(
                 representanteComiteId,
                 fichaPerfilId);

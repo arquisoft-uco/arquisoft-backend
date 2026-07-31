@@ -1,13 +1,15 @@
 package com.arquisoft.fichas.application.fichaperfil.command;
 
 import com.arquisoft.fichas.application.fichaperfil.command.model.ModificarFichaPerfilCommand;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoEncontradaException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.BaseException;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,6 +24,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,7 +39,10 @@ class ModificarFichaPerfilUseCaseTest {
     private FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Mock
-    private FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
+    private FichaPerfilValidator fichaPerfilValidator;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private ModificarFichaPerfilUseCase modificarFichaPerfilUseCase;
@@ -51,12 +57,11 @@ class ModificarFichaPerfilUseCaseTest {
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         String tituloNuevo = "Titulo nuevo";
-        ModificarFichaPerfilCommand command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloNuevo);
+        var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloNuevo);
         FichaPerfilAggregate ficha = crearFicha(fichaId, "Titulo original");
 
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaId, estudianteId)).thenReturn(true);
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
-        when(fichaPerfilOutputPort.existsByTituloProyecto(tituloNuevo)).thenReturn(false);
+        when(fichaPerfilOutputPort.existePorTituloProyecto(tituloNuevo)).thenReturn(false);
 
         // Act
         modificarFichaPerfilUseCase.ejecutar(command);
@@ -72,9 +77,11 @@ class ModificarFichaPerfilUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        ModificarFichaPerfilCommand command = new ModificarFichaPerfilCommand(fichaId, estudianteId, "Titulo");
+        var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, "Titulo");
 
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaId, estudianteId)).thenReturn(false);
+        doThrow(new FichaNoPropietarioException(fichaId, estudianteId))
+                .when(fichaPerfilValidator).validarEstudiantePropietario(
+                        new PropietarioFichaCriteria(fichaId, estudianteId));
 
         // Act
         Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(command));
@@ -91,9 +98,8 @@ class ModificarFichaPerfilUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        ModificarFichaPerfilCommand command = new ModificarFichaPerfilCommand(fichaId, estudianteId, "Titulo");
+        var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, "Titulo");
 
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaId, estudianteId)).thenReturn(true);
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.empty());
 
         // Act
@@ -111,14 +117,12 @@ class ModificarFichaPerfilUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        String tituloOriginal = "Titulo original";
         String tituloDuplicado = "Titulo duplicado";
-        ModificarFichaPerfilCommand command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloDuplicado);
-        FichaPerfilAggregate ficha = crearFicha(fichaId, tituloOriginal);
+        var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloDuplicado);
+        FichaPerfilAggregate ficha = crearFicha(fichaId, "Titulo original");
 
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaId, estudianteId)).thenReturn(true);
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
-        when(fichaPerfilOutputPort.existsByTituloProyecto(tituloDuplicado)).thenReturn(true);
+        when(fichaPerfilOutputPort.existePorTituloProyecto(tituloDuplicado)).thenReturn(true);
 
         // Act
         Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(command));
@@ -136,10 +140,9 @@ class ModificarFichaPerfilUseCaseTest {
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         String mismoTitulo = "Titulo sin cambios";
-        ModificarFichaPerfilCommand command = new ModificarFichaPerfilCommand(fichaId, estudianteId, mismoTitulo);
+        var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, mismoTitulo);
         FichaPerfilAggregate ficha = crearFicha(fichaId, mismoTitulo);
 
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaId, estudianteId)).thenReturn(true);
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
 
         // Act
@@ -147,7 +150,7 @@ class ModificarFichaPerfilUseCaseTest {
 
         // Assert
         verify(fichaPerfilOutputPort, times(1)).guardar(any(FichaPerfilAggregate.class));
-        verify(fichaPerfilOutputPort, never()).existsByTituloProyecto(any());
+        verify(fichaPerfilOutputPort, never()).existePorTituloProyecto(any());
     }
 
     @Test
@@ -156,12 +159,11 @@ class ModificarFichaPerfilUseCaseTest {
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         String tituloNuevo = "Titulo nuevo";
-        ModificarFichaPerfilCommand command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloNuevo);
+        var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloNuevo);
         FichaPerfilAggregate ficha = crearFicha(fichaId, "Titulo original");
 
-        when(fichaPerfilQueryOutputPort.esEstudiantePropietario(fichaId, estudianteId)).thenReturn(true);
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
-        when(fichaPerfilOutputPort.existsByTituloProyecto(tituloNuevo)).thenReturn(false);
+        when(fichaPerfilOutputPort.existePorTituloProyecto(tituloNuevo)).thenReturn(false);
 
         // Act
         modificarFichaPerfilUseCase.ejecutar(command);

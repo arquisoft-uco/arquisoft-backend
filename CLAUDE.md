@@ -77,7 +77,10 @@ exception/           # Domain exceptions shared across features (extend DomainEx
 {context}/application/
 └── {feature}/
     ├── command/
-    │   ├── {Action}{Entity}UseCase.java       # Use case implementation
+    │   ├── {Action}{Entity}Interactor.java    # Implements InputPort + owns @Transactional
+    │   ├── {Action}{Entity}UseCase.java       # Business orchestration (no transaction)
+    │   ├── validator/
+    │   │   └── {Feature}Validator.java        # Reusable existence/uniqueness/ownership checks
     │   ├── port/in/
     │   │   └── {Action}{Entity}InputPort.java
     │   └── model/
@@ -126,7 +129,9 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Domain events:** Extend `DomainEvent`. After persisting an aggregate, drain its unpublished events and publish via `EventPublisher` (RabbitMQ, publisher confirms, manual ACK, prefetch=1).
 
-**Transactional (command):** Always use `@Transactional(transactionManager = "{context}TransactionManager")` with explicit qualifier in command use cases that publish events — required for outbox atomicity. Example: `@Transactional(transactionManager = "seguridadTransactionManager")`.
+**Interactor (command side):** The interactor — not the use case — is the entry point and owns the transaction: `{Action}{Entity}Interactor` implements the `InputPort`, annotates `ejecutar` with `@Transactional(transactionManager = "{context}TransactionManager")` and delegates to the use case. Rationale: an operation may lean on several use cases, so the unit of work belongs one layer above; it also guarantees the right transaction manager is active when domain events reach the outbox (`ContextAwareEventPublicationRepository`). Applied throughout `fichas`; the other contexts still keep `@Transactional` on the use case (pending migration). The use case must **not** implement the `InputPort` — two beans for the same port make injection ambiguous.
+
+**Transactional (command, contexts not yet migrated):** `@Transactional(transactionManager = "{context}TransactionManager")` with explicit qualifier in command use cases that publish events — required for outbox atomicity. Example: `@Transactional(transactionManager = "seguridadTransactionManager")`.
 
 **Transactional (query):** Query use cases annotate the class with `@Transactional(readOnly = true, transactionManager = "{context}TransactionManager")`. The qualifier is mandatory here too: `usuariosTransactionManager` is the `@Primary` bean, so a bare `@Transactional` does not fail at startup — it silently binds to the `usuarios` transaction manager.
 
@@ -138,13 +143,23 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/{feature}/command/adapter/out/persistence/` (or appropriate sub-package for non-JPA), suffix `OutputAdapter` (e.g., `FichaPerfilCommandOutputAdapter`, `KeycloakAuthOutputAdapter`). Implement the corresponding `OutputPort` interface.
 
-**Use case implementations:** `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCase`, `AutenticarUsuarioUseCase`), implement the corresponding `InputPort`. Annotated `@Component` — **never `@Service`**, which is not used anywhere in this project.
+**Use case implementations:** `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCase`, `AutenticarUsuarioUseCase`). Annotated `@Component` — **never `@Service`**, which is not used anywhere in this project. In `fichas` the use case is a plain collaborator invoked by its interactor; in the other contexts it still implements the `InputPort` directly.
+
+**Validators:** Existence, uniqueness and ownership checks live in `{Feature}Validator` (`application/{feature}/command/validator/`, `@Component`), not as inline `if/throw` blocks inside the use case — that keeps rules reusable across features (e.g., `EstudiantesFichaValidator` is shared by ficha registration and student assignment). Method names state the rule: `validarAsesorExiste`, `validarTituloUnico`, `validarSinDuplicados`.
+
+**Validation order (mandatory):** 1) data integrity (format, required, length, duplicates within the payload — accumulable), 2) existence and uniqueness against the DB, 3) business rules in the aggregate. Never query the database on data whose integrity has not been established first.
 
 **Commands:** Input data for use cases in `application/{feature}/command/model/`, suffix `Command` (e.g., `RegistrarFichaPerfilCommand`). Implemented as Java `record`. DTOs in `infrastructure/{feature}/command/adapter/in/web/dto/` own a `toCommand()` factory method.
 
 **ReadModels:** Flat query projections in `application/{feature}/query/readmodel/`, suffix `ReadModel` (e.g., `FichaPerfilReadModel`). Implemented as Java `record`. The read side projects straight from the JPA entity via the mapper — there is no `fromDomain(Aggregate)` factory.
 
-**DTOs:** `RequestDTO` is a Java `record` with Jakarta annotations (`@NotBlank`, `@NotNull`) and a `toCommand()` method, living in `infrastructure/{feature}/command/adapter/in/web/dto/`. Generic technical DTOs (`ErrorResponseDTO`, `PageResponseDTO<T>`) come from `shared:web` — never redefine them per context.
+**DTOs:** `RequestDTO` is a Java `record` with Jakarta annotations (`@NotBlank`, `@NotNull`) and a `toCommand()` method, living in `infrastructure/{feature}/command/adapter/in/web/dto/`. Generic technical DTOs (`ErrorResponseDTO`, `PageResponseDTO<T>`) come from `shared:web` — never redefine them per context. The DTO is a pass-through: it carries data and guarantees its integrity, it does not run business rules.
+
+**Identifiers in request bodies:** received as `String` annotated `@UuidValido` (`shared:web`), never as `UUID` — a malformed `UUID` field would otherwise surface as a blind Jackson deserialization error. Element-level constraints work on lists (`List<@UuidValido String> estudiantes`), so every offending element is reported in `fieldErrors[]`. Conversion happens in `toCommand()` via `UtilUUID.generateUUIDFromString`; the Command stays typed `UUID`. Path variables remain `UUID`.
+
+**Objectual naming in contracts:** DTO and Command components carry what they represent, not the column name: `asesorFicha` (not `asesorFichaId`), `estudiantes` (not `estudiantesIds`). Field-name constants live in `FichasMessages.{Aggregate}.CAMPO_*`.
+
+**No hardcoded literals in adapters:** response codes come from `ApiCodes` (`shared:web`), Swagger texts from `FichasApiDocs` (`shared:message`), authorities from `FichasAuthorities` (`@PreAuthorize(FichasAuthorities.Expresiones.HAS_...)`, with the raw authority available for tests), base paths from `FichasRoutes`. Jakarta `message =` and `max =` reference `FichasMessages` constants — changing a message or a length must never require touching a validation annotation and a catalog separately.
 
 **Exceptions:** Every context exception extends one of five bases from `com.arquisoft.shared.exception`: `DomainException` (422), `ApplicationException` (400), `AuthorizationException` (403), `InfrastructureException` (503), `DomainValidationException` (422 + `fieldErrors[]`). Never `RuntimeException` directly. The constructor signature is `super(message, errorCode)` — both are `String`, so swapping them compiles and silently swaps the two fields in the response. `GlobalAppExceptionHandler` (`shared:web`) resolves the HTTP status by walking the superclass chain; contexts do not define their own handler (only `seguridad` does, for a name clash with Spring Security).
 
@@ -154,7 +169,9 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Injection:** Always constructor injection via `@RequiredArgsConstructor` — never `@Autowired`.
 
-**Logging:** `@Slf4j`. `warn` for 4xx, `error` for 5xx. Structured JSON via `shared:logger` (includes `traceId`, `userId`).
+**Logging:** inject the `AppLogger` port (`shared:logger`) by constructor — `private final AppLogger logger;` — instead of `@Slf4j`, so application and infrastructure code does not depend on SLF4J. `Slf4jAppLogger` is the default strategy, wired as a prototype bean by `AppLoggerConfig` (each class gets a logger named after itself). Applied throughout `fichas`; the other contexts still use `@Slf4j` (pending migration). `warn` for 4xx, `error` for 5xx. Structured JSON via `shared:logger` (includes `traceId`, `userId`). In `@WebMvcTest` slices add `AppLoggerConfig.class` to `@Import`; in unit tests pass a mock.
+
+**Correlation:** `TraceIdFilter` (`shared:web`) reuses the incoming `X-Correlation-Id` header, falls back to the W3C `traceparent` trace-id, and only then generates a UUID. The resolved id goes into the MDC, is echoed back in the `X-Correlation-Id` response header, and is included as `traceId` in every `ErrorResponseDTO` — so a reported error can be traced back through the logs. Incoming values are sanitized against a whitelist (log injection).
 
 **No Lombok in domain layer.**
 

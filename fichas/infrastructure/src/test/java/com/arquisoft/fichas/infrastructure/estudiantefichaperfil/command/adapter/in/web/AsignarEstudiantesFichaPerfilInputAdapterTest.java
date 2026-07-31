@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontr
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.AsignarEstudiantesFichaPerfilInputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -33,7 +34,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AsignarEstudiantesFichaPerfilInputAdapter.class)
-@Import({GlobalAppExceptionHandler.class,
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+        GlobalAppExceptionHandler.class,
         AsignarEstudiantesFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class AsignarEstudiantesFichaPerfilInputAdapterTest {
 
@@ -66,7 +68,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         UUID estudiante1 = UUID.randomUUID();
         String body = String.format("""
                 {
-                  "estudiantesIds": ["%s"]
+                  "estudiantes": ["%s"]
                 }
                 """, estudiante1);
         doNothing().when(asignarEstudiantesFichaPerfilInputPort).ejecutar(any());
@@ -74,7 +76,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isNoContent());
@@ -89,7 +91,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         UUID estudiante3 = UUID.randomUUID();
         String body = String.format("""
                 {
-                  "estudiantesIds": ["%s", "%s", "%s"]
+                  "estudiantes": ["%s", "%s", "%s"]
                 }
                 """, estudiante1, estudiante2, estudiante3);
         doNothing().when(asignarEstudiantesFichaPerfilInputPort).ejecutar(any());
@@ -97,7 +99,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isNoContent());
@@ -109,14 +111,14 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         UUID fichaPerfilId = UUID.randomUUID();
         String body = """
                 {
-                  "estudiantesIds": []
+                  "estudiantes": []
                 }
                 """;
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -132,14 +134,14 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         UUID estudiante4 = UUID.randomUUID();
         String body = String.format("""
                 {
-                  "estudiantesIds": ["%s", "%s", "%s", "%s"]
+                  "estudiantes": ["%s", "%s", "%s", "%s"]
                 }
                 """, estudiante1, estudiante2, estudiante3, estudiante4);
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -152,7 +154,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         UUID estudiante1 = UUID.randomUUID();
         String body = String.format("""
                 {
-                  "estudiantesIds": ["%s"]
+                  "estudiantes": ["%s"]
                 }
                 """, estudiante1);
         doThrow(new FichaPerfilNoEncontradaException(fichaPerfilId))
@@ -161,7 +163,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -174,7 +176,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         UUID estudiante1 = UUID.randomUUID();
         String body = String.format("""
                 {
-                  "estudiantesIds": ["%s"]
+                  "estudiantes": ["%s"]
                 }
                 """, estudiante1);
         doThrow(new EstudianteNoEncontradoException(estudiante1))
@@ -183,7 +185,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -196,7 +198,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         UUID estudiante1 = UUID.randomUUID();
         String body = String.format("""
                 {
-                  "estudiantesIds": ["%s"]
+                  "estudiantes": ["%s"]
                 }
                 """, estudiante1);
         doThrow(new EstudianteDuplicadoException(estudiante1))
@@ -205,7 +207,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -218,7 +220,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         UUID estudiante1 = UUID.randomUUID();
         String body = String.format("""
                 {
-                  "estudiantesIds": ["%s"]
+                  "estudiantes": ["%s"]
                 }
                 """, estudiante1);
 
@@ -236,7 +238,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         UUID estudiante1 = UUID.randomUUID();
         String body = String.format("""
                 {
-                  "estudiantesIds": ["%s"]
+                  "estudiantes": ["%s"]
                 }
                 """, estudiante1);
 
@@ -257,13 +259,13 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         UUID estudiante2 = UUID.randomUUID();
         String body = String.format("""
                 {
-                  "estudiantesIds": ["%s", "%s"]
+                  "estudiantes": ["%s", "%s"]
                 }
                 """, estudiante1, estudiante2);
 
         ValidationResult validationResult = new ValidationResult();
         validationResult.addError(
-                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES_IDS,
+                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES,
                 FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO,
                 FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
                         FichasMessages.FichaPerfil.ESTUDIANTES_MAX
@@ -276,7 +278,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnprocessableEntity());

@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.estadoficha.query.adapter.in.web;
 
 import com.arquisoft.fichas.application.estadoficha.query.port.in.ConsultarEstadosFichaInputPort;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarEstadosFichaInputAdapter.class)
-@Import({GlobalAppExceptionHandler.class,
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+        GlobalAppExceptionHandler.class,
         ConsultarEstadosFichaInputAdapterTest.TestSecurityConfig.class})
 class ConsultarEstadosFichaInputAdapterTest {
 
@@ -68,7 +70,7 @@ class ConsultarEstadosFichaInputAdapterTest {
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-ficha:view"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("EN_CONSTRUCCION"))
@@ -87,7 +89,7 @@ class ConsultarEstadosFichaInputAdapterTest {
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-ficha:view"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW))))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
     }
@@ -105,7 +107,7 @@ class ConsultarEstadosFichaInputAdapterTest {
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-ficha:view"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(3))
                 .andExpect(jsonPath("$[0].id").value("NO_APROBADA"))
@@ -140,7 +142,7 @@ class ConsultarEstadosFichaInputAdapterTest {
         // Act
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-ficha:view"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW))))
                 .andExpect(status().isOk());
 
         // Assert
@@ -158,7 +160,7 @@ class ConsultarEstadosFichaInputAdapterTest {
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-ficha:view"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_FICHA_VIEW))))
                 .andExpect(status().isOk());
     }
 }

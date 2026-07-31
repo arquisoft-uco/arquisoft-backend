@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.minio.adapter.in.web;
 
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.minio.MinioStorageClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,9 @@ class MinioGuiaInputAdapterTest {
 
     @Mock
     private MinioStorageClient minioStorageClient;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private MinioGuiaInputAdapter minioGuiaInputAdapter;

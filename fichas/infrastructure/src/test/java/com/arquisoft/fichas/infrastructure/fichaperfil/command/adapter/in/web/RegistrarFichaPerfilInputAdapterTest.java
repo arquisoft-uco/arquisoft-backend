@@ -5,6 +5,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.exception.Estudian
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInputPort;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RegistrarFichaPerfilInputAdapter.class)
-@Import({GlobalAppExceptionHandler.class,
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+        GlobalAppExceptionHandler.class,
         RegistrarFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class RegistrarFichaPerfilInputAdapterTest {
 
@@ -65,7 +67,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         String body = String.format("""
                 {
                   "tituloProyecto": "Título válido",
-                  "asesorFichaId": "%s"
+                  "asesorFicha": "%s"
                 }
                 """, asesorId);
 
@@ -74,7 +76,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -87,14 +89,14 @@ class RegistrarFichaPerfilInputAdapterTest {
         String bodyInvalido = """
                 {
                   "tituloProyecto": "",
-                  "asesorFichaId": null
+                  "asesorFicha": null
                 }
                 """;
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(bodyInvalido))
                 .andExpect(status().isBadRequest());
@@ -107,7 +109,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         String body = String.format("""
                 {
                   "tituloProyecto": "Título de prueba",
-                  "asesorFichaId": "%s"
+                  "asesorFicha": "%s"
                 }
                 """, asesorId);
 
@@ -125,7 +127,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         String body = String.format("""
                 {
                   "tituloProyecto": "Título de prueba",
-                  "asesorFichaId": "%s"
+                  "asesorFicha": "%s"
                 }
                 """, asesorId);
 
@@ -146,7 +148,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         String body = String.format("""
                 {
                   "tituloProyecto": "%s",
-                  "asesorFichaId": "%s"
+                  "asesorFicha": "%s"
                 }
                 """, tituloDuplicado, asesorId);
 
@@ -156,7 +158,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -169,7 +171,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         String body = String.format("""
                 {
                   "tituloProyecto": "Título de prueba",
-                  "asesorFichaId": "%s"
+                  "asesorFicha": "%s"
                 }
                 """, asesorId);
 
@@ -179,7 +181,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -195,8 +197,8 @@ class RegistrarFichaPerfilInputAdapterTest {
         String body = String.format("""
                 {
                   "tituloProyecto": "Título válido",
-                  "asesorFichaId": "%s",
-                  "estudiantesIds": ["%s", "%s"]
+                  "asesorFicha": "%s",
+                  "estudiantes": ["%s", "%s"]
                 }
                 """, asesorId, estudiante1, estudiante2);
 
@@ -205,7 +207,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -220,8 +222,8 @@ class RegistrarFichaPerfilInputAdapterTest {
         String body = String.format("""
                 {
                   "tituloProyecto": "Título válido",
-                  "asesorFichaId": "%s",
-                  "estudiantesIds": []
+                  "asesorFicha": "%s",
+                  "estudiantes": []
                 }
                 """, asesorId);
 
@@ -230,7 +232,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
@@ -248,15 +250,15 @@ class RegistrarFichaPerfilInputAdapterTest {
         String body = String.format("""
                 {
                   "tituloProyecto": "Título válido",
-                  "asesorFichaId": "%s",
-                  "estudiantesIds": ["%s", "%s", "%s", "%s"]
+                  "asesorFicha": "%s",
+                  "estudiantes": ["%s", "%s", "%s", "%s"]
                 }
                 """, asesorId, e1, e2, e3, e4);
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -270,8 +272,8 @@ class RegistrarFichaPerfilInputAdapterTest {
         String body = String.format("""
                 {
                   "tituloProyecto": "Título válido",
-                  "asesorFichaId": "%s",
-                  "estudiantesIds": ["%s"]
+                  "asesorFicha": "%s",
+                  "estudiantes": ["%s"]
                 }
                 """, asesorId, estudianteId);
 
@@ -281,7 +283,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -295,8 +297,8 @@ class RegistrarFichaPerfilInputAdapterTest {
         String body = String.format("""
                 {
                   "tituloProyecto": "Título válido",
-                  "asesorFichaId": "%s",
-                  "estudiantesIds": ["%s", "%s"]
+                  "asesorFicha": "%s",
+                  "estudiantes": ["%s", "%s"]
                 }
                 """, asesorId, estudianteId, estudianteId);
 
@@ -306,7 +308,7 @@ class RegistrarFichaPerfilInputAdapterTest {
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:create")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());

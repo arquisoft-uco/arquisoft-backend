@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface EstudianteQueryOutputPort {
 
-    boolean existsById(UUID id);
+    boolean existePorId(UUID id);
 }

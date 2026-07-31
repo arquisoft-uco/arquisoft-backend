@@ -2,6 +2,10 @@ package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapte
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.RemoverEstudianteFichaPerfilInputPort;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
+import com.arquisoft.shared.message.FichasApiDocs;
+import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -18,24 +22,29 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/fichas-perfil")
+@RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = "Fichas", description = "Gestión de fichas de perfil")
+@Tag(name = FichasApiDocs.EstudianteFichaPerfil.TAG_NAME,
+        description = FichasApiDocs.EstudianteFichaPerfil.TAG_DESCRIPTION)
 public class RemoverEstudianteFichaPerfilInputAdapter {
 
     private final RemoverEstudianteFichaPerfilInputPort inputPort;
 
     @DeleteMapping("/{fichaPerfilId}/estudiantes/{estudianteId}")
-    @PreAuthorize("hasAuthority('fichas:estudiante-ficha-perfil:delete')")
+    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTUDIANTE_FICHA_PERFIL_DELETE)
     @Operation(
-            summary = "Remover estudiante de ficha perfil",
-            security = @SecurityRequirement(name = "bearerAuth")
+            summary = FichasApiDocs.EstudianteFichaPerfil.REMOVER_SUMMARY,
+            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Estudiante removido exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Ficha, estudiante o relación no encontrada"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permiso para remover estudiantes")
+            @ApiResponse(responseCode = ApiCodes.NO_CONTENT,
+                    description = FichasApiDocs.EstudianteFichaPerfil.REMOVER_RESP_204),
+            @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
+                    description = FichasApiDocs.EstudianteFichaPerfil.REMOVER_RESP_400),
+            @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
+                    description = FichasApiDocs.Comun.RESP_401),
+            @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
+                    description = FichasApiDocs.EstudianteFichaPerfil.REMOVER_RESP_403)
     })
     public ResponseEntity<Void> remover(
             @PathVariable UUID fichaPerfilId,

@@ -51,6 +51,12 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 | DTOs | Sufijo `DTO`, con `toDomain()` y `static fromDomain(...)`. `@Data @NoArgsConstructor @AllArgsConstructor @Builder`. |
 | Excepciones de dominio | Extienden `DomainException` (shared) con campo `errorCode` |
 | IDs | Siempre `UUID` — nunca `Long` ni `Integer` |
+| Interactor (lado comando) | `{Accion}{Entidad}Interactor` implementa el `InputPort` y declara `@Transactional(transactionManager = "{contexto}TransactionManager")`; delega en el use case, que ya no implementa el puerto ni maneja la transacción. Aplicado en `fichas` |
+| Validators | Existencia, unicidad y propiedad en `{Feature}Validator` (`application/{feature}/command/validator/`), reutilizables entre features — no bloques `if/throw` dentro del use case |
+| Orden de validación | 1) integridad del dato (formato, obligatoriedad, longitud, duplicados en la petición), 2) existencia/unicidad en BD, 3) reglas de negocio del agregado |
+| Identificadores en el body | Se reciben como `String` con `@UuidValido` (`shared:web`) y se convierten a `UUID` en `toCommand()`; nunca tipados `UUID` en el DTO |
+| Nombres del contrato | Objetuales: `asesorFicha`, `estudiantes` — no `asesorFichaId`, `estudiantesIds` |
+| Literales en adapters | `ApiCodes` (códigos HTTP), `FichasApiDocs` (textos Swagger), `FichasAuthorities` (authorities), `FichasRoutes` (rutas) — nada quemado inline |
 
 ## Outbox Pattern — Spring Modulith 2.0.0
 
@@ -254,7 +260,14 @@ Migraciones Flyway en `{contexto}/infrastructure/src/main/resources/db/migration
 
 ### Logging
 
-- `@Slf4j` — `log.warn()` para 4xx, `log.error()` para 5xx
+- Puerto `AppLogger` (`shared:logger`) inyectado por constructor: `private final AppLogger logger;` — desacopla la aplicación de SLF4J (implementación por defecto `Slf4jAppLogger`, bean prototype de `AppLoggerConfig`). Aplicado en `fichas`; el resto de contextos aún usa `@Slf4j`.
+- `logger.warn()` para 4xx, `logger.error()` para 5xx
+- En slices `@WebMvcTest` añadir `AppLoggerConfig.class` al `@Import`; en tests unitarios, mock por constructor
+
+### Trazabilidad
+
+- `TraceIdFilter` (`shared:web`) reutiliza el header `X-Correlation-Id` entrante, cae al trace-id de `traceparent` (W3C) y solo si no hay ninguno genera un UUID
+- El id resuelto va al MDC, se devuelve en el header `X-Correlation-Id` de la respuesta y viaja como `traceId` en `ErrorResponseDTO`, de modo que un error reportado se puede reconstruir desde los logs
 
 ## Testing
 

@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -29,7 +30,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarFichasPerfilInputAdapter.class)
-@Import({GlobalAppExceptionHandler.class,
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+        GlobalAppExceptionHandler.class,
         ConsultarFichasPerfilInputAdapterTest.TestSecurityConfig.class})
 class ConsultarFichasPerfilInputAdapterTest {
 
@@ -63,7 +65,7 @@ class ConsultarFichasPerfilInputAdapterTest {
         mockMvc.perform(post("/fichas-perfil/coordinador")
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:view"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(0));
@@ -91,7 +93,7 @@ class ConsultarFichasPerfilInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:view"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
                 .andExpect(status().isOk());
     }
 
@@ -120,7 +122,7 @@ class ConsultarFichasPerfilInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority("fichas:ficha-perfil:view"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
                 .andExpect(status().isOk());
     }
 

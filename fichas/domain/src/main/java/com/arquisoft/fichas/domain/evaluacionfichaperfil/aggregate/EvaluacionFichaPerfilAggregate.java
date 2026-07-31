@@ -48,20 +48,24 @@ public final class EvaluacionFichaPerfilAggregate {
     }
 
     private void setRepresentanteComiteId(UUID representanteComiteId, ValidationResult result) {
-        DomainValidator.notNull(
+        if (!DomainValidator.notNull(
                 representanteComiteId,
-                FichasMessages.EvaluacionFichaPerfil.CAMPO_REPRESENTANTE_COMITE_ID,
+                FichasMessages.EvaluacionFichaPerfil.CAMPO_REPRESENTANTE_COMITE,
                 FichasMessages.EvaluacionFichaPerfil.REPRESENTANTE_REQUERIDO,
-                result);
+                result)) {
+            return;
+        }
         this.representanteComiteId = representanteComiteId;
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
-        DomainValidator.notNull(
+        if (!DomainValidator.notNull(
                 fichaPerfilId,
-                FichasMessages.EvaluacionFichaPerfil.CAMPO_FICHA_PERFIL_ID,
+                FichasMessages.EvaluacionFichaPerfil.CAMPO_FICHA_PERFIL,
                 FichasMessages.EvaluacionFichaPerfil.FICHA_REQUERIDA,
-                result);
+                result)) {
+            return;
+        }
         this.fichaPerfilId = fichaPerfilId;
     }
 

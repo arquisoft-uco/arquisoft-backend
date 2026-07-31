@@ -53,7 +53,7 @@ class ItemFichaPerfilAggregateTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_FICHA_PERFIL_ID);
+                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_FICHA_PERFIL);
     }
 
     @Test

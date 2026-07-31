@@ -2,6 +2,10 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.ModificarFichaPerfilInputPort;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.ModificarFichaPerfilRequestDTO;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
+import com.arquisoft.shared.message.FichasApiDocs;
+import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -9,7 +13,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,27 +25,30 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@Slf4j
 @RestController
-@RequestMapping("/fichas-perfil")
+@RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = "Fichas Perfil", description = "Gestión de fichas de perfil de proyectos de grado")
+@Tag(name = FichasApiDocs.FichaPerfil.TAG_NAME, description = FichasApiDocs.FichaPerfil.TAG_DESCRIPTION)
 public class ModificarFichaPerfilInputAdapter {
 
     private final ModificarFichaPerfilInputPort modificarFichaPerfilInputPort;
 
     @PatchMapping("/{id}")
-    @PreAuthorize("hasAuthority('fichas:ficha-perfil:update')")
+    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_UPDATE)
     @Operation(
-            summary = "Modificar ficha de perfil",
-            description = "Permite a un estudiante modificar el título de su propia ficha de perfil.",
-            security = @SecurityRequirement(name = "bearerAuth")
+            summary = FichasApiDocs.FichaPerfil.MODIFICAR_SUMMARY,
+            description = FichasApiDocs.FichaPerfil.MODIFICAR_DESCRIPTION,
+            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Ficha modificada exitosamente"),
-            @ApiResponse(responseCode = "400", description = "Título duplicado, ficha no encontrada o datos inválidos"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin la autoridad fichas:ficha-perfil:update, o no es propietario de la ficha")
+            @ApiResponse(responseCode = ApiCodes.NO_CONTENT,
+                    description = FichasApiDocs.FichaPerfil.MODIFICAR_RESP_204),
+            @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
+                    description = FichasApiDocs.FichaPerfil.MODIFICAR_RESP_400),
+            @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
+                    description = FichasApiDocs.Comun.RESP_401),
+            @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
+                    description = FichasApiDocs.FichaPerfil.MODIFICAR_RESP_403)
     })
     public ResponseEntity<Void> modificar(
             @PathVariable UUID id,

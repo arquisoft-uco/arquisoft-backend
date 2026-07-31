@@ -5,6 +5,6 @@ import java.util.UUID;
 
 public record RegistrarFichaPerfilCommand(
         String tituloProyecto,
-        UUID asesorFichaId,
-        List<UUID> estudiantesIds
+        UUID asesorFicha,
+        List<UUID> estudiantes
 ) {}

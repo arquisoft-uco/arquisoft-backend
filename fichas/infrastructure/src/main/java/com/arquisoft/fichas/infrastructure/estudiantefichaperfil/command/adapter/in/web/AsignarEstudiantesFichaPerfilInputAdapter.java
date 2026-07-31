@@ -2,6 +2,10 @@ package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapte
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.AsignarEstudiantesFichaPerfilInputPort;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web.dto.AsignarEstudiantesFichaPerfilRequestDTO;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
+import com.arquisoft.shared.message.FichasApiDocs;
+import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -9,7 +13,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,43 +23,33 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-@Slf4j
 @RestController
-@RequestMapping("/fichas-perfil")
+@RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = "Fichas Perfil", description = "Gestión de fichas de perfil de proyectos de grado")
+@Tag(name = FichasApiDocs.EstudianteFichaPerfil.TAG_NAME,
+        description = FichasApiDocs.EstudianteFichaPerfil.TAG_DESCRIPTION)
 public class AsignarEstudiantesFichaPerfilInputAdapter {
 
     private final AsignarEstudiantesFichaPerfilInputPort asignarEstudiantesFichaPerfilInputPort;
 
     @PostMapping("/{fichaPerfilId}/estudiantes")
-    @PreAuthorize("hasAuthority('fichas:estudiante-ficha-perfil:create')")
+    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTUDIANTE_FICHA_PERFIL_CREATE)
     @Operation(
-            summary = "Asignar estudiantes a ficha de perfil existente",
-            description = "Permite al coordinador asignar entre 1 y 3 estudiantes a una ficha de perfil ya existente",
-            security = @SecurityRequirement(name = "bearerAuth")
+            summary = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_SUMMARY,
+            description = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_DESCRIPTION,
+            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
-            @ApiResponse(
-                    responseCode = "204",
-                    description = "Estudiantes asignados exitosamente"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Ficha no encontrada, estudiante no encontrado, duplicado en lista o ya asignado"
-            ),
-            @ApiResponse(
-                    responseCode = "422",
-                    description = "Límite de estudiantes excedido"
-            ),
-            @ApiResponse(
-                    responseCode = "401",
-                    description = "No autenticado"
-            ),
-            @ApiResponse(
-                    responseCode = "403",
-                    description = "Sin permiso para asignar estudiantes"
-            )
+            @ApiResponse(responseCode = ApiCodes.NO_CONTENT,
+                    description = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_RESP_204),
+            @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
+                    description = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_RESP_400),
+            @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
+                    description = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_RESP_422),
+            @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
+                    description = FichasApiDocs.Comun.RESP_401),
+            @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
+                    description = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_RESP_403)
     })
     public ResponseEntity<Void> asignarEstudiantes(
             @PathVariable UUID fichaPerfilId,

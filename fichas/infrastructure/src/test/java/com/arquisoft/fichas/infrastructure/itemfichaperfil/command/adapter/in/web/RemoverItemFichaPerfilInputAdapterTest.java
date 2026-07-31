@@ -5,6 +5,7 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverIte
 import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.RemoverItemFichaPerfilInputPort;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.infrastructure.FichasInfrastructureTestApplication;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -34,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = RemoverItemFichaPerfilInputAdapter.class)
-@Import({
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
         RemoverItemFichaPerfilInputAdapterTest.TestSecurityConfig.class,
         FichasInfrastructureTestApplication.class
@@ -72,7 +73,7 @@ class RemoverItemFichaPerfilInputAdapterTest {
         mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId)
                         .with(jwt()
                                 .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:delete"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isNoContent());
     }
 
@@ -87,7 +88,7 @@ class RemoverItemFichaPerfilInputAdapterTest {
         mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId)
                         .with(jwt()
                                 .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:delete"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorCode").value(FichasMessages.ItemFichaPerfil.ITEM_NO_ENCONTRADO));
     }
@@ -106,7 +107,7 @@ class RemoverItemFichaPerfilInputAdapterTest {
         mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId)
                         .with(jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:delete"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.errorCode").value(FichasMessages.FichaPerfil.FICHA_NO_PROPIETARIO));
     }
@@ -129,7 +130,7 @@ class RemoverItemFichaPerfilInputAdapterTest {
         mockMvc.perform(delete("/fichas-perfil/items/{itemId}", itemId)
                         .with(jwt()
                                 .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:delete"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.fieldErrors[0].field")
                         .value(FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES));

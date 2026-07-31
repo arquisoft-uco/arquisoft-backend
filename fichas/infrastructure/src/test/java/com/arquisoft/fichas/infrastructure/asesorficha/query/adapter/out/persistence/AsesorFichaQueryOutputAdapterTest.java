@@ -30,7 +30,7 @@ class AsesorFichaQueryOutputAdapterTest {
         when(asesorFichaJpaRepository.existsById(asesorId)).thenReturn(true);
 
         // Act
-        boolean existe = adapter.existsById(asesorId);
+        boolean existe = adapter.existePorId(asesorId);
 
         // Assert
         assertThat(existe).isTrue();
@@ -44,7 +44,7 @@ class AsesorFichaQueryOutputAdapterTest {
         when(asesorFichaJpaRepository.existsById(asesorId)).thenReturn(false);
 
         // Act
-        boolean existe = adapter.existsById(asesorId);
+        boolean existe = adapter.existePorId(asesorId);
 
         // Assert
         assertThat(existe).isFalse();

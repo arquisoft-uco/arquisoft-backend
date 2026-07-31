@@ -14,7 +14,7 @@ public class EstudianteQueryOutputAdapter implements EstudianteQueryOutputPort {
     private final EstudianteJpaRepository estudianteJpaRepository;
 
     @Override
-    public boolean existsById(UUID id) {
+    public boolean existePorId(UUID id) {
         return estudianteJpaRepository.existsById(id);
     }
 }

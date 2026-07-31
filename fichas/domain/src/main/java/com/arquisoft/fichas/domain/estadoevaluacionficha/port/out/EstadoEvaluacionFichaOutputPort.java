@@ -9,11 +9,11 @@ public interface EstadoEvaluacionFichaOutputPort {
 
     void guardar(EstadoEvaluacionFichaAggregate aggregate);
 
-    boolean existsByEvaluacionAndEstado(UUID evaluacionFichaPerfilId, String estadoEvaluacionId);
+    boolean existePorEvaluacionYEstado(UUID evaluacionFichaPerfilId, String estadoEvaluacionId);
 
     long contarEstadosPorEvaluacion(UUID evaluacionFichaPerfilId);
 
-    boolean existsEstadoEvaluacionById(String estadoEvaluacionId);
+    boolean existeEstadoEvaluacionPorId(String estadoEvaluacionId);
 
     Optional<String> obtenerUltimoEstado(UUID evaluacionFichaPerfilId);
 }

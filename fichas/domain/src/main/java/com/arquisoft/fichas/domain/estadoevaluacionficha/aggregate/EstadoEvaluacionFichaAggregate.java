@@ -79,7 +79,7 @@ public final class EstadoEvaluacionFichaAggregate {
     private void setEvaluacionFichaPerfilId(UUID evaluacionFichaPerfilId, ValidationResult result) {
         if (!DomainValidator.notNull(
                 evaluacionFichaPerfilId,
-                FichasMessages.EstadoEvaluacionFicha.CAMPO_EVALUACION_ID,
+                FichasMessages.EstadoEvaluacionFicha.CAMPO_EVALUACION_FICHA_PERFIL,
                 FichasMessages.EstadoEvaluacionFicha.EVALUACION_REQUERIDA,
                 result)) {
             return;

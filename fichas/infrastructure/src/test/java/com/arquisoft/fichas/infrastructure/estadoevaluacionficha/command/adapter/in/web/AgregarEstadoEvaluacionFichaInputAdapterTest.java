@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.port.in.Ag
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
@@ -32,7 +33,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AgregarEstadoEvaluacionFichaInputAdapter.class)
-@Import({GlobalAppExceptionHandler.class,
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+        GlobalAppExceptionHandler.class,
         AgregarEstadoEvaluacionFichaInputAdapterTest.TestSecurityConfig.class})
 class AgregarEstadoEvaluacionFichaInputAdapterTest {
 
@@ -64,7 +66,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         UUID evaluacionId = UUID.randomUUID();
         UUID resultadoId = UUID.randomUUID();
         String requestBody = String.format(
-                "{\"evaluacionFichaPerfilId\":\"%s\",\"estadoEvaluacionId\":\"APROBADA\"}",
+                "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
                 evaluacionId);
 
         when(agregarEstadoEvaluacionFichaInputPort.ejecutar(any())).thenReturn(resultadoId);
@@ -74,7 +76,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(resultadoId.toString()));
     }
@@ -82,14 +84,14 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
     @Test
     void debe400_cuandoRequestInvalido() throws Exception {
         // Arrange
-        String requestInvalido = "{\"evaluacionFichaPerfilId\":null,\"estadoEvaluacionId\":\"\"}";
+        String requestInvalido = "{\"evaluacionFichaPerfil\":null,\"estadoEvaluacion\":\"\"}";
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestInvalido)
                         .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -98,7 +100,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         String requestBody = String.format(
-                "{\"evaluacionFichaPerfilId\":\"%s\",\"estadoEvaluacionId\":\"APROBADA\"}",
+                "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
                 evaluacionId);
 
         when(agregarEstadoEvaluacionFichaInputPort.ejecutar(any()))
@@ -109,7 +111,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -118,7 +120,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         String requestBody = String.format(
-                "{\"evaluacionFichaPerfilId\":\"%s\",\"estadoEvaluacionId\":\"APROBADA\"}",
+                "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
                 evaluacionId);
 
         when(agregarEstadoEvaluacionFichaInputPort.ejecutar(any()))
@@ -129,7 +131,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -138,7 +140,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         String requestBody = String.format(
-                "{\"evaluacionFichaPerfilId\":\"%s\",\"estadoEvaluacionId\":\"NO_APROBADA\"}",
+                "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"NO_APROBADA\"}",
                 evaluacionId);
 
         var validationResult = new ValidationResult();
@@ -153,7 +155,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)
                         .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
                 .andExpect(status().isUnprocessableEntity());
     }
 
@@ -162,7 +164,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         String requestBody = String.format(
-                "{\"evaluacionFichaPerfilId\":\"%s\",\"estadoEvaluacionId\":\"APROBADA\"}",
+                "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
                 evaluacionId);
 
         // Act & Assert
@@ -177,7 +179,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         String requestBody = String.format(
-                "{\"evaluacionFichaPerfilId\":\"%s\",\"estadoEvaluacionId\":\"APROBADA\"}",
+                "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
                 evaluacionId);
 
         when(agregarEstadoEvaluacionFichaInputPort.ejecutar(any()))
@@ -189,7 +191,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
                         .content(requestBody)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:estado-evaluacion-ficha:create"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
                 .andExpect(status().isForbidden());
     }
 
@@ -198,7 +200,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         String requestBody = String.format(
-                "{\"evaluacionFichaPerfilId\":\"%s\",\"estadoEvaluacionId\":\"APROBADA\"}",
+                "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
                 evaluacionId);
 
         // Act & Assert

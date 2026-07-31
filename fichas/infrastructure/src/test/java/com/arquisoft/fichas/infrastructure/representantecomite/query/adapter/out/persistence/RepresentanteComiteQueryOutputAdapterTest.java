@@ -36,8 +36,8 @@ class RepresentanteComiteQueryOutputAdapterTest {
         when(jpaRepository.existsById(idNoExistente)).thenReturn(false);
 
         // Act
-        boolean existeTrue = adapter.existsById(idExistente);
-        boolean existeFalse = adapter.existsById(idNoExistente);
+        boolean existeTrue = adapter.existePorId(idExistente);
+        boolean existeFalse = adapter.existePorId(idNoExistente);
 
         // Assert
         assertThat(existeTrue).isTrue();

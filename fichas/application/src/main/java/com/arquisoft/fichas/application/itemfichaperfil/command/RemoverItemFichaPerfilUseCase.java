@@ -1,42 +1,37 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command;
 
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoPropietarioException;
-import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
-import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.RemoverItemFichaPerfilInputPort;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
-@Transactional(transactionManager = "fichasTransactionManager")
-public class RemoverItemFichaPerfilUseCase implements RemoverItemFichaPerfilInputPort {
+public class RemoverItemFichaPerfilUseCase {
 
     private final ItemFichaPerfilOutputPort itemOutputPort;
-    private final FichaPerfilQueryOutputPort fichaQueryPort;
     private final RevisionItemQueryOutputPort revisionQueryPort;
+    private final FichaPerfilValidator fichaPerfilValidator;
+    private final AppLogger logger;
 
-    @Override
     public void ejecutar(RemoverItemFichaPerfilCommand command) {
-        var item = itemOutputPort.buscarPorId(command.itemId())
-                .orElseThrow(() -> new ItemFichaPerfilNoEncontradoException(command.itemId()));
+        var item = itemOutputPort.buscarPorId(command.item())
+                .orElseThrow(() -> new ItemFichaPerfilNoEncontradoException(command.item()));
 
-        if (!fichaQueryPort.esEstudiantePropietario(item.getFichaPerfilId(), command.estudianteId())) {
-            throw new FichaNoPropietarioException(item.getFichaPerfilId(), command.estudianteId());
-        }
+        fichaPerfilValidator.validarEstudiantePropietario(
+                new PropietarioFichaCriteria(item.getFichaPerfilId(), command.estudiante()));
 
-        long totalRevisiones = revisionQueryPort.contarPorItem(command.itemId());
+        long totalRevisiones = revisionQueryPort.contarPorItem(command.item());
         item.removerse(totalRevisiones);
 
-        itemOutputPort.eliminarPorId(command.itemId());
+        itemOutputPort.eliminarPorId(command.item());
 
-        log.info(FichasMessages.ItemFichaPerfil.LOG_REMOVIDO, command.itemId(), item.getFichaPerfilId());
+        logger.info(FichasMessages.ItemFichaPerfil.LOG_REMOVIDO, command.item(), item.getFichaPerfilId());
     }
 }

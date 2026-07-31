@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarI
 import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.ModificarItemFichaPerfilInputPort;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemNoEncontradoException;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -33,7 +34,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ModificarItemFichaPerfilInputAdapter.class)
-@Import({GlobalAppExceptionHandler.class,
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+        GlobalAppExceptionHandler.class,
         ModificarItemFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class ModificarItemFichaPerfilInputAdapterTest {
 
@@ -72,7 +74,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isNoContent());
@@ -92,7 +94,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isBadRequest());
@@ -113,7 +115,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isForbidden());
@@ -170,7 +172,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnprocessableEntity());
@@ -197,7 +199,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
-                                .authorities(new SimpleGrantedAuthority("fichas:item-ficha-perfil:update")))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isUnprocessableEntity());

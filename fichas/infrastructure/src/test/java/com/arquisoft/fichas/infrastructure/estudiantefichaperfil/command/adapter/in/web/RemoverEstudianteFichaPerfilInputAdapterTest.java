@@ -5,6 +5,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.Remo
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.RemoverEstudianteFichaPerfilInputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -35,7 +36,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RemoverEstudianteFichaPerfilInputAdapter.class)
-@Import({GlobalAppExceptionHandler.class,
+@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
+        GlobalAppExceptionHandler.class,
         RemoverEstudianteFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class RemoverEstudianteFichaPerfilInputAdapterTest {
 
@@ -74,15 +76,15 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilId, estudianteId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:delete"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
         ArgumentCaptor<RemoverEstudianteFichaPerfilCommand> captor =
                 ArgumentCaptor.forClass(RemoverEstudianteFichaPerfilCommand.class);
         verify(inputPort, times(1)).ejecutar(captor.capture());
-        assertThat(captor.getValue().fichaPerfilId()).isEqualTo(fichaPerfilId);
-        assertThat(captor.getValue().estudianteId()).isEqualTo(estudianteId);
+        assertThat(captor.getValue().fichaPerfil()).isEqualTo(fichaPerfilId);
+        assertThat(captor.getValue().estudiante()).isEqualTo(estudianteId);
     }
 
     @Test
@@ -99,7 +101,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilId, estudianteId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:delete"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -117,7 +119,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilId, estudianteId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:delete"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -135,7 +137,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilId, estudianteId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:delete"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -175,7 +177,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilIdInvalido, estudianteId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:delete"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -189,7 +191,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
                         fichaPerfilId, estudianteIdInvalido)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .authorities(new SimpleGrantedAuthority("fichas:estudiante-ficha-perfil:delete"))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isBadRequest());
     }
 

@@ -1,8 +1,13 @@
 package com.arquisoft.shared.validation;
 
 import com.arquisoft.shared.message.AppMessages;
+import com.arquisoft.shared.util.UtilCollection;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilUUID;
+
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Guard central de invariantes de dominio — Notification Pattern.
@@ -94,6 +99,66 @@ public final class DomainValidator {
         if (!UtilText.emailStringIsValid(value)) {
             result.addError(fieldName, errorCode,
                     AppMessages.DomainValidator.VALID_EMAIL.formatted(fieldName));
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Acumula error si {@code value} no tiene formato de identificador único universal (UUID).
+     * Llamar solo después de verificar que el valor existe con {@link #notBlank}.
+     *
+     * @return {@code true} si la validación pasó (formato válido); {@code false} si falló.
+     */
+    public static boolean validUUID(String value, String fieldName, String errorCode, ValidationResult result) {
+        if (!UtilUUID.uuidStringIsValid(value)) {
+            result.addError(fieldName, errorCode,
+                    AppMessages.DomainValidator.VALID_UUID.formatted(fieldName));
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Acumula error si {@code value} es {@code null} o no tiene elementos.
+     *
+     * @return {@code true} si la validación pasó (colección con elementos); {@code false} si falló.
+     */
+    public static boolean notEmpty(Collection<?> value, String fieldName, String errorCode, ValidationResult result) {
+        if (UtilCollection.isEmptyOrNull(value)) {
+            result.addError(fieldName, errorCode,
+                    AppMessages.DomainValidator.NOT_EMPTY.formatted(fieldName));
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Acumula error si {@code value} tiene más de {@code max} elementos.
+     * Una colección {@code null} pasa la validación (la obligatoriedad la decide {@link #notEmpty}).
+     *
+     * @return {@code true} si la validación pasó (tamaño dentro del límite); {@code false} si falló.
+     */
+    public static boolean maxSize(Collection<?> value, int max, String fieldName, String errorCode, ValidationResult result) {
+        if (!UtilObject.isNull(value) && value.size() > max) {
+            result.addError(fieldName, errorCode,
+                    AppMessages.DomainValidator.MAX_SIZE.formatted(fieldName, max));
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Acumula error si {@code value} contiene elementos repetidos; el mensaje incluye el
+     * primer duplicado encontrado. Una colección {@code null} o vacía pasa la validación.
+     *
+     * @return {@code true} si la validación pasó (sin duplicados); {@code false} si falló.
+     */
+    public static boolean sinDuplicados(Collection<?> value, String fieldName, String errorCode, ValidationResult result) {
+        Optional<?> duplicado = UtilCollection.firstDuplicate(value);
+        if (duplicado.isPresent()) {
+            result.addError(fieldName, errorCode,
+                    AppMessages.DomainValidator.SIN_DUPLICADOS.formatted(fieldName, duplicado.get()));
             return false;
         }
         return true;

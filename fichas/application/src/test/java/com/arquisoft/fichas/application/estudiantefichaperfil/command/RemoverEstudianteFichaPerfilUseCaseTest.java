@@ -4,9 +4,10 @@ import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontr
 import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -27,13 +29,16 @@ import static org.mockito.Mockito.when;
 class RemoverEstudianteFichaPerfilUseCaseTest {
 
     @Mock
-    private FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
-
-    @Mock
     private EstudianteQueryOutputPort estudianteQueryOutputPort;
 
     @Mock
     private EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+
+    @Mock
+    private FichaPerfilValidator fichaPerfilValidator;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private RemoverEstudianteFichaPerfilUseCase useCase;
@@ -45,8 +50,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         var estudianteId = UUID.randomUUID();
         var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudianteId)).thenReturn(true);
+        when(estudianteQueryOutputPort.existePorId(estudianteId)).thenReturn(true);
         when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(true);
 
@@ -54,8 +58,8 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         useCase.ejecutar(command);
 
         // Assert
-        verify(fichaPerfilQueryOutputPort, times(1)).existsById(fichaPerfilId);
-        verify(estudianteQueryOutputPort, times(1)).existsById(estudianteId);
+        verify(fichaPerfilValidator, times(1)).validarFichaExiste(fichaPerfilId);
+        verify(estudianteQueryOutputPort, times(1)).existePorId(estudianteId);
         verify(estudianteFichaPerfilOutputPort, times(1))
                 .existePorFichaYEstudiante(fichaPerfilId, estudianteId);
         verify(estudianteFichaPerfilOutputPort, times(1)).eliminar(fichaPerfilId, estudianteId);
@@ -68,15 +72,15 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         var estudianteId = UUID.randomUUID();
         var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(false);
+        doThrow(new FichaPerfilNoEncontradaException(fichaPerfilId))
+                .when(fichaPerfilValidator).validarFichaExiste(fichaPerfilId);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class)
                 .hasMessage(FichasMessages.FichaPerfil.FICHA_NO_ENCONTRADA_MSG.formatted(fichaPerfilId));
 
-        verify(fichaPerfilQueryOutputPort, times(1)).existsById(fichaPerfilId);
-        verify(estudianteQueryOutputPort, never()).existsById(any());
+        verify(estudianteQueryOutputPort, never()).existePorId(any());
         verify(estudianteFichaPerfilOutputPort, never()).existePorFichaYEstudiante(any(), any());
         verify(estudianteFichaPerfilOutputPort, never()).eliminar(any(), any());
     }
@@ -88,16 +92,14 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         var estudianteId = UUID.randomUUID();
         var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudianteId)).thenReturn(false);
+        when(estudianteQueryOutputPort.existePorId(estudianteId)).thenReturn(false);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(EstudianteNoEncontradoException.class)
                 .hasMessage(FichasMessages.Estudiante.NO_ENCONTRADO_MSG.formatted(estudianteId));
 
-        verify(fichaPerfilQueryOutputPort, times(1)).existsById(fichaPerfilId);
-        verify(estudianteQueryOutputPort, times(1)).existsById(estudianteId);
+        verify(fichaPerfilValidator, times(1)).validarFichaExiste(fichaPerfilId);
         verify(estudianteFichaPerfilOutputPort, never()).existePorFichaYEstudiante(any(), any());
         verify(estudianteFichaPerfilOutputPort, never()).eliminar(any(), any());
     }
@@ -109,8 +111,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         var estudianteId = UUID.randomUUID();
         var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudianteId)).thenReturn(true);
+        when(estudianteQueryOutputPort.existePorId(estudianteId)).thenReturn(true);
         when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(false);
 
@@ -120,10 +121,6 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
                 .hasMessage(FichasMessages.EstudianteFichaPerfil.RELACION_NO_ENCONTRADA_MSG
                         .formatted(estudianteId, fichaPerfilId));
 
-        verify(fichaPerfilQueryOutputPort, times(1)).existsById(fichaPerfilId);
-        verify(estudianteQueryOutputPort, times(1)).existsById(estudianteId);
-        verify(estudianteFichaPerfilOutputPort, times(1))
-                .existePorFichaYEstudiante(fichaPerfilId, estudianteId);
         verify(estudianteFichaPerfilOutputPort, never()).eliminar(any(), any());
     }
 
@@ -134,8 +131,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         var estudianteId = UUID.randomUUID();
         var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaPerfilId)).thenReturn(true);
-        when(estudianteQueryOutputPort.existsById(estudianteId)).thenReturn(true);
+        when(estudianteQueryOutputPort.existePorId(estudianteId)).thenReturn(true);
         when(estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(fichaPerfilId, estudianteId))
                 .thenReturn(true);
 

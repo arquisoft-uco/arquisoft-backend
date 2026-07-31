@@ -6,10 +6,13 @@ import com.arquisoft.shared.exception.BaseException;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.shared.logger.MdcKeys;
+import com.arquisoft.shared.message.AppMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -52,14 +55,14 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
      * sin modificar la lógica del handler.</p>
      */
     private static final Map<Class<? extends BaseException>, ExceptionMapping> EXCEPTION_MAPPINGS = Map.of(
-            DomainException.class,        new ExceptionMapping(HttpStatus.UNPROCESSABLE_CONTENT, "Error de dominio",       false),
-            ApplicationException.class,   new ExceptionMapping(HttpStatus.BAD_REQUEST,          "Error de aplicación",    false),
-            AuthorizationException.class, new ExceptionMapping(HttpStatus.FORBIDDEN,            "Acceso denegado",        false),
-            InfrastructureException.class, new ExceptionMapping(HttpStatus.SERVICE_UNAVAILABLE,  "Servicio no disponible", true)
+            DomainException.class,        new ExceptionMapping(HttpStatus.UNPROCESSABLE_CONTENT, AppMessages.Http.ERROR_DOMINIO,          false),
+            ApplicationException.class,   new ExceptionMapping(HttpStatus.BAD_REQUEST,          AppMessages.Http.ERROR_APLICACION,       false),
+            AuthorizationException.class, new ExceptionMapping(HttpStatus.FORBIDDEN,            AppMessages.Http.ACCESO_DENEGADO,        false),
+            InfrastructureException.class, new ExceptionMapping(HttpStatus.SERVICE_UNAVAILABLE,  AppMessages.Http.SERVICIO_NO_DISPONIBLE, true)
     );
 
     private static final ExceptionMapping FALLBACK_MAPPING =
-            new ExceptionMapping(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno", true);
+            new ExceptionMapping(HttpStatus.INTERNAL_SERVER_ERROR, AppMessages.Http.ERROR_INTERNO, true);
 
     /** Campos cuyo valor nunca debe exponerse en la respuesta JSON (OWASP A01). */
     private static final Pattern SENSITIVE_FIELD_PATTERN =
@@ -113,12 +116,13 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(ErrorResponseDTO.builder()
-                        .error("Error de validación de dominio")
+                        .error(AppMessages.Http.ERROR_VALIDACION_DOMINIO)
                         .errorCode(ex.getErrorCode())
-                        .message("La entidad contiene %d error(es) de validación.".formatted(fieldErrors.size()))
+                        .message(AppMessages.Http.VALIDACION_DOMINIO_MSG.formatted(fieldErrors.size()))
                         .fieldErrors(fieldErrors)
                         .status(HttpStatus.UNPROCESSABLE_CONTENT.value())
                         .path(request.getRequestURI())
+                        .traceId(currentTraceId())
                         .build());
     }
 
@@ -141,8 +145,10 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                     request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
         }
 
-        return ResponseEntity.status(mapping.status())
-                .body(ErrorResponseDTO.fromBaseException(ex, mapping.error(), mapping.status(), request.getRequestURI()));
+        ErrorResponseDTO body = ErrorResponseDTO.fromBaseException(
+                ex, mapping.error(), mapping.status(), request.getRequestURI());
+        body.setTraceId(currentTraceId());
+        return ResponseEntity.status(mapping.status()).body(body);
     }
 
     // -------------------------------------------------------------------------
@@ -158,10 +164,11 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponseDTO.builder()
-                        .error("Unauthorized")
-                        .message("No autenticado o token inválido")
+                        .error(AppMessages.Http.NO_AUTORIZADO)
+                        .message(AppMessages.Http.NO_AUTENTICADO_MSG)
                         .status(HttpStatus.UNAUTHORIZED.value())
                         .path(request.getRequestURI())
+                        .traceId(currentTraceId())
                         .build());
     }
 
@@ -174,10 +181,11 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ErrorResponseDTO.builder()
-                        .error("Forbidden")
-                        .message("No tienes permisos para acceder a este recurso")
+                        .error(AppMessages.Http.PROHIBIDO)
+                        .message(AppMessages.Http.SIN_PERMISOS_MSG)
                         .status(HttpStatus.FORBIDDEN.value())
                         .path(request.getRequestURI())
+                        .traceId(currentTraceId())
                         .build());
     }
 
@@ -203,11 +211,12 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponseDTO.builder()
-                        .error("Parámetros inválidos")
-                        .errorCode("PARAMETRO_INVALIDO")
+                        .error(AppMessages.Http.PARAMETROS_INVALIDOS)
+                        .errorCode(AppMessages.Http.PARAMETRO_INVALIDO)
                         .message(safeMessage)
                         .status(HttpStatus.BAD_REQUEST.value())
                         .path(request.getRequestURI())
+                        .traceId(currentTraceId())
                         .build());
     }
 
@@ -224,10 +233,11 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseDTO.builder()
-                        .error("Internal Server Error")
-                        .message("Error interno del servidor")
+                        .error(AppMessages.Http.ERROR_INTERNO_SERVIDOR)
+                        .message(AppMessages.Http.ERROR_INTERNO_MSG)
                         .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .path(request.getRequestURI())
+                        .traceId(currentTraceId())
                         .build());
     }
 
@@ -257,22 +267,23 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     private ErrorResponseDTO buildSpringMvcErrorBody(Exception ex, HttpStatus status, String path) {
         String message = switch (status) {
             case BAD_REQUEST -> extractBadRequestMessage(ex);
-            case NOT_FOUND -> "El recurso solicitado no existe";
-            case METHOD_NOT_ALLOWED -> "El método HTTP no está permitido en este endpoint";
-            case NOT_ACCEPTABLE -> "No se puede producir una respuesta en el formato solicitado";
-            case UNSUPPORTED_MEDIA_TYPE -> "Content-Type no soportado";
-            case CONTENT_TOO_LARGE -> "El archivo supera el tamaño máximo permitido";
-            default -> "Error en la petición";
+            case NOT_FOUND -> AppMessages.Http.RECURSO_NO_EXISTE_MSG;
+            case METHOD_NOT_ALLOWED -> AppMessages.Http.METODO_NO_PERMITIDO_MSG;
+            case NOT_ACCEPTABLE -> AppMessages.Http.FORMATO_NO_PRODUCIBLE_MSG;
+            case UNSUPPORTED_MEDIA_TYPE -> AppMessages.Http.CONTENT_TYPE_NO_SOPORTADO_MSG;
+            case CONTENT_TOO_LARGE -> AppMessages.Http.ARCHIVO_DEMASIADO_GRANDE_MSG;
+            default -> AppMessages.Http.ERROR_PETICION_MSG;
         };
 
         ErrorResponseDTO.ErrorResponseDTOBuilder builder = ErrorResponseDTO.builder()
                 .error(status.getReasonPhrase())
                 .message(message)
                 .status(status.value())
-                .path(path);
+                .path(path)
+                .traceId(currentTraceId());
 
         if (status == HttpStatus.CONTENT_TOO_LARGE) {
-            builder.errorCode("ARCHIVO_DEMASIADO_GRANDE");
+            builder.errorCode(AppMessages.Http.ARCHIVO_DEMASIADO_GRANDE);
         }
 
         // MethodArgumentNotValidException: enriquecer con fieldErrors
@@ -310,13 +321,54 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     private String extractBadRequestMessage(Exception ex) {
         return switch (ex) {
             case org.springframework.web.bind.MethodArgumentNotValidException ignored ->
-                    "Error de validación en los datos enviados";
+                    AppMessages.Http.VALIDACION_DATOS_MSG;
             case org.springframework.web.bind.MissingServletRequestParameterException m ->
-                    "Parámetro requerido faltante: " + m.getParameterName();
-            case org.springframework.http.converter.HttpMessageNotReadableException ignored ->
-                    "Cuerpo de la petición mal formado";
-            default -> "Petición inválida";
+                    AppMessages.Http.PARAMETRO_FALTANTE_MSG.formatted(m.getParameterName());
+            case org.springframework.http.converter.HttpMessageNotReadableException notReadable ->
+                    extractUnreadableBodyMessage(notReadable);
+            case org.springframework.web.method.annotation.MethodArgumentTypeMismatchException m ->
+                    AppMessages.Http.CAMPO_FORMATO_INVALIDO_MSG.formatted(m.getName());
+            default -> AppMessages.Http.PETICION_INVALIDA_MSG;
         };
+    }
+
+    /**
+     * Identifica el campo ofensor cuando Jackson no puede deserializar el body,
+     * para responder qué dato falló en lugar del mensaje ciego genérico.
+     */
+    private String extractUnreadableBodyMessage(Exception ex) {
+        Throwable cause = ex.getCause();
+        while (cause != null) {
+            if (cause instanceof tools.jackson.core.JacksonException jacksonEx) {
+                String campo = describirPathJackson(jacksonEx);
+                if (campo != null && !campo.isBlank()) {
+                    return AppMessages.Http.CAMPO_FORMATO_INVALIDO_MSG.formatted(campo);
+                }
+            }
+            cause = cause.getCause();
+        }
+        return AppMessages.Http.CUERPO_MAL_FORMADO_MSG;
+    }
+
+    /** Construye la ruta del campo (ej. {@code estudiantes[1]}) desde el path de Jackson. */
+    private String describirPathJackson(tools.jackson.core.JacksonException jacksonEx) {
+        StringBuilder ruta = new StringBuilder();
+        for (var referencia : jacksonEx.getPath()) {
+            if (referencia.getPropertyName() != null) {
+                if (!ruta.isEmpty()) {
+                    ruta.append('.');
+                }
+                ruta.append(referencia.getPropertyName());
+            } else if (referencia.getIndex() >= 0) {
+                ruta.append('[').append(referencia.getIndex()).append(']');
+            }
+        }
+        return ruta.toString();
+    }
+
+    /** ID de correlación de la request actual, publicado en el MDC por TraceIdFilter. */
+    private String currentTraceId() {
+        return MDC.get(MdcKeys.TRACE_ID);
     }
 }
 

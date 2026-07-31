@@ -12,14 +12,27 @@ public final class FichasMessages {
 
         private FichaPerfil() {}
 
-        // Campos
-        public static final String CAMPO_TITULO          = "tituloProyecto";
-        public static final String CAMPO_ASESOR_FICHA_ID = "asesorFichaId";
-        public static final String CAMPO_ESTADO_FICHA    = "estadoFicha";
+        // Campos (contrato objetual — el comando transporta lo que representa, no la columna)
+        public static final String CAMPO_TITULO       = "tituloProyecto";
+        public static final String CAMPO_ASESOR_FICHA = "asesorFicha";
+        public static final String CAMPO_ESTUDIANTES  = "estudiantes";
+        public static final String CAMPO_ESTADO_FICHA = "estadoFicha";
 
         // Límites
         public static final int TITULO_MAX = 100;
         public static final int ESTUDIANTES_MAX = 3;
+
+        // Mensajes de validación de entrada (DTO)
+        public static final String TITULO_OBLIGATORIO_MSG = "El título del proyecto es obligatorio";
+        public static final String TITULO_MAX_MSG =
+                "El título no puede superar los " + TITULO_MAX + " caracteres";
+        public static final String ASESOR_OBLIGATORIO_MSG = "El asesor de ficha es obligatorio";
+        public static final String ASESOR_FORMATO_UUID_MSG =
+                "El dato " + CAMPO_ASESOR_FICHA + " no cumple el formato de identificador único universal";
+        public static final String ESTUDIANTES_MAX_MSG =
+                "No se pueden asignar más de " + ESTUDIANTES_MAX + " estudiantes";
+        public static final String ESTUDIANTE_FORMATO_UUID_MSG =
+                "El dato " + CAMPO_ESTUDIANTES + " no cumple el formato de identificador único universal";
 
         // Códigos de error
         public static final String TITULO_REQUERIDO        = "FICHA_TITULO_REQUERIDO";
@@ -60,15 +73,21 @@ public final class FichasMessages {
 
         private ItemFichaPerfil() {}
 
-        // Campos
-        public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
-        public static final String CAMPO_TIPO_ITEM       = "tipoItem";
-        public static final String CAMPO_CONTENIDO       = "contenido";
-        public static final String CAMPO_ESTADO_FICHA    = "estadoFicha";
-        public static final String CAMPO_REVISIONES      = "revisiones";
+        // Campos (contrato objetual)
+        public static final String CAMPO_FICHA_PERFIL = "fichaPerfil";
+        public static final String CAMPO_TIPO_ITEM    = "tipoItem";
+        public static final String CAMPO_CONTENIDO    = "contenido";
+        public static final String CAMPO_ESTADO_FICHA = "estadoFicha";
+        public static final String CAMPO_REVISIONES   = "revisiones";
 
         // Límites
         public static final int CONTENIDO_MAX = 7000;
+
+        // Mensajes de validación de entrada (DTO)
+        public static final String TIPO_ITEM_OBLIGATORIO_MSG = "El tipo de ítem es obligatorio";
+        public static final String CONTENIDO_OBLIGATORIO_MSG = "El contenido es obligatorio";
+        public static final String CONTENIDO_MAX_MSG =
+                "El contenido no puede superar " + CONTENIDO_MAX + " caracteres";
 
         // Códigos de error
         public static final String FICHA_PERFIL_ID_REQUERIDO     = "ITEM_FICHA_PERFIL_ID_REQUERIDO";
@@ -164,14 +183,23 @@ public final class FichasMessages {
 
         private EstudianteFichaPerfil() {}
 
-        // Campos
-        public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
-        public static final String CAMPO_ESTUDIANTE_ID   = "estudianteId";
-        public static final String CAMPO_ESTUDIANTES_IDS = "estudiantesIds";
+        // Campos (contrato objetual)
+        public static final String CAMPO_FICHA_PERFIL = "fichaPerfil";
+        public static final String CAMPO_ESTUDIANTE   = "estudiante";
+        public static final String CAMPO_ESTUDIANTES  = "estudiantes";
+
+        // Mensajes de validación de entrada (DTO)
+        public static final String ESTUDIANTES_OBLIGATORIOS_MSG =
+                "La lista de estudiantes es obligatoria y no puede estar vacía";
+        public static final String ESTUDIANTES_MAX_MSG =
+                "No se pueden asignar más de " + FichaPerfil.ESTUDIANTES_MAX + " estudiantes";
+        public static final String ESTUDIANTE_FORMATO_UUID_MSG =
+                "El dato " + CAMPO_ESTUDIANTES + " no cumple el formato de identificador único universal";
 
         // Códigos de error
         public static final String FICHA_PERFIL_ID_REQUERIDO    = "ESTUDIANTE_FICHA_PERFIL_FICHA_ID_REQUERIDO";
         public static final String ESTUDIANTE_ID_REQUERIDO      = "ESTUDIANTE_FICHA_PERFIL_ESTUDIANTE_ID_REQUERIDO";
+        public static final String ESTUDIANTES_REQUERIDOS       = "ESTUDIANTE_FICHA_PERFIL_ESTUDIANTES_REQUERIDOS";
         public static final String ESTUDIANTE_DUPLICADO         = "ESTUDIANTE_DUPLICADO";
         public static final String LIMITE_ESTUDIANTES_EXCEDIDO  = "LIMITE_ESTUDIANTES_EXCEDIDO";
         public static final String ESTUDIANTE_FICHA_PERFIL_NO_ENCONTRADO = "ESTUDIANTE_FICHA_PERFIL_NO_ENCONTRADO";
@@ -194,9 +222,9 @@ public final class FichasMessages {
 
         private EstadoFichaPerfil() {}
 
-        // Campos
-        public static final String CAMPO_FICHA_PERFIL_ID     = "fichaPerfilId";
-        public static final String CAMPO_ESTADO_FICHA        = "estadoFicha";
+        // Campos (contrato objetual)
+        public static final String CAMPO_FICHA_PERFIL = "fichaPerfil";
+        public static final String CAMPO_ESTADO_FICHA = "estadoFicha";
 
         // Códigos de error
         public static final String FICHA_PERFIL_ID_REQUERIDO       = "ESTADO_FICHA_PERFIL_FICHA_PERFIL_ID_REQUERIDO";
@@ -214,9 +242,9 @@ public final class FichasMessages {
 
         private EvaluacionFichaPerfil() {}
 
-        // Campos
-        public static final String CAMPO_REPRESENTANTE_COMITE_ID = "representanteComiteId";
-        public static final String CAMPO_FICHA_PERFIL_ID = "fichaPerfilId";
+        // Campos (contrato objetual)
+        public static final String CAMPO_REPRESENTANTE_COMITE = "representanteComite";
+        public static final String CAMPO_FICHA_PERFIL = "fichaPerfil";
 
         // Códigos de error
         public static final String EVALUACION_DUPLICADA = "EVALUACION_DUPLICADA";
@@ -253,9 +281,20 @@ public final class FichasMessages {
 
         private EstadoEvaluacionFicha() {}
 
-        // Campos
-        public static final String CAMPO_EVALUACION_ID = "evaluacionFichaPerfilId";
+        // Campos (contrato objetual)
+        public static final String CAMPO_EVALUACION_FICHA_PERFIL = "evaluacionFichaPerfil";
         public static final String CAMPO_ESTADO_EVALUACION = "estadoEvaluacion";
+
+        // Límites
+        public static final int ESTADO_MAX = 50;
+
+        // Mensajes de validación de entrada (DTO)
+        public static final String EVALUACION_OBLIGATORIA_MSG = "El identificador de la evaluación es obligatorio";
+        public static final String EVALUACION_FORMATO_UUID_MSG =
+                "El dato " + CAMPO_EVALUACION_FICHA_PERFIL + " no cumple el formato de identificador único universal";
+        public static final String ESTADO_OBLIGATORIO_MSG = "El identificador del estado es obligatorio";
+        public static final String ESTADO_MAX_MSG =
+                "El identificador del estado no puede superar " + ESTADO_MAX + " caracteres";
 
         // Códigos de error
         public static final String EVALUACION_NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";

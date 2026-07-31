@@ -6,10 +6,8 @@ import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJp
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilMapper;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class EstadoFichaPerfilCommandOutputAdapter implements EstadoFichaPerfilOutputPort {

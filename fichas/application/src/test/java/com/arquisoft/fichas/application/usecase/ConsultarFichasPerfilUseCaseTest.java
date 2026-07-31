@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilU
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,9 @@ class ConsultarFichasPerfilUseCaseTest {
 
     @Mock
     private FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;

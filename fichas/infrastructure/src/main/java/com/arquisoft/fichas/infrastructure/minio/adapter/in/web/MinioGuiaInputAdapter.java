@@ -7,8 +7,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,11 +26,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/fichas/minio/guia")
 @RequiredArgsConstructor
-@Slf4j
 @Tag(name = "MinIO Guía", description = "Endpoints de prueba para validar el módulo shared:minio. Eliminar tras el PoC.")
 public class MinioGuiaInputAdapter {
 
     private final MinioStorageClient minioStorageClient;
+    private final AppLogger logger;
 
     @GetMapping("/upload-url")
     @PreAuthorize("isAuthenticated()")
@@ -46,7 +46,7 @@ public class MinioGuiaInputAdapter {
             @Parameter(description = "Clave del objeto (ruta + nombre)", example = "documentos/mi-archivo.pdf")
             @RequestParam String key) {
 
-        log.debug(FichasMessages.MinioGuia.LOG_UPLOAD_URL, bucket, key);
+        logger.debug(FichasMessages.MinioGuia.LOG_UPLOAD_URL, bucket, key);
         String url = minioStorageClient.generateUploadPresignedUrl(bucket, key);
         return ResponseEntity.ok(Map.of(
                 "bucket", bucket,
@@ -70,7 +70,7 @@ public class MinioGuiaInputAdapter {
             @Parameter(description = "Clave del objeto", example = "documentos/mi-archivo.pdf")
             @RequestParam String key) {
 
-        log.debug(FichasMessages.MinioGuia.LOG_DOWNLOAD_URL, bucket, key);
+        logger.debug(FichasMessages.MinioGuia.LOG_DOWNLOAD_URL, bucket, key);
         String url = minioStorageClient.generateDownloadPresignedUrl(bucket, key);
         return ResponseEntity.ok(Map.of(
                 "bucket", bucket,
@@ -108,7 +108,7 @@ public class MinioGuiaInputAdapter {
             @RequestParam String bucket,
             @RequestParam String key) {
 
-        log.debug(FichasMessages.MinioGuia.LOG_DELETE, bucket, key);
+        logger.debug(FichasMessages.MinioGuia.LOG_DELETE, bucket, key);
         minioStorageClient.deleteObject(bucket, key);
         return ResponseEntity.noContent().build();
     }

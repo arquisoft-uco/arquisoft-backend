@@ -1,15 +1,16 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.EvaluacionFichaPerfilValidator;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.exception.RepresentanteComiteNoEncontradoException;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
-import com.arquisoft.fichas.application.representantecomite.query.port.out.RepresentanteComiteQueryOutputPort;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
-import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,22 +26,24 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RegistrarEvaluacionFichaPerfilUseCaseTest {
-
-    @Mock
-    private FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
-
-    @Mock
-    private RepresentanteComiteQueryOutputPort representanteComiteQueryOutputPort;
 
     @Mock
     private EvaluacionFichaPerfilOutputPort evaluacionFichaPerfilOutputPort;
 
     @Mock
     private EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
+
+    @Mock
+    private FichaPerfilValidator fichaPerfilValidator;
+
+    @Mock
+    private EvaluacionFichaPerfilValidator evaluacionFichaPerfilValidator;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private RegistrarEvaluacionFichaPerfilUseCase useCase;
@@ -52,19 +55,14 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(true);
-        when(representanteComiteQueryOutputPort.existsById(representanteId)).thenReturn(true);
-        when(evaluacionFichaPerfilOutputPort.existsByRepresentanteAndFicha(representanteId, fichaId))
-                .thenReturn(false);
-
         // Act
         UUID resultado = useCase.ejecutar(command);
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(fichaPerfilQueryOutputPort).existsById(fichaId);
-        verify(representanteComiteQueryOutputPort).existsById(representanteId);
-        verify(evaluacionFichaPerfilOutputPort).existsByRepresentanteAndFicha(representanteId, fichaId);
+        verify(fichaPerfilValidator).validarFichaExiste(fichaId);
+        verify(evaluacionFichaPerfilValidator).validarRepresentanteExiste(representanteId);
+        verify(evaluacionFichaPerfilValidator).validarEvaluacionNoDuplicada(representanteId, fichaId);
         verify(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilAggregate.class));
         verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaAggregate.class));
     }
@@ -76,15 +74,15 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(false);
+        doThrow(new FichaPerfilNoEncontradaException(fichaId))
+                .when(fichaPerfilValidator).validarFichaExiste(fichaId);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class);
 
-        verify(fichaPerfilQueryOutputPort).existsById(fichaId);
-        verify(representanteComiteQueryOutputPort, never()).existsById(any());
-        verify(evaluacionFichaPerfilOutputPort, never()).existsByRepresentanteAndFicha(any(), any());
+        verify(evaluacionFichaPerfilValidator, never()).validarRepresentanteExiste(any());
+        verify(evaluacionFichaPerfilValidator, never()).validarEvaluacionNoDuplicada(any(), any());
         verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -95,16 +93,14 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(true);
-        when(representanteComiteQueryOutputPort.existsById(representanteId)).thenReturn(false);
+        doThrow(new RepresentanteComiteNoEncontradoException(representanteId))
+                .when(evaluacionFichaPerfilValidator).validarRepresentanteExiste(representanteId);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(RepresentanteComiteNoEncontradoException.class);
 
-        verify(fichaPerfilQueryOutputPort).existsById(fichaId);
-        verify(representanteComiteQueryOutputPort).existsById(representanteId);
-        verify(evaluacionFichaPerfilOutputPort, never()).existsByRepresentanteAndFicha(any(), any());
+        verify(evaluacionFichaPerfilValidator, never()).validarEvaluacionNoDuplicada(any(), any());
         verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -115,18 +111,14 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(true);
-        when(representanteComiteQueryOutputPort.existsById(representanteId)).thenReturn(true);
-        when(evaluacionFichaPerfilOutputPort.existsByRepresentanteAndFicha(representanteId, fichaId))
-                .thenReturn(true);
+        doThrow(new EvaluacionFichaPerfilDuplicadaException(representanteId, fichaId))
+                .when(evaluacionFichaPerfilValidator)
+                .validarEvaluacionNoDuplicada(representanteId, fichaId);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(EvaluacionFichaPerfilDuplicadaException.class);
 
-        verify(fichaPerfilQueryOutputPort).existsById(fichaId);
-        verify(representanteComiteQueryOutputPort).existsById(representanteId);
-        verify(evaluacionFichaPerfilOutputPort).existsByRepresentanteAndFicha(representanteId, fichaId);
         verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -137,10 +129,6 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
-        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(true);
-        when(representanteComiteQueryOutputPort.existsById(representanteId)).thenReturn(true);
-        when(evaluacionFichaPerfilOutputPort.existsByRepresentanteAndFicha(representanteId, fichaId))
-                .thenReturn(false);
         doThrow(new DataAccessException("Error de BD") {})
                 .when(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilAggregate.class));
 
@@ -155,14 +143,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
     @Test
     void debeCrearEstadoInicialAutomatico_cuandoRegistrarEvaluacion() {
         // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID representanteId = UUID.randomUUID();
-        var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
-
-        when(fichaPerfilQueryOutputPort.existsById(fichaId)).thenReturn(true);
-        when(representanteComiteQueryOutputPort.existsById(representanteId)).thenReturn(true);
-        when(evaluacionFichaPerfilOutputPort.existsByRepresentanteAndFicha(representanteId, fichaId))
-                .thenReturn(false);
+        var command = new RegistrarEvaluacionFichaPerfilCommand(UUID.randomUUID(), UUID.randomUUID());
 
         // Act
         useCase.ejecutar(command);

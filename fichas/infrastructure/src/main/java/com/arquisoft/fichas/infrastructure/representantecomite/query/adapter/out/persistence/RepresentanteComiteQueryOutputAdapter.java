@@ -15,7 +15,7 @@ public class RepresentanteComiteQueryOutputAdapter
     private final RepresentanteComiteJpaRepository jpaRepository;
 
     @Override
-    public boolean existsById(UUID id) {
+    public boolean existePorId(UUID id) {
         return jpaRepository.existsById(id);
     }
 }

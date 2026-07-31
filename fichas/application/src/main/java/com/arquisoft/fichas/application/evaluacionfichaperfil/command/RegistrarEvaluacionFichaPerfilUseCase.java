@@ -1,63 +1,43 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.port.in.RegistrarEvaluacionFichaPerfilInputPort;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.exception.RepresentanteComiteNoEncontradoException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
-import com.arquisoft.fichas.application.representantecomite.query.port.out.RepresentanteComiteQueryOutputPort;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.EvaluacionFichaPerfilValidator;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
-import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-@Slf4j
-public class RegistrarEvaluacionFichaPerfilUseCase
-        implements RegistrarEvaluacionFichaPerfilInputPort {
+public class RegistrarEvaluacionFichaPerfilUseCase {
 
-    private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
-    private final RepresentanteComiteQueryOutputPort representanteComiteQueryOutputPort;
     private final EvaluacionFichaPerfilOutputPort evaluacionFichaPerfilOutputPort;
     private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
+    private final FichaPerfilValidator fichaPerfilValidator;
+    private final EvaluacionFichaPerfilValidator evaluacionFichaPerfilValidator;
+    private final AppLogger logger;
 
-    @Override
-    @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(RegistrarEvaluacionFichaPerfilCommand command) {
-
-        if (!fichaPerfilQueryOutputPort.existsById(command.fichaPerfilId())) {
-            throw new FichaPerfilNoEncontradaException(command.fichaPerfilId());
-        }
-
-        if (!representanteComiteQueryOutputPort.existsById(command.representanteComiteId())) {
-            throw new RepresentanteComiteNoEncontradoException(command.representanteComiteId());
-        }
-
-        if (evaluacionFichaPerfilOutputPort.existsByRepresentanteAndFicha(
-                command.representanteComiteId(),
-                command.fichaPerfilId())) {
-            throw new EvaluacionFichaPerfilDuplicadaException(
-                    command.representanteComiteId(),
-                    command.fichaPerfilId());
-        }
+        fichaPerfilValidator.validarFichaExiste(command.fichaPerfil());
+        evaluacionFichaPerfilValidator.validarRepresentanteExiste(command.representanteComite());
+        evaluacionFichaPerfilValidator.validarEvaluacionNoDuplicada(
+                command.representanteComite(), command.fichaPerfil());
 
         var evaluacion = EvaluacionFichaPerfilAggregate.crear(
-                command.representanteComiteId(),
-                command.fichaPerfilId());
+                command.representanteComite(),
+                command.fichaPerfil());
 
         evaluacionFichaPerfilOutputPort.guardar(evaluacion);
         asignarEstadoInicialEvaluacion(evaluacion.getId());
 
-        log.info(
+        logger.info(
                 FichasMessages.EvaluacionFichaPerfil.LOG_REGISTRADA,
                 evaluacion.getId(),
                 evaluacion.getRepresentanteComiteId(),
@@ -66,11 +46,10 @@ public class RegistrarEvaluacionFichaPerfilUseCase
         return evaluacion.getId();
     }
 
-    private void asignarEstadoInicialEvaluacion(UUID evaluacionFichaPerfilId) {
-        var estadoInicial = EstadoEvaluacionFichaAggregate
-                .crear(evaluacionFichaPerfilId);
+    private void asignarEstadoInicialEvaluacion(UUID evaluacionFichaPerfil) {
+        var estadoInicial = EstadoEvaluacionFichaAggregate.crear(evaluacionFichaPerfil);
         estadoEvaluacionFichaOutputPort.guardar(estadoInicial);
-        log.info(
+        logger.info(
                 FichasMessages.EstadoEvaluacionFicha.LOG_CREADO_AUTOMATICO,
                 estadoInicial.getId(),
                 estadoInicial.getEvaluacionFichaPerfilId(),

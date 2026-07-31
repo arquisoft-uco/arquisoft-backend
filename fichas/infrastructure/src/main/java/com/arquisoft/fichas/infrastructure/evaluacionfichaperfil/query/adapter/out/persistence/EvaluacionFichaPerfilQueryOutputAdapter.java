@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.adapter.out.persistence;
 
+import com.arquisoft.fichas.application.evaluacionfichaperfil.query.criteria.PropietarioEvaluacionCriteria;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.port.out.EvaluacionFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,14 +15,14 @@ public class EvaluacionFichaPerfilQueryOutputAdapter implements EvaluacionFichaP
     private final EvaluacionFichaPerfilJpaRepository evaluacionFichaPerfilJpaRepository;
 
     @Override
-    public boolean existsById(UUID evaluacionFichaPerfilId) {
+    public boolean existePorId(UUID evaluacionFichaPerfilId) {
         return evaluacionFichaPerfilJpaRepository.existsById(evaluacionFichaPerfilId);
     }
 
     @Override
-    public boolean esRepresentantePropietario(UUID evaluacionFichaPerfilId, UUID representanteComiteId) {
+    public boolean esRepresentantePropietario(PropietarioEvaluacionCriteria criteria) {
         return evaluacionFichaPerfilJpaRepository.existsByIdAndRepresentanteComiteId(
-                evaluacionFichaPerfilId,
-                representanteComiteId);
+                criteria.evaluacionFichaPerfil(),
+                criteria.representanteComite());
     }
 }

@@ -40,7 +40,7 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         EstudianteFichaPerfilAggregate relacion = EstudianteFichaPerfilAggregate.crear(
-                fichaId, List.of(estudianteId), 0L).get(0);
+                fichaId, List.of(estudianteId)).get(0);
         EstudianteFichaPerfilJpaEntity entity = new EstudianteFichaPerfilJpaEntity();
 
         when(mapper.toJpaEntity(relacion)).thenReturn(entity);

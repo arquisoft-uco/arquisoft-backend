@@ -14,7 +14,7 @@ public class AsesorFichaQueryOutputAdapter implements AsesorFichaQueryOutputPort
     private final AsesorFichaJpaRepository asesorFichaJpaRepository;
 
     @Override
-    public boolean existsById(UUID id) {
+    public boolean existePorId(UUID id) {
         return asesorFichaJpaRepository.existsById(id);
     }
 }

@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface RepresentanteComiteQueryOutputPort {
 
-    boolean existsById(UUID id);
+    boolean existePorId(UUID id);
 }

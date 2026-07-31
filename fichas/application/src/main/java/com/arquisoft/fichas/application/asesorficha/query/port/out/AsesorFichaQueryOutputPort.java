@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface AsesorFichaQueryOutputPort {
 
-    boolean existsById(UUID id);
+    boolean existePorId(UUID id);
 }

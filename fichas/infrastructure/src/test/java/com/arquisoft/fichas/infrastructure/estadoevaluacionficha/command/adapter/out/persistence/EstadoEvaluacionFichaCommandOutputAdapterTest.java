@@ -124,7 +124,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
                 .thenReturn(true);
 
         // Act
-        boolean existe = adapter.existsByEvaluacionAndEstado(evaluacionId, "EN_EVALUACION");
+        boolean existe = adapter.existePorEvaluacionYEstado(evaluacionId, "EN_EVALUACION");
 
         // Assert
         assertThat(existe).isTrue();
