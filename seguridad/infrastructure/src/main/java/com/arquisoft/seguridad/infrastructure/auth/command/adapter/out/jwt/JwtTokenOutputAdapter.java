@@ -13,9 +13,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Los roles se leen exclusivamente de realm_access.roles (ADR-003).
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

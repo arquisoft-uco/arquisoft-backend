@@ -4,16 +4,6 @@ import com.arquisoft.shared.validation.ValidationResult;
 
 import java.util.stream.Collectors;
 
-/**
- * Excepción lanzada cuando la validación de una entidad de dominio
- * detecta uno o más errores (Notification Pattern).
- *
- * <p>Extiende {@link DomainException} para integrarse con el manejador
- * global de excepciones. Transporta el {@link ValidationResult} completo,
- * permitiendo al caller acceder a todos los errores individuales.</p>
- *
- * <p>Lanzada exclusivamente por {@link ValidationResult#throwIfHasErrors()}.</p>
- */
 public final class DomainValidationException extends DomainException {
 
     private final ValidationResult validationResult;
@@ -23,9 +13,6 @@ public final class DomainValidationException extends DomainException {
         this.validationResult = validationResult;
     }
 
-    /**
-     * Retorna el resultado de validación con la lista completa de errores.
-     */
     public ValidationResult getValidationResult() {
         return validationResult;
     }

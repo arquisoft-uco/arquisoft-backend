@@ -1,17 +1,9 @@
 package com.arquisoft.shared.message;
 
-/**
- * Textos de documentación OpenAPI (Swagger) del contexto fichas — Message Catalog Pattern.
- *
- * <p>Separado de {@link FichasMessages} para no mezclar texto de documentación de API
- * con mensajes de negocio. Los adaptadores web no queman summaries, descriptions ni
- * descripciones de respuesta: todo sale de aquí, con un único tag por agregado.</p>
- */
 public final class FichasApiDocs {
 
     private FichasApiDocs() {}
 
-    /** Descripciones de respuesta comunes a todos los endpoints. */
     public static final class Comun {
 
         private Comun() {}

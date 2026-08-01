@@ -20,16 +20,6 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Configuración de persistencia para el bounded context {@code usuarios}.
- *
- * <p>Registra DataSource, EntityManagerFactory, TransactionManager y Flyway
- * para la base de datos {@code usuarios}.
- *
- * <p>{@code usuariosTransactionManager} es declarado {@code @Primary} porque
- * contiene la tabla {@code event_publication} del Outbox Pattern. Todos los use
- * cases deben especificar el qualifier explícito en {@code @Transactional}.
- */
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(

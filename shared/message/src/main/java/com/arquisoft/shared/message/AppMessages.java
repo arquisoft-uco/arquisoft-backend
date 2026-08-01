@@ -23,15 +23,10 @@ public final class AppMessages {
         public static final String SIN_DUPLICADOS = "La colección '%s' contiene el elemento duplicado: %s.";
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
-    // Capa web transversal (GlobalAppExceptionHandler / ErrorResponseDTO)
-    // ─────────────────────────────────────────────────────────────────────────
-
     public static final class Http {
 
         private Http() {}
 
-        // Títulos de error por familia de excepción
         public static final String ERROR_DOMINIO             = "Error de dominio";
         public static final String ERROR_APLICACION          = "Error de aplicación";
         public static final String ACCESO_DENEGADO           = "Acceso denegado";
@@ -43,7 +38,6 @@ public final class AppMessages {
         public static final String PARAMETROS_INVALIDOS      = "Parámetros inválidos";
         public static final String ERROR_INTERNO_SERVIDOR    = "Internal Server Error";
 
-        // Mensajes al cliente
         public static final String VALIDACION_DOMINIO_MSG    = "La entidad contiene %d error(es) de validación.";
         public static final String NO_AUTENTICADO_MSG        = "No autenticado o token inválido";
         public static final String SIN_PERMISOS_MSG          = "No tienes permisos para acceder a este recurso";
@@ -62,7 +56,6 @@ public final class AppMessages {
         public static final String UUID_FORMATO_INVALIDO_MSG =
                 "El dato no cumple el formato de identificador único universal";
 
-        // Códigos de error
         public static final String PARAMETRO_INVALIDO        = "PARAMETRO_INVALIDO";
         public static final String ARCHIVO_DEMASIADO_GRANDE  = "ARCHIVO_DEMASIADO_GRANDE";
         public static final String CAMPO_FORMATO_INVALIDO    = "CAMPO_FORMATO_INVALIDO";

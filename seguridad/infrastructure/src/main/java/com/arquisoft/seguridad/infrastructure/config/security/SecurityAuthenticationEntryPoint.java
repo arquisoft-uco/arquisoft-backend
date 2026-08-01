@@ -10,12 +10,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-/**
- * Entry point de autenticación que delega al {@link HandlerExceptionResolver} de Spring MVC,
- * garantizando que los 401 generados a nivel de filtro (token ausente, expirado o inválido)
- * devuelvan un body {@code ErrorResponseDTO} consistente con el resto de la API,
- * en lugar del comportamiento por defecto que solo escribe el header {@code WWW-Authenticate}.
- */
 @Slf4j
 @Component
 public class SecurityAuthenticationEntryPoint implements AuthenticationEntryPoint {

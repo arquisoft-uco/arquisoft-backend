@@ -27,12 +27,6 @@ public class RedisConfig {
     @Value("${spring.data.redis.password}")
     private String password;
 
-    /**
-     * Crea explicitamente el LettuceConnectionFactory con credenciales opcionales.
-     * Desplaza la auto-configuracion de Spring Boot (RedisAutoConfiguration) que no
-     * expone username cuando se usa la propiedad spring.data.redis.username en ciertas versiones.
-     * Si REDIS_USERNAME o REDIS_PASSWORD estan vacios, no se envian al servidor (compatible con Redis sin auth).
-     */
     @Bean
     @Primary
     public LettuceConnectionFactory redisConnectionFactory() {
@@ -46,13 +40,6 @@ public class RedisConfig {
         return new LettuceConnectionFactory(config);
     }
 
-    /**
-     * Sobreescribe el RedisTemplate<Object,Object> por defecto de Spring Boot,
-     * que usa serializacion JDK (no legible, no portable entre JVMs).
-     * Usa String como clave y JSON Jackson 3.x como valor.
-     *
-     * StringRedisTemplate es auto-configurado por Spring Boot — no se redeclara aqui.
-     */
     @Bean
     @Primary
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {

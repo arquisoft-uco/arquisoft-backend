@@ -21,10 +21,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-/**
- * Filtro de Rate Limiting que limita el número de solicitudes por IP.
- * Retorna 429 (Too Many Requests) si se excede el límite.
- */
 @Slf4j
 @Component
 @Order(-200)
@@ -94,15 +90,6 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         }
     }
 
-    /**
-     * Extrae la IP del cliente usando request.getRemoteAddr().
-     *
-     * Con server.forward-headers-strategy=FRAMEWORK, Spring Boot registra
-     * ForwardedHeaderFilter antes de cualquier filtro de aplicación. Ese filtro
-     * procesa y elimina X-Forwarded-For / X-Real-IP reescribiendo getRemoteAddr()
-     * con la IP real validada — leer los headers manualmente aquí sería código muerto
-     * y omitiría la validación de proxy de Spring.
-     */
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         return IP_PATTERN.matcher(ip).matches() ? ip : "INVALID";

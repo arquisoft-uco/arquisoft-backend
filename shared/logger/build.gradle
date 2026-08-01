@@ -6,7 +6,5 @@ dependencies {
     // en stdout — sin dependencias de terceros para logging JSON.
     implementation "org.springframework.boot:spring-boot-starter-logging"
 
-    // Necesario para AppLoggerConfig (@Configuration + InjectionPoint) — el puerto
-    // AppLogger y su implementación SLF4J siguen siendo Java puro.
     implementation "org.springframework:spring-context"
 }

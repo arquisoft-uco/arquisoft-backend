@@ -33,12 +33,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Cubre el enlace HTTP → LoginRequestDTO / RefreshTokenRequestDTO: deserialización
- * real de Jackson desde el body y evaluación de las restricciones Jakarta. El test
- * unitario hermano (AuthCommandInputAdapterTest) instancia los DTO en Java y por
- * tanto no ejercita este camino.
- */
 // Se excluyen los filtros @Component del módulo: @WebMvcTest los registra por defecto y
 // dependen de puertos de dominio (TokenBlacklistOutputPort, BucketResolver) que este slice
 // no levanta. No participan en el enlace del body, que es lo que aquí se verifica.

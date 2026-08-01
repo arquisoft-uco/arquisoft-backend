@@ -9,12 +9,6 @@ import jakarta.validation.constraints.Size;
 
 import java.util.List;
 
-/**
- * DTO pass-through: transporta los datos de entrada y garantiza su integridad
- * (obligatoriedad, longitud, formato) con mensajes del catálogo; las reglas de
- * negocio pertenecen al dominio. Los identificadores viajan como {@code String}
- * y se convierten a {@code UUID} en {@link #toCommand()} tras validar formato.
- */
 public record RegistrarFichaPerfilRequestDTO(
 
         @NotBlank(message = FichasMessages.FichaPerfil.TITULO_OBLIGATORIO_MSG)

@@ -4,14 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Objeto de valor que encapsula la información estructurada de un error.
- * Almacena el código de error, el mensaje y la traza de causas previas.
- *
- * <p>Se construye mediante los métodos de fábrica {@code of(...)} para garantizar
- * inmutabilidad. La traza se construye automáticamente desde la cadena de
- * {@link Throwable#getCause()} cuando se proporciona.</p>
- */
 public final class BaseError {
 
     private final String errorCode;

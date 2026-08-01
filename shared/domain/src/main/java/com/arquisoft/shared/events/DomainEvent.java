@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 
 public abstract class DomainEvent {
 
-    /** Formato obligatorio: {@code {contexto}.{entidad}.{accion}} — tres segmentos en minúsculas separados por puntos. */
     private static final Pattern TOPIC_PATTERN = Pattern.compile("^[a-z][a-z_]*\\.[a-z][a-z_]*\\.[a-z][a-z_]*$");
 
     private final String eventId;

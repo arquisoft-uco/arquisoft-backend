@@ -11,11 +11,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
-/**
- * Configuración de RestTemplate con timeouts, logging y retry.
- * Nota: RestTemplateBuilder fue eliminado en Spring Boot 4.0.x (ADR-008).
- * Se construye RestTemplate directamente con SimpleClientHttpRequestFactory.
- */
 @Slf4j
 @Configuration
 public class RestTemplateConfig {

@@ -18,7 +18,6 @@ class UuidValidoValidatorTest {
 
     @Test
     void debeSerValido_cuandoValorEsNull() {
-        // La obligatoriedad la decide @NotNull/@NotBlank, no esta constraint
         assertThat(validator.isValid(null, null)).isTrue();
     }
 

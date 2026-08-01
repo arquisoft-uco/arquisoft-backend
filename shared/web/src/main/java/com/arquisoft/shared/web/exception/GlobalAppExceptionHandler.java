@@ -33,27 +33,11 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- * Manejador global de excepciones.
- *
- * <p>Extiende {@link ResponseEntityExceptionHandler} para reutilizar la captura de todas
- * las excepciones estándar de Spring MVC (405, 415, 406, 413, 400, 404, etc.) y
- * sobreescribe {@link #handleExceptionInternal} para unificar el formato de respuesta
- * en {@link ErrorResponseDTO}. Los handlers explícitos solo cubren las excepciones
- * propias del dominio y de Spring Security.</p>
- */
 @Slf4j
 @RestControllerAdvice
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
-    /**
-     * Mapeo de tipo de excepción → (HTTP status, mensaje de error para el cliente).
-     *
-     * <p>Reemplaza el {@code instanceof} chain original para respetar OCP: agregar soporte
-     * para un nuevo subtipo de {@link BaseException} solo requiere añadir una entrada aquí,
-     * sin modificar la lógica del handler.</p>
-     */
     private static final Map<Class<? extends BaseException>, ExceptionMapping> EXCEPTION_MAPPINGS = Map.of(
             DomainException.class,        new ExceptionMapping(HttpStatus.UNPROCESSABLE_CONTENT, AppMessages.Http.ERROR_DOMINIO,          false),
             ApplicationException.class,   new ExceptionMapping(HttpStatus.BAD_REQUEST,          AppMessages.Http.ERROR_APLICACION,       false),
@@ -64,20 +48,11 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     private static final ExceptionMapping FALLBACK_MAPPING =
             new ExceptionMapping(HttpStatus.INTERNAL_SERVER_ERROR, AppMessages.Http.ERROR_INTERNO, true);
 
-    /** Campos cuyo valor nunca debe exponerse en la respuesta JSON (OWASP A01). */
     private static final Pattern SENSITIVE_FIELD_PATTERN =
             Pattern.compile("(?i)(password|contrasena|contraseña|secret|token|credential|clave|pin)");
 
     private record ExceptionMapping(HttpStatus status, String error, boolean logAsError) {}
 
-    /**
-     * Resuelve el mapeo recorriendo la jerarquía de superclases de la excepción.
-     *
-     * <p>Garantiza que subclases no registradas explícitamente en {@link #EXCEPTION_MAPPINGS}
-     * hereden el mapping de su superclase más cercana (ej. {@code OrdenamientoInvalidoException}
-     * → {@code ApplicationException} → HTTP 400) en lugar de degradar silenciosamente a HTTP 500.
-     * La búsqueda se detiene en {@link BaseException} inclusive.</p>
-     */
     @SuppressWarnings("unchecked")
     private ExceptionMapping resolveMapping(BaseException ex) {
         Class<?> clazz = ex.getClass();
@@ -304,10 +279,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
         return builder.build();
     }
 
-    /**
-     * Convierte el valor rechazado a String enmascarando campos sensibles.
-     * Evita exponer contraseñas, tokens o secretos en la respuesta JSON (OWASP A01).
-     */
     private String sanitizeRejectedValue(String field, Object value) {
         if (value == null) {
             return null;
@@ -332,10 +303,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
         };
     }
 
-    /**
-     * Identifica el campo ofensor cuando Jackson no puede deserializar el body,
-     * para responder qué dato falló en lugar del mensaje ciego genérico.
-     */
     private String extractUnreadableBodyMessage(Exception ex) {
         Throwable cause = ex.getCause();
         while (cause != null) {
@@ -350,7 +317,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
         return AppMessages.Http.CUERPO_MAL_FORMADO_MSG;
     }
 
-    /** Construye la ruta del campo (ej. {@code estudiantes[1]}) desde el path de Jackson. */
     private String describirPathJackson(tools.jackson.core.JacksonException jacksonEx) {
         StringBuilder ruta = new StringBuilder();
         for (var referencia : jacksonEx.getPath()) {
@@ -366,9 +332,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
         return ruta.toString();
     }
 
-    /** ID de correlación de la request actual, publicado en el MDC por TraceIdFilter. */
     private String currentTraceId() {
         return MDC.get(MdcKeys.TRACE_ID);
     }
 }
-

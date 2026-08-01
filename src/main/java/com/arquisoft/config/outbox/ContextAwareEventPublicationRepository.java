@@ -65,11 +65,6 @@ public class ContextAwareEventPublicationRepository implements EventPublicationR
                         (a, b) -> a));
     }
 
-    /**
-     * Se ejecuta después de que TODOS los beans están inicializados, garantizando
-     * que Flyway ya aplicó las migraciones antes de verificar qué DataSources
-     * tienen tabla event_publication.
-     */
     @Override
     public void afterSingletonsInstantiated() {
         this.entries = allDataSources.entrySet().stream()

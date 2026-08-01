@@ -8,12 +8,6 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.sql.DataSource;
 
-/**
- * Configuración de DataSource para el bounded context {@code repositorio_artefactos}.
- *
- * <p>Solo declara el bean DataSource. La configuración de JPA, Flyway y
- * TransactionManager se añadirá cuando el contexto tenga entidades implementadas.
- */
 @Configuration
 public class RepositorioArtefactosDataSourceConfig {
 

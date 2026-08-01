@@ -12,7 +12,6 @@ public final class FichasMessages {
 
         private FichaPerfil() {}
 
-        // Campos (contrato objetual — el comando transporta lo que representa, no la columna)
         public static final String CAMPO_TITULO       = "tituloProyecto";
         public static final String CAMPO_ASESOR_FICHA = "asesorFicha";
         public static final String CAMPO_ESTUDIANTES  = "estudiantes";
@@ -22,7 +21,6 @@ public final class FichasMessages {
         public static final int TITULO_MAX = 100;
         public static final int ESTUDIANTES_MAX = 3;
 
-        // Mensajes de validación de entrada (DTO)
         public static final String TITULO_OBLIGATORIO_MSG = "El título del proyecto es obligatorio";
         public static final String TITULO_MAX_MSG =
                 "El título no puede superar los " + TITULO_MAX + " caracteres";
@@ -73,7 +71,6 @@ public final class FichasMessages {
 
         private ItemFichaPerfil() {}
 
-        // Campos (contrato objetual)
         public static final String CAMPO_FICHA_PERFIL = "fichaPerfil";
         public static final String CAMPO_TIPO_ITEM    = "tipoItem";
         public static final String CAMPO_CONTENIDO    = "contenido";
@@ -83,7 +80,6 @@ public final class FichasMessages {
         // Límites
         public static final int CONTENIDO_MAX = 7000;
 
-        // Mensajes de validación de entrada (DTO)
         public static final String TIPO_ITEM_OBLIGATORIO_MSG = "El tipo de ítem es obligatorio";
         public static final String CONTENIDO_OBLIGATORIO_MSG = "El contenido es obligatorio";
         public static final String CONTENIDO_MAX_MSG =
@@ -183,12 +179,10 @@ public final class FichasMessages {
 
         private EstudianteFichaPerfil() {}
 
-        // Campos (contrato objetual)
         public static final String CAMPO_FICHA_PERFIL = "fichaPerfil";
         public static final String CAMPO_ESTUDIANTE   = "estudiante";
         public static final String CAMPO_ESTUDIANTES  = "estudiantes";
 
-        // Mensajes de validación de entrada (DTO)
         public static final String ESTUDIANTES_OBLIGATORIOS_MSG =
                 "La lista de estudiantes es obligatoria y no puede estar vacía";
         public static final String ESTUDIANTES_MAX_MSG =
@@ -222,7 +216,6 @@ public final class FichasMessages {
 
         private EstadoFichaPerfil() {}
 
-        // Campos (contrato objetual)
         public static final String CAMPO_FICHA_PERFIL = "fichaPerfil";
         public static final String CAMPO_ESTADO_FICHA = "estadoFicha";
 
@@ -242,7 +235,6 @@ public final class FichasMessages {
 
         private EvaluacionFichaPerfil() {}
 
-        // Campos (contrato objetual)
         public static final String CAMPO_REPRESENTANTE_COMITE = "representanteComite";
         public static final String CAMPO_FICHA_PERFIL = "fichaPerfil";
 
@@ -281,14 +273,11 @@ public final class FichasMessages {
 
         private EstadoEvaluacionFicha() {}
 
-        // Campos (contrato objetual)
         public static final String CAMPO_EVALUACION_FICHA_PERFIL = "evaluacionFichaPerfil";
         public static final String CAMPO_ESTADO_EVALUACION = "estadoEvaluacion";
 
-        // Límites
         public static final int ESTADO_MAX = 50;
 
-        // Mensajes de validación de entrada (DTO)
         public static final String EVALUACION_OBLIGATORIA_MSG = "El identificador de la evaluación es obligatorio";
         public static final String EVALUACION_FORMATO_UUID_MSG =
                 "El dato " + CAMPO_EVALUACION_FICHA_PERFIL + " no cumple el formato de identificador único universal";

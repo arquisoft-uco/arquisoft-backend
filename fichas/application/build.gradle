@@ -2,7 +2,6 @@ dependencies {
     implementation project(':fichas:domain')
     implementation project(':shared:domain')
 
-    // Puerto de logging (AppLogger) — la capa de aplicación no depende de SLF4J directamente
     implementation project(':shared:logger')
 
     // Transactional — solo necesitamos @Transactional, no todo el starter

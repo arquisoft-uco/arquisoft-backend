@@ -24,25 +24,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
-/**
- * Implementacion distribuida de {@link BucketResolver} usando Bucket4j + Lettuce (Redis).
- *
- * <p>Sustituye InMemoryBucketResolver. Comportamientos preservados:</p>
- * <ul>
- *   <li>{@code rate-limit.enabled=false}  → unlimited bucket (sin cuota)</li>
- *   <li>Redis no disponible               → exhausted bucket, fail-closed (HTTP 429 inmediato)</li>
- *   <li>bucket login                      → refillGreedy (anti-ventana-fija, igual que antes)</li>
- *   <li>bucket general                    → refillIntervally (igual que antes)</li>
- * </ul>
- *
- * <p>Ventajas sobre la implementacion en memoria:</p>
- * <ul>
- *   <li>Estado compartido entre instancias (horizontal scaling)</li>
- *   <li>Sin limite de IPs rastreadas — Redis gestiona la eviction por TTL</li>
- *   <li>Sin @Scheduled de eviction manual</li>
- *   <li>Estado sobrevive reinicios de la app</li>
- * </ul>
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -132,11 +113,6 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         }
     }
 
-    /**
-     * Bucket exhausto: cualquier peticion recibe HTTP 429 de inmediato.
-     * Se usa en modo fail-closed cuando Redis no esta disponible.
-     * No se almacena en cache — se crea y descarta por peticion, sin consumo de memoria.
-     */
     private Bucket createExhaustedBucket() {
         Bandwidth limit = Bandwidth.builder()
                 .capacity(1)
@@ -147,7 +123,6 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         return bucket;
     }
 
-    /** Bucket ilimitado: usado cuando rate-limit.enabled=false. */
     private Bucket createUnlimitedBucket() {
         return Bucket.builder()
                 .addLimit(Bandwidth.builder()

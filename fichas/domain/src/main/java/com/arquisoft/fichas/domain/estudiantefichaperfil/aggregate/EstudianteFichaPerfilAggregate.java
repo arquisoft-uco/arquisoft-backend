@@ -34,11 +34,6 @@ public final class EstudianteFichaPerfilAggregate {
         return relacion;
     }
 
-    /**
-     * Construye las relaciones validando la integridad de la petición: la colección debe
-     * traer elementos y cada relación se autovalida. No consulta estado externo, por lo
-     * que el caso de uso puede invocarla antes de tocar la base de datos.
-     */
     public static List<EstudianteFichaPerfilAggregate> crear(
             UUID fichaPerfilId,
             List<UUID> nuevosEstudiantesIds) {
@@ -82,13 +77,6 @@ public final class EstudianteFichaPerfilAggregate {
         this.estudianteId = estudianteId;
     }
 
-    /**
-     * Regla de negocio del conjunto: los estudiantes ya vinculados más los que se pretende
-     * asignar no pueden superar {@code ESTUDIANTES_MAX}. Es una invariante de la ficha y no
-     * de una relación individual — de ahí que sea estática y se evalúe una sola vez.
-     * El conteo actual lo consulta el caso de uso y lo entrega como parámetro, porque el
-     * dominio no accede a la base de datos.
-     */
     public static void validarCupoDisponible(int nuevos, long existentes) {
         var result = new ValidationResult();
 

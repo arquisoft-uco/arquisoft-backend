@@ -28,11 +28,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * AuditFilter escribe URI saneada, IP validada y userId en el MDC solo durante la
- * escritura del log AUDIT (dentro del finally) y los limpia antes de retornar —
- * por eso las aserciones deben leer el evento de log capturado, no el MDC post-filtro.
- */
 @ExtendWith(MockitoExtension.class)
 class AuditFilterTest {
 

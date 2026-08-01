@@ -224,7 +224,6 @@ class RegistrarFichaPerfilUseCaseTest {
 
     @Test
     void debeValidarDuplicadosAntesDeConsultarLaBaseDeDatos_cuandoUUIDRepetidoEnLista() {
-        // Arrange — la integridad de los datos se valida antes que cualquier acceso a BD
         UUID estudianteId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = comandoConEstudiantes(
                 Arrays.asList(estudianteId, estudianteId));

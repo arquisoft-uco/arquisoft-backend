@@ -18,19 +18,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Registra una ficha de perfil con su estado inicial y, opcionalmente, sus estudiantes.
- *
- * <p>Las validaciones siguen el orden obligatorio: primero integridad de los datos
- * recibidos, luego existencia y unicidad contra la base de datos y, por último,
- * las reglas de negocio propias del agregado. La transacción la abre
- * {@code RegistrarFichaPerfilInteractor}.</p>
- */
 @Component
 @RequiredArgsConstructor
 public class RegistrarFichaPerfilUseCase {
 
-    /** La ficha se está creando en esta misma operación: no puede tener estudiantes previos. */
     private static final long SIN_ESTUDIANTES_PREVIOS = 0L;
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
