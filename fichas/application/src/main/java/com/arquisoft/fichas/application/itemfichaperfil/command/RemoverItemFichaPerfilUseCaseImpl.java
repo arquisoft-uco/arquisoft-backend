@@ -22,18 +22,18 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
     private final AppLogger logger;
 
     @Override
-    public void ejecutar(RemoverItemFichaPerfilCommand command) {
-        var item = itemOutputPort.buscarPorId(command.item())
-                .orElseThrow(() -> new ItemFichaPerfilNoEncontradoException(command.item()));
+    public void ejecutar(RemoverItemFichaPerfilCommand entrada) {
+        var item = itemOutputPort.buscarPorId(entrada.item())
+                .orElseThrow(() -> new ItemFichaPerfilNoEncontradoException(entrada.item()));
 
         fichaPerfilValidator.validarEstudiantePropietario(
-                new PropietarioFichaCriteria(item.getFichaPerfilId(), command.estudiante()));
+                new PropietarioFichaCriteria(item.getFichaPerfilId(), entrada.estudiante()));
 
-        long totalRevisiones = revisionQueryPort.contarPorItem(command.item());
+        long totalRevisiones = revisionQueryPort.contarPorItem(entrada.item());
         item.removerse(totalRevisiones);
 
-        itemOutputPort.eliminarPorId(command.item());
+        itemOutputPort.eliminarPorId(entrada.item());
 
-        logger.info(FichasMessages.ItemFichaPerfil.LOG_REMOVIDO, command.item(), item.getFichaPerfilId());
+        logger.info(FichasMessages.ItemFichaPerfil.LOG_REMOVIDO, entrada.item(), item.getFichaPerfilId());
     }
 }

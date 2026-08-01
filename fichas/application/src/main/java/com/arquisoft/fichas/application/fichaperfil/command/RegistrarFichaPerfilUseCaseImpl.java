@@ -8,6 +8,7 @@ import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfil
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
@@ -23,28 +24,27 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseCase {
 
-    private static final long SIN_ESTUDIANTES_PREVIOS = 0L;
-
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+    private final EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
     private final EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
     private final FichaPerfilValidator fichaPerfilValidator;
     private final EstudiantesFichaValidator estudiantesFichaValidator;
     private final AppLogger logger;
 
     @Override
-    public UUID ejecutar(RegistrarFichaPerfilCommand command) {
-        List<UUID> estudiantes = command.estudiantes();
+    public UUID ejecutar(RegistrarFichaPerfilCommand entrada) {
+        List<UUID> estudiantes = entrada.estudiantes();
 
         estudiantesFichaValidator.validarSinDuplicados(estudiantes);
 
-        fichaPerfilValidator.validarAsesorExiste(command.asesorFicha());
-        fichaPerfilValidator.validarTituloUnico(command.tituloProyecto());
+        fichaPerfilValidator.validarAsesorExiste(entrada.asesorFicha());
+        fichaPerfilValidator.validarTituloUnico(entrada.tituloProyecto());
         estudiantesFichaValidator.validarExistencia(estudiantes);
 
         FichaPerfilAggregate ficha = FichaPerfilAggregate.crear(
-                command.tituloProyecto(),
-                command.asesorFicha()
+                entrada.tituloProyecto(),
+                entrada.asesorFicha()
         );
 
         fichaPerfilOutputPort.guardar(ficha);
@@ -69,7 +69,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
             return;
         }
         var relaciones = EstudianteFichaPerfilAggregate.crear(fichaPerfil, estudiantes);
-        EstudianteFichaPerfilAggregate.validarCupoDisponible(relaciones.size(), SIN_ESTUDIANTES_PREVIOS);
+        estudianteFichaPerfilCupoDisponibleRule.validar(relaciones);
         relaciones.forEach(estudianteFichaPerfilOutputPort::guardar);
     }
 }

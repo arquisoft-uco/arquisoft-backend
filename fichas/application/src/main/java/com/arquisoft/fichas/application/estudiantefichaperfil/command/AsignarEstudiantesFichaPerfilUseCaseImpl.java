@@ -6,6 +6,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.
 import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +20,15 @@ import java.util.UUID;
 public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudiantesFichaPerfilUseCase {
 
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+    private final EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
     private final FichaPerfilValidator fichaPerfilValidator;
     private final EstudiantesFichaValidator estudiantesFichaValidator;
     private final AppLogger logger;
 
     @Override
-    public void ejecutar(AsignarEstudiantesFichaPerfilCommand command) {
-        UUID fichaPerfil = command.fichaPerfil();
-        List<UUID> estudiantes = command.estudiantes();
+    public void ejecutar(AsignarEstudiantesFichaPerfilCommand entrada) {
+        UUID fichaPerfil = entrada.fichaPerfil();
+        List<UUID> estudiantes = entrada.estudiantes();
 
         List<EstudianteFichaPerfilAggregate> relaciones =
                 EstudianteFichaPerfilAggregate.crear(fichaPerfil, estudiantes);
@@ -36,9 +38,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
         estudiantesFichaValidator.validarExistencia(estudiantes);
         estudiantesFichaValidator.validarNoVinculados(fichaPerfil, estudiantes);
 
-        EstudianteFichaPerfilAggregate.validarCupoDisponible(
-                relaciones.size(),
-                estudianteFichaPerfilOutputPort.contarPorFichaPerfilId(fichaPerfil));
+        estudianteFichaPerfilCupoDisponibleRule.validar(relaciones);
 
         relaciones.forEach(estudianteFichaPerfilOutputPort::guardar);
 

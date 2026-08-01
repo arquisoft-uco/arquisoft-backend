@@ -22,16 +22,16 @@ public class ModificarFichaPerfilUseCaseImpl implements ModificarFichaPerfilUseC
     private final AppLogger logger;
 
     @Override
-    public void ejecutar(ModificarFichaPerfilCommand command) {
+    public void ejecutar(ModificarFichaPerfilCommand entrada) {
         fichaPerfilValidator.validarEstudiantePropietario(
-                new PropietarioFichaCriteria(command.fichaPerfil(), command.estudiante()));
+                new PropietarioFichaCriteria(entrada.fichaPerfil(), entrada.estudiante()));
 
-        var ficha = fichaPerfilOutputPort.buscarPorId(command.fichaPerfil())
-                .orElseThrow(() -> new FichaNoEncontradaException(command.fichaPerfil()));
+        var ficha = fichaPerfilOutputPort.buscarPorId(entrada.fichaPerfil())
+                .orElseThrow(() -> new FichaNoEncontradaException(entrada.fichaPerfil()));
 
-        validarTituloDisponible(ficha, command.tituloProyecto());
+        validarTituloDisponible(ficha, entrada.tituloProyecto());
 
-        ficha.actualizarTitulo(command.tituloProyecto());
+        ficha.actualizarTitulo(entrada.tituloProyecto());
         fichaPerfilOutputPort.guardar(ficha);
 
         logger.info(FichasMessages.FichaPerfil.LOG_MODIFICADA, ficha.getId());

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
@@ -113,37 +112,4 @@ class EstudianteFichaPerfilAggregateTest {
         assertThatThrownBy(() -> EstudianteFichaPerfilAggregate.crear(fichaPerfilId, null))
                 .isInstanceOf(DomainValidationException.class);
     }
-
-    @Test
-    void debeLanzarDomainValidationException_cuandoExistentes2MasNuevos2() {
-        // Act
-        Throwable ex = catchThrowable(() -> EstudianteFichaPerfilAggregate.validarCupoDisponible(2, 2L));
-
-        // Assert
-        assertThat(ex)
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
-                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX
-                ));
-
-        DomainValidationException domainEx = (DomainValidationException) ex;
-        assertThat(domainEx.getValidationResult().getErrors())
-                .anyMatch(error -> error.errorCode().equals(
-                        FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO
-                ));
-    }
-
-    @Test
-    void debePermitirLimiteExacto_cuandoExistentes0MasNuevos3() {
-        // Act & Assert
-        assertThatCode(() -> EstudianteFichaPerfilAggregate.validarCupoDisponible(3, 0L))
-                .doesNotThrowAnyException();
-    }
-
-    @Test
-    void debePermitirAsignacion_cuandoQuedaCupo() {
-        // Act & Assert
-        assertThatCode(() -> EstudianteFichaPerfilAggregate.validarCupoDisponible(2, 1L))
-                .doesNotThrowAnyException();
-    }
-}
+}

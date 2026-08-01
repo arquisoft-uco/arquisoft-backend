@@ -17,10 +17,10 @@ public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
     private final AuthenticationOutputPort authenticationOutputPort;
 
     @Override
-    public AuthResult ejecutar(AuthenticateUserCommand command) {
+    public AuthResult ejecutar(AuthenticateUserCommand entrada) {
         log.debug(SeguridadMessages.Autenticacion.AUTENTICAR_DEBUG);
 
-        CredencialesSesion credenciales = authenticationOutputPort.autenticar(command.email(), command.password());
+        CredencialesSesion credenciales = authenticationOutputPort.autenticar(entrada.email(), entrada.password());
 
         log.info(SeguridadMessages.Autenticacion.AUTENTICAR_EXITOSO);
 

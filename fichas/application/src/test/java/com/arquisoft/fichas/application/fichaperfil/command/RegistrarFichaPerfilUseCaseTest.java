@@ -10,12 +10,14 @@ import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplica
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.validation.ValidationResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -47,6 +49,9 @@ class RegistrarFichaPerfilUseCaseTest {
 
     @Mock
     private EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+
+    @Mock
+    private EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
 
     @Mock
     private EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
@@ -184,10 +189,12 @@ class RegistrarFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debeLanzarDomainValidationException_cuandoMasDeTresEstudiantes() {
+    void debePropagarLimiteExcedido_cuandoLaReglaDeCupoFalla() {
         // Arrange
         RegistrarFichaPerfilCommand command = comandoConEstudiantes(Arrays.asList(
                 UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
+
+        doThrow(limiteExcedido()).when(estudianteFichaPerfilCupoDisponibleRule).validar(anyList());
 
         // Act
         Throwable ex = catchThrowable(() -> registrarFichaPerfilUseCase.ejecutar(command));
@@ -277,5 +284,15 @@ class RegistrarFichaPerfilUseCaseTest {
 
     private RegistrarFichaPerfilCommand comandoConEstudiantes(List<UUID> estudiantes) {
         return new RegistrarFichaPerfilCommand("Título de prueba", UUID.randomUUID(), estudiantes);
+    }
+
+    private static DomainValidationException limiteExcedido() {
+        var result = new ValidationResult();
+        result.addError(
+                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES,
+                FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO,
+                FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
+                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX));
+        return new DomainValidationException(result);
     }
 }

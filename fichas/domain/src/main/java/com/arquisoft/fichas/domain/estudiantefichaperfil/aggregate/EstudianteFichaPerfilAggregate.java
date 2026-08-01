@@ -77,22 +77,6 @@ public final class EstudianteFichaPerfilAggregate {
         this.estudianteId = estudianteId;
     }
 
-    public static void validarCupoDisponible(int nuevos, long existentes) {
-        var result = new ValidationResult();
-
-        if (existentes + nuevos > FichasMessages.FichaPerfil.ESTUDIANTES_MAX) {
-            result.addError(
-                    FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES,
-                    FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO,
-                    FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
-                            FichasMessages.FichaPerfil.ESTUDIANTES_MAX
-                    )
-            );
-        }
-
-        result.throwIfHasErrors();
-    }
-
     public UUID getId() {
         return id;
     }

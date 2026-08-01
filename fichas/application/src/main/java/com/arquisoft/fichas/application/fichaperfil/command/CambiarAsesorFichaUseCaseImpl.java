@@ -21,19 +21,19 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
     private final AppLogger logger;
 
     @Override
-    public void ejecutar(CambiarAsesorFichaCommand command) {
-        var ficha = fichaPerfilOutputPort.buscarPorId(command.fichaPerfil())
-                .orElseThrow(() -> new FichaPerfilNoEncontradaException(command.fichaPerfil()));
+    public void ejecutar(CambiarAsesorFichaCommand entrada) {
+        var ficha = fichaPerfilOutputPort.buscarPorId(entrada.fichaPerfil())
+                .orElseThrow(() -> new FichaPerfilNoEncontradaException(entrada.fichaPerfil()));
 
-        fichaPerfilValidator.validarAsesorExiste(command.nuevoAsesorFicha());
+        fichaPerfilValidator.validarAsesorExiste(entrada.nuevoAsesorFicha());
 
-        var estadoActual = estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(command.fichaPerfil())
-                .orElseThrow(() -> new FichaPerfilNoEncontradaException(command.fichaPerfil()));
+        var estadoActual = estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(entrada.fichaPerfil())
+                .orElseThrow(() -> new FichaPerfilNoEncontradaException(entrada.fichaPerfil()));
 
-        ficha.cambiarAsesorFicha(command.nuevoAsesorFicha(), estadoActual);
+        ficha.cambiarAsesorFicha(entrada.nuevoAsesorFicha(), estadoActual);
 
         fichaPerfilOutputPort.guardar(ficha);
 
-        logger.info(FichasMessages.FichaPerfil.LOG_ASESOR_CAMBIADO, ficha.getId(), command.nuevoAsesorFicha());
+        logger.info(FichasMessages.FichaPerfil.LOG_ASESOR_CAMBIADO, ficha.getId(), entrada.nuevoAsesorFicha());
     }
 }

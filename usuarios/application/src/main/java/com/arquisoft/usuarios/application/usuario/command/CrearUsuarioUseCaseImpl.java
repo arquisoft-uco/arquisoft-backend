@@ -23,14 +23,14 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
     @Override
     @Transactional(transactionManager = "usuariosTransactionManager")
-    public UUID ejecutar(CrearUsuarioCommand command) {
-        UsuarioAggregate usuario = UsuarioAggregate.crear(command.email(), command.rol());
+    public UUID ejecutar(CrearUsuarioCommand entrada) {
+        UsuarioAggregate usuario = UsuarioAggregate.crear(entrada.email(), entrada.rol());
 
         usuarioOutputPort.save(usuario);
 
         usuario.drainUnPublishedEvents().forEach(eventPublisher::publish);
 
-        log.info(UsuariosMessages.Usuario.LOG_CREADO, usuario.getId(), command.email(), command.rol().getCode());
+        log.info(UsuariosMessages.Usuario.LOG_CREADO, usuario.getId(), entrada.email(), entrada.rol().getCode());
         return usuario.getId();
     }
 }

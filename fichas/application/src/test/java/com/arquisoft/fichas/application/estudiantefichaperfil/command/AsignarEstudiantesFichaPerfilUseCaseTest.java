@@ -7,9 +7,11 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.exception.Estudian
 import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.validation.ValidationResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -29,13 +31,15 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AsignarEstudiantesFichaPerfilUseCaseTest {
 
     @Mock
     private EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+
+    @Mock
+    private EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
 
     @Mock
     private FichaPerfilValidator fichaPerfilValidator;
@@ -57,8 +61,6 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 fichaPerfilId,
                 List.of(UUID.randomUUID(), UUID.randomUUID())
         );
-
-        when(estudianteFichaPerfilOutputPort.contarPorFichaPerfilId(fichaPerfilId)).thenReturn(1L);
 
         // Act
         useCase.ejecutar(command);
@@ -155,13 +157,13 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debeLanzarDomainValidationException_cuandoExistentes2MasNuevos2() {
+    void debePropagarLimiteExcedido_cuandoLaReglaDeCupoFalla() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
         var command = new AsignarEstudiantesFichaPerfilCommand(
                 fichaPerfilId, List.of(UUID.randomUUID(), UUID.randomUUID()));
 
-        when(estudianteFichaPerfilOutputPort.contarPorFichaPerfilId(fichaPerfilId)).thenReturn(2L);
+        doThrow(limiteExcedido()).when(estudianteFichaPerfilCupoDisponibleRule).validar(anyList());
 
         // Act
         Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
@@ -187,9 +189,6 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         UUID fichaPerfilId = UUID.randomUUID();
         var command = new AsignarEstudiantesFichaPerfilCommand(
                 fichaPerfilId, List.of(UUID.randomUUID()));
-
-        when(estudianteFichaPerfilOutputPort.contarPorFichaPerfilId(fichaPerfilId)).thenReturn(0L);
-
         // Act
         useCase.ejecutar(command);
 
@@ -199,5 +198,15 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         inOrder.verify(fichaPerfilValidator).validarFichaExiste(fichaPerfilId);
         inOrder.verify(estudiantesFichaValidator).validarExistencia(anyList());
         inOrder.verify(estudiantesFichaValidator).validarNoVinculados(any(), anyList());
+    }
+
+    private static DomainValidationException limiteExcedido() {
+        var result = new ValidationResult();
+        result.addError(
+                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES,
+                FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO,
+                FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
+                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX));
+        return new DomainValidationException(result);
     }
 }

@@ -16,10 +16,10 @@ public class RefreshTokenUseCaseImpl implements RefreshTokenUseCase {
     private final AuthenticationOutputPort authenticationOutputPort;
 
     @Override
-    public RefreshResult ejecutar(String tokenRefresco) {
+    public RefreshResult ejecutar(String entrada) {
         log.debug(SeguridadMessages.Token.REFRESH_DEBUG);
 
-        CredencialesSesion credenciales = authenticationOutputPort.refrescar(tokenRefresco);
+        CredencialesSesion credenciales = authenticationOutputPort.refrescar(entrada);
 
         log.info(SeguridadMessages.Token.REFRESH_EXITOSO);
 

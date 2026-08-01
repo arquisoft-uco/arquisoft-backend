@@ -18,13 +18,13 @@ public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilUs
     private final AppLogger logger;
 
     @Override
-    public PaginatedResult<FichaPerfilReadModel> ejecutar(FichaPerfilCriteria criteria) {
-        logger.debug(FichasMessages.FichaPerfil.LOG_CONSULTANDO, criteria.getPagina(), criteria.getTamanio());
+    public PaginatedResult<FichaPerfilReadModel> ejecutar(FichaPerfilCriteria entrada) {
+        logger.debug(FichasMessages.FichaPerfil.LOG_CONSULTANDO, entrada.getPagina(), entrada.getTamanio());
 
-        PaginatedResult<FichaPerfilReadModel> resultado = fichaPerfilQueryOutputPort.consultarTodas(criteria);
+        PaginatedResult<FichaPerfilReadModel> resultado = fichaPerfilQueryOutputPort.consultarTodas(entrada);
 
         logger.info(FichasMessages.FichaPerfil.LOG_CONSULTA_COMPLETADA,
-                resultado.getTotalElements(), criteria.getPagina(), criteria.getTamanio());
+                resultado.getTotalElements(), entrada.getPagina(), entrada.getTamanio());
         return resultado;
     }
 }

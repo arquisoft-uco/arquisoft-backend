@@ -26,15 +26,15 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
     private final AppLogger logger;
 
     @Override
-    public UUID ejecutar(RegistrarEvaluacionFichaPerfilCommand command) {
-        fichaPerfilValidator.validarFichaExiste(command.fichaPerfil());
-        evaluacionFichaPerfilValidator.validarRepresentanteExiste(command.representanteComite());
+    public UUID ejecutar(RegistrarEvaluacionFichaPerfilCommand entrada) {
+        fichaPerfilValidator.validarFichaExiste(entrada.fichaPerfil());
+        evaluacionFichaPerfilValidator.validarRepresentanteExiste(entrada.representanteComite());
         evaluacionFichaPerfilValidator.validarEvaluacionNoDuplicada(
-                command.representanteComite(), command.fichaPerfil());
+                entrada.representanteComite(), entrada.fichaPerfil());
 
         var evaluacion = EvaluacionFichaPerfilAggregate.crear(
-                command.representanteComite(),
-                command.fichaPerfil());
+                entrada.representanteComite(),
+                entrada.fichaPerfil());
 
         evaluacionFichaPerfilOutputPort.guardar(evaluacion);
         asignarEstadoInicialEvaluacion(evaluacion.getId());

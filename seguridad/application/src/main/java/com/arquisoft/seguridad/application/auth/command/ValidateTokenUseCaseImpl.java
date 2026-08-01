@@ -17,12 +17,12 @@ public class ValidateTokenUseCaseImpl implements ValidateTokenUseCase {
     private final TokenValidationOutputPort tokenValidationOutputPort;
 
     @Override
-    public ValidationResult ejecutar(TokenAggregate tokenAggregate) {
+    public ValidationResult ejecutar(TokenAggregate entrada) {
         log.debug(SeguridadMessages.Token.VALIDAR_DEBUG);
 
         try {
-            if (tokenValidationOutputPort.validarToken(tokenAggregate.valor())) {
-                IdentidadToken identidad = tokenValidationOutputPort.extraerInfo(tokenAggregate.valor());
+            if (tokenValidationOutputPort.validarToken(entrada.valor())) {
+                IdentidadToken identidad = tokenValidationOutputPort.extraerInfo(entrada.valor());
 
                 return new ValidationResult(
                         true,

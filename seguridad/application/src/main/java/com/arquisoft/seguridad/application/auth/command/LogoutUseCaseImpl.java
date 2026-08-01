@@ -17,9 +17,9 @@ public class LogoutUseCaseImpl implements LogoutUseCase {
     private final TokenBlacklistOutputPort tokenBlacklistOutputPort;
 
     @Override
-    public void ejecutar(TokenSesionCommand command) {
+    public void ejecutar(TokenSesionCommand entrada) {
         SesionAggregate sesion = SesionAggregate.cerrar(
-                command.identificadorToken(), command.tiempoVidaRestante());
+                entrada.identificadorToken(), entrada.tiempoVidaRestante());
 
         tokenBlacklistOutputPort.invalidarToken(
                 sesion.identificadorToken(), sesion.tiempoVidaRestante());

@@ -22,19 +22,19 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
     private final AppLogger logger;
 
     @Override
-    public void ejecutar(ModificarItemFichaPerfilCommand command) {
-        var item = itemFichaPerfilOutputPort.buscarPorId(command.item())
-                .orElseThrow(() -> new ItemNoEncontradoException(command.item()));
+    public void ejecutar(ModificarItemFichaPerfilCommand entrada) {
+        var item = itemFichaPerfilOutputPort.buscarPorId(entrada.item())
+                .orElseThrow(() -> new ItemNoEncontradoException(entrada.item()));
 
-        itemFichaPerfilValidator.validarFichaPropia(item.getFichaPerfilId(), command.estudiante());
+        itemFichaPerfilValidator.validarFichaPropia(item.getFichaPerfilId(), entrada.estudiante());
 
         var estadoActual = estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(item.getFichaPerfilId())
                 .orElseThrow(() -> new FichaPerfilNoEncontradaException(item.getFichaPerfilId()));
 
-        item.modificarContenido(command.contenido(), estadoActual);
+        item.modificarContenido(entrada.contenido(), estadoActual);
 
         itemFichaPerfilOutputPort.guardar(item);
 
-        logger.info(FichasMessages.ItemFichaPerfil.LOG_MODIFICADO, command.item());
+        logger.info(FichasMessages.ItemFichaPerfil.LOG_MODIFICADO, entrada.item());
     }
 }

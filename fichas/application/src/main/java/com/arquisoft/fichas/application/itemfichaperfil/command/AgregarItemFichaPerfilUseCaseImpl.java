@@ -23,15 +23,15 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
     private final AppLogger logger;
 
     @Override
-    public UUID ejecutar(AgregarItemFichaPerfilCommand command) {
-        fichaPerfilValidator.validarFichaExiste(command.fichaPerfil());
-        itemFichaPerfilValidator.validarFichaPropia(command.fichaPerfil(), command.estudiante());
-        itemFichaPerfilValidator.validarTipoNoDuplicado(command.fichaPerfil(), command.tipoItem());
+    public UUID ejecutar(AgregarItemFichaPerfilCommand entrada) {
+        fichaPerfilValidator.validarFichaExiste(entrada.fichaPerfil());
+        itemFichaPerfilValidator.validarFichaPropia(entrada.fichaPerfil(), entrada.estudiante());
+        itemFichaPerfilValidator.validarTipoNoDuplicado(entrada.fichaPerfil(), entrada.tipoItem());
 
         var item = ItemFichaPerfilAggregate.crear(
-                command.fichaPerfil(),
-                command.tipoItem(),
-                command.contenido()
+                entrada.fichaPerfil(),
+                entrada.tipoItem(),
+                entrada.contenido()
         );
 
         itemFichaPerfilOutputPort.guardar(item);

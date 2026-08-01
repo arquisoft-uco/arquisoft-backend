@@ -23,21 +23,21 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
     private final AppLogger logger;
 
     @Override
-    public UUID ejecutar(AgregarEstadoEvaluacionFichaCommand command) {
+    public UUID ejecutar(AgregarEstadoEvaluacionFichaCommand entrada) {
         EstadoEvaluacion nuevoEstado =
-                estadoEvaluacionFichaValidator.resolverEstado(command.estadoEvaluacion());
+                estadoEvaluacionFichaValidator.resolverEstado(entrada.estadoEvaluacion());
 
-        estadoEvaluacionFichaValidator.validarEvaluacionExiste(command.evaluacionFichaPerfil());
+        estadoEvaluacionFichaValidator.validarEvaluacionExiste(entrada.evaluacionFichaPerfil());
         estadoEvaluacionFichaValidator.validarRepresentantePropietario(
                 new PropietarioEvaluacionCriteria(
-                        command.evaluacionFichaPerfil(), command.representanteComite()));
+                        entrada.evaluacionFichaPerfil(), entrada.representanteComite()));
         estadoEvaluacionFichaValidator.validarEstadoNoDuplicado(
-                command.evaluacionFichaPerfil(), command.estadoEvaluacion());
+                entrada.evaluacionFichaPerfil(), entrada.estadoEvaluacion());
 
         var estadoEvaluacion = EstadoEvaluacionFichaAggregate.crearConEstado(
-                command.evaluacionFichaPerfil(),
+                entrada.evaluacionFichaPerfil(),
                 nuevoEstado,
-                obtenerUltimoEstado(command.evaluacionFichaPerfil()));
+                obtenerUltimoEstado(entrada.evaluacionFichaPerfil()));
 
         estadoEvaluacionFichaOutputPort.guardar(estadoEvaluacion);
 

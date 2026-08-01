@@ -17,7 +17,7 @@ public class ConsultarEstadosFichaUseCaseImpl implements ConsultarEstadosFichaUs
     private final EstadoFichaQueryOutputPort queryOutputPort;
 
     @Override
-    public List<EstadoFichaReadModel> ejecutar(Void input) {
+    public List<EstadoFichaReadModel> ejecutar(Void entrada) {
         return queryOutputPort.findAll();
     }
 }

@@ -24,9 +24,9 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
     private final AppLogger logger;
 
     @Override
-    public void ejecutar(RemoverEstudianteFichaPerfilCommand command) {
-        UUID fichaPerfil = command.fichaPerfil();
-        UUID estudiante = command.estudiante();
+    public void ejecutar(RemoverEstudianteFichaPerfilCommand entrada) {
+        UUID fichaPerfil = entrada.fichaPerfil();
+        UUID estudiante = entrada.estudiante();
 
         fichaPerfilValidator.validarFichaExiste(fichaPerfil);
         validarEstudianteExiste(estudiante);
