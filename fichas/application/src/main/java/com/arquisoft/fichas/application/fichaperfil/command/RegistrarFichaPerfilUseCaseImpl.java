@@ -36,20 +36,24 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
     public UUID ejecutar(RegistrarFichaPerfilCommand entrada) {
         List<UUID> estudiantes = entrada.estudiantes();
 
-        estudiantesFichaValidator.validarSinDuplicados(estudiantes);
-
-        fichaPerfilValidator.validarAsesorExiste(entrada.asesorFicha());
-        fichaPerfilValidator.validarTituloUnico(entrada.tituloProyecto());
-        estudiantesFichaValidator.validarExistencia(estudiantes);
-
         FichaPerfilAggregate ficha = FichaPerfilAggregate.crear(
                 entrada.tituloProyecto(),
                 entrada.asesorFicha()
         );
+        List<EstudianteFichaPerfilAggregate> relaciones =
+                construirRelaciones(ficha.getId(), estudiantes);
+
+        fichaPerfilValidator.validarAsesorExiste(ficha.getAsesorFichaId());
+        fichaPerfilValidator.validarTituloUnico(ficha.getTituloProyecto());
+        estudiantesFichaValidator.validarExistencia(estudiantes);
+
+        if (!relaciones.isEmpty()) {
+            estudianteFichaPerfilCupoDisponibleRule.validar(relaciones);
+        }
 
         fichaPerfilOutputPort.guardar(ficha);
         asignarEstadoInicial(ficha.getId());
-        vincularEstudiantes(ficha.getId(), estudiantes);
+        relaciones.forEach(estudianteFichaPerfilOutputPort::guardar);
 
         logger.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
         return ficha.getId();
@@ -64,12 +68,12 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
                 estadoInicial.getEstadoFicha().getNombre());
     }
 
-    private void vincularEstudiantes(UUID fichaPerfil, List<UUID> estudiantes) {
+    private List<EstudianteFichaPerfilAggregate> construirRelaciones(
+            UUID fichaPerfil, List<UUID> estudiantes) {
         if (UtilCollection.isEmptyOrNull(estudiantes)) {
-            return;
+            return List.of();
         }
-        var relaciones = EstudianteFichaPerfilAggregate.crear(fichaPerfil, estudiantes);
-        estudianteFichaPerfilCupoDisponibleRule.validar(relaciones);
-        relaciones.forEach(estudianteFichaPerfilOutputPort::guardar);
+        estudiantesFichaValidator.validarSinDuplicados(estudiantes);
+        return EstudianteFichaPerfilAggregate.crear(fichaPerfil, estudiantes);
     }
 }

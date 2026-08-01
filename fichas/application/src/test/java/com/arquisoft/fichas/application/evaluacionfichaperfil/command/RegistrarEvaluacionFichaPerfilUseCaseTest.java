@@ -10,6 +10,7 @@ import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluac
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
+import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -138,6 +139,21 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
                 .hasMessageContaining("Error de BD");
 
         verify(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilAggregate.class));
+    }
+
+    @Test
+    void debeConstruirAgregadoAntesDeConsultarLaBaseDeDatos_cuandoRepresentanteEsNull() {
+        // Arrange
+        var command = new RegistrarEvaluacionFichaPerfilCommand(null, UUID.randomUUID());
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(command))
+                .isInstanceOf(DomainValidationException.class);
+
+        verify(fichaPerfilValidator, never()).validarFichaExiste(any());
+        verify(evaluacionFichaPerfilValidator, never()).validarRepresentanteExiste(any());
+        verify(evaluacionFichaPerfilValidator, never()).validarEvaluacionNoDuplicada(any(), any());
+        verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
     }
 
     @Test

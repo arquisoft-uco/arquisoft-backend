@@ -24,15 +24,15 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
 
     @Override
     public UUID ejecutar(AgregarItemFichaPerfilCommand entrada) {
-        fichaPerfilValidator.validarFichaExiste(entrada.fichaPerfil());
-        itemFichaPerfilValidator.validarFichaPropia(entrada.fichaPerfil(), entrada.estudiante());
-        itemFichaPerfilValidator.validarTipoNoDuplicado(entrada.fichaPerfil(), entrada.tipoItem());
-
         var item = ItemFichaPerfilAggregate.crear(
                 entrada.fichaPerfil(),
                 entrada.tipoItem(),
                 entrada.contenido()
         );
+
+        fichaPerfilValidator.validarFichaExiste(item.getFichaPerfilId());
+        itemFichaPerfilValidator.validarFichaPropia(item.getFichaPerfilId(), entrada.estudiante());
+        itemFichaPerfilValidator.validarTipoNoDuplicado(item.getFichaPerfilId(), item.getTipoItem().getId());
 
         itemFichaPerfilOutputPort.guardar(item);
 

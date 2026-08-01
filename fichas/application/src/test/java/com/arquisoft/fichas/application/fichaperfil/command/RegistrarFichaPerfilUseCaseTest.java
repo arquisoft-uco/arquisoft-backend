@@ -225,6 +225,48 @@ class RegistrarFichaPerfilUseCaseTest {
     }
 
     @Test
+    void debeConstruirAgregadoAntesDeConsultarLaBaseDeDatos_cuandoTituloEsInvalido() {
+        // Arrange
+        RegistrarFichaPerfilCommand command = comandoSinEstudiantes("   ");
+
+        // Act & Assert
+        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
+                .isInstanceOf(DomainValidationException.class);
+
+        verify(estudiantesFichaValidator, never()).validarSinDuplicados(anyList());
+        verify(fichaPerfilValidator, never()).validarAsesorExiste(any());
+        verify(fichaPerfilValidator, never()).validarTituloUnico(any());
+        verify(estudiantesFichaValidator, never()).validarExistencia(anyList());
+        verify(fichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeConsultarUnicidadConElTituloNormalizado_cuandoTituloTieneEspacios() {
+        // Arrange
+        RegistrarFichaPerfilCommand command = comandoSinEstudiantes("  Título de prueba  ");
+
+        // Act
+        registrarFichaPerfilUseCase.ejecutar(command);
+
+        // Assert
+        verify(fichaPerfilValidator).validarTituloUnico("Título de prueba");
+    }
+
+    @Test
+    void debeValidarCupoDespuesDeLaExistencia_cuandoHayEstudiantes() {
+        // Arrange
+        RegistrarFichaPerfilCommand command = comandoConEstudiantes(List.of(UUID.randomUUID()));
+
+        // Act
+        registrarFichaPerfilUseCase.ejecutar(command);
+
+        // Assert
+        InOrder inOrder = inOrder(estudiantesFichaValidator, estudianteFichaPerfilCupoDisponibleRule);
+        inOrder.verify(estudiantesFichaValidator).validarExistencia(anyList());
+        inOrder.verify(estudianteFichaPerfilCupoDisponibleRule).validar(anyList());
+    }
+
+    @Test
     void debeValidarDuplicadosAntesDeConsultarLaBaseDeDatos_cuandoUUIDRepetidoEnLista() {
         UUID estudianteId = UUID.randomUUID();
         RegistrarFichaPerfilCommand command = comandoConEstudiantes(
