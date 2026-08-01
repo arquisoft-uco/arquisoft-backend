@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.ModificarItemFichaPerfilInputPort;
+import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.ModificarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.dto.ModificarItemFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
@@ -32,7 +32,7 @@ import java.util.UUID;
         description = FichasApiDocs.ItemFichaPerfil.TAG_DESCRIPTION)
 public class ModificarItemFichaPerfilInputAdapter {
 
-    private final ModificarItemFichaPerfilInputPort modificarItemFichaPerfilInputPort;
+    private final ModificarItemFichaPerfilInteractor modificarItemFichaPerfilInteractor;
 
     @PatchMapping("/items/{itemId}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_UPDATE)
@@ -60,7 +60,7 @@ public class ModificarItemFichaPerfilInputAdapter {
 
         UUID estudianteId = UUID.fromString(jwt.getSubject());
 
-        modificarItemFichaPerfilInputPort.ejecutar(dto.toCommand(itemId, estudianteId));
+        modificarItemFichaPerfilInteractor.ejecutar(dto.toCommand(itemId, estudianteId));
 
         return ResponseEntity.noContent().build();
     }

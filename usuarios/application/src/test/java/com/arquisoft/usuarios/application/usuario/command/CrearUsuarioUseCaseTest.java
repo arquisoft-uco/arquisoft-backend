@@ -32,7 +32,7 @@ class CrearUsuarioUseCaseTest {
     private EventPublisher eventPublisher;
 
     @InjectMocks
-    private CrearUsuarioUseCase crearUsuarioUseCase;
+    private CrearUsuarioUseCaseImpl crearUsuarioUseCase;
 
     @Test
     void debeCrearUsuario_cuandoDatosValidos() {

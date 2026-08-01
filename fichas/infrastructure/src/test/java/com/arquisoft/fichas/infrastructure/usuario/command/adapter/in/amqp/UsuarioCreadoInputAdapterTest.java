@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.usuario.command.adapter.in.amqp;
 
 import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
-import com.arquisoft.fichas.application.usuario.command.port.in.RegistrarUsuarioInputPort;
+import com.arquisoft.fichas.application.usuario.command.port.in.RegistrarUsuarioUseCase;
 import com.rabbitmq.client.Channel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 class UsuarioCreadoInputAdapterTest {
 
     @Mock
-    private RegistrarUsuarioInputPort registrarUsuarioInputPort;
+    private RegistrarUsuarioUseCase registrarUsuarioUseCase;
 
     @Mock
     private Channel channel;
@@ -34,7 +34,7 @@ class UsuarioCreadoInputAdapterTest {
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
-        adapter = new UsuarioCreadoInputAdapter(registrarUsuarioInputPort, objectMapper,
+        adapter = new UsuarioCreadoInputAdapter(registrarUsuarioUseCase, objectMapper,
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class));
     }
 
@@ -75,7 +75,7 @@ class UsuarioCreadoInputAdapterTest {
 
         // Assert
         ArgumentCaptor<RegistrarUsuarioCommand> commandCaptor = ArgumentCaptor.forClass(RegistrarUsuarioCommand.class);
-        verify(registrarUsuarioInputPort).ejecutar(commandCaptor.capture());
+        verify(registrarUsuarioUseCase).ejecutar(commandCaptor.capture());
 
         RegistrarUsuarioCommand command = commandCaptor.getValue();
         assertThat(command.usuarioId()).isEqualTo(usuarioId);
@@ -111,7 +111,7 @@ class UsuarioCreadoInputAdapterTest {
                 .build();
 
         doThrow(new RuntimeException("Email duplicado"))
-                .when(registrarUsuarioInputPort)
+                .when(registrarUsuarioUseCase)
                 .ejecutar(org.mockito.ArgumentMatchers.any());
 
         // Act

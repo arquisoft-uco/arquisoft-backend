@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.AsignarEstudiantesFichaPerfilInputPort;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.AsignarEstudiantesFichaPerfilInteractor;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -59,7 +59,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AsignarEstudiantesFichaPerfilInputPort asignarEstudiantesFichaPerfilInputPort;
+    private AsignarEstudiantesFichaPerfilInteractor asignarEstudiantesFichaPerfilInteractor;
 
     @Test
     void debe204_cuandoPeticionValidaConListaDeUno() throws Exception {
@@ -71,7 +71,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
                   "estudiantes": ["%s"]
                 }
                 """, estudiante1);
-        doNothing().when(asignarEstudiantesFichaPerfilInputPort).ejecutar(any());
+        doNothing().when(asignarEstudiantesFichaPerfilInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
@@ -94,7 +94,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
                   "estudiantes": ["%s", "%s", "%s"]
                 }
                 """, estudiante1, estudiante2, estudiante3);
-        doNothing().when(asignarEstudiantesFichaPerfilInputPort).ejecutar(any());
+        doNothing().when(asignarEstudiantesFichaPerfilInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
@@ -158,7 +158,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
                 }
                 """, estudiante1);
         doThrow(new FichaPerfilNoEncontradaException(fichaPerfilId))
-                .when(asignarEstudiantesFichaPerfilInputPort).ejecutar(any());
+                .when(asignarEstudiantesFichaPerfilInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
@@ -180,7 +180,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
                 }
                 """, estudiante1);
         doThrow(new EstudianteNoEncontradoException(estudiante1))
-                .when(asignarEstudiantesFichaPerfilInputPort).ejecutar(any());
+                .when(asignarEstudiantesFichaPerfilInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
@@ -202,7 +202,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
                 }
                 """, estudiante1);
         doThrow(new EstudianteDuplicadoException(estudiante1))
-                .when(asignarEstudiantesFichaPerfilInputPort).ejecutar(any());
+                .when(asignarEstudiantesFichaPerfilInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)
@@ -273,7 +273,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
         );
         DomainValidationException exception = new DomainValidationException(validationResult);
 
-        doThrow(exception).when(asignarEstudiantesFichaPerfilInputPort).ejecutar(any());
+        doThrow(exception).when(asignarEstudiantesFichaPerfilInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/estudiantes", fichaPerfilId)

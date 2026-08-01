@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
-import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilUseCase;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
@@ -55,11 +55,11 @@ class ConsultarFichasPerfilInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ConsultarFichasPerfilInputPort consultarFichasPerfilInputPort;
+    private ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;
 
     @Test
     void debe200_cuandoBodyVacio() throws Exception {
-        when(consultarFichasPerfilInputPort.ejecutar(any(FichaPerfilCriteria.class)))
+        when(consultarFichasPerfilUseCase.ejecutar(any(FichaPerfilCriteria.class)))
                 .thenReturn(PaginatedResult.of(List.of(), 0, 10, 0L));
 
         mockMvc.perform(post("/fichas-perfil/coordinador")
@@ -73,7 +73,7 @@ class ConsultarFichasPerfilInputAdapterTest {
 
     @Test
     void debe200_cuandoConsultaConFiltroPredicado() throws Exception {
-        when(consultarFichasPerfilInputPort.ejecutar(any(FichaPerfilCriteria.class)))
+        when(consultarFichasPerfilUseCase.ejecutar(any(FichaPerfilCriteria.class)))
                 .thenReturn(PaginatedResult.of(List.of(), 0, 10, 0L));
 
         String body = """
@@ -99,7 +99,7 @@ class ConsultarFichasPerfilInputAdapterTest {
 
     @Test
     void debe200_cuandoConsultaConGrupoOR() throws Exception {
-        when(consultarFichasPerfilInputPort.ejecutar(any(FichaPerfilCriteria.class)))
+        when(consultarFichasPerfilUseCase.ejecutar(any(FichaPerfilCriteria.class)))
                 .thenReturn(PaginatedResult.of(List.of(), 0, 5, 0L));
 
         String body = """

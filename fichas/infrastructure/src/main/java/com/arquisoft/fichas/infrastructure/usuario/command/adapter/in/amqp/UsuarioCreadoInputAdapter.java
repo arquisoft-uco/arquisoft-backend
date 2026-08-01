@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.usuario.command.adapter.in.amqp;
 
 import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
-import com.arquisoft.fichas.application.usuario.command.port.in.RegistrarUsuarioInputPort;
+import com.arquisoft.fichas.application.usuario.command.port.in.RegistrarUsuarioUseCase;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
@@ -19,15 +19,15 @@ import java.util.UUID;
 @Component
 public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
 
-    private final RegistrarUsuarioInputPort registrarUsuarioInputPort;
+    private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
     private final AppLogger logger;
 
     public UsuarioCreadoInputAdapter(
-            RegistrarUsuarioInputPort registrarUsuarioInputPort,
+            RegistrarUsuarioUseCase registrarUsuarioUseCase,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger) {
         super(objectMapper);
-        this.registrarUsuarioInputPort = registrarUsuarioInputPort;
+        this.registrarUsuarioUseCase = registrarUsuarioUseCase;
         this.logger = logger;
     }
 
@@ -39,7 +39,7 @@ public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
             logger.info(FichasMessages.Usuario.LOG_USUARIO_CREADO_RECIBIDO,
                     payload.usuarioId(), payload.email(), payload.rol());
 
-            registrarUsuarioInputPort.ejecutar(new RegistrarUsuarioCommand(
+            registrarUsuarioUseCase.ejecutar(new RegistrarUsuarioCommand(
                     UUID.fromString(payload.usuarioId()),
                     payload.email(),
                     payload.rol()));

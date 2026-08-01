@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
-import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.port.in.ConsultarFichasPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = FichasApiDocs.FichaPerfil.TAG_NAME, description = FichasApiDocs.FichaPerfil.TAG_DESCRIPTION)
 public class ConsultarFichasPerfilInputAdapter {
 
-    private final ConsultarFichasPerfilInputPort consultarFichasPerfilInputPort;
+    private final ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;
     private final AppLogger logger;
 
     @PostMapping("/coordinador")
@@ -72,7 +72,7 @@ public class ConsultarFichasPerfilInputAdapter {
                 .raiz(solicitud.parsearFiltros())
                 .build();
 
-        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilInputPort.ejecutar(criteria);
+        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilUseCase.ejecutar(criteria);
 
         return ResponseEntity.ok(PageResponseDTO.from(resultado));
     }

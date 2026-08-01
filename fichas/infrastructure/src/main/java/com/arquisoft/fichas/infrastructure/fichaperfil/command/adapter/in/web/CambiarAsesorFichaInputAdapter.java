@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaperfil.command.port.in.CambiarAsesorFichaInputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.port.in.CambiarAsesorFichaInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.CambiarAsesorFichaRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
@@ -29,7 +29,7 @@ import java.util.UUID;
 @Tag(name = FichasApiDocs.FichaPerfil.TAG_NAME, description = FichasApiDocs.FichaPerfil.TAG_DESCRIPTION)
 public class CambiarAsesorFichaInputAdapter {
 
-    private final CambiarAsesorFichaInputPort cambiarAsesorFichaInputPort;
+    private final CambiarAsesorFichaInteractor cambiarAsesorFichaInteractor;
 
     @PatchMapping("/{id}/asesor-ficha")
     @Operation(
@@ -54,7 +54,7 @@ public class CambiarAsesorFichaInputAdapter {
             @PathVariable UUID id,
             @Valid @RequestBody CambiarAsesorFichaRequestDTO request
     ) {
-        cambiarAsesorFichaInputPort.ejecutar(request.toCommand(id));
+        cambiarAsesorFichaInteractor.ejecutar(request.toCommand(id));
         return ResponseEntity.noContent().build();
     }
 }

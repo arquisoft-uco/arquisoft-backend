@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.AgregarItemFichaPerfilInputPort;
+import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.AgregarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.dto.AgregarItemFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.dto.AgregarItemFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -36,7 +36,7 @@ import java.util.UUID;
         description = FichasApiDocs.ItemFichaPerfil.TAG_DESCRIPTION)
 public class AgregarItemFichaPerfilInputAdapter {
 
-    private final AgregarItemFichaPerfilInputPort agregarItemFichaPerfilInputPort;
+    private final AgregarItemFichaPerfilInteractor agregarItemFichaPerfilInteractor;
 
     @PostMapping("/{fichaPerfilId}/items")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_CREATE)
@@ -65,7 +65,7 @@ public class AgregarItemFichaPerfilInputAdapter {
 
         UUID estudianteId = UUID.fromString(jwt.getSubject());
 
-        UUID itemId = agregarItemFichaPerfilInputPort.ejecutar(dto.toCommand(fichaPerfilId, estudianteId));
+        UUID itemId = agregarItemFichaPerfilInteractor.ejecutar(dto.toCommand(fichaPerfilId, estudianteId));
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

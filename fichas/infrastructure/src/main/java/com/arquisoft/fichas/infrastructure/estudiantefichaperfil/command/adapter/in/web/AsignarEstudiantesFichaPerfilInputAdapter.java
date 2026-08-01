@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.AsignarEstudiantesFichaPerfilInputPort;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.AsignarEstudiantesFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web.dto.AsignarEstudiantesFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
@@ -30,7 +30,7 @@ import java.util.UUID;
         description = FichasApiDocs.EstudianteFichaPerfil.TAG_DESCRIPTION)
 public class AsignarEstudiantesFichaPerfilInputAdapter {
 
-    private final AsignarEstudiantesFichaPerfilInputPort asignarEstudiantesFichaPerfilInputPort;
+    private final AsignarEstudiantesFichaPerfilInteractor asignarEstudiantesFichaPerfilInteractor;
 
     @PostMapping("/{fichaPerfilId}/estudiantes")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTUDIANTE_FICHA_PERFIL_CREATE)
@@ -55,7 +55,7 @@ public class AsignarEstudiantesFichaPerfilInputAdapter {
             @PathVariable UUID fichaPerfilId,
             @Valid @RequestBody AsignarEstudiantesFichaPerfilRequestDTO dto) {
 
-        asignarEstudiantesFichaPerfilInputPort.ejecutar(dto.toCommand(fichaPerfilId));
+        asignarEstudiantesFichaPerfilInteractor.ejecutar(dto.toCommand(fichaPerfilId));
 
         return ResponseEntity.noContent().build();
     }

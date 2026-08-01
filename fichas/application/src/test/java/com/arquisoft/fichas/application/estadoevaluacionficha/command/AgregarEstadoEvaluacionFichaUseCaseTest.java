@@ -43,7 +43,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
     private AppLogger logger;
 
     @InjectMocks
-    private AgregarEstadoEvaluacionFichaUseCase useCase;
+    private AgregarEstadoEvaluacionFichaUseCaseImpl useCase;
 
     @Test
     void debeAgregar_cuandoDatosValidos() {

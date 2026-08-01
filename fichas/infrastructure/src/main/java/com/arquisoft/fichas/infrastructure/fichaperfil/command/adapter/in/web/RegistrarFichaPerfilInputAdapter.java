@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.RegistrarFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.RegistrarFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = FichasApiDocs.FichaPerfil.TAG_NAME, description = FichasApiDocs.FichaPerfil.TAG_DESCRIPTION)
 public class RegistrarFichaPerfilInputAdapter {
 
-    private final RegistrarFichaPerfilInputPort registrarFichaPerfilInputPort;
+    private final RegistrarFichaPerfilInteractor registrarFichaPerfilInteractor;
 
     @PostMapping
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_CREATE)
@@ -56,7 +56,7 @@ public class RegistrarFichaPerfilInputAdapter {
     public ResponseEntity<RegistrarFichaPerfilResponseDTO> registrar(
             @Valid @RequestBody RegistrarFichaPerfilRequestDTO request) {
 
-        UUID id = registrarFichaPerfilInputPort.ejecutar(request.toCommand());
+        UUID id = registrarFichaPerfilInteractor.ejecutar(request.toCommand());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new RegistrarFichaPerfilResponseDTO(id));
     }

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
-import com.arquisoft.fichas.application.fichaperfil.command.port.in.CambiarAsesorFichaInputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.port.in.CambiarAsesorFichaInteractor;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -61,7 +61,7 @@ class CambiarAsesorFichaInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private CambiarAsesorFichaInputPort cambiarAsesorFichaInputPort;
+    private CambiarAsesorFichaInteractor cambiarAsesorFichaInteractor;
 
     @Test
     void debeRetornar204_cuandoCambioExitoso() throws Exception {
@@ -75,7 +75,7 @@ class CambiarAsesorFichaInputAdapterTest {
                 }
                 """, nuevoAsesorId);
 
-        doNothing().when(cambiarAsesorFichaInputPort).ejecutar(any(CambiarAsesorFichaCommand.class));
+        doNothing().when(cambiarAsesorFichaInteractor).ejecutar(any(CambiarAsesorFichaCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)
@@ -123,7 +123,7 @@ class CambiarAsesorFichaInputAdapterTest {
                 """, nuevoAsesorId);
 
         doThrow(new FichaPerfilNoEncontradaException(fichaId))
-                .when(cambiarAsesorFichaInputPort).ejecutar(any(CambiarAsesorFichaCommand.class));
+                .when(cambiarAsesorFichaInteractor).ejecutar(any(CambiarAsesorFichaCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)
@@ -149,7 +149,7 @@ class CambiarAsesorFichaInputAdapterTest {
                 """, nuevoAsesorId);
 
         doThrow(new AsesorFichaNoEncontradoException(nuevoAsesorId))
-                .when(cambiarAsesorFichaInputPort).ejecutar(any(CambiarAsesorFichaCommand.class));
+                .when(cambiarAsesorFichaInteractor).ejecutar(any(CambiarAsesorFichaCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)
@@ -182,7 +182,7 @@ class CambiarAsesorFichaInputAdapterTest {
         );
 
         doThrow(new DomainValidationException(result))
-                .when(cambiarAsesorFichaInputPort).ejecutar(any(CambiarAsesorFichaCommand.class));
+                .when(cambiarAsesorFichaInteractor).ejecutar(any(CambiarAsesorFichaCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)
@@ -217,7 +217,7 @@ class CambiarAsesorFichaInputAdapterTest {
         );
 
         doThrow(new DomainValidationException(result))
-                .when(cambiarAsesorFichaInputPort).ejecutar(any(CambiarAsesorFichaCommand.class));
+                .when(cambiarAsesorFichaInteractor).ejecutar(any(CambiarAsesorFichaCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/{id}/asesor-ficha", fichaId)

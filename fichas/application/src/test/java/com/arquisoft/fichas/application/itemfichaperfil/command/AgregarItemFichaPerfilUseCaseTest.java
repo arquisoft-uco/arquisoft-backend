@@ -49,7 +49,7 @@ class AgregarItemFichaPerfilUseCaseTest {
     private AppLogger logger;
 
     @InjectMocks
-    private AgregarItemFichaPerfilUseCase useCase;
+    private AgregarItemFichaPerfilUseCaseImpl useCase;
 
     @Test
     void debeAgregarItem_cuandoDatosValidos() {

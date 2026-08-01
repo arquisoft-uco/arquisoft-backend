@@ -61,7 +61,7 @@ class RegistrarFichaPerfilUseCaseTest {
     private AppLogger logger;
 
     @InjectMocks
-    private RegistrarFichaPerfilUseCase registrarFichaPerfilUseCase;
+    private RegistrarFichaPerfilUseCaseImpl registrarFichaPerfilUseCase;
 
     @Test
     void debeRegistrar_cuandoDatosValidos() {

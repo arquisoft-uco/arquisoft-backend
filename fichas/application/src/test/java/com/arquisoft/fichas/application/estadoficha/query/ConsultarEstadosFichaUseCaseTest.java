@@ -22,7 +22,7 @@ class ConsultarEstadosFichaUseCaseTest {
     private EstadoFichaQueryOutputPort queryOutputPort;
 
     @InjectMocks
-    private ConsultarEstadosFichaUseCase useCase;
+    private ConsultarEstadosFichaUseCaseImpl useCase;
 
     @Test
     void debeRetornarListaCompleta_cuandoExistenEstados() {

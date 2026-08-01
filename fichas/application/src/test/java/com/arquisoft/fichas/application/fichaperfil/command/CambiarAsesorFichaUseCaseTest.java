@@ -45,7 +45,7 @@ class CambiarAsesorFichaUseCaseTest {
     private AppLogger logger;
 
     @InjectMocks
-    private CambiarAsesorFichaUseCase cambiarAsesorFichaUseCase;
+    private CambiarAsesorFichaUseCaseImpl cambiarAsesorFichaUseCase;
 
     @Test
     void debeCambiarAsesor_cuandoDatosValidos() {

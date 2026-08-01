@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
-import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.ModificarItemFichaPerfilInputPort;
+import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.ModificarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemNoEncontradoException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -59,7 +59,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ModificarItemFichaPerfilInputPort modificarItemFichaPerfilInputPort;
+    private ModificarItemFichaPerfilInteractor modificarItemFichaPerfilInteractor;
 
     @Test
     void debe204_cuandoPeticionValida() throws Exception {
@@ -68,7 +68,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         UUID estudianteId = UUID.randomUUID();
         String body = "{\"contenido\": \"Contenido modificado válido\"}";
 
-        doNothing().when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
+        doNothing().when(modificarItemFichaPerfilInteractor).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
@@ -88,7 +88,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         String body = "{\"contenido\": \"Contenido modificado\"}";
 
         doThrow(new ItemNoEncontradoException(itemId))
-                .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
+                .when(modificarItemFichaPerfilInteractor).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
@@ -109,7 +109,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         String body = "{\"contenido\": \"Contenido modificado\"}";
 
         doThrow(new ItemFichaNoPropiaException(fichaPerfilId))
-                .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
+                .when(modificarItemFichaPerfilInteractor).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
@@ -166,7 +166,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         );
 
         doThrow(new DomainValidationException(validationResult))
-                .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
+                .when(modificarItemFichaPerfilInteractor).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)
@@ -193,7 +193,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         );
 
         doThrow(new DomainValidationException(validationResult))
-                .when(modificarItemFichaPerfilInputPort).ejecutar(any(ModificarItemFichaPerfilCommand.class));
+                .when(modificarItemFichaPerfilInteractor).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert
         mockMvc.perform(patch("/fichas-perfil/items/{itemId}", itemId)

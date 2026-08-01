@@ -46,7 +46,7 @@ class RemoverItemFichaPerfilUseCaseTest {
     private AppLogger logger;
 
     @InjectMocks
-    private RemoverItemFichaPerfilUseCase useCase;
+    private RemoverItemFichaPerfilUseCaseImpl useCase;
 
     @Test
     void debeEliminar_cuandoDatosValidos() {

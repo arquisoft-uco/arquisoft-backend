@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
-import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.RemoverItemFichaPerfilInputPort;
+import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.RemoverItemFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
 import com.arquisoft.shared.message.FichasApiDocs;
@@ -30,7 +30,7 @@ import java.util.UUID;
         description = FichasApiDocs.ItemFichaPerfil.TAG_DESCRIPTION)
 public class RemoverItemFichaPerfilInputAdapter {
 
-    private final RemoverItemFichaPerfilInputPort inputPort;
+    private final RemoverItemFichaPerfilInteractor removerItemFichaPerfilInteractor;
 
     @DeleteMapping("/items/{itemId}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_DELETE)
@@ -56,7 +56,7 @@ public class RemoverItemFichaPerfilInputAdapter {
             @AuthenticationPrincipal Jwt jwt) {
         var estudianteId = UUID.fromString(jwt.getSubject());
         var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
-        inputPort.ejecutar(command);
+        removerItemFichaPerfilInteractor.ejecutar(command);
         return ResponseEntity.noContent().build();
     }
 }

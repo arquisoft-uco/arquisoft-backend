@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.port.in.AgregarEstadoEvaluacionFichaInputPort;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.port.in.AgregarEstadoEvaluacionFichaInteractor;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.in.web.dto.AgregarEstadoEvaluacionFichaRequestDTO;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.in.web.dto.AgregarEstadoEvaluacionFichaResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -35,7 +35,7 @@ import java.util.UUID;
         description = FichasApiDocs.EstadoEvaluacionFicha.TAG_DESCRIPTION)
 public class AgregarEstadoEvaluacionFichaInputAdapter {
 
-    private final AgregarEstadoEvaluacionFichaInputPort agregarEstadoEvaluacionFichaInputPort;
+    private final AgregarEstadoEvaluacionFichaInteractor agregarEstadoEvaluacionFichaInteractor;
 
     @PostMapping
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_EVALUACION_FICHA_CREATE)
@@ -61,7 +61,7 @@ public class AgregarEstadoEvaluacionFichaInputAdapter {
             @AuthenticationPrincipal Jwt jwt) {
 
         UUID representanteComiteId = UUID.fromString(jwt.getSubject());
-        var id = agregarEstadoEvaluacionFichaInputPort.ejecutar(request.toCommand(representanteComiteId));
+        var id = agregarEstadoEvaluacionFichaInteractor.ejecutar(request.toCommand(representanteComiteId));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new AgregarEstadoEvaluacionFichaResponseDTO(id));
     }

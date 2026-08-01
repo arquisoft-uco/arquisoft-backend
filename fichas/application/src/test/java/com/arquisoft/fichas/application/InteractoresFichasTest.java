@@ -1,15 +1,15 @@
 package com.arquisoft.fichas.application;
 
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.AgregarEstadoEvaluacionFichaInteractor;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.AsignarEstudiantesFichaPerfilInteractor;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.RemoverEstudianteFichaPerfilInteractor;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.RegistrarEvaluacionFichaPerfilInteractor;
-import com.arquisoft.fichas.application.fichaperfil.command.CambiarAsesorFichaInteractor;
-import com.arquisoft.fichas.application.fichaperfil.command.ModificarFichaPerfilInteractor;
-import com.arquisoft.fichas.application.fichaperfil.command.RegistrarFichaPerfilInteractor;
-import com.arquisoft.fichas.application.itemfichaperfil.command.AgregarItemFichaPerfilInteractor;
-import com.arquisoft.fichas.application.itemfichaperfil.command.ModificarItemFichaPerfilInteractor;
-import com.arquisoft.fichas.application.itemfichaperfil.command.RemoverItemFichaPerfilInteractor;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.AgregarEstadoEvaluacionFichaInteractorImpl;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.AsignarEstudiantesFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.RemoverEstudianteFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.RegistrarEvaluacionFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.fichaperfil.command.CambiarAsesorFichaInteractorImpl;
+import com.arquisoft.fichas.application.fichaperfil.command.ModificarFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.fichaperfil.command.RegistrarFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.itemfichaperfil.command.AgregarItemFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.itemfichaperfil.command.ModificarItemFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.itemfichaperfil.command.RemoverItemFichaPerfilInteractorImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -31,21 +31,21 @@ class InteractoresFichasTest {
     @DisplayName("El interactor declara la transacción con el manager de fichas")
     @ParameterizedTest(name = "{0}")
     @ValueSource(classes = {
-            RegistrarFichaPerfilInteractor.class,
-            ModificarFichaPerfilInteractor.class,
-            CambiarAsesorFichaInteractor.class,
-            AgregarItemFichaPerfilInteractor.class,
-            ModificarItemFichaPerfilInteractor.class,
-            RemoverItemFichaPerfilInteractor.class,
-            AsignarEstudiantesFichaPerfilInteractor.class,
-            RemoverEstudianteFichaPerfilInteractor.class,
-            RegistrarEvaluacionFichaPerfilInteractor.class,
-            AgregarEstadoEvaluacionFichaInteractor.class
+            RegistrarFichaPerfilInteractorImpl.class,
+            ModificarFichaPerfilInteractorImpl.class,
+            CambiarAsesorFichaInteractorImpl.class,
+            AgregarItemFichaPerfilInteractorImpl.class,
+            ModificarItemFichaPerfilInteractorImpl.class,
+            RemoverItemFichaPerfilInteractorImpl.class,
+            AsignarEstudiantesFichaPerfilInteractorImpl.class,
+            RemoverEstudianteFichaPerfilInteractorImpl.class,
+            RegistrarEvaluacionFichaPerfilInteractorImpl.class,
+            AgregarEstadoEvaluacionFichaInteractorImpl.class
     })
     void debeDeclararTransaccion_cuandoEsInteractorDeComando(Class<?> interactor) {
         // Arrange
         Method ejecutar = Arrays.stream(interactor.getDeclaredMethods())
-                .filter(m -> "ejecutar".equals(m.getName()))
+                .filter(m -> "ejecutar".equals(m.getName()) && !m.isBridge())
                 .findFirst()
                 .orElseThrow();
 

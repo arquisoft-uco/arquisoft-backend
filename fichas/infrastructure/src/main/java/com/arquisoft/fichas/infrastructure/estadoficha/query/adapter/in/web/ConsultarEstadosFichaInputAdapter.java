@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.adapter.in.web;
 
-import com.arquisoft.fichas.application.estadoficha.query.port.in.ConsultarEstadosFichaInputPort;
+import com.arquisoft.fichas.application.estadoficha.query.port.in.ConsultarEstadosFichaUseCase;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
@@ -28,7 +28,7 @@ import java.util.List;
 @Tag(name = FichasApiDocs.EstadoFicha.TAG_NAME, description = FichasApiDocs.EstadoFicha.TAG_DESCRIPTION)
 public class ConsultarEstadosFichaInputAdapter {
 
-    private final ConsultarEstadosFichaInputPort inputPort;
+    private final ConsultarEstadosFichaUseCase consultarEstadosFichaUseCase;
 
     @GetMapping("/estados-ficha")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_FICHA_VIEW)
@@ -52,7 +52,7 @@ public class ConsultarEstadosFichaInputAdapter {
                     content = @Content)
     })
     public ResponseEntity<List<EstadoFichaReadModel>> consultarEstadosFicha() {
-        List<EstadoFichaReadModel> estados = inputPort.ejecutar(null);
+        List<EstadoFichaReadModel> estados = consultarEstadosFichaUseCase.ejecutar(null);
         return ResponseEntity.ok(estados);
     }
 }

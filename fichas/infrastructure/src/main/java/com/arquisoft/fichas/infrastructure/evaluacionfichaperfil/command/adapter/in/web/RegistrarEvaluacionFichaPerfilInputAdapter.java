@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.port.in.RegistrarEvaluacionFichaPerfilInputPort;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.port.in.RegistrarEvaluacionFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.in.web.dto.RegistrarEvaluacionFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
@@ -32,7 +32,7 @@ import java.util.UUID;
         description = FichasApiDocs.EvaluacionFichaPerfil.TAG_DESCRIPTION)
 public class RegistrarEvaluacionFichaPerfilInputAdapter {
 
-    private final RegistrarEvaluacionFichaPerfilInputPort registrarEvaluacionFichaPerfilInputPort;
+    private final RegistrarEvaluacionFichaPerfilInteractor registrarEvaluacionFichaPerfilInteractor;
 
     @PostMapping("/{fichaId}/evaluaciones")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_EVALUACION_FICHA_PERFIL_CREATE)
@@ -61,7 +61,7 @@ public class RegistrarEvaluacionFichaPerfilInputAdapter {
                 fichaId,
                 representanteComiteId);
 
-        UUID evaluacionId = registrarEvaluacionFichaPerfilInputPort.ejecutar(command);
+        UUID evaluacionId = registrarEvaluacionFichaPerfilInteractor.ejecutar(command);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new RegistrarEvaluacionFichaPerfilResponseDTO(evaluacionId));

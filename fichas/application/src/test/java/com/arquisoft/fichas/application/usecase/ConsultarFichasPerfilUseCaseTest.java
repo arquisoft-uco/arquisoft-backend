@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.usecase;
 
-import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCase;
+import com.arquisoft.fichas.application.fichaperfil.query.ConsultarFichasPerfilUseCaseImpl;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
@@ -30,7 +30,7 @@ class ConsultarFichasPerfilUseCaseTest {
     private AppLogger logger;
 
     @InjectMocks
-    private ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;
+    private ConsultarFichasPerfilUseCaseImpl consultarFichasPerfilUseCase;
 
     @Test
     void debeRetornarFichasPaginadas_cuandoExistenFichas() {

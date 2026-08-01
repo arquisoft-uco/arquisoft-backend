@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.adapter.in.web;
 
-import com.arquisoft.fichas.application.estadoficha.query.port.in.ConsultarEstadosFichaInputPort;
+import com.arquisoft.fichas.application.estadoficha.query.port.in.ConsultarEstadosFichaUseCase;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
@@ -56,7 +56,7 @@ class ConsultarEstadosFichaInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ConsultarEstadosFichaInputPort inputPort;
+    private ConsultarEstadosFichaUseCase consultarEstadosFichaUseCase;
 
     @Test
     void debe200_cuandoConsultaExitosa() throws Exception {
@@ -65,7 +65,7 @@ class ConsultarEstadosFichaInputAdapterTest {
                 new EstadoFichaReadModel("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo"),
                 new EstadoFichaReadModel("APROBADA", "Aprobada", "Ficha aprobada")
         );
-        when(inputPort.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaUseCase.ejecutar(isNull())).thenReturn(estados);
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -84,7 +84,7 @@ class ConsultarEstadosFichaInputAdapterTest {
     @Test
     void debe200ConListaVacia_cuandoNoHayEstados() throws Exception {
         // Arrange
-        when(inputPort.ejecutar(isNull())).thenReturn(List.of());
+        when(consultarEstadosFichaUseCase.ejecutar(isNull())).thenReturn(List.of());
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -102,7 +102,7 @@ class ConsultarEstadosFichaInputAdapterTest {
                 new EstadoFichaReadModel("DISPONIBLE_PARA_EVALUACION", "Disponible para Evaluacion", "Lista para evaluar"),
                 new EstadoFichaReadModel("APROBADA_CON_OBSERVACIONES", "Aprobada con Observaciones", "Aprobada condicionalmente")
         );
-        when(inputPort.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaUseCase.ejecutar(isNull())).thenReturn(estados);
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -132,12 +132,12 @@ class ConsultarEstadosFichaInputAdapterTest {
     }
 
     @Test
-    void debeInvocarInputPort_cuandoEndpointEsLlamado() throws Exception {
+    void debeInvocarUseCase_cuandoEndpointEsLlamado() throws Exception {
         // Arrange
         List<EstadoFichaReadModel> estados = List.of(
                 new EstadoFichaReadModel("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo")
         );
-        when(inputPort.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaUseCase.ejecutar(isNull())).thenReturn(estados);
 
         // Act
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -146,7 +146,7 @@ class ConsultarEstadosFichaInputAdapterTest {
                 .andExpect(status().isOk());
 
         // Assert
-        verify(inputPort, times(1)).ejecutar(isNull());
+        verify(consultarEstadosFichaUseCase, times(1)).ejecutar(isNull());
     }
 
     @Test
@@ -155,7 +155,7 @@ class ConsultarEstadosFichaInputAdapterTest {
         List<EstadoFichaReadModel> estados = List.of(
                 new EstadoFichaReadModel("APROBADA", "Aprobada", "Ficha aprobada")
         );
-        when(inputPort.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaUseCase.ejecutar(isNull())).thenReturn(estados);
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")

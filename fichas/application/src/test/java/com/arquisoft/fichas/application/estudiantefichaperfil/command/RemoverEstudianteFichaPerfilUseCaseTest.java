@@ -41,7 +41,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
     private AppLogger logger;
 
     @InjectMocks
-    private RemoverEstudianteFichaPerfilUseCase useCase;
+    private RemoverEstudianteFichaPerfilUseCaseImpl useCase;
 
     @Test
     void debeRemover_cuandoRelacionExiste() {

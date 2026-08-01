@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.AgregarItemFichaPerfilInputPort;
+import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.AgregarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemTipoDuplicadoException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -58,7 +58,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AgregarItemFichaPerfilInputPort agregarItemFichaPerfilInputPort;
+    private AgregarItemFichaPerfilInteractor agregarItemFichaPerfilInteractor;
 
     private static final UUID ESTUDIANTE_ID = UUID.randomUUID();
     private static final UUID FICHA_PERFIL_ID = UUID.randomUUID();
@@ -73,7 +73,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
     @Test
     void debe201_cuandoPeticionValida() throws Exception {
         UUID itemId = UUID.randomUUID();
-        when(agregarItemFichaPerfilInputPort.ejecutar(any())).thenReturn(itemId);
+        when(agregarItemFichaPerfilInteractor.ejecutar(any())).thenReturn(itemId);
 
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
@@ -124,7 +124,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
 
     @Test
     void debe400_cuandoTipoDuplicado() throws Exception {
-        when(agregarItemFichaPerfilInputPort.ejecutar(any()))
+        when(agregarItemFichaPerfilInteractor.ejecutar(any()))
                 .thenThrow(new ItemTipoDuplicadoException("OBJETIVO_GENERAL"));
 
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
@@ -138,7 +138,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
 
     @Test
     void debe403_cuandoFichaNoPropia() throws Exception {
-        when(agregarItemFichaPerfilInputPort.ejecutar(any()))
+        when(agregarItemFichaPerfilInteractor.ejecutar(any()))
                 .thenThrow(new ItemFichaNoPropiaException(FICHA_PERFIL_ID));
 
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)
@@ -159,7 +159,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
                 FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO_MSG.formatted("TIPO_INEXISTENTE")
         );
 
-        when(agregarItemFichaPerfilInputPort.ejecutar(any()))
+        when(agregarItemFichaPerfilInteractor.ejecutar(any()))
                 .thenThrow(new DomainValidationException(validationResult));
 
         mockMvc.perform(post("/fichas-perfil/{fichaPerfilId}/items", FICHA_PERFIL_ID)

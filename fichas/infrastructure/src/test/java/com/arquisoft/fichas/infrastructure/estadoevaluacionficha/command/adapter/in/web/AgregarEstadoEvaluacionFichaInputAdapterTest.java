@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.port.in.AgregarEstadoEvaluacionFichaInputPort;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.port.in.AgregarEstadoEvaluacionFichaInteractor;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
@@ -58,7 +58,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AgregarEstadoEvaluacionFichaInputPort agregarEstadoEvaluacionFichaInputPort;
+    private AgregarEstadoEvaluacionFichaInteractor agregarEstadoEvaluacionFichaInteractor;
 
     @Test
     void debe201_cuandoPeticionValida() throws Exception {
@@ -69,7 +69,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
                 "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
                 evaluacionId);
 
-        when(agregarEstadoEvaluacionFichaInputPort.ejecutar(any())).thenReturn(resultadoId);
+        when(agregarEstadoEvaluacionFichaInteractor.ejecutar(any())).thenReturn(resultadoId);
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/estado-evaluacion-ficha")
@@ -103,7 +103,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
                 "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
                 evaluacionId);
 
-        when(agregarEstadoEvaluacionFichaInputPort.ejecutar(any()))
+        when(agregarEstadoEvaluacionFichaInteractor.ejecutar(any()))
                 .thenThrow(new EvaluacionFichaPerfilNoEncontradaException(evaluacionId));
 
         // Act & Assert
@@ -123,7 +123,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
                 "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
                 evaluacionId);
 
-        when(agregarEstadoEvaluacionFichaInputPort.ejecutar(any()))
+        when(agregarEstadoEvaluacionFichaInteractor.ejecutar(any()))
                 .thenThrow(new EstadoEvaluacionDuplicadoException(evaluacionId, "APROBADA"));
 
         // Act & Assert
@@ -147,7 +147,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
         validationResult.addError("estadoEvaluacion", "TRANSICION_INVALIDA",
                 "No se puede agregar un nuevo estado cuando la evaluación ya alcanzó un estado terminal");
 
-        when(agregarEstadoEvaluacionFichaInputPort.ejecutar(any()))
+        when(agregarEstadoEvaluacionFichaInteractor.ejecutar(any()))
                 .thenThrow(new DomainValidationException(validationResult));
 
         // Act & Assert
@@ -182,7 +182,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
                 "{\"evaluacionFichaPerfil\":\"%s\",\"estadoEvaluacion\":\"APROBADA\"}",
                 evaluacionId);
 
-        when(agregarEstadoEvaluacionFichaInputPort.ejecutar(any()))
+        when(agregarEstadoEvaluacionFichaInteractor.ejecutar(any()))
                 .thenThrow(new EvaluacionFichaNoPropiaException(evaluacionId));
 
         // Act & Assert

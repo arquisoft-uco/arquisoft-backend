@@ -2,7 +2,7 @@ package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web;
 
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioCommand;
-import com.arquisoft.usuarios.application.usuario.command.port.in.CrearUsuarioInputPort;
+import com.arquisoft.usuarios.application.usuario.command.port.in.CrearUsuarioUseCase;
 import com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web.dto.CrearUsuarioRequestDTO;
 import com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web.dto.CrearUsuarioResponseDTO;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 class UsuarioCommandInputAdapterTest {
 
     @Mock
-    private CrearUsuarioInputPort crearUsuarioInputPort;
+    private CrearUsuarioUseCase crearUsuarioUseCase;
 
     @InjectMocks
     private UsuarioCommandInputAdapter adapter;
@@ -38,7 +38,7 @@ class UsuarioCommandInputAdapterTest {
                 "test@example.com",
                 CrearUsuarioRequestDTO.RolUsuarioDTO.ESTUDIANTE
         );
-        when(crearUsuarioInputPort.ejecutar(any(CrearUsuarioCommand.class))).thenReturn(expectedId);
+        when(crearUsuarioUseCase.ejecutar(any(CrearUsuarioCommand.class))).thenReturn(expectedId);
 
         // Act
         ResponseEntity<CrearUsuarioResponseDTO> response = adapter.crear(request);
@@ -52,21 +52,21 @@ class UsuarioCommandInputAdapterTest {
     }
 
     @Test
-    void debeInvocarInputPort_cuandoCrear() {
+    void debeInvocarUseCase_cuandoCrear() {
         // Arrange
         UUID expectedId = UUID.randomUUID();
         CrearUsuarioRequestDTO request = new CrearUsuarioRequestDTO(
                 "admin@example.com",
                 CrearUsuarioRequestDTO.RolUsuarioDTO.ADMINISTRADOR
         );
-        when(crearUsuarioInputPort.ejecutar(any(CrearUsuarioCommand.class))).thenReturn(expectedId);
+        when(crearUsuarioUseCase.ejecutar(any(CrearUsuarioCommand.class))).thenReturn(expectedId);
         ArgumentCaptor<CrearUsuarioCommand> captor = ArgumentCaptor.forClass(CrearUsuarioCommand.class);
 
         // Act
         adapter.crear(request);
 
         // Assert
-        verify(crearUsuarioInputPort).ejecutar(captor.capture());
+        verify(crearUsuarioUseCase).ejecutar(captor.capture());
         CrearUsuarioCommand command = captor.getValue();
         assertThat(command.email()).isEqualTo("admin@example.com");
         assertThat(command.rol()).isEqualTo(UsuarioRole.ADMINISTRADOR);

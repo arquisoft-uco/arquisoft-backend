@@ -1,10 +1,10 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
 import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
-import com.arquisoft.seguridad.application.auth.command.port.in.AuthenticateUserInputPort;
-import com.arquisoft.seguridad.application.auth.command.port.in.LogoutInputPort;
-import com.arquisoft.seguridad.application.auth.command.port.in.RefreshTokenInputPort;
-import com.arquisoft.seguridad.application.auth.command.port.in.ValidateTokenInputPort;
+import com.arquisoft.seguridad.application.auth.command.port.in.AuthenticateUserUseCase;
+import com.arquisoft.seguridad.application.auth.command.port.in.LogoutUseCase;
+import com.arquisoft.seguridad.application.auth.command.port.in.RefreshTokenUseCase;
+import com.arquisoft.seguridad.application.auth.command.port.in.ValidateTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginRequestDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginResponseDTO;
@@ -31,16 +31,16 @@ import static org.mockito.Mockito.when;
 class AuthCommandInputAdapterTest {
 
     @Mock
-    private AuthenticateUserInputPort authenticateUserInputPort;
+    private AuthenticateUserUseCase authenticateUserUseCase;
 
     @Mock
-    private RefreshTokenInputPort refreshTokenInputPort;
+    private RefreshTokenUseCase refreshTokenUseCase;
 
     @Mock
-    private LogoutInputPort logoutInputPort;
+    private LogoutUseCase logoutUseCase;
 
     @Mock
-    private ValidateTokenInputPort validateTokenInputPort;
+    private ValidateTokenUseCase validateTokenUseCase;
 
     @InjectMocks
     private AuthCommandInputAdapter adapter;
@@ -50,7 +50,7 @@ class AuthCommandInputAdapterTest {
         // Arrange
         LoginRequestDTO request = new LoginRequestDTO("estudiante@uco.edu.co", "password123");
 
-        AuthenticateUserInputPort.AuthResult authResult = new AuthenticateUserInputPort.AuthResult(
+        AuthenticateUserUseCase.AuthResult authResult = new AuthenticateUserUseCase.AuthResult(
                 "eyJhbGc-access...",
                 "eyJhbGc-refresh...",
                 3600L,
@@ -58,7 +58,7 @@ class AuthCommandInputAdapterTest {
                 "openid profile email"
         );
 
-        when(authenticateUserInputPort.ejecutar(any())).thenReturn(authResult);
+        when(authenticateUserUseCase.ejecutar(any())).thenReturn(authResult);
 
         // Act
         ResponseEntity<LoginResponseDTO> response = adapter.login(request);
@@ -69,7 +69,7 @@ class AuthCommandInputAdapterTest {
         assertThat(response.getBody().getAccessToken()).isEqualTo("eyJhbGc-access...");
         assertThat(response.getBody().getRefreshToken()).isEqualTo("eyJhbGc-refresh...");
         assertThat(response.getBody().getExpiresIn()).isEqualTo(3600L);
-        verify(authenticateUserInputPort).ejecutar(any());
+        verify(authenticateUserUseCase).ejecutar(any());
     }
 
     @Test
@@ -77,7 +77,7 @@ class AuthCommandInputAdapterTest {
         // Arrange
         RefreshTokenRequestDTO request = new RefreshTokenRequestDTO("eyJhbGc-refresh-old...");
 
-        RefreshTokenInputPort.RefreshResult refreshResult = new RefreshTokenInputPort.RefreshResult(
+        RefreshTokenUseCase.RefreshResult refreshResult = new RefreshTokenUseCase.RefreshResult(
                 "eyJhbGc-access-new...",
                 "eyJhbGc-refresh-new...",
                 3600L,
@@ -85,7 +85,7 @@ class AuthCommandInputAdapterTest {
                 "openid profile email"
         );
 
-        when(refreshTokenInputPort.ejecutar(anyString())).thenReturn(refreshResult);
+        when(refreshTokenUseCase.ejecutar(anyString())).thenReturn(refreshResult);
 
         // Act
         ResponseEntity<LoginResponseDTO> response = adapter.refreshToken(request);
@@ -94,7 +94,7 @@ class AuthCommandInputAdapterTest {
         assertThat(response.getStatusCode().value()).isEqualTo(200);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getAccessToken()).isEqualTo("eyJhbGc-access-new...");
-        verify(refreshTokenInputPort).ejecutar("eyJhbGc-refresh-old...");
+        verify(refreshTokenUseCase).ejecutar("eyJhbGc-refresh-old...");
     }
 
     @Test
@@ -113,21 +113,21 @@ class AuthCommandInputAdapterTest {
 
         // Assert
         assertThat(response.getStatusCode().value()).isEqualTo(200);
-        verify(logoutInputPort).ejecutar(any(TokenSesionCommand.class));
+        verify(logoutUseCase).ejecutar(any(TokenSesionCommand.class));
     }
 
     @Test
     void debeRetornar200_cuandoValidateToken() {
         // Arrange
-        ValidateTokenInputPort.ValidationResult validationResult =
-                new ValidateTokenInputPort.ValidationResult(
+        ValidateTokenUseCase.ValidationResult validationResult =
+                new ValidateTokenUseCase.ValidationResult(
                         true,
                         "uuid-estudiante-123",
                         "estudiante@uco.edu.co",
                         "Token valido"
                 );
 
-        when(validateTokenInputPort.ejecutar(any())).thenReturn(validationResult);
+        when(validateTokenUseCase.ejecutar(any())).thenReturn(validationResult);
 
         // Act
         ResponseEntity<ValidateTokenResponseDTO> response = adapter.validateToken("eyJhbGc-token-valido...");
@@ -138,6 +138,6 @@ class AuthCommandInputAdapterTest {
         assertThat(response.getBody().isValido()).isTrue();
         assertThat(response.getBody().getIdentidadId()).isEqualTo("uuid-estudiante-123");
         assertThat(response.getBody().getCorreo()).isEqualTo("estudiante@uco.edu.co");
-        verify(validateTokenInputPort).ejecutar(any(TokenAggregate.class));
+        verify(validateTokenUseCase).ejecutar(any(TokenAggregate.class));
     }
 }

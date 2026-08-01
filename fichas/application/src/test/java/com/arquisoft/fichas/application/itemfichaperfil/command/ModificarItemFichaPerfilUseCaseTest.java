@@ -47,7 +47,7 @@ class ModificarItemFichaPerfilUseCaseTest {
     private AppLogger logger;
 
     @InjectMocks
-    private ModificarItemFichaPerfilUseCase useCase;
+    private ModificarItemFichaPerfilUseCaseImpl useCase;
 
     @Test
     void debeModificar_cuandoDatosValidos() {

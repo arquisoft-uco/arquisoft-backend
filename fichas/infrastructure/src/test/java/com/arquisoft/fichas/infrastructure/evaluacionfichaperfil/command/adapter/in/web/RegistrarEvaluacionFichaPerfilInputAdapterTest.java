@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.port.in.RegistrarEvaluacionFichaPerfilInputPort;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.port.in.RegistrarEvaluacionFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class RegistrarEvaluacionFichaPerfilInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private RegistrarEvaluacionFichaPerfilInputPort registrarEvaluacionFichaPerfilInputPort;
+    private RegistrarEvaluacionFichaPerfilInteractor registrarEvaluacionFichaPerfilInteractor;
 
     @Test
     void debe201_cuandoPeticionValida() throws Exception {
@@ -61,7 +61,7 @@ class RegistrarEvaluacionFichaPerfilInputAdapterTest {
         UUID evaluacionId = UUID.randomUUID();
         UUID representanteId = UUID.randomUUID();
 
-        when(registrarEvaluacionFichaPerfilInputPort.ejecutar(any())).thenReturn(evaluacionId);
+        when(registrarEvaluacionFichaPerfilInteractor.ejecutar(any())).thenReturn(evaluacionId);
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil/{fichaId}/evaluaciones", fichaId)

@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
-import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInteractor;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -57,7 +57,7 @@ class RegistrarFichaPerfilInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private RegistrarFichaPerfilInputPort registrarFichaPerfilInputPort;
+    private RegistrarFichaPerfilInteractor registrarFichaPerfilInteractor;
 
     @Test
     void debe201_cuandoPeticionValida() throws Exception {
@@ -71,7 +71,7 @@ class RegistrarFichaPerfilInputAdapterTest {
                 }
                 """, asesorId);
 
-        when(registrarFichaPerfilInputPort.ejecutar(any())).thenReturn(fichaId);
+        when(registrarFichaPerfilInteractor.ejecutar(any())).thenReturn(fichaId);
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
@@ -152,7 +152,7 @@ class RegistrarFichaPerfilInputAdapterTest {
                 }
                 """, tituloDuplicado, asesorId);
 
-        when(registrarFichaPerfilInputPort.ejecutar(any()))
+        when(registrarFichaPerfilInteractor.ejecutar(any()))
                 .thenThrow(new FichaTituloDuplicadoException(tituloDuplicado));
 
         // Act & Assert
@@ -175,7 +175,7 @@ class RegistrarFichaPerfilInputAdapterTest {
                 }
                 """, asesorId);
 
-        when(registrarFichaPerfilInputPort.ejecutar(any()))
+        when(registrarFichaPerfilInteractor.ejecutar(any()))
                 .thenThrow(new AsesorFichaNoEncontradoException(asesorId));
 
         // Act & Assert
@@ -202,7 +202,7 @@ class RegistrarFichaPerfilInputAdapterTest {
                 }
                 """, asesorId, estudiante1, estudiante2);
 
-        when(registrarFichaPerfilInputPort.ejecutar(any())).thenReturn(fichaId);
+        when(registrarFichaPerfilInteractor.ejecutar(any())).thenReturn(fichaId);
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
@@ -227,7 +227,7 @@ class RegistrarFichaPerfilInputAdapterTest {
                 }
                 """, asesorId);
 
-        when(registrarFichaPerfilInputPort.ejecutar(any())).thenReturn(fichaId);
+        when(registrarFichaPerfilInteractor.ejecutar(any())).thenReturn(fichaId);
 
         // Act & Assert
         mockMvc.perform(post("/fichas-perfil")
@@ -277,7 +277,7 @@ class RegistrarFichaPerfilInputAdapterTest {
                 }
                 """, asesorId, estudianteId);
 
-        when(registrarFichaPerfilInputPort.ejecutar(any()))
+        when(registrarFichaPerfilInteractor.ejecutar(any()))
                 .thenThrow(new EstudianteNoEncontradoException(estudianteId));
 
         // Act & Assert
@@ -302,7 +302,7 @@ class RegistrarFichaPerfilInputAdapterTest {
                 }
                 """, asesorId, estudianteId, estudianteId);
 
-        when(registrarFichaPerfilInputPort.ejecutar(any()))
+        when(registrarFichaPerfilInteractor.ejecutar(any()))
                 .thenThrow(new EstudianteDuplicadoException(estudianteId));
 
         // Act & Assert

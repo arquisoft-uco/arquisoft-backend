@@ -47,7 +47,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     private AppLogger logger;
 
     @InjectMocks
-    private AsignarEstudiantesFichaPerfilUseCase useCase;
+    private AsignarEstudiantesFichaPerfilUseCaseImpl useCase;
 
     @Test
     void debeAsignarEstudiantes_cuandoListaValidaYLimiteNoExcedido() {

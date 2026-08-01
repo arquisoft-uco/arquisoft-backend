@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaperfil.command.port.in.ModificarFichaPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.port.in.ModificarFichaPerfilInteractor;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoEncontradaException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
@@ -55,7 +55,7 @@ class ModificarFichaPerfilInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ModificarFichaPerfilInputPort modificarFichaPerfilInputPort;
+    private ModificarFichaPerfilInteractor modificarFichaPerfilInteractor;
 
     private static final UUID FICHA_ID = UUID.randomUUID();
     private static final UUID ESTUDIANTE_ID = UUID.randomUUID();
@@ -109,7 +109,7 @@ class ModificarFichaPerfilInputAdapterTest {
     void debeRetornar403_cuandoNoEsPropietario() throws Exception {
         // Arrange
         doThrow(new FichaNoPropietarioException(FICHA_ID, ESTUDIANTE_ID))
-                .when(modificarFichaPerfilInputPort)
+                .when(modificarFichaPerfilInteractor)
                 .ejecutar(any());
 
         // Act & Assert
@@ -128,7 +128,7 @@ class ModificarFichaPerfilInputAdapterTest {
     void debeRetornar400_cuandoFichaNoExiste() throws Exception {
         // Arrange
         doThrow(new FichaNoEncontradaException(FICHA_ID))
-                .when(modificarFichaPerfilInputPort)
+                .when(modificarFichaPerfilInteractor)
                 .ejecutar(any());
 
         // Act & Assert
@@ -147,7 +147,7 @@ class ModificarFichaPerfilInputAdapterTest {
     void debeRetornar400_cuandoTituloDuplicado() throws Exception {
         // Arrange
         doThrow(new FichaTituloDuplicadoException("Título duplicado"))
-                .when(modificarFichaPerfilInputPort)
+                .when(modificarFichaPerfilInteractor)
                 .ejecutar(any());
 
         // Act & Assert

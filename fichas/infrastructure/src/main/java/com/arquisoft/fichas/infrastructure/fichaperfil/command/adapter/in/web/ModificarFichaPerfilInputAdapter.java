@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaperfil.command.port.in.ModificarFichaPerfilInputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.port.in.ModificarFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.ModificarFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
@@ -31,7 +31,7 @@ import java.util.UUID;
 @Tag(name = FichasApiDocs.FichaPerfil.TAG_NAME, description = FichasApiDocs.FichaPerfil.TAG_DESCRIPTION)
 public class ModificarFichaPerfilInputAdapter {
 
-    private final ModificarFichaPerfilInputPort modificarFichaPerfilInputPort;
+    private final ModificarFichaPerfilInteractor modificarFichaPerfilInteractor;
 
     @PatchMapping("/{id}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_UPDATE)
@@ -56,7 +56,7 @@ public class ModificarFichaPerfilInputAdapter {
             @AuthenticationPrincipal Jwt jwt) {
 
         UUID estudianteId = UUID.fromString(jwt.getSubject());
-        modificarFichaPerfilInputPort.ejecutar(request.toCommand(id, estudianteId));
+        modificarFichaPerfilInteractor.ejecutar(request.toCommand(id, estudianteId));
 
         return ResponseEntity.noContent().build();
     }

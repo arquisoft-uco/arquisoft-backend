@@ -45,7 +45,7 @@ class ModificarFichaPerfilUseCaseTest {
     private AppLogger logger;
 
     @InjectMocks
-    private ModificarFichaPerfilUseCase modificarFichaPerfilUseCase;
+    private ModificarFichaPerfilUseCaseImpl modificarFichaPerfilUseCase;
 
     private static FichaPerfilAggregate crearFicha(UUID id, String titulo) {
         return FichaPerfilAggregate.reconstruir(id, titulo, ASESOR_ID);

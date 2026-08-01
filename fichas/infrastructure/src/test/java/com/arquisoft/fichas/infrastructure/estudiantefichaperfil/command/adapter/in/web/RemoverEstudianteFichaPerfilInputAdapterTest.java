@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapte
 
 import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.RemoverEstudianteFichaPerfilInputPort;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.RemoverEstudianteFichaPerfilInteractor;
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -62,7 +62,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private RemoverEstudianteFichaPerfilInputPort inputPort;
+    private RemoverEstudianteFichaPerfilInteractor removerEstudianteFichaPerfilInteractor;
 
     @Test
     void debe204_cuandoPeticionValida() throws Exception {
@@ -70,7 +70,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
 
-        doNothing().when(inputPort).ejecutar(any());
+        doNothing().when(removerEstudianteFichaPerfilInteractor).ejecutar(any());
 
         // Act & Assert
         mockMvc.perform(delete("/fichas-perfil/{fichaPerfilId}/estudiantes/{estudianteId}",
@@ -82,7 +82,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
 
         ArgumentCaptor<RemoverEstudianteFichaPerfilCommand> captor =
                 ArgumentCaptor.forClass(RemoverEstudianteFichaPerfilCommand.class);
-        verify(inputPort, times(1)).ejecutar(captor.capture());
+        verify(removerEstudianteFichaPerfilInteractor, times(1)).ejecutar(captor.capture());
         assertThat(captor.getValue().fichaPerfil()).isEqualTo(fichaPerfilId);
         assertThat(captor.getValue().estudiante()).isEqualTo(estudianteId);
     }
@@ -94,7 +94,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
         UUID estudianteId = UUID.randomUUID();
 
         doThrow(new FichaPerfilNoEncontradaException(fichaPerfilId))
-                .when(inputPort)
+                .when(removerEstudianteFichaPerfilInteractor)
                 .ejecutar(any());
 
         // Act & Assert
@@ -112,7 +112,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
         UUID estudianteId = UUID.randomUUID();
 
         doThrow(new EstudianteNoEncontradoException(estudianteId))
-                .when(inputPort)
+                .when(removerEstudianteFichaPerfilInteractor)
                 .ejecutar(any());
 
         // Act & Assert
@@ -130,7 +130,7 @@ class RemoverEstudianteFichaPerfilInputAdapterTest {
         UUID estudianteId = UUID.randomUUID();
 
         doThrow(new EstudianteFichaPerfilNoEncontradoException(estudianteId, fichaPerfilId))
-                .when(inputPort)
+                .when(removerEstudianteFichaPerfilInteractor)
                 .ejecutar(any());
 
         // Act & Assert
