@@ -8,10 +8,9 @@ import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfi
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
-import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
-import com.arquisoft.shared.validation.ValidationResult;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -170,16 +169,12 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(ex)
-                .isInstanceOf(DomainValidationException.class)
+                .isInstanceOf(CupoEstudiantesExcedidoException.class)
                 .hasMessageContaining(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
                         FichasMessages.FichaPerfil.ESTUDIANTES_MAX
                 ));
-
-        DomainValidationException domainEx = (DomainValidationException) ex;
-        assertThat(domainEx.getValidationResult().getErrors())
-                .anyMatch(error -> error.errorCode().equals(
-                        FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO
-                ));
+        assertThat(((CupoEstudiantesExcedidoException) ex).getErrorCode())
+                .isEqualTo(FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO);
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -200,13 +195,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         inOrder.verify(estudiantesFichaValidator).validarNoVinculados(any(), anyList());
     }
 
-    private static DomainValidationException limiteExcedido() {
-        var result = new ValidationResult();
-        result.addError(
-                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES,
-                FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO,
-                FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
-                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX));
-        return new DomainValidationException(result);
+    private static CupoEstudiantesExcedidoException limiteExcedido() {
+        return new CupoEstudiantesExcedidoException(FichasMessages.FichaPerfil.ESTUDIANTES_MAX);
     }
 }

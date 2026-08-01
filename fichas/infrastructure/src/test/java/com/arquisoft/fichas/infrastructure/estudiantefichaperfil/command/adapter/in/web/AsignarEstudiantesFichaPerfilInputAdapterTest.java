@@ -5,9 +5,8 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.As
 import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
 import com.arquisoft.shared.message.FichasMessages;
-import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -263,15 +262,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
                 }
                 """, estudiante1, estudiante2);
 
-        ValidationResult validationResult = new ValidationResult();
-        validationResult.addError(
-                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES,
-                FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO,
-                FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
-                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX
-                )
-        );
-        DomainValidationException exception = new DomainValidationException(validationResult);
+        var exception = new CupoEstudiantesExcedidoException(FichasMessages.FichaPerfil.ESTUDIANTES_MAX);
 
         doThrow(exception).when(asignarEstudiantesFichaPerfilInteractor).ejecutar(any());
 

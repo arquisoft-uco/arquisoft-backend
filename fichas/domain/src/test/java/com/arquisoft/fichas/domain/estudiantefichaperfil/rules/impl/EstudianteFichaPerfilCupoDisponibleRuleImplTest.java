@@ -2,7 +2,7 @@ package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +19,7 @@ class EstudianteFichaPerfilCupoDisponibleRuleImplTest {
     private static final UUID FICHA_PERFIL = UUID.randomUUID();
 
     @Test
-    void debeLanzarDomainValidationException_cuandoExistentes2MasNuevos2() {
+    void debeLanzarCupoEstudiantesExcedido_cuandoExistentes2MasNuevos2() {
         // Arrange
         var regla = new EstudianteFichaPerfilCupoDisponibleRuleImpl(portConExistentes(2L));
 
@@ -28,16 +28,13 @@ class EstudianteFichaPerfilCupoDisponibleRuleImplTest {
 
         // Assert
         assertThat(ex)
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
+                .isInstanceOf(CupoEstudiantesExcedidoException.class)
+                .hasMessage(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
                         FichasMessages.FichaPerfil.ESTUDIANTES_MAX
                 ));
 
-        DomainValidationException domainEx = (DomainValidationException) ex;
-        assertThat(domainEx.getValidationResult().getErrors())
-                .anyMatch(error -> error.errorCode().equals(
-                        FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO
-                ));
+        assertThat(((CupoEstudiantesExcedidoException) ex).getErrorCode())
+                .isEqualTo(FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO);
     }
 
     @Test
