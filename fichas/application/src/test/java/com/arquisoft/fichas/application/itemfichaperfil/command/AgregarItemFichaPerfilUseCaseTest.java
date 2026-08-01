@@ -9,6 +9,7 @@ import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemTipoDuplic
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.exception.ApplicationException;
+import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
@@ -133,6 +134,22 @@ class AgregarItemFichaPerfilUseCaseTest {
         inOrder.verify(itemFichaPerfilValidator)
                 .validarTipoNoDuplicado(command.fichaPerfil(), TIPO_ITEM);
         inOrder.verify(itemFichaPerfilOutputPort).guardar(any(ItemFichaPerfilAggregate.class));
+    }
+
+    @Test
+    void debeConstruirAgregadoAntesDeConsultarLaBaseDeDatos_cuandoTipoItemEsInvalido() {
+        // Arrange
+        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
+                UUID.randomUUID(), "TIPO_INEXISTENTE", CONTENIDO, UUID.randomUUID());
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(command))
+                .isInstanceOf(DomainValidationException.class);
+
+        verify(fichaPerfilValidator, never()).validarFichaExiste(any());
+        verify(itemFichaPerfilValidator, never()).validarFichaPropia(any(), any());
+        verify(itemFichaPerfilValidator, never()).validarTipoNoDuplicado(any(), any());
+        verify(itemFichaPerfilOutputPort, never()).guardar(any());
     }
 
     @Test

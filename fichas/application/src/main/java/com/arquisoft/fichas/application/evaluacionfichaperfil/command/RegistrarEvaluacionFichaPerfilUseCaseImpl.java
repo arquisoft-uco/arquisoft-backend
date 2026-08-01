@@ -27,14 +27,14 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
 
     @Override
     public UUID ejecutar(RegistrarEvaluacionFichaPerfilCommand entrada) {
-        fichaPerfilValidator.validarFichaExiste(entrada.fichaPerfil());
-        evaluacionFichaPerfilValidator.validarRepresentanteExiste(entrada.representanteComite());
-        evaluacionFichaPerfilValidator.validarEvaluacionNoDuplicada(
-                entrada.representanteComite(), entrada.fichaPerfil());
-
         var evaluacion = EvaluacionFichaPerfilAggregate.crear(
                 entrada.representanteComite(),
                 entrada.fichaPerfil());
+
+        fichaPerfilValidator.validarFichaExiste(evaluacion.getFichaPerfilId());
+        evaluacionFichaPerfilValidator.validarRepresentanteExiste(evaluacion.getRepresentanteComiteId());
+        evaluacionFichaPerfilValidator.validarEvaluacionNoDuplicada(
+                evaluacion.getRepresentanteComiteId(), evaluacion.getFichaPerfilId());
 
         evaluacionFichaPerfilOutputPort.guardar(evaluacion);
         asignarEstadoInicialEvaluacion(evaluacion.getId());
