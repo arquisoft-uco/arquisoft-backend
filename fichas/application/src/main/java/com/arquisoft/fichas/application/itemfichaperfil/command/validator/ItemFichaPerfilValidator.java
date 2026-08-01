@@ -10,9 +10,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-/**
- * Validaciones reutilizables de propiedad y unicidad de ítems de ficha de perfil.
- */
 @Component
 @RequiredArgsConstructor
 public class ItemFichaPerfilValidator {
@@ -20,7 +17,6 @@ public class ItemFichaPerfilValidator {
     private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
     private final ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
 
-    /** El estudiante autenticado debe ser propietario de la ficha que contiene el ítem. */
     public void validarFichaPropia(UUID fichaPerfil, UUID estudiante) {
         if (!fichaPerfilQueryOutputPort.esEstudiantePropietario(
                 new PropietarioFichaCriteria(fichaPerfil, estudiante))) {
@@ -28,7 +24,6 @@ public class ItemFichaPerfilValidator {
         }
     }
 
-    /** Una ficha no puede tener dos ítems del mismo tipo. */
     public void validarTipoNoDuplicado(UUID fichaPerfil, String tipoItem) {
         if (itemFichaPerfilOutputPort.existePorFichaYTipoItem(fichaPerfil, tipoItem)) {
             throw new ItemTipoDuplicadoException(tipoItem);

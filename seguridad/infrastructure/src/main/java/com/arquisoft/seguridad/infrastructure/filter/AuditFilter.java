@@ -20,9 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-/**
- * Filtro de Auditoría que registra todos los intentos de acceso a la API.
- */
 @Slf4j
 @Component
 @Order(Ordered.LOWEST_PRECEDENCE)  // debe ejecutarse DESPUÉS de FilterChainProxy (orden -100)

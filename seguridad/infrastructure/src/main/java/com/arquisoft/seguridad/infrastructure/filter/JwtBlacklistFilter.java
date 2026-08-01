@@ -22,19 +22,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
-/**
- * Verifica la blacklist de tokens JWT en cada request autenticado.
- * Se registra en SecurityConfig con addFilterAfter(BearerTokenAuthenticationFilter),
- * de modo que SecurityContextHolder ya tiene la autenticacion verificada.
- *
- * Patron de respuesta: identico a RateLimitingFilter — ObjectMapper + ErrorResponseDTO.
- * Los handlers (@RestControllerAdvice) no aplican a filtros de servlet.
- *
- * Fail-closed:
- *   - Token en blacklist → 401 + log.warn  (respuesta generica — no revela razon especifica)
- *   - Redis no disponible → 503 + log.error (servicio externo caido)
- *   SecurityContext se limpia en ambos casos.
- */
 @Slf4j
 @Component
 @Order(-100)

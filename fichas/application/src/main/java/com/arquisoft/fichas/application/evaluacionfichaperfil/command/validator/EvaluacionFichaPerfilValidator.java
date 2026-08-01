@@ -9,9 +9,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-/**
- * Validaciones reutilizables de existencia y unicidad de evaluaciones de ficha de perfil.
- */
 @Component
 @RequiredArgsConstructor
 public class EvaluacionFichaPerfilValidator {
@@ -25,7 +22,6 @@ public class EvaluacionFichaPerfilValidator {
         }
     }
 
-    /** Un representante solo puede registrar una evaluación por ficha. */
     public void validarEvaluacionNoDuplicada(UUID representanteComite, UUID fichaPerfil) {
         if (evaluacionFichaPerfilOutputPort.existePorRepresentanteYFicha(representanteComite, fichaPerfil)) {
             throw new EvaluacionFichaPerfilDuplicadaException(representanteComite, fichaPerfil);

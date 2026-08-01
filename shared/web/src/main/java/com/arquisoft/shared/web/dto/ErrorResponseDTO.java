@@ -11,9 +11,6 @@ import org.springframework.http.HttpStatus;
 import java.time.Instant;
 import java.util.List;
 
-/**
- * DTO unificado para respuestas de error estandarizadas en todos los contextos.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,7 +24,6 @@ public class ErrorResponseDTO {
     private Integer status;
     private String path;
 
-    /** ID de correlación de la request (MDC) — permite reconstruir la transacción en los logs. */
     private String traceId;
 
     @Builder.Default
@@ -49,9 +45,6 @@ public class ErrorResponseDTO {
                 .build();
     }
 
-    /**
-     * DTO para errores de validación de campos específicos.
-     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

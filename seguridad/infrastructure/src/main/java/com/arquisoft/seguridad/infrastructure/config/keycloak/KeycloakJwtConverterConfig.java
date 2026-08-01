@@ -13,12 +13,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Configura el bean JwtAuthenticationConverter usando KeycloakRoleExtractor
- * para traducir resource_access.{clientId}.roles (permisos finos como
- * ficha:ficha:view) directamente a GrantedAuthority.
- * Sin prefijo ROLE_ — compatible con hasAuthority() en @PreAuthorize.
- */
 @Slf4j
 @Configuration
 @RequiredArgsConstructor

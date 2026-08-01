@@ -44,15 +44,6 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ObjectUtils;
 
-/**
- * JDBC-based repository to store {@link TargetEventPublication}s.
- *
- * @author Dmitry Belyaev
- * @author Björn Kieling
- * @author Oliver Drotbohm
- * @author Raed Ben Hamouda
- * @author Cora Iberkleid
- */
 class JdbcEventPublicationRepository implements EventPublicationRepository, BeanClassLoaderAware {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(JdbcEventPublicationRepository.class);
@@ -188,14 +179,6 @@ class JdbcEventPublicationRepository implements EventPublicationRepository, Bean
 			sqlStatementCopyToArchive,
 			sqlStatementCopyToArchiveByEventAndListenerId;
 
-	/**
-	 * Creates a new {@link JdbcEventPublicationRepository} for the given {@link JdbcOperations}, {@link EventSerializer},
-	 * {@link DatabaseType} and {@link JdbcConfigurationProperties}.
-	 *
-	 * @param operations must not be {@literal null}.
-	 * @param serializer must not be {@literal null}.
-	 * @param settings must not be {@literal null}.
-	 */
 	public JdbcEventPublicationRepository(JdbcOperations operations, EventSerializer serializer,
 			JdbcRepositorySettings settings) {
 
@@ -426,13 +409,6 @@ class JdbcEventPublicationRepository implements EventPublicationRepository, Bean
 		return serializer.serialize(event).toString();
 	}
 
-	/**
-	 * Effectively a {@link ResultSetExtractor} to drop {@link TargetEventPublication}s that cannot be deserialized.
-	 *
-	 * @param resultSet must not be {@literal null}.
-	 * @return will never be {@literal null}.
-	 * @throws SQLException
-	 */
 	private List<TargetEventPublication> resultSetToPublications(ResultSet resultSet) throws SQLException {
 
 		List<TargetEventPublication> result = new ArrayList<>();
@@ -449,13 +425,6 @@ class JdbcEventPublicationRepository implements EventPublicationRepository, Bean
 		return result;
 	}
 
-	/**
-	 * Effectively a {@link RowMapper} to turn a single row into an {@link TargetEventPublication}.
-	 *
-	 * @param rs must not be {@literal null}.
-	 * @return can be {@literal null}.
-	 * @throws SQLException
-	 */
 	private @Nullable TargetEventPublication resultSetToPublication(ResultSet rs) throws SQLException {
 
 		var id = getUuidFromResultSet(rs);
@@ -520,13 +489,6 @@ class JdbcEventPublicationRepository implements EventPublicationRepository, Bean
 		private @Nullable Instant completionDate;
 		private @Nullable Object event;
 
-		/**
-		 * @param id must not be {@literal null}.
-		 * @param publicationDate must not be {@literal null}.
-		 * @param listenerId must not be {@literal null} or empty.
-		 * @param event must not be {@literal null}..
-		 * @param completionDate can be {@literal null}.
-		 */
 		public JdbcEventPublication(UUID id, Instant publicationDate, String listenerId, Supplier<Object> event,
 				@Nullable Instant completionDate) {
 

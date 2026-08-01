@@ -20,12 +20,6 @@ import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * El interactor es el dueño de la transacción del contexto fichas: si un interactor
- * pierde su {@code @Transactional}, la operación escribiría fuera de transacción y el
- * outbox de eventos no encontraría el transaction manager activo. Este test protege
- * esa invariante estructural en las diez operaciones de comando.
- */
 class InteractoresFichasTest {
 
     @DisplayName("El interactor declara la transacción con el manager de fichas")

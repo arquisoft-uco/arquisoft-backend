@@ -7,21 +7,6 @@ import com.arquisoft.usuarios.domain.usuario.event.UsuarioCreadoEvent;
 
 import java.util.UUID;
 
-/**
- * Aggregate Root del bounded context {@code usuarios}.
- *
- * <p>Representa un usuario del sistema con su rol asignado.
- * Constructor privado — solo se instancia a través de los factory methods:
- * <ul>
- *   <li>{@link #crear(String, UsuarioRole)} — crea un nuevo usuario, valida invariantes
- *       y <b>acumula</b> el evento {@link UsuarioCreadoEvent} en {@code unPublishedEvents}.
- *       El use case drena y publica los eventos tras persistir el aggregate.</li>
- *   <li>{@link #reconstruir(UUID, String, UsuarioRole)} — reconstruye desde persistencia sin
- *       emitir eventos (el usuario ya existe, no hay novedad de negocio que comunicar).</li>
- * </ul>
- *
- * <p>Sin Spring, sin Lombok, sin JPA — Java puro.
- */
 public final class UsuarioAggregate extends AggregateRoot {
 
     private final UUID id;
@@ -34,13 +19,6 @@ public final class UsuarioAggregate extends AggregateRoot {
         this.rol   = rol;
     }
 
-    /**
-     * Crea un nuevo usuario, valida sus invariantes y emite {@link UsuarioCreadoEvent}.
-     *
-     * @param email email único del usuario (no puede ser nulo ni vacío)
-     * @param rol   rol asignado al usuario en el sistema (no puede ser nulo)
-     * @return nuevo aggregate con el evento acumulado en {@code unPublishedEvents}
-     */
     public static UsuarioAggregate crear(String email, UsuarioRole rol) {
         if (email == null || email.isBlank()) {
             throw new DomainException("El email del usuario no puede ser vacio", "USUARIO_EMAIL_REQUERIDO");
@@ -54,10 +32,6 @@ public final class UsuarioAggregate extends AggregateRoot {
         return usuario;
     }
 
-    /**
-     * Reconstruye un usuario desde persistencia sin emitir eventos.
-     * Usado por el repositorio cuando carga un aggregate ya existente.
-     */
     public static UsuarioAggregate reconstruir(UUID id, String email, UsuarioRole rol) {
         return new UsuarioAggregate(id, email, rol);
     }

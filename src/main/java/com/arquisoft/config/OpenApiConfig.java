@@ -12,23 +12,6 @@ import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Configuracion global de OpenAPI / Swagger UI para Arquisoft.
- *
- * <p>Reside en el paquete config de la aplicacion principal porque es la unica
- * capa que ensambla todos los contextos y tiene visibilidad completa de la API.
- * No duplicar en modulos individuales.
- *
- * <p>Define:
- * - Metadata global de la API (titulo, version, contacto, licencia, servidores)
- * - Esquema de seguridad JWT bearerAuth aplicado por defecto a todos los endpoints
- * - Grupos de API por bounded context para navegacion organizada en Swagger UI
- *
- * <p>Acceso en desarrollo: http://localhost:8080/api/swagger-ui/index.html
- * (sin autenticacion — endpoints /swagger-ui/** y /v3/api-docs/** son permit-all)
- *
- * <p>ADR-011: documentacion-api-springdoc-openapi
- */
 @Configuration
 @OpenAPIDefinition(
     info = @Info(
@@ -66,9 +49,6 @@ import org.springframework.context.annotation.Configuration;
 )
 public class OpenApiConfig {
 
-    /**
-     * Grupo: todos los endpoints de la API (vista completa).
-     */
     @Bean
     public GroupedOpenApi allApi() {
         return GroupedOpenApi.builder()
@@ -78,10 +58,6 @@ public class OpenApiConfig {
             .build();
     }
 
-    /**
-     * Grupo: Seguridad — autenticacion, tokens y validacion via Keycloak.
-     * Incluye: /auth/** (login, refresh, logout, validate)
-     */
     @Bean
     public GroupedOpenApi seguridadApi() {
         return GroupedOpenApi.builder()
@@ -91,9 +67,6 @@ public class OpenApiConfig {
             .build();
     }
 
-    /**
-     * Grupo: Usuarios — gestion de usuarios del sistema.
-     */
     @Bean
     public GroupedOpenApi usuariosApi() {
         return GroupedOpenApi.builder()
@@ -103,9 +76,6 @@ public class OpenApiConfig {
             .build();
     }
 
-    /**
-     * Grupo: Fichas de Perfil — ciclo de vida de fichas de trabajos de grado.
-     */
     @Bean
     public GroupedOpenApi fichasApi() {
         return GroupedOpenApi.builder()
@@ -115,9 +85,6 @@ public class OpenApiConfig {
             .build();
     }
 
-    /**
-     * Grupo: Proyectos de Grado — gestion de proyectos, asesores y estudiantes.
-     */
     @Bean
     public GroupedOpenApi proyectosApi() {
         return GroupedOpenApi.builder()
@@ -127,9 +94,6 @@ public class OpenApiConfig {
             .build();
     }
 
-    /**
-     * Grupo: Artefactos — documentos y artefactos versionados.
-     */
     @Bean
     public GroupedOpenApi artefactosApi() {
         return GroupedOpenApi.builder()
@@ -139,9 +103,6 @@ public class OpenApiConfig {
             .build();
     }
 
-    /**
-     * Grupo: Repositorio de Artefactos — control de versiones y almacenamiento.
-     */
     @Bean
     public GroupedOpenApi repositorioArtefactosApi() {
         return GroupedOpenApi.builder()
@@ -151,9 +112,6 @@ public class OpenApiConfig {
             .build();
     }
 
-    /**
-     * Grupo: Entregables — entregables e hitos de proyectos de grado.
-     */
     @Bean
     public GroupedOpenApi entregablesApi() {
         return GroupedOpenApi.builder()
@@ -163,9 +121,6 @@ public class OpenApiConfig {
             .build();
     }
 
-    /**
-     * Grupo: Evaluaciones — evaluaciones definitivas y calificaciones.
-     */
     @Bean
     public GroupedOpenApi evaluacionesApi() {
         return GroupedOpenApi.builder()

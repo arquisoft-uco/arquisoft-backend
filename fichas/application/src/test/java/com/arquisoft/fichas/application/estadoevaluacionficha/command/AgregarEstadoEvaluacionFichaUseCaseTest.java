@@ -123,7 +123,6 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         when(estadoEvaluacionFichaValidator.resolverEstado("ESTADO_INVALIDO"))
                 .thenThrow(new EstadoEvaluacionNoEncontradoException("ESTADO_INVALIDO"));
 
-        // Act & Assert — el formato del dato se valida antes de cualquier consulta
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(EstadoEvaluacionNoEncontradoException.class);
 

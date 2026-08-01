@@ -19,10 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-/**
- * Controlador de guía para validar el funcionamiento del módulo shared:minio.
- * Eliminar una vez completada la prueba de concepto.
- */
 @RestController
 @RequestMapping("/fichas/minio/guia")
 @RequiredArgsConstructor

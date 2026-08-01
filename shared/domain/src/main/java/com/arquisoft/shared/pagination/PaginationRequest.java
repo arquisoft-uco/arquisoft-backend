@@ -5,23 +5,6 @@ import com.arquisoft.shared.message.AppMessages;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.util.UtilText;
 
-/**
- * Solicitud de consulta paginada — valor inmutable.
- *
- * <p>Encapsula los parámetros necesarios para realizar una consulta paginada:
- * número de página (0-based), tamaño, campo de ordenamiento (opcional)
- * y dirección de orden.</p>
- *
- * <p>Java puro — sin dependencias de Spring ni Jakarta.
- * Usa {@link ApplicationException} (HTTP 400) para parámetros inválidos,
- * consistente con el handler global de la aplicación.</p>
- *
- * <p>Construcción exclusivamente via factories estáticos:
- * <ul>
- *   <li>{@link #of(int, int)} — sin ordenamiento</li>
- *   <li>{@link #of(int, int, String, SortDirection)} — con ordenamiento</li>
- * </ul>
- */
 public final class PaginationRequest {
 
     private final int page;
@@ -40,52 +23,30 @@ public final class PaginationRequest {
         this.direction = (!UtilObject.isNull(direction)) ? direction : SortDirection.ASC;
     }
 
-    /**
-     * Crea una solicitud de paginación sin ordenamiento explícito.
-     *
-     * @param page número de página 0-based
-     * @param size número de elementos por página (debe ser > 0)
-     */
     public static PaginationRequest of(int page, int size) {
         return new PaginationRequest(page, size, null, SortDirection.ASC);
     }
 
-    /**
-     * Crea una solicitud de paginación con campo y dirección de ordenamiento.
-     *
-     * @param page      número de página 0-based
-     * @param size      número de elementos por página (debe ser > 0)
-     * @param sort      nombre del campo por el que ordenar (puede ser {@code null})
-     * @param direction dirección de ordenamiento; si es {@code null} se asume {@link SortDirection#ASC}
-     */
     public static PaginationRequest of(int page, int size, String sort, SortDirection direction) {
         return new PaginationRequest(page, size, sort, direction);
     }
 
-    /** Número de página 0-based. */
     public int getPage() {
         return page;
     }
 
-    /** Número de elementos por página. */
     public int getSize() {
         return size;
     }
 
-    /**
-     * Campo de ordenamiento. Puede ser {@code null} si no se especificó ordenamiento.
-     * Usar {@link #hasSort()} para verificar antes de consumir.
-     */
     public String getSort() {
         return sort;
     }
 
-    /** Dirección de ordenamiento. Nunca {@code null} — por defecto {@link SortDirection#ASC}. */
     public SortDirection getDirection() {
         return direction;
     }
 
-    /** Retorna {@code true} si se especificó un campo de ordenamiento no vacío. */
     public boolean hasSort() {
         return !UtilText.isEmptyOrNull(sort);
     }

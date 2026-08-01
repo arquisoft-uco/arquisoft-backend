@@ -77,7 +77,6 @@ class DomainValidatorTest {
         // Act
         boolean valido = DomainValidator.maxSize(null, 2, CAMPO, CODIGO, result);
 
-        // Assert — la obligatoriedad la decide notEmpty, no maxSize
         assertThat(valido).isTrue();
         assertThat(result.hasErrors()).isFalse();
     }

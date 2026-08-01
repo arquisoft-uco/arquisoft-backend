@@ -9,18 +9,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
-/**
- * Fallback de {@link EventPublisher} activo únicamente cuando {@link SpringModulithEventPublisher}
- * no está en el contexto (Spring Modulith ausente o deshabilitado).
- *
- * <p><b>Política de reintentos:</b> backoff exponencial ante errores de conectividad
- * ({@link AmqpException}) — hasta 3 intentos: 500 ms → 1 s → 2 s. {@code RuntimeException}
- * no se reintenta (error de serialización u otro fallo de programación).
- *
- * <p><b>Trazabilidad:</b> los headers {@code X-Trace-Id} y {@code X-User-Id} son inyectados
- * por el {@code traceHeadersPostProcessor} registrado en el {@link RabbitTemplate}
- * ({@link RabbitMQConfig}).
- */
 @Slf4j
 @Component
 @ConditionalOnMissingBean(EventPublisher.class)

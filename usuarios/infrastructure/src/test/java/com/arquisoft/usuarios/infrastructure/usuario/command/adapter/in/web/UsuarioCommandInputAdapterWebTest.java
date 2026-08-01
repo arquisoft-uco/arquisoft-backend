@@ -31,12 +31,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Cubre el enlace HTTP → CrearUsuarioRequestDTO: deserialización real de Jackson
- * desde el body y evaluación de las restricciones Jakarta. El test unitario
- * hermano (UsuarioCommandInputAdapterTest) instancia el DTO en Java y por tanto
- * no ejercita este camino.
- */
 @WebMvcTest(UsuarioCommandInputAdapter.class)
 @Import({GlobalAppExceptionHandler.class,
         UsuarioCommandInputAdapterWebTest.TestSecurityConfig.class})

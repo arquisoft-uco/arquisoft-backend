@@ -15,8 +15,6 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 class EstudianteFichaPerfilAggregateTest {
 
-    // ─── crear: integridad de la petición ─────────────────────────────────────
-
     @Test
     void debeConstruirRelacion_cuandoDatosValidos() {
         // Arrange
@@ -112,12 +110,9 @@ class EstudianteFichaPerfilAggregateTest {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
 
-        // Act & Assert — sin NPE: la integridad se evalúa antes de recorrer la colección
         assertThatThrownBy(() -> EstudianteFichaPerfilAggregate.crear(fichaPerfilId, null))
                 .isInstanceOf(DomainValidationException.class);
     }
-
-    // ─── validarCupoDisponible: regla de negocio del conjunto ─────────────────
 
     @Test
     void debeLanzarDomainValidationException_cuandoExistentes2MasNuevos2() {

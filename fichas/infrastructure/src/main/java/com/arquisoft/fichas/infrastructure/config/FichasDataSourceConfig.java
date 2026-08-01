@@ -19,15 +19,6 @@ import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Configuración de persistencia para el bounded context {@code fichas}.
- *
- * <p>Registra DataSource, EntityManagerFactory, TransactionManager y Flyway
- * para la base de datos {@code fichas_perfil}.
- *
- * <p>Sin {@code @Primary} — {@code usuariosTransactionManager} es el primario
- * (declarado en {@code UsuariosDataSourceConfig}).
- */
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(

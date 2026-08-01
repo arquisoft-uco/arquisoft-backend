@@ -13,12 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-/**
- * Validaciones reutilizables de existencia, unicidad y propiedad de fichas de perfil.
- *
- * <p>Mantiene los casos de uso libres de bloques {@code if/throw} repetidos y da un
- * nombre de negocio a cada regla.</p>
- */
 @Component
 @RequiredArgsConstructor
 public class FichaPerfilValidator {

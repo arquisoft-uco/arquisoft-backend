@@ -1,13 +1,5 @@
 package com.arquisoft.shared.exception;
 
-/**
- * Excepción para violaciones de reglas de negocio del dominio.
- *
- * <p>HTTP sugerido: {@code 422 Unprocessable Entity}</p>
- *
- * <p>Ejemplos: estado inválido de una entidad, invariante de dominio rota,
- * precondición de negocio no cumplida.</p>
- */
 public class DomainException extends BaseException {
 
     public DomainException(BaseError error) {

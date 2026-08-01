@@ -62,7 +62,6 @@ class TraceIdFilterTest {
 
     @Test
     void debeGenerarTraceId_cuandoCorrelacionEntranteEsInsegura() throws Exception {
-        // Arrange — se descarta el valor con caracteres fuera de la whitelist (log injection)
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader(CorrelationHeaders.X_CORRELATION_ID, "abc\n123 INYECTADO");
         MockHttpServletResponse response = new MockHttpServletResponse();

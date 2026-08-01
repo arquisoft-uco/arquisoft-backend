@@ -11,12 +11,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Validaciones reutilizables sobre la lista de estudiantes de una ficha de perfil.
- *
- * <p>Compartido por el registro de fichas y la asignación posterior de estudiantes,
- * de modo que ambos flujos apliquen exactamente las mismas reglas.</p>
- */
 @Component
 @RequiredArgsConstructor
 public class EstudiantesFichaValidator {
@@ -24,7 +18,6 @@ public class EstudiantesFichaValidator {
     private final EstudianteQueryOutputPort estudianteQueryOutputPort;
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
 
-    /** Integridad de la lista: ningún estudiante puede repetirse en la misma petición. */
     public void validarSinDuplicados(List<UUID> estudiantes) {
         UtilCollection.firstDuplicate(estudiantes)
                 .ifPresent(duplicado -> {
@@ -32,7 +25,6 @@ public class EstudiantesFichaValidator {
                 });
     }
 
-    /** Todos los estudiantes referenciados deben existir. */
     public void validarExistencia(List<UUID> estudiantes) {
         if (UtilCollection.isEmptyOrNull(estudiantes)) {
             return;
@@ -44,7 +36,6 @@ public class EstudiantesFichaValidator {
         });
     }
 
-    /** Ningún estudiante puede estar ya vinculado a la ficha. */
     public void validarNoVinculados(UUID fichaPerfil, List<UUID> estudiantes) {
         if (UtilCollection.isEmptyOrNull(estudiantes)) {
             return;

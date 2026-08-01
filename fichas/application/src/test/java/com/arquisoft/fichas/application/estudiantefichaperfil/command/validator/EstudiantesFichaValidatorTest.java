@@ -49,7 +49,6 @@ class EstudiantesFichaValidatorTest {
 
     @Test
     void debePasar_cuandoListaEsNula() {
-        // Act & Assert — la obligatoriedad se valida en el contrato de entrada
         assertThatCode(() -> validator.validarSinDuplicados(null)).doesNotThrowAnyException();
         assertThatCode(() -> validator.validarExistencia(null)).doesNotThrowAnyException();
         assertThatCode(() -> validator.validarNoVinculados(UUID.randomUUID(), null))

@@ -13,24 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
-/**
- * Implementación del caso de uso de creación de usuario.
- *
- * <p>Orquesta el patrón aggregate-driven de publicación de eventos con Outbox Pattern:
- * <ol>
- *   <li>El aggregate {@link UsuarioAggregate#crear} decide qué evento emitir y lo acumula
- *       internamente — sin saber que existe RabbitMQ.</li>
- *   <li>Este use case persiste el aggregate.</li>
- *   <li>Drena los eventos y los entrega a {@link EventPublisher} ({@code SpringModulithEventPublisher}),
- *       que los persiste en {@code event_publication} dentro de la misma transacción.</li>
- *   <li>Tras el commit, Spring Modulith publica al exchange RabbitMQ de forma asíncrona.
- *       Si falla, el evento queda en BD y se reintenta automáticamente.</li>
- * </ol>
- *
- * <p>La anotación {@code @Transactional(transactionManager = "usuariosTransactionManager")}
- * garantiza que el {@code save} del aggregate y la inserción en {@code event_publication}
- * sean atómicos.
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor

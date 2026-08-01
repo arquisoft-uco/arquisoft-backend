@@ -7,11 +7,6 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Extrae roles del claim resource_access.{clientId}.roles del JWT emitido por Keycloak
- * (permisos finos usados por la autorización actual, ej. ficha:ficha:view).
- * Usa instanceof pattern matching (Java 16+) para eliminar casts explícitos inseguros.
- */
 @Component
 public class KeycloakRoleExtractor {
 
@@ -21,10 +16,6 @@ public class KeycloakRoleExtractor {
     @Value("${KEYCLOAK_CLIENT_ID}")
     private String clientId;
 
-    /**
-     * Retorna los roles del resource_access.{clientId} del token.
-     * Retorna lista vacía si el claim no existe o tiene estructura inesperada.
-     */
     public List<String> extractResourceRoles(Jwt jwt) {
         if (jwt.getClaim(CLAIM_RESOURCE_ACCESS) instanceof Map<?, ?> resourceAccess
                 && resourceAccess.get(clientId) instanceof Map<?, ?> clientAccess

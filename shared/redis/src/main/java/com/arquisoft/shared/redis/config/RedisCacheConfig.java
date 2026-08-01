@@ -15,17 +15,6 @@ import java.time.Duration;
 @EnableCaching
 public class RedisCacheConfig {
 
-    /**
-     * CacheManager global para todos los bounded contexts.
-     *
-     * Prefijo de clave: "arquisoft:"
-     * Convencion de uso: @Cacheable(value = "{contexto}:{nombre}", key = "#param")
-     * Ejemplo key Redis resultante: arquisoft:proyectos:activos::{uuid}
-     *
-     * TTL por defecto: 30 minutos.
-     * Para un TTL diferente, el bounded context puede declarar un
-     * RedisCacheManagerBuilderCustomizer o registrar configuraciones de cache especificas.
-     */
     @Bean
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         // GenericJacksonJsonRedisSerializer: reemplazo Jackson 3.x de GenericJackson2JsonRedisSerializer.

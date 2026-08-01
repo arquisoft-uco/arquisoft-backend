@@ -13,9 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-/**
- * Validaciones reutilizables de la trazabilidad de estados de evaluación.
- */
 @Component
 @RequiredArgsConstructor
 public class EstadoEvaluacionFichaValidator {
@@ -41,10 +38,6 @@ public class EstadoEvaluacionFichaValidator {
         }
     }
 
-    /**
-     * Traduce el código recibido al estado de evaluación del dominio, o falla con un
-     * mensaje que identifica el valor no reconocido.
-     */
     public EstadoEvaluacion resolverEstado(String estadoEvaluacion) {
         try {
             return EstadoEvaluacion.valueOf(estadoEvaluacion);
