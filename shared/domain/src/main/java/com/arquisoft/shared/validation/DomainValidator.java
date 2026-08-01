@@ -13,83 +13,87 @@ public final class DomainValidator {
 
     private DomainValidator() {}
 
-    public static boolean notNull(Object value, String fieldName, String errorCode, ValidationResult result) {
-        if (UtilObject.isNull(value)) {
-            result.addError(fieldName, errorCode,
-                    AppMessages.DomainValidator.NOT_NULL.formatted(fieldName));
+    public static boolean noNulo(Object valor, String campo, String codigoError, ValidationResult resultado) {
+        if (UtilObject.isNull(valor)) {
+            resultado.agregarError(campo, codigoError,
+                    AppMessages.DomainValidator.NOT_NULL.formatted(campo));
             return false;
         }
         return true;
     }
 
-    public static boolean notBlank(String value, String fieldName, String errorCode, ValidationResult result) {
-        if (UtilText.isEmptyOrNull(value)) {
-            result.addError(fieldName, errorCode,
-                    AppMessages.DomainValidator.NOT_BLANK.formatted(fieldName));
+    public static boolean noEnBlanco(String valor, String campo, String codigoError, ValidationResult resultado) {
+        if (UtilText.isEmptyOrNull(valor)) {
+            resultado.agregarError(campo, codigoError,
+                    AppMessages.DomainValidator.NOT_BLANK.formatted(campo));
             return false;
         }
         return true;
     }
 
-    public static boolean maxLength(String value, int max, String fieldName, String errorCode, ValidationResult result) {
-        if (UtilText.applyTrim(value).length() > max) {
-            result.addError(fieldName, errorCode,
-                    AppMessages.DomainValidator.MAX_LENGTH.formatted(fieldName, max));
+    public static boolean longitudMaxima(
+            String valor, int max, String campo, String codigoError, ValidationResult resultado) {
+        if (UtilText.applyTrim(valor).length() > max) {
+            resultado.agregarError(campo, codigoError,
+                    AppMessages.DomainValidator.MAX_LENGTH.formatted(campo, max));
             return false;
         }
         return true;
     }
 
-    public static boolean minLength(String value, int min, String fieldName, String errorCode, ValidationResult result) {
-        if (UtilText.applyTrim(value).length() < min) {
-            result.addError(fieldName, errorCode,
-                    AppMessages.DomainValidator.MIN_LENGTH.formatted(fieldName, min));
+    public static boolean longitudMinima(
+            String valor, int min, String campo, String codigoError, ValidationResult resultado) {
+        if (UtilText.applyTrim(valor).length() < min) {
+            resultado.agregarError(campo, codigoError,
+                    AppMessages.DomainValidator.MIN_LENGTH.formatted(campo, min));
             return false;
         }
         return true;
     }
 
-    public static boolean validEmail(String value, String fieldName, String errorCode, ValidationResult result) {
-        if (!UtilText.emailStringIsValid(value)) {
-            result.addError(fieldName, errorCode,
-                    AppMessages.DomainValidator.VALID_EMAIL.formatted(fieldName));
+    public static boolean correoValido(String valor, String campo, String codigoError, ValidationResult resultado) {
+        if (!UtilText.emailStringIsValid(valor)) {
+            resultado.agregarError(campo, codigoError,
+                    AppMessages.DomainValidator.VALID_EMAIL.formatted(campo));
             return false;
         }
         return true;
     }
 
-    public static boolean validUUID(String value, String fieldName, String errorCode, ValidationResult result) {
-        if (!UtilUUID.uuidStringIsValid(value)) {
-            result.addError(fieldName, errorCode,
-                    AppMessages.DomainValidator.VALID_UUID.formatted(fieldName));
+    public static boolean uuidValido(String valor, String campo, String codigoError, ValidationResult resultado) {
+        if (!UtilUUID.uuidStringIsValid(valor)) {
+            resultado.agregarError(campo, codigoError,
+                    AppMessages.DomainValidator.VALID_UUID.formatted(campo));
             return false;
         }
         return true;
     }
 
-    public static boolean notEmpty(Collection<?> value, String fieldName, String errorCode, ValidationResult result) {
-        if (UtilCollection.isEmptyOrNull(value)) {
-            result.addError(fieldName, errorCode,
-                    AppMessages.DomainValidator.NOT_EMPTY.formatted(fieldName));
+    public static boolean noVacia(Collection<?> valor, String campo, String codigoError, ValidationResult resultado) {
+        if (UtilCollection.isEmptyOrNull(valor)) {
+            resultado.agregarError(campo, codigoError,
+                    AppMessages.DomainValidator.NOT_EMPTY.formatted(campo));
             return false;
         }
         return true;
     }
 
-    public static boolean maxSize(Collection<?> value, int max, String fieldName, String errorCode, ValidationResult result) {
-        if (!UtilObject.isNull(value) && value.size() > max) {
-            result.addError(fieldName, errorCode,
-                    AppMessages.DomainValidator.MAX_SIZE.formatted(fieldName, max));
+    public static boolean tamanioMaximo(
+            Collection<?> valor, int max, String campo, String codigoError, ValidationResult resultado) {
+        if (!UtilObject.isNull(valor) && valor.size() > max) {
+            resultado.agregarError(campo, codigoError,
+                    AppMessages.DomainValidator.MAX_SIZE.formatted(campo, max));
             return false;
         }
         return true;
     }
 
-    public static boolean sinDuplicados(Collection<?> value, String fieldName, String errorCode, ValidationResult result) {
-        Optional<?> duplicado = UtilCollection.firstDuplicate(value);
+    public static boolean sinDuplicados(
+            Collection<?> valor, String campo, String codigoError, ValidationResult resultado) {
+        Optional<?> duplicado = UtilCollection.firstDuplicate(valor);
         if (duplicado.isPresent()) {
-            result.addError(fieldName, errorCode,
-                    AppMessages.DomainValidator.SIN_DUPLICADOS.formatted(fieldName, duplicado.get()));
+            resultado.agregarError(campo, codigoError,
+                    AppMessages.DomainValidator.SIN_DUPLICADOS.formatted(campo, duplicado.get()));
             return false;
         }
         return true;

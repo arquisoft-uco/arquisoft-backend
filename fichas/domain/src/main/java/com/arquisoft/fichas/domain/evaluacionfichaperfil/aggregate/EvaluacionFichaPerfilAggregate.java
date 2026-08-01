@@ -34,7 +34,7 @@ public final class EvaluacionFichaPerfilAggregate {
         evaluacion.setFichaPerfilId(fichaPerfilId, result);
         evaluacion.setFechaCreacion();
 
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
         return evaluacion;
     }
 
@@ -48,7 +48,7 @@ public final class EvaluacionFichaPerfilAggregate {
     }
 
     private void setRepresentanteComiteId(UUID representanteComiteId, ValidationResult result) {
-        if (!DomainValidator.notNull(
+        if (!DomainValidator.noNulo(
                 representanteComiteId,
                 FichasMessages.EvaluacionFichaPerfil.CAMPO_REPRESENTANTE_COMITE,
                 FichasMessages.EvaluacionFichaPerfil.REPRESENTANTE_REQUERIDO,
@@ -59,7 +59,7 @@ public final class EvaluacionFichaPerfilAggregate {
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
-        if (!DomainValidator.notNull(
+        if (!DomainValidator.noNulo(
                 fichaPerfilId,
                 FichasMessages.EvaluacionFichaPerfil.CAMPO_FICHA_PERFIL,
                 FichasMessages.EvaluacionFichaPerfil.FICHA_REQUERIDA,

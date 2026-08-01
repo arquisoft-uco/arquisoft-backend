@@ -79,10 +79,10 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             DomainValidationException ex,
             HttpServletRequest request) {
 
-        List<ErrorResponseDTO.FieldErrorDTO> fieldErrors = ex.getValidationResult().getErrors().stream()
+        List<ErrorResponseDTO.FieldErrorDTO> fieldErrors = ex.getValidationResult().getErrores().stream()
                 .map(e -> ErrorResponseDTO.FieldErrorDTO.builder()
-                        .field(e.field())
-                        .message(e.message())
+                        .field(e.campo())
+                        .message(e.mensaje())
                         .build())
                 .collect(Collectors.toList());
 

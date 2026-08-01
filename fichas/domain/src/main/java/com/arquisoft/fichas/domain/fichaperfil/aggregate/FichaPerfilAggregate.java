@@ -34,7 +34,7 @@ public final class FichaPerfilAggregate {
         ficha.setTituloProyecto(titulo, result);
         ficha.setAsesorFichaId(asesorFichaId, result);
 
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
         return ficha;
     }
 
@@ -49,19 +49,19 @@ public final class FichaPerfilAggregate {
     public void actualizarTitulo(String nuevoTitulo) {
         ValidationResult result = new ValidationResult();
         setTituloProyecto(nuevoTitulo, result);
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
     }
 
     public void cambiarAsesorFicha(UUID nuevoAsesorFichaId, EstadoFicha estadoActual) {
         var result = new ValidationResult();
 
-        DomainValidator.notNull(nuevoAsesorFichaId,
+        DomainValidator.noNulo(nuevoAsesorFichaId,
                 FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA,
                 FichasMessages.FichaPerfil.ASESOR_REQUERIDO,
                 result);
 
         if (!UtilObject.isNull(nuevoAsesorFichaId) && nuevoAsesorFichaId.equals(this.asesorFichaId)) {
-            result.addError(
+            result.agregarError(
                     FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA,
                     FichasMessages.FichaPerfil.MISMO_ASESOR,
                     FichasMessages.FichaPerfil.MISMO_ASESOR_MSG.formatted(nuevoAsesorFichaId)
@@ -69,14 +69,14 @@ public final class FichaPerfilAggregate {
         }
 
         if (estadoActual.esTerminal()) {
-            result.addError(
+            result.agregarError(
                     FichasMessages.FichaPerfil.CAMPO_ESTADO_FICHA,
                     FichasMessages.FichaPerfil.ESTADO_TERMINAL,
                     FichasMessages.FichaPerfil.ESTADO_TERMINAL_MSG.formatted(estadoActual)
             );
         }
 
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
 
         this.asesorFichaId = nuevoAsesorFichaId;
     }
@@ -88,12 +88,12 @@ public final class FichaPerfilAggregate {
     }
 
     private void setTituloProyecto(String titulo, ValidationResult result) {
-        if (!DomainValidator.notBlank(titulo,
+        if (!DomainValidator.noEnBlanco(titulo,
                 FichasMessages.FichaPerfil.CAMPO_TITULO,
                 FichasMessages.FichaPerfil.TITULO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.maxLength(titulo, FichasMessages.FichaPerfil.TITULO_MAX,
+        if (!DomainValidator.longitudMaxima(titulo, FichasMessages.FichaPerfil.TITULO_MAX,
                 FichasMessages.FichaPerfil.CAMPO_TITULO,
                 FichasMessages.FichaPerfil.TITULO_DEMASIADO_LARGO, result)) {
             return;
@@ -102,7 +102,7 @@ public final class FichaPerfilAggregate {
     }
 
     private void setAsesorFichaId(UUID asesorFichaId, ValidationResult result) {
-        if (!DomainValidator.notNull(asesorFichaId,
+        if (!DomainValidator.noNulo(asesorFichaId,
                 FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA,
                 FichasMessages.FichaPerfil.ASESOR_REQUERIDO, result)) {
             return;

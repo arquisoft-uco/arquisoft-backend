@@ -153,7 +153,7 @@ class AgregarItemFichaPerfilInputAdapterTest {
     @Test
     void debe422_cuandoTipoItemInvalido() throws Exception {
         ValidationResult validationResult = new ValidationResult();
-        validationResult.addError(
+        validationResult.agregarError(
                 FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM,
                 FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
                 FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO_MSG.formatted("TIPO_INEXISTENTE")

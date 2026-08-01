@@ -120,7 +120,7 @@ class CambiarAsesorFichaUseCaseTest {
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(command))
                 .isInstanceOf(DomainValidationException.class)
                 .extracting(ex -> ((DomainValidationException) ex)
-                        .getValidationResult().getErrors().get(0).errorCode())
+                        .getValidationResult().getErrores().get(0).codigoError())
                 .isEqualTo(FichasMessages.FichaPerfil.MISMO_ASESOR);
 
         verify(fichaPerfilOutputPort, never()).guardar(any());
@@ -141,7 +141,7 @@ class CambiarAsesorFichaUseCaseTest {
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(command))
                 .isInstanceOf(DomainValidationException.class)
                 .extracting(ex -> ((DomainValidationException) ex)
-                        .getValidationResult().getErrors().get(0).errorCode())
+                        .getValidationResult().getErrores().get(0).codigoError())
                 .isEqualTo(FichasMessages.FichaPerfil.ESTADO_TERMINAL);
 
         verify(fichaPerfilOutputPort, never()).guardar(any());

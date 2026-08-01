@@ -159,7 +159,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         String body = "{\"contenido\": \"Contenido modificado\"}";
 
         ValidationResult validationResult = new ValidationResult();
-        validationResult.addError(
+        validationResult.agregarError(
                 FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO,
                 FichasMessages.ItemFichaPerfil.CONTENIDO_REQUERIDO,
                 "El contenido es obligatorio"
@@ -186,7 +186,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         String body = "{\"contenido\": \"Contenido modificado\"}";
 
         ValidationResult validationResult = new ValidationResult();
-        validationResult.addError(
+        validationResult.agregarError(
                 FichasMessages.ItemFichaPerfil.CAMPO_ESTADO_FICHA,
                 FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
                 FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE_MSG.formatted("Aprobada")

@@ -20,12 +20,12 @@ class DomainValidatorTest {
         var result = new ValidationResult();
 
         // Act
-        boolean valido = DomainValidator.validUUID("no-es-uuid", CAMPO, CODIGO, result);
+        boolean valido = DomainValidator.uuidValido("no-es-uuid", CAMPO, CODIGO, result);
 
         // Assert
         assertThat(valido).isFalse();
-        assertThat(result.hasErrors()).isTrue();
-        assertThat(result.getErrors().get(0).message())
+        assertThat(result.tieneErrores()).isTrue();
+        assertThat(result.getErrores().get(0).mensaje())
                 .isEqualTo(AppMessages.DomainValidator.VALID_UUID.formatted(CAMPO));
     }
 
@@ -35,11 +35,11 @@ class DomainValidatorTest {
         var result = new ValidationResult();
 
         // Act
-        boolean valido = DomainValidator.validUUID(UUID.randomUUID().toString(), CAMPO, CODIGO, result);
+        boolean valido = DomainValidator.uuidValido(UUID.randomUUID().toString(), CAMPO, CODIGO, result);
 
         // Assert
         assertThat(valido).isTrue();
-        assertThat(result.hasErrors()).isFalse();
+        assertThat(result.tieneErrores()).isFalse();
     }
 
     @Test
@@ -48,11 +48,11 @@ class DomainValidatorTest {
         var result = new ValidationResult();
 
         // Act
-        boolean valido = DomainValidator.notEmpty(new ArrayList<>(), CAMPO, CODIGO, result);
+        boolean valido = DomainValidator.noVacia(new ArrayList<>(), CAMPO, CODIGO, result);
 
         // Assert
         assertThat(valido).isFalse();
-        assertThat(result.getErrors().get(0).errorCode()).isEqualTo(CODIGO);
+        assertThat(result.getErrores().get(0).codigoError()).isEqualTo(CODIGO);
     }
 
     @Test
@@ -61,11 +61,11 @@ class DomainValidatorTest {
         var result = new ValidationResult();
 
         // Act
-        boolean valido = DomainValidator.maxSize(List.of("a", "b", "c"), 2, CAMPO, CODIGO, result);
+        boolean valido = DomainValidator.tamanioMaximo(List.of("a", "b", "c"), 2, CAMPO, CODIGO, result);
 
         // Assert
         assertThat(valido).isFalse();
-        assertThat(result.getErrors().get(0).message())
+        assertThat(result.getErrores().get(0).mensaje())
                 .isEqualTo(AppMessages.DomainValidator.MAX_SIZE.formatted(CAMPO, 2));
     }
 
@@ -75,10 +75,10 @@ class DomainValidatorTest {
         var result = new ValidationResult();
 
         // Act
-        boolean valido = DomainValidator.maxSize(null, 2, CAMPO, CODIGO, result);
+        boolean valido = DomainValidator.tamanioMaximo(null, 2, CAMPO, CODIGO, result);
 
         assertThat(valido).isTrue();
-        assertThat(result.hasErrors()).isFalse();
+        assertThat(result.tieneErrores()).isFalse();
     }
 
     @Test
@@ -91,7 +91,7 @@ class DomainValidatorTest {
 
         // Assert
         assertThat(valido).isFalse();
-        assertThat(result.getErrors().get(0).message())
+        assertThat(result.getErrores().get(0).mensaje())
                 .isEqualTo(AppMessages.DomainValidator.SIN_DUPLICADOS.formatted(CAMPO, "a"));
     }
 
@@ -105,6 +105,6 @@ class DomainValidatorTest {
 
         // Assert
         assertThat(valido).isTrue();
-        assertThat(result.hasErrors()).isFalse();
+        assertThat(result.tieneErrores()).isFalse();
     }
 }

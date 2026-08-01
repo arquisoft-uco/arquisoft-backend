@@ -144,7 +144,7 @@ class AgregarEstadoEvaluacionFichaInputAdapterTest {
                 evaluacionId);
 
         var validationResult = new ValidationResult();
-        validationResult.addError("estadoEvaluacion", "TRANSICION_INVALIDA",
+        validationResult.agregarError("estadoEvaluacion", "TRANSICION_INVALIDA",
                 "No se puede agregar un nuevo estado cuando la evaluación ya alcanzó un estado terminal");
 
         when(agregarEstadoEvaluacionFichaInteractor.ejecutar(any()))

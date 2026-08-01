@@ -36,7 +36,7 @@ public final class EstadoFichaPerfilAggregate {
         aggregate.setEstadoFichaInicial();
         aggregate.setFechaActualizacion();
 
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
         return aggregate;
     }
 
@@ -55,7 +55,7 @@ public final class EstadoFichaPerfilAggregate {
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
-        if (!DomainValidator.notNull(fichaPerfilId,
+        if (!DomainValidator.noNulo(fichaPerfilId,
                 FichasMessages.EstadoFichaPerfil.CAMPO_FICHA_PERFIL,
                 FichasMessages.EstadoFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;

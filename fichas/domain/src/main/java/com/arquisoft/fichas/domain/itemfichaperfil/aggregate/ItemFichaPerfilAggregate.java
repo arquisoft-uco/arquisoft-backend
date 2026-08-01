@@ -37,7 +37,7 @@ public final class ItemFichaPerfilAggregate {
         itemFichaPerfilAggregate.setTipoItem(tipoItem, result);
         itemFichaPerfilAggregate.setContenido(contenido, result);
 
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
         return itemFichaPerfilAggregate;
     }
 
@@ -55,7 +55,7 @@ public final class ItemFichaPerfilAggregate {
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
-        if (!DomainValidator.notNull(fichaPerfilId,
+        if (!DomainValidator.noNulo(fichaPerfilId,
                 FichasMessages.ItemFichaPerfil.CAMPO_FICHA_PERFIL,
                 FichasMessages.ItemFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;
@@ -64,7 +64,7 @@ public final class ItemFichaPerfilAggregate {
     }
 
     private void setTipoItem(String tipoItem, ValidationResult result) {
-        if (!DomainValidator.notBlank(tipoItem,
+        if (!DomainValidator.noEnBlanco(tipoItem,
                 FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM,
                 FichasMessages.ItemFichaPerfil.TIPO_ITEM_REQUERIDO, result)) {
             return;
@@ -72,7 +72,7 @@ public final class ItemFichaPerfilAggregate {
         try {
             this.tipoItem = TipoItem.valueOf(UtilText.applyTrim(tipoItem));
         } catch (IllegalArgumentException e) {
-            result.addError(
+            result.agregarError(
                     FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM,
                     FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
                     FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO_MSG.formatted(tipoItem));
@@ -80,12 +80,12 @@ public final class ItemFichaPerfilAggregate {
     }
 
     private void setContenido(String contenido, ValidationResult result) {
-        if (!DomainValidator.notBlank(contenido,
+        if (!DomainValidator.noEnBlanco(contenido,
                 FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO,
                 FichasMessages.ItemFichaPerfil.CONTENIDO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.maxLength(contenido,
+        if (!DomainValidator.longitudMaxima(contenido,
                 FichasMessages.ItemFichaPerfil.CONTENIDO_MAX,
                 FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO,
                 FichasMessages.ItemFichaPerfil.CONTENIDO_DEMASIADO_LARGO, result)) {
@@ -103,7 +103,7 @@ public final class ItemFichaPerfilAggregate {
             setContenido(nuevoContenido, result);
         }
 
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
     }
 
     // ─── Método de negocio: remover (valida invariante POL-05) ───────────────
@@ -111,21 +111,21 @@ public final class ItemFichaPerfilAggregate {
     public void removerse(long totalRevisiones) {
         var result = new ValidationResult();
         if (totalRevisiones > 0) {
-            result.addError(FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES,
+            result.agregarError(FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES,
                     FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES,
                     FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES_MSG.formatted(id));
         }
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
     }
 
     private boolean esFichaModificable(EstadoFicha estadoFichaActual, ValidationResult result) {
-        if (!DomainValidator.notNull(estadoFichaActual,
+        if (!DomainValidator.noNulo(estadoFichaActual,
                 FichasMessages.ItemFichaPerfil.CAMPO_ESTADO_FICHA,
                 FichasMessages.ItemFichaPerfil.ESTADO_FICHA_REQUERIDO, result)) {
             return false;
         }
         if (!estadoFichaActual.permiteModificacion()) {
-            result.addError(
+            result.agregarError(
                     FichasMessages.ItemFichaPerfil.CAMPO_ESTADO_FICHA,
                     FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
                     FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE_MSG

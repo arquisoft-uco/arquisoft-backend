@@ -99,8 +99,8 @@ class EstudianteFichaPerfilAggregateTest {
 
         // Assert
         assertThat(ex).isInstanceOf(DomainValidationException.class);
-        assertThat(((DomainValidationException) ex).getValidationResult().getErrors())
-                .anyMatch(error -> error.errorCode().equals(
+        assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                .anyMatch(error -> error.codigoError().equals(
                         FichasMessages.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS));
     }
 

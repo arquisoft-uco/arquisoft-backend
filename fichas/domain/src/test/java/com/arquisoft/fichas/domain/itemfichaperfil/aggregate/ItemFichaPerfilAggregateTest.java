@@ -326,10 +326,10 @@ class ItemFichaPerfilAggregateTest {
         assertThat(exception).isInstanceOf(DomainValidationException.class);
 
         DomainValidationException validationException = (DomainValidationException) exception;
-        assertThat(validationException.getValidationResult().getErrors()).hasSize(1);
-        assertThat(validationException.getValidationResult().getErrors().get(0).field())
+        assertThat(validationException.getValidationResult().getErrores()).hasSize(1);
+        assertThat(validationException.getValidationResult().getErrores().get(0).campo())
                 .isEqualTo(FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES);
-        assertThat(validationException.getValidationResult().getErrors().get(0).errorCode())
+        assertThat(validationException.getValidationResult().getErrores().get(0).codigoError())
                 .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES);
     }
 

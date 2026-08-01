@@ -40,7 +40,7 @@ public final class EstadoEvaluacionFichaAggregate {
         aggregate.setEstadoEvaluacionInicial();
         aggregate.setFechaActualizacion();
 
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
         return aggregate;
     }
 
@@ -56,7 +56,7 @@ public final class EstadoEvaluacionFichaAggregate {
         aggregate.setEstadoEvaluacion(estadoEvaluacion, ultimoEstado, result);
         aggregate.setFechaActualizacion();
 
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
         return aggregate;
     }
 
@@ -77,7 +77,7 @@ public final class EstadoEvaluacionFichaAggregate {
     }
 
     private void setEvaluacionFichaPerfilId(UUID evaluacionFichaPerfilId, ValidationResult result) {
-        if (!DomainValidator.notNull(
+        if (!DomainValidator.noNulo(
                 evaluacionFichaPerfilId,
                 FichasMessages.EstadoEvaluacionFicha.CAMPO_EVALUACION_FICHA_PERFIL,
                 FichasMessages.EstadoEvaluacionFicha.EVALUACION_REQUERIDA,
@@ -92,7 +92,7 @@ public final class EstadoEvaluacionFichaAggregate {
     }
 
     private void setEstadoEvaluacion(EstadoEvaluacion estadoEvaluacion, EstadoEvaluacion ultimoEstado, ValidationResult result) {
-        if (!DomainValidator.notNull(
+        if (!DomainValidator.noNulo(
                 estadoEvaluacion,
                 FichasMessages.EstadoEvaluacionFicha.CAMPO_ESTADO_EVALUACION,
                 FichasMessages.EstadoEvaluacionFicha.ESTADO_REQUERIDO,
@@ -101,7 +101,7 @@ public final class EstadoEvaluacionFichaAggregate {
         }
 
         if (estadoEvaluacion.esEnEvaluacion()) {
-            result.addError(
+            result.agregarError(
                     FichasMessages.EstadoEvaluacionFicha.CAMPO_ESTADO_EVALUACION,
                     FichasMessages.EstadoEvaluacionFicha.ESTADO_EN_EVALUACION_NO_MANUAL,
                     FichasMessages.EstadoEvaluacionFicha.ESTADO_EN_EVALUACION_NO_MANUAL_MSG);
@@ -109,7 +109,7 @@ public final class EstadoEvaluacionFichaAggregate {
         }
 
         if (!UtilObject.isNull(ultimoEstado) && ultimoEstado.esTerminal()) {
-            result.addError(
+            result.agregarError(
                     FichasMessages.EstadoEvaluacionFicha.CAMPO_ESTADO_EVALUACION,
                     FichasMessages.EstadoEvaluacionFicha.TRANSICION_INVALIDA,
                     FichasMessages.EstadoEvaluacionFicha.TRANSICION_DESDE_TERMINAL_SIMPLE_MSG);

@@ -8,28 +8,28 @@ import java.util.List;
 
 public final class ValidationResult {
 
-    public record ValidationError(String field, String errorCode, String message) {}
+    public record ValidationError(String campo, String codigoError, String mensaje) {}
 
-    private final List<ValidationError> errors = new ArrayList<>();
+    private final List<ValidationError> errores = new ArrayList<>();
 
-    public void addError(String field, String errorCode, String message) {
-        errors.add(new ValidationError(field, errorCode, message));
+    public void agregarError(String campo, String codigoError, String mensaje) {
+        errores.add(new ValidationError(campo, codigoError, mensaje));
     }
 
-    public boolean hasErrors() {
-        return !errors.isEmpty();
+    public boolean tieneErrores() {
+        return !errores.isEmpty();
     }
 
-    public boolean hasFieldErrors(String field) {
-        return errors.stream().anyMatch(e -> e.field().equals(field));
+    public boolean tieneErroresDeCampo(String campo) {
+        return errores.stream().anyMatch(e -> e.campo().equals(campo));
     }
 
-    public List<ValidationError> getErrors() {
-        return Collections.unmodifiableList(errors);
+    public List<ValidationError> getErrores() {
+        return Collections.unmodifiableList(errores);
     }
 
-    public void throwIfHasErrors() {
-        if (hasErrors()) {
+    public void lanzarSiTieneErrores() {
+        if (tieneErrores()) {
             throw new DomainValidationException(this);
         }
     }

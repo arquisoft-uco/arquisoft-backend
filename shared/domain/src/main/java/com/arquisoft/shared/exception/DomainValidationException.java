@@ -18,8 +18,8 @@ public final class DomainValidationException extends DomainException {
     }
 
     private static String buildMessage(ValidationResult result) {
-        return result.getErrors().stream()
-            .map(e -> "[%s] %s".formatted(e.errorCode(), e.message()))
+        return result.getErrores().stream()
+            .map(e -> "[%s] %s".formatted(e.codigoError(), e.mensaje()))
             .collect(Collectors.joining(" | "));
     }
 }

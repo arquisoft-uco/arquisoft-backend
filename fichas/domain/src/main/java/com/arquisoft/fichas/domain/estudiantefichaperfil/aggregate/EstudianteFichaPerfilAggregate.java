@@ -30,7 +30,7 @@ public final class EstudianteFichaPerfilAggregate {
         relacion.setFichaPerfilId(fichaPerfilId, result);
         relacion.setEstudianteId(estudianteId, result);
 
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
         return relacion;
     }
 
@@ -40,11 +40,11 @@ public final class EstudianteFichaPerfilAggregate {
 
         var result = new ValidationResult();
 
-        DomainValidator.notEmpty(nuevosEstudiantesIds,
+        DomainValidator.noVacia(nuevosEstudiantesIds,
                 FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES,
                 FichasMessages.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS, result);
 
-        result.throwIfHasErrors();
+        result.lanzarSiTieneErrores();
 
         return nuevosEstudiantesIds.stream()
                 .map(estudianteId -> crear(fichaPerfilId, estudianteId))
@@ -60,7 +60,7 @@ public final class EstudianteFichaPerfilAggregate {
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
-        if (!DomainValidator.notNull(fichaPerfilId,
+        if (!DomainValidator.noNulo(fichaPerfilId,
                 FichasMessages.EstudianteFichaPerfil.CAMPO_FICHA_PERFIL,
                 FichasMessages.EstudianteFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;
@@ -69,7 +69,7 @@ public final class EstudianteFichaPerfilAggregate {
     }
 
     private void setEstudianteId(UUID estudianteId, ValidationResult result) {
-        if (!DomainValidator.notNull(estudianteId,
+        if (!DomainValidator.noNulo(estudianteId,
                 FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTE,
                 FichasMessages.EstudianteFichaPerfil.ESTUDIANTE_ID_REQUERIDO, result)) {
             return;

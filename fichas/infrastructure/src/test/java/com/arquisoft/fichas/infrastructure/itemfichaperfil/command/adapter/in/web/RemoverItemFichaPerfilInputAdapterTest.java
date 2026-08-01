@@ -117,7 +117,7 @@ class RemoverItemFichaPerfilInputAdapterTest {
         // Arrange
         UUID itemId = UUID.randomUUID();
         ValidationResult result = new ValidationResult();
-        result.addError(
+        result.agregarError(
                 FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES,
                 FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES,
                 FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES_MSG.formatted(itemId)

@@ -175,7 +175,7 @@ class CambiarAsesorFichaInputAdapterTest {
                 """, asesorId);
 
         ValidationResult result = new ValidationResult();
-        result.addError(
+        result.agregarError(
                 FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA,
                 FichasMessages.FichaPerfil.MISMO_ASESOR,
                 FichasMessages.FichaPerfil.MISMO_ASESOR_MSG.formatted(asesorId)
@@ -210,7 +210,7 @@ class CambiarAsesorFichaInputAdapterTest {
                 """, nuevoAsesorId);
 
         ValidationResult result = new ValidationResult();
-        result.addError(
+        result.agregarError(
                 FichasMessages.FichaPerfil.CAMPO_ESTADO_FICHA,
                 FichasMessages.FichaPerfil.ESTADO_TERMINAL,
                 FichasMessages.FichaPerfil.ESTADO_TERMINAL_MSG.formatted("APROBADA")
