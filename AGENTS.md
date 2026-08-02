@@ -45,13 +45,14 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 | Entidades de dominio | Inmutables, constructor privado, campos `final`, solo getters. `build(UUID.randomUUID())` para nuevas, `rebuild(uuid)` desde persistencia. Sin Lombok ni Spring. |
 | Aggregate Root | Entidades raíz extienden `AggregateRoot` de `shared:domain` (`com.arquisoft.shared.domain`). Gestiona eventos de dominio no publicados via `publishEvent(DomainEvent)`. |
 | Eventos de dominio | Extienden `DomainEvent` de `shared:domain`. Cada subclase declara sus **propios campos** con nombres semánticamente correctos (e.g. `usuarioId`, `fichaId`). `DomainEvent` asigna `eventId` (UUID), `occurredAt`, `eventType` y `eventTopic` automáticamente. El constructor recibe `(eventTopic, eventType)` — sin `aggregateId` genérico. |
-| Puertos de entrada | `{Accion}{Entidad}Interactor` en `application/{feature}/command/interactor/` (lado comando) y `{Accion}{Entidad}UseCase` en `application/{feature}/{command\|query}/usecase/` |
+| Puertos de entrada | `{Accion}{Entidad}Interactor` en `application/{feature}/command/interactor/` (lado comando, es lo que inyecta el adapter) y `{Accion}{Entidad}UseCase` en `application/{feature}/{command\|query}/usecase/` |
 | Puertos de salida | `{Entidad}RepositoryPort` en `domain/port/out/` |
 | Use cases | `{Accion}{Entidad}UseCaseImpl` en `application/{feature}/{command\|query}/usecase/impl/`; el interactor en `application/{feature}/command/interactor/impl/` |
 | DTOs | Sufijo `DTO`, con `toDomain()` y `static fromDomain(...)`. `@Data @NoArgsConstructor @AllArgsConstructor @Builder`. |
 | Excepciones de dominio | Extienden `DomainException` (shared) con campo `errorCode` |
 | IDs | Siempre `UUID` — nunca `Long` ni `Integer` |
-| Interactor (lado comando) | `{Accion}{Entidad}InteractorImpl` implementa `{Accion}{Entidad}Interactor` y declara `@Transactional(transactionManager = "{contexto}TransactionManager")`; delega en el use case, que ya no implementa el puerto ni maneja la transacción. Aplicado en `fichas` |
+| Interactor (lado comando) | `{Accion}{Entidad}InteractorImpl` implementa `{Accion}{Entidad}Interactor` y declara `@Transactional(transactionManager = "{contexto}TransactionManager")`; delega en el use case, que ya no implementa el puerto ni maneja la transacción. Aplicado en `fichas` y `usuarios`; `seguridad` tiene interactor pero sin `@Transactional` (no tiene DataSource propio: Keycloak + Redis) |
+| Reglas de dominio | `{Regla}Rule` en `domain/{feature}/rules/` con su `{Regla}RuleImpl` en `rules/impl/` (POJO sin Spring); se registran como bean en `{Contexto}DomainRulesConfig` de infrastructure |
 | Validators | Existencia, unicidad y propiedad en `{Feature}Validator` (`application/{feature}/command/validator/`), reutilizables entre features — no bloques `if/throw` dentro del use case |
 | Orden de validación | 1) integridad del dato (formato, obligatoriedad, longitud, duplicados en la petición), 2) existencia/unicidad en BD, 3) reglas de negocio del agregado |
 | Identificadores en el body | Se reciben como `String` con `@UuidValido` (`shared:web`) y se convierten a `UUID` en `toCommand()`; nunca tipados `UUID` en el DTO |

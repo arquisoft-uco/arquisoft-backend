@@ -10,4 +10,6 @@ public interface UsuarioOutputPort {
     void save(UsuarioAggregate usuario);
 
     Optional<UsuarioAggregate> findById(UUID id);
+
+    boolean existePorEmail(String email);
 }

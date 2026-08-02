@@ -34,4 +34,13 @@ class UsuarioCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isEmpty();
     }
+
+    @Test
+    void debeRetornarFalse_cuandoExistePorEmailEsInvocado() {
+        // Arrange / Act
+        boolean existe = adapter.existePorEmail("test@example.com");
+
+        // Assert
+        assertThat(existe).isFalse();
+    }
 }

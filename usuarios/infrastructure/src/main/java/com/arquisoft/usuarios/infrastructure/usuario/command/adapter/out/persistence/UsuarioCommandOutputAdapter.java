@@ -21,4 +21,10 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
     public Optional<UsuarioAggregate> findById(UUID id) {
         return Optional.empty();
     }
+
+    @Override
+    public boolean existePorEmail(String email) {
+        log.debug("Mock — verificacion de email omitida: email={}", email);
+        return false;
+    }
 }

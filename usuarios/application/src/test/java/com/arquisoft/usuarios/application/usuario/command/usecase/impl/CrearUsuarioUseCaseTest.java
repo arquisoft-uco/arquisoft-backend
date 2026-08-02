@@ -5,6 +5,7 @@ import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioCommand;
+import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuarioValidator;
 import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioAggregate;
 import com.arquisoft.usuarios.domain.usuario.port.out.UsuarioOutputPort;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,9 @@ class CrearUsuarioUseCaseTest {
 
     @Mock
     private UsuarioOutputPort usuarioOutputPort;
+
+    @Mock
+    private CrearUsuarioValidator crearUsuarioValidator;
 
     @Mock
     private EventPublisher eventPublisher;

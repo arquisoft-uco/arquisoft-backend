@@ -1,8 +1,11 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
 import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
+import com.arquisoft.seguridad.application.auth.command.interactor.AuthenticateUserInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.LogoutInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.ValidateTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.LogoutUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
@@ -31,16 +34,16 @@ import static org.mockito.Mockito.when;
 class AuthCommandInputAdapterTest {
 
     @Mock
-    private AuthenticateUserUseCase authenticateUserUseCase;
+    private AuthenticateUserInteractor authenticateUserInteractor;
 
     @Mock
-    private RefreshTokenUseCase refreshTokenUseCase;
+    private RefreshTokenInteractor refreshTokenInteractor;
 
     @Mock
-    private LogoutUseCase logoutUseCase;
+    private LogoutInteractor logoutInteractor;
 
     @Mock
-    private ValidateTokenUseCase validateTokenUseCase;
+    private ValidateTokenInteractor validateTokenInteractor;
 
     @InjectMocks
     private AuthCommandInputAdapter adapter;
@@ -58,7 +61,7 @@ class AuthCommandInputAdapterTest {
                 "openid profile email"
         );
 
-        when(authenticateUserUseCase.ejecutar(any())).thenReturn(authResult);
+        when(authenticateUserInteractor.ejecutar(any())).thenReturn(authResult);
 
         // Act
         ResponseEntity<LoginResponseDTO> response = adapter.login(request);
@@ -69,7 +72,7 @@ class AuthCommandInputAdapterTest {
         assertThat(response.getBody().getAccessToken()).isEqualTo("eyJhbGc-access...");
         assertThat(response.getBody().getRefreshToken()).isEqualTo("eyJhbGc-refresh...");
         assertThat(response.getBody().getExpiresIn()).isEqualTo(3600L);
-        verify(authenticateUserUseCase).ejecutar(any());
+        verify(authenticateUserInteractor).ejecutar(any());
     }
 
     @Test
@@ -85,7 +88,7 @@ class AuthCommandInputAdapterTest {
                 "openid profile email"
         );
 
-        when(refreshTokenUseCase.ejecutar(anyString())).thenReturn(refreshResult);
+        when(refreshTokenInteractor.ejecutar(anyString())).thenReturn(refreshResult);
 
         // Act
         ResponseEntity<LoginResponseDTO> response = adapter.refreshToken(request);
@@ -94,7 +97,7 @@ class AuthCommandInputAdapterTest {
         assertThat(response.getStatusCode().value()).isEqualTo(200);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().getAccessToken()).isEqualTo("eyJhbGc-access-new...");
-        verify(refreshTokenUseCase).ejecutar("eyJhbGc-refresh-old...");
+        verify(refreshTokenInteractor).ejecutar("eyJhbGc-refresh-old...");
     }
 
     @Test
@@ -113,7 +116,7 @@ class AuthCommandInputAdapterTest {
 
         // Assert
         assertThat(response.getStatusCode().value()).isEqualTo(200);
-        verify(logoutUseCase).ejecutar(any(TokenSesionCommand.class));
+        verify(logoutInteractor).ejecutar(any(TokenSesionCommand.class));
     }
 
     @Test
@@ -127,7 +130,7 @@ class AuthCommandInputAdapterTest {
                         "Token valido"
                 );
 
-        when(validateTokenUseCase.ejecutar(any())).thenReturn(validationResult);
+        when(validateTokenInteractor.ejecutar(any())).thenReturn(validationResult);
 
         // Act
         ResponseEntity<ValidateTokenResponseDTO> response = adapter.validateToken("eyJhbGc-token-valido...");
@@ -138,6 +141,6 @@ class AuthCommandInputAdapterTest {
         assertThat(response.getBody().isValido()).isTrue();
         assertThat(response.getBody().getIdentidadId()).isEqualTo("uuid-estudiante-123");
         assertThat(response.getBody().getCorreo()).isEqualTo("estudiante@uco.edu.co");
-        verify(validateTokenUseCase).ejecutar(any(TokenAggregate.class));
+        verify(validateTokenInteractor).ejecutar(any(TokenAggregate.class));
     }
 }

@@ -1,10 +1,12 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
 import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCommand;
+import com.arquisoft.seguridad.application.auth.command.interactor.AuthenticateUserInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.LogoutInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.ValidateTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.LogoutUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
 import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
 import com.arquisoft.seguridad.infrastructure.filter.RateLimitingFilter;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
@@ -60,23 +62,23 @@ class AuthCommandInputAdapterWebTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private AuthenticateUserUseCase authenticateUserUseCase;
+    private AuthenticateUserInteractor authenticateUserInteractor;
 
     @MockitoBean
-    private RefreshTokenUseCase refreshTokenUseCase;
+    private RefreshTokenInteractor refreshTokenInteractor;
 
     @MockitoBean
-    private LogoutUseCase logoutUseCase;
+    private LogoutInteractor logoutInteractor;
 
     @MockitoBean
-    private ValidateTokenUseCase validateTokenUseCase;
+    private ValidateTokenInteractor validateTokenInteractor;
 
     // ── login ──
 
     @Test
     void debeRetornar200YEnlazarCredenciales_cuandoBodyDeLoginEsValido() throws Exception {
         // Arrange
-        when(authenticateUserUseCase.ejecutar(any())).thenReturn(
+        when(authenticateUserInteractor.ejecutar(any())).thenReturn(
                 new AuthenticateUserUseCase.AuthResult(
                         "access...", "refresh...", 3600L, "Bearer", "openid"));
         ArgumentCaptor<AuthenticateUserCommand> captor =
@@ -95,7 +97,7 @@ class AuthCommandInputAdapterWebTest {
                 .andExpect(jsonPath("$.accessToken").value("access..."));
 
         // Assert — el DTO recibió los valores del JSON
-        verify(authenticateUserUseCase).ejecutar(captor.capture());
+        verify(authenticateUserInteractor).ejecutar(captor.capture());
         assertThat(captor.getValue().email()).isEqualTo("estudiante@uco.edu.co");
         assertThat(captor.getValue().password()).isEqualTo("password123");
     }
@@ -131,7 +133,7 @@ class AuthCommandInputAdapterWebTest {
     @Test
     void debeRetornar200YEnlazarRefreshToken_cuandoBodyDeRefreshEsValido() throws Exception {
         // Arrange
-        when(refreshTokenUseCase.ejecutar(anyString())).thenReturn(
+        when(refreshTokenInteractor.ejecutar(anyString())).thenReturn(
                 new RefreshTokenUseCase.RefreshResult(
                         "access-new...", "refresh-new...", 3600L, "Bearer", "openid"));
 
@@ -147,7 +149,7 @@ class AuthCommandInputAdapterWebTest {
                 .andExpect(jsonPath("$.accessToken").value("access-new..."));
 
         // el DTO recibió el valor del JSON, no null
-        verify(refreshTokenUseCase).ejecutar("refresh-old...");
+        verify(refreshTokenInteractor).ejecutar("refresh-old...");
     }
 
     @Test

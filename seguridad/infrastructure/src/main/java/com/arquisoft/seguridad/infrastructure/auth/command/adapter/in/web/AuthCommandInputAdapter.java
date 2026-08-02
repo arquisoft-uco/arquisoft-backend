@@ -1,8 +1,11 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
+import com.arquisoft.seguridad.application.auth.command.interactor.AuthenticateUserInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.LogoutInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.ValidateTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
 import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.LogoutUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
@@ -41,10 +44,10 @@ import java.time.Instant;
 @Tag(name = "Seguridad - Autenticacion", description = "Comandos de autenticacion: login, refresh y logout")
 public class AuthCommandInputAdapter {
 
-    private final AuthenticateUserUseCase authenticateUserUseCase;
-    private final RefreshTokenUseCase refreshTokenUseCase;
-    private final LogoutUseCase logoutUseCase;
-    private final ValidateTokenUseCase validateTokenUseCase;
+    private final AuthenticateUserInteractor authenticateUserInteractor;
+    private final RefreshTokenInteractor refreshTokenInteractor;
+    private final LogoutInteractor logoutInteractor;
+    private final ValidateTokenInteractor validateTokenInteractor;
 
     @Deprecated(since = "OAuth 2.1 / RFC 9700 — usar Authorization Code + PKCE en la SPA")
     @PostMapping("/login")
@@ -70,7 +73,7 @@ public class AuthCommandInputAdapter {
                     content = @Content(mediaType = "application/json"))
     })
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
-        AuthenticateUserUseCase.AuthResult result = authenticateUserUseCase.ejecutar(loginRequest.toCommand());
+        AuthenticateUserUseCase.AuthResult result = authenticateUserInteractor.ejecutar(loginRequest.toCommand());
 
         LoginResponseDTO response = LoginResponseDTO.builder()
                 .accessToken(result.accessToken())
@@ -101,7 +104,7 @@ public class AuthCommandInputAdapter {
             @Valid @RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
         log.debug(SeguridadMessages.Token.REFRESH_DEBUG);
 
-        RefreshTokenUseCase.RefreshResult result = refreshTokenUseCase.ejecutar(
+        RefreshTokenUseCase.RefreshResult result = refreshTokenInteractor.ejecutar(
                 refreshTokenRequest.refreshToken()
         );
 
@@ -135,7 +138,7 @@ public class AuthCommandInputAdapter {
         long tiempoVida = (expiracion != null && Instant.now().isBefore(expiracion))
                 ? Math.max(1L, Duration.between(Instant.now(), expiracion).toSeconds())
                 : 0L;
-        logoutUseCase.ejecutar(new TokenSesionCommand(jwt.getId(), tiempoVida));
+        logoutInteractor.ejecutar(new TokenSesionCommand(jwt.getId(), tiempoVida));
         return ResponseEntity.ok(LogoutResponseDTO.builder().build());
     }
 
@@ -158,7 +161,7 @@ public class AuthCommandInputAdapter {
     public ResponseEntity<ValidateTokenResponseDTO> validateToken(@RequestParam String token) {
         log.debug(SeguridadMessages.Autenticacion.VALIDATE_DEBUG);
 
-        ValidateTokenUseCase.ValidationResult result = validateTokenUseCase.ejecutar(
+        ValidateTokenUseCase.ValidationResult result = validateTokenInteractor.ejecutar(
                 TokenAggregate.de(token)
         );
 

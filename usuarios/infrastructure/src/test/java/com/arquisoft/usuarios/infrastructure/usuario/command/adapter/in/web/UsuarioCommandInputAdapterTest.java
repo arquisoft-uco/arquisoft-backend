@@ -2,7 +2,7 @@ package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web;
 
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioCommand;
-import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUseCase;
+import com.arquisoft.usuarios.application.usuario.command.interactor.CrearUsuarioInteractor;
 import com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web.dto.CrearUsuarioRequestDTO;
 import com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web.dto.CrearUsuarioResponseDTO;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.when;
 class UsuarioCommandInputAdapterTest {
 
     @Mock
-    private CrearUsuarioUseCase crearUsuarioUseCase;
+    private CrearUsuarioInteractor crearUsuarioInteractor;
 
     @InjectMocks
     private UsuarioCommandInputAdapter adapter;
@@ -38,7 +38,7 @@ class UsuarioCommandInputAdapterTest {
                 "test@example.com",
                 CrearUsuarioRequestDTO.RolUsuarioDTO.ESTUDIANTE
         );
-        when(crearUsuarioUseCase.ejecutar(any(CrearUsuarioCommand.class))).thenReturn(expectedId);
+        when(crearUsuarioInteractor.ejecutar(any(CrearUsuarioCommand.class))).thenReturn(expectedId);
 
         // Act
         ResponseEntity<CrearUsuarioResponseDTO> response = adapter.crear(request);
@@ -59,14 +59,14 @@ class UsuarioCommandInputAdapterTest {
                 "admin@example.com",
                 CrearUsuarioRequestDTO.RolUsuarioDTO.ADMINISTRADOR
         );
-        when(crearUsuarioUseCase.ejecutar(any(CrearUsuarioCommand.class))).thenReturn(expectedId);
+        when(crearUsuarioInteractor.ejecutar(any(CrearUsuarioCommand.class))).thenReturn(expectedId);
         ArgumentCaptor<CrearUsuarioCommand> captor = ArgumentCaptor.forClass(CrearUsuarioCommand.class);
 
         // Act
         adapter.crear(request);
 
         // Assert
-        verify(crearUsuarioUseCase).ejecutar(captor.capture());
+        verify(crearUsuarioInteractor).ejecutar(captor.capture());
         CrearUsuarioCommand command = captor.getValue();
         assertThat(command.email()).isEqualTo("admin@example.com");
         assertThat(command.rol()).isEqualTo(UsuarioRole.ADMINISTRADOR);
