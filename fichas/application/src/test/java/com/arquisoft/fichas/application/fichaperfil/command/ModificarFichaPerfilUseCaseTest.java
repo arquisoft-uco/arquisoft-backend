@@ -1,11 +1,10 @@
 package com.arquisoft.fichas.application.fichaperfil.command;
 
 import com.arquisoft.fichas.application.fichaperfil.command.model.ModificarFichaPerfilCommand;
-import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoEncontradaException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoPropietarioException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.BaseException;
@@ -39,7 +38,7 @@ class ModificarFichaPerfilUseCaseTest {
     private FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Mock
-    private FichaPerfilValidator fichaPerfilValidator;
+    private ModificarFichaPerfilValidator modificarFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
@@ -61,7 +60,6 @@ class ModificarFichaPerfilUseCaseTest {
         FichaPerfilAggregate ficha = crearFicha(fichaId, "Titulo original");
 
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
-        when(fichaPerfilOutputPort.existePorTituloProyecto(tituloNuevo)).thenReturn(false);
 
         // Act
         modificarFichaPerfilUseCase.ejecutar(command);
@@ -80,8 +78,7 @@ class ModificarFichaPerfilUseCaseTest {
         var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, "Titulo");
 
         doThrow(new FichaNoPropietarioException(fichaId, estudianteId))
-                .when(fichaPerfilValidator).validarEstudiantePropietario(
-                        new PropietarioFichaCriteria(fichaId, estudianteId));
+                .when(modificarFichaPerfilValidator).validarPropiedad(any(), any());
 
         // Act
         Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(command));
@@ -122,7 +119,8 @@ class ModificarFichaPerfilUseCaseTest {
         FichaPerfilAggregate ficha = crearFicha(fichaId, "Titulo original");
 
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
-        when(fichaPerfilOutputPort.existePorTituloProyecto(tituloDuplicado)).thenReturn(true);
+        doThrow(new FichaTituloDuplicadoException(tituloDuplicado))
+                .when(modificarFichaPerfilValidator).validarTitulo(any(), any());
 
         // Act
         Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(command));
@@ -163,7 +161,6 @@ class ModificarFichaPerfilUseCaseTest {
         FichaPerfilAggregate ficha = crearFicha(fichaId, "Titulo original");
 
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
-        when(fichaPerfilOutputPort.existePorTituloProyecto(tituloNuevo)).thenReturn(false);
 
         // Act
         modificarFichaPerfilUseCase.ejecutar(command);

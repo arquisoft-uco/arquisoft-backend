@@ -2,8 +2,7 @@ package com.arquisoft.fichas.application.evaluacionfichaperfil.command;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.port.in.RegistrarEvaluacionFichaPerfilUseCase;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.EvaluacionFichaPerfilValidator;
-import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
@@ -21,8 +20,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
 
     private final EvaluacionFichaPerfilOutputPort evaluacionFichaPerfilOutputPort;
     private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
-    private final FichaPerfilValidator fichaPerfilValidator;
-    private final EvaluacionFichaPerfilValidator evaluacionFichaPerfilValidator;
+    private final RegistrarEvaluacionFichaPerfilValidator registrarEvaluacionFichaPerfilValidator;
     private final AppLogger logger;
 
     @Override
@@ -31,10 +29,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
                 entrada.representanteComite(),
                 entrada.fichaPerfil());
 
-        fichaPerfilValidator.validarFichaExiste(evaluacion.getFichaPerfilId());
-        evaluacionFichaPerfilValidator.validarRepresentanteExiste(evaluacion.getRepresentanteComiteId());
-        evaluacionFichaPerfilValidator.validarEvaluacionNoDuplicada(
-                evaluacion.getRepresentanteComiteId(), evaluacion.getFichaPerfilId());
+        registrarEvaluacionFichaPerfilValidator.validar(evaluacion);
 
         evaluacionFichaPerfilOutputPort.guardar(evaluacion);
         asignarEstadoInicialEvaluacion(evaluacion.getId());

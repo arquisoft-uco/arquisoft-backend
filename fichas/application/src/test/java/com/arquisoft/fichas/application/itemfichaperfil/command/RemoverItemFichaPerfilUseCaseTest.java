@@ -1,8 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command;
 
-import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoPropietarioException;
-import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
+import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
@@ -40,7 +39,7 @@ class RemoverItemFichaPerfilUseCaseTest {
     private RevisionItemQueryOutputPort revisionQueryPort;
 
     @Mock
-    private FichaPerfilValidator fichaPerfilValidator;
+    private RemoverItemFichaPerfilValidator removerItemFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
@@ -66,8 +65,7 @@ class RemoverItemFichaPerfilUseCaseTest {
 
         // Assert
         verify(itemOutputPort, times(1)).buscarPorId(itemId);
-        verify(fichaPerfilValidator, times(1)).validarEstudiantePropietario(
-                new PropietarioFichaCriteria(fichaPerfilId, estudianteId));
+        verify(removerItemFichaPerfilValidator, times(1)).validar(any(), any());
         verify(revisionQueryPort, times(1)).contarPorItem(itemId);
         verify(itemOutputPort, times(1)).eliminarPorId(itemId);
     }
@@ -95,7 +93,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         assertThat(notFoundException.getErrorCode())
                 .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_NO_ENCONTRADO);
 
-        verify(fichaPerfilValidator, never()).validarEstudiantePropietario(any());
+        verify(removerItemFichaPerfilValidator, never()).validar(any(), any());
         verify(revisionQueryPort, never()).contarPorItem(any());
         verify(itemOutputPort, never()).eliminarPorId(any());
     }
@@ -110,8 +108,7 @@ class RemoverItemFichaPerfilUseCaseTest {
 
         when(itemOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
         doThrow(new FichaNoPropietarioException(fichaPerfilId, estudianteId))
-                .when(fichaPerfilValidator).validarEstudiantePropietario(
-                        new PropietarioFichaCriteria(fichaPerfilId, estudianteId));
+                .when(removerItemFichaPerfilValidator).validar(any(), any());
 
         var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
 

@@ -1,14 +1,12 @@
 package com.arquisoft.fichas.application.fichaperfil.command;
 
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.EstudiantesFichaValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilUseCase;
-import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
@@ -26,10 +24,8 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
-    private final EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
     private final EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
-    private final FichaPerfilValidator fichaPerfilValidator;
-    private final EstudiantesFichaValidator estudiantesFichaValidator;
+    private final RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
     private final AppLogger logger;
 
     @Override
@@ -43,13 +39,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
         List<EstudianteFichaPerfilAggregate> relaciones =
                 construirRelaciones(ficha.getId(), estudiantes);
 
-        fichaPerfilValidator.validarAsesorExiste(ficha.getAsesorFichaId());
-        fichaPerfilValidator.validarTituloUnico(ficha.getTituloProyecto());
-        estudiantesFichaValidator.validarExistencia(estudiantes);
-
-        if (!relaciones.isEmpty()) {
-            estudianteFichaPerfilCupoDisponibleRule.validar(relaciones);
-        }
+        registrarFichaPerfilValidator.validar(ficha, estudiantes, relaciones);
 
         fichaPerfilOutputPort.guardar(ficha);
         asignarEstadoInicial(ficha.getId());
@@ -73,7 +63,6 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
         if (UtilCollection.isEmptyOrNull(estudiantes)) {
             return List.of();
         }
-        estudiantesFichaValidator.validarSinDuplicados(estudiantes);
         return EstudianteFichaPerfilAggregate.crear(fichaPerfil, estudiantes);
     }
 }

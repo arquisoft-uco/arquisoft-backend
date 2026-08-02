@@ -1,10 +1,9 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.EvaluacionFichaPerfilValidator;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.exception.RepresentanteComiteNoEncontradoException;
-import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.RepresentanteComiteNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
@@ -38,10 +37,8 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
     private EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
 
     @Mock
-    private FichaPerfilValidator fichaPerfilValidator;
+    private RegistrarEvaluacionFichaPerfilValidator registrarEvaluacionFichaPerfilValidator;
 
-    @Mock
-    private EvaluacionFichaPerfilValidator evaluacionFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
@@ -61,9 +58,9 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(fichaPerfilValidator).validarFichaExiste(fichaId);
-        verify(evaluacionFichaPerfilValidator).validarRepresentanteExiste(representanteId);
-        verify(evaluacionFichaPerfilValidator).validarEvaluacionNoDuplicada(representanteId, fichaId);
+        verify(registrarEvaluacionFichaPerfilValidator).validar(any());
+        verify(registrarEvaluacionFichaPerfilValidator).validar(any());
+        verify(registrarEvaluacionFichaPerfilValidator).validar(any());
         verify(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilAggregate.class));
         verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaAggregate.class));
     }
@@ -76,14 +73,12 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
         doThrow(new FichaPerfilNoEncontradaException(fichaId))
-                .when(fichaPerfilValidator).validarFichaExiste(fichaId);
+                .when(registrarEvaluacionFichaPerfilValidator).validar(any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class);
 
-        verify(evaluacionFichaPerfilValidator, never()).validarRepresentanteExiste(any());
-        verify(evaluacionFichaPerfilValidator, never()).validarEvaluacionNoDuplicada(any(), any());
         verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -95,13 +90,12 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
         doThrow(new RepresentanteComiteNoEncontradoException(representanteId))
-                .when(evaluacionFichaPerfilValidator).validarRepresentanteExiste(representanteId);
+                .when(registrarEvaluacionFichaPerfilValidator).validar(any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(RepresentanteComiteNoEncontradoException.class);
 
-        verify(evaluacionFichaPerfilValidator, never()).validarEvaluacionNoDuplicada(any(), any());
         verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -113,8 +107,8 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
         doThrow(new EvaluacionFichaPerfilDuplicadaException(representanteId, fichaId))
-                .when(evaluacionFichaPerfilValidator)
-                .validarEvaluacionNoDuplicada(representanteId, fichaId);
+                .when(registrarEvaluacionFichaPerfilValidator)
+                .validar(any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
@@ -150,9 +144,6 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(DomainValidationException.class);
 
-        verify(fichaPerfilValidator, never()).validarFichaExiste(any());
-        verify(evaluacionFichaPerfilValidator, never()).validarRepresentanteExiste(any());
-        verify(evaluacionFichaPerfilValidator, never()).validarEvaluacionNoDuplicada(any(), any());
         verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
     }
 

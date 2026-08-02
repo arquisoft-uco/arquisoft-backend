@@ -1,11 +1,10 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command;
 
-import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
+import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
-import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ItemFichaPerfilValidator;
-import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaNoPropiaException;
-import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemTipoDuplicadoException;
+import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
+import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.exception.ApplicationException;
@@ -41,10 +40,8 @@ class AgregarItemFichaPerfilUseCaseTest {
     private ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
 
     @Mock
-    private FichaPerfilValidator fichaPerfilValidator;
+    private AgregarItemFichaPerfilValidator agregarItemFichaPerfilValidator;
 
-    @Mock
-    private ItemFichaPerfilValidator itemFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
@@ -70,7 +67,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         // Arrange
         AgregarItemFichaPerfilCommand command = comando();
         doThrow(new FichaPerfilNoEncontradaException(command.fichaPerfil()))
-                .when(fichaPerfilValidator).validarFichaExiste(command.fichaPerfil());
+                .when(agregarItemFichaPerfilValidator).validar(any(), any());
 
         // Act
         Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
@@ -85,8 +82,8 @@ class AgregarItemFichaPerfilUseCaseTest {
         // Arrange
         AgregarItemFichaPerfilCommand command = comando();
         doThrow(new ItemFichaNoPropiaException(command.fichaPerfil()))
-                .when(itemFichaPerfilValidator)
-                .validarFichaPropia(command.fichaPerfil(), command.estudiante());
+                .when(agregarItemFichaPerfilValidator)
+                .validar(any(), any());
 
         // Act
         Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
@@ -103,8 +100,8 @@ class AgregarItemFichaPerfilUseCaseTest {
         // Arrange
         AgregarItemFichaPerfilCommand command = comando();
         doThrow(new ItemTipoDuplicadoException(TIPO_ITEM))
-                .when(itemFichaPerfilValidator)
-                .validarTipoNoDuplicado(command.fichaPerfil(), TIPO_ITEM);
+                .when(agregarItemFichaPerfilValidator)
+                .validar(any(), any());
 
         // Act
         Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
@@ -119,7 +116,7 @@ class AgregarItemFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debeValidarEnOrdenCorrecto() {
+    void debeValidarAntesDePersistir_cuandoSeEjecuta() {
         // Arrange
         AgregarItemFichaPerfilCommand command = comando();
 
@@ -127,12 +124,8 @@ class AgregarItemFichaPerfilUseCaseTest {
         useCase.ejecutar(command);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilValidator, itemFichaPerfilValidator, itemFichaPerfilOutputPort);
-        inOrder.verify(fichaPerfilValidator).validarFichaExiste(command.fichaPerfil());
-        inOrder.verify(itemFichaPerfilValidator)
-                .validarFichaPropia(command.fichaPerfil(), command.estudiante());
-        inOrder.verify(itemFichaPerfilValidator)
-                .validarTipoNoDuplicado(command.fichaPerfil(), TIPO_ITEM);
+        InOrder inOrder = inOrder(agregarItemFichaPerfilValidator, itemFichaPerfilOutputPort);
+        inOrder.verify(agregarItemFichaPerfilValidator).validar(any(), any());
         inOrder.verify(itemFichaPerfilOutputPort).guardar(any(ItemFichaPerfilAggregate.class));
     }
 
@@ -146,9 +139,9 @@ class AgregarItemFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(DomainValidationException.class);
 
-        verify(fichaPerfilValidator, never()).validarFichaExiste(any());
-        verify(itemFichaPerfilValidator, never()).validarFichaPropia(any(), any());
-        verify(itemFichaPerfilValidator, never()).validarTipoNoDuplicado(any(), any());
+        verify(agregarItemFichaPerfilValidator, never()).validar(any(), any());
+        verify(agregarItemFichaPerfilValidator, never()).validar(any(), any());
+        verify(agregarItemFichaPerfilValidator, never()).validar(any(), any());
         verify(itemFichaPerfilOutputPort, never()).guardar(any());
     }
 

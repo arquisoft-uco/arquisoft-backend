@@ -1,19 +1,17 @@
 package com.arquisoft.fichas.application.fichaperfil.command;
 
-import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.EstudiantesFichaValidator;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
-import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
-import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
+import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -32,7 +30,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doThrow;
@@ -41,6 +38,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+/**
+ * El orden entre las reglas de negocio se prueba en RegistrarFichaPerfilValidatorTest:
+ * aqui solo se comprueba que el caso de uso valida antes de persistir y que propaga
+ * lo que lance el validador.
+ */
 @ExtendWith(MockitoExtension.class)
 class RegistrarFichaPerfilUseCaseTest {
 
@@ -51,16 +53,10 @@ class RegistrarFichaPerfilUseCaseTest {
     private EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
 
     @Mock
-    private EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
-
-    @Mock
     private EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
 
     @Mock
-    private FichaPerfilValidator fichaPerfilValidator;
-
-    @Mock
-    private EstudiantesFichaValidator estudiantesFichaValidator;
+    private RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
@@ -82,11 +78,38 @@ class RegistrarFichaPerfilUseCaseTest {
     }
 
     @Test
+    void debeGuardarEstadoInicial_cuandoValidacionesExitosas() {
+        // Arrange
+        RegistrarFichaPerfilCommand command = comandoSinEstudiantes("Título válido");
+
+        // Act
+        registrarFichaPerfilUseCase.ejecutar(command);
+
+        // Assert
+        verify(fichaPerfilOutputPort, times(1)).guardar(any(FichaPerfilAggregate.class));
+        verify(estadoFichaPerfilOutputPort, times(1)).guardar(any());
+    }
+
+    @Test
+    void debeValidarAntesDePersistir_cuandoSeEjecuta() {
+        // Arrange
+        RegistrarFichaPerfilCommand command = comandoConEstudiantes(List.of(UUID.randomUUID()));
+
+        // Act
+        registrarFichaPerfilUseCase.ejecutar(command);
+
+        // Assert
+        InOrder inOrder = inOrder(registrarFichaPerfilValidator, fichaPerfilOutputPort);
+        inOrder.verify(registrarFichaPerfilValidator).validar(any(), anyList(), anyList());
+        inOrder.verify(fichaPerfilOutputPort).guardar(any(FichaPerfilAggregate.class));
+    }
+
+    @Test
     void debeLanzarExcepcion_cuandoAsesorNoExiste() {
         // Arrange
         RegistrarFichaPerfilCommand command = comandoSinEstudiantes("Título de prueba");
         doThrow(new AsesorFichaNoEncontradoException(command.asesorFicha()))
-                .when(fichaPerfilValidator).validarAsesorExiste(command.asesorFicha());
+                .when(registrarFichaPerfilValidator).validar(any(), any(), anyList());
 
         // Act & Assert
         assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
@@ -101,7 +124,7 @@ class RegistrarFichaPerfilUseCaseTest {
         String titulo = "Título duplicado";
         RegistrarFichaPerfilCommand command = comandoSinEstudiantes(titulo);
         doThrow(new FichaTituloDuplicadoException(titulo))
-                .when(fichaPerfilValidator).validarTituloUnico(titulo);
+                .when(registrarFichaPerfilValidator).validar(any(), any(), anyList());
 
         // Act & Assert
         assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
@@ -111,16 +134,64 @@ class RegistrarFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debeGuardarEstadoInicial_cuandoValidacionesExitosas() {
+    void debeLanzarEstudianteNoEncontrado_cuandoUUIDNoExiste() {
         // Arrange
-        RegistrarFichaPerfilCommand command = comandoSinEstudiantes("Título válido");
+        UUID estudianteId = UUID.randomUUID();
+        RegistrarFichaPerfilCommand command = comandoConEstudiantes(List.of(estudianteId));
+        doThrow(new EstudianteNoEncontradoException(estudianteId))
+                .when(registrarFichaPerfilValidator).validar(any(), anyList(), anyList());
 
-        // Act
-        registrarFichaPerfilUseCase.ejecutar(command);
+        // Act & Assert
+        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
+                .isInstanceOf(EstudianteNoEncontradoException.class);
 
-        // Assert
-        verify(fichaPerfilOutputPort, times(1)).guardar(any(FichaPerfilAggregate.class));
-        verify(estadoFichaPerfilOutputPort, times(1)).guardar(any());
+        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeLanzarEstudianteDuplicado_cuandoUUIDRepetidoEnLista() {
+        // Arrange
+        UUID estudianteId = UUID.randomUUID();
+        RegistrarFichaPerfilCommand command = comandoConEstudiantes(List.of(estudianteId, estudianteId));
+        doThrow(new EstudianteDuplicadoException(estudianteId))
+                .when(registrarFichaPerfilValidator).validar(any(), anyList(), anyList());
+
+        // Act & Assert
+        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
+                .isInstanceOf(EstudianteDuplicadoException.class);
+
+        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debePropagarLimiteExcedido_cuandoElValidadorFalla() {
+        // Arrange
+        RegistrarFichaPerfilCommand command = comandoConEstudiantes(Arrays.asList(
+                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
+        doThrow(limiteExcedido())
+                .when(registrarFichaPerfilValidator).validar(any(), anyList(), anyList());
+
+        // Act & Assert
+        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
+                .isInstanceOf(CupoEstudiantesExcedidoException.class)
+                .hasMessage(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
+                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX));
+
+        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeConstruirAgregadoAntesDeValidar_cuandoTituloEsInvalido() {
+        // Arrange
+        RegistrarFichaPerfilCommand command = comandoSinEstudiantes("   ");
+
+        // Act & Assert
+        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
+                .isInstanceOf(DomainValidationException.class);
+
+        verify(registrarFichaPerfilValidator, never()).validar(any(), any(), anyList());
+        verify(fichaPerfilOutputPort, never()).guardar(any());
     }
 
     @Test
@@ -186,120 +257,6 @@ class RegistrarFichaPerfilUseCaseTest {
         // Assert
         assertThat(resultado).isNotNull();
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
-    }
-
-    @Test
-    void debePropagarLimiteExcedido_cuandoLaReglaDeCupoFalla() {
-        // Arrange
-        RegistrarFichaPerfilCommand command = comandoConEstudiantes(Arrays.asList(
-                UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
-
-        doThrow(limiteExcedido()).when(estudianteFichaPerfilCupoDisponibleRule).validar(anyList());
-
-        // Act
-        Throwable ex = catchThrowable(() -> registrarFichaPerfilUseCase.ejecutar(command));
-
-        // Assert
-        assertThat(ex)
-                .isInstanceOf(CupoEstudiantesExcedidoException.class)
-                .hasMessageContaining(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
-                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX
-                ));
-        assertThat(((CupoEstudiantesExcedidoException) ex).getErrorCode())
-                .isEqualTo(FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO);
-        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
-    }
-
-    @Test
-    void debeLanzarEstudianteNoEncontrado_cuandoUUIDNoExiste() {
-        // Arrange
-        UUID estudianteId = UUID.randomUUID();
-        RegistrarFichaPerfilCommand command = comandoConEstudiantes(List.of(estudianteId));
-        doThrow(new EstudianteNoEncontradoException(estudianteId))
-                .when(estudiantesFichaValidator).validarExistencia(anyList());
-
-        // Act & Assert
-        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
-                .isInstanceOf(EstudianteNoEncontradoException.class);
-
-        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
-    }
-
-    @Test
-    void debeConstruirAgregadoAntesDeConsultarLaBaseDeDatos_cuandoTituloEsInvalido() {
-        // Arrange
-        RegistrarFichaPerfilCommand command = comandoSinEstudiantes("   ");
-
-        // Act & Assert
-        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
-                .isInstanceOf(DomainValidationException.class);
-
-        verify(estudiantesFichaValidator, never()).validarSinDuplicados(anyList());
-        verify(fichaPerfilValidator, never()).validarAsesorExiste(any());
-        verify(fichaPerfilValidator, never()).validarTituloUnico(any());
-        verify(estudiantesFichaValidator, never()).validarExistencia(anyList());
-        verify(fichaPerfilOutputPort, never()).guardar(any());
-    }
-
-    @Test
-    void debeConsultarUnicidadConElTituloNormalizado_cuandoTituloTieneEspacios() {
-        // Arrange
-        RegistrarFichaPerfilCommand command = comandoSinEstudiantes("  Título de prueba  ");
-
-        // Act
-        registrarFichaPerfilUseCase.ejecutar(command);
-
-        // Assert
-        verify(fichaPerfilValidator).validarTituloUnico("Título de prueba");
-    }
-
-    @Test
-    void debeValidarCupoDespuesDeLaExistencia_cuandoHayEstudiantes() {
-        // Arrange
-        RegistrarFichaPerfilCommand command = comandoConEstudiantes(List.of(UUID.randomUUID()));
-
-        // Act
-        registrarFichaPerfilUseCase.ejecutar(command);
-
-        // Assert
-        InOrder inOrder = inOrder(estudiantesFichaValidator, estudianteFichaPerfilCupoDisponibleRule);
-        inOrder.verify(estudiantesFichaValidator).validarExistencia(anyList());
-        inOrder.verify(estudianteFichaPerfilCupoDisponibleRule).validar(anyList());
-    }
-
-    @Test
-    void debeValidarDuplicadosAntesDeConsultarLaBaseDeDatos_cuandoUUIDRepetidoEnLista() {
-        UUID estudianteId = UUID.randomUUID();
-        RegistrarFichaPerfilCommand command = comandoConEstudiantes(
-                Arrays.asList(estudianteId, estudianteId));
-        doThrow(new EstudianteDuplicadoException(estudianteId))
-                .when(estudiantesFichaValidator).validarSinDuplicados(anyList());
-
-        // Act & Assert
-        assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
-                .isInstanceOf(EstudianteDuplicadoException.class);
-
-        verify(fichaPerfilValidator, never()).validarAsesorExiste(any());
-        verify(fichaPerfilValidator, never()).validarTituloUnico(any());
-        verify(estudiantesFichaValidator, never()).validarExistencia(anyList());
-        verify(fichaPerfilOutputPort, never()).guardar(any());
-        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
-    }
-
-    @Test
-    void debeValidarIntegridadAntesQueExistencia_cuandoHayEstudiantes() {
-        // Arrange
-        RegistrarFichaPerfilCommand command = comandoConEstudiantes(List.of(UUID.randomUUID()));
-
-        // Act
-        registrarFichaPerfilUseCase.ejecutar(command);
-
-        // Assert
-        InOrder inOrder = inOrder(estudiantesFichaValidator, fichaPerfilValidator);
-        inOrder.verify(estudiantesFichaValidator).validarSinDuplicados(anyList());
-        inOrder.verify(fichaPerfilValidator).validarAsesorExiste(any());
-        inOrder.verify(fichaPerfilValidator).validarTituloUnico(any());
-        inOrder.verify(estudiantesFichaValidator).validarExistencia(anyList());
     }
 
     @Test

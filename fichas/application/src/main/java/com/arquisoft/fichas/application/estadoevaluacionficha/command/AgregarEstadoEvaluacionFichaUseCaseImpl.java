@@ -2,8 +2,7 @@ package com.arquisoft.fichas.application.estadoevaluacionficha.command;
 
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.port.in.AgregarEstadoEvaluacionFichaUseCase;
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.EstadoEvaluacionFichaValidator;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.query.criteria.PropietarioEvaluacionCriteria;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
@@ -19,20 +18,18 @@ import java.util.UUID;
 public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEvaluacionFichaUseCase {
 
     private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
-    private final EstadoEvaluacionFichaValidator estadoEvaluacionFichaValidator;
+    private final AgregarEstadoEvaluacionFichaValidator agregarEstadoEvaluacionFichaValidator;
     private final AppLogger logger;
 
     @Override
     public UUID ejecutar(AgregarEstadoEvaluacionFichaCommand entrada) {
         EstadoEvaluacion nuevoEstado =
-                estadoEvaluacionFichaValidator.resolverEstado(entrada.estadoEvaluacion());
+                agregarEstadoEvaluacionFichaValidator.resolverEstado(entrada.estadoEvaluacion());
 
-        estadoEvaluacionFichaValidator.validarEvaluacionExiste(entrada.evaluacionFichaPerfil());
-        estadoEvaluacionFichaValidator.validarRepresentantePropietario(
-                new PropietarioEvaluacionCriteria(
-                        entrada.evaluacionFichaPerfil(), entrada.representanteComite()));
-        estadoEvaluacionFichaValidator.validarEstadoNoDuplicado(
-                entrada.evaluacionFichaPerfil(), entrada.estadoEvaluacion());
+        agregarEstadoEvaluacionFichaValidator.validar(
+                entrada.evaluacionFichaPerfil(),
+                entrada.representanteComite(),
+                entrada.estadoEvaluacion());
 
         var estadoEvaluacion = EstadoEvaluacionFichaAggregate.crearConEstado(
                 entrada.evaluacionFichaPerfil(),
@@ -52,7 +49,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
 
     private EstadoEvaluacion obtenerUltimoEstado(UUID evaluacionFichaPerfil) {
         return estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionFichaPerfil)
-                .map(estadoEvaluacionFichaValidator::resolverEstado)
+                .map(agregarEstadoEvaluacionFichaValidator::resolverEstado)
                 .orElse(null);
     }
 }

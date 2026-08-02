@@ -2,6 +2,7 @@ package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
 
@@ -54,6 +55,11 @@ class FichaPerfilExisteRuleImplTest {
 
         @Override
         public boolean existePorTituloProyecto(String titulo) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean esEstudiantePropietario(PropietarioFichaCriteria criteria) {
             throw new UnsupportedOperationException();
         }
     }

@@ -2,6 +2,8 @@ package com.arquisoft.fichas.domain.fichaperfil.port.out;
 
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 
+import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,4 +16,6 @@ public interface FichaPerfilOutputPort {
     boolean existePorId(UUID id);
 
     boolean existePorTituloProyecto(String titulo);
+
+    boolean esEstudiantePropietario(PropietarioFichaCriteria criteria);
 }

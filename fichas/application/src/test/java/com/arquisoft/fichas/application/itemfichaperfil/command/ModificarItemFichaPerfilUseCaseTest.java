@@ -3,8 +3,8 @@ package com.arquisoft.fichas.application.itemfichaperfil.command;
 import com.arquisoft.fichas.application.estadofichaperfil.query.port.out.EstadoFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
-import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ItemFichaPerfilValidator;
-import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaNoPropiaException;
+import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ModificarItemFichaPerfilValidator;
+import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemNoEncontradoException;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
@@ -41,7 +41,7 @@ class ModificarItemFichaPerfilUseCaseTest {
     private EstadoFichaPerfilQueryOutputPort estadoFichaPerfilQueryOutputPort;
 
     @Mock
-    private ItemFichaPerfilValidator itemFichaPerfilValidator;
+    private ModificarItemFichaPerfilValidator modificarItemFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
@@ -67,7 +67,7 @@ class ModificarItemFichaPerfilUseCaseTest {
 
         // Assert
         verify(itemFichaPerfilOutputPort, times(1)).buscarPorId(itemId);
-        verify(itemFichaPerfilValidator, times(1)).validarFichaPropia(fichaPerfilId, estudianteId);
+        verify(modificarItemFichaPerfilValidator, times(1)).validar(any(), any());
         verify(itemFichaPerfilOutputPort, times(1)).guardar(item);
     }
 
@@ -83,7 +83,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(ItemNoEncontradoException.class);
 
-        verify(itemFichaPerfilValidator, never()).validarFichaPropia(any(), any());
+        verify(modificarItemFichaPerfilValidator, never()).validar(any(), any());
         verify(itemFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -98,7 +98,7 @@ class ModificarItemFichaPerfilUseCaseTest {
 
         when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
         doThrow(new ItemFichaNoPropiaException(fichaPerfilId))
-                .when(itemFichaPerfilValidator).validarFichaPropia(fichaPerfilId, estudianteId);
+                .when(modificarItemFichaPerfilValidator).validar(any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))

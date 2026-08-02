@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.CambiarAsesorFichaInteractor;
-import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;

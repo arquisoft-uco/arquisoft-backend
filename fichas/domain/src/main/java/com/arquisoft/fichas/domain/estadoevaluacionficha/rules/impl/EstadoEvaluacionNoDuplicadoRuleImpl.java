@@ -1,0 +1,24 @@
+package com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl;
+
+import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.model.EstadoEvaluacionCriteria;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionNoDuplicadoRule;
+
+public class EstadoEvaluacionNoDuplicadoRuleImpl implements EstadoEvaluacionNoDuplicadoRule {
+
+    private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
+
+    public EstadoEvaluacionNoDuplicadoRuleImpl(EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort) {
+        this.estadoEvaluacionFichaOutputPort = estadoEvaluacionFichaOutputPort;
+    }
+
+    @Override
+    public void validar(EstadoEvaluacionCriteria criteria) {
+        if (estadoEvaluacionFichaOutputPort.existePorEvaluacionYEstado(
+                criteria.evaluacionFichaPerfil(), criteria.estadoEvaluacion())) {
+            throw new EstadoEvaluacionDuplicadoException(
+                    criteria.evaluacionFichaPerfil(), criteria.estadoEvaluacion());
+        }
+    }
+}

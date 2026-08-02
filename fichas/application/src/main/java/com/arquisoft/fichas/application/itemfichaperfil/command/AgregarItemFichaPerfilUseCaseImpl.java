@@ -1,9 +1,8 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command;
 
-import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.AgregarItemFichaPerfilUseCase;
-import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ItemFichaPerfilValidator;
+import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
@@ -18,8 +17,7 @@ import java.util.UUID;
 public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfilUseCase {
 
     private final ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
-    private final FichaPerfilValidator fichaPerfilValidator;
-    private final ItemFichaPerfilValidator itemFichaPerfilValidator;
+    private final AgregarItemFichaPerfilValidator agregarItemFichaPerfilValidator;
     private final AppLogger logger;
 
     @Override
@@ -30,9 +28,7 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
                 entrada.contenido()
         );
 
-        fichaPerfilValidator.validarFichaExiste(item.getFichaPerfilId());
-        itemFichaPerfilValidator.validarFichaPropia(item.getFichaPerfilId(), entrada.estudiante());
-        itemFichaPerfilValidator.validarTipoNoDuplicado(item.getFichaPerfilId(), item.getTipoItem().getId());
+        agregarItemFichaPerfilValidator.validar(item, entrada.estudiante());
 
         itemFichaPerfilOutputPort.guardar(item);
 

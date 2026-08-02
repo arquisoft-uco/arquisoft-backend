@@ -2,8 +2,8 @@ package com.arquisoft.fichas.application.fichaperfil.command;
 
 import com.arquisoft.fichas.application.estadofichaperfil.query.port.out.EstadoFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
-import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
-import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
+import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
+import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
@@ -39,7 +39,7 @@ class CambiarAsesorFichaUseCaseTest {
     private EstadoFichaPerfilQueryOutputPort estadoFichaPerfilQueryOutputPort;
 
     @Mock
-    private FichaPerfilValidator fichaPerfilValidator;
+    private CambiarAsesorFichaValidator cambiarAsesorFichaValidator;
 
     @Mock
     private AppLogger logger;
@@ -94,7 +94,7 @@ class CambiarAsesorFichaUseCaseTest {
 
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
         doThrow(new AsesorFichaNoEncontradoException(nuevoAsesorId))
-                .when(fichaPerfilValidator).validarAsesorExiste(nuevoAsesorId);
+                .when(cambiarAsesorFichaValidator).validar(any());
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(command))

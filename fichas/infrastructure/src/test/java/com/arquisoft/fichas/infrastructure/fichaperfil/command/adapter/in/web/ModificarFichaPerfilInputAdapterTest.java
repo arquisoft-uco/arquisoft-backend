@@ -2,8 +2,8 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.ModificarFichaPerfilInteractor;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoEncontradaException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoPropietarioException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
