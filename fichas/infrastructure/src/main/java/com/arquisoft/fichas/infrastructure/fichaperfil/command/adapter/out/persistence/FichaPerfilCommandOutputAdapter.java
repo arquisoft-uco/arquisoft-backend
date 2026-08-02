@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.persistence;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
@@ -8,7 +10,6 @@ import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRe
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,13 +25,14 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     private final AsesorFichaRepository asesorFichaRepository;
     private final EstudianteFichaPerfilRepository estudianteFichaPerfilRepository;
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     @Override
     public void guardar(FichaPerfilAggregate ficha) {
         AsesorFichaEntity asesorRef =
                 asesorFichaRepository.getReferenceById(ficha.getAsesorFichaId());
         fichaPerfilRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));
-        logger.debug(FichasMessages.FichaPerfil.LOG_GUARDADA, ficha.getId());
+        logger.debug(catalog.obtener(FichasKeys.FichaPerfil.LOG_GUARDADA), ficha.getId());
     }
 
     @Override

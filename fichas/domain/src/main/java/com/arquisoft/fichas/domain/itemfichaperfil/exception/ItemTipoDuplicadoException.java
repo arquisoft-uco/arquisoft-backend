@@ -1,14 +1,16 @@
 package com.arquisoft.fichas.domain.itemfichaperfil.exception;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.shared.exception.ApplicationException;
-import com.arquisoft.shared.message.FichasMessages;
 
 public final class ItemTipoDuplicadoException extends ApplicationException {
 
     public ItemTipoDuplicadoException(String tipoItem) {
         super(
-                FichasMessages.ItemFichaPerfil.TIPO_ITEM_DUPLICADO_MSG.formatted(tipoItem),
-                FichasMessages.ItemFichaPerfil.ITEM_TIPO_DUPLICADO
+                Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_TIPO_DUPLICADO, tipoItem),
+                FichasCodes.ItemFichaPerfil.ITEM_TIPO_DUPLICADO
         );
     }
 }

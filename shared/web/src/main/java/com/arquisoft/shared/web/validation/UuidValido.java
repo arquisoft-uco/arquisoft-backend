@@ -1,6 +1,6 @@
 package com.arquisoft.shared.web.validation;
 
-import com.arquisoft.shared.message.AppMessages;
+import com.arquisoft.shared.message.ValidationKeys;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UuidValido {
 
-    String message() default AppMessages.Http.UUID_FORMATO_INVALIDO_MSG;
+    String message() default ValidationKeys.Http.UUID_INVALIDO;
 
     Class<?>[] groups() default {};
 

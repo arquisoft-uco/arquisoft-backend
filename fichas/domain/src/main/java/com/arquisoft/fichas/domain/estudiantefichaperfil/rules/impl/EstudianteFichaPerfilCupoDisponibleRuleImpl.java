@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
+import com.arquisoft.shared.message.FichasLimits;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
-import com.arquisoft.shared.message.FichasMessages;
 
 import java.util.List;
 
@@ -22,8 +22,8 @@ public class EstudianteFichaPerfilCupoDisponibleRuleImpl implements EstudianteFi
         long existentes = estudianteFichaPerfilOutputPort
                 .contarPorFichaPerfilId(nuevasRelaciones.getFirst().getFichaPerfilId());
 
-        if (existentes + nuevasRelaciones.size() > FichasMessages.FichaPerfil.ESTUDIANTES_MAX) {
-            throw new CupoEstudiantesExcedidoException(FichasMessages.FichaPerfil.ESTUDIANTES_MAX);
+        if (existentes + nuevasRelaciones.size() > FichasLimits.FichaPerfil.ESTUDIANTES_MAX) {
+            throw new CupoEstudiantesExcedidoException(FichasLimits.FichaPerfil.ESTUDIANTES_MAX);
         }
     }
 }

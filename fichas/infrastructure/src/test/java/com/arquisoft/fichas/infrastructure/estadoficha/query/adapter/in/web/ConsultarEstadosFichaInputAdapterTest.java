@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
 import com.arquisoft.fichas.application.estadoficha.query.usecase.ConsultarEstadosFichaUseCase;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -32,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ConsultarEstadosFichaInputAdapter.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class,
+        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         ConsultarEstadosFichaInputAdapterTest.TestSecurityConfig.class})
 class ConsultarEstadosFichaInputAdapterTest {
 

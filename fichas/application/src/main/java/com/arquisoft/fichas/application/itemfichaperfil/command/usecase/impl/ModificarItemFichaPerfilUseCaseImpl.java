@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.estadofichaperfil.query.port.out.EstadoFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.ModificarItemFichaPerfilUseCase;
@@ -8,7 +10,6 @@ import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemNoEncontra
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,7 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
     private final EstadoFichaPerfilQueryOutputPort estadoFichaPerfilQueryOutputPort;
     private final ModificarItemFichaPerfilValidator modificarItemFichaPerfilValidator;
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     @Override
     public void ejecutar(ModificarItemFichaPerfilCommand entrada) {
@@ -35,6 +37,6 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
 
         itemFichaPerfilOutputPort.guardar(item);
 
-        logger.info(FichasMessages.ItemFichaPerfil.LOG_MODIFICADO, entrada.item());
+        logger.info(catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_MODIFICADO), entrada.item());
     }
 }

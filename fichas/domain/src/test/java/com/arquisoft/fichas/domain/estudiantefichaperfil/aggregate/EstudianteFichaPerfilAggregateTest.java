@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate;
 
+import com.arquisoft.shared.message.FichasCodes;
 import com.arquisoft.shared.exception.DomainValidationException;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -101,7 +101,7 @@ class EstudianteFichaPerfilAggregateTest {
         assertThat(ex).isInstanceOf(DomainValidationException.class);
         assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
                 .anyMatch(error -> error.codigoError().equals(
-                        FichasMessages.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS));
+                        FichasCodes.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS));
     }
 
     @Test
@@ -112,4 +112,7 @@ class EstudianteFichaPerfilAggregateTest {
         assertThatThrownBy(() -> EstudianteFichaPerfilAggregate.crear(fichaPerfilId, null))
                 .isInstanceOf(DomainValidationException.class);
     }
-}
+
+
+
+}

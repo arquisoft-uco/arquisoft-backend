@@ -1,12 +1,17 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.ValidationKeys;
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.CambiarAsesorFichaInteractor;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -36,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(CambiarAsesorFichaInputAdapter.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class,
+        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         CambiarAsesorFichaInputAdapterTest.TestSecurityConfig.class
 })
 class CambiarAsesorFichaInputAdapterTest {
@@ -105,9 +110,10 @@ class CambiarAsesorFichaInputAdapterTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Error de validación en los datos enviados"))
-                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA))
+                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
                 .andExpect(jsonPath("$.fieldErrors[0].message")
-                        .value(FichasMessages.FichaPerfil.ASESOR_OBLIGATORIO_MSG));
+                        .value(Messages.obtener(
+                                ValidationKeys.sinLlaves(ValidationKeys.FichaPerfil.ASESOR_OBLIGATORIO))));
     }
 
     @Test
@@ -133,7 +139,7 @@ class CambiarAsesorFichaInputAdapterTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.errorCode").value(FichasMessages.FichaPerfil.FICHA_NO_ENCONTRADA));
+                .andExpect(jsonPath("$.errorCode").value(FichasCodes.FichaPerfil.FICHA_NO_ENCONTRADA));
     }
 
     @Test
@@ -159,7 +165,7 @@ class CambiarAsesorFichaInputAdapterTest {
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.errorCode").value(FichasMessages.FichaPerfil.ASESOR_NO_ENCONTRADO));
+                .andExpect(jsonPath("$.errorCode").value(FichasCodes.FichaPerfil.ASESOR_NO_ENCONTRADO));
     }
 
     @Test
@@ -176,9 +182,9 @@ class CambiarAsesorFichaInputAdapterTest {
 
         ValidationResult result = new ValidationResult();
         result.agregarError(
-                FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA,
-                FichasMessages.FichaPerfil.MISMO_ASESOR,
-                FichasMessages.FichaPerfil.MISMO_ASESOR_MSG.formatted(asesorId)
+                FichasFields.FichaPerfil.ASESOR_FICHA,
+                FichasCodes.FichaPerfil.MISMO_ASESOR,
+                Messages.formatear(FichasKeys.FichaPerfil.ERROR_MISMO_ASESOR, asesorId)
         );
 
         doThrow(new DomainValidationException(result))
@@ -193,8 +199,8 @@ class CambiarAsesorFichaInputAdapterTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.errorCode").value("DOMAIN_VALIDATION_ERROR"))
-                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA))
-                .andExpect(jsonPath("$.fieldErrors[0].message").value(FichasMessages.FichaPerfil.MISMO_ASESOR_MSG.formatted(asesorId)));
+                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value(Messages.formatear(FichasKeys.FichaPerfil.ERROR_MISMO_ASESOR, asesorId)));
     }
 
     @Test
@@ -211,9 +217,9 @@ class CambiarAsesorFichaInputAdapterTest {
 
         ValidationResult result = new ValidationResult();
         result.agregarError(
-                FichasMessages.FichaPerfil.CAMPO_ESTADO_FICHA,
-                FichasMessages.FichaPerfil.ESTADO_TERMINAL,
-                FichasMessages.FichaPerfil.ESTADO_TERMINAL_MSG.formatted("APROBADA")
+                FichasFields.FichaPerfil.ESTADO_FICHA,
+                FichasCodes.FichaPerfil.ESTADO_TERMINAL,
+                Messages.formatear(FichasKeys.FichaPerfil.ERROR_ESTADO_TERMINAL, "APROBADA")
         );
 
         doThrow(new DomainValidationException(result))
@@ -228,8 +234,8 @@ class CambiarAsesorFichaInputAdapterTest {
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.errorCode").value("DOMAIN_VALIDATION_ERROR"))
-                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasMessages.FichaPerfil.CAMPO_ESTADO_FICHA))
-                .andExpect(jsonPath("$.fieldErrors[0].message").value(FichasMessages.FichaPerfil.ESTADO_TERMINAL_MSG.formatted("APROBADA")));
+                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ESTADO_FICHA))
+                .andExpect(jsonPath("$.fieldErrors[0].message").value(Messages.formatear(FichasKeys.FichaPerfil.ERROR_ESTADO_TERMINAL, "APROBADA")));
     }
 
     @Test

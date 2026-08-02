@@ -1,13 +1,14 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasApiKeys;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.usecase.ConsultarFichasPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasApiDocs;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
@@ -32,37 +33,38 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = FichasApiDocs.FichaPerfil.TAG_NAME, description = FichasApiDocs.FichaPerfil.TAG_DESCRIPTION)
+@Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
 public class ConsultarFichasPerfilInputAdapter {
 
     private final ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     @PostMapping("/coordinador")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_VIEW)
     @Operation(
-            summary = FichasApiDocs.FichaPerfil.CONSULTAR_SUMMARY,
-            description = FichasApiDocs.FichaPerfil.CONSULTAR_DESCRIPTION,
+            summary = FichasApiKeys.FichaPerfil.CONSULTAR_SUMMARY,
+            description = FichasApiKeys.FichaPerfil.CONSULTAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.OK,
-                    description = FichasApiDocs.FichaPerfil.CONSULTAR_RESP_200,
+                    description = FichasApiKeys.FichaPerfil.CONSULTAR_RESP_200,
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = PageResponseDTO.class))),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
-                    description = FichasApiDocs.FichaPerfil.CONSULTAR_RESP_400,
+                    description = FichasApiKeys.FichaPerfil.CONSULTAR_RESP_400,
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiDocs.Comun.RESP_401),
+                    description = FichasApiKeys.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiDocs.FichaPerfil.CONSULTAR_RESP_403)
+                    description = FichasApiKeys.FichaPerfil.CONSULTAR_RESP_403)
     })
     public ResponseEntity<PageResponseDTO<FichaPerfilReadModel>> consultarFichasCoordinador(
             @RequestBody(required = false) QueryCriteriaRequestDTO request) {
 
         QueryCriteriaRequestDTO solicitud = request != null ? request : new QueryCriteriaRequestDTO();
-        logger.debug(FichasMessages.FichaPerfil.LOG_CONSULTANDO,
+        logger.debug(catalog.obtener(FichasKeys.FichaPerfil.LOG_CONSULTANDO),
                 solicitud.getPagina(), solicitud.getTamanio());
 
         FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()

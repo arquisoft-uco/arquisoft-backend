@@ -1,11 +1,12 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenValidationOutputPort;
-import com.arquisoft.shared.message.SeguridadMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -16,10 +17,11 @@ import org.springframework.stereotype.Component;
 public class ValidateTokenUseCaseImpl implements ValidateTokenUseCase {
 
     private final TokenValidationOutputPort tokenValidationOutputPort;
+    private final MessageCatalog catalog;
 
     @Override
     public ValidacionTokenResult ejecutar(TokenAggregate entrada) {
-        log.debug(SeguridadMessages.Token.VALIDAR_DEBUG);
+        log.debug(catalog.obtener(SeguridadKeys.Token.LOG_VALIDAR_DEBUG));
 
         try {
             if (tokenValidationOutputPort.validarToken(entrada.valor())) {
@@ -29,16 +31,16 @@ public class ValidateTokenUseCaseImpl implements ValidateTokenUseCase {
                         true,
                         identidad.identidadId(),
                         identidad.correo(),
-                        SeguridadMessages.Token.TOKEN_VALIDO
+                        catalog.obtener(SeguridadKeys.Token.LOG_VALIDO)
                 );
             } else {
                 return new ValidacionTokenResult(false, null, null,
-                        SeguridadMessages.Token.TOKEN_INVALIDO);
+                        catalog.obtener(SeguridadKeys.Token.LOG_INVALIDO));
             }
         } catch (Exception e) {
-            log.debug(SeguridadMessages.Token.ERROR_VALIDAR, e.getMessage());
+            log.debug(catalog.obtener(SeguridadKeys.Token.LOG_VALIDACION_FALLIDA), e.getMessage());
             return new ValidacionTokenResult(false, null, null,
-                    SeguridadMessages.Token.ERROR_VALIDAR_PREFIJO + e.getMessage());
+                    catalog.formatear(SeguridadKeys.Token.ERROR_VALIDAR_DETALLE, e.getMessage()));
         }
     }
 }

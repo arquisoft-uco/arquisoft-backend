@@ -1,12 +1,13 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.message.FichasLimits;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.AsignarEstudiantesFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AsignarEstudiantesFichaPerfilInputAdapter.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class,
+        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         AsignarEstudiantesFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class AsignarEstudiantesFichaPerfilInputAdapterTest {
 
@@ -262,7 +263,7 @@ class AsignarEstudiantesFichaPerfilInputAdapterTest {
                 }
                 """, estudiante1, estudiante2);
 
-        var exception = new CupoEstudiantesExcedidoException(FichasMessages.FichaPerfil.ESTUDIANTES_MAX);
+        var exception = new CupoEstudiantesExcedidoException(FichasLimits.FichaPerfil.ESTUDIANTES_MAX);
 
         doThrow(exception).when(asignarEstudiantesFichaPerfilInteractor).ejecutar(any());
 

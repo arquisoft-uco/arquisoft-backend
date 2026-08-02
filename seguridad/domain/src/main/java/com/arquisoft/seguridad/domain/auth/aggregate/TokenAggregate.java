@@ -1,7 +1,9 @@
 package com.arquisoft.seguridad.domain.auth.aggregate;
 
+import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.SeguridadCodes;
+import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.shared.exception.DomainException;
-import com.arquisoft.shared.message.SeguridadMessages;
 
 public final class TokenAggregate {
 
@@ -13,7 +15,7 @@ public final class TokenAggregate {
 
     public static TokenAggregate de(String valor) {
         if (valor == null || valor.isBlank()) {
-            throw new DomainException(SeguridadMessages.Token.VALOR_REQUERIDO_MSG, SeguridadMessages.Token.TOKEN_VALOR_REQUERIDO);
+            throw new DomainException(Messages.obtener(SeguridadKeys.Token.ERROR_VALOR_REQUERIDO), SeguridadCodes.Token.TOKEN_VALOR_REQUERIDO);
         }
         return new TokenAggregate(valor);
     }

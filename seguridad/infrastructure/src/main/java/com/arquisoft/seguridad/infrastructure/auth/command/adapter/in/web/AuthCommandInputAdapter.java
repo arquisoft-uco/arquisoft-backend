@@ -1,5 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.application.auth.command.interactor.AuthenticateUserInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.LogoutInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
@@ -14,7 +16,6 @@ import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.Lo
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LogoutResponseDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.RefreshTokenRequestDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.ValidateTokenResponseDTO;
-import com.arquisoft.shared.message.SeguridadMessages;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -48,6 +49,7 @@ public class AuthCommandInputAdapter {
     private final RefreshTokenInteractor refreshTokenInteractor;
     private final LogoutInteractor logoutInteractor;
     private final ValidateTokenInteractor validateTokenInteractor;
+    private final MessageCatalog catalog;
 
     @Deprecated(since = "OAuth 2.1 / RFC 9700 — usar Authorization Code + PKCE en la SPA")
     @PostMapping("/login")
@@ -102,7 +104,7 @@ public class AuthCommandInputAdapter {
     })
     public ResponseEntity<LoginResponseDTO> refreshToken(
             @Valid @RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
-        log.debug(SeguridadMessages.Token.REFRESH_DEBUG);
+        log.debug(catalog.obtener(SeguridadKeys.Token.LOG_REFRESH_DEBUG));
 
         RefrescoTokenResult result = refreshTokenInteractor.ejecutar(
                 refreshTokenRequest.refreshToken()
@@ -116,7 +118,7 @@ public class AuthCommandInputAdapter {
                 .scope(result.scope())
                 .build();
 
-        log.debug(SeguridadMessages.Autenticacion.REFRESH_EXITOSO_DEBUG);
+        log.debug(catalog.obtener(SeguridadKeys.Autenticacion.LOG_REFRESH_EXITOSO));
         return ResponseEntity.ok(response);
     }
 
@@ -159,7 +161,7 @@ public class AuthCommandInputAdapter {
                     content = @Content(mediaType = "application/json"))
     })
     public ResponseEntity<ValidateTokenResponseDTO> validateToken(@RequestParam String token) {
-        log.debug(SeguridadMessages.Autenticacion.VALIDATE_DEBUG);
+        log.debug(catalog.obtener(SeguridadKeys.Autenticacion.LOG_VALIDATE_DEBUG));
 
         ValidacionTokenResult result = validateTokenInteractor.ejecutar(
                 TokenAggregate.de(token)

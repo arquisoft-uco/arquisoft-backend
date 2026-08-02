@@ -1,5 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
 import com.arquisoft.shared.exception.DomainException;
@@ -7,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -19,7 +22,12 @@ class LogoutUseCaseImplTest {
     @Mock
     private TokenBlacklistOutputPort tokenBlacklistOutputPort;
 
-    @InjectMocks
+        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
+    // resultado, y un mock los dejaria en null.
+    @Spy
+    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+
+@InjectMocks
     private LogoutUseCaseImpl logoutUseCase;
 
     @Test

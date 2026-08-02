@@ -1,12 +1,13 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.AgregarItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
     private final ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
     private final AgregarItemFichaPerfilValidator agregarItemFichaPerfilValidator;
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     @Override
     public UUID ejecutar(AgregarItemFichaPerfilCommand entrada) {
@@ -33,7 +35,7 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
         itemFichaPerfilOutputPort.guardar(item);
 
         logger.info(
-                FichasMessages.ItemFichaPerfil.LOG_AGREGADO,
+                catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_AGREGADO),
                 item.getId(),
                 item.getFichaPerfilId(),
                 item.getTipoItem()

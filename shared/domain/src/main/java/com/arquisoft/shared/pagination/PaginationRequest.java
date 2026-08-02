@@ -1,7 +1,9 @@
 package com.arquisoft.shared.pagination;
 
+import com.arquisoft.shared.message.AppCodes;
+import com.arquisoft.shared.message.AppKeys;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.shared.exception.ApplicationException;
-import com.arquisoft.shared.message.AppMessages;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.util.UtilText;
 
@@ -15,7 +17,7 @@ public final class PaginationRequest {
     private PaginationRequest(int page, int size, String sort, SortDirection direction) {
         if (size <= 0) {
             throw new ApplicationException(
-                    AppMessages.PaginationRequest.MENSAJE_SIZE_MAYOR_CERO, AppMessages.PaginationRequest.SIZE_INVALIDA);
+                    Messages.obtener(AppKeys.Paginacion.SIZE_MAYOR_CERO), AppCodes.Paginacion.SIZE_INVALIDA);
         }
         this.page = Math.max(0, page);
         this.size = size;

@@ -1,8 +1,12 @@
 package com.arquisoft.fichas.domain.itemfichaperfil.aggregate;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.FichasLimits;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
@@ -56,8 +60,8 @@ public final class ItemFichaPerfilAggregate {
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
         if (!DomainValidator.noNulo(fichaPerfilId,
-                FichasMessages.ItemFichaPerfil.CAMPO_FICHA_PERFIL,
-                FichasMessages.ItemFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
+                FichasFields.ItemFichaPerfil.FICHA_PERFIL,
+                FichasCodes.ItemFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;
         }
         this.fichaPerfilId = fichaPerfilId;
@@ -65,30 +69,30 @@ public final class ItemFichaPerfilAggregate {
 
     private void setTipoItem(String tipoItem, ValidationResult result) {
         if (!DomainValidator.noEnBlanco(tipoItem,
-                FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM,
-                FichasMessages.ItemFichaPerfil.TIPO_ITEM_REQUERIDO, result)) {
+                FichasFields.ItemFichaPerfil.TIPO_ITEM,
+                FichasCodes.ItemFichaPerfil.TIPO_ITEM_REQUERIDO, result)) {
             return;
         }
         try {
             this.tipoItem = TipoItem.valueOf(UtilText.applyTrim(tipoItem));
         } catch (IllegalArgumentException e) {
             result.agregarError(
-                    FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM,
-                    FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
-                    FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO_MSG.formatted(tipoItem));
+                    FichasFields.ItemFichaPerfil.TIPO_ITEM,
+                    FichasCodes.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
+                    Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_TIPO_INVALIDO, tipoItem));
         }
     }
 
     private void setContenido(String contenido, ValidationResult result) {
         if (!DomainValidator.noEnBlanco(contenido,
-                FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO,
-                FichasMessages.ItemFichaPerfil.CONTENIDO_REQUERIDO, result)) {
+                FichasFields.ItemFichaPerfil.CONTENIDO,
+                FichasCodes.ItemFichaPerfil.CONTENIDO_REQUERIDO, result)) {
             return;
         }
         if (!DomainValidator.longitudMaxima(contenido,
-                FichasMessages.ItemFichaPerfil.CONTENIDO_MAX,
-                FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO,
-                FichasMessages.ItemFichaPerfil.CONTENIDO_DEMASIADO_LARGO, result)) {
+                FichasLimits.ItemFichaPerfil.CONTENIDO_MAX,
+                FichasFields.ItemFichaPerfil.CONTENIDO,
+                FichasCodes.ItemFichaPerfil.CONTENIDO_DEMASIADO_LARGO, result)) {
             return;
         }
         this.contenido = UtilText.applyTrim(contenido);
@@ -111,24 +115,24 @@ public final class ItemFichaPerfilAggregate {
     public void removerse(long totalRevisiones) {
         var result = new ValidationResult();
         if (totalRevisiones > 0) {
-            result.agregarError(FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES,
-                    FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES,
-                    FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES_MSG.formatted(id));
+            result.agregarError(FichasFields.ItemFichaPerfil.REVISIONES,
+                    FichasCodes.ItemFichaPerfil.ITEM_CON_REVISIONES,
+                    Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_CON_REVISIONES, id));
         }
         result.lanzarSiTieneErrores();
     }
 
     private boolean esFichaModificable(EstadoFicha estadoFichaActual, ValidationResult result) {
         if (!DomainValidator.noNulo(estadoFichaActual,
-                FichasMessages.ItemFichaPerfil.CAMPO_ESTADO_FICHA,
-                FichasMessages.ItemFichaPerfil.ESTADO_FICHA_REQUERIDO, result)) {
+                FichasFields.ItemFichaPerfil.ESTADO_FICHA,
+                FichasCodes.ItemFichaPerfil.ESTADO_FICHA_REQUERIDO, result)) {
             return false;
         }
         if (!estadoFichaActual.permiteModificacion()) {
             result.agregarError(
-                    FichasMessages.ItemFichaPerfil.CAMPO_ESTADO_FICHA,
-                    FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
-                    FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE_MSG
+                    FichasFields.ItemFichaPerfil.ESTADO_FICHA,
+                    FichasCodes.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
+                    Messages.obtener(FichasKeys.ItemFichaPerfil.ERROR_ESTADO_FICHA_NO_MODIFICABLE)
                             .formatted(estadoFichaActual.getNombre()));
             return false;
         }

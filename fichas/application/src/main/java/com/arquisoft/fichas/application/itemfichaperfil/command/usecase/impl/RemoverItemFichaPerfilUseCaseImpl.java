@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.RemoverItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
@@ -7,7 +9,6 @@ import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfi
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +20,7 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
     private final RevisionItemQueryOutputPort revisionQueryPort;
     private final RemoverItemFichaPerfilValidator removerItemFichaPerfilValidator;
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     @Override
     public void ejecutar(RemoverItemFichaPerfilCommand entrada) {
@@ -32,6 +34,6 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
 
         itemOutputPort.eliminarPorId(entrada.item());
 
-        logger.info(FichasMessages.ItemFichaPerfil.LOG_REMOVIDO, entrada.item(), item.getFichaPerfilId());
+        logger.info(catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_REMOVIDO), entrada.item(), item.getFichaPerfilId());
     }
 }

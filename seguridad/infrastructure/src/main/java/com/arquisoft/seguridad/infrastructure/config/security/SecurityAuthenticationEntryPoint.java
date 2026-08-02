@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
-import com.arquisoft.shared.message.SeguridadMessages;
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.SeguridadKeys;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +16,13 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 public class SecurityAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private final HandlerExceptionResolver resolver;
+    private final MessageCatalog catalog;
 
     public SecurityAuthenticationEntryPoint(
-            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+            @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver,
+            MessageCatalog catalog) {
         this.resolver = resolver;
+        this.catalog = catalog;
     }
 
     @Override
@@ -26,7 +30,7 @@ public class SecurityAuthenticationEntryPoint implements AuthenticationEntryPoin
                          HttpServletResponse response,
                          AuthenticationException authException) {
 
-        log.warn(SeguridadMessages.Login.LOG_UNAUTHORIZED, request.getRequestURI(), authException.getMessage());
+        log.warn(catalog.obtener(SeguridadKeys.Login.LOG_UNAUTHORIZED), request.getRequestURI(), authException.getMessage());
         resolver.resolveException(request, response, null, authException);
     }
 }

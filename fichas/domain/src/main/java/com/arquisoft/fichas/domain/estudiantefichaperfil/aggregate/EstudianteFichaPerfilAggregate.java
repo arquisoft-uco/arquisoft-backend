@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate;
 
-import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -41,8 +42,8 @@ public final class EstudianteFichaPerfilAggregate {
         var result = new ValidationResult();
 
         DomainValidator.noVacia(nuevosEstudiantesIds,
-                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTES,
-                FichasMessages.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS, result);
+                FichasFields.EstudianteFichaPerfil.ESTUDIANTES,
+                FichasCodes.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS, result);
 
         result.lanzarSiTieneErrores();
 
@@ -61,8 +62,8 @@ public final class EstudianteFichaPerfilAggregate {
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
         if (!DomainValidator.noNulo(fichaPerfilId,
-                FichasMessages.EstudianteFichaPerfil.CAMPO_FICHA_PERFIL,
-                FichasMessages.EstudianteFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
+                FichasFields.EstudianteFichaPerfil.FICHA_PERFIL,
+                FichasCodes.EstudianteFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;
         }
         this.fichaPerfilId = fichaPerfilId;
@@ -70,8 +71,8 @@ public final class EstudianteFichaPerfilAggregate {
 
     private void setEstudianteId(UUID estudianteId, ValidationResult result) {
         if (!DomainValidator.noNulo(estudianteId,
-                FichasMessages.EstudianteFichaPerfil.CAMPO_ESTUDIANTE,
-                FichasMessages.EstudianteFichaPerfil.ESTUDIANTE_ID_REQUERIDO, result)) {
+                FichasFields.EstudianteFichaPerfil.ESTUDIANTE,
+                FichasCodes.EstudianteFichaPerfil.ESTUDIANTE_ID_REQUERIDO, result)) {
             return;
         }
         this.estudianteId = estudianteId;

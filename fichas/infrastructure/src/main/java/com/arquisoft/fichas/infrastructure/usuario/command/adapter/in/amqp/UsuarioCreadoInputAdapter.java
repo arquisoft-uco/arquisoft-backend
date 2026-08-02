@@ -1,11 +1,12 @@
 package com.arquisoft.fichas.infrastructure.usuario.command.adapter.in.amqp;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
 import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -21,14 +22,17 @@ public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
 
     private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     public UsuarioCreadoInputAdapter(
             RegistrarUsuarioUseCase registrarUsuarioUseCase,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
-            AppLogger logger) {
+            AppLogger logger,
+            MessageCatalog catalog) {
         super(objectMapper);
         this.registrarUsuarioUseCase = registrarUsuarioUseCase;
         this.logger = logger;
+        this.catalog = catalog;
     }
 
     @RabbitListener(queues = FichasUsuariosQueueConfig.USUARIO_CREADO_QUEUE)
@@ -36,7 +40,7 @@ public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
         withCorrelation(message, channel, () -> {
             UsuarioCreadoPayload payload = deserialize(message, UsuarioCreadoPayload.class);
 
-            logger.info(FichasMessages.Usuario.LOG_USUARIO_CREADO_RECIBIDO,
+            logger.info(catalog.obtener(FichasKeys.Usuario.LOG_USUARIO_CREADO_RECIBIDO),
                     payload.usuarioId(), payload.email(), payload.rol());
 
             registrarUsuarioUseCase.ejecutar(new RegistrarUsuarioCommand(

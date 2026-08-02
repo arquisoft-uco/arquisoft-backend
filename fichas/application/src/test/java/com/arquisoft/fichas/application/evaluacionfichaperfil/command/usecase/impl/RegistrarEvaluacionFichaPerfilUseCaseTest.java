@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataAccessException;
 
@@ -43,7 +46,12 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
     @Mock
     private AppLogger logger;
 
-    @InjectMocks
+        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
+    // resultado, y un mock los dejaria en null.
+    @Spy
+    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+
+@InjectMocks
     private RegistrarEvaluacionFichaPerfilUseCaseImpl useCase;
 
     @Test

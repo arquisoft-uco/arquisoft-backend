@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
@@ -10,7 +12,6 @@ import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFich
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.util.UtilCollection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
     private final EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
     private final RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     @Override
     public UUID ejecutar(RegistrarFichaPerfilCommand entrada) {
@@ -45,14 +47,14 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
         asignarEstadoInicial(ficha.getId());
         relaciones.forEach(estudianteFichaPerfilOutputPort::guardar);
 
-        logger.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
+        logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_REGISTRADA), ficha.getId());
         return ficha.getId();
     }
 
     private void asignarEstadoInicial(UUID fichaPerfil) {
         var estadoInicial = EstadoFichaPerfilAggregate.crear(fichaPerfil);
         estadoFichaPerfilOutputPort.guardar(estadoInicial);
-        logger.info(FichasMessages.EstadoFichaPerfil.LOG_CREADO,
+        logger.info(catalog.obtener(FichasKeys.EstadoFichaPerfil.LOG_CREADO),
                 estadoInicial.getId(),
                 estadoInicial.getFichaPerfilId(),
                 estadoInicial.getEstadoFicha().getNombre());

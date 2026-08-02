@@ -1,9 +1,12 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.FichasLimits;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -29,12 +32,12 @@ class EstudianteFichaPerfilCupoDisponibleRuleImplTest {
         // Assert
         assertThat(ex)
                 .isInstanceOf(CupoEstudiantesExcedidoException.class)
-                .hasMessage(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
-                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX
+                .hasMessage(Messages.formatear(FichasKeys.EstudianteFichaPerfil.ERROR_LIMITE_EXCEDIDO, 
+                        FichasLimits.FichaPerfil.ESTUDIANTES_MAX
                 ));
 
         assertThat(((CupoEstudiantesExcedidoException) ex).getErrorCode())
-                .isEqualTo(FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO);
+                .isEqualTo(FichasCodes.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO);
     }
 
     @Test
@@ -43,7 +46,7 @@ class EstudianteFichaPerfilCupoDisponibleRuleImplTest {
         var regla = new EstudianteFichaPerfilCupoDisponibleRuleImpl(portConExistentes(0L));
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(relaciones(FichasMessages.FichaPerfil.ESTUDIANTES_MAX)))
+        assertThatCode(() -> regla.validar(relaciones(FichasLimits.FichaPerfil.ESTUDIANTES_MAX)))
                 .doesNotThrowAnyException();
     }
 

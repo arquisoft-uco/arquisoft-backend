@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.adapter.in.web;
 
+import com.arquisoft.shared.message.FichasApiKeys;
 import com.arquisoft.fichas.application.estadoficha.query.usecase.ConsultarEstadosFichaUseCase;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.message.FichasApiDocs;
 import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -25,7 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = FichasApiDocs.EstadoFicha.TAG_NAME, description = FichasApiDocs.EstadoFicha.TAG_DESCRIPTION)
+@Tag(name = FichasApiKeys.EstadoFicha.TAG_NAME, description = FichasApiKeys.EstadoFicha.TAG_DESCRIPTION)
 public class ConsultarEstadosFichaInputAdapter {
 
     private final ConsultarEstadosFichaUseCase consultarEstadosFichaUseCase;
@@ -33,22 +33,22 @@ public class ConsultarEstadosFichaInputAdapter {
     @GetMapping("/estados-ficha")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_FICHA_VIEW)
     @Operation(
-            summary = FichasApiDocs.EstadoFicha.CONSULTAR_SUMMARY,
-            description = FichasApiDocs.EstadoFicha.CONSULTAR_DESCRIPTION,
+            summary = FichasApiKeys.EstadoFicha.CONSULTAR_SUMMARY,
+            description = FichasApiKeys.EstadoFicha.CONSULTAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.OK,
-                    description = FichasApiDocs.EstadoFicha.CONSULTAR_RESP_200,
+                    description = FichasApiKeys.EstadoFicha.CONSULTAR_RESP_200,
                     content = @Content(
                             mediaType = org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = EstadoFichaReadModel.class)
                     )),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiDocs.EstadoFicha.CONSULTAR_RESP_401,
+                    description = FichasApiKeys.EstadoFicha.CONSULTAR_RESP_401,
                     content = @Content),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiDocs.EstadoFicha.CONSULTAR_RESP_403,
+                    description = FichasApiKeys.EstadoFicha.CONSULTAR_RESP_403,
                     content = @Content)
     })
     public ResponseEntity<List<EstadoFichaReadModel>> consultarEstadosFicha() {

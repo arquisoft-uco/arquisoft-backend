@@ -1,7 +1,9 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.SeguridadCodes;
+import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.infrastructure.config.ratelimit.BucketResolver;
-import com.arquisoft.shared.message.SeguridadMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import tools.jackson.databind.ObjectMapper;
 import io.github.bucket4j.Bucket;
@@ -33,6 +35,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private final BucketResolver bucketResolver;
     private final ObjectMapper objectMapper;
+    private final MessageCatalog catalog;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -78,15 +81,15 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             response.addHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitForRefill));
 
             ErrorResponseDTO body = ErrorResponseDTO.builder()
-                    .error(SeguridadMessages.RateLimit.HTTP_TOO_MANY_REQUESTS)
-                    .errorCode(SeguridadMessages.RateLimit.RATE_LIMIT_EXCEDIDO)
-                    .message(SeguridadMessages.RateLimit.LIMITE_EXCEDIDO_PREFIJO + waitForRefill + SeguridadMessages.RateLimit.LIMITE_EXCEDIDO_SUFIJO)
+                    .error(catalog.obtener(SeguridadKeys.RateLimit.ERROR_HTTP_TOO_MANY_REQUESTS))
+                    .errorCode(SeguridadCodes.RateLimit.RATE_LIMIT_EXCEDIDO)
+                    .message(catalog.formatear(SeguridadKeys.RateLimit.ERROR_LIMITE_EXCEDIDO, waitForRefill))
                     .status(HttpStatus.TOO_MANY_REQUESTS.value())
                     .path(request.getRequestURI())
                     .build();
             objectMapper.writeValue(response.getWriter(), body);
 
-            log.warn(SeguridadMessages.RateLimit.LOG_RATE_LIMIT_EXCEDIDO, clientIp, request.getRequestURI());
+            log.warn(catalog.obtener(SeguridadKeys.RateLimit.LOG_LIMITE_EXCEDIDO), clientIp, request.getRequestURI());
         }
     }
 

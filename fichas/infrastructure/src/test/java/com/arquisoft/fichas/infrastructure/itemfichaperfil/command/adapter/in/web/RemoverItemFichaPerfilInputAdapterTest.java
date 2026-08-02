@@ -1,5 +1,10 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.RemoverItemFichaPerfilInteractor;
@@ -7,7 +12,6 @@ import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfi
 import com.arquisoft.fichas.infrastructure.FichasInfrastructureTestApplication;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -36,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = RemoverItemFichaPerfilInputAdapter.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class,
+        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         RemoverItemFichaPerfilInputAdapterTest.TestSecurityConfig.class,
         FichasInfrastructureTestApplication.class
 })
@@ -90,7 +94,7 @@ class RemoverItemFichaPerfilInputAdapterTest {
                                 .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode").value(FichasMessages.ItemFichaPerfil.ITEM_NO_ENCONTRADO));
+                .andExpect(jsonPath("$.errorCode").value(FichasCodes.ItemFichaPerfil.ITEM_NO_ENCONTRADO));
     }
 
     @Test
@@ -109,7 +113,7 @@ class RemoverItemFichaPerfilInputAdapterTest {
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.errorCode").value(FichasMessages.FichaPerfil.FICHA_NO_PROPIETARIO));
+                .andExpect(jsonPath("$.errorCode").value(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO));
     }
 
     @Test
@@ -118,9 +122,9 @@ class RemoverItemFichaPerfilInputAdapterTest {
         UUID itemId = UUID.randomUUID();
         ValidationResult result = new ValidationResult();
         result.agregarError(
-                FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES,
-                FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES,
-                FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES_MSG.formatted(itemId)
+                FichasFields.ItemFichaPerfil.REVISIONES,
+                FichasCodes.ItemFichaPerfil.ITEM_CON_REVISIONES,
+                Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_CON_REVISIONES, itemId)
         );
 
         doThrow(new DomainValidationException(result))
@@ -133,7 +137,7 @@ class RemoverItemFichaPerfilInputAdapterTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.fieldErrors[0].field")
-                        .value(FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES));
+                        .value(FichasFields.ItemFichaPerfil.REVISIONES));
     }
 
     @Test

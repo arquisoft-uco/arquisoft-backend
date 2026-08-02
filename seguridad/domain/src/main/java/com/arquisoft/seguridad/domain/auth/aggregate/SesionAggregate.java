@@ -1,7 +1,9 @@
 package com.arquisoft.seguridad.domain.auth.aggregate;
 
+import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.SeguridadCodes;
+import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.shared.exception.DomainException;
-import com.arquisoft.shared.message.SeguridadMessages;
 
 public final class SesionAggregate {
 
@@ -15,12 +17,12 @@ public final class SesionAggregate {
 
     public static SesionAggregate cerrar(String identificadorToken, long tiempoVidaRestante) {
         if (identificadorToken == null || identificadorToken.isBlank()) {
-            throw new DomainException(SeguridadMessages.Sesion.IDENTIFICADOR_REQUERIDO_MSG,
-                    SeguridadMessages.Sesion.SESION_IDENTIFICADOR_REQUERIDO);
+            throw new DomainException(Messages.obtener(SeguridadKeys.Sesion.ERROR_IDENTIFICADOR_REQUERIDO),
+                    SeguridadCodes.Sesion.SESION_IDENTIFICADOR_REQUERIDO);
         }
         if (tiempoVidaRestante <= 0) {
-            throw new DomainException(SeguridadMessages.Sesion.TTL_INVALIDO_MSG,
-                    SeguridadMessages.Sesion.SESION_TTL_INVALIDO);
+            throw new DomainException(Messages.obtener(SeguridadKeys.Sesion.ERROR_TTL_INVALIDO),
+                    SeguridadCodes.Sesion.SESION_TTL_INVALIDO);
         }
         return new SesionAggregate(identificadorToken, tiempoVidaRestante);
     }

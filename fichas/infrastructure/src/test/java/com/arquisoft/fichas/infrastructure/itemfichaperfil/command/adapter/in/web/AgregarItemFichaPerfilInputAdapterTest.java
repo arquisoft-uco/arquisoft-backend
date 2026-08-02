@@ -1,11 +1,15 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.AgregarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -34,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AgregarItemFichaPerfilInputAdapter.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class,
+        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         AgregarItemFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class AgregarItemFichaPerfilInputAdapterTest {
 
@@ -154,9 +158,9 @@ class AgregarItemFichaPerfilInputAdapterTest {
     void debe422_cuandoTipoItemInvalido() throws Exception {
         ValidationResult validationResult = new ValidationResult();
         validationResult.agregarError(
-                FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM,
-                FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
-                FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO_MSG.formatted("TIPO_INEXISTENTE")
+                FichasFields.ItemFichaPerfil.TIPO_ITEM,
+                FichasCodes.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
+                Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_TIPO_INVALIDO, "TIPO_INEXISTENTE")
         );
 
         when(agregarItemFichaPerfilInteractor.ejecutar(any()))
@@ -170,6 +174,6 @@ class AgregarItemFichaPerfilInputAdapterTest {
                         .content(BODY_VALIDO))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.fieldErrors[0].field")
-                        .value(FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM));
+                        .value(FichasFields.ItemFichaPerfil.TIPO_ITEM));
     }
 }

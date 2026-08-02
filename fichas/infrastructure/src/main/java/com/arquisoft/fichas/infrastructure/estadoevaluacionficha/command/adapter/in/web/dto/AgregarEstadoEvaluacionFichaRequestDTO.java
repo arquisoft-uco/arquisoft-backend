@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.in.web.dto;
 
+import com.arquisoft.shared.message.FichasLimits;
+import com.arquisoft.shared.message.ValidationKeys;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.validation.UuidValido;
 import jakarta.validation.constraints.NotBlank;
@@ -11,13 +12,13 @@ import java.util.UUID;
 
 public record AgregarEstadoEvaluacionFichaRequestDTO(
 
-        @NotBlank(message = FichasMessages.EstadoEvaluacionFicha.EVALUACION_OBLIGATORIA_MSG)
-        @UuidValido(message = FichasMessages.EstadoEvaluacionFicha.EVALUACION_FORMATO_UUID_MSG)
+        @NotBlank(message = ValidationKeys.EstadoEvaluacionFicha.EVALUACION_OBLIGATORIA)
+        @UuidValido(message = ValidationKeys.EstadoEvaluacionFicha.EVALUACION_UUID)
         String evaluacionFichaPerfil,
 
-        @NotBlank(message = FichasMessages.EstadoEvaluacionFicha.ESTADO_OBLIGATORIO_MSG)
-        @Size(max = FichasMessages.EstadoEvaluacionFicha.ESTADO_MAX,
-                message = FichasMessages.EstadoEvaluacionFicha.ESTADO_MAX_MSG)
+        @NotBlank(message = ValidationKeys.EstadoEvaluacionFicha.ESTADO_OBLIGATORIO)
+        @Size(max = FichasLimits.EstadoEvaluacionFicha.ESTADO_MAX,
+                message = ValidationKeys.EstadoEvaluacionFicha.ESTADO_MAXIMO)
         String estadoEvaluacion) {
 
     public AgregarEstadoEvaluacionFichaCommand toCommand(UUID representanteComite) {

@@ -1,8 +1,9 @@
 package com.arquisoft.fichas.domain.fichaperfil.aggregate;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.shared.exception.DomainValidationException;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -60,7 +61,7 @@ class FichaPerfilAggregateTest {
         // Act & Assert
         assertThatThrownBy(() -> FichaPerfilAggregate.crear(titulo, null))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA);
+                .hasMessageContaining(FichasFields.FichaPerfil.ASESOR_FICHA);
     }
 
     @Test
@@ -156,9 +157,9 @@ class FichaPerfilAggregateTest {
         DomainValidationException domainEx = (DomainValidationException) excepcion;
         assertThat(domainEx.getValidationResult().getErrores()).hasSize(1);
         assertThat(domainEx.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA);
+                .isEqualTo(FichasFields.FichaPerfil.ASESOR_FICHA);
         assertThat(domainEx.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasMessages.FichaPerfil.ASESOR_REQUERIDO);
+                .isEqualTo(FichasCodes.FichaPerfil.ASESOR_REQUERIDO);
     }
 
     @Test
@@ -181,9 +182,9 @@ class FichaPerfilAggregateTest {
         DomainValidationException domainEx = (DomainValidationException) excepcion;
         assertThat(domainEx.getValidationResult().getErrores()).hasSize(1);
         assertThat(domainEx.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasMessages.FichaPerfil.CAMPO_ASESOR_FICHA);
+                .isEqualTo(FichasFields.FichaPerfil.ASESOR_FICHA);
         assertThat(domainEx.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasMessages.FichaPerfil.MISMO_ASESOR);
+                .isEqualTo(FichasCodes.FichaPerfil.MISMO_ASESOR);
         assertThat(domainEx.getValidationResult().getErrores().get(0).mensaje())
                 .contains(asesorActualId.toString());
     }
@@ -209,9 +210,9 @@ class FichaPerfilAggregateTest {
         DomainValidationException domainEx = (DomainValidationException) excepcion;
         assertThat(domainEx.getValidationResult().getErrores()).hasSize(1);
         assertThat(domainEx.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasMessages.FichaPerfil.CAMPO_ESTADO_FICHA);
+                .isEqualTo(FichasFields.FichaPerfil.ESTADO_FICHA);
         assertThat(domainEx.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasMessages.FichaPerfil.ESTADO_TERMINAL);
+                .isEqualTo(FichasCodes.FichaPerfil.ESTADO_TERMINAL);
         assertThat(domainEx.getValidationResult().getErrores().get(0).mensaje())
                 .contains("APROBADA");
     }
@@ -237,9 +238,9 @@ class FichaPerfilAggregateTest {
         DomainValidationException domainEx = (DomainValidationException) excepcion;
         assertThat(domainEx.getValidationResult().getErrores()).hasSize(1);
         assertThat(domainEx.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasMessages.FichaPerfil.CAMPO_ESTADO_FICHA);
+                .isEqualTo(FichasFields.FichaPerfil.ESTADO_FICHA);
         assertThat(domainEx.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasMessages.FichaPerfil.ESTADO_TERMINAL);
+                .isEqualTo(FichasCodes.FichaPerfil.ESTADO_TERMINAL);
         assertThat(domainEx.getValidationResult().getErrores().get(0).mensaje())
                 .contains("APROBADA_CON_OBSERVACIONES");
     }
@@ -265,9 +266,9 @@ class FichaPerfilAggregateTest {
         DomainValidationException domainEx = (DomainValidationException) excepcion;
         assertThat(domainEx.getValidationResult().getErrores()).hasSize(1);
         assertThat(domainEx.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasMessages.FichaPerfil.CAMPO_ESTADO_FICHA);
+                .isEqualTo(FichasFields.FichaPerfil.ESTADO_FICHA);
         assertThat(domainEx.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasMessages.FichaPerfil.ESTADO_TERMINAL);
+                .isEqualTo(FichasCodes.FichaPerfil.ESTADO_TERMINAL);
         assertThat(domainEx.getValidationResult().getErrores().get(0).mensaje())
                 .contains("NO_APROBADA");
     }

@@ -1,7 +1,8 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.UsuariosKeys;
 import com.arquisoft.shared.events.EventPublisher;
-import com.arquisoft.shared.message.UsuariosMessages;
 import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioCommand;
 import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUseCase;
 import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuarioValidator;
@@ -21,6 +22,7 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
     private final UsuarioOutputPort usuarioOutputPort;
     private final CrearUsuarioValidator crearUsuarioValidator;
     private final EventPublisher eventPublisher;
+    private final MessageCatalog catalog;
 
     @Override
     public UUID ejecutar(CrearUsuarioCommand entrada) {
@@ -32,7 +34,7 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
         usuario.drainUnPublishedEvents().forEach(eventPublisher::publish);
 
-        log.info(UsuariosMessages.Usuario.LOG_CREADO, usuario.getId(), entrada.email(), entrada.rol().getCode());
+        log.info(catalog.obtener(UsuariosKeys.Usuario.LOG_CREADO), usuario.getId(), entrada.email(), entrada.rol().getCode());
         return usuario.getId();
     }
 }

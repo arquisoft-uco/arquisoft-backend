@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.ModificarFichaPerfilInteractor;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ModificarFichaPerfilInputAdapter.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class,
+        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         ModificarFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class ModificarFichaPerfilInputAdapterTest {
 

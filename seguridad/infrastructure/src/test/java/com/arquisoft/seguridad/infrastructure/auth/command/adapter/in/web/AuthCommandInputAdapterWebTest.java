@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
 import com.arquisoft.seguridad.application.auth.command.interactor.AuthenticateUserInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.LogoutInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
@@ -42,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = {JwtBlacklistFilter.class, RateLimitingFilter.class}))
-@Import({GlobalAppExceptionHandler.class,
+@Import({GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         AuthCommandInputAdapterWebTest.TestSecurityConfig.class})
 class AuthCommandInputAdapterWebTest {
 

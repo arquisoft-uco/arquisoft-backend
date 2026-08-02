@@ -1,9 +1,10 @@
 package com.arquisoft.fichas.domain.itemfichaperfil.aggregate;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.exception.DomainValidationException;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -53,7 +54,7 @@ class ItemFichaPerfilAggregateTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_FICHA_PERFIL);
+                .hasMessageContaining(FichasFields.ItemFichaPerfil.FICHA_PERFIL);
     }
 
     @Test
@@ -73,7 +74,7 @@ class ItemFichaPerfilAggregateTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_TIPO_ITEM);
+                .hasMessageContaining(FichasFields.ItemFichaPerfil.TIPO_ITEM);
     }
 
     @Test
@@ -93,7 +94,7 @@ class ItemFichaPerfilAggregateTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO);
+                .hasMessageContaining(FichasFields.ItemFichaPerfil.CONTENIDO);
     }
 
     @Test
@@ -113,7 +114,7 @@ class ItemFichaPerfilAggregateTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO);
+                .hasMessageContaining(FichasFields.ItemFichaPerfil.CONTENIDO);
     }
 
     @Test
@@ -133,7 +134,7 @@ class ItemFichaPerfilAggregateTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.TIPO_ITEM_INVALIDO);
+                .hasMessageContaining(FichasCodes.ItemFichaPerfil.TIPO_ITEM_INVALIDO);
     }
 
     @Test
@@ -196,7 +197,7 @@ class ItemFichaPerfilAggregateTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO);
+                .hasMessageContaining(FichasFields.ItemFichaPerfil.CONTENIDO);
     }
 
     @Test
@@ -219,7 +220,7 @@ class ItemFichaPerfilAggregateTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO);
+                .hasMessageContaining(FichasFields.ItemFichaPerfil.CONTENIDO);
     }
 
     @Test
@@ -263,7 +264,7 @@ class ItemFichaPerfilAggregateTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE);
+                .hasMessageContaining(FichasCodes.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE);
         assertThat(aggregate.getContenido()).isEqualTo("Contenido original");
     }
 
@@ -303,7 +304,7 @@ class ItemFichaPerfilAggregateTest {
         // Assert
         assertThat(exception)
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.ItemFichaPerfil.ESTADO_FICHA_REQUERIDO);
+                .hasMessageContaining(FichasCodes.ItemFichaPerfil.ESTADO_FICHA_REQUERIDO);
         assertThat(aggregate.getContenido()).isEqualTo("Contenido original");
     }
 
@@ -328,9 +329,9 @@ class ItemFichaPerfilAggregateTest {
         DomainValidationException validationException = (DomainValidationException) exception;
         assertThat(validationException.getValidationResult().getErrores()).hasSize(1);
         assertThat(validationException.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES);
+                .isEqualTo(FichasFields.ItemFichaPerfil.REVISIONES);
         assertThat(validationException.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES);
+                .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_CON_REVISIONES);
     }
 
     @Test

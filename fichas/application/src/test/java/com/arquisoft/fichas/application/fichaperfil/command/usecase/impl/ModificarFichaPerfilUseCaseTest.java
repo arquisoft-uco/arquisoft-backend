@@ -1,5 +1,8 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.FichasCodes;
 import com.arquisoft.fichas.application.fichaperfil.command.model.ModificarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoEncontradaException;
@@ -9,12 +12,12 @@ import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.BaseException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -43,7 +46,12 @@ class ModificarFichaPerfilUseCaseTest {
     @Mock
     private AppLogger logger;
 
-    @InjectMocks
+        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
+    // resultado, y un mock los dejaria en null.
+    @Spy
+    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+
+@InjectMocks
     private ModificarFichaPerfilUseCaseImpl modificarFichaPerfilUseCase;
 
     private static FichaPerfilAggregate crearFicha(UUID id, String titulo) {
@@ -86,7 +94,7 @@ class ModificarFichaPerfilUseCaseTest {
         // Assert
         assertThat(ex).isInstanceOf(FichaNoPropietarioException.class);
         assertThat(((BaseException) ex).getErrorCode())
-                .isEqualTo(FichasMessages.FichaPerfil.FICHA_NO_PROPIETARIO);
+                .isEqualTo(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO);
         verify(fichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -105,7 +113,7 @@ class ModificarFichaPerfilUseCaseTest {
         // Assert
         assertThat(ex).isInstanceOf(FichaNoEncontradaException.class);
         assertThat(((BaseException) ex).getErrorCode())
-                .isEqualTo(FichasMessages.FichaPerfil.FICHA_NO_ENCONTRADA);
+                .isEqualTo(FichasCodes.FichaPerfil.FICHA_NO_ENCONTRADA);
         verify(fichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -128,7 +136,7 @@ class ModificarFichaPerfilUseCaseTest {
         // Assert
         assertThat(ex).isInstanceOf(FichaTituloDuplicadoException.class);
         assertThat(((BaseException) ex).getErrorCode())
-                .isEqualTo(FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
+                .isEqualTo(FichasCodes.FichaPerfil.FICHA_TITULO_DUPLICADO);
         verify(fichaPerfilOutputPort, never()).guardar(any());
     }
 

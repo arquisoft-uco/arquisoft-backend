@@ -1,10 +1,11 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
 import com.arquisoft.seguridad.domain.auth.port.out.AuthenticationOutputPort;
-import com.arquisoft.shared.message.SeguridadMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -15,14 +16,15 @@ import org.springframework.stereotype.Component;
 public class RefreshTokenUseCaseImpl implements RefreshTokenUseCase {
 
     private final AuthenticationOutputPort authenticationOutputPort;
+    private final MessageCatalog catalog;
 
     @Override
     public RefrescoTokenResult ejecutar(String entrada) {
-        log.debug(SeguridadMessages.Token.REFRESH_DEBUG);
+        log.debug(catalog.obtener(SeguridadKeys.Token.LOG_REFRESH_DEBUG));
 
         CredencialesSesion credenciales = authenticationOutputPort.refrescar(entrada);
 
-        log.info(SeguridadMessages.Token.REFRESH_EXITOSO);
+        log.info(catalog.obtener(SeguridadKeys.Token.LOG_REFRESH_EXITOSO));
 
         return new RefrescoTokenResult(
                 credenciales.tokenAcceso(),

@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.usecase.ConsultarFichasPerfilUseCase;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -31,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ConsultarFichasPerfilInputAdapter.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class,
+        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         ConsultarFichasPerfilInputAdapterTest.TestSecurityConfig.class})
 class ConsultarFichasPerfilInputAdapterTest {
 

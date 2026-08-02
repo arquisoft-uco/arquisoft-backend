@@ -1,11 +1,11 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.message.FichasApiKeys;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.RegistrarFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.RegistrarFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.RegistrarFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.message.FichasApiDocs;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = FichasApiDocs.FichaPerfil.TAG_NAME, description = FichasApiDocs.FichaPerfil.TAG_DESCRIPTION)
+@Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
 public class RegistrarFichaPerfilInputAdapter {
 
     private final RegistrarFichaPerfilInteractor registrarFichaPerfilInteractor;
@@ -38,20 +38,20 @@ public class RegistrarFichaPerfilInputAdapter {
     @PostMapping
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_CREATE)
     @Operation(
-            summary = FichasApiDocs.FichaPerfil.REGISTRAR_SUMMARY,
-            description = FichasApiDocs.FichaPerfil.REGISTRAR_DESCRIPTION,
+            summary = FichasApiKeys.FichaPerfil.REGISTRAR_SUMMARY,
+            description = FichasApiKeys.FichaPerfil.REGISTRAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.CREATED,
-                    description = FichasApiDocs.FichaPerfil.REGISTRAR_RESP_201),
+                    description = FichasApiKeys.FichaPerfil.REGISTRAR_RESP_201),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
-                    description = FichasApiDocs.FichaPerfil.REGISTRAR_RESP_400,
+                    description = FichasApiKeys.FichaPerfil.REGISTRAR_RESP_400,
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiDocs.Comun.RESP_401),
+                    description = FichasApiKeys.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiDocs.Comun.RESP_403)
+                    description = FichasApiKeys.Comun.RESP_403)
     })
     public ResponseEntity<RegistrarFichaPerfilResponseDTO> registrar(
             @Valid @RequestBody RegistrarFichaPerfilRequestDTO request) {

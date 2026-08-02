@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.message.FichasApiKeys;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.ModificarFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.ModificarFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.message.FichasApiDocs;
 import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,7 +28,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = FichasApiDocs.FichaPerfil.TAG_NAME, description = FichasApiDocs.FichaPerfil.TAG_DESCRIPTION)
+@Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
 public class ModificarFichaPerfilInputAdapter {
 
     private final ModificarFichaPerfilInteractor modificarFichaPerfilInteractor;
@@ -36,19 +36,19 @@ public class ModificarFichaPerfilInputAdapter {
     @PatchMapping("/{id}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_UPDATE)
     @Operation(
-            summary = FichasApiDocs.FichaPerfil.MODIFICAR_SUMMARY,
-            description = FichasApiDocs.FichaPerfil.MODIFICAR_DESCRIPTION,
+            summary = FichasApiKeys.FichaPerfil.MODIFICAR_SUMMARY,
+            description = FichasApiKeys.FichaPerfil.MODIFICAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.NO_CONTENT,
-                    description = FichasApiDocs.FichaPerfil.MODIFICAR_RESP_204),
+                    description = FichasApiKeys.FichaPerfil.MODIFICAR_RESP_204),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
-                    description = FichasApiDocs.FichaPerfil.MODIFICAR_RESP_400),
+                    description = FichasApiKeys.FichaPerfil.MODIFICAR_RESP_400),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiDocs.Comun.RESP_401),
+                    description = FichasApiKeys.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiDocs.FichaPerfil.MODIFICAR_RESP_403)
+                    description = FichasApiKeys.FichaPerfil.MODIFICAR_RESP_403)
     })
     public ResponseEntity<Void> modificar(
             @PathVariable UUID id,

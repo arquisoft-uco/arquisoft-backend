@@ -1,5 +1,9 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
@@ -10,11 +14,11 @@ import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutpu
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -44,7 +48,12 @@ class RemoverItemFichaPerfilUseCaseTest {
     @Mock
     private AppLogger logger;
 
-    @InjectMocks
+        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
+    // resultado, y un mock los dejaria en null.
+    @Spy
+    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+
+@InjectMocks
     private RemoverItemFichaPerfilUseCaseImpl useCase;
 
     @Test
@@ -91,7 +100,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         ItemFichaPerfilNoEncontradoException notFoundException =
                 (ItemFichaPerfilNoEncontradoException) exception;
         assertThat(notFoundException.getErrorCode())
-                .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_NO_ENCONTRADO);
+                .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_NO_ENCONTRADO);
 
         verify(removerItemFichaPerfilValidator, never()).validar(any(), any());
         verify(revisionQueryPort, never()).contarPorItem(any());
@@ -120,7 +129,7 @@ class RemoverItemFichaPerfilUseCaseTest {
 
         FichaNoPropietarioException authException = (FichaNoPropietarioException) exception;
         assertThat(authException.getErrorCode())
-                .isEqualTo(FichasMessages.FichaPerfil.FICHA_NO_PROPIETARIO);
+                .isEqualTo(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO);
 
         verify(revisionQueryPort, never()).contarPorItem(any());
         verify(itemOutputPort, never()).eliminarPorId(any());
@@ -148,9 +157,9 @@ class RemoverItemFichaPerfilUseCaseTest {
         DomainValidationException validationException = (DomainValidationException) exception;
         assertThat(validationException.getValidationResult().getErrores()).hasSize(1);
         assertThat(validationException.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasMessages.ItemFichaPerfil.CAMPO_REVISIONES);
+                .isEqualTo(FichasFields.ItemFichaPerfil.REVISIONES);
         assertThat(validationException.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_CON_REVISIONES);
+                .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_CON_REVISIONES);
 
         verify(itemOutputPort, never()).eliminarPorId(any());
     }

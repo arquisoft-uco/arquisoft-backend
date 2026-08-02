@@ -1,12 +1,16 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.ModificarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemNoEncontradoException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -35,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ModificarItemFichaPerfilInputAdapter.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class,
+        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         ModificarItemFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class ModificarItemFichaPerfilInputAdapterTest {
 
@@ -160,8 +164,8 @@ class ModificarItemFichaPerfilInputAdapterTest {
 
         ValidationResult validationResult = new ValidationResult();
         validationResult.agregarError(
-                FichasMessages.ItemFichaPerfil.CAMPO_CONTENIDO,
-                FichasMessages.ItemFichaPerfil.CONTENIDO_REQUERIDO,
+                FichasFields.ItemFichaPerfil.CONTENIDO,
+                FichasCodes.ItemFichaPerfil.CONTENIDO_REQUERIDO,
                 "El contenido es obligatorio"
         );
 
@@ -187,9 +191,9 @@ class ModificarItemFichaPerfilInputAdapterTest {
 
         ValidationResult validationResult = new ValidationResult();
         validationResult.agregarError(
-                FichasMessages.ItemFichaPerfil.CAMPO_ESTADO_FICHA,
-                FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
-                FichasMessages.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE_MSG.formatted("Aprobada")
+                FichasFields.ItemFichaPerfil.ESTADO_FICHA,
+                FichasCodes.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
+                Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_ESTADO_FICHA_NO_MODIFICABLE, "Aprobada")
         );
 
         doThrow(new DomainValidationException(validationResult))

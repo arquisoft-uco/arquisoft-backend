@@ -1,13 +1,15 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.exception;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.shared.exception.DomainException;
-import com.arquisoft.shared.message.FichasMessages;
 
 public class CupoEstudiantesExcedidoException extends DomainException {
 
     public CupoEstudiantesExcedidoException(int maximo) {
         super(
-                FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(maximo),
-                FichasMessages.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO);
+                Messages.formatear(FichasKeys.EstudianteFichaPerfil.ERROR_LIMITE_EXCEDIDO, maximo),
+                FichasCodes.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO);
     }
 }

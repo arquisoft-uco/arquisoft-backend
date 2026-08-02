@@ -1,5 +1,10 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.FichasLimits;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
@@ -15,12 +20,12 @@ import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
@@ -61,7 +66,12 @@ class RegistrarFichaPerfilUseCaseTest {
     @Mock
     private AppLogger logger;
 
-    @InjectMocks
+        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
+    // resultado, y un mock los dejaria en null.
+    @Spy
+    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+
+@InjectMocks
     private RegistrarFichaPerfilUseCaseImpl registrarFichaPerfilUseCase;
 
     @Test
@@ -175,8 +185,8 @@ class RegistrarFichaPerfilUseCaseTest {
         // Act & Assert
         assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(command))
                 .isInstanceOf(CupoEstudiantesExcedidoException.class)
-                .hasMessage(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
-                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX));
+                .hasMessage(Messages.formatear(FichasKeys.EstudianteFichaPerfil.ERROR_LIMITE_EXCEDIDO, 
+                        FichasLimits.FichaPerfil.ESTUDIANTES_MAX));
 
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
     }
@@ -282,6 +292,6 @@ class RegistrarFichaPerfilUseCaseTest {
     }
 
     private static CupoEstudiantesExcedidoException limiteExcedido() {
-        return new CupoEstudiantesExcedidoException(FichasMessages.FichaPerfil.ESTUDIANTES_MAX);
+        return new CupoEstudiantesExcedidoException(FichasLimits.FichaPerfil.ESTUDIANTES_MAX);
     }
 }

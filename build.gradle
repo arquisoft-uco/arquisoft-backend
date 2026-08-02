@@ -77,6 +77,10 @@ dependencies {
     // Logging estructurado (ADR-005): JSON encoder con traceId/userId en MDC via AuditFilter
     implementation project(':shared:logger')
 
+    // Catálogo de mensajes: MessageCatalogConfig lo expone como bean y publica los textos
+    // de OpenAPI en el Environment.
+    implementation project(':shared:message')
+
     // Flyway — version gestionada por el BOM de Spring Boot 4.0.5 (12.4.0).
     // flyway-database-postgresql es necesario en Flyway 11+ para soportar PostgreSQL.
     implementation "org.flywaydb:flyway-core"

@@ -1,17 +1,37 @@
 # shared:message — Catálogo central de mensajes
 
 Módulo Gradle que centraliza **todos los textos del proyecto** (mensajes de error,
-validaciones, logs, códigos de error, nombres de campo, límites de negocio) en un
-único lugar — implementación del patrón **Message Catalog** mediante constantes
-Java type-safe.
+validaciones, logs) en archivos `.properties` resueltos por `ResourceBundle`, más las
+**constantes** que no pueden salir del código (códigos de error, límites, nombres de campo).
 
-Java puro: sin dependencias de Spring, Jakarta, ni ningún framework.
-Cualquier capa (`domain`, `application`, `infrastructure`) de cualquier contexto
-puede importarlo sin violar la regla "domain sin framework".
+Java puro: sin dependencias de Spring, Jakarta, ni ningún framework. Cualquier capa
+(`domain`, `application`, `infrastructure`) de cualquier contexto puede importarlo sin violar
+la regla "domain sin framework".
 
-Se expone transitivamente a través de `shared:domain` (configuración `api` de
-java-library), por lo que todos los módulos del proyecto lo tienen disponible
-sin necesidad de declarar la dependencia explícita.
+Se expone transitivamente a través de `shared:domain` (configuración `api` de java-library),
+por lo que todos los módulos del proyecto lo tienen disponible sin declarar la dependencia.
+
+---
+
+## Por qué el catálogo está partido en dos
+
+El texto vive en `.properties`; el resto vive en constantes Java. La frontera no es de gusto,
+la marca el compilador:
+
+> **JLS §9.7.1** — el valor de un atributo de anotación debe ser una expresión constante.
+
+Un `ResourceBundle` se resuelve en tiempo de ejecución, así que nada que se consuma desde una
+anotación puede salir al bundle. De ahí el reparto:
+
+| Qué | Dónde vive | Por qué |
+|---|---|---|
+| Mensajes de error, logs | `messages/*.properties` | Texto puro, resuelto en runtime |
+| Textos de validación Jakarta | `ValidationMessages.properties` | Los resuelve Hibernate Validator vía `message="{clave}"` |
+| Textos OpenAPI (`@Operation`, `@ApiResponse`) | `messages/fichas-api.properties` | springdoc resuelve `${clave}` contra el `Environment` |
+| Códigos de error (`FICHA_TITULO_DUPLICADO`) | `*Codes.java` | Contrato de la API: viajan en `ErrorResponseDTO.errorCode` y los asientan los tests |
+| Límites (`TITULO_MAX = 100`) | `*Limits.java` | Se usan en `@Size(max = …)` — imposible externalizar |
+| Nombres de campo (`asesorFicha`) | `*Fields.java` | Identifican el campo en `fieldErrors[]`; también se usan en anotaciones |
+| Textos de `@Tag` | `FichasApiKeys.TAG_*` | springdoc **no** resuelve `${…}` en `@Tag` (verificado en 2.8.8) |
 
 ---
 
@@ -21,246 +41,180 @@ sin necesidad de declarar la dependencia explícita.
 shared/message/
 ├── build.gradle
 ├── README.md
-└── src/main/java/com/arquisoft/shared/message/
-    ├── AppMessages.java                    ← Mensajes transversales (DomainValidator, paginación)
-    ├── FichasMessages.java                 ← Bounded context: fichas
-    ├── SeguridadMessages.java              ← Bounded context: seguridad
-    ├── ProyectosMessages.java              ← Bounded context: proyectos
-    ├── ArtefactosMessages.java             ← Bounded context: artefactos
-    ├── RepositorioArtefactosMessages.java  ← Bounded context: repositorio_artefactos
-    ├── EntregablesMessages.java            ← Bounded context: entregables
-    └── EvaluacionesMessages.java           ← Bounded context: evaluaciones
+└── src/main/
+    ├── java/com/arquisoft/shared/message/
+    │   ├── MessageCatalog.java                ← Puerto: obtener / formatear / contiene
+    │   ├── ResourceBundleMessageCatalog.java  ← Implementación sobre ResourceBundle
+    │   ├── Messages.java                      ← Fachada estática (solo para dominio)
+    │   ├── MessageBundles.java                ← Registro de bundles
+    │   ├── AppKeys / FichasKeys / SeguridadKeys / UsuariosKeys
+    │   ├── AppCodes / FichasCodes / SeguridadCodes / UsuariosCodes
+    │   ├── FichasFields, FichasLimits
+    │   ├── ValidationKeys                     ← Referencias "{clave}" para Jakarta
+    │   └── FichasApiKeys                      ← Referencias "${clave}" para springdoc
+    └── resources/
+        ├── ValidationMessages.properties      ← Lo lee Hibernate Validator
+        └── messages/
+            ├── app.properties
+            ├── fichas.properties
+            ├── fichas-api.properties
+            ├── seguridad.properties
+            └── usuarios.properties
 ```
 
-**Una clase por bounded context.** Dentro de cada clase, una `nested static final class`
-por cada aggregate / entidad / agrupador funcional del contexto.
+Granularidad: **un archivo por contexto**, más uno extra cuando el volumen lo justifica
+(`fichas-api`, que no comparte ciclo de vida con los mensajes de negocio de `fichas`).
 
 ---
 
-## Convención de IDs por tipo de constante
+## Esquema de claves
 
-Dentro de cada nested class, las constantes se agrupan en **5 secciones** con
-prefijos consistentes que las hacen identificables a simple vista:
-
-| # | Tipo | Prefijo / Patrón | Tipo Java | Ejemplo |
-|---|---|---|---|---|
-| 1 | **Campos** | `CAMPO_{NOMBRE}` | `String` | `CAMPO_TITULO = "tituloProyecto"` |
-| 2 | **Límites** | `{NOMBRE}_{TIPO}` (sin prefijo) | `int` / `long` | `TITULO_MAX = 100` |
-| 3 | **Códigos de error** | `{ENTIDAD}_{DESCRIPCIÓN}` (UPPER_SNAKE) | `String` | `FICHA_TITULO_REQUERIDO = "FICHA_TITULO_REQUERIDO"` |
-| 4 | **Mensajes de error** | `{DESCRIPCION}_MSG` (sufijo obligatorio) | `String` (con `%s`/`%d`) | `TITULO_DUPLICADO_MSG = "El título ya existe: %s"` |
-| 5 | **Logs** | `LOG_{ACCIÓN}` | `String` (con `{}` SLF4J) | `LOG_REGISTRADA = "Ficha registrada — id={}"` |
-
-### 1. Campos — `CAMPO_*`
-
-Nombre del campo de la entidad, usado para reporting de validación
-(parámetro `fieldName` de `DomainValidator`).
-
-```java
-public static final String CAMPO_TITULO          = "tituloProyecto";
-public static final String CAMPO_ASESOR_FICHA_ID = "asesorFichaId";
+```
+contexto.capa.objeto.tipo.descripcion
 ```
 
-- **Formato:** camelCase del nombre Java del campo.
-- **Valor:** el mismo nombre del campo en la entidad — facilita correlación con DTOs.
-- **No incluye prefijo del contexto** (ya está implícito por la nested class).
+| Segmento | Valores |
+|---|---|
+| `contexto` | `app`, `fichas`, `seguridad`, `usuarios`, … |
+| `capa` | `dominio`, `aplicacion`, `infraestructura` |
+| `objeto` | agregado o componente (`fichaperfil`, `ratelimit`, `validador`) |
+| `tipo` | `error`, `log`, `validacion`, `api` |
+| `descripcion` | kebab-case |
 
-### 2. Límites — sin prefijo
-
-Constantes numéricas de negocio (tamaños máximos, mínimos, umbrales).
-
-```java
-public static final int TITULO_MAX  = 100;
-public static final int NOMBRE_MIN  = 3;
-public static final int RETRY_MAX   = 5;
+```properties
+fichas.dominio.fichaperfil.error.titulo-duplicado=El título ya existe: %s
+fichas.aplicacion.fichaperfil.log.registrada=Ficha de perfil registrada — id={}
 ```
 
-- **Formato:** `{CAMPO}_{TIPO_LIMITE}` en UPPER_SNAKE.
-- **Tipo Java primitivo** (`int`, `long`, `double`) — no `Integer`.
-
-### 3. Códigos de error — `{ENTIDAD}_{DESCRIPCIÓN}`
-
-Identificadores estables, en mayúsculas, consumidos por el cliente para
-disparar lógica condicional (mostrar mensaje localizado, redirigir, etc.).
-Se usan en `ApplicationException.getErrorCode()`, `ValidationResult.addError()`
-y en los `ErrorResponseDTO` de la capa web.
+Las constantes espejan el esquema:
 
 ```java
-public static final String FICHA_TITULO_REQUERIDO       = "FICHA_TITULO_REQUERIDO";
-public static final String FICHA_TITULO_DEMASIADO_LARGO = "FICHA_TITULO_DEMASIADO_LARGO";
-public static final String FICHA_TITULO_DUPLICADO       = "FICHA_TITULO_DUPLICADO";
+FichasKeys.FichaPerfil.ERROR_TITULO_DUPLICADO
+FichasKeys.FichaPerfil.LOG_REGISTRADA
 ```
-
-- **Formato:** `{ENTIDAD}_{CAMPO}_{CONDICION}` en UPPER_SNAKE.
-- **El valor literal es igual al nombre de la constante** — facilita búsqueda global.
-- **Incluye el prefijo del contexto/entidad** (`FICHA_`, `USUARIO_`, etc.) porque
-  estos códigos viajan al cliente y deben ser únicos globalmente.
-
-### 4. Mensajes de error — sufijo `_MSG` obligatorio
-
-Texto humano que ve el usuario final. Usa marcadores `%s` (string) y `%d`
-(entero) para parametrizar mediante `String.formatted(...)`.
-
-```java
-public static final String TITULO_DUPLICADO_MSG = "El título ya existe: %s";
-public static final String LIMITE_EXCEDIDO_MSG  = "El campo '%s' no puede superar %d caracteres.";
-```
-
-- **Formato del nombre:** `{DESCRIPCION}_MSG` en UPPER_SNAKE — el sufijo `_MSG`
-  es **obligatorio** y distingue el mensaje humano de su código de error hermano
-  en la sección 3 (mismo nombre base sin sufijo): código `FICHA_TITULO_DUPLICADO`
-  ↔ mensaje `TITULO_DUPLICADO_MSG`.
-- **Marcadores:** `%s`, `%d`, `%f` (formato de `String.formatted`).
-- **Idioma:** español (cambiar a `.properties` si se necesita i18n a futuro).
-- **Excepciones que NO llevan `_MSG`:** frases técnicas HTTP reason-phrase
-  (`HTTP_401_ERROR = "Unauthorized"`) y fragmentos concatenables terminados en
-  `_PREFIJO`/`_SUFIJO` (`ERROR_REFRESCAR_PREFIJO = "Error al refrescar: "`) —
-  no son mensajes de negocio completos.
-
-### 5. Logs — `LOG_*`
-
-Plantillas de mensajes para `log.info(...)`, `log.warn(...)`, `log.debug(...)`,
-`log.error(...)`. Usan marcadores `{}` del formato SLF4J.
-
-```java
-public static final String LOG_REGISTRADA            = "Ficha de perfil registrada — id={}";
-public static final String LOG_CONSULTA_COMPLETADA   = "Consulta fichas-perfil completada — total={}, pagina={}, tamanio={}";
-public static final String LOG_ORDENAMIENTO_INVALIDO = "Campo de ordenamiento inválido: {}";
-```
-
-- **Formato del nombre:** `LOG_{ACCION}` o `LOG_{ACCION}_{DETALLE}` en UPPER_SNAKE.
-- **Marcadores:** `{}` (formato SLF4J, no `%s`).
-- **Incluyen el nivel implícito por convención:** los `LOG_*` son neutros — el
-  nivel (info/warn/error) lo decide el llamador.
 
 ---
 
-## Plantilla de archivo por contexto
+## Cómo se consume
+
+### Aplicación e infraestructura — inyección
+
+`MessageCatalog` es un bean (`MessageCatalogConfig`, en `shared:web`). Se inyecta por
+constructor como cualquier otro colaborador:
 
 ```java
-package com.arquisoft.shared.message;
+@Component
+@RequiredArgsConstructor
+public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseCase {
 
-public final class FichasMessages {
+    private final FichaPerfilOutputPort fichaPerfilOutputPort;
+    private final AppLogger logger;
+    private final MessageCatalog catalog;
 
-    private FichasMessages() {}
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // FichaPerfil
-    // ─────────────────────────────────────────────────────────────────────────
-
-    public static final class FichaPerfil {
-
-        private FichaPerfil() {}
-
-        // Campos
-        public static final String CAMPO_TITULO = "tituloProyecto";
-
-        // Límites
-        public static final int TITULO_MAX = 100;
-
-        // Códigos de error
-        public static final String FICHA_TITULO_REQUERIDO       = "FICHA_TITULO_REQUERIDO";
-        public static final String FICHA_TITULO_DEMASIADO_LARGO = "FICHA_TITULO_DEMASIADO_LARGO";
-
-        // Mensajes de error
-        public static final String TITULO_DUPLICADO_MSG = "El título ya existe: %s";
-
-        // Logs
-        public static final String LOG_REGISTRADA = "Ficha de perfil registrada — id={}";
+    @Override
+    public UUID ejecutar(RegistrarFichaPerfilCommand command) {
+        // ...
+        logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_REGISTRADA), ficha.getId());
+        return ficha.getId();
     }
 }
 ```
 
-Reglas obligatorias:
+### Dominio — fachada estática
 
-- La clase outer es `public final` con constructor privado vacío.
-- Cada nested class es `public static final` con constructor privado vacío.
-- Todas las constantes son `public static final`.
-- **No se permiten JavaDocs** — los nombres y la convención son autoexplicativos.
-- Las 5 secciones se separan con comentarios `// Campos`, `// Límites`, etc.
-  — solo las secciones que tengan al menos una constante.
-
----
-
-## Uso desde código
-
-### Validación de dominio
+Los agregados, reglas y excepciones se construyen con factorías estáticas y `new`, nunca como
+beans: no hay punto de inyección. Para ese caso existe `Messages`, que delega en la **misma
+instancia** que recibe el resto de capas:
 
 ```java
-DomainValidator.notBlank(titulo,
-        FichasMessages.FichaPerfil.CAMPO_TITULO,
-        FichasMessages.FichaPerfil.FICHA_TITULO_REQUERIDO,
-        result);
+public class TituloDuplicadoException extends DomainException {
 
-DomainValidator.maxLength(titulo,
-        FichasMessages.FichaPerfil.TITULO_MAX,
-        FichasMessages.FichaPerfil.CAMPO_TITULO,
-        FichasMessages.FichaPerfil.FICHA_TITULO_DEMASIADO_LARGO,
-        result);
+    public TituloDuplicadoException(String titulo) {
+        super(Messages.formatear(FichasKeys.FichaPerfil.ERROR_TITULO_DUPLICADO, titulo),
+              FichasCodes.FichaPerfil.FICHA_TITULO_DUPLICADO);
+    }
+}
 ```
 
-### Excepción con mensaje parametrizado
+### DTOs — interpolación nativa de Jakarta
 
 ```java
-throw new FichaTituloDuplicadoException(
-        FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG.formatted(titulo),
-        FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO);
+public record RegistrarFichaPerfilRequestDTO(
+
+        @NotBlank(message = ValidationKeys.FichaPerfil.TITULO_OBLIGATORIO)
+        @Size(max = FichasLimits.FichaPerfil.TITULO_MAX,
+              message = ValidationKeys.FichaPerfil.TITULO_MAXIMO)
+        String tituloProyecto) { }
 ```
 
-### Log SLF4J
+El número del mensaje sale del propio `{max}` de la restricción, así que cambiar
+`FichasLimits.FichaPerfil.TITULO_MAX` actualiza también el texto que ve el usuario.
+
+---
+
+## Detalles del mecanismo
+
+**`obtener` vs `formatear`.** `formatear` sustituye parámetros con la sintaxis de
+`java.util.Formatter` (`%s`, `%d`), **no** la de `MessageFormat`: los textos del proyecto llevan
+comillas simples (`El campo '%s' no puede ser nulo`) que `MessageFormat` interpretaría como
+carácter de escape y eliminaría. Los patrones de log se recuperan con `obtener` y conservan sus
+marcadores `{}` — los sustituye SLF4J, no el catálogo.
+
+**Codificación.** Desde Java 9 `ResourceBundle` lee los `.properties` en UTF-8, así que los
+mensajes conservan tildes y eñes sin secuencias `\uXXXX`. El `@PropertySource` de springdoc sí
+necesita `encoding = "UTF-8"` explícito, porque Spring asume ISO-8859-1.
+
+**Locale.** Se fija `Locale.ROOT` para que la resolución no dependa de la configuración regional
+de la máquina. Añadir traducciones es cuestión de crear `app_en.properties` y pasar otro locale.
+
+**Clave ausente.** Devuelve el marcador `??clave??` en lugar de lanzar: un texto mal referenciado
+degrada el mensaje, no tumba la petición.
+
+---
+
+## Red de seguridad
+
+Externalizar texto cuesta la verificación del compilador: una clave mal escrita ya no rompe el
+build. `MessageCatalogClavesTest` devuelve esa garantía y **falla el build** si:
+
+- una constante de `*Keys` / `ValidationKeys` / `FichasApiKeys` no resuelve a ningún texto;
+- un texto del `.properties` queda huérfano, sin constante que lo referencie.
+
+Ese test es la razón por la que se puede confiar en el catálogo. Si se añade una clave, hay que
+añadir su constante — y al revés.
+
+---
+
+## Añadir un contexto al catálogo
+
+1. Crear `src/main/resources/messages/{contexto}.properties`.
+2. Registrar su base name en `MessageBundles.TODOS`.
+3. Crear `{Contexto}Keys` (claves) y `{Contexto}Codes` (códigos de error).
+4. Añadir la clase de claves a `CLASES_DE_CLAVES` en `MessageCatalogClavesTest`.
+5. Ejecutar `./gradlew :shared:message:test`.
+
+---
+
+## Pruebas
+
+En pruebas unitarias con `@InjectMocks`, usar el catálogo **real**, no un mock: varios mensajes
+acaban en la excepción o en el resultado, y un mock los dejaría en `null`.
 
 ```java
-log.info(FichasMessages.FichaPerfil.LOG_REGISTRADA, ficha.getId());
-log.warn(FichasMessages.FichaPerfil.LOG_ORDENAMIENTO_INVALIDO, campoInvalido);
+@Spy
+private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
 ```
 
----
+En slices `@WebMvcTest` hay que importar el bean, porque `GlobalAppExceptionHandler` lo recibe
+por constructor:
 
-## Cuándo agregar al catálogo
+```java
+@Import({GlobalAppExceptionHandler.class, MessageCatalogConfig.class})
+```
 
-Cualquier string literal que aparezca en código de producción debe vivir aquí
-si entra en alguna de estas categorías:
+Para afirmar sobre un texto de validación Jakarta, resolverlo desde el catálogo en lugar de
+repetirlo:
 
-- Mensaje de excepción (`super(...)` de cualquier `*Exception`).
-- Código de error (`getErrorCode()`, `addError(...)`).
-- Mensaje de validación de dominio (parámetros 2 y 3 de `DomainValidator.*`).
-- Mensaje de log (`log.info`, `log.warn`, `log.error`, `log.debug`).
-- Nombre de campo usado para reporting (parámetro `fieldName`).
-- Límite numérico de negocio que aparece en validaciones.
-
-**No** entran al catálogo:
-
-- Strings técnicos de configuración (nombres de queues, colas, beans, headers HTTP).
-- Constantes propias de un módulo `shared:*` que no representan mensajes
-  (ej: nombres de tipos de eventos AMQP — esos viven en `shared:amqp`).
-- Literales en tests (los tests pueden usar literales o importar del catálogo
-  para evitar duplicación).
-
----
-
-## Agregar una nueva entidad
-
-1. Identificar el bounded context (`fichas`, `seguridad`, etc.).
-2. Abrir `{Contexto}Messages.java`.
-3. Agregar nested class `public static final class {NombreEntidad}` con
-   constructor privado vacío.
-4. Añadir las constantes en el orden de las 5 secciones, separadas por los
-   comentarios `// Campos`, `// Límites`, `// Códigos de error`,
-   `// Mensajes de error`, `// Logs`.
-
----
-
-## Agregar un nuevo bounded context
-
-1. Crear `{Contexto}Messages.java` en `com.arquisoft.shared.message`.
-2. Estructura mínima:
-
-   ```java
-   package com.arquisoft.shared.message;
-
-   public final class {Contexto}Messages {
-
-       private {Contexto}Messages() {}
-   }
-   ```
-3. Agregar nested classes a medida que aparezcan entidades con strings que
-   centralizar.
+```java
+.value(Messages.obtener(ValidationKeys.sinLlaves(ValidationKeys.FichaPerfil.ASESOR_OBLIGATORIO)))
+```

@@ -1,11 +1,12 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.RemoverEstudianteFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.RemoverEstudianteFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final RemoverEstudianteFichaPerfilValidator removerEstudianteFichaPerfilValidator;
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     @Override
     public void ejecutar(RemoverEstudianteFichaPerfilCommand entrada) {
@@ -28,6 +30,6 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
 
         estudianteFichaPerfilOutputPort.eliminar(fichaPerfil, estudiante);
 
-        logger.info(FichasMessages.EstudianteFichaPerfil.LOG_REMOVIDO, fichaPerfil, estudiante);
+        logger.info(catalog.obtener(FichasKeys.EstudianteFichaPerfil.LOG_REMOVIDO), fichaPerfil, estudiante);
     }
 }

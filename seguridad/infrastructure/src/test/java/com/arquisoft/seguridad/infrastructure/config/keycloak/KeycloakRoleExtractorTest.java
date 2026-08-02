@@ -26,7 +26,10 @@ class KeycloakRoleExtractorTest {
         roleExtractor = new KeycloakRoleExtractor();
         // El campo clientId se inyecta normalmente via @Value("${KEYCLOAK_CLIENT_ID}").
         ReflectionTestUtils.setField(roleExtractor, "clientId", CLIENT_ID);
-        converter = new KeycloakJwtConverterConfig(roleExtractor).jwtAuthenticationConverter();
+        converter = new KeycloakJwtConverterConfig(
+                roleExtractor,
+                com.arquisoft.shared.message.ResourceBundleMessageCatalog.porDefecto())
+                .jwtAuthenticationConverter();
     }
 
     private Jwt jwtConRolesDeCliente(List<String> roles) {

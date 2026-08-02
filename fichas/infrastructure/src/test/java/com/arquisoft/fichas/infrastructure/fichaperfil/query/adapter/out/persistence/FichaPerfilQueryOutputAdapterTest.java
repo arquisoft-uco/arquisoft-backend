@@ -39,7 +39,8 @@ class FichaPerfilQueryOutputAdapterTest {
                 fichaPerfilRepository,
                 new FichaPerfilJpaSpecification(),
                 estudianteFichaPerfilRepository,
-                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class)
+                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
+                com.arquisoft.shared.message.ResourceBundleMessageCatalog.porDefecto()
         );
     }
 

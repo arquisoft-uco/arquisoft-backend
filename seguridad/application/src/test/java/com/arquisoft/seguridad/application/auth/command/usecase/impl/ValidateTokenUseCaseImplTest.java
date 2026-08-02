@@ -1,5 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -21,7 +24,12 @@ class ValidateTokenUseCaseImplTest {
     @Mock
     private TokenValidationOutputPort tokenValidationOutputPort;
 
-    @InjectMocks
+        // Catalogo real: el mensaje viaja en ValidacionTokenResult, no solo al log,
+    // y un mock devolveria null.
+    @Spy
+    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+
+@InjectMocks
     private ValidateTokenUseCaseImpl validateTokenUseCase;
 
     @Test

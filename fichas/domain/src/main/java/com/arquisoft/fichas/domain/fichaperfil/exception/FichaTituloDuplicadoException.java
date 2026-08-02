@@ -1,14 +1,16 @@
 package com.arquisoft.fichas.domain.fichaperfil.exception;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.shared.exception.ApplicationException;
-import com.arquisoft.shared.message.FichasMessages;
 
 public final class FichaTituloDuplicadoException extends ApplicationException {
 
     public FichaTituloDuplicadoException(String titulo) {
         super(
-                FichasMessages.FichaPerfil.TITULO_DUPLICADO_MSG.formatted(titulo),
-                FichasMessages.FichaPerfil.FICHA_TITULO_DUPLICADO
+                Messages.formatear(FichasKeys.FichaPerfil.ERROR_TITULO_DUPLICADO, titulo),
+                FichasCodes.FichaPerfil.FICHA_TITULO_DUPLICADO
         );
     }
 }

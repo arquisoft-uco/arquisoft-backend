@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.RegistrarEvaluacionFichaPerfilUseCase;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
@@ -8,7 +10,6 @@ import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluaci
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +23,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
     private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
     private final RegistrarEvaluacionFichaPerfilValidator registrarEvaluacionFichaPerfilValidator;
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     @Override
     public UUID ejecutar(RegistrarEvaluacionFichaPerfilCommand entrada) {
@@ -35,7 +37,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
         asignarEstadoInicialEvaluacion(evaluacion.getId());
 
         logger.info(
-                FichasMessages.EvaluacionFichaPerfil.LOG_REGISTRADA,
+                catalog.obtener(FichasKeys.EvaluacionFichaPerfil.LOG_REGISTRADA),
                 evaluacion.getId(),
                 evaluacion.getRepresentanteComiteId(),
                 evaluacion.getFichaPerfilId());
@@ -47,7 +49,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
         var estadoInicial = EstadoEvaluacionFichaAggregate.crear(evaluacionFichaPerfil);
         estadoEvaluacionFichaOutputPort.guardar(estadoInicial);
         logger.info(
-                FichasMessages.EstadoEvaluacionFicha.LOG_CREADO_AUTOMATICO,
+                catalog.obtener(FichasKeys.EstadoEvaluacionFicha.LOG_CREADO_AUTOMATICO),
                 estadoInicial.getId(),
                 estadoInicial.getEvaluacionFichaPerfilId(),
                 estadoInicial.getEstadoEvaluacion());

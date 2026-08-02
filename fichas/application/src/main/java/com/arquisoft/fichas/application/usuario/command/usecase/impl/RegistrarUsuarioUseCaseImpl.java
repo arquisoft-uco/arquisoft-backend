@@ -1,9 +1,10 @@
 package com.arquisoft.fichas.application.usuario.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
 import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,11 +13,12 @@ import org.springframework.stereotype.Component;
 public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
 
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     @Override
     public void ejecutar(RegistrarUsuarioCommand entrada) {
         // TODO: persistir en tabla espejo fichas_perfil.usuarios_espejo
-        logger.info(FichasMessages.Usuario.LOG_REGISTRADO_ESPEJO_SIMULADO,
+        logger.info(catalog.obtener(FichasKeys.Usuario.LOG_REGISTRADO_ESPEJO_SIMULADO),
                 entrada.usuarioId(), entrada.email(), entrada.rol());
     }
 }

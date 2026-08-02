@@ -35,7 +35,8 @@ class UsuarioCreadoInputAdapterTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         adapter = new UsuarioCreadoInputAdapter(registrarUsuarioUseCase, objectMapper,
-                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class));
+                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
+                com.arquisoft.shared.message.ResourceBundleMessageCatalog.porDefecto());
     }
 
     @Test

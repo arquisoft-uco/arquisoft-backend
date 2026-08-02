@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate;
 
-import com.arquisoft.shared.message.FichasMessages;
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
 import com.arquisoft.shared.util.UtilDate;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
@@ -50,8 +51,8 @@ public final class EvaluacionFichaPerfilAggregate {
     private void setRepresentanteComiteId(UUID representanteComiteId, ValidationResult result) {
         if (!DomainValidator.noNulo(
                 representanteComiteId,
-                FichasMessages.EvaluacionFichaPerfil.CAMPO_REPRESENTANTE_COMITE,
-                FichasMessages.EvaluacionFichaPerfil.REPRESENTANTE_REQUERIDO,
+                FichasFields.EvaluacionFichaPerfil.REPRESENTANTE_COMITE,
+                FichasCodes.EvaluacionFichaPerfil.REPRESENTANTE_REQUERIDO,
                 result)) {
             return;
         }
@@ -61,8 +62,8 @@ public final class EvaluacionFichaPerfilAggregate {
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
         if (!DomainValidator.noNulo(
                 fichaPerfilId,
-                FichasMessages.EvaluacionFichaPerfil.CAMPO_FICHA_PERFIL,
-                FichasMessages.EvaluacionFichaPerfil.FICHA_REQUERIDA,
+                FichasFields.EvaluacionFichaPerfil.FICHA_PERFIL,
+                FichasCodes.EvaluacionFichaPerfil.FICHA_REQUERIDA,
                 result)) {
             return;
         }

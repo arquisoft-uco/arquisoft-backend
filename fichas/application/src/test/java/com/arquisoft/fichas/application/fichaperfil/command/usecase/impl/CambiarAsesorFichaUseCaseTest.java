@@ -1,5 +1,8 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.FichasCodes;
 import com.arquisoft.fichas.application.estadofichaperfil.query.port.out.EstadoFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
@@ -10,12 +13,12 @@ import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
@@ -44,7 +47,12 @@ class CambiarAsesorFichaUseCaseTest {
     @Mock
     private AppLogger logger;
 
-    @InjectMocks
+        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
+    // resultado, y un mock los dejaria en null.
+    @Spy
+    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+
+@InjectMocks
     private CambiarAsesorFichaUseCaseImpl cambiarAsesorFichaUseCase;
 
     @Test
@@ -121,7 +129,7 @@ class CambiarAsesorFichaUseCaseTest {
                 .isInstanceOf(DomainValidationException.class)
                 .extracting(ex -> ((DomainValidationException) ex)
                         .getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasMessages.FichaPerfil.MISMO_ASESOR);
+                .isEqualTo(FichasCodes.FichaPerfil.MISMO_ASESOR);
 
         verify(fichaPerfilOutputPort, never()).guardar(any());
     }
@@ -142,7 +150,7 @@ class CambiarAsesorFichaUseCaseTest {
                 .isInstanceOf(DomainValidationException.class)
                 .extracting(ex -> ((DomainValidationException) ex)
                         .getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasMessages.FichaPerfil.ESTADO_TERMINAL);
+                .isEqualTo(FichasCodes.FichaPerfil.ESTADO_TERMINAL);
 
         verify(fichaPerfilOutputPort, never()).guardar(any());
     }

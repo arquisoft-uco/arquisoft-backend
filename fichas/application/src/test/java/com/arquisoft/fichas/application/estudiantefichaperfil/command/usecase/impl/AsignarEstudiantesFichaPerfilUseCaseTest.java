@@ -1,5 +1,11 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.FichasLimits;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
@@ -8,11 +14,11 @@ import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDup
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -40,7 +46,12 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     @Mock
     private AppLogger logger;
 
-    @InjectMocks
+        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
+    // resultado, y un mock los dejaria en null.
+    @Spy
+    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+
+@InjectMocks
     private AsignarEstudiantesFichaPerfilUseCaseImpl useCase;
 
     @Test
@@ -108,7 +119,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 .isInstanceOf(EstudianteNoEncontradoException.class)
                 .hasMessageContaining(estudiante.toString());
         assertThat(((EstudianteNoEncontradoException) ex).getErrorCode())
-                .isEqualTo(FichasMessages.Estudiante.ESTUDIANTE_NO_ENCONTRADO);
+                .isEqualTo(FichasCodes.Estudiante.ESTUDIANTE_NO_ENCONTRADO);
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -129,7 +140,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 .isInstanceOf(EstudianteDuplicadoException.class)
                 .hasMessageContaining(estudiante.toString());
         assertThat(((EstudianteDuplicadoException) ex).getErrorCode())
-                .isEqualTo(FichasMessages.EstudianteFichaPerfil.ESTUDIANTE_DUPLICADO);
+                .isEqualTo(FichasCodes.EstudianteFichaPerfil.ESTUDIANTE_DUPLICADO);
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
     }
 
@@ -139,7 +150,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         var command = new AsignarEstudiantesFichaPerfilCommand(
                 UUID.randomUUID(), List.of(UUID.randomUUID(), UUID.randomUUID()));
 
-        doThrow(new CupoEstudiantesExcedidoException(FichasMessages.FichaPerfil.ESTUDIANTES_MAX))
+        doThrow(new CupoEstudiantesExcedidoException(FichasLimits.FichaPerfil.ESTUDIANTES_MAX))
                 .when(asignarEstudiantesFichaPerfilValidator).validar(any(), anyList(), anyList());
 
         // Act
@@ -148,8 +159,8 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         // Assert
         assertThat(ex)
                 .isInstanceOf(CupoEstudiantesExcedidoException.class)
-                .hasMessage(FichasMessages.EstudianteFichaPerfil.LIMITE_EXCEDIDO_MSG.formatted(
-                        FichasMessages.FichaPerfil.ESTUDIANTES_MAX));
+                .hasMessage(Messages.formatear(FichasKeys.EstudianteFichaPerfil.ERROR_LIMITE_EXCEDIDO, 
+                        FichasLimits.FichaPerfil.ESTUDIANTES_MAX));
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
     }
 }

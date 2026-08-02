@@ -1,7 +1,9 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.exception;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.shared.exception.ApplicationException;
-import com.arquisoft.shared.message.FichasMessages;
 
 import java.util.UUID;
 
@@ -9,11 +11,11 @@ public final class EstudianteFichaPerfilNoEncontradoException extends Applicatio
 
     public EstudianteFichaPerfilNoEncontradoException(UUID estudianteId, UUID fichaPerfilId) {
         super(
-                FichasMessages.EstudianteFichaPerfil.RELACION_NO_ENCONTRADA_MSG.formatted(
+                Messages.formatear(FichasKeys.EstudianteFichaPerfil.ERROR_RELACION_NO_ENCONTRADA, 
                         estudianteId,
                         fichaPerfilId
                 ),
-                FichasMessages.EstudianteFichaPerfil.ESTUDIANTE_FICHA_PERFIL_NO_ENCONTRADO
+                FichasCodes.EstudianteFichaPerfil.ESTUDIANTE_FICHA_PERFIL_NO_ENCONTRADO
         );
     }
 }

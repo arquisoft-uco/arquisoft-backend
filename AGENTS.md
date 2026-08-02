@@ -58,7 +58,8 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 | Orden de validación | 1) integridad del dato (formato, obligatoriedad, longitud, duplicados en la petición), 2) existencia/unicidad en BD, 3) reglas de negocio del agregado |
 | Identificadores en el body | Se reciben como `String` con `@UuidValido` (`shared:web`) y se convierten a `UUID` en `toCommand()`; nunca tipados `UUID` en el DTO |
 | Nombres del contrato | Objetuales: `asesorFicha`, `estudiantes` — no `asesorFichaId`, `estudiantesIds` |
-| Literales en adapters | `ApiCodes` (códigos HTTP), `FichasApiDocs` (textos Swagger), `FichasAuthorities` (authorities), `FichasRoutes` (rutas) — nada quemado inline |
+| Literales en adapters | `ApiCodes` (códigos HTTP), `FichasApiKeys` (textos Swagger), `FichasAuthorities` (authorities), `FichasRoutes` (rutas) — nada quemado inline |
+| Mensajes y logs | `MessageCatalog` inyectado (dominio: fachada estática `Messages`); textos en `shared:message/resources/messages/*.properties` con clave `contexto.capa.objeto.tipo.descripcion` |
 
 ## Outbox Pattern — Spring Modulith 2.0.0
 

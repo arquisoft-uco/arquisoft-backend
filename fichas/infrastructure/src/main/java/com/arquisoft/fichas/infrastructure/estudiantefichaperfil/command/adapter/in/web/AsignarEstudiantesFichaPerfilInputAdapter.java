@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.message.FichasApiKeys;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.AsignarEstudiantesFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web.dto.AsignarEstudiantesFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.message.FichasApiDocs;
 import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -26,8 +26,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = FichasApiDocs.EstudianteFichaPerfil.TAG_NAME,
-        description = FichasApiDocs.EstudianteFichaPerfil.TAG_DESCRIPTION)
+@Tag(name = FichasApiKeys.EstudianteFichaPerfil.TAG_NAME,
+        description = FichasApiKeys.EstudianteFichaPerfil.TAG_DESCRIPTION)
 public class AsignarEstudiantesFichaPerfilInputAdapter {
 
     private final AsignarEstudiantesFichaPerfilInteractor asignarEstudiantesFichaPerfilInteractor;
@@ -35,21 +35,21 @@ public class AsignarEstudiantesFichaPerfilInputAdapter {
     @PostMapping("/{fichaPerfilId}/estudiantes")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTUDIANTE_FICHA_PERFIL_CREATE)
     @Operation(
-            summary = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_SUMMARY,
-            description = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_DESCRIPTION,
+            summary = FichasApiKeys.EstudianteFichaPerfil.ASIGNAR_SUMMARY,
+            description = FichasApiKeys.EstudianteFichaPerfil.ASIGNAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.NO_CONTENT,
-                    description = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_RESP_204),
+                    description = FichasApiKeys.EstudianteFichaPerfil.ASIGNAR_RESP_204),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
-                    description = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_RESP_400),
+                    description = FichasApiKeys.EstudianteFichaPerfil.ASIGNAR_RESP_400),
             @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
-                    description = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_RESP_422),
+                    description = FichasApiKeys.EstudianteFichaPerfil.ASIGNAR_RESP_422),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiDocs.Comun.RESP_401),
+                    description = FichasApiKeys.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiDocs.EstudianteFichaPerfil.ASIGNAR_RESP_403)
+                    description = FichasApiKeys.EstudianteFichaPerfil.ASIGNAR_RESP_403)
     })
     public ResponseEntity<Void> asignarEstudiantes(
             @PathVariable UUID fichaPerfilId,

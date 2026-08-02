@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.RemoverEstudianteFichaPerfilInteractor;
@@ -37,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(RemoverEstudianteFichaPerfilInputAdapter.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class,
+        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         RemoverEstudianteFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class RemoverEstudianteFichaPerfilInputAdapterTest {
 

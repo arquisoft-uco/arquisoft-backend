@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.domain.estadofichaperfil.aggregate;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.util.UtilDate;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
@@ -56,8 +57,8 @@ public final class EstadoFichaPerfilAggregate {
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
         if (!DomainValidator.noNulo(fichaPerfilId,
-                FichasMessages.EstadoFichaPerfil.CAMPO_FICHA_PERFIL,
-                FichasMessages.EstadoFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
+                FichasFields.EstadoFichaPerfil.FICHA_PERFIL,
+                FichasCodes.EstadoFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;
         }
         this.fichaPerfilId = fichaPerfilId;

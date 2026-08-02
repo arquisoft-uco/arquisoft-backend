@@ -1,5 +1,10 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
@@ -10,12 +15,12 @@ import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutpu
 import com.arquisoft.shared.exception.ApplicationException;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
@@ -46,7 +51,12 @@ class AgregarItemFichaPerfilUseCaseTest {
     @Mock
     private AppLogger logger;
 
-    @InjectMocks
+        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
+    // resultado, y un mock los dejaria en null.
+    @Spy
+    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+
+@InjectMocks
     private AgregarItemFichaPerfilUseCaseImpl useCase;
 
     @Test
@@ -109,9 +119,9 @@ class AgregarItemFichaPerfilUseCaseTest {
         // Assert
         assertThat(exception).isInstanceOf(ItemTipoDuplicadoException.class);
         assertThat(((ApplicationException) exception).getErrorCode())
-                .isEqualTo(FichasMessages.ItemFichaPerfil.ITEM_TIPO_DUPLICADO);
+                .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_TIPO_DUPLICADO);
         assertThat(exception.getMessage())
-                .isEqualTo(FichasMessages.ItemFichaPerfil.TIPO_ITEM_DUPLICADO_MSG.formatted(TIPO_ITEM));
+                .isEqualTo(Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_TIPO_DUPLICADO, TIPO_ITEM));
         verify(itemFichaPerfilOutputPort, never()).guardar(any());
     }
 

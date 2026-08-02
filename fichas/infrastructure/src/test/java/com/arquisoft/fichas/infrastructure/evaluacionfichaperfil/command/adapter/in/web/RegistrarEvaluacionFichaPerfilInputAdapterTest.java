@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.web.config.MessageCatalogConfig;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.interactor.RegistrarEvaluacionFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(RegistrarEvaluacionFichaPerfilInputAdapter.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class,
+        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
         RegistrarEvaluacionFichaPerfilInputAdapterTest.TestSecurityConfig.class})
 class RegistrarEvaluacionFichaPerfilInputAdapterTest {
 

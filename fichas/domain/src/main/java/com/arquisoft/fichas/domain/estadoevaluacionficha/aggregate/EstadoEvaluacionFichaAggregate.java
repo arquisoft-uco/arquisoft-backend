@@ -1,7 +1,10 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.util.UtilDate;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.util.UtilUUID;
@@ -79,8 +82,8 @@ public final class EstadoEvaluacionFichaAggregate {
     private void setEvaluacionFichaPerfilId(UUID evaluacionFichaPerfilId, ValidationResult result) {
         if (!DomainValidator.noNulo(
                 evaluacionFichaPerfilId,
-                FichasMessages.EstadoEvaluacionFicha.CAMPO_EVALUACION_FICHA_PERFIL,
-                FichasMessages.EstadoEvaluacionFicha.EVALUACION_REQUERIDA,
+                FichasFields.EstadoEvaluacionFicha.EVALUACION_FICHA_PERFIL,
+                FichasCodes.EstadoEvaluacionFicha.EVALUACION_REQUERIDA,
                 result)) {
             return;
         }
@@ -94,25 +97,25 @@ public final class EstadoEvaluacionFichaAggregate {
     private void setEstadoEvaluacion(EstadoEvaluacion estadoEvaluacion, EstadoEvaluacion ultimoEstado, ValidationResult result) {
         if (!DomainValidator.noNulo(
                 estadoEvaluacion,
-                FichasMessages.EstadoEvaluacionFicha.CAMPO_ESTADO_EVALUACION,
-                FichasMessages.EstadoEvaluacionFicha.ESTADO_REQUERIDO,
+                FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
+                FichasCodes.EstadoEvaluacionFicha.ESTADO_REQUERIDO,
                 result)) {
             return;
         }
 
         if (estadoEvaluacion.esEnEvaluacion()) {
             result.agregarError(
-                    FichasMessages.EstadoEvaluacionFicha.CAMPO_ESTADO_EVALUACION,
-                    FichasMessages.EstadoEvaluacionFicha.ESTADO_EN_EVALUACION_NO_MANUAL,
-                    FichasMessages.EstadoEvaluacionFicha.ESTADO_EN_EVALUACION_NO_MANUAL_MSG);
+                    FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
+                    FichasCodes.EstadoEvaluacionFicha.ESTADO_EN_EVALUACION_NO_MANUAL,
+                    Messages.obtener(FichasKeys.EstadoEvaluacionFicha.ERROR_EN_EVALUACION_NO_MANUAL));
             return;
         }
 
         if (!UtilObject.isNull(ultimoEstado) && ultimoEstado.esTerminal()) {
             result.agregarError(
-                    FichasMessages.EstadoEvaluacionFicha.CAMPO_ESTADO_EVALUACION,
-                    FichasMessages.EstadoEvaluacionFicha.TRANSICION_INVALIDA,
-                    FichasMessages.EstadoEvaluacionFicha.TRANSICION_DESDE_TERMINAL_SIMPLE_MSG);
+                    FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
+                    FichasCodes.EstadoEvaluacionFicha.TRANSICION_INVALIDA,
+                    Messages.obtener(FichasKeys.EstadoEvaluacionFicha.ERROR_TRANSICION_DESDE_TERMINAL));
         }
         this.estadoEvaluacion = estadoEvaluacion;
     }

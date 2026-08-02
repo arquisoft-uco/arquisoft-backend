@@ -41,7 +41,8 @@ class FichaPerfilCommandOutputAdapterTest {
         adapter = new FichaPerfilCommandOutputAdapter(fichaPerfilRepository, asesorFichaRepository,
                 org.mockito.Mockito.mock(
                         com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository.class),
-                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class));
+                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
+                com.arquisoft.shared.message.ResourceBundleMessageCatalog.porDefecto());
     }
 
     @Test

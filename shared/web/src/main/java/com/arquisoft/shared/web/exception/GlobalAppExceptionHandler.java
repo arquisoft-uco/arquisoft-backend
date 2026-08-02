@@ -1,5 +1,8 @@
 package com.arquisoft.shared.web.exception;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.AppCodes;
+import com.arquisoft.shared.message.AppKeys;
 import com.arquisoft.shared.exception.ApplicationException;
 import com.arquisoft.shared.exception.AuthorizationException;
 import com.arquisoft.shared.exception.BaseException;
@@ -7,7 +10,6 @@ import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.MdcKeys;
-import com.arquisoft.shared.message.AppMessages;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -38,20 +40,28 @@ import java.util.stream.Collectors;
 @Order(Ordered.LOWEST_PRECEDENCE)
 public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
+    private final MessageCatalog catalog;
+
+    public GlobalAppExceptionHandler(MessageCatalog catalog) {
+        this.catalog = catalog;
+    }
+
+    // El mapa guarda la CLAVE del catálogo, no el texto: es estático y se inicializa antes de que
+    // exista el bean, así que la resolución se difiere al momento de armar la respuesta.
     private static final Map<Class<? extends BaseException>, ExceptionMapping> EXCEPTION_MAPPINGS = Map.of(
-            DomainException.class,        new ExceptionMapping(HttpStatus.UNPROCESSABLE_CONTENT, AppMessages.Http.ERROR_DOMINIO,          false),
-            ApplicationException.class,   new ExceptionMapping(HttpStatus.BAD_REQUEST,          AppMessages.Http.ERROR_APLICACION,       false),
-            AuthorizationException.class, new ExceptionMapping(HttpStatus.FORBIDDEN,            AppMessages.Http.ACCESO_DENEGADO,        false),
-            InfrastructureException.class, new ExceptionMapping(HttpStatus.SERVICE_UNAVAILABLE,  AppMessages.Http.SERVICIO_NO_DISPONIBLE, true)
+            DomainException.class,         new ExceptionMapping(HttpStatus.UNPROCESSABLE_CONTENT, AppKeys.Http.ERROR_DOMINIO,          false),
+            ApplicationException.class,    new ExceptionMapping(HttpStatus.BAD_REQUEST,           AppKeys.Http.ERROR_APLICACION,       false),
+            AuthorizationException.class,  new ExceptionMapping(HttpStatus.FORBIDDEN,             AppKeys.Http.ACCESO_DENEGADO,        false),
+            InfrastructureException.class, new ExceptionMapping(HttpStatus.SERVICE_UNAVAILABLE,   AppKeys.Http.SERVICIO_NO_DISPONIBLE, true)
     );
 
     private static final ExceptionMapping FALLBACK_MAPPING =
-            new ExceptionMapping(HttpStatus.INTERNAL_SERVER_ERROR, AppMessages.Http.ERROR_INTERNO, true);
+            new ExceptionMapping(HttpStatus.INTERNAL_SERVER_ERROR, AppKeys.Http.ERROR_INTERNO, true);
 
     private static final Pattern SENSITIVE_FIELD_PATTERN =
             Pattern.compile("(?i)(password|contrasena|contraseña|secret|token|credential|clave|pin)");
 
-    private record ExceptionMapping(HttpStatus status, String error, boolean logAsError) {}
+    private record ExceptionMapping(HttpStatus status, String errorKey, boolean logAsError) {}
 
     @SuppressWarnings("unchecked")
     private ExceptionMapping resolveMapping(BaseException ex) {
@@ -91,9 +101,9 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(ErrorResponseDTO.builder()
-                        .error(AppMessages.Http.ERROR_VALIDACION_DOMINIO)
+                        .error(catalog.obtener(AppKeys.Http.ERROR_VALIDACION_DOMINIO))
                         .errorCode(ex.getErrorCode())
-                        .message(AppMessages.Http.VALIDACION_DOMINIO_MSG.formatted(fieldErrors.size()))
+                        .message(catalog.formatear(AppKeys.Http.VALIDACION_DOMINIO_DETALLE, fieldErrors.size()))
                         .fieldErrors(fieldErrors)
                         .status(HttpStatus.UNPROCESSABLE_CONTENT.value())
                         .path(request.getRequestURI())
@@ -121,7 +131,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         ErrorResponseDTO body = ErrorResponseDTO.fromBaseException(
-                ex, mapping.error(), mapping.status(), request.getRequestURI());
+                ex, catalog.obtener(mapping.errorKey()), mapping.status(), request.getRequestURI());
         body.setTraceId(currentTraceId());
         return ResponseEntity.status(mapping.status()).body(body);
     }
@@ -139,8 +149,8 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponseDTO.builder()
-                        .error(AppMessages.Http.NO_AUTORIZADO)
-                        .message(AppMessages.Http.NO_AUTENTICADO_MSG)
+                        .error(catalog.obtener(AppKeys.Http.NO_AUTORIZADO))
+                        .message(catalog.obtener(AppKeys.Http.NO_AUTENTICADO_DETALLE))
                         .status(HttpStatus.UNAUTHORIZED.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
@@ -156,8 +166,8 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ErrorResponseDTO.builder()
-                        .error(AppMessages.Http.PROHIBIDO)
-                        .message(AppMessages.Http.SIN_PERMISOS_MSG)
+                        .error(catalog.obtener(AppKeys.Http.PROHIBIDO))
+                        .message(catalog.obtener(AppKeys.Http.SIN_PERMISOS_DETALLE))
                         .status(HttpStatus.FORBIDDEN.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
@@ -186,8 +196,8 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponseDTO.builder()
-                        .error(AppMessages.Http.PARAMETROS_INVALIDOS)
-                        .errorCode(AppMessages.Http.PARAMETRO_INVALIDO)
+                        .error(catalog.obtener(AppKeys.Http.PARAMETROS_INVALIDOS))
+                        .errorCode(AppCodes.Http.PARAMETRO_INVALIDO)
                         .message(safeMessage)
                         .status(HttpStatus.BAD_REQUEST.value())
                         .path(request.getRequestURI())
@@ -208,8 +218,8 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseDTO.builder()
-                        .error(AppMessages.Http.ERROR_INTERNO_SERVIDOR)
-                        .message(AppMessages.Http.ERROR_INTERNO_MSG)
+                        .error(catalog.obtener(AppKeys.Http.ERROR_INTERNO_SERVIDOR))
+                        .message(catalog.obtener(AppKeys.Http.ERROR_INTERNO_DETALLE))
                         .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
@@ -242,12 +252,12 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     private ErrorResponseDTO buildSpringMvcErrorBody(Exception ex, HttpStatus status, String path) {
         String message = switch (status) {
             case BAD_REQUEST -> extractBadRequestMessage(ex);
-            case NOT_FOUND -> AppMessages.Http.RECURSO_NO_EXISTE_MSG;
-            case METHOD_NOT_ALLOWED -> AppMessages.Http.METODO_NO_PERMITIDO_MSG;
-            case NOT_ACCEPTABLE -> AppMessages.Http.FORMATO_NO_PRODUCIBLE_MSG;
-            case UNSUPPORTED_MEDIA_TYPE -> AppMessages.Http.CONTENT_TYPE_NO_SOPORTADO_MSG;
-            case CONTENT_TOO_LARGE -> AppMessages.Http.ARCHIVO_DEMASIADO_GRANDE_MSG;
-            default -> AppMessages.Http.ERROR_PETICION_MSG;
+            case NOT_FOUND -> catalog.obtener(AppKeys.Http.RECURSO_NO_EXISTE_DETALLE);
+            case METHOD_NOT_ALLOWED -> catalog.obtener(AppKeys.Http.METODO_NO_PERMITIDO_DETALLE);
+            case NOT_ACCEPTABLE -> catalog.obtener(AppKeys.Http.FORMATO_NO_PRODUCIBLE_DETALLE);
+            case UNSUPPORTED_MEDIA_TYPE -> catalog.obtener(AppKeys.Http.CONTENT_TYPE_NO_SOPORTADO_DETALLE);
+            case CONTENT_TOO_LARGE -> catalog.obtener(AppKeys.Http.ARCHIVO_DEMASIADO_GRANDE_DETALLE);
+            default -> catalog.obtener(AppKeys.Http.ERROR_PETICION_DETALLE);
         };
 
         ErrorResponseDTO.ErrorResponseDTOBuilder builder = ErrorResponseDTO.builder()
@@ -258,7 +268,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                 .traceId(currentTraceId());
 
         if (status == HttpStatus.CONTENT_TOO_LARGE) {
-            builder.errorCode(AppMessages.Http.ARCHIVO_DEMASIADO_GRANDE);
+            builder.errorCode(AppCodes.Http.ARCHIVO_DEMASIADO_GRANDE);
         }
 
         // MethodArgumentNotValidException: enriquecer con fieldErrors
@@ -292,14 +302,14 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     private String extractBadRequestMessage(Exception ex) {
         return switch (ex) {
             case org.springframework.web.bind.MethodArgumentNotValidException ignored ->
-                    AppMessages.Http.VALIDACION_DATOS_MSG;
+                    catalog.obtener(AppKeys.Http.VALIDACION_DATOS_DETALLE);
             case org.springframework.web.bind.MissingServletRequestParameterException m ->
-                    AppMessages.Http.PARAMETRO_FALTANTE_MSG.formatted(m.getParameterName());
+                    catalog.formatear(AppKeys.Http.PARAMETRO_FALTANTE_DETALLE, m.getParameterName());
             case org.springframework.http.converter.HttpMessageNotReadableException notReadable ->
                     extractUnreadableBodyMessage(notReadable);
             case org.springframework.web.method.annotation.MethodArgumentTypeMismatchException m ->
-                    AppMessages.Http.CAMPO_FORMATO_INVALIDO_MSG.formatted(m.getName());
-            default -> AppMessages.Http.PETICION_INVALIDA_MSG;
+                    catalog.formatear(AppKeys.Http.CAMPO_FORMATO_INVALIDO_DETALLE, m.getName());
+            default -> catalog.obtener(AppKeys.Http.PETICION_INVALIDA_DETALLE);
         };
     }
 
@@ -309,12 +319,12 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             if (cause instanceof tools.jackson.core.JacksonException jacksonEx) {
                 String campo = describirPathJackson(jacksonEx);
                 if (campo != null && !campo.isBlank()) {
-                    return AppMessages.Http.CAMPO_FORMATO_INVALIDO_MSG.formatted(campo);
+                    return catalog.formatear(AppKeys.Http.CAMPO_FORMATO_INVALIDO_DETALLE, campo);
                 }
             }
             cause = cause.getCause();
         }
-        return AppMessages.Http.CUERPO_MAL_FORMADO_MSG;
+        return catalog.obtener(AppKeys.Http.CUERPO_MAL_FORMADO_DETALLE);
     }
 
     private String describirPathJackson(tools.jackson.core.JacksonException jacksonEx) {

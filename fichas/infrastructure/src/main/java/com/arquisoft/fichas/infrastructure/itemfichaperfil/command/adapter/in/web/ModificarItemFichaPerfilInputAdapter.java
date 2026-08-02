@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.message.FichasApiKeys;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.ModificarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.dto.ModificarItemFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.message.FichasApiDocs;
 import com.arquisoft.shared.web.openapi.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -28,8 +28,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
-@Tag(name = FichasApiDocs.ItemFichaPerfil.TAG_NAME,
-        description = FichasApiDocs.ItemFichaPerfil.TAG_DESCRIPTION)
+@Tag(name = FichasApiKeys.ItemFichaPerfil.TAG_NAME,
+        description = FichasApiKeys.ItemFichaPerfil.TAG_DESCRIPTION)
 public class ModificarItemFichaPerfilInputAdapter {
 
     private final ModificarItemFichaPerfilInteractor modificarItemFichaPerfilInteractor;
@@ -37,21 +37,21 @@ public class ModificarItemFichaPerfilInputAdapter {
     @PatchMapping("/items/{itemId}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_UPDATE)
     @Operation(
-            summary = FichasApiDocs.ItemFichaPerfil.MODIFICAR_SUMMARY,
-            description = FichasApiDocs.ItemFichaPerfil.MODIFICAR_DESCRIPTION,
+            summary = FichasApiKeys.ItemFichaPerfil.MODIFICAR_SUMMARY,
+            description = FichasApiKeys.ItemFichaPerfil.MODIFICAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.NO_CONTENT,
-                    description = FichasApiDocs.ItemFichaPerfil.MODIFICAR_RESP_204),
+                    description = FichasApiKeys.ItemFichaPerfil.MODIFICAR_RESP_204),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
-                    description = FichasApiDocs.ItemFichaPerfil.MODIFICAR_RESP_400),
+                    description = FichasApiKeys.ItemFichaPerfil.MODIFICAR_RESP_400),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiDocs.Comun.RESP_401),
+                    description = FichasApiKeys.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiDocs.ItemFichaPerfil.MODIFICAR_RESP_403),
+                    description = FichasApiKeys.ItemFichaPerfil.MODIFICAR_RESP_403),
             @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
-                    description = FichasApiDocs.ItemFichaPerfil.MODIFICAR_RESP_422)
+                    description = FichasApiKeys.ItemFichaPerfil.MODIFICAR_RESP_422)
     })
     public ResponseEntity<Void> modificarItem(
             @PathVariable UUID itemId,

@@ -1,12 +1,13 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final AsignarEstudiantesFichaPerfilValidator asignarEstudiantesFichaPerfilValidator;
     private final AppLogger logger;
+    private final MessageCatalog catalog;
 
     @Override
     public void ejecutar(AsignarEstudiantesFichaPerfilCommand entrada) {
@@ -33,6 +35,6 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
 
         relaciones.forEach(estudianteFichaPerfilOutputPort::guardar);
 
-        logger.info(FichasMessages.EstudianteFichaPerfil.LOG_ASIGNADO, fichaPerfil, relaciones.size());
+        logger.info(catalog.obtener(FichasKeys.EstudianteFichaPerfil.LOG_ASIGNADO), fichaPerfil, relaciones.size());
     }
 }

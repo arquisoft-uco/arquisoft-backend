@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate;
 
+import com.arquisoft.shared.message.FichasFields;
 import com.arquisoft.shared.exception.DomainValidationException;
-import com.arquisoft.shared.message.FichasMessages;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -61,7 +61,7 @@ class EvaluacionFichaPerfilAggregateTest {
         // Act & Assert
         assertThatThrownBy(() -> EvaluacionFichaPerfilAggregate.crear(null, fichaPerfilId))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.EvaluacionFichaPerfil.CAMPO_REPRESENTANTE_COMITE);
+                .hasMessageContaining(FichasFields.EvaluacionFichaPerfil.REPRESENTANTE_COMITE);
     }
 
     @Test
@@ -72,6 +72,6 @@ class EvaluacionFichaPerfilAggregateTest {
         // Act & Assert
         assertThatThrownBy(() -> EvaluacionFichaPerfilAggregate.crear(representanteComiteId, null))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasMessages.EvaluacionFichaPerfil.CAMPO_FICHA_PERFIL);
+                .hasMessageContaining(FichasFields.EvaluacionFichaPerfil.FICHA_PERFIL);
     }
 }
