@@ -1,15 +1,15 @@
 package com.arquisoft.fichas.application;
 
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.AgregarEstadoEvaluacionFichaInteractorImpl;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.AsignarEstudiantesFichaPerfilInteractorImpl;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.RemoverEstudianteFichaPerfilInteractorImpl;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.RegistrarEvaluacionFichaPerfilInteractorImpl;
-import com.arquisoft.fichas.application.fichaperfil.command.CambiarAsesorFichaInteractorImpl;
-import com.arquisoft.fichas.application.fichaperfil.command.ModificarFichaPerfilInteractorImpl;
-import com.arquisoft.fichas.application.fichaperfil.command.RegistrarFichaPerfilInteractorImpl;
-import com.arquisoft.fichas.application.itemfichaperfil.command.AgregarItemFichaPerfilInteractorImpl;
-import com.arquisoft.fichas.application.itemfichaperfil.command.ModificarItemFichaPerfilInteractorImpl;
-import com.arquisoft.fichas.application.itemfichaperfil.command.RemoverItemFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.interactor.impl.AgregarEstadoEvaluacionFichaInteractorImpl;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.impl.AsignarEstudiantesFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.impl.RemoverEstudianteFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.interactor.impl.RegistrarEvaluacionFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.fichaperfil.command.interactor.impl.CambiarAsesorFichaInteractorImpl;
+import com.arquisoft.fichas.application.fichaperfil.command.interactor.impl.ModificarFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.fichaperfil.command.interactor.impl.RegistrarFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.impl.AgregarItemFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.impl.ModificarItemFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.impl.RemoverItemFichaPerfilInteractorImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

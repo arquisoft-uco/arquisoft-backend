@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web;
 
-import com.arquisoft.usuarios.application.usuario.command.port.in.CrearUsuarioUseCase;
+import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUseCase;
 import com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web.dto.CrearUsuarioRequestDTO;
 import com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web.dto.CrearUsuarioResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;

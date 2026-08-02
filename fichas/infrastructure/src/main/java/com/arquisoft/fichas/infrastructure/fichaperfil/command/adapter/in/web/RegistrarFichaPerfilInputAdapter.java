@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInteractor;
+import com.arquisoft.fichas.application.fichaperfil.command.interactor.RegistrarFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.RegistrarFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.RegistrarFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;

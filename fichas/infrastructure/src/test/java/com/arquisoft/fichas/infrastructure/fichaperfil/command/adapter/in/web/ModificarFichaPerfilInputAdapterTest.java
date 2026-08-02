@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.fichaperfil.command.port.in.ModificarFichaPerfilInteractor;
+import com.arquisoft.fichas.application.fichaperfil.command.interactor.ModificarFichaPerfilInteractor;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;

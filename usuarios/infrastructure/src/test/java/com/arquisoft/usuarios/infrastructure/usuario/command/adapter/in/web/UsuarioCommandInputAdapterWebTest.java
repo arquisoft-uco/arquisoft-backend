@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web;
 
 import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioCommand;
-import com.arquisoft.usuarios.application.usuario.command.port.in.CrearUsuarioUseCase;
+import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUseCase;
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;

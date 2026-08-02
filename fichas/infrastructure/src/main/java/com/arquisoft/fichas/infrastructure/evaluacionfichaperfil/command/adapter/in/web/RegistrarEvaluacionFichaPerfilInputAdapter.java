@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.port.in.RegistrarEvaluacionFichaPerfilInteractor;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.interactor.RegistrarEvaluacionFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.in.web.dto.RegistrarEvaluacionFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;

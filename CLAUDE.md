@@ -77,18 +77,23 @@ exception/           # Domain exceptions shared across features (extend DomainEx
 {context}/application/
 └── {feature}/
     ├── command/
-    │   ├── {Action}{Entity}Interactor.java    # Implements InputPort + owns @Transactional
-    │   ├── {Action}{Entity}UseCase.java       # Business orchestration (no transaction)
+    │   ├── interactor/
+    │   │   ├── {Action}{Entity}Interactor.java        # Entry-point interface
+    │   │   └── impl/
+    │   │       └── {Action}{Entity}InteractorImpl.java  # Owns @Transactional
+    │   ├── usecase/
+    │   │   ├── {Action}{Entity}UseCase.java           # Use case interface
+    │   │   └── impl/
+    │   │       └── {Action}{Entity}UseCaseImpl.java   # Business orchestration (no transaction)
     │   ├── validator/
     │   │   └── {Feature}Validator.java        # Reusable existence/uniqueness/ownership checks
-    │   ├── port/in/
-    │   │   └── {Action}{Entity}InputPort.java
     │   └── model/
     │       └── {Action}{Entity}Command.java
     └── query/
-        ├── {Consult}{Entity}UseCase.java
-        ├── port/in/
-        │   └── {Consult}{Entity}InputPort.java
+        ├── usecase/
+        │   ├── {Consult}{Entity}UseCase.java
+        │   └── impl/
+        │       └── {Consult}{Entity}UseCaseImpl.java
         ├── port/out/
         │   └── {Feature}QueryOutputPort.java  # Output port read-side
         ├── criteria/
@@ -129,13 +134,13 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Domain events:** Extend `DomainEvent`. After persisting an aggregate, drain its unpublished events and publish via `EventPublisher` (RabbitMQ, publisher confirms, manual ACK, prefetch=1).
 
-**Interactor (command side):** The interactor — not the use case — is the entry point and owns the transaction: `{Action}{Entity}Interactor` implements the `InputPort`, annotates `ejecutar` with `@Transactional(transactionManager = "{context}TransactionManager")` and delegates to the use case. Rationale: an operation may lean on several use cases, so the unit of work belongs one layer above; it also guarantees the right transaction manager is active when domain events reach the outbox (`ContextAwareEventPublicationRepository`). Applied throughout `fichas`; the other contexts still keep `@Transactional` on the use case (pending migration). The use case must **not** implement the `InputPort` — two beans for the same port make injection ambiguous.
+**Interactor (command side):** The interactor — not the use case — is the entry point and owns the transaction: `{Action}{Entity}InteractorImpl` implements `{Action}{Entity}Interactor`, annotates `ejecutar` with `@Transactional(transactionManager = "{context}TransactionManager")` and delegates to the use case. Rationale: an operation may lean on several use cases, so the unit of work belongs one layer above; it also guarantees the right transaction manager is active when domain events reach the outbox (`ContextAwareEventPublicationRepository`). Applied throughout `fichas`; the other contexts still keep `@Transactional` on the use case (pending migration). The use case must **not** implement the `Interactor` interface — two beans for the same port make injection ambiguous.
 
 **Transactional (command, contexts not yet migrated):** `@Transactional(transactionManager = "{context}TransactionManager")` with explicit qualifier in command use cases that publish events — required for outbox atomicity. Example: `@Transactional(transactionManager = "seguridadTransactionManager")`.
 
 **Transactional (query):** Query use cases annotate the class with `@Transactional(readOnly = true, transactionManager = "{context}TransactionManager")`. The qualifier is mandatory here too: `usuariosTransactionManager` is the `@Primary` bean, so a bare `@Transactional` does not fail at startup — it silently binds to the `usuarios` transaction manager.
 
-**Input ports:** Interfaces in `application/{feature}/command/port/in/` or `application/{feature}/query/port/in/`, suffix `InputPort` (e.g., `RegistrarFichaPerfilInputPort`, `ConsultarFichasPerfilInputPort`).
+**Input ports:** The entry point of a command is the `Interactor` interface in `application/{feature}/command/interactor/`, implemented by `{Action}{Entity}InteractorImpl` in the nested `impl/` package. The use case it delegates to is the `UseCase` interface in `application/{feature}/command/usecase/` (or `application/{feature}/query/usecase/` on the read side), implemented by `{Action}{Entity}UseCaseImpl` in the nested `impl/` package. There is no `port/in/` package on the application layer — interfaces and implementations live together under `interactor/` and `usecase/`.
 
 **Output ports:** Write-side in `domain/{feature}/port/out/`; read-side in `application/{feature}/query/port/out/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`).
 
@@ -143,7 +148,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/{feature}/command/adapter/out/persistence/` (or appropriate sub-package for non-JPA), suffix `OutputAdapter` (e.g., `FichaPerfilCommandOutputAdapter`, `KeycloakAuthOutputAdapter`). Implement the corresponding `OutputPort` interface.
 
-**Use case implementations:** `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCase`, `AutenticarUsuarioUseCase`). Annotated `@Component` — **never `@Service`**, which is not used anywhere in this project. In `fichas` the use case is a plain collaborator invoked by its interactor; in the other contexts it still implements the `InputPort` directly.
+**Use case implementations:** `{Action}{Entity}UseCaseImpl` in `usecase/impl/`, implementing `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCaseImpl`, `AuthenticateUserUseCaseImpl`). Annotated `@Component` — **never `@Service`**, which is not used anywhere in this project. In `fichas` the use case is a plain collaborator invoked by its interactor; in the other contexts the `Interactor` layer does not exist yet and the adapter injects the `UseCase` directly.
 
 **Validators:** Existence, uniqueness and ownership checks live in `{Feature}Validator` (`application/{feature}/command/validator/`, `@Component`), not as inline `if/throw` blocks inside the use case — that keeps rules reusable across features (e.g., `EstudiantesFichaValidator` is shared by ficha registration and student assignment). Method names state the rule: `validarAsesorExiste`, `validarTituloUnico`, `validarSinDuplicados`.
 
@@ -165,7 +170,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Business rules:** Validated inside the aggregate (→ 422), never with `if/throw` in the use case. The use case reads the state a rule needs via a port and passes it as a parameter to the factory. Existence, DB-duplicate and resource-ownership checks do belong in the use case (→ 400 / 403).
 
-**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Aggregate`, `InputPort`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `UseCase`, `ReadModel`, `DTO`, `Command`).
+**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Aggregate`, `Interactor`, `UseCase`, `Impl`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `ReadModel`, `DTO`, `Command`).
 
 **Injection:** Always constructor injection via `@RequiredArgsConstructor` — never `@Autowired`.
 
@@ -209,7 +214,7 @@ Jackson 3 moved `databind` to `tools.jackson.databind.*`; `com.fasterxml.jackson
 
 - **Unit:** JUnit 6 + Mockito + AssertJ, `@ExtendWith(MockitoExtension.class)`, no Spring context loaded
 - **Repository slice:** `@DataJpaTest` with H2 (`org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`). `@SpringBootTest` is not used anywhere in this repo
-- **Controller slice:** `@WebMvcTest` (`org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`) + `@Import(GlobalAppExceptionHandler.class)` — without that import every exception surfaces as 500. Mock the `InputPort` with `@MockitoBean` (not `@MockBean`), authenticate with `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` using the exact client role (not `@WithMockUser`)
+- **Controller slice:** `@WebMvcTest` (`org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`) + `@Import(GlobalAppExceptionHandler.class)` — without that import every exception surfaces as 500. Mock the `Interactor` (or the `UseCase`, where no interactor exists) with `@MockitoBean` (not `@MockBean`), authenticate with `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` using the exact client role (not `@WithMockUser`)
 - Spring Boot 4 relocated the slice-test packages; the Spring Boot 3 `org.springframework.boot.test.autoconfigure.*` paths do not exist
 - Method naming: `debeHacerAlgo_cuandoCondicion()`
 - Pattern: Arrange / Act / Assert

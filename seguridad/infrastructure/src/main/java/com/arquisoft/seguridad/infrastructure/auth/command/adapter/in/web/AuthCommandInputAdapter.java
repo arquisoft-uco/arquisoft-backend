@@ -1,10 +1,10 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
 import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
-import com.arquisoft.seguridad.application.auth.command.port.in.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.application.auth.command.port.in.LogoutUseCase;
-import com.arquisoft.seguridad.application.auth.command.port.in.RefreshTokenUseCase;
-import com.arquisoft.seguridad.application.auth.command.port.in.ValidateTokenUseCase;
+import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
+import com.arquisoft.seguridad.application.auth.command.usecase.LogoutUseCase;
+import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
+import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginRequestDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginResponseDTO;

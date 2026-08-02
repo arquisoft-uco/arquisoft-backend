@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.usuario.command.adapter.in.amqp;
 
 import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
-import com.arquisoft.fichas.application.usuario.command.port.in.RegistrarUsuarioUseCase;
+import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;

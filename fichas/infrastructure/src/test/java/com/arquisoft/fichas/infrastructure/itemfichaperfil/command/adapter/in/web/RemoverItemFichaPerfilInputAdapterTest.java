@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.w
 
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
-import com.arquisoft.fichas.application.itemfichaperfil.command.port.in.RemoverItemFichaPerfilInteractor;
+import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.RemoverItemFichaPerfilInteractor;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.infrastructure.FichasInfrastructureTestApplication;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
