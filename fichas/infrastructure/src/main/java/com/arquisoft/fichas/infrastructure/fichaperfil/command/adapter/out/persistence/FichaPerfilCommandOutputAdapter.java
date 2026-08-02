@@ -36,6 +36,11 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     }
 
     @Override
+    public boolean existePorId(UUID id) {
+        return fichaPerfilJpaRepository.existsById(id);
+    }
+
+    @Override
     public boolean existePorTituloProyecto(String titulo) {
         return fichaPerfilJpaRepository.existsByTituloProyecto(titulo);
     }

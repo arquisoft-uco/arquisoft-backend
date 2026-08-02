@@ -11,5 +11,7 @@ public interface FichaPerfilOutputPort {
 
     Optional<FichaPerfilAggregate> buscarPorId(UUID id);
 
+    boolean existePorId(UUID id);
+
     boolean existePorTituloProyecto(String titulo);
 }

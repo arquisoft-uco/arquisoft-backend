@@ -2,11 +2,9 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command;
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.AsignarEstudiantesFichaPerfilUseCase;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.EstudiantesFichaValidator;
-import com.arquisoft.fichas.application.fichaperfil.command.validator.FichaPerfilValidator;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.FichasMessages;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +18,7 @@ import java.util.UUID;
 public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudiantesFichaPerfilUseCase {
 
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
-    private final EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
-    private final FichaPerfilValidator fichaPerfilValidator;
-    private final EstudiantesFichaValidator estudiantesFichaValidator;
+    private final AsignarEstudiantesFichaPerfilValidator asignarEstudiantesFichaPerfilValidator;
     private final AppLogger logger;
 
     @Override
@@ -32,13 +28,8 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
 
         List<EstudianteFichaPerfilAggregate> relaciones =
                 EstudianteFichaPerfilAggregate.crear(fichaPerfil, estudiantes);
-        estudiantesFichaValidator.validarSinDuplicados(estudiantes);
 
-        fichaPerfilValidator.validarFichaExiste(fichaPerfil);
-        estudiantesFichaValidator.validarExistencia(estudiantes);
-        estudiantesFichaValidator.validarNoVinculados(fichaPerfil, estudiantes);
-
-        estudianteFichaPerfilCupoDisponibleRule.validar(relaciones);
+        asignarEstudiantesFichaPerfilValidator.validar(fichaPerfil, estudiantes, relaciones);
 
         relaciones.forEach(estudianteFichaPerfilOutputPort::guardar);
 

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command;
 
-import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
+import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.RemoverEstudianteFichaPerfilUseCase;

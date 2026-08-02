@@ -3,11 +3,11 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator;
 import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoPropietarioException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,6 +18,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +32,9 @@ class FichaPerfilValidatorTest {
 
     @Mock
     private FichaPerfilOutputPort fichaPerfilOutputPort;
+
+    @Mock
+    private FichaPerfilExisteRule fichaPerfilExisteRule;
 
     @InjectMocks
     private FichaPerfilValidator validator;
@@ -57,24 +61,15 @@ class FichaPerfilValidatorTest {
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoFichaNoExiste() {
+    void debeDelegarEnLaReglaDeExistencia_cuandoValidaFichaExiste() {
         // Arrange
         UUID ficha = UUID.randomUUID();
-        when(fichaPerfilQueryOutputPort.existePorId(ficha)).thenReturn(false);
 
-        // Act & Assert
-        assertThatThrownBy(() -> validator.validarFichaExiste(ficha))
-                .isInstanceOf(FichaPerfilNoEncontradaException.class);
-    }
+        // Act
+        validator.validarFichaExiste(ficha);
 
-    @Test
-    void debePasar_cuandoFichaExiste() {
-        // Arrange
-        UUID ficha = UUID.randomUUID();
-        when(fichaPerfilQueryOutputPort.existePorId(ficha)).thenReturn(true);
-
-        // Act & Assert
-        assertThatCode(() -> validator.validarFichaExiste(ficha)).doesNotThrowAnyException();
+        // Assert
+        verify(fichaPerfilExisteRule).validar(ficha);
     }
 
     @Test

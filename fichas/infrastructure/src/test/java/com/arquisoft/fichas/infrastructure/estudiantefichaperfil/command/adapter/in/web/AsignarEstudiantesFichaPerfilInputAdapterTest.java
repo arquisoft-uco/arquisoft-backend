@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
+import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.port.in.AsignarEstudiantesFichaPerfilInteractor;
-import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
 import com.arquisoft.shared.message.FichasMessages;

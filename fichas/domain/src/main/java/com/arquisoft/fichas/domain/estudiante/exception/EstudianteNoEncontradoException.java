@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.application.estudiante.exception;
+package com.arquisoft.fichas.domain.estudiante.exception;
 
 import com.arquisoft.shared.exception.ApplicationException;
 import com.arquisoft.shared.message.FichasMessages;

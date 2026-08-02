@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
-import com.arquisoft.fichas.application.estudiante.exception.EstudianteNoEncontradoException;
-import com.arquisoft.fichas.application.estudiantefichaperfil.exception.EstudianteDuplicadoException;
+import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.RegistrarFichaPerfilInteractor;
 import com.arquisoft.fichas.application.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.application.fichaperfil.exception.FichaTituloDuplicadoException;
