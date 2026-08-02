@@ -87,8 +87,10 @@ exception/           # Domain exceptions shared across features (extend DomainEx
     │   │       └── {Action}{Entity}UseCaseImpl.java   # Business orchestration (no transaction)
     │   ├── validator/
     │   │   └── {Feature}Validator.java        # Reusable existence/uniqueness/ownership checks
-    │   └── model/
-    │       └── {Action}{Entity}Command.java
+    │   ├── model/
+    │   │   └── {Action}{Entity}Command.java   # Command input
+    │   └── result/
+    │       └── {Concepto}Result.java          # Command output, only when it is not UUID/void
     └── query/
         ├── usecase/
         │   ├── {Consult}{Entity}UseCase.java
@@ -153,6 +155,8 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 **Validators:** Existence, uniqueness and ownership checks live in `{Feature}Validator` (`application/{feature}/command/validator/`, `@Component`), not as inline `if/throw` blocks inside the use case — that keeps rules reusable across features (e.g., `EstudiantesFichaValidator` is shared by ficha registration and student assignment). Method names state the rule: `validarAsesorExiste`, `validarTituloUnico`, `validarSinDuplicados`.
 
 **Validation order (mandatory):** 1) data integrity (format, required, length, duplicates within the payload — accumulable), 2) existence and uniqueness against the DB, 3) business rules in the aggregate. Never query the database on data whose integrity has not been established first.
+
+**Command results:** a command normally returns `UUID` or `void`, and then it needs no type of its own. When it does return something richer (only `seguridad` today), the record lives in `application/{feature}/command/result/` with suffix `Result` (e.g., `AutenticacionResult`, `RefrescoTokenResult`, `ValidacionTokenResult`) — never nested inside the `UseCase` interface, and never in `model/`, which is reserved for input. This mirrors the read side, where `criteria/` is the input and `readmodel/` the output.
 
 **Commands:** Input data for use cases in `application/{feature}/command/model/`, suffix `Command` (e.g., `RegistrarFichaPerfilCommand`). Implemented as Java `record`. DTOs in `infrastructure/{feature}/command/adapter/in/web/dto/` own a `toCommand()` factory method.
 

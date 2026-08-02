@@ -2,6 +2,9 @@ package com.arquisoft.seguridad.application.auth.command.interactor.impl;
 
 import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCommand;
 import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
+import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
+import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
+import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.LogoutUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
@@ -66,12 +69,12 @@ class InteractoresSeguridadTest {
     void debeDelegarEnElUseCase_cuandoAutenticar() {
         // Arrange
         AuthenticateUserCommand command = new AuthenticateUserCommand("test@example.com", "secreto");
-        AuthenticateUserUseCase.AuthResult esperado =
-                new AuthenticateUserUseCase.AuthResult("access", "refresh", 300L, "Bearer", "openid");
+        AutenticacionResult esperado =
+                new AutenticacionResult("access", "refresh", 300L, "Bearer", "openid");
         when(authenticateUserUseCase.ejecutar(command)).thenReturn(esperado);
 
         // Act
-        AuthenticateUserUseCase.AuthResult resultado =
+        AutenticacionResult resultado =
                 new AuthenticateUserInteractorImpl(authenticateUserUseCase).ejecutar(command);
 
         // Assert
@@ -81,12 +84,12 @@ class InteractoresSeguridadTest {
     @Test
     void debeDelegarEnElUseCase_cuandoRefrescar() {
         // Arrange
-        RefreshTokenUseCase.RefreshResult esperado =
-                new RefreshTokenUseCase.RefreshResult("access", "refresh", 300L, "Bearer", "openid");
+        RefrescoTokenResult esperado =
+                new RefrescoTokenResult("access", "refresh", 300L, "Bearer", "openid");
         when(refreshTokenUseCase.ejecutar("token-refresco")).thenReturn(esperado);
 
         // Act
-        RefreshTokenUseCase.RefreshResult resultado =
+        RefrescoTokenResult resultado =
                 new RefreshTokenInteractorImpl(refreshTokenUseCase).ejecutar("token-refresco");
 
         // Assert
@@ -109,12 +112,12 @@ class InteractoresSeguridadTest {
     void debeDelegarEnElUseCase_cuandoValidarToken() {
         // Arrange
         TokenAggregate token = TokenAggregate.de("eyJhbGc...");
-        ValidateTokenUseCase.ValidationResult esperado =
-                new ValidateTokenUseCase.ValidationResult(true, "id-1", "test@example.com", "Token valido");
+        ValidacionTokenResult esperado =
+                new ValidacionTokenResult(true, "id-1", "test@example.com", "Token valido");
         when(validateTokenUseCase.ejecutar(token)).thenReturn(esperado);
 
         // Act
-        ValidateTokenUseCase.ValidationResult resultado =
+        ValidacionTokenResult resultado =
                 new ValidateTokenInteractorImpl(validateTokenUseCase).ejecutar(token);
 
         // Assert

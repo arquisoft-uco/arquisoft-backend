@@ -1,13 +1,13 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
-import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
 import com.arquisoft.seguridad.application.auth.command.interactor.AuthenticateUserInteractor;
-import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.LogoutInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.ValidateTokenInteractor;
-import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
+import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
+import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
+import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
+import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginRequestDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginResponseDTO;
@@ -53,7 +53,7 @@ class AuthCommandInputAdapterTest {
         // Arrange
         LoginRequestDTO request = new LoginRequestDTO("estudiante@uco.edu.co", "password123");
 
-        AuthenticateUserUseCase.AuthResult authResult = new AuthenticateUserUseCase.AuthResult(
+        AutenticacionResult authResult = new AutenticacionResult(
                 "eyJhbGc-access...",
                 "eyJhbGc-refresh...",
                 3600L,
@@ -80,7 +80,7 @@ class AuthCommandInputAdapterTest {
         // Arrange
         RefreshTokenRequestDTO request = new RefreshTokenRequestDTO("eyJhbGc-refresh-old...");
 
-        RefreshTokenUseCase.RefreshResult refreshResult = new RefreshTokenUseCase.RefreshResult(
+        RefrescoTokenResult refreshResult = new RefrescoTokenResult(
                 "eyJhbGc-access-new...",
                 "eyJhbGc-refresh-new...",
                 3600L,
@@ -122,8 +122,8 @@ class AuthCommandInputAdapterTest {
     @Test
     void debeRetornar200_cuandoValidateToken() {
         // Arrange
-        ValidateTokenUseCase.ValidationResult validationResult =
-                new ValidateTokenUseCase.ValidationResult(
+        ValidacionTokenResult validationResult =
+                new ValidacionTokenResult(
                         true,
                         "uuid-estudiante-123",
                         "estudiante@uco.edu.co",

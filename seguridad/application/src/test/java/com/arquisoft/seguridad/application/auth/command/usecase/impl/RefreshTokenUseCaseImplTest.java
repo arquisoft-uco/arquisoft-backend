@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
-import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
+import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
 import com.arquisoft.seguridad.domain.auth.port.out.AuthenticationOutputPort;
@@ -31,7 +31,7 @@ class RefreshTokenUseCaseImplTest {
                 .thenReturn(CredencialesSesion.de("access-nuevo", "refresh-nuevo", 600L, "Bearer", "openid"));
 
         // Act
-        RefreshTokenUseCase.RefreshResult resultado = refreshTokenUseCase.ejecutar("refresh-viejo");
+        RefrescoTokenResult resultado = refreshTokenUseCase.ejecutar("refresh-viejo");
 
         // Assert
         assertThat(resultado.accessToken()).isEqualTo("access-nuevo");

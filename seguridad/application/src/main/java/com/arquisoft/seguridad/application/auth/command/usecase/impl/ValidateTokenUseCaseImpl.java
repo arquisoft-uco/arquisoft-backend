@@ -1,10 +1,11 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
+import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
-import com.arquisoft.shared.message.SeguridadMessages;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenValidationOutputPort;
+import com.arquisoft.shared.message.SeguridadMessages;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,26 +18,26 @@ public class ValidateTokenUseCaseImpl implements ValidateTokenUseCase {
     private final TokenValidationOutputPort tokenValidationOutputPort;
 
     @Override
-    public ValidationResult ejecutar(TokenAggregate entrada) {
+    public ValidacionTokenResult ejecutar(TokenAggregate entrada) {
         log.debug(SeguridadMessages.Token.VALIDAR_DEBUG);
 
         try {
             if (tokenValidationOutputPort.validarToken(entrada.valor())) {
                 IdentidadToken identidad = tokenValidationOutputPort.extraerInfo(entrada.valor());
 
-                return new ValidationResult(
+                return new ValidacionTokenResult(
                         true,
                         identidad.identidadId(),
                         identidad.correo(),
                         SeguridadMessages.Token.TOKEN_VALIDO
                 );
             } else {
-                return new ValidationResult(false, null, null,
+                return new ValidacionTokenResult(false, null, null,
                         SeguridadMessages.Token.TOKEN_INVALIDO);
             }
         } catch (Exception e) {
             log.debug(SeguridadMessages.Token.ERROR_VALIDAR, e.getMessage());
-            return new ValidationResult(false, null, null,
+            return new ValidacionTokenResult(false, null, null,
                     SeguridadMessages.Token.ERROR_VALIDAR_PREFIJO + e.getMessage());
         }
     }

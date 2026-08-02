@@ -5,9 +5,9 @@ import com.arquisoft.seguridad.application.auth.command.interactor.LogoutInterac
 import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.ValidateTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
-import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
+import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
+import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
+import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginRequestDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginResponseDTO;
@@ -73,7 +73,7 @@ public class AuthCommandInputAdapter {
                     content = @Content(mediaType = "application/json"))
     })
     public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO loginRequest) {
-        AuthenticateUserUseCase.AuthResult result = authenticateUserInteractor.ejecutar(loginRequest.toCommand());
+        AutenticacionResult result = authenticateUserInteractor.ejecutar(loginRequest.toCommand());
 
         LoginResponseDTO response = LoginResponseDTO.builder()
                 .accessToken(result.accessToken())
@@ -104,7 +104,7 @@ public class AuthCommandInputAdapter {
             @Valid @RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
         log.debug(SeguridadMessages.Token.REFRESH_DEBUG);
 
-        RefreshTokenUseCase.RefreshResult result = refreshTokenInteractor.ejecutar(
+        RefrescoTokenResult result = refreshTokenInteractor.ejecutar(
                 refreshTokenRequest.refreshToken()
         );
 
@@ -161,7 +161,7 @@ public class AuthCommandInputAdapter {
     public ResponseEntity<ValidateTokenResponseDTO> validateToken(@RequestParam String token) {
         log.debug(SeguridadMessages.Autenticacion.VALIDATE_DEBUG);
 
-        ValidateTokenUseCase.ValidationResult result = validateTokenInteractor.ejecutar(
+        ValidacionTokenResult result = validateTokenInteractor.ejecutar(
                 TokenAggregate.de(token)
         );
 

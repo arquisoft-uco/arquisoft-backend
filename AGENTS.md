@@ -52,6 +52,7 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 | Excepciones de dominio | Extienden `DomainException` (shared) con campo `errorCode` |
 | IDs | Siempre `UUID` — nunca `Long` ni `Integer` |
 | Interactor (lado comando) | `{Accion}{Entidad}InteractorImpl` implementa `{Accion}{Entidad}Interactor` y declara `@Transactional(transactionManager = "{contexto}TransactionManager")`; delega en el use case, que ya no implementa el puerto ni maneja la transacción. Aplicado en `fichas` y `usuarios`; `seguridad` tiene interactor pero sin `@Transactional` (no tiene DataSource propio: Keycloak + Redis) |
+| Resultados de comando | Un comando devuelve `UUID` o `void`; si devuelve algo mas rico, el record vive en `application/{feature}/command/result/` con sufijo `Result` — nunca anidado en la interfaz `UseCase` ni en `model/`, que es solo entrada |
 | Reglas de dominio | `{Regla}Rule` en `domain/{feature}/rules/` con su `{Regla}RuleImpl` en `rules/impl/` (POJO sin Spring); se registran como bean en `{Contexto}DomainRulesConfig` de infrastructure |
 | Validators | Existencia, unicidad y propiedad en `{Feature}Validator` (`application/{feature}/command/validator/`), reutilizables entre features — no bloques `if/throw` dentro del use case |
 | Orden de validación | 1) integridad del dato (formato, obligatoriedad, longitud, duplicados en la petición), 2) existencia/unicidad en BD, 3) reglas de negocio del agregado |

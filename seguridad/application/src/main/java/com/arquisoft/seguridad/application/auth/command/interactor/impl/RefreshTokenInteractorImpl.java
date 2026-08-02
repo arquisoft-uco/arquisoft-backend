@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command.interactor.impl;
 
 import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
+import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,7 @@ public class RefreshTokenInteractorImpl implements RefreshTokenInteractor {
     private final RefreshTokenUseCase refreshTokenUseCase;
 
     @Override
-    public RefreshTokenUseCase.RefreshResult ejecutar(String tokenRefresco) {
+    public RefrescoTokenResult ejecutar(String tokenRefresco) {
         return refreshTokenUseCase.ejecutar(tokenRefresco);
     }
 }

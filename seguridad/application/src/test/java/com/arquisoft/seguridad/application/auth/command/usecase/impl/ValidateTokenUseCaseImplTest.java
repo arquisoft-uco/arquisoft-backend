@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
-import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
+import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenValidationOutputPort;
@@ -33,7 +33,7 @@ class ValidateTokenUseCaseImplTest {
                 .thenReturn(IdentidadToken.de("id-1", "test@example.com", "Test", List.of("estudiante")));
 
         // Act
-        ValidateTokenUseCase.ValidationResult resultado = validateTokenUseCase.ejecutar(token);
+        ValidacionTokenResult resultado = validateTokenUseCase.ejecutar(token);
 
         // Assert
         assertThat(resultado.valido()).isTrue();
@@ -49,7 +49,7 @@ class ValidateTokenUseCaseImplTest {
         when(tokenValidationOutputPort.validarToken("token-invalido")).thenReturn(false);
 
         // Act
-        ValidateTokenUseCase.ValidationResult resultado = validateTokenUseCase.ejecutar(token);
+        ValidacionTokenResult resultado = validateTokenUseCase.ejecutar(token);
 
         // Assert
         assertThat(resultado.valido()).isFalse();
@@ -66,7 +66,7 @@ class ValidateTokenUseCaseImplTest {
                 .thenThrow(new IllegalStateException("firma corrupta"));
 
         // Act
-        ValidateTokenUseCase.ValidationResult resultado = validateTokenUseCase.ejecutar(token);
+        ValidacionTokenResult resultado = validateTokenUseCase.ejecutar(token);
 
         // Assert
         assertThat(resultado.valido()).isFalse();

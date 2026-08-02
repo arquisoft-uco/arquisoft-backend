@@ -2,6 +2,7 @@ package com.arquisoft.seguridad.application.auth.command.interactor.impl;
 
 import com.arquisoft.seguridad.application.auth.command.interactor.AuthenticateUserInteractor;
 import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCommand;
+import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,7 @@ public class AuthenticateUserInteractorImpl implements AuthenticateUserInteracto
     private final AuthenticateUserUseCase authenticateUserUseCase;
 
     @Override
-    public AuthenticateUserUseCase.AuthResult ejecutar(AuthenticateUserCommand command) {
+    public AutenticacionResult ejecutar(AuthenticateUserCommand command) {
         return authenticateUserUseCase.ejecutar(command);
     }
 }

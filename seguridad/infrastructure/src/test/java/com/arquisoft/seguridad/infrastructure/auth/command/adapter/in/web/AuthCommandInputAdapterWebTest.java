@@ -1,12 +1,12 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
-import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCommand;
 import com.arquisoft.seguridad.application.auth.command.interactor.AuthenticateUserInteractor;
-import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.LogoutInteractor;
+import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.ValidateTokenInteractor;
-import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
+import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCommand;
+import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
+import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
 import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
 import com.arquisoft.seguridad.infrastructure.filter.RateLimitingFilter;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
@@ -79,7 +79,7 @@ class AuthCommandInputAdapterWebTest {
     void debeRetornar200YEnlazarCredenciales_cuandoBodyDeLoginEsValido() throws Exception {
         // Arrange
         when(authenticateUserInteractor.ejecutar(any())).thenReturn(
-                new AuthenticateUserUseCase.AuthResult(
+                new AutenticacionResult(
                         "access...", "refresh...", 3600L, "Bearer", "openid"));
         ArgumentCaptor<AuthenticateUserCommand> captor =
                 ArgumentCaptor.forClass(AuthenticateUserCommand.class);
@@ -134,7 +134,7 @@ class AuthCommandInputAdapterWebTest {
     void debeRetornar200YEnlazarRefreshToken_cuandoBodyDeRefreshEsValido() throws Exception {
         // Arrange
         when(refreshTokenInteractor.ejecutar(anyString())).thenReturn(
-                new RefreshTokenUseCase.RefreshResult(
+                new RefrescoTokenResult(
                         "access-new...", "refresh-new...", 3600L, "Bearer", "openid"));
 
         // Act & Assert

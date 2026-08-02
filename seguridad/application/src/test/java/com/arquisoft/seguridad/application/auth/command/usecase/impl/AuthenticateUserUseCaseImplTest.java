@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
 import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCommand;
-import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
+import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
 import com.arquisoft.seguridad.domain.auth.port.out.AuthenticationOutputPort;
@@ -33,7 +33,7 @@ class AuthenticateUserUseCaseImplTest {
                 .thenReturn(CredencialesSesion.de("access-token", "refresh-token", 300L, "Bearer", "openid"));
 
         // Act
-        AuthenticateUserUseCase.AuthResult resultado = authenticateUserUseCase.ejecutar(command);
+        AutenticacionResult resultado = authenticateUserUseCase.ejecutar(command);
 
         // Assert
         assertThat(resultado.accessToken()).isEqualTo("access-token");
