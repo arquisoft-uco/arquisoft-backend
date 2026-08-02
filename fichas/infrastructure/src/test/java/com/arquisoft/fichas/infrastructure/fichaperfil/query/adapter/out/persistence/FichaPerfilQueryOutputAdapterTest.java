@@ -3,11 +3,11 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persis
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaEntity;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaRepository;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,26 +26,26 @@ class FichaPerfilQueryOutputAdapterTest {
     private TestEntityManager entityManager;
 
     @Autowired
-    private FichaPerfilJpaRepository fichaPerfilJpaRepository;
+    private FichaPerfilRepository fichaPerfilRepository;
 
     @Autowired
-    private EstudianteFichaPerfilJpaRepository estudianteFichaPerfilJpaRepository;
+    private EstudianteFichaPerfilRepository estudianteFichaPerfilRepository;
 
     private FichaPerfilQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
         adapter = new FichaPerfilQueryOutputAdapter(
-                fichaPerfilJpaRepository,
+                fichaPerfilRepository,
                 new FichaPerfilJpaSpecification(),
-                estudianteFichaPerfilJpaRepository,
+                estudianteFichaPerfilRepository,
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class)
         );
     }
 
     @Test
     void debeRetornarReadModel_cuandoExistenEnBD() {
-        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
+        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador("DOC-001")
                 .nombre("Juan Salazar")
@@ -53,7 +53,7 @@ class FichaPerfilQueryOutputAdapterTest {
                 .build();
         entityManager.persist(asesor);
 
-        FichaPerfilJpaEntity ficha = FichaPerfilJpaEntity.builder()
+        FichaPerfilEntity ficha = FichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .tituloProyecto("Arquisoft Backend")
                 .asesorFicha(asesor)
@@ -91,7 +91,7 @@ class FichaPerfilQueryOutputAdapterTest {
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
 
-        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
+        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador("DOC-001")
                 .nombre("Juan Salazar")
@@ -99,14 +99,14 @@ class FichaPerfilQueryOutputAdapterTest {
                 .build();
         entityManager.persist(asesor);
 
-        FichaPerfilJpaEntity ficha = FichaPerfilJpaEntity.builder()
+        FichaPerfilEntity ficha = FichaPerfilEntity.builder()
                 .id(fichaPerfilId)
                 .tituloProyecto("Arquisoft Backend")
                 .asesorFicha(asesor)
                 .build();
         entityManager.persist(ficha);
 
-        EstudianteFichaPerfilJpaEntity relacion = EstudianteFichaPerfilJpaEntity.builder()
+        EstudianteFichaPerfilEntity relacion = EstudianteFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
                 .estudianteId(estudianteId)
@@ -128,7 +128,7 @@ class FichaPerfilQueryOutputAdapterTest {
         UUID estudianteId = UUID.randomUUID();
         UUID otroEstudianteId = UUID.randomUUID();
 
-        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
+        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador("DOC-001")
                 .nombre("Juan Salazar")
@@ -136,14 +136,14 @@ class FichaPerfilQueryOutputAdapterTest {
                 .build();
         entityManager.persist(asesor);
 
-        FichaPerfilJpaEntity ficha = FichaPerfilJpaEntity.builder()
+        FichaPerfilEntity ficha = FichaPerfilEntity.builder()
                 .id(fichaPerfilId)
                 .tituloProyecto("Arquisoft Backend")
                 .asesorFicha(asesor)
                 .build();
         entityManager.persist(ficha);
 
-        EstudianteFichaPerfilJpaEntity relacion = EstudianteFichaPerfilJpaEntity.builder()
+        EstudianteFichaPerfilEntity relacion = EstudianteFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
                 .estudianteId(otroEstudianteId)
@@ -161,7 +161,7 @@ class FichaPerfilQueryOutputAdapterTest {
     @Test
     void debeRetornarTrue_cuandoFichaExistePorId() {
         // Arrange
-        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
+        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador("DOC-002")
                 .nombre("Ana Ramirez")
@@ -170,7 +170,7 @@ class FichaPerfilQueryOutputAdapterTest {
         entityManager.persist(asesor);
 
         UUID fichaId = UUID.randomUUID();
-        FichaPerfilJpaEntity ficha = FichaPerfilJpaEntity.builder()
+        FichaPerfilEntity ficha = FichaPerfilEntity.builder()
                 .id(fichaId)
                 .tituloProyecto("Proyecto Existente")
                 .asesorFicha(asesor)

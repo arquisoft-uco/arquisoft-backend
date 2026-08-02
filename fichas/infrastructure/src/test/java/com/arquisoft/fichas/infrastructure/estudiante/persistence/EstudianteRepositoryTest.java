@@ -9,15 +9,15 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class EstudianteJpaRepositoryTest {
+class EstudianteRepositoryTest {
 
     @Autowired
-    private EstudianteJpaRepository repository;
+    private EstudianteRepository repository;
 
     @Test
     void debeRetornarTrue_cuandoEstudianteExiste() {
         // Arrange
-        EstudianteJpaEntity estudiante = EstudianteJpaEntity.builder()
+        EstudianteEntity estudiante = EstudianteEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador("1234567890")
                 .nombre("Estudiante de prueba")

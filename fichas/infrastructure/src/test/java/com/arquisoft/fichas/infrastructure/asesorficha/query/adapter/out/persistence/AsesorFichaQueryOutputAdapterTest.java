@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.asesorficha.query.adapter.out.persistence;
 
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaRepository;
+import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.times;
 class AsesorFichaQueryOutputAdapterTest {
 
     @Mock
-    private AsesorFichaJpaRepository asesorFichaJpaRepository;
+    private AsesorFichaRepository asesorFichaRepository;
 
     @InjectMocks
     private AsesorFichaQueryOutputAdapter adapter;
@@ -27,27 +27,27 @@ class AsesorFichaQueryOutputAdapterTest {
     void debeRetornarTrue_cuandoAsesorExiste() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
-        when(asesorFichaJpaRepository.existsById(asesorId)).thenReturn(true);
+        when(asesorFichaRepository.existsById(asesorId)).thenReturn(true);
 
         // Act
         boolean existe = adapter.existePorId(asesorId);
 
         // Assert
         assertThat(existe).isTrue();
-        verify(asesorFichaJpaRepository, times(1)).existsById(asesorId);
+        verify(asesorFichaRepository, times(1)).existsById(asesorId);
     }
 
     @Test
     void debeRetornarFalse_cuandoAsesorNoExiste() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
-        when(asesorFichaJpaRepository.existsById(asesorId)).thenReturn(false);
+        when(asesorFichaRepository.existsById(asesorId)).thenReturn(false);
 
         // Act
         boolean existe = adapter.existePorId(asesorId);
 
         // Assert
         assertThat(existe).isFalse();
-        verify(asesorFichaJpaRepository, times(1)).existsById(asesorId);
+        verify(asesorFichaRepository, times(1)).existsById(asesorId);
     }
 }

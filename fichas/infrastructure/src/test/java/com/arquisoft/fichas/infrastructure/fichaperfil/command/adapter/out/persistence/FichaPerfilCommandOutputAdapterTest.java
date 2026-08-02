@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaRepository;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
+import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,10 +24,10 @@ import static org.mockito.Mockito.times;
 class FichaPerfilCommandOutputAdapterTest {
 
     @Mock
-    private FichaPerfilJpaRepository fichaPerfilJpaRepository;
+    private FichaPerfilRepository fichaPerfilRepository;
 
     @Mock
-    private AsesorFichaJpaRepository asesorFichaJpaRepository;
+    private AsesorFichaRepository asesorFichaRepository;
 
     private FichaPerfilCommandOutputAdapter adapter;
 
@@ -38,9 +38,9 @@ class FichaPerfilCommandOutputAdapterTest {
     void setUp() {
         fichaId = UUID.randomUUID();
         asesorId = UUID.randomUUID();
-        adapter = new FichaPerfilCommandOutputAdapter(fichaPerfilJpaRepository, asesorFichaJpaRepository,
+        adapter = new FichaPerfilCommandOutputAdapter(fichaPerfilRepository, asesorFichaRepository,
                 org.mockito.Mockito.mock(
-                        com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaRepository.class),
+                        com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository.class),
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class));
     }
 
@@ -53,80 +53,80 @@ class FichaPerfilCommandOutputAdapterTest {
                 asesorId
         );
 
-        AsesorFichaJpaEntity asesorRef = new AsesorFichaJpaEntity();
+        AsesorFichaEntity asesorRef = new AsesorFichaEntity();
         asesorRef.setId(asesorId);
 
-        when(asesorFichaJpaRepository.getReferenceById(asesorId)).thenReturn(asesorRef);
-        when(fichaPerfilJpaRepository.save(any(FichaPerfilJpaEntity.class)))
+        when(asesorFichaRepository.getReferenceById(asesorId)).thenReturn(asesorRef);
+        when(fichaPerfilRepository.save(any(FichaPerfilEntity.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         adapter.guardar(aggregate);
 
         // Assert
-        verify(asesorFichaJpaRepository, times(1)).getReferenceById(asesorId);
-        verify(fichaPerfilJpaRepository, times(1)).save(any(FichaPerfilJpaEntity.class));
+        verify(asesorFichaRepository, times(1)).getReferenceById(asesorId);
+        verify(fichaPerfilRepository, times(1)).save(any(FichaPerfilEntity.class));
     }
 
     @Test
     void debeBuscarPorId_cuandoIdExiste() {
         // Arrange
-        AsesorFichaJpaEntity asesor = new AsesorFichaJpaEntity();
+        AsesorFichaEntity asesor = new AsesorFichaEntity();
         asesor.setId(asesorId);
 
-        FichaPerfilJpaEntity entity = new FichaPerfilJpaEntity();
+        FichaPerfilEntity entity = new FichaPerfilEntity();
         entity.setId(fichaId);
         entity.setTituloProyecto("Proyecto Test");
         entity.setAsesorFicha(asesor);
 
-        when(fichaPerfilJpaRepository.findById(fichaId)).thenReturn(Optional.of(entity));
+        when(fichaPerfilRepository.findById(fichaId)).thenReturn(Optional.of(entity));
 
         // Act
         Optional<FichaPerfilAggregate> resultado = adapter.buscarPorId(fichaId);
 
         // Assert
         assertThat(resultado).isPresent();
-        verify(fichaPerfilJpaRepository, times(1)).findById(fichaId);
+        verify(fichaPerfilRepository, times(1)).findById(fichaId);
     }
 
     @Test
     void debeRetornarVacio_cuandoIdNoExiste() {
         // Arrange
-        when(fichaPerfilJpaRepository.findById(fichaId)).thenReturn(Optional.empty());
+        when(fichaPerfilRepository.findById(fichaId)).thenReturn(Optional.empty());
 
         // Act
         Optional<FichaPerfilAggregate> resultado = adapter.buscarPorId(fichaId);
 
         // Assert
         assertThat(resultado).isEmpty();
-        verify(fichaPerfilJpaRepository, times(1)).findById(fichaId);
+        verify(fichaPerfilRepository, times(1)).findById(fichaId);
     }
 
     @Test
     void debeRetornarTrue_cuandoExistePorTitulo() {
         // Arrange
         String titulo = "Proyecto Unico";
-        when(fichaPerfilJpaRepository.existsByTituloProyecto(titulo)).thenReturn(true);
+        when(fichaPerfilRepository.existsByTituloProyecto(titulo)).thenReturn(true);
 
         // Act
         boolean existe = adapter.existePorTituloProyecto(titulo);
 
         // Assert
         assertThat(existe).isTrue();
-        verify(fichaPerfilJpaRepository, times(1)).existsByTituloProyecto(titulo);
+        verify(fichaPerfilRepository, times(1)).existsByTituloProyecto(titulo);
     }
 
     @Test
     void debeRetornarFalse_cuandoNoExistePorTitulo() {
         // Arrange
         String titulo = "Proyecto Nuevo";
-        when(fichaPerfilJpaRepository.existsByTituloProyecto(titulo)).thenReturn(false);
+        when(fichaPerfilRepository.existsByTituloProyecto(titulo)).thenReturn(false);
 
         // Act
         boolean existe = adapter.existePorTituloProyecto(titulo);
 
         // Assert
         assertThat(existe).isFalse();
-        verify(fichaPerfilJpaRepository, times(1)).existsByTituloProyecto(titulo);
+        verify(fichaPerfilRepository, times(1)).existsByTituloProyecto(titulo);
     }
 }

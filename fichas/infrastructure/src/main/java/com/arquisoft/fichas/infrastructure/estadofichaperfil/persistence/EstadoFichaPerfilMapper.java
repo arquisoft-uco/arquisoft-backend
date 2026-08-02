@@ -2,16 +2,16 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence;
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
 
 public final class EstadoFichaPerfilMapper {
 
     private EstadoFichaPerfilMapper() {}
 
-    public static EstadoFichaPerfilJpaEntity toJpaEntity(
+    public static EstadoFichaPerfilEntity toEntity(
             EstadoFichaPerfilAggregate aggregate,
-            EstadoFichaJpaEntity estadoFichaRef) {
-        return EstadoFichaPerfilJpaEntity.builder()
+            EstadoFichaEntity estadoFichaRef) {
+        return EstadoFichaPerfilEntity.builder()
                 .id(aggregate.getId())
                 .fichaPerfilId(aggregate.getFichaPerfilId())
                 .estadoFicha(estadoFichaRef)
@@ -19,7 +19,7 @@ public final class EstadoFichaPerfilMapper {
                 .build();
     }
 
-    public static EstadoFichaPerfilAggregate toDomain(EstadoFichaPerfilJpaEntity entity) {
+    public static EstadoFichaPerfilAggregate toDomain(EstadoFichaPerfilEntity entity) {
         EstadoFicha estadoFicha = EstadoFicha.valueOf(entity.getEstadoFicha().getId());
         return EstadoFichaPerfilAggregate.reconstruir(
                 entity.getId(),

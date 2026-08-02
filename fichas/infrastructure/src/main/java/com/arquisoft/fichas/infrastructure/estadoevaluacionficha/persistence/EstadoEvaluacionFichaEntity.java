@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence;
 
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionJpaEntity;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionEntity;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EstadoEvaluacionFichaJpaEntity {
+public class EstadoEvaluacionFichaEntity {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -30,11 +30,11 @@ public class EstadoEvaluacionFichaJpaEntity {
 
     @ManyToOne
     @JoinColumn(name = "evaluacion_ficha_perfil_id", nullable = false)
-    private EvaluacionFichaPerfilJpaEntity evaluacionFichaPerfil;
+    private EvaluacionFichaPerfilEntity evaluacionFichaPerfil;
 
     @ManyToOne
     @JoinColumn(name = "estado_evaluacion_id", nullable = false)
-    private EstadoEvaluacionJpaEntity estadoEvaluacion;
+    private EstadoEvaluacionEntity estadoEvaluacion;
 
     @Column(name = "fecha_actualizacion", nullable = false)
     private Instant fechaActualizacion;

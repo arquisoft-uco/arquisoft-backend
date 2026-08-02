@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class EvaluacionFichaPerfilMapper {
 
-    public EvaluacionFichaPerfilJpaEntity toJpaEntity(EvaluacionFichaPerfilAggregate aggregate) {
-        return EvaluacionFichaPerfilJpaEntity.builder()
+    public EvaluacionFichaPerfilEntity toEntity(EvaluacionFichaPerfilAggregate aggregate) {
+        return EvaluacionFichaPerfilEntity.builder()
                 .id(aggregate.getId())
                 .representanteComiteId(aggregate.getRepresentanteComiteId())
                 .fichaPerfilId(aggregate.getFichaPerfilId())
@@ -15,7 +15,7 @@ public class EvaluacionFichaPerfilMapper {
                 .build();
     }
 
-    public EvaluacionFichaPerfilAggregate toDomain(EvaluacionFichaPerfilJpaEntity entity) {
+    public EvaluacionFichaPerfilAggregate toDomain(EvaluacionFichaPerfilEntity entity) {
         return EvaluacionFichaPerfilAggregate.reconstruir(
                 entity.getId(),
                 entity.getRepresentanteComiteId(),

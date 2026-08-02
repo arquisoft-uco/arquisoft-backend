@@ -15,7 +15,7 @@ class EstudianteMapperTest {
     void debeMaperarADominio_cuandoEntityEsValida() {
         // Arrange
         UUID id = UUID.randomUUID();
-        EstudianteJpaEntity entity = EstudianteJpaEntity.builder()
+        EstudianteEntity entity = EstudianteEntity.builder()
                 .id(id)
                 .identificador("20161020123")
                 .nombre("Juan Pérez")
@@ -33,7 +33,7 @@ class EstudianteMapperTest {
     }
 
     @Test
-    void debeMaperarAJpaEntity_cuandoAggregateEsValido() {
+    void debeMaperarAEntity_cuandoAggregateEsValido() {
         // Arrange
         UUID id = UUID.randomUUID();
         EstudianteAggregate aggregate = EstudianteAggregate.reconstruir(
@@ -44,7 +44,7 @@ class EstudianteMapperTest {
         );
 
         // Act
-        EstudianteJpaEntity entity = mapper.toJpaEntity(aggregate);
+        EstudianteEntity entity = mapper.toEntity(aggregate);
 
         // Assert
         assertThat(entity.getId()).isEqualTo(id);
@@ -57,7 +57,7 @@ class EstudianteMapperTest {
     void debePreservarId_cuandoMapeaIdaYVuelta() {
         // Arrange
         UUID idOriginal = UUID.randomUUID();
-        EstudianteJpaEntity entityOriginal = EstudianteJpaEntity.builder()
+        EstudianteEntity entityOriginal = EstudianteEntity.builder()
                 .id(idOriginal)
                 .identificador("20161020123")
                 .nombre("Juan Pérez")
@@ -66,7 +66,7 @@ class EstudianteMapperTest {
 
         // Act
         EstudianteAggregate aggregate = mapper.toDomain(entityOriginal);
-        EstudianteJpaEntity entityMapeada = mapper.toJpaEntity(aggregate);
+        EstudianteEntity entityMapeada = mapper.toEntity(aggregate);
 
         // Assert
         assertThat(entityMapeada.getId()).isEqualTo(idOriginal);

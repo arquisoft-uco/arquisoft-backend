@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.infrastructure.asesorficha.persistence;
+package com.arquisoft.fichas.infrastructure.estudiante.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Entity
-@Table(name = "asesor_ficha")
+@Table(name = "estudiante")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AsesorFichaJpaEntity {
+public class EstudianteEntity {
 
     @Id
-    @Column(name = "id", columnDefinition = "uuid")
+    @Column(name = "id", columnDefinition = "UUID")
     private UUID id;
 
     @Column(name = "identificador", nullable = false, length = 30)

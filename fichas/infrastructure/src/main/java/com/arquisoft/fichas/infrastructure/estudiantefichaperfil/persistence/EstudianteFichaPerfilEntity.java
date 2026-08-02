@@ -21,7 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EstudianteFichaPerfilJpaEntity {
+public class EstudianteFichaPerfilEntity {
 
     @Id
     @Column(name = "id", columnDefinition = "UUID")

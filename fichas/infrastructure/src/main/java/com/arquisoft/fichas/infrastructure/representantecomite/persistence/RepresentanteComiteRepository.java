@@ -4,6 +4,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface RepresentanteComiteJpaRepository
-        extends JpaRepository<RepresentanteComiteJpaEntity, UUID> {
+public interface RepresentanteComiteRepository
+        extends JpaRepository<RepresentanteComiteEntity, UUID> {
 }

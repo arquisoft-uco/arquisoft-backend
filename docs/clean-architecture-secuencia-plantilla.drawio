@@ -122,7 +122,7 @@
                         <mxPoint x="464" y="423" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="m12" value="10: map Dominio -&gt; JpaEntity; persiste" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
+                <mxCell id="m12" value="10: map Dominio -&gt; Entity; persiste" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" parent="1" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="880" y="453" as="sourcePoint"/>
                         <mxPoint x="880" y="475" as="targetPoint"/>
@@ -159,7 +159,7 @@
                 <mxCell id="n3" value="3) XxxAggregate (domain)&#xa;operacionNegocio() valida invariantes.&#xa;Solo se llama desde application (DIP).&#xa;build() / rebuild() sin Spring, sin Lombok." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#dae8fc;strokeColor=#6c8ebf;align=left;verticalAlign=top;spacing=6;size=14;" parent="1" vertex="1">
                     <mxGeometry x="1010" y="354" width="360" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="n4" value="4) XxxOutputAdapter (infrastructure — Output)&#xa;Implementa XxxOutputPort (domain). DIP.&#xa;Aqui (y SOLO aqui) se mapea&#xa;Dominio &lt;-&gt; JpaEntity." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacing=6;size=14;" parent="1" vertex="1">
+                <mxCell id="n4" value="4) XxxOutputAdapter (infrastructure — Output)&#xa;Implementa XxxOutputPort (domain). DIP.&#xa;Aqui (y SOLO aqui) se mapea&#xa;Dominio &lt;-&gt; Entity." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;verticalAlign=top;spacing=6;size=14;" parent="1" vertex="1">
                     <mxGeometry x="1010" y="470" width="360" height="80" as="geometry"/>
                 </mxCell>
                 <mxCell id="sep" value="" style="line;strokeColor=#888888;strokeWidth=2;fillColor=none;" parent="1" vertex="1">

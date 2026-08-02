@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiante.query.adapter.out.persistence;
 
-import com.arquisoft.fichas.infrastructure.estudiante.persistence.EstudianteJpaRepository;
+import com.arquisoft.fichas.infrastructure.estudiante.persistence.EstudianteRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.times;
 class EstudianteQueryOutputAdapterTest {
 
     @Mock
-    private EstudianteJpaRepository estudianteJpaRepository;
+    private EstudianteRepository estudianteRepository;
 
     @InjectMocks
     private EstudianteQueryOutputAdapter adapter;
@@ -27,27 +27,27 @@ class EstudianteQueryOutputAdapterTest {
     void debeRetornarTrue_cuandoEstudianteExiste() {
         // Arrange
         UUID estudianteId = UUID.randomUUID();
-        when(estudianteJpaRepository.existsById(estudianteId)).thenReturn(true);
+        when(estudianteRepository.existsById(estudianteId)).thenReturn(true);
 
         // Act
         boolean existe = adapter.existePorId(estudianteId);
 
         // Assert
         assertThat(existe).isTrue();
-        verify(estudianteJpaRepository, times(1)).existsById(estudianteId);
+        verify(estudianteRepository, times(1)).existsById(estudianteId);
     }
 
     @Test
     void debeRetornarFalse_cuandoEstudianteNoExiste() {
         // Arrange
         UUID estudianteId = UUID.randomUUID();
-        when(estudianteJpaRepository.existsById(estudianteId)).thenReturn(false);
+        when(estudianteRepository.existsById(estudianteId)).thenReturn(false);
 
         // Act
         boolean existe = adapter.existePorId(estudianteId);
 
         // Assert
         assertThat(existe).isFalse();
-        verify(estudianteJpaRepository, times(1)).existsById(estudianteId);
+        verify(estudianteRepository, times(1)).existsById(estudianteId);
     }
 }

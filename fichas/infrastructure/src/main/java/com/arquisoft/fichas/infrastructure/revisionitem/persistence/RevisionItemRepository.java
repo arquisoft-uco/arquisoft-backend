@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface RevisionItemJpaRepository extends JpaRepository<RevisionItemJpaEntity, UUID> {
+public interface RevisionItemRepository extends JpaRepository<RevisionItemEntity, UUID> {
 
     long countByItemId(UUID itemId);
 }

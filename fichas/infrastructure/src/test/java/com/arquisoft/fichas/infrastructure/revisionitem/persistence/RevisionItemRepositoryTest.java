@@ -16,10 +16,10 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.jpa.show-sql=false"
 })
-class RevisionItemJpaRepositoryTest {
+class RevisionItemRepositoryTest {
 
     @Autowired
-    private RevisionItemJpaRepository repository;
+    private RevisionItemRepository repository;
 
     @Autowired
     private EntityManager entityManager;

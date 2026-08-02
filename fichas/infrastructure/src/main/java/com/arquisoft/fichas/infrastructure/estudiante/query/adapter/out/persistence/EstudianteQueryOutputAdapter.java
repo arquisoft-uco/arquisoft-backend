@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estudiante.query.adapter.out.persistence;
 
 import com.arquisoft.fichas.application.estudiante.query.port.out.EstudianteQueryOutputPort;
-import com.arquisoft.fichas.infrastructure.estudiante.persistence.EstudianteJpaRepository;
+import com.arquisoft.fichas.infrastructure.estudiante.persistence.EstudianteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +11,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EstudianteQueryOutputAdapter implements EstudianteQueryOutputPort {
 
-    private final EstudianteJpaRepository estudianteJpaRepository;
+    private final EstudianteRepository estudianteRepository;
 
     @Override
     public boolean existePorId(UUID id) {
-        return estudianteJpaRepository.existsById(id);
+        return estudianteRepository.existsById(id);
     }
 }

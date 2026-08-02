@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.revisionitem.query.adapter.out.persistence;
 
-import com.arquisoft.fichas.infrastructure.revisionitem.persistence.RevisionItemJpaRepository;
+import com.arquisoft.fichas.infrastructure.revisionitem.persistence.RevisionItemRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 class RevisionItemQueryOutputAdapterTest {
 
     @Mock
-    private RevisionItemJpaRepository jpaRepository;
+    private RevisionItemRepository jpaRepository;
 
     @InjectMocks
     private RevisionItemQueryOutputAdapter adapter;

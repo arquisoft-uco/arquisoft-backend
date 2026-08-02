@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence;
 
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaEntity;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaRepository;
+import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
+import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,37 +14,37 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class EstadoFichaPerfilJpaRepositoryTest {
+class EstadoFichaPerfilRepositoryTest {
 
     @Autowired
-    private EstadoFichaPerfilJpaRepository estadoFichaPerfilJpaRepository;
+    private EstadoFichaPerfilRepository estadoFichaPerfilRepository;
 
     @Autowired
-    private EstadoFichaJpaRepository estadoFichaJpaRepository;
+    private EstadoFichaRepository estadoFichaRepository;
 
-    private EstadoFichaJpaEntity estadoFicha;
+    private EstadoFichaEntity estadoFicha;
 
     @BeforeEach
     void setUp() {
-        estadoFicha = new EstadoFichaJpaEntity();
+        estadoFicha = new EstadoFichaEntity();
         estadoFicha.setId("EN_CONSTRUCCION");
         estadoFicha.setNombre("En Construccion");
         estadoFicha.setDescripcion("Estado inicial");
-        estadoFichaJpaRepository.save(estadoFicha);
+        estadoFichaRepository.save(estadoFicha);
     }
 
     @Test
-    void debeGuardar_cuandoEntidadJpaEsValida() {
+    void debeGuardar_cuandoEntidadEsValida() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        var entity = new EstadoFichaPerfilJpaEntity();
+        var entity = new EstadoFichaPerfilEntity();
         entity.setId(UUID.randomUUID());
         entity.setFichaPerfilId(fichaPerfilId);
         entity.setEstadoFicha(estadoFicha);
         entity.setFechaActualizacion(Instant.now());
 
         // Act
-        EstadoFichaPerfilJpaEntity resultado = estadoFichaPerfilJpaRepository.save(entity);
+        EstadoFichaPerfilEntity resultado = estadoFichaPerfilRepository.save(entity);
 
         // Assert
         assertThat(resultado).isNotNull();
@@ -57,15 +57,15 @@ class EstadoFichaPerfilJpaRepositoryTest {
     void debeBuscarPorId_cuandoIdExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        var entity = new EstadoFichaPerfilJpaEntity();
+        var entity = new EstadoFichaPerfilEntity();
         entity.setId(UUID.randomUUID());
         entity.setFichaPerfilId(fichaPerfilId);
         entity.setEstadoFicha(estadoFicha);
         entity.setFechaActualizacion(Instant.now());
-        estadoFichaPerfilJpaRepository.save(entity);
+        estadoFichaPerfilRepository.save(entity);
 
         // Act
-        Optional<EstadoFichaPerfilJpaEntity> resultado = estadoFichaPerfilJpaRepository.findById(entity.getId());
+        Optional<EstadoFichaPerfilEntity> resultado = estadoFichaPerfilRepository.findById(entity.getId());
 
         // Assert
         assertThat(resultado).isPresent();

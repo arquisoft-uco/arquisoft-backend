@@ -9,10 +9,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class EstudianteFichaPerfilJpaRepositoryTest {
+class EstudianteFichaPerfilRepositoryTest {
 
     @Autowired
-    private EstudianteFichaPerfilJpaRepository repository;
+    private EstudianteFichaPerfilRepository repository;
 
     @Test
     void debeRetornarFalse_cuandoRelacionNoExiste() {
@@ -32,11 +32,11 @@ class EstudianteFichaPerfilJpaRepositoryTest {
         // Arrange — la entidad usa columnas UUID crudas (sin @ManyToOne), no requiere filas padre
         UUID fichaId = UUID.randomUUID();
         UUID otraFicha = UUID.randomUUID();
-        repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
+        repository.saveAndFlush(EstudianteFichaPerfilEntity.builder()
                 .id(UUID.randomUUID()).fichaPerfilId(fichaId).estudianteId(UUID.randomUUID()).build());
-        repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
+        repository.saveAndFlush(EstudianteFichaPerfilEntity.builder()
                 .id(UUID.randomUUID()).fichaPerfilId(fichaId).estudianteId(UUID.randomUUID()).build());
-        repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
+        repository.saveAndFlush(EstudianteFichaPerfilEntity.builder()
                 .id(UUID.randomUUID()).fichaPerfilId(otraFicha).estudianteId(UUID.randomUUID()).build());
 
         // Act
@@ -51,7 +51,7 @@ class EstudianteFichaPerfilJpaRepositoryTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        var entity = EstudianteFichaPerfilJpaEntity.builder()
+        var entity = EstudianteFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaId)
                 .estudianteId(estudianteId)

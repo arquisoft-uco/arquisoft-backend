@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.persistence;
 
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,7 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FichaPerfilJpaEntity {
+public class FichaPerfilEntity {
 
     @Id
     @Column(name = "id", columnDefinition = "uuid")
@@ -32,5 +32,5 @@ public class FichaPerfilJpaEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "asesor_ficha_id", nullable = false)
-    private AsesorFichaJpaEntity asesorFicha;
+    private AsesorFichaEntity asesorFicha;
 }

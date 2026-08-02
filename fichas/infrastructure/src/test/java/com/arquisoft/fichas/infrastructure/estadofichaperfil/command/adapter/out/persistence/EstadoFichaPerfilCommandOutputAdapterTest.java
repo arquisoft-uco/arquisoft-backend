@@ -2,10 +2,10 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.adapter.ou
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaEntity;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaRepository;
-import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaEntity;
-import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
+import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,29 +22,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EstadoFichaPerfilCommandOutputAdapterTest {
 
     @Autowired
-    private EstadoFichaPerfilJpaRepository estadoFichaPerfilJpaRepository;
+    private EstadoFichaPerfilRepository estadoFichaPerfilRepository;
 
     @Autowired
-    private EstadoFichaJpaRepository estadoFichaJpaRepository;
+    private EstadoFichaRepository estadoFichaRepository;
 
     private EstadoFichaPerfilCommandOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
         adapter = new EstadoFichaPerfilCommandOutputAdapter(
-                estadoFichaPerfilJpaRepository, estadoFichaJpaRepository);
+                estadoFichaPerfilRepository, estadoFichaRepository);
 
-        var estadoFicha = new EstadoFichaJpaEntity();
+        var estadoFicha = new EstadoFichaEntity();
         estadoFicha.setId("EN_CONSTRUCCION");
         estadoFicha.setNombre("En Construccion");
         estadoFicha.setDescripcion("Estado inicial");
-        estadoFichaJpaRepository.save(estadoFicha);
+        estadoFichaRepository.save(estadoFicha);
 
-        var estadoAprobada = new EstadoFichaJpaEntity();
+        var estadoAprobada = new EstadoFichaEntity();
         estadoAprobada.setId("APROBADA");
         estadoAprobada.setNombre("Aprobada");
         estadoAprobada.setDescripcion("Estado terminal");
-        estadoFichaJpaRepository.save(estadoAprobada);
+        estadoFichaRepository.save(estadoAprobada);
     }
 
     @Test
@@ -57,7 +57,7 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
         adapter.guardar(aggregate);
 
         // Assert
-        Optional<EstadoFichaPerfilJpaEntity> resultado = estadoFichaPerfilJpaRepository.findById(aggregate.getId());
+        Optional<EstadoFichaPerfilEntity> resultado = estadoFichaPerfilRepository.findById(aggregate.getId());
         assertThat(resultado).isPresent();
         assertThat(resultado.get().getFichaPerfilId()).isEqualTo(fichaPerfilId);
         assertThat(resultado.get().getEstadoFicha().getId()).isEqualTo("EN_CONSTRUCCION");
@@ -68,16 +68,16 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
     void debeReconstruirConReconstruir_cuandoMapperConvierte() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        EstadoFichaJpaEntity estadoFichaEntity = estadoFichaJpaRepository.findByNombre("En Construccion")
+        EstadoFichaEntity estadoFichaEntity = estadoFichaRepository.findByNombre("En Construccion")
                 .orElseThrow();
         Instant fechaActualizacion = Instant.now();
 
-        var entity = new EstadoFichaPerfilJpaEntity();
+        var entity = new EstadoFichaPerfilEntity();
         entity.setId(UUID.randomUUID());
         entity.setFichaPerfilId(fichaPerfilId);
         entity.setEstadoFicha(estadoFichaEntity);
         entity.setFechaActualizacion(fechaActualizacion);
-        estadoFichaPerfilJpaRepository.save(entity);
+        estadoFichaPerfilRepository.save(entity);
 
         // Act
         EstadoFichaPerfilAggregate resultado = EstadoFichaPerfilMapper.toDomain(entity);

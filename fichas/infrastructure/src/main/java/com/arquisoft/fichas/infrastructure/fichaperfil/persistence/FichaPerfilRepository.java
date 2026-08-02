@@ -9,11 +9,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 import java.util.UUID;
 
-public interface FichaPerfilJpaRepository extends JpaRepository<FichaPerfilJpaEntity, UUID>,
-        JpaSpecificationExecutor<FichaPerfilJpaEntity> {
+public interface FichaPerfilRepository extends JpaRepository<FichaPerfilEntity, UUID>,
+        JpaSpecificationExecutor<FichaPerfilEntity> {
 
     @EntityGraph(attributePaths = "asesorFicha")
-    Page<FichaPerfilJpaEntity> findAll(Specification<FichaPerfilJpaEntity> spec, Pageable pageable);
+    Page<FichaPerfilEntity> findAll(Specification<FichaPerfilEntity> spec, Pageable pageable);
 
     boolean existsByTituloProyecto(String tituloProyecto);
 }

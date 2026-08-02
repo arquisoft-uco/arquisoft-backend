@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaEntity;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class EvaluacionFichaPerfilCommandOutputAdapterTest {
 
     @Mock
-    private EvaluacionFichaPerfilJpaRepository jpaRepository;
+    private EvaluacionFichaPerfilRepository jpaRepository;
 
     private EvaluacionFichaPerfilMapper mapper;
     private EvaluacionFichaPerfilCommandOutputAdapter adapter;
@@ -39,20 +39,20 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
         UUID fichaId = UUID.randomUUID();
         var aggregate = EvaluacionFichaPerfilAggregate.crear(representanteId, fichaId);
 
-        EvaluacionFichaPerfilJpaEntity entityGuardada = EvaluacionFichaPerfilJpaEntity.builder()
+        EvaluacionFichaPerfilEntity entityGuardada = EvaluacionFichaPerfilEntity.builder()
                 .id(aggregate.getId())
                 .representanteComiteId(representanteId)
                 .fichaPerfilId(fichaId)
                 .fechaCreacion(aggregate.getFechaCreacion())
                 .build();
 
-        when(jpaRepository.save(any(EvaluacionFichaPerfilJpaEntity.class))).thenReturn(entityGuardada);
+        when(jpaRepository.save(any(EvaluacionFichaPerfilEntity.class))).thenReturn(entityGuardada);
 
         // Act
         adapter.guardar(aggregate);
 
         // Assert
-        verify(jpaRepository).save(any(EvaluacionFichaPerfilJpaEntity.class));
+        verify(jpaRepository).save(any(EvaluacionFichaPerfilEntity.class));
     }
 
     @Test

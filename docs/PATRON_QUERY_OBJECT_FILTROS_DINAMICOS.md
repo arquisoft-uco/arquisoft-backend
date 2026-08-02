@@ -72,7 +72,7 @@ Spring Data JPA. Es el único punto del sistema que conoce JPA.
      │  specification.desdeCriteria(criteria)
      ▼
  FichaPerfilJpaSpecification   ← [SPRING DATA SPECIFICATION] spec concreta (fichas:infrastructure)
-     │  extends QueryJpaSpecification<FichaPerfilJpaEntity>
+     │  extends QueryJpaSpecification<FichaPerfilEntity>
      │
      ▼
  QueryJpaSpecification<E>      ← recorre NodoFiltro (shared:postgres)
@@ -81,7 +81,7 @@ Spring Data JPA. Es el único punto del sistema que conoce JPA.
  CampoSpec<E>                  ← predicado JPA por tipo (shared:postgres)
      │
      ▼
- Specification<FichaPerfilJpaEntity>  → SQL WHERE generado
+ Specification<FichaPerfilEntity>  → SQL WHERE generado
 ```
 
 La frontera entre los dos patrones está exactamente en `FichaPerfilQueryOutputPort`:
@@ -474,14 +474,14 @@ el enum y el compilador señala todos los puntos que requieren actualización.
 
 #### `FichaPerfilJpaSpecification` — `@Component` — [SPRING DATA SPECIFICATION]
 
-Extiende `QueryJpaSpecification<FichaPerfilJpaEntity>`. Construye el mapa de campos
+Extiende `QueryJpaSpecification<FichaPerfilEntity>`. Construye el mapa de campos
 filtrables iterando `FichaPerfilCriteria.Campo` con un switch exhaustivo: si se agrega
 un campo al enum sin actualizar el switch, el compilador falla.
 
 ```java
 static {
     for (FichaPerfilCriteria.Campo campo : FichaPerfilCriteria.Campo.values()) {
-        CampoSpec<FichaPerfilJpaEntity> spec = switch (campo) {
+        CampoSpec<FichaPerfilEntity> spec = switch (campo) {
             case TITULO_PROYECTO -> CampoSpec.texto(root -> root.get("tituloProyecto"));
             case ASESOR_NOMBRE   -> CampoSpec.texto(root -> root.get("asesorFicha").get("nombre"));
             case ASESOR_EMAIL    -> CampoSpec.texto(root -> root.get("asesorFicha").get("email"));
@@ -551,9 +551,9 @@ Body: QueryCriteriaRequestDTO     (opcional — sin body devuelve todo paginado)
    └─ Delega a FichaPerfilQueryOutputPort.consultarTodas(criteria)
 
 4. FichaPerfilQueryOutputAdapter.consultarTodas(criteria)
-   └─ specification.desdeCriteria(criteria)  →  Specification<FichaPerfilJpaEntity>
+   └─ specification.desdeCriteria(criteria)  →  Specification<FichaPerfilEntity>
    └─ FichaPerfilSortMapper.traducir(campo)  →  ruta JPA para Pageable
-   └─ fichaPerfilJpaRepository.findAll(spec, pageable)
+   └─ fichaPerfilRepository.findAll(spec, pageable)
 
 5. FichaPerfilJpaSpecification → QueryJpaSpecification.desdeCriteria(criteria)
    └─ especDesdeNodo(raiz)
@@ -729,14 +729,14 @@ campos olvidados.
 ```java
 // proyectos/infrastructure/.../ProyectoJpaSpecification.java
 @Component
-class ProyectoJpaSpecification extends QueryJpaSpecification<ProyectoJpaEntity> {
+class ProyectoJpaSpecification extends QueryJpaSpecification<ProyectoEntity> {
 
-    private static final Map<String, CampoSpec<ProyectoJpaEntity>> CAMPOS;
+    private static final Map<String, CampoSpec<ProyectoEntity>> CAMPOS;
 
     static {
-        Map<String, CampoSpec<ProyectoJpaEntity>> m = new LinkedHashMap<>();
+        Map<String, CampoSpec<ProyectoEntity>> m = new LinkedHashMap<>();
         for (ProyectoCriteria.Campo campo : ProyectoCriteria.Campo.values()) {
-            CampoSpec<ProyectoJpaEntity> spec = switch (campo) {
+            CampoSpec<ProyectoEntity> spec = switch (campo) {
                 case TITULO       -> CampoSpec.texto(root -> root.get("titulo"));
                 case ESTADO       -> CampoSpec.texto(root -> root.get("estado"));
                 case ANIO         -> CampoSpec.entero(root -> root.get("anio"));
@@ -749,7 +749,7 @@ class ProyectoJpaSpecification extends QueryJpaSpecification<ProyectoJpaEntity> 
     }
 
     @Override
-    protected Map<String, CampoSpec<ProyectoJpaEntity>> camposPermitidos() {
+    protected Map<String, CampoSpec<ProyectoEntity>> camposPermitidos() {
         return CAMPOS;
     }
 }
@@ -791,13 +791,13 @@ final class ProyectoSortMapper {
 @RequiredArgsConstructor
 public class ProyectoQueryOutputAdapter implements ProyectoQueryOutputPort {
 
-    private final ProyectoJpaRepository repository;
+    private final ProyectoRepository repository;
     private final ProyectoJpaSpecification specification;
 
     @Override
     public PaginatedResult<ProyectoReadModel> consultarTodos(ProyectoCriteria criteria) {
         Pageable pageable = toPageable(criteria);
-        Specification<ProyectoJpaEntity> spec = specification.desdeCriteria(criteria);
+        Specification<ProyectoEntity> spec = specification.desdeCriteria(criteria);
         return PaginationMapper.toResult(
                 repository.findAll(spec, pageable).map(ProyectoMapper::toReadModel));
     }

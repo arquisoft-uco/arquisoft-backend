@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface EstudianteFichaPerfilJpaRepository extends JpaRepository<EstudianteFichaPerfilJpaEntity, UUID> {
+public interface EstudianteFichaPerfilRepository extends JpaRepository<EstudianteFichaPerfilEntity, UUID> {
 
     boolean existsByFichaPerfilIdAndEstudianteId(UUID fichaPerfilId, UUID estudianteId);
 

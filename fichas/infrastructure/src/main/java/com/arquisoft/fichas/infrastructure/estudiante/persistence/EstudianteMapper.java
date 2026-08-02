@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class EstudianteMapper {
 
-    public EstudianteAggregate toDomain(EstudianteJpaEntity entity) {
+    public EstudianteAggregate toDomain(EstudianteEntity entity) {
         return EstudianteAggregate.reconstruir(
             entity.getId(),
             entity.getIdentificador(),
@@ -15,8 +15,8 @@ public class EstudianteMapper {
         );
     }
 
-    public EstudianteJpaEntity toJpaEntity(EstudianteAggregate aggregate) {
-        return EstudianteJpaEntity.builder()
+    public EstudianteEntity toEntity(EstudianteAggregate aggregate) {
+        return EstudianteEntity.builder()
             .id(aggregate.getId())
             .identificador(aggregate.getIdentificador())
             .nombre(aggregate.getNombre())

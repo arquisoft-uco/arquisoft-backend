@@ -118,8 +118,8 @@ exception/           # Domain exceptions shared across features (extend DomainEx
     │   └── adapter/out/persistence/
     │       └── {Feature}QueryOutputAdapter.java
     └── persistence/
-        ├── {Feature}JpaEntity.java
-        ├── {Feature}JpaRepository.java
+        ├── {Feature}Entity.java
+        ├── {Feature}Repository.java
         └── {Feature}Mapper.java
 config/              # Spring configuration shared within context
 filter/              # HTTP filters (if applicable to context)

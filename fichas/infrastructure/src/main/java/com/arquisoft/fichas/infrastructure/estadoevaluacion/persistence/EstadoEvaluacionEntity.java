@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EstadoEvaluacionJpaEntity {
+public class EstadoEvaluacionEntity {
 
     @Id
     @Column(name = "id", nullable = false, length = 50)

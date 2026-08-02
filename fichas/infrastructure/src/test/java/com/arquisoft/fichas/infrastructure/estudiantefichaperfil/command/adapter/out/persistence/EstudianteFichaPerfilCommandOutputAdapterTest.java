@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaEntity;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 class EstudianteFichaPerfilCommandOutputAdapterTest {
 
     @Mock
-    private EstudianteFichaPerfilJpaRepository jpaRepository;
+    private EstudianteFichaPerfilRepository jpaRepository;
 
     @Mock
     private EstudianteFichaPerfilMapper mapper;
@@ -41,15 +41,15 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         UUID estudianteId = UUID.randomUUID();
         EstudianteFichaPerfilAggregate relacion = EstudianteFichaPerfilAggregate.crear(
                 fichaId, List.of(estudianteId)).get(0);
-        EstudianteFichaPerfilJpaEntity entity = new EstudianteFichaPerfilJpaEntity();
+        EstudianteFichaPerfilEntity entity = new EstudianteFichaPerfilEntity();
 
-        when(mapper.toJpaEntity(relacion)).thenReturn(entity);
+        when(mapper.toEntity(relacion)).thenReturn(entity);
 
         // Act
         adapter.guardar(relacion);
 
         // Assert
-        verify(mapper, times(1)).toJpaEntity(relacion);
+        verify(mapper, times(1)).toEntity(relacion);
         verify(jpaRepository, times(1)).save(entity);
     }
 

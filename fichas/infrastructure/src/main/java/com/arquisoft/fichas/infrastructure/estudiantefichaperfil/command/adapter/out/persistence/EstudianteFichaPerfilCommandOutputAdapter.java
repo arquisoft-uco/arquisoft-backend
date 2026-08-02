@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapte
 
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,12 +13,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFichaPerfilOutputPort {
 
-    private final EstudianteFichaPerfilJpaRepository jpaRepository;
+    private final EstudianteFichaPerfilRepository jpaRepository;
     private final EstudianteFichaPerfilMapper mapper;
 
     @Override
     public void guardar(EstudianteFichaPerfilAggregate relacion) {
-        var entity = mapper.toJpaEntity(relacion);
+        var entity = mapper.toEntity(relacion);
         jpaRepository.save(entity);
     }
 

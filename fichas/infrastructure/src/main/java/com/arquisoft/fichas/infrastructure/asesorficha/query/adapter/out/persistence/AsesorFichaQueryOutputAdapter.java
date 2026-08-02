@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.asesorficha.query.adapter.out.persistence;
 
 import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQueryOutputPort;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaRepository;
+import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +11,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AsesorFichaQueryOutputAdapter implements AsesorFichaQueryOutputPort {
 
-    private final AsesorFichaJpaRepository asesorFichaJpaRepository;
+    private final AsesorFichaRepository asesorFichaRepository;
 
     @Override
     public boolean existePorId(UUID id) {
-        return asesorFichaJpaRepository.existsById(id);
+        return asesorFichaRepository.existsById(id);
     }
 }

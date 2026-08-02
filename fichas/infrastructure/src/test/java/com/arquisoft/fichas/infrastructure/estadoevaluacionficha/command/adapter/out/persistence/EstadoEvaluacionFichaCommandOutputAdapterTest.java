@@ -2,13 +2,13 @@ package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapte
 
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionJpaEntity;
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionJpaRepository;
-import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaJpaEntity;
-import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaJpaRepository;
+import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionRepository;
+import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaRepository;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaMapper;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaEntity;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,25 +28,25 @@ import static org.mockito.Mockito.when;
 class EstadoEvaluacionFichaCommandOutputAdapterTest {
 
     @Mock
-    private EstadoEvaluacionFichaJpaRepository estadoEvaluacionFichaJpaRepository;
+    private EstadoEvaluacionFichaRepository estadoEvaluacionFichaRepository;
 
     @Mock
-    private EvaluacionFichaPerfilJpaRepository evaluacionFichaPerfilJpaRepository;
+    private EvaluacionFichaPerfilRepository evaluacionFichaPerfilRepository;
 
     @Mock
-    private EstadoEvaluacionJpaRepository estadoEvaluacionJpaRepository;
+    private EstadoEvaluacionRepository estadoEvaluacionRepository;
 
     private EstadoEvaluacionFichaCommandOutputAdapter adapter;
     private EstadoEvaluacionFichaMapper mapper;
 
     @BeforeEach
     void setUp() {
-        mapper = new EstadoEvaluacionFichaMapper(estadoEvaluacionJpaRepository);
+        mapper = new EstadoEvaluacionFichaMapper(estadoEvaluacionRepository);
         adapter = new EstadoEvaluacionFichaCommandOutputAdapter(
-                estadoEvaluacionFichaJpaRepository,
+                estadoEvaluacionFichaRepository,
                 mapper,
-                evaluacionFichaPerfilJpaRepository,
-                estadoEvaluacionJpaRepository);
+                evaluacionFichaPerfilRepository,
+                estadoEvaluacionRepository);
     }
 
     @Test
@@ -55,31 +55,31 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         UUID evaluacionId = UUID.randomUUID();
         var aggregate = EstadoEvaluacionFichaAggregate.crear(evaluacionId);
 
-        var evaluacionJpa = EvaluacionFichaPerfilJpaEntity.builder()
+        var evaluacionJpa = EvaluacionFichaPerfilEntity.builder()
                 .id(evaluacionId)
                 .build();
-        when(evaluacionFichaPerfilJpaRepository.getReferenceById(evaluacionId))
+        when(evaluacionFichaPerfilRepository.getReferenceById(evaluacionId))
                 .thenReturn(evaluacionJpa);
 
-        var estadoJpa = new EstadoEvaluacionJpaEntity("EN_EVALUACION", "En Evaluación", "");
-        when(estadoEvaluacionJpaRepository.getReferenceById("EN_EVALUACION"))
+        var estadoJpa = new EstadoEvaluacionEntity("EN_EVALUACION", "En Evaluación", "");
+        when(estadoEvaluacionRepository.getReferenceById("EN_EVALUACION"))
                 .thenReturn(estadoJpa);
 
-        EstadoEvaluacionFichaJpaEntity entityGuardada = EstadoEvaluacionFichaJpaEntity.builder()
+        EstadoEvaluacionFichaEntity entityGuardada = EstadoEvaluacionFichaEntity.builder()
                 .id(aggregate.getId())
                 .evaluacionFichaPerfil(evaluacionJpa)
                 .estadoEvaluacion(estadoJpa)
                 .fechaActualizacion(aggregate.getFechaActualizacion())
                 .build();
 
-        when(estadoEvaluacionFichaJpaRepository.save(any(EstadoEvaluacionFichaJpaEntity.class)))
+        when(estadoEvaluacionFichaRepository.save(any(EstadoEvaluacionFichaEntity.class)))
                 .thenReturn(entityGuardada);
 
         // Act
         adapter.guardar(aggregate);
 
         // Assert
-        verify(estadoEvaluacionFichaJpaRepository).save(any(EstadoEvaluacionFichaJpaEntity.class));
+        verify(estadoEvaluacionFichaRepository).save(any(EstadoEvaluacionFichaEntity.class));
     }
 
     @Test
@@ -88,23 +88,23 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         UUID id = UUID.randomUUID();
         UUID evaluacionId = UUID.randomUUID();
 
-        var evaluacionJpa = EvaluacionFichaPerfilJpaEntity.builder()
+        var evaluacionJpa = EvaluacionFichaPerfilEntity.builder()
                 .id(evaluacionId)
                 .build();
 
-        var estadoJpa = new EstadoEvaluacionJpaEntity("APROBADA", "Aprobada", "");
+        var estadoJpa = new EstadoEvaluacionEntity("APROBADA", "Aprobada", "");
 
-        EstadoEvaluacionFichaJpaEntity entity = EstadoEvaluacionFichaJpaEntity.builder()
+        EstadoEvaluacionFichaEntity entity = EstadoEvaluacionFichaEntity.builder()
                 .id(id)
                 .evaluacionFichaPerfil(evaluacionJpa)
                 .estadoEvaluacion(estadoJpa)
                 .fechaActualizacion(Instant.now())
                 .build();
 
-        when(estadoEvaluacionFichaJpaRepository.findById(id)).thenReturn(Optional.of(entity));
+        when(estadoEvaluacionFichaRepository.findById(id)).thenReturn(Optional.of(entity));
 
         // Act
-        var resultado = estadoEvaluacionFichaJpaRepository.findById(id);
+        var resultado = estadoEvaluacionFichaRepository.findById(id);
         assertThat(resultado).isPresent();
 
         var aggregateReconstruido = mapper.toDomain(resultado.get());
@@ -119,7 +119,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
 
-        when(estadoEvaluacionFichaJpaRepository
+        when(estadoEvaluacionFichaRepository
                 .existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(evaluacionId, "EN_EVALUACION"))
                 .thenReturn(true);
 
@@ -128,7 +128,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
 
         // Assert
         assertThat(existe).isTrue();
-        verify(estadoEvaluacionFichaJpaRepository)
+        verify(estadoEvaluacionFichaRepository)
                 .existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(evaluacionId, "EN_EVALUACION");
     }
 
@@ -137,7 +137,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
 
-        when(estadoEvaluacionFichaJpaRepository.countByEvaluacionFichaPerfilId(evaluacionId))
+        when(estadoEvaluacionFichaRepository.countByEvaluacionFichaPerfilId(evaluacionId))
                 .thenReturn(2L);
 
         // Act
@@ -145,6 +145,6 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
 
         // Assert
         assertThat(count).isEqualTo(2);
-        verify(estadoEvaluacionFichaJpaRepository).countByEvaluacionFichaPerfilId(evaluacionId);
+        verify(estadoEvaluacionFichaRepository).countByEvaluacionFichaPerfilId(evaluacionId);
     }
 }

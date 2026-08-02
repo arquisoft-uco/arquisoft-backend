@@ -2,8 +2,8 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.adapter.ou
 
 import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaRepository;
-import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -12,14 +12,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EstadoFichaPerfilCommandOutputAdapter implements EstadoFichaPerfilOutputPort {
 
-    private final EstadoFichaPerfilJpaRepository jpaRepository;
-    private final EstadoFichaJpaRepository estadoFichaJpaRepository;
+    private final EstadoFichaPerfilRepository jpaRepository;
+    private final EstadoFichaRepository estadoFichaRepository;
 
     @Override
     public void guardar(EstadoFichaPerfilAggregate aggregate) {
         var estadoFichaRef =
-                estadoFichaJpaRepository.getReferenceById(aggregate.getEstadoFicha().getId());
-        var entity = EstadoFichaPerfilMapper.toJpaEntity(aggregate, estadoFichaRef);
+                estadoFichaRepository.getReferenceById(aggregate.getEstadoFicha().getId());
+        var entity = EstadoFichaPerfilMapper.toEntity(aggregate, estadoFichaRef);
         jpaRepository.save(entity);
     }
 }

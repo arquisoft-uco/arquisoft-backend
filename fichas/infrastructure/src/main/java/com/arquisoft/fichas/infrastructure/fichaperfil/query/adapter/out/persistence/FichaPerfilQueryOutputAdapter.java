@@ -4,10 +4,10 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCr
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.exception.OrdenamientoInvalidoException;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaRepository;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
 import com.arquisoft.shared.message.FichasMessages;
 import com.arquisoft.shared.pagination.PaginatedResult;
@@ -30,18 +30,18 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
 
-    private final FichaPerfilJpaRepository fichaPerfilJpaRepository;
+    private final FichaPerfilRepository fichaPerfilRepository;
     private final FichaPerfilJpaSpecification specification;
-    private final EstudianteFichaPerfilJpaRepository estudianteFichaPerfilJpaRepository;
+    private final EstudianteFichaPerfilRepository estudianteFichaPerfilRepository;
     private final AppLogger logger;
 
     @Override
     public PaginatedResult<FichaPerfilReadModel> consultarTodas(FichaPerfilCriteria criteria) {
         Pageable pageable = toPageable(criteria);
-        Specification<FichaPerfilJpaEntity> spec = specification.desdeCriteria(criteria);
+        Specification<FichaPerfilEntity> spec = specification.desdeCriteria(criteria);
         try {
             return PaginationMapper.toResult(
-                    fichaPerfilJpaRepository.findAll(spec, pageable)
+                    fichaPerfilRepository.findAll(spec, pageable)
                             .map(FichaPerfilMapper::toReadModel));
         } catch (PropertyReferenceException ex) {
             logger.warn(FichasMessages.FichaPerfil.LOG_ORDENAMIENTO_INVALIDO, ex.getPropertyName());
@@ -72,12 +72,12 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
 
     @Override
     public boolean existePorId(UUID id) {
-        return fichaPerfilJpaRepository.existsById(id);
+        return fichaPerfilRepository.existsById(id);
     }
 
     @Override
     public boolean esEstudiantePropietario(PropietarioFichaCriteria criteria) {
-        return estudianteFichaPerfilJpaRepository.existsByFichaPerfilIdAndEstudianteId(
+        return estudianteFichaPerfilRepository.existsByFichaPerfilIdAndEstudianteId(
                 criteria.fichaPerfil(),
                 criteria.estudiante()
         );

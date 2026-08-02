@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.adapter.out.persistence;
 
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaEntity;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaRepository;
+import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
+import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 class EstadoFichaQueryOutputAdapterTest {
 
     @Mock
-    private EstadoFichaJpaRepository jpaRepository;
+    private EstadoFichaRepository jpaRepository;
 
     @InjectMocks
     private EstadoFichaQueryOutputAdapter adapter;
@@ -28,22 +28,22 @@ class EstadoFichaQueryOutputAdapterTest {
     @Test
     void debeRetornarListaDeReadModels_cuandoFindAllEsInvocado() {
         // Arrange
-        EstadoFichaJpaEntity entity1 = new EstadoFichaJpaEntity();
+        EstadoFichaEntity entity1 = new EstadoFichaEntity();
         entity1.setId("EN_CONSTRUCCION");
         entity1.setNombre("En Construccion");
         entity1.setDescripcion("Ficha en desarrollo");
 
-        EstadoFichaJpaEntity entity2 = new EstadoFichaJpaEntity();
+        EstadoFichaEntity entity2 = new EstadoFichaEntity();
         entity2.setId("APROBADA");
         entity2.setNombre("Aprobada");
         entity2.setDescripcion("Ficha aprobada por el comite");
 
-        EstadoFichaJpaEntity entity3 = new EstadoFichaJpaEntity();
+        EstadoFichaEntity entity3 = new EstadoFichaEntity();
         entity3.setId("NO_APROBADA");
         entity3.setNombre("No Aprobada");
         entity3.setDescripcion("Ficha rechazada");
 
-        List<EstadoFichaJpaEntity> entities = List.of(entity1, entity2, entity3);
+        List<EstadoFichaEntity> entities = List.of(entity1, entity2, entity3);
         when(jpaRepository.findAll()).thenReturn(entities);
 
         // Act
@@ -83,9 +83,9 @@ class EstadoFichaQueryOutputAdapterTest {
     }
 
     @Test
-    void debeMaperarCorrectamente_cuandoConvierteJpaEntityAReadModel() {
+    void debeMaperarCorrectamente_cuandoConvierteEntityAReadModel() {
         // Arrange
-        EstadoFichaJpaEntity entity = new EstadoFichaJpaEntity();
+        EstadoFichaEntity entity = new EstadoFichaEntity();
         entity.setId("DISPONIBLE_PARA_EVALUACION");
         entity.setNombre("Disponible para Evaluacion");
         entity.setDescripcion("Ficha lista para ser evaluada");

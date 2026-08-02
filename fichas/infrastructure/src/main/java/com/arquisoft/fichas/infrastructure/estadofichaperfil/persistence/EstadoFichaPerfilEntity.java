@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence;
 
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -22,7 +22,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EstadoFichaPerfilJpaEntity {
+public class EstadoFichaPerfilEntity {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -33,7 +33,7 @@ public class EstadoFichaPerfilJpaEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "estado_ficha_id", nullable = false)
-    private EstadoFichaJpaEntity estadoFicha;
+    private EstadoFichaEntity estadoFicha;
 
     @Column(name = "fecha_actualizacion", nullable = false)
     private Instant fechaActualizacion;

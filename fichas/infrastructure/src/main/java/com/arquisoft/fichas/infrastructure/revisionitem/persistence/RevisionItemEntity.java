@@ -14,7 +14,7 @@ import java.util.UUID;
 @Table(name = "revision_item")
 @Getter
 @NoArgsConstructor
-public class RevisionItemJpaEntity {
+public class RevisionItemEntity {
 
     @Id
     @Column(name = "id")

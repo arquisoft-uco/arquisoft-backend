@@ -9,22 +9,22 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class EstadoFichaJpaRepositoryTest {
+class EstadoFichaRepositoryTest {
 
     @Autowired
-    private EstadoFichaJpaRepository estadoFichaJpaRepository;
+    private EstadoFichaRepository estadoFichaRepository;
 
     @Test
     void debeBuscarPorNombre_cuandoEstadoExiste() {
         // Arrange
-        var estadoFicha = new EstadoFichaJpaEntity();
+        var estadoFicha = new EstadoFichaEntity();
         estadoFicha.setId("EN_CONSTRUCCION");
         estadoFicha.setNombre("En Construccion");
         estadoFicha.setDescripcion("Estado inicial");
-        estadoFichaJpaRepository.save(estadoFicha);
+        estadoFichaRepository.save(estadoFicha);
 
         // Act
-        Optional<EstadoFichaJpaEntity> resultado = estadoFichaJpaRepository.findByNombre("En Construccion");
+        Optional<EstadoFichaEntity> resultado = estadoFichaRepository.findByNombre("En Construccion");
 
         // Assert
         assertThat(resultado).isPresent();
@@ -35,7 +35,7 @@ class EstadoFichaJpaRepositoryTest {
     @Test
     void debeRetornarVacio_cuandoEstadoNoExiste() {
         // Arrange / Act
-        Optional<EstadoFichaJpaEntity> resultado = estadoFichaJpaRepository.findByNombre("Estado Inexistente");
+        Optional<EstadoFichaEntity> resultado = estadoFichaRepository.findByNombre("Estado Inexistente");
 
         // Assert
         assertThat(resultado).isEmpty();

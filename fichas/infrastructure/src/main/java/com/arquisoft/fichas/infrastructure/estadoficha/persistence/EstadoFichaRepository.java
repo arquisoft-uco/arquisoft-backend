@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface EstadoFichaJpaRepository extends JpaRepository<EstadoFichaJpaEntity, String> {
+public interface EstadoFichaRepository extends JpaRepository<EstadoFichaEntity, String> {
 
-    Optional<EstadoFichaJpaEntity> findByNombre(String nombre);
+    Optional<EstadoFichaEntity> findByNombre(String nombre);
 }

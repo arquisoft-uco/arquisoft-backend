@@ -18,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EvaluacionFichaPerfilJpaEntity {
+public class EvaluacionFichaPerfilEntity {
 
     @Id
     @Column(name = "id")

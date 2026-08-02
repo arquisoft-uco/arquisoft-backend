@@ -7,8 +7,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface EstadoEvaluacionFichaJpaRepository
-        extends JpaRepository<EstadoEvaluacionFichaJpaEntity, UUID> {
+public interface EstadoEvaluacionFichaRepository
+        extends JpaRepository<EstadoEvaluacionFichaEntity, UUID> {
 
     boolean existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(
             UUID evaluacionFichaPerfilId,
@@ -16,9 +16,9 @@ public interface EstadoEvaluacionFichaJpaRepository
 
     long countByEvaluacionFichaPerfilId(UUID evaluacionFichaPerfilId);
 
-    @Query("SELECT e FROM EstadoEvaluacionFichaJpaEntity e "
+    @Query("SELECT e FROM EstadoEvaluacionFichaEntity e "
             + "WHERE e.evaluacionFichaPerfil.id = :evaluacionId "
             + "ORDER BY e.fechaActualizacion DESC LIMIT 1")
-    Optional<EstadoEvaluacionFichaJpaEntity> findFirstByEvaluacionFichaPerfilIdOrderByFechaActualizacionDesc(
+    Optional<EstadoEvaluacionFichaEntity> findFirstByEvaluacionFichaPerfilIdOrderByFechaActualizacionDesc(
             @Param("evaluacionId") UUID evaluacionId);
 }

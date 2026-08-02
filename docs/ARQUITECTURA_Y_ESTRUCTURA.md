@@ -678,11 +678,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class FichaPerfilOutputAdapter implements FichaPerfilOutputPort {
-    private final FichaPerfilJpaRepository fichaPerfilJpaRepository;
+    private final FichaPerfilRepository fichaPerfilRepository;
 
     @Override
     public PaginatedResult<FichaPerfilAggregate> consultarTodas(PaginationRequest request) {
-        Page<FichaPerfilJpaEntity> page = fichaPerfilJpaRepository.findAll(
+        Page<FichaPerfilEntity> page = fichaPerfilRepository.findAll(
                 PageRequest.of(request.getPage(), request.getSize()));
         return PaginatedResult.of(
                 page.getContent().stream().map(FichaPerfilMapper::toDomain).toList(),
@@ -806,7 +806,7 @@ FichaPerfilOutputPort.consultarTodas(request)        [OutputPort - interface]
     ↓
 FichaPerfilOutputAdapter.consultarTodas(request)     [OutputAdapter - implementation]
     ↓
-FichaPerfilJpaRepository.findAll(PageRequest)
+FichaPerfilRepository.findAll(PageRequest)
     ↓
 FichaPerfilMapper.toDomain() → FichaPerfilAggregate
     ↓

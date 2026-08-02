@@ -18,7 +18,7 @@ class EstudianteFichaPerfilMapperTest {
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
 
-        EstudianteFichaPerfilJpaEntity entity = EstudianteFichaPerfilJpaEntity.builder()
+        EstudianteFichaPerfilEntity entity = EstudianteFichaPerfilEntity.builder()
                 .id(id)
                 .fichaPerfilId(fichaPerfilId)
                 .estudianteId(estudianteId)
@@ -34,7 +34,7 @@ class EstudianteFichaPerfilMapperTest {
     }
 
     @Test
-    void debeMaperarAJpaEntity_cuandoAggregateEsValido() {
+    void debeMaperarAEntity_cuandoAggregateEsValido() {
         // Arrange
         UUID id = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
@@ -47,7 +47,7 @@ class EstudianteFichaPerfilMapperTest {
         );
 
         // Act
-        EstudianteFichaPerfilJpaEntity entity = mapper.toJpaEntity(aggregate);
+        EstudianteFichaPerfilEntity entity = mapper.toEntity(aggregate);
 
         // Assert
         assertThat(entity.getId()).isEqualTo(id);
@@ -62,7 +62,7 @@ class EstudianteFichaPerfilMapperTest {
         UUID fichaPerfilIdOriginal = UUID.randomUUID();
         UUID estudianteIdOriginal = UUID.randomUUID();
 
-        EstudianteFichaPerfilJpaEntity entityOriginal = EstudianteFichaPerfilJpaEntity.builder()
+        EstudianteFichaPerfilEntity entityOriginal = EstudianteFichaPerfilEntity.builder()
                 .id(idOriginal)
                 .fichaPerfilId(fichaPerfilIdOriginal)
                 .estudianteId(estudianteIdOriginal)
@@ -70,7 +70,7 @@ class EstudianteFichaPerfilMapperTest {
 
         // Act
         EstudianteFichaPerfilAggregate aggregate = mapper.toDomain(entityOriginal);
-        EstudianteFichaPerfilJpaEntity entityMapeada = mapper.toJpaEntity(aggregate);
+        EstudianteFichaPerfilEntity entityMapeada = mapper.toEntity(aggregate);
 
         // Assert
         assertThat(entityMapeada.getId()).isEqualTo(idOriginal);

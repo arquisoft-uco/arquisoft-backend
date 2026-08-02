@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persistence;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
 import com.arquisoft.shared.postgres.query.CampoSpec;
 import com.arquisoft.shared.postgres.query.QueryJpaSpecification;
 import org.springframework.stereotype.Component;
@@ -11,14 +11,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
-class FichaPerfilJpaSpecification extends QueryJpaSpecification<FichaPerfilJpaEntity> {
+class FichaPerfilJpaSpecification extends QueryJpaSpecification<FichaPerfilEntity> {
 
-    private static final Map<String, CampoSpec<FichaPerfilJpaEntity>> CAMPOS;
+    private static final Map<String, CampoSpec<FichaPerfilEntity>> CAMPOS;
 
     static {
-        Map<String, CampoSpec<FichaPerfilJpaEntity>> m = new LinkedHashMap<>();
+        Map<String, CampoSpec<FichaPerfilEntity>> m = new LinkedHashMap<>();
         for (FichaPerfilCriteria.Campo campo : FichaPerfilCriteria.Campo.values()) {
-            CampoSpec<FichaPerfilJpaEntity> spec = switch (campo) {
+            CampoSpec<FichaPerfilEntity> spec = switch (campo) {
                 case TITULO_PROYECTO -> CampoSpec.texto(root -> root.get("tituloProyecto"));
                 case ASESOR_NOMBRE   -> CampoSpec.texto(root -> root.get("asesorFicha").get("nombre"));
                 case ASESOR_EMAIL    -> CampoSpec.texto(root -> root.get("asesorFicha").get("email"));
@@ -30,7 +30,7 @@ class FichaPerfilJpaSpecification extends QueryJpaSpecification<FichaPerfilJpaEn
     }
 
     @Override
-    protected Map<String, CampoSpec<FichaPerfilJpaEntity>> camposPermitidos() {
+    protected Map<String, CampoSpec<FichaPerfilEntity>> camposPermitidos() {
         return CAMPOS;
     }
 }

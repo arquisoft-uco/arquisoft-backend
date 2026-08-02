@@ -2,9 +2,9 @@ package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence;
 
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionJpaEntity;
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionJpaRepository;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionRepository;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,9 +12,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EstadoEvaluacionFichaMapper {
 
-    private final EstadoEvaluacionJpaRepository estadoEvaluacionJpaRepository;
+    private final EstadoEvaluacionRepository estadoEvaluacionRepository;
 
-    public EstadoEvaluacionFichaAggregate toDomain(EstadoEvaluacionFichaJpaEntity entity) {
+    public EstadoEvaluacionFichaAggregate toDomain(EstadoEvaluacionFichaEntity entity) {
         return EstadoEvaluacionFichaAggregate.reconstruir(
                 entity.getId(),
                 entity.getEvaluacionFichaPerfil().getId(),
@@ -22,14 +22,14 @@ public class EstadoEvaluacionFichaMapper {
                 entity.getFechaActualizacion());
     }
 
-    public EstadoEvaluacionFichaJpaEntity toEntity(
+    public EstadoEvaluacionFichaEntity toEntity(
             EstadoEvaluacionFichaAggregate aggregate,
-            EvaluacionFichaPerfilJpaEntity evaluacionFichaPerfilRef) {
+            EvaluacionFichaPerfilEntity evaluacionFichaPerfilRef) {
 
-        EstadoEvaluacionJpaEntity estadoEvaluacionRef = estadoEvaluacionJpaRepository
+        EstadoEvaluacionEntity estadoEvaluacionRef = estadoEvaluacionRepository
                 .getReferenceById(aggregate.getEstadoEvaluacion().name());
 
-        return EstadoEvaluacionFichaJpaEntity.builder()
+        return EstadoEvaluacionFichaEntity.builder()
                 .id(aggregate.getId())
                 .evaluacionFichaPerfil(evaluacionFichaPerfilRef)
                 .estadoEvaluacion(estadoEvaluacionRef)

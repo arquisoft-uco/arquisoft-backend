@@ -67,10 +67,10 @@
                 <mxCell id="c_opi" value="«Output Adapter»&#xa;XxxOutputAdapter" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
                     <mxGeometry x="1110" y="100" width="255" height="140" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_opi_b" value="+ buscarPorId(id): XxxAggregate&#xa;+ guardar(aggregate): void&#xa;&#xa;Mapea Dominio &lt;-&gt; XxxJpaEntity" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_opi" vertex="1">
+                <mxCell id="c_opi_b" value="+ buscarPorId(id): XxxAggregate&#xa;+ guardar(aggregate): void&#xa;&#xa;Mapea Dominio &lt;-&gt; XxxEntity" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_opi" vertex="1">
                     <mxGeometry y="40" width="255" height="100" as="geometry"/>
                 </mxCell>
-                <mxCell id="c_jpa" value="«Persistencia»&#xa;XxxJpaEntity" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                <mxCell id="c_jpa" value="«Persistencia»&#xa;XxxEntity" style="swimlane;html=1;fontStyle=1;align=center;verticalAlign=top;startSize=40;collapsible=0;rounded=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
                     <mxGeometry x="1112.5" y="293" width="255" height="100" as="geometry"/>
                 </mxCell>
                 <mxCell id="c_jpa_b" value="- id&#xa;- ...columnas&#xa;(solo datos, sin logica)" style="text;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=6;spacingRight=6;whiteSpace=wrap;" parent="c_jpa" vertex="1">

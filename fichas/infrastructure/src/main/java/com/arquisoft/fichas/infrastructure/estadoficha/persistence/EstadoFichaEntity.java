@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EstadoFichaJpaEntity {
+public class EstadoFichaEntity {
 
     @Id
     @Column(name = "id", nullable = false, length = 50)

@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.query.adapter.out.
 
 import com.arquisoft.fichas.application.estadofichaperfil.query.port.out.EstadoFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EstadoFichaPerfilQueryOutputAdapter implements EstadoFichaPerfilQueryOutputPort {
 
-    private final EstadoFichaPerfilJpaRepository jpaRepository;
+    private final EstadoFichaPerfilRepository jpaRepository;
 
     @Override
     public Optional<EstadoFicha> obtenerEstadoActual(UUID fichaPerfilId) {

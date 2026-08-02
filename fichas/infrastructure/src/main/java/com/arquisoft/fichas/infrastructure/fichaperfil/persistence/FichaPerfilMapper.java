@@ -3,13 +3,13 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.persistence;
 import com.arquisoft.fichas.application.asesorficha.query.AsesorFichaReadModel;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
 
 public final class FichaPerfilMapper {
 
     private FichaPerfilMapper() {}
 
-    public static FichaPerfilAggregate toDomain(FichaPerfilJpaEntity entity) {
+    public static FichaPerfilAggregate toDomain(FichaPerfilEntity entity) {
         return FichaPerfilAggregate.reconstruir(
                 entity.getId(),
                 entity.getTituloProyecto(),
@@ -17,7 +17,7 @@ public final class FichaPerfilMapper {
         );
     }
 
-    public static FichaPerfilReadModel toReadModel(FichaPerfilJpaEntity entity) {
+    public static FichaPerfilReadModel toReadModel(FichaPerfilEntity entity) {
         return FichaPerfilReadModel.builder()
                 .id(entity.getId())
                 .tituloProyecto(entity.getTituloProyecto())
@@ -30,8 +30,8 @@ public final class FichaPerfilMapper {
                 .build();
     }
 
-    public static FichaPerfilJpaEntity toEntity(FichaPerfilAggregate domain, AsesorFichaJpaEntity asesorRef) {
-        return FichaPerfilJpaEntity.builder()
+    public static FichaPerfilEntity toEntity(FichaPerfilAggregate domain, AsesorFichaEntity asesorRef) {
+        return FichaPerfilEntity.builder()
                 .id(domain.getId())
                 .tituloProyecto(domain.getTituloProyecto())
                 .asesorFicha(asesorRef)

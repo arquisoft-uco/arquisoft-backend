@@ -2,10 +2,10 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.out.
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
-import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilJpaEntity;
-import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilJpaRepository;
-import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemJpaEntity;
-import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemJpaRepository;
+import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilRepository;
+import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemEntity;
+import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemRepository;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,10 +25,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ItemFichaPerfilCommandOutputAdapterTest {
 
     @Autowired
-    private ItemFichaPerfilJpaRepository jpaRepository;
+    private ItemFichaPerfilRepository jpaRepository;
 
     @Autowired
-    private TipoItemJpaRepository tipoItemJpaRepository;
+    private TipoItemRepository tipoItemRepository;
 
     @Autowired
     private EntityManager entityManager;
@@ -37,7 +37,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new ItemFichaPerfilCommandOutputAdapter(jpaRepository, tipoItemJpaRepository);
+        adapter = new ItemFichaPerfilCommandOutputAdapter(jpaRepository, tipoItemRepository);
 
         // Seed: insertar tipo_item en H2 para que la referencia por id funcione
         entityManager.createNativeQuery(
@@ -67,7 +67,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        ItemFichaPerfilJpaEntity savedEntity = jpaRepository.findById(aggregate.getId()).orElse(null);
+        ItemFichaPerfilEntity savedEntity = jpaRepository.findById(aggregate.getId()).orElse(null);
         assertThat(savedEntity).isNotNull();
         assertThat(savedEntity.getId()).isEqualTo(aggregate.getId());
         assertThat(savedEntity.getFichaPerfilId()).isEqualTo(fichaPerfilId);
@@ -91,7 +91,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
 
         // Assert — getReference crea un proxy sin SELECT
         // Verificamos que el entity guardado tiene el tipo correcto sin haber cargado toda la entidad
-        ItemFichaPerfilJpaEntity saved = jpaRepository.findById(aggregate.getId()).orElseThrow();
+        ItemFichaPerfilEntity saved = jpaRepository.findById(aggregate.getId()).orElseThrow();
         assertThat(saved.getTipoItem()).isNotNull();
         assertThat(saved.getTipoItem().getId()).isEqualTo("OBJETIVO_GENERAL");
     }
@@ -102,8 +102,8 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         UUID fichaPerfilId = UUID.randomUUID();
         String tipoItem = "OBJETIVO_GENERAL";
 
-        TipoItemJpaEntity tipoItemRef = tipoItemJpaRepository.getReferenceById(tipoItem);
-        ItemFichaPerfilJpaEntity entity = ItemFichaPerfilJpaEntity.builder()
+        TipoItemEntity tipoItemRef = tipoItemRepository.getReferenceById(tipoItem);
+        ItemFichaPerfilEntity entity = ItemFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
                 .tipoItem(tipoItemRef)
@@ -137,14 +137,14 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeRetornarTrue_cuandoItemExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        TipoItemJpaEntity tipoItemRef = tipoItemJpaRepository.getReferenceById("OBJETIVO_GENERAL");
-        ItemFichaPerfilJpaEntity entity = ItemFichaPerfilJpaEntity.builder()
+        TipoItemEntity tipoItemRef = tipoItemRepository.getReferenceById("OBJETIVO_GENERAL");
+        ItemFichaPerfilEntity entity = ItemFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
                 .tipoItem(tipoItemRef)
                 .contenido("Contenido existente")
                 .build();
-        ItemFichaPerfilJpaEntity saved = jpaRepository.save(entity);
+        ItemFichaPerfilEntity saved = jpaRepository.save(entity);
         entityManager.flush();
         entityManager.clear();
 
@@ -188,7 +188,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        ItemFichaPerfilJpaEntity savedEntity = jpaRepository.findById(aggregate.getId()).orElseThrow();
+        ItemFichaPerfilEntity savedEntity = jpaRepository.findById(aggregate.getId()).orElseThrow();
         assertThat(savedEntity.getContenido()).isEqualTo("Contenido modificado");
     }
 
@@ -196,14 +196,14 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeEliminar_cuandoIdValido() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        TipoItemJpaEntity tipoItemRef = tipoItemJpaRepository.getReferenceById("OBJETIVO_GENERAL");
-        ItemFichaPerfilJpaEntity entity = ItemFichaPerfilJpaEntity.builder()
+        TipoItemEntity tipoItemRef = tipoItemRepository.getReferenceById("OBJETIVO_GENERAL");
+        ItemFichaPerfilEntity entity = ItemFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
                 .tipoItem(tipoItemRef)
                 .contenido("Contenido a eliminar")
                 .build();
-        ItemFichaPerfilJpaEntity saved = jpaRepository.save(entity);
+        ItemFichaPerfilEntity saved = jpaRepository.save(entity);
         entityManager.flush();
         entityManager.clear();
 

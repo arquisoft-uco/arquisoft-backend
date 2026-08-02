@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TipoItemJpaEntity {
+public class TipoItemEntity {
 
     @Id
     @Column(name = "id", nullable = false, length = 50)

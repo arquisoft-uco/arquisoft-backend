@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence;
 
-import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemJpaEntity;
+import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,7 +21,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ItemFichaPerfilJpaEntity {
+public class ItemFichaPerfilEntity {
 
     @Id
     @Column(name = "id", columnDefinition = "UUID")
@@ -32,7 +32,7 @@ public class ItemFichaPerfilJpaEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tipo_item_id", nullable = false)
-    private TipoItemJpaEntity tipoItem;
+    private TipoItemEntity tipoItem;
 
     @Column(name = "contenido", nullable = false, length = 7000)
     private String contenido;

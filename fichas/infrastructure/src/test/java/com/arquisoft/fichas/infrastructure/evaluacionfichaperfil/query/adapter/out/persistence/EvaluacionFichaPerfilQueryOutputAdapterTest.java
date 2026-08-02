@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.adapter.out.persistence;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.criteria.PropietarioEvaluacionCriteria;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaEntity;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilJpaRepository;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,23 +17,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EvaluacionFichaPerfilQueryOutputAdapterTest {
 
     @Autowired
-    private EvaluacionFichaPerfilJpaRepository evaluacionFichaPerfilJpaRepository;
+    private EvaluacionFichaPerfilRepository evaluacionFichaPerfilRepository;
 
     private EvaluacionFichaPerfilQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EvaluacionFichaPerfilQueryOutputAdapter(evaluacionFichaPerfilJpaRepository);
+        adapter = new EvaluacionFichaPerfilQueryOutputAdapter(evaluacionFichaPerfilRepository);
     }
 
     private UUID persistirEvaluacion(UUID representanteComiteId) {
-        var entity = EvaluacionFichaPerfilJpaEntity.builder()
+        var entity = EvaluacionFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .representanteComiteId(representanteComiteId)
                 .fichaPerfilId(UUID.randomUUID())
                 .fechaCreacion(Instant.now())
                 .build();
-        evaluacionFichaPerfilJpaRepository.save(entity);
+        evaluacionFichaPerfilRepository.save(entity);
         return entity.getId();
     }
 
