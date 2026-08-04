@@ -56,7 +56,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
         estadoFichaPerfilOutputPort.guardar(estadoInicial);
         logger.info(catalog.obtener(FichasKeys.EstadoFichaPerfil.LOG_CREADO),
                 estadoInicial.getId(),
-                estadoInicial.getFichaPerfilId(),
+                estadoInicial.getFichaPerfil(),
                 estadoInicial.getEstadoFicha().getNombre());
     }
 

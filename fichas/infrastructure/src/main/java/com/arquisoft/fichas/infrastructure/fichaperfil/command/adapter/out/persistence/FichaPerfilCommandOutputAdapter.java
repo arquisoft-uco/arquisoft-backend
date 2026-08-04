@@ -30,7 +30,7 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     @Override
     public void guardar(FichaPerfilAggregate ficha) {
         AsesorFichaEntity asesorRef =
-                asesorFichaRepository.getReferenceById(ficha.getAsesorFichaId());
+                asesorFichaRepository.getReferenceById(ficha.getAsesorFicha());
         fichaPerfilRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));
         logger.debug(catalog.obtener(FichasKeys.FichaPerfil.LOG_GUARDADA), ficha.getId());
     }

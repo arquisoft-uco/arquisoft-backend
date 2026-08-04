@@ -23,7 +23,7 @@ class EstadoFichaPerfilAggregateTest {
         // Assert
         assertThat(aggregate).isNotNull();
         assertThat(aggregate.getId()).isNotNull();
-        assertThat(aggregate.getFichaPerfilId()).isEqualTo(fichaPerfilId);
+        assertThat(aggregate.getFichaPerfil()).isEqualTo(fichaPerfilId);
         assertThat(aggregate.getEstadoFicha()).isEqualTo(EstadoFicha.EN_CONSTRUCCION);
         assertThat(aggregate.getFechaActualizacion()).isNotNull();
     }
@@ -45,7 +45,7 @@ class EstadoFichaPerfilAggregateTest {
         // Assert
         assertThat(aggregate).isNotNull();
         assertThat(aggregate.getId()).isEqualTo(id);
-        assertThat(aggregate.getFichaPerfilId()).isEqualTo(fichaPerfilId);
+        assertThat(aggregate.getFichaPerfil()).isEqualTo(fichaPerfilId);
         assertThat(aggregate.getEstadoFicha()).isEqualTo(EstadoFicha.EN_CONSTRUCCION);
     }
 

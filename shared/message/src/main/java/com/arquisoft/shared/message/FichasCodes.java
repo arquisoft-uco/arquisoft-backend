@@ -14,6 +14,7 @@ public final class FichasCodes {
 
         private FichaPerfil() {}
 
+        public static final String ID_REQUERIDO = "FICHA_ID_REQUERIDO";
         public static final String TITULO_REQUERIDO = "FICHA_TITULO_REQUERIDO";
         public static final String TITULO_DEMASIADO_LARGO = "FICHA_TITULO_DEMASIADO_LARGO";
         public static final String ASESOR_REQUERIDO = "FICHA_ASESOR_REQUERIDO";
@@ -67,6 +68,8 @@ public final class FichasCodes {
 
         public static final String FICHA_PERFIL_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_FICHA_PERFIL_ID_REQUERIDO";
         public static final String ESTADO_FICHA_REQUERIDO = "ESTADO_FICHA_PERFIL_ESTADO_FICHA_REQUERIDO";
+        public static final String NO_ENCONTRADO = "ESTADO_FICHA_PERFIL_NO_ENCONTRADO";
+        public static final String ESTADO_TERMINAL = "ESTADO_FICHA_PERFIL_ESTADO_TERMINAL";
     }
 
     public static final class EvaluacionFichaPerfil {

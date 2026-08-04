@@ -8,6 +8,9 @@ import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.RepresentanteProp
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EstadoEvaluacionNoDuplicadoRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EvaluacionFichaExisteRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.RepresentantePropietarioEvaluacionRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnTerminalRuleImpl;
 import com.arquisoft.fichas.domain.estudiante.port.out.EstudianteOutputPort;
 import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
 import com.arquisoft.fichas.domain.estudiante.rules.impl.EstudiantesExistenRuleImpl;
@@ -26,11 +29,13 @@ import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.RepresentanteComi
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.impl.EvaluacionNoDuplicadaRuleImpl;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.impl.RepresentanteComiteExisteRuleImpl;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaDiferenteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaExisteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.EstudiantePropietarioFichaRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloDisponibleRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloUnicoRule;
+import com.arquisoft.fichas.domain.fichaperfil.rules.impl.AsesorFichaDiferenteRuleImpl;
 import com.arquisoft.fichas.domain.fichaperfil.rules.impl.AsesorFichaExisteRuleImpl;
 import com.arquisoft.fichas.domain.fichaperfil.rules.impl.EstudiantePropietarioFichaRuleImpl;
 import com.arquisoft.fichas.domain.fichaperfil.rules.impl.FichaPerfilExisteRuleImpl;
@@ -104,6 +109,11 @@ public class FichasDomainRulesConfig {
     }
 
     @Bean
+    public AsesorFichaDiferenteRule asesorFichaDiferenteRule() {
+        return new AsesorFichaDiferenteRuleImpl();
+    }
+
+    @Bean
     public RepresentanteComiteExisteRule representanteComiteExisteRule(
             RepresentanteComiteOutputPort representanteComiteOutputPort) {
         return new RepresentanteComiteExisteRuleImpl(representanteComiteOutputPort);
@@ -142,5 +152,11 @@ public class FichasDomainRulesConfig {
     public ItemTipoNoDuplicadoRule itemTipoNoDuplicadoRule(
             ItemFichaPerfilOutputPort itemFichaPerfilOutputPort) {
         return new ItemTipoNoDuplicadoRuleImpl(itemFichaPerfilOutputPort);
+    }
+
+    @Bean
+    public EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule(
+            EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort) {
+        return new EstadoFichaPerfilEnTerminalRuleImpl(estadoFichaPerfilOutputPort);
     }
 }

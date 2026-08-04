@@ -28,4 +28,12 @@ public final class AppCodes {
 
         public static final String SIZE_INVALIDA = "PAGINACION_SIZE_INVALIDA";
     }
+
+    /** Envio de notificaciones — transversal, lo produce {@code shared:notification}. */
+    public static final class Notificacion {
+
+        private Notificacion() {}
+
+        public static final String ENVIO_FALLIDO = "NOTIFICACION_ENVIO_FALLIDO";
+    }
 }

@@ -71,4 +71,12 @@ public final class AppKeys {
 
         public static final String SIZE_MAYOR_CERO = "app.aplicacion.paginacion.error.size-mayor-cero";
     }
+
+    /** Envío de notificaciones — transversal, lo produce {@code shared:notification}. */
+    public static final class Notificacion {
+
+        private Notificacion() {}
+
+        public static final String ERROR_ENVIO_FALLIDO = "app.infraestructura.notificacion.error.envio-fallido";
+    }
 }

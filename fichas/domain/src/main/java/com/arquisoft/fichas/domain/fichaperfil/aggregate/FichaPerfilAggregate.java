@@ -2,11 +2,8 @@ package com.arquisoft.fichas.domain.fichaperfil.aggregate;
 
 import com.arquisoft.shared.message.FichasCodes;
 import com.arquisoft.shared.message.FichasFields;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.shared.message.FichasLimits;
-import com.arquisoft.shared.message.Messages;
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.shared.util.UtilObject;
+import com.arquisoft.shared.events.AggregateRoot;
 import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
@@ -14,29 +11,29 @@ import com.arquisoft.shared.validation.ValidationResult;
 
 import java.util.UUID;
 
-public final class FichaPerfilAggregate {
+public final class FichaPerfilAggregate extends AggregateRoot {
 
     private UUID id;
     private String tituloProyecto;
-    private UUID asesorFichaId;
+    private UUID asesorFicha;
 
     private FichaPerfilAggregate() {}
 
-    private FichaPerfilAggregate(UUID id, String tituloProyecto, UUID asesorFichaId) {
+    private FichaPerfilAggregate(UUID id, String tituloProyecto, UUID asesorFicha) {
         this.id = id;
         this.tituloProyecto = tituloProyecto;
-        this.asesorFichaId = asesorFichaId;
+        this.asesorFicha = asesorFicha;
     }
 
     // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
 
-    public static FichaPerfilAggregate crear(String titulo, UUID asesorFichaId) {
+    public static FichaPerfilAggregate crear(String titulo, UUID asesorFicha) {
         var ficha = new FichaPerfilAggregate();
         var result = new ValidationResult();
 
         ficha.setId();
         ficha.setTituloProyecto(titulo, result);
-        ficha.setAsesorFichaId(asesorFichaId, result);
+        ficha.setAsesorFicha(asesorFicha, result);
 
         result.lanzarSiTieneErrores();
         return ficha;
@@ -56,39 +53,31 @@ public final class FichaPerfilAggregate {
         result.lanzarSiTieneErrores();
     }
 
-    public void cambiarAsesorFicha(UUID nuevoAsesorFichaId, EstadoFicha estadoActual) {
+    public static FichaPerfilAggregate cambiarAsesorFicha(UUID fichaPerfil, UUID nuevoAsesorFicha) {
+        var ficha = new FichaPerfilAggregate();
         var result = new ValidationResult();
 
-        DomainValidator.noNulo(nuevoAsesorFichaId,
-                FichasFields.FichaPerfil.ASESOR_FICHA,
-                FichasCodes.FichaPerfil.ASESOR_REQUERIDO,
-                result);
-
-        if (!UtilObject.isNull(nuevoAsesorFichaId) && nuevoAsesorFichaId.equals(this.asesorFichaId)) {
-            result.agregarError(
-                    FichasFields.FichaPerfil.ASESOR_FICHA,
-                    FichasCodes.FichaPerfil.MISMO_ASESOR,
-                    Messages.formatear(FichasKeys.FichaPerfil.ERROR_MISMO_ASESOR, nuevoAsesorFichaId)
-            );
-        }
-
-        if (estadoActual.esTerminal()) {
-            result.agregarError(
-                    FichasFields.FichaPerfil.ESTADO_FICHA,
-                    FichasCodes.FichaPerfil.ESTADO_TERMINAL,
-                    Messages.formatear(FichasKeys.FichaPerfil.ERROR_ESTADO_TERMINAL, estadoActual)
-            );
-        }
+        ficha.setAsesorFicha(nuevoAsesorFicha, result);
+        ficha.setId(fichaPerfil, result);
 
         result.lanzarSiTieneErrores();
 
-        this.asesorFichaId = nuevoAsesorFichaId;
+        return ficha;
     }
 
     // ─── Private setters ──────────────────────────────────────────────────────
 
     private void setId() {
         this.id = UtilUUID.generateNewUUID();
+    }
+
+    private void setId(UUID id, ValidationResult result) {
+        if (!DomainValidator.noNulo(id,
+                FichasFields.FichaPerfil.ID,
+                FichasCodes.FichaPerfil.ID_REQUERIDO, result)) {
+            return;
+        }
+        this.id = id;
     }
 
     private void setTituloProyecto(String titulo, ValidationResult result) {
@@ -105,13 +94,13 @@ public final class FichaPerfilAggregate {
         this.tituloProyecto = UtilText.applyTrim(titulo);
     }
 
-    private void setAsesorFichaId(UUID asesorFichaId, ValidationResult result) {
-        if (!DomainValidator.noNulo(asesorFichaId,
+    private void setAsesorFicha(UUID asesorFicha, ValidationResult result) {
+        if (!DomainValidator.noNulo(asesorFicha,
                 FichasFields.FichaPerfil.ASESOR_FICHA,
                 FichasCodes.FichaPerfil.ASESOR_REQUERIDO, result)) {
             return;
         }
-        this.asesorFichaId = asesorFichaId;
+        this.asesorFicha = asesorFicha;
     }
 
     // ─── Getters ──────────────────────────────────────────────────────────────
@@ -124,7 +113,7 @@ public final class FichaPerfilAggregate {
         return tituloProyecto;
     }
 
-    public UUID getAsesorFichaId() {
-        return asesorFichaId;
+    public UUID getAsesorFicha() {
+        return asesorFicha;
     }
 }

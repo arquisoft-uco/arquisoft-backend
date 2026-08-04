@@ -1,0 +1,19 @@
+dependencies {
+    implementation project(':notificaciones:domain')
+    implementation project(':shared:domain')
+    implementation project(':shared:logger')
+
+    // shared:notification — puerto NotificationSender. La aplicacion conoce el puerto y su
+    // value object, nunca un proveedor concreto: cambiar de SMTP a otro transporte no llega aqui.
+    implementation project(':shared:notification')
+
+    // Transactional — solo necesitamos @Transactional, no todo el starter
+    implementation 'org.springframework:spring-tx'
+
+    // Testing — junit-platform-launcher requerido explicitamente por Gradle 9
+    testImplementation "org.assertj:assertj-core"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+}

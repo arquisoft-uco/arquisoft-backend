@@ -28,6 +28,7 @@ CREATE DATABASE repositorio_artefactos OWNER arquisoft_user;
 CREATE DATABASE proyectos_grado OWNER arquisoft_user;
 CREATE DATABASE entregables OWNER arquisoft_user;
 CREATE DATABASE evaluaciones OWNER arquisoft_user;
+CREATE DATABASE notificaciones OWNER arquisoft_user;
 
 -- ==================== BASE DE DATOS KEYCLOAK ====================
 
@@ -64,6 +65,10 @@ GRANT ALL ON SCHEMA public TO arquisoft_user;
 ALTER SCHEMA public OWNER TO arquisoft_user;
 
 -- Contexto 7: Evaluaciones Definitivas
+GRANT ALL ON SCHEMA public TO arquisoft_user;
+ALTER SCHEMA public OWNER TO arquisoft_user;
+
+-- Contexto 8: Notificaciones (avisos por correo)
 GRANT ALL ON SCHEMA public TO arquisoft_user;
 ALTER SCHEMA public OWNER TO arquisoft_user;
 

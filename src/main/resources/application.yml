@@ -142,6 +142,34 @@ spring:
               authorization-grant-type: password
               scope: openid, profile, email
 
+# ==================== NOTIFICACIONES (envío de correos) ====================
+# 'proveedor' decide qué implementación de NotificationSender queda activa:
+#   log  → LoggingNotificationSender: registra y NO entrega. Es el valor por defecto a propósito,
+#          para que un entorno mal configurado nunca escriba a una persona real.
+#   smtp → SmtpNotificationSender: entrega vía spring.mail.*, que sirve para Brevo, Gmail o
+#          Mailpit sin tocar código — solo cambian host, puerto y credenciales.
+# Agregar un proveedor con API REST es añadir una clase con @ConditionalOnProperty y su valor;
+# ni el dominio ni la aplicación se enteran.
+notificacion:
+  proveedor: ${NOTIFICACION_PROVEEDOR:log}
+  remitente-email: ${NOTIFICACION_REMITENTE_EMAIL:no-reply@arquisoft.local}
+  remitente-nombre: ${NOTIFICACION_REMITENTE_NOMBRE:Arquisoft}
+
+# ==================== SMTP ====================
+# Valores por defecto apuntando a Mailpit (docker-compose): captura los correos en local
+# sin enviar nada a internet. En prod: smtp-relay.brevo.com:587 con auth y STARTTLS.
+spring.mail:
+  host: ${MAIL_HOST:localhost}
+  port: ${MAIL_PORT:1025}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
+  properties:
+    mail:
+      smtp:
+        auth: ${MAIL_SMTP_AUTH:false}
+        starttls:
+          enable: ${MAIL_SMTP_STARTTLS:false}
+
 # ==================== MINIO (Object Storage) ====================
 # Presigned URLs permiten subir/descargar archivos directamente desde el cliente,
 # sin que el backend actúe como proxy — conserva recursos en servidores limitados.
@@ -234,6 +262,17 @@ datasource:
       minimum-idle: 2
       connection-timeout: 20000
       pool-name: HikariPool-Evaluaciones
+
+  notificaciones:
+    url: ${DB_NOTIFICACIONES_URL:jdbc:postgresql://localhost:5432/notificaciones}
+    username: ${DB_NOTIFICACIONES_USERNAME:arquisoft_user}
+    password: ${DB_NOTIFICACIONES_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Notificaciones
 
 # ==================== KEYCLOAK ====================
 # Propiedades propias para KeycloakAuthAdapter y SecurityConfig.

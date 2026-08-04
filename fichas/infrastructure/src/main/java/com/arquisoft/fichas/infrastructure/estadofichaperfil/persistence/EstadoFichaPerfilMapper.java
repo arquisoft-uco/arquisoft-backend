@@ -13,7 +13,7 @@ public final class EstadoFichaPerfilMapper {
             EstadoFichaEntity estadoFichaRef) {
         return EstadoFichaPerfilEntity.builder()
                 .id(aggregate.getId())
-                .fichaPerfilId(aggregate.getFichaPerfilId())
+                .fichaPerfilId(aggregate.getFichaPerfil())
                 .estadoFicha(estadoFichaRef)
                 .fechaActualizacion(aggregate.getFechaActualizacion())
                 .build();

@@ -28,7 +28,7 @@ public class RegistrarFichaPerfilValidator {
 
         estudiantesSinDuplicadosRule.validar(estudiantes);
 
-        asesorFichaExisteRule.validar(ficha.getAsesorFichaId());
+        asesorFichaExisteRule.validar(ficha.getAsesorFicha());
         fichaPerfilTituloUnicoRule.validar(ficha.getTituloProyecto());
         estudiantesExistenRule.validar(estudiantes);
 

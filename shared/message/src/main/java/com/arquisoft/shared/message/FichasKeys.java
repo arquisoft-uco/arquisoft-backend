@@ -71,6 +71,9 @@ public final class FichasKeys {
 
         private EstadoFichaPerfil() {}
 
+        public static final String ERROR_NO_ENCONTRADO = "fichas.dominio.estadofichaperfil.error.no-encontrado";
+        public static final String ERROR_ESTADO_TERMINAL = "fichas.dominio.estadofichaperfil.error.estado-terminal";
+
         public static final String LOG_CREADO = "fichas.aplicacion.estadofichaperfil.log.creado";
     }
 

@@ -6,7 +6,7 @@ import java.util.List;
 public abstract class AggregateRoot {
     private final List<DomainEvent> unPublishedEvents = new ArrayList<>();
 
-    protected void publishEvent(DomainEvent event) {
+    public void publishEvent(DomainEvent event) {
         unPublishedEvents.add(event);
     }
 

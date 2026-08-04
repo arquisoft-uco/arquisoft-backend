@@ -85,7 +85,7 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isNotNull();
         assertThat(resultado.getId()).isEqualTo(entity.getId());
-        assertThat(resultado.getFichaPerfilId()).isEqualTo(fichaPerfilId);
+        assertThat(resultado.getFichaPerfil()).isEqualTo(fichaPerfilId);
         assertThat(resultado.getEstadoFicha()).isEqualTo(EstadoFicha.EN_CONSTRUCCION);
         assertThat(resultado.getFechaActualizacion()).isEqualTo(fechaActualizacion);
     }

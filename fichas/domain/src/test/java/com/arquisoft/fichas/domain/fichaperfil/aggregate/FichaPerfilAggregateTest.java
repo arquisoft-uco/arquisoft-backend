@@ -1,8 +1,6 @@
 package com.arquisoft.fichas.domain.fichaperfil.aggregate;
 
-import com.arquisoft.shared.message.FichasCodes;
 import com.arquisoft.shared.message.FichasFields;
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.shared.exception.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
@@ -10,7 +8,6 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
 
 class FichaPerfilAggregateTest {
 
@@ -26,7 +23,7 @@ class FichaPerfilAggregateTest {
         // Assert
         assertThat(ficha.getId()).isNotNull();
         assertThat(ficha.getTituloProyecto()).isEqualTo("Título de prueba");
-        assertThat(ficha.getAsesorFichaId()).isEqualTo(asesorId);
+        assertThat(ficha.getAsesorFicha()).isEqualTo(asesorId);
     }
 
     @Test
@@ -77,7 +74,7 @@ class FichaPerfilAggregateTest {
         // Assert
         assertThat(ficha.getId()).isEqualTo(id);
         assertThat(ficha.getTituloProyecto()).isEqualTo(titulo);
-        assertThat(ficha.getAsesorFichaId()).isEqualTo(asesorId);
+        assertThat(ficha.getAsesorFicha()).isEqualTo(asesorId);
     }
 
     @Test
@@ -121,155 +118,39 @@ class FichaPerfilAggregateTest {
     }
 
     @Test
-    void debeCambiarAsesor_cuandoNuevoAsesorEsDiferenteYEstadoNoTerminal() {
+    void debeConstruirFichaParaCambioDeAsesor_cuandoDatosValidos() {
         // Arrange
-        UUID asesorActualId = UUID.randomUUID();
+        UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.reconstruir(
-                UUID.randomUUID(),
-                "Título de prueba",
-                asesorActualId
-        );
 
         // Act
-        ficha.cambiarAsesorFicha(nuevoAsesorId, EstadoFicha.EN_CONSTRUCCION);
+        FichaPerfilAggregate ficha = FichaPerfilAggregate.cambiarAsesorFicha(fichaId, nuevoAsesorId);
 
-        // Assert
-        assertThat(ficha.getAsesorFichaId()).isEqualTo(nuevoAsesorId);
+        // Assert — el título no lo conoce este factory; lo trae quien reconstruye desde persistencia
+        assertThat(ficha.getId()).isEqualTo(fichaId);
+        assertThat(ficha.getAsesorFicha()).isEqualTo(nuevoAsesorId);
+        assertThat(ficha.getTituloProyecto()).isNull();
     }
 
     @Test
-    void debeLanzarDomainValidationException_cuandoNuevoAsesorIdEsNulo() {
+    void debeLanzarDomainValidationException_cuandoNuevoAsesorEsNulo() {
         // Arrange
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.reconstruir(
-                UUID.randomUUID(),
-                "Título de prueba",
-                UUID.randomUUID()
-        );
+        UUID fichaId = UUID.randomUUID();
 
-        // Act
-        Throwable excepcion = catchThrowable(() ->
-                ficha.cambiarAsesorFicha(null, EstadoFicha.EN_CONSTRUCCION)
-        );
-
-        // Assert
-        assertThat(excepcion).isInstanceOf(DomainValidationException.class);
-        DomainValidationException domainEx = (DomainValidationException) excepcion;
-        assertThat(domainEx.getValidationResult().getErrores()).hasSize(1);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasFields.FichaPerfil.ASESOR_FICHA);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasCodes.FichaPerfil.ASESOR_REQUERIDO);
+        // Act & Assert
+        assertThatThrownBy(() -> FichaPerfilAggregate.cambiarAsesorFicha(fichaId, null))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasFields.FichaPerfil.ASESOR_FICHA);
     }
 
     @Test
-    void debeLanzarDomainValidationException_cuandoNuevoAsesorEsIgualAlActual() {
+    void debeLanzarDomainValidationException_cuandoFichaPerfilEsNula() {
         // Arrange
-        UUID asesorActualId = UUID.randomUUID();
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.reconstruir(
-                UUID.randomUUID(),
-                "Título de prueba",
-                asesorActualId
-        );
-
-        // Act
-        Throwable excepcion = catchThrowable(() ->
-                ficha.cambiarAsesorFicha(asesorActualId, EstadoFicha.EN_CONSTRUCCION)
-        );
-
-        // Assert
-        assertThat(excepcion).isInstanceOf(DomainValidationException.class);
-        DomainValidationException domainEx = (DomainValidationException) excepcion;
-        assertThat(domainEx.getValidationResult().getErrores()).hasSize(1);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasFields.FichaPerfil.ASESOR_FICHA);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasCodes.FichaPerfil.MISMO_ASESOR);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).mensaje())
-                .contains(asesorActualId.toString());
-    }
-
-    @Test
-    void debeLanzarDomainValidationException_cuandoEstadoEsAprobada() {
-        // Arrange
-        UUID asesorActualId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.reconstruir(
-                UUID.randomUUID(),
-                "Título de prueba",
-                asesorActualId
-        );
 
-        // Act
-        Throwable excepcion = catchThrowable(() ->
-                ficha.cambiarAsesorFicha(nuevoAsesorId, EstadoFicha.APROBADA)
-        );
-
-        // Assert
-        assertThat(excepcion).isInstanceOf(DomainValidationException.class);
-        DomainValidationException domainEx = (DomainValidationException) excepcion;
-        assertThat(domainEx.getValidationResult().getErrores()).hasSize(1);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasFields.FichaPerfil.ESTADO_FICHA);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasCodes.FichaPerfil.ESTADO_TERMINAL);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).mensaje())
-                .contains("APROBADA");
-    }
-
-    @Test
-    void debeLanzarDomainValidationException_cuandoEstadoEsAprobadaConObservaciones() {
-        // Arrange
-        UUID asesorActualId = UUID.randomUUID();
-        UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.reconstruir(
-                UUID.randomUUID(),
-                "Título de prueba",
-                asesorActualId
-        );
-
-        // Act
-        Throwable excepcion = catchThrowable(() ->
-                ficha.cambiarAsesorFicha(nuevoAsesorId, EstadoFicha.APROBADA_CON_OBSERVACIONES)
-        );
-
-        // Assert
-        assertThat(excepcion).isInstanceOf(DomainValidationException.class);
-        DomainValidationException domainEx = (DomainValidationException) excepcion;
-        assertThat(domainEx.getValidationResult().getErrores()).hasSize(1);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasFields.FichaPerfil.ESTADO_FICHA);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasCodes.FichaPerfil.ESTADO_TERMINAL);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).mensaje())
-                .contains("APROBADA_CON_OBSERVACIONES");
-    }
-
-    @Test
-    void debeLanzarDomainValidationException_cuandoEstadoEsNoAprobada() {
-        // Arrange
-        UUID asesorActualId = UUID.randomUUID();
-        UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.reconstruir(
-                UUID.randomUUID(),
-                "Título de prueba",
-                asesorActualId
-        );
-
-        // Act
-        Throwable excepcion = catchThrowable(() ->
-                ficha.cambiarAsesorFicha(nuevoAsesorId, EstadoFicha.NO_APROBADA)
-        );
-
-        // Assert
-        assertThat(excepcion).isInstanceOf(DomainValidationException.class);
-        DomainValidationException domainEx = (DomainValidationException) excepcion;
-        assertThat(domainEx.getValidationResult().getErrores()).hasSize(1);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).campo())
-                .isEqualTo(FichasFields.FichaPerfil.ESTADO_FICHA);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).codigoError())
-                .isEqualTo(FichasCodes.FichaPerfil.ESTADO_TERMINAL);
-        assertThat(domainEx.getValidationResult().getErrores().get(0).mensaje())
-                .contains("NO_APROBADA");
+        // Act & Assert
+        assertThatThrownBy(() -> FichaPerfilAggregate.cambiarAsesorFicha(null, nuevoAsesorId))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasFields.FichaPerfil.ID);
     }
 }

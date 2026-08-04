@@ -23,8 +23,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class MessageCatalogClavesTest {
 
-    private static final List<Class<?>> CLASES_DE_CLAVES =
-            List.of(AppKeys.class, FichasKeys.class, SeguridadKeys.class, UsuariosKeys.class);
+    private static final List<Class<?>> CLASES_DE_CLAVES = List.of(
+            AppKeys.class,
+            FichasKeys.class,
+            SeguridadKeys.class,
+            UsuariosKeys.class,
+            NotificacionesKeys.class);
 
     private final ResourceBundleMessageCatalog catalogo = ResourceBundleMessageCatalog.porDefecto();
 

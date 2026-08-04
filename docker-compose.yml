@@ -108,6 +108,29 @@ services:
       retries: 5
       start_period: 20s
 
+  # ==================== MAILPIT (servidor SMTP de desarrollo) ====================
+  # Captura todo el correo que envía el backend y lo muestra en una bandeja web.
+  # Nada sale a internet: permite probar la entrega real sin escribirle a una persona.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: arquisoft-mailpit
+    environment:
+      TZ: America/Bogota
+      MP_MAX_MESSAGES: 500
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Bandeja web — http://localhost:8025
+    networks:
+      - arquisoft-network
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   # ==================== BACKEND ====================
   arquisoft-backend:
     build:
@@ -136,6 +159,16 @@ services:
       DB_EVALUACIONES_URL: jdbc:postgresql://postgres:5432/evaluaciones
       DB_EVALUACIONES_USERNAME: arquisoft_user
       DB_EVALUACIONES_PASSWORD: arquisoft123
+      DB_NOTIFICACIONES_URL: jdbc:postgresql://postgres:5432/notificaciones
+      DB_NOTIFICACIONES_USERNAME: arquisoft_user
+      DB_NOTIFICACIONES_PASSWORD: arquisoft123
+      # 'log' no intenta conectar a ningún servidor SMTP — Mailpit es opcional.
+      # Para probar la entrega real: levantar el servicio 'mailpit' y poner esta var en 'smtp'.
+      NOTIFICACION_PROVEEDOR: ${NOTIFICACION_PROVEEDOR:-log}
+      MAIL_HOST: ${MAIL_HOST:-mailpit}
+      MAIL_PORT: 1025
+      MAIL_SMTP_AUTH: "false"
+      MAIL_SMTP_STARTTLS: "false"
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_REDIS_HOST: redis
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080

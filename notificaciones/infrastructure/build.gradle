@@ -1,0 +1,23 @@
+dependencies {
+    implementation project(':notificaciones:domain')
+    implementation project(':notificaciones:application')
+    implementation project(':shared:domain')
+    implementation project(':shared:amqp')
+    implementation project(':shared:logger')
+    implementation project(':shared:notification')
+
+    // AMQP — spring-amqp no es transitivo en compilacion desde shared:amqp (Gradle 'implementation').
+    // Se declara aqui para acceder a @RabbitListener, Message, Channel, QueueBuilder, etc.
+    implementation "org.springframework.boot:spring-boot-starter-amqp"
+
+    // Database
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
+    runtimeOnly "org.postgresql:postgresql"
+
+    // Testing — Spring Boot 4.x: @DataJpaTest requiere modulo separado
+    testImplementation "org.springframework.boot:spring-boot-starter-data-jpa-test"
+    testImplementation "com.h2database:h2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

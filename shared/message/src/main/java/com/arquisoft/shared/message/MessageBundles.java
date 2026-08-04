@@ -31,6 +31,9 @@ public final class MessageBundles {
     /** Contexto usuarios. */
     public static final String USUARIOS = "messages.usuarios";
 
+    /** Contexto notificaciones: reglas, plantillas de correo y trazas de los consumidores. */
+    public static final String NOTIFICACIONES = "messages.notificaciones";
+
     /**
      * Mensajes de las restricciones Jakarta. Lo lee Hibernate Validator por su cuenta para
      * resolver los {@code message="{clave}"} de las anotaciones; se registra además aquí para que
@@ -49,6 +52,7 @@ public final class MessageBundles {
         FICHAS_API,
         SEGURIDAD,
         USUARIOS,
+        NOTIFICACIONES,
         VALIDACION,
     };
 }

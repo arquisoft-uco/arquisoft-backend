@@ -10,6 +10,7 @@ include 'shared:web'
 include 'shared:minio'
 include 'shared:postgres'
 include 'shared:message'
+include 'shared:notification'
 
 // ==================== CONTEXTOS DE NEGOCIO ====================
 
@@ -60,3 +61,9 @@ include 'usuarios'
 include 'usuarios:domain'
 include 'usuarios:application'
 include 'usuarios:infrastructure'
+
+// Contexto 9: Notificaciones (avisos por correo ante eventos de dominio)
+include 'notificaciones'
+include 'notificaciones:domain'
+include 'notificaciones:application'
+include 'notificaciones:infrastructure'
