@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 
+import com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl.ModificarItemFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ class ModificarItemFichaPerfilValidatorTest {
     private ItemFichaPropiaRule itemFichaPropiaRule;
 
     @InjectMocks
-    private ModificarItemFichaPerfilValidator validator;
+    private ModificarItemFichaPerfilValidatorImpl validator;
 
     @Test
     void debeDelegarEnLaReglaDeFichaPropia_cuandoValida() {

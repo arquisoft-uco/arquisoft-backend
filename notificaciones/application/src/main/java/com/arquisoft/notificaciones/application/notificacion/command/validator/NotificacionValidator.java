@@ -1,14 +1,6 @@
 package com.arquisoft.notificaciones.application.notificacion.command.validator;
 
-import com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
-
-@Component
-@RequiredArgsConstructor
-public class NotificacionValidator {
-
-    private final NotificacionOutputPort notificacionOutputPort;
+public interface NotificacionValidator {
 
     /**
      * Indica si el evento ya fue atendido.
@@ -20,7 +12,5 @@ public class NotificacionValidator {
      * @param eventId identificador del evento de dominio
      * @return {@code true} si ya existe una notificacion para ese evento
      */
-    public boolean yaFueProcesado(String eventId) {
-        return notificacionOutputPort.existePorEventId(eventId);
-    }
+    boolean yaFueProcesado(String eventId);
 }

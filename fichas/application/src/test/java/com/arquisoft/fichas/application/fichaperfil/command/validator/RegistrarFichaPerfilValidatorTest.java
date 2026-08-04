@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
+import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.RegistrarFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
@@ -41,7 +42,7 @@ class RegistrarFichaPerfilValidatorTest {
     private EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
 
     @InjectMocks
-    private RegistrarFichaPerfilValidator validator;
+    private RegistrarFichaPerfilValidatorImpl validator;
 
     @Test
     void debeAplicarLasReglasEnOrden_cuandoHayEstudiantes() {

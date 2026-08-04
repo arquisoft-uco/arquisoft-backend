@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
-import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQueryOutputPort;
+import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorContactoFinder;
 import com.arquisoft.fichas.application.asesorficha.query.readmodel.AsesorContactoReadModel;
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
@@ -13,6 +13,7 @@ import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontrado
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.MismoAsesorFichaException;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
@@ -24,7 +25,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +42,10 @@ class CambiarAsesorFichaUseCaseTest {
     private FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Mock
-    private AsesorFichaQueryOutputPort asesorFichaQueryOutputPort;
+    private FichaPerfilFinder fichaPerfilFinder;
+
+    @Mock
+    private AsesorContactoFinder asesorContactoFinder;
 
     @Mock
     private CambiarAsesorFichaValidator cambiarAsesorFichaValidator;
@@ -69,9 +72,8 @@ class CambiarAsesorFichaUseCaseTest {
         FichaPerfilAggregate ficha = fichaReconstruida(fichaId, UUID.randomUUID());
         var command = new CambiarAsesorFichaCommand(fichaId, nuevoAsesorId);
 
-        when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
-        when(asesorFichaQueryOutputPort.buscarContactoPorId(nuevoAsesorId))
-                .thenReturn(Optional.of(contactoDe(nuevoAsesorId)));
+        when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
+        when(asesorContactoFinder.obtener(nuevoAsesorId)).thenReturn(contactoDe(nuevoAsesorId));
 
         // Act
         cambiarAsesorFichaUseCase.ejecutar(command);
@@ -90,9 +92,8 @@ class CambiarAsesorFichaUseCaseTest {
         FichaPerfilAggregate ficha = fichaReconstruida(fichaId, UUID.randomUUID());
         var command = new CambiarAsesorFichaCommand(fichaId, nuevoAsesorId);
 
-        when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
-        when(asesorFichaQueryOutputPort.buscarContactoPorId(nuevoAsesorId))
-                .thenReturn(Optional.of(contactoDe(nuevoAsesorId)));
+        when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
+        when(asesorContactoFinder.obtener(nuevoAsesorId)).thenReturn(contactoDe(nuevoAsesorId));
 
         // Act
         cambiarAsesorFichaUseCase.ejecutar(command);
@@ -111,9 +112,8 @@ class CambiarAsesorFichaUseCaseTest {
         FichaPerfilAggregate ficha = fichaReconstruida(fichaId, UUID.randomUUID());
         var command = new CambiarAsesorFichaCommand(fichaId, nuevoAsesorId);
 
-        when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
-        when(asesorFichaQueryOutputPort.buscarContactoPorId(nuevoAsesorId))
-                .thenReturn(Optional.of(contactoDe(nuevoAsesorId)));
+        when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
+        when(asesorContactoFinder.obtener(nuevoAsesorId)).thenReturn(contactoDe(nuevoAsesorId));
 
         // Act
         cambiarAsesorFichaUseCase.ejecutar(command);
@@ -135,7 +135,7 @@ class CambiarAsesorFichaUseCaseTest {
         UUID fichaId = UUID.randomUUID();
         var command = new CambiarAsesorFichaCommand(fichaId, UUID.randomUUID());
 
-        when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.empty());
+        doThrow(new FichaPerfilNoEncontradaException(fichaId)).when(fichaPerfilFinder).obtener(fichaId);
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(command))
@@ -154,9 +154,9 @@ class CambiarAsesorFichaUseCaseTest {
         FichaPerfilAggregate ficha = fichaReconstruida(fichaId, UUID.randomUUID());
         var command = new CambiarAsesorFichaCommand(fichaId, nuevoAsesorId);
 
-        when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
-        when(asesorFichaQueryOutputPort.buscarContactoPorId(nuevoAsesorId))
-                .thenReturn(Optional.empty());
+        when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
+        doThrow(new AsesorFichaNoEncontradoException(nuevoAsesorId))
+                .when(asesorContactoFinder).obtener(nuevoAsesorId);
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(command))
@@ -174,7 +174,7 @@ class CambiarAsesorFichaUseCaseTest {
         FichaPerfilAggregate ficha = fichaReconstruida(fichaId, UUID.randomUUID());
         var command = new CambiarAsesorFichaCommand(fichaId, nuevoAsesorId);
 
-        when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
+        when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
         doThrow(new AsesorFichaNoEncontradoException(nuevoAsesorId))
                 .when(cambiarAsesorFichaValidator).validar(any(), any());
 
@@ -195,7 +195,7 @@ class CambiarAsesorFichaUseCaseTest {
         FichaPerfilAggregate ficha = fichaReconstruida(fichaId, UUID.randomUUID());
         var command = new CambiarAsesorFichaCommand(fichaId, nuevoAsesorId);
 
-        when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
+        when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
         doThrow(new EstadoFichaPerfilTerminalException(EstadoFicha.APROBADA))
                 .when(cambiarAsesorFichaValidator).validar(any(), any());
 
@@ -215,7 +215,7 @@ class CambiarAsesorFichaUseCaseTest {
         FichaPerfilAggregate ficha = fichaReconstruida(fichaId, asesorActualId);
         var command = new CambiarAsesorFichaCommand(fichaId, asesorActualId);
 
-        when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
+        when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
         doThrow(new MismoAsesorFichaException(asesorActualId))
                 .when(cambiarAsesorFichaValidator).validar(any(), any());
 

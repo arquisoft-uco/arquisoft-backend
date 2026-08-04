@@ -5,8 +5,8 @@ import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.RemoverItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
-import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
+import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilFinder;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfilUseCase {
 
     private final ItemFichaPerfilOutputPort itemOutputPort;
+    private final ItemFichaPerfilFinder itemFichaPerfilFinder;
     private final RevisionItemQueryOutputPort revisionQueryPort;
     private final RemoverItemFichaPerfilValidator removerItemFichaPerfilValidator;
     private final AppLogger logger;
@@ -24,8 +25,7 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
 
     @Override
     public void ejecutar(RemoverItemFichaPerfilCommand entrada) {
-        var item = itemOutputPort.buscarPorId(entrada.item())
-                .orElseThrow(() -> new ItemFichaPerfilNoEncontradoException(entrada.item()));
+        var item = itemFichaPerfilFinder.obtener(entrada.item());
 
         removerItemFichaPerfilValidator.validar(item.getFichaPerfilId(), entrada.estudiante());
 

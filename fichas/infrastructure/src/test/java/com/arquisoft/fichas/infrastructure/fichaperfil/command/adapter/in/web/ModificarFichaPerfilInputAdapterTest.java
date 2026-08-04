@@ -2,8 +2,8 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
 import com.arquisoft.shared.web.config.MessageCatalogConfig;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.ModificarFichaPerfilInteractor;
-import com.arquisoft.fichas.application.fichaperfil.exception.FichaNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
@@ -128,7 +128,7 @@ class ModificarFichaPerfilInputAdapterTest {
     @Test
     void debeRetornar400_cuandoFichaNoExiste() throws Exception {
         // Arrange
-        doThrow(new FichaNoEncontradaException(FICHA_ID))
+        doThrow(new FichaPerfilNoEncontradaException(FICHA_ID))
                 .when(modificarFichaPerfilInteractor)
                 .ejecutar(any());
 

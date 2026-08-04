@@ -10,6 +10,7 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverIte
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
+import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilFinder;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.exception.DomainValidationException;
@@ -21,7 +22,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +38,9 @@ class RemoverItemFichaPerfilUseCaseTest {
 
     @Mock
     private ItemFichaPerfilOutputPort itemOutputPort;
+
+    @Mock
+    private ItemFichaPerfilFinder itemFichaPerfilFinder;
 
     @Mock
     private RevisionItemQueryOutputPort revisionQueryPort;
@@ -64,7 +67,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         UUID fichaPerfilId = UUID.randomUUID();
         ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
 
-        when(itemOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         when(revisionQueryPort.contarPorItem(itemId)).thenReturn(0L);
 
         var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
@@ -73,7 +76,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         useCase.ejecutar(command);
 
         // Assert
-        verify(itemOutputPort, times(1)).buscarPorId(itemId);
+        verify(itemFichaPerfilFinder, times(1)).obtener(itemId);
         verify(removerItemFichaPerfilValidator, times(1)).validar(any(), any());
         verify(revisionQueryPort, times(1)).contarPorItem(itemId);
         verify(itemOutputPort, times(1)).eliminarPorId(itemId);
@@ -85,7 +88,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
 
-        when(itemOutputPort.buscarPorId(itemId)).thenReturn(Optional.empty());
+        doThrow(new ItemFichaPerfilNoEncontradoException(itemId)).when(itemFichaPerfilFinder).obtener(itemId);
 
         var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
 
@@ -115,7 +118,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         UUID fichaPerfilId = UUID.randomUUID();
         ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
 
-        when(itemOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         doThrow(new FichaNoPropietarioException(fichaPerfilId, estudianteId))
                 .when(removerItemFichaPerfilValidator).validar(any(), any());
 
@@ -143,7 +146,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         UUID fichaPerfilId = UUID.randomUUID();
         ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
 
-        when(itemOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         when(revisionQueryPort.contarPorItem(itemId)).thenReturn(2L);
 
         var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);

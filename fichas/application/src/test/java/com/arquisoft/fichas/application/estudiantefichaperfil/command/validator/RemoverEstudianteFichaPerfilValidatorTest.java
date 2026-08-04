@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.validator;
 
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.impl.RemoverEstudianteFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculacionEstudianteCriteria;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.VinculoEstudianteFichaExisteRule;
@@ -29,7 +30,7 @@ class RemoverEstudianteFichaPerfilValidatorTest {
     private VinculoEstudianteFichaExisteRule vinculoEstudianteFichaExisteRule;
 
     @InjectMocks
-    private RemoverEstudianteFichaPerfilValidator validator;
+    private RemoverEstudianteFichaPerfilValidatorImpl validator;
 
     @Test
     void debeAplicarLasReglasEnOrden_cuandoValida() {

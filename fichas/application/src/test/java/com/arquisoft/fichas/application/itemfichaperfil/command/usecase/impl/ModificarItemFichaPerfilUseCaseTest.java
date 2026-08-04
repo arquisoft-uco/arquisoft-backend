@@ -7,9 +7,10 @@ import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontrada
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ModificarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
-import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemNoEncontradoException;
+import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
+import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilFinder;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.exception.DomainValidationException;
@@ -41,6 +42,9 @@ class ModificarItemFichaPerfilUseCaseTest {
     private ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
 
     @Mock
+    private ItemFichaPerfilFinder itemFichaPerfilFinder;
+
+    @Mock
     private EstadoFichaPerfilQueryOutputPort estadoFichaPerfilQueryOutputPort;
 
     @Mock
@@ -66,7 +70,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, estudianteId);
 
-        when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
                 .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
 
@@ -74,7 +78,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         useCase.ejecutar(command);
 
         // Assert
-        verify(itemFichaPerfilOutputPort, times(1)).buscarPorId(itemId);
+        verify(itemFichaPerfilFinder, times(1)).obtener(itemId);
         verify(modificarItemFichaPerfilValidator, times(1)).validar(any(), any());
         verify(itemFichaPerfilOutputPort, times(1)).guardar(item);
     }
@@ -85,11 +89,11 @@ class ModificarItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
 
-        when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.empty());
+        doThrow(new ItemFichaPerfilNoEncontradoException(itemId)).when(itemFichaPerfilFinder).obtener(itemId);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
-                .isInstanceOf(ItemNoEncontradoException.class);
+                .isInstanceOf(ItemFichaPerfilNoEncontradoException.class);
 
         verify(modificarItemFichaPerfilValidator, never()).validar(any(), any());
         verify(itemFichaPerfilOutputPort, never()).guardar(any());
@@ -104,7 +108,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, estudianteId);
 
-        when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         doThrow(new ItemFichaNoPropiaException(fichaPerfilId))
                 .when(modificarItemFichaPerfilValidator).validar(any(), any());
 
@@ -123,7 +127,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, "", UUID.randomUUID());
 
-        when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
                 .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
 
@@ -142,7 +146,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
 
-        when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
                 .thenReturn(Optional.of(EstadoFicha.APROBADA));
 
@@ -161,7 +165,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
 
-        when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId)).thenReturn(Optional.empty());
 
         // Act & Assert
@@ -179,7 +183,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
 
-        when(itemFichaPerfilOutputPort.buscarPorId(itemId)).thenReturn(Optional.of(item));
+        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
                 .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
         doThrow(new RuntimeException("Error de BD")).when(itemFichaPerfilOutputPort).guardar(any());

@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
+import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.CambiarAsesorFichaValidatorImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.model.CambioAsesorFichaCriteria;
@@ -28,7 +29,7 @@ class CambiarAsesorFichaValidatorTest {
     private AsesorFichaDiferenteRule asesorFichaDiferenteRule;
 
     @InjectMocks
-    private CambiarAsesorFichaValidator validator;
+    private CambiarAsesorFichaValidatorImpl validator;
 
     @Test
     void debeDelegarEnLasReglas_cuandoValida() {

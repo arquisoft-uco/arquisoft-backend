@@ -8,7 +8,7 @@ import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.ModificarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
-import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemNoEncontradoException;
+import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -91,7 +91,7 @@ class ModificarItemFichaPerfilInputAdapterTest {
         UUID estudianteId = UUID.randomUUID();
         String body = "{\"contenido\": \"Contenido modificado\"}";
 
-        doThrow(new ItemNoEncontradoException(itemId))
+        doThrow(new ItemFichaPerfilNoEncontradoException(itemId))
                 .when(modificarItemFichaPerfilInteractor).ejecutar(any(ModificarItemFichaPerfilCommand.class));
 
         // Act & Assert

@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
+import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.ModificarFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.model.TituloFichaCriteria;
@@ -25,7 +26,7 @@ class ModificarFichaPerfilValidatorTest {
     private FichaPerfilTituloDisponibleRule fichaPerfilTituloDisponibleRule;
 
     @InjectMocks
-    private ModificarFichaPerfilValidator validator;
+    private ModificarFichaPerfilValidatorImpl validator;
 
     @Test
     void debeDelegarEnLaReglaDePropiedad_cuandoValidaPropiedad() {

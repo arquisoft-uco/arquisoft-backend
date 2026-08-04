@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.usuario.command.validator;
 
+import com.arquisoft.usuarios.application.usuario.command.validator.impl.CrearUsuarioValidatorImpl;
 import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioAggregate;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEmailDuplicadoException;
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
@@ -22,7 +23,7 @@ class CrearUsuarioValidatorTest {
     private UsuarioEmailUnicoRule usuarioEmailUnicoRule;
 
     @InjectMocks
-    private CrearUsuarioValidator crearUsuarioValidator;
+    private CrearUsuarioValidatorImpl crearUsuarioValidator;
 
     @Test
     void debeValidarUnicidadDelEmailNormalizado_cuandoUsuarioEsValido() {

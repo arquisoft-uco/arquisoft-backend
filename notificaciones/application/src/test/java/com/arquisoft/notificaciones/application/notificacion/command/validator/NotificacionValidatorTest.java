@@ -1,5 +1,6 @@
 package com.arquisoft.notificaciones.application.notificacion.command.validator;
 
+import com.arquisoft.notificaciones.application.notificacion.command.validator.impl.NotificacionValidatorImpl;
 import com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +20,7 @@ class NotificacionValidatorTest {
     private NotificacionOutputPort notificacionOutputPort;
 
     @InjectMocks
-    private NotificacionValidator notificacionValidator;
+    private NotificacionValidatorImpl notificacionValidator;
 
     @Test
     void debeReportarProcesado_cuandoYaExisteUnaNotificacionParaElEvento() {

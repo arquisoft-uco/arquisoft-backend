@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.validator;
 
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.impl.AgregarEstadoEvaluacionFichaValidatorImpl;
 import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionNoEncontradoException;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.model.EstadoEvaluacionCriteria;
@@ -33,7 +34,7 @@ class AgregarEstadoEvaluacionFichaValidatorTest {
     private EstadoEvaluacionNoDuplicadoRule estadoEvaluacionNoDuplicadoRule;
 
     @InjectMocks
-    private AgregarEstadoEvaluacionFichaValidator validator;
+    private AgregarEstadoEvaluacionFichaValidatorImpl validator;
 
     @Test
     void debeAplicarLasReglasEnOrden_cuandoValida() {

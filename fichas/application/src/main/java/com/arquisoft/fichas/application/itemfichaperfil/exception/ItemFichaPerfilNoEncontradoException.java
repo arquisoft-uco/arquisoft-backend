@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.application.itemfichaperfil.exception;
 
+import com.arquisoft.shared.exception.ApplicationException;
 import com.arquisoft.shared.message.FichasCodes;
 import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.shared.message.Messages;
-import com.arquisoft.shared.exception.ApplicationException;
 
 import java.util.UUID;
 

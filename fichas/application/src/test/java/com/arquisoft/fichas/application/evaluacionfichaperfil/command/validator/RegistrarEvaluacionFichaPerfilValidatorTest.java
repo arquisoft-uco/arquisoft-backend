@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator;
 
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.impl.RegistrarEvaluacionFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.EvaluacionRepresentanteFichaCriteria;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.EvaluacionNoDuplicadaRule;
@@ -29,7 +30,7 @@ class RegistrarEvaluacionFichaPerfilValidatorTest {
     private EvaluacionNoDuplicadaRule evaluacionNoDuplicadaRule;
 
     @InjectMocks
-    private RegistrarEvaluacionFichaPerfilValidator validator;
+    private RegistrarEvaluacionFichaPerfilValidatorImpl validator;
 
     @Test
     void debeAplicarLasReglasEnOrden_cuandoValida() {

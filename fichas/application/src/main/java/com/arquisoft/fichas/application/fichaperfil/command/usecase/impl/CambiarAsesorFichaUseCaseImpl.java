@@ -1,13 +1,12 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQueryOutputPort;
+import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorContactoFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAsesorFichaUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
-import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
-import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
@@ -23,7 +22,8 @@ import java.util.UUID;
 public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase {
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
-    private final AsesorFichaQueryOutputPort asesorFichaQueryOutputPort;
+    private final FichaPerfilFinder fichaPerfilFinder;
+    private final AsesorContactoFinder asesorContactoFinder;
     private final CambiarAsesorFichaValidator cambiarAsesorFichaValidator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
@@ -39,15 +39,11 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
                 nuevoAsesorFicha
         );
 
-        // Llevar a un validator, esto lo pueden usar más use case
-        var fichaActual = fichaPerfilOutputPort.buscarPorId(fichaPerfil)
-                .orElseThrow(() -> new FichaPerfilNoEncontradaException(entrada.fichaPerfil()));
+        var fichaActual = fichaPerfilFinder.obtener(fichaPerfil);
 
         cambiarAsesorFichaValidator.validar(ficha, fichaActual.getAsesorFicha());
 
-        // Llevar a un validator, esto lo pueden usar más use case
-        var asesorFichaContacto = asesorFichaQueryOutputPort.buscarContactoPorId(entrada.nuevoAsesorFicha())
-                .orElseThrow(() -> new AsesorFichaNoEncontradoException(entrada.nuevoAsesorFicha()));
+        var asesorFichaContacto = asesorContactoFinder.obtener(nuevoAsesorFicha);
 
         FichaPerfilAggregate fichaActualizada = FichaPerfilAggregate.reconstruir(
                 fichaActual.getId(), fichaActual.getTituloProyecto(), nuevoAsesorFicha);
