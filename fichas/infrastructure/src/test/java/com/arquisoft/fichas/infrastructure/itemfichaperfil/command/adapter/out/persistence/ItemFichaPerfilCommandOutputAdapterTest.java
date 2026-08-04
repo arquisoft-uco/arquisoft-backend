@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ItemFichaPerfilCommandOutputAdapterTest {
 
     @Autowired
-    private ItemFichaPerfilRepository jpaRepository;
+    private ItemFichaPerfilRepository repository;
 
     @Autowired
     private TipoItemRepository tipoItemRepository;
@@ -37,7 +37,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new ItemFichaPerfilCommandOutputAdapter(jpaRepository, tipoItemRepository);
+        adapter = new ItemFichaPerfilCommandOutputAdapter(repository, tipoItemRepository);
 
         // Seed: insertar tipo_item en H2 para que la referencia por id funcione
         entityManager.createNativeQuery(
@@ -67,7 +67,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        ItemFichaPerfilEntity savedEntity = jpaRepository.findById(aggregate.getId()).orElse(null);
+        ItemFichaPerfilEntity savedEntity = repository.findById(aggregate.getId()).orElse(null);
         assertThat(savedEntity).isNotNull();
         assertThat(savedEntity.getId()).isEqualTo(aggregate.getId());
         assertThat(savedEntity.getFichaPerfilId()).isEqualTo(fichaPerfilId);
@@ -91,7 +91,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
 
         // Assert — getReference crea un proxy sin SELECT
         // Verificamos que el entity guardado tiene el tipo correcto sin haber cargado toda la entidad
-        ItemFichaPerfilEntity saved = jpaRepository.findById(aggregate.getId()).orElseThrow();
+        ItemFichaPerfilEntity saved = repository.findById(aggregate.getId()).orElseThrow();
         assertThat(saved.getTipoItem()).isNotNull();
         assertThat(saved.getTipoItem().getId()).isEqualTo("OBJETIVO_GENERAL");
     }
@@ -109,7 +109,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
                 .tipoItem(tipoItemRef)
                 .contenido("Contenido existente")
                 .build();
-        jpaRepository.save(entity);
+        repository.save(entity);
         entityManager.flush();
         entityManager.clear();
 
@@ -144,7 +144,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
                 .tipoItem(tipoItemRef)
                 .contenido("Contenido existente")
                 .build();
-        ItemFichaPerfilEntity saved = jpaRepository.save(entity);
+        ItemFichaPerfilEntity saved = repository.save(entity);
         entityManager.flush();
         entityManager.clear();
 
@@ -188,7 +188,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        ItemFichaPerfilEntity savedEntity = jpaRepository.findById(aggregate.getId()).orElseThrow();
+        ItemFichaPerfilEntity savedEntity = repository.findById(aggregate.getId()).orElseThrow();
         assertThat(savedEntity.getContenido()).isEqualTo("Contenido modificado");
     }
 
@@ -203,7 +203,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
                 .tipoItem(tipoItemRef)
                 .contenido("Contenido a eliminar")
                 .build();
-        ItemFichaPerfilEntity saved = jpaRepository.save(entity);
+        ItemFichaPerfilEntity saved = repository.save(entity);
         entityManager.flush();
         entityManager.clear();
 
@@ -212,6 +212,6 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.flush();
 
         // Assert
-        assertThat(jpaRepository.existsById(saved.getId())).isFalse();
+        assertThat(repository.existsById(saved.getId())).isFalse();
     }
 }

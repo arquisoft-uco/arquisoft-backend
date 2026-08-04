@@ -13,11 +13,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EstadoFichaQueryOutputAdapter implements EstadoFichaQueryOutputPort {
 
-    private final EstadoFichaRepository jpaRepository;
+    private final EstadoFichaRepository repository;
 
     @Override
     public List<EstadoFichaReadModel> findAll() {
-        return jpaRepository.findAll()
+        return repository.findAll()
                 .stream()
                 .map(this::toReadModel)
                 .toList();

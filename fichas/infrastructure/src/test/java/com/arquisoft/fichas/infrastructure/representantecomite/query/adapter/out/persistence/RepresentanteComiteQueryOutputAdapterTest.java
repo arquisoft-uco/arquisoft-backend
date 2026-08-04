@@ -17,13 +17,13 @@ import static org.mockito.Mockito.when;
 class RepresentanteComiteQueryOutputAdapterTest {
 
     @Mock
-    private RepresentanteComiteRepository jpaRepository;
+    private RepresentanteComiteRepository repository;
 
     private RepresentanteComiteQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new RepresentanteComiteQueryOutputAdapter(jpaRepository);
+        adapter = new RepresentanteComiteQueryOutputAdapter(repository);
     }
 
     @Test
@@ -32,8 +32,8 @@ class RepresentanteComiteQueryOutputAdapterTest {
         UUID idExistente = UUID.randomUUID();
         UUID idNoExistente = UUID.randomUUID();
 
-        when(jpaRepository.existsById(idExistente)).thenReturn(true);
-        when(jpaRepository.existsById(idNoExistente)).thenReturn(false);
+        when(repository.existsById(idExistente)).thenReturn(true);
+        when(repository.existsById(idNoExistente)).thenReturn(false);
 
         // Act
         boolean existeTrue = adapter.existePorId(idExistente);
@@ -42,7 +42,7 @@ class RepresentanteComiteQueryOutputAdapterTest {
         // Assert
         assertThat(existeTrue).isTrue();
         assertThat(existeFalse).isFalse();
-        verify(jpaRepository).existsById(idExistente);
-        verify(jpaRepository).existsById(idNoExistente);
+        verify(repository).existsById(idExistente);
+        verify(repository).existsById(idNoExistente);
     }
 }

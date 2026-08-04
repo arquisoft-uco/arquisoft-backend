@@ -15,29 +15,29 @@ import java.util.UUID;
 public class EvaluacionFichaPerfilCommandOutputAdapter
         implements EvaluacionFichaPerfilOutputPort {
 
-    private final EvaluacionFichaPerfilRepository jpaRepository;
+    private final EvaluacionFichaPerfilRepository repository;
     private final EvaluacionFichaPerfilMapper mapper;
 
     @Override
     public void guardar(EvaluacionFichaPerfilAggregate evaluacion) {
         var entity = mapper.toEntity(evaluacion);
-        jpaRepository.save(entity);
+        repository.save(entity);
     }
 
     @Override
     public boolean existePorId(UUID id) {
-        return jpaRepository.existsById(id);
+        return repository.existsById(id);
     }
 
     @Override
     public boolean existePorRepresentanteYFicha(UUID representanteComiteId, UUID fichaPerfilId) {
-        return jpaRepository.existsByRepresentanteComiteIdAndFichaPerfilId(
+        return repository.existsByRepresentanteComiteIdAndFichaPerfilId(
                 representanteComiteId,
                 fichaPerfilId);
     }
     @Override
     public boolean esRepresentantePropietario(PropietarioEvaluacionCriteria criteria) {
-        return jpaRepository.existsByIdAndRepresentanteComiteId(
+        return repository.existsByIdAndRepresentanteComiteId(
                 criteria.evaluacionFichaPerfil(), criteria.representanteComite());
     }
 }

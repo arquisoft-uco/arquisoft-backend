@@ -15,34 +15,34 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutputPort {
 
-    private final ItemFichaPerfilRepository jpaRepository;
+    private final ItemFichaPerfilRepository repository;
     private final TipoItemRepository tipoItemRepository;
 
     @Override
     public void guardar(ItemFichaPerfilAggregate aggregate) {
         var tipoItemRef = tipoItemRepository.getReferenceById(aggregate.getTipoItem().getId());
         var entity = ItemFichaPerfilMapper.toEntity(aggregate, tipoItemRef);
-        jpaRepository.save(entity);
+        repository.save(entity);
     }
 
     @Override
     public boolean existePorFichaYTipoItem(UUID fichaPerfilId, String tipoItem) {
-        return jpaRepository.existsByFichaPerfilIdAndTipoItemId(fichaPerfilId, tipoItem);
+        return repository.existsByFichaPerfilIdAndTipoItemId(fichaPerfilId, tipoItem);
     }
 
     @Override
     public boolean existePorId(UUID itemId) {
-        return jpaRepository.existsById(itemId);
+        return repository.existsById(itemId);
     }
 
     @Override
     public Optional<ItemFichaPerfilAggregate> buscarPorId(UUID itemId) {
-        return jpaRepository.findById(itemId)
+        return repository.findById(itemId)
                 .map(ItemFichaPerfilMapper::toDomain);
     }
 
     @Override
     public void eliminarPorId(UUID itemId) {
-        jpaRepository.deleteById(itemId);
+        repository.deleteById(itemId);
     }
 }

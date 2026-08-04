@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 class EstudianteFichaPerfilCommandOutputAdapterTest {
 
     @Mock
-    private EstudianteFichaPerfilRepository jpaRepository;
+    private EstudianteFichaPerfilRepository repository;
 
     @Mock
     private EstudianteFichaPerfilMapper mapper;
@@ -31,7 +31,7 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new EstudianteFichaPerfilCommandOutputAdapter(jpaRepository, mapper);
+        adapter = new EstudianteFichaPerfilCommandOutputAdapter(repository, mapper);
     }
 
     @Test
@@ -50,7 +50,7 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
 
         // Assert
         verify(mapper, times(1)).toEntity(relacion);
-        verify(jpaRepository, times(1)).save(entity);
+        verify(repository, times(1)).save(entity);
     }
 
     @Test
@@ -59,7 +59,7 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
 
-        when(jpaRepository.existsByFichaPerfilIdAndEstudianteId(fichaId, estudianteId)).thenReturn(true);
+        when(repository.existsByFichaPerfilIdAndEstudianteId(fichaId, estudianteId)).thenReturn(true);
 
         // Act
         boolean resultado = adapter.existePorFichaYEstudiante(fichaId, estudianteId);
@@ -74,7 +74,7 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
 
-        when(jpaRepository.existsByFichaPerfilIdAndEstudianteId(fichaId, estudianteId)).thenReturn(false);
+        when(repository.existsByFichaPerfilIdAndEstudianteId(fichaId, estudianteId)).thenReturn(false);
 
         // Act
         boolean resultado = adapter.existePorFichaYEstudiante(fichaId, estudianteId);
@@ -88,7 +88,7 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
 
-        when(jpaRepository.countByFichaPerfilId(fichaId)).thenReturn(2L);
+        when(repository.countByFichaPerfilId(fichaId)).thenReturn(2L);
 
         // Act
         long resultado = adapter.contarPorFichaPerfilId(fichaId);

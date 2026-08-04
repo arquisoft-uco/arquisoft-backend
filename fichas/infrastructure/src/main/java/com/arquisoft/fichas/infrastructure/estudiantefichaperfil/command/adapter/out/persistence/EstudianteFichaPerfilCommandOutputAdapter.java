@@ -13,27 +13,27 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFichaPerfilOutputPort {
 
-    private final EstudianteFichaPerfilRepository jpaRepository;
+    private final EstudianteFichaPerfilRepository repository;
     private final EstudianteFichaPerfilMapper mapper;
 
     @Override
     public void guardar(EstudianteFichaPerfilAggregate relacion) {
         var entity = mapper.toEntity(relacion);
-        jpaRepository.save(entity);
+        repository.save(entity);
     }
 
     @Override
     public boolean existePorFichaYEstudiante(UUID fichaPerfilId, UUID estudianteId) {
-        return jpaRepository.existsByFichaPerfilIdAndEstudianteId(fichaPerfilId, estudianteId);
+        return repository.existsByFichaPerfilIdAndEstudianteId(fichaPerfilId, estudianteId);
     }
 
     @Override
     public long contarPorFichaPerfilId(UUID fichaPerfilId) {
-        return jpaRepository.countByFichaPerfilId(fichaPerfilId);
+        return repository.countByFichaPerfilId(fichaPerfilId);
     }
 
     @Override
     public void eliminar(UUID fichaPerfilId, UUID estudianteId) {
-        jpaRepository.deleteByFichaPerfilIdAndEstudianteId(fichaPerfilId, estudianteId);
+        repository.deleteByFichaPerfilIdAndEstudianteId(fichaPerfilId, estudianteId);
     }
 }

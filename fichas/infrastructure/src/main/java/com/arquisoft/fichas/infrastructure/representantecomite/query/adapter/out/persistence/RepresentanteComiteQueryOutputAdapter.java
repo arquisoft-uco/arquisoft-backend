@@ -12,10 +12,10 @@ import java.util.UUID;
 public class RepresentanteComiteQueryOutputAdapter
         implements RepresentanteComiteQueryOutputPort {
 
-    private final RepresentanteComiteRepository jpaRepository;
+    private final RepresentanteComiteRepository repository;
 
     @Override
     public boolean existePorId(UUID id) {
-        return jpaRepository.existsById(id);
+        return repository.existsById(id);
     }
 }

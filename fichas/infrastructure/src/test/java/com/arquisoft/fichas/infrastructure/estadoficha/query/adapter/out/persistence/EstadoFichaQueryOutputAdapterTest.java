@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 class EstadoFichaQueryOutputAdapterTest {
 
     @Mock
-    private EstadoFichaRepository jpaRepository;
+    private EstadoFichaRepository repository;
 
     @InjectMocks
     private EstadoFichaQueryOutputAdapter adapter;
@@ -44,7 +44,7 @@ class EstadoFichaQueryOutputAdapterTest {
         entity3.setDescripcion("Ficha rechazada");
 
         List<EstadoFichaEntity> entities = List.of(entity1, entity2, entity3);
-        when(jpaRepository.findAll()).thenReturn(entities);
+        when(repository.findAll()).thenReturn(entities);
 
         // Act
         List<EstadoFichaReadModel> resultado = adapter.findAll();
@@ -65,13 +65,13 @@ class EstadoFichaQueryOutputAdapterTest {
         assertThat(resultado.get(2).nombre()).isEqualTo("No Aprobada");
         assertThat(resultado.get(2).descripcion()).isEqualTo("Ficha rechazada");
 
-        verify(jpaRepository, times(1)).findAll();
+        verify(repository, times(1)).findAll();
     }
 
     @Test
     void debeRetornarListaVacia_cuandoRepositorioRetornaVacio() {
         // Arrange
-        when(jpaRepository.findAll()).thenReturn(List.of());
+        when(repository.findAll()).thenReturn(List.of());
 
         // Act
         List<EstadoFichaReadModel> resultado = adapter.findAll();
@@ -79,7 +79,7 @@ class EstadoFichaQueryOutputAdapterTest {
         // Assert
         assertThat(resultado).isNotNull();
         assertThat(resultado).isEmpty();
-        verify(jpaRepository, times(1)).findAll();
+        verify(repository, times(1)).findAll();
     }
 
     @Test
@@ -90,7 +90,7 @@ class EstadoFichaQueryOutputAdapterTest {
         entity.setNombre("Disponible para Evaluacion");
         entity.setDescripcion("Ficha lista para ser evaluada");
 
-        when(jpaRepository.findAll()).thenReturn(List.of(entity));
+        when(repository.findAll()).thenReturn(List.of(entity));
 
         // Act
         List<EstadoFichaReadModel> resultado = adapter.findAll();

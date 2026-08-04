@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class EvaluacionFichaPerfilCommandOutputAdapterTest {
 
     @Mock
-    private EvaluacionFichaPerfilRepository jpaRepository;
+    private EvaluacionFichaPerfilRepository repository;
 
     private EvaluacionFichaPerfilMapper mapper;
     private EvaluacionFichaPerfilCommandOutputAdapter adapter;
@@ -29,7 +29,7 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
     @BeforeEach
     void setUp() {
         mapper = new EvaluacionFichaPerfilMapper();
-        adapter = new EvaluacionFichaPerfilCommandOutputAdapter(jpaRepository, mapper);
+        adapter = new EvaluacionFichaPerfilCommandOutputAdapter(repository, mapper);
     }
 
     @Test
@@ -46,13 +46,13 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
                 .fechaCreacion(aggregate.getFechaCreacion())
                 .build();
 
-        when(jpaRepository.save(any(EvaluacionFichaPerfilEntity.class))).thenReturn(entityGuardada);
+        when(repository.save(any(EvaluacionFichaPerfilEntity.class))).thenReturn(entityGuardada);
 
         // Act
         adapter.guardar(aggregate);
 
         // Assert
-        verify(jpaRepository).save(any(EvaluacionFichaPerfilEntity.class));
+        verify(repository).save(any(EvaluacionFichaPerfilEntity.class));
     }
 
     @Test
@@ -61,7 +61,7 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
         UUID representanteId = UUID.randomUUID();
         UUID fichaId = UUID.randomUUID();
 
-        when(jpaRepository.existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId))
+        when(repository.existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId))
                 .thenReturn(true);
 
         // Act
@@ -69,7 +69,7 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
 
         // Assert
         assertThat(existe).isTrue();
-        verify(jpaRepository).existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId);
+        verify(repository).existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId);
     }
 
     @Test
@@ -78,7 +78,7 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
         UUID representanteId = UUID.randomUUID();
         UUID fichaId = UUID.randomUUID();
 
-        when(jpaRepository.existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId))
+        when(repository.existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId))
                 .thenReturn(false);
 
         // Act
@@ -86,6 +86,6 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
 
         // Assert
         assertThat(existe).isFalse();
-        verify(jpaRepository).existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId);
+        verify(repository).existsByRepresentanteComiteIdAndFichaPerfilId(representanteId, fichaId);
     }
 }

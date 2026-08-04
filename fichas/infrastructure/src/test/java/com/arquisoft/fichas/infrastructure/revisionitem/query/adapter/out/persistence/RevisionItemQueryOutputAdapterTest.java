@@ -18,7 +18,7 @@ import static org.mockito.Mockito.when;
 class RevisionItemQueryOutputAdapterTest {
 
     @Mock
-    private RevisionItemRepository jpaRepository;
+    private RevisionItemRepository repository;
 
     @InjectMocks
     private RevisionItemQueryOutputAdapter adapter;
@@ -27,27 +27,27 @@ class RevisionItemQueryOutputAdapterTest {
     void debeRetornarCount_cuandoItemTieneRevisiones() {
         // Arrange
         UUID itemId = UUID.randomUUID();
-        when(jpaRepository.countByItemId(itemId)).thenReturn(3L);
+        when(repository.countByItemId(itemId)).thenReturn(3L);
 
         // Act
         long resultado = adapter.contarPorItem(itemId);
 
         // Assert
         assertThat(resultado).isEqualTo(3L);
-        verify(jpaRepository, times(1)).countByItemId(itemId);
+        verify(repository, times(1)).countByItemId(itemId);
     }
 
     @Test
     void debeRetornarCero_cuandoItemSinRevisiones() {
         // Arrange
         UUID itemId = UUID.randomUUID();
-        when(jpaRepository.countByItemId(itemId)).thenReturn(0L);
+        when(repository.countByItemId(itemId)).thenReturn(0L);
 
         // Act
         long resultado = adapter.contarPorItem(itemId);
 
         // Assert
         assertThat(resultado).isZero();
-        verify(jpaRepository, times(1)).countByItemId(itemId);
+        verify(repository, times(1)).countByItemId(itemId);
     }
 }

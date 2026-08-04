@@ -13,11 +13,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EstadoFichaPerfilQueryOutputAdapter implements EstadoFichaPerfilQueryOutputPort {
 
-    private final EstadoFichaPerfilRepository jpaRepository;
+    private final EstadoFichaPerfilRepository repository;
 
     @Override
     public Optional<EstadoFicha> obtenerEstadoActual(UUID fichaPerfilId) {
-        return jpaRepository
+        return repository
                 .findFirstByFichaPerfilIdOrderByFechaActualizacionDesc(fichaPerfilId)
                 .map(entity -> EstadoFicha.valueOf(entity.getEstadoFicha().getId()));
     }

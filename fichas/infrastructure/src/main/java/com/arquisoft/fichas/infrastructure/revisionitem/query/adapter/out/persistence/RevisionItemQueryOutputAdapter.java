@@ -11,10 +11,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RevisionItemQueryOutputAdapter implements RevisionItemQueryOutputPort {
 
-    private final RevisionItemRepository jpaRepository;
+    private final RevisionItemRepository repository;
 
     @Override
     public long contarPorItem(UUID itemId) {
-        return jpaRepository.countByItemId(itemId);
+        return repository.countByItemId(itemId);
     }
 }
