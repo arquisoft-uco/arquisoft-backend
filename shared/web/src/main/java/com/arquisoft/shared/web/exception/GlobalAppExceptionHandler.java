@@ -8,6 +8,7 @@ import com.arquisoft.shared.exception.AuthorizationException;
 import com.arquisoft.shared.exception.BaseException;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.exception.InfrastructureException;
+import com.arquisoft.shared.exception.ApplicationValidationException;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.MdcKeys;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
@@ -88,7 +89,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleDomainValidationException(
             DomainValidationException ex,
             HttpServletRequest request) {
-
         List<ErrorResponseDTO.FieldErrorDTO> fieldErrors = ex.getValidationResult().getErrores().stream()
                 .map(e -> ErrorResponseDTO.FieldErrorDTO.builder()
                         .field(e.campo())
@@ -111,6 +111,32 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                         .build());
     }
 
+    @ExceptionHandler(ApplicationValidationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleApplicationValidationException(
+            ApplicationValidationException ex,
+            HttpServletRequest request) {
+        List<ErrorResponseDTO.FieldErrorDTO> fieldErrors = ex.getValidationResult().getErrores().stream()
+                .map(e -> ErrorResponseDTO.FieldErrorDTO.builder()
+                        .field(e.campo())
+                        .message(e.mensaje())
+                        .build())
+                .collect(Collectors.toList());
+
+        log.warn("Input validation failed in {}: {} error(s) [{}]",
+                request.getRequestURI(), fieldErrors.size(), ex.getErrorCode());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponseDTO.builder()
+                        .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                        .errorCode(ex.getErrorCode())
+                        .message(catalog.obtener(AppKeys.Http.VALIDACION_DATOS_DETALLE))
+                        .fieldErrors(fieldErrors)
+                        .status(HttpStatus.BAD_REQUEST.value())
+                        .path(request.getRequestURI())
+                        .traceId(currentTraceId())
+                        .build());
+    }
+
     // -------------------------------------------------------------------------
     // Excepciones de dominio personalizado — un handler, dispatch por mapa
     // -------------------------------------------------------------------------
@@ -119,7 +145,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleBaseException(
             BaseException ex,
             HttpServletRequest request) {
-
         ExceptionMapping mapping = resolveMapping(ex);
 
         if (mapping.logAsError()) {
@@ -144,7 +169,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleAuthenticationException(
             AuthenticationException ex,
             HttpServletRequest request) {
-
         log.warn("Authentication failed in {}: {}", request.getRequestURI(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -161,7 +185,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleAccessDenied(
             AccessDeniedException ex,
             HttpServletRequest request) {
-
         log.warn("Access denied in {}: {}", request.getRequestURI(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -183,7 +206,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleConstraintViolation(
             ConstraintViolationException ex,
             HttpServletRequest request) {
-
         // ex.getMessage() expone propertyPath, nombre de clase y valor rechazado de la
         // implementación interna (Hibernate Validator). Se extraen solo los mensajes
         // interpolados para evitar filtración de detalles de infraestructura (OWASP A05).
@@ -213,7 +235,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleGeneral(
             Exception ex,
             HttpServletRequest request) {
-
         log.error("Unexpected error in {}: {}", request.getRequestURI(), ex.getMessage(), ex);
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -239,7 +260,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             HttpHeaders headers,
             HttpStatusCode statusCode,
             WebRequest webRequest) {
-
         HttpStatus status = HttpStatus.resolve(statusCode.value());
         String path = ((ServletWebRequest) webRequest).getRequest().getRequestURI();
 

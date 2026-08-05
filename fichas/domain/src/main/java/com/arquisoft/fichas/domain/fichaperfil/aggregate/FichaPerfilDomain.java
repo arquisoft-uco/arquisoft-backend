@@ -53,32 +53,10 @@ public final class FichaPerfilDomain extends AggregateRoot {
         result.lanzarSiTieneErrores();
     }
 
-    public static FichaPerfilDomain crear(UUID fichaPerfil, UUID nuevoAsesorFicha) {
-        var ficha = new FichaPerfilDomain();
-        var result = new ValidationResult();
-
-        ficha.setId(fichaPerfil, result);
-        //ficha.setTituloProyecto(UtilText.EMPTY, result);
-        ficha.setAsesorFicha(nuevoAsesorFicha, result);
-
-        result.lanzarSiTieneErrores();
-
-        return ficha;
-    }
-
     // ─── Private setters ──────────────────────────────────────────────────────
 
     private void setId() {
         this.id = UtilUUID.generateNewUUID();
-    }
-
-    private void setId(UUID id, ValidationResult result) {
-        if (!DomainValidator.noNulo(id,
-                FichasFields.FichaPerfil.ID,
-                FichasCodes.FichaPerfil.ID_REQUERIDO, result)) {
-            return;
-        }
-        this.id = id;
     }
 
     private void setTituloProyecto(String titulo, ValidationResult result) {

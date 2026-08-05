@@ -46,7 +46,7 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         when(mapper.toEntity(relacion)).thenReturn(entity);
 
         // Act
-        adapter.guardar(relacion);
+        adapter.vincularEstudiante(relacion);
 
         // Assert
         verify(mapper, times(1)).toEntity(relacion);

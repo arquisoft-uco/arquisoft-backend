@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.interactor.impl;
 
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.interactor.AgregarEstadoEvaluacionFichaInteractor;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.mapper.AgregarEstadoEvaluacionFichaMapper;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.AgregarEstadoEvaluacionFichaUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,7 @@ public class AgregarEstadoEvaluacionFichaInteractorImpl implements AgregarEstado
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(AgregarEstadoEvaluacionFichaCommand command) {
-        return agregarEstadoEvaluacionFichaUseCase.ejecutar(command);
+        return agregarEstadoEvaluacionFichaUseCase.ejecutar(
+                AgregarEstadoEvaluacionFichaMapper.toDomain(command));
     }
 }

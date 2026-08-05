@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.impl;
 
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.RemoverEstudianteFichaPerfilInteractor;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.mapper.RemoverEstudianteFichaPerfilMapper;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.RemoverEstudianteFichaPerfilUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,6 @@ public class RemoverEstudianteFichaPerfilInteractorImpl implements RemoverEstudi
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
     public void ejecutar(RemoverEstudianteFichaPerfilCommand command) {
-        removerEstudianteFichaPerfilUseCase.ejecutar(command);
+        removerEstudianteFichaPerfilUseCase.ejecutar(RemoverEstudianteFichaPerfilMapper.toDomain(command));
     }
 }

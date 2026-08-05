@@ -2,10 +2,10 @@ package com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.i
 
 import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.AgregarEstadoEvaluacionFichaUseCase;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.AgregarEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
@@ -24,21 +24,18 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
     private final MessageCatalog catalog;
 
     @Override
-    public UUID ejecutar(AgregarEstadoEvaluacionFichaCommand entrada) {
-        EstadoEvaluacion nuevoEstado =
-                agregarEstadoEvaluacionFichaValidator.resolverEstado(entrada.estadoEvaluacion());
-
+    public UUID ejecutar(AgregarEstadoEvaluacionFichaDomain entrada) {
         agregarEstadoEvaluacionFichaValidator.validar(
-                entrada.evaluacionFichaPerfil(),
-                entrada.representanteComite(),
-                entrada.estadoEvaluacion());
+                entrada.getEvaluacionFichaPerfil(),
+                entrada.getRepresentanteComite(),
+                entrada.getEstadoEvaluacion());
 
         var estadoEvaluacion = EstadoEvaluacionFichaDomain.crearConEstado(
-                entrada.evaluacionFichaPerfil(),
-                nuevoEstado,
-                obtenerUltimoEstado(entrada.evaluacionFichaPerfil()));
+                entrada.getEvaluacionFichaPerfil(),
+                entrada.getEstadoEvaluacion(),
+                obtenerUltimoEstado(entrada.getEvaluacionFichaPerfil()));
 
-        estadoEvaluacionFichaOutputPort.guardar(estadoEvaluacion);
+        estadoEvaluacionFichaOutputPort.agregarEstado(estadoEvaluacion);
 
         logger.info(
                 catalog.obtener(FichasKeys.EstadoEvaluacionFicha.LOG_AGREGADO),
@@ -51,7 +48,6 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
 
     private EstadoEvaluacion obtenerUltimoEstado(UUID evaluacionFichaPerfil) {
         return estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionFichaPerfil)
-                .map(agregarEstadoEvaluacionFichaValidator::resolverEstado)
                 .orElse(null);
     }
 }

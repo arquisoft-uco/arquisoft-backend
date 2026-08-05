@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.CambiarAsesorFichaValidatorImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.CambiarAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.CambioAsesorFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaDiferenteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaExisteRule;
@@ -37,10 +37,10 @@ class CambiarAsesorFichaValidatorTest {
         UUID fichaId = UUID.randomUUID();
         UUID asesorActualId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilDomain ficha = FichaPerfilDomain.cambiarAsesorFicha(fichaId, nuevoAsesorId);
+        CambiarAsesorFichaDomain cambio = CambiarAsesorFichaDomain.crear(fichaId, nuevoAsesorId);
 
         // Act
-        validator.validar(ficha, asesorActualId);
+        validator.validar(cambio, asesorActualId);
 
         // Assert
         verify(asesorFichaExisteRule).validar(nuevoAsesorId);

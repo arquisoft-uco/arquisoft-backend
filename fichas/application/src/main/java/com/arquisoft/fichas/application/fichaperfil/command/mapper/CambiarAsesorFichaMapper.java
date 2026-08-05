@@ -1,13 +1,13 @@
 package com.arquisoft.fichas.application.fichaperfil.command.mapper;
 
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.CambiarAsesorFichaDomain;
 
 public final class CambiarAsesorFichaMapper {
 
     private CambiarAsesorFichaMapper() {}
 
-    public static FichaPerfilDomain toDomain(CambiarAsesorFichaCommand command) {
-        return FichaPerfilDomain.crear(command.fichaPerfil(), command.nuevoAsesorFicha());
+    public static CambiarAsesorFichaDomain toDomain(CambiarAsesorFichaCommand command) {
+        return CambiarAsesorFichaDomain.crear(command.fichaPerfil(), command.nuevoAsesorFicha());
     }
 }

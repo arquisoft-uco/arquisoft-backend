@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
+import com.arquisoft.fichas.application.fichaperfil.command.mapper.ModificarFichaPerfilMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.shared.message.FichasCodes;
@@ -73,11 +74,11 @@ class ModificarFichaPerfilUseCaseTest {
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
 
         // Act
-        modificarFichaPerfilUseCase.ejecutar(command);
+        modificarFichaPerfilUseCase.ejecutar(ModificarFichaPerfilMapper.toDomain(command));
 
         // Assert
         ArgumentCaptor<FichaPerfilDomain> captor = ArgumentCaptor.forClass(FichaPerfilDomain.class);
-        verify(fichaPerfilOutputPort, times(1)).guardar(captor.capture());
+        verify(fichaPerfilOutputPort, times(1)).actualizarTitulo(captor.capture());
         assertThat(captor.getValue().getTituloProyecto()).isEqualTo(tituloNuevo);
     }
 
@@ -89,16 +90,16 @@ class ModificarFichaPerfilUseCaseTest {
         var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, "Titulo");
 
         doThrow(new FichaNoPropietarioException(fichaId, estudianteId))
-                .when(modificarFichaPerfilValidator).validarPropiedad(any(), any());
+                .when(modificarFichaPerfilValidator).validar(any(), any());
 
         // Act
-        Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(command));
+        Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(ModificarFichaPerfilMapper.toDomain(command)));
 
         // Assert
         assertThat(ex).isInstanceOf(FichaNoPropietarioException.class);
         assertThat(((BaseException) ex).getErrorCode())
                 .isEqualTo(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO);
-        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(fichaPerfilOutputPort, never()).actualizarTitulo(any());
     }
 
     @Test
@@ -111,13 +112,13 @@ class ModificarFichaPerfilUseCaseTest {
         doThrow(new FichaPerfilNoEncontradaException(fichaId)).when(fichaPerfilFinder).obtener(fichaId);
 
         // Act
-        Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(command));
+        Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(ModificarFichaPerfilMapper.toDomain(command)));
 
         // Assert
         assertThat(ex).isInstanceOf(FichaPerfilNoEncontradaException.class);
         assertThat(((BaseException) ex).getErrorCode())
                 .isEqualTo(FichasCodes.FichaPerfil.FICHA_NO_ENCONTRADA);
-        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(fichaPerfilOutputPort, never()).actualizarTitulo(any());
     }
 
     @Test
@@ -131,16 +132,16 @@ class ModificarFichaPerfilUseCaseTest {
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
         doThrow(new FichaTituloDuplicadoException(tituloDuplicado))
-                .when(modificarFichaPerfilValidator).validarTitulo(any(), any());
+                .when(modificarFichaPerfilValidator).validar(any(), any());
 
         // Act
-        Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(command));
+        Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(ModificarFichaPerfilMapper.toDomain(command)));
 
         // Assert
         assertThat(ex).isInstanceOf(FichaTituloDuplicadoException.class);
         assertThat(((BaseException) ex).getErrorCode())
                 .isEqualTo(FichasCodes.FichaPerfil.FICHA_TITULO_DUPLICADO);
-        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(fichaPerfilOutputPort, never()).actualizarTitulo(any());
     }
 
     @Test
@@ -155,10 +156,10 @@ class ModificarFichaPerfilUseCaseTest {
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
 
         // Act
-        modificarFichaPerfilUseCase.ejecutar(command);
+        modificarFichaPerfilUseCase.ejecutar(ModificarFichaPerfilMapper.toDomain(command));
 
         // Assert
-        verify(fichaPerfilOutputPort, times(1)).guardar(any(FichaPerfilDomain.class));
+        verify(fichaPerfilOutputPort, times(1)).actualizarTitulo(any(FichaPerfilDomain.class));
         verify(fichaPerfilOutputPort, never()).existePorTituloProyecto(any());
     }
 
@@ -174,9 +175,9 @@ class ModificarFichaPerfilUseCaseTest {
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
 
         // Act
-        modificarFichaPerfilUseCase.ejecutar(command);
+        modificarFichaPerfilUseCase.ejecutar(ModificarFichaPerfilMapper.toDomain(command));
 
         // Assert
-        verify(fichaPerfilOutputPort, times(1)).guardar(any(FichaPerfilDomain.class));
+        verify(fichaPerfilOutputPort, times(1)).actualizarTitulo(any(FichaPerfilDomain.class));
     }
 }

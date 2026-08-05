@@ -62,7 +62,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         );
 
         // Act
-        adapter.guardar(aggregate);
+        adapter.registrarItem(aggregate);
         entityManager.flush();
         entityManager.clear();
 
@@ -86,7 +86,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         );
 
         // Act
-        adapter.guardar(aggregate);
+        adapter.registrarItem(aggregate);
         entityManager.flush();
 
         // Assert — getReference crea un proxy sin SELECT
@@ -176,14 +176,14 @@ class ItemFichaPerfilCommandOutputAdapterTest {
                 "OBJETIVO_GENERAL",
                 "Contenido inicial"
         );
-        adapter.guardar(aggregate);
+        adapter.registrarItem(aggregate);
         entityManager.flush();
         entityManager.clear();
 
         // Act
         ItemFichaPerfilDomain reconstruido = adapter.buscarPorId(aggregate.getId()).orElseThrow();
         reconstruido.modificarContenido("Contenido modificado", EstadoFicha.EN_CONSTRUCCION);
-        adapter.guardar(reconstruido);
+        adapter.actualizarContenido(reconstruido);
         entityManager.flush();
         entityManager.clear();
 
@@ -208,7 +208,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        adapter.eliminarPorId(saved.getId());
+        adapter.removerItem(saved.getId());
         entityManager.flush();
 
         // Assert

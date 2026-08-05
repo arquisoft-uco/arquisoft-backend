@@ -6,7 +6,5 @@ import java.util.UUID;
 
 public interface AgregarEstadoEvaluacionFichaValidator {
 
-    void validar(UUID evaluacionFichaPerfil, UUID representanteComite, String estadoEvaluacion);
-
-    EstadoEvaluacion resolverEstado(String estadoEvaluacion);
+    void validar(UUID evaluacionFichaPerfil, UUID representanteComite, EstadoEvaluacion estadoEvaluacion);
 }

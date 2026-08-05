@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.mapper.RegistrarFichaPerfilRequestMapper;
 import com.arquisoft.shared.message.FichasApiKeys;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.RegistrarFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.RegistrarFichaPerfilRequestDTO;
@@ -15,7 +16,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,9 +54,9 @@ public class RegistrarFichaPerfilInputAdapter {
                     description = FichasApiKeys.Comun.RESP_403)
     })
     public ResponseEntity<RegistrarFichaPerfilResponseDTO> registrar(
-            @Valid @RequestBody RegistrarFichaPerfilRequestDTO request) {
+            @RequestBody RegistrarFichaPerfilRequestDTO request) {
 
-        UUID id = registrarFichaPerfilInteractor.ejecutar(request.toCommand());
+        UUID id = registrarFichaPerfilInteractor.ejecutar(RegistrarFichaPerfilRequestMapper.toCommand(request));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new RegistrarFichaPerfilResponseDTO(id));
     }

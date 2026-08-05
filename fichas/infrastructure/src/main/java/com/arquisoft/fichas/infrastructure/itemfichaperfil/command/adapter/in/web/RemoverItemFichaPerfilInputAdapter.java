@@ -55,7 +55,7 @@ public class RemoverItemFichaPerfilInputAdapter {
             @PathVariable UUID itemId,
             @AuthenticationPrincipal Jwt jwt) {
         var estudianteId = UUID.fromString(jwt.getSubject());
-        var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
+        var command = RemoverItemFichaPerfilCommand.crear(itemId, estudianteId);
         removerItemFichaPerfilInteractor.ejecutar(command);
         return ResponseEntity.noContent().build();
     }

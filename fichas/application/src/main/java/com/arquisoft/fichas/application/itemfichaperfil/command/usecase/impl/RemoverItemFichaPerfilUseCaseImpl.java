@@ -2,10 +2,10 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.FichasKeys;
-import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.RemoverItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
+import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.RemoverItemFichaPerfilDomain;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilFinder;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
@@ -24,16 +24,19 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
     private final MessageCatalog catalog;
 
     @Override
-    public void ejecutar(RemoverItemFichaPerfilCommand entrada) {
-        var item = itemFichaPerfilFinder.obtener(entrada.item());
+    public void ejecutar(RemoverItemFichaPerfilDomain entrada) {
+        var item = itemFichaPerfilFinder.obtener(entrada.getItem());
 
-        removerItemFichaPerfilValidator.validar(item.getFichaPerfilId(), entrada.estudiante());
+        removerItemFichaPerfilValidator.validar(item.getFichaPerfilId(), entrada.getEstudiante());
 
-        long totalRevisiones = revisionQueryPort.contarPorItem(entrada.item());
+        long totalRevisiones = revisionQueryPort.contarPorItem(entrada.getItem());
         item.removerse(totalRevisiones);
 
-        itemOutputPort.eliminarPorId(entrada.item());
+        itemOutputPort.removerItem(entrada.getItem());
 
-        logger.info(catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_REMOVIDO), entrada.item(), item.getFichaPerfilId());
+        logger.info(
+                catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_REMOVIDO),
+                entrada.getItem(),
+                item.getFichaPerfilId());
     }
 }

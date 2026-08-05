@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
+import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.mapper.AgregarItemFichaPerfilRequestMapper;
 import com.arquisoft.shared.message.FichasApiKeys;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.AgregarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.dto.AgregarItemFichaPerfilRequestDTO;
@@ -14,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,12 +60,12 @@ public class AgregarItemFichaPerfilInputAdapter {
     })
     public ResponseEntity<AgregarItemFichaPerfilResponseDTO> agregarItem(
             @PathVariable UUID fichaPerfilId,
-            @Valid @RequestBody AgregarItemFichaPerfilRequestDTO dto,
+            @RequestBody AgregarItemFichaPerfilRequestDTO dto,
             @AuthenticationPrincipal Jwt jwt) {
 
         UUID estudianteId = UUID.fromString(jwt.getSubject());
 
-        UUID itemId = agregarItemFichaPerfilInteractor.ejecutar(dto.toCommand(fichaPerfilId, estudianteId));
+        UUID itemId = agregarItemFichaPerfilInteractor.ejecutar(AgregarItemFichaPerfilRequestMapper.toCommand(dto, fichaPerfilId, estudianteId));
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

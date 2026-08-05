@@ -1,0 +1,81 @@
+package com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate;
+
+import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.FichasFields;
+import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.validation.DomainValidator;
+import com.arquisoft.shared.validation.ValidationResult;
+
+import java.util.UUID;
+
+public final class AgregarEstadoEvaluacionFichaDomain {
+
+    private UUID evaluacionFichaPerfil;
+    private EstadoEvaluacion estadoEvaluacion;
+    private UUID representanteComite;
+
+    private AgregarEstadoEvaluacionFichaDomain() {}
+
+    public static AgregarEstadoEvaluacionFichaDomain crear(
+            UUID evaluacionFichaPerfil, String estadoEvaluacion, UUID representanteComite) {
+        var transaccion = new AgregarEstadoEvaluacionFichaDomain();
+        var result = new ValidationResult();
+
+        transaccion.setEvaluacionFichaPerfil(evaluacionFichaPerfil, result);
+        transaccion.setEstadoEvaluacion(estadoEvaluacion, result);
+        transaccion.setRepresentanteComite(representanteComite, result);
+
+        result.lanzarSiTieneErrores();
+        return transaccion;
+    }
+
+    private void setEvaluacionFichaPerfil(UUID evaluacionFichaPerfil, ValidationResult result) {
+        if (!DomainValidator.noNulo(evaluacionFichaPerfil,
+                FichasFields.EstadoEvaluacionFicha.EVALUACION_FICHA_PERFIL,
+                FichasCodes.EstadoEvaluacionFicha.EVALUACION_REQUERIDA, result)) {
+            return;
+        }
+        this.evaluacionFichaPerfil = evaluacionFichaPerfil;
+    }
+
+    private void setEstadoEvaluacion(String estadoEvaluacion, ValidationResult result) {
+        if (!DomainValidator.noEnBlanco(estadoEvaluacion,
+                FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
+                FichasCodes.EstadoEvaluacionFicha.ESTADO_REQUERIDO, result)) {
+            return;
+        }
+        try {
+            this.estadoEvaluacion = EstadoEvaluacion.valueOf(UtilText.applyTrim(estadoEvaluacion));
+        } catch (IllegalArgumentException e) {
+            result.agregarError(
+                    FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
+                    FichasCodes.EstadoEvaluacionFicha.ESTADO_NO_ENCONTRADO,
+                    Messages.formatear(
+                            FichasKeys.EstadoEvaluacionFicha.ERROR_ESTADO_NO_ENCONTRADO, estadoEvaluacion));
+        }
+    }
+
+    private void setRepresentanteComite(UUID representanteComite, ValidationResult result) {
+        if (!DomainValidator.noNulo(representanteComite,
+                FichasFields.EstadoEvaluacionFicha.REPRESENTANTE_COMITE,
+                FichasCodes.EstadoEvaluacionFicha.REPRESENTANTE_REQUERIDO, result)) {
+            return;
+        }
+        this.representanteComite = representanteComite;
+    }
+
+    public UUID getEvaluacionFichaPerfil() {
+        return evaluacionFichaPerfil;
+    }
+
+    public EstadoEvaluacion getEstadoEvaluacion() {
+        return estadoEvaluacion;
+    }
+
+    public UUID getRepresentanteComite() {
+        return representanteComite;
+    }
+}

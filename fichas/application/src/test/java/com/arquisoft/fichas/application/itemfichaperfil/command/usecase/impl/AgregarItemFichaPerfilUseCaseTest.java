@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.AgregarItemFichaPerfilMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.shared.message.FichasCodes;
@@ -65,11 +66,11 @@ class AgregarItemFichaPerfilUseCaseTest {
         AgregarItemFichaPerfilCommand command = comando();
 
         // Act
-        UUID resultado = useCase.ejecutar(command);
+        UUID resultado = useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command));
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(itemFichaPerfilOutputPort, times(1)).guardar(any(ItemFichaPerfilDomain.class));
+        verify(itemFichaPerfilOutputPort, times(1)).registrarItem(any(ItemFichaPerfilDomain.class));
     }
 
     @Test
@@ -80,11 +81,11 @@ class AgregarItemFichaPerfilUseCaseTest {
                 .when(agregarItemFichaPerfilValidator).validar(any(), any());
 
         // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
+        Throwable exception = catchThrowable(() -> useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command)));
 
         // Assert
         assertThat(exception).isInstanceOf(FichaPerfilNoEncontradaException.class);
-        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+        verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
     }
 
     @Test
@@ -96,13 +97,13 @@ class AgregarItemFichaPerfilUseCaseTest {
                 .validar(any(), any());
 
         // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
+        Throwable exception = catchThrowable(() -> useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command)));
 
         // Assert
         assertThat(exception)
                 .isInstanceOf(ItemFichaNoPropiaException.class)
                 .hasMessageContaining(command.fichaPerfil().toString());
-        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+        verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
     }
 
     @Test
@@ -114,7 +115,7 @@ class AgregarItemFichaPerfilUseCaseTest {
                 .validar(any(), any());
 
         // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
+        Throwable exception = catchThrowable(() -> useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command)));
 
         // Assert
         assertThat(exception).isInstanceOf(ItemTipoDuplicadoException.class);
@@ -122,7 +123,7 @@ class AgregarItemFichaPerfilUseCaseTest {
                 .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_TIPO_DUPLICADO);
         assertThat(exception.getMessage())
                 .isEqualTo(Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_TIPO_DUPLICADO, TIPO_ITEM));
-        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+        verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
     }
 
     @Test
@@ -131,12 +132,12 @@ class AgregarItemFichaPerfilUseCaseTest {
         AgregarItemFichaPerfilCommand command = comando();
 
         // Act
-        useCase.ejecutar(command);
+        useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command));
 
         // Assert
         InOrder inOrder = inOrder(agregarItemFichaPerfilValidator, itemFichaPerfilOutputPort);
         inOrder.verify(agregarItemFichaPerfilValidator).validar(any(), any());
-        inOrder.verify(itemFichaPerfilOutputPort).guardar(any(ItemFichaPerfilDomain.class));
+        inOrder.verify(itemFichaPerfilOutputPort).registrarItem(any(ItemFichaPerfilDomain.class));
     }
 
     @Test
@@ -146,13 +147,13 @@ class AgregarItemFichaPerfilUseCaseTest {
                 UUID.randomUUID(), "TIPO_INEXISTENTE", CONTENIDO, UUID.randomUUID());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(DomainValidationException.class);
 
         verify(agregarItemFichaPerfilValidator, never()).validar(any(), any());
         verify(agregarItemFichaPerfilValidator, never()).validar(any(), any());
         verify(agregarItemFichaPerfilValidator, never()).validar(any(), any());
-        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+        verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
     }
 
     @Test
@@ -161,7 +162,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         AgregarItemFichaPerfilCommand command = comando();
 
         // Act
-        UUID resultado = useCase.ejecutar(command);
+        UUID resultado = useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command));
 
         // Assert
         assertThat(resultado).isNotNull();
@@ -171,10 +172,10 @@ class AgregarItemFichaPerfilUseCaseTest {
     void debePropagar_cuandoRepositorioFalla() {
         // Arrange
         AgregarItemFichaPerfilCommand command = comando();
-        doThrow(new RuntimeException("DB error")).when(itemFichaPerfilOutputPort).guardar(any());
+        doThrow(new RuntimeException("DB error")).when(itemFichaPerfilOutputPort).registrarItem(any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("DB error");
     }

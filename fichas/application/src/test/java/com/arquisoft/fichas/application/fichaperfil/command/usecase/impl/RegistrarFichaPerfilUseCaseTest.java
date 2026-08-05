@@ -66,7 +66,7 @@ class RegistrarFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(resultado).isEqualTo(ficha.getId());
-        verify(fichaPerfilOutputPort, times(1)).guardar(ficha);
+        verify(fichaPerfilOutputPort, times(1)).registrarFicha(ficha);
     }
 
     @Test
@@ -80,7 +80,7 @@ class RegistrarFichaPerfilUseCaseTest {
         // Assert
         InOrder inOrder = inOrder(registrarFichaPerfilValidator, fichaPerfilOutputPort);
         inOrder.verify(registrarFichaPerfilValidator).validar(ficha);
-        inOrder.verify(fichaPerfilOutputPort).guardar(ficha);
+        inOrder.verify(fichaPerfilOutputPort).registrarFicha(ficha);
     }
 
     @Test
@@ -94,7 +94,7 @@ class RegistrarFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(ficha))
                 .isInstanceOf(AsesorFichaNoEncontradoException.class);
 
-        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(fichaPerfilOutputPort, never()).registrarFicha(any());
     }
 
     @Test
@@ -108,7 +108,7 @@ class RegistrarFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(ficha))
                 .isInstanceOf(FichaTituloDuplicadoException.class);
 
-        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(fichaPerfilOutputPort, never()).registrarFicha(any());
     }
 
     @Test
@@ -116,7 +116,7 @@ class RegistrarFichaPerfilUseCaseTest {
         // Arrange
         FichaPerfilDomain ficha = fichaValida();
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
-                .when(fichaPerfilOutputPort).guardar(ficha);
+                .when(fichaPerfilOutputPort).registrarFicha(ficha);
 
         // Act & Assert
         assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(ficha))

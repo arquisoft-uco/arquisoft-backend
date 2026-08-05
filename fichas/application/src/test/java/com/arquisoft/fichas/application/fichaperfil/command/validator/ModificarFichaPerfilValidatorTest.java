@@ -2,6 +2,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.ModificarFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.ModificarFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.model.TituloFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.rules.EstudiantePropietarioFichaRule;
@@ -29,27 +30,19 @@ class ModificarFichaPerfilValidatorTest {
     private ModificarFichaPerfilValidatorImpl validator;
 
     @Test
-    void debeDelegarEnLaReglaDePropiedad_cuandoValidaPropiedad() {
+    void debeDelegarEnAmbasReglas_cuandoValida() {
         // Arrange
-        UUID ficha = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
+        UUID fichaId = UUID.randomUUID();
+        UUID estudianteId = UUID.randomUUID();
+        var modificacion = ModificarFichaPerfilDomain.crear(fichaId, "Titulo nuevo", estudianteId);
+        var fichaActual = FichaPerfilDomain.reconstruir(fichaId, "Titulo original", UUID.randomUUID());
 
-        // Act
-        validator.validarPropiedad(ficha, estudiante);
+        // Act — una sola llamada agrupa todas las reglas de la transacción
+        validator.validar(modificacion, fichaActual);
 
         // Assert
-        verify(estudiantePropietarioFichaRule).validar(new PropietarioFichaCriteria(ficha, estudiante));
-    }
-
-    @Test
-    void debeDelegarEnLaReglaDeTitulo_cuandoValidaTitulo() {
-        // Arrange
-        FichaPerfilDomain ficha = FichaPerfilDomain.crear("Titulo original", UUID.randomUUID());
-
-        // Act
-        validator.validarTitulo(ficha, "Titulo nuevo");
-
-        // Assert
+        verify(estudiantePropietarioFichaRule)
+                .validar(new PropietarioFichaCriteria(fichaId, estudianteId));
         verify(fichaPerfilTituloDisponibleRule)
                 .validar(new TituloFichaCriteria("Titulo original", "Titulo nuevo"));
     }

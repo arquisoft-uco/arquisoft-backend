@@ -1,11 +1,12 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.impl;
 
+import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.mapper.AgregarEstadoEvaluacionFichaMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
-import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionNoEncontradoException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
@@ -59,15 +60,11 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("APROBADA"))
-                .thenReturn(EstadoEvaluacion.APROBADA);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionId))
-                .thenReturn(Optional.of("EN_EVALUACION"));
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("EN_EVALUACION"))
-                .thenReturn(EstadoEvaluacion.EN_EVALUACION);
+                .thenReturn(Optional.of(EstadoEvaluacion.EN_EVALUACION));
 
         // Act
-        UUID resultado = useCase.ejecutar(command);
+        UUID resultado = useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command));
 
         // Assert
         assertThat(resultado).isNotNull();
@@ -75,7 +72,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         verify(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
         verify(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
         verify(estadoEvaluacionFichaOutputPort).obtenerUltimoEstado(evaluacionId);
-        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
+        verify(estadoEvaluacionFichaOutputPort).agregarEstado(any(EstadoEvaluacionFichaDomain.class));
     }
 
     @Test
@@ -85,16 +82,14 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("APROBADA"))
-                .thenReturn(EstadoEvaluacion.APROBADA);
         doThrow(new EvaluacionFichaPerfilNoEncontradaException(evaluacionId))
                 .when(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command)))
                 .isInstanceOf(EvaluacionFichaPerfilNoEncontradaException.class);
 
-        verify(estadoEvaluacionFichaOutputPort, never()).guardar(any());
+        verify(estadoEvaluacionFichaOutputPort, never()).agregarEstado(any());
     }
 
     @Test
@@ -104,33 +99,31 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("APROBADA"))
-                .thenReturn(EstadoEvaluacion.APROBADA);
         doThrow(new EvaluacionFichaNoPropiaException(evaluacionId))
                 .when(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command)))
                 .isInstanceOf(EvaluacionFichaNoPropiaException.class);
 
-        verify(estadoEvaluacionFichaOutputPort, never()).guardar(any());
+        verify(estadoEvaluacionFichaOutputPort, never()).agregarEstado(any());
     }
 
     @Test
-    void debeLanzarEstadoNoEncontrado_cuandoCatalogoNoExiste() {
+    void debeRechazarEnElMapeo_cuandoElEstadoNoEstaEnElCatalogo() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         UUID representanteId = UUID.randomUUID();
         var command = new AgregarEstadoEvaluacionFichaCommand(
                 evaluacionId, "ESTADO_INVALIDO", representanteId);
 
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("ESTADO_INVALIDO"))
-                .thenThrow(new EstadoEvaluacionNoEncontradoException("ESTADO_INVALIDO"));
+        // Act & Assert
+        assertThatThrownBy(() -> AgregarEstadoEvaluacionFichaMapper.toDomain(command))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasCodes.EstadoEvaluacionFicha.ESTADO_NO_ENCONTRADO)
+                .hasMessageContaining("ESTADO_INVALIDO");
 
-        assertThatThrownBy(() -> useCase.ejecutar(command))
-                .isInstanceOf(EstadoEvaluacionNoEncontradoException.class);
-
-        verify(estadoEvaluacionFichaOutputPort, never()).guardar(any());
+        verify(estadoEvaluacionFichaOutputPort, never()).agregarEstado(any());
     }
 
     @Test
@@ -140,16 +133,14 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("APROBADA"))
-                .thenReturn(EstadoEvaluacion.APROBADA);
         doThrow(new EstadoEvaluacionDuplicadoException(evaluacionId, "APROBADA"))
                 .when(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command)))
                 .isInstanceOf(EstadoEvaluacionDuplicadoException.class);
 
-        verify(estadoEvaluacionFichaOutputPort, never()).guardar(any());
+        verify(estadoEvaluacionFichaOutputPort, never()).agregarEstado(any());
     }
 
     @Test
@@ -159,19 +150,15 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "NO_APROBADA", representanteId);
 
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("NO_APROBADA"))
-                .thenReturn(EstadoEvaluacion.NO_APROBADA);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionId))
-                .thenReturn(Optional.of("APROBADA"));
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("APROBADA"))
-                .thenReturn(EstadoEvaluacion.APROBADA);
+                .thenReturn(Optional.of(EstadoEvaluacion.APROBADA));
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command)))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("estado terminal");
 
-        verify(estadoEvaluacionFichaOutputPort, never()).guardar(any());
+        verify(estadoEvaluacionFichaOutputPort, never()).agregarEstado(any());
     }
 
     @Test
@@ -181,17 +168,15 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "EN_EVALUACION", representanteId);
 
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("EN_EVALUACION"))
-                .thenReturn(EstadoEvaluacion.EN_EVALUACION);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionId))
-                .thenReturn(Optional.of("EN_EVALUACION"));
+                .thenReturn(Optional.of(EstadoEvaluacion.EN_EVALUACION));
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command)))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("EN_EVALUACION se asigna al momento de registrar la evaluación");
 
-        verify(estadoEvaluacionFichaOutputPort, never()).guardar(any());
+        verify(estadoEvaluacionFichaOutputPort, never()).agregarEstado(any());
     }
 
     @Test
@@ -202,19 +187,15 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var command = new AgregarEstadoEvaluacionFichaCommand(
                 evaluacionId, "APROBADA_CON_OBSERVACIONES", representanteId);
 
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("APROBADA_CON_OBSERVACIONES"))
-                .thenReturn(EstadoEvaluacion.APROBADA_CON_OBSERVACIONES);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionId))
-                .thenReturn(Optional.of("EN_EVALUACION"));
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("EN_EVALUACION"))
-                .thenReturn(EstadoEvaluacion.EN_EVALUACION);
+                .thenReturn(Optional.of(EstadoEvaluacion.EN_EVALUACION));
 
         // Act
-        UUID resultado = useCase.ejecutar(command);
+        UUID resultado = useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command));
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
+        verify(estadoEvaluacionFichaOutputPort).agregarEstado(any(EstadoEvaluacionFichaDomain.class));
     }
 
     @Test
@@ -224,20 +205,16 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         UUID representanteId = UUID.randomUUID();
         var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("APROBADA"))
-                .thenReturn(EstadoEvaluacion.APROBADA);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionId))
-                .thenReturn(Optional.of("EN_EVALUACION"));
-        when(agregarEstadoEvaluacionFichaValidator.resolverEstado("EN_EVALUACION"))
-                .thenReturn(EstadoEvaluacion.EN_EVALUACION);
+                .thenReturn(Optional.of(EstadoEvaluacion.EN_EVALUACION));
         doThrow(new DataAccessException("Error de BD") {})
-                .when(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
+                .when(estadoEvaluacionFichaOutputPort).agregarEstado(any(EstadoEvaluacionFichaDomain.class));
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command)))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("Error de BD");
 
-        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
+        verify(estadoEvaluacionFichaOutputPort).agregarEstado(any(EstadoEvaluacionFichaDomain.class));
     }
 }

@@ -117,40 +117,4 @@ class FichaPerfilDomainTest {
                 .hasMessageContaining("tituloProyecto");
     }
 
-    @Test
-    void debeConstruirFichaParaCambioDeAsesor_cuandoDatosValidos() {
-        // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID nuevoAsesorId = UUID.randomUUID();
-
-        // Act
-        FichaPerfilDomain ficha = FichaPerfilDomain.cambiarAsesorFicha(fichaId, nuevoAsesorId);
-
-        // Assert — el título no lo conoce este factory; lo trae quien reconstruye desde persistencia
-        assertThat(ficha.getId()).isEqualTo(fichaId);
-        assertThat(ficha.getAsesorFicha()).isEqualTo(nuevoAsesorId);
-        assertThat(ficha.getTituloProyecto()).isNull();
-    }
-
-    @Test
-    void debeLanzarDomainValidationException_cuandoNuevoAsesorEsNulo() {
-        // Arrange
-        UUID fichaId = UUID.randomUUID();
-
-        // Act & Assert
-        assertThatThrownBy(() -> FichaPerfilDomain.cambiarAsesorFicha(fichaId, null))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasFields.FichaPerfil.ASESOR_FICHA);
-    }
-
-    @Test
-    void debeLanzarDomainValidationException_cuandoFichaPerfilEsNula() {
-        // Arrange
-        UUID nuevoAsesorId = UUID.randomUUID();
-
-        // Act & Assert
-        assertThatThrownBy(() -> FichaPerfilDomain.cambiarAsesorFicha(null, nuevoAsesorId))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasFields.FichaPerfil.ID);
-    }
 }

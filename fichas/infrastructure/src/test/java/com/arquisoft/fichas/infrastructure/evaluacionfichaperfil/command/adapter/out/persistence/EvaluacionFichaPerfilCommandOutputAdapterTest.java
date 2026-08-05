@@ -49,7 +49,7 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
         when(repository.save(any(EvaluacionFichaPerfilEntity.class))).thenReturn(entityGuardada);
 
         // Act
-        adapter.guardar(aggregate);
+        adapter.registrarEvaluacion(aggregate);
 
         // Assert
         verify(repository).save(any(EvaluacionFichaPerfilEntity.class));

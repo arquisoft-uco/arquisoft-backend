@@ -1,5 +1,6 @@
 package com.arquisoft.shared.validation;
 
+import com.arquisoft.shared.exception.ApplicationValidationException;
 import com.arquisoft.shared.exception.DomainValidationException;
 
 import java.util.ArrayList;
@@ -31,6 +32,12 @@ public final class ValidationResult {
     public void lanzarSiTieneErrores() {
         if (tieneErrores()) {
             throw new DomainValidationException(this);
+        }
+    }
+
+    public void lanzarSiTieneErroresDeEntrada() {
+        if (tieneErrores()) {
+            throw new ApplicationValidationException(this);
         }
     }
 }

@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface EvaluacionFichaPerfilOutputPort {
 
-    void guardar(EvaluacionFichaPerfilDomain evaluacion);
+    void registrarEvaluacion(EvaluacionFichaPerfilDomain evaluacion);
 
     boolean existePorId(UUID id);
 

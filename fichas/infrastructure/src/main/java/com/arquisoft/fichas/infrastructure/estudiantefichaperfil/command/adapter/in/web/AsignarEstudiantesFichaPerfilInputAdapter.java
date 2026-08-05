@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web;
 
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web.mapper.AsignarEstudiantesFichaPerfilRequestMapper;
 import com.arquisoft.shared.message.FichasApiKeys;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.AsignarEstudiantesFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web.dto.AsignarEstudiantesFichaPerfilRequestDTO;
@@ -11,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -53,9 +53,9 @@ public class AsignarEstudiantesFichaPerfilInputAdapter {
     })
     public ResponseEntity<Void> asignarEstudiantes(
             @PathVariable UUID fichaPerfilId,
-            @Valid @RequestBody AsignarEstudiantesFichaPerfilRequestDTO dto) {
+            @RequestBody AsignarEstudiantesFichaPerfilRequestDTO dto) {
 
-        asignarEstudiantesFichaPerfilInteractor.ejecutar(dto.toCommand(fichaPerfilId));
+        asignarEstudiantesFichaPerfilInteractor.ejecutar(AsignarEstudiantesFichaPerfilRequestMapper.toCommand(dto, fichaPerfilId));
 
         return ResponseEntity.noContent().build();
     }

@@ -60,7 +60,7 @@ class EstadoFichaPerfilEnTerminalRuleImplTest {
             implements EstadoFichaPerfilOutputPort {
 
         @Override
-        public void guardar(EstadoFichaPerfilDomain aggregate) {
+        public void registrarEstadoInicial(EstadoFichaPerfilDomain aggregate) {
             throw new UnsupportedOperationException();
         }
 

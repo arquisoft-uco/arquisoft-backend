@@ -29,7 +29,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
 
         asignarEstudiantesFichaPerfilValidator.validar(fichaPerfil, estudiantes, relaciones);
 
-        relaciones.forEach(estudianteFichaPerfilOutputPort::guardar);
+        relaciones.forEach(estudianteFichaPerfilOutputPort::vincularEstudiante);
 
         logger.info(catalog.obtener(FichasKeys.EstudianteFichaPerfil.LOG_ASIGNADO), fichaPerfil, relaciones.size());
     }

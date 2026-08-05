@@ -62,7 +62,7 @@ class FichaPerfilCommandOutputAdapterTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        adapter.guardar(aggregate);
+        adapter.registrarFicha(aggregate);
 
         // Assert
         verify(asesorFichaRepository, times(1)).getReferenceById(asesorId);

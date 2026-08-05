@@ -50,7 +50,7 @@ public class RemoverEstudianteFichaPerfilInputAdapter {
             @PathVariable UUID fichaPerfilId,
             @PathVariable UUID estudianteId
     ) {
-        var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
+        var command = RemoverEstudianteFichaPerfilCommand.crear(fichaPerfilId, estudianteId);
         removerEstudianteFichaPerfilInteractor.ejecutar(command);
         return ResponseEntity.noContent().build();
     }

@@ -20,7 +20,7 @@ public class EstadoFichaPerfilCommandOutputAdapter implements EstadoFichaPerfilO
     private final EstadoFichaRepository estadoFichaRepository;
 
     @Override
-    public void guardar(EstadoFichaPerfilDomain aggregate) {
+    public void registrarEstadoInicial(EstadoFichaPerfilDomain aggregate) {
         var estadoFichaRef =
                 estadoFichaRepository.getReferenceById(aggregate.getEstadoFicha().getId());
         var entity = EstadoFichaPerfilMapper.toEntity(aggregate, estadoFichaRef);

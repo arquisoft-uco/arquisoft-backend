@@ -76,7 +76,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
                 .thenReturn(entityGuardada);
 
         // Act
-        adapter.guardar(aggregate);
+        adapter.registrarEstadoInicial(aggregate);
 
         // Assert
         verify(estadoEvaluacionFichaRepository).save(any(EstadoEvaluacionFichaEntity.class));

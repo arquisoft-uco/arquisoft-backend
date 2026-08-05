@@ -17,7 +17,7 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     private final EstudianteFichaPerfilMapper mapper;
 
     @Override
-    public void guardar(EstudianteFichaPerfilDomain relacion) {
+    public void vincularEstudiante(EstudianteFichaPerfilDomain relacion) {
         var entity = mapper.toEntity(relacion);
         repository.save(entity);
     }
@@ -33,7 +33,7 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     }
 
     @Override
-    public void eliminar(UUID fichaPerfilId, UUID estudianteId) {
+    public void desvincularEstudiante(UUID fichaPerfilId, UUID estudianteId) {
         repository.deleteByFichaPerfilIdAndEstudianteId(fichaPerfilId, estudianteId);
     }
 }

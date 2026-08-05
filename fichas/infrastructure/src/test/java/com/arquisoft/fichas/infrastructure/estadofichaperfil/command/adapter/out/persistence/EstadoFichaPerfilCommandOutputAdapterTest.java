@@ -54,7 +54,7 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
         EstadoFichaPerfilDomain aggregate = EstadoFichaPerfilDomain.crear(fichaPerfilId);
 
         // Act
-        adapter.guardar(aggregate);
+        adapter.registrarEstadoInicial(aggregate);
 
         // Assert
         Optional<EstadoFichaPerfilEntity> resultado = estadoFichaPerfilRepository.findById(aggregate.getId());

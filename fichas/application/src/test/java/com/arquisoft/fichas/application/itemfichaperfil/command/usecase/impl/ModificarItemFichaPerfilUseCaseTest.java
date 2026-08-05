@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.ModificarItemFichaPerfilMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.fichas.application.estadofichaperfil.query.port.out.EstadoFichaPerfilQueryOutputPort;
@@ -32,6 +33,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class ModificarItemFichaPerfilUseCaseTest {
@@ -75,12 +77,12 @@ class ModificarItemFichaPerfilUseCaseTest {
                 .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
 
         // Act
-        useCase.ejecutar(command);
+        useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command));
 
         // Assert
         verify(itemFichaPerfilFinder, times(1)).obtener(itemId);
         verify(modificarItemFichaPerfilValidator, times(1)).validar(any(), any());
-        verify(itemFichaPerfilOutputPort, times(1)).guardar(item);
+        verify(itemFichaPerfilOutputPort, times(1)).actualizarContenido(item);
     }
 
     @Test
@@ -92,11 +94,11 @@ class ModificarItemFichaPerfilUseCaseTest {
         doThrow(new ItemFichaPerfilNoEncontradoException(itemId)).when(itemFichaPerfilFinder).obtener(itemId);
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(ItemFichaPerfilNoEncontradoException.class);
 
         verify(modificarItemFichaPerfilValidator, never()).validar(any(), any());
-        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any());
     }
 
     @Test
@@ -113,29 +115,24 @@ class ModificarItemFichaPerfilUseCaseTest {
                 .when(modificarItemFichaPerfilValidator).validar(any(), any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(ItemFichaNoPropiaException.class);
 
-        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any());
     }
 
     @Test
-    void debeLanzarDomainValidation_cuandoContenidoInvalido() {
+    void debeRechazarEnElMapeo_cuandoContenidoInvalido() {
         // Arrange
         UUID itemId = UUID.randomUUID();
-        UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, "", UUID.randomUUID());
 
-        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
-        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
-                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
-
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> ModificarItemFichaPerfilMapper.toDomain(command))
                 .isInstanceOf(DomainValidationException.class);
 
-        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+        verifyNoInteractions(itemFichaPerfilFinder, estadoFichaPerfilQueryOutputPort);
+        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any());
     }
 
     @Test
@@ -151,10 +148,10 @@ class ModificarItemFichaPerfilUseCaseTest {
                 .thenReturn(Optional.of(EstadoFicha.APROBADA));
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(DomainValidationException.class);
 
-        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any());
     }
 
     @Test
@@ -169,10 +166,10 @@ class ModificarItemFichaPerfilUseCaseTest {
         when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class);
 
-        verify(itemFichaPerfilOutputPort, never()).guardar(any());
+        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any());
     }
 
     @Test
@@ -186,14 +183,14 @@ class ModificarItemFichaPerfilUseCaseTest {
         when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
                 .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
-        doThrow(new RuntimeException("Error de BD")).when(itemFichaPerfilOutputPort).guardar(any());
+        doThrow(new RuntimeException("Error de BD")).when(itemFichaPerfilOutputPort).actualizarContenido(any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Error de BD");
 
-        verify(itemFichaPerfilOutputPort, times(1)).guardar(item);
+        verify(itemFichaPerfilOutputPort, times(1)).actualizarContenido(item);
     }
 
     private ItemFichaPerfilDomain itemReconstruido(UUID itemId, UUID fichaPerfilId) {

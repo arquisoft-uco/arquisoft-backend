@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.impl;
 
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.mapper.RegistrarEvaluacionFichaPerfilMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
@@ -62,15 +63,15 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
         // Act
-        UUID resultado = useCase.ejecutar(command);
+        UUID resultado = useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command));
 
         // Assert
         assertThat(resultado).isNotNull();
         verify(registrarEvaluacionFichaPerfilValidator).validar(any());
         verify(registrarEvaluacionFichaPerfilValidator).validar(any());
         verify(registrarEvaluacionFichaPerfilValidator).validar(any());
-        verify(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilDomain.class));
-        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
+        verify(evaluacionFichaPerfilOutputPort).registrarEvaluacion(any(EvaluacionFichaPerfilDomain.class));
+        verify(estadoEvaluacionFichaOutputPort).registrarEstadoInicial(any(EstadoEvaluacionFichaDomain.class));
     }
 
     @Test
@@ -84,10 +85,10 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
                 .when(registrarEvaluacionFichaPerfilValidator).validar(any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class);
 
-        verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
+        verify(evaluacionFichaPerfilOutputPort, never()).registrarEvaluacion(any());
     }
 
     @Test
@@ -101,10 +102,10 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
                 .when(registrarEvaluacionFichaPerfilValidator).validar(any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(RepresentanteComiteNoEncontradoException.class);
 
-        verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
+        verify(evaluacionFichaPerfilOutputPort, never()).registrarEvaluacion(any());
     }
 
     @Test
@@ -119,10 +120,10 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
                 .validar(any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(EvaluacionFichaPerfilDuplicadaException.class);
 
-        verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
+        verify(evaluacionFichaPerfilOutputPort, never()).registrarEvaluacion(any());
     }
 
     @Test
@@ -133,14 +134,14 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
         doThrow(new DataAccessException("Error de BD") {})
-                .when(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilDomain.class));
+                .when(evaluacionFichaPerfilOutputPort).registrarEvaluacion(any(EvaluacionFichaPerfilDomain.class));
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("Error de BD");
 
-        verify(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilDomain.class));
+        verify(evaluacionFichaPerfilOutputPort).registrarEvaluacion(any(EvaluacionFichaPerfilDomain.class));
     }
 
     @Test
@@ -149,10 +150,10 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         var command = new RegistrarEvaluacionFichaPerfilCommand(null, UUID.randomUUID());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(DomainValidationException.class);
 
-        verify(evaluacionFichaPerfilOutputPort, never()).guardar(any());
+        verify(evaluacionFichaPerfilOutputPort, never()).registrarEvaluacion(any());
     }
 
     @Test
@@ -161,9 +162,9 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         var command = new RegistrarEvaluacionFichaPerfilCommand(UUID.randomUUID(), UUID.randomUUID());
 
         // Act
-        useCase.ejecutar(command);
+        useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command));
 
         // Assert
-        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
+        verify(estadoEvaluacionFichaOutputPort).registrarEstadoInicial(any(EstadoEvaluacionFichaDomain.class));
     }
 }

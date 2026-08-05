@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.in.web;
 
+import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.in.web.mapper.AgregarEstadoEvaluacionFichaRequestMapper;
 import com.arquisoft.shared.message.FichasApiKeys;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.interactor.AgregarEstadoEvaluacionFichaInteractor;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.in.web.dto.AgregarEstadoEvaluacionFichaRequestDTO;
@@ -14,7 +15,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,11 +57,11 @@ public class AgregarEstadoEvaluacionFichaInputAdapter {
                     description = FichasApiKeys.EstadoEvaluacionFicha.AGREGAR_RESP_422)
     })
     public ResponseEntity<AgregarEstadoEvaluacionFichaResponseDTO> agregar(
-            @Valid @RequestBody AgregarEstadoEvaluacionFichaRequestDTO request,
+            @RequestBody AgregarEstadoEvaluacionFichaRequestDTO request,
             @AuthenticationPrincipal Jwt jwt) {
 
         UUID representanteComiteId = UUID.fromString(jwt.getSubject());
-        var id = agregarEstadoEvaluacionFichaInteractor.ejecutar(request.toCommand(representanteComiteId));
+        var id = agregarEstadoEvaluacionFichaInteractor.ejecutar(AgregarEstadoEvaluacionFichaRequestMapper.toCommand(request, representanteComiteId));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new AgregarEstadoEvaluacionFichaResponseDTO(id));
     }

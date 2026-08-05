@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.mapper.CambiarAsesorFichaRequestMapper;
 import com.arquisoft.shared.message.FichasApiKeys;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.CambiarAsesorFichaInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.CambiarAsesorFichaRequestDTO;
@@ -11,7 +12,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,9 +52,9 @@ public class CambiarAsesorFichaInputAdapter {
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_UPDATE_ASESOR)
     public ResponseEntity<Void> cambiarAsesor(
             @PathVariable UUID id,
-            @Valid @RequestBody CambiarAsesorFichaRequestDTO request
+            @RequestBody CambiarAsesorFichaRequestDTO request
     ) {
-        cambiarAsesorFichaInteractor.ejecutar(request.toCommand(id));
+        cambiarAsesorFichaInteractor.ejecutar(CambiarAsesorFichaRequestMapper.toCommand(request, id));
         return ResponseEntity.noContent().build();
     }
 }

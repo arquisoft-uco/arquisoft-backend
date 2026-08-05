@@ -19,7 +19,7 @@ public class EvaluacionFichaPerfilCommandOutputAdapter
     private final EvaluacionFichaPerfilMapper mapper;
 
     @Override
-    public void guardar(EvaluacionFichaPerfilDomain evaluacion) {
+    public void registrarEvaluacion(EvaluacionFichaPerfilDomain evaluacion) {
         var entity = mapper.toEntity(evaluacion);
         repository.save(entity);
     }

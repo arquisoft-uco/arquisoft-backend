@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.mapper.RemoverEstudianteFichaPerfilMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
@@ -59,11 +60,11 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
 
         // Act
-        useCase.ejecutar(command);
+        useCase.ejecutar(RemoverEstudianteFichaPerfilMapper.toDomain(command));
 
         // Assert
         verify(removerEstudianteFichaPerfilValidator, times(1)).validar(fichaPerfilId, estudianteId);
-        verify(estudianteFichaPerfilOutputPort, times(1)).eliminar(fichaPerfilId, estudianteId);
+        verify(estudianteFichaPerfilOutputPort, times(1)).desvincularEstudiante(fichaPerfilId, estudianteId);
     }
 
     @Test
@@ -74,12 +75,12 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
 
         // Act
-        useCase.ejecutar(command);
+        useCase.ejecutar(RemoverEstudianteFichaPerfilMapper.toDomain(command));
 
         // Assert
         InOrder inOrder = inOrder(removerEstudianteFichaPerfilValidator, estudianteFichaPerfilOutputPort);
         inOrder.verify(removerEstudianteFichaPerfilValidator).validar(fichaPerfilId, estudianteId);
-        inOrder.verify(estudianteFichaPerfilOutputPort).eliminar(fichaPerfilId, estudianteId);
+        inOrder.verify(estudianteFichaPerfilOutputPort).desvincularEstudiante(fichaPerfilId, estudianteId);
     }
 
     @Test
@@ -93,11 +94,11 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
                 .when(removerEstudianteFichaPerfilValidator).validar(any(), any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(RemoverEstudianteFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class)
                 .hasMessageContaining(fichaPerfilId.toString());
 
-        verify(estudianteFichaPerfilOutputPort, never()).eliminar(any(), any());
+        verify(estudianteFichaPerfilOutputPort, never()).desvincularEstudiante(any(), any());
     }
 
     @Test
@@ -111,11 +112,11 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
                 .when(removerEstudianteFichaPerfilValidator).validar(any(), any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(RemoverEstudianteFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(EstudianteNoEncontradoException.class)
                 .hasMessageContaining(estudianteId.toString());
 
-        verify(estudianteFichaPerfilOutputPort, never()).eliminar(any(), any());
+        verify(estudianteFichaPerfilOutputPort, never()).desvincularEstudiante(any(), any());
     }
 
     @Test
@@ -129,9 +130,9 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
                 .when(removerEstudianteFichaPerfilValidator).validar(any(), any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(command))
+        assertThatThrownBy(() -> useCase.ejecutar(RemoverEstudianteFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(EstudianteFichaPerfilNoEncontradoException.class);
 
-        verify(estudianteFichaPerfilOutputPort, never()).eliminar(any(), any());
+        verify(estudianteFichaPerfilOutputPort, never()).desvincularEstudiante(any(), any());
     }
 }

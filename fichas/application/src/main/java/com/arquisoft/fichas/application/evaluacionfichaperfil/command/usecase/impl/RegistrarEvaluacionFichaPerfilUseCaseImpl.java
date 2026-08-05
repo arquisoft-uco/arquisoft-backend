@@ -2,7 +2,6 @@ package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.i
 
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.FichasKeys;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.RegistrarEvaluacionFichaPerfilUseCase;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
@@ -26,14 +25,10 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
     private final MessageCatalog catalog;
 
     @Override
-    public UUID ejecutar(RegistrarEvaluacionFichaPerfilCommand entrada) {
-        var evaluacion = EvaluacionFichaPerfilDomain.crear(
-                entrada.representanteComite(),
-                entrada.fichaPerfil());
-
+    public UUID ejecutar(EvaluacionFichaPerfilDomain evaluacion) {
         registrarEvaluacionFichaPerfilValidator.validar(evaluacion);
 
-        evaluacionFichaPerfilOutputPort.guardar(evaluacion);
+        evaluacionFichaPerfilOutputPort.registrarEvaluacion(evaluacion);
         asignarEstadoInicialEvaluacion(evaluacion.getId());
 
         logger.info(
@@ -47,7 +42,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
 
     private void asignarEstadoInicialEvaluacion(UUID evaluacionFichaPerfil) {
         var estadoInicial = EstadoEvaluacionFichaDomain.crear(evaluacionFichaPerfil);
-        estadoEvaluacionFichaOutputPort.guardar(estadoInicial);
+        estadoEvaluacionFichaOutputPort.registrarEstadoInicial(estadoInicial);
         logger.info(
                 catalog.obtener(FichasKeys.EstadoEvaluacionFicha.LOG_CREADO_AUTOMATICO),
                 estadoInicial.getId(),

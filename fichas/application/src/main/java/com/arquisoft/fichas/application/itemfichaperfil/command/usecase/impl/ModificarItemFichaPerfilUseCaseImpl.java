@@ -3,10 +3,10 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.estadofichaperfil.query.port.out.EstadoFichaPerfilQueryOutputPort;
-import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.ModificarItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ModificarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ModificarItemFichaPerfilDomain;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilFinder;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
@@ -25,18 +25,18 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
     private final MessageCatalog catalog;
 
     @Override
-    public void ejecutar(ModificarItemFichaPerfilCommand entrada) {
-        var item = itemFichaPerfilFinder.obtener(entrada.item());
+    public void ejecutar(ModificarItemFichaPerfilDomain entrada) {
+        var item = itemFichaPerfilFinder.obtener(entrada.getItem());
 
-        modificarItemFichaPerfilValidator.validar(item.getFichaPerfilId(), entrada.estudiante());
+        modificarItemFichaPerfilValidator.validar(item.getFichaPerfilId(), entrada.getEstudiante());
 
         var estadoActual = estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(item.getFichaPerfilId())
                 .orElseThrow(() -> new FichaPerfilNoEncontradaException(item.getFichaPerfilId()));
 
-        item.modificarContenido(entrada.contenido(), estadoActual);
+        item.modificarContenido(entrada.getContenido(), estadoActual);
 
-        itemFichaPerfilOutputPort.guardar(item);
+        itemFichaPerfilOutputPort.actualizarContenido(item);
 
-        logger.info(catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_MODIFICADO), entrada.item());
+        logger.info(catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_MODIFICADO), entrada.getItem());
     }
 }

@@ -57,7 +57,7 @@ public class RegistrarEvaluacionFichaPerfilInputAdapter {
 
         UUID representanteComiteId = UUID.fromString(jwt.getSubject());
 
-        var command = new RegistrarEvaluacionFichaPerfilCommand(
+        var command = RegistrarEvaluacionFichaPerfilCommand.crear(
                 fichaId,
                 representanteComiteId);
 

@@ -23,7 +23,7 @@ public class AsignarEstadoInicialFichaPerfilUseCaseImpl implements AsignarEstado
     public void ejecutar(EstadoFichaPerfilDomain estadoInicial) {
         asignarEstadoInicialFichaPerfilValidator.validar(estadoInicial.getFichaPerfil());
 
-        estadoFichaPerfilOutputPort.guardar(estadoInicial);
+        estadoFichaPerfilOutputPort.registrarEstadoInicial(estadoInicial);
 
         logger.info(catalog.obtener(FichasKeys.EstadoFichaPerfil.LOG_CREADO),
                 estadoInicial.getId(),

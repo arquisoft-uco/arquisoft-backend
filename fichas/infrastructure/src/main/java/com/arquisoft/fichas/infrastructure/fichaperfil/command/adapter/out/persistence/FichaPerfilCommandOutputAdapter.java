@@ -28,7 +28,21 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     private final MessageCatalog catalog;
 
     @Override
-    public void guardar(FichaPerfilDomain ficha) {
+    public void registrarFicha(FichaPerfilDomain ficha) {
+        persistir(ficha);
+    }
+
+    @Override
+    public void actualizarTitulo(FichaPerfilDomain ficha) {
+        persistir(ficha);
+    }
+
+    @Override
+    public void actualizarAsesor(FichaPerfilDomain ficha) {
+        persistir(ficha);
+    }
+
+    private void persistir(FichaPerfilDomain ficha) {
         AsesorFichaEntity asesorRef =
                 asesorFichaRepository.getReferenceById(ficha.getAsesorFicha());
         fichaPerfilRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));

@@ -25,7 +25,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
     public UUID ejecutar(FichaPerfilDomain ficha) {
         registrarFichaPerfilValidator.validar(ficha);
 
-        fichaPerfilOutputPort.guardar(ficha);
+        fichaPerfilOutputPort.registrarFicha(ficha);
 
         logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_REGISTRADA), ficha.getId());
         return ficha.getId();

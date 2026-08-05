@@ -9,7 +9,11 @@ import java.util.UUID;
 
 public interface FichaPerfilOutputPort {
 
-    void guardar(FichaPerfilDomain ficha);
+    void registrarFicha(FichaPerfilDomain ficha);
+
+    void actualizarTitulo(FichaPerfilDomain ficha);
+
+    void actualizarAsesor(FichaPerfilDomain ficha);
 
     Optional<FichaPerfilDomain> buscarPorId(UUID id);
 

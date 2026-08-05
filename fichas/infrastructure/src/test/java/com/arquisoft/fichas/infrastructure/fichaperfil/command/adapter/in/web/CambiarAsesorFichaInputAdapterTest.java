@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.FichasCodes;
 import com.arquisoft.shared.message.FichasFields;
 import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.shared.message.Messages;
-import com.arquisoft.shared.message.ValidationKeys;
+import com.arquisoft.shared.message.AppKeys;
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.CambiarAsesorFichaInteractor;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
@@ -112,8 +112,8 @@ class CambiarAsesorFichaInputAdapterTest {
                 .andExpect(jsonPath("$.message").value("Error de validación en los datos enviados"))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
                 .andExpect(jsonPath("$.fieldErrors[0].message")
-                        .value(Messages.obtener(
-                                ValidationKeys.sinLlaves(ValidationKeys.FichaPerfil.ASESOR_OBLIGATORIO))));
+                        .value(Messages.formatear(
+                                AppKeys.Validador.NO_EN_BLANCO, FichasFields.FichaPerfil.ASESOR_FICHA)));
     }
 
     @Test

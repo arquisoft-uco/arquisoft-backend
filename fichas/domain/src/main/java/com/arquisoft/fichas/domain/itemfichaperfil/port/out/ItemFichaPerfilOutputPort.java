@@ -7,7 +7,9 @@ import java.util.UUID;
 
 public interface ItemFichaPerfilOutputPort {
 
-    void guardar(ItemFichaPerfilDomain item);
+    void registrarItem(ItemFichaPerfilDomain item);
+
+    void actualizarContenido(ItemFichaPerfilDomain item);
 
     boolean existePorFichaYTipoItem(UUID fichaPerfilId, String tipoItem);
 
@@ -15,5 +17,5 @@ public interface ItemFichaPerfilOutputPort {
 
     Optional<ItemFichaPerfilDomain> buscarPorId(UUID itemId);
 
-    void eliminarPorId(UUID itemId);
+    void removerItem(UUID itemId);
 }

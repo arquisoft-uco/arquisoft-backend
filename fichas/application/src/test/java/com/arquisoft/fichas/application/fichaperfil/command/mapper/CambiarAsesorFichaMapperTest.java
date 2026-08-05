@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.mapper;
 
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.CambiarAsesorFichaDomain;
 import com.arquisoft.shared.message.FichasFields;
 import com.arquisoft.shared.exception.DomainValidationException;
 import org.junit.jupiter.api.Test;
@@ -21,11 +21,11 @@ class CambiarAsesorFichaMapperTest {
         var command = new CambiarAsesorFichaCommand(fichaId, nuevoAsesorId);
 
         // Act
-        FichaPerfilDomain ficha = CambiarAsesorFichaMapper.toDomain(command);
+        CambiarAsesorFichaDomain cambio = CambiarAsesorFichaMapper.toDomain(command);
 
         // Assert
-        assertThat(ficha.getId()).isEqualTo(fichaId);
-        assertThat(ficha.getAsesorFicha()).isEqualTo(nuevoAsesorId);
+        assertThat(cambio.getFichaPerfil()).isEqualTo(fichaId);
+        assertThat(cambio.getNuevoAsesorFicha()).isEqualTo(nuevoAsesorId);
     }
 
     @Test

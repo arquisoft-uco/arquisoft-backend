@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public interface EstadoFichaPerfilOutputPort {
 
-    void guardar(EstadoFichaPerfilDomain aggregate);
+    void registrarEstadoInicial(EstadoFichaPerfilDomain estado);
 
     Optional<EstadoFicha> obtenerEstadoActual(UUID fichaPerfilId);
 }

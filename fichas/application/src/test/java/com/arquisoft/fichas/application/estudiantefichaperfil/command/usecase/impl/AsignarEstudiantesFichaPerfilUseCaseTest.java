@@ -65,7 +65,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         useCase.ejecutar(relaciones);
 
         // Assert
-        verify(estudianteFichaPerfilOutputPort, times(2)).guardar(any());
+        verify(estudianteFichaPerfilOutputPort, times(2)).vincularEstudiante(any());
     }
 
     @Test
@@ -100,7 +100,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         assertThat(ex)
                 .isInstanceOf(FichaPerfilNoEncontradaException.class)
                 .hasMessageContaining(fichaPerfilId.toString());
-        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+        verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }
 
     @Test
@@ -122,7 +122,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 .hasMessageContaining(estudiante.toString());
         assertThat(((EstudianteNoEncontradoException) ex).getErrorCode())
                 .isEqualTo(FichasCodes.Estudiante.ESTUDIANTE_NO_ENCONTRADO);
-        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+        verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }
 
     @Test
@@ -144,7 +144,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 .hasMessageContaining(estudiante.toString());
         assertThat(((EstudianteDuplicadoException) ex).getErrorCode())
                 .isEqualTo(FichasCodes.EstudianteFichaPerfil.ESTUDIANTE_DUPLICADO);
-        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+        verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }
 
     @Test
@@ -164,6 +164,6 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 .isInstanceOf(CupoEstudiantesExcedidoException.class)
                 .hasMessage(Messages.formatear(FichasKeys.EstudianteFichaPerfil.ERROR_LIMITE_EXCEDIDO,
                         FichasLimits.FichaPerfil.ESTUDIANTES_MAX));
-        verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
+        verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }
 }

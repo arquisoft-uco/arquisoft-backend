@@ -19,10 +19,18 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     private final TipoItemRepository tipoItemRepository;
 
     @Override
-    public void guardar(ItemFichaPerfilDomain aggregate) {
-        var tipoItemRef = tipoItemRepository.getReferenceById(aggregate.getTipoItem().getId());
-        var entity = ItemFichaPerfilMapper.toEntity(aggregate, tipoItemRef);
-        repository.save(entity);
+    public void registrarItem(ItemFichaPerfilDomain item) {
+        persistir(item);
+    }
+
+    @Override
+    public void actualizarContenido(ItemFichaPerfilDomain item) {
+        persistir(item);
+    }
+
+    private void persistir(ItemFichaPerfilDomain item) {
+        var tipoItemRef = tipoItemRepository.getReferenceById(item.getTipoItem().getId());
+        repository.save(ItemFichaPerfilMapper.toEntity(item, tipoItemRef));
     }
 
     @Override
@@ -42,7 +50,7 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     }
 
     @Override
-    public void eliminarPorId(UUID itemId) {
+    public void removerItem(UUID itemId) {
         repository.deleteById(itemId);
     }
 }

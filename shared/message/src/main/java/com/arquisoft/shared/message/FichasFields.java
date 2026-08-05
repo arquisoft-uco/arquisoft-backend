@@ -19,6 +19,7 @@ public final class FichasFields {
         public static final String ID = "fichaPerfilId";
         public static final String TITULO = "tituloProyecto";
         public static final String ASESOR_FICHA = "asesorFicha";
+        public static final String ESTUDIANTE = "estudiante";
         public static final String ESTUDIANTES = "estudiantes";
         public static final String ESTADO_FICHA = "estadoFicha";
     }
@@ -27,9 +28,11 @@ public final class FichasFields {
 
         private ItemFichaPerfil() {}
 
+        public static final String ITEM = "item";
         public static final String FICHA_PERFIL = "fichaPerfil";
         public static final String TIPO_ITEM = "tipoItem";
         public static final String CONTENIDO = "contenido";
+        public static final String ESTUDIANTE = "estudiante";
         public static final String ESTADO_FICHA = "estadoFicha";
         public static final String REVISIONES = "revisiones";
     }
@@ -65,5 +68,6 @@ public final class FichasFields {
 
         public static final String EVALUACION_FICHA_PERFIL = "evaluacionFichaPerfil";
         public static final String ESTADO_EVALUACION = "estadoEvaluacion";
+        public static final String REPRESENTANTE_COMITE = "representanteComite";
     }
 }

@@ -3,6 +3,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorContactoFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAsesorFichaUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.CambiarAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
@@ -29,13 +30,13 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
     private final MessageCatalog catalog;
 
     @Override
-    public void ejecutar(FichaPerfilDomain ficha) {
-        UUID fichaPerfil = ficha.getId();
-        UUID nuevoAsesorFicha = ficha.getAsesorFicha();
+    public void ejecutar(CambiarAsesorFichaDomain cambio) {
+        UUID fichaPerfil = cambio.getFichaPerfil();
+        UUID nuevoAsesorFicha = cambio.getNuevoAsesorFicha();
 
         var fichaActual = fichaPerfilFinder.obtener(fichaPerfil);
 
-        cambiarAsesorFichaValidator.validar(ficha, fichaActual.getAsesorFicha());
+        cambiarAsesorFichaValidator.validar(cambio, fichaActual.getAsesorFicha());
 
         var asesorFichaContacto = asesorContactoFinder.obtener(nuevoAsesorFicha);
 
@@ -45,7 +46,7 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
         fichaActualizada.publishEvent(new AsesorFichaCambiadoEvent(fichaActualizada.getId(), fichaActualizada.getTituloProyecto(),
                         asesorFichaContacto.id(), asesorFichaContacto.nombre(), asesorFichaContacto.email()));
 
-        fichaPerfilOutputPort.guardar(fichaActualizada);
+        fichaPerfilOutputPort.actualizarAsesor(fichaActualizada);
 
         fichaActualizada.drainUnPublishedEvents().forEach(eventPublisher::publish);
 

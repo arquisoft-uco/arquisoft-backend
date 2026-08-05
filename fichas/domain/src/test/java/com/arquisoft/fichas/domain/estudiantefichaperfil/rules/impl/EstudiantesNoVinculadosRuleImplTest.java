@@ -60,7 +60,7 @@ class EstudiantesNoVinculadosRuleImplTest {
         }
 
         @Override
-        public void guardar(EstudianteFichaPerfilDomain relacion) {
+        public void vincularEstudiante(EstudianteFichaPerfilDomain relacion) {
             throw new UnsupportedOperationException();
         }
 
@@ -70,7 +70,7 @@ class EstudiantesNoVinculadosRuleImplTest {
         }
 
         @Override
-        public void eliminar(UUID fichaPerfilId, UUID estudianteId) {
+        public void desvincularEstudiante(UUID fichaPerfilId, UUID estudianteId) {
             throw new UnsupportedOperationException();
         }
     }

@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.RemoverItemFichaPerfilMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.shared.message.FichasCodes;
@@ -73,13 +74,13 @@ class RemoverItemFichaPerfilUseCaseTest {
         var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
 
         // Act
-        useCase.ejecutar(command);
+        useCase.ejecutar(RemoverItemFichaPerfilMapper.toDomain(command));
 
         // Assert
         verify(itemFichaPerfilFinder, times(1)).obtener(itemId);
         verify(removerItemFichaPerfilValidator, times(1)).validar(any(), any());
         verify(revisionQueryPort, times(1)).contarPorItem(itemId);
-        verify(itemOutputPort, times(1)).eliminarPorId(itemId);
+        verify(itemOutputPort, times(1)).removerItem(itemId);
     }
 
     @Test
@@ -93,7 +94,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
 
         // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
+        Throwable exception = catchThrowable(() -> useCase.ejecutar(RemoverItemFichaPerfilMapper.toDomain(command)));
 
         // Assert
         assertThat(exception)
@@ -107,7 +108,7 @@ class RemoverItemFichaPerfilUseCaseTest {
 
         verify(removerItemFichaPerfilValidator, never()).validar(any(), any());
         verify(revisionQueryPort, never()).contarPorItem(any());
-        verify(itemOutputPort, never()).eliminarPorId(any());
+        verify(itemOutputPort, never()).removerItem(any());
     }
 
     @Test
@@ -125,7 +126,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
 
         // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
+        Throwable exception = catchThrowable(() -> useCase.ejecutar(RemoverItemFichaPerfilMapper.toDomain(command)));
 
         // Assert
         assertThat(exception).isInstanceOf(FichaNoPropietarioException.class);
@@ -135,7 +136,7 @@ class RemoverItemFichaPerfilUseCaseTest {
                 .isEqualTo(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO);
 
         verify(revisionQueryPort, never()).contarPorItem(any());
-        verify(itemOutputPort, never()).eliminarPorId(any());
+        verify(itemOutputPort, never()).removerItem(any());
     }
 
     @Test
@@ -152,7 +153,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
 
         // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(command));
+        Throwable exception = catchThrowable(() -> useCase.ejecutar(RemoverItemFichaPerfilMapper.toDomain(command)));
 
         // Assert
         assertThat(exception).isInstanceOf(DomainValidationException.class);
@@ -164,7 +165,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         assertThat(validationException.getValidationResult().getErrores().get(0).codigoError())
                 .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_CON_REVISIONES);
 
-        verify(itemOutputPort, never()).eliminarPorId(any());
+        verify(itemOutputPort, never()).removerItem(any());
     }
 
     private ItemFichaPerfilDomain itemReconstruido(UUID itemId, UUID fichaPerfilId) {

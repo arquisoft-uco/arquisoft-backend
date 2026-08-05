@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.out.persistence;
 
+import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
+import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionNoEncontradoException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionRepository;
@@ -22,12 +24,21 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
     private final EstadoEvaluacionRepository estadoEvaluacionRepository;
 
     @Override
-    public void guardar(EstadoEvaluacionFichaDomain aggregate) {
-        var evaluacionRef = evaluacionFichaPerfilRepository
-                .getReferenceById(aggregate.getEvaluacionFichaPerfilId());
+    public void registrarEstadoInicial(EstadoEvaluacionFichaDomain estado) {
+        persistir(estado);
+    }
 
-        var entity = estadoEvaluacionFichaMapper.toEntity(aggregate, evaluacionRef);
-        estadoEvaluacionFichaRepository.save(entity);
+    @Override
+    public void agregarEstado(EstadoEvaluacionFichaDomain estado) {
+        persistir(estado);
+    }
+
+    private void persistir(EstadoEvaluacionFichaDomain estado) {
+        var evaluacionRef = evaluacionFichaPerfilRepository
+                .getReferenceById(estado.getEvaluacionFichaPerfilId());
+
+        estadoEvaluacionFichaRepository.save(
+                estadoEvaluacionFichaMapper.toEntity(estado, evaluacionRef));
     }
 
     @Override
@@ -49,9 +60,18 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
     }
 
     @Override
-    public Optional<String> obtenerUltimoEstado(UUID evaluacionFichaPerfilId) {
+    public Optional<EstadoEvaluacion> obtenerUltimoEstado(UUID evaluacionFichaPerfilId) {
         return estadoEvaluacionFichaRepository
                 .findFirstByEvaluacionFichaPerfilIdOrderByFechaActualizacionDesc(evaluacionFichaPerfilId)
-                .map(entity -> entity.getEstadoEvaluacion().getId());
+                .map(entity -> entity.getEstadoEvaluacion().getId())
+                .map(EstadoEvaluacionFichaCommandOutputAdapter::resolverEstado);
+    }
+
+    private static EstadoEvaluacion resolverEstado(String estadoEvaluacionId) {
+        try {
+            return EstadoEvaluacion.valueOf(estadoEvaluacionId);
+        } catch (IllegalArgumentException e) {
+            throw new EstadoEvaluacionNoEncontradoException(estadoEvaluacionId);
+        }
     }
 }

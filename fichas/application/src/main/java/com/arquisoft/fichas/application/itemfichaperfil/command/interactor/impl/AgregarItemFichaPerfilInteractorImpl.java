@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.interactor.impl;
 
-import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.AgregarItemFichaPerfilInteractor;
+import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.AgregarItemFichaPerfilMapper;
+import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.AgregarItemFichaPerfilUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,6 @@ public class AgregarItemFichaPerfilInteractorImpl implements AgregarItemFichaPer
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(AgregarItemFichaPerfilCommand command) {
-        return agregarItemFichaPerfilUseCase.ejecutar(command);
+        return agregarItemFichaPerfilUseCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command));
     }
 }

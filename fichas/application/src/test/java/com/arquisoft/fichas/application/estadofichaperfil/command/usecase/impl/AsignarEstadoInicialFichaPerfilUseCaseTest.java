@@ -54,7 +54,7 @@ class AsignarEstadoInicialFichaPerfilUseCaseTest {
         useCase.ejecutar(estadoInicial);
 
         // Assert
-        verify(estadoFichaPerfilOutputPort, times(1)).guardar(estadoInicial);
+        verify(estadoFichaPerfilOutputPort, times(1)).registrarEstadoInicial(estadoInicial);
     }
 
     @Test
@@ -69,7 +69,7 @@ class AsignarEstadoInicialFichaPerfilUseCaseTest {
         // Assert
         InOrder inOrder = inOrder(asignarEstadoInicialFichaPerfilValidator, estadoFichaPerfilOutputPort);
         inOrder.verify(asignarEstadoInicialFichaPerfilValidator).validar(fichaPerfil);
-        inOrder.verify(estadoFichaPerfilOutputPort).guardar(estadoInicial);
+        inOrder.verify(estadoFichaPerfilOutputPort).registrarEstadoInicial(estadoInicial);
     }
 
     @Test
@@ -85,6 +85,6 @@ class AsignarEstadoInicialFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> useCase.ejecutar(estadoInicial))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class)
                 .hasMessageContaining(fichaPerfil.toString());
-        verify(estadoFichaPerfilOutputPort, never()).guardar(any());
+        verify(estadoFichaPerfilOutputPort, never()).registrarEstadoInicial(any());
     }
 }

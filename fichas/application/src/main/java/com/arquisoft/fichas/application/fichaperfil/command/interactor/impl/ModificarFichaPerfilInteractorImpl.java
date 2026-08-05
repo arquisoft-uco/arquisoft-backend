@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.application.fichaperfil.command.interactor.impl;
 
-import com.arquisoft.fichas.application.fichaperfil.command.model.ModificarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.ModificarFichaPerfilInteractor;
+import com.arquisoft.fichas.application.fichaperfil.command.mapper.ModificarFichaPerfilMapper;
+import com.arquisoft.fichas.application.fichaperfil.command.model.ModificarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.ModificarFichaPerfilUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,6 @@ public class ModificarFichaPerfilInteractorImpl implements ModificarFichaPerfilI
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
     public void ejecutar(ModificarFichaPerfilCommand command) {
-        modificarFichaPerfilUseCase.ejecutar(command);
+        modificarFichaPerfilUseCase.ejecutar(ModificarFichaPerfilMapper.toDomain(command));
     }
 }

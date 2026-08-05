@@ -8,6 +8,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFi
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.CambiarAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
@@ -68,7 +69,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
+        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
         FichaPerfilDomain fichaActual = fichaReconstruida(fichaId, UUID.randomUUID());
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaActual);
@@ -79,7 +80,7 @@ class CambiarAsesorFichaUseCaseTest {
 
         // Assert
         ArgumentCaptor<FichaPerfilDomain> fichaCaptor = ArgumentCaptor.forClass(FichaPerfilDomain.class);
-        verify(fichaPerfilOutputPort).guardar(fichaCaptor.capture());
+        verify(fichaPerfilOutputPort).actualizarAsesor(fichaCaptor.capture());
         assertThat(fichaCaptor.getValue().getAsesorFicha()).isEqualTo(nuevoAsesorId);
     }
 
@@ -88,7 +89,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange — la entrada no trae el título; debe salir de lo persistido, no perderse
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
+        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
         FichaPerfilDomain fichaActual = fichaReconstruida(fichaId, UUID.randomUUID());
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaActual);
@@ -99,7 +100,7 @@ class CambiarAsesorFichaUseCaseTest {
 
         // Assert
         ArgumentCaptor<FichaPerfilDomain> fichaCaptor = ArgumentCaptor.forClass(FichaPerfilDomain.class);
-        verify(fichaPerfilOutputPort).guardar(fichaCaptor.capture());
+        verify(fichaPerfilOutputPort).actualizarAsesor(fichaCaptor.capture());
         assertThat(fichaCaptor.getValue().getTituloProyecto()).isEqualTo("Título de prueba");
     }
 
@@ -108,7 +109,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
+        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
         FichaPerfilDomain fichaActual = fichaReconstruida(fichaId, UUID.randomUUID());
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaActual);
@@ -132,7 +133,7 @@ class CambiarAsesorFichaUseCaseTest {
     void debeLanzarFichaPerfilNoEncontradaException_cuandoFichaNoExiste() {
         // Arrange
         UUID fichaId = UUID.randomUUID();
-        FichaPerfilDomain entrada = fichaEntrada(fichaId, UUID.randomUUID());
+        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, UUID.randomUUID());
 
         doThrow(new FichaPerfilNoEncontradaException(fichaId)).when(fichaPerfilFinder).obtener(fichaId);
 
@@ -141,7 +142,7 @@ class CambiarAsesorFichaUseCaseTest {
                 .isInstanceOf(FichaPerfilNoEncontradaException.class)
                 .hasMessageContaining(fichaId.toString());
 
-        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(fichaPerfilOutputPort, never()).actualizarAsesor(any());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -150,7 +151,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
+        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
         FichaPerfilDomain fichaActual = fichaReconstruida(fichaId, UUID.randomUUID());
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaActual);
@@ -161,7 +162,7 @@ class CambiarAsesorFichaUseCaseTest {
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(entrada))
                 .isInstanceOf(AsesorFichaNoEncontradoException.class);
 
-        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(fichaPerfilOutputPort, never()).actualizarAsesor(any());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -170,7 +171,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
+        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
         FichaPerfilDomain fichaActual = fichaReconstruida(fichaId, UUID.randomUUID());
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaActual);
@@ -182,7 +183,7 @@ class CambiarAsesorFichaUseCaseTest {
                 .isInstanceOf(AsesorFichaNoEncontradoException.class)
                 .hasMessageContaining(nuevoAsesorId.toString());
 
-        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(fichaPerfilOutputPort, never()).actualizarAsesor(any());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -191,7 +192,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        FichaPerfilDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
+        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
         FichaPerfilDomain fichaActual = fichaReconstruida(fichaId, UUID.randomUUID());
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaActual);
@@ -202,7 +203,7 @@ class CambiarAsesorFichaUseCaseTest {
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(entrada))
                 .isInstanceOf(EstadoFichaPerfilTerminalException.class);
 
-        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(fichaPerfilOutputPort, never()).actualizarAsesor(any());
         verify(eventPublisher, never()).publish(any());
     }
 
@@ -211,7 +212,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID asesorActualId = UUID.randomUUID();
-        FichaPerfilDomain entrada = fichaEntrada(fichaId, asesorActualId);
+        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, asesorActualId);
         FichaPerfilDomain fichaActual = fichaReconstruida(fichaId, asesorActualId);
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaActual);
@@ -223,12 +224,12 @@ class CambiarAsesorFichaUseCaseTest {
                 .isInstanceOf(MismoAsesorFichaException.class)
                 .hasMessageContaining(asesorActualId.toString());
 
-        verify(fichaPerfilOutputPort, never()).guardar(any());
+        verify(fichaPerfilOutputPort, never()).actualizarAsesor(any());
         verify(eventPublisher, never()).publish(any());
     }
 
-    private FichaPerfilDomain fichaEntrada(UUID fichaId, UUID nuevoAsesorId) {
-        return FichaPerfilDomain.cambiarAsesorFicha(fichaId, nuevoAsesorId);
+    private CambiarAsesorFichaDomain fichaEntrada(UUID fichaId, UUID nuevoAsesorId) {
+        return CambiarAsesorFichaDomain.crear(fichaId, nuevoAsesorId);
     }
 
     private FichaPerfilDomain fichaReconstruida(UUID fichaId, UUID asesorId) {

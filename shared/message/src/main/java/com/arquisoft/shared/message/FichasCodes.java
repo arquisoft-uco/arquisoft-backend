@@ -18,6 +18,7 @@ public final class FichasCodes {
         public static final String TITULO_REQUERIDO = "FICHA_TITULO_REQUERIDO";
         public static final String TITULO_DEMASIADO_LARGO = "FICHA_TITULO_DEMASIADO_LARGO";
         public static final String ASESOR_REQUERIDO = "FICHA_ASESOR_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO = "FICHA_ESTUDIANTE_REQUERIDO";
         public static final String FICHA_TITULO_DUPLICADO = "FICHA_TITULO_DUPLICADO";
         public static final String ASESOR_NO_ENCONTRADO = "ASESOR_NO_ENCONTRADO";
         public static final String FICHA_NO_ENCONTRADA = "FICHA_NO_ENCONTRADA";
@@ -30,6 +31,8 @@ public final class FichasCodes {
 
         private ItemFichaPerfil() {}
 
+        public static final String ITEM_ID_REQUERIDO = "ITEM_ID_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO = "ITEM_ESTUDIANTE_REQUERIDO";
         public static final String FICHA_PERFIL_ID_REQUERIDO = "ITEM_FICHA_PERFIL_ID_REQUERIDO";
         public static final String TIPO_ITEM_REQUERIDO = "ITEM_TIPO_ITEM_REQUERIDO";
         public static final String CONTENIDO_REQUERIDO = "ITEM_CONTENIDO_REQUERIDO";
@@ -100,5 +103,6 @@ public final class FichasCodes {
         public static final String ESTADO_REQUERIDO = "ESTADO_REQUERIDO";
         public static final String ESTADO_EN_EVALUACION_NO_MANUAL = "ESTADO_EN_EVALUACION_NO_MANUAL";
         public static final String EVALUACION_NO_PROPIA = "EVALUACION_NO_PROPIA";
+        public static final String REPRESENTANTE_REQUERIDO = "ESTADO_EVALUACION_REPRESENTANTE_REQUERIDO";
     }
 }

@@ -44,7 +44,17 @@ class FichaPerfilExisteRuleImplTest {
         }
 
         @Override
-        public void guardar(FichaPerfilDomain ficha) {
+        public void registrarFicha(FichaPerfilDomain ficha) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void actualizarTitulo(FichaPerfilDomain ficha) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void actualizarAsesor(FichaPerfilDomain ficha) {
             throw new UnsupportedOperationException();
         }
 
