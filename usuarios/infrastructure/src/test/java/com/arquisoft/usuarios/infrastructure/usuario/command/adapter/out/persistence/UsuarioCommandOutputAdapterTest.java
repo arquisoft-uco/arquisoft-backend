@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.out.persistence;
 
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioAggregate;
+import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -17,7 +17,7 @@ class UsuarioCommandOutputAdapterTest {
     @Test
     void debeNoLanzarExcepcion_cuandoSaveEsInvocado() {
         // Arrange
-        UsuarioAggregate usuario = UsuarioAggregate.crear("test@example.com", UsuarioRole.ESTUDIANTE);
+        UsuarioDomain usuario = UsuarioDomain.crear("test@example.com", UsuarioRole.ESTUDIANTE);
 
         // Act / Assert
         assertThatCode(() -> adapter.save(usuario)).doesNotThrowAnyException();
@@ -29,7 +29,7 @@ class UsuarioCommandOutputAdapterTest {
         UUID id = UUID.randomUUID();
 
         // Act
-        Optional<UsuarioAggregate> resultado = adapter.findById(id);
+        Optional<UsuarioDomain> resultado = adapter.findById(id);
 
         // Assert
         assertThat(resultado).isEmpty();

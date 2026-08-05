@@ -3,7 +3,7 @@ package com.arquisoft.seguridad.application.auth.command.interactor.impl;
 import com.arquisoft.seguridad.application.auth.command.interactor.ValidateTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
-import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
+import com.arquisoft.seguridad.domain.auth.aggregate.TokenDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +16,7 @@ public class ValidateTokenInteractorImpl implements ValidateTokenInteractor {
     private final ValidateTokenUseCase validateTokenUseCase;
 
     @Override
-    public ValidacionTokenResult ejecutar(TokenAggregate token) {
+    public ValidacionTokenResult ejecutar(TokenDomain token) {
         return validateTokenUseCase.ejecutar(token);
     }
 }

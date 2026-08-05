@@ -1,6 +1,6 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.persistence;
 
-import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionAggregate;
+import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 
@@ -8,7 +8,7 @@ public final class NotificacionMapper {
 
     private NotificacionMapper() {}
 
-    public static NotificacionEntity toEntity(NotificacionAggregate aggregate) {
+    public static NotificacionEntity toEntity(NotificacionDomain aggregate) {
         return NotificacionEntity.builder()
                 .id(aggregate.getId())
                 .eventId(aggregate.getEventId())
@@ -22,9 +22,9 @@ public final class NotificacionMapper {
                 .build();
     }
 
-    public static NotificacionAggregate toDomain(NotificacionEntity entity) {
-        return NotificacionAggregate.reconstruir(
-                new NotificacionAggregate.DatosNotificacion(
+    public static NotificacionDomain toDomain(NotificacionEntity entity) {
+        return NotificacionDomain.reconstruir(
+                new NotificacionDomain.DatosNotificacion(
                         entity.getId(),
                         entity.getEventId(),
                         TipoNotificacion.valueOf(entity.getTipo()),

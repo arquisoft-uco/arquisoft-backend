@@ -1,20 +1,20 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import org.springframework.stereotype.Component;
 
 @Component
 public class EstudianteFichaPerfilMapper {
 
-    public EstudianteFichaPerfilAggregate toDomain(EstudianteFichaPerfilEntity entity) {
-        return EstudianteFichaPerfilAggregate.reconstruir(
+    public EstudianteFichaPerfilDomain toDomain(EstudianteFichaPerfilEntity entity) {
+        return EstudianteFichaPerfilDomain.reconstruir(
             entity.getId(),
             entity.getFichaPerfilId(),
             entity.getEstudianteId()
         );
     }
 
-    public EstudianteFichaPerfilEntity toEntity(EstudianteFichaPerfilAggregate aggregate) {
+    public EstudianteFichaPerfilEntity toEntity(EstudianteFichaPerfilDomain aggregate) {
         return EstudianteFichaPerfilEntity.builder()
             .id(aggregate.getId())
             .fichaPerfilId(aggregate.getFichaPerfilId())

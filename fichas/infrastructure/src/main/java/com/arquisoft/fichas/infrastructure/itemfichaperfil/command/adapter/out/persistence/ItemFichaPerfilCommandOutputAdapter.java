@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.out.persistence;
 
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilMapper;
@@ -19,7 +19,7 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     private final TipoItemRepository tipoItemRepository;
 
     @Override
-    public void guardar(ItemFichaPerfilAggregate aggregate) {
+    public void guardar(ItemFichaPerfilDomain aggregate) {
         var tipoItemRef = tipoItemRepository.getReferenceById(aggregate.getTipoItem().getId());
         var entity = ItemFichaPerfilMapper.toEntity(aggregate, tipoItemRef);
         repository.save(entity);
@@ -36,7 +36,7 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     }
 
     @Override
-    public Optional<ItemFichaPerfilAggregate> buscarPorId(UUID itemId) {
+    public Optional<ItemFichaPerfilDomain> buscarPorId(UUID itemId) {
         return repository.findById(itemId)
                 .map(ItemFichaPerfilMapper::toDomain);
     }

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.out.persistence;
 
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilMapper;
@@ -37,7 +37,7 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
         // Arrange
         UUID representanteId = UUID.randomUUID();
         UUID fichaId = UUID.randomUUID();
-        var aggregate = EvaluacionFichaPerfilAggregate.crear(representanteId, fichaId);
+        var aggregate = EvaluacionFichaPerfilDomain.crear(representanteId, fichaId);
 
         EvaluacionFichaPerfilEntity entityGuardada = EvaluacionFichaPerfilEntity.builder()
                 .id(aggregate.getId())

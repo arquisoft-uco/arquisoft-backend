@@ -1,6 +1,6 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.command.adapter.out.persistence;
 
-import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionAggregate;
+import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.notificaciones.infrastructure.notificacion.persistence.NotificacionEntity;
@@ -35,8 +35,8 @@ class NotificacionCommandOutputAdapterTest {
         adapter = new NotificacionCommandOutputAdapter(repository);
     }
 
-    private NotificacionAggregate notificacionCon(String eventId) {
-        return NotificacionAggregate.crear(
+    private NotificacionDomain notificacionCon(String eventId) {
+        return NotificacionDomain.crear(
                 eventId, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO);
     }
 
@@ -44,7 +44,7 @@ class NotificacionCommandOutputAdapterTest {
     void debePersistirTodosLosCampos_cuandoSeGuardaUnaNotificacionEnviada() {
         // Arrange
         String eventId = UUID.randomUUID().toString();
-        NotificacionAggregate notificacion = notificacionCon(eventId);
+        NotificacionDomain notificacion = notificacionCon(eventId);
         notificacion.marcarEnviada();
 
         // Act
@@ -64,7 +64,7 @@ class NotificacionCommandOutputAdapterTest {
     @Test
     void debeConservarElMotivoDelFallo_cuandoSeGuardaUnaNotificacionFallida() {
         // Arrange
-        NotificacionAggregate notificacion = notificacionCon(UUID.randomUUID().toString());
+        NotificacionDomain notificacion = notificacionCon(UUID.randomUUID().toString());
         notificacion.marcarFallida("servidor SMTP no disponible");
 
         // Act

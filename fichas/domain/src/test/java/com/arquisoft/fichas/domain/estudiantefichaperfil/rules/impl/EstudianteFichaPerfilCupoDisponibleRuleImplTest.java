@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.FichasCodes;
 import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.shared.message.FichasLimits;
 import com.arquisoft.shared.message.Messages;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
 import org.junit.jupiter.api.Test;
@@ -72,8 +72,8 @@ class EstudianteFichaPerfilCupoDisponibleRuleImplTest {
         assertThat(port.fichaConsultada).isEqualTo(FICHA_PERFIL);
     }
 
-    private static List<EstudianteFichaPerfilAggregate> relaciones(int cantidad) {
-        return EstudianteFichaPerfilAggregate.crear(
+    private static List<EstudianteFichaPerfilDomain> relaciones(int cantidad) {
+        return EstudianteFichaPerfilDomain.crear(
                 FICHA_PERFIL,
                 IntStream.range(0, cantidad).mapToObj(i -> UUID.randomUUID()).toList());
     }
@@ -99,7 +99,7 @@ class EstudianteFichaPerfilCupoDisponibleRuleImplTest {
         }
 
         @Override
-        public void guardar(EstudianteFichaPerfilAggregate relacion) {
+        public void guardar(EstudianteFichaPerfilDomain relacion) {
             throw new UnsupportedOperationException();
         }
 

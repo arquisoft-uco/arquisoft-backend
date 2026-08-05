@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.out.persistence;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilMapper;
@@ -17,7 +17,7 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     private final EstudianteFichaPerfilMapper mapper;
 
     @Override
-    public void guardar(EstudianteFichaPerfilAggregate relacion) {
+    public void guardar(EstudianteFichaPerfilDomain relacion) {
         var entity = mapper.toEntity(relacion);
         repository.save(entity);
     }

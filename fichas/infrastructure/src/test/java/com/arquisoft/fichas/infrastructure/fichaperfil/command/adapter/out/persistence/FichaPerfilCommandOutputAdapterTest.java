@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.persistence;
 
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
@@ -48,7 +48,7 @@ class FichaPerfilCommandOutputAdapterTest {
     @Test
     void debeGuardarFichaPerfil_cuandoAgreggateEsValido() {
         // Arrange
-        FichaPerfilAggregate aggregate = FichaPerfilAggregate.reconstruir(
+        FichaPerfilDomain aggregate = FichaPerfilDomain.reconstruir(
                 fichaId,
                 "Proyecto de Prueba",
                 asesorId
@@ -83,7 +83,7 @@ class FichaPerfilCommandOutputAdapterTest {
         when(fichaPerfilRepository.findById(fichaId)).thenReturn(Optional.of(entity));
 
         // Act
-        Optional<FichaPerfilAggregate> resultado = adapter.buscarPorId(fichaId);
+        Optional<FichaPerfilDomain> resultado = adapter.buscarPorId(fichaId);
 
         // Assert
         assertThat(resultado).isPresent();
@@ -96,7 +96,7 @@ class FichaPerfilCommandOutputAdapterTest {
         when(fichaPerfilRepository.findById(fichaId)).thenReturn(Optional.empty());
 
         // Act
-        Optional<FichaPerfilAggregate> resultado = adapter.buscarPorId(fichaId);
+        Optional<FichaPerfilDomain> resultado = adapter.buscarPorId(fichaId);
 
         // Assert
         assertThat(resultado).isEmpty();

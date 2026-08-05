@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilRepository;
@@ -20,7 +20,7 @@ public class EstadoFichaPerfilCommandOutputAdapter implements EstadoFichaPerfilO
     private final EstadoFichaRepository estadoFichaRepository;
 
     @Override
-    public void guardar(EstadoFichaPerfilAggregate aggregate) {
+    public void guardar(EstadoFichaPerfilDomain aggregate) {
         var estadoFichaRef =
                 estadoFichaRepository.getReferenceById(aggregate.getEstadoFicha().getId());
         var entity = EstadoFichaPerfilMapper.toEntity(aggregate, estadoFichaRef);

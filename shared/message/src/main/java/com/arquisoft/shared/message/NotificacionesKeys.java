@@ -8,7 +8,7 @@ public final class NotificacionesKeys {
 
     private NotificacionesKeys() {}
 
-    /** Reglas del agregado {@code NotificacionAggregate}. */
+    /** Reglas del agregado {@code NotificacionDomain}. */
     public static final class Notificacion {
 
         private Notificacion() {}

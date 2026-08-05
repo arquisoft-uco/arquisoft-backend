@@ -2,7 +2,7 @@ package com.arquisoft.shared.util;
 
 public final class UtilText {
 
-    private static final String EMPTY = "";
+    public static final String EMPTY = "";
 
     private static final String EMAIL_RE =
             "^[_A-Za-z0-9\\-\\+]+(\\.[_A-Za-z0-9\\-]+)*@[A-Za-z0-9\\-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";

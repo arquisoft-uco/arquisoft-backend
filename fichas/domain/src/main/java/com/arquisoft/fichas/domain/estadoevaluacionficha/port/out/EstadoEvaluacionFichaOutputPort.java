@@ -1,13 +1,13 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.port.out;
 
-import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public interface EstadoEvaluacionFichaOutputPort {
 
-    void guardar(EstadoEvaluacionFichaAggregate aggregate);
+    void guardar(EstadoEvaluacionFichaDomain aggregate);
 
     boolean existePorEvaluacionYEstado(UUID evaluacionFichaPerfilId, String estadoEvaluacionId);
 

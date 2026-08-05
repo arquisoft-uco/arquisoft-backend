@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
@@ -44,12 +44,12 @@ class FichaPerfilExisteRuleImplTest {
         }
 
         @Override
-        public void guardar(FichaPerfilAggregate ficha) {
+        public void guardar(FichaPerfilDomain ficha) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Optional<FichaPerfilAggregate> buscarPorId(UUID id) {
+        public Optional<FichaPerfilDomain> buscarPorId(UUID id) {
             throw new UnsupportedOperationException();
         }
 

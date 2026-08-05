@@ -9,7 +9,7 @@ import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUser
 import com.arquisoft.seguridad.application.auth.command.usecase.LogoutUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
-import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
+import com.arquisoft.seguridad.domain.auth.aggregate.TokenDomain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -111,7 +111,7 @@ class InteractoresSeguridadTest {
     @Test
     void debeDelegarEnElUseCase_cuandoValidarToken() {
         // Arrange
-        TokenAggregate token = TokenAggregate.de("eyJhbGc...");
+        TokenDomain token = TokenDomain.de("eyJhbGc...");
         ValidacionTokenResult esperado =
                 new ValidacionTokenResult(true, "id-1", "test@example.com", "Token valido");
         when(validateTokenUseCase.ejecutar(token)).thenReturn(esperado);

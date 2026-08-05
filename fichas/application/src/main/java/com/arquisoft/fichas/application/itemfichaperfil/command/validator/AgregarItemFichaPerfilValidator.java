@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
 
 import java.util.UUID;
 
 public interface AgregarItemFichaPerfilValidator {
 
-    void validar(ItemFichaPerfilAggregate item, UUID estudiante);
+    void validar(ItemFichaPerfilDomain item, UUID estudiante);
 }

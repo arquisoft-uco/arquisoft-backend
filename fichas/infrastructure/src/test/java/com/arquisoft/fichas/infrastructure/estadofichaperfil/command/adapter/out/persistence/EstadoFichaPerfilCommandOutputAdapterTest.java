@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
 import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilEntity;
@@ -51,7 +51,7 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
     void debeGuardar_cuandoEntidadEsValida() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        EstadoFichaPerfilAggregate aggregate = EstadoFichaPerfilAggregate.crear(fichaPerfilId);
+        EstadoFichaPerfilDomain aggregate = EstadoFichaPerfilDomain.crear(fichaPerfilId);
 
         // Act
         adapter.guardar(aggregate);
@@ -80,7 +80,7 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
         estadoFichaPerfilRepository.save(entity);
 
         // Act
-        EstadoFichaPerfilAggregate resultado = EstadoFichaPerfilMapper.toDomain(entity);
+        EstadoFichaPerfilDomain resultado = EstadoFichaPerfilMapper.toDomain(entity);
 
         // Assert
         assertThat(resultado).isNotNull();

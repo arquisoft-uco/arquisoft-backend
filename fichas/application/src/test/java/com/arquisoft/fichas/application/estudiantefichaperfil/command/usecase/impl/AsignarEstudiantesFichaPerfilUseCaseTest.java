@@ -6,9 +6,9 @@ import com.arquisoft.shared.message.FichasCodes;
 import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.shared.message.FichasLimits;
 import com.arquisoft.shared.message.Messages;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
@@ -58,11 +58,11 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     void debeAsignarEstudiantes_cuandoLasReglasPasan() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        var command = new AsignarEstudiantesFichaPerfilCommand(
-                fichaPerfilId, List.of(UUID.randomUUID(), UUID.randomUUID()));
+        List<EstudianteFichaPerfilDomain> relaciones =
+                EstudianteFichaPerfilDomain.crear(fichaPerfilId, List.of(UUID.randomUUID(), UUID.randomUUID()));
 
         // Act
-        useCase.ejecutar(command);
+        useCase.ejecutar(relaciones);
 
         // Assert
         verify(estudianteFichaPerfilOutputPort, times(2)).guardar(any());
@@ -73,27 +73,28 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
         List<UUID> estudiantes = List.of(UUID.randomUUID());
-        var command = new AsignarEstudiantesFichaPerfilCommand(fichaPerfilId, estudiantes);
+        List<EstudianteFichaPerfilDomain> relaciones = EstudianteFichaPerfilDomain.crear(fichaPerfilId, estudiantes);
 
         // Act
-        useCase.ejecutar(command);
+        useCase.ejecutar(relaciones);
 
         // Assert
         verify(asignarEstudiantesFichaPerfilValidator)
-                .validar(eq(fichaPerfilId), eq(estudiantes), anyList());
+                .validar(eq(fichaPerfilId), eq(estudiantes), eq(relaciones));
     }
 
     @Test
     void debePropagarFichaNoEncontrada_cuandoElValidadorFalla() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        var command = new AsignarEstudiantesFichaPerfilCommand(fichaPerfilId, List.of(UUID.randomUUID()));
+        List<EstudianteFichaPerfilDomain> relaciones =
+                EstudianteFichaPerfilDomain.crear(fichaPerfilId, List.of(UUID.randomUUID()));
 
         doThrow(new FichaPerfilNoEncontradaException(fichaPerfilId))
                 .when(asignarEstudiantesFichaPerfilValidator).validar(any(), anyList(), anyList());
 
         // Act
-        Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
+        Throwable ex = catchThrowable(() -> useCase.ejecutar(relaciones));
 
         // Assert
         assertThat(ex)
@@ -106,13 +107,14 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     void debePropagarEstudianteNoEncontrado_cuandoElValidadorFalla() {
         // Arrange
         UUID estudiante = UUID.randomUUID();
-        var command = new AsignarEstudiantesFichaPerfilCommand(UUID.randomUUID(), List.of(estudiante));
+        List<EstudianteFichaPerfilDomain> relaciones =
+                EstudianteFichaPerfilDomain.crear(UUID.randomUUID(), List.of(estudiante));
 
         doThrow(new EstudianteNoEncontradoException(estudiante))
                 .when(asignarEstudiantesFichaPerfilValidator).validar(any(), anyList(), anyList());
 
         // Act
-        Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
+        Throwable ex = catchThrowable(() -> useCase.ejecutar(relaciones));
 
         // Assert
         assertThat(ex)
@@ -127,13 +129,14 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     void debePropagarEstudianteDuplicado_cuandoElValidadorFalla() {
         // Arrange
         UUID estudiante = UUID.randomUUID();
-        var command = new AsignarEstudiantesFichaPerfilCommand(UUID.randomUUID(), List.of(estudiante));
+        List<EstudianteFichaPerfilDomain> relaciones =
+                EstudianteFichaPerfilDomain.crear(UUID.randomUUID(), List.of(estudiante));
 
         doThrow(new EstudianteDuplicadoException(estudiante))
                 .when(asignarEstudiantesFichaPerfilValidator).validar(any(), anyList(), anyList());
 
         // Act
-        Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
+        Throwable ex = catchThrowable(() -> useCase.ejecutar(relaciones));
 
         // Assert
         assertThat(ex)
@@ -147,19 +150,19 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     @Test
     void debePropagarLimiteExcedido_cuandoElValidadorFalla() {
         // Arrange
-        var command = new AsignarEstudiantesFichaPerfilCommand(
+        List<EstudianteFichaPerfilDomain> relaciones = EstudianteFichaPerfilDomain.crear(
                 UUID.randomUUID(), List.of(UUID.randomUUID(), UUID.randomUUID()));
 
         doThrow(new CupoEstudiantesExcedidoException(FichasLimits.FichaPerfil.ESTUDIANTES_MAX))
                 .when(asignarEstudiantesFichaPerfilValidator).validar(any(), anyList(), anyList());
 
         // Act
-        Throwable ex = catchThrowable(() -> useCase.ejecutar(command));
+        Throwable ex = catchThrowable(() -> useCase.ejecutar(relaciones));
 
         // Assert
         assertThat(ex)
                 .isInstanceOf(CupoEstudiantesExcedidoException.class)
-                .hasMessage(Messages.formatear(FichasKeys.EstudianteFichaPerfil.ERROR_LIMITE_EXCEDIDO, 
+                .hasMessage(Messages.formatear(FichasKeys.EstudianteFichaPerfil.ERROR_LIMITE_EXCEDIDO,
                         FichasLimits.FichaPerfil.ESTUDIANTES_MAX));
         verify(estudianteFichaPerfilOutputPort, never()).guardar(any());
     }

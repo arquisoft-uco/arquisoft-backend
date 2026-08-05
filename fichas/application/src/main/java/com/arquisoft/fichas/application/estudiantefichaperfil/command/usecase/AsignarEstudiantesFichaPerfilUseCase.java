@@ -1,6 +1,8 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase;
 
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import com.arquisoft.shared.usecase.VoidUseCase;
 
-public interface AsignarEstudiantesFichaPerfilUseCase extends VoidUseCase<AsignarEstudiantesFichaPerfilCommand> {}
+import java.util.List;
+
+public interface AsignarEstudiantesFichaPerfilUseCase extends VoidUseCase<List<EstudianteFichaPerfilDomain>> {}

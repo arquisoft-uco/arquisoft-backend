@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculacionEstudiantesCriteria;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
@@ -60,7 +60,7 @@ class EstudiantesNoVinculadosRuleImplTest {
         }
 
         @Override
-        public void guardar(EstudianteFichaPerfilAggregate relacion) {
+        public void guardar(EstudianteFichaPerfilDomain relacion) {
             throw new UnsupportedOperationException();
         }
 

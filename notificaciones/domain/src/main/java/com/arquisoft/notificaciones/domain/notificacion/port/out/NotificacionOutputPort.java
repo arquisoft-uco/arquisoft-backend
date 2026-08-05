@@ -1,10 +1,10 @@
 package com.arquisoft.notificaciones.domain.notificacion.port.out;
 
-import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionAggregate;
+import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
 
 public interface NotificacionOutputPort {
 
-    void guardar(NotificacionAggregate notificacion);
+    void guardar(NotificacionDomain notificacion);
 
     /**
      * Indica si el evento ya produjo una notificacion.

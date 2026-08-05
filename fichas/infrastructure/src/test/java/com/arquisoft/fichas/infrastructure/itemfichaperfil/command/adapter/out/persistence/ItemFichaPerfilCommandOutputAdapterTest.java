@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemEntity;
@@ -55,7 +55,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeGuardar_cuandoItemEsValido() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+        ItemFichaPerfilDomain aggregate = ItemFichaPerfilDomain.crear(
                 fichaPerfilId,
                 "OBJETIVO_GENERAL",
                 "Este es un objetivo general de prueba"
@@ -79,7 +79,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeUsarGetReference_cuandoGuarda() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+        ItemFichaPerfilDomain aggregate = ItemFichaPerfilDomain.crear(
                 fichaPerfilId,
                 "OBJETIVO_GENERAL",
                 "Contenido de prueba"
@@ -171,7 +171,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeGuardarCambios_cuandoModificarContenido() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilAggregate aggregate = ItemFichaPerfilAggregate.crear(
+        ItemFichaPerfilDomain aggregate = ItemFichaPerfilDomain.crear(
                 fichaPerfilId,
                 "OBJETIVO_GENERAL",
                 "Contenido inicial"
@@ -181,7 +181,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        ItemFichaPerfilAggregate reconstruido = adapter.buscarPorId(aggregate.getId()).orElseThrow();
+        ItemFichaPerfilDomain reconstruido = adapter.buscarPorId(aggregate.getId()).orElseThrow();
         reconstruido.modificarContenido("Contenido modificado", EstadoFicha.EN_CONSTRUCCION);
         adapter.guardar(reconstruido);
         entityManager.flush();

@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
-import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
+import com.arquisoft.seguridad.domain.auth.aggregate.TokenDomain;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenValidationOutputPort;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class ValidateTokenUseCaseImpl implements ValidateTokenUseCase {
     private final MessageCatalog catalog;
 
     @Override
-    public ValidacionTokenResult ejecutar(TokenAggregate entrada) {
+    public ValidacionTokenResult ejecutar(TokenDomain entrada) {
         log.debug(catalog.obtener(SeguridadKeys.Token.LOG_VALIDAR_DEBUG));
 
         try {

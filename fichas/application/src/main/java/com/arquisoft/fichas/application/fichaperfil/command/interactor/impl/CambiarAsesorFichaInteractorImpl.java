@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.application.fichaperfil.command.interactor.impl;
 
-import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.CambiarAsesorFichaInteractor;
+import com.arquisoft.fichas.application.fichaperfil.command.mapper.CambiarAsesorFichaMapper;
+import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAsesorFichaUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,6 @@ public class CambiarAsesorFichaInteractorImpl implements CambiarAsesorFichaInter
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
     public void ejecutar(CambiarAsesorFichaCommand command) {
-        cambiarAsesorFichaUseCase.ejecutar(command);
+        cambiarAsesorFichaUseCase.ejecutar(CambiarAsesorFichaMapper.toDomain(command));
     }
 }

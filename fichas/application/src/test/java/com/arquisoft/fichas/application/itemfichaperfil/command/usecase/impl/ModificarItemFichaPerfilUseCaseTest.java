@@ -9,7 +9,7 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.validator.Modifi
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilFinder;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
@@ -67,7 +67,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
+        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, estudianteId);
 
         when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
@@ -105,7 +105,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
+        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, estudianteId);
 
         when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
@@ -124,7 +124,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         // Arrange
         UUID itemId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
+        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, "", UUID.randomUUID());
 
         when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
@@ -143,7 +143,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         // Arrange
         UUID itemId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
+        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
 
         when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
@@ -162,7 +162,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         // Arrange
         UUID itemId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
+        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
 
         when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
@@ -180,7 +180,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         // Arrange
         UUID itemId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
+        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
 
         when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
@@ -196,8 +196,8 @@ class ModificarItemFichaPerfilUseCaseTest {
         verify(itemFichaPerfilOutputPort, times(1)).guardar(item);
     }
 
-    private ItemFichaPerfilAggregate itemReconstruido(UUID itemId, UUID fichaPerfilId) {
-        return ItemFichaPerfilAggregate.reconstruir(
+    private ItemFichaPerfilDomain itemReconstruido(UUID itemId, UUID fichaPerfilId) {
+        return ItemFichaPerfilDomain.reconstruir(
                 itemId,
                 fichaPerfilId,
                 TipoItem.OBJETIVO_GENERAL,

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.impl.RegistrarEvaluacionFichaPerfilValidatorImpl;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.EvaluacionRepresentanteFichaCriteria;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.EvaluacionNoDuplicadaRule;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.RepresentanteComiteExisteRule;
@@ -37,7 +37,7 @@ class RegistrarEvaluacionFichaPerfilValidatorTest {
         // Arrange
         UUID representante = UUID.randomUUID();
         UUID ficha = UUID.randomUUID();
-        var evaluacion = EvaluacionFichaPerfilAggregate.crear(representante, ficha);
+        var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
 
         // Act
         validator.validar(evaluacion);

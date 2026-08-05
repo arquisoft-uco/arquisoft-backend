@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.ModificarFichaPerfilValidatorImpl;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.model.TituloFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.rules.EstudiantePropietarioFichaRule;
@@ -44,7 +44,7 @@ class ModificarFichaPerfilValidatorTest {
     @Test
     void debeDelegarEnLaReglaDeTitulo_cuandoValidaTitulo() {
         // Arrange
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.crear("Titulo original", UUID.randomUUID());
+        FichaPerfilDomain ficha = FichaPerfilDomain.crear("Titulo original", UUID.randomUUID());
 
         // Act
         validator.validarTitulo(ficha, "Titulo nuevo");

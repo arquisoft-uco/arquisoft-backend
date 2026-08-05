@@ -6,7 +6,7 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.Agre
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.AgregarEstadoEvaluacionFichaUseCase;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
                 entrada.representanteComite(),
                 entrada.estadoEvaluacion());
 
-        var estadoEvaluacion = EstadoEvaluacionFichaAggregate.crearConEstado(
+        var estadoEvaluacion = EstadoEvaluacionFichaDomain.crearConEstado(
                 entrada.evaluacionFichaPerfil(),
                 nuevoEstado,
                 obtenerUltimoEstado(entrada.evaluacionFichaPerfil()));

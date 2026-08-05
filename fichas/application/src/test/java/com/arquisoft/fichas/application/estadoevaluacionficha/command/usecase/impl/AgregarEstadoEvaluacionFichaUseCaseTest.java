@@ -9,7 +9,7 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEv
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -75,7 +75,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         verify(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
         verify(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
         verify(estadoEvaluacionFichaOutputPort).obtenerUltimoEstado(evaluacionId);
-        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaAggregate.class));
+        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
     }
 
     @Test
@@ -214,7 +214,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaAggregate.class));
+        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
     }
 
     @Test
@@ -231,13 +231,13 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         when(agregarEstadoEvaluacionFichaValidator.resolverEstado("EN_EVALUACION"))
                 .thenReturn(EstadoEvaluacion.EN_EVALUACION);
         doThrow(new DataAccessException("Error de BD") {})
-                .when(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaAggregate.class));
+                .when(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("Error de BD");
 
-        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaAggregate.class));
+        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
     }
 }

@@ -7,9 +7,9 @@ import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.RepresentanteComiteNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -69,8 +69,8 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         verify(registrarEvaluacionFichaPerfilValidator).validar(any());
         verify(registrarEvaluacionFichaPerfilValidator).validar(any());
         verify(registrarEvaluacionFichaPerfilValidator).validar(any());
-        verify(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilAggregate.class));
-        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaAggregate.class));
+        verify(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilDomain.class));
+        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
     }
 
     @Test
@@ -133,14 +133,14 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
 
         doThrow(new DataAccessException("Error de BD") {})
-                .when(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilAggregate.class));
+                .when(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilDomain.class));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(command))
                 .isInstanceOf(DataAccessException.class)
                 .hasMessageContaining("Error de BD");
 
-        verify(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilAggregate.class));
+        verify(evaluacionFichaPerfilOutputPort).guardar(any(EvaluacionFichaPerfilDomain.class));
     }
 
     @Test
@@ -164,6 +164,6 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         useCase.ejecutar(command);
 
         // Assert
-        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaAggregate.class));
+        verify(estadoEvaluacionFichaOutputPort).guardar(any(EstadoEvaluacionFichaDomain.class));
     }
 }

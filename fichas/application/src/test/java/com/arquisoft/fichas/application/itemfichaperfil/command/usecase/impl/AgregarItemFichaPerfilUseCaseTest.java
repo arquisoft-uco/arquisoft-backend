@@ -10,7 +10,7 @@ import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontrada
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.exception.ApplicationException;
 import com.arquisoft.shared.exception.DomainValidationException;
@@ -69,7 +69,7 @@ class AgregarItemFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(itemFichaPerfilOutputPort, times(1)).guardar(any(ItemFichaPerfilAggregate.class));
+        verify(itemFichaPerfilOutputPort, times(1)).guardar(any(ItemFichaPerfilDomain.class));
     }
 
     @Test
@@ -136,7 +136,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         // Assert
         InOrder inOrder = inOrder(agregarItemFichaPerfilValidator, itemFichaPerfilOutputPort);
         inOrder.verify(agregarItemFichaPerfilValidator).validar(any(), any());
-        inOrder.verify(itemFichaPerfilOutputPort).guardar(any(ItemFichaPerfilAggregate.class));
+        inOrder.verify(itemFichaPerfilOutputPort).guardar(any(ItemFichaPerfilDomain.class));
     }
 
     @Test

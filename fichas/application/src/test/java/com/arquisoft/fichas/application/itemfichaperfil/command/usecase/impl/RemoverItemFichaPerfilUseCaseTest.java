@@ -9,7 +9,7 @@ import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioExcep
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilFinder;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
@@ -65,7 +65,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
+        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
 
         when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         when(revisionQueryPort.contarPorItem(itemId)).thenReturn(0L);
@@ -116,7 +116,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
+        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
 
         when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         doThrow(new FichaNoPropietarioException(fichaPerfilId, estudianteId))
@@ -144,7 +144,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilAggregate item = itemReconstruido(itemId, fichaPerfilId);
+        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
 
         when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         when(revisionQueryPort.contarPorItem(itemId)).thenReturn(2L);
@@ -167,8 +167,8 @@ class RemoverItemFichaPerfilUseCaseTest {
         verify(itemOutputPort, never()).eliminarPorId(any());
     }
 
-    private ItemFichaPerfilAggregate itemReconstruido(UUID itemId, UUID fichaPerfilId) {
-        return ItemFichaPerfilAggregate.reconstruir(
+    private ItemFichaPerfilDomain itemReconstruido(UUID itemId, UUID fichaPerfilId) {
+        return ItemFichaPerfilDomain.reconstruir(
                 itemId,
                 fichaPerfilId,
                 TipoItem.OBJETIVO_GENERAL,

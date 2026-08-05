@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.out.persistence;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilMapper;
@@ -39,7 +39,7 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        EstudianteFichaPerfilAggregate relacion = EstudianteFichaPerfilAggregate.crear(
+        EstudianteFichaPerfilDomain relacion = EstudianteFichaPerfilDomain.crear(
                 fichaId, List.of(estudianteId)).get(0);
         EstudianteFichaPerfilEntity entity = new EstudianteFichaPerfilEntity();
 

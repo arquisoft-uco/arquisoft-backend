@@ -1,10 +1,9 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorContactoFinder;
-import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAsesorFichaUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
@@ -30,14 +29,9 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
     private final MessageCatalog catalog;
 
     @Override
-    public void ejecutar(CambiarAsesorFichaCommand entrada) {
-        UUID fichaPerfil =  entrada.fichaPerfil();
-        UUID nuevoAsesorFicha = entrada.nuevoAsesorFicha();
-
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.cambiarAsesorFicha(
-                fichaPerfil,
-                nuevoAsesorFicha
-        );
+    public void ejecutar(FichaPerfilDomain ficha) {
+        UUID fichaPerfil = ficha.getId();
+        UUID nuevoAsesorFicha = ficha.getAsesorFicha();
 
         var fichaActual = fichaPerfilFinder.obtener(fichaPerfil);
 
@@ -45,7 +39,7 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
 
         var asesorFichaContacto = asesorContactoFinder.obtener(nuevoAsesorFicha);
 
-        FichaPerfilAggregate fichaActualizada = FichaPerfilAggregate.reconstruir(
+        FichaPerfilDomain fichaActualizada = FichaPerfilDomain.reconstruir(
                 fichaActual.getId(), fichaActual.getTituloProyecto(), nuevoAsesorFicha);
 
         fichaActualizada.publishEvent(new AsesorFichaCambiadoEvent(fichaActualizada.getId(), fichaActualizada.getTituloProyecto(),
@@ -55,6 +49,6 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
 
         fichaActualizada.drainUnPublishedEvents().forEach(eventPublisher::publish);
 
-        logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_ASESOR_CAMBIADO), fichaActualizada.getId(), entrada.nuevoAsesorFicha());
+        logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_ASESOR_CAMBIADO), fichaActualizada.getId(), nuevoAsesorFicha);
     }
 }

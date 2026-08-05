@@ -8,7 +8,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarF
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.BaseException;
@@ -57,8 +57,8 @@ class ModificarFichaPerfilUseCaseTest {
 @InjectMocks
     private ModificarFichaPerfilUseCaseImpl modificarFichaPerfilUseCase;
 
-    private static FichaPerfilAggregate crearFicha(UUID id, String titulo) {
-        return FichaPerfilAggregate.reconstruir(id, titulo, ASESOR_ID);
+    private static FichaPerfilDomain crearFicha(UUID id, String titulo) {
+        return FichaPerfilDomain.reconstruir(id, titulo, ASESOR_ID);
     }
 
     @Test
@@ -68,7 +68,7 @@ class ModificarFichaPerfilUseCaseTest {
         UUID estudianteId = UUID.randomUUID();
         String tituloNuevo = "Titulo nuevo";
         var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloNuevo);
-        FichaPerfilAggregate ficha = crearFicha(fichaId, "Titulo original");
+        FichaPerfilDomain ficha = crearFicha(fichaId, "Titulo original");
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
 
@@ -76,7 +76,7 @@ class ModificarFichaPerfilUseCaseTest {
         modificarFichaPerfilUseCase.ejecutar(command);
 
         // Assert
-        ArgumentCaptor<FichaPerfilAggregate> captor = ArgumentCaptor.forClass(FichaPerfilAggregate.class);
+        ArgumentCaptor<FichaPerfilDomain> captor = ArgumentCaptor.forClass(FichaPerfilDomain.class);
         verify(fichaPerfilOutputPort, times(1)).guardar(captor.capture());
         assertThat(captor.getValue().getTituloProyecto()).isEqualTo(tituloNuevo);
     }
@@ -127,7 +127,7 @@ class ModificarFichaPerfilUseCaseTest {
         UUID estudianteId = UUID.randomUUID();
         String tituloDuplicado = "Titulo duplicado";
         var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloDuplicado);
-        FichaPerfilAggregate ficha = crearFicha(fichaId, "Titulo original");
+        FichaPerfilDomain ficha = crearFicha(fichaId, "Titulo original");
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
         doThrow(new FichaTituloDuplicadoException(tituloDuplicado))
@@ -150,7 +150,7 @@ class ModificarFichaPerfilUseCaseTest {
         UUID estudianteId = UUID.randomUUID();
         String mismoTitulo = "Titulo sin cambios";
         var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, mismoTitulo);
-        FichaPerfilAggregate ficha = crearFicha(fichaId, mismoTitulo);
+        FichaPerfilDomain ficha = crearFicha(fichaId, mismoTitulo);
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
 
@@ -158,7 +158,7 @@ class ModificarFichaPerfilUseCaseTest {
         modificarFichaPerfilUseCase.ejecutar(command);
 
         // Assert
-        verify(fichaPerfilOutputPort, times(1)).guardar(any(FichaPerfilAggregate.class));
+        verify(fichaPerfilOutputPort, times(1)).guardar(any(FichaPerfilDomain.class));
         verify(fichaPerfilOutputPort, never()).existePorTituloProyecto(any());
     }
 
@@ -169,7 +169,7 @@ class ModificarFichaPerfilUseCaseTest {
         UUID estudianteId = UUID.randomUUID();
         String tituloNuevo = "Titulo nuevo";
         var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloNuevo);
-        FichaPerfilAggregate ficha = crearFicha(fichaId, "Titulo original");
+        FichaPerfilDomain ficha = crearFicha(fichaId, "Titulo original");
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(ficha);
 
@@ -177,6 +177,6 @@ class ModificarFichaPerfilUseCaseTest {
         modificarFichaPerfilUseCase.ejecutar(command);
 
         // Assert
-        verify(fichaPerfilOutputPort, times(1)).guardar(any(FichaPerfilAggregate.class));
+        verify(fichaPerfilOutputPort, times(1)).guardar(any(FichaPerfilDomain.class));
     }
 }

@@ -3,7 +3,7 @@ package com.arquisoft.notificaciones.application.notificacion.command.usecase.im
 import com.arquisoft.notificaciones.application.notificacion.command.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.usecase.EnviarNotificacionUseCase;
 import com.arquisoft.notificaciones.application.notificacion.command.validator.NotificacionValidator;
-import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionAggregate;
+import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.MessageCatalog;
@@ -35,7 +35,7 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
             return;
         }
 
-        var notificacion = NotificacionAggregate.crear(
+        var notificacion = NotificacionDomain.crear(
                 entrada.eventId(),
                 entrada.tipo(),
                 entrada.destinatarioEmail(),

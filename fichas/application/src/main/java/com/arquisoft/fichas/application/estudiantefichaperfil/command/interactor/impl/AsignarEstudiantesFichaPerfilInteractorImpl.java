@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.impl;
 
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.AsignarEstudiantesFichaPerfilInteractor;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.mapper.AsignarEstudiantesFichaPerfilMapper;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,6 @@ public class AsignarEstudiantesFichaPerfilInteractorImpl implements AsignarEstud
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
     public void ejecutar(AsignarEstudiantesFichaPerfilCommand command) {
-        asignarEstudiantesFichaPerfilUseCase.ejecutar(command);
+        asignarEstudiantesFichaPerfilUseCase.ejecutar(AsignarEstudiantesFichaPerfilMapper.toDomain(command));
     }
 }

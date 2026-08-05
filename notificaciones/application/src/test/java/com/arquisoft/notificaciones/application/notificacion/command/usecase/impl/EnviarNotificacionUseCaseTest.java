@@ -2,7 +2,7 @@ package com.arquisoft.notificaciones.application.notificacion.command.usecase.im
 
 import com.arquisoft.notificaciones.application.notificacion.command.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.validator.NotificacionValidator;
-import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionAggregate;
+import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort;
@@ -72,8 +72,8 @@ class EnviarNotificacionUseCaseTest {
         // Assert
         verify(notificationSender).enviar(any(NotificationMessage.class));
 
-        ArgumentCaptor<NotificacionAggregate> captor =
-                ArgumentCaptor.forClass(NotificacionAggregate.class);
+        ArgumentCaptor<NotificacionDomain> captor =
+                ArgumentCaptor.forClass(NotificacionDomain.class);
         verify(notificacionOutputPort).guardar(captor.capture());
         assertThat(captor.getValue().getEstado()).isEqualTo(EstadoNotificacion.ENVIADA);
         assertThat(captor.getValue().getEventId()).isEqualTo(EVENT_ID);
@@ -127,8 +127,8 @@ class EnviarNotificacionUseCaseTest {
         enviarNotificacionUseCase.ejecutar(comando());
 
         // Assert
-        ArgumentCaptor<NotificacionAggregate> captor =
-                ArgumentCaptor.forClass(NotificacionAggregate.class);
+        ArgumentCaptor<NotificacionDomain> captor =
+                ArgumentCaptor.forClass(NotificacionDomain.class);
         verify(notificacionOutputPort).guardar(captor.capture());
         assertThat(captor.getValue().getEstado()).isEqualTo(EstadoNotificacion.FALLIDA);
         assertThat(captor.getValue().getDetalleError()).contains("No se pudo entregar");

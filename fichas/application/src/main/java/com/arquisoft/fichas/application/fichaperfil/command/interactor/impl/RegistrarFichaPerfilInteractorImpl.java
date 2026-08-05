@@ -1,8 +1,14 @@
 package com.arquisoft.fichas.application.fichaperfil.command.interactor.impl;
 
-import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
+import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.mapper.AsignarEstudiantesFichaPerfilMapper;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.RegistrarFichaPerfilInteractor;
+import com.arquisoft.fichas.application.fichaperfil.command.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
+import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,10 +20,21 @@ import java.util.UUID;
 public class RegistrarFichaPerfilInteractorImpl implements RegistrarFichaPerfilInteractor {
 
     private final RegistrarFichaPerfilUseCase registrarFichaPerfilUseCase;
+    private final AsignarEstadoInicialFichaPerfilUseCase asignarEstadoInicialFichaPerfilUseCase;
+    private final AsignarEstudiantesFichaPerfilUseCase asignarEstudiantesFichaPerfilUseCase;
 
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(RegistrarFichaPerfilCommand command) {
-        return registrarFichaPerfilUseCase.ejecutar(command);
+        FichaPerfilDomain ficha = FichaPerfilDomain.crear(command.tituloProyecto(), command.asesorFicha());
+
+        UUID fichaPerfil = registrarFichaPerfilUseCase.ejecutar(ficha);
+
+        asignarEstadoInicialFichaPerfilUseCase.ejecutar(EstadoFichaPerfilDomain.crear(fichaPerfil));
+
+        asignarEstudiantesFichaPerfilUseCase.ejecutar(AsignarEstudiantesFichaPerfilMapper.toDomain(
+                new AsignarEstudiantesFichaPerfilCommand(fichaPerfil, command.estudiantes())));
+
+        return fichaPerfil;
     }
 }

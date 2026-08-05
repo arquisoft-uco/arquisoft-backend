@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estadofichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
 import com.arquisoft.fichas.domain.estadofichaperfil.port.out.EstadoFichaPerfilOutputPort;
@@ -60,7 +60,7 @@ class EstadoFichaPerfilEnTerminalRuleImplTest {
             implements EstadoFichaPerfilOutputPort {
 
         @Override
-        public void guardar(EstadoFichaPerfilAggregate aggregate) {
+        public void guardar(EstadoFichaPerfilDomain aggregate) {
             throw new UnsupportedOperationException();
         }
 

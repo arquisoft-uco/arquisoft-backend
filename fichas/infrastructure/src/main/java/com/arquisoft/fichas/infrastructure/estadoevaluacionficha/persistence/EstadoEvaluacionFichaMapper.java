@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence;
 
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionEntity;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionRepository;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
@@ -14,8 +14,8 @@ public class EstadoEvaluacionFichaMapper {
 
     private final EstadoEvaluacionRepository estadoEvaluacionRepository;
 
-    public EstadoEvaluacionFichaAggregate toDomain(EstadoEvaluacionFichaEntity entity) {
-        return EstadoEvaluacionFichaAggregate.reconstruir(
+    public EstadoEvaluacionFichaDomain toDomain(EstadoEvaluacionFichaEntity entity) {
+        return EstadoEvaluacionFichaDomain.reconstruir(
                 entity.getId(),
                 entity.getEvaluacionFichaPerfil().getId(),
                 EstadoEvaluacion.valueOf(entity.getEstadoEvaluacion().getId()),
@@ -23,7 +23,7 @@ public class EstadoEvaluacionFichaMapper {
     }
 
     public EstadoEvaluacionFichaEntity toEntity(
-            EstadoEvaluacionFichaAggregate aggregate,
+            EstadoEvaluacionFichaDomain aggregate,
             EvaluacionFichaPerfilEntity evaluacionFichaPerfilRef) {
 
         EstadoEvaluacionEntity estadoEvaluacionRef = estadoEvaluacionRepository

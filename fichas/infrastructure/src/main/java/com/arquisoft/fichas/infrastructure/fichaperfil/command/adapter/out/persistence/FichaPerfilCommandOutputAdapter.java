@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.pers
 
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.FichasKeys;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
@@ -28,7 +28,7 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     private final MessageCatalog catalog;
 
     @Override
-    public void guardar(FichaPerfilAggregate ficha) {
+    public void guardar(FichaPerfilDomain ficha) {
         AsesorFichaEntity asesorRef =
                 asesorFichaRepository.getReferenceById(ficha.getAsesorFicha());
         fichaPerfilRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));
@@ -36,7 +36,7 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     }
 
     @Override
-    public Optional<FichaPerfilAggregate> buscarPorId(UUID id) {
+    public Optional<FichaPerfilDomain> buscarPorId(UUID id) {
         return fichaPerfilRepository.findById(id).map(FichaPerfilMapper::toDomain);
     }
 

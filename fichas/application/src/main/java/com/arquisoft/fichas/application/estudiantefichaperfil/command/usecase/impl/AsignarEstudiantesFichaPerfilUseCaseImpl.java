@@ -2,10 +2,9 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.i
 
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.FichasKeys;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +23,9 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
     private final MessageCatalog catalog;
 
     @Override
-    public void ejecutar(AsignarEstudiantesFichaPerfilCommand entrada) {
-        UUID fichaPerfil = entrada.fichaPerfil();
-        List<UUID> estudiantes = entrada.estudiantes();
-
-        List<EstudianteFichaPerfilAggregate> relaciones =
-                EstudianteFichaPerfilAggregate.crear(fichaPerfil, estudiantes);
+    public void ejecutar(List<EstudianteFichaPerfilDomain> relaciones) {
+        UUID fichaPerfil = relaciones.getFirst().getFichaPerfilId();
+        List<UUID> estudiantes = relaciones.stream().map(EstudianteFichaPerfilDomain::getEstudianteId).toList();
 
         asignarEstudiantesFichaPerfilValidator.validar(fichaPerfil, estudiantes, relaciones);
 

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -25,7 +25,7 @@ class EstudianteFichaPerfilMapperTest {
                 .build();
 
         // Act
-        EstudianteFichaPerfilAggregate aggregate = mapper.toDomain(entity);
+        EstudianteFichaPerfilDomain aggregate = mapper.toDomain(entity);
 
         // Assert
         assertThat(aggregate.getId()).isEqualTo(id);
@@ -40,7 +40,7 @@ class EstudianteFichaPerfilMapperTest {
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
 
-        EstudianteFichaPerfilAggregate aggregate = EstudianteFichaPerfilAggregate.reconstruir(
+        EstudianteFichaPerfilDomain aggregate = EstudianteFichaPerfilDomain.reconstruir(
                 id,
                 fichaPerfilId,
                 estudianteId
@@ -69,7 +69,7 @@ class EstudianteFichaPerfilMapperTest {
                 .build();
 
         // Act
-        EstudianteFichaPerfilAggregate aggregate = mapper.toDomain(entityOriginal);
+        EstudianteFichaPerfilDomain aggregate = mapper.toDomain(entityOriginal);
         EstudianteFichaPerfilEntity entityMapeada = mapper.toEntity(aggregate);
 
         // Assert

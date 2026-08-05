@@ -3,7 +3,7 @@ package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
-import com.arquisoft.seguridad.domain.auth.aggregate.TokenAggregate;
+import com.arquisoft.seguridad.domain.auth.aggregate.TokenDomain;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenValidationOutputPort;
 import org.junit.jupiter.api.Test;
@@ -35,7 +35,7 @@ class ValidateTokenUseCaseImplTest {
     @Test
     void debeRetornarValido_cuandoTokenEsCorrecto() {
         // Arrange
-        TokenAggregate token = TokenAggregate.de("token-valido");
+        TokenDomain token = TokenDomain.de("token-valido");
         when(tokenValidationOutputPort.validarToken("token-valido")).thenReturn(true);
         when(tokenValidationOutputPort.extraerInfo("token-valido"))
                 .thenReturn(IdentidadToken.de("id-1", "test@example.com", "Test", List.of("estudiante")));
@@ -53,7 +53,7 @@ class ValidateTokenUseCaseImplTest {
     @Test
     void debeRetornarInvalido_cuandoTokenNoPasaLaValidacion() {
         // Arrange
-        TokenAggregate token = TokenAggregate.de("token-invalido");
+        TokenDomain token = TokenDomain.de("token-invalido");
         when(tokenValidationOutputPort.validarToken("token-invalido")).thenReturn(false);
 
         // Act
@@ -69,7 +69,7 @@ class ValidateTokenUseCaseImplTest {
     @Test
     void debeRetornarInvalido_cuandoLaValidacionLanzaExcepcion() {
         // Arrange
-        TokenAggregate token = TokenAggregate.de("token-roto");
+        TokenDomain token = TokenDomain.de("token-roto");
         when(tokenValidationOutputPort.validarToken("token-roto"))
                 .thenThrow(new IllegalStateException("firma corrupta"));
 

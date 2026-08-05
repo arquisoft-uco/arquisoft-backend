@@ -2,15 +2,15 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.persistence;
 
 import com.arquisoft.fichas.application.asesorficha.query.AsesorFichaReadModel;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
 
 public final class FichaPerfilMapper {
 
     private FichaPerfilMapper() {}
 
-    public static FichaPerfilAggregate toDomain(FichaPerfilEntity entity) {
-        return FichaPerfilAggregate.reconstruir(
+    public static FichaPerfilDomain toDomain(FichaPerfilEntity entity) {
+        return FichaPerfilDomain.reconstruir(
                 entity.getId(),
                 entity.getTituloProyecto(),
                 entity.getAsesorFicha().getId()
@@ -30,7 +30,7 @@ public final class FichaPerfilMapper {
                 .build();
     }
 
-    public static FichaPerfilEntity toEntity(FichaPerfilAggregate domain, AsesorFichaEntity asesorRef) {
+    public static FichaPerfilEntity toEntity(FichaPerfilDomain domain, AsesorFichaEntity asesorRef) {
         return FichaPerfilEntity.builder()
                 .id(domain.getId())
                 .tituloProyecto(domain.getTituloProyecto())

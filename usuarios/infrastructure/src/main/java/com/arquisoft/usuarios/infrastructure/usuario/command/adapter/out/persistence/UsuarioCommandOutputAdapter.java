@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.out.persistence;
 
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioAggregate;
+import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.port.out.UsuarioOutputPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -13,12 +13,12 @@ import java.util.UUID;
 public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
 
     @Override
-    public void save(UsuarioAggregate usuario) {
+    public void save(UsuarioDomain usuario) {
         log.debug("Mock — usuario no persistido: id={} email={}", usuario.getId(), usuario.getEmail());
     }
 
     @Override
-    public Optional<UsuarioAggregate> findById(UUID id) {
+    public Optional<UsuarioDomain> findById(UUID id) {
         return Optional.empty();
     }
 

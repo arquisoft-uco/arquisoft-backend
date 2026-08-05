@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator;
 
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilDomain;
 
 public interface RegistrarEvaluacionFichaPerfilValidator {
 
-    void validar(EvaluacionFichaPerfilAggregate evaluacion);
+    void validar(EvaluacionFichaPerfilDomain evaluacion);
 }

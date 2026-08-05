@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command.validator
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculacionEstudiantesCriteria;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantesNoVinculadosRule;
@@ -26,7 +26,7 @@ public class AsignarEstudiantesFichaPerfilValidatorImpl implements AsignarEstudi
 
     @Override
     public void validar(UUID fichaPerfil, List<UUID> estudiantes,
-                        List<EstudianteFichaPerfilAggregate> relaciones) {
+                        List<EstudianteFichaPerfilDomain> relaciones) {
 
         estudiantesSinDuplicadosRule.validar(estudiantes);
 

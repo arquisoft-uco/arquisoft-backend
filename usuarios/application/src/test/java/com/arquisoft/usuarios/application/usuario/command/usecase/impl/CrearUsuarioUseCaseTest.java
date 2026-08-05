@@ -8,7 +8,7 @@ import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioCommand;
 import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuarioValidator;
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioAggregate;
+import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.port.out.UsuarioOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +56,7 @@ class CrearUsuarioUseCaseTest {
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(usuarioOutputPort, times(1)).save(any(UsuarioAggregate.class));
+        verify(usuarioOutputPort, times(1)).save(any(UsuarioDomain.class));
     }
 
     @Test
@@ -75,14 +75,14 @@ class CrearUsuarioUseCaseTest {
     void debeGuardarAggregate_cuandoEjecutar() {
         // Arrange
         CrearUsuarioCommand command = new CrearUsuarioCommand("admin@example.com", UsuarioRole.ADMINISTRADOR);
-        ArgumentCaptor<UsuarioAggregate> captor = ArgumentCaptor.forClass(UsuarioAggregate.class);
+        ArgumentCaptor<UsuarioDomain> captor = ArgumentCaptor.forClass(UsuarioDomain.class);
 
         // Act
         crearUsuarioUseCase.ejecutar(command);
 
         // Assert
         verify(usuarioOutputPort).save(captor.capture());
-        UsuarioAggregate saved = captor.getValue();
+        UsuarioDomain saved = captor.getValue();
         assertThat(saved.getEmail()).isEqualTo("admin@example.com");
         assertThat(saved.getRol()).isEqualTo(UsuarioRole.ADMINISTRADOR);
     }

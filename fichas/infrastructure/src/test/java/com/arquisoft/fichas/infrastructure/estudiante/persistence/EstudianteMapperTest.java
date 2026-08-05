@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiante.persistence;
 
-import com.arquisoft.fichas.domain.estudiante.aggregate.EstudianteAggregate;
+import com.arquisoft.fichas.domain.estudiante.aggregate.EstudianteDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -23,7 +23,7 @@ class EstudianteMapperTest {
                 .build();
 
         // Act
-        EstudianteAggregate aggregate = mapper.toDomain(entity);
+        EstudianteDomain aggregate = mapper.toDomain(entity);
 
         // Assert
         assertThat(aggregate.getId()).isEqualTo(id);
@@ -36,7 +36,7 @@ class EstudianteMapperTest {
     void debeMaperarAEntity_cuandoAggregateEsValido() {
         // Arrange
         UUID id = UUID.randomUUID();
-        EstudianteAggregate aggregate = EstudianteAggregate.reconstruir(
+        EstudianteDomain aggregate = EstudianteDomain.reconstruir(
                 id,
                 "20161020123",
                 "Juan Pérez",
@@ -65,7 +65,7 @@ class EstudianteMapperTest {
                 .build();
 
         // Act
-        EstudianteAggregate aggregate = mapper.toDomain(entityOriginal);
+        EstudianteDomain aggregate = mapper.toDomain(entityOriginal);
         EstudianteEntity entityMapeada = mapper.toEntity(aggregate);
 
         // Assert

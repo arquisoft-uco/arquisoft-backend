@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.usuario.command.validator.impl;
 
 import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuarioValidator;
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioAggregate;
+import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.rules.UsuarioEmailUnicoRule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -13,7 +13,7 @@ public class CrearUsuarioValidatorImpl implements CrearUsuarioValidator {
     private final UsuarioEmailUnicoRule usuarioEmailUnicoRule;
 
     @Override
-    public void validar(UsuarioAggregate usuario) {
+    public void validar(UsuarioDomain usuario) {
         usuarioEmailUnicoRule.validar(usuario.getEmail());
     }
 }

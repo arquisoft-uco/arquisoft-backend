@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.usuario.command.validator;
 
 import com.arquisoft.usuarios.application.usuario.command.validator.impl.CrearUsuarioValidatorImpl;
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioAggregate;
+import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEmailDuplicadoException;
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.domain.usuario.rules.UsuarioEmailUnicoRule;
@@ -28,7 +28,7 @@ class CrearUsuarioValidatorTest {
     @Test
     void debeValidarUnicidadDelEmailNormalizado_cuandoUsuarioEsValido() {
         // Arrange
-        UsuarioAggregate usuario = UsuarioAggregate.crear("  Nuevo@Example.COM  ", UsuarioRole.ESTUDIANTE);
+        UsuarioDomain usuario = UsuarioDomain.crear("  Nuevo@Example.COM  ", UsuarioRole.ESTUDIANTE);
 
         // Act
         crearUsuarioValidator.validar(usuario);
@@ -40,7 +40,7 @@ class CrearUsuarioValidatorTest {
     @Test
     void debePropagarExcepcion_cuandoEmailYaExiste() {
         // Arrange
-        UsuarioAggregate usuario = UsuarioAggregate.crear("repetido@example.com", UsuarioRole.ASESOR);
+        UsuarioDomain usuario = UsuarioDomain.crear("repetido@example.com", UsuarioRole.ASESOR);
         doThrow(new UsuarioEmailDuplicadoException("repetido@example.com"))
                 .when(usuarioEmailUnicoRule).validar("repetido@example.com");
 
@@ -52,7 +52,7 @@ class CrearUsuarioValidatorTest {
     @Test
     void debePasar_cuandoReglaNoLanzaExcepcion() {
         // Arrange
-        UsuarioAggregate usuario = UsuarioAggregate.crear("ok@example.com", UsuarioRole.COORDINADOR);
+        UsuarioDomain usuario = UsuarioDomain.crear("ok@example.com", UsuarioRole.COORDINADOR);
 
         // Act / Assert
         assertThatCode(() -> crearUsuarioValidator.validar(usuario)).doesNotThrowAnyException();

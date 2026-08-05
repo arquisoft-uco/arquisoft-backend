@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.out.persistence;
 
-import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionRepository;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaRepository;
@@ -22,7 +22,7 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
     private final EstadoEvaluacionRepository estadoEvaluacionRepository;
 
     @Override
-    public void guardar(EstadoEvaluacionFichaAggregate aggregate) {
+    public void guardar(EstadoEvaluacionFichaDomain aggregate) {
         var evaluacionRef = evaluacionFichaPerfilRepository
                 .getReferenceById(aggregate.getEvaluacionFichaPerfilId());
 

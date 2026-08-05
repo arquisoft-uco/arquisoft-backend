@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.fichaperfil.port.out;
 
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 
@@ -9,9 +9,9 @@ import java.util.UUID;
 
 public interface FichaPerfilOutputPort {
 
-    void guardar(FichaPerfilAggregate ficha);
+    void guardar(FichaPerfilDomain ficha);
 
-    Optional<FichaPerfilAggregate> buscarPorId(UUID id);
+    Optional<FichaPerfilDomain> buscarPorId(UUID id);
 
     boolean existePorId(UUID id);
 

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.model.TituloFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.rules.EstudiantePropietarioFichaRule;
@@ -24,7 +24,7 @@ public class ModificarFichaPerfilValidatorImpl implements ModificarFichaPerfilVa
     }
 
     @Override
-    public void validarTitulo(FichaPerfilAggregate ficha, String nuevoTitulo) {
+    public void validarTitulo(FichaPerfilDomain ficha, String nuevoTitulo) {
         fichaPerfilTituloDisponibleRule.validar(
                 new TituloFichaCriteria(ficha.getTituloProyecto(), nuevoTitulo));
     }

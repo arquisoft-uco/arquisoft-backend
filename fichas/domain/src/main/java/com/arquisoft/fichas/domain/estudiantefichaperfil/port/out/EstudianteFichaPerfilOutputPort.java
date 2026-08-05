@@ -1,12 +1,12 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.port.out;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilAggregate;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 
 import java.util.UUID;
 
 public interface EstudianteFichaPerfilOutputPort {
 
-    void guardar(EstudianteFichaPerfilAggregate relacion);
+    void guardar(EstudianteFichaPerfilDomain relacion);
 
     boolean existePorFichaYEstudiante(UUID fichaPerfilId, UUID estudianteId);
 

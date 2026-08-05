@@ -1,8 +1,8 @@
 package com.arquisoft.usuarios.application.usuario.command.validator;
 
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioAggregate;
+import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
 
 public interface CrearUsuarioValidator {
 
-    void validar(UsuarioAggregate usuario);
+    void validar(UsuarioDomain usuario);
 }

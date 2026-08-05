@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.finder.impl;
 
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
+import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
@@ -29,11 +29,11 @@ class FichaPerfilFinderImplTest {
     void debeRetornarLaFicha_cuandoExiste() {
         // Arrange
         UUID fichaId = UUID.randomUUID();
-        FichaPerfilAggregate ficha = FichaPerfilAggregate.reconstruir(fichaId, "Título de prueba", UUID.randomUUID());
+        FichaPerfilDomain ficha = FichaPerfilDomain.reconstruir(fichaId, "Título de prueba", UUID.randomUUID());
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(ficha));
 
         // Act
-        FichaPerfilAggregate resultado = finder.obtener(fichaId);
+        FichaPerfilDomain resultado = finder.obtener(fichaId);
 
         // Assert
         assertThat(resultado).isSameAs(ficha);

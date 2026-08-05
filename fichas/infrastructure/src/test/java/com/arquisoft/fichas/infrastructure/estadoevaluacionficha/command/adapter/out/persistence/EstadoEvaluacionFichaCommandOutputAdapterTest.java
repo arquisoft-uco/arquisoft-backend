@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaAggregate;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionEntity;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionRepository;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaEntity;
@@ -53,7 +53,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
     void debeGuardar_cuandoEntidadEsValida() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        var aggregate = EstadoEvaluacionFichaAggregate.crear(evaluacionId);
+        var aggregate = EstadoEvaluacionFichaDomain.crear(evaluacionId);
 
         var evaluacionJpa = EvaluacionFichaPerfilEntity.builder()
                 .id(evaluacionId)
