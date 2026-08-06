@@ -107,14 +107,14 @@ exception/           # Domain exceptions shared across features (extend DomainEx
 └── {feature}/
     ├── command/
     │   ├── adapter/in/web/
-    │   │   ├── {Action}{Entity}InputAdapter.java
+    │   │   ├── {Action}{Entity}Controlador.java
     │   │   └── dto/
     │   │       └── {Action}{Entity}RequestDTO.java
     │   └── adapter/out/persistence/
     │       └── {Feature}CommandOutputAdapter.java
     ├── query/
     │   ├── adapter/in/web/
-    │   │   └── {Consult}{Entity}InputAdapter.java
+    │   │   └── {Consult}{Entity}Controlador.java
     │   └── adapter/out/persistence/
     │       └── {Feature}QueryOutputAdapter.java
     └── persistence/
@@ -146,7 +146,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Output ports:** Write-side in `domain/{feature}/port/out/`; read-side in `application/{feature}/query/port/out/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`).
 
-**Input adapters:** REST controllers in `infrastructure/{feature}/command/adapter/in/web/`; AMQP consumers in `infrastructure/{feature}/command/adapter/in/amqp/`, suffix `InputAdapter` (e.g., `RegistrarFichaPerfilInputAdapter`, `UsuarioCreadoInputAdapter`).
+**Input adapters:** REST controllers in `infrastructure/{feature}/command/adapter/in/web/` (or `query/.../web/`), suffix `Controlador` (e.g., `RegistrarFichaPerfilControlador`). AMQP consumers in `infrastructure/{feature}/command/adapter/in/amqp/`, suffix `InputAdapter` (e.g., `UsuarioCreadoInputAdapter`).
 
 **Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/{feature}/command/adapter/out/persistence/` (or appropriate sub-package for non-JPA), suffix `OutputAdapter` (e.g., `FichaPerfilCommandOutputAdapter`, `KeycloakAuthOutputAdapter`). Implement the corresponding `OutputPort` interface.
 
@@ -176,7 +176,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Business rules:** Validated inside the aggregate (→ 422), never with `if/throw` in the use case. The use case reads the state a rule needs via a port and passes it as a parameter to the factory. Existence, DB-duplicate and resource-ownership checks do belong in the use case (→ 400 / 403).
 
-**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Aggregate`, `Interactor`, `UseCase`, `Impl`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `ReadModel`, `DTO`, `Command`).
+**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Aggregate`, `Interactor`, `UseCase`, `Impl`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `ReadModel`, `DTO`, `Command`) — `Controlador` is the one Spanish exception, naming REST controllers.
 
 **Injection:** Always constructor injection via `@RequiredArgsConstructor` — never `@Autowired`.
 
