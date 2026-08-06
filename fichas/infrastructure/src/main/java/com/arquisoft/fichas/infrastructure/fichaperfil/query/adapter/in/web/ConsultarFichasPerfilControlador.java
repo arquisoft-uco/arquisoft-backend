@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(FichasRoutes.FICHAS_PERFIL)
+@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
 public class ConsultarFichasPerfilControlador {
@@ -40,7 +40,7 @@ public class ConsultarFichasPerfilControlador {
     private final AppLogger logger;
     private final MessageCatalog catalog;
 
-    @PostMapping("/coordinador")
+    @PostMapping("${rutas.fichas.fichas-perfil.coordinador:/coordinador}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_VIEW)
     @Operation(
             summary = FichasApiKeys.FichaPerfil.CONSULTAR_SUMMARY,

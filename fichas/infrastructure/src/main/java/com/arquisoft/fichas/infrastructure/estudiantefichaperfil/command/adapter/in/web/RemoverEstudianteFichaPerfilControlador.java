@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(FichasRoutes.FICHAS_PERFIL)
+@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.EstudianteFichaPerfil.TAG_NAME,
         description = FichasApiKeys.EstudianteFichaPerfil.TAG_DESCRIPTION)
@@ -30,7 +30,7 @@ public class RemoverEstudianteFichaPerfilControlador {
 
     private final RemoverEstudianteFichaPerfilInteractor removerEstudianteFichaPerfilInteractor;
 
-    @DeleteMapping("/{fichaPerfilId}/estudiantes/{estudianteId}")
+    @DeleteMapping("${rutas.fichas.fichas-perfil.estudiante-por-id:/{fichaPerfilId}/estudiantes/{estudianteId}}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTUDIANTE_FICHA_PERFIL_DELETE)
     @Operation(
             summary = FichasApiKeys.EstudianteFichaPerfil.REMOVER_SUMMARY,

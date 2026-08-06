@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(FichasRoutes.FICHAS_PERFIL)
+@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.EstudianteFichaPerfil.TAG_NAME,
         description = FichasApiKeys.EstudianteFichaPerfil.TAG_DESCRIPTION)
@@ -32,7 +32,7 @@ public class AsignarEstudiantesFichaPerfilControlador {
 
     private final AsignarEstudiantesFichaPerfilInteractor asignarEstudiantesFichaPerfilInteractor;
 
-    @PostMapping("/{fichaPerfilId}/estudiantes")
+    @PostMapping("${rutas.fichas.fichas-perfil.estudiantes:/{fichaPerfilId}/estudiantes}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTUDIANTE_FICHA_PERFIL_CREATE)
     @Operation(
             summary = FichasApiKeys.EstudianteFichaPerfil.ASIGNAR_SUMMARY,

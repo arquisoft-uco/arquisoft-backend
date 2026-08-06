@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(FichasRoutes.FICHAS_PERFIL)
+@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.EvaluacionFichaPerfil.TAG_NAME,
         description = FichasApiKeys.EvaluacionFichaPerfil.TAG_DESCRIPTION)
@@ -34,7 +34,7 @@ public class RegistrarEvaluacionFichaPerfilControlador {
 
     private final RegistrarEvaluacionFichaPerfilInteractor registrarEvaluacionFichaPerfilInteractor;
 
-    @PostMapping("/{fichaId}/evaluaciones")
+    @PostMapping("${rutas.fichas.fichas-perfil.evaluaciones:/{fichaId}/evaluaciones}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_EVALUACION_FICHA_PERFIL_CREATE)
     @Operation(
             summary = FichasApiKeys.EvaluacionFichaPerfil.REGISTRAR_SUMMARY,

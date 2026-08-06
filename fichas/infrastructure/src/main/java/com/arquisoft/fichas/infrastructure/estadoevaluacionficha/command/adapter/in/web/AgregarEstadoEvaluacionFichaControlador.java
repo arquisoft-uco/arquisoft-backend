@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(FichasRoutes.ESTADO_EVALUACION_FICHA)
+@RequestMapping("${rutas.fichas.estado-evaluacion-ficha.base:/fichas-perfil/estado-evaluacion-ficha}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.EstadoEvaluacionFicha.TAG_NAME,
         description = FichasApiKeys.EstadoEvaluacionFicha.TAG_DESCRIPTION)

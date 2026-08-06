@@ -25,7 +25,7 @@ import java.util.UUID;
 
 @Slf4j
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("${rutas.usuarios.usuarios.base:/usuarios}")
 @RequiredArgsConstructor
 @Tag(name = "Usuarios", description = "Gestion de usuarios del sistema")
 public class UsuarioCommandControlador {

@@ -24,14 +24,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(FichasRoutes.FICHAS_PERFIL)
+@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
 public class CambiarAsesorFichaControlador {
 
     private final CambiarAsesorFichaInteractor cambiarAsesorFichaInteractor;
 
-    @PatchMapping("/{id}/asesor-ficha")
+    @PatchMapping("${rutas.fichas.fichas-perfil.asesor-ficha:/{id}/asesor-ficha}")
     @Operation(
             summary = FichasApiKeys.FichaPerfil.CAMBIAR_ASESOR_SUMMARY,
             description = FichasApiKeys.FichaPerfil.CAMBIAR_ASESOR_DESCRIPTION

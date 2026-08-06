@@ -26,14 +26,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(FichasRoutes.FICHAS_PERFIL)
+@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
 public class ModificarFichaPerfilControlador {
 
     private final ModificarFichaPerfilInteractor modificarFichaPerfilInteractor;
 
-    @PatchMapping("/{id}")
+    @PatchMapping("${rutas.fichas.fichas-perfil.por-id:/{id}}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_UPDATE)
     @Operation(
             summary = FichasApiKeys.FichaPerfil.MODIFICAR_SUMMARY,

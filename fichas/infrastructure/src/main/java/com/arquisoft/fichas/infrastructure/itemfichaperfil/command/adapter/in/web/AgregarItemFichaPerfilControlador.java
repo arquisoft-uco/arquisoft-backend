@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(FichasRoutes.FICHAS_PERFIL)
+@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.ItemFichaPerfil.TAG_NAME,
         description = FichasApiKeys.ItemFichaPerfil.TAG_DESCRIPTION)
@@ -38,7 +38,7 @@ public class AgregarItemFichaPerfilControlador {
 
     private final AgregarItemFichaPerfilInteractor agregarItemFichaPerfilInteractor;
 
-    @PostMapping("/{fichaPerfilId}/items")
+    @PostMapping("${rutas.fichas.fichas-perfil.items:/{fichaPerfilId}/items}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_CREATE)
     @Operation(
             summary = FichasApiKeys.ItemFichaPerfil.AGREGAR_SUMMARY,

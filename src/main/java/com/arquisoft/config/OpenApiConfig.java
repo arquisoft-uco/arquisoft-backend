@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -49,6 +50,15 @@ import org.springframework.context.annotation.Configuration;
 )
 public class OpenApiConfig {
 
+    @Value("${rutas.seguridad.auth.base:/auth}")
+    private String authBasePath;
+
+    @Value("${rutas.usuarios.usuarios.base:/usuarios}")
+    private String usuariosBasePath;
+
+    @Value("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
+    private String fichasPerfilBasePath;
+
     @Bean
     public GroupedOpenApi allApi() {
         return GroupedOpenApi.builder()
@@ -63,7 +73,7 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
             .group("01-seguridad")
             .displayName("Seguridad")
-            .pathsToMatch("/auth/**", "/seguridad/**")
+            .pathsToMatch(authBasePath + "/**", "/seguridad/**")
             .build();
     }
 
@@ -72,7 +82,7 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
             .group("02-usuarios")
             .displayName("Usuarios")
-            .pathsToMatch("/usuarios/**")
+            .pathsToMatch(usuariosBasePath + "/**")
             .build();
     }
 
@@ -81,7 +91,7 @@ public class OpenApiConfig {
         return GroupedOpenApi.builder()
             .group("03-fichas")
             .displayName("Fichas de Perfil")
-            .pathsToMatch("/fichas-perfil/**")
+            .pathsToMatch(fichasPerfilBasePath + "/**")
             .build();
     }
 

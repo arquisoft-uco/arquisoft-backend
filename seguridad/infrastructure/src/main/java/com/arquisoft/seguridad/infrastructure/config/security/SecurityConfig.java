@@ -45,6 +45,15 @@ public class SecurityConfig {
     @Value("${arquisoft.keycloak.expected-audience:arquisoft-api}")
     private String expectedAudience;
 
+    @Value("${rutas.seguridad.auth.base:/auth}${rutas.seguridad.auth.login:/login}")
+    private String authLoginPath;
+
+    @Value("${rutas.seguridad.auth.base:/auth}${rutas.seguridad.auth.refresh:/refresh}")
+    private String authRefreshPath;
+
+    @Value("${rutas.seguridad.auth.base:/auth}${rutas.seguridad.auth.validate:/validate}")
+    private String authValidatePath;
+
     @Bean
     public JwtDecoder jwtDecoder() {
         String issuer = String.format("%s/realms/%s", keycloakServerUrl, realm);
@@ -68,9 +77,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/validate").permitAll()
+                        .requestMatchers(HttpMethod.POST, authLoginPath).permitAll()
+                        .requestMatchers(HttpMethod.POST, authRefreshPath).permitAll()
+                        .requestMatchers(HttpMethod.POST, authValidatePath).permitAll()
                         .requestMatchers("/actuator/health/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
                         .anyRequest().authenticated()

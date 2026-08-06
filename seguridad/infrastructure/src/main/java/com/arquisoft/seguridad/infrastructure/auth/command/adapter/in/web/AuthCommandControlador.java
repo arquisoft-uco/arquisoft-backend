@@ -40,7 +40,7 @@ import java.time.Instant;
 
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("${rutas.seguridad.auth.base:/auth}")
 @RequiredArgsConstructor
 @Tag(name = "Seguridad - Autenticacion", description = "Comandos de autenticacion: login, refresh y logout")
 public class AuthCommandControlador {
@@ -52,7 +52,7 @@ public class AuthCommandControlador {
     private final MessageCatalog catalog;
 
     @Deprecated(since = "OAuth 2.1 / RFC 9700 — usar Authorization Code + PKCE en la SPA")
-    @PostMapping("/login")
+    @PostMapping("${rutas.seguridad.auth.login:/login}")
     @Operation(
             summary = "Iniciar sesion (ROPC — desaconsejado para navegadores)",
             description = "Autentica al usuario contra Keycloak usando email y contrasena "
@@ -88,7 +88,7 @@ public class AuthCommandControlador {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/refresh")
+    @PostMapping("${rutas.seguridad.auth.refresh:/refresh}")
     @Operation(
             summary = "Refrescar token",
             description = "Obtiene un nuevo access token usando un refresh token valido."
@@ -122,7 +122,7 @@ public class AuthCommandControlador {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/logout")
+    @PostMapping("${rutas.seguridad.auth.logout:/logout}")
     @Operation(
             summary = "Cerrar sesion",
             description = "Invalida el token JWT actual en la blacklist de Redis.",
@@ -144,7 +144,7 @@ public class AuthCommandControlador {
         return ResponseEntity.ok(LogoutResponseDTO.builder().build());
     }
 
-    @PostMapping("/validate")
+    @PostMapping("${rutas.seguridad.auth.validate:/validate}")
     @Operation(
             summary = "Validar token JWT",
             description = "Valida un token JWT sin requerirlo en el header Authorization. "

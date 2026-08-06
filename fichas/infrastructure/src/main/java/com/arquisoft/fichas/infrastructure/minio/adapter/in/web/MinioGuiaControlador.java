@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/fichas/minio/guia")
+@RequestMapping("${rutas.fichas.minio-guia.base:/fichas/minio/guia}")
 @RequiredArgsConstructor
 @Tag(name = "MinIO Guía", description = "Endpoints de prueba para validar el módulo shared:minio. Eliminar tras el PoC.")
 public class MinioGuiaControlador {
@@ -30,7 +30,7 @@ public class MinioGuiaControlador {
     private final AppLogger logger;
     private final MessageCatalog catalog;
 
-    @GetMapping("/upload-url")
+    @GetMapping("${rutas.fichas.minio-guia.upload-url:/upload-url}")
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Generar presigned URL de carga",
@@ -54,7 +54,7 @@ public class MinioGuiaControlador {
         ));
     }
 
-    @GetMapping("/download-url")
+    @GetMapping("${rutas.fichas.minio-guia.download-url:/download-url}")
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Generar presigned URL de descarga",
@@ -78,7 +78,7 @@ public class MinioGuiaControlador {
         ));
     }
 
-    @GetMapping("/existe")
+    @GetMapping("${rutas.fichas.minio-guia.existe:/existe}")
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Verificar si un objeto existe",
@@ -94,7 +94,7 @@ public class MinioGuiaControlador {
         return ResponseEntity.ok(Map.of("bucket", bucket, "key", key, "existe", existe));
     }
 
-    @DeleteMapping("/objeto")
+    @DeleteMapping("${rutas.fichas.minio-guia.objeto:/objeto}")
     @PreAuthorize("isAuthenticated()")
     @Operation(
             summary = "Eliminar un objeto",

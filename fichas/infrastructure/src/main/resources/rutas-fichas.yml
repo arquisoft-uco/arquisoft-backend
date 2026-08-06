@@ -1,0 +1,26 @@
+# ==================== RUTAS DE CONTROLADORES — CONTEXTO FICHAS ====================
+# Un placeholder por segmento de path. OpenApiConfig lee la clave base via @Value
+# para no duplicar el literal entre el controlador REST y la agrupacion de Swagger.
+# Vive en este modulo (no en el application.yml raiz) para que, si este contexto se
+# extrae a microservicio, se lleve su propia configuracion de rutas consigo.
+rutas:
+  fichas:
+    fichas-perfil:
+      base: /fichas-perfil
+      por-id: /{id}
+      asesor-ficha: /{id}/asesor-ficha
+      coordinador: /coordinador
+      estados-ficha: /estados-ficha
+      items: /{fichaPerfilId}/items
+      item-por-id: /items/{itemId}
+      estudiantes: /{fichaPerfilId}/estudiantes
+      estudiante-por-id: /{fichaPerfilId}/estudiantes/{estudianteId}
+      evaluaciones: /{fichaId}/evaluaciones
+    estado-evaluacion-ficha:
+      base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha
+    minio-guia:
+      base: /fichas/minio/guia
+      upload-url: /upload-url
+      download-url: /download-url
+      existe: /existe
+      objeto: /objeto

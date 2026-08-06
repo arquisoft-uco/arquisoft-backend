@@ -23,14 +23,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping(FichasRoutes.FICHAS_PERFIL)
+@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.EstadoFicha.TAG_NAME, description = FichasApiKeys.EstadoFicha.TAG_DESCRIPTION)
 public class ConsultarEstadosFichaControlador {
 
     private final ConsultarEstadosFichaUseCase consultarEstadosFichaUseCase;
 
-    @GetMapping("/estados-ficha")
+    @GetMapping("${rutas.fichas.fichas-perfil.estados-ficha:/estados-ficha}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_FICHA_VIEW)
     @Operation(
             summary = FichasApiKeys.EstadoFicha.CONSULTAR_SUMMARY,

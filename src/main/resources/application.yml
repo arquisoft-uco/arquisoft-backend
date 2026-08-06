@@ -15,6 +15,11 @@ spring:
       - "optional:file:./.env[.properties]"
       - "optional:file:./.env.properties"
       - "optional:file:./.env-${spring.profiles.active:dev}.properties"
+      # Rutas de controladores por bounded context: cada modulo infrastructure trae su propio
+      # archivo, para poder llevarselo intacto si ese contexto se extrae a microservicio.
+      - "classpath:rutas-seguridad.yml"
+      - "classpath:rutas-usuarios.yml"
+      - "classpath:rutas-fichas.yml"
   banner:
     location: classpath:banner.txt
   application:

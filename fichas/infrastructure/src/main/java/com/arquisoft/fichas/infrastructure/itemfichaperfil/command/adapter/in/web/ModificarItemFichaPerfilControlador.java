@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.UUID;
 
 @RestController
-@RequestMapping(FichasRoutes.FICHAS_PERFIL)
+@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.ItemFichaPerfil.TAG_NAME,
         description = FichasApiKeys.ItemFichaPerfil.TAG_DESCRIPTION)
@@ -34,7 +34,7 @@ public class ModificarItemFichaPerfilControlador {
 
     private final ModificarItemFichaPerfilInteractor modificarItemFichaPerfilInteractor;
 
-    @PatchMapping("/items/{itemId}")
+    @PatchMapping("${rutas.fichas.fichas-perfil.item-por-id:/items/{itemId}}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_UPDATE)
     @Operation(
             summary = FichasApiKeys.ItemFichaPerfil.MODIFICAR_SUMMARY,
