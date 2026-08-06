@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
-public class RegistrarFichaPerfilInputAdapter {
+public class RegistrarFichaPerfilControlador {
 
     private final RegistrarFichaPerfilInteractor registrarFichaPerfilInteractor;
 

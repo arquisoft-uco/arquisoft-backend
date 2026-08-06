@@ -37,11 +37,11 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ModificarItemFichaPerfilInputAdapter.class)
+@WebMvcTest(ModificarItemFichaPerfilControlador.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
-        ModificarItemFichaPerfilInputAdapterTest.TestSecurityConfig.class})
-class ModificarItemFichaPerfilInputAdapterTest {
+        ModificarItemFichaPerfilControladorTest.TestSecurityConfig.class})
+class ModificarItemFichaPerfilControladorTest {
 
     @TestConfiguration
     @EnableWebSecurity

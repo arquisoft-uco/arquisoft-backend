@@ -30,7 +30,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.ItemFichaPerfil.TAG_NAME,
         description = FichasApiKeys.ItemFichaPerfil.TAG_DESCRIPTION)
-public class ModificarItemFichaPerfilInputAdapter {
+public class ModificarItemFichaPerfilControlador {
 
     private final ModificarItemFichaPerfilInteractor modificarItemFichaPerfilInteractor;
 

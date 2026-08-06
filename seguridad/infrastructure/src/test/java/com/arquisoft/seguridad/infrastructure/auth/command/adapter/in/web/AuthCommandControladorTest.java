@@ -34,7 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AuthCommandInputAdapterTest {
+class AuthCommandControladorTest {
 
     @Mock
     private AuthenticateUserInteractor authenticateUserInteractor;
@@ -54,7 +54,7 @@ class AuthCommandInputAdapterTest {
     private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
 
 @InjectMocks
-    private AuthCommandInputAdapter adapter;
+    private AuthCommandControlador adapter;
 
     @Test
     void debeRetornar200_cuandoLoginExitoso() {

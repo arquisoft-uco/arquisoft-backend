@@ -33,11 +33,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AgregarEstadoEvaluacionFichaInputAdapter.class)
+@WebMvcTest(AgregarEstadoEvaluacionFichaControlador.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
-        AgregarEstadoEvaluacionFichaInputAdapterTest.TestSecurityConfig.class})
-class AgregarEstadoEvaluacionFichaInputAdapterTest {
+        AgregarEstadoEvaluacionFichaControladorTest.TestSecurityConfig.class})
+class AgregarEstadoEvaluacionFichaControladorTest {
 
     @TestConfiguration
     @EnableWebSecurity

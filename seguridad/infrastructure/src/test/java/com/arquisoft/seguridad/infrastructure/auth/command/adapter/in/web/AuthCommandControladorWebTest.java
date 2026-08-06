@@ -39,13 +39,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 // Se excluyen los filtros @Component del módulo: @WebMvcTest los registra por defecto y
 // dependen de puertos de dominio (TokenBlacklistOutputPort, BucketResolver) que este slice
 // no levanta. No participan en el enlace del body, que es lo que aquí se verifica.
-@WebMvcTest(controllers = AuthCommandInputAdapter.class,
+@WebMvcTest(controllers = AuthCommandControlador.class,
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = {JwtBlacklistFilter.class, RateLimitingFilter.class}))
 @Import({GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
-        AuthCommandInputAdapterWebTest.TestSecurityConfig.class})
-class AuthCommandInputAdapterWebTest {
+        AuthCommandControladorWebTest.TestSecurityConfig.class})
+class AuthCommandControladorWebTest {
 
     @TestConfiguration
     @EnableWebSecurity

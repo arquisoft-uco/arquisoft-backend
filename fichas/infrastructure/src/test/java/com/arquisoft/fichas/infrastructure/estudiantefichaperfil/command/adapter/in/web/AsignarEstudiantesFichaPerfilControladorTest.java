@@ -33,11 +33,11 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(AsignarEstudiantesFichaPerfilInputAdapter.class)
+@WebMvcTest(AsignarEstudiantesFichaPerfilControlador.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
-        AsignarEstudiantesFichaPerfilInputAdapterTest.TestSecurityConfig.class})
-class AsignarEstudiantesFichaPerfilInputAdapterTest {
+        AsignarEstudiantesFichaPerfilControladorTest.TestSecurityConfig.class})
+class AsignarEstudiantesFichaPerfilControladorTest {
 
     @TestConfiguration
     @EnableWebSecurity

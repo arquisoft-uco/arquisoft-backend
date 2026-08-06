@@ -28,7 +28,7 @@ import java.util.UUID;
 @RequestMapping("/usuarios")
 @RequiredArgsConstructor
 @Tag(name = "Usuarios", description = "Gestion de usuarios del sistema")
-public class UsuarioCommandInputAdapter {
+public class UsuarioCommandControlador {
 
     private final CrearUsuarioInteractor crearUsuarioInteractor;
 

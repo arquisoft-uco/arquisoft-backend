@@ -30,7 +30,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.EvaluacionFichaPerfil.TAG_NAME,
         description = FichasApiKeys.EvaluacionFichaPerfil.TAG_DESCRIPTION)
-public class RegistrarEvaluacionFichaPerfilInputAdapter {
+public class RegistrarEvaluacionFichaPerfilControlador {
 
     private final RegistrarEvaluacionFichaPerfilInteractor registrarEvaluacionFichaPerfilInteractor;
 

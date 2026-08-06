@@ -29,7 +29,7 @@ import java.util.UUID;
 @RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
-public class ModificarFichaPerfilInputAdapter {
+public class ModificarFichaPerfilControlador {
 
     private final ModificarFichaPerfilInteractor modificarFichaPerfilInteractor;
 

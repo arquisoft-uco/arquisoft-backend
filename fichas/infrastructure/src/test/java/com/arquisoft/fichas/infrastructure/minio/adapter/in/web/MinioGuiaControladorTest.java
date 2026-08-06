@@ -19,7 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class MinioGuiaInputAdapterTest {
+class MinioGuiaControladorTest {
 
     @Mock
     private MinioStorageClient minioStorageClient;
@@ -33,7 +33,7 @@ class MinioGuiaInputAdapterTest {
     private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
 
 @InjectMocks
-    private MinioGuiaInputAdapter minioGuiaInputAdapter;
+    private MinioGuiaControlador minioGuiaControlador;
 
     @Test
     void debeGenerarUrlCarga_cuandoParametrosValidos() {
@@ -44,7 +44,7 @@ class MinioGuiaInputAdapterTest {
         when(minioStorageClient.generateUploadPresignedUrl(bucket, key)).thenReturn(urlEsperada);
 
         // Act
-        ResponseEntity<Map<String, String>> respuesta = minioGuiaInputAdapter.generarUrlCarga(bucket, key);
+        ResponseEntity<Map<String, String>> respuesta = minioGuiaControlador.generarUrlCarga(bucket, key);
 
         // Assert
         assertThat(respuesta.getStatusCode().value()).isEqualTo(200);
@@ -65,7 +65,7 @@ class MinioGuiaInputAdapterTest {
         when(minioStorageClient.generateDownloadPresignedUrl(bucket, key)).thenReturn(urlEsperada);
 
         // Act
-        ResponseEntity<Map<String, String>> respuesta = minioGuiaInputAdapter.generarUrlDescarga(bucket, key);
+        ResponseEntity<Map<String, String>> respuesta = minioGuiaControlador.generarUrlDescarga(bucket, key);
 
         // Assert
         assertThat(respuesta.getStatusCode().value()).isEqualTo(200);
@@ -85,7 +85,7 @@ class MinioGuiaInputAdapterTest {
         when(minioStorageClient.objectExists(bucket, key)).thenReturn(true);
 
         // Act
-        ResponseEntity<Map<String, Object>> respuesta = minioGuiaInputAdapter.verificarExistencia(bucket, key);
+        ResponseEntity<Map<String, Object>> respuesta = minioGuiaControlador.verificarExistencia(bucket, key);
 
         // Assert
         assertThat(respuesta.getStatusCode().value()).isEqualTo(200);
@@ -104,7 +104,7 @@ class MinioGuiaInputAdapterTest {
         when(minioStorageClient.objectExists(bucket, key)).thenReturn(false);
 
         // Act
-        ResponseEntity<Map<String, Object>> respuesta = minioGuiaInputAdapter.verificarExistencia(bucket, key);
+        ResponseEntity<Map<String, Object>> respuesta = minioGuiaControlador.verificarExistencia(bucket, key);
 
         // Assert
         assertThat(respuesta.getStatusCode().value()).isEqualTo(200);
@@ -120,7 +120,7 @@ class MinioGuiaInputAdapterTest {
         String key = "documentos/archivo.pdf";
 
         // Act
-        ResponseEntity<Void> respuesta = minioGuiaInputAdapter.eliminarObjeto(bucket, key);
+        ResponseEntity<Void> respuesta = minioGuiaControlador.eliminarObjeto(bucket, key);
 
         // Assert
         assertThat(respuesta.getStatusCode().value()).isEqualTo(204);

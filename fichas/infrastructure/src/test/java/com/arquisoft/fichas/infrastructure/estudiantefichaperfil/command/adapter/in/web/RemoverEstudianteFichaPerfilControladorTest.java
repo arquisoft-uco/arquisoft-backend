@@ -36,11 +36,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(RemoverEstudianteFichaPerfilInputAdapter.class)
+@WebMvcTest(RemoverEstudianteFichaPerfilControlador.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
-        RemoverEstudianteFichaPerfilInputAdapterTest.TestSecurityConfig.class})
-class RemoverEstudianteFichaPerfilInputAdapterTest {
+        RemoverEstudianteFichaPerfilControladorTest.TestSecurityConfig.class})
+class RemoverEstudianteFichaPerfilControladorTest {
 
     @TestConfiguration
     @EnableWebSecurity

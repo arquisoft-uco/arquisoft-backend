@@ -24,7 +24,7 @@ import java.util.Map;
 @RequestMapping("/fichas/minio/guia")
 @RequiredArgsConstructor
 @Tag(name = "MinIO Guía", description = "Endpoints de prueba para validar el módulo shared:minio. Eliminar tras el PoC.")
-public class MinioGuiaInputAdapter {
+public class MinioGuiaControlador {
 
     private final MinioStorageClient minioStorageClient;
     private final AppLogger logger;

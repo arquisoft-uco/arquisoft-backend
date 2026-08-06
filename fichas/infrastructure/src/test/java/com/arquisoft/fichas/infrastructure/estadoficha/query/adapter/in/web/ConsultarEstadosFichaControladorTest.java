@@ -31,11 +31,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ConsultarEstadosFichaInputAdapter.class)
+@WebMvcTest(ConsultarEstadosFichaControlador.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
-        ConsultarEstadosFichaInputAdapterTest.TestSecurityConfig.class})
-class ConsultarEstadosFichaInputAdapterTest {
+        ConsultarEstadosFichaControladorTest.TestSecurityConfig.class})
+class ConsultarEstadosFichaControladorTest {
 
     @TestConfiguration
     @EnableWebSecurity

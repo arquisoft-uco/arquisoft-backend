@@ -27,7 +27,7 @@ import java.util.UUID;
 @RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
-public class CambiarAsesorFichaInputAdapter {
+public class CambiarAsesorFichaControlador {
 
     private final CambiarAsesorFichaInteractor cambiarAsesorFichaInteractor;
 

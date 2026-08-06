@@ -43,7 +43,7 @@ import java.time.Instant;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @Tag(name = "Seguridad - Autenticacion", description = "Comandos de autenticacion: login, refresh y logout")
-public class AuthCommandInputAdapter {
+public class AuthCommandControlador {
 
     private final AuthenticateUserInteractor authenticateUserInteractor;
     private final RefreshTokenInteractor refreshTokenInteractor;

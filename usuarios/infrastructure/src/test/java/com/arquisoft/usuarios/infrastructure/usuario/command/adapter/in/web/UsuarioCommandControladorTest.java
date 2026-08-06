@@ -22,13 +22,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class UsuarioCommandInputAdapterTest {
+class UsuarioCommandControladorTest {
 
     @Mock
     private CrearUsuarioInteractor crearUsuarioInteractor;
 
     @InjectMocks
-    private UsuarioCommandInputAdapter adapter;
+    private UsuarioCommandControlador adapter;
 
     @Test
     void debeRetornar201_cuandoRequestValido() {

@@ -32,10 +32,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(UsuarioCommandInputAdapter.class)
+@WebMvcTest(UsuarioCommandControlador.class)
 @Import({GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
-        UsuarioCommandInputAdapterWebTest.TestSecurityConfig.class})
-class UsuarioCommandInputAdapterWebTest {
+        UsuarioCommandControladorWebTest.TestSecurityConfig.class})
+class UsuarioCommandControladorWebTest {
 
     @TestConfiguration
     @EnableWebSecurity

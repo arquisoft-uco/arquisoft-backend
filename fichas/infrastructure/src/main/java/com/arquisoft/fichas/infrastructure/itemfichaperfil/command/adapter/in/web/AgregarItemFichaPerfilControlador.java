@@ -34,7 +34,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.ItemFichaPerfil.TAG_NAME,
         description = FichasApiKeys.ItemFichaPerfil.TAG_DESCRIPTION)
-public class AgregarItemFichaPerfilInputAdapter {
+public class AgregarItemFichaPerfilControlador {
 
     private final AgregarItemFichaPerfilInteractor agregarItemFichaPerfilInteractor;
 

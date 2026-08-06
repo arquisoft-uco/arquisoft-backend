@@ -26,7 +26,7 @@ import java.util.List;
 @RequestMapping(FichasRoutes.FICHAS_PERFIL)
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.EstadoFicha.TAG_NAME, description = FichasApiKeys.EstadoFicha.TAG_DESCRIPTION)
-public class ConsultarEstadosFichaInputAdapter {
+public class ConsultarEstadosFichaControlador {
 
     private final ConsultarEstadosFichaUseCase consultarEstadosFichaUseCase;
 

@@ -33,7 +33,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.EstadoEvaluacionFicha.TAG_NAME,
         description = FichasApiKeys.EstadoEvaluacionFicha.TAG_DESCRIPTION)
-public class AgregarEstadoEvaluacionFichaInputAdapter {
+public class AgregarEstadoEvaluacionFichaControlador {
 
     private final AgregarEstadoEvaluacionFichaInteractor agregarEstadoEvaluacionFichaInteractor;
 

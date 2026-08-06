@@ -26,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Tag(name = FichasApiKeys.EstudianteFichaPerfil.TAG_NAME,
         description = FichasApiKeys.EstudianteFichaPerfil.TAG_DESCRIPTION)
-public class RemoverEstudianteFichaPerfilInputAdapter {
+public class RemoverEstudianteFichaPerfilControlador {
 
     private final RemoverEstudianteFichaPerfilInteractor removerEstudianteFichaPerfilInteractor;
 
