@@ -1,6 +1,5 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.out.persistence;
 
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilRepository;
@@ -13,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -168,7 +168,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     }
 
     @Test
-    void debeGuardarCambios_cuandoModificarContenido() {
+    void debeActualizarSoloElContenido_cuandoModificarContenido() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
         ItemFichaPerfilDomain aggregate = ItemFichaPerfilDomain.crear(
@@ -181,15 +181,44 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         entityManager.clear();
 
         // Act
-        ItemFichaPerfilDomain reconstruido = adapter.buscarPorId(aggregate.getId()).orElseThrow();
-        reconstruido.modificarContenido("Contenido modificado", EstadoFicha.EN_CONSTRUCCION);
-        adapter.actualizarContenido(reconstruido);
+        adapter.actualizarContenido(aggregate.getId(), "Contenido modificado");
         entityManager.flush();
         entityManager.clear();
 
         // Assert
         ItemFichaPerfilEntity savedEntity = repository.findById(aggregate.getId()).orElseThrow();
         assertThat(savedEntity.getContenido()).isEqualTo("Contenido modificado");
+        assertThat(savedEntity.getFichaPerfilId()).isEqualTo(fichaPerfilId);
+        assertThat(savedEntity.getTipoItem().getId()).isEqualTo("OBJETIVO_GENERAL");
+    }
+
+    @Test
+    void debeRetornarFichaPerfilId_cuandoItemExiste() {
+        // Arrange
+        UUID fichaPerfilId = UUID.randomUUID();
+        ItemFichaPerfilDomain aggregate = ItemFichaPerfilDomain.crear(
+                fichaPerfilId,
+                "OBJETIVO_GENERAL",
+                "Contenido inicial"
+        );
+        adapter.registrarItem(aggregate);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        Optional<UUID> resultado = adapter.obtenerFichaPerfilId(aggregate.getId());
+
+        // Assert
+        assertThat(resultado).contains(fichaPerfilId);
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoItemNoExisteParaFichaPerfilId() {
+        // Act
+        Optional<UUID> resultado = adapter.obtenerFichaPerfilId(UUID.randomUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
     }
 
     @Test

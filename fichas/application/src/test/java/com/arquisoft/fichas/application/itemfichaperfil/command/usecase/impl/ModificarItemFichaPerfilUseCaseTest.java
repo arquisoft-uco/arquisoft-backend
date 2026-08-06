@@ -3,17 +3,13 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.ModificarItemFichaPerfilMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
-import com.arquisoft.fichas.application.estadofichaperfil.query.port.out.EstadoFichaPerfilQueryOutputPort;
-import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ModificarItemFichaPerfilValidator;
-import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
-import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilFinder;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
+import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.exception.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
@@ -23,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,7 +27,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,45 +38,32 @@ class ModificarItemFichaPerfilUseCaseTest {
     private ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
 
     @Mock
-    private ItemFichaPerfilFinder itemFichaPerfilFinder;
-
-    @Mock
-    private EstadoFichaPerfilQueryOutputPort estadoFichaPerfilQueryOutputPort;
-
-    @Mock
     private ModificarItemFichaPerfilValidator modificarItemFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
+    // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
     @Spy
     private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
 
-@InjectMocks
+    @InjectMocks
     private ModificarItemFichaPerfilUseCaseImpl useCase;
 
     @Test
     void debeModificar_cuandoDatosValidos() {
         // Arrange
         UUID itemId = UUID.randomUUID();
-        UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, estudianteId);
-
-        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
-        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
-                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
 
         // Act
         useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command));
 
         // Assert
-        verify(itemFichaPerfilFinder, times(1)).obtener(itemId);
-        verify(modificarItemFichaPerfilValidator, times(1)).validar(any(), any());
-        verify(itemFichaPerfilOutputPort, times(1)).actualizarContenido(item);
+        verify(modificarItemFichaPerfilValidator, times(1)).validar(itemId, estudianteId);
+        verify(itemFichaPerfilOutputPort, times(1)).actualizarContenido(itemId, CONTENIDO_NUEVO);
     }
 
     @Test
@@ -91,14 +72,14 @@ class ModificarItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
 
-        doThrow(new ItemFichaPerfilNoEncontradoException(itemId)).when(itemFichaPerfilFinder).obtener(itemId);
+        doThrow(new ItemFichaPerfilNoEncontradoException(itemId))
+                .when(modificarItemFichaPerfilValidator).validar(any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(ItemFichaPerfilNoEncontradoException.class);
 
-        verify(modificarItemFichaPerfilValidator, never()).validar(any(), any());
-        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any());
+        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any(), any());
     }
 
     @Test
@@ -107,10 +88,8 @@ class ModificarItemFichaPerfilUseCaseTest {
         UUID itemId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
-        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, estudianteId);
 
-        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
         doThrow(new ItemFichaNoPropiaException(fichaPerfilId))
                 .when(modificarItemFichaPerfilValidator).validar(any(), any());
 
@@ -118,7 +97,7 @@ class ModificarItemFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(ItemFichaNoPropiaException.class);
 
-        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any());
+        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any(), any());
     }
 
     @Test
@@ -131,74 +110,39 @@ class ModificarItemFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> ModificarItemFichaPerfilMapper.toDomain(command))
                 .isInstanceOf(DomainValidationException.class);
 
-        verifyNoInteractions(itemFichaPerfilFinder, estadoFichaPerfilQueryOutputPort);
-        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any());
+        verifyNoInteractions(itemFichaPerfilOutputPort, modificarItemFichaPerfilValidator);
     }
 
     @Test
-    void debePropagarDomainValidation_cuandoFichaEnEstadoTerminal() {
+    void debePropagarEstadoFichaPerfilTerminalException_cuandoFichaEnEstadoTerminal() {
         // Arrange
         UUID itemId = UUID.randomUUID();
-        UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
 
-        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
-        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
-                .thenReturn(Optional.of(EstadoFicha.APROBADA));
+        doThrow(new EstadoFichaPerfilTerminalException(EstadoFicha.APROBADA))
+                .when(modificarItemFichaPerfilValidator).validar(any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command)))
-                .isInstanceOf(DomainValidationException.class);
+                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
 
-        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any());
-    }
-
-    @Test
-    void debeLanzarFichaPerfilNoEncontrada_cuandoFichaSinEstadoRegistrado() {
-        // Arrange
-        UUID itemId = UUID.randomUUID();
-        UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
-        var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
-
-        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
-        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command)))
-                .isInstanceOf(FichaPerfilNoEncontradaException.class);
-
-        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any());
+        verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any(), any());
     }
 
     @Test
     void debePropagarExcepcion_cuandoRepositorioFalla() {
         // Arrange
         UUID itemId = UUID.randomUUID();
-        UUID fichaPerfilId = UUID.randomUUID();
-        ItemFichaPerfilDomain item = itemReconstruido(itemId, fichaPerfilId);
         var command = new ModificarItemFichaPerfilCommand(itemId, CONTENIDO_NUEVO, UUID.randomUUID());
 
-        when(itemFichaPerfilFinder.obtener(itemId)).thenReturn(item);
-        when(estadoFichaPerfilQueryOutputPort.obtenerEstadoActual(fichaPerfilId))
-                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
-        doThrow(new RuntimeException("Error de BD")).when(itemFichaPerfilOutputPort).actualizarContenido(any());
+        doThrow(new RuntimeException("Error de BD"))
+                .when(itemFichaPerfilOutputPort).actualizarContenido(any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(ModificarItemFichaPerfilMapper.toDomain(command)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Error de BD");
 
-        verify(itemFichaPerfilOutputPort, times(1)).actualizarContenido(item);
-    }
-
-    private ItemFichaPerfilDomain itemReconstruido(UUID itemId, UUID fichaPerfilId) {
-        return ItemFichaPerfilDomain.reconstruir(
-                itemId,
-                fichaPerfilId,
-                TipoItem.OBJETIVO_GENERAL,
-                "Contenido original"
-        );
+        verify(itemFichaPerfilOutputPort, times(1)).actualizarContenido(itemId, CONTENIDO_NUEVO);
     }
 }

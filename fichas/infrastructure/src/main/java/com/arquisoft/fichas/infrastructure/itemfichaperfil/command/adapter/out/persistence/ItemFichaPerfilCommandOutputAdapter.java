@@ -20,17 +20,13 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
 
     @Override
     public void registrarItem(ItemFichaPerfilDomain item) {
-        persistir(item);
+        var tipoItemRef = tipoItemRepository.getReferenceById(item.getTipoItem().getId());
+        repository.save(ItemFichaPerfilMapper.toEntity(item, tipoItemRef));
     }
 
     @Override
-    public void actualizarContenido(ItemFichaPerfilDomain item) {
-        persistir(item);
-    }
-
-    private void persistir(ItemFichaPerfilDomain item) {
-        var tipoItemRef = tipoItemRepository.getReferenceById(item.getTipoItem().getId());
-        repository.save(ItemFichaPerfilMapper.toEntity(item, tipoItemRef));
+    public void actualizarContenido(UUID item, String contenido) {
+        repository.actualizarContenido(item, contenido);
     }
 
     @Override
@@ -44,9 +40,8 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     }
 
     @Override
-    public Optional<ItemFichaPerfilDomain> buscarPorId(UUID itemId) {
-        return repository.findById(itemId)
-                .map(ItemFichaPerfilMapper::toDomain);
+    public Optional<UUID> obtenerFichaPerfilId(UUID itemId) {
+        return repository.obtenerFichaPerfilId(itemId);
     }
 
     @Override

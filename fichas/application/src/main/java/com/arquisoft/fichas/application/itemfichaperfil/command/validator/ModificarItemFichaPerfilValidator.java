@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface ModificarItemFichaPerfilValidator {
 
-    void validar(UUID fichaPerfil, UUID estudiante);
+    void validar(UUID item, UUID estudiante);
 }

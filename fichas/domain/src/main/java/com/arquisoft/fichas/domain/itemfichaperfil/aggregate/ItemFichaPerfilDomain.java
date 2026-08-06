@@ -5,7 +5,6 @@ import com.arquisoft.shared.message.FichasFields;
 import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.shared.message.FichasLimits;
 import com.arquisoft.shared.message.Messages;
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.shared.util.UtilUUID;
@@ -103,47 +102,6 @@ public final class ItemFichaPerfilDomain {
             return;
         }
         this.contenido = UtilText.applyTrim(contenido);
-    }
-
-    // ─── Método de negocio: modificar contenido ───────────────────────────────
-
-    public void modificarContenido(String nuevoContenido, EstadoFicha estadoFichaActual) {
-        var result = new ValidationResult();
-
-        if (esFichaModificable(estadoFichaActual, result)) {
-            setContenido(nuevoContenido, result);
-        }
-
-        result.lanzarSiTieneErrores();
-    }
-
-    // ─── Método de negocio: remover (valida invariante POL-05) ───────────────
-
-    public void removerse(long totalRevisiones) {
-        var result = new ValidationResult();
-        if (totalRevisiones > 0) {
-            result.agregarError(FichasFields.ItemFichaPerfil.REVISIONES,
-                    FichasCodes.ItemFichaPerfil.ITEM_CON_REVISIONES,
-                    Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_CON_REVISIONES, id));
-        }
-        result.lanzarSiTieneErrores();
-    }
-
-    private boolean esFichaModificable(EstadoFicha estadoFichaActual, ValidationResult result) {
-        if (!DomainValidator.noNulo(estadoFichaActual,
-                FichasFields.ItemFichaPerfil.ESTADO_FICHA,
-                FichasCodes.ItemFichaPerfil.ESTADO_FICHA_REQUERIDO, result)) {
-            return false;
-        }
-        if (!estadoFichaActual.permiteModificacion()) {
-            result.agregarError(
-                    FichasFields.ItemFichaPerfil.ESTADO_FICHA,
-                    FichasCodes.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
-                    Messages.obtener(FichasKeys.ItemFichaPerfil.ERROR_ESTADO_FICHA_NO_MODIFICABLE)
-                            .formatted(estadoFichaActual.getNombre()));
-            return false;
-        }
-        return true;
     }
 
     // ─── Getters ──────────────────────────────────────────────────────────────

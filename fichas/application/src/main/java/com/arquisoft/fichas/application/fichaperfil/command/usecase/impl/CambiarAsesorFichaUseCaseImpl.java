@@ -42,7 +42,7 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
         fichaPerfilOutputPort.actualizarAsesor(fichaPerfil, nuevoAsesorFicha);
 
         eventPublisher.publish(new AsesorFichaCambiadoEvent(fichaPerfil, fichaActual.getTituloProyecto(),
-                        asesorFichaContacto.id(), asesorFichaContacto.nombre(), asesorFichaContacto.email()));
+                asesorFichaContacto.id(), asesorFichaContacto.nombre(), asesorFichaContacto.email()));
 
         logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_ASESOR_CAMBIADO), fichaPerfil, nuevoAsesorFicha);
     }

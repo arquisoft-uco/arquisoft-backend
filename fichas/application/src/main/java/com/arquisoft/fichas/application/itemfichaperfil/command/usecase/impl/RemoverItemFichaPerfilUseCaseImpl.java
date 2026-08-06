@@ -6,8 +6,9 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.RemoverI
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.RemoverItemFichaPerfilDomain;
-import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilFinder;
+import com.arquisoft.fichas.domain.itemfichaperfil.model.RevisionesItemCriteria;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemSinRevisionesRule;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,26 +18,21 @@ import org.springframework.stereotype.Component;
 public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfilUseCase {
 
     private final ItemFichaPerfilOutputPort itemOutputPort;
-    private final ItemFichaPerfilFinder itemFichaPerfilFinder;
     private final RevisionItemQueryOutputPort revisionQueryPort;
     private final RemoverItemFichaPerfilValidator removerItemFichaPerfilValidator;
+    private final ItemSinRevisionesRule itemSinRevisionesRule;
     private final AppLogger logger;
     private final MessageCatalog catalog;
 
     @Override
     public void ejecutar(RemoverItemFichaPerfilDomain entrada) {
-        var item = itemFichaPerfilFinder.obtener(entrada.getItem());
-
-        removerItemFichaPerfilValidator.validar(item.getFichaPerfilId(), entrada.getEstudiante());
+        removerItemFichaPerfilValidator.validar(entrada.getItem(), entrada.getEstudiante());
 
         long totalRevisiones = revisionQueryPort.contarPorItem(entrada.getItem());
-        item.removerse(totalRevisiones);
+        itemSinRevisionesRule.validar(new RevisionesItemCriteria(entrada.getItem(), totalRevisiones));
 
         itemOutputPort.removerItem(entrada.getItem());
 
-        logger.info(
-                catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_REMOVIDO),
-                entrada.getItem(),
-                item.getFichaPerfilId());
+        logger.info(catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_REMOVIDO), entrada.getItem());
     }
 }

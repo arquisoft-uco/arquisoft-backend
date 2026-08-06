@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl;
 
+import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.rules.EstudiantePropietarioFichaRule;
@@ -12,10 +13,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RemoverItemFichaPerfilValidatorImpl implements RemoverItemFichaPerfilValidator {
 
+    private final FichaPerfilDelItemFinder fichaPerfilDelItemFinder;
     private final EstudiantePropietarioFichaRule estudiantePropietarioFichaRule;
 
     @Override
-    public void validar(UUID fichaPerfil, UUID estudiante) {
+    public void validar(UUID item, UUID estudiante) {
+        UUID fichaPerfil = fichaPerfilDelItemFinder.obtener(item);
+
         estudiantePropietarioFichaRule.validar(new PropietarioFichaCriteria(fichaPerfil, estudiante));
     }
 }

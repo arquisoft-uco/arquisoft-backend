@@ -43,8 +43,10 @@ import com.arquisoft.fichas.domain.fichaperfil.rules.impl.FichaPerfilTituloDispo
 import com.arquisoft.fichas.domain.fichaperfil.rules.impl.FichaPerfilTituloUnicoRuleImpl;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
+import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemSinRevisionesRule;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemTipoNoDuplicadoRule;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.impl.ItemFichaPropiaRuleImpl;
+import com.arquisoft.fichas.domain.itemfichaperfil.rules.impl.ItemSinRevisionesRuleImpl;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.impl.ItemTipoNoDuplicadoRuleImpl;
 import com.arquisoft.fichas.domain.representantecomite.port.out.RepresentanteComiteOutputPort;
 import org.springframework.context.annotation.Bean;
@@ -152,6 +154,11 @@ public class FichasDomainRulesConfig {
     public ItemTipoNoDuplicadoRule itemTipoNoDuplicadoRule(
             ItemFichaPerfilOutputPort itemFichaPerfilOutputPort) {
         return new ItemTipoNoDuplicadoRuleImpl(itemFichaPerfilOutputPort);
+    }
+
+    @Bean
+    public ItemSinRevisionesRule itemSinRevisionesRule() {
+        return new ItemSinRevisionesRuleImpl();
     }
 
     @Bean
