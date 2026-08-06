@@ -7,7 +7,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.util.UUID;
@@ -17,7 +17,7 @@ import java.util.UUID;
     name = "estudiante_ficha_perfil",
     uniqueConstraints = @UniqueConstraint(columnNames = {"ficha_perfil_id", "estudiante_id"})
 )
-@Data
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

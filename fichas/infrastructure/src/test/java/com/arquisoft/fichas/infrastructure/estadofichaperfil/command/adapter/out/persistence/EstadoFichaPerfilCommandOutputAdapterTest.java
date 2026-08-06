@@ -34,16 +34,18 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
         adapter = new EstadoFichaPerfilCommandOutputAdapter(
                 estadoFichaPerfilRepository, estadoFichaRepository);
 
-        var estadoFicha = new EstadoFichaEntity();
-        estadoFicha.setId("EN_CONSTRUCCION");
-        estadoFicha.setNombre("En Construccion");
-        estadoFicha.setDescripcion("Estado inicial");
+        var estadoFicha = EstadoFichaEntity.builder()
+                .id("EN_CONSTRUCCION")
+                .nombre("En Construccion")
+                .descripcion("Estado inicial")
+                .build();
         estadoFichaRepository.save(estadoFicha);
 
-        var estadoAprobada = new EstadoFichaEntity();
-        estadoAprobada.setId("APROBADA");
-        estadoAprobada.setNombre("Aprobada");
-        estadoAprobada.setDescripcion("Estado terminal");
+        var estadoAprobada = EstadoFichaEntity.builder()
+                .id("APROBADA")
+                .nombre("Aprobada")
+                .descripcion("Estado terminal")
+                .build();
         estadoFichaRepository.save(estadoAprobada);
     }
 
@@ -72,11 +74,12 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
                 .orElseThrow();
         Instant fechaActualizacion = Instant.now();
 
-        var entity = new EstadoFichaPerfilEntity();
-        entity.setId(UUID.randomUUID());
-        entity.setFichaPerfilId(fichaPerfilId);
-        entity.setEstadoFicha(estadoFichaEntity);
-        entity.setFechaActualizacion(fechaActualizacion);
+        var entity = EstadoFichaPerfilEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaPerfilId)
+                .estadoFicha(estadoFichaEntity)
+                .fechaActualizacion(fechaActualizacion)
+                .build();
         estadoFichaPerfilRepository.save(entity);
 
         // Act

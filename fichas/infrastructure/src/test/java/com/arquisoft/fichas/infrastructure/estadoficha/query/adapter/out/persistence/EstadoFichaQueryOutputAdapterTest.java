@@ -28,20 +28,23 @@ class EstadoFichaQueryOutputAdapterTest {
     @Test
     void debeRetornarListaDeReadModels_cuandoFindAllEsInvocado() {
         // Arrange
-        EstadoFichaEntity entity1 = new EstadoFichaEntity();
-        entity1.setId("EN_CONSTRUCCION");
-        entity1.setNombre("En Construccion");
-        entity1.setDescripcion("Ficha en desarrollo");
+        EstadoFichaEntity entity1 = EstadoFichaEntity.builder()
+                .id("EN_CONSTRUCCION")
+                .nombre("En Construccion")
+                .descripcion("Ficha en desarrollo")
+                .build();
 
-        EstadoFichaEntity entity2 = new EstadoFichaEntity();
-        entity2.setId("APROBADA");
-        entity2.setNombre("Aprobada");
-        entity2.setDescripcion("Ficha aprobada por el comite");
+        EstadoFichaEntity entity2 = EstadoFichaEntity.builder()
+                .id("APROBADA")
+                .nombre("Aprobada")
+                .descripcion("Ficha aprobada por el comite")
+                .build();
 
-        EstadoFichaEntity entity3 = new EstadoFichaEntity();
-        entity3.setId("NO_APROBADA");
-        entity3.setNombre("No Aprobada");
-        entity3.setDescripcion("Ficha rechazada");
+        EstadoFichaEntity entity3 = EstadoFichaEntity.builder()
+                .id("NO_APROBADA")
+                .nombre("No Aprobada")
+                .descripcion("Ficha rechazada")
+                .build();
 
         List<EstadoFichaEntity> entities = List.of(entity1, entity2, entity3);
         when(repository.findAll()).thenReturn(entities);
@@ -85,10 +88,11 @@ class EstadoFichaQueryOutputAdapterTest {
     @Test
     void debeMaperarCorrectamente_cuandoConvierteEntityAReadModel() {
         // Arrange
-        EstadoFichaEntity entity = new EstadoFichaEntity();
-        entity.setId("DISPONIBLE_PARA_EVALUACION");
-        entity.setNombre("Disponible para Evaluacion");
-        entity.setDescripcion("Ficha lista para ser evaluada");
+        EstadoFichaEntity entity = EstadoFichaEntity.builder()
+                .id("DISPONIBLE_PARA_EVALUACION")
+                .nombre("Disponible para Evaluacion")
+                .descripcion("Ficha lista para ser evaluada")
+                .build();
 
         when(repository.findAll()).thenReturn(List.of(entity));
 

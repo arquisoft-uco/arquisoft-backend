@@ -26,10 +26,11 @@ class EstadoFichaPerfilRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        estadoFicha = new EstadoFichaEntity();
-        estadoFicha.setId("EN_CONSTRUCCION");
-        estadoFicha.setNombre("En Construccion");
-        estadoFicha.setDescripcion("Estado inicial");
+        estadoFicha = EstadoFichaEntity.builder()
+                .id("EN_CONSTRUCCION")
+                .nombre("En Construccion")
+                .descripcion("Estado inicial")
+                .build();
         estadoFichaRepository.save(estadoFicha);
     }
 
@@ -37,11 +38,12 @@ class EstadoFichaPerfilRepositoryTest {
     void debeGuardar_cuandoEntidadEsValida() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        var entity = new EstadoFichaPerfilEntity();
-        entity.setId(UUID.randomUUID());
-        entity.setFichaPerfilId(fichaPerfilId);
-        entity.setEstadoFicha(estadoFicha);
-        entity.setFechaActualizacion(Instant.now());
+        var entity = EstadoFichaPerfilEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaPerfilId)
+                .estadoFicha(estadoFicha)
+                .fechaActualizacion(Instant.now())
+                .build();
 
         // Act
         EstadoFichaPerfilEntity resultado = estadoFichaPerfilRepository.save(entity);
@@ -57,11 +59,12 @@ class EstadoFichaPerfilRepositoryTest {
     void debeBuscarPorId_cuandoIdExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        var entity = new EstadoFichaPerfilEntity();
-        entity.setId(UUID.randomUUID());
-        entity.setFichaPerfilId(fichaPerfilId);
-        entity.setEstadoFicha(estadoFicha);
-        entity.setFechaActualizacion(Instant.now());
+        var entity = EstadoFichaPerfilEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaPerfilId)
+                .estadoFicha(estadoFicha)
+                .fechaActualizacion(Instant.now())
+                .build();
         estadoFichaPerfilRepository.save(entity);
 
         // Act

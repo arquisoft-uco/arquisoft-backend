@@ -54,8 +54,9 @@ class FichaPerfilCommandOutputAdapterTest {
                 asesorId
         );
 
-        AsesorFichaEntity asesorRef = new AsesorFichaEntity();
-        asesorRef.setId(asesorId);
+        AsesorFichaEntity asesorRef = AsesorFichaEntity.builder()
+                .id(asesorId)
+                .build();
 
         when(asesorFichaRepository.getReferenceById(asesorId)).thenReturn(asesorRef);
         when(fichaPerfilRepository.save(any(FichaPerfilEntity.class)))
@@ -72,13 +73,15 @@ class FichaPerfilCommandOutputAdapterTest {
     @Test
     void debeBuscarPorId_cuandoIdExiste() {
         // Arrange
-        AsesorFichaEntity asesor = new AsesorFichaEntity();
-        asesor.setId(asesorId);
+        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
+                .id(asesorId)
+                .build();
 
-        FichaPerfilEntity entity = new FichaPerfilEntity();
-        entity.setId(fichaId);
-        entity.setTituloProyecto("Proyecto Test");
-        entity.setAsesorFicha(asesor);
+        FichaPerfilEntity entity = FichaPerfilEntity.builder()
+                .id(fichaId)
+                .tituloProyecto("Proyecto Test")
+                .asesorFicha(asesor)
+                .build();
 
         when(fichaPerfilRepository.findById(fichaId)).thenReturn(Optional.of(entity));
 

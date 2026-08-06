@@ -10,7 +10,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.Instant;
@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "estado_evaluacion_ficha")
-@Data
+@Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

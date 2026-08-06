@@ -17,10 +17,11 @@ class EstadoFichaRepositoryTest {
     @Test
     void debeBuscarPorNombre_cuandoEstadoExiste() {
         // Arrange
-        var estadoFicha = new EstadoFichaEntity();
-        estadoFicha.setId("EN_CONSTRUCCION");
-        estadoFicha.setNombre("En Construccion");
-        estadoFicha.setDescripcion("Estado inicial");
+        var estadoFicha = EstadoFichaEntity.builder()
+                .id("EN_CONSTRUCCION")
+                .nombre("En Construccion")
+                .descripcion("Estado inicial")
+                .build();
         estadoFichaRepository.save(estadoFicha);
 
         // Act

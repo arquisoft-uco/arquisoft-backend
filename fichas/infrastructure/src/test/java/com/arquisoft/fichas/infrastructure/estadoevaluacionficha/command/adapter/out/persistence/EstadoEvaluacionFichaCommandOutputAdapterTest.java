@@ -61,7 +61,11 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         when(evaluacionFichaPerfilRepository.getReferenceById(evaluacionId))
                 .thenReturn(evaluacionJpa);
 
-        var estadoJpa = new EstadoEvaluacionEntity("EN_EVALUACION", "En Evaluación", "");
+        var estadoJpa = EstadoEvaluacionEntity.builder()
+                .id("EN_EVALUACION")
+                .nombre("En Evaluación")
+                .descripcion("")
+                .build();
         when(estadoEvaluacionRepository.getReferenceById("EN_EVALUACION"))
                 .thenReturn(estadoJpa);
 
@@ -92,7 +96,11 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
                 .id(evaluacionId)
                 .build();
 
-        var estadoJpa = new EstadoEvaluacionEntity("APROBADA", "Aprobada", "");
+        var estadoJpa = EstadoEvaluacionEntity.builder()
+                .id("APROBADA")
+                .nombre("Aprobada")
+                .descripcion("")
+                .build();
 
         EstadoEvaluacionFichaEntity entity = EstadoEvaluacionFichaEntity.builder()
                 .id(id)

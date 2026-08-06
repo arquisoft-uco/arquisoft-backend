@@ -31,25 +31,28 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
     void setUp() {
         adapter = new EstadoFichaPerfilQueryOutputAdapter(estadoFichaPerfilRepository);
 
-        var estadoFicha = new EstadoFichaEntity();
-        estadoFicha.setId("EN_CONSTRUCCION");
-        estadoFicha.setNombre("En Construccion");
-        estadoFicha.setDescripcion("Estado inicial");
+        var estadoFicha = EstadoFichaEntity.builder()
+                .id("EN_CONSTRUCCION")
+                .nombre("En Construccion")
+                .descripcion("Estado inicial")
+                .build();
         estadoFichaRepository.save(estadoFicha);
 
-        var estadoAprobada = new EstadoFichaEntity();
-        estadoAprobada.setId("APROBADA");
-        estadoAprobada.setNombre("Aprobada");
-        estadoAprobada.setDescripcion("Estado terminal");
+        var estadoAprobada = EstadoFichaEntity.builder()
+                .id("APROBADA")
+                .nombre("Aprobada")
+                .descripcion("Estado terminal")
+                .build();
         estadoFichaRepository.save(estadoAprobada);
     }
 
     private void persistirEstado(UUID fichaPerfilId, String estadoFichaId, Instant fechaActualizacion) {
-        var entity = new EstadoFichaPerfilEntity();
-        entity.setId(UUID.randomUUID());
-        entity.setFichaPerfilId(fichaPerfilId);
-        entity.setEstadoFicha(estadoFichaRepository.findById(estadoFichaId).orElseThrow());
-        entity.setFechaActualizacion(fechaActualizacion);
+        var entity = EstadoFichaPerfilEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaPerfilId)
+                .estadoFicha(estadoFichaRepository.findById(estadoFichaId).orElseThrow())
+                .fechaActualizacion(fechaActualizacion)
+                .build();
         estadoFichaPerfilRepository.save(entity);
     }
 
