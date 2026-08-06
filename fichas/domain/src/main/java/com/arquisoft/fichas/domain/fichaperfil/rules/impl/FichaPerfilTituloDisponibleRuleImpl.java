@@ -15,10 +15,7 @@ public class FichaPerfilTituloDisponibleRuleImpl implements FichaPerfilTituloDis
 
     @Override
     public void validar(TituloFichaCriteria criteria) {
-        if (criteria.tituloActual().equals(criteria.nuevoTitulo())) {
-            return;
-        }
-        if (fichaPerfilOutputPort.existePorTituloProyecto(criteria.nuevoTitulo())) {
+        if (fichaPerfilOutputPort.existeTituloEnOtraFicha(criteria.fichaPerfil(), criteria.nuevoTitulo())) {
             throw new FichaTituloDuplicadoException(criteria.nuevoTitulo());
         }
     }

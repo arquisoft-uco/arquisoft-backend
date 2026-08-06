@@ -17,13 +17,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AsesorContactoFinderImplTest {
+class AsesorFichaFinderImplTest {
 
     @Mock
     private AsesorFichaQueryOutputPort asesorFichaQueryOutputPort;
 
     @InjectMocks
-    private AsesorContactoFinderImpl finder;
+    private AsesorFichaFinderImpl finder;
 
     @Test
     void debeRetornarElContacto_cuandoExiste() {

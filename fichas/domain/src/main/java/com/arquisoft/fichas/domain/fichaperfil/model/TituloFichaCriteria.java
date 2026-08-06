@@ -1,3 +1,5 @@
 package com.arquisoft.fichas.domain.fichaperfil.model;
 
-public record TituloFichaCriteria(String tituloActual, String nuevoTitulo) {}
+import java.util.UUID;
+
+public record TituloFichaCriteria(UUID fichaPerfil, String nuevoTitulo) {}

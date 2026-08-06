@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.asesorficha.query.finder.impl;
 
-import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorContactoFinder;
+import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.asesorficha.query.port.out.AsesorFichaQueryOutputPort;
 import com.arquisoft.fichas.application.asesorficha.query.readmodel.AsesorContactoReadModel;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class AsesorContactoFinderImpl implements AsesorContactoFinder {
+public class AsesorFichaFinderImpl implements AsesorFichaFinder {
 
     private final AsesorFichaQueryOutputPort asesorFichaQueryOutputPort;
 

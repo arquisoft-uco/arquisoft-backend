@@ -45,14 +45,6 @@ public final class FichaPerfilDomain extends AggregateRoot {
         return new FichaPerfilDomain(id, titulo, asesorFichaId);
     }
 
-    // ─── Métodos de negocio ───────────────────────────────────────────────────
-
-    public void actualizarTitulo(String nuevoTitulo) {
-        var result = new ValidationResult();
-        setTituloProyecto(nuevoTitulo, result);
-        result.lanzarSiTieneErrores();
-    }
-
     // ─── Private setters ──────────────────────────────────────────────────────
 
     private void setId() {

@@ -11,15 +11,17 @@ public interface FichaPerfilOutputPort {
 
     void registrarFicha(FichaPerfilDomain ficha);
 
-    void actualizarTitulo(FichaPerfilDomain ficha);
+    void actualizarTitulo(UUID fichaPerfil, String tituloProyecto);
 
-    void actualizarAsesor(FichaPerfilDomain ficha);
+    void actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha);
 
     Optional<FichaPerfilDomain> buscarPorId(UUID id);
 
     boolean existePorId(UUID id);
 
     boolean existePorTituloProyecto(String titulo);
+
+    boolean existeTituloEnOtraFicha(UUID fichaPerfil, String titulo);
 
     boolean esEstudiantePropietario(PropietarioFichaCriteria criteria);
 }

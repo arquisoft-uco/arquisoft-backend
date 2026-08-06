@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.ModificarFichaPerfilValidatorImpl;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.ModificarFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.model.TituloFichaCriteria;
@@ -35,15 +34,14 @@ class ModificarFichaPerfilValidatorTest {
         UUID fichaId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
         var modificacion = ModificarFichaPerfilDomain.crear(fichaId, "Titulo nuevo", estudianteId);
-        var fichaActual = FichaPerfilDomain.reconstruir(fichaId, "Titulo original", UUID.randomUUID());
 
         // Act — una sola llamada agrupa todas las reglas de la transacción
-        validator.validar(modificacion, fichaActual);
+        validator.validar(modificacion);
 
         // Assert
         verify(estudiantePropietarioFichaRule)
                 .validar(new PropietarioFichaCriteria(fichaId, estudianteId));
         verify(fichaPerfilTituloDisponibleRule)
-                .validar(new TituloFichaCriteria("Titulo original", "Titulo nuevo"));
+                .validar(new TituloFichaCriteria(fichaId, "Titulo nuevo"));
     }
 }

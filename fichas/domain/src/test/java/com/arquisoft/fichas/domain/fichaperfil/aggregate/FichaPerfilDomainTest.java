@@ -77,44 +77,4 @@ class FichaPerfilDomainTest {
         assertThat(ficha.getAsesorFicha()).isEqualTo(asesorId);
     }
 
-    @Test
-    void debeActualizarTitulo_cuandoTituloValido() {
-        // Arrange
-        String titulo = "Título original";
-        UUID asesorId = UUID.randomUUID();
-        FichaPerfilDomain ficha = FichaPerfilDomain.crear(titulo, asesorId);
-
-        // Act
-        ficha.actualizarTitulo("Título nuevo");
-
-        // Assert
-        assertThat(ficha.getTituloProyecto()).isEqualTo("Título nuevo");
-    }
-
-    @Test
-    void debeRechazarActualizacion_cuandoTituloVacio() {
-        // Arrange
-        String titulo = "Título válido";
-        UUID asesorId = UUID.randomUUID();
-        FichaPerfilDomain ficha = FichaPerfilDomain.crear(titulo, asesorId);
-
-        // Act & Assert
-        assertThatThrownBy(() -> ficha.actualizarTitulo(""))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("tituloProyecto");
-    }
-
-    @Test
-    void debeRechazarActualizacion_cuandoTituloExcedeMaximo() {
-        // Arrange
-        String titulo = "Título válido";
-        UUID asesorId = UUID.randomUUID();
-        FichaPerfilDomain ficha = FichaPerfilDomain.crear(titulo, asesorId);
-
-        // Act & Assert
-        assertThatThrownBy(() -> ficha.actualizarTitulo("a".repeat(101)))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("tituloProyecto");
-    }
-
 }

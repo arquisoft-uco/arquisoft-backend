@@ -5,5 +5,5 @@ import com.arquisoft.shared.rules.Finder;
 
 import java.util.UUID;
 
-public interface AsesorContactoFinder extends Finder<UUID, AsesorContactoReadModel> {
+public interface AsesorFichaFinder extends Finder<UUID, AsesorContactoReadModel> {
 }

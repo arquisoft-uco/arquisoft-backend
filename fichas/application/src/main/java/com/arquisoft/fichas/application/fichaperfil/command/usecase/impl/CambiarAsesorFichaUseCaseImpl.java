@@ -1,12 +1,11 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorContactoFinder;
+import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorFichaFinder;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAsesorFichaUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.CambiarAsesorFichaDomain;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
-import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
@@ -23,7 +22,7 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
     private final FichaPerfilFinder fichaPerfilFinder;
-    private final AsesorContactoFinder asesorContactoFinder;
+    private final AsesorFichaFinder asesorFichaFinder;
     private final CambiarAsesorFichaValidator cambiarAsesorFichaValidator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
@@ -38,18 +37,13 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
 
         cambiarAsesorFichaValidator.validar(cambio, fichaActual.getAsesorFicha());
 
-        var asesorFichaContacto = asesorContactoFinder.obtener(nuevoAsesorFicha);
+        var asesorFichaContacto = asesorFichaFinder.obtener(nuevoAsesorFicha);
 
-        FichaPerfilDomain fichaActualizada = FichaPerfilDomain.reconstruir(
-                fichaActual.getId(), fichaActual.getTituloProyecto(), nuevoAsesorFicha);
+        fichaPerfilOutputPort.actualizarAsesor(fichaPerfil, nuevoAsesorFicha);
 
-        fichaActualizada.publishEvent(new AsesorFichaCambiadoEvent(fichaActualizada.getId(), fichaActualizada.getTituloProyecto(),
+        eventPublisher.publish(new AsesorFichaCambiadoEvent(fichaPerfil, fichaActual.getTituloProyecto(),
                         asesorFichaContacto.id(), asesorFichaContacto.nombre(), asesorFichaContacto.email()));
 
-        fichaPerfilOutputPort.actualizarAsesor(fichaActualizada);
-
-        fichaActualizada.drainUnPublishedEvents().forEach(eventPublisher::publish);
-
-        logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_ASESOR_CAMBIADO), fichaActualizada.getId(), nuevoAsesorFicha);
+        logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_ASESOR_CAMBIADO), fichaPerfil, nuevoAsesorFicha);
     }
 }

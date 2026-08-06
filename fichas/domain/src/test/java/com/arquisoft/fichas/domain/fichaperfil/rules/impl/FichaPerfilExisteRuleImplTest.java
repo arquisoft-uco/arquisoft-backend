@@ -49,12 +49,12 @@ class FichaPerfilExisteRuleImplTest {
         }
 
         @Override
-        public void actualizarTitulo(FichaPerfilDomain ficha) {
+        public void actualizarTitulo(UUID fichaPerfil, String tituloProyecto) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void actualizarAsesor(FichaPerfilDomain ficha) {
+        public void actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha) {
             throw new UnsupportedOperationException();
         }
 
@@ -65,6 +65,11 @@ class FichaPerfilExisteRuleImplTest {
 
         @Override
         public boolean existePorTituloProyecto(String titulo) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean existeTituloEnOtraFicha(UUID fichaPerfil, String titulo) {
             throw new UnsupportedOperationException();
         }
 

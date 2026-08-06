@@ -29,24 +29,22 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
     @Override
     public void registrarFicha(FichaPerfilDomain ficha) {
-        persistir(ficha);
-    }
-
-    @Override
-    public void actualizarTitulo(FichaPerfilDomain ficha) {
-        persistir(ficha);
-    }
-
-    @Override
-    public void actualizarAsesor(FichaPerfilDomain ficha) {
-        persistir(ficha);
-    }
-
-    private void persistir(FichaPerfilDomain ficha) {
-        AsesorFichaEntity asesorRef =
-                asesorFichaRepository.getReferenceById(ficha.getAsesorFicha());
+        AsesorFichaEntity asesorRef = asesorFichaRepository.getReferenceById(ficha.getAsesorFicha());
         fichaPerfilRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));
         logger.debug(catalog.obtener(FichasKeys.FichaPerfil.LOG_GUARDADA), ficha.getId());
+    }
+
+    @Override
+    public void actualizarTitulo(UUID fichaPerfil, String tituloProyecto) {
+        fichaPerfilRepository.actualizarTitulo(fichaPerfil, tituloProyecto);
+        logger.debug(catalog.obtener(FichasKeys.FichaPerfil.LOG_GUARDADA), fichaPerfil);
+    }
+
+    @Override
+    public void actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha) {
+        AsesorFichaEntity asesorRef = asesorFichaRepository.getReferenceById(nuevoAsesorFicha);
+        fichaPerfilRepository.actualizarAsesorFicha(fichaPerfil, asesorRef);
+        logger.debug(catalog.obtener(FichasKeys.FichaPerfil.LOG_GUARDADA), fichaPerfil);
     }
 
     @Override
@@ -68,5 +66,10 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     @Override
     public boolean existePorTituloProyecto(String titulo) {
         return fichaPerfilRepository.existsByTituloProyecto(titulo);
+    }
+
+    @Override
+    public boolean existeTituloEnOtraFicha(UUID fichaPerfil, String titulo) {
+        return fichaPerfilRepository.existsByTituloProyectoAndIdNot(titulo, fichaPerfil);
     }
 }

@@ -5,7 +5,6 @@ import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTe
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.CambiarAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.CambioAsesorFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaDiferenteRule;
-import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaExisteRule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,9 +17,6 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class CambiarAsesorFichaValidatorTest {
-
-    @Mock
-    private AsesorFichaExisteRule asesorFichaExisteRule;
 
     @Mock
     private EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
@@ -43,7 +39,6 @@ class CambiarAsesorFichaValidatorTest {
         validator.validar(cambio, asesorActualId);
 
         // Assert
-        verify(asesorFichaExisteRule).validar(nuevoAsesorId);
         verify(estadoFichaPerfilEnTerminalRule).validar(fichaId);
         verify(asesorFichaDiferenteRule).validar(new CambioAsesorFichaCriteria(nuevoAsesorId, asesorActualId));
     }
