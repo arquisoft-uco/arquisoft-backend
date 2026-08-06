@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
@@ -27,7 +27,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
 
         fichaPerfilOutputPort.registrarFicha(ficha);
 
-        logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_REGISTRADA), ficha.getId());
+        logger.info(catalog.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
         return ficha.getId();
     }
 }

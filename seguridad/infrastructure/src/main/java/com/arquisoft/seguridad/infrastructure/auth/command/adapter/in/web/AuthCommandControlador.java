@@ -1,7 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web;
 
+import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
+import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.application.auth.command.interactor.AuthenticateUserInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.LogoutInteractor;
 import com.arquisoft.seguridad.application.auth.command.interactor.RefreshTokenInteractor;
@@ -104,7 +105,7 @@ public class AuthCommandControlador {
     })
     public ResponseEntity<LoginResponseDTO> refreshToken(
             @Valid @RequestBody RefreshTokenRequestDTO refreshTokenRequest) {
-        log.debug(catalog.obtener(SeguridadKeys.Token.LOG_REFRESH_DEBUG));
+        log.debug(catalog.obtener(TokenKey.LOG_REFRESH_DEBUG));
 
         RefrescoTokenResult result = refreshTokenInteractor.ejecutar(
                 refreshTokenRequest.refreshToken()
@@ -118,7 +119,7 @@ public class AuthCommandControlador {
                 .scope(result.scope())
                 .build();
 
-        log.debug(catalog.obtener(SeguridadKeys.Autenticacion.LOG_REFRESH_EXITOSO));
+        log.debug(catalog.obtener(AutenticacionKey.LOG_REFRESH_EXITOSO));
         return ResponseEntity.ok(response);
     }
 
@@ -161,7 +162,7 @@ public class AuthCommandControlador {
                     content = @Content(mediaType = "application/json"))
     })
     public ResponseEntity<ValidateTokenResponseDTO> validateToken(@RequestParam String token) {
-        log.debug(catalog.obtener(SeguridadKeys.Autenticacion.LOG_VALIDATE_DEBUG));
+        log.debug(catalog.obtener(AutenticacionKey.LOG_VALIDATE_DEBUG));
 
         ValidacionTokenResult result = validateTokenInteractor.ejecutar(
                 TokenDomain.de(token)

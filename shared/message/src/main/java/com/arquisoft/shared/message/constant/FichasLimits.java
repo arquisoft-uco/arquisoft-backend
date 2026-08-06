@@ -1,4 +1,4 @@
-package com.arquisoft.shared.message;
+package com.arquisoft.shared.message.constant;
 
 /**
  * Límites de longitud y cardinalidad del contexto fichas.

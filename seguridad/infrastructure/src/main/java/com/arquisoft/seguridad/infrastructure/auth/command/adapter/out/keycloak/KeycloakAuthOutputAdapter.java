@@ -1,7 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.out.keycloak;
 
+import com.arquisoft.shared.message.key.seguridad.LoginKey;
+import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
 import com.arquisoft.seguridad.domain.auth.port.out.AuthenticationOutputPort;
@@ -63,22 +64,22 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
                 return mapToCredenciales(response.getBody());
             }
 
-            throw new CredencialesInvalidasException(catalog.obtener(SeguridadKeys.Login.ERROR_AUTENTICAR_KEYCLOAK));
+            throw new CredencialesInvalidasException(catalog.obtener(LoginKey.ERROR_AUTENTICAR_KEYCLOAK));
 
         } catch (HttpClientErrorException.Unauthorized e) {
-            log.warn(catalog.obtener(SeguridadKeys.Login.LOG_CREDENCIALES_INVALIDAS));
-            throw new CredencialesInvalidasException(catalog.obtener(SeguridadKeys.Login.ERROR_CREDENCIALES_INVALIDAS));
+            log.warn(catalog.obtener(LoginKey.LOG_CREDENCIALES_INVALIDAS));
+            throw new CredencialesInvalidasException(catalog.obtener(LoginKey.ERROR_CREDENCIALES_INVALIDAS));
         } catch (HttpClientErrorException e) {
-            log.error(catalog.obtener(SeguridadKeys.Login.LOG_ERROR_AUTENTICACION_KEYCLOAK), e.getStatusCode(), e.getMessage());
-            throw new AuthenticationException(catalog.formatear(SeguridadKeys.Login.ERROR_COMUNICACION_KEYCLOAK, e.getMessage()));
+            log.error(catalog.obtener(LoginKey.LOG_ERROR_AUTENTICACION_KEYCLOAK), e.getStatusCode(), e.getMessage());
+            throw new AuthenticationException(catalog.formatear(LoginKey.ERROR_COMUNICACION_KEYCLOAK, e.getMessage()));
         } catch (ResourceAccessException e) {
-            log.error(catalog.obtener(SeguridadKeys.Login.LOG_KEYCLOAK_NO_DISPONIBLE), e.getMessage());
-            throw new ProveedorIdentidadNoDisponibleException(catalog.obtener(SeguridadKeys.Login.ERROR_SERVICIO_NO_DISPONIBLE), e);
+            log.error(catalog.obtener(LoginKey.LOG_KEYCLOAK_NO_DISPONIBLE), e.getMessage());
+            throw new ProveedorIdentidadNoDisponibleException(catalog.obtener(LoginKey.ERROR_SERVICIO_NO_DISPONIBLE), e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {
-            log.error(catalog.obtener(SeguridadKeys.Login.LOG_ERROR_INESPERADO), e.getMessage());
-            throw new AuthenticationException(catalog.formatear(SeguridadKeys.Login.ERROR_INESPERADO_AUTENTICACION, e.getMessage()), e);
+            log.error(catalog.obtener(LoginKey.LOG_ERROR_INESPERADO), e.getMessage());
+            throw new AuthenticationException(catalog.formatear(LoginKey.ERROR_INESPERADO_AUTENTICACION, e.getMessage()), e);
         }
     }
 
@@ -100,22 +101,22 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
                 return mapToCredenciales(response.getBody());
             }
 
-            throw new TokenInvalidoException(catalog.obtener(SeguridadKeys.Token.ERROR_REFRESCAR));
+            throw new TokenInvalidoException(catalog.obtener(TokenKey.ERROR_REFRESCAR));
 
         } catch (HttpClientErrorException.BadRequest e) {
-            log.warn(catalog.obtener(SeguridadKeys.Token.LOG_REFRESH_INVALIDO));
-            throw new TokenInvalidoException(catalog.obtener(SeguridadKeys.Token.ERROR_REFRESH_INVALIDO_EXPIRADO));
+            log.warn(catalog.obtener(TokenKey.LOG_REFRESH_INVALIDO));
+            throw new TokenInvalidoException(catalog.obtener(TokenKey.ERROR_REFRESH_INVALIDO_EXPIRADO));
         } catch (HttpClientErrorException e) {
-            log.error(catalog.obtener(SeguridadKeys.Token.LOG_ERROR_REFRESCO_KEYCLOAK), e.getStatusCode(), e.getMessage());
-            throw new AuthenticationException(catalog.formatear(SeguridadKeys.Token.ERROR_REFRESCAR_DETALLE, e.getMessage()));
+            log.error(catalog.obtener(TokenKey.LOG_ERROR_REFRESCO_KEYCLOAK), e.getStatusCode(), e.getMessage());
+            throw new AuthenticationException(catalog.formatear(TokenKey.ERROR_REFRESCAR_DETALLE, e.getMessage()));
         } catch (ResourceAccessException e) {
-            log.error(catalog.obtener(SeguridadKeys.Token.LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO), e.getMessage());
-            throw new ProveedorIdentidadNoDisponibleException(catalog.obtener(SeguridadKeys.Login.ERROR_SERVICIO_NO_DISPONIBLE), e);
+            log.error(catalog.obtener(TokenKey.LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO), e.getMessage());
+            throw new ProveedorIdentidadNoDisponibleException(catalog.obtener(LoginKey.ERROR_SERVICIO_NO_DISPONIBLE), e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {
-            log.error(catalog.obtener(SeguridadKeys.Token.LOG_ERROR_INESPERADO_REFRESCO), e.getMessage());
-            throw new AuthenticationException(catalog.formatear(SeguridadKeys.Token.ERROR_INESPERADO_REFRESCO, e.getMessage()), e);
+            log.error(catalog.obtener(TokenKey.LOG_ERROR_INESPERADO_REFRESCO), e.getMessage());
+            throw new AuthenticationException(catalog.formatear(TokenKey.ERROR_INESPERADO_REFRESCO, e.getMessage()), e);
         }
     }
 
@@ -125,7 +126,7 @@ public class KeycloakAuthOutputAdapter implements AuthenticationOutputPort {
             refrescar(tokenRefresco);
             return true;
         } catch (Exception e) {
-            log.debug(catalog.obtener(SeguridadKeys.Token.LOG_VALIDACION_REFRESH_FALLIDA), e.getMessage());
+            log.debug(catalog.obtener(TokenKey.LOG_VALIDACION_REFRESH_FALLIDA), e.getMessage());
             return false;
         }
     }

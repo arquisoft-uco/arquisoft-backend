@@ -1,8 +1,9 @@
 package com.arquisoft.shared.web.exception;
 
+import com.arquisoft.shared.message.key.app.HttpKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.AppCodes;
-import com.arquisoft.shared.message.AppKeys;
+import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.exception.ApplicationException;
 import com.arquisoft.shared.exception.AuthorizationException;
 import com.arquisoft.shared.exception.BaseException;
@@ -50,19 +51,19 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     // El mapa guarda la CLAVE del catálogo, no el texto: es estático y se inicializa antes de que
     // exista el bean, así que la resolución se difiere al momento de armar la respuesta.
     private static final Map<Class<? extends BaseException>, ExceptionMapping> EXCEPTION_MAPPINGS = Map.of(
-            DomainException.class,         new ExceptionMapping(HttpStatus.UNPROCESSABLE_CONTENT, AppKeys.Http.ERROR_DOMINIO,          false),
-            ApplicationException.class,    new ExceptionMapping(HttpStatus.BAD_REQUEST,           AppKeys.Http.ERROR_APLICACION,       false),
-            AuthorizationException.class,  new ExceptionMapping(HttpStatus.FORBIDDEN,             AppKeys.Http.ACCESO_DENEGADO,        false),
-            InfrastructureException.class, new ExceptionMapping(HttpStatus.SERVICE_UNAVAILABLE,   AppKeys.Http.SERVICIO_NO_DISPONIBLE, true)
+            DomainException.class,         new ExceptionMapping(HttpStatus.UNPROCESSABLE_CONTENT, HttpKey.ERROR_DOMINIO,          false),
+            ApplicationException.class,    new ExceptionMapping(HttpStatus.BAD_REQUEST,           HttpKey.ERROR_APLICACION,       false),
+            AuthorizationException.class,  new ExceptionMapping(HttpStatus.FORBIDDEN,             HttpKey.ACCESO_DENEGADO,        false),
+            InfrastructureException.class, new ExceptionMapping(HttpStatus.SERVICE_UNAVAILABLE,   HttpKey.SERVICIO_NO_DISPONIBLE, true)
     );
 
     private static final ExceptionMapping FALLBACK_MAPPING =
-            new ExceptionMapping(HttpStatus.INTERNAL_SERVER_ERROR, AppKeys.Http.ERROR_INTERNO, true);
+            new ExceptionMapping(HttpStatus.INTERNAL_SERVER_ERROR, HttpKey.ERROR_INTERNO, true);
 
     private static final Pattern SENSITIVE_FIELD_PATTERN =
             Pattern.compile("(?i)(password|contrasena|contraseña|secret|token|credential|clave|pin)");
 
-    private record ExceptionMapping(HttpStatus status, String errorKey, boolean logAsError) {}
+    private record ExceptionMapping(HttpStatus status, MessageKey errorKey, boolean logAsError) {}
 
     @SuppressWarnings("unchecked")
     private ExceptionMapping resolveMapping(BaseException ex) {
@@ -101,9 +102,9 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT)
                 .body(ErrorResponseDTO.builder()
-                        .error(catalog.obtener(AppKeys.Http.ERROR_VALIDACION_DOMINIO))
+                        .error(catalog.obtener(HttpKey.ERROR_VALIDACION_DOMINIO))
                         .errorCode(ex.getErrorCode())
-                        .message(catalog.formatear(AppKeys.Http.VALIDACION_DOMINIO_DETALLE, fieldErrors.size()))
+                        .message(catalog.formatear(HttpKey.VALIDACION_DOMINIO_DETALLE, fieldErrors.size()))
                         .fieldErrors(fieldErrors)
                         .status(HttpStatus.UNPROCESSABLE_CONTENT.value())
                         .path(request.getRequestURI())
@@ -129,7 +130,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(ErrorResponseDTO.builder()
                         .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                         .errorCode(ex.getErrorCode())
-                        .message(catalog.obtener(AppKeys.Http.VALIDACION_DATOS_DETALLE))
+                        .message(catalog.obtener(HttpKey.VALIDACION_DATOS_DETALLE))
                         .fieldErrors(fieldErrors)
                         .status(HttpStatus.BAD_REQUEST.value())
                         .path(request.getRequestURI())
@@ -173,8 +174,8 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponseDTO.builder()
-                        .error(catalog.obtener(AppKeys.Http.NO_AUTORIZADO))
-                        .message(catalog.obtener(AppKeys.Http.NO_AUTENTICADO_DETALLE))
+                        .error(catalog.obtener(HttpKey.NO_AUTORIZADO))
+                        .message(catalog.obtener(HttpKey.NO_AUTENTICADO_DETALLE))
                         .status(HttpStatus.UNAUTHORIZED.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
@@ -189,8 +190,8 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(ErrorResponseDTO.builder()
-                        .error(catalog.obtener(AppKeys.Http.PROHIBIDO))
-                        .message(catalog.obtener(AppKeys.Http.SIN_PERMISOS_DETALLE))
+                        .error(catalog.obtener(HttpKey.PROHIBIDO))
+                        .message(catalog.obtener(HttpKey.SIN_PERMISOS_DETALLE))
                         .status(HttpStatus.FORBIDDEN.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
@@ -218,7 +219,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponseDTO.builder()
-                        .error(catalog.obtener(AppKeys.Http.PARAMETROS_INVALIDOS))
+                        .error(catalog.obtener(HttpKey.PARAMETROS_INVALIDOS))
                         .errorCode(AppCodes.Http.PARAMETRO_INVALIDO)
                         .message(safeMessage)
                         .status(HttpStatus.BAD_REQUEST.value())
@@ -239,8 +240,8 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponseDTO.builder()
-                        .error(catalog.obtener(AppKeys.Http.ERROR_INTERNO_SERVIDOR))
-                        .message(catalog.obtener(AppKeys.Http.ERROR_INTERNO_DETALLE))
+                        .error(catalog.obtener(HttpKey.ERROR_INTERNO_SERVIDOR))
+                        .message(catalog.obtener(HttpKey.ERROR_INTERNO_DETALLE))
                         .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
@@ -272,12 +273,12 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     private ErrorResponseDTO buildSpringMvcErrorBody(Exception ex, HttpStatus status, String path) {
         String message = switch (status) {
             case BAD_REQUEST -> extractBadRequestMessage(ex);
-            case NOT_FOUND -> catalog.obtener(AppKeys.Http.RECURSO_NO_EXISTE_DETALLE);
-            case METHOD_NOT_ALLOWED -> catalog.obtener(AppKeys.Http.METODO_NO_PERMITIDO_DETALLE);
-            case NOT_ACCEPTABLE -> catalog.obtener(AppKeys.Http.FORMATO_NO_PRODUCIBLE_DETALLE);
-            case UNSUPPORTED_MEDIA_TYPE -> catalog.obtener(AppKeys.Http.CONTENT_TYPE_NO_SOPORTADO_DETALLE);
-            case CONTENT_TOO_LARGE -> catalog.obtener(AppKeys.Http.ARCHIVO_DEMASIADO_GRANDE_DETALLE);
-            default -> catalog.obtener(AppKeys.Http.ERROR_PETICION_DETALLE);
+            case NOT_FOUND -> catalog.obtener(HttpKey.RECURSO_NO_EXISTE_DETALLE);
+            case METHOD_NOT_ALLOWED -> catalog.obtener(HttpKey.METODO_NO_PERMITIDO_DETALLE);
+            case NOT_ACCEPTABLE -> catalog.obtener(HttpKey.FORMATO_NO_PRODUCIBLE_DETALLE);
+            case UNSUPPORTED_MEDIA_TYPE -> catalog.obtener(HttpKey.CONTENT_TYPE_NO_SOPORTADO_DETALLE);
+            case CONTENT_TOO_LARGE -> catalog.obtener(HttpKey.ARCHIVO_DEMASIADO_GRANDE_DETALLE);
+            default -> catalog.obtener(HttpKey.ERROR_PETICION_DETALLE);
         };
 
         ErrorResponseDTO.ErrorResponseDTOBuilder builder = ErrorResponseDTO.builder()
@@ -322,14 +323,14 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     private String extractBadRequestMessage(Exception ex) {
         return switch (ex) {
             case org.springframework.web.bind.MethodArgumentNotValidException ignored ->
-                    catalog.obtener(AppKeys.Http.VALIDACION_DATOS_DETALLE);
+                    catalog.obtener(HttpKey.VALIDACION_DATOS_DETALLE);
             case org.springframework.web.bind.MissingServletRequestParameterException m ->
-                    catalog.formatear(AppKeys.Http.PARAMETRO_FALTANTE_DETALLE, m.getParameterName());
+                    catalog.formatear(HttpKey.PARAMETRO_FALTANTE_DETALLE, m.getParameterName());
             case org.springframework.http.converter.HttpMessageNotReadableException notReadable ->
                     extractUnreadableBodyMessage(notReadable);
             case org.springframework.web.method.annotation.MethodArgumentTypeMismatchException m ->
-                    catalog.formatear(AppKeys.Http.CAMPO_FORMATO_INVALIDO_DETALLE, m.getName());
-            default -> catalog.obtener(AppKeys.Http.PETICION_INVALIDA_DETALLE);
+                    catalog.formatear(HttpKey.CAMPO_FORMATO_INVALIDO_DETALLE, m.getName());
+            default -> catalog.obtener(HttpKey.PETICION_INVALIDA_DETALLE);
         };
     }
 
@@ -339,12 +340,12 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             if (cause instanceof tools.jackson.core.JacksonException jacksonEx) {
                 String campo = describirPathJackson(jacksonEx);
                 if (campo != null && !campo.isBlank()) {
-                    return catalog.formatear(AppKeys.Http.CAMPO_FORMATO_INVALIDO_DETALLE, campo);
+                    return catalog.formatear(HttpKey.CAMPO_FORMATO_INVALIDO_DETALLE, campo);
                 }
             }
             cause = cause.getCause();
         }
-        return catalog.obtener(AppKeys.Http.CUERPO_MAL_FORMADO_DETALLE);
+        return catalog.obtener(HttpKey.CUERPO_MAL_FORMADO_DETALLE);
     }
 
     private String describirPathJackson(tools.jackson.core.JacksonException jacksonEx) {

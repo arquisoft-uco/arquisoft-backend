@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 import com.arquisoft.fichas.application.fichaperfil.command.mapper.ModificarFichaPerfilMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
-import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.fichas.application.fichaperfil.command.model.ModificarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;

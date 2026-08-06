@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
+import com.arquisoft.shared.message.key.seguridad.LoginKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.SeguridadKeys;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,7 @@ public class SecurityAuthenticationEntryPoint implements AuthenticationEntryPoin
                          HttpServletResponse response,
                          AuthenticationException authException) {
 
-        log.warn(catalog.obtener(SeguridadKeys.Login.LOG_UNAUTHORIZED), request.getRequestURI(), authException.getMessage());
+        log.warn(catalog.obtener(LoginKey.LOG_UNAUTHORIZED), request.getRequestURI(), authException.getMessage());
         resolver.resolveException(request, response, null, authException);
     }
 }

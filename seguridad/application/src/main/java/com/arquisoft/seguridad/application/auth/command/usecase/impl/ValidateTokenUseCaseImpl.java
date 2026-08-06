@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenDomain;
@@ -21,7 +21,7 @@ public class ValidateTokenUseCaseImpl implements ValidateTokenUseCase {
 
     @Override
     public ValidacionTokenResult ejecutar(TokenDomain entrada) {
-        log.debug(catalog.obtener(SeguridadKeys.Token.LOG_VALIDAR_DEBUG));
+        log.debug(catalog.obtener(TokenKey.LOG_VALIDAR_DEBUG));
 
         try {
             if (tokenValidationOutputPort.validarToken(entrada.valor())) {
@@ -31,16 +31,16 @@ public class ValidateTokenUseCaseImpl implements ValidateTokenUseCase {
                         true,
                         identidad.identidadId(),
                         identidad.correo(),
-                        catalog.obtener(SeguridadKeys.Token.LOG_VALIDO)
+                        catalog.obtener(TokenKey.LOG_VALIDO)
                 );
             } else {
                 return new ValidacionTokenResult(false, null, null,
-                        catalog.obtener(SeguridadKeys.Token.LOG_INVALIDO));
+                        catalog.obtener(TokenKey.LOG_INVALIDO));
             }
         } catch (Exception e) {
-            log.debug(catalog.obtener(SeguridadKeys.Token.LOG_VALIDACION_FALLIDA), e.getMessage());
+            log.debug(catalog.obtener(TokenKey.LOG_VALIDACION_FALLIDA), e.getMessage());
             return new ValidacionTokenResult(false, null, null,
-                    catalog.formatear(SeguridadKeys.Token.ERROR_VALIDAR_DETALLE, e.getMessage()));
+                    catalog.formatear(TokenKey.ERROR_VALIDAR_DETALLE, e.getMessage()));
         }
     }
 }

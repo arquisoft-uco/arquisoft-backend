@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.web.config.MessageCatalogConfig;
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasFields;
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.constant.FichasCodes;
+import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
@@ -124,7 +124,7 @@ class RemoverItemFichaPerfilControladorTest {
         result.agregarError(
                 FichasFields.ItemFichaPerfil.REVISIONES,
                 FichasCodes.ItemFichaPerfil.ITEM_CON_REVISIONES,
-                Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_CON_REVISIONES, itemId)
+                Messages.formatear(ItemFichaPerfilKey.ERROR_CON_REVISIONES, itemId)
         );
 
         doThrow(new DomainValidationException(result))

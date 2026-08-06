@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate;
 
-import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.exception.DomainValidationException;
 import org.junit.jupiter.api.Test;
 

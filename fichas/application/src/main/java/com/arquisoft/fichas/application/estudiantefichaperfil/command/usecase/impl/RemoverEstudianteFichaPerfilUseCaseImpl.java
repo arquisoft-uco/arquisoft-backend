@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.RemoverEstudianteFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.RemoverEstudianteFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.RemoverEstudianteFichaPerfilDomain;
@@ -30,6 +30,6 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
 
         estudianteFichaPerfilOutputPort.desvincularEstudiante(fichaPerfil, estudiante);
 
-        logger.info(catalog.obtener(FichasKeys.EstudianteFichaPerfil.LOG_REMOVIDO), fichaPerfil, estudiante);
+        logger.info(catalog.obtener(EstudianteFichaPerfilKey.LOG_REMOVIDO), fichaPerfil, estudiante);
     }
 }

@@ -1,8 +1,8 @@
 package com.arquisoft.seguridad.domain.auth.model;
 
+import com.arquisoft.shared.message.key.seguridad.IdentidadKey;
 import com.arquisoft.shared.message.Messages;
-import com.arquisoft.shared.message.SeguridadCodes;
-import com.arquisoft.shared.message.SeguridadKeys;
+import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.exception.DomainException;
 
 import java.util.List;
@@ -15,11 +15,11 @@ public record IdentidadToken(
 
     public IdentidadToken {
         if (identidadId == null || identidadId.isBlank()) {
-            throw new DomainException(Messages.obtener(SeguridadKeys.Identidad.ERROR_ID_REQUERIDO),
+            throw new DomainException(Messages.obtener(IdentidadKey.ERROR_ID_REQUERIDO),
                     SeguridadCodes.Identidad.IDENTIDAD_ID_REQUERIDO);
         }
         if (correo == null || correo.isBlank()) {
-            throw new DomainException(Messages.obtener(SeguridadKeys.Identidad.ERROR_CORREO_REQUERIDO),
+            throw new DomainException(Messages.obtener(IdentidadKey.ERROR_CORREO_REQUERIDO),
                     SeguridadCodes.Identidad.IDENTIDAD_CORREO_REQUERIDO);
         }
         roles = roles != null ? List.copyOf(roles) : List.of();

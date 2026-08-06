@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.RemoverItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
@@ -33,6 +33,6 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
 
         itemOutputPort.removerItem(entrada.getItem());
 
-        logger.info(catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_REMOVIDO), entrada.getItem());
+        logger.info(catalog.obtener(ItemFichaPerfilKey.LOG_REMOVIDO), entrada.getItem());
     }
 }

@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
+import com.arquisoft.shared.message.key.seguridad.JwtBlacklistKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
@@ -61,22 +61,22 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
                 try {
                     if (tokenBlacklistPort.estaInvalidado(jti)) {
                         // log.warn: error de cliente — token revocado (detalle interno, no se expone al cliente)
-                        log.warn(catalog.obtener(SeguridadKeys.JwtBlacklist.LOG_TOKEN_REVOCADO),
+                        log.warn(catalog.obtener(JwtBlacklistKey.LOG_TOKEN_REVOCADO),
                                 jti, request.getRequestURI());
                         writeErrorResponse(response, request,
                                 HttpStatus.UNAUTHORIZED,
-                                catalog.obtener(SeguridadKeys.JwtBlacklist.ERROR_HTTP_401),
-                                catalog.obtener(SeguridadKeys.JwtBlacklist.ERROR_HTTP_401_DETALLE));
+                                catalog.obtener(JwtBlacklistKey.ERROR_HTTP_401),
+                                catalog.obtener(JwtBlacklistKey.ERROR_HTTP_401_DETALLE));
                         return;
                     }
                 } catch (Exception e) {
                     // log.error: error de servidor — Redis no disponible
-                    log.error(catalog.obtener(SeguridadKeys.JwtBlacklist.LOG_REDIS_NO_DISPONIBLE),
+                    log.error(catalog.obtener(JwtBlacklistKey.LOG_REDIS_NO_DISPONIBLE),
                             e.getMessage(), e);
                     writeErrorResponse(response, request,
                             HttpStatus.SERVICE_UNAVAILABLE,
-                            catalog.obtener(SeguridadKeys.JwtBlacklist.ERROR_HTTP_503),
-                            catalog.obtener(SeguridadKeys.JwtBlacklist.ERROR_HTTP_503_DETALLE));
+                            catalog.obtener(JwtBlacklistKey.ERROR_HTTP_503),
+                            catalog.obtener(JwtBlacklistKey.ERROR_HTTP_503_DETALLE));
                     return;
                 }
             }

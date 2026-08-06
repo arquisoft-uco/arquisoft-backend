@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.mapper;
 
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.CambiarAsesorFichaDomain;
-import com.arquisoft.shared.message.FichasFields;
+import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.exception.DomainValidationException;
 import org.junit.jupiter.api.Test;
 

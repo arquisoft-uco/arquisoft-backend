@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estadofichaperfil.aggregate;
 
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasFields;
+import com.arquisoft.shared.message.constant.FichasCodes;
+import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.shared.util.UtilDate;
 import com.arquisoft.shared.util.UtilUUID;

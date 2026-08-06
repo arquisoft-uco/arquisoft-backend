@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.mapper.CambiarAsesorFichaRequestMapper;
-import com.arquisoft.shared.message.FichasApiKeys;
+import com.arquisoft.shared.message.annotation.FichasApiKeys;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.CambiarAsesorFichaInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto.CambiarAsesorFichaRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;

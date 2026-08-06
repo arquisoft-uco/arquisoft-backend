@@ -1,5 +1,7 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.command.adapter.in.amqp;
 
+import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
+import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.notificaciones.application.notificacion.command.interactor.EnviarNotificacionInteractor;
 import com.arquisoft.notificaciones.application.notificacion.command.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
@@ -7,7 +9,6 @@ import com.arquisoft.notificaciones.infrastructure.config.NotificacionesFichasQu
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.NotificacionesKeys;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -48,7 +49,7 @@ public class AsesorFichaCambiadoInputAdapter extends AbstractEventConsumer {
                     deserialize(message, AsesorFichaCambiadoPayload.class);
 
             logger.info(
-                    catalog.obtener(NotificacionesKeys.Consumidor.LOG_ASESOR_CAMBIADO_RECIBIDO),
+                    catalog.obtener(ConsumidorKey.LOG_ASESOR_CAMBIADO_RECIBIDO),
                     payload.fichaPerfilId(),
                     payload.asesorEmail());
 
@@ -58,10 +59,10 @@ public class AsesorFichaCambiadoInputAdapter extends AbstractEventConsumer {
                     payload.asesorNombre(),
                     payload.asesorEmail(),
                     catalog.formatear(
-                            NotificacionesKeys.Plantilla.ASUNTO_ASESOR_CAMBIADO,
+                            PlantillaKey.ASUNTO_ASESOR_CAMBIADO,
                             payload.tituloProyecto()),
                     catalog.formatear(
-                            NotificacionesKeys.Plantilla.CUERPO_ASESOR_CAMBIADO,
+                            PlantillaKey.CUERPO_ASESOR_CAMBIADO,
                             payload.asesorNombre(),
                             payload.tituloProyecto())));
         });

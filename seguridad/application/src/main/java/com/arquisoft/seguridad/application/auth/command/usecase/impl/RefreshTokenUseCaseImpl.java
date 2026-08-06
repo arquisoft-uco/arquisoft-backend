@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
@@ -20,11 +20,11 @@ public class RefreshTokenUseCaseImpl implements RefreshTokenUseCase {
 
     @Override
     public RefrescoTokenResult ejecutar(String entrada) {
-        log.debug(catalog.obtener(SeguridadKeys.Token.LOG_REFRESH_DEBUG));
+        log.debug(catalog.obtener(TokenKey.LOG_REFRESH_DEBUG));
 
         CredencialesSesion credenciales = authenticationOutputPort.refrescar(entrada);
 
-        log.info(catalog.obtener(SeguridadKeys.Token.LOG_REFRESH_EXITOSO));
+        log.info(catalog.obtener(TokenKey.LOG_REFRESH_EXITOSO));
 
         return new RefrescoTokenResult(
                 credenciales.tokenAcceso(),

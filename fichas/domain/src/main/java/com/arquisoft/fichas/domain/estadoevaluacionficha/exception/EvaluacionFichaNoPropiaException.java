@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.exception;
 
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
+import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.Messages;
 import com.arquisoft.shared.exception.AuthorizationException;
 
@@ -11,7 +11,7 @@ public final class EvaluacionFichaNoPropiaException extends AuthorizationExcepti
 
     public EvaluacionFichaNoPropiaException(UUID evaluacionFichaPerfilId) {
         super(
-                Messages.formatear(FichasKeys.EstadoEvaluacionFicha.ERROR_EVALUACION_NO_PROPIA, evaluacionFichaPerfilId),
+                Messages.formatear(EstadoEvaluacionFichaKey.ERROR_EVALUACION_NO_PROPIA, evaluacionFichaPerfilId),
                 FichasCodes.EstadoEvaluacionFicha.EVALUACION_NO_PROPIA
         );
     }

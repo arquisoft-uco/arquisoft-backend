@@ -38,23 +38,23 @@ public final class Messages {
     }
 
     /**
-     * Atajo de {@link MessageCatalog#obtener(String)} sobre el catálogo activo.
+     * Atajo de {@link MessageCatalog#obtener(MessageKey)} sobre el catálogo activo.
      *
-     * @param clave clave completa del catálogo
+     * @param clave clave del catálogo
      * @return el texto asociado
      */
-    public static String obtener(String clave) {
+    public static String obtener(MessageKey clave) {
         return catalogo.obtener(clave);
     }
 
     /**
-     * Atajo de {@link MessageCatalog#formatear(String, Object...)} sobre el catálogo activo.
+     * Atajo de {@link MessageCatalog#formatear(MessageKey, Object...)} sobre el catálogo activo.
      *
-     * @param clave clave completa del catálogo
+     * @param clave clave del catálogo
      * @param args  argumentos a sustituir en el patrón
      * @return el texto formateado
      */
-    public static String formatear(String clave, Object... args) {
+    public static String formatear(MessageKey clave, Object... args) {
         return catalogo.formatear(clave, args);
     }
 }

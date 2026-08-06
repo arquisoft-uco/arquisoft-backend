@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.mapper.AgregarItemFichaPerfilRequestMapper;
-import com.arquisoft.shared.message.FichasApiKeys;
+import com.arquisoft.shared.message.annotation.FichasApiKeys;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.AgregarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.dto.AgregarItemFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web.dto.AgregarItemFichaPerfilResponseDTO;

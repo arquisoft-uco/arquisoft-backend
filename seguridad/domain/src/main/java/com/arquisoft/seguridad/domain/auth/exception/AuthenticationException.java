@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.domain.auth.exception;
 
-import com.arquisoft.shared.message.SeguridadCodes;
+import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.exception.BaseError;
 import com.arquisoft.shared.exception.DomainException;
 

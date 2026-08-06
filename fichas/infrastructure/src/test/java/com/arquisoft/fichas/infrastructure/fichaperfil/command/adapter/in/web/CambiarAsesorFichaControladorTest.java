@@ -1,11 +1,11 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.message.key.app.ValidadorKey;
+import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.web.config.MessageCatalogConfig;
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasFields;
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.constant.FichasCodes;
+import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.Messages;
-import com.arquisoft.shared.message.AppKeys;
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.CambiarAsesorFichaInteractor;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
@@ -113,7 +113,7 @@ class CambiarAsesorFichaControladorTest {
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
                 .andExpect(jsonPath("$.fieldErrors[0].message")
                         .value(Messages.formatear(
-                                AppKeys.Validador.NO_EN_BLANCO, FichasFields.FichaPerfil.ASESOR_FICHA)));
+                                ValidadorKey.NO_EN_BLANCO, FichasFields.FichaPerfil.ASESOR_FICHA)));
     }
 
     @Test
@@ -184,7 +184,7 @@ class CambiarAsesorFichaControladorTest {
         result.agregarError(
                 FichasFields.FichaPerfil.ASESOR_FICHA,
                 FichasCodes.FichaPerfil.MISMO_ASESOR,
-                Messages.formatear(FichasKeys.FichaPerfil.ERROR_MISMO_ASESOR, asesorId)
+                Messages.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR, asesorId)
         );
 
         doThrow(new DomainValidationException(result))
@@ -200,7 +200,7 @@ class CambiarAsesorFichaControladorTest {
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.errorCode").value("DOMAIN_VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
-                .andExpect(jsonPath("$.fieldErrors[0].message").value(Messages.formatear(FichasKeys.FichaPerfil.ERROR_MISMO_ASESOR, asesorId)));
+                .andExpect(jsonPath("$.fieldErrors[0].message").value(Messages.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR, asesorId)));
     }
 
     @Test
@@ -219,7 +219,7 @@ class CambiarAsesorFichaControladorTest {
         result.agregarError(
                 FichasFields.FichaPerfil.ESTADO_FICHA,
                 FichasCodes.FichaPerfil.ESTADO_TERMINAL,
-                Messages.formatear(FichasKeys.FichaPerfil.ERROR_ESTADO_TERMINAL, "APROBADA")
+                Messages.formatear(FichaPerfilKey.ERROR_ESTADO_TERMINAL, "APROBADA")
         );
 
         doThrow(new DomainValidationException(result))
@@ -235,7 +235,7 @@ class CambiarAsesorFichaControladorTest {
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.errorCode").value("DOMAIN_VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ESTADO_FICHA))
-                .andExpect(jsonPath("$.fieldErrors[0].message").value(Messages.formatear(FichasKeys.FichaPerfil.ERROR_ESTADO_TERMINAL, "APROBADA")));
+                .andExpect(jsonPath("$.fieldErrors[0].message").value(Messages.formatear(FichaPerfilKey.ERROR_ESTADO_TERMINAL, "APROBADA")));
     }
 
     @Test

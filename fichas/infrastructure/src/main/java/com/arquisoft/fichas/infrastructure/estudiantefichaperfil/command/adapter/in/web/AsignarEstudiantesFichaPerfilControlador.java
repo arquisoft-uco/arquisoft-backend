@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web.mapper.AsignarEstudiantesFichaPerfilRequestMapper;
-import com.arquisoft.shared.message.FichasApiKeys;
+import com.arquisoft.shared.message.annotation.FichasApiKeys;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.AsignarEstudiantesFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web.dto.AsignarEstudiantesFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;

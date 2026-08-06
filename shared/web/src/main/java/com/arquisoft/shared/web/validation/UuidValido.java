@@ -1,6 +1,6 @@
 package com.arquisoft.shared.web.validation;
 
-import com.arquisoft.shared.message.ValidationKeys;
+import com.arquisoft.shared.message.annotation.ValidationKeys;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 

@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCommand;
 import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
@@ -21,11 +21,11 @@ public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
 
     @Override
     public AutenticacionResult ejecutar(AuthenticateUserCommand entrada) {
-        log.debug(catalog.obtener(SeguridadKeys.Autenticacion.LOG_AUTENTICAR_DEBUG));
+        log.debug(catalog.obtener(AutenticacionKey.LOG_AUTENTICAR_DEBUG));
 
         CredencialesSesion credenciales = authenticationOutputPort.autenticar(entrada.email(), entrada.password());
 
-        log.info(catalog.obtener(SeguridadKeys.Autenticacion.LOG_AUTENTICAR_EXITOSO));
+        log.info(catalog.obtener(AutenticacionKey.LOG_AUTENTICAR_EXITOSO));
 
         return new AutenticacionResult(
                 credenciales.tokenAcceso(),

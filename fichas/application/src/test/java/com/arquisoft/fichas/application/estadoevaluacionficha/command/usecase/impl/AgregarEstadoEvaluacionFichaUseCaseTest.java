@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.impl;
 
-import com.arquisoft.shared.message.FichasCodes;
+import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.mapper.AgregarEstadoEvaluacionFichaMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;

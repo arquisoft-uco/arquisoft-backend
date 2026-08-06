@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.exception;
 
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
+import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.Messages;
 import com.arquisoft.shared.exception.ApplicationException;
 
@@ -11,7 +11,7 @@ public class EvaluacionFichaPerfilNoEncontradaException extends ApplicationExcep
 
     public EvaluacionFichaPerfilNoEncontradaException(UUID evaluacionId) {
         super(
-                Messages.formatear(FichasKeys.EstadoEvaluacionFicha.ERROR_EVALUACION_NO_ENCONTRADA, evaluacionId),
+                Messages.formatear(EstadoEvaluacionFichaKey.ERROR_EVALUACION_NO_ENCONTRADA, evaluacionId),
                 FichasCodes.EstadoEvaluacionFicha.EVALUACION_NO_ENCONTRADA);
     }
 }

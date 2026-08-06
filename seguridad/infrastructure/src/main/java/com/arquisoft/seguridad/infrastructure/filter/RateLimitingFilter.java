@@ -1,8 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
+import com.arquisoft.shared.message.key.seguridad.RateLimitKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.SeguridadCodes;
-import com.arquisoft.shared.message.SeguridadKeys;
+import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.seguridad.infrastructure.config.ratelimit.BucketResolver;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import tools.jackson.databind.ObjectMapper;
@@ -81,15 +81,15 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             response.addHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitForRefill));
 
             ErrorResponseDTO body = ErrorResponseDTO.builder()
-                    .error(catalog.obtener(SeguridadKeys.RateLimit.ERROR_HTTP_TOO_MANY_REQUESTS))
+                    .error(catalog.obtener(RateLimitKey.ERROR_HTTP_TOO_MANY_REQUESTS))
                     .errorCode(SeguridadCodes.RateLimit.RATE_LIMIT_EXCEDIDO)
-                    .message(catalog.formatear(SeguridadKeys.RateLimit.ERROR_LIMITE_EXCEDIDO, waitForRefill))
+                    .message(catalog.formatear(RateLimitKey.ERROR_LIMITE_EXCEDIDO, waitForRefill))
                     .status(HttpStatus.TOO_MANY_REQUESTS.value())
                     .path(request.getRequestURI())
                     .build();
             objectMapper.writeValue(response.getWriter(), body);
 
-            log.warn(catalog.obtener(SeguridadKeys.RateLimit.LOG_LIMITE_EXCEDIDO), clientIp, request.getRequestURI());
+            log.warn(catalog.obtener(RateLimitKey.LOG_LIMITE_EXCEDIDO), clientIp, request.getRequestURI());
         }
     }
 

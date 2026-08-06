@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate;
 
+import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasFields;
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.constant.FichasCodes;
+import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.Messages;
 import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.shared.validation.DomainValidator;
@@ -54,7 +54,7 @@ public final class AgregarEstadoEvaluacionFichaDomain {
                     FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
                     FichasCodes.EstadoEvaluacionFicha.ESTADO_NO_ENCONTRADO,
                     Messages.formatear(
-                            FichasKeys.EstadoEvaluacionFicha.ERROR_ESTADO_NO_ENCONTRADO, estadoEvaluacion));
+                            EstadoEvaluacionFichaKey.ERROR_ESTADO_NO_ENCONTRADO, estadoEvaluacion));
         }
     }
 

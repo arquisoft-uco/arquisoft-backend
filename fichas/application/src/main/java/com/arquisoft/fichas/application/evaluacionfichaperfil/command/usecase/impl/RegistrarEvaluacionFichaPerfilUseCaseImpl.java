@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
+import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.RegistrarEvaluacionFichaPerfilUseCase;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
@@ -32,7 +33,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
         asignarEstadoInicialEvaluacion(evaluacion.getId());
 
         logger.info(
-                catalog.obtener(FichasKeys.EvaluacionFichaPerfil.LOG_REGISTRADA),
+                catalog.obtener(EvaluacionFichaPerfilKey.LOG_REGISTRADA),
                 evaluacion.getId(),
                 evaluacion.getRepresentanteComiteId(),
                 evaluacion.getFichaPerfilId());
@@ -44,7 +45,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
         var estadoInicial = EstadoEvaluacionFichaDomain.crear(evaluacionFichaPerfil);
         estadoEvaluacionFichaOutputPort.registrarEstadoInicial(estadoInicial);
         logger.info(
-                catalog.obtener(FichasKeys.EstadoEvaluacionFicha.LOG_CREADO_AUTOMATICO),
+                catalog.obtener(EstadoEvaluacionFichaKey.LOG_CREADO_AUTOMATICO),
                 estadoInicial.getId(),
                 estadoInicial.getEvaluacionFichaPerfilId(),
                 estadoInicial.getEstadoEvaluacion());

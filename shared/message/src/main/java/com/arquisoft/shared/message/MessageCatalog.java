@@ -10,6 +10,9 @@ package com.arquisoft.shared.message;
  *
  * <p>Las claves siguen el esquema {@code contexto.capa.objeto.tipo.descripcion}, por ejemplo
  * {@code fichas.dominio.fichaperfil.error.titulo-duplicado}. Ver {@link MessageBundles}.
+ *
+ * <p>El contrato se tipa sobre {@link MessageKey}, no sobre {@code String}: así el compilador
+ * rechaza una clave inventada o mal escrita, que antes solo se notaba en ejecución.
  */
 public interface MessageCatalog {
 
@@ -19,10 +22,10 @@ public interface MessageCatalog {
      * <p>Es el método que deben usar los mensajes de log, cuyo patrón lleva marcadores
      * {@code {}} que resuelve SLF4J en la capa de logging, no este catálogo.
      *
-     * @param clave clave completa del catálogo
+     * @param clave clave del catálogo
      * @return el texto, o un marcador visible si la clave no existe
      */
-    String obtener(String clave);
+    String obtener(MessageKey clave);
 
     /**
      * Devuelve el texto asociado a la clave con los parámetros sustituidos.
@@ -32,17 +35,17 @@ public interface MessageCatalog {
      * simples (por ejemplo {@code El campo '%s' no puede ser nulo}) que {@code MessageFormat}
      * interpretaría como carácter de escape y eliminaría del texto final.
      *
-     * @param clave clave completa del catálogo
+     * @param clave clave del catálogo
      * @param args  argumentos a sustituir en el patrón
      * @return el texto formateado, o un marcador visible si la clave no existe
      */
-    String formatear(String clave, Object... args);
+    String formatear(MessageKey clave, Object... args);
 
     /**
-     * Indica si la clave está declarada en alguno de los bundles cargados.
+     * Indica si la clave resuelve a un texto en el bundle que ella misma declara.
      *
-     * @param clave clave completa del catálogo
+     * @param clave clave del catálogo
      * @return {@code true} si la clave se puede resolver
      */
-    boolean contiene(String clave);
+    boolean contiene(MessageKey clave);
 }

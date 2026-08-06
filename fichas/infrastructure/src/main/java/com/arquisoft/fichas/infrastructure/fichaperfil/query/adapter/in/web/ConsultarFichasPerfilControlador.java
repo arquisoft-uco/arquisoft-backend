@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 
+import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasApiKeys;
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.annotation.FichasApiKeys;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.usecase.ConsultarFichasPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
@@ -64,7 +64,7 @@ public class ConsultarFichasPerfilControlador {
             @RequestBody(required = false) QueryCriteriaRequestDTO request) {
 
         QueryCriteriaRequestDTO solicitud = request != null ? request : new QueryCriteriaRequestDTO();
-        logger.debug(catalog.obtener(FichasKeys.FichaPerfil.LOG_CONSULTANDO),
+        logger.debug(catalog.obtener(FichaPerfilKey.LOG_CONSULTANDO),
                 solicitud.getPagina(), solicitud.getTamanio());
 
         FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()

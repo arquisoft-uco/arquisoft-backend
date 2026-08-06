@@ -1,7 +1,7 @@
 package com.arquisoft.shared.notification.smtp;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.AppCodes;
+import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
 import com.arquisoft.shared.notification.config.NotificationProperties;

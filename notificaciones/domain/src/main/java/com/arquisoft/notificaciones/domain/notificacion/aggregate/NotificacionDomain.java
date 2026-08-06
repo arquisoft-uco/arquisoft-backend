@@ -1,12 +1,12 @@
 package com.arquisoft.notificaciones.domain.notificacion.aggregate;
 
+import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.message.Messages;
-import com.arquisoft.shared.message.NotificacionesCodes;
-import com.arquisoft.shared.message.NotificacionesFields;
-import com.arquisoft.shared.message.NotificacionesKeys;
-import com.arquisoft.shared.message.NotificacionesLimits;
+import com.arquisoft.shared.message.constant.NotificacionesCodes;
+import com.arquisoft.shared.message.constant.NotificacionesFields;
+import com.arquisoft.shared.message.constant.NotificacionesLimits;
 import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
@@ -122,7 +122,7 @@ public final class NotificacionDomain {
                     NotificacionesFields.Notificacion.ESTADO,
                     NotificacionesCodes.Notificacion.TRANSICION_INVALIDA,
                     Messages.formatear(
-                            NotificacionesKeys.Notificacion.ERROR_TRANSICION_INVALIDA, this.estado)
+                            NotificacionKey.ERROR_TRANSICION_INVALIDA, this.estado)
             );
             result.lanzarSiTieneErrores();
         }

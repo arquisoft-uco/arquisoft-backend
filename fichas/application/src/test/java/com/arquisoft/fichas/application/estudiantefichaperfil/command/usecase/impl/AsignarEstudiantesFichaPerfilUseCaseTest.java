@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasKeys;
-import com.arquisoft.shared.message.FichasLimits;
+import com.arquisoft.shared.message.constant.FichasCodes;
+import com.arquisoft.shared.message.constant.FichasLimits;
 import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
@@ -162,7 +162,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         // Assert
         assertThat(ex)
                 .isInstanceOf(CupoEstudiantesExcedidoException.class)
-                .hasMessage(Messages.formatear(FichasKeys.EstudianteFichaPerfil.ERROR_LIMITE_EXCEDIDO,
+                .hasMessage(Messages.formatear(EstudianteFichaPerfilKey.ERROR_LIMITE_EXCEDIDO,
                         FichasLimits.FichaPerfil.ESTUDIANTES_MAX));
         verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }

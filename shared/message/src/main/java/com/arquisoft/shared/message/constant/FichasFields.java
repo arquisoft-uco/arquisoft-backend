@@ -1,4 +1,4 @@
-package com.arquisoft.shared.message;
+package com.arquisoft.shared.message.constant;
 
 /**
  * Nombres de campo del contexto fichas.

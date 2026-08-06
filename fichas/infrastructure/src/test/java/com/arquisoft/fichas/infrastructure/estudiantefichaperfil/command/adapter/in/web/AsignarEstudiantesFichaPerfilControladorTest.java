@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.adapter.in.web;
 
 import com.arquisoft.shared.web.config.MessageCatalogConfig;
-import com.arquisoft.shared.message.FichasLimits;
+import com.arquisoft.shared.message.constant.FichasLimits;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.interactor.AsignarEstudiantesFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;

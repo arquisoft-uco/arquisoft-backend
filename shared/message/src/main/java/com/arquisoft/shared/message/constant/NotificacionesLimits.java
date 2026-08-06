@@ -1,4 +1,4 @@
-package com.arquisoft.shared.message;
+package com.arquisoft.shared.message.constant;
 
 /**
  * Límites de longitud del contexto notificaciones. Ver la nota de {@link FichasLimits}.

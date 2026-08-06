@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.persistence;
 
+import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
@@ -31,20 +31,20 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     public void registrarFicha(FichaPerfilDomain ficha) {
         AsesorFichaEntity asesorRef = asesorFichaRepository.getReferenceById(ficha.getAsesorFicha());
         fichaPerfilRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));
-        logger.debug(catalog.obtener(FichasKeys.FichaPerfil.LOG_GUARDADA), ficha.getId());
+        logger.debug(catalog.obtener(FichaPerfilKey.LOG_GUARDADA), ficha.getId());
     }
 
     @Override
     public void actualizarTitulo(UUID fichaPerfil, String tituloProyecto) {
         fichaPerfilRepository.actualizarTitulo(fichaPerfil, tituloProyecto);
-        logger.debug(catalog.obtener(FichasKeys.FichaPerfil.LOG_GUARDADA), fichaPerfil);
+        logger.debug(catalog.obtener(FichaPerfilKey.LOG_GUARDADA), fichaPerfil);
     }
 
     @Override
     public void actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha) {
         AsesorFichaEntity asesorRef = asesorFichaRepository.getReferenceById(nuevoAsesorFicha);
         fichaPerfilRepository.actualizarAsesorFicha(fichaPerfil, asesorRef);
-        logger.debug(catalog.obtener(FichasKeys.FichaPerfil.LOG_GUARDADA), fichaPerfil);
+        logger.debug(catalog.obtener(FichaPerfilKey.LOG_GUARDADA), fichaPerfil);
     }
 
     @Override

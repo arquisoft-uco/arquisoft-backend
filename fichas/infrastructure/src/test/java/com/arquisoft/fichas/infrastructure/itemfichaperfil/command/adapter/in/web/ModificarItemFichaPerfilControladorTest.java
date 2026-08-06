@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
+import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.web.config.MessageCatalogConfig;
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasFields;
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.constant.FichasCodes;
+import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.ModificarItemFichaPerfilInteractor;
@@ -193,7 +193,7 @@ class ModificarItemFichaPerfilControladorTest {
         validationResult.agregarError(
                 FichasFields.ItemFichaPerfil.ESTADO_FICHA,
                 FichasCodes.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
-                Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_ESTADO_FICHA_NO_MODIFICABLE, "Aprobada")
+                Messages.formatear(ItemFichaPerfilKey.ERROR_ESTADO_FICHA_NO_MODIFICABLE, "Aprobada")
         );
 
         doThrow(new DomainValidationException(validationResult))

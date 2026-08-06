@@ -1,5 +1,6 @@
 package com.arquisoft.notificaciones.application.notificacion.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.notificaciones.application.notificacion.command.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.usecase.EnviarNotificacionUseCase;
 import com.arquisoft.notificaciones.application.notificacion.command.validator.NotificacionValidator;
@@ -7,7 +8,6 @@ import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDo
 import com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.NotificacionesKeys;
 import com.arquisoft.shared.notification.NotificationSender;
 import com.arquisoft.shared.notification.exception.NotificationDeliveryException;
 import com.arquisoft.shared.notification.model.NotificationMessage;
@@ -30,7 +30,7 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
         // Un evento reentregado por el broker no debe producir un segundo correo.
         if (notificacionValidator.yaFueProcesado(entrada.eventId())) {
             logger.info(
-                    catalog.obtener(NotificacionesKeys.Notificacion.LOG_EVENTO_DUPLICADO),
+                    catalog.obtener(NotificacionKey.LOG_EVENTO_DUPLICADO),
                     entrada.eventId());
             return;
         }
@@ -49,7 +49,7 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
 
             notificacion.marcarEnviada();
             logger.info(
-                    catalog.obtener(NotificacionesKeys.Notificacion.LOG_ENVIADA),
+                    catalog.obtener(NotificacionKey.LOG_ENVIADA),
                     entrada.eventId(),
                     entrada.destinatarioEmail());
         } catch (NotificationDeliveryException e) {
@@ -59,7 +59,7 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
             // insumo de un reintento posterior.
             notificacion.marcarFallida(e.getMessage());
             logger.error(
-                    catalog.obtener(NotificacionesKeys.Notificacion.LOG_FALLIDA),
+                    catalog.obtener(NotificacionKey.LOG_FALLIDA),
                     e,
                     entrada.eventId(),
                     entrada.destinatarioEmail());

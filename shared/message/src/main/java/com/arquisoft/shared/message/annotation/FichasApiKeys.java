@@ -1,4 +1,4 @@
-package com.arquisoft.shared.message;
+package com.arquisoft.shared.message.annotation;
 
 /**
  * Referencias a los textos de {@code messages/fichas-api.properties}, listas para usar en las

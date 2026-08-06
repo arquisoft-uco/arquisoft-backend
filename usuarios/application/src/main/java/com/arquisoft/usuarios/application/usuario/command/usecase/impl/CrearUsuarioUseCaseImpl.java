@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.UsuariosKeys;
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioCommand;
 import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUseCase;
@@ -34,7 +34,7 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
         usuario.drainUnPublishedEvents().forEach(eventPublisher::publish);
 
-        log.info(catalog.obtener(UsuariosKeys.Usuario.LOG_CREADO), usuario.getId(), entrada.email(), entrada.rol().getCode());
+        log.info(catalog.obtener(UsuarioKey.LOG_CREADO), usuario.getId(), entrada.email(), entrada.rol().getCode());
         return usuario.getId();
     }
 }

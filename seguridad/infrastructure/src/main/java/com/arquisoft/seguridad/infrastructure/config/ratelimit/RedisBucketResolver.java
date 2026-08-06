@@ -1,8 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.config.ratelimit;
 
+import com.arquisoft.shared.message.key.seguridad.RateLimitKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.SeguridadCodes;
-import com.arquisoft.shared.message.SeguridadKeys;
+import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.util.UtilObject;
 import io.github.bucket4j.Bandwidth;
@@ -50,16 +50,16 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
                     .expirationAfterWrite(ExpirationAfterWriteStrategy
                             .basedOnTimeForRefillingBucketUpToMax(Duration.ofMinutes(2)))
                     .build();
-            log.debug(catalog.obtener(SeguridadKeys.RateLimit.LOG_INIT_OK));
+            log.debug(catalog.obtener(RateLimitKey.LOG_INIT_OK));
         } else {
             // log.error: detalle tecnico para el desarrollador — nunca llega al cliente.
             // El nombre de la clase del cliente obtenido orienta rapidamente el diagnostico.
-            log.error(catalog.obtener(SeguridadKeys.RateLimit.LOG_CLIENTE_STANDALONE_ERROR),
+            log.error(catalog.obtener(RateLimitKey.LOG_CLIENTE_STANDALONE_ERROR),
                     !UtilObject.isNull(nativeClient) ? nativeClient.getClass().getSimpleName() : "null");
             // InfrastructureException con mensaje generico: si llegara a la capa web
             // (improbable desde @PostConstruct), el cliente ve un mensaje sin detalles internos.
             throw new InfrastructureException(
-                    catalog.obtener(SeguridadKeys.RateLimit.ERROR_CLIENTE_STANDALONE),
+                    catalog.obtener(RateLimitKey.ERROR_CLIENTE_STANDALONE),
                     SeguridadCodes.RateLimit.REDIS_CLIENTE_STANDALONE_REQUERIDO);
         }
     }
@@ -78,7 +78,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
                                     .refillIntervally(properties.requestsPerMinute(), Duration.ofMinutes(1)))
                             .build());
         } catch (Exception e) {
-            log.error(catalog.obtener(SeguridadKeys.RateLimit.LOG_BUCKET_REDIS_ERROR),
+            log.error(catalog.obtener(RateLimitKey.LOG_BUCKET_REDIS_ERROR),
                     ip, e.getMessage());
             return createExhaustedBucket();
         }
@@ -98,7 +98,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
                                     .refillGreedy(properties.loginRequestsPerMinute(), Duration.ofMinutes(1)))
                             .build());
         } catch (Exception e) {
-            log.error(catalog.obtener(SeguridadKeys.RateLimit.LOG_BUCKET_LOGIN_REDIS_ERROR),
+            log.error(catalog.obtener(RateLimitKey.LOG_BUCKET_LOGIN_REDIS_ERROR),
                     ip, e.getMessage());
             return createExhaustedBucket();
         }

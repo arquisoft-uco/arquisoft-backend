@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.evaluacionfichaperfil.exception;
 
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
+import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.Messages;
 import com.arquisoft.shared.exception.ApplicationException;
 
@@ -11,7 +11,7 @@ public class RepresentanteComiteNoEncontradoException extends ApplicationExcepti
 
     public RepresentanteComiteNoEncontradoException(UUID representanteId) {
         super(
-                Messages.obtener(FichasKeys.RepresentanteComite.ERROR_NO_ENCONTRADO)
+                Messages.obtener(RepresentanteComiteKey.ERROR_NO_ENCONTRADO)
                         .formatted(representanteId),
                 FichasCodes.RepresentanteComite.REPRESENTANTE_NO_ENCONTRADO
 

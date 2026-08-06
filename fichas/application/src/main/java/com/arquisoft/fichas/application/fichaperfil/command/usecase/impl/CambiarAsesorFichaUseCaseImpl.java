@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAsesorFichaUseCase;
@@ -9,7 +10,6 @@ import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.shared.message.MessageCatalog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -44,6 +44,6 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
         eventPublisher.publish(new AsesorFichaCambiadoEvent(fichaPerfil, fichaActual.getTituloProyecto(),
                 asesorFichaContacto.id(), asesorFichaContacto.nombre(), asesorFichaContacto.email()));
 
-        logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_ASESOR_CAMBIADO), fichaPerfil, nuevoAsesorFicha);
+        logger.info(catalog.obtener(FichaPerfilKey.LOG_ASESOR_CAMBIADO), fichaPerfil, nuevoAsesorFicha);
     }
 }

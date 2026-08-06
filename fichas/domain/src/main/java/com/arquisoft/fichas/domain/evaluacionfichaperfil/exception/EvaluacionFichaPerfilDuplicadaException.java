@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.evaluacionfichaperfil.exception;
 
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
+import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.Messages;
 import com.arquisoft.shared.exception.ApplicationException;
 
@@ -11,7 +11,7 @@ public class EvaluacionFichaPerfilDuplicadaException extends ApplicationExceptio
 
     public EvaluacionFichaPerfilDuplicadaException(UUID representanteId, UUID fichaId) {
         super(
-                Messages.obtener(FichasKeys.EvaluacionFichaPerfil.ERROR_DUPLICADA)
+                Messages.obtener(EvaluacionFichaPerfilKey.ERROR_DUPLICADA)
                         .formatted(representanteId, fichaId),
                 FichasCodes.EvaluacionFichaPerfil.EVALUACION_DUPLICADA
         );

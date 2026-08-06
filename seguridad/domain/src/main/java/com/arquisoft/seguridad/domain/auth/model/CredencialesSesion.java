@@ -1,8 +1,8 @@
 package com.arquisoft.seguridad.domain.auth.model;
 
+import com.arquisoft.shared.message.key.seguridad.CredencialesKey;
 import com.arquisoft.shared.message.Messages;
-import com.arquisoft.shared.message.SeguridadCodes;
-import com.arquisoft.shared.message.SeguridadKeys;
+import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.exception.DomainException;
 
 public record CredencialesSesion(
@@ -14,15 +14,15 @@ public record CredencialesSesion(
 
     public CredencialesSesion {
         if (tokenAcceso == null || tokenAcceso.isBlank()) {
-            throw new DomainException(Messages.obtener(SeguridadKeys.Credenciales.ERROR_TOKEN_ACCESO_REQUERIDO),
+            throw new DomainException(Messages.obtener(CredencialesKey.ERROR_TOKEN_ACCESO_REQUERIDO),
                     SeguridadCodes.Credenciales.CREDENCIALES_TOKEN_ACCESO_REQUERIDO);
         }
         if (expiraEn <= 0) {
-            throw new DomainException(Messages.obtener(SeguridadKeys.Credenciales.ERROR_EXPIRACION_INVALIDA),
+            throw new DomainException(Messages.obtener(CredencialesKey.ERROR_EXPIRACION_INVALIDA),
                     SeguridadCodes.Credenciales.CREDENCIALES_EXPIRACION_INVALIDA);
         }
         if (tipoToken == null || tipoToken.isBlank()) {
-            throw new DomainException(Messages.obtener(SeguridadKeys.Credenciales.ERROR_TIPO_TOKEN_REQUERIDO),
+            throw new DomainException(Messages.obtener(CredencialesKey.ERROR_TIPO_TOKEN_REQUERIDO),
                     SeguridadCodes.Credenciales.CREDENCIALES_TIPO_TOKEN_REQUERIDO);
         }
     }

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persistence;
 
+import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
@@ -46,10 +46,10 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
                     fichaPerfilRepository.findAll(spec, pageable)
                             .map(FichaPerfilMapper::toReadModel));
         } catch (PropertyReferenceException ex) {
-            logger.warn(catalog.obtener(FichasKeys.FichaPerfil.LOG_ORDENAMIENTO_INVALIDO), ex.getPropertyName());
+            logger.warn(catalog.obtener(FichaPerfilKey.LOG_ORDENAMIENTO_INVALIDO), ex.getPropertyName());
             throw new OrdenamientoInvalidoException(ex.getPropertyName(), ex);
         } catch (InvalidDataAccessApiUsageException ex) {
-            logger.warn(catalog.obtener(FichasKeys.FichaPerfil.LOG_USO_INVALIDO_API_ORDEN), ex.getMessage());
+            logger.warn(catalog.obtener(FichaPerfilKey.LOG_USO_INVALIDO_API_ORDEN), ex.getMessage());
             throw new OrdenamientoInvalidoException(pageable.getSort().toString(), ex);
         }
     }

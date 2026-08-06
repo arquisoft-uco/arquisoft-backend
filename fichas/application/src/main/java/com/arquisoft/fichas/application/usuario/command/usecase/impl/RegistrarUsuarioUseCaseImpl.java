@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.usuario.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.UsuarioKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
 import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
 import com.arquisoft.shared.logger.AppLogger;
@@ -18,7 +18,7 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
     @Override
     public void ejecutar(RegistrarUsuarioCommand entrada) {
         // TODO: persistir en tabla espejo fichas_perfil.usuarios_espejo
-        logger.info(catalog.obtener(FichasKeys.Usuario.LOG_REGISTRADO_ESPEJO_SIMULADO),
+        logger.info(catalog.obtener(UsuarioKey.LOG_REGISTRADO_ESPEJO_SIMULADO),
                 entrada.usuarioId(), entrada.email(), entrada.rol());
     }
 }

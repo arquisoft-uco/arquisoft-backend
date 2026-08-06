@@ -1,7 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.web;
 
+import com.arquisoft.shared.message.key.seguridad.LoginKey;
+import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.SeguridadKeys;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
@@ -31,12 +32,12 @@ public class SeguridadGlobalExceptionHandler {
             CredencialesInvalidasException ex,
             HttpServletRequest request) {
 
-        log.warn(catalog.obtener(SeguridadKeys.Login.LOG_CREDENCIALES_INVALIDAS_HANDLER),
+        log.warn(catalog.obtener(LoginKey.LOG_CREDENCIALES_INVALIDAS_HANDLER),
                 request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponseDTO.fromBaseException(
-                        ex, catalog.obtener(SeguridadKeys.Login.ERROR_HTTP_401), HttpStatus.UNAUTHORIZED, request.getRequestURI()));
+                        ex, catalog.obtener(LoginKey.ERROR_HTTP_401), HttpStatus.UNAUTHORIZED, request.getRequestURI()));
     }
 
     @ExceptionHandler(TokenInvalidoException.class)
@@ -44,11 +45,11 @@ public class SeguridadGlobalExceptionHandler {
             TokenInvalidoException ex,
             HttpServletRequest request) {
 
-        log.warn(catalog.obtener(SeguridadKeys.Token.LOG_INVALIDO_HANDLER), request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+        log.warn(catalog.obtener(TokenKey.LOG_INVALIDO_HANDLER), request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponseDTO.fromBaseException(
-                        ex, catalog.obtener(SeguridadKeys.Login.ERROR_HTTP_401), HttpStatus.UNAUTHORIZED, request.getRequestURI()));
+                        ex, catalog.obtener(LoginKey.ERROR_HTTP_401), HttpStatus.UNAUTHORIZED, request.getRequestURI()));
     }
 
     @ExceptionHandler(AuthenticationException.class)
@@ -56,10 +57,10 @@ public class SeguridadGlobalExceptionHandler {
             AuthenticationException ex,
             HttpServletRequest request) {
 
-        log.warn(catalog.obtener(SeguridadKeys.Login.LOG_EXCEPCION_AUTENTICACION), request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+        log.warn(catalog.obtener(LoginKey.LOG_EXCEPCION_AUTENTICACION), request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponseDTO.fromBaseException(
-                        ex, catalog.obtener(SeguridadKeys.Login.ERROR_HTTP_401), HttpStatus.UNAUTHORIZED, request.getRequestURI()));
+                        ex, catalog.obtener(LoginKey.ERROR_HTTP_401), HttpStatus.UNAUTHORIZED, request.getRequestURI()));
     }
 }

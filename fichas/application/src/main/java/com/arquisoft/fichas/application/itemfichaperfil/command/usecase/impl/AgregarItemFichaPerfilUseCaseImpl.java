@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.AgregarItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.AgregarItemFichaPerfilDomain;
@@ -30,7 +30,7 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
         itemFichaPerfilOutputPort.registrarItem(item);
 
         logger.info(
-                catalog.obtener(FichasKeys.ItemFichaPerfil.LOG_AGREGADO),
+                catalog.obtener(ItemFichaPerfilKey.LOG_AGREGADO),
                 item.getId(),
                 item.getFichaPerfilId(),
                 item.getTipoItem()

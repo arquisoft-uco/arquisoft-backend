@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.AgregarItemFichaPerfilMapper;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
-import com.arquisoft.shared.message.FichasCodes;
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.Messages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
@@ -122,7 +122,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         assertThat(((ApplicationException) exception).getErrorCode())
                 .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_TIPO_DUPLICADO);
         assertThat(exception.getMessage())
-                .isEqualTo(Messages.formatear(FichasKeys.ItemFichaPerfil.ERROR_TIPO_DUPLICADO, TIPO_ITEM));
+                .isEqualTo(Messages.formatear(ItemFichaPerfilKey.ERROR_TIPO_DUPLICADO, TIPO_ITEM));
         verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
     }
 

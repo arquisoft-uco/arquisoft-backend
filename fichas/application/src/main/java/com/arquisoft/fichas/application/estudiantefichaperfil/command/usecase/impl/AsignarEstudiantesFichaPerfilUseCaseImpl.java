@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
@@ -31,6 +31,6 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
 
         relaciones.forEach(estudianteFichaPerfilOutputPort::vincularEstudiante);
 
-        logger.info(catalog.obtener(FichasKeys.EstudianteFichaPerfil.LOG_ASIGNADO), fichaPerfil, relaciones.size());
+        logger.info(catalog.obtener(EstudianteFichaPerfilKey.LOG_ASIGNADO), fichaPerfil, relaciones.size());
     }
 }

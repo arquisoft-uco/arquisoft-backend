@@ -1,4 +1,4 @@
-package com.arquisoft.shared.message;
+package com.arquisoft.shared.message.constant;
 
 /**
  * Códigos de error del contexto notificaciones. Ver la nota de {@link AppCodes}.

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estadofichaperfil.command.usecase.impl;
 
+import com.arquisoft.shared.message.key.fichas.EstadoFichaPerfilKey;
 import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.FichasKeys;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estadofichaperfil.command.validator.AsignarEstadoInicialFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilDomain;
@@ -25,7 +25,7 @@ public class AsignarEstadoInicialFichaPerfilUseCaseImpl implements AsignarEstado
 
         estadoFichaPerfilOutputPort.registrarEstadoInicial(estadoInicial);
 
-        logger.info(catalog.obtener(FichasKeys.EstadoFichaPerfil.LOG_CREADO),
+        logger.info(catalog.obtener(EstadoFichaPerfilKey.LOG_CREADO),
                 estadoInicial.getId(),
                 estadoInicial.getFichaPerfil(),
                 estadoInicial.getEstadoFicha().getNombre());

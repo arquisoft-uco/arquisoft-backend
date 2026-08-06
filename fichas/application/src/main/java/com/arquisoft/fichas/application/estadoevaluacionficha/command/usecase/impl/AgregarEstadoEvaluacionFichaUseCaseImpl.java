@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.impl;
 
-import com.arquisoft.shared.message.FichasKeys;
+import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.MessageCatalog;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.AgregarEstadoEvaluacionFichaUseCase;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
@@ -38,7 +38,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
         estadoEvaluacionFichaOutputPort.agregarEstado(estadoEvaluacion);
 
         logger.info(
-                catalog.obtener(FichasKeys.EstadoEvaluacionFicha.LOG_AGREGADO),
+                catalog.obtener(EstadoEvaluacionFichaKey.LOG_AGREGADO),
                 estadoEvaluacion.getId(),
                 estadoEvaluacion.getEvaluacionFichaPerfilId(),
                 estadoEvaluacion.getEstadoEvaluacion());
