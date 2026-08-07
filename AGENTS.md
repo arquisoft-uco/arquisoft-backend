@@ -43,8 +43,8 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 | Elemento | Convención |
 |---|---|
 | Entidades de dominio | Inmutables, constructor privado, campos `final`, solo getters. `build(UUID.randomUUID())` para nuevas, `rebuild(uuid)` desde persistencia. Sin Lombok ni Spring. |
-| Aggregate Root | Entidades raíz extienden `AggregateRoot` de `shared:domain` (`com.arquisoft.shared.domain`). Gestiona eventos de dominio no publicados via `publishEvent(DomainEvent)`. |
-| Eventos de dominio | Extienden `DomainEvent` de `shared:domain`. Cada subclase declara sus **propios campos** con nombres semánticamente correctos (e.g. `usuarioId`, `fichaId`). `DomainEvent` asigna `idEvento` (UUID), `occurredAt`, `eventType` y `eventTopic` automáticamente. El constructor recibe `(eventTopic, eventType)` — sin `aggregateId` genérico. |
+| Aggregate Root | Entidades raíz extienden `AggregateRoot` de `shared:domain` (`com.arquisoft.shared.domain`). Gestiona eventos de dominio no publicados via `publicarEvento(DomainEvent)`. |
+| Eventos de dominio | Extienden `DomainEvent` de `shared:domain`. Cada subclase declara sus **propios campos** con nombres semánticamente correctos (e.g. `usuarioId`, `fichaId`). `DomainEvent` asigna `idEvento` (UUID), `ocurridoEn`, `tipoEvento` y `temaEvento` automáticamente. El constructor recibe `(temaEvento, tipoEvento)` — sin `aggregateId` genérico. |
 | Puertos de entrada | `{Accion}{Entidad}Interactor` en `application/{feature}/command/interactor/` (lado comando, es lo que inyecta el adapter) y `{Accion}{Entidad}UseCase` en `application/{feature}/{command\|query}/usecase/` |
 | Puertos de salida | `{Entidad}RepositoryPort` en `domain/port/out/` |
 | Use cases | `{Accion}{Entidad}UseCaseImpl` en `application/{feature}/{command\|query}/usecase/impl/`; el interactor en `application/{feature}/command/interactor/impl/` |
@@ -73,14 +73,14 @@ Los eventos de dominio se publican usando el **Event Publication Registry** de S
 public UUID ejecutar(CrearXxxCommand command) {
     XxxAggregate aggregate = XxxAggregate.crear(...);
     xxxOutputPort.save(aggregate);
-    aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);
+    aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish);
     return aggregate.getId();
 }
 ```
 
 - `eventPublisher` es `SpringModulithEventPublisher` (en `shared/amqp`), que delega a `ApplicationEventPublisher`.
 - Spring Modulith intercepta el `publicarEvento` y persiste el evento en la tabla `event_publication` de la BD del propio contexto **dentro de la misma transacción** — atomicidad garantizada.
-- Tras el commit, lo publica a RabbitMQ con el `eventTopic` como routing key.
+- Tras el commit, lo publica a RabbitMQ con el `temaEvento` como routing key.
 
 ### Outbox por contexto — `event_publication` distribuida
 
@@ -138,7 +138,7 @@ public class UsuarioCreadoEvent extends DomainEvent {
 
 ## Configuracion: Seguridad
 
-### SecurityConfig (`seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/config/SecurityConfig.java`)
+### SeguridadConfig (`seguridad/infrastructure/src/main/java/com/arquisoft/seguridad/infrastructure/config/security/SeguridadConfig.java`)
 
 - `@EnableWebSecurity` + `@EnableMethodSecurity(prePostEnabled = true)`
 - JWT decodificado via JWK Set URI de Keycloak: `{keycloak-url}/realms/{realm}/protocol/openid-connect/certs`
@@ -155,9 +155,9 @@ public class UsuarioCreadoEvent extends DomainEvent {
 - Expone headers: `Authorization`, `Content-Type`, `X-Total-Count`, `X-Page-Number`, `X-Page-Size`
 - Credenciales habilitadas, registrado en `/**`
 
-### RateLimitConfig (`seguridad/infrastructure/.../config/RateLimitConfig.java`)
+### LimiteSolicitudesConfig (`seguridad/infrastructure/.../config/ratelimit/LimiteSolicitudesConfig.java`)
 
-- Usa **Bucket4j** (`bucket4j-core:7.6.0`) con per-IP buckets en `ConcurrentHashMap`
+- Usa **Bucket4j** (`com.bucket4j:bucket4j_jdk17-core:8.18.0`) con per-IP buckets en `ConcurrentHashMap`
 - Propiedades: `security.rate-limit.enabled`, `requests-per-minute` (default 100), `login-requests-per-minute` (default 5)
 - **En `application-prod.yml`: habilitado con 60/min global, 3/min login**
 
@@ -181,7 +181,7 @@ La documentación de la API se gestiona con **springdoc-openapi 2.x** (Spring Bo
 | `src/main/java/com/arquisoft/config/OpenApiConfig.java` | `@OpenAPIDefinition` + `@SecurityScheme` global (bearerAuth JWT) |
 | `application.yml` | `springdoc.swagger-ui.enabled: true` + `springdoc.api-docs.enabled: true` |
 | `application-prod.yml` | Ambos **deshabilitados** en prod |
-| `SecurityConfig.java` | `/swagger-ui/**`, `/v3/api-docs/**` son permit-all |
+| `SeguridadConfig.java` | `/swagger-ui/**`, `/v3/api-docs/**` son permit-all |
 | `AuditFilter.java` | Paths de Swagger excluidos del log de auditoría |
 
 URL en dev: `http://localhost:8080/api/swagger-ui/index.html` — sin autenticación.

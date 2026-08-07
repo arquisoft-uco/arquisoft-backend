@@ -57,7 +57,7 @@ arquisoft-backend/
 ├── seguridad/                           # CONTEXTO 1: Seguridad y Autenticación
 │   ├── domain/                          # UserRole, CurrentUserProvider, JwtTokenProvider
 │   ├── application/                     # DTOs (Login, Token, AuthenticatedUser)
-│   └── infrastructure/                  # SecurityConfig, AuthController, Keycloak, RateLimit
+│   └── infrastructure/                  # SeguridadConfig, AutenticacionCommandControlador, Keycloak, LimiteSolicitudes
 │
 ├── fichas/                              # CONTEXTO 2: Fichas de Trabajo de Grado
 │   ├── domain/

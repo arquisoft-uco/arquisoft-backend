@@ -233,7 +233,7 @@ Espera las respuestas del usuario antes de continuar.
    > Esta decisión determina TRES cosas: (1) si la entidad raíz extiende `AggregateRoot` (A/B = sí, C = no — forzar la extensión "por consistencia futura" es error); (2) si se generan archivos de evento (`{Entidad}{Accion}Event extends DomainEvent` con su constante `EVENT_TOPIC`); (3) si el use case inyecta `EventPublisher` y hay drenado/limpieza tras persistir. Una decisión incorrecta aquí infla el código innecesariamente o deja casos sin consumir. Ver sección "AggregateRoot — Regla Estricta" y "¿Cuándo emitir eventos de dominio?" del skill `arquisoft-context`.
 6. ¿Se requiere persistencia nueva (tabla/columna) o se reutiliza la existente?
 7. ¿Hay casos de error relevantes que debemos manejar explícitamente?
-8. ¿La entidad raíz afectada es un Aggregate Root nuevo o ya existe? Si es nuevo, **y la pregunta 5 fue A o B**, ¿qué eventos de dominio debe emitir esta acción y cuál es el `eventTopic` de cada uno (formato `{contexto}.{entidad}.{accion}`)?
+8. ¿La entidad raíz afectada es un Aggregate Root nuevo o ya existe? Si es nuevo, **y la pregunta 5 fue A o B**, ¿qué eventos de dominio debe emitir esta acción y cuál es el `temaEvento` de cada uno (formato `{contexto}.{entidad}.{accion}`)?
    (Si pregunta 5 fue C, omite la parte de eventos — el factory `crear(...)` no emitirá ninguno.)
 8b. **¿La HU valida la existencia de un aggregate de OTRA feature** (FK ajena — ej. confirmar que el `asesorFicha` existe antes de crear la `FichaPerfil`)? Si sí, ese `exists()` vive en un `{OtraEntidad}QueryOutputPort` de `application/{otraEntidad}/query/port/out/`, NUNCA en el `{Entidad}OutputPort` propio ni en `domain/` de la otra feature; un solo puerto lo inyectan tanto command como query use cases. Registra en la sección 4 del plan qué puerto cross-aggregate se inyecta. Ver "Ubicación de `exists()` y lookups cross-aggregate en puertos de salida" del skill `arquisoft-context`.
 9. ¿La HU requiere hablar con algún sistema externo (Keycloak, servicios HTTP,
@@ -497,15 +497,15 @@ Cuando un atributo es un **estado** o **tipo** con un conjunto **cerrado y conoc
 >   - No se crean archivos en domain/{entidad}/event/.
 > ```
 
-| Evento | Clase | `eventTopic` | Consumidor(es) conocido(s) | Cuándo se emite |
+| Evento | Clase | `temaEvento` | Consumidor(es) conocido(s) | Cuándo se emite |
 |---|---|---|---|---|
 | {EntidadCreada} | `{Entidad}CreadaEvent` (extiende `DomainEvent`) | `{contexto}.{entidad}.creada` | {contexto consumidor o "ninguno aún" si fue B} | En `crear(...)` o tras acción de negocio |
 
-> **Regla cuando hay eventos:** el dominio solo acumula eventos con `publishEvent(...)` desde el
+> **Regla cuando hay eventos:** el dominio solo acumula eventos con `publicarEvento(...)` desde el
 > factory. El use case los drena y publica en una sola línea tras persistir:
-> `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);`. `drainUnPublishedEvents()`
+> `aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish);`. `extraerEventosSinPublicar()`
 > retorna la lista y la limpia internamente en una operación atómica — **NO existe**
-> `clearUnPublishedEvents()` separado. El `EventPublisher` lo inyecta el use case desde
+> `limpiarEventosSinPublicar()` separado. El `EventPublisher` lo inyecta el use case desde
 > `com.arquisoft.shared.events` (interfaz en shared:domain); Spring Modulith elige la
 > implementación concreta (`SpringModulithEventPublisher` por defecto, con Outbox vía tabla
 > `event_publication`).
@@ -551,7 +551,7 @@ Para cada integración externa, documenta:
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/command/model/{Accion}{Entidad}Command.java` | `record` | Intención de negocio. Campos en español idénticos al aggregate |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/command/port/in/{Accion}{Entidad}InputPort.java` | Interface (vacía) | Extiende `InputPort<Command, Result>` o `VoidInputPort<Command>` de `shared:domain` |
 | application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/exception/{Entidad}DuplicadaException.java` `{Entidad}NoEncontradaException.java` etc. | Exception del use case | Extiende **`ApplicationException`** (duplicado, no encontrado, parámetro inválido → 400). Va aquí porque la decide el use case tras consultar un puerto (repositorio, servicio externo), NO el aggregate. **Ubicación directa bajo `{entidad}/exception/`, sin anidar `command/` o `query/`** — la excepción pertenece al concepto entidad, no al slice CQRS. **Si la ubicas en `domain/` rompes la dirección de dependencias** — `domain/` no puede importar `ApplicationException` de `shared:exception`. |
-| application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/command/{Accion}{Entidad}UseCase.java` | UseCase | `@Component` que implementa el `InputPort`. Patrón: `crear → save → drainUnPublishedEvents().forEach(publish) → retornar id` |
+| application | `{contexto}/src/main/java/com/arquisoft/{contexto}/application/{entidad}/command/{Accion}{Entidad}UseCase.java` | UseCase | `@Component` que implementa el `InputPort`. Patrón: `crear → save → extraerEventosSinPublicar().forEach(publish) → retornar id` |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/in/web/dto/{Accion}{Entidad}RequestDTO.java` | `record` | `record` con anotaciones Jakarta (`@NotBlank`, etc.). Método `toCommand()` que produce el `Command` |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/in/web/dto/{Accion}{Entidad}ResponseDTO.java` | `record` | **Solo respuesta A (retorna id):** `record {Accion}{Entidad}ResponseDTO(UUID id) {}` — serializa como `{"id": "..."}`. No se crea para respuesta B (Void). |
 | infrastructure | `{contexto}/src/main/java/com/arquisoft/{contexto}/infrastructure/{entidad}/command/adapter/in/web/{Accion}{Entidad}InputAdapter.java` | `@RestController` | Inyecta el `InputPort`. Respuesta A: `ResponseEntity<{Accion}{Entidad}ResponseDTO>` con `201` y body `{"id": "..."}` (nunca `ResponseEntity<UUID>` crudo). Respuesta B: `ResponseEntity<Void>` con `201`/`204`. ADR-011 (`@Tag`, `@Operation`, `@ApiResponses`, `@SecurityRequirement`) |
@@ -603,7 +603,7 @@ Para cada integración externa, documenta:
 | Validación multi-campo (Notification Pattern) | `DomainValidationException` | **422** + `fieldErrors[]` |
 | Fallo de infraestructura (BD, RabbitMQ, Keycloak caído) | `InfrastructureException` | **503** Service Unavailable |
 
-El `GlobalAppExceptionHandler` resuelve el HTTP recorriendo la jerarquía de la excepción hasta encontrar la clase base. El **mensaje al cliente proviene de `getMessage()` y el código de `getErrorCode()`** — ambos vienen del constructor de la excepción, así que el cuerpo de error es informativo automáticamente.
+El `GlobalAppExceptionHandler` resuelve el HTTP recorriendo la jerarquía de la excepción hasta encontrar la clase base. El **mensaje al cliente proviene de `getMessage()` y el código de `getCodigoError()`** — ambos vienen del constructor de la excepción, así que el cuerpo de error es informativo automáticamente.
 
 **Implicación para el plan:** las excepciones de dominio nuevas declaradas en este plan solo necesitan extender la clase base correcta. **NO se planifica creación de handler de contexto** salvo en los dos casos excepcionales descritos abajo.
 
@@ -678,7 +678,7 @@ Inventario de constantes a agregar al catálogo en esta HU (el agente lo llena a
 > (`com.arquisoft.shared.events.EventPublisher`, vive en `shared:domain`) y la invoca pasando un
 > `DomainEvent`. Cada evento declara su constante `EVENT_TOPIC` (routing key `{contexto}.{entidad}.{accion}`,
 > minúsculas + snake_case) y la pasa al `super(EVENT_TOPIC, EVENT_TYPE)`; el constructor de `DomainEvent`
-> valida el formato. `getEventTopic()` es `final` — no se sobreescribe.
+> valida el formato. `getTemaEvento()` es `final` — no se sobreescribe.
 > El plan NO declara archivos de Spring Modulith ni el `ContextAwareEventPublicationRepository`
 > — esa infraestructura ya existe globalmente en `shared:amqp` y `src/main/java/com/arquisoft/config/outbox/`.
 > **Sí debe declarar** dos cosas cuando la HU emite eventos: (1) la migración Flyway
@@ -839,7 +839,7 @@ Para cada client role nuevo de la tabla anterior:
 
 ## 10. Eventos RabbitMQ (si aplica)
 
-| Dirección | Exchange | Routing Key (`eventTopic`) | Payload | Bounded Context receptor |
+| Dirección | Exchange | Routing Key (`temaEvento`) | Payload | Bounded Context receptor |
 |-----------|----------|----------------------------|---------|--------------------------|
 | Publica | `arquisoft.events` | `{contexto}.{entidad}.{accion}` | `{Entidad}{Accion}Event` (record con campos del payload) | `{otro_contexto}` o "ninguno aún" |
 
@@ -894,8 +894,8 @@ Para cada client role nuevo de la tabla anterior:
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
 | `{Entidad}Test` | `debeConstruirEntidad_cuandoDatosValidos` | `crear(...)` crea entidad con UUID no nulo |
-| `{Entidad}Test` | `debePublicarEvento_cuandoCrearEsInvocado` | tras `crear(...)` hay 1 evento en `getUnPublishedEvents()` |
-| `{Entidad}Test` | `debeDrenarYLimpiarEventos_cuandoDrainEsInvocado` | `drainUnPublishedEvents()` retorna la lista de eventos Y deja vacía la lista interna en una sola operación |
+| `{Entidad}Test` | `debePublicarEvento_cuandoCrearEsInvocado` | tras `crear(...)` hay 1 evento en `obtenerEventosSinPublicar()` |
+| `{Entidad}Test` | `debeDrenarYLimpiarEventos_cuandoDrainEsInvocado` | `extraerEventosSinPublicar()` retorna la lista de eventos Y deja vacía la lista interna en una sola operación |
 | `{Entidad}Test` | `debeReconstruirSinEventos_cuandoReconstruirEsInvocado` | `reconstruir(...)` no acumula eventos |
 | `{Entidad}Test` | `debeLanzarExcepcion_cuando{InvarianteViolada}` | constructor lanza si datos inválidos |
 
@@ -905,7 +905,7 @@ Para cada client role nuevo de la tabla anterior:
 | Clase de test | Método | Escenario |
 |---------------|--------|-----------|
 | `{Accion}{Entidad}UseCaseImplTest` | `debe{Accion}_cuandoDatosValidos` | flujo exitoso completo |
-| `{Accion}{Entidad}UseCaseImplTest` | `debePublicarEventosDrenados_cuandoEjecutaExitoso` | verify `eventPublisher.publish(...)` se llamó N veces (uno por cada evento esperado). NO se verifica el estado interno del aggregate desde application — `getUnPublishedEvents()` es protected. |
+| `{Accion}{Entidad}UseCaseImplTest` | `debePublicarEventosDrenados_cuandoEjecutaExitoso` | verify `eventPublisher.publish(...)` se llamó N veces (uno por cada evento esperado). NO se verifica el estado interno del aggregate desde application — `obtenerEventosSinPublicar()` es protected. |
 | `{Accion}{Entidad}UseCaseImplTest` | `debeLanzarExcepcion_cuandoRepositorioFalla` | propaga error de repositorio |
 
 #### Tests capa `infrastructure`
@@ -975,7 +975,7 @@ ejemplos detallados.
 - [ ] Entidad inmutable: constructor privado, campos privados sin `final` (los asignan los setters privados del factory), solo getters públicos, factory methods `crear` / `reconstruir`, sin Lombok
 - [ ] **Cada regla de negocio de la sección 3 se valida dentro del aggregate** (→ 422), no con `if/throw` en el use case. El use case solo lee el estado vía puerto y lo pasa como parámetro a la factory
 - [ ] Eventos de dominio en `domain/event/`, extienden `DomainEvent`
-- [ ] Factory `crear(...)` llama `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))`
+- [ ] Factory `crear(...)` llama `publicarEvento(new {Entidad}CreadaEvent(id.toString(), ...))`
 - [ ] IDs siempre `UUID` (nunca `Long` / `Integer`)
 - [ ] Puerto de entrada (`{Accion}{Entidad}UseCase`) definido
 - [ ] Puerto de salida (`{Entidad}OutputPort`) definido

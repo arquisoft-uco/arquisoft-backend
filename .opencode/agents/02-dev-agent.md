@@ -231,9 +231,9 @@ CAPA 1 — domain (genera todos antes de compilar)
   ├── Eventos de dominio        ({Entidad}CreadaEvent.java, etc.) — extienden DomainEvent
   │     ⚠️ SOLO si el plan declara eventos en su sección 4. Si el plan dice
   │        "Eventos: ninguno" (CRUD sin consumidores), NO se generan archivos
-  │        de evento ni se llama a publishEvent(...) en crear(...).
+  │        de evento ni se llama a publicarEvento(...) en crear(...).
   │     ⚠️ Cuando se generan: el evento declara las constantes EVENT_TOPIC y EVENT_TYPE
-  │        y las pasa a super(EVENT_TOPIC, EVENT_TYPE). getEventTopic() es FINAL en
+  │        y las pasa a super(EVENT_TOPIC, EVENT_TYPE). getTemaEvento() es FINAL en
   │        DomainEvent — NO se sobreescribe (un @Override NO compila). EVENT_TOPIC debe ser
   │        "{contexto}.{entidad}.{accion}" en minúsculas + snake_case (ej. "fichas.ficha_perfil.creada");
   │        camelCase lanza IllegalArgumentException. Si el plan no lo especifica, derívalo del contexto + entidad + acción.
@@ -241,10 +241,10 @@ CAPA 1 — domain (genera todos antes de compilar)
   │     ⚠️ `extends AggregateRoot` SOLO si el plan declara eventos en su sección 4.
   │        Si el plan dice "Eventos: ninguno" (CRUD sin consumidores), la entidad
   │        es una `final class` plana SIN heredar de AggregateRoot — no acumula eventos,
-  │        no tiene drainUnPublishedEvents()/getUnPublishedEvents(), no necesita la maquinaria.
+  │        no tiene extraerEventosSinPublicar()/obtenerEventosSinPublicar(), no necesita la maquinaria.
   │        Forzar `extends AggregateRoot` "por consistencia futura" cuando el plan no
   │        declara eventos es VIOLACIÓN del plan — detente y reporta ambigüedad.
-  │     ⚠️ El factory crear(...) llama a publishEvent(...) SOLO si la entidad extiende
+  │     ⚠️ El factory crear(...) llama a publicarEvento(...) SOLO si la entidad extiende
   │        AggregateRoot (y por tanto el plan declara eventos). Si no, crear(...) construye
   │        y retorna la entidad sin emitir nada.
   ├── Enums                     (si aplican)
@@ -285,10 +285,10 @@ CAPA 2 — application (genera todos antes de compilar)
         ─ Si plan declara eventos (respuesta A o B con tabla de eventos en sección 4) →
           inyecta EventPublisher (interfaz `com.arquisoft.shared.events.EventPublisher` de
           shared:domain) y, tras persistir, drena con:
-              aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);
-          ⚠️ NO uses `clearUnPublishedEvents()` — ese método NO existe en AggregateRoot.
-          `drainUnPublishedEvents()` ya retorna la lista Y limpia internamente en una
-          sola operación atómica. Tampoco uses `getUnPublishedEvents()` desde el use case
+              aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish);
+          ⚠️ NO uses `limpiarEventosSinPublicar()` — ese método NO existe en AggregateRoot.
+          `extraerEventosSinPublicar()` ya retorna la lista Y limpia internamente en una
+          sola operación atómica. Tampoco uses `obtenerEventosSinPublicar()` desde el use case
           (es `protected`, accesible solo desde tests en el mismo paquete del aggregate).
 
   ⚠️ DTOs técnicos genéricos (PageResponseDTO, ErrorResponseDTO) NO se crean aquí —
@@ -304,7 +304,7 @@ CAPA 2 — application (genera todos antes de compilar)
        • shared/domain/.../events/EventPublisher.java (interfaz `void publish(DomainEvent)`)
        • shared/amqp/.../SpringModulithEventPublisher.java (publicador principal)
        • shared/amqp/.../RabbitMQConfig.java (con TopicExchange "arquisoft.events" + DLX)
-       • shared/amqp/.../ModulithAmqpExternalizationConfig.java (routing por getEventTopic())
+       • shared/amqp/.../ModulithAmqpExternalizationConfig.java (routing por getTemaEvento())
 
      Si falta la interfaz `EventPublisher` o faltan AMBOS publicadores (Spring Modulith
      y el fallback), PAUSA y AVISA:
@@ -360,7 +360,7 @@ CAPA 3 — infrastructure (genera todos antes de compilar)
      centralizada en shared:amqp (Spring Modulith + Outbox por contexto; impl principal
      SpringModulithEventPublisher, fallback RabbitMQEventPublisher). El use case inyecta
      la interfaz EventPublisher de com.arquisoft.shared.events (vive en shared:domain) y
-     llama a publish(domainEvent). Cada DomainEvent expone su routing key vía getEventTopic()
+     llama a publish(domainEvent). Cada DomainEvent expone su routing key vía getTemaEvento()
      (final en la clase base — el evento pasa su EVENT_TOPIC al super, no lo sobreescribe).
 
   → 🔨 COMPILAR: ./gradlew :{contexto}:infrastructure:compileJava
@@ -463,7 +463,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 ### Entidades de Dominio (Aggregate Root)
 
 - Constructor **privado**, campos privados **sin `final`**, solo getters públicos — Java puro, sin Lombok, sin framework. Los campos NO llevan `final` porque los asignan los **setters privados** que orquesta el factory (Notification Pattern): un campo `final` no puede asignarse desde un método. La inmutabilidad la garantizan el constructor privado y la ausencia de setters públicos, no el modificador `final`.
-- Factory method `crear(...)` para instancias nuevas — orquesta setters privados (uno por atributo, nombrado como el atributo: `setId`, `setContenido`, no `setIdRandom` ni `setTipoItemCode`) y luego `result.throwIfHasErrors()`. **Los valores autogenerados y conversiones se hacen DENTRO del setter, no en el cuerpo de `crear`:** `setId()` → `UtilUUID.generateNewUUID()`, `setFechaActualizacion()` → `UtilDate.generateNewInstantNow()`, conversión de enum/`valueOf` con su manejo de error vía catálogo dentro de su setter. Si la HU emite eventos, **publica** con `publishEvent(new {Entidad}CreadaEvent(id.toString(), ...))` tras validar.
+- Factory method `crear(...)` para instancias nuevas — orquesta setters privados (uno por atributo, nombrado como el atributo: `setId`, `setContenido`, no `setIdRandom` ni `setTipoItemCode`) y luego `result.throwIfHasErrors()`. **Los valores autogenerados y conversiones se hacen DENTRO del setter, no en el cuerpo de `crear`:** `setId()` → `UtilUUID.generateNewUUID()`, `setFechaActualizacion()` → `UtilDate.generateNewInstantNow()`, conversión de enum/`valueOf` con su manejo de error vía catálogo dentro de su setter. Si la HU emite eventos, **publica** con `publicarEvento(new {Entidad}CreadaEvent(id.toString(), ...))` tras validar.
 - Factory method `reconstruir(...)` para reconstruir desde persistencia — recibe el UUID existente, **sin publicar eventos**.
 - ID siempre `UUID` (`java.util.UUID`) — **nunca** `Long` ni `Integer`.
 - Para campos `Instant` autogenerados en `crear(...)` (ej. `fechaActualizacion`), usar `UtilDate.generateNewInstantNow()` de `com.arquisoft.shared.util.UtilDate` (`shared:domain`). **Nunca** `Instant.now()` directamente en código de dominio.
@@ -481,7 +481,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 
 ### Eventos de Dominio
 
-- Extienden `DomainEvent` de `shared:domain.events`. El constructor recibe `aggregateId`, `eventTopic`, `eventType` y los pasa al `super(...)`. La clase base asigna automáticamente `idEvento` y `occurredAt`.
+- Extienden `DomainEvent` de `shared:domain.events`. El constructor recibe `aggregateId`, `temaEvento`, `tipoEvento` y los pasa al `super(...)`. La clase base asigna automáticamente `idEvento` y `ocurridoEn`.
 - Declaran constantes `public static final String EVENT_TOPIC` (formato `{contexto}.{entidad}.{accion}`) y `EVENT_TYPE`.
 - Se ubican en `{contexto}/domain/{entidad}/event/`.
 - Marcarlos `final` (no se extienden).
@@ -545,7 +545,7 @@ Ver detalle completo en `shared/message/README.md` y en el skill `arquisoft-cont
 ### Use Cases
 
 - `@Component @RequiredArgsConstructor @Slf4j` + `@Transactional` cuando hay persistencia. **Siempre `@Component`, nunca `@Service`** — `@Service` no se usa en ninguna capa del proyecto. **Si el use case emite eventos**, el `@Transactional` debe llevar qualifier explícito del transaction manager del contexto: `@Transactional(transactionManager = "{contexto}TransactionManager")` (ej. `usuariosTransactionManager`, `fichasTransactionManager`). Sin el qualifier, el `ContextAwareEventPublicationRepository` puede escribir el registro de outbox en una BD equivocada o lanzar `IllegalStateException` por no encontrar transacción activa.
-- Orquestan: persistir → `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` → retornar. **Solo si el plan declara eventos** (respuesta A o B a la pregunta 5 del planificador). Si "Eventos: ninguno" (respuesta C), el use case ni inyecta `EventPublisher` ni hace drenado. `drainUnPublishedEvents()` retorna + limpia en una sola operación atómica — no llames a `clearUnPublishedEvents()` (no existe).
+- Orquestan: persistir → `aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)` → retornar. **Solo si el plan declara eventos** (respuesta A o B a la pregunta 5 del planificador). Si "Eventos: ninguno" (respuesta C), el use case ni inyecta `EventPublisher` ni hace drenado. `extraerEventosSinPublicar()` retorna + limpia en una sola operación atómica — no llames a `limpiarEventosSinPublicar()` (no existe).
 - Inyectan puertos (interfaces de `domain/port/out/`), nunca implementaciones.
 - **`{Entidad}OutputPort` solo opera sobre su propio aggregate.** Para validar FK contra otro aggregate (típicamente vista materializada de otro contexto), inyecta el `{OtroAggregate}QueryOutputPort` (en `application/{otraEntidad}/query/port/out/`) — NUNCA mezcles lookups de otro aggregate dentro de tu `OutputPort`. Ver "Ubicación de `exists()` y lookups cross-aggregate en puertos de salida" del skill.
 - **Tell, Don't Ask.** Al hablarle a un aggregate, invoca un método de comportamiento (`crear`, `actualizarTitulo`, `modificarContenido`) y deja que valide adentro. NO leas un getter del aggregate para evaluar un invariante y decidir/lanzar afuera. Getters permitidos solo para retornar/loguear el id, mensajes de excepción, mapeo JPA o pasar el valor a otro paso — nunca para tomar una decisión de negocio que le toca al aggregate.
@@ -811,7 +811,7 @@ Opciones:
 9. **Sin interacción con git.** Ni commits, ni ramas, ni stage.
 10. **DDD estricto — separación de capas:** ningún `@Configuration`, adaptador o controller contiene reglas de negocio. El dominio es Java puro (cero imports de Spring, JPA, Lombok, Jackson, Keycloak, RabbitMQ, Swagger, Security). Para integraciones externas: puerto en `domain/port/out/`, adaptador en `infrastructure/adapter/out/{tipo}/`, `@Configuration` solo cablea. Aplica la **prueba del algodón** antes de cada archivo.
 11. **Estructura de carpetas en adapters:** `@RestController` y `@RestControllerAdvice` en `infrastructure/adapter/in/web/`. Consumers RabbitMQ (`@RabbitListener`, extienden `AbstractEventConsumer`) en `{entidad}/command/adapter/in/amqp/`. JPA + repository adapter en `adapter/out/persistence/`. Otras integraciones en `adapter/out/{tipo}/` (ej. `security/`, `storage/`, `notification/`). **NO** existe `adapter/out/messaging/` en los contextos — la publicación de eventos está centralizada en `shared:amqp`. Nunca dejes componentes directamente en `adapter/in/` o `adapter/out/` sin subcarpeta.
-12. **Manejo de excepciones centralizado por defecto.** Las excepciones del contexto las maneja `GlobalAppExceptionHandler` de `shared:web` por jerarquía de su clase base — `DomainException` → 422, `ApplicationException` → 400, `InfrastructureException` → 503. El cliente recibe el `getMessage()` y el `getErrorCode()` que pone el constructor de la excepción. **NO crees `{Contexto}GlobalExceptionHandler` salvo que el plan lo declare explícitamente** (solo dos casos válidos: colisión de nombres con clases del framework, o HTTP status fuera del default de la jerarquía). Si lo declara, anota: `@RestControllerAdvice` + `@Order(Ordered.HIGHEST_PRECEDENCE)`, solo handlers de las excepciones específicas, sin fallback de `DomainException` ni `Exception.class`. **Nunca permitas que una excepción de dominio caiga en `handleGeneral` → 500.** Si una excepción no encaja en ninguna clase base correctamente, reporta ambigüedad al usuario.
+12. **Manejo de excepciones centralizado por defecto.** Las excepciones del contexto las maneja `GlobalAppExceptionHandler` de `shared:web` por jerarquía de su clase base — `DomainException` → 422, `ApplicationException` → 400, `InfrastructureException` → 503. El cliente recibe el `getMessage()` y el `getCodigoError()` que pone el constructor de la excepción. **NO crees `{Contexto}GlobalExceptionHandler` salvo que el plan lo declare explícitamente** (solo dos casos válidos: colisión de nombres con clases del framework, o HTTP status fuera del default de la jerarquía). Si lo declara, anota: `@RestControllerAdvice` + `@Order(Ordered.HIGHEST_PRECEDENCE)`, solo handlers de las excepciones específicas, sin fallback de `DomainException` ni `Exception.class`. **Nunca permitas que una excepción de dominio caiga en `handleGeneral` → 500.** Si una excepción no encaja en ninguna clase base correctamente, reporta ambigüedad al usuario.
 13. **DDD estricto — Aggregate Root condicional a eventos:** en los 6 contextos de negocio, la entidad raíz extiende `AggregateRoot` **SOLO si el plan declara eventos en su sección 4** (respuesta A o B a la pregunta 5 del planificador). Si el plan dice "Eventos: ninguno" (respuesta C), la entidad raíz es una `final class` plana SIN `extends AggregateRoot` — sin maquinaria de eventos. El contexto `seguridad` nunca usa `AggregateRoot`. Si el plan es ambiguo sobre la extensión (declara "Eventos: ninguno" pero también pide `extends AggregateRoot`, o viceversa), reporta ambigüedad con el Protocolo correspondiente antes de generar la entidad.
 14. **Eventos de dominio:** en `domain/event/`, extienden `DomainEvent`. El use case los drena tras persistir — nunca el dominio publica directamente.
 15. **IDs siempre `UUID`** (`java.util.UUID`). `crear()` lo genera dentro del setter `setId()` con `UtilUUID.generateNewUUID()` (de `shared:domain`); `reconstruir()` recibe el UUID desde persistencia.

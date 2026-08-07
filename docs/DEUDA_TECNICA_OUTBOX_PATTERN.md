@@ -15,7 +15,7 @@ En `CrearUsuarioUseCase`, la persistencia del aggregate y la publicación del ev
 
 ```java
 usuarioOutputPort.save(usuario);
-usuario.drainUnPublishedEvents().forEach(eventPublisher::publish);
+usuario.extraerEventosSinPublicar().forEach(eventPublisher::publish);
 ```
 
 Si el paso (1) se completaba y el paso (2) fallaba (broker caído, timeout, etc.), el sistema quedaba inconsistente:
@@ -57,7 +57,7 @@ Se integró **Spring Modulith 2.0.0** con su Event Publication Registry (Outbox 
 | Componente | Ubicación | Responsabilidad |
 |---|---|---|
 | `SpringModulithEventPublisher` | `shared/amqp` | Delega a `ApplicationEventPublisher` — Spring Modulith intercepta y persiste |
-| `ModulithAmqpExternalizationConfig` | `shared/amqp` | Routing: `DomainEvent` → exchange `arquisoft.events` con routing key del `eventTopic` |
+| `ModulithAmqpExternalizationConfig` | `shared/amqp` | Routing: `DomainEvent` → exchange `arquisoft.events` con routing key del `temaEvento` |
 | `ArquisoftEventsDataSourceConfig` | `src/main/config` | DataSource `@Primary` para la BD centralizada `arquisoft_events` |
 | `FailedEventRetryConfig` | `src/main/config` | Reintenta eventos `FAILED` periódicamente sin reinicio |
 | `arquisoft_events` DB | PostgreSQL | BD centralizada que contiene la tabla `event_publication` |

@@ -75,7 +75,7 @@ shared/                          ← Componentes reutilizables (7 sub-módulos)
 seguridad/                       ← CONTEXTO 1: Autenticación/Autorización
 ├── domain/                      ← UserRole, JWT, CurrentUser ports
 ├── application/                 ← LoginDTO, AuthenticatedUserDTO
-└── infrastructure/              ← SecurityConfig, AuthController, Keycloak
+└── infrastructure/              ← SeguridadConfig, AutenticacionCommandControlador, Keycloak
 
 fichas/                          ← CONTEXTO 2: Fichas
 proyectos/                       ← CONTEXTO 3: Proyectos

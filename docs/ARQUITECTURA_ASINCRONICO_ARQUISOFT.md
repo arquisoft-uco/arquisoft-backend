@@ -325,7 +325,7 @@ public class Entregable extends AggregateRoot {
         e.archivoUrl = archivoUrl;
         e.fechaCreacion = LocalDateTime.now();
         
-        e.publishEvent(new EntregableSubidoEvent(
+        e.publicarEvento(new EntregableSubidoEvent(
             e.id, proyectoId, descripcion, archivoUrl, LocalDateTime.now()
         ));
         return e;
@@ -352,8 +352,7 @@ public class CrearEntregableUseCaseImpl implements CrearEntregableUseCase {
         );
 
         Entregable saved = entregableRepository.save(entregable);
-        saved.getUnPublishedEvents().forEach(eventPublisher::publish);
-        saved.clearUnPublishedEvents();
+        saved.extraerEventosSinPublicar().forEach(eventPublisher::publish);
         return saved;
     }
 }
@@ -595,7 +594,7 @@ Sin el Outbox Pattern, `save(aggregate)` y `eventPublisher.publish(event)` son d
     └── COMMIT
             │
     [Spring Modulith — post-commit]
-            ├── Publica a RabbitMQ (routing key = eventTopic)
+            ├── Publica a RabbitMQ (routing key = temaEvento)
             │     ├── OK   → borra fila de event_publication
             │     └── FAIL → status = FAILED, fila permanece
             │

@@ -156,24 +156,24 @@ arquisoft-backend/
 │   ├── application/
 │   │   └── src/main/java/com/arquisoft/seguridad/application/
 │   │       ├── auth/
-│   │       │   ├── AuthenticateUserInputPort.java   # InputPort (contiene inner record AuthResult)
-│   │       │   ├── AuthenticateUserUseCaseImpl.java
-│   │       │   ├── LogoutInputPort.java
-│   │       │   ├── LogoutUseCaseImpl.java
-│   │       │   ├── RefreshTokenInputPort.java       # InputPort (contiene inner record RefreshResult)
-│   │       │   ├── RefreshTokenUseCaseImpl.java
-│   │       │   ├── ValidateTokenInputPort.java      # InputPort (contiene inner record ValidationResult)
-│   │       │   └── ValidateTokenUseCaseImpl.java
+│   │       │   ├── AutenticarUsuarioInteractor.java   # Interactor (contiene inner record AuthResult)
+│   │       │   ├── AutenticarUsuarioUseCaseImpl.java
+│   │       │   ├── CerrarSesionInteractor.java
+│   │       │   ├── CerrarSesionUseCaseImpl.java
+│   │       │   ├── RefrescarTokenInteractor.java       # Interactor (contiene inner record RefreshResult)
+│   │       │   ├── RefrescarTokenUseCaseImpl.java
+│   │       │   ├── ValidarTokenInteractor.java      # Interactor (contiene inner record ValidationResult)
+│   │       │   └── ValidarTokenUseCaseImpl.java
 │   │       ├── usuario/
 │   │       │   ├── CrearUsuarioInputPort.java
 │   │       │   ├── CrearUsuarioUseCaseImpl.java
 │   │       │   ├── RegistrarUsuarioInputPort.java
 │   │       │   └── RegistrarUsuarioUseCaseImpl.java
 │   │       ├── port/out/
-│   │       │   ├── AuthenticationOutputPort.java   # Contrato Keycloak
-│   │       │   ├── TokenOutputPort.java             # Contrato validación JWT
-│   │       │   ├── TokenBlacklistOutputPort.java    # Contrato Redis blacklist
-│   │       │   └── CurrentUserOutputPort.java       # Contrato Spring Security context
+│   │       │   ├── AutenticacionOutputPort.java   # Contrato Keycloak
+│   │       │   ├── ValidacionTokenOutputPort.java   # Contrato validación JWT
+│   │       │   ├── TokenInvalidadoOutputPort.java    # Contrato Redis blacklist
+│   │       │   └── UsuarioActualOutputPort.java       # Contrato Spring Security context
 │   │       └── dto/
 │   │           ├── LoginRequestDTO.java
 │   │           ├── LoginResponseDTO.java
@@ -191,15 +191,15 @@ arquisoft-backend/
 │           │   ├── UsuarioOutputAdapter.java         # OutputAdapter (ex InMemoryUsuarioRepository)
 │           │   ├── JwtTokenOutputAdapter.java        # OutputAdapter (ex JwtTokenAdapter)
 │           │   ├── KeycloakAuthOutputAdapter.java    # OutputAdapter (ex KeycloakAuthAdapter)
-│           │   ├── CurrentUserOutputAdapter.java     # OutputAdapter (ex CurrentUserAdapter)
+│           │   ├── UsuarioActualOutputAdapter.java     # OutputAdapter (ex CurrentUserAdapter)
 │           │   └── RedisTokenBlacklistOutputAdapter.java  # OutputAdapter (ex RedisTokenBlacklistAdapter)
 │           ├── config/                   # Configuraciones de SEGURIDAD (no van en config/ raíz)
-│           │   ├── SecurityConfig.java    # JWT + OAuth2 Resource Server + método security
+│           │   ├── SeguridadConfig.java    # JWT + OAuth2 Resource Server + método security
 │           │   ├── CorsConfig.java        # Orígenes, headers expuestos, credenciales
-│           │   ├── RateLimitConfig.java   # Bucket4j per-IP (100/min global, 5/min login)
+│           │   ├── LimiteSolicitudesConfig.java   # Bucket4j per-IP (100/min global, 5/min login)
 │           │   └── RestTemplateConfig.java # SimpleClientHttpRequestFactory (SB4 compat)
 │           └── filter/
-│               ├── RateLimitingFilter.java  # OncePerRequestFilter: evalúa límite por IP
+│               ├── LimitadorSolicitudesFilter.java  # OncePerRequestFilter: evalúa límite por IP
 │               └── AuditFilter.java         # Registra METHOD, URI, USER, TIME, STATUS
 │
 ├── fichas/                               # CONTEXTO 2
@@ -311,18 +311,20 @@ dependencies {
 ```java
 // shared/domain — clase existente
 public abstract class AggregateRoot {
-    private final List<DomainEvent> unPublishedEvents = new ArrayList<>();
+    private final List<DomainEvent> eventosSinPublicar = new ArrayList<>();
 
-    protected void publishEvent(DomainEvent event) {
-        unPublishedEvents.add(event);         // acumula el evento en memoria
+    public void publicarEvento(DomainEvent evento) {
+        eventosSinPublicar.add(evento);        // acumula el evento en memoria
     }
 
-    public List<DomainEvent> getUnPublishedEvents() {
-        return new ArrayList<>(unPublishedEvents);
+    public List<DomainEvent> extraerEventosSinPublicar() {
+        List<DomainEvent> extraidos = new ArrayList<>(eventosSinPublicar);
+        eventosSinPublicar.clear();
+        return extraidos;                      // drena Y limpia en una sola operación
     }
 
-    public void clearUnPublishedEvents() {
-        unPublishedEvents.clear();
+    protected List<DomainEvent> obtenerEventosSinPublicar() {
+        return new ArrayList<>(eventosSinPublicar);
     }
 }
 ```
@@ -380,7 +382,7 @@ public class FichaPerfilAggregate extends AggregateRoot {  // ← sufijo Aggrega
     // Factory para NUEVA ficha — genera UUID y registra evento
     public static FichaPerfilAggregate build(String tituloProyecto, AsesorFicha asesorFicha) {
         FichaPerfilAggregate ficha = new FichaPerfilAggregate(UUID.randomUUID(), tituloProyecto, asesorFicha);
-        ficha.publishEvent(new FichaPerfilCreadaEvent(ficha.id.toString(), tituloProyecto));
+        ficha.publicarEvento(new FichaPerfilCreadaEvent(ficha.id.toString(), tituloProyecto));
         return ficha;
     }
 
@@ -414,7 +416,7 @@ public class FichaCreadaEvent extends DomainEvent {
     private final String titulo;
 
     public FichaCreadaEvent(UUID fichaId, String titulo) {
-        super(EVENT_TOPIC, EVENT_TYPE);  // eventId, occurredAt se generan automáticamente
+        super(EVENT_TOPIC, EVENT_TYPE);  // idEvento, ocurridoEn se generan automáticamente
         this.fichaId = fichaId;
         this.titulo  = titulo;
     }
@@ -441,9 +443,8 @@ public class CrearFichaPerfilUseCaseImpl implements CrearFichaPerfilInputPort {
     public FichaPerfilAggregate crear(FichaPerfilAggregate ficha) {
         FichaPerfilAggregate guardada = fichaPerfilOutputPort.save(ficha);  // 1. persistir
 
-        guardada.getUnPublishedEvents()                // 2. drenar eventos acumulados
+        guardada.extraerEventosSinPublicar()                // 2. drenar Y limpiar en un solo paso
                 .forEach(eventPublisher::publish);     // 3. publicar a RabbitMQ
-        guardada.clearUnPublishedEvents();             // 4. limpiar lista
 
         return guardada;
     }

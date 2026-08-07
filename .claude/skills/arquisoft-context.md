@@ -618,35 +618,35 @@ Clase base en `shared:domain` que gestiona eventos de dominio acumulados en memo
 ```java
 // Ya existe en shared:domain — no reimplementar, solo usar
 public abstract class AggregateRoot {
-    private final List<DomainEvent> unPublishedEvents = new ArrayList<>();
+    private final List<DomainEvent> eventosSinPublicar = new ArrayList<>();
 
-    protected void publishEvent(DomainEvent event) { unPublishedEvents.add(event); }
+    public void publicarEvento(DomainEvent evento) { eventosSinPublicar.add(evento); }
 
     // Retorna la lista Y la limpia en una sola operación. Lo llama el use case tras
-    // persistir. NO existe clearUnPublishedEvents() — código que lo invoque no compila.
-    public List<DomainEvent> drainUnPublishedEvents() { /* drena + limpia */ }
+    // persistir. NO existe limpiarEventosSinPublicar() — código que lo invoque no compila.
+    public List<DomainEvent> extraerEventosSinPublicar() { /* drena + limpia */ }
 
     // protected — solo accesible desde tests del mismo paquete del aggregate.
-    protected List<DomainEvent> getUnPublishedEvents() { /* copia de la lista */ }
+    protected List<DomainEvent> obtenerEventosSinPublicar() { /* copia de la lista */ }
 }
 ```
 
 ### ¿Qué es DomainEvent?
 
-Clase base en `shared:domain`. El constructor recibe `eventTopic` y `eventType`, valida que el topic cumpla el formato `{contexto}.{entidad}.{accion}`, y asigna automáticamente `idEvento` (UUID) y `occurredAt` (`Instant`). **`getEventTopic()` es `final`** — la subclase NO lo sobreescribe: declara su constante `EVENT_TOPIC` y la pasa al `super(...)`.
+Clase base en `shared:domain`. El constructor recibe `temaEvento` y `tipoEvento`, valida que el topic cumpla el formato `{contexto}.{entidad}.{accion}`, y asigna automáticamente `idEvento` (UUID) y `ocurridoEn` (`Instant`). **`getTemaEvento()` es `final`** — la subclase NO lo sobreescribe: declara su constante `EVENT_TOPIC` y la pasa al `super(...)`.
 
 ```java
 // Ya existe en shared:domain
 public abstract class DomainEvent {
-    protected DomainEvent(String eventTopic, String eventType) {
-        validateTopic(eventTopic);                  // formato {contexto}.{entidad}.{accion}
-        this.eventId    = UUID.randomUUID().toString();
-        this.occurredAt = Instant.now();
-        this.eventType  = eventType;
-        this.eventTopic = eventTopic;
+    protected DomainEvent(String temaEvento, String tipoEvento) {
+        validarTema(temaEvento);                    // formato {contexto}.{entidad}.{accion}
+        this.idEvento    = UUID.randomUUID().toString();
+        this.ocurridoEn = Instant.now();
+        this.tipoEvento  = tipoEvento;
+        this.temaEvento = temaEvento;
     }
-    public final String getEventTopic() { return eventTopic; }  // final — no se sobreescribe
-    // getEventId(), getOccurredAt(), getEventType()
+    public final String getTemaEvento() { return temaEvento; }  // final — no se sobreescribe
+    // getIdEvento(), getOcurridoEn(), getTipoEvento()
 }
 
 // Cada evento concreto declara sus constantes y las pasa al super:
@@ -662,7 +662,7 @@ public class UsuarioCreadoEvent extends DomainEvent {
 
 ### Ciclo de emisión y drenado
 
-El aggregate acumula eventos con `publishEvent(...)` en sus factories/métodos de negocio. El use case, tras persistir, drena y publica en una línea: `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)`. El dominio NUNCA inyecta `EventPublisher`; el controller NUNCA drena. Mecánica completa (Outbox por contexto, Spring Modulith) en **"Eventos asíncronos — RabbitMQ"**.
+El aggregate acumula eventos con `publicarEvento(...)` en sus factories/métodos de negocio. El use case, tras persistir, drena y publica en una línea: `aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)`. El dominio NUNCA inyecta `EventPublisher`; el controller NUNCA drena. Mecánica completa (Outbox por contexto, Spring Modulith) en **"Eventos asíncronos — RabbitMQ"**.
 
 ### Factory methods obligatorios
 
@@ -697,10 +697,10 @@ Una HU de Escritura puede emitir eventos o no. La decisión depende de si hay (o
 
 | Decisión | Entidad raíz | `crear(...)` | Use case | Plan declara |
 |---|---|---|---|---|
-| **Con eventos** | `extends AggregateRoot` | Llama a `publishEvent(new {Entidad}{Accion}Event(...))` | Inyecta `EventPublisher` y drena tras persistir con `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` | Sección 4 lista los eventos emitidos con su `eventTopic` |
-| **Sin eventos (CRUD simple)** | **NO extiende `AggregateRoot`** — es un `class` plano con factories `crear`/`reconstruir` | NO existe `publishEvent(...)` ni se llama | NO inyecta `EventPublisher`, no hay drenado | Sección 4 declara explícitamente "Esta HU no emite eventos: <razón>" + "Entidad raíz NO extiende `AggregateRoot`" |
+| **Con eventos** | `extends AggregateRoot` | Llama a `publicarEvento(new {Entidad}{Accion}Event(...))` | Inyecta `EventPublisher` y drena tras persistir con `aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)` | Sección 4 lista los eventos emitidos con su `temaEvento` |
+| **Sin eventos (CRUD simple)** | **NO extiende `AggregateRoot`** — es un `class` plano con factories `crear`/`reconstruir` | NO existe `publicarEvento(...)` ni se llama | NO inyecta `EventPublisher`, no hay drenado | Sección 4 declara explícitamente "Esta HU no emite eventos: <razón>" + "Entidad raíz NO extiende `AggregateRoot`" |
 
-**Cuando aparezca la primera necesidad de evento futuro:** la HU que introduzca el evento añade `extends AggregateRoot` a la entidad, crea la clase del evento (`{Entidad}{Accion}Event extends DomainEvent` con su constante `EVENT_TOPIC` pasada al `super(...)`), llama a `publishEvent(...)` en el factory correspondiente e inyecta `EventPublisher` en el use case. No se anticipa.
+**Cuando aparezca la primera necesidad de evento futuro:** la HU que introduzca el evento añade `extends AggregateRoot` a la entidad, crea la clase del evento (`{Entidad}{Accion}Event extends DomainEvent` con su constante `EVENT_TOPIC` pasada al `super(...)`), llama a `publicarEvento(...)` en el factory correspondiente e inyecta `EventPublisher` en el use case. No se anticipa.
 
 ### Firma de EventPublisher
 
@@ -789,7 +789,7 @@ private Map<String, Object> claims;
 | Caso | Justificación |
 |---|---|
 | Clases **base del módulo `shared`** que serán heredadas por múltiples contextos (ej. `AggregateRoot`, `DomainEvent`, `QueryCriteria`, `EventPublisher`) | Son el contrato del framework interno del proyecto; sus usuarios son otros desarrolladores que no verán su implementación. |
-| Métodos abstractos en clases del `shared` que cada subclase DEBE implementar (ej. `DomainEvent.getEventTopic()`) | El contrato debe documentarse claramente porque diferentes contextos lo implementarán. |
+| Métodos abstractos en clases del `shared` que cada subclase DEBE implementar (ej. `DomainEvent.getTemaEvento()`) | El contrato debe documentarse claramente porque diferentes contextos lo implementarán. |
 | Anotaciones públicas custom del proyecto (si las hubiera) | Documentación del API para quien las consume. |
 
 **En los 7 contextos de negocio, NO hay Javadoc descriptivo.** Ni en aggregates, ni en use cases, ni en adapters, ni en controllers, ni en tests, ni en DTOs.
@@ -820,7 +820,7 @@ Características:
 - El use case drena los eventos tras persistir y los publica vía `EventPublisher`.
 
 Tests apropiados:
-- **domain:** ciclo completo de eventos (`publicarEvento` interno del factory → `drainUnPublishedEvents()` retorna y limpia), `reconstruir()` no emite eventos, invariantes del constructor.
+- **domain:** ciclo completo de eventos (`publicarEvento` interno del factory → `extraerEventosSinPublicar()` retorna y limpia), `reconstruir()` no emite eventos, invariantes del constructor.
 - **application:** flujo exitoso, error de repositorio, drenado de eventos verificado con `verify(eventPublisher).publish(...)`.
 - **infrastructure:** controller con códigos HTTP correctos (201, 400, 401, 403), repositorio guarda y reconstruye con `reconstruir()`.
 
@@ -840,7 +840,7 @@ Tests apropiados:
 **Tests que NO aplican a use cases de consulta:**
 - ❌ Ciclo de eventos del Aggregate Root (no hay eventos).
 - ❌ Verificación de `eventPublisher.publish(...)` (no se publica nada).
-- ❌ `drainUnPublishedEvents()` / `getUnPublishedEvents()`.
+- ❌ `extraerEventosSinPublicar()` / `obtenerEventosSinPublicar()`.
 - ❌ Validación de que `reconstruir()` no emite eventos (irrelevante en flujo de lectura).
 
 ### Use Case Mixto (raro, requiere cuidado)
@@ -924,7 +924,7 @@ void debeLanzarExcepcion_cuandoEstadoFiltroEsInvalido() {
 @Test
 void debeLanzarExcepcionConErrorCode_cuandoEstadoFiltroEsInvalido() {
     Throwable ex = catchThrowable(() -> useCase.ejecutar("BLOQUEADO"));
-    assertThat(((DomainException) ex).getErrorCode()).isEqualTo("PARAMETRO_FILTRO_INVALIDO");
+    assertThat(((DomainException) ex).getCodigoError()).isEqualTo("PARAMETRO_FILTRO_INVALIDO");
 }
 ```
 
@@ -939,7 +939,7 @@ void debeLanzarExcepcion_cuandoEstadoFiltroEsInvalido() {
     assertThat(ex)
         .isInstanceOf(ParametroFiltroInvalidoException.class)
         .hasMessageContaining("BLOQUEADO");
-    assertThat(((DomainException) ex).getErrorCode())
+    assertThat(((DomainException) ex).getCodigoError())
         .isEqualTo("PARAMETRO_FILTRO_INVALIDO");
 }
 ```
@@ -964,7 +964,7 @@ Si el use case **solo** delega al repositorio (sin transformar, validar, ni orqu
 @Test
 void debeContenerErrorCode_cuandoExcepcionEsCreada() {
     FichaNoEncontradaException ex = new FichaNoEncontradaException("123");
-    assertThat(ex.getErrorCode()).isEqualTo("FICHA_NO_ENCONTRADA");
+    assertThat(ex.getCodigoError()).isEqualTo("FICHA_NO_ENCONTRADA");
 }
 ```
 
@@ -1377,7 +1377,7 @@ public final class FichaPerfilAggregate extends AggregateRoot {
       aggregate.setAsesorFichaId(asesorFichaId, result);
       result.throwIfHasErrors();
 
-      aggregate.publishEvent(new FichaPerfilCreadaEvent(
+      aggregate.publicarEvento(new FichaPerfilCreadaEvent(
               aggregate.id, aggregate.tituloProyecto, aggregate.asesorFichaId));
       return aggregate;
    }
@@ -1433,7 +1433,7 @@ public final class FichaPerfilCreadaEvent extends DomainEvent {
     private final UUID asesorFichaId;
 
     public FichaPerfilCreadaEvent(UUID fichaPerfilId, String titulo, UUID asesorFichaId) {
-        super(EVENT_TOPIC, EVENT_TYPE);          // base solo recibe (eventTopic, eventType)
+        super(EVENT_TOPIC, EVENT_TYPE);          // base solo recibe (temaEvento, tipoEvento)
         this.fichaPerfilId  = fichaPerfilId;
         this.tituloProyecto = titulo;
         this.asesorFichaId  = asesorFichaId;
@@ -1510,14 +1510,14 @@ public class CrearFichaPerfilUseCase implements CrearFichaPerfilInputPort {
 
       fichaPerfilOutputPort.guardar(aggregate);
 
-      aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);
+      aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish);
 
       return aggregate.getId();
    }
 }
 ```
 
-> **Patrón canónico:** `crear → persistir → drainUnPublishedEvents().forEach(publish) → retornar id`. El UseCase no decide qué eventos publicar; solo drena lo que el aggregate acumuló.
+> **Patrón canónico:** `crear → persistir → extraerEventosSinPublicar().forEach(publish) → retornar id`. El UseCase no decide qué eventos publicar; solo drena lo que el aggregate acumuló.
 
 #### 7. RequestDTO (en `infrastructure`)
 
@@ -2045,7 +2045,7 @@ public class {Contexto}GlobalExceptionHandler {
     @ExceptionHandler({Entidad}DuplicadaException.class)
     public ResponseEntity<ErrorResponseDTO> handleDuplicada(
             {Entidad}DuplicadaException ex, HttpServletRequest request) {
-        log.warn("Recurso duplicado en {}: [{}] {}", request.getRequestURI(), ex.getErrorCode(), ex.getMessage());
+        log.warn("Recurso duplicado en {}: [{}] {}", request.getRequestURI(), ex.getCodigoError(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ErrorResponseDTO.fromBaseException(ex, "Conflict", HttpStatus.CONFLICT, request.getRequestURI()));
     }
@@ -2266,7 +2266,7 @@ Exchange "arquisoft.events" (TopicExchange, durable)
 |---|---|---|
 | Exchange único | `arquisoft.events` (Topic, durable) | — |
 | Routing key | `{contexto}.{entidad}.{accion}` (la constante `EVENT_TOPIC` del evento) | `fichas.ficha_perfil.creada` |
-| Cola por consumidor | `{contextoConsumidor}.{eventTopic}` durable | `proyectos.fichas.ficha_perfil.creada` |
+| Cola por consumidor | `{contextoConsumidor}.{temaEvento}` durable | `proyectos.fichas.ficha_perfil.creada` |
 | DLX | `arquisoft.dlx` + routing key `{queue}.dead` | — |
 
 ### Publicación — `SpringModulithEventPublisher` (Spring Modulith + Outbox Pattern)
@@ -2274,7 +2274,7 @@ Exchange "arquisoft.events" (TopicExchange, durable)
 El publicador principal del proyecto es **`SpringModulithEventPublisher`** (en `shared:amqp`), que implementa el puerto `EventPublisher` de `shared:domain.events`. Internamente delega a `ApplicationEventPublisher.publishEvent(...)`, y Spring Modulith intercepta esa publicación para aplicar **Outbox Pattern con tabla `event_publication` por contexto**:
 
 1. **Dentro de la transacción del use case:** persiste el evento en la tabla `event_publication` **de la BD del contexto** (mismo `DataSource` del aggregate) con `completion_date = NULL`. El INSERT está en la misma transacción que el `save()` del aggregate — atomicidad real, no práctica.
-2. **Tras el commit:** publica al exchange `arquisoft.events` usando `event.getEventTopic()` como routing key, vía la configuración `ModulithAmqpExternalizationConfig`.
+2. **Tras el commit:** publica al exchange `arquisoft.events` usando `event.getTemaEvento()` como routing key, vía la configuración `ModulithAmqpExternalizationConfig`.
 3. **Si el broker rechaza o está caído:** el evento queda en `event_publication` con `completion_date = NULL`. El bean `FailedEventRetryConfig` reintenta cada 5 min mediante `FailedEventPublications.resubmit(...)` con `withMinAge(2m)`.
 
 **Cómo Modulith sabe a qué BD escribir:** el proyecto reemplaza el `JdbcEventPublicationRepository` por un componente custom — **`ContextAwareEventPublicationRepository`** (en `src/main/java/com/arquisoft/config/outbox/`). En el arranque detecta automáticamente qué `DataSource`s tienen tabla `event_publication`; al publicar un evento, busca la transacción activa (vía `TransactionSynchronizationManager`) y enruta el INSERT al `JdbcTemplate` correspondiente. Las queries de estado (incompletos, fallidos, conteos) hacen fan-out a todas las tablas detectadas. La autoconfig de Modulith para JDBC está **explícitamente excluida** en `application.yml` (`JdbcEventPublicationAutoConfiguration` en la lista de `spring.autoconfigure.exclude`).
@@ -2293,10 +2293,10 @@ Existe además un **fallback `RabbitMQEventPublisher`** anotado con `@Conditiona
 **Implicación para el use case:** inyecta la interfaz `EventPublisher` de `com.arquisoft.shared.events` (vive en `shared:domain`). NO conoce que hay Outbox por debajo — eso es responsabilidad de `shared:amqp`. El patrón es:
 
 ```java
-aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish);
+aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish);
 ```
 
-`drainUnPublishedEvents()` retorna y limpia la lista en una sola operación atómica. **NO existe `clearUnPublishedEvents()`** — no llamar a un método con ese nombre.
+`extraerEventosSinPublicar()` retorna y limpia la lista en una sola operación atómica. **NO existe `limpiarEventosSinPublicar()`** — no llamar a un método con ese nombre.
 
 ### Consumo — `AbstractEventConsumer` (en `shared:amqp`)
 
@@ -2379,12 +2379,12 @@ public class ProyectosFichaPerfilQueueConfig {
 | Pieza | Capa | Responsabilidad |
 |---|---|---|
 | Decide qué evento emitir | `domain/{entidad}/aggregate/` | Solo el aggregate decide qué pasó |
-| Acumula evento en memoria | `domain/{entidad}/aggregate/` | `publishEvent(...)` desde el factory |
-| Drena y publica | `application/{entidad}/command/` | `drainUnPublishedEvents().forEach(publish)` tras persistir |
+| Acumula evento en memoria | `domain/{entidad}/aggregate/` | `publicarEvento(...)` desde el factory |
+| Drena y publica | `application/{entidad}/command/` | `extraerEventosSinPublicar().forEach(publish)` tras persistir |
 | Publica a RabbitMQ | `shared:amqp` (`SpringModulithEventPublisher`) | Delega a `ApplicationEventPublisher`; Modulith persiste en `event_publication` y publica tras commit |
 | Outbox por contexto | `ContextAwareEventPublicationRepository` (`src/main/java/com/arquisoft/config/outbox/`) | Detecta DataSources con tabla `event_publication` en el arranque; enruta INSERT a la transacción activa; fan-out en queries de estado |
 | Reintentos de FAILED | `FailedEventRetryConfig` | Scheduler `@Scheduled` cada 5 min: `FailedEventPublications.resubmit(...)` con `withMinAge(2m)` |
-| Externalización a exchange | `shared:amqp` (`ModulithAmqpExternalizationConfig`) | `EventExternalizationConfiguration` con routing por `getEventTopic()` |
+| Externalización a exchange | `shared:amqp` (`ModulithAmqpExternalizationConfig`) | `EventExternalizationConfiguration` con routing por `getTemaEvento()` |
 | Configura cola + DLX | `{contextoConsumidor}/infrastructure/config/` | `@Configuration` con Queue + Binding |
 | Consume el mensaje | `{contextoConsumidor}/infrastructure/{entidad}/command/adapter/in/amqp/` | Extiende `AbstractEventConsumer` |
 | Payload del consumidor | mismo paquete del consumer | `record` local, **NO** importa el evento del publicador |
@@ -2392,7 +2392,7 @@ public class ProyectosFichaPerfilQueueConfig {
 ### Reglas inviolables
 
 1. **`AggregateRoot` solo acumula eventos en memoria.** Nunca conoce `EventPublisher`.
-2. **El UseCase write drena con `drainUnPublishedEvents()`** (un solo método que retorna + limpia atómico). Nunca itera el aggregate manualmente. **NO existe `clearUnPublishedEvents()`** en `AggregateRoot` — código que lo use NO compila.
+2. **El UseCase write drena con `extraerEventosSinPublicar()`** (un solo método que retorna + limpia atómico). Nunca itera el aggregate manualmente. **NO existe `limpiarEventosSinPublicar()`** en `AggregateRoot` — código que lo use NO compila.
 3. **El use case inyecta `EventPublisher`** (interfaz de `shared:domain.events`). Quién la provee (`SpringModulithEventPublisher` en operación normal, `RabbitMQEventPublisher` como fallback) lo decide Spring — el use case no conoce la implementación.
    **Si el use case emite eventos**, el `@Transactional` lleva qualifier explícito: `@Transactional(transactionManager = "{contexto}TransactionManager")`. Sin qualifier, el outbox puede romperse silenciosamente al escribir en una BD equivocada.
 4. **El consumidor declara su propio `record` payload.** Nunca importa la clase del evento del publicador (cero acoplamiento entre contextos).

@@ -210,7 +210,7 @@ Jackson 3 moved `databind` to `tools.jackson.databind.*`; `com.fasterxml.jackson
 
 ## Security
 
-- JWT validated against Keycloak JWK Set (configured in `seguridad/infrastructure/config/SecurityConfig`)
+- JWT validated against Keycloak JWK Set (configured in `seguridad/infrastructure/config/SeguridadConfig`)
 - Rate limiting via Bucket4j: per-IP buckets in `ConcurrentHashMap` (100 req/min global dev, 60 prod; 5 login/min)
 - `AuditFilter` logs all requests with METHOD, URI, USER, TIME, STATUS (skips Swagger paths)
 - CORS default origins: `localhost:3000`, `4200`, `5173` (configurable via `CORS_ALLOWED_ORIGINS`)

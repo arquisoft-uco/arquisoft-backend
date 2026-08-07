@@ -211,11 +211,11 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Entidad raíz **extiende `AggregateRoot`** de `shared:domain` (paquete `com.arquisoft.shared.events`) | ✅ |
 | Eventos en `{contexto}/domain/{entidad}/event/` y extienden `DomainEvent` | ✅ |
 | Cada `DomainEvent` declara su constante `EVENT_TOPIC` (formato `{contexto}.{entidad}.{accion}`, minúsculas + snake_case) y la pasa a `super(EVENT_TOPIC, EVENT_TYPE)` | ✅ |
-| Evento con `@Override` de `getEventTopic()`, o `super(...)` que pasa `aggregateId`/3 args (la base recibe solo `eventTopic, eventType`), o `EVENT_TOPIC` en camelCase | ❌ violación bloqueante (no compila / falla validación de topic en runtime) |
-| Factory `crear(...)` publica evento con `publishEvent(...)` | ✅ |
+| Evento con `@Override` de `getTemaEvento()`, o `super(...)` que pasa `aggregateId`/3 args (la base recibe solo `temaEvento, tipoEvento`), o `EVENT_TOPIC` en camelCase | ❌ violación bloqueante (no compila / falla validación de topic en runtime) |
+| Factory `crear(...)` publica evento con `publicarEvento(...)` | ✅ |
 | Use case inyecta `EventPublisher` de `com.arquisoft.shared.events` (interfaz en shared:domain; NO una implementación local del contexto, NO `SpringModulithEventPublisher` ni `RabbitMQEventPublisher` directamente) | ✅ |
-| Use case drena eventos tras persistir con `aggregate.drainUnPublishedEvents().forEach(eventPublisher::publish)` — UN solo método, no dos pasos | ✅ |
-| Use case llama `clearUnPublishedEvents()` (método inexistente — no compila) | ❌ violación bloqueante |
+| Use case drena eventos tras persistir con `aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)` — UN solo método, no dos pasos | ✅ |
+| Use case llama `limpiarEventosSinPublicar()` (método inexistente — no compila) | ❌ violación bloqueante |
 
 **Checks aplicables SOLO si el plan declara "Eventos: ninguno" (respuesta C a la pregunta 5):**
 
@@ -224,9 +224,9 @@ Aplica los checks de las dos secciones siguientes mentalmente, contando bloquean
 | Entidad raíz **NO extiende `AggregateRoot`** — es una `final class` plana con factories `crear`/`reconstruir` | ✅ |
 | Entidad raíz extiende `AggregateRoot` "por consistencia" cuando el plan no declara eventos | ❌ violación bloqueante (arrastra maquinaria de eventos no usada) |
 | NO existen archivos en `{contexto}/domain/{entidad}/event/` para esta HU | ✅ |
-| Factory `crear(...)` NO llama a `publishEvent(...)` (el método no existe en una clase plana) | ✅ |
+| Factory `crear(...)` NO llama a `publicarEvento(...)` (el método no existe en una clase plana) | ✅ |
 | Use case NO inyecta `EventPublisher` | ✅ |
-| Use case NO drena eventos (no llama a `drainUnPublishedEvents()` — no hay nada que drenar en una entidad plana) | ✅ |
+| Use case NO drena eventos (no llama a `extraerEventosSinPublicar()` — no hay nada que drenar en una entidad plana) | ✅ |
 
 **2.3 Entidades de dominio:**
 
@@ -465,7 +465,7 @@ revise. NO lo marques como bloqueante por sí solo.
 | **Consulta** | `verify(eventPublisher).publish(...)` en `{Accion}{Entidad}UseCaseImplTest.java` | ✅ |
 | **Consulta** | Test `debeReconstruirSinEventos_cuandoReconstruirEsInvocado` (la consulta no debería estar testeando `reconstruir`) | ✅ |
 | **Escritura** | AUSENCIA de tests de ciclo de eventos (`publicarEvento`, `obtenerEventosSinPublicar`, `extraerEventosSinPublicar`) cuando el plan declara que la HU emite eventos | ✅ |
-| **Cualquier tipo** | Cualquier llamada a `clearUnPublishedEvents()` (método inexistente — código no compila) | ❌ violación bloqueante |
+| **Cualquier tipo** | Cualquier llamada a `limpiarEventosSinPublicar()` (método inexistente — código no compila) | ❌ violación bloqueante |
 | **Escritura** | AUSENCIA de `verify(eventPublisher).publish(...)` en `{Accion}{Entidad}UseCaseImplTest.java` | ✅ |
 | (cualquier tipo) | Plan no declara el campo "Tipo de Use Case" en la Metadata | ⚠️ menor (advertencia, no bloqueante — el plan puede ser de versión vieja) |
 
@@ -486,7 +486,7 @@ revise. NO lo marques como bloqueante por sí solo.
 - Tipo de UC declarado en plan: Consulta
 - Problema: el test contiene verificaciones de ciclo de eventos del Aggregate Root,
   que no aplican a use cases de consulta (no hay eventos que verificar).
-- Acción requerida: eliminar tests de publishEvent, getUnPublishedEvents y drainUnPublishedEvents.
+- Acción requerida: eliminar tests de publishEvent, obtenerEventosSinPublicar y extraerEventosSinPublicar.
 - Referencia: skill arquisoft-context, sección "Tipos de Use Case y sus Tests".
 ```
 
@@ -850,7 +850,7 @@ Nota: las secciones 2.11, 2.12 y 2.13 se omiten porque no hay tests que validar.
 {bullet points con los cambios implementados — uno por cada aspecto relevante:
 - Qué se implementó (endpoint, caso de uso, evento RabbitMQ, migración Flyway)
 - Capas afectadas y archivos principales creados/modificados
-- Eventos de dominio emitidos con su eventTopic (si aplica)
+- Eventos de dominio emitidos con su temaEvento (si aplica)
 - Migraciones Flyway ejecutadas (si aplica)}
 
 **Tipo:** `feat` / `fix` / `refactor` / `docs` / `style` / `test` / `chore`
