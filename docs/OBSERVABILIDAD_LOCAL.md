@@ -75,7 +75,7 @@ level=info msg="finished transferring logs" component=tailer container=docker/..
 | `origin` | `external_labels` en `config.alloy` | `local-tuNombre` |
 | `job` | `external_labels` | `backend-java-local` |
 
-`traceId` y `userId` son alta cardinalidad — se consultan con `| json`, no como stream labels.
+`idTraza` y `idUsuario` son alta cardinalidad — se consultan con `| json`, no como stream labels.
 
 > **Nota sobre `__meta_docker_*`:** estos metadatos solo están disponibles en `discovery.relabel` referenciado via `relabel_rules` en `loki.source.docker`. No están disponibles en `loki.relabel` usado como `forward_to`. Ver comentarios en `config.alloy`.
 
@@ -88,9 +88,9 @@ El backend usa `StructuredLogEncoder` (Spring Boot 4.x nativo, perfil `prod`). C
 | Campo | Quién lo inyecta | Cuándo está presente |
 |---|---|---|
 | `level`, `message`, `logger_name` | Logback | Siempre |
-| `traceId` | `TraceIdFilter` (orden -300) | Por request (ausente en startup) |
-| `userId` | `AuditFilter` (LOWEST_PRECEDENCE) | Por request autenticado |
-| `httpMethod`, `httpUri`, `httpStatus`, `durationMs`, `clientIp` | `AuditFilter` | Solo en evento `AUDIT` |
+| `idTraza` | `TraceIdFilter` (orden -300) | Por request (ausente en startup) |
+| `idUsuario` | `AuditFilter` (LOWEST_PRECEDENCE) | Por request autenticado |
+| `metodoHttp`, `uriHttp`, `estadoHttp`, `duracionMs`, `ipCliente` | `AuditFilter` | Solo en evento `AUDIT` |
 
 Rutas excluidas del evento `AUDIT`: `/api/actuator/`, `/api/swagger-ui`, `/api/v3/api-docs`, `/api/swagger-resources`.
 
@@ -112,8 +112,8 @@ Usar siempre `{container="arquisoft-backend"}` — **no** solo `{origin="..."}` 
 {container="arquisoft-backend", origin="local-tuNombre"} |= "NullPointerException"
 
 # Trazabilidad — alta cardinalidad: usar | json
-{container="arquisoft-backend"} | json | traceId="<uuid>"
-{container="arquisoft-backend", origin="local-tuNombre"} | json | userId="<uuid>"
+{container="arquisoft-backend"} | json | idTraza="<uuid>"
+{container="arquisoft-backend", origin="local-tuNombre"} | json | idUsuario="<uuid>"
 
 # Formato legible
 {container="arquisoft-backend", origin="local-tuNombre"} | json | line_format "[{{.level}}] {{.logger_name}} — {{.message}}"

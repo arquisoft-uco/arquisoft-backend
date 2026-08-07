@@ -75,7 +75,7 @@ class AuditFilterTest {
         verify(filterChain).doFilter(request, response);
         ILoggingEvent event = logAppender.list.get(0);
         assertThat(event.getLevel()).isEqualTo(Level.INFO);
-        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.HTTP_STATUS, "200");
+        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.ESTADO_HTTP, "200");
         assertThat(MDC.getCopyOfContextMap()).isNullOrEmpty();
     }
 
@@ -93,7 +93,7 @@ class AuditFilterTest {
         // Assert
         ILoggingEvent event = logAppender.list.get(0);
         assertThat(event.getLevel()).isEqualTo(Level.WARN);
-        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.HTTP_STATUS, "401");
+        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.ESTADO_HTTP, "401");
     }
 
     @Test
@@ -110,7 +110,7 @@ class AuditFilterTest {
         // Assert
         ILoggingEvent event = logAppender.list.get(0);
         assertThat(event.getLevel()).isEqualTo(Level.ERROR);
-        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.HTTP_STATUS, "500");
+        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.ESTADO_HTTP, "500");
     }
 
     @Test
@@ -138,7 +138,7 @@ class AuditFilterTest {
 
         // Assert
         ILoggingEvent event = logAppender.list.get(0);
-        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.USER_ID, "uuid-estudiante-123");
+        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.ID_USUARIO, "uuid-estudiante-123");
     }
 
     @Test
@@ -155,7 +155,7 @@ class AuditFilterTest {
 
         // Assert
         ILoggingEvent event = logAppender.list.get(0);
-        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.USER_ID, "ANONYMOUS");
+        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.ID_USUARIO, "ANONYMOUS");
     }
 
     @Test
@@ -171,7 +171,7 @@ class AuditFilterTest {
 
         // Assert
         ILoggingEvent event = logAppender.list.get(0);
-        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.HTTP_URI, "/api/fichas____/malicious");
+        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.URI_HTTP, "/api/fichas____/malicious");
     }
 
     @Test
@@ -187,7 +187,7 @@ class AuditFilterTest {
 
         // Assert
         ILoggingEvent event = logAppender.list.get(0);
-        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.CLIENT_IP, "203.0.113.25");
+        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.IP_CLIENTE, "203.0.113.25");
     }
 
     @Test
@@ -203,6 +203,6 @@ class AuditFilterTest {
 
         // Assert
         ILoggingEvent event = logAppender.list.get(0);
-        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.CLIENT_IP, "INVALID");
+        assertThat(event.getMDCPropertyMap()).containsEntry(MdcKeys.IP_CLIENTE, "INVALID");
     }
 }

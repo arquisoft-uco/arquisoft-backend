@@ -58,12 +58,12 @@ public class RabbitMQConfig {
     @Bean
     public MessagePostProcessor traceHeadersPostProcessor() {
         return message -> {
-            String traceId = MDC.get(MdcKeys.TRACE_ID);
-            String userId  = MDC.get(MdcKeys.USER_ID);
+            String idTraza = MDC.get(MdcKeys.ID_TRAZA);
+            String idUsuario = MDC.get(MdcKeys.ID_USUARIO);
             message.getMessageProperties().setHeader("X-Trace-Id",
-                    traceId != null ? traceId : UUID.randomUUID().toString().replace("-", ""));
+                    idTraza != null ? idTraza : UUID.randomUUID().toString().replace("-", ""));
             message.getMessageProperties().setHeader("X-User-Id",
-                    userId != null ? userId : "SYSTEM");
+                    idUsuario != null ? idUsuario : "SYSTEM");
             return message;
         };
     }

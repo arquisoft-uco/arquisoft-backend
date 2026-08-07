@@ -12,10 +12,10 @@ public class ModulithAmqpExternalizationConfig {
     @Bean
     EventExternalizationConfiguration eventExternalizationConfiguration() {
         return EventExternalizationConfiguration.externalizing()
-                .select(event -> event instanceof DomainEvent)
-                .route(DomainEvent.class, event ->
+                .select(evento -> evento instanceof DomainEvent)
+                .route(DomainEvent.class, evento ->
                         RoutingTarget.forTarget(RabbitMQConfig.EXCHANGE_NAME)
-                                .andKey(event.getTemaEvento()))
+                                .andKey(evento.getTemaEvento()))
                 .build();
     }
 }

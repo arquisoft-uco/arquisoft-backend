@@ -27,13 +27,13 @@ public class TraceIdFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String traceId = resolverTraceId(request);
-        MDC.put(MdcKeys.TRACE_ID, traceId);
-        response.setHeader(CorrelationHeaders.X_CORRELATION_ID, traceId);
+        String idTraza = resolverTraceId(request);
+        MDC.put(MdcKeys.ID_TRAZA, idTraza);
+        response.setHeader(CorrelationHeaders.X_CORRELATION_ID, idTraza);
         try {
             filterChain.doFilter(request, response);
         } finally {
-            MDC.remove(MdcKeys.TRACE_ID);
+            MDC.remove(MdcKeys.ID_TRAZA);
         }
     }
 

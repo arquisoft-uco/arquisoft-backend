@@ -115,8 +115,8 @@ Configurar en Grafana (Server 2): **Connections → Data sources → Add → Lok
 {container="arquisoft-backend", job="backend-java-coolify"} |= "Exception"
 
 # Trazabilidad
-{container="arquisoft-backend"} | json | traceId="<uuid>"
-{container="arquisoft-backend"} | json | userId="<uuid>"
+{container="arquisoft-backend"} | json | idTraza="<uuid>"
+{container="arquisoft-backend"} | json | idUsuario="<uuid>"
 
 # Métricas
 rate({container="arquisoft-backend", level="ERROR"}[1m])

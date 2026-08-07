@@ -45,7 +45,7 @@ Todas las respuestas de error incluyen ahora `traceId`.
   implementó la correlación punta a punta con MDC y headers, que cubre el requisito
   funcional (reconstruir la historia de una transacción), y se dejó el bridge OTel como
   spike aparte: introducirlo toca los ocho contextos, obliga a decidir propagación W3C
-  frente a correlación propia y colisiona con la clave MDC `traceId` que ya consumen
+  frente a correlación propia y colisiona con la clave MDC `idTraza` que ya consumen
   `logback-spring.xml` y Loki. El filtro ya acepta `traceparent`, lo que facilita la
   migración.
 - **Operadores `IN` / `NOT IN` en el filtrado.** `FiltroOperador` ya soporta contiene,

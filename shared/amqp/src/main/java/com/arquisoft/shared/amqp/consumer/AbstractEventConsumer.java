@@ -29,13 +29,13 @@ public abstract class AbstractEventConsumer {
 
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
-        String traceId = header(message, "X-Trace-Id");
-        String userId  = header(message, "X-User-Id");
+        String idTraza = header(message, "X-Trace-Id");
+        String idUsuario = header(message, "X-User-Id");
 
         Map<String, String> prevMdc = MDC.getCopyOfContextMap();
-        MDC.put(MdcKeys.TRACE_ID, traceId != null ? traceId
+        MDC.put(MdcKeys.ID_TRAZA, idTraza != null ? idTraza
                                  : UUID.randomUUID().toString().replace("-", ""));
-        MDC.put(MdcKeys.USER_ID,  userId  != null ? userId : "EVENT");
+        MDC.put(MdcKeys.ID_USUARIO,  idUsuario != null ? idUsuario : "EVENT");
 
         try {
             handler.handle();

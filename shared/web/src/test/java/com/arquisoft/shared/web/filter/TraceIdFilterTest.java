@@ -34,16 +34,16 @@ class TraceIdFilterTest {
     @Test
     void debeExtraerTraceIdDeTraceparent_cuandoNoHayCorrelacionPropia() throws Exception {
         // Arrange
-        String traceId = "4bf92f3577b34da6a3ce929d0e0e4736";
+        String idTraza = "4bf92f3577b34da6a3ce929d0e0e4736";
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(CorrelationHeaders.TRACEPARENT, "00-" + traceId + "-00f067aa0ba902b7-01");
+        request.addHeader(CorrelationHeaders.TRACEPARENT, "00-" + idTraza + "-00f067aa0ba902b7-01");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         // Act
         AtomicReference<String> traceEnCadena = capturarTraceId(request, response);
 
         // Assert
-        assertThat(traceEnCadena.get()).isEqualTo(traceId);
+        assertThat(traceEnCadena.get()).isEqualTo(idTraza);
     }
 
     @Test
@@ -83,13 +83,13 @@ class TraceIdFilterTest {
         filter.doFilter(request, response, mock(FilterChain.class));
 
         // Assert
-        assertThat(MDC.get(MdcKeys.TRACE_ID)).isNull();
+        assertThat(MDC.get(MdcKeys.ID_TRAZA)).isNull();
     }
 
     private AtomicReference<String> capturarTraceId(MockHttpServletRequest request,
                                                     MockHttpServletResponse response) throws Exception {
         AtomicReference<String> capturado = new AtomicReference<>();
-        FilterChain chain = (req, res) -> capturado.set(MDC.get(MdcKeys.TRACE_ID));
+        FilterChain chain = (req, res) -> capturado.set(MDC.get(MdcKeys.ID_TRAZA));
         filter.doFilter(request, response, chain);
         return capturado;
     }

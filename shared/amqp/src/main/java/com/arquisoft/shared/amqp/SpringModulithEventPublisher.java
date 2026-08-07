@@ -13,7 +13,7 @@ public class SpringModulithEventPublisher implements EventPublisher {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Override
-    public void publish(DomainEvent event) {
-        applicationEventPublisher.publishEvent(event);
+    public void publish(DomainEvent evento) {
+        applicationEventPublisher.publishEvent(evento);
     }
 }

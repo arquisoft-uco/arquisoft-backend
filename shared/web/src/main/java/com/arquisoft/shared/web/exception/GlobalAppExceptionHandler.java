@@ -364,6 +364,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private String currentTraceId() {
-        return MDC.get(MdcKeys.TRACE_ID);
+        return MDC.get(MdcKeys.ID_TRAZA);
     }
 }

@@ -43,9 +43,9 @@ public class AuditFilter extends OncePerRequestFilter {
         Map<String, String> preMdc = MDC.getCopyOfContextMap();
         // traceId lo gestiona TraceIdFilter (orden -300, antes de LimitadorSolicitudesFilter y Spring Security).
         // AuditFilter solo es responsable de userId y del evento AUDIT.
-        MDC.put(MdcKeys.USER_ID, extractUserId());
+        MDC.put(MdcKeys.ID_USUARIO, extractUserId());
 
-        String clientIp   = getClientIp(request);
+        String ipCliente = getClientIp(request);
         String method     = request.getMethod();
         String requestUri = sanitizeUri(request.getRequestURI());
         long   startTime  = System.currentTimeMillis();
@@ -58,11 +58,11 @@ public class AuditFilter extends OncePerRequestFilter {
 
             if (!isExcluded(requestUri)) {
                 // Campos HTTP en MDC solo durante la escritura del log AUDIT
-                MDC.put(MdcKeys.HTTP_METHOD, method);
-                MDC.put(MdcKeys.HTTP_URI,    requestUri);
-                MDC.put(MdcKeys.HTTP_STATUS, String.valueOf(status));
-                MDC.put(MdcKeys.DURATION_MS, String.valueOf(duration));
-                MDC.put(MdcKeys.CLIENT_IP,   clientIp);
+                MDC.put(MdcKeys.METODO_HTTP, method);
+                MDC.put(MdcKeys.URI_HTTP,    requestUri);
+                MDC.put(MdcKeys.ESTADO_HTTP, String.valueOf(status));
+                MDC.put(MdcKeys.DURACION_MS, String.valueOf(duration));
+                MDC.put(MdcKeys.IP_CLIENTE, ipCliente);
                 auditLog(status);
             }
 
