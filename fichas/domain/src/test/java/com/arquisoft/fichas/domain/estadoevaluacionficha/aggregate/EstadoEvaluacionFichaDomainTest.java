@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate;
 
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;

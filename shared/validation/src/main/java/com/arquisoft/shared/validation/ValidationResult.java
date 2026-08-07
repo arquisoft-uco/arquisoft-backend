@@ -1,8 +1,5 @@
 package com.arquisoft.shared.validation;
 
-import com.arquisoft.shared.exception.ApplicationValidationException;
-import com.arquisoft.shared.exception.DomainValidationException;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

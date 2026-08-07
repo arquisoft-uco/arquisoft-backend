@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.fichaperfil.aggregate;
 
-import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.message.constant.FichasFields;
 import org.junit.jupiter.api.Test;
 

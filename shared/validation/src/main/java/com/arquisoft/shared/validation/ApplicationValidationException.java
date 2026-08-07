@@ -1,6 +1,6 @@
-package com.arquisoft.shared.exception;
+package com.arquisoft.shared.validation;
 
-import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.exception.ApplicationException;
 
 import java.util.stream.Collectors;
 

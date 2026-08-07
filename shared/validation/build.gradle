@@ -1,0 +1,29 @@
+// java-library habilita la configuración 'api', que expone las clases
+// transitivamente a los consumidores del módulo.
+//
+// shared:validation implementa el Notification Pattern: DomainValidator acumula
+// errores en un ValidationResult en vez de lanzar en el primero, de modo que una
+// petición inválida devuelve todos sus fallos de una vez en fieldErrors[].
+//
+// El módulo incluye DomainValidationException y ApplicationValidationException, y no
+// es un detalle: ValidationResult las lanza y ellas la reciben por constructor. Ese
+// trío es mutuamente dependiente, así que dejarlo repartido entre dos módulos cerraría
+// un ciclo. Juntas aquí, la dependencia hacia shared:exception queda en un solo sentido
+// — las dos extienden DomainException y ApplicationException, que viven allí.
+apply plugin: 'java-library'
+
+dependencies {
+    // 'api': DomainValidationException y ApplicationValidationException extienden tipos
+    // de ese módulo, así que forman parte del contrato público de este.
+    api project(':shared:exception')
+
+    // 'implementation': DomainValidator resuelve los textos de sus mensajes contra
+    // el catálogo, pero ni Mensajes ni ValidadorKey aparecen en su firma pública.
+    implementation project(':shared:message')
+
+    // 'implementation': uso interno de UtilText, UtilObject, UtilUUID, UtilCollection.
+    implementation project(':shared:util')
+
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

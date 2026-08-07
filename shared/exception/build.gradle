@@ -1,0 +1,23 @@
+// java-library habilita la configuración 'api', que expone las clases
+// transitivamente a los consumidores del módulo.
+//
+// shared:exception contiene la jerarquía base de excepciones del proyecto:
+// BaseException, el par mensaje+código BaseError y las cinco derivadas que
+// GlobalAppExceptionHandler traduce a un status HTTP.
+//
+// Vive en su propio módulo y no en shared:domain porque shared:message necesita
+// extender InfrastructureException, y shared:domain ya declara
+// 'api project(":shared:message")' — la dependencia inversa sería un ciclo que
+// Gradle rechaza. Al ser una hoja del grafo, cualquier módulo puede usarla.
+//
+// No tiene dependencias: solo clases Java puras. Mantenerlo así es lo que permite
+// que la capa de dominio lo importe sin violar la regla "domain sin Spring ni Jakarta".
+//
+// No debe crecer con lógica de negocio: aquí solo van los tipos base que otros
+// módulos extienden. Una excepción concreta de un contexto vive en ese contexto.
+apply plugin: 'java-library'
+
+dependencies {
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

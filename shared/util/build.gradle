@@ -1,0 +1,19 @@
+// java-library habilita la configuración 'api', que expone las clases
+// transitivamente a los consumidores del módulo.
+//
+// shared:util son helpers estáticos sin estado (UtilText, UtilObject, UtilUUID,
+// UtilCollection, UtilDate, UtilNumber). No modelan nada del negocio: son las
+// operaciones de bajo nivel que el resto del código repetiría de otro modo.
+//
+// Vive en su propio módulo y no en shared:domain porque shared:validation lo
+// necesita, y shared:domain ya expone shared:validation con 'api' — la dependencia
+// inversa sería un ciclo. Al ser una hoja del grafo, cualquier módulo puede usarlo.
+//
+// No tiene dependencias: solo JDK. Mantenerlo así es lo que permite que la capa de
+// dominio lo importe sin violar la regla "domain sin Spring ni Jakarta".
+apply plugin: 'java-library'
+
+dependencies {
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

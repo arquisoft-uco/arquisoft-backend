@@ -2,7 +2,7 @@ package com.arquisoft.notificaciones.domain.notificacion.aggregate;
 
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
-import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.message.constant.NotificacionesCodes;
 import com.arquisoft.shared.message.constant.NotificacionesFields;
 import org.junit.jupiter.api.Test;

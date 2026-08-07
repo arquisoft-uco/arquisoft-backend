@@ -2,6 +2,9 @@ rootProject.name = 'arquisoft-backend'
 
 // ==================== SHARED (Commons) ====================
 include 'shared'
+include 'shared:util'
+include 'shared:exception'
+include 'shared:validation'
 include 'shared:domain'
 include 'shared:logger'
 include 'shared:redis'

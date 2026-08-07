@@ -9,6 +9,23 @@ dependencies {
     // necesidad de declarar la dependencia explícitamente en cada módulo.
     api project(':shared:message')
 
+    // shared:exception — jerarquía base de excepciones (BaseException y derivadas), que
+    // antes vivía en este módulo. Se movió a una hoja del grafo para que shared:message
+    // pueda extenderlas sin formar un ciclo con la línea de arriba.
+    api project(':shared:exception')
+
+    // shared:validation — DomainValidator y ValidationResult (Notification Pattern).
+    api project(':shared:validation')
+
+    // shared:util — helpers estáticos. Fuera de este módulo porque shared:validation los
+    // usa, y shared:validation ya se expone arriba: tenerlos aquí cerraría un ciclo.
+    api project(':shared:util')
+
+    // Los tres anteriores y shared:message van con 'api', y no es una preferencia de
+    // estilo: sus paquetes (com.arquisoft.shared.{exception,validation,util,message}) los
+    // importan ~160 archivos que solo declaran shared:domain. Con 'implementation' ninguno
+    // compilaría.
+
     testImplementation "org.assertj:assertj-core"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

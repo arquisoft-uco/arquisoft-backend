@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command.mapper;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.exception.DomainValidationException;
+import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
