@@ -28,7 +28,7 @@ public final class UtilNumber {
 
     // ─── Validación de formato ────────────────────────────────────────────────
 
-    public static boolean isValidDoubleToNote(final Number number) {
+    public static boolean isValidDecimalFormat(final Number number) {
         return UtilText.matchPattern(
                 UtilText.applyTrim(number.toString()), RE_DOUBLE);
     }

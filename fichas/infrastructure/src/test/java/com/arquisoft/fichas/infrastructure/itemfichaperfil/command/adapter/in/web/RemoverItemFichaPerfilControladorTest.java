@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.RemoverItemFichaPerfilInteractor;
@@ -40,7 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = RemoverItemFichaPerfilControlador.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
+        GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class,
         RemoverItemFichaPerfilControladorTest.TestSecurityConfig.class,
         FichasInfrastructureTestApplication.class
 })
@@ -124,7 +124,7 @@ class RemoverItemFichaPerfilControladorTest {
         result.agregarError(
                 FichasFields.ItemFichaPerfil.REVISIONES,
                 FichasCodes.ItemFichaPerfil.ITEM_CON_REVISIONES,
-                Messages.formatear(ItemFichaPerfilKey.ERROR_CON_REVISIONES, itemId)
+                Mensajes.formatear(ItemFichaPerfilKey.ERROR_CON_REVISIONES, itemId)
         );
 
         doThrow(new DomainValidationException(result))

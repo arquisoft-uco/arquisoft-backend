@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
-import com.arquisoft.shared.message.key.seguridad.LoginKey;
-import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
+import com.arquisoft.shared.message.CatalogoMensajes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -16,13 +16,13 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 public class SecurityAccessDeniedHandler implements AccessDeniedHandler {
 
     private final HandlerExceptionResolver resolver;
-    private final MessageCatalog catalog;
+    private final CatalogoMensajes catalogo;
 
     public SecurityAccessDeniedHandler(
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver,
-            MessageCatalog catalog) {
+            CatalogoMensajes catalogo) {
         this.resolver = resolver;
-        this.catalog = catalog;
+        this.catalogo = catalogo;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class SecurityAccessDeniedHandler implements AccessDeniedHandler {
                        HttpServletResponse response,
                        AccessDeniedException accessDeniedException) {
 
-        log.warn(catalog.obtener(LoginKey.LOG_ACCESS_DENIED), request.getRequestURI(), accessDeniedException.getMessage());
+        log.warn(catalogo.obtener(IniciarSesionKey.LOG_ACCESS_DENIED), request.getRequestURI(), accessDeniedException.getMessage());
         resolver.resolveException(request, response, null, accessDeniedException);
     }
 }

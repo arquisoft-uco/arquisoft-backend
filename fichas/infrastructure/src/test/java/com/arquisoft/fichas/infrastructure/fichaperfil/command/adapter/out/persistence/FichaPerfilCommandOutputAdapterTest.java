@@ -5,6 +5,7 @@ import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEn
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +43,7 @@ class FichaPerfilCommandOutputAdapterTest {
                 org.mockito.Mockito.mock(
                         com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository.class),
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
-                com.arquisoft.shared.message.ResourceBundleMessageCatalog.porDefecto());
+                CatalogoMensajesResourceBundle.porDefecto());
     }
 
     @Test

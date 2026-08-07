@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.fichas;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de EstadoEvaluacionFicha. */
-public enum EstadoEvaluacionFichaKey implements MessageKey {
+public enum EstadoEvaluacionFichaKey implements ClaveMensaje {
 
     ERROR_EVALUACION_NO_ENCONTRADA("fichas.dominio.estadoevaluacionficha.error.evaluacion-no-encontrada"),
     ERROR_EVALUACION_NO_PROPIA("fichas.dominio.estadoevaluacionficha.error.evaluacion-no-propia"),
@@ -27,7 +27,7 @@ public enum EstadoEvaluacionFichaKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.FICHAS;
+    public String paquete() {
+        return PaquetesMensajes.FICHAS;
     }
 }

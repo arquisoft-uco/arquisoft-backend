@@ -41,7 +41,7 @@ public class AuditFilter extends OncePerRequestFilter {
         // Guardar estado MDC previo (contiene traceId de TraceIdFilter) para restaurar
         // atómicamente al finalizar — evita removes individuales y race conditions con VTs.
         Map<String, String> preMdc = MDC.getCopyOfContextMap();
-        // traceId lo gestiona TraceIdFilter (orden -300, antes de RateLimitingFilter y Spring Security).
+        // traceId lo gestiona TraceIdFilter (orden -300, antes de LimitadorSolicitudesFilter y Spring Security).
         // AuditFilter solo es responsable de userId y del evento AUDIT.
         MDC.put(MdcKeys.USER_ID, extractUserId());
 

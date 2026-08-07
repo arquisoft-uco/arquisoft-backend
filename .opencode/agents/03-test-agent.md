@@ -561,7 +561,7 @@ class CrearFichaPerfilInputAdapterTest {
 
 > **Todo módulo `{contexto}:infrastructure` necesita una `{Contexto}InfrastructureTestApplication` en sus test sources.** Los submódulos del monorepo no tienen `@SpringBootApplication` propia, y `@WebMvcTest` / `@DataJpaTest` fallan con `IllegalStateException: Unable to find a @SpringBootConfiguration` si no existe. Es una clase vacía anotada `@SpringBootApplication` en `src/test/java/com/arquisoft/{contexto}/infrastructure/`. Si no está, **créala** antes del primer slice test del módulo.
 >
-> **Filtros `@Component` del módulo.** `@WebMvcTest` registra los beans `Filter` del contexto. Si alguno depende de un puerto que el slice no levanta (caso `seguridad`: `JwtBlacklistFilter` → `TokenBlacklistOutputPort`, `RateLimitingFilter` → `BucketResolver`), el contexto no carga. Exclúyelos: `@WebMvcTest(controllers = X.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {...}))`.
+> **Filtros `@Component` del módulo.** `@WebMvcTest` registra los beans `Filter` del contexto. Si alguno depende de un puerto que el slice no levanta (caso `seguridad`: `JwtBlacklistFilter` → `TokenInvalidadoOutputPort`, `LimitadorSolicitudesFilter` → `BucketResolver`), el contexto no carga. Exclúyelos: `@WebMvcTest(controllers = X.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {...}))`.
 >
 > **`jwt()` solo si el módulo tiene `oauth2-resource-server` en el classpath.** `fichas` lo tiene; `usuarios` no. Si el adapter solo exige la authority vía `@PreAuthorize` y no usa el `Jwt` principal, autentica con `SecurityMockMvcRequestPostProcessors.user("...").authorities(...)` en vez de añadir la dependencia.
 >
@@ -569,7 +569,7 @@ class CrearFichaPerfilInputAdapterTest {
 >
 > **Spring Boot 4.x:** `@MockBean` fue reemplazado por `@MockitoBean`. Se mockea el **`InputPort`** (la interfaz que el adapter inyecta), no la clase `UseCase`.
 >
-> **Seguridad:** no importes el `SecurityConfig` de producción. Declara una `@TestConfiguration` local con `@EnableWebSecurity` + `@EnableMethodSecurity(prePostEnabled = true)` para que `@PreAuthorize` se evalúe, y autentica con `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` usando el **client role exacto** (`fichas:ficha-perfil:create`). `@WithMockUser(roles = "...")` genera authorities con prefijo `ROLE_` y **no** casa con `hasAuthority('fichas:ficha-perfil:create')`.
+> **Seguridad:** no importes el `SeguridadConfig` de producción. Declara una `@TestConfiguration` local con `@EnableWebSecurity` + `@EnableMethodSecurity(prePostEnabled = true)` para que `@PreAuthorize` se evalúe, y autentica con `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` usando el **client role exacto** (`fichas:ficha-perfil:create`). `@WithMockUser(roles = "...")` genera authorities con prefijo `ROLE_` y **no** casa con `hasAuthority('fichas:ficha-perfil:create')`.
 
 ### Imports obligatorios por tipo de test
 
@@ -721,8 +721,8 @@ Distribución por capa:
 
 #### Qué testear
 
-- **Aggregate Root:** factory methods `crear()` / `crear()` (con evento si la HU emite) y `reconstruir()` (sin evento), getters, comportamientos de negocio, ciclo de eventos (`publishEvent`, `drainUnPublishedEvents`).
-- **Eventos de dominio:** constructor asigna `eventId`, `occurredAt`, `eventType`, `eventTopic`; campos del payload se propagan correctamente.
+- **Aggregate Root:** factory methods `crear()` / `crear()` (con evento si la HU emite) y `reconstruir()` (sin evento), getters, comportamientos de negocio, ciclo de eventos (`publicarEvento`, `extraerEventosSinPublicar`).
+- **Eventos de dominio:** constructor asigna `idEvento`, `occurredAt`, `eventType`, `eventTopic`; campos del payload se propagan correctamente.
 - **Excepciones:** que se lanzan con el mensaje correcto y el `errorCode` esperado.
 
 #### Consulta Context7 antes de generar
@@ -773,7 +773,7 @@ query-docs /assertj/assertj "assertThat isEqualTo isNotNull isInstanceOf isEmpty
 > caso es sobre-testeo (anti-patrón).
 >
 > **Regla DomainEvent:** verificar que el constructor asigna automáticamente
-> `eventId` (no nulo, UUID válido), `occurredAt` (no nulo), `eventType`
+> `idEvento` (no nulo, UUID válido), `occurredAt` (no nulo), `eventType`
 > (igual al `getClass().getSimpleName()`) y `aggregateId`. Verificar también
 > que `getEventTopic()` retorne el formato correcto `{contexto}.{entidad}.{accion}`.
 >
@@ -1026,7 +1026,7 @@ de modificar cualquier archivo de producción.
 8. **El gate del build es `check` (test + checkstyle + cobertura ≥75%), no solo `test`.** `check` corre `checkstyleMain`, `checkstyleTest` y `jacocoTestCoverageVerification` (`minimum = 0.75`). En FASE 5 ejecuta `./gradlew :{contexto}:domain:check :{contexto}:application:check :{contexto}:infrastructure:check` — es lo que corre CI. Reportar verde habiendo corrido solo `test` es un error: un import sin usar o cobertura <75% rompen el build. Si falla: para cobertura, agrega tests significativos; para checkstyle, elimina imports/variables/métodos muertos y respeta el estilo. Nunca bajes el umbral, desactives reglas ni infles con tests triviales.
 9. **Spring Boot 4.x:** usar `@MockitoBean`, nunca `@MockBean`.
 10. **DDD estricto — tests aislados por capa:** los tests de `domain` son Java puro (solo JUnit + AssertJ, sin mocks de Spring/Keycloak/RabbitMQ); los tests de `application` solo mockean puertos del dominio, nunca APIs externas. Si un test de domain o application requiere framework externo, **detente y reporta violación de capas** antes de escribir el test — la lógica está en la capa equivocada.
-11. **DDD en tests de domain (solo si el plan declara eventos en sección 4):** el test del Aggregate Root verifica el ciclo (`publishEvent` interno del factory → `drainUnPublishedEvents()` retorna y limpia) y que `reconstruir(...)` NO emite eventos. `getUnPublishedEvents()` es `protected` — solo accesible desde tests del mismo paquete del aggregate (typical: `{contexto}/domain/src/test/java/...{entidad}/aggregate/`). **NO uses `clearUnPublishedEvents()` — no existe**. **Si el plan dice "Eventos: ninguno", la entidad raíz no extiende `AggregateRoot` y NO se generan estos tests.**
+11. **DDD en tests de domain (solo si el plan declara eventos en sección 4):** el test del Aggregate Root verifica el ciclo (`publicarEvento` interno del factory → `drainUnPublishedEvents()` retorna y limpia) y que `reconstruir(...)` NO emite eventos. `getUnPublishedEvents()` es `protected` — solo accesible desde tests del mismo paquete del aggregate (typical: `{contexto}/domain/src/test/java/...{entidad}/aggregate/`). **NO uses `clearUnPublishedEvents()` — no existe**. **Si el plan dice "Eventos: ninguno", la entidad raíz no extiende `AggregateRoot` y NO se generan estos tests.**
 12. **DDD en tests de application (solo si el plan declara eventos):** verifica que el use case publica los eventos tras persistir con `verify(eventPublisher, times(N)).publish(any())`. **NO uses `assertThat(entity.getUnPublishedEvents()).isEmpty()`** desde application — el método es `protected`. **Si el plan dice "Eventos: ninguno", NO incluyas `EventPublisher` mock ni `verify(eventPublisher)...`** — el use case no inyecta ese puerto.
 13. **Anti-patrones — nunca generes:** tests de getters/setters de Lombok (anti-patrón 1), tests de validaciones Jakarta una por una (anti-patrón 2), tests de métodos privados (anti-patrón 3), tests duplicados con asserts complementarios sin consolidar (anti-patrón 4), tests de delegación pura sin lógica (anti-patrón 5), tests propios de excepciones simples sin lógica adicional al `super(...)` (anti-patrón 6), tests de equals/hashCode/toString generados por Lombok (anti-patrón 7).
 14. **Regla de consolidación:** si dos tests tienen el mismo "Act" pero asserts complementarios, consolídalos en un solo test con múltiples asserts.

@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.i
 
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
-import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.RegistrarEvaluacionFichaPerfilUseCase;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
@@ -23,7 +23,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
     private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
     private final RegistrarEvaluacionFichaPerfilValidator registrarEvaluacionFichaPerfilValidator;
     private final AppLogger logger;
-    private final MessageCatalog catalog;
+    private final CatalogoMensajes catalogo;
 
     @Override
     public UUID ejecutar(EvaluacionFichaPerfilDomain evaluacion) {
@@ -33,7 +33,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
         asignarEstadoInicialEvaluacion(evaluacion.getId());
 
         logger.info(
-                catalog.obtener(EvaluacionFichaPerfilKey.LOG_REGISTRADA),
+                catalogo.obtener(EvaluacionFichaPerfilKey.LOG_REGISTRADA),
                 evaluacion.getId(),
                 evaluacion.getRepresentanteComiteId(),
                 evaluacion.getFichaPerfilId());
@@ -45,7 +45,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
         var estadoInicial = EstadoEvaluacionFichaDomain.crear(evaluacionFichaPerfil);
         estadoEvaluacionFichaOutputPort.registrarEstadoInicial(estadoInicial);
         logger.info(
-                catalog.obtener(EstadoEvaluacionFichaKey.LOG_CREADO_AUTOMATICO),
+                catalogo.obtener(EstadoEvaluacionFichaKey.LOG_CREADO_AUTOMATICO),
                 estadoInicial.getId(),
                 estadoInicial.getEvaluacionFichaPerfilId(),
                 estadoInicial.getEstadoEvaluacion());

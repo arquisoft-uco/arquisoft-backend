@@ -1,11 +1,11 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
-import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
@@ -49,7 +49,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
     @Spy
-    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
 @InjectMocks
     private AsignarEstudiantesFichaPerfilUseCaseImpl useCase;
@@ -120,7 +120,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         assertThat(ex)
                 .isInstanceOf(EstudianteNoEncontradoException.class)
                 .hasMessageContaining(estudiante.toString());
-        assertThat(((EstudianteNoEncontradoException) ex).getErrorCode())
+        assertThat(((EstudianteNoEncontradoException) ex).getCodigoError())
                 .isEqualTo(FichasCodes.Estudiante.ESTUDIANTE_NO_ENCONTRADO);
         verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }
@@ -142,7 +142,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         assertThat(ex)
                 .isInstanceOf(EstudianteDuplicadoException.class)
                 .hasMessageContaining(estudiante.toString());
-        assertThat(((EstudianteDuplicadoException) ex).getErrorCode())
+        assertThat(((EstudianteDuplicadoException) ex).getCodigoError())
                 .isEqualTo(FichasCodes.EstudianteFichaPerfil.ESTUDIANTE_DUPLICADO);
         verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }
@@ -162,7 +162,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         // Assert
         assertThat(ex)
                 .isInstanceOf(CupoEstudiantesExcedidoException.class)
-                .hasMessage(Messages.formatear(EstudianteFichaPerfilKey.ERROR_LIMITE_EXCEDIDO,
+                .hasMessage(Mensajes.formatear(EstudianteFichaPerfilKey.ERROR_LIMITE_EXCEDIDO,
                         FichasLimits.FichaPerfil.ESTUDIANTES_MAX));
         verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }

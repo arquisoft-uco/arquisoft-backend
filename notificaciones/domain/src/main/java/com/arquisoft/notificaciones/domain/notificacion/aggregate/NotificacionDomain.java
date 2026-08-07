@@ -3,7 +3,7 @@ package com.arquisoft.notificaciones.domain.notificacion.aggregate;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.NotificacionesCodes;
 import com.arquisoft.shared.message.constant.NotificacionesFields;
 import com.arquisoft.shared.message.constant.NotificacionesLimits;
@@ -18,14 +18,14 @@ import java.util.UUID;
 /**
  * Registro de una notificacion: a quien se le aviso, por que, y como termino el intento.
  *
- * <p>Existe para dos cosas que el envio por si solo no da: idempotencia —{@code eventId} es unico,
+ * <p>Existe para dos cosas que el envio por si solo no da: idempotencia —{@code idEvento} es unico,
  * de modo que un reintento del broker no genera un segundo correo— y auditoria de lo que se
  * entrego.
  */
 public final class NotificacionDomain {
 
     private UUID id;
-    private String eventId;
+    private String idEvento;
     private TipoNotificacion tipo;
     private String destinatario;
     private String asunto;
@@ -39,13 +39,13 @@ public final class NotificacionDomain {
     // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
 
     public static NotificacionDomain crear(
-            String eventId, TipoNotificacion tipo, String destinatario, String asunto) {
+            String idEvento, TipoNotificacion tipo, String destinatario, String asunto) {
 
         var notificacion = new NotificacionDomain();
         var result = new ValidationResult();
 
         notificacion.setId();
-        notificacion.setEventId(eventId, result);
+        notificacion.setIdEvento(idEvento, result);
         notificacion.setTipo(tipo, result);
         notificacion.setDestinatario(destinatario, result);
         notificacion.setAsunto(asunto, result);
@@ -64,7 +64,7 @@ public final class NotificacionDomain {
 
         var notificacion = new NotificacionDomain();
         notificacion.id = datos.id();
-        notificacion.eventId = datos.eventId();
+        notificacion.idEvento = datos.idEvento();
         notificacion.tipo = datos.tipo();
         notificacion.destinatario = datos.destinatario();
         notificacion.asunto = datos.asunto();
@@ -82,7 +82,7 @@ public final class NotificacionDomain {
      * pasaran sueltos, y porque describen una sola cosa: la fila leida de la tabla.
      *
      * @param id            identificador de la notificacion
-     * @param eventId       evento de dominio que la origino
+     * @param idEvento      evento de dominio que la origino
      * @param tipo          motivo de la notificacion
      * @param destinatario  correo al que se dirige
      * @param asunto        linea de asunto
@@ -91,7 +91,7 @@ public final class NotificacionDomain {
      */
     public record DatosNotificacion(
             UUID id,
-            String eventId,
+            String idEvento,
             TipoNotificacion tipo,
             String destinatario,
             String asunto,
@@ -121,7 +121,7 @@ public final class NotificacionDomain {
             result.agregarError(
                     NotificacionesFields.Notificacion.ESTADO,
                     NotificacionesCodes.Notificacion.TRANSICION_INVALIDA,
-                    Messages.formatear(
+                    Mensajes.formatear(
                             NotificacionKey.ERROR_TRANSICION_INVALIDA, this.estado)
             );
             result.lanzarSiTieneErrores();
@@ -134,19 +134,19 @@ public final class NotificacionDomain {
         this.id = UtilUUID.generateNewUUID();
     }
 
-    private void setEventId(String eventId, ValidationResult result) {
-        if (!DomainValidator.noEnBlanco(eventId,
-                NotificacionesFields.Notificacion.EVENT_ID,
-                NotificacionesCodes.Notificacion.EVENT_ID_REQUERIDO, result)) {
+    private void setIdEvento(String idEvento, ValidationResult result) {
+        if (!DomainValidator.noEnBlanco(idEvento,
+                NotificacionesFields.Notificacion.ID_EVENTO,
+                NotificacionesCodes.Notificacion.ID_EVENTO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.longitudMaxima(eventId,
-                NotificacionesLimits.Notificacion.EVENT_ID_MAX,
-                NotificacionesFields.Notificacion.EVENT_ID,
-                NotificacionesCodes.Notificacion.EVENT_ID_REQUERIDO, result)) {
+        if (!DomainValidator.longitudMaxima(idEvento,
+                NotificacionesLimits.Notificacion.ID_EVENTO_MAX,
+                NotificacionesFields.Notificacion.ID_EVENTO,
+                NotificacionesCodes.Notificacion.ID_EVENTO_REQUERIDO, result)) {
             return;
         }
-        this.eventId = UtilText.applyTrim(eventId);
+        this.idEvento = UtilText.applyTrim(idEvento);
     }
 
     private void setTipo(TipoNotificacion tipo, ValidationResult result) {
@@ -199,8 +199,8 @@ public final class NotificacionDomain {
         return id;
     }
 
-    public String getEventId() {
-        return eventId;
+    public String getIdEvento() {
+        return idEvento;
     }
 
     public TipoNotificacion getTipo() {

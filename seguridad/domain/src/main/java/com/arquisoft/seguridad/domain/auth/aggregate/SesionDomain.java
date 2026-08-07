@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.domain.auth.aggregate;
 
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.exception.DomainException;
 
@@ -17,11 +17,11 @@ public final class SesionDomain {
 
     public static SesionDomain cerrar(String identificadorToken, long tiempoVidaRestante) {
         if (identificadorToken == null || identificadorToken.isBlank()) {
-            throw new DomainException(Messages.obtener(SesionKey.ERROR_IDENTIFICADOR_REQUERIDO),
+            throw new DomainException(Mensajes.obtener(SesionKey.ERROR_IDENTIFICADOR_REQUERIDO),
                     SeguridadCodes.Sesion.SESION_IDENTIFICADOR_REQUERIDO);
         }
         if (tiempoVidaRestante <= 0) {
-            throw new DomainException(Messages.obtener(SesionKey.ERROR_TTL_INVALIDO),
+            throw new DomainException(Mensajes.obtener(SesionKey.ERROR_TTL_INVALIDO),
                     SeguridadCodes.Sesion.SESION_TTL_INVALIDO);
         }
         return new SesionDomain(identificadorToken, tiempoVidaRestante);

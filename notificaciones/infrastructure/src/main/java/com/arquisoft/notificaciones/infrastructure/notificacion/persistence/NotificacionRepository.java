@@ -6,5 +6,5 @@ import java.util.UUID;
 
 public interface NotificacionRepository extends JpaRepository<NotificacionEntity, UUID> {
 
-    boolean existsByEventId(String eventId);
+    boolean existsByIdEvento(String idEvento);
 }

@@ -11,7 +11,7 @@ public final class NotificacionMapper {
     public static NotificacionEntity toEntity(NotificacionDomain aggregate) {
         return NotificacionEntity.builder()
                 .id(aggregate.getId())
-                .eventId(aggregate.getEventId())
+                .idEvento(aggregate.getIdEvento())
                 .tipo(aggregate.getTipo().getCodigo())
                 .destinatario(aggregate.getDestinatario())
                 .asunto(aggregate.getAsunto())
@@ -26,7 +26,7 @@ public final class NotificacionMapper {
         return NotificacionDomain.reconstruir(
                 new NotificacionDomain.DatosNotificacion(
                         entity.getId(),
-                        entity.getEventId(),
+                        entity.getIdEvento(),
                         TipoNotificacion.valueOf(entity.getTipo()),
                         entity.getDestinatario(),
                         entity.getAsunto(),

@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.seguridad;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de Identidad. */
-public enum IdentidadKey implements MessageKey {
+public enum IdentidadKey implements ClaveMensaje {
 
     ERROR_ID_REQUERIDO("seguridad.dominio.identidad.error.id-requerido"),
     ERROR_CORREO_REQUERIDO("seguridad.dominio.identidad.error.correo-requerido");
@@ -21,7 +21,7 @@ public enum IdentidadKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.SEGURIDAD;
+    public String paquete() {
+        return PaquetesMensajes.SEGURIDAD;
     }
 }

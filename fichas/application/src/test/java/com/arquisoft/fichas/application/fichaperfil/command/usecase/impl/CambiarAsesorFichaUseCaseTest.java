@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
-import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.asesorficha.query.readmodel.AsesorContactoReadModel;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
@@ -59,7 +59,7 @@ class CambiarAsesorFichaUseCaseTest {
     // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
     @Spy
-    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
     @InjectMocks
     private CambiarAsesorFichaUseCaseImpl cambiarAsesorFichaUseCase;

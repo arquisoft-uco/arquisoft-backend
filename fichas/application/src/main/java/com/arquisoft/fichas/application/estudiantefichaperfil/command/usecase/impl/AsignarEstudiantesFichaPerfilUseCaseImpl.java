@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
-import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
@@ -20,7 +20,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final AsignarEstudiantesFichaPerfilValidator asignarEstudiantesFichaPerfilValidator;
     private final AppLogger logger;
-    private final MessageCatalog catalog;
+    private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(List<EstudianteFichaPerfilDomain> relaciones) {
@@ -31,6 +31,6 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
 
         relaciones.forEach(estudianteFichaPerfilOutputPort::vincularEstudiante);
 
-        logger.info(catalog.obtener(EstudianteFichaPerfilKey.LOG_ASIGNADO), fichaPerfil, relaciones.size());
+        logger.info(catalogo.obtener(EstudianteFichaPerfilKey.LOG_ASIGNADO), fichaPerfil, relaciones.size());
     }
 }

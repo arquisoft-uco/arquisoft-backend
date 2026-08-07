@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.fichas;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de Usuario. */
-public enum UsuarioKey implements MessageKey {
+public enum UsuarioKey implements ClaveMensaje {
 
     LOG_USUARIO_CREADO_RECIBIDO("fichas.infraestructura.usuario.log.usuario-creado-recibido"),
     LOG_REGISTRADO_ESPEJO_SIMULADO("fichas.infraestructura.usuario.log.registrado-espejo-simulado");
@@ -21,7 +21,7 @@ public enum UsuarioKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.FICHAS;
+    public String paquete() {
+        return PaquetesMensajes.FICHAS;
     }
 }

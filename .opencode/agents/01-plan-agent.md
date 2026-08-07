@@ -899,7 +899,7 @@ Para cada client role nuevo de la tabla anterior:
 | `{Entidad}Test` | `debeReconstruirSinEventos_cuandoReconstruirEsInvocado` | `reconstruir(...)` no acumula eventos |
 | `{Entidad}Test` | `debeLanzarExcepcion_cuando{InvarianteViolada}` | constructor lanza si datos inválidos |
 
-> **Solo crear `{Entidad}CreadaEventTest`** si el evento tiene lógica adicional al constructor base. Una clase que solo hace `super(EVENT_TOPIC, EVENT_TYPE)` y guarda 2 campos NO necesita test propio — sus metadatos se verifican implícitamente al testear `publishEvent` en el Aggregate.
+> **Solo crear `{Entidad}CreadaEventTest`** si el evento tiene lógica adicional al constructor base. Una clase que solo hace `super(EVENT_TOPIC, EVENT_TYPE)` y guarda 2 campos NO necesita test propio — sus metadatos se verifican implícitamente al testear `publicarEvento` en el Aggregate.
 
 #### Tests capa `application`
 | Clase de test | Método | Escenario |
@@ -923,7 +923,7 @@ Para cada client role nuevo de la tabla anterior:
 ### Caso B — Use Case de CONSULTA (listar, buscar, obtener)
 
 > ⚠️ **Use cases de consulta NO tienen ciclo de eventos.** No incluyas tests de
-> `publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents`, ni de
+> `publicarEvento`, `obtenerEventosSinPublicar`, `extraerEventosSinPublicar`, ni de
 > `verify(eventPublisher).publish(...)` — no aplican.
 
 > Si la consulta solo lee datos existentes y los devuelve, **no necesita tests de domain en absoluto** — el aggregate no se invoca en el read side.

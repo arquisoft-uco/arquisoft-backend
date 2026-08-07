@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.RemoverItemFichaPerfilMapper;
-import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
@@ -52,7 +52,7 @@ class RemoverItemFichaPerfilUseCaseTest {
     // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
     @Spy
-    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
     @InjectMocks
     private RemoverItemFichaPerfilUseCaseImpl useCase;
@@ -97,7 +97,7 @@ class RemoverItemFichaPerfilUseCaseTest {
 
         ItemFichaPerfilNoEncontradoException notFoundException =
                 (ItemFichaPerfilNoEncontradoException) exception;
-        assertThat(notFoundException.getErrorCode())
+        assertThat(notFoundException.getCodigoError())
                 .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_NO_ENCONTRADO);
 
         verify(revisionQueryPort, never()).contarPorItem(any());
@@ -123,7 +123,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         assertThat(exception).isInstanceOf(FichaNoPropietarioException.class);
 
         FichaNoPropietarioException authException = (FichaNoPropietarioException) exception;
-        assertThat(authException.getErrorCode())
+        assertThat(authException.getCodigoError())
                 .isEqualTo(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO);
 
         verify(revisionQueryPort, never()).contarPorItem(any());

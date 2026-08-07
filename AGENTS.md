@@ -44,7 +44,7 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 |---|---|
 | Entidades de dominio | Inmutables, constructor privado, campos `final`, solo getters. `build(UUID.randomUUID())` para nuevas, `rebuild(uuid)` desde persistencia. Sin Lombok ni Spring. |
 | Aggregate Root | Entidades raíz extienden `AggregateRoot` de `shared:domain` (`com.arquisoft.shared.domain`). Gestiona eventos de dominio no publicados via `publishEvent(DomainEvent)`. |
-| Eventos de dominio | Extienden `DomainEvent` de `shared:domain`. Cada subclase declara sus **propios campos** con nombres semánticamente correctos (e.g. `usuarioId`, `fichaId`). `DomainEvent` asigna `eventId` (UUID), `occurredAt`, `eventType` y `eventTopic` automáticamente. El constructor recibe `(eventTopic, eventType)` — sin `aggregateId` genérico. |
+| Eventos de dominio | Extienden `DomainEvent` de `shared:domain`. Cada subclase declara sus **propios campos** con nombres semánticamente correctos (e.g. `usuarioId`, `fichaId`). `DomainEvent` asigna `idEvento` (UUID), `occurredAt`, `eventType` y `eventTopic` automáticamente. El constructor recibe `(eventTopic, eventType)` — sin `aggregateId` genérico. |
 | Puertos de entrada | `{Accion}{Entidad}Interactor` en `application/{feature}/command/interactor/` (lado comando, es lo que inyecta el adapter) y `{Accion}{Entidad}UseCase` en `application/{feature}/{command\|query}/usecase/` |
 | Puertos de salida | `{Entidad}RepositoryPort` en `domain/port/out/` |
 | Use cases | `{Accion}{Entidad}UseCaseImpl` en `application/{feature}/{command\|query}/usecase/impl/`; el interactor en `application/{feature}/command/interactor/impl/` |
@@ -59,7 +59,7 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 | Identificadores en el body | Se reciben como `String` con `@UuidValido` (`shared:web`) y se convierten a `UUID` en `toCommand()`; nunca tipados `UUID` en el DTO |
 | Nombres del contrato | Objetuales: `asesorFicha`, `estudiantes` — no `asesorFichaId`, `estudiantesIds` |
 | Literales en adapters | `ApiCodes` (códigos HTTP), `FichasApiKeys` (textos Swagger), `FichasAuthorities` (authorities), `FichasRoutes` (rutas) — nada quemado inline |
-| Mensajes y logs | `MessageCatalog` inyectado (dominio: fachada estática `Messages`); textos en `shared:message/resources/messages/*.properties` con clave `contexto.capa.objeto.tipo.descripcion` |
+| Mensajes y logs | `CatalogoMensajes` inyectado (dominio: fachada estática `Mensajes`); textos en `shared:message/resources/messages/*.properties` con clave `contexto.capa.objeto.tipo.descripcion` |
 
 ## Outbox Pattern — Spring Modulith 2.0.0
 
@@ -79,7 +79,7 @@ public UUID ejecutar(CrearXxxCommand command) {
 ```
 
 - `eventPublisher` es `SpringModulithEventPublisher` (en `shared/amqp`), que delega a `ApplicationEventPublisher`.
-- Spring Modulith intercepta el `publishEvent` y persiste el evento en la tabla `event_publication` de la BD del propio contexto **dentro de la misma transacción** — atomicidad garantizada.
+- Spring Modulith intercepta el `publicarEvento` y persiste el evento en la tabla `event_publication` de la BD del propio contexto **dentro de la misma transacción** — atomicidad garantizada.
 - Tras el commit, lo publica a RabbitMQ con el `eventTopic` como routing key.
 
 ### Outbox por contexto — `event_publication` distribuida

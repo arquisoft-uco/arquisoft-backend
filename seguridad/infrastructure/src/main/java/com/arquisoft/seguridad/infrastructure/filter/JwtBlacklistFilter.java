@@ -1,8 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
-import com.arquisoft.shared.message.key.seguridad.JwtBlacklistKey;
-import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
+import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.seguridad.domain.auth.port.out.TokenInvalidadoOutputPort;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.FilterChain;
@@ -29,9 +29,9 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtBlacklistFilter extends OncePerRequestFilter {
 
-    private final TokenBlacklistOutputPort tokenBlacklistPort;
+    private final TokenInvalidadoOutputPort tokenInvalidadoPort;
     private final ObjectMapper objectMapper;
-    private final MessageCatalog catalog;
+    private final CatalogoMensajes catalogo;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -59,24 +59,24 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
 
             if (!UtilObject.isNull(jti)) {
                 try {
-                    if (tokenBlacklistPort.estaInvalidado(jti)) {
+                    if (tokenInvalidadoPort.estaInvalidado(jti)) {
                         // log.warn: error de cliente — token revocado (detalle interno, no se expone al cliente)
-                        log.warn(catalog.obtener(JwtBlacklistKey.LOG_TOKEN_REVOCADO),
+                        log.warn(catalogo.obtener(TokenInvalidadoKey.LOG_TOKEN_REVOCADO),
                                 jti, request.getRequestURI());
                         writeErrorResponse(response, request,
                                 HttpStatus.UNAUTHORIZED,
-                                catalog.obtener(JwtBlacklistKey.ERROR_HTTP_401),
-                                catalog.obtener(JwtBlacklistKey.ERROR_HTTP_401_DETALLE));
+                                catalogo.obtener(TokenInvalidadoKey.ERROR_HTTP_401),
+                                catalogo.obtener(TokenInvalidadoKey.ERROR_HTTP_401_DETALLE));
                         return;
                     }
                 } catch (Exception e) {
                     // log.error: error de servidor — Redis no disponible
-                    log.error(catalog.obtener(JwtBlacklistKey.LOG_REDIS_NO_DISPONIBLE),
+                    log.error(catalogo.obtener(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE),
                             e.getMessage(), e);
                     writeErrorResponse(response, request,
                             HttpStatus.SERVICE_UNAVAILABLE,
-                            catalog.obtener(JwtBlacklistKey.ERROR_HTTP_503),
-                            catalog.obtener(JwtBlacklistKey.ERROR_HTTP_503_DETALLE));
+                            catalogo.obtener(TokenInvalidadoKey.ERROR_HTTP_503),
+                            catalogo.obtener(TokenInvalidadoKey.ERROR_HTTP_503_DETALLE));
                     return;
                 }
             }

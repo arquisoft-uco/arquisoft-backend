@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.ModificarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
@@ -39,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ModificarItemFichaPerfilControlador.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
+        GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class,
         ModificarItemFichaPerfilControladorTest.TestSecurityConfig.class})
 class ModificarItemFichaPerfilControladorTest {
 
@@ -193,7 +193,7 @@ class ModificarItemFichaPerfilControladorTest {
         validationResult.agregarError(
                 FichasFields.ItemFichaPerfil.ESTADO_FICHA,
                 FichasCodes.ItemFichaPerfil.ESTADO_FICHA_NO_MODIFICABLE,
-                Messages.formatear(ItemFichaPerfilKey.ERROR_ESTADO_FICHA_NO_MODIFICABLE, "Aprobada")
+                Mensajes.formatear(ItemFichaPerfilKey.ERROR_ESTADO_FICHA_NO_MODIFICABLE, "Aprobada")
         );
 
         doThrow(new DomainValidationException(validationResult))

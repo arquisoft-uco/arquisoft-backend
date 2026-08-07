@@ -11,7 +11,7 @@ public final class NotificacionesFields {
 
         private Notificacion() {}
 
-        public static final String EVENT_ID = "eventId";
+        public static final String ID_EVENTO = "idEvento";
         public static final String TIPO = "tipo";
         public static final String DESTINATARIO = "destinatario";
         public static final String ASUNTO = "asunto";

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.adapter.in.web;
 
-import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.interactor.AgregarEstadoEvaluacionFichaInteractor;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AgregarEstadoEvaluacionFichaControlador.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
+        GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class,
         AgregarEstadoEvaluacionFichaControladorTest.TestSecurityConfig.class})
 class AgregarEstadoEvaluacionFichaControladorTest {
 

@@ -19,7 +19,7 @@ public class NotificacionCommandOutputAdapter implements NotificacionOutputPort 
     }
 
     @Override
-    public boolean existePorEventId(String eventId) {
-        return repository.existsByEventId(eventId);
+    public boolean existePorIdEvento(String idEvento) {
+        return repository.existsByIdEvento(idEvento);
     }
 }

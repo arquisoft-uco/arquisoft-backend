@@ -1,8 +1,8 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
-import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
-import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
+import com.arquisoft.seguridad.domain.auth.port.out.TokenInvalidadoOutputPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,7 +34,7 @@ class JwtBlacklistFilterTest {
     private static final String JTI = "jti-123";
 
     @Mock
-    private TokenBlacklistOutputPort tokenBlacklistPort;
+    private TokenInvalidadoOutputPort tokenInvalidadoPort;
 
     @Mock
     private ObjectMapper objectMapper;
@@ -42,7 +42,7 @@ class JwtBlacklistFilterTest {
         // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
     @Spy
-    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
 @InjectMocks
     private JwtBlacklistFilter filter;
@@ -73,7 +73,7 @@ class JwtBlacklistFilterTest {
         FilterChain filterChain = mock(FilterChain.class);
 
         when(request.getRequestURI()).thenReturn("/api/fichas-perfil");
-        when(tokenBlacklistPort.estaInvalidado(JTI)).thenReturn(true);
+        when(tokenInvalidadoPort.estaInvalidado(JTI)).thenReturn(true);
         when(response.getWriter()).thenReturn(new PrintWriter(new StringWriter()));
 
         // Act
@@ -93,7 +93,7 @@ class JwtBlacklistFilterTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
 
-        when(tokenBlacklistPort.estaInvalidado(JTI)).thenReturn(false);
+        when(tokenInvalidadoPort.estaInvalidado(JTI)).thenReturn(false);
 
         // Act
         filter.doFilterInternal(request, response, filterChain);

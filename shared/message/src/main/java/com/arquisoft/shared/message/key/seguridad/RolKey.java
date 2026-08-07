@@ -1,12 +1,12 @@
 package com.arquisoft.shared.message.key.seguridad;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de Rol. */
-public enum RolKey implements MessageKey {
+public enum RolKey implements ClaveMensaje {
 
-    LOG_RESOURCE_ROLES("seguridad.infraestructura.rol.log.resource-roles");
+    LOG_ROLES_RECURSO("seguridad.infraestructura.rol.log.roles-recurso");
 
     private final String clave;
 
@@ -20,7 +20,7 @@ public enum RolKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.SEGURIDAD;
+    public String paquete() {
+        return PaquetesMensajes.SEGURIDAD;
     }
 }

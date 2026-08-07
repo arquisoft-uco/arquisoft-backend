@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class LogoutResponseDTO {
 
     @Builder.Default
-    private String message = "Sesion cerrada exitosamente. Por favor, elimina el token almacenado.";
+    private String mensaje = "Sesion cerrada exitosamente. Por favor, elimina el token almacenado.";
 }

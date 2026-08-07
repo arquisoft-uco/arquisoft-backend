@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.fichas;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de FichaPerfil. */
-public enum FichaPerfilKey implements MessageKey {
+public enum FichaPerfilKey implements ClaveMensaje {
 
     ERROR_TITULO_DUPLICADO("fichas.dominio.fichaperfil.error.titulo-duplicado"),
     ERROR_ASESOR_NO_ENCONTRADO("fichas.dominio.fichaperfil.error.asesor-no-encontrado"),
@@ -33,7 +33,7 @@ public enum FichaPerfilKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.FICHAS;
+    public String paquete() {
+        return PaquetesMensajes.FICHAS;
     }
 }

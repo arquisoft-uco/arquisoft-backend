@@ -15,13 +15,13 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 class NotificacionDomainTest {
 
-    private static final String EVENT_ID = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
+    private static final String ID_EVENTO = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
     private static final String DESTINATARIO = "ana.gomez@soyuco.edu.co";
     private static final String ASUNTO = "Se te asignó la ficha";
 
     private NotificacionDomain notificacionValida() {
         return NotificacionDomain.crear(
-                EVENT_ID, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO);
+                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO);
     }
 
     @Test
@@ -31,7 +31,7 @@ class NotificacionDomainTest {
 
         // Assert
         assertThat(notificacion.getId()).isNotNull();
-        assertThat(notificacion.getEventId()).isEqualTo(EVENT_ID);
+        assertThat(notificacion.getIdEvento()).isEqualTo(ID_EVENTO);
         assertThat(notificacion.getTipo()).isEqualTo(TipoNotificacion.ASESOR_FICHA_CAMBIADO);
         assertThat(notificacion.getDestinatario()).isEqualTo(DESTINATARIO);
         assertThat(notificacion.getAsunto()).isEqualTo(ASUNTO);
@@ -50,9 +50,9 @@ class NotificacionDomainTest {
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
         assertThat(((DomainValidationException) excepcion).getValidationResult().getErrores())
                 .anySatisfy(error -> {
-                    assertThat(error.campo()).isEqualTo(NotificacionesFields.Notificacion.EVENT_ID);
+                    assertThat(error.campo()).isEqualTo(NotificacionesFields.Notificacion.ID_EVENTO);
                     assertThat(error.codigoError())
-                            .isEqualTo(NotificacionesCodes.Notificacion.EVENT_ID_REQUERIDO);
+                            .isEqualTo(NotificacionesCodes.Notificacion.ID_EVENTO_REQUERIDO);
                 });
     }
 
@@ -60,7 +60,7 @@ class NotificacionDomainTest {
     void debeLanzarDomainValidationException_cuandoElTipoEsNulo() {
         // Act
         Throwable excepcion = catchThrowable(() ->
-                NotificacionDomain.crear(EVENT_ID, null, DESTINATARIO, ASUNTO));
+                NotificacionDomain.crear(ID_EVENTO, null, DESTINATARIO, ASUNTO));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -73,7 +73,7 @@ class NotificacionDomainTest {
     void debeLanzarDomainValidationException_cuandoElDestinatarioNoEsUnCorreo() {
         // Act
         Throwable excepcion = catchThrowable(() -> NotificacionDomain.crear(
-                EVENT_ID, TipoNotificacion.ASESOR_FICHA_CAMBIADO, "no-es-un-correo", ASUNTO));
+                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, "no-es-un-correo", ASUNTO));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -86,7 +86,7 @@ class NotificacionDomainTest {
     void debeLanzarDomainValidationException_cuandoElAsuntoEstaEnBlanco() {
         // Act
         Throwable excepcion = catchThrowable(() -> NotificacionDomain.crear(
-                EVENT_ID, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, "  "));
+                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, "  "));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -160,14 +160,14 @@ class NotificacionDomainTest {
         // Act
         NotificacionDomain notificacion = NotificacionDomain.reconstruir(
                 new NotificacionDomain.DatosNotificacion(
-                        id, EVENT_ID, TipoNotificacion.ASESOR_FICHA_CAMBIADO,
+                        id, ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO,
                         DESTINATARIO, ASUNTO, creacion, envio),
                 EstadoNotificacion.ENVIADA,
                 null);
 
         // Assert
         assertThat(notificacion.getId()).isEqualTo(id);
-        assertThat(notificacion.getEventId()).isEqualTo(EVENT_ID);
+        assertThat(notificacion.getIdEvento()).isEqualTo(ID_EVENTO);
         assertThat(notificacion.getEstado()).isEqualTo(EstadoNotificacion.ENVIADA);
         assertThat(notificacion.getFechaCreacion()).isEqualTo(creacion);
         assertThat(notificacion.getFechaEnvio()).isEqualTo(envio);

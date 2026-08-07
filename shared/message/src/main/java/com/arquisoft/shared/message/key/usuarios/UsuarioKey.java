@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.usuarios;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de Usuario. */
-public enum UsuarioKey implements MessageKey {
+public enum UsuarioKey implements ClaveMensaje {
 
     ERROR_EMAIL_DUPLICADO("usuarios.dominio.usuario.error.email-duplicado"),
     LOG_CREADO("usuarios.aplicacion.usuario.log.creado");
@@ -21,7 +21,7 @@ public enum UsuarioKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.USUARIOS;
+    public String paquete() {
+        return PaquetesMensajes.USUARIOS;
     }
 }

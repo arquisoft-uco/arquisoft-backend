@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.app;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Mensajes que produce {@code DomainValidator} al acumular errores de integridad. */
-public enum ValidadorKey implements MessageKey {
+public enum ValidadorKey implements ClaveMensaje {
 
     NO_NULO("app.dominio.validador.error.no-nulo"),
     NO_EN_BLANCO("app.dominio.validador.error.no-en-blanco"),
@@ -28,7 +28,7 @@ public enum ValidadorKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.APP;
+    public String paquete() {
+        return PaquetesMensajes.APP;
     }
 }

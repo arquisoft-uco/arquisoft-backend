@@ -106,7 +106,7 @@ Extraídas del Event Storming — políticas del comando "Registrar Nueva inform
 
 **Implicaciones:**
 - La entidad raíz `FichaPerfilAggregate` **NO extiende `AggregateRoot`** — es una clase plana con factories `crear`/`reconstruir`.
-- El factory `crear(...)` **NO acumula eventos** (no existe `publishEvent`).
+- El factory `crear(...)` **NO acumula eventos** (no existe `publicarEvento`).
 - El use case **NO inyecta `EventPublisher`**, no hay drenado de eventos.
 - **No se crean archivos en `domain/fichaperfil/event/`.**
 
@@ -185,7 +185,7 @@ Esta HU introduce textos, códigos y límites nuevos. El plan declara modificaci
 - **Cambio principal:** verificar que NO extienda `AggregateRoot`. Si el código actual la extiende, **quitar `extends AggregateRoot`** porque esta HU no emite eventos. Validar que `crear(...)` use `DomainValidator` con las constantes del catálogo `FichasMessages.FichaPerfil.*`.
 - **Features Java 21 aplicables:** ninguno — la entidad es una clase inmutable con constructor privado, no un `record`.
 - **Métodos principales:**
-    - `crear(String tituloProyecto, UUID asesorFichaId): FichaPerfilAggregate` — factory que crea entidad nueva, genera UUID con `UUID.randomUUID()`, valida con Notification Pattern (lanza `DomainValidationException` si hay errores), aplica `.trim()` antes de validar. **NO acumula eventos** (no existe `publishEvent`).
+    - `crear(String tituloProyecto, UUID asesorFichaId): FichaPerfilAggregate` — factory que crea entidad nueva, genera UUID con `UUID.randomUUID()`, valida con Notification Pattern (lanza `DomainValidationException` si hay errores), aplica `.trim()` antes de validar. **NO acumula eventos** (no existe `publicarEvento`).
     - `reconstruir(UUID id, String tituloProyecto, UUID asesorFichaId): FichaPerfilAggregate` — factory que reconstruye desde persistencia, NO valida (confía en que la BD ya tiene datos válidos).
 - **Dependencias:** `ValidationResult` (Notification Pattern de `shared:domain.validation`), `DomainValidator` (validaciones estáticas), `FichasMessages.FichaPerfil` (constantes del catálogo).
 
@@ -364,7 +364,7 @@ CREATE TABLE ficha_perfil (
 | `FichaPerfilAggregateTest` | `debeLanzarExcepcion_cuandoAsesorNull` | `crear(titulo, null)` lanza `DomainValidationException` con error para `asesorFichaId` |
 | `FichaPerfilAggregateTest` | `debeReconstruirSinValidar_cuandoReconstruirEsInvocado` | `reconstruir(id, titulo, asesorId)` retorna entidad sin lanzar excepción, incluso con datos inválidos |
 
-> **NO se testea ciclo de eventos** (`publishEvent`, `drainUnPublishedEvents`) porque la HU no emite eventos. El aggregate NO extiende `AggregateRoot` — es una clase plana.
+> **NO se testea ciclo de eventos** (`publicarEvento`, `extraerEventosSinPublicar`) porque la HU no emite eventos. El aggregate NO extiende `AggregateRoot` — es una clase plana.
 
 #### Tests capa `application`
 
@@ -414,7 +414,7 @@ Ver sección "Anti-patrones de Testing en Arquisoft" del skill `arquisoft-contex
 - [ ] **DDD:** Entidad de dominio `FichaPerfilAggregate` **NO** extiende `AggregateRoot` (la HU no emite eventos)
 - [ ] Entidad inmutable: constructor privado, campos `final`, factory methods `crear` / `reconstruir`, sin Lombok
 - [ ] **NO hay eventos de dominio** (no se crean archivos en `domain/fichaperfil/event/`)
-- [ ] Factory `crear(...)` usa Notification Pattern con `DomainValidator` y lanza `DomainValidationException` si hay errores. **NO acumula eventos** (no existe `publishEvent`).
+- [ ] Factory `crear(...)` usa Notification Pattern con `DomainValidator` y lanza `DomainValidationException` si hay errores. **NO acumula eventos** (no existe `publicarEvento`).
 - [ ] IDs siempre `UUID` (autogenerado en `crear(...)` con `UUID.randomUUID()`)
 - [ ] Puerto de entrada (`RegistrarFichaPerfilInputPort`) definido (ya existe)
 - [ ] Puerto de salida `FichaPerfilOutputPort` define `guardar`, `buscarPorId`, `existsByTituloProyecto` (solo sobre el propio aggregate)

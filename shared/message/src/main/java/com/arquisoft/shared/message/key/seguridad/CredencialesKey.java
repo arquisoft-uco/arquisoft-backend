@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.seguridad;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de Credenciales. */
-public enum CredencialesKey implements MessageKey {
+public enum CredencialesKey implements ClaveMensaje {
 
     ERROR_TOKEN_ACCESO_REQUERIDO("seguridad.dominio.credenciales.error.token-acceso-requerido"),
     ERROR_EXPIRACION_INVALIDA("seguridad.dominio.credenciales.error.expiracion-invalida"),
@@ -22,7 +22,7 @@ public enum CredencialesKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.SEGURIDAD;
+    public String paquete() {
+        return PaquetesMensajes.SEGURIDAD;
     }
 }

@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.in.web;
 
-import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioCommand;
 import com.arquisoft.usuarios.application.usuario.command.interactor.CrearUsuarioInteractor;
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
@@ -33,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UsuarioCommandControlador.class)
-@Import({GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
+@Import({GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class,
         UsuarioCommandControladorWebTest.TestSecurityConfig.class})
 class UsuarioCommandControladorWebTest {
 

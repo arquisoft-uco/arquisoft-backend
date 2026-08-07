@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.seguridad;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de Token. */
-public enum TokenKey implements MessageKey {
+public enum TokenKey implements ClaveMensaje {
 
     ERROR_VALOR_REQUERIDO("seguridad.dominio.token.error.valor-requerido"),
     ERROR_REFRESCAR("seguridad.dominio.token.error.refrescar"),
@@ -39,7 +39,7 @@ public enum TokenKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.SEGURIDAD;
+    public String paquete() {
+        return PaquetesMensajes.SEGURIDAD;
     }
 }

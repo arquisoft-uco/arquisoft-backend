@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.app;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Envío de notificaciones — transversal, lo produce {@code shared:notification}. */
-public enum NotificacionKey implements MessageKey {
+public enum NotificacionKey implements ClaveMensaje {
 
     ERROR_ENVIO_FALLIDO("app.infraestructura.notificacion.error.envio-fallido");
 
@@ -20,7 +20,7 @@ public enum NotificacionKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.APP;
+    public String paquete() {
+        return PaquetesMensajes.APP;
     }
 }

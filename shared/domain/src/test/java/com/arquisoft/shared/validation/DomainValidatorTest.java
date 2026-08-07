@@ -1,7 +1,7 @@
 package com.arquisoft.shared.validation;
 
 import com.arquisoft.shared.message.key.app.ValidadorKey;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ class DomainValidatorTest {
         assertThat(valido).isFalse();
         assertThat(result.tieneErrores()).isTrue();
         assertThat(result.getErrores().get(0).mensaje())
-                .isEqualTo(Messages.formatear(ValidadorKey.UUID_INVALIDO, CAMPO));
+                .isEqualTo(Mensajes.formatear(ValidadorKey.UUID_INVALIDO, CAMPO));
     }
 
     @Test
@@ -67,7 +67,7 @@ class DomainValidatorTest {
         // Assert
         assertThat(valido).isFalse();
         assertThat(result.getErrores().get(0).mensaje())
-                .isEqualTo(Messages.formatear(ValidadorKey.TAMANIO_MAXIMO, CAMPO, 2));
+                .isEqualTo(Mensajes.formatear(ValidadorKey.TAMANIO_MAXIMO, CAMPO, 2));
     }
 
     @Test
@@ -93,7 +93,7 @@ class DomainValidatorTest {
         // Assert
         assertThat(valido).isFalse();
         assertThat(result.getErrores().get(0).mensaje())
-                .isEqualTo(Messages.formatear(ValidadorKey.SIN_DUPLICADOS, CAMPO, "a"));
+                .isEqualTo(Mensajes.formatear(ValidadorKey.SIN_DUPLICADOS, CAMPO, "a"));
     }
 
     @Test

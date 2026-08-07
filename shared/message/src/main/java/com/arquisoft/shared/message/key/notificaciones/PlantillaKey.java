@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.notificaciones;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Textos de los correos que produce el contexto. */
-public enum PlantillaKey implements MessageKey {
+public enum PlantillaKey implements ClaveMensaje {
 
     ASUNTO_ASESOR_CAMBIADO("notificaciones.aplicacion.plantilla.asunto.asesor-cambiado"),
     CUERPO_ASESOR_CAMBIADO("notificaciones.aplicacion.plantilla.cuerpo.asesor-cambiado");
@@ -21,7 +21,7 @@ public enum PlantillaKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.NOTIFICACIONES;
+    public String paquete() {
+        return PaquetesMensajes.NOTIFICACIONES;
     }
 }

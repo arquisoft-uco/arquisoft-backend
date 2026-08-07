@@ -2,10 +2,10 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.AgregarItemFichaPerfilMapper;
-import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.message.constant.FichasCodes;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
@@ -55,7 +55,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
     @Spy
-    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
 @InjectMocks
     private AgregarItemFichaPerfilUseCaseImpl useCase;
@@ -119,10 +119,10 @@ class AgregarItemFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(exception).isInstanceOf(ItemTipoDuplicadoException.class);
-        assertThat(((ApplicationException) exception).getErrorCode())
+        assertThat(((ApplicationException) exception).getCodigoError())
                 .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_TIPO_DUPLICADO);
         assertThat(exception.getMessage())
-                .isEqualTo(Messages.formatear(ItemFichaPerfilKey.ERROR_TIPO_DUPLICADO, TIPO_ITEM));
+                .isEqualTo(Mensajes.formatear(ItemFichaPerfilKey.ERROR_TIPO_DUPLICADO, TIPO_ITEM));
         verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
     }
 

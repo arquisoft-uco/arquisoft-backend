@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.notificaciones;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Reglas del agregado {@code NotificacionDomain}. */
-public enum NotificacionKey implements MessageKey {
+public enum NotificacionKey implements ClaveMensaje {
 
     ERROR_TRANSICION_INVALIDA("notificaciones.dominio.notificacion.error.transicion-invalida"),
     LOG_EVENTO_DUPLICADO("notificaciones.aplicacion.notificacion.log.evento-duplicado"),
@@ -23,7 +23,7 @@ public enum NotificacionKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.NOTIFICACIONES;
+    public String paquete() {
+        return PaquetesMensajes.NOTIFICACIONES;
     }
 }

@@ -7,11 +7,11 @@ import com.arquisoft.shared.exception.DomainException;
 public class AuthenticationException extends DomainException {
 
     public AuthenticationException(String message) {
-        super(BaseError.of(SeguridadCodes.Login.AUTENTICACION_ERROR, message));
+        super(BaseError.of(SeguridadCodes.Autenticacion.AUTENTICACION_ERROR, message));
     }
 
     public AuthenticationException(String message, Throwable cause) {
-        super(BaseError.of(SeguridadCodes.Login.AUTENTICACION_ERROR, message, cause), cause);
+        super(BaseError.of(SeguridadCodes.Autenticacion.AUTENTICACION_ERROR, message, cause), cause);
     }
 
     protected AuthenticationException(BaseError error) {

@@ -12,7 +12,7 @@ public class NotificacionValidatorImpl implements NotificacionValidator {
     private final NotificacionOutputPort notificacionOutputPort;
 
     @Override
-    public boolean yaFueProcesado(String eventId) {
-        return notificacionOutputPort.existePorEventId(eventId);
+    public boolean yaFueProcesado(String idEvento) {
+        return notificacionOutputPort.existePorIdEvento(idEvento);
     }
 }

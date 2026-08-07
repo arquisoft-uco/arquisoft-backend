@@ -4,7 +4,7 @@ import com.arquisoft.notificaciones.application.notificacion.command.interactor.
 import com.arquisoft.notificaciones.application.notificacion.command.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.rabbitmq.client.Channel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,19 +42,19 @@ class AsesorFichaCambiadoInputAdapterTest {
                 enviarNotificacionInteractor,
                 new ObjectMapper(),
                 Mockito.mock(AppLogger.class),
-                ResourceBundleMessageCatalog.porDefecto());
+                CatalogoMensajesResourceBundle.porDefecto());
     }
 
-    private Message mensajeCon(String eventId, long deliveryTag) {
+    private Message mensajeCon(String idEvento, long deliveryTag) {
         String payloadJson = """
                 {
-                    "eventId": "%s",
+                    "idEvento": "%s",
                     "fichaPerfilId": "%s",
                     "tituloProyecto": "Sistema de gestión",
                     "asesorNombre": "Ana Gomez",
                     "asesorEmail": "ana.gomez@soyuco.edu.co"
                 }
-                """.formatted(eventId, UUID.randomUUID());
+                """.formatted(idEvento, UUID.randomUUID());
 
         MessageProperties props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
@@ -67,10 +67,10 @@ class AsesorFichaCambiadoInputAdapterTest {
     @Test
     void debeTraducirElEventoEnUnaNotificacion_cuandoElPayloadEsValido() throws Exception {
         // Arrange
-        String eventId = UUID.randomUUID().toString();
+        String idEvento = UUID.randomUUID().toString();
 
         // Act
-        adapter.onAsesorFichaCambiado(mensajeCon(eventId, 1L), channel);
+        adapter.onAsesorFichaCambiado(mensajeCon(idEvento, 1L), channel);
 
         // Assert
         ArgumentCaptor<EnviarNotificacionCommand> captor =
@@ -78,7 +78,7 @@ class AsesorFichaCambiadoInputAdapterTest {
         verify(enviarNotificacionInteractor).ejecutar(captor.capture());
 
         EnviarNotificacionCommand command = captor.getValue();
-        assertThat(command.eventId()).isEqualTo(eventId);
+        assertThat(command.idEvento()).isEqualTo(idEvento);
         assertThat(command.tipo()).isEqualTo(TipoNotificacion.ASESOR_FICHA_CAMBIADO);
         assertThat(command.destinatarioNombre()).isEqualTo("Ana Gomez");
         assertThat(command.destinatarioEmail()).isEqualTo("ana.gomez@soyuco.edu.co");

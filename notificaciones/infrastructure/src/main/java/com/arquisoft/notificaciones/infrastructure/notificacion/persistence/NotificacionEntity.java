@@ -25,7 +25,7 @@ public class NotificacionEntity {
     private UUID id;
 
     @Column(name = "event_id", nullable = false, unique = true, length = 36)
-    private String eventId;
+    private String idEvento;
 
     @Column(name = "tipo", nullable = false, length = 60)
     private String tipo;

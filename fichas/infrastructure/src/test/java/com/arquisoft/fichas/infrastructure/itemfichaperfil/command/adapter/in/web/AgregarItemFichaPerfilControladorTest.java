@@ -1,10 +1,10 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.adapter.in.web;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.interactor.AgregarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
@@ -38,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AgregarItemFichaPerfilControlador.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
+        GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class,
         AgregarItemFichaPerfilControladorTest.TestSecurityConfig.class})
 class AgregarItemFichaPerfilControladorTest {
 
@@ -160,7 +160,7 @@ class AgregarItemFichaPerfilControladorTest {
         validationResult.agregarError(
                 FichasFields.ItemFichaPerfil.TIPO_ITEM,
                 FichasCodes.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
-                Messages.formatear(ItemFichaPerfilKey.ERROR_TIPO_INVALIDO, "TIPO_INEXISTENTE")
+                Mensajes.formatear(ItemFichaPerfilKey.ERROR_TIPO_INVALIDO, "TIPO_INEXISTENTE")
         );
 
         when(agregarItemFichaPerfilInteractor.ejecutar(any()))

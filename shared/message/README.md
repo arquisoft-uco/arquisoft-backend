@@ -43,10 +43,10 @@ shared/message/
 ├── README.md
 └── src/main/
     ├── java/com/arquisoft/shared/message/
-    │   ├── MessageCatalog.java                ← Puerto: obtener / formatear / contiene
-    │   ├── ResourceBundleMessageCatalog.java  ← Implementación sobre ResourceBundle
-    │   ├── Messages.java                      ← Fachada estática (solo para dominio)
-    │   ├── MessageBundles.java                ← Registro de bundles
+    │   ├── CatalogoMensajes.java               ← Puerto: obtener / formatear / contiene
+    │   ├── CatalogoMensajesResourceBundle.java ← Implementación sobre ResourceBundle
+    │   ├── Mensajes.java                       ← Fachada estática (solo para dominio)
+    │   ├── PaquetesMensajes.java                ← Registro de bundles
     │   ├── AppKeys / FichasKeys / SeguridadKeys / UsuariosKeys
     │   ├── AppCodes / FichasCodes / SeguridadCodes / UsuariosCodes
     │   ├── FichasFields, FichasLimits
@@ -99,7 +99,7 @@ FichasKeys.FichaPerfil.LOG_REGISTRADA
 
 ### Aplicación e infraestructura — inyección
 
-`MessageCatalog` es un bean (`MessageCatalogConfig`, en `shared:web`). Se inyecta por
+`CatalogoMensajes` es un bean (`CatalogoMensajesConfig`, en `shared:web`). Se inyecta por
 constructor como cualquier otro colaborador:
 
 ```java
@@ -109,12 +109,12 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
     private final AppLogger logger;
-    private final MessageCatalog catalog;
+    private final CatalogoMensajes catalogo;
 
     @Override
     public UUID ejecutar(RegistrarFichaPerfilCommand command) {
         // ...
-        logger.info(catalog.obtener(FichasKeys.FichaPerfil.LOG_REGISTRADA), ficha.getId());
+        logger.info(catalogo.obtener(FichasKeys.FichaPerfil.LOG_REGISTRADA), ficha.getId());
         return ficha.getId();
     }
 }
@@ -123,14 +123,14 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
 ### Dominio — fachada estática
 
 Los agregados, reglas y excepciones se construyen con factorías estáticas y `new`, nunca como
-beans: no hay punto de inyección. Para ese caso existe `Messages`, que delega en la **misma
+beans: no hay punto de inyección. Para ese caso existe `Mensajes`, que delega en la **misma
 instancia** que recibe el resto de capas:
 
 ```java
 public class TituloDuplicadoException extends DomainException {
 
     public TituloDuplicadoException(String titulo) {
-        super(Messages.formatear(FichasKeys.FichaPerfil.ERROR_TITULO_DUPLICADO, titulo),
+        super(Mensajes.formatear(FichasKeys.FichaPerfil.ERROR_TITULO_DUPLICADO, titulo),
               FichasCodes.FichaPerfil.FICHA_TITULO_DUPLICADO);
     }
 }
@@ -175,7 +175,7 @@ degrada el mensaje, no tumba la petición.
 ## Red de seguridad
 
 Externalizar texto cuesta la verificación del compilador: una clave mal escrita ya no rompe el
-build. `MessageCatalogClavesTest` devuelve esa garantía y **falla el build** si:
+build. `CatalogoMensajesClavesTest` devuelve esa garantía y **falla el build** si:
 
 - una constante de `*Keys` / `ValidationKeys` / `FichasApiKeys` no resuelve a ningún texto;
 - un texto del `.properties` queda huérfano, sin constante que lo referencie.
@@ -188,9 +188,9 @@ añadir su constante — y al revés.
 ## Añadir un contexto al catálogo
 
 1. Crear `src/main/resources/messages/{contexto}.properties`.
-2. Registrar su base name en `MessageBundles.TODOS`.
+2. Registrar su base name en `PaquetesMensajes.TODOS`.
 3. Crear `{Contexto}Keys` (claves) y `{Contexto}Codes` (códigos de error).
-4. Añadir la clase de claves a `CLASES_DE_CLAVES` en `MessageCatalogClavesTest`.
+4. Añadir la clase de claves a `CLASES_DE_CLAVES` en `CatalogoMensajesClavesTest`.
 5. Ejecutar `./gradlew :shared:message:test`.
 
 ---
@@ -202,19 +202,19 @@ acaban en la excepción o en el resultado, y un mock los dejaría en `null`.
 
 ```java
 @Spy
-private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 ```
 
 En slices `@WebMvcTest` hay que importar el bean, porque `GlobalAppExceptionHandler` lo recibe
 por constructor:
 
 ```java
-@Import({GlobalAppExceptionHandler.class, MessageCatalogConfig.class})
+@Import({GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class})
 ```
 
 Para afirmar sobre un texto de validación Jakarta, resolverlo desde el catálogo en lugar de
 repetirlo:
 
 ```java
-.value(Messages.obtener(ValidationKeys.sinLlaves(ValidationKeys.FichaPerfil.ASESOR_OBLIGATORIO)))
+.value(Mensajes.obtener(ValidationKeys.sinLlaves(ValidationKeys.FichaPerfil.ASESOR_OBLIGATORIO)))
 ```

@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -53,7 +53,7 @@ public final class AgregarEstadoEvaluacionFichaDomain {
             result.agregarError(
                     FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
                     FichasCodes.EstadoEvaluacionFicha.ESTADO_NO_ENCONTRADO,
-                    Messages.formatear(
+                    Mensajes.formatear(
                             EstadoEvaluacionFichaKey.ERROR_ESTADO_NO_ENCONTRADO, estadoEvaluacion));
         }
     }

@@ -5,13 +5,12 @@ import com.arquisoft.notificaciones.application.notificacion.command.validator.N
 import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
-import com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
-import com.arquisoft.shared.notification.NotificationSender;
-import com.arquisoft.shared.notification.exception.NotificationDeliveryException;
-import com.arquisoft.shared.notification.model.NotificationMessage;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
+import com.arquisoft.shared.notification.EnvioNotificacionOutputPort;
+import com.arquisoft.shared.notification.exception.EnvioNotificacionFallidoException;
+import com.arquisoft.shared.notification.model.MensajeNotificacion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,30 +29,30 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class EnviarNotificacionUseCaseTest {
 
-    private static final String EVENT_ID = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
+    private static final String ID_EVENTO = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
 
     @Mock
-    private NotificacionOutputPort notificacionOutputPort;
+    private com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort notificacionOutputPort;
 
     @Mock
     private NotificacionValidator notificacionValidator;
 
     @Mock
-    private NotificationSender notificationSender;
+    private EnvioNotificacionOutputPort envioNotificacionOutputPort;
 
     @Mock
     private AppLogger logger;
 
     // Catalogo real, no mock: los textos acaban en el log y en la notificacion persistida.
     @Spy
-    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
     @InjectMocks
     private EnviarNotificacionUseCaseImpl enviarNotificacionUseCase;
 
     private EnviarNotificacionCommand comando() {
         return new EnviarNotificacionCommand(
-                EVENT_ID,
+                ID_EVENTO,
                 TipoNotificacion.ASESOR_FICHA_CAMBIADO,
                 "Ana Gomez",
                 "ana.gomez@soyuco.edu.co",
@@ -64,35 +63,35 @@ class EnviarNotificacionUseCaseTest {
     @Test
     void debeEnviarYPersistirComoEnviada_cuandoElEventoEsNuevo() {
         // Arrange
-        when(notificacionValidator.yaFueProcesado(EVENT_ID)).thenReturn(false);
+        when(notificacionValidator.yaFueProcesado(ID_EVENTO)).thenReturn(false);
 
         // Act
         enviarNotificacionUseCase.ejecutar(comando());
 
         // Assert
-        verify(notificationSender).enviar(any(NotificationMessage.class));
+        verify(envioNotificacionOutputPort).enviar(any(MensajeNotificacion.class));
 
         ArgumentCaptor<NotificacionDomain> captor =
                 ArgumentCaptor.forClass(NotificacionDomain.class);
         verify(notificacionOutputPort).guardar(captor.capture());
         assertThat(captor.getValue().getEstado()).isEqualTo(EstadoNotificacion.ENVIADA);
-        assertThat(captor.getValue().getEventId()).isEqualTo(EVENT_ID);
+        assertThat(captor.getValue().getIdEvento()).isEqualTo(ID_EVENTO);
     }
 
     @Test
     void debeConstruirElMensajeConDestinatarioAsuntoYCuerpo_cuandoEnvia() {
         // Arrange
-        when(notificacionValidator.yaFueProcesado(EVENT_ID)).thenReturn(false);
+        when(notificacionValidator.yaFueProcesado(ID_EVENTO)).thenReturn(false);
 
         // Act
         enviarNotificacionUseCase.ejecutar(comando());
 
         // Assert
-        ArgumentCaptor<NotificationMessage> captor =
-                ArgumentCaptor.forClass(NotificationMessage.class);
-        verify(notificationSender).enviar(captor.capture());
+        ArgumentCaptor<MensajeNotificacion> captor =
+                ArgumentCaptor.forClass(MensajeNotificacion.class);
+        verify(envioNotificacionOutputPort).enviar(captor.capture());
 
-        NotificationMessage mensaje = captor.getValue();
+        MensajeNotificacion mensaje = captor.getValue();
         assertThat(mensaje.destinatarios()).singleElement()
                 .satisfies(destinatario -> {
                     assertThat(destinatario.nombre()).isEqualTo("Ana Gomez");
@@ -105,23 +104,23 @@ class EnviarNotificacionUseCaseTest {
     @Test
     void noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado() {
         // Arrange — es la reentrega normal del broker, no un error
-        when(notificacionValidator.yaFueProcesado(EVENT_ID)).thenReturn(true);
+        when(notificacionValidator.yaFueProcesado(ID_EVENTO)).thenReturn(true);
 
         // Act
         enviarNotificacionUseCase.ejecutar(comando());
 
         // Assert
-        verify(notificationSender, never()).enviar(any());
+        verify(envioNotificacionOutputPort, never()).enviar(any());
         verify(notificacionOutputPort, never()).guardar(any());
     }
 
     @Test
     void debePersistirComoFallidaConElMotivo_cuandoLaEntregaFalla() {
         // Arrange
-        when(notificacionValidator.yaFueProcesado(EVENT_ID)).thenReturn(false);
-        doThrow(new NotificationDeliveryException(
+        when(notificacionValidator.yaFueProcesado(ID_EVENTO)).thenReturn(false);
+        doThrow(new EnvioNotificacionFallidoException(
                 "No se pudo entregar la notificación", "NOTIFICACION_ENVIO_FALLIDO", new RuntimeException()))
-                .when(notificationSender).enviar(any(NotificationMessage.class));
+                .when(envioNotificacionOutputPort).enviar(any(MensajeNotificacion.class));
 
         // Act — no relanza: el fallo se persiste para poder reintentarlo despues
         enviarNotificacionUseCase.ejecutar(comando());

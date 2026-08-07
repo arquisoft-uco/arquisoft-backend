@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.fichas;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de MinioGuia. */
-public enum MinioGuiaKey implements MessageKey {
+public enum MinioGuiaKey implements ClaveMensaje {
 
     LOG_UPLOAD_URL("fichas.infraestructura.minioguia.log.upload-url"),
     LOG_DOWNLOAD_URL("fichas.infraestructura.minioguia.log.download-url"),
@@ -22,7 +22,7 @@ public enum MinioGuiaKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.FICHAS;
+    public String paquete() {
+        return PaquetesMensajes.FICHAS;
     }
 }

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.usuario.command.adapter.in.amqp;
 
 import com.arquisoft.shared.message.key.fichas.UsuarioKey;
-import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
 import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
@@ -22,17 +22,17 @@ public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
 
     private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
     private final AppLogger logger;
-    private final MessageCatalog catalog;
+    private final CatalogoMensajes catalogo;
 
     public UsuarioCreadoInputAdapter(
             RegistrarUsuarioUseCase registrarUsuarioUseCase,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
-            MessageCatalog catalog) {
+            CatalogoMensajes catalogo) {
         super(objectMapper);
         this.registrarUsuarioUseCase = registrarUsuarioUseCase;
         this.logger = logger;
-        this.catalog = catalog;
+        this.catalogo = catalogo;
     }
 
     @RabbitListener(queues = FichasUsuariosQueueConfig.USUARIO_CREADO_QUEUE)
@@ -40,7 +40,7 @@ public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
         withCorrelation(message, channel, () -> {
             UsuarioCreadoPayload payload = deserialize(message, UsuarioCreadoPayload.class);
 
-            logger.info(catalog.obtener(UsuarioKey.LOG_USUARIO_CREADO_RECIBIDO),
+            logger.info(catalogo.obtener(UsuarioKey.LOG_USUARIO_CREADO_RECIBIDO),
                     payload.usuarioId(), payload.email(), payload.rol());
 
             registrarUsuarioUseCase.ejecutar(new RegistrarUsuarioCommand(

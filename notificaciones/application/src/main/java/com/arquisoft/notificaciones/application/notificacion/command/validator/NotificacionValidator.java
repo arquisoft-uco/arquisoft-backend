@@ -9,8 +9,8 @@ public interface NotificacionValidator {
      * reentrega normal de un broker con ACK manual, y la respuesta correcta es ignorarlo en
      * silencio y confirmar el mensaje.
      *
-     * @param eventId identificador del evento de dominio
+     * @param idEvento identificador del evento de dominio
      * @return {@code true} si ya existe una notificacion para ese evento
      */
-    boolean yaFueProcesado(String eventId);
+    boolean yaFueProcesado(String idEvento);
 }

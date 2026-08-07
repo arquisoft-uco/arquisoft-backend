@@ -7,9 +7,9 @@ public final class SeguridadCodes {
 
     private SeguridadCodes() {}
 
-    public static final class Login {
+    public static final class Autenticacion {
 
-        private Login() {}
+        private Autenticacion() {}
 
         public static final String AUTENTICACION_ERROR = "AUTENTICACION_ERROR";
         public static final String CREDENCIALES_INVALIDAS = "CREDENCIALES_INVALIDAS";
@@ -49,11 +49,11 @@ public final class SeguridadCodes {
         public static final String CREDENCIALES_TIPO_TOKEN_REQUERIDO = "CREDENCIALES_TIPO_TOKEN_REQUERIDO";
     }
 
-    public static final class RateLimit {
+    public static final class LimiteSolicitudes {
 
-        private RateLimit() {}
+        private LimiteSolicitudes() {}
 
-        public static final String RATE_LIMIT_EXCEDIDO = "RATE_LIMIT_EXCEEDED";
+        public static final String LIMITE_SOLICITUDES_EXCEDIDO = "LIMITE_SOLICITUDES_EXCEDIDO";
         public static final String REDIS_CLIENTE_STANDALONE_REQUERIDO = "REDIS_CLIENTE_STANDALONE_REQUERIDO";
     }
 }

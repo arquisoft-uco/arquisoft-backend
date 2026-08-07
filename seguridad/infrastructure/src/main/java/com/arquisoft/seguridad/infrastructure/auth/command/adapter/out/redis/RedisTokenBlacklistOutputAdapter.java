@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.out.redis;
 
-import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
+import com.arquisoft.seguridad.domain.auth.port.out.TokenInvalidadoOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import java.time.Duration;
 
 @Component
 @RequiredArgsConstructor
-public class RedisTokenBlacklistOutputAdapter implements TokenBlacklistOutputPort {
+public class RedisTokenBlacklistOutputAdapter implements TokenInvalidadoOutputPort {
 
     private static final String PREFIX = "arquisoft:blacklist:jti:";
 

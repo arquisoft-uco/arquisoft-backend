@@ -113,8 +113,8 @@ La creación de usuarios (`POST /usuarios`) vive en el contexto `usuarios`, no e
 ## Mecanismos de seguridad
 
 ### JWT / Keycloak
-- Tokens validados en `SecurityConfig` contra el **issuer** de Keycloak (`{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}`), que autodescubre el JWKS vía OIDC. Se valida **firma + expiración (nbf/exp) + `iss` + `aud`** (RFC 9700 / OAuth 2.1). Un token con issuer o audience incorrectos se rechaza con **401 `invalid_token`**.
-- Autorización basada en permisos finos del claim `resource_access.{KEYCLOAK_CLIENT_ID}.roles` (formato `contexto:recurso:accion`, ej. `usuarios:usuario:create`, `fichas:ficha-perfil:view`), extraídos por `KeycloakRoleExtractor` y mapeados 1:1 a `GrantedAuthority` sin prefijo `ROLE_` en `KeycloakJwtConverterConfig`. Los roles de `realm_access.roles` ya no se usan para autorización — cada contexto protege sus endpoints con `@PreAuthorize("hasAuthority('...')")` sobre estos permisos finos.
+- Tokens validados en `SeguridadConfig` contra el **issuer** de Keycloak (`{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}`), que autodescubre el JWKS vía OIDC. Se valida **firma + expiración (nbf/exp) + `iss` + `aud`** (RFC 9700 / OAuth 2.1). Un token con issuer o audience incorrectos se rechaza con **401 `invalid_token`**.
+- Autorización basada en permisos finos del claim `resource_access.{KEYCLOAK_CLIENT_ID}.roles` (formato `contexto:recurso:accion`, ej. `usuarios:usuario:create`, `fichas:ficha-perfil:view`), extraídos por `KeycloakRolExtractor` y mapeados 1:1 a `GrantedAuthority` sin prefijo `ROLE_` en `KeycloakJwtConverterConfig`. Los roles de `realm_access.roles` ya no se usan para autorización — cada contexto protege sus endpoints con `@PreAuthorize("hasAuthority('...')")` sobre estos permisos finos.
 - Sesión stateless — ningún estado HTTP del lado del servidor.
 
 #### Contrato de claims del access token
@@ -123,7 +123,7 @@ La SPA `react-app` autentica con **Authorization Code + PKCE** (public client) y
 
 | Claim | Contenido esperado | Lo produce | Si falta → |
 |---|---|---|---|
-| `aud` | contiene `arquisoft-api` | **audience resolve mapper** (default) cuando el token porta client roles de `arquisoft-api` | **401** `invalid_token` (validación en `SecurityConfig`) |
+| `aud` | contiene `arquisoft-api` | **audience resolve mapper** (default) cuando el token porta client roles de `arquisoft-api` | **401** `invalid_token` (validación en `SeguridadConfig`) |
 | `resource_access.arquisoft-api.roles` | permisos finos (`contexto:recurso:accion`) | **Full Scope Allowed** o **Client Roles mapper** en `react-app` + realm roles compuestos | **403** en `@PreAuthorize` (autentica pero sin authorities) |
 | `realm_access.roles` | roles de negocio (`estudiante`, `asesor`, `coordinador`, …) | default de Keycloak | el backend NO lo usa; solo gating de UI del frontend |
 

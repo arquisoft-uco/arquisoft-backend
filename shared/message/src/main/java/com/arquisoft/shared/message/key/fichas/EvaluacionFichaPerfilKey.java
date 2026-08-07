@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.fichas;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de EvaluacionFichaPerfil. */
-public enum EvaluacionFichaPerfilKey implements MessageKey {
+public enum EvaluacionFichaPerfilKey implements ClaveMensaje {
 
     ERROR_DUPLICADA("fichas.dominio.evaluacionfichaperfil.error.duplicada"),
     LOG_REGISTRADA("fichas.aplicacion.evaluacionfichaperfil.log.registrada");
@@ -21,7 +21,7 @@ public enum EvaluacionFichaPerfilKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.FICHAS;
+    public String paquete() {
+        return PaquetesMensajes.FICHAS;
     }
 }

@@ -33,8 +33,8 @@ class AsesorFichaCambiadoEventTest {
                 UUID.randomUUID(), "Titulo", UUID.randomUUID(), "Ana", "ana@soyuco.edu.co");
 
         // Assert
-        assertThat(evento.getEventTopic()).isEqualTo("fichas.ficha_perfil.asesor_cambiado");
-        assertThat(evento.getEventType()).isEqualTo("AsesorFichaCambiadoEvent");
+        assertThat(evento.getTemaEvento()).isEqualTo("fichas.ficha_perfil.asesor_cambiado");
+        assertThat(evento.getTipoEvento()).isEqualTo("AsesorFichaCambiadoEvent");
     }
 
     @Test
@@ -43,8 +43,8 @@ class AsesorFichaCambiadoEventTest {
         AsesorFichaCambiadoEvent evento = new AsesorFichaCambiadoEvent(
                 UUID.randomUUID(), "Titulo", UUID.randomUUID(), "Ana", "ana@soyuco.edu.co");
 
-        // Assert — el eventId es la clave de idempotencia del consumidor
-        assertThat(evento.getEventId()).isNotBlank();
-        assertThat(evento.getOccurredAt()).isNotNull();
+        // Assert — el idEvento es la clave de idempotencia del consumidor
+        assertThat(evento.getIdEvento()).isNotBlank();
+        assertThat(evento.getOcurridoEn()).isNotNull();
     }
 }

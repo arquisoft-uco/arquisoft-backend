@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class NotificacionValidatorTest {
 
-    private static final String EVENT_ID = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
+    private static final String ID_EVENTO = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
 
     @Mock
     private NotificacionOutputPort notificacionOutputPort;
@@ -25,18 +25,18 @@ class NotificacionValidatorTest {
     @Test
     void debeReportarProcesado_cuandoYaExisteUnaNotificacionParaElEvento() {
         // Arrange
-        when(notificacionOutputPort.existePorEventId(EVENT_ID)).thenReturn(true);
+        when(notificacionOutputPort.existePorIdEvento(ID_EVENTO)).thenReturn(true);
 
         // Act & Assert
-        assertThat(notificacionValidator.yaFueProcesado(EVENT_ID)).isTrue();
+        assertThat(notificacionValidator.yaFueProcesado(ID_EVENTO)).isTrue();
     }
 
     @Test
     void debeReportarNoProcesado_cuandoElEventoEsNuevo() {
         // Arrange
-        when(notificacionOutputPort.existePorEventId(EVENT_ID)).thenReturn(false);
+        when(notificacionOutputPort.existePorIdEvento(ID_EVENTO)).thenReturn(false);
 
         // Act & Assert
-        assertThat(notificacionValidator.yaFueProcesado(EVENT_ID)).isFalse();
+        assertThat(notificacionValidator.yaFueProcesado(ID_EVENTO)).isFalse();
     }
 }

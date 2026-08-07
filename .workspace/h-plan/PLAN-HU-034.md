@@ -108,7 +108,7 @@ Esta HU NO modifica el aggregate ni la JPA Entity — ambos ya existen. Solo se 
 
 **Implicaciones:**
 - La entidad raíz `ItemFichaPerfilAggregate` NO extiende `AggregateRoot` — es una clase plana con factories `crear`/`reconstruir`.
-- El factory `crear(...)` NO acumula eventos (no existe `publishEvent`).
+- El factory `crear(...)` NO acumula eventos (no existe `publicarEvento`).
 - El use case NO inyecta `EventPublisher`, no hay drenado de eventos.
 - No se crean archivos en `domain/itemfichaperfil/event/`.
 

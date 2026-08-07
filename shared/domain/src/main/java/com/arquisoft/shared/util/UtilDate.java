@@ -12,7 +12,7 @@ public final class UtilDate {
 
     // ─── Generación ───────────────────────────────────────────────────────────
 
-    public static LocalDate generateNewFechaNow() {
+    public static LocalDate generateCurrentDate() {
         return LocalDate.now();
     }
 
@@ -28,9 +28,9 @@ public final class UtilDate {
 
     // ─── Conversión ───────────────────────────────────────────────────────────
 
-    public static LocalDate generateFechaFromString(final String fechaValue) {
-        return dateStringIsValid(fechaValue)
-                ? LocalDate.parse(fechaValue, DateTimeFormatter.ISO_LOCAL_DATE)
+    public static LocalDate parseDateFromString(final String dateValue) {
+        return dateStringIsValid(dateValue)
+                ? LocalDate.parse(dateValue, DateTimeFormatter.ISO_LOCAL_DATE)
                 : null;
     }
 }

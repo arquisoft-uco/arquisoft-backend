@@ -1,9 +1,9 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.adapter.out.jwt;
 
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
-import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
-import com.arquisoft.seguridad.domain.auth.port.out.TokenValidationOutputPort;
+import com.arquisoft.seguridad.domain.auth.port.out.ValidacionTokenOutputPort;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,10 +17,10 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtTokenOutputAdapter implements TokenValidationOutputPort {
+public class JwtTokenOutputAdapter implements ValidacionTokenOutputPort {
 
     private final JwtDecoder jwtDecoder;
-    private final MessageCatalog catalog;
+    private final CatalogoMensajes catalogo;
 
     @Override
     public IdentidadToken extraerInfo(String token) {
@@ -33,8 +33,8 @@ public class JwtTokenOutputAdapter implements TokenValidationOutputPort {
                     extraerRolesRealm(jwt)
             );
         } catch (Exception e) {
-            log.error(catalog.obtener(TokenKey.LOG_ERROR_EXTRAER_INFO), e.getMessage());
-            throw new TokenInvalidoException(catalog.formatear(TokenKey.ERROR_INVALIDO_DETALLE, e.getMessage()), e);
+            log.error(catalogo.obtener(TokenKey.LOG_ERROR_EXTRAER_INFO), e.getMessage());
+            throw new TokenInvalidoException(catalogo.formatear(TokenKey.ERROR_INVALIDO_DETALLE, e.getMessage()), e);
         }
     }
 
@@ -44,7 +44,7 @@ public class JwtTokenOutputAdapter implements TokenValidationOutputPort {
             jwtDecoder.decode(token);
             return true;
         } catch (Exception e) {
-            log.warn(catalog.obtener(TokenKey.LOG_VALIDACION_FALLIDA), e.getMessage());
+            log.warn(catalogo.obtener(TokenKey.LOG_VALIDACION_FALLIDA), e.getMessage());
             return false;
         }
     }

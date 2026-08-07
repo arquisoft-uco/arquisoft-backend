@@ -24,9 +24,9 @@ public class RabbitMQEventPublisher implements EventPublisher { // EventPublishe
     }
 
     @Override
-    public void publish(DomainEvent event) {
-        String routingKey = event.getEventTopic();
-        CorrelationData corr = new CorrelationData(event.getEventId());
+    public void publish(DomainEvent evento) {
+        String claveRuta = evento.getTemaEvento();
+        CorrelationData corr = new CorrelationData(evento.getIdEvento());
 
         AmqpException lastException = null;
         long backoffMs = INITIAL_BACKOFF_MS;
@@ -37,33 +37,33 @@ public class RabbitMQEventPublisher implements EventPublisher { // EventPublishe
                 // registrado en RabbitMQConfig#rabbitTemplate — no se duplican aquí.
                 rabbitTemplate.convertAndSend(
                     RabbitMQConfig.EXCHANGE_NAME,
-                    routingKey,
-                    event,
+                    claveRuta,
+                    evento,
                     corr
                 );
-                log.info("Evento publicado: type={} routingKey={} eventId={}",
-                        event.getEventType(), routingKey, event.getEventId());
+                log.info("Evento publicado: tipo={} claveRuta={} idEvento={}",
+                        evento.getTipoEvento(), claveRuta, evento.getIdEvento());
                 return;
             } catch (AmqpException ex) {
                 // Error transitorio de conectividad: vale la pena reintentar.
                 lastException = ex;
                 if (attempt < MAX_ATTEMPTS) {
-                    log.warn("Error al publicar evento (intento {}/{}), reintentando en {} ms: type={} eventId={}",
-                            attempt, MAX_ATTEMPTS, backoffMs, event.getEventType(), event.getEventId());
+                    log.warn("Error al publicar evento (intento {}/{}), reintentando en {} ms: tipo={} idEvento={}",
+                            attempt, MAX_ATTEMPTS, backoffMs, evento.getTipoEvento(), evento.getIdEvento());
                     sleepUninterruptibly(backoffMs);
                     backoffMs *= 2;
                 }
             } catch (RuntimeException ex) {
                 // Error no transitorio (ej. fallo de serialización): no se reintenta.
                 // Se loguea aquí para preservar el contexto del evento antes de propagar.
-                log.error("Error no recuperable al publicar evento (sin reintentos): type={} routingKey={} eventId={}",
-                        event.getEventType(), routingKey, event.getEventId(), ex);
+                log.error("Error no recuperable al publicar evento (sin reintentos): tipo={} claveRuta={} idEvento={}",
+                        evento.getTipoEvento(), claveRuta, evento.getIdEvento(), ex);
                 throw ex;
             }
         }
 
-        log.error("Error al publicar evento tras {} intentos: type={} routingKey={} eventId={}",
-                MAX_ATTEMPTS, event.getEventType(), routingKey, event.getEventId(), lastException);
+        log.error("Error al publicar evento tras {} intentos: tipo={} claveRuta={} idEvento={}",
+                MAX_ATTEMPTS, evento.getTipoEvento(), claveRuta, evento.getIdEvento(), lastException);
         throw lastException;
     }
 

@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.notificaciones;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Consumidores AMQP. */
-public enum ConsumidorKey implements MessageKey {
+public enum ConsumidorKey implements ClaveMensaje {
 
     LOG_ASESOR_CAMBIADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.asesor-cambiado-recibido");
 
@@ -20,7 +20,7 @@ public enum ConsumidorKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.NOTIFICACIONES;
+    public String paquete() {
+        return PaquetesMensajes.NOTIFICACIONES;
     }
 }

@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.usuario.command.adapter.in.amqp;
 
 import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
 import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.rabbitmq.client.Channel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class UsuarioCreadoInputAdapterTest {
         ObjectMapper objectMapper = new ObjectMapper();
         adapter = new UsuarioCreadoInputAdapter(registrarUsuarioUseCase, objectMapper,
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
-                com.arquisoft.shared.message.ResourceBundleMessageCatalog.porDefecto());
+                CatalogoMensajesResourceBundle.porDefecto());
     }
 
     @Test
@@ -49,7 +50,7 @@ class UsuarioCreadoInputAdapterTest {
         String payloadJson = String.format(
                 """
                 {
-                    "eventId": "%s",
+                    "idEvento": "%s",
                     "usuarioId": "%s",
                     "email": "%s",
                     "rol": "%s"
@@ -93,7 +94,7 @@ class UsuarioCreadoInputAdapterTest {
         String payloadJson = String.format(
                 """
                 {
-                    "eventId": "%s",
+                    "idEvento": "%s",
                     "usuarioId": "%s",
                     "email": "duplicado@example.com",
                     "rol": "ESTUDIANTE"

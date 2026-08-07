@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.ModificarItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ModificarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ModificarItemFichaPerfilDomain;
@@ -17,7 +17,7 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
     private final ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
     private final ModificarItemFichaPerfilValidator modificarItemFichaPerfilValidator;
     private final AppLogger logger;
-    private final MessageCatalog catalog;
+    private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(ModificarItemFichaPerfilDomain entrada) {
@@ -25,6 +25,6 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
 
         itemFichaPerfilOutputPort.actualizarContenido(entrada.getItem(), entrada.getContenido());
 
-        logger.info(catalog.obtener(ItemFichaPerfilKey.LOG_MODIFICADO), entrada.getItem());
+        logger.info(catalogo.obtener(ItemFichaPerfilKey.LOG_MODIFICADO), entrada.getItem());
     }
 }

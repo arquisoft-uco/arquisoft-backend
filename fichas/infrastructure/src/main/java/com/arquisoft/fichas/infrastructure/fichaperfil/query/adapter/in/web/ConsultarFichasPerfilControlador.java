@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.in.web;
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.shared.message.MessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.annotation.FichasApiKeys;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.usecase.ConsultarFichasPerfilUseCase;
@@ -38,7 +38,7 @@ public class ConsultarFichasPerfilControlador {
 
     private final ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;
     private final AppLogger logger;
-    private final MessageCatalog catalog;
+    private final CatalogoMensajes catalogo;
 
     @PostMapping("${rutas.fichas.fichas-perfil.coordinador:/coordinador}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_VIEW)
@@ -64,7 +64,7 @@ public class ConsultarFichasPerfilControlador {
             @RequestBody(required = false) QueryCriteriaRequestDTO request) {
 
         QueryCriteriaRequestDTO solicitud = request != null ? request : new QueryCriteriaRequestDTO();
-        logger.debug(catalog.obtener(FichaPerfilKey.LOG_CONSULTANDO),
+        logger.debug(catalogo.obtener(FichaPerfilKey.LOG_CONSULTANDO),
                 solicitud.getPagina(), solicitud.getTamanio());
 
         FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()

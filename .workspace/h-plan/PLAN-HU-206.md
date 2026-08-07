@@ -132,7 +132,7 @@ Razón: CRUD interno sin consumidores conocidos ni casos de auditoría identific
 
 Implicaciones:
 - La entidad raíz `FichaPerfilAggregate` NO extiende `AggregateRoot` — es una clase plana con factories `crear`/`reconstruir` (confirmado en el código existente).
-- El factory `crear(...)` NO acumula eventos (no existe `publishEvent`).
+- El factory `crear(...)` NO acumula eventos (no existe `publicarEvento`).
 - El use case `RegistrarFichaPerfilUseCase` NO inyecta `EventPublisher`, no hay drenado de eventos.
 - No se crean archivos en `domain/fichaperfil/event/`.
 

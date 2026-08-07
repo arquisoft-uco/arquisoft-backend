@@ -217,7 +217,7 @@ public interface AsesorFichaQueryOutputPort {
 | Comando | `XxxCommand` (`record`) | — |
 | Read model | `XxxReadModel` (`record`) | — |
 | Criteria | `XxxCriteria` (extiende `QueryCriteria`) | — |
-| Configuración | `XxxConfig` (`OpenApiConfig`, `SecurityConfig`, `RabbitMQConfig`) — en `infrastructure/config/` | `@Configuration` |
+| Configuración | `XxxConfig` (`OpenApiConfig`, `SeguridadConfig`, `RabbitMQConfig`) — en `infrastructure/config/` | `@Configuration` |
 | Filtro HTTP | `XxxFilter` | `@Component` + implementa `Filter` |
 
 > **El infijo `Query` solo aparece en los adaptadores y puertos de SALIDA de lectura** (`{Entidad}QueryOutputAdapter`, `{Entidad}QueryOutputPort`). El use case, el input port y el input adapter de lectura **NO** lo llevan: la acción `Consultar` ya identifica el lado read. Es `ConsultarFichasPerfilUseCase`, **no** `ConsultarFichasPerfilQueryUseCase`.
@@ -607,7 +607,7 @@ En el proyecto Arquisoft, **una entidad raíz extiende `AggregateRoot` de `share
 - **`seguridad`:** nunca usa `AggregateRoot` (delega el estado en Keycloak).
 - **Los otros 6 contextos:**
     - HU **emite eventos** (consumidores conocidos o auditoría justificada) → la entidad raíz **DEBE** extender `AggregateRoot`. Su ausencia es **error bloqueante**.
-    - HU **NO emite eventos** (CRUD interno sin consumidores ni casos de auditoría) → la entidad raíz **NO** extiende `AggregateRoot`. Es solo un `class` con factories `crear`/`reconstruir`. Forzar la extensión "por consistencia" es un **error bloqueante** porque arrastra maquinaria muerta (lista de eventos, métodos `getUnPublishedEvents`/`drainUnPublishedEvents`) que nadie usa.
+    - HU **NO emite eventos** (CRUD interno sin consumidores ni casos de auditoría) → la entidad raíz **NO** extiende `AggregateRoot`. Es solo un `class` con factories `crear`/`reconstruir`. Forzar la extensión "por consistencia" es un **error bloqueante** porque arrastra maquinaria muerta (lista de eventos, métodos `obtenerEventosSinPublicar`/`extraerEventosSinPublicar`) que nadie usa.
 
 > **Migración cuando aparezca el primer evento:** si una HU futura introduce un evento sobre una entidad que hoy no extiende `AggregateRoot`, esa HU es la que añade `extends AggregateRoot` y crea la clase del evento. No se anticipa.
 
@@ -633,7 +633,7 @@ public abstract class AggregateRoot {
 
 ### ¿Qué es DomainEvent?
 
-Clase base en `shared:domain`. El constructor recibe `eventTopic` y `eventType`, valida que el topic cumpla el formato `{contexto}.{entidad}.{accion}`, y asigna automáticamente `eventId` (UUID) y `occurredAt` (`Instant`). **`getEventTopic()` es `final`** — la subclase NO lo sobreescribe: declara su constante `EVENT_TOPIC` y la pasa al `super(...)`.
+Clase base en `shared:domain`. El constructor recibe `eventTopic` y `eventType`, valida que el topic cumpla el formato `{contexto}.{entidad}.{accion}`, y asigna automáticamente `idEvento` (UUID) y `occurredAt` (`Instant`). **`getEventTopic()` es `final`** — la subclase NO lo sobreescribe: declara su constante `EVENT_TOPIC` y la pasa al `super(...)`.
 
 ```java
 // Ya existe en shared:domain
@@ -820,7 +820,7 @@ Características:
 - El use case drena los eventos tras persistir y los publica vía `EventPublisher`.
 
 Tests apropiados:
-- **domain:** ciclo completo de eventos (`publishEvent` interno del factory → `drainUnPublishedEvents()` retorna y limpia), `reconstruir()` no emite eventos, invariantes del constructor.
+- **domain:** ciclo completo de eventos (`publicarEvento` interno del factory → `drainUnPublishedEvents()` retorna y limpia), `reconstruir()` no emite eventos, invariantes del constructor.
 - **application:** flujo exitoso, error de repositorio, drenado de eventos verificado con `verify(eventPublisher).publish(...)`.
 - **infrastructure:** controller con códigos HTTP correctos (201, 400, 401, 403), repositorio guarda y reconstruye con `reconstruir()`.
 

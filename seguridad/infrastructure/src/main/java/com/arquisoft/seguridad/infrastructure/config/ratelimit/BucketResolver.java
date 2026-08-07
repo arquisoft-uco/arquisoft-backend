@@ -8,5 +8,5 @@ public interface BucketResolver {
 
     Bucket resolveLoginBucket(String ip);
 
-    boolean isRateLimitEnabled();
+    boolean estaLimiteSolicitudesHabilitado();
 }

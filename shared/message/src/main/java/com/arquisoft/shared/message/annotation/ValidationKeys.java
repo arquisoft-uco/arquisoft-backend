@@ -1,7 +1,7 @@
 package com.arquisoft.shared.message.annotation;
 
-import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /**
  * Referencias a los mensajes de {@code ValidationMessages.properties}, listas para usar en el
@@ -12,10 +12,10 @@ import com.arquisoft.shared.message.MessageKey;
  * El valor sigue siendo una constante de compilación, que es lo único que una anotación admite,
  * pero el texto vive fuera del código.
  *
- * <p>Por esa misma razón estas claves no pueden ser un {@link MessageKey} como las de
- * {@code key.*}: una llamada a {@link MessageKey#clave()} no es una expresión constante. Apuntan
+ * <p>Por esa misma razón estas claves no pueden ser un {@link ClaveMensaje} como las de
+ * {@code key.*}: una llamada a {@link ClaveMensaje#clave()} no es una expresión constante. Apuntan
  * además a otro bundle y las resuelve otro mecanismo — {@code ValidationMessages.properties} lo
- * lee Hibernate Validator, no {@link MessageCatalog}.
+ * lee Hibernate Validator, no {@link CatalogoMensajes}.
  */
 public final class ValidationKeys {
 
@@ -29,8 +29,8 @@ public final class ValidationKeys {
      *
      * <p>Lo usan las pruebas: la anotación necesita la forma {@code "{clave}"}, pero para afirmar
      * sobre el texto resuelto hace falta la clave tal cual, que es lo que espera
-     * {@code ResourceBundleMessageCatalog.contieneClave(String)} — la vía para las claves que no
-     * declaran bundle porque no son {@link MessageKey}.
+     * {@code CatalogoMensajesResourceBundle.contieneClave(String)} — la vía para las claves que no
+     * declaran bundle porque no son {@link ClaveMensaje}.
      *
      * @param referencia constante de esta clase, en la forma {@code "{clave}"}
      * @return la clave sin las llaves

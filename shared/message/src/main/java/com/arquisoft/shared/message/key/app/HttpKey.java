@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.app;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Títulos y detalles de las respuestas de error HTTP que arma {@code GlobalAppExceptionHandler}. */
-public enum HttpKey implements MessageKey {
+public enum HttpKey implements ClaveMensaje {
 
     // Títulos — campo "error" de ErrorResponseDTO
     ERROR_DOMINIO("app.infraestructura.http.error.dominio"),
@@ -34,7 +34,18 @@ public enum HttpKey implements MessageKey {
     CUERPO_MAL_FORMADO_DETALLE("app.infraestructura.http.error.cuerpo-mal-formado-detalle"),
     PETICION_INVALIDA_DETALLE("app.infraestructura.http.error.peticion-invalida-detalle"),
     CAMPO_FORMATO_INVALIDO_DETALLE("app.infraestructura.http.error.campo-formato-invalido-detalle"),
-    UUID_FORMATO_INVALIDO_DETALLE("app.infraestructura.http.error.uuid-formato-invalido-detalle");
+    UUID_FORMATO_INVALIDO_DETALLE("app.infraestructura.http.error.uuid-formato-invalido-detalle"),
+
+    // Logs — GlobalAppExceptionHandler
+    LOG_VALIDACION_DOMINIO_FALLIDA("app.infraestructura.http.log.validacion-dominio-fallida"),
+    LOG_VALIDACION_APLICACION_FALLIDA("app.infraestructura.http.log.validacion-aplicacion-fallida"),
+    LOG_EXCEPCION("app.infraestructura.http.log.excepcion"),
+    LOG_AUTENTICACION_FALLIDA("app.infraestructura.http.log.autenticacion-fallida"),
+    LOG_ACCESO_DENEGADO("app.infraestructura.http.log.acceso-denegado"),
+    LOG_VIOLACION_RESTRICCION("app.infraestructura.http.log.violacion-restriccion"),
+    LOG_ERROR_INESPERADO("app.infraestructura.http.log.error-inesperado"),
+    LOG_EXCEPCION_SPRING_MVC("app.infraestructura.http.log.excepcion-spring-mvc"),
+    LOG_ERROR_VALIDACION_CAMPOS("app.infraestructura.http.log.error-validacion-campos");
 
     private final String clave;
 
@@ -48,7 +59,7 @@ public enum HttpKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.APP;
+    public String paquete() {
+        return PaquetesMensajes.APP;
     }
 }

@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.fichas.application.fichaperfil.command.mapper.ModificarFichaPerfilMapper;
-import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.fichas.application.fichaperfil.command.model.ModificarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
@@ -43,7 +43,7 @@ class ModificarFichaPerfilUseCaseTest {
     // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
     @Spy
-    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
     @InjectMocks
     private ModificarFichaPerfilUseCaseImpl modificarFichaPerfilUseCase;
@@ -78,7 +78,7 @@ class ModificarFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(ex).isInstanceOf(FichaNoPropietarioException.class);
-        assertThat(((BaseException) ex).getErrorCode())
+        assertThat(((BaseException) ex).getCodigoError())
                 .isEqualTo(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO);
         verify(fichaPerfilOutputPort, never()).actualizarTitulo(any(), any());
     }
@@ -99,7 +99,7 @@ class ModificarFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(ex).isInstanceOf(FichaTituloDuplicadoException.class);
-        assertThat(((BaseException) ex).getErrorCode())
+        assertThat(((BaseException) ex).getCodigoError())
                 .isEqualTo(FichasCodes.FichaPerfil.FICHA_TITULO_DUPLICADO);
         verify(fichaPerfilOutputPort, never()).actualizarTitulo(any(), any());
     }

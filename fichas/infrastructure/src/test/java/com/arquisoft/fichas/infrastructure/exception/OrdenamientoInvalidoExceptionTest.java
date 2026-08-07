@@ -18,7 +18,7 @@ class OrdenamientoInvalidoExceptionTest {
         // Assert
         assertThat(excepcion).isInstanceOf(ApplicationException.class);
         assertThat(excepcion.getMessage()).isEqualTo("El campo de ordenamiento 'campoInvalido' no es válido");
-        assertThat(excepcion.getErrorCode()).isEqualTo("ORDENAMIENTO_INVALIDO");
+        assertThat(excepcion.getCodigoError()).isEqualTo("ORDENAMIENTO_INVALIDO");
     }
 
     @Test
@@ -33,7 +33,7 @@ class OrdenamientoInvalidoExceptionTest {
         // Assert
         assertThat(excepcion).isInstanceOf(ApplicationException.class);
         assertThat(excepcion.getMessage()).contains("El campo de ordenamiento 'campoInvalido' no es válido");
-        assertThat(excepcion.getErrorCode()).isEqualTo("ORDENAMIENTO_INVALIDO");
+        assertThat(excepcion.getCodigoError()).isEqualTo("ORDENAMIENTO_INVALIDO");
         assertThat(excepcion.getCause()).isEqualTo(causa);
     }
 }

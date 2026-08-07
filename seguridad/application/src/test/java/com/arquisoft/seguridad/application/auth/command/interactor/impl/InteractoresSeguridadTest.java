@@ -1,14 +1,14 @@
 package com.arquisoft.seguridad.application.auth.command.interactor.impl;
 
-import com.arquisoft.seguridad.application.auth.command.model.AuthenticateUserCommand;
+import com.arquisoft.seguridad.application.auth.command.model.AutenticarUsuarioCommand;
 import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
 import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
 import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
-import com.arquisoft.seguridad.application.auth.command.usecase.AuthenticateUserUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.LogoutUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.RefreshTokenUseCase;
-import com.arquisoft.seguridad.application.auth.command.usecase.ValidateTokenUseCase;
+import com.arquisoft.seguridad.application.auth.command.usecase.AutenticarUsuarioUseCase;
+import com.arquisoft.seguridad.application.auth.command.usecase.CerrarSesionUseCase;
+import com.arquisoft.seguridad.application.auth.command.usecase.RefrescarTokenUseCase;
+import com.arquisoft.seguridad.application.auth.command.usecase.ValidarTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.aggregate.TokenDomain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,24 +30,24 @@ import static org.mockito.Mockito.when;
 class InteractoresSeguridadTest {
 
     @Mock
-    private AuthenticateUserUseCase authenticateUserUseCase;
+    private AutenticarUsuarioUseCase autenticarUsuarioUseCase;
 
     @Mock
-    private RefreshTokenUseCase refreshTokenUseCase;
+    private RefrescarTokenUseCase refrescarTokenUseCase;
 
     @Mock
-    private LogoutUseCase logoutUseCase;
+    private CerrarSesionUseCase cerrarSesionUseCase;
 
     @Mock
-    private ValidateTokenUseCase validateTokenUseCase;
+    private ValidarTokenUseCase validarTokenUseCase;
 
     @DisplayName("El interactor de seguridad no declara transacción: el contexto no tiene DataSource")
     @ParameterizedTest(name = "{0}")
     @ValueSource(classes = {
-            AuthenticateUserInteractorImpl.class,
-            RefreshTokenInteractorImpl.class,
-            LogoutInteractorImpl.class,
-            ValidateTokenInteractorImpl.class
+            AutenticarUsuarioInteractorImpl.class,
+            RefrescarTokenInteractorImpl.class,
+            CerrarSesionInteractorImpl.class,
+            ValidarTokenInteractorImpl.class
     })
     void debeNoDeclararTransaccion_cuandoEsInteractorDeSeguridad(Class<?> interactor) {
         // Arrange
@@ -68,14 +68,14 @@ class InteractoresSeguridadTest {
     @Test
     void debeDelegarEnElUseCase_cuandoAutenticar() {
         // Arrange
-        AuthenticateUserCommand command = new AuthenticateUserCommand("test@example.com", "secreto");
+        AutenticarUsuarioCommand command = new AutenticarUsuarioCommand("test@example.com", "secreto");
         AutenticacionResult esperado =
                 new AutenticacionResult("access", "refresh", 300L, "Bearer", "openid");
-        when(authenticateUserUseCase.ejecutar(command)).thenReturn(esperado);
+        when(autenticarUsuarioUseCase.ejecutar(command)).thenReturn(esperado);
 
         // Act
         AutenticacionResult resultado =
-                new AuthenticateUserInteractorImpl(authenticateUserUseCase).ejecutar(command);
+                new AutenticarUsuarioInteractorImpl(autenticarUsuarioUseCase).ejecutar(command);
 
         // Assert
         assertThat(resultado).isEqualTo(esperado);
@@ -86,11 +86,11 @@ class InteractoresSeguridadTest {
         // Arrange
         RefrescoTokenResult esperado =
                 new RefrescoTokenResult("access", "refresh", 300L, "Bearer", "openid");
-        when(refreshTokenUseCase.ejecutar("token-refresco")).thenReturn(esperado);
+        when(refrescarTokenUseCase.ejecutar("token-refresco")).thenReturn(esperado);
 
         // Act
         RefrescoTokenResult resultado =
-                new RefreshTokenInteractorImpl(refreshTokenUseCase).ejecutar("token-refresco");
+                new RefrescarTokenInteractorImpl(refrescarTokenUseCase).ejecutar("token-refresco");
 
         // Assert
         assertThat(resultado).isEqualTo(esperado);
@@ -102,10 +102,10 @@ class InteractoresSeguridadTest {
         TokenSesionCommand command = new TokenSesionCommand("jti-123", 120L);
 
         // Act
-        new LogoutInteractorImpl(logoutUseCase).ejecutar(command);
+        new CerrarSesionInteractorImpl(cerrarSesionUseCase).ejecutar(command);
 
         // Assert
-        verify(logoutUseCase).ejecutar(command);
+        verify(cerrarSesionUseCase).ejecutar(command);
     }
 
     @Test
@@ -114,11 +114,11 @@ class InteractoresSeguridadTest {
         TokenDomain token = TokenDomain.de("eyJhbGc...");
         ValidacionTokenResult esperado =
                 new ValidacionTokenResult(true, "id-1", "test@example.com", "Token valido");
-        when(validateTokenUseCase.ejecutar(token)).thenReturn(esperado);
+        when(validarTokenUseCase.ejecutar(token)).thenReturn(esperado);
 
         // Act
         ValidacionTokenResult resultado =
-                new ValidateTokenInteractorImpl(validateTokenUseCase).ejecutar(token);
+                new ValidarTokenInteractorImpl(validarTokenUseCase).ejecutar(token);
 
         // Assert
         assertThat(resultado).isEqualTo(esperado);

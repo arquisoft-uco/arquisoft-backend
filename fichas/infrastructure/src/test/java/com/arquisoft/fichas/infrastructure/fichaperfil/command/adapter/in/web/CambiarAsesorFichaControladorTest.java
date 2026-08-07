@@ -2,10 +2,10 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
 import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.shared.web.config.MessageCatalogConfig;
+import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.fichaperfil.command.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.interactor.CambiarAsesorFichaInteractor;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(CambiarAsesorFichaControlador.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, MessageCatalogConfig.class,
+        GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class,
         CambiarAsesorFichaControladorTest.TestSecurityConfig.class
 })
 class CambiarAsesorFichaControladorTest {
@@ -112,7 +112,7 @@ class CambiarAsesorFichaControladorTest {
                 .andExpect(jsonPath("$.message").value("Error de validación en los datos enviados"))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
                 .andExpect(jsonPath("$.fieldErrors[0].message")
-                        .value(Messages.formatear(
+                        .value(Mensajes.formatear(
                                 ValidadorKey.NO_EN_BLANCO, FichasFields.FichaPerfil.ASESOR_FICHA)));
     }
 
@@ -184,7 +184,7 @@ class CambiarAsesorFichaControladorTest {
         result.agregarError(
                 FichasFields.FichaPerfil.ASESOR_FICHA,
                 FichasCodes.FichaPerfil.MISMO_ASESOR,
-                Messages.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR, asesorId)
+                Mensajes.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR, asesorId)
         );
 
         doThrow(new DomainValidationException(result))
@@ -200,7 +200,7 @@ class CambiarAsesorFichaControladorTest {
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.errorCode").value("DOMAIN_VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
-                .andExpect(jsonPath("$.fieldErrors[0].message").value(Messages.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR, asesorId)));
+                .andExpect(jsonPath("$.fieldErrors[0].message").value(Mensajes.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR, asesorId)));
     }
 
     @Test
@@ -219,7 +219,7 @@ class CambiarAsesorFichaControladorTest {
         result.agregarError(
                 FichasFields.FichaPerfil.ESTADO_FICHA,
                 FichasCodes.FichaPerfil.ESTADO_TERMINAL,
-                Messages.formatear(FichaPerfilKey.ERROR_ESTADO_TERMINAL, "APROBADA")
+                Mensajes.formatear(FichaPerfilKey.ERROR_ESTADO_TERMINAL, "APROBADA")
         );
 
         doThrow(new DomainValidationException(result))
@@ -235,7 +235,7 @@ class CambiarAsesorFichaControladorTest {
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.errorCode").value("DOMAIN_VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ESTADO_FICHA))
-                .andExpect(jsonPath("$.fieldErrors[0].message").value(Messages.formatear(FichaPerfilKey.ERROR_ESTADO_TERMINAL, "APROBADA")));
+                .andExpect(jsonPath("$.fieldErrors[0].message").value(Mensajes.formatear(FichaPerfilKey.ERROR_ESTADO_TERMINAL, "APROBADA")));
     }
 
     @Test

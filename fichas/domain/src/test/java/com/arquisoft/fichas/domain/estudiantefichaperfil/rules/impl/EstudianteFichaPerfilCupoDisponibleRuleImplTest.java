@@ -3,7 +3,7 @@ package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
@@ -32,11 +32,11 @@ class EstudianteFichaPerfilCupoDisponibleRuleImplTest {
         // Assert
         assertThat(ex)
                 .isInstanceOf(CupoEstudiantesExcedidoException.class)
-                .hasMessage(Messages.formatear(EstudianteFichaPerfilKey.ERROR_LIMITE_EXCEDIDO, 
+                .hasMessage(Mensajes.formatear(EstudianteFichaPerfilKey.ERROR_LIMITE_EXCEDIDO,
                         FichasLimits.FichaPerfil.ESTUDIANTES_MAX
                 ));
 
-        assertThat(((CupoEstudiantesExcedidoException) ex).getErrorCode())
+        assertThat(((CupoEstudiantesExcedidoException) ex).getCodigoError())
                 .isEqualTo(FichasCodes.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO);
     }
 

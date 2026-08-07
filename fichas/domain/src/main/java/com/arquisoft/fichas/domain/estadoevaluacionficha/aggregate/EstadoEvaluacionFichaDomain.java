@@ -3,7 +3,7 @@ package com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.shared.util.UtilDate;
 import com.arquisoft.shared.util.UtilObject;
@@ -107,7 +107,7 @@ public final class EstadoEvaluacionFichaDomain {
             result.agregarError(
                     FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
                     FichasCodes.EstadoEvaluacionFicha.ESTADO_EN_EVALUACION_NO_MANUAL,
-                    Messages.obtener(EstadoEvaluacionFichaKey.ERROR_EN_EVALUACION_NO_MANUAL));
+                    Mensajes.obtener(EstadoEvaluacionFichaKey.ERROR_EN_EVALUACION_NO_MANUAL));
             return;
         }
 
@@ -115,7 +115,7 @@ public final class EstadoEvaluacionFichaDomain {
             result.agregarError(
                     FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
                     FichasCodes.EstadoEvaluacionFicha.TRANSICION_INVALIDA,
-                    Messages.obtener(EstadoEvaluacionFichaKey.ERROR_TRANSICION_DESDE_TERMINAL));
+                    Mensajes.obtener(EstadoEvaluacionFichaKey.ERROR_TRANSICION_DESDE_TERMINAL));
         }
         this.estadoEvaluacion = estadoEvaluacion;
     }

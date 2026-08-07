@@ -38,7 +38,7 @@ public class ErrorResponseDTO {
         // el stack trace completo en los logs del servidor.
         return ErrorResponseDTO.builder()
                 .error(error)
-                .errorCode(ex.getErrorCode())
+                .errorCode(ex.getCodigoError())
                 .message(ex.getMessage())
                 .status(status.value())
                 .path(path)

@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.app;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Paginación de las consultas. */
-public enum PaginacionKey implements MessageKey {
+public enum PaginacionKey implements ClaveMensaje {
 
     SIZE_MAYOR_CERO("app.aplicacion.paginacion.error.size-mayor-cero");
 
@@ -20,7 +20,7 @@ public enum PaginacionKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.APP;
+    public String paquete() {
+        return PaquetesMensajes.APP;
     }
 }

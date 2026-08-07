@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.message.Messages;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.shared.util.UtilUUID;
@@ -85,7 +85,7 @@ public final class ItemFichaPerfilDomain {
             result.agregarError(
                     FichasFields.ItemFichaPerfil.TIPO_ITEM,
                     FichasCodes.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
-                    Messages.formatear(ItemFichaPerfilKey.ERROR_TIPO_INVALIDO, tipoItem));
+                    Mensajes.formatear(ItemFichaPerfilKey.ERROR_TIPO_INVALIDO, tipoItem));
         }
     }
 

@@ -15,7 +15,7 @@ public class ModulithAmqpExternalizationConfig {
                 .select(event -> event instanceof DomainEvent)
                 .route(DomainEvent.class, event ->
                         RoutingTarget.forTarget(RabbitMQConfig.EXCHANGE_NAME)
-                                .andKey(event.getEventTopic()))
+                                .andKey(event.getTemaEvento()))
                 .build();
     }
 }

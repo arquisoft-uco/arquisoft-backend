@@ -461,10 +461,10 @@ revise. NO lo marques como bloqueante por sí solo.
 
 | Tipo de UC declarado en plan | Check | Bloqueante |
 |---|---|:---:|
-| **Consulta** | Tests de `publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents` en `{Entidad}Test.java` | ✅ |
+| **Consulta** | Tests de `publicarEvento`, `obtenerEventosSinPublicar`, `extraerEventosSinPublicar` en `{Entidad}Test.java` | ✅ |
 | **Consulta** | `verify(eventPublisher).publish(...)` en `{Accion}{Entidad}UseCaseImplTest.java` | ✅ |
 | **Consulta** | Test `debeReconstruirSinEventos_cuandoReconstruirEsInvocado` (la consulta no debería estar testeando `reconstruir`) | ✅ |
-| **Escritura** | AUSENCIA de tests de ciclo de eventos (`publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents`) cuando el plan declara que la HU emite eventos | ✅ |
+| **Escritura** | AUSENCIA de tests de ciclo de eventos (`publicarEvento`, `obtenerEventosSinPublicar`, `extraerEventosSinPublicar`) cuando el plan declara que la HU emite eventos | ✅ |
 | **Cualquier tipo** | Cualquier llamada a `clearUnPublishedEvents()` (método inexistente — código no compila) | ❌ violación bloqueante |
 | **Escritura** | AUSENCIA de `verify(eventPublisher).publish(...)` en `{Accion}{Entidad}UseCaseImplTest.java` | ✅ |
 | (cualquier tipo) | Plan no declara el campo "Tipo de Use Case" en la Metadata | ⚠️ menor (advertencia, no bloqueante — el plan puede ser de versión vieja) |
@@ -474,7 +474,7 @@ revise. NO lo marques como bloqueante por sí solo.
 1. Extrae de la Metadata del plan el campo "Tipo de Use Case" (si existe).
 2. Lee los archivos de test relevantes (`{Entidad}Test.java`, `{Accion}{Entidad}UseCaseImplTest.java`).
 3. Busca patrones de eventos en su contenido:
-   - Llamadas a `publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents`.
+   - Llamadas a `publicarEvento`, `obtenerEventosSinPublicar`, `extraerEventosSinPublicar`.
    - `verify(eventPublisher)`, `verify(...EventPublisher)`.
 4. Compara con el Tipo de Use Case declarado y aplica la tabla.
 

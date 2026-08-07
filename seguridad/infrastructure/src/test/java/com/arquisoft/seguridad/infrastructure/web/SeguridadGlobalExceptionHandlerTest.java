@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.web;
 
-import com.arquisoft.shared.message.MessageCatalog;
-import com.arquisoft.shared.message.ResourceBundleMessageCatalog;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
@@ -28,7 +28,7 @@ class SeguridadGlobalExceptionHandlerTest {
         // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
     @Spy
-    private MessageCatalog catalog = ResourceBundleMessageCatalog.porDefecto();
+    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
 @InjectMocks
     private SeguridadGlobalExceptionHandler handler;
@@ -45,7 +45,7 @@ class SeguridadGlobalExceptionHandlerTest {
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getError()).isEqualTo("Unauthorized");
+        assertThat(response.getBody().getError()).isEqualTo("No autorizado");
         assertThat(response.getBody().getErrorCode()).isEqualTo("CREDENCIALES_INVALIDAS");
         assertThat(response.getBody().getMessage()).contains("Credenciales incorrectas");
         assertThat(response.getBody().getPath()).isEqualTo("/api/auth/login");
@@ -63,7 +63,7 @@ class SeguridadGlobalExceptionHandlerTest {
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getError()).isEqualTo("Unauthorized");
+        assertThat(response.getBody().getError()).isEqualTo("No autorizado");
         assertThat(response.getBody().getErrorCode()).isEqualTo("TOKEN_INVALIDO");
         assertThat(response.getBody().getMessage()).contains("Refresh token expirado");
         assertThat(response.getBody().getPath()).isEqualTo("/api/auth/refresh");
@@ -81,7 +81,7 @@ class SeguridadGlobalExceptionHandlerTest {
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getError()).isEqualTo("Unauthorized");
+        assertThat(response.getBody().getError()).isEqualTo("No autorizado");
         assertThat(response.getBody().getErrorCode()).isEqualTo("AUTENTICACION_ERROR");
         assertThat(response.getBody().getMessage()).contains("Error de autenticacion generico");
         assertThat(response.getBody().getPath()).isEqualTo("/api/auth/validate");

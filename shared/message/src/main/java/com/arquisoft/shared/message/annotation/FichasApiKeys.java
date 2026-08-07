@@ -5,7 +5,7 @@ package com.arquisoft.shared.message.annotation;
  * anotaciones de documentación OpenAPI ({@code @Tag}, {@code @Operation}, {@code @ApiResponse}).
  *
  * <p>Cada constante lleva la clave envuelta en {@code "${clave}"}: springdoc resuelve esa sintaxis
- * contra el {@code Environment} de Spring al construir la especificación. {@code MessageCatalogConfig}
+ * contra el {@code Environment} de Spring al construir la especificación. {@code CatalogoMensajesConfig}
  * registra el archivo como {@code PropertySource} para que esas claves estén disponibles.
  *
  * <p>Excepción: {@code TAG_NAME} y {@code TAG_DESCRIPTION} llevan el texto incrustado. springdoc

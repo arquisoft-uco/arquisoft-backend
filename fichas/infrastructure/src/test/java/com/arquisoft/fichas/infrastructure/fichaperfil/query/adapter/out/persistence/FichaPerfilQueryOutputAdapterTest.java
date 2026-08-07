@@ -8,6 +8,7 @@ import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.Est
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
+import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,7 @@ class FichaPerfilQueryOutputAdapterTest {
                 new FichaPerfilJpaSpecification(),
                 estudianteFichaPerfilRepository,
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
-                com.arquisoft.shared.message.ResourceBundleMessageCatalog.porDefecto()
+                CatalogoMensajesResourceBundle.porDefecto()
         );
     }
 

@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.seguridad;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de Sesion. */
-public enum SesionKey implements MessageKey {
+public enum SesionKey implements ClaveMensaje {
 
     ERROR_IDENTIFICADOR_REQUERIDO("seguridad.dominio.sesion.error.identificador-requerido"),
     ERROR_TTL_INVALIDO("seguridad.dominio.sesion.error.ttl-invalido"),
@@ -22,7 +22,7 @@ public enum SesionKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.SEGURIDAD;
+    public String paquete() {
+        return PaquetesMensajes.SEGURIDAD;
     }
 }

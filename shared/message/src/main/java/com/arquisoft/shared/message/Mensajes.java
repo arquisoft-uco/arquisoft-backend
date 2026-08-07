@@ -1,0 +1,60 @@
+package com.arquisoft.shared.message;
+
+/**
+ * Acceso estático al catálogo para la capa de dominio.
+ *
+ * <p>Aplicación e infraestructura deben inyectar {@link CatalogoMensajes} por constructor — es un
+ * bean de Spring, ver {@code CatalogoMensajesConfig}. El dominio no puede: sus agregados,
+ * excepciones y reglas se instancian con factorías estáticas ({@code crear}, {@code reconstruir})
+ * y constructores de excepción, nunca como beans, así que no hay punto de inyección donde
+ * entregarles el catálogo. Esta fachada existe para ese caso concreto.
+ *
+ * <p>Delega en la misma instancia que expone el bean, de modo que dominio y aplicación resuelven
+ * las claves contra los mismos archivos.
+ */
+public final class Mensajes {
+
+    private static volatile CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
+
+    private Mensajes() {}
+
+    /**
+     * Devuelve el catálogo activo.
+     *
+     * @return catálogo activo
+     */
+    public static CatalogoMensajes catalogo() {
+        return catalogo;
+    }
+
+    /**
+     * Sustituye el catálogo activo. Pensado para pruebas y para que la configuración de Spring
+     * comparta una única instancia entre el bean inyectable y esta fachada.
+     *
+     * @param nuevoCatalogo catálogo a instalar; {@code null} restaura el catálogo por defecto
+     */
+    public static void instalar(CatalogoMensajes nuevoCatalogo) {
+        catalogo = nuevoCatalogo == null ? CatalogoMensajesResourceBundle.porDefecto() : nuevoCatalogo;
+    }
+
+    /**
+     * Atajo de {@link CatalogoMensajes#obtener(ClaveMensaje)} sobre el catálogo activo.
+     *
+     * @param clave clave del catálogo
+     * @return el texto asociado
+     */
+    public static String obtener(ClaveMensaje clave) {
+        return catalogo.obtener(clave);
+    }
+
+    /**
+     * Atajo de {@link CatalogoMensajes#formatear(ClaveMensaje, Object...)} sobre el catálogo activo.
+     *
+     * @param clave clave del catálogo
+     * @param args  argumentos a sustituir en el patrón
+     * @return el texto formateado
+     */
+    public static String formatear(ClaveMensaje clave, Object... args) {
+        return catalogo.formatear(clave, args);
+    }
+}

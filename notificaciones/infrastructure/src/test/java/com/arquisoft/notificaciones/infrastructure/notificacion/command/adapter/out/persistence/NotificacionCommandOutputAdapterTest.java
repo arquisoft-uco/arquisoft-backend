@@ -35,16 +35,16 @@ class NotificacionCommandOutputAdapterTest {
         adapter = new NotificacionCommandOutputAdapter(repository);
     }
 
-    private NotificacionDomain notificacionCon(String eventId) {
+    private NotificacionDomain notificacionCon(String idEvento) {
         return NotificacionDomain.crear(
-                eventId, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO);
+                idEvento, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO);
     }
 
     @Test
     void debePersistirTodosLosCampos_cuandoSeGuardaUnaNotificacionEnviada() {
         // Arrange
-        String eventId = UUID.randomUUID().toString();
-        NotificacionDomain notificacion = notificacionCon(eventId);
+        String idEvento = UUID.randomUUID().toString();
+        NotificacionDomain notificacion = notificacionCon(idEvento);
         notificacion.marcarEnviada();
 
         // Act
@@ -52,7 +52,7 @@ class NotificacionCommandOutputAdapterTest {
 
         // Assert
         NotificacionEntity guardada = repository.findById(notificacion.getId()).orElseThrow();
-        assertThat(guardada.getEventId()).isEqualTo(eventId);
+        assertThat(guardada.getIdEvento()).isEqualTo(idEvento);
         assertThat(guardada.getTipo()).isEqualTo(TipoNotificacion.ASESOR_FICHA_CAMBIADO.getCodigo());
         assertThat(guardada.getDestinatario()).isEqualTo(DESTINATARIO);
         assertThat(guardada.getAsunto()).isEqualTo(ASUNTO);
@@ -79,16 +79,16 @@ class NotificacionCommandOutputAdapterTest {
     @Test
     void debeReportarTrue_cuandoElEventoYaTieneNotificacion() {
         // Arrange
-        String eventId = UUID.randomUUID().toString();
-        adapter.guardar(notificacionCon(eventId));
+        String idEvento = UUID.randomUUID().toString();
+        adapter.guardar(notificacionCon(idEvento));
 
         // Act & Assert
-        assertThat(adapter.existePorEventId(eventId)).isTrue();
+        assertThat(adapter.existePorIdEvento(idEvento)).isTrue();
     }
 
     @Test
     void debeReportarFalse_cuandoElEventoNoTieneNotificacion() {
         // Act & Assert
-        assertThat(adapter.existePorEventId(UUID.randomUUID().toString())).isFalse();
+        assertThat(adapter.existePorIdEvento(UUID.randomUUID().toString())).isFalse();
     }
 }

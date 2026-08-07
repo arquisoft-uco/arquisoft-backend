@@ -98,7 +98,7 @@ Razón: CRUD interno sin consumidores conocidos ni casos de auditoría identific
 
 Implicaciones:
 - La entidad raíz `ItemFichaPerfilAggregate` NO extiende `AggregateRoot` — es una clase plana con factories `crear`/`reconstruir` (confirmado al leer el archivo existente).
-- El método `modificarContenido(...)` NO acumula eventos (no existe `publishEvent`).
+- El método `modificarContenido(...)` NO acumula eventos (no existe `publicarEvento`).
 - El use case `ModificarItemFichaPerfilUseCase` NO inyecta `EventPublisher`, no hay drenado de eventos.
 - No se crean archivos nuevos en `domain/itemfichaperfil/event/`.
 
@@ -393,7 +393,7 @@ Esta HU es pequeña (1 endpoint, 1 entidad modificada). Presupuesto: **18-22 tes
 | `ItemFichaPerfilAggregateTest` | `debeModificarContenido_cuandoEstadoFichaNoEsTerminal` | `@ParameterizedTest` sobre `EN_CONSTRUCCION`, `DISPONIBLE_PARA_EVALUACION` → modifica sin error *(corregido el 2026-07-30: se retiró `EN_REVISION`, valor inexistente en el MER)* |
 | `ItemFichaPerfilAggregateTest` | `debeLanzarExcepcion_cuandoEstadoFichaEsNulo` | `modificarContenido(..., null)` → `DomainValidationException` con `ESTADO_FICHA_REQUERIDO` |
 
-> **NO se testean ciclo de eventos** (la entidad NO extiende `AggregateRoot`), ni `publishEvent`, ni `drainUnPublishedEvents`. Solo se testea el método de negocio `modificarContenido(...)`.
+> **NO se testean ciclo de eventos** (la entidad NO extiende `AggregateRoot`), ni `publicarEvento`, ni `extraerEventosSinPublicar`. Solo se testea el método de negocio `modificarContenido(...)`.
 
 ---
 

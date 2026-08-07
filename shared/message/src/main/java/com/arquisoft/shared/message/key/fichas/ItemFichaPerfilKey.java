@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.fichas;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de ItemFichaPerfil. */
-public enum ItemFichaPerfilKey implements MessageKey {
+public enum ItemFichaPerfilKey implements ClaveMensaje {
 
     ERROR_TIPO_INVALIDO("fichas.dominio.itemfichaperfil.error.tipo-invalido"),
     ERROR_TIPO_DUPLICADO("fichas.dominio.itemfichaperfil.error.tipo-duplicado"),
@@ -28,7 +28,7 @@ public enum ItemFichaPerfilKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.FICHAS;
+    public String paquete() {
+        return PaquetesMensajes.FICHAS;
     }
 }

@@ -15,7 +15,7 @@ public final class NotificacionesLimits {
 
         private Notificacion() {}
 
-        public static final int EVENT_ID_MAX = 36;
+        public static final int ID_EVENTO_MAX = 36;
         public static final int TIPO_MAX = 60;
         public static final int DESTINATARIO_MAX = 50;
         public static final int ASUNTO_MAX = 200;

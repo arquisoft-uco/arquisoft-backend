@@ -11,7 +11,7 @@ public final class NotificacionesCodes {
 
         private Notificacion() {}
 
-        public static final String EVENT_ID_REQUERIDO = "NOTIFICACION_EVENT_ID_REQUERIDO";
+        public static final String ID_EVENTO_REQUERIDO = "NOTIFICACION_ID_EVENTO_REQUERIDO";
         public static final String TIPO_REQUERIDO = "NOTIFICACION_TIPO_REQUERIDO";
         public static final String DESTINATARIO_REQUERIDO = "NOTIFICACION_DESTINATARIO_REQUERIDO";
         public static final String DESTINATARIO_INVALIDO = "NOTIFICACION_DESTINATARIO_INVALIDO";

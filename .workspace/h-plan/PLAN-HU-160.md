@@ -385,7 +385,7 @@ CREATE TABLE ficha_perfil (
 
 ## 11. Casos de Prueba Sugeridos — Caso B (Use Case de CONSULTA)
 
-> ⚠️ Esta HU es de consulta. **No se incluyen tests de ciclo de eventos** (`publishEvent`, `getUnPublishedEvents`, `clearUnPublishedEvents`, `verify(eventPublisher).publish(...)`). No aplican.
+> ⚠️ Esta HU es de consulta. **No se incluyen tests de ciclo de eventos** (`publicarEvento`, `obtenerEventosSinPublicar`, `clearUnPublishedEvents`, `verify(eventPublisher).publish(...)`). No aplican.
 
 ### Presupuesto orientativo
 

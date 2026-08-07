@@ -6,42 +6,42 @@ import java.util.regex.Pattern;
 
 public abstract class DomainEvent {
 
-    private static final Pattern TOPIC_PATTERN = Pattern.compile("^[a-z][a-z_]*\\.[a-z][a-z_]*\\.[a-z][a-z_]*$");
+    private static final Pattern PATRON_TEMA = Pattern.compile("^[a-z][a-z_]*\\.[a-z][a-z_]*\\.[a-z][a-z_]*$");
 
-    private final String eventId;
-    private final Instant occurredAt;
-    private final String eventType;
-    private final String eventTopic;
+    private final String idEvento;
+    private final Instant ocurridoEn;
+    private final String tipoEvento;
+    private final String temaEvento;
 
-    protected DomainEvent(String eventTopic, String eventType) {
-        validateTopic(eventTopic);
-        this.eventId   = UUID.randomUUID().toString();
-        this.occurredAt = Instant.now();
-        this.eventType  = eventType;
-        this.eventTopic = eventTopic;
+    protected DomainEvent(String temaEvento, String tipoEvento) {
+        validarTema(temaEvento);
+        this.idEvento = UUID.randomUUID().toString();
+        this.ocurridoEn = Instant.now();
+        this.tipoEvento = tipoEvento;
+        this.temaEvento = temaEvento;
     }
 
-    private static void validateTopic(String topic) {
-        if (topic == null || !TOPIC_PATTERN.matcher(topic).matches()) {
+    private static void validarTema(String tema) {
+        if (tema == null || !PATRON_TEMA.matcher(tema).matches()) {
             throw new IllegalArgumentException(
-                "Event topic '" + topic + "' no cumple el formato requerido '{contexto}.{entidad}.{accion}' "
+                "El tema del evento '" + tema + "' no cumple el formato requerido '{contexto}.{entidad}.{accion}' "
                 + "(ej. 'seguridad.usuario.creado')");
         }
     }
 
-    public String getEventId() {
-        return eventId;
+    public String getIdEvento() {
+        return idEvento;
     }
 
-    public Instant getOccurredAt() {
-        return occurredAt;
+    public Instant getOcurridoEn() {
+        return ocurridoEn;
     }
 
-    public String getEventType() {
-        return eventType;
+    public String getTipoEvento() {
+        return tipoEvento;
     }
 
-    public final String getEventTopic() {
-        return eventTopic;
+    public final String getTemaEvento() {
+        return temaEvento;
     }
 }

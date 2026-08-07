@@ -8,7 +8,7 @@ import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
  * <p>El asunto y el cuerpo llegan ya resueltos: quien traduce un evento de dominio en texto es el
  * consumidor, de modo que agregar un evento nuevo no obliga a tocar el caso de uso.
  *
- * @param eventId            evento de dominio que origina la notificacion — clave de idempotencia
+ * @param idEvento           evento de dominio que origina la notificacion — clave de idempotencia
  * @param tipo               motivo de la notificacion
  * @param destinatarioNombre nombre visible del destinatario
  * @param destinatarioEmail  correo del destinatario
@@ -16,7 +16,7 @@ import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
  * @param cuerpo             cuerpo del mensaje
  */
 public record EnviarNotificacionCommand(
-        String eventId,
+        String idEvento,
         TipoNotificacion tipo,
         String destinatarioNombre,
         String destinatarioEmail,

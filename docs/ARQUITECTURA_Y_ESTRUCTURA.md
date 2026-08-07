@@ -484,7 +484,7 @@ Esta configuración hace que Spring Boot reemplace automáticamente los executor
 | **`JwtTokenOutputAdapter`** (decodificación JWT) | Igual |
 | **`FichaPerfilOutputAdapter`** y todos los OutputAdapters JPA/JDBC | Queries a BD sin bloquear OS thread |
 | **`@RabbitListener`** en InputAdapters AMQP | Mensajes procesados en virtual threads |
-| **`AuditFilter`**, **`RateLimitingFilter`** | Mismo virtual thread del request |
+| **`AuditFilter`**, **`LimitadorSolicitudesFilter`** | Mismo virtual thread del request |
 
 No hay que modificar ningún método ni clase — el beneficio es completamente transparente para el código de negocio.
 
@@ -514,7 +514,7 @@ En este proyecto no hay ningún `TaskExecutor` declarado manualmente, por lo que
 |---|---|
 | `config/` *(raíz del proyecto)* | Configuraciones **transversales** del build/tooling: `checkstyle.xml`, reglas de análisis estático. |
 | `src/main/java/com/arquisoft/` | Punto de entrada (`ArquisoftApplication`) y configuraciones **globales de la API ensamblada**: `config/OpenApiConfig` con `@OpenAPIDefinition` y `@SecurityScheme`. Reside aquí porque es el único módulo con visibilidad de todos los contextos. |
-| `seguridad/infrastructure/config/` | Configuraciones **de runtime de Spring Security**: `SecurityConfig`, `CorsConfig`, `RateLimitConfig`, `RestTemplateConfig`. Solo pertenecen al contexto de seguridad. |
+| `seguridad/infrastructure/config/` | Configuraciones **de runtime de Spring Security**: `SeguridadConfig`, `CorsConfig`, `LimiteSolicitudesConfig`, `RestTemplateConfig`. Solo pertenecen al contexto de seguridad. |
 
 ---
 

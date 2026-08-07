@@ -54,7 +54,7 @@ Ninguno detectado.
 
 **Anti-patrones detectados:** Ninguno.
 **Tests que afirman 500:** Ninguno.
-**Tests apropiados para Tipo de UC:** ✅ NO se detectaron tests de ciclo de eventos (`publishEvent`, `drainUnPublishedEvents`, `getUnPublishedEvents`) ni verificaciones de `eventPublisher.publish(...)` — correcto para CRUD sin eventos.
+**Tests apropiados para Tipo de UC:** ✅ NO se detectaron tests de ciclo de eventos (`publicarEvento`, `extraerEventosSinPublicar`, `obtenerEventosSinPublicar`) ni verificaciones de `eventPublisher.publish(...)` — correcto para CRUD sin eventos.
 
 ---
 

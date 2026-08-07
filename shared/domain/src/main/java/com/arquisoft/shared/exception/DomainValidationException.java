@@ -9,7 +9,7 @@ public final class DomainValidationException extends DomainException {
     private final ValidationResult validationResult;
 
     public DomainValidationException(ValidationResult validationResult) {
-        super(buildMessage(validationResult), "DOMAIN_VALIDATION_ERROR");
+        super(construirMensaje(validationResult), "DOMAIN_VALIDATION_ERROR");
         this.validationResult = validationResult;
     }
 
@@ -17,7 +17,7 @@ public final class DomainValidationException extends DomainException {
         return validationResult;
     }
 
-    private static String buildMessage(ValidationResult result) {
+    private static String construirMensaje(ValidationResult result) {
         return result.getErrores().stream()
             .map(e -> "[%s] %s".formatted(e.codigoError(), e.mensaje()))
             .collect(Collectors.joining(" | "));

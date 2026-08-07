@@ -19,10 +19,10 @@ class UsuarioCreadoEventTest {
         UsuarioCreadoEvent evento = new UsuarioCreadoEvent(usuarioId, email, rol);
 
         // Assert
-        assertThat(evento.getEventId()).isNotNull();
-        assertThat(evento.getOccurredAt()).isNotNull();
-        assertThat(evento.getEventType()).isEqualTo("UsuarioCreadoEvent");
-        assertThat(evento.getEventTopic()).isEqualTo("usuarios.usuario.creado");
+        assertThat(evento.getIdEvento()).isNotNull();
+        assertThat(evento.getOcurridoEn()).isNotNull();
+        assertThat(evento.getTipoEvento()).isEqualTo("UsuarioCreadoEvent");
+        assertThat(evento.getTemaEvento()).isEqualTo("usuarios.usuario.creado");
         assertThat(evento.getUsuarioId()).isEqualTo(usuarioId);
         assertThat(evento.getEmail()).isEqualTo(email);
         assertThat(evento.getRol()).isEqualTo(rol);

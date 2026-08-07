@@ -481,7 +481,7 @@ Si el plan (en su sección 5 "Integraciones Externas") indica una integración e
 
 ### Eventos de Dominio
 
-- Extienden `DomainEvent` de `shared:domain.events`. El constructor recibe `aggregateId`, `eventTopic`, `eventType` y los pasa al `super(...)`. La clase base asigna automáticamente `eventId` y `occurredAt`.
+- Extienden `DomainEvent` de `shared:domain.events`. El constructor recibe `aggregateId`, `eventTopic`, `eventType` y los pasa al `super(...)`. La clase base asigna automáticamente `idEvento` y `occurredAt`.
 - Declaran constantes `public static final String EVENT_TOPIC` (formato `{contexto}.{entidad}.{accion}`) y `EVENT_TYPE`.
 - Se ubican en `{contexto}/domain/{entidad}/event/`.
 - Marcarlos `final` (no se extienden).

@@ -1,10 +1,10 @@
 package com.arquisoft.shared.message.key.fichas;
 
-import com.arquisoft.shared.message.MessageBundles;
-import com.arquisoft.shared.message.MessageKey;
+import com.arquisoft.shared.message.PaquetesMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de EstudianteFichaPerfil. */
-public enum EstudianteFichaPerfilKey implements MessageKey {
+public enum EstudianteFichaPerfilKey implements ClaveMensaje {
 
     ERROR_DUPLICADO("fichas.dominio.estudiantefichaperfil.error.duplicado"),
     ERROR_LIMITE_EXCEDIDO("fichas.dominio.estudiantefichaperfil.error.limite-excedido"),
@@ -24,7 +24,7 @@ public enum EstudianteFichaPerfilKey implements MessageKey {
     }
 
     @Override
-    public String bundle() {
-        return MessageBundles.FICHAS;
+    public String paquete() {
+        return PaquetesMensajes.FICHAS;
     }
 }

@@ -7,6 +7,6 @@ import com.arquisoft.shared.exception.InfrastructureException;
 public final class ProveedorIdentidadNoDisponibleException extends InfrastructureException {
 
     public ProveedorIdentidadNoDisponibleException(String message, Throwable cause) {
-        super(BaseError.of(SeguridadCodes.Login.PROVEEDOR_IDENTIDAD_NO_DISPONIBLE, message, cause), cause);
+        super(BaseError.of(SeguridadCodes.Autenticacion.PROVEEDOR_IDENTIDAD_NO_DISPONIBLE, message, cause), cause);
     }
 }
