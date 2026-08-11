@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.mapper;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.RemoverItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.RemoverItemFichaPerfilDomain;
 
 public final class RemoverItemFichaPerfilMapper {
 

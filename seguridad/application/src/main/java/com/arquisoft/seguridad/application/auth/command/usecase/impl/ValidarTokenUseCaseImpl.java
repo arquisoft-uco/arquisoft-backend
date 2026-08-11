@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidarTokenUseCase;
-import com.arquisoft.seguridad.domain.auth.aggregate.TokenDomain;
+import com.arquisoft.seguridad.domain.auth.TokenDomain;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import com.arquisoft.seguridad.domain.auth.port.out.ValidacionTokenOutputPort;
 import lombok.RequiredArgsConstructor;

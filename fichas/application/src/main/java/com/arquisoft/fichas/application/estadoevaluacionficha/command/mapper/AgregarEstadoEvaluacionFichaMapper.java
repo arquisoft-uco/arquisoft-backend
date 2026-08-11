@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.mapper;
 
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.AgregarEstadoEvaluacionFichaDomain;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregarEstadoEvaluacionFichaDomain;
 
 public final class AgregarEstadoEvaluacionFichaMapper {
 

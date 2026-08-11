@@ -1,6 +1,6 @@
 package com.arquisoft.notificaciones.domain.notificacion.port.out;
 
-import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
+import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 
 public interface NotificacionOutputPort {
 

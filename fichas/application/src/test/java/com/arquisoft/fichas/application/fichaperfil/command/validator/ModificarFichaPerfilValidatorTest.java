@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.ModificarFichaPerfilValidatorImpl;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.ModificarFichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.ModificarFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.model.TituloFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.rules.EstudiantePropietarioFichaRule;

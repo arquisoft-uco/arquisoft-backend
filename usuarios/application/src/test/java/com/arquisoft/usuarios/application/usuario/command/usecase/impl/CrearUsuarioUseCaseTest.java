@@ -8,7 +8,7 @@ import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.application.usuario.command.model.CrearUsuarioCommand;
 import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuarioValidator;
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.port.out.UsuarioOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

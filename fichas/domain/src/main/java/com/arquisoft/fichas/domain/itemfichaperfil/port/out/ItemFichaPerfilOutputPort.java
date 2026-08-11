@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.itemfichaperfil.port.out;
 
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 
 import java.util.Optional;
 import java.util.UUID;

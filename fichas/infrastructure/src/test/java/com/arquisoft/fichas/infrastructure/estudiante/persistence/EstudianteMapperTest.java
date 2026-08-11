@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiante.persistence;
 
-import com.arquisoft.fichas.domain.estudiante.aggregate.EstudianteDomain;
+import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.port.out;
 
-import com.arquisoft.fichas.domain.estadoevaluacionficha.aggregate.EstadoEvaluacionFichaDomain;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 

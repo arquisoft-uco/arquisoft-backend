@@ -3,7 +3,7 @@ package com.arquisoft.seguridad.application.auth.command.interactor.impl;
 import com.arquisoft.seguridad.application.auth.command.interactor.ValidarTokenInteractor;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidarTokenUseCase;
-import com.arquisoft.seguridad.domain.auth.aggregate.TokenDomain;
+import com.arquisoft.seguridad.domain.auth.TokenDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import org.springframework.stereotype.Component;
 
 @Component

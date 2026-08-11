@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
 import com.arquisoft.seguridad.application.auth.command.usecase.CerrarSesionUseCase;
-import com.arquisoft.seguridad.domain.auth.aggregate.SesionDomain;
+import com.arquisoft.seguridad.domain.auth.SesionDomain;
 import com.arquisoft.seguridad.domain.auth.port.out.TokenInvalidadoOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

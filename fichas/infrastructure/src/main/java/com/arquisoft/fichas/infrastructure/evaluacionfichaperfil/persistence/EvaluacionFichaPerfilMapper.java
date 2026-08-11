@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence;
 
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilDomain;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import org.springframework.stereotype.Component;
 
 @Component

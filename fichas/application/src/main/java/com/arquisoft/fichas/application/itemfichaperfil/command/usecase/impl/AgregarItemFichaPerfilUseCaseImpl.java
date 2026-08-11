@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.AgregarItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.AgregarItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.AgregarItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;

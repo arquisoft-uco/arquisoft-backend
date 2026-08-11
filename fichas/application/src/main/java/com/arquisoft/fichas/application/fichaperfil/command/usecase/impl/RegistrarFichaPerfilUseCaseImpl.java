@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;

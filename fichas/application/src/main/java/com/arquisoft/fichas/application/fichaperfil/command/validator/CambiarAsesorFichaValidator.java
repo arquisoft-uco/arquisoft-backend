@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.CambiarAsesorFichaDomain;
+import com.arquisoft.fichas.domain.fichaperfil.CambiarAsesorFichaDomain;
 
 import java.util.UUID;
 

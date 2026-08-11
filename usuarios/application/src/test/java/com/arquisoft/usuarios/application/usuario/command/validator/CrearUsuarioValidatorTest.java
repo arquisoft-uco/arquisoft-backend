@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.application.usuario.command.validator;
 
 import com.arquisoft.usuarios.application.usuario.command.validator.impl.CrearUsuarioValidatorImpl;
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEmailDuplicadoException;
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.domain.usuario.rules.UsuarioEmailUnicoRule;

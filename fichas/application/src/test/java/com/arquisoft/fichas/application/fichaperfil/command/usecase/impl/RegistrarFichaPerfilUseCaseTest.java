@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;

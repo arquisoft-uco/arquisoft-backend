@@ -2,7 +2,7 @@ package com.arquisoft.notificaciones.application.notificacion.command.usecase.im
 
 import com.arquisoft.notificaciones.application.notificacion.command.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.validator.NotificacionValidator;
-import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
+import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;

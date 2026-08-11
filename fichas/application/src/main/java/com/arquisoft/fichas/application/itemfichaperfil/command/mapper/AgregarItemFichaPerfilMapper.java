@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.mapper;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.AgregarItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.AgregarItemFichaPerfilDomain;
 
 public final class AgregarItemFichaPerfilMapper {
 

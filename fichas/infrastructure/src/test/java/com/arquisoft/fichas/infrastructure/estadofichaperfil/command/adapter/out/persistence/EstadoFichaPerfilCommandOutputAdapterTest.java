@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
 import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilEntity;

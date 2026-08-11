@@ -1,6 +1,6 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.persistence;
 
-import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
+import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 

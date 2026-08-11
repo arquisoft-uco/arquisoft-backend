@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl.AgregarItemFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.model.ItemTipoCriteria;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemTipoNoDuplicadoRule;

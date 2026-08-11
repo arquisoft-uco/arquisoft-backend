@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence;
 
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemEntity;
 
 public final class ItemFichaPerfilMapper {

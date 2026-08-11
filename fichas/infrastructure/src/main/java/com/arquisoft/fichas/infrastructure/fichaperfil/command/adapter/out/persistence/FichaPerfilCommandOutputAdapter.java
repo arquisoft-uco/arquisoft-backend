@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.pers
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;

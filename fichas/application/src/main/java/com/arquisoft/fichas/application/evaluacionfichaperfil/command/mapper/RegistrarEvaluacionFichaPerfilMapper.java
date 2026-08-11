@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.mapper;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.model.RegistrarEvaluacionFichaPerfilCommand;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.aggregate.EvaluacionFichaPerfilDomain;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 
 /**
  * A diferencia del resto de transacciones de fichas, ésta no necesita un dominio propio: la

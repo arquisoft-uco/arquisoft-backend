@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence;
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.aggregate.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
 
 public final class EstadoFichaPerfilMapper {

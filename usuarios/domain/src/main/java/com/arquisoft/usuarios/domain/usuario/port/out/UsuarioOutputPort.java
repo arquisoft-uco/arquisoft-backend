@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.domain.usuario.port.out;
 
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaExisteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloUnicoRule;
 import lombok.RequiredArgsConstructor;

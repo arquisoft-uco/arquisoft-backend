@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.notificaciones.application.notificacion.command.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.usecase.EnviarNotificacionUseCase;
 import com.arquisoft.notificaciones.application.notificacion.command.validator.NotificacionValidator;
-import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
+import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajes;

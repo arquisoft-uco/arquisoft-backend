@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.persistence;
 
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;

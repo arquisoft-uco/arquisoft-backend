@@ -9,7 +9,7 @@ import com.arquisoft.seguridad.application.auth.command.usecase.AutenticarUsuari
 import com.arquisoft.seguridad.application.auth.command.usecase.CerrarSesionUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.RefrescarTokenUseCase;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidarTokenUseCase;
-import com.arquisoft.seguridad.domain.auth.aggregate.TokenDomain;
+import com.arquisoft.seguridad.domain.auth.TokenDomain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.port.out;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.aggregate.EstudianteFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 
 import java.util.UUID;
 

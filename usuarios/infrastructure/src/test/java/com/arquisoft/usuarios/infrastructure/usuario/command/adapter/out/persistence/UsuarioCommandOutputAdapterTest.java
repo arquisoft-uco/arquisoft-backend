@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.out.persistence;
 
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;

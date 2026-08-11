@@ -11,7 +11,7 @@ import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand
 import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
 import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
-import com.arquisoft.seguridad.domain.auth.aggregate.TokenDomain;
+import com.arquisoft.seguridad.domain.auth.TokenDomain;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginRequestDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LoginResponseDTO;
 import com.arquisoft.seguridad.infrastructure.auth.command.adapter.in.web.dto.LogoutResponseDTO;

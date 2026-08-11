@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.fichaperfil.port.out;
 
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 
 import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 

@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.RemoverItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.RemoverItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.RemoverItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.model.RevisionesItemCriteria;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemSinRevisionesRule;

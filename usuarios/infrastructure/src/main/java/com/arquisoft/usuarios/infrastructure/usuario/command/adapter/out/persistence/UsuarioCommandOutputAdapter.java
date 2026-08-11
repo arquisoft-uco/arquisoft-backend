@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.adapter.out.persistence;
 
-import com.arquisoft.usuarios.domain.usuario.aggregate.UsuarioDomain;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.port.out.UsuarioOutputPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;

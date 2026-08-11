@@ -1,6 +1,6 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.command.adapter.out.persistence;
 
-import com.arquisoft.notificaciones.domain.notificacion.aggregate.NotificacionDomain;
+import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort;
 import com.arquisoft.notificaciones.infrastructure.notificacion.persistence.NotificacionMapper;
 import com.arquisoft.notificaciones.infrastructure.notificacion.persistence.NotificacionRepository;

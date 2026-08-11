@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 
-import com.arquisoft.fichas.domain.itemfichaperfil.aggregate.ItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 
 import java.util.UUID;
 

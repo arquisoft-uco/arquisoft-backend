@@ -5,7 +5,7 @@ import com.arquisoft.fichas.application.asesorficha.query.finder.AsesorFichaFind
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAsesorFichaUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
-import com.arquisoft.fichas.domain.fichaperfil.aggregate.CambiarAsesorFichaDomain;
+import com.arquisoft.fichas.domain.fichaperfil.CambiarAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
