@@ -63,26 +63,33 @@ curl http://localhost:8080/api/actuator/health
 ## Estructura Rápida
 
 ```
-shared/                          ← Componentes reutilizables (7 sub-módulos)
+shared/                          ← Componentes reutilizables (12 sub-módulos)
+├── util/                        ← UtilText, UtilUUID, UtilCollection, UtilDate, UtilNumber, UtilObject
+├── exception/                   ← BaseException/BaseError y las 5 excepciones base (DomainException, ...)
+├── validation/                  ← DomainValidator, ValidationResult (Notification Pattern)
 ├── domain/                      ← DomainEvent, AggregateRoot
-├── exceptions/                  ← DomainException base
-├── amqp/                        ← EventPublisher (RabbitMQ)
-├── postgres/                    ← BaseRepository (JPA)
+├── logger/                      ← AppLogger
 ├── redis/                       ← RedisClient
-├── web/                         ← HttpClient
-├── validation/                  ← @ValidEmail
+├── amqp/                        ← EventPublisher (RabbitMQ)
+├── web/                         ← HttpClient, TraceIdFilter, GlobalAppExceptionHandler, @UuidValido
+├── minio/                       ← Cliente MinIO
+├── postgres/                    ← BaseRepository (JPA)
+├── message/                     ← CatalogoMensajes (catálogo de mensajes)
+└── notification/                ← EnvioNotificacionOutputPort (SMTP)
 
-seguridad/                       ← CONTEXTO 1: Autenticación/Autorización
-├── domain/                      ← UserRole, JWT, CurrentUser ports
-├── application/                 ← LoginDTO, AuthenticatedUserDTO
-└── infrastructure/              ← SeguridadConfig, AutenticacionCommandControlador, Keycloak
+seguridad/                       ← CONTEXTO: Autenticación/Autorización (sin DB propia)
+├── domain/                      ← SesionDomain, TokenDomain, secondaryport/
+├── application/                 ← AutenticarUsuarioCommand, primaryport/interactor, usecase
+└── infrastructure/               ← SeguridadConfig, AutenticacionCommandController, Keycloak
 
-fichas/                          ← CONTEXTO 2: Fichas
-proyectos/                       ← CONTEXTO 3: Proyectos
-artefactos/                      ← CONTEXTO 4: Artefactos
-repositorio_artefactos/          ← CONTEXTO 5: Repositorio Artefactos
-entregables/                     ← CONTEXTO 6: Entregables
-evaluaciones/                    ← CONTEXTO 7: Evaluaciones
+usuarios/                        ← CONTEXTO: Usuarios (implementación real, mínima)
+fichas/                          ← CONTEXTO: Fichas (implementación real, la más completa)
+notificaciones/                  ← CONTEXTO: Notificaciones (implementación real)
+proyectos/                       ← CONTEXTO: Proyectos (scaffolding, sin código de dominio aún)
+artefactos/                      ← CONTEXTO: Artefactos (scaffolding)
+repositorio_artefactos/          ← CONTEXTO: Repositorio Artefactos (scaffolding)
+entregables/                     ← CONTEXTO: Entregables (scaffolding)
+evaluaciones/                    ← CONTEXTO: Evaluaciones (scaffolding)
 ```
 
 ---
@@ -124,131 +131,169 @@ evaluaciones/                    ← CONTEXTO 7: Evaluaciones
 
 ## Crear un Nuevo Caso de Uso (Ejemplo: Fichas)
 
-### 1. Definir Entidad en Domain
+### 1. Definir el Aggregate Root en Domain
 
 ```java
-// fichas/domain/src/main/java/com/arquisoft/fichas/domain/model/Ficha.java
-package com.arquisoft.fichas.domain.model;
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/ficha/FichaDomain.java
+package com.arquisoft.fichas.domain.ficha;
+
+import com.arquisoft.shared.events.AggregateRoot;
+import com.arquisoft.shared.validation.DomainValidator;
+import com.arquisoft.shared.validation.ValidationResult;
 
 import java.util.UUID;
 
-public class Ficha {
-    private final UUID id;
-    private final String titulo;
-    private final String descripcion;
-    private final String areaConocimiento;
+public final class FichaDomain extends AggregateRoot {
+    private UUID id;
+    private String titulo;
+    private String areaConocimiento;
 
-    private Ficha(UUID id, String titulo, String descripcion, String areaConocimiento) {
-        this.id = id;
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-        this.areaConocimiento = areaConocimiento;
+    private FichaDomain() {}
+
+    // Factory para NUEVA ficha — valida invariantes
+    public static FichaDomain crear(String titulo, String areaConocimiento) {
+        var result = new ValidationResult();
+        DomainValidator.noEnBlanco(titulo, "titulo", "FICHA_TITULO_REQUERIDO", result);
+        result.lanzarSiTieneErrores();
+
+        var ficha = new FichaDomain();
+        ficha.id = UUID.randomUUID();
+        ficha.titulo = titulo;
+        ficha.areaConocimiento = areaConocimiento;
+        return ficha;
     }
 
-    // Factory para NUEVA ficha
-    public static Ficha build(String titulo, String descripcion, String areaConocimiento) {
-        return new Ficha(UUID.randomUUID(), titulo, descripcion, areaConocimiento);
-    }
-
-    // Factory para RECONSTRUIR desde persistencia
-    public static Ficha rebuild(UUID id, String titulo, String descripcion, String areaConocimiento) {
-        return new Ficha(id, titulo, descripcion, areaConocimiento);
+    // Factory para RECONSTRUIR desde persistencia — dato ya confiable, sin re-validar
+    public static FichaDomain reconstruir(UUID id, String titulo, String areaConocimiento) {
+        var ficha = new FichaDomain();
+        ficha.id = id;
+        ficha.titulo = titulo;
+        ficha.areaConocimiento = areaConocimiento;
+        return ficha;
     }
 
     public UUID getId() { return id; }
     public String getTitulo() { return titulo; }
-    public String getDescripcion() { return descripcion; }
     public String getAreaConocimiento() { return areaConocimiento; }
 }
 ```
 
-### 2. Definir Puerto de Entrada
+### 2. Definir el Puerto de Salida en Domain
 
 ```java
-// fichas/domain/src/main/java/com/arquisoft/fichas/domain/port/in/CrearFichaUseCase.java
-public interface CrearFichaUseCase {
-    Ficha crearFicha(Ficha ficha);
+// fichas/domain/src/main/java/com/arquisoft/fichas/domain/ficha/secondaryport/FichaOutputPort.java
+package com.arquisoft.fichas.domain.ficha.secondaryport;
+
+import com.arquisoft.fichas.domain.ficha.FichaDomain;
+
+import java.util.UUID;
+
+public interface FichaOutputPort {
+    void guardar(FichaDomain ficha);
+    boolean existePorId(UUID id);
 }
 ```
 
-### 3. Definir Puerto de Salida
+### 3. Definir el Command en Application
 
 ```java
-// fichas/domain/src/main/java/com/arquisoft/fichas/domain/port/out/FichaRepositoryPort.java
-public interface FichaRepositoryPort {
-    Ficha save(Ficha ficha);
-    Optional<Ficha> findById(UUID id);
-    List<Ficha> findAll();
-}
+// fichas/application/src/main/java/com/arquisoft/fichas/application/ficha/command/primaryport/model/CrearFichaCommand.java
+package com.arquisoft.fichas.application.ficha.command.primaryport.model;
+
+public record CrearFichaCommand(String titulo, String areaConocimiento) {}
 ```
 
-### 4. Implementar UseCase en Application
+### 4. Implementar el UseCase (colaborador interno, sin transacción)
 
 ```java
-// fichas/application/src/main/java/com/arquisoft/fichas/application/usecase/CrearFichaUseCaseImpl.java
+// fichas/application/src/main/java/com/arquisoft/fichas/application/ficha/command/usecase/impl/CrearFichaUseCaseImpl.java
 @Component
 @RequiredArgsConstructor
 public class CrearFichaUseCaseImpl implements CrearFichaUseCase {
-    private final FichaRepositoryPort fichaRepositoryPort;
+    private final FichaOutputPort fichaOutputPort;
 
     @Override
-    public Ficha crearFicha(Ficha ficha) {
-        return fichaRepositoryPort.save(ficha);
+    public UUID ejecutar(FichaDomain ficha) {
+        fichaOutputPort.guardar(ficha);
+        return ficha.getId();
     }
 }
 ```
 
-### 5. Crear Controller en Infrastructure
+### 5. Implementar el Interactor (entry point, dueño de la transacción)
 
 ```java
-// fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/adapter/in/FichaController.java
-@RestController
-@RequestMapping("/api/fichas")
-@RequiredArgsConstructor
-public class FichaController {
-    private final CrearFichaUseCase crearFichaUseCase;
-
-    @PostMapping
-    public ResponseEntity<FichaDTO> crear(@RequestBody FichaDTO dto) {
-        Ficha ficha = crearFichaUseCase.crearFicha(dto.toDomain());
-        return ResponseEntity.status(HttpStatus.CREATED).body(FichaDTO.fromDomain(ficha));
-    }
-}
-```
-
-### 6. Crear Repository Adapter en Infrastructure
-
-```java
-// fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/adapter/out/FichaRepositoryAdapter.java
-@Repository
-@RequiredArgsConstructor
-public class FichaRepositoryAdapter implements FichaRepositoryPort {
-    private final JdbcTemplate jdbcTemplate;
-
-    @Override
-    public Ficha save(Ficha ficha) {
-        String sql = "INSERT INTO fichas_perfil.ficha (id, titulo, descripcion, area) VALUES (?, ?, ?, ?)";
-        jdbcTemplate.update(sql, ficha.getId(), ficha.getTitulo(), ficha.getDescripcion(), ficha.getAreaConocimiento());
-        return ficha;
-    }
-}
-```
-
-### 7. Event Listener en Otro Contexto (Opcional)
-
-```java
-// proyectos/infrastructure/src/main/java/com/arquisoft/proyectos/infrastructure/adapter/in/ProyectosEventListener.java
+// fichas/application/src/main/java/com/arquisoft/fichas/application/ficha/command/primaryport/interactor/impl/CrearFichaInteractorImpl.java
 @Component
 @RequiredArgsConstructor
-public class ProyectosEventListener {
+public class CrearFichaInteractorImpl implements CrearFichaInteractor {
+    private final CrearFichaUseCase crearFichaUseCase;
+
+    @Override
+    @Transactional(transactionManager = "fichasTransactionManager")
+    public UUID ejecutar(CrearFichaCommand command) {
+        FichaDomain ficha = FichaDomain.crear(command.titulo(), command.areaConocimiento());
+        return crearFichaUseCase.ejecutar(ficha);
+    }
+}
+```
+
+### 6. Crear el Controller en Infrastructure
+
+```java
+// fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/ficha/command/primaryadapter/web/FichaController.java
+@RestController
+@RequestMapping(FichasRoutes.FICHAS)
+@RequiredArgsConstructor
+public class FichaController {
+    private final CrearFichaInteractor crearFichaInteractor; // se inyecta el Interactor, nunca el UseCase
+
+    @PostMapping
+    @PreAuthorize(FichasAuthorities.Expresiones.HAS_ASESOR)
+    public ResponseEntity<Void> crear(@Valid @RequestBody CrearFichaRequestDTO dto) {
+        UUID id = crearFichaInteractor.ejecutar(CrearFichaRequestMapper.toCommand(dto));
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+}
+```
+
+### 7. Crear el Output Adapter en Infrastructure
+
+```java
+// fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/ficha/command/secondaryadapter/repository/FichaCommandOutputAdapter.java
+@Component
+@RequiredArgsConstructor
+public class FichaCommandOutputAdapter implements FichaOutputPort {
+    private final FichaRepository fichaRepository; // Spring Data JPA
+    private final FichaMapper fichaMapper;
+
+    @Override
+    public void guardar(FichaDomain ficha) {
+        fichaRepository.save(fichaMapper.toEntity(ficha));
+    }
+
+    @Override
+    public boolean existePorId(UUID id) {
+        return fichaRepository.existsById(id);
+    }
+}
+```
+
+### 8. Consumidor de eventos AMQP en Otro Contexto (Opcional)
+
+```java
+// proyectos/infrastructure/src/main/java/com/arquisoft/proyectos/infrastructure/ficha/command/primaryadapter/amqp/FichaCreadaInputAdapter.java
+@Component
+@RequiredArgsConstructor
+public class FichaCreadaInputAdapter {
 
     @RabbitListener(bindings = @QueueBinding(
         value = @Queue("proyectos.fichas-events"),
         exchange = @Exchange("arquisoft.events"),
         key = "fichas.creada"
     ))
-    public void onFichaCreada(String message) {
-        // Procesar evento de ficha creada
+    public void onFichaCreada(FichaCreadaEvent evento) {
+        // Sincronizar copia local del concepto en el contexto proyectos
     }
 }
 ```

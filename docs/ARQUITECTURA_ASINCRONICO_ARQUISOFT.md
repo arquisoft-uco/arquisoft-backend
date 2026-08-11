@@ -282,7 +282,7 @@ archivo=documento.pdf
 #### Paso 2: Controller responde inmediatamente
 
 ```java
-// entregables/infrastructure/adapter/in/EntregablesController.java
+// entregables/infrastructure/entregable/command/primaryadapter/web/EntregablesController.java
 @RestController
 @RequestMapping("/api/entregables")
 @RequiredArgsConstructor
@@ -361,7 +361,7 @@ public class CrearEntregableUseCaseImpl implements CrearEntregableUseCase {
 #### Paso 5: Otros contextos escuchan (Background)
 
 ```java
-// evaluaciones/infrastructure/adapter/in/EvaluacionesEventListener.java
+// evaluaciones/infrastructure/evaluacion/command/primaryadapter/amqp/EvaluacionesEventListener.java
 @Component
 @RequiredArgsConstructor
 public class EvaluacionesEventListener {

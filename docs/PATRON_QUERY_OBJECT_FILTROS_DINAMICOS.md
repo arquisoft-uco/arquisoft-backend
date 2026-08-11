@@ -137,9 +137,9 @@ fichas/
 │       └── FichaPerfilCriteria.java        ← [QUERY OBJECT] criteria concreto con enum de campos
 │
 └── infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/fichaperfil/query/
-    ├── adapter/in/web/
-    │   └── ConsultarFichasPerfilInputAdapter.java      ← endpoint POST
-    └── adapter/out/persistence/
+    ├── primaryadapter/web/
+    │   └── ConsultarFichasPerfilController.java        ← endpoint POST
+    └── secondaryadapter/repository/
         ├── FichaPerfilJpaSpecification.java            ← [SPRING DATA SPECIFICATION] mapa de campos
         ├── FichaPerfilSortMapper.java                  ← traduce claves lógicas a rutas JPA para sort
         └── FichaPerfilQueryOutputAdapter.java          ← ejecuta la consulta JPA

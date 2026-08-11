@@ -9,7 +9,7 @@
 
 # Arquisoft Backend - Arquitectura Hexagonal Modular
 
-Aplicación backend para Arquisoft basada en **Arquitectura Hexagonal Modular** con **7 contextos independientes** y **comunicación asincrónica** mediante RabbitMQ.
+Aplicación backend para Arquisoft basada en **Arquitectura Hexagonal Modular** con **9 contextos independientes** (4 con implementación real, 5 scaffolding) y **comunicación asincrónica** mediante RabbitMQ.
 
 ## Índice
 
@@ -27,17 +27,19 @@ Aplicación backend para Arquisoft basada en **Arquitectura Hexagonal Modular** 
 
 ## Contextos de Negocio
 
-El proyecto está organizado en **7 contextos independientes**, cada uno representando un dominio de negocio específico:
+El proyecto está organizado en **9 contextos independientes**, cada uno representando un dominio de negocio específico. Solo Seguridad, Usuarios, Fichas y Notificaciones tienen implementación real hoy; los demás son scaffolding (solo la configuración del DataSource, sin código de dominio/aplicación):
 
 | # | Contexto | Descripción |
 |---|----------|-------------|
 | 1 | **Seguridad** | Autenticación OAuth2/JWT (Keycloak), roles, permisos, rate limiting, auditoría |
-| 2 | **Fichas** | Fichas de caracterización de trabajos de grado |
-| 3 | **Proyectos** | Creación y gestión de proyectos de grado |
-| 4 | **Artefactos** | Gestión de documentos y artefactos de proyecto |
-| 5 | **Repositorio Artefactos** | Control de versiones y almacenamiento |
-| 6 | **Entregables** | Gestión de entregables y hitos del proyecto |
-| 7 | **Evaluaciones** | Evaluaciones finales y calificaciones |
+| 2 | **Usuarios** | Alta de usuarios y su rol, sincronizado hacia los demás contextos vía eventos |
+| 3 | **Fichas** | Fichas de caracterización de trabajos de grado |
+| 4 | **Notificaciones** | Envío de notificaciones (SMTP) disparado por eventos de dominio |
+| 5 | **Proyectos** *(scaffolding)* | Creación y gestión de proyectos de grado |
+| 6 | **Artefactos** *(scaffolding)* | Gestión de documentos y artefactos de proyecto |
+| 7 | **Repositorio Artefactos** *(scaffolding)* | Control de versiones y almacenamiento |
+| 8 | **Entregables** *(scaffolding)* | Gestión de entregables y hitos del proyecto |
+| 9 | **Evaluaciones** *(scaffolding)* | Evaluaciones finales y calificaciones |
 
 ---
 
@@ -45,46 +47,61 @@ El proyecto está organizado en **7 contextos independientes**, cada uno represe
 
 ```
 arquisoft-backend/
-├── shared/                              # Módulo compartido (7 sub-módulos)
+├── shared/                              # Módulo compartido (12 sub-módulos)
+│   ├── util/                            # UtilText, UtilUUID, UtilCollection, UtilDate, UtilNumber, UtilObject
+│   ├── exception/                       # BaseException/BaseError y las 5 excepciones base
+│   ├── validation/                      # DomainValidator, ValidationResult (Notification Pattern)
 │   ├── domain/                          # Eventos base (DomainEvent, AggregateRoot)
-│   ├── exceptions/                      # DomainException base
-│   ├── amqp/                            # EventPublisher interface (RabbitMQ)
-│   ├── postgres/                        # BaseRepository (JPA)
+│   ├── logger/                          # AppLogger
 │   ├── redis/                           # RedisClient interface
-│   ├── web/                             # HttpClient interface
-│   └── validation/                      # Anotaciones de validación (@ValidEmail)
+│   ├── amqp/                            # EventPublisher interface (RabbitMQ)
+│   ├── web/                             # HttpClient, TraceIdFilter, @UuidValido
+│   ├── minio/                           # Cliente MinIO
+│   ├── postgres/                        # BaseRepository (JPA)
+│   ├── message/                         # CatalogoMensajes (catálogo de mensajes)
+│   └── notification/                    # EnvioNotificacionOutputPort (SMTP)
 │
-├── seguridad/                           # CONTEXTO 1: Seguridad y Autenticación
-│   ├── domain/                          # UserRole, CurrentUserProvider, JwtTokenProvider
-│   ├── application/                     # DTOs (Login, Token, AuthenticatedUser)
-│   └── infrastructure/                  # SeguridadConfig, AutenticacionCommandControlador, Keycloak, LimiteSolicitudes
+├── seguridad/                           # CONTEXTO: Seguridad y Autenticación (sin DB propia)
+│   ├── domain/                          # SesionDomain, TokenDomain, secondaryport/
+│   ├── application/                     # AutenticarUsuarioCommand, primaryport/interactor, usecase
+│   └── infrastructure/                  # SeguridadConfig, AutenticacionCommandController, Keycloak, LimiteSolicitudes
 │
-├── fichas/                              # CONTEXTO 2: Fichas de Trabajo de Grado
+├── usuarios/                            # CONTEXTO: Usuarios
 │   ├── domain/
 │   ├── application/
 │   └── infrastructure/
 │
-├── proyectos/                           # CONTEXTO 3: Proyectos de Grado
+├── fichas/                              # CONTEXTO: Fichas de Trabajo de Grado
 │   ├── domain/
 │   ├── application/
 │   └── infrastructure/
 │
-├── artefactos/                          # CONTEXTO 4: Artefactos
+├── notificaciones/                      # CONTEXTO: Notificaciones
 │   ├── domain/
 │   ├── application/
 │   └── infrastructure/
 │
-├── repositorio_artefactos/              # CONTEXTO 5: Repositorio de Artefactos
+├── proyectos/                           # CONTEXTO: Proyectos de Grado (scaffolding)
 │   ├── domain/
 │   ├── application/
 │   └── infrastructure/
 │
-├── entregables/                         # CONTEXTO 6: Entregables
+├── artefactos/                          # CONTEXTO: Artefactos (scaffolding)
 │   ├── domain/
 │   ├── application/
 │   └── infrastructure/
 │
-├── evaluaciones/                        # CONTEXTO 7: Evaluaciones Definitivas
+├── repositorio_artefactos/              # CONTEXTO: Repositorio de Artefactos (scaffolding)
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+│
+├── entregables/                         # CONTEXTO: Entregables (scaffolding)
+│   ├── domain/
+│   ├── application/
+│   └── infrastructure/
+│
+├── evaluaciones/                        # CONTEXTO: Evaluaciones Definitivas (scaffolding)
 │   ├── domain/
 │   ├── application/
 │   └── infrastructure/

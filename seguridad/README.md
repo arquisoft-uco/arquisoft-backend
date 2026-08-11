@@ -24,17 +24,16 @@ seguridad/
 ├── domain/
 │   └── src/main/java/.../seguridad/domain/
 │       └── auth/
-│           ├── aggregate/
-│           │   ├── TokenAggregate.java          Aggregate para validar un JWT (solo campo valor)
-│           │   └── SesionAggregate.java         Aggregate de sesión activa; guarda invariantes del logout (jti no vacío, TTL > 0)
+│           ├── SesionDomain.java                 Aggregate root de sesión activa; invariantes del logout (jti no vacío, TTL > 0)
+│           ├── TokenDomain.java                   Aggregate root para validar un JWT (solo campo valor)
 │           ├── model/
-│           │   ├── CredencialesSesion.java       Value object: resultado de autenticar/refrescar
-│           │   └── IdentidadToken.java           Value object: identidad extraída de un JWT validado
-│           ├── port/out/
-│           │   ├── AuthenticationOutputPort.java  Contrato con el proveedor de identidad (Keycloak)
-│           │   ├── TokenValidationOutputPort.java Contrato para validar y extraer info de un JWT
-│           │   ├── TokenBlacklistOutputPort.java  Contrato para blacklist de tokens revocados
-│           │   └── CurrentUserOutputPort.java     Contrato para leer el usuario autenticado del contexto
+│           │   ├── CredencialesSesion.java        Value object: resultado de autenticar/refrescar
+│           │   └── IdentidadToken.java            Value object: identidad extraída de un JWT validado
+│           ├── secondaryport/
+│           │   ├── AutenticacionOutputPort.java   Contrato con el proveedor de identidad (Keycloak)
+│           │   ├── ValidacionTokenOutputPort.java Contrato para validar y extraer info de un JWT
+│           │   ├── TokenInvalidadoOutputPort.java Contrato para blacklist de tokens revocados
+│           │   └── UsuarioActualOutputPort.java   Contrato para leer el usuario autenticado del contexto
 │           └── exception/
 │               └── AuthenticationException.java   Excepción base de autenticación del dominio
 │
@@ -42,32 +41,40 @@ seguridad/
 │   └── src/main/java/.../seguridad/application/
 │       └── auth/
 │           └── command/
-│               ├── AuthenticateUserUseCase.java   Caso de uso: autenticar con email y contraseña
-│               ├── LogoutUseCase.java             Caso de uso: invalidar token en blacklist Redis
-│               ├── RefreshTokenUseCase.java        Caso de uso: obtener nuevo access token
-│               ├── ValidateTokenUseCase.java       Caso de uso: validar JWT y extraer identidad
-│               ├── model/
-│               │   ├── AuthenticateUserCommand.java  Datos de entrada del login
-│               │   └── TokenSesionCommand.java       Record plano: jti y TTL calculado por el adaptador; invariantes en SesionAggregate
-│               └── port/in/
-│                   ├── AuthenticateUserInputPort.java
-│                   ├── LogoutInputPort.java
-│                   ├── RefreshTokenInputPort.java
-│                   └── ValidateTokenInputPort.java
+│               ├── primaryport/
+│               │   ├── interactor/
+│               │   │   ├── AutenticarUsuarioInteractor.java   Entry point: autenticar con email y contraseña
+│               │   │   ├── CerrarSesionInteractor.java         Entry point: invalidar token en blacklist Redis
+│               │   │   ├── RefrescarTokenInteractor.java       Entry point: obtener nuevo access token
+│               │   │   ├── ValidarTokenInteractor.java         Entry point: validar JWT y extraer identidad
+│               │   │   └── impl/                                *InteractorImpl.java — sin @Transactional (sin DataSource propio)
+│               │   └── model/
+│               │       ├── AutenticarUsuarioCommand.java       Datos de entrada del login
+│               │       └── TokenSesionCommand.java             Record plano: jti y TTL calculado por el adaptador; invariantes en SesionDomain
+│               ├── usecase/                                    Colaborador interno, no nested bajo primaryport
+│               │   ├── AutenticarUsuarioUseCase.java
+│               │   ├── CerrarSesionUseCase.java
+│               │   ├── RefrescarTokenUseCase.java
+│               │   ├── ValidarTokenUseCase.java
+│               │   └── impl/                                    *UseCaseImpl.java
+│               └── result/
+│                   ├── AutenticacionResult.java
+│                   ├── RefrescoTokenResult.java
+│                   └── ValidacionTokenResult.java
 │
 └── infrastructure/
     └── src/main/java/.../seguridad/infrastructure/
         ├── auth/
         │   └── command/
-        │       ├── adapter/in/web/
-        │       │   ├── AuthCommandInputAdapter.java   Endpoints REST /auth/*
+        │       ├── primaryadapter/web/
+        │       │   ├── AutenticacionCommandController.java   Endpoints REST /auth/*
         │       │   └── dto/
-        │       │       ├── LoginRequestDTO.java
+        │       │       ├── LoginRequestDTO.java               Tiene su propio toCommand()
         │       │       ├── LoginResponseDTO.java
         │       │       ├── LogoutResponseDTO.java
         │       │       ├── RefreshTokenRequestDTO.java
         │       │       └── ValidateTokenResponseDTO.java
-        │       └── adapter/out/
+        │       └── secondaryadapter/
         │           ├── keycloak/
         │           │   └── KeycloakAuthOutputAdapter.java   Integración Keycloak vía RestTemplate
         │           ├── redis/
@@ -75,22 +82,22 @@ seguridad/
         │           ├── jwt/
         │           │   └── JwtTokenOutputAdapter.java       Decodifica JWT con JwtDecoder de Spring
         │           └── security/
-        │               └── CurrentUserOutputAdapter.java    Lee usuario del SecurityContextHolder
+        │               └── UsuarioActualOutputAdapter.java  Lee usuario del SecurityContextHolder
         ├── config/
-        │   ├── security/      SecurityConfig, handlers de 401/403
-        │   ├── keycloak/      KeycloakRoleExtractor + KeycloakJwtConverterConfig — mapeo de resource_access.roles a authorities
-        │   ├── ratelimit/     Bucket4j + Redis distribuido
+        │   ├── security/      SeguridadConfig, SecurityAuthenticationEntryPoint/SecurityAccessDeniedHandler (401/403), AudienceValidator
+        │   ├── keycloak/      KeycloakRolExtractor + KeycloakJwtConverterConfig — mapeo de resource_access.roles a authorities
+        │   ├── ratelimit/     LimiteSolicitudesConfig/Properties + BucketResolver/RedisBucketResolver (Bucket4j + Redis distribuido)
         │   ├── cors/          CorsConfig
-        │   ├── http/          RestTemplate para Keycloak
-        │   └── scheduling/    @EnableScheduling
+        │   ├── http/          RestTemplateConfig para Keycloak
+        │   └── scheduling/    SchedulingConfig (@EnableScheduling)
         ├── exception/
         │   ├── CredencialesInvalidasException.java
         │   ├── TokenInvalidoException.java
         │   └── ProveedorIdentidadNoDisponibleException.java
         ├── filter/
-        │   ├── AuditFilter.java         Log de cada request (METHOD, URI, STATUS, duración, IP)
-        │   ├── JwtBlacklistFilter.java  Bloquea tokens revocados; fail-closed ante Redis caído
-        │   └── RateLimitingFilter.java  429 por IP; bucket global y bucket login (más estricto)
+        │   ├── AuditFilter.java              Log de cada request (METHOD, URI, STATUS, duración, IP)
+        │   ├── JwtBlacklistFilter.java        Bloquea tokens revocados; fail-closed ante Redis caído
+        │   └── LimitadorSolicitudesFilter.java 429 por IP; bucket global y bucket login (más estricto)
         └── web/
             └── SeguridadGlobalExceptionHandler.java  Mapeo de excepciones a HTTP 401/503
 ```

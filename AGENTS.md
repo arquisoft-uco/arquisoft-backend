@@ -23,7 +23,7 @@
 
 ## Estructura de Modulos
 
-28 subproyectos Gradle (7 contextos × 3 capas + 7 módulos shared). Cada bounded context tiene 3 capas:
+49 subproyectos Gradle (9 contextos × [3 capas + 1 agregador] + 12 módulos shared + 1 agregador `shared`). Cada bounded context tiene 3 capas. Solo `seguridad`, `usuarios`, `fichas` y `notificaciones` tienen implementación real; `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables` y `evaluaciones` son scaffolding (solo `{Contexto}DataSourceConfig`, sin código de dominio/aplicación aún).
 
 ```
 {contexto}/domain        ← Java puro, sin Spring, sin Lombok
@@ -32,8 +32,8 @@
 ```
 
 **Contextos:**
-- `shared` → `domain`, `amqp`, `exceptions`, `postgres`, `redis`, `validation`, `web`
-- `seguridad`, `fichas`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones`
+- `shared` → `util`, `exception`, `validation`, `domain`, `logger`, `redis`, `amqp`, `web`, `minio`, `postgres`, `message`, `notification`
+- `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones`
 
 **Dirección de dependencias (estricta via Gradle):** `domain ← application ← infrastructure`
 Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:amqp`).
@@ -42,21 +42,21 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 
 | Elemento | Convención |
 |---|---|
-| Entidades de dominio | Inmutables, constructor privado, campos `final`, solo getters. `build(UUID.randomUUID())` para nuevas, `rebuild(uuid)` desde persistencia. Sin Lombok ni Spring. |
-| Aggregate Root | Entidades raíz extienden `AggregateRoot` de `shared:domain` (`com.arquisoft.shared.domain`). Gestiona eventos de dominio no publicados via `publicarEvento(DomainEvent)`. |
+| Entidades de dominio | Inmutables desde fuera, constructor privado, campos `final` no (Notification Pattern: no-`final` con setters privados), solo getters. `crear(...)` para nuevas, `reconstruir(...)` desde persistencia — **no** `build()`/`rebuild()`. Sin Lombok ni Spring. |
+| Aggregate Root | Entidades raíz extienden `AggregateRoot` de `shared:domain` (`com.arquisoft.shared.domain`). Sufijo de la clase concreta es `Domain` (sustantivo, no el verbo de la acción), no `Aggregate` — e.g. `FichaPerfilDomain`, no `FichaPerfilAggregate` ni `RegistrarFichaPerfilDomain`. Vive directo en `domain/{feature}/`, sin subcarpeta `aggregate/` ni `model/`. Gestiona eventos de dominio no publicados via `publicarEvento(DomainEvent)`. |
 | Eventos de dominio | Extienden `DomainEvent` de `shared:domain`. Cada subclase declara sus **propios campos** con nombres semánticamente correctos (e.g. `usuarioId`, `fichaId`). `DomainEvent` asigna `idEvento` (UUID), `ocurridoEn`, `tipoEvento` y `temaEvento` automáticamente. El constructor recibe `(temaEvento, tipoEvento)` — sin `aggregateId` genérico. |
-| Puertos de entrada | `{Accion}{Entidad}Interactor` en `application/{feature}/command/interactor/` (lado comando, es lo que inyecta el adapter) y `{Accion}{Entidad}UseCase` en `application/{feature}/{command\|query}/usecase/` |
-| Puertos de salida | `{Entidad}RepositoryPort` en `domain/port/out/` |
-| Use cases | `{Accion}{Entidad}UseCaseImpl` en `application/{feature}/{command\|query}/usecase/impl/`; el interactor en `application/{feature}/command/interactor/impl/` |
-| DTOs | Sufijo `DTO`, con `toDomain()` y `static fromDomain(...)`. `@Data @NoArgsConstructor @AllArgsConstructor @Builder`. |
+| Puertos de entrada | `{Accion}{Entidad}Interactor` en `application/{feature}/command/primaryport/interactor/` (lado comando, es lo que inyecta el adapter) y `{Accion}{Entidad}UseCase` en `application/{feature}/command/usecase/` (lado comando, sin `primaryport/` — es un colaborador interno, no el contrato primario) o en `application/{feature}/query/primaryport/usecase/` (lado consulta, donde sí es el contrato primario porque no hay interactor) |
+| Puertos de salida | `{Entidad}OutputPort` en `domain/{feature}/secondaryport/` (escritura) o `application/{feature}/query/secondaryport/` (lectura) |
+| Use cases | `{Accion}{Entidad}UseCaseImpl` en `application/{feature}/command/usecase/impl/` o `application/{feature}/query/primaryport/usecase/impl/`; el interactor en `application/{feature}/command/primaryport/interactor/impl/` |
+| DTOs | `record` con sufijo `DTO`, sin Lombok. En contextos pequeños (`seguridad`, `usuarios`) el propio DTO expone `toCommand()`; en contextos grandes con validación más pesada (`fichas`) el DTO es un record sin anotaciones y un `{Feature}RequestMapper` externo (`primaryadapter/web/mapper/`) hace `toCommand(dto)`, delegando el formato a `{Command}.crear(...)` |
 | Excepciones de dominio | Extienden `DomainException` (shared) con campo `errorCode` |
 | IDs | Siempre `UUID` — nunca `Long` ni `Integer` |
 | Interactor (lado comando) | `{Accion}{Entidad}InteractorImpl` implementa `{Accion}{Entidad}Interactor` y declara `@Transactional(transactionManager = "{contexto}TransactionManager")`; delega en el use case, que ya no implementa el puerto ni maneja la transacción. Aplicado en `fichas` y `usuarios`; `seguridad` tiene interactor pero sin `@Transactional` (no tiene DataSource propio: Keycloak + Redis) |
 | Resultados de comando | Un comando devuelve `UUID` o `void`; si devuelve algo mas rico, el record vive en `application/{feature}/command/result/` con sufijo `Result` — nunca anidado en la interfaz `UseCase` ni en `model/`, que es solo entrada |
-| Reglas de dominio | `{Regla}Rule` en `domain/{feature}/rules/` con su `{Regla}RuleImpl` en `rules/impl/` (POJO sin Spring); se registran como bean en `{Contexto}DomainRulesConfig` de infrastructure |
-| Validators | Existencia, unicidad y propiedad en `{Feature}Validator` (`application/{feature}/command/validator/`), reutilizables entre features — no bloques `if/throw` dentro del use case |
+| Reglas de dominio | `{Regla}Rule` (extiende `shared.rules.DomainRule<T>`) en `domain/{feature}/rules/` con su `{Regla}RuleImpl` en `rules/impl/` (POJO sin Spring, inyecta el `OutputPort` de la feature); se registran como bean en `{Contexto}DomainRulesConfig` de infrastructure (e.g. `FichasDomainRulesConfig`, `UsuariosDomainRulesConfig`) |
+| Validators | Existencia, unicidad y propiedad en `{Feature}Validator` (`application/{feature}/command/validator/`), reutilizables entre features — no bloques `if/throw` dentro del use case; delega en las `Rule` de dominio de arriba |
 | Orden de validación | 1) integridad del dato (formato, obligatoriedad, longitud, duplicados en la petición), 2) existencia/unicidad en BD, 3) reglas de negocio del agregado |
-| Identificadores en el body | Se reciben como `String` con `@UuidValido` (`shared:web`) y se convierten a `UUID` en `toCommand()`; nunca tipados `UUID` en el DTO |
+| Identificadores en el body | Se reciben como `String`, nunca tipados `UUID` en el DTO. `shared:web` ofrece `@UuidValido` para esto pero ningún contexto lo usa hoy; `fichas` valida el formato dentro de `{Command}.crear(...)` vía `DomainValidator.uuidValido(...)` y convierte con `UtilUUID.generateUUIDFromString` |
 | Nombres del contrato | Objetuales: `asesorFicha`, `estudiantes` — no `asesorFichaId`, `estudiantesIds` |
 | Literales en adapters | `ApiCodes` (códigos HTTP), `FichasApiKeys` (textos Swagger), `FichasAuthorities` (authorities), `FichasRoutes` (rutas) — nada quemado inline |
 | Mensajes y logs | `CatalogoMensajes` inyectado (dominio: fachada estática `Mensajes`); textos en `shared:message/resources/messages/*.properties` con clave `contexto.capa.objeto.tipo.descripcion` |
@@ -65,16 +65,42 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 
 Los eventos de dominio se publican usando el **Event Publication Registry** de Spring Modulith, que garantiza atomicidad entre el `save` del aggregate y la publicación al broker.
 
-### Flujo obligatorio en use cases que publican eventos
+### Flujo obligatorio en interactor + use case que publican eventos
+
+La transacción **ya no se maneja a nivel de use case — vive en la implementación del interactor**. El interactor solo delega; el use case hace el trabajo real (crear el dominio, persistir, drenar y publicar eventos) sin su propia anotación `@Transactional`:
 
 ```java
-@Transactional(transactionManager = "xxxTransactionManager")  // qualifier explícito obligatorio
-@Override
-public UUID ejecutar(CrearXxxCommand command) {
-    XxxAggregate aggregate = XxxAggregate.crear(...);
-    xxxOutputPort.save(aggregate);
-    aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish);
-    return aggregate.getId();
+// {Accion}{Entidad}InteractorImpl — dueño de la transacción, delega y nada más
+@Component
+@RequiredArgsConstructor
+public class CrearXxxInteractorImpl implements CrearXxxInteractor {
+
+    private final CrearXxxUseCase crearXxxUseCase;
+
+    @Override
+    @Transactional(transactionManager = "xxxTransactionManager")  // qualifier explícito obligatorio
+    public UUID ejecutar(CrearXxxCommand command) {
+        return crearXxxUseCase.ejecutar(command);
+    }
+}
+```
+
+```java
+// {Accion}{Entidad}UseCaseImpl — sin @Transactional; corre dentro de la transacción abierta por el interactor
+@Component
+@RequiredArgsConstructor
+public class CrearXxxUseCaseImpl implements CrearXxxUseCase {
+
+    private final XxxOutputPort xxxOutputPort;
+    private final EventPublisher eventPublisher;
+
+    @Override
+    public UUID ejecutar(CrearXxxCommand command) {
+        XxxDomain xxx = XxxDomain.crear(...);
+        xxxOutputPort.save(xxx);
+        xxx.extraerEventosSinPublicar().forEach(eventPublisher::publish);
+        return xxx.getId();
+    }
 }
 ```
 
