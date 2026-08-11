@@ -218,7 +218,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 | Java | 21 (Virtual Threads active automatically) |
 | Spring Boot | 4.0.5 |
 | Gradle | 9.0.0 |
-| PostgreSQL | 18 (7 schemas, separate DataSource per context) |
+| PostgreSQL | 18 (8 schemas, separate DataSource per context) |
 | RabbitMQ | 4.2.5 |
 | Redis | 7 (Lettuce) |
 | Keycloak | 26.6 (OAuth2/OIDC Resource Server) |
@@ -235,7 +235,7 @@ Jackson 3 moved `databind` to `tools.jackson.databind.*`; `com.fasterxml.jackson
 
 ## Security
 
-- JWT validated against Keycloak JWK Set (configured in `seguridad/infrastructure/config/SeguridadConfig`)
+- JWT validated against Keycloak JWK Set (configured in `seguridad/infrastructure/config/security/SeguridadConfig`)
 - Rate limiting via Bucket4j: per-IP buckets in `ConcurrentHashMap` (100 req/min global dev, 60 prod; 5 login/min)
 - `AuditFilter` logs all requests with METHOD, URI, USER, TIME, STATUS (skips Swagger paths)
 - CORS default origins: `localhost:3000`, `4200`, `5173` (configurable via `CORS_ALLOWED_ORIGINS`)
@@ -253,6 +253,6 @@ Jackson 3 moved `databind` to `tools.jackson.databind.*`; `com.fasterxml.jackson
 ## Reference Documentation
 
 - [AGENTS.md](AGENTS.md) — comprehensive project guide and ADR index
-- [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md) — 900-line architecture reference
+- [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md) — long-form architecture reference (human-oriented, not for agent context)
 - [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md) — full local setup guide
 - [CONTRIBUTING.md](CONTRIBUTING.md) — git workflow and branch naming
