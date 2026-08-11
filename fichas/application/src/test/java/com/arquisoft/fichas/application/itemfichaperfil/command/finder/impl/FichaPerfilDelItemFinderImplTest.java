@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.finder.impl;
 
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

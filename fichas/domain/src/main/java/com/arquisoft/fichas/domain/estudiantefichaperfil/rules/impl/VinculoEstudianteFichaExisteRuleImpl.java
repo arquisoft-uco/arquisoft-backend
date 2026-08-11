@@ -2,7 +2,7 @@ package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.estudiantefichaperfil.RemocionEstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.secondaryport.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.VinculoEstudianteFichaExisteRule;
 
 public class VinculoEstudianteFichaExisteRuleImpl implements VinculoEstudianteFichaExisteRule {

@@ -1,17 +1,17 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.impl;
 
 import com.arquisoft.shared.message.constant.FichasCodes;
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.mapper.AgregarEstadoEvaluacionFichaMapper;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.primaryport.mapper.AgregarEstadoEvaluacionFichaMapper;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.model.AgregarEstadoEvaluacionFichaCommand;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.primaryport.model.AgregarEstadoEvaluacionFichaCommand;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.secondaryport.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;

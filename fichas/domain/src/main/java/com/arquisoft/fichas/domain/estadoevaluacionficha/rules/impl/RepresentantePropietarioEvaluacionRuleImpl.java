@@ -3,7 +3,7 @@ package com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.RepresentantePropietarioEvaluacionRule;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.secondaryport.EvaluacionFichaPerfilOutputPort;
 
 public class RepresentantePropietarioEvaluacionRuleImpl implements RepresentantePropietarioEvaluacionRule {
 

@@ -7,7 +7,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAseso
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
 import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajes;

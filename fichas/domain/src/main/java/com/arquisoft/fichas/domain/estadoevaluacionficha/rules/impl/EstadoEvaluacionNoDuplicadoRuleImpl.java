@@ -2,7 +2,7 @@ package com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl;
 
 import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.secondaryport.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionNoDuplicadoRule;
 
 public class EstadoEvaluacionNoDuplicadoRuleImpl implements EstadoEvaluacionNoDuplicadoRule {

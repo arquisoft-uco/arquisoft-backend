@@ -2,7 +2,7 @@ package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.secondaryport.EstudianteFichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

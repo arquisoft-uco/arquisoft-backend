@@ -1,7 +1,7 @@
 package com.arquisoft.notificaciones.application.notificacion.command.validator;
 
 import com.arquisoft.notificaciones.application.notificacion.command.validator.impl.NotificacionValidatorImpl;
-import com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort;
+import com.arquisoft.notificaciones.domain.notificacion.secondaryport.NotificacionOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

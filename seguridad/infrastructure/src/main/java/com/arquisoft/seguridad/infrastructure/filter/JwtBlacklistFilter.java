@@ -2,7 +2,7 @@ package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.seguridad.domain.auth.port.out.TokenInvalidadoOutputPort;
+import com.arquisoft.seguridad.domain.auth.secondaryport.TokenInvalidadoOutputPort;
 import com.arquisoft.shared.util.UtilObject;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.FilterChain;

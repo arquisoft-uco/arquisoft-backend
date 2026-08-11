@@ -1,15 +1,15 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.ModificarItemFichaPerfilMapper;
+import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.mapper.ModificarItemFichaPerfilMapper;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.fichas.application.itemfichaperfil.command.model.ModificarItemFichaPerfilCommand;
+import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ModificarItemFichaPerfilValidator;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
-import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;

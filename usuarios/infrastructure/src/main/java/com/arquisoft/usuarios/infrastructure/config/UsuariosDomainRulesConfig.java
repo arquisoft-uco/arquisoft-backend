@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.config;
 
-import com.arquisoft.usuarios.domain.usuario.port.out.UsuarioOutputPort;
+import com.arquisoft.usuarios.domain.usuario.secondaryport.UsuarioOutputPort;
 import com.arquisoft.usuarios.domain.usuario.rules.UsuarioEmailUnicoRule;
 import com.arquisoft.usuarios.domain.usuario.rules.impl.UsuarioEmailUnicoRuleImpl;
 import org.springframework.context.annotation.Bean;

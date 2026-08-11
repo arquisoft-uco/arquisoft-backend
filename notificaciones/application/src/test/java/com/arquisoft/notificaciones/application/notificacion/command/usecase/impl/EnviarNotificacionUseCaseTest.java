@@ -1,6 +1,6 @@
 package com.arquisoft.notificaciones.application.notificacion.command.usecase.impl;
 
-import com.arquisoft.notificaciones.application.notificacion.command.model.EnviarNotificacionCommand;
+import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.validator.NotificacionValidator;
 import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
@@ -32,7 +32,7 @@ class EnviarNotificacionUseCaseTest {
     private static final String ID_EVENTO = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
 
     @Mock
-    private com.arquisoft.notificaciones.domain.notificacion.port.out.NotificacionOutputPort notificacionOutputPort;
+    private com.arquisoft.notificaciones.domain.notificacion.secondaryport.NotificacionOutputPort notificacionOutputPort;
 
     @Mock
     private NotificacionValidator notificacionValidator;

@@ -2,11 +2,11 @@ package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.seguridad.application.auth.command.model.AutenticarUsuarioCommand;
+import com.arquisoft.seguridad.application.auth.command.primaryport.model.AutenticarUsuarioCommand;
 import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
-import com.arquisoft.seguridad.domain.auth.port.out.AutenticacionOutputPort;
+import com.arquisoft.seguridad.domain.auth.secondaryport.AutenticacionOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

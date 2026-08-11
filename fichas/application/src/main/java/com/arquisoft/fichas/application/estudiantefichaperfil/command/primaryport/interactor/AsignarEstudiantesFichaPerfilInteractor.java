@@ -1,0 +1,6 @@
+package com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.interactor;
+
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.model.AsignarEstudiantesFichaPerfilCommand;
+import com.arquisoft.shared.interactor.VoidInteractor;
+
+public interface AsignarEstudiantesFichaPerfilInteractor extends VoidInteractor<AsignarEstudiantesFichaPerfilCommand> {}

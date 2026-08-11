@@ -1,13 +1,13 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.mapper.RemoverEstudianteFichaPerfilMapper;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.mapper.RemoverEstudianteFichaPerfilMapper;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.model.RemoverEstudianteFichaPerfilCommand;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.model.RemoverEstudianteFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.RemoverEstudianteFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.secondaryport.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;

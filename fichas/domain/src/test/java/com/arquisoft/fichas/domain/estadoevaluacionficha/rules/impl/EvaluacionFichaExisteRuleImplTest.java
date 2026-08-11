@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl;
 
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.secondaryport.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaPerfilNoEncontradaException;
 
 import org.junit.jupiter.api.Test;

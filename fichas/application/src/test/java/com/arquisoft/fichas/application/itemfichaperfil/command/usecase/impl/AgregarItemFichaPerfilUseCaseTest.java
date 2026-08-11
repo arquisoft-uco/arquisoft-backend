@@ -1,18 +1,18 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.AgregarItemFichaPerfilMapper;
+import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.mapper.AgregarItemFichaPerfilMapper;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
-import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
+import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.AgregarItemFichaPerfilCommand;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
 import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
-import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.exception.ApplicationException;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.logger.AppLogger;

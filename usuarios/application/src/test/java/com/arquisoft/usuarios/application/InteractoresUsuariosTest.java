@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.application;
 
-import com.arquisoft.usuarios.application.usuario.command.interactor.impl.CrearUsuarioInteractorImpl;
+import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor.impl.CrearUsuarioInteractorImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;

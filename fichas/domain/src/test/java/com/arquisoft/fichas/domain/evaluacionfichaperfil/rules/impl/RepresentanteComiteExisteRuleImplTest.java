@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.representantecomite.port.out.RepresentanteComiteOutputPort;
+import com.arquisoft.fichas.domain.representantecomite.secondaryport.RepresentanteComiteOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.RepresentanteComiteNoEncontradoException;
 
 import org.junit.jupiter.api.Test;

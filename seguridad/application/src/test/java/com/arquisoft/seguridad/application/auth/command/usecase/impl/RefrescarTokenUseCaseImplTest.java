@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResult;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
-import com.arquisoft.seguridad.domain.auth.port.out.AutenticacionOutputPort;
+import com.arquisoft.seguridad.domain.auth.secondaryport.AutenticacionOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

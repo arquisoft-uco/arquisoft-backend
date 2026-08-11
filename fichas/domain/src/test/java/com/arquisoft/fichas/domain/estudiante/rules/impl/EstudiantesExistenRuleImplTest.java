@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estudiante.rules.impl;
 
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
-import com.arquisoft.fichas.domain.estudiante.port.out.EstudianteOutputPort;
+import com.arquisoft.fichas.domain.estudiante.secondaryport.EstudianteOutputPort;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;

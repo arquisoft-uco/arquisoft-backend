@@ -2,10 +2,10 @@ package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.seguridad.application.auth.command.model.TokenSesionCommand;
+import com.arquisoft.seguridad.application.auth.command.primaryport.model.TokenSesionCommand;
 import com.arquisoft.seguridad.application.auth.command.usecase.CerrarSesionUseCase;
 import com.arquisoft.seguridad.domain.auth.SesionDomain;
-import com.arquisoft.seguridad.domain.auth.port.out.TokenInvalidadoOutputPort;
+import com.arquisoft.seguridad.domain.auth.secondaryport.TokenInvalidadoOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

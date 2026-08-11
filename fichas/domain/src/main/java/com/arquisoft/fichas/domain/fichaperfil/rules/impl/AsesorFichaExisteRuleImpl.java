@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.asesorficha.port.out.AsesorFichaOutputPort;
+import com.arquisoft.fichas.domain.asesorficha.secondaryport.AsesorFichaOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaExisteRule;
 

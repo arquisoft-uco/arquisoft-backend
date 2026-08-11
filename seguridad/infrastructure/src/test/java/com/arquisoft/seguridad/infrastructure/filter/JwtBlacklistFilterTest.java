@@ -2,7 +2,7 @@ package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.seguridad.domain.auth.port.out.TokenInvalidadoOutputPort;
+import com.arquisoft.seguridad.domain.auth.secondaryport.TokenInvalidadoOutputPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

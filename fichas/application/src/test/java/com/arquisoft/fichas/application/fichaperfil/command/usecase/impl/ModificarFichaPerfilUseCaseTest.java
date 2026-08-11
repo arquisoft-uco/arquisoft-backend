@@ -1,14 +1,14 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.fichaperfil.command.mapper.ModificarFichaPerfilMapper;
+import com.arquisoft.fichas.application.fichaperfil.command.primaryport.mapper.ModificarFichaPerfilMapper;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.message.constant.FichasCodes;
-import com.arquisoft.fichas.application.fichaperfil.command.model.ModificarFichaPerfilCommand;
+import com.arquisoft.fichas.application.fichaperfil.command.primaryport.model.ModificarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.BaseException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;

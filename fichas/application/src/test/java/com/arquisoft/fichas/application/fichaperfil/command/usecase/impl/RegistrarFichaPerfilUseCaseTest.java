@@ -6,7 +6,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarF
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;

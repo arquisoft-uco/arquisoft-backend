@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
 
 import org.junit.jupiter.api.Test;

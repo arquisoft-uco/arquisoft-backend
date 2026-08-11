@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.usuario.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.UsuarioKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.fichas.application.usuario.command.model.RegistrarUsuarioCommand;
+import com.arquisoft.fichas.application.usuario.command.primaryport.model.RegistrarUsuarioCommand;
 import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;

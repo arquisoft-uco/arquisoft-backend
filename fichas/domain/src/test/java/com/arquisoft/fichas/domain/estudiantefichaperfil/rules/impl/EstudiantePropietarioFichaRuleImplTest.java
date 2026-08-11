@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropietarioFicha;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.secondaryport.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

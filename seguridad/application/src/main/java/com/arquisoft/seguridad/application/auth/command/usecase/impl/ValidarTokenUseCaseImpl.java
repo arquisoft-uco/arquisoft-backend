@@ -6,7 +6,7 @@ import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenRe
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidarTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.TokenDomain;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
-import com.arquisoft.seguridad.domain.auth.port.out.ValidacionTokenOutputPort;
+import com.arquisoft.seguridad.domain.auth.secondaryport.ValidacionTokenOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

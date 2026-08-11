@@ -14,7 +14,7 @@ import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.MismoAsesorFichaException;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;

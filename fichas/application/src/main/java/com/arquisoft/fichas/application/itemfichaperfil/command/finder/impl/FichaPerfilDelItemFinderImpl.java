@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.finder.impl;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

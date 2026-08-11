@@ -2,7 +2,7 @@ package com.arquisoft.fichas.domain.itemfichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
-import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemTipoNoDuplicadoRule;
 
 public class ItemTipoNoDuplicadoRuleImpl implements ItemTipoNoDuplicadoRule {

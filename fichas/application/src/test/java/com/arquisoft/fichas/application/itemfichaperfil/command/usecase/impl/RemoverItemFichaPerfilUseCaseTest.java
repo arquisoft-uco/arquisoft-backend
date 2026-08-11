@@ -1,16 +1,16 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.itemfichaperfil.command.mapper.RemoverItemFichaPerfilMapper;
+import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.mapper.RemoverItemFichaPerfilMapper;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
-import com.arquisoft.fichas.application.itemfichaperfil.command.model.RemoverItemFichaPerfilCommand;
+import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
+import com.arquisoft.fichas.application.revisionitem.query.secondaryport.RevisionItemQueryOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemConRevisionesException;
-import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemSinRevisionesRule;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
