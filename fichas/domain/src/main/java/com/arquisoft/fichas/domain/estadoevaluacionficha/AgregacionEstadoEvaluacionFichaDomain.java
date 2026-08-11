@@ -11,17 +11,17 @@ import com.arquisoft.shared.validation.ValidationResult;
 
 import java.util.UUID;
 
-public final class AgregarEstadoEvaluacionFichaDomain {
+public final class AgregacionEstadoEvaluacionFichaDomain {
 
     private UUID evaluacionFichaPerfil;
     private EstadoEvaluacion estadoEvaluacion;
     private UUID representanteComite;
 
-    private AgregarEstadoEvaluacionFichaDomain() {}
+    private AgregacionEstadoEvaluacionFichaDomain() {}
 
-    public static AgregarEstadoEvaluacionFichaDomain crear(
+    public static AgregacionEstadoEvaluacionFichaDomain crear(
             UUID evaluacionFichaPerfil, String estadoEvaluacion, UUID representanteComite) {
-        var transaccion = new AgregarEstadoEvaluacionFichaDomain();
+        var transaccion = new AgregacionEstadoEvaluacionFichaDomain();
         var result = new ValidationResult();
 
         transaccion.setEvaluacionFichaPerfil(evaluacionFichaPerfil, result);

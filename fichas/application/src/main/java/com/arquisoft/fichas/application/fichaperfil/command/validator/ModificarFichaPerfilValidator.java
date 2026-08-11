@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
-import com.arquisoft.fichas.domain.fichaperfil.ModificarFichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
 
 public interface ModificarFichaPerfilValidator {
 
-    void validar(ModificarFichaPerfilDomain modificacion);
+    void validar(ModificacionFichaPerfilDomain modificacion);
 }

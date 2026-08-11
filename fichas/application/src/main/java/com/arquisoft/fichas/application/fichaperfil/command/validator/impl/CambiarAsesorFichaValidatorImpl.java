@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
-import com.arquisoft.fichas.domain.fichaperfil.CambiarAsesorFichaDomain;
+import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.CambioAsesorFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaDiferenteRule;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class CambiarAsesorFichaValidatorImpl implements CambiarAsesorFichaValida
     private final AsesorFichaDiferenteRule asesorFichaDiferenteRule;
 
     @Override
-    public void validar(CambiarAsesorFichaDomain cambio, UUID asesorFichaActual) {
+    public void validar(CambioAsesorFichaDomain cambio, UUID asesorFichaActual) {
         estadoFichaPerfilEnTerminalRule.validar(cambio.getFichaPerfil());
         asesorFichaDiferenteRule.validar(
                 new CambioAsesorFichaCriteria(cambio.getNuevoAsesorFicha(), asesorFichaActual));

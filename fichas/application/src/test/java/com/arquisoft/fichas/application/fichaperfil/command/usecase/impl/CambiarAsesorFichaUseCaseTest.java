@@ -8,7 +8,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFi
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
-import com.arquisoft.fichas.domain.fichaperfil.CambiarAsesorFichaDomain;
+import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
@@ -69,7 +69,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
+        CambioAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaReconstruida(fichaId, UUID.randomUUID()));
         when(asesorFichaFinder.obtener(nuevoAsesorId)).thenReturn(contactoDe(nuevoAsesorId));
@@ -86,7 +86,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
+        CambioAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaReconstruida(fichaId, UUID.randomUUID()));
         when(asesorFichaFinder.obtener(nuevoAsesorId)).thenReturn(contactoDe(nuevoAsesorId));
@@ -109,7 +109,7 @@ class CambiarAsesorFichaUseCaseTest {
     void debeLanzarFichaPerfilNoEncontradaException_cuandoFichaNoExiste() {
         // Arrange
         UUID fichaId = UUID.randomUUID();
-        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, UUID.randomUUID());
+        CambioAsesorFichaDomain entrada = fichaEntrada(fichaId, UUID.randomUUID());
 
         doThrow(new FichaPerfilNoEncontradaException(fichaId)).when(fichaPerfilFinder).obtener(fichaId);
 
@@ -127,7 +127,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
+        CambioAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaReconstruida(fichaId, UUID.randomUUID()));
         doThrow(new AsesorFichaNoEncontradoException(nuevoAsesorId))
@@ -146,7 +146,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
-        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
+        CambioAsesorFichaDomain entrada = fichaEntrada(fichaId, nuevoAsesorId);
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaReconstruida(fichaId, UUID.randomUUID()));
         doThrow(new EstadoFichaPerfilTerminalException(EstadoFicha.APROBADA))
@@ -165,7 +165,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID asesorActualId = UUID.randomUUID();
-        CambiarAsesorFichaDomain entrada = fichaEntrada(fichaId, asesorActualId);
+        CambioAsesorFichaDomain entrada = fichaEntrada(fichaId, asesorActualId);
 
         when(fichaPerfilFinder.obtener(fichaId)).thenReturn(fichaReconstruida(fichaId, asesorActualId));
         doThrow(new MismoAsesorFichaException(asesorActualId))
@@ -180,8 +180,8 @@ class CambiarAsesorFichaUseCaseTest {
         verify(eventPublisher, never()).publish(any());
     }
 
-    private CambiarAsesorFichaDomain fichaEntrada(UUID fichaId, UUID nuevoAsesorId) {
-        return CambiarAsesorFichaDomain.crear(fichaId, nuevoAsesorId);
+    private CambioAsesorFichaDomain fichaEntrada(UUID fichaId, UUID nuevoAsesorId) {
+        return CambioAsesorFichaDomain.crear(fichaId, nuevoAsesorId);
     }
 
     private FichaPerfilDomain fichaReconstruida(UUID fichaId, UUID asesorId) {

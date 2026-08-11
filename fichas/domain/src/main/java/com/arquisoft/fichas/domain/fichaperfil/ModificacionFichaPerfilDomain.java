@@ -9,16 +9,16 @@ import com.arquisoft.shared.validation.ValidationResult;
 
 import java.util.UUID;
 
-public final class ModificarFichaPerfilDomain {
+public final class ModificacionFichaPerfilDomain {
 
     private UUID fichaPerfil;
     private String tituloProyecto;
     private UUID estudiante;
 
-    private ModificarFichaPerfilDomain() {}
+    private ModificacionFichaPerfilDomain() {}
 
-    public static ModificarFichaPerfilDomain crear(UUID fichaPerfil, String tituloProyecto, UUID estudiante) {
-        var transaccion = new ModificarFichaPerfilDomain();
+    public static ModificacionFichaPerfilDomain crear(UUID fichaPerfil, String tituloProyecto, UUID estudiante) {
+        var transaccion = new ModificacionFichaPerfilDomain();
         var result = new ValidationResult();
 
         transaccion.setFichaPerfil(fichaPerfil, result);

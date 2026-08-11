@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.ModificarFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
-import com.arquisoft.fichas.domain.fichaperfil.ModificarFichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class ModificarFichaPerfilUseCaseImpl implements ModificarFichaPerfilUseC
     private final CatalogoMensajes catalogo;
 
     @Override
-    public void ejecutar(ModificarFichaPerfilDomain entrada) {
+    public void ejecutar(ModificacionFichaPerfilDomain entrada) {
         modificarFichaPerfilValidator.validar(entrada);
 
         fichaPerfilOutputPort.actualizarTitulo(entrada.getFichaPerfil(), entrada.getTituloProyecto());

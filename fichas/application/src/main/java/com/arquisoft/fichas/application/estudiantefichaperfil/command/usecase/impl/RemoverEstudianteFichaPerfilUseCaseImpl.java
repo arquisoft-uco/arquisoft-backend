@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.RemoverEstudianteFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.RemoverEstudianteFichaPerfilValidator;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.RemoverEstudianteFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.RemocionEstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
     private final CatalogoMensajes catalogo;
 
     @Override
-    public void ejecutar(RemoverEstudianteFichaPerfilDomain entrada) {
+    public void ejecutar(RemocionEstudianteFichaPerfilDomain entrada) {
         UUID fichaPerfil = entrada.getFichaPerfil();
         UUID estudiante = entrada.getEstudiante();
 

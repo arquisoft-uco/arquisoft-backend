@@ -7,15 +7,15 @@ import com.arquisoft.shared.validation.ValidationResult;
 
 import java.util.UUID;
 
-public final class RemoverEstudianteFichaPerfilDomain {
+public final class RemocionEstudianteFichaPerfilDomain {
 
     private UUID fichaPerfil;
     private UUID estudiante;
 
-    private RemoverEstudianteFichaPerfilDomain() {}
+    private RemocionEstudianteFichaPerfilDomain() {}
 
-    public static RemoverEstudianteFichaPerfilDomain crear(UUID fichaPerfil, UUID estudiante) {
-        var transaccion = new RemoverEstudianteFichaPerfilDomain();
+    public static RemocionEstudianteFichaPerfilDomain crear(UUID fichaPerfil, UUID estudiante) {
+        var transaccion = new RemocionEstudianteFichaPerfilDomain();
         var result = new ValidationResult();
 
         transaccion.setFichaPerfil(fichaPerfil, result);

@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.AgregarItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
-import com.arquisoft.fichas.domain.itemfichaperfil.AgregarItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.AgregacionItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
     private final CatalogoMensajes catalogo;
 
     @Override
-    public UUID ejecutar(AgregarItemFichaPerfilDomain entrada) {
+    public UUID ejecutar(AgregacionItemFichaPerfilDomain entrada) {
         var item = entrada.getItem();
 
         agregarItemFichaPerfilValidator.validar(item, entrada.getEstudiante());

@@ -12,7 +12,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class AgregarItemFichaPerfilDomainTest {
+class AgregacionItemFichaPerfilDomainTest {
 
     private static final String CONTENIDO = "Contenido del ítem";
 
@@ -23,7 +23,7 @@ class AgregarItemFichaPerfilDomainTest {
         UUID estudianteId = UUID.randomUUID();
 
         // Act
-        var transaccion = AgregarItemFichaPerfilDomain.crear(
+        var transaccion = AgregacionItemFichaPerfilDomain.crear(
                 fichaId, TipoItem.OBJETIVO_GENERAL.name(), CONTENIDO, estudianteId);
 
         // Assert
@@ -36,7 +36,7 @@ class AgregarItemFichaPerfilDomainTest {
     @Test
     void debeLanzarDomainValidationException_cuandoEstudianteEsNulo() {
         // Act & Assert
-        assertThatThrownBy(() -> AgregarItemFichaPerfilDomain.crear(
+        assertThatThrownBy(() -> AgregacionItemFichaPerfilDomain.crear(
                 UUID.randomUUID(), TipoItem.OBJETIVO_GENERAL.name(), CONTENIDO, null))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining(FichasFields.ItemFichaPerfil.ESTUDIANTE);
@@ -48,7 +48,7 @@ class AgregarItemFichaPerfilDomainTest {
         String contenidoLargo = "x".repeat(FichasLimits.ItemFichaPerfil.CONTENIDO_MAX + 1);
 
         // Act & Assert — el actor no puede quedar sin reportar porque el ítem falle primero
-        assertThatThrownBy(() -> AgregarItemFichaPerfilDomain.crear(
+        assertThatThrownBy(() -> AgregacionItemFichaPerfilDomain.crear(
                 null, "TIPO_INEXISTENTE", contenidoLargo, null))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining(FichasCodes.ItemFichaPerfil.FICHA_PERFIL_ID_REQUERIDO)

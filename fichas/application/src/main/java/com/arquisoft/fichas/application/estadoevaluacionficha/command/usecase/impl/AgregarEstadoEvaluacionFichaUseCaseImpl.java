@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.AgregarEstadoEvaluacionFichaUseCase;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregarEstadoEvaluacionFichaDomain;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
@@ -24,7 +24,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
     private final CatalogoMensajes catalogo;
 
     @Override
-    public UUID ejecutar(AgregarEstadoEvaluacionFichaDomain entrada) {
+    public UUID ejecutar(AgregacionEstadoEvaluacionFichaDomain entrada) {
         agregarEstadoEvaluacionFichaValidator.validar(
                 entrada.getEvaluacionFichaPerfil(),
                 entrada.getRepresentanteComite(),

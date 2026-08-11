@@ -7,16 +7,16 @@ import com.arquisoft.shared.validation.ValidationResult;
 
 import java.util.UUID;
 
-public final class AgregarItemFichaPerfilDomain {
+public final class AgregacionItemFichaPerfilDomain {
 
     private ItemFichaPerfilDomain item;
     private UUID estudiante;
 
-    private AgregarItemFichaPerfilDomain() {}
+    private AgregacionItemFichaPerfilDomain() {}
 
-    public static AgregarItemFichaPerfilDomain crear(
+    public static AgregacionItemFichaPerfilDomain crear(
             UUID fichaPerfil, String tipoItem, String contenido, UUID estudiante) {
-        var transaccion = new AgregarItemFichaPerfilDomain();
+        var transaccion = new AgregacionItemFichaPerfilDomain();
         var result = new ValidationResult();
 
         transaccion.setItem(fichaPerfil, tipoItem, contenido, result);

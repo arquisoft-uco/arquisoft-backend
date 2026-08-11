@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.RemoverItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
 import com.arquisoft.fichas.application.revisionitem.query.port.out.RevisionItemQueryOutputPort;
-import com.arquisoft.fichas.domain.itemfichaperfil.RemoverItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.RemocionItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.model.RevisionesItemCriteria;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemSinRevisionesRule;
@@ -25,7 +25,7 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
     private final CatalogoMensajes catalogo;
 
     @Override
-    public void ejecutar(RemoverItemFichaPerfilDomain entrada) {
+    public void ejecutar(RemocionItemFichaPerfilDomain entrada) {
         removerItemFichaPerfilValidator.validar(entrada.getItem(), entrada.getEstudiante());
 
         long totalRevisiones = revisionQueryPort.contarPorItem(entrada.getItem());

@@ -1,14 +1,14 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.mapper;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.model.AgregarItemFichaPerfilCommand;
-import com.arquisoft.fichas.domain.itemfichaperfil.AgregarItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.AgregacionItemFichaPerfilDomain;
 
 public final class AgregarItemFichaPerfilMapper {
 
     private AgregarItemFichaPerfilMapper() {}
 
-    public static AgregarItemFichaPerfilDomain toDomain(AgregarItemFichaPerfilCommand command) {
-        return AgregarItemFichaPerfilDomain.crear(
+    public static AgregacionItemFichaPerfilDomain toDomain(AgregarItemFichaPerfilCommand command) {
+        return AgregacionItemFichaPerfilDomain.crear(
                 command.fichaPerfil(),
                 command.tipoItem(),
                 command.contenido(),
