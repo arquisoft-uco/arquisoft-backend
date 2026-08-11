@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator.impl;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
 import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
-import com.arquisoft.fichas.domain.fichaperfil.model.CambioAsesorFichaCriteria;
+import com.arquisoft.fichas.domain.fichaperfil.model.AsesorFichaComparacion;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaDiferenteRule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,6 +21,6 @@ public class CambiarAsesorFichaValidatorImpl implements CambiarAsesorFichaValida
     public void validar(CambioAsesorFichaDomain cambio, UUID asesorFichaActual) {
         estadoFichaPerfilEnTerminalRule.validar(cambio.getFichaPerfil());
         asesorFichaDiferenteRule.validar(
-                new CambioAsesorFichaCriteria(cambio.getNuevoAsesorFicha(), asesorFichaActual));
+                new AsesorFichaComparacion(cambio.getNuevoAsesorFicha(), asesorFichaActual));
     }
 }

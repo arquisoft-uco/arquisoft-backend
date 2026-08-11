@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
+import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.domain.fichaperfil.model.TituloFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,11 +28,11 @@ class FichaPerfilTituloDisponibleRuleImplTest {
     void debeLanzarExcepcion_cuandoOtraFichaTieneElMismoTitulo() {
         // Arrange
         UUID fichaId = UUID.randomUUID();
-        var criteria = new TituloFichaCriteria(fichaId, "Titulo duplicado");
+        var modificacion = ModificacionFichaPerfilDomain.crear(fichaId, "Titulo duplicado", UUID.randomUUID());
         when(puerto.existeTituloEnOtraFicha(fichaId, "Titulo duplicado")).thenReturn(true);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(criteria))
+        assertThatThrownBy(() -> regla.validar(modificacion))
                 .isInstanceOf(FichaTituloDuplicadoException.class);
     }
 
@@ -40,10 +40,10 @@ class FichaPerfilTituloDisponibleRuleImplTest {
     void debePasar_cuandoNingunaOtraFichaTieneEseTitulo() {
         // Arrange — incluye el caso de reenviar el mismo título de la propia ficha
         UUID fichaId = UUID.randomUUID();
-        var criteria = new TituloFichaCriteria(fichaId, "Titulo sin cambios");
+        var modificacion = ModificacionFichaPerfilDomain.crear(fichaId, "Titulo sin cambios", UUID.randomUUID());
         when(puerto.existeTituloEnOtraFicha(fichaId, "Titulo sin cambios")).thenReturn(false);
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(criteria)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(modificacion)).doesNotThrowAnyException();
     }
 }

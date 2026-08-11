@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl;
 
-import com.arquisoft.fichas.domain.estadoevaluacionficha.model.EstadoEvaluacionCriteria;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.port.out.EstadoEvaluacionFichaOutputPort;
 import org.junit.jupiter.api.Test;
@@ -27,8 +27,9 @@ class EstadoEvaluacionNoDuplicadoRuleImplTest {
     @Test
     void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
         // Arrange
-        var entrada = new EstadoEvaluacionCriteria(UUID.randomUUID(), "APROBADA");
-        when(puerto.existePorEvaluacionYEstado(entrada.evaluacionFichaPerfil(), entrada.estadoEvaluacion())).thenReturn(true);
+        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(UUID.randomUUID(), "APROBADA", UUID.randomUUID());
+        when(puerto.existePorEvaluacionYEstado(entrada.getEvaluacionFichaPerfil(), entrada.getEstadoEvaluacion().getId()))
+                .thenReturn(true);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(entrada))
@@ -38,8 +39,9 @@ class EstadoEvaluacionNoDuplicadoRuleImplTest {
     @Test
     void debePasar_cuandoLaReglaSeCumple() {
         // Arrange
-        var entrada = new EstadoEvaluacionCriteria(UUID.randomUUID(), "APROBADA");
-        when(puerto.existePorEvaluacionYEstado(entrada.evaluacionFichaPerfil(), entrada.estadoEvaluacion())).thenReturn(false);
+        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(UUID.randomUUID(), "APROBADA", UUID.randomUUID());
+        when(puerto.existePorEvaluacionYEstado(entrada.getEvaluacionFichaPerfil(), entrada.getEstadoEvaluacion().getId()))
+                .thenReturn(false);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl;
 
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.PropietarioEvaluacionCriteria;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
@@ -27,8 +27,9 @@ class RepresentantePropietarioEvaluacionRuleImplTest {
     @Test
     void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
         // Arrange
-        var entrada = new PropietarioEvaluacionCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.esRepresentantePropietario(entrada)).thenReturn(false);
+        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(UUID.randomUUID(), "APROBADA", UUID.randomUUID());
+        when(puerto.esRepresentantePropietario(entrada.getEvaluacionFichaPerfil(), entrada.getRepresentanteComite()))
+                .thenReturn(false);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(entrada))
@@ -38,8 +39,9 @@ class RepresentantePropietarioEvaluacionRuleImplTest {
     @Test
     void debePasar_cuandoLaReglaSeCumple() {
         // Arrange
-        var entrada = new PropietarioEvaluacionCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.esRepresentantePropietario(entrada)).thenReturn(true);
+        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(UUID.randomUUID(), "APROBADA", UUID.randomUUID());
+        when(puerto.esRepresentantePropietario(entrada.getEvaluacionFichaPerfil(), entrada.getRepresentanteComite()))
+                .thenReturn(true);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();

@@ -3,13 +3,11 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.pers
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
-import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -23,7 +21,6 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
     private final FichaPerfilRepository fichaPerfilRepository;
     private final AsesorFichaRepository asesorFichaRepository;
-    private final EstudianteFichaPerfilRepository estudianteFichaPerfilRepository;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
 
@@ -55,12 +52,6 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     @Override
     public boolean existePorId(UUID id) {
         return fichaPerfilRepository.existsById(id);
-    }
-
-    @Override
-    public boolean esEstudiantePropietario(PropietarioFichaCriteria criteria) {
-        return estudianteFichaPerfilRepository.existsByFichaPerfilIdAndEstudianteId(
-                criteria.fichaPerfil(), criteria.estudiante());
     }
 
     @Override

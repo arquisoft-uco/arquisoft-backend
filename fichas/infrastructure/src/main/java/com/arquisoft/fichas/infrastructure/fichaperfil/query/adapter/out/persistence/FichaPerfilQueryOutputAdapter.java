@@ -3,10 +3,8 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persis
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
-import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.port.out.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.exception.OrdenamientoInvalidoException;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
@@ -33,7 +31,6 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
 
     private final FichaPerfilRepository fichaPerfilRepository;
     private final FichaPerfilJpaSpecification specification;
-    private final EstudianteFichaPerfilRepository estudianteFichaPerfilRepository;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
 
@@ -75,13 +72,5 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
     @Override
     public boolean existePorId(UUID id) {
         return fichaPerfilRepository.existsById(id);
-    }
-
-    @Override
-    public boolean esEstudiantePropietario(PropietarioFichaCriteria criteria) {
-        return estudianteFichaPerfilRepository.existsByFichaPerfilIdAndEstudianteId(
-                criteria.fichaPerfil(),
-                criteria.estudiante()
-        );
     }
 }

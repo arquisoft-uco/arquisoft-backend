@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.fichaperfil.exception.MismoAsesorFichaException;
-import com.arquisoft.fichas.domain.fichaperfil.model.CambioAsesorFichaCriteria;
+import com.arquisoft.fichas.domain.fichaperfil.model.AsesorFichaComparacion;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -17,10 +17,10 @@ class AsesorFichaDiferenteRuleImplTest {
     void debeLanzarExcepcion_cuandoNuevoAsesorEsIgualAlActual() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
-        var criteria = new CambioAsesorFichaCriteria(asesorId, asesorId);
+        var entrada = new AsesorFichaComparacion(asesorId, asesorId);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(criteria))
+        assertThatThrownBy(() -> regla.validar(entrada))
                 .isInstanceOf(MismoAsesorFichaException.class)
                 .hasMessageContaining(asesorId.toString());
     }
@@ -28,9 +28,9 @@ class AsesorFichaDiferenteRuleImplTest {
     @Test
     void debePasar_cuandoNuevoAsesorEsDiferenteAlActual() {
         // Arrange
-        var criteria = new CambioAsesorFichaCriteria(UUID.randomUUID(), UUID.randomUUID());
+        var entrada = new AsesorFichaComparacion(UUID.randomUUID(), UUID.randomUUID());
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(criteria)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
     }
 }

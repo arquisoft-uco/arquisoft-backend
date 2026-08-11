@@ -1,10 +1,8 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.validator;
 
-import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-
-import java.util.UUID;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 
 public interface AgregarEstadoEvaluacionFichaValidator {
 
-    void validar(UUID evaluacionFichaPerfil, UUID representanteComite, EstadoEvaluacion estadoEvaluacion);
+    void validar(AgregacionEstadoEvaluacionFichaDomain entrada);
 }

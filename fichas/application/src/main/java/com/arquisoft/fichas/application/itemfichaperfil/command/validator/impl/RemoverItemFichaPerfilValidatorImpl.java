@@ -2,8 +2,8 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
-import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
-import com.arquisoft.fichas.domain.fichaperfil.rules.EstudiantePropietarioFichaRule;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropietarioFicha;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantePropietarioFichaRule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +20,6 @@ public class RemoverItemFichaPerfilValidatorImpl implements RemoverItemFichaPerf
     public void validar(UUID item, UUID estudiante) {
         UUID fichaPerfil = fichaPerfilDelItemFinder.obtener(item);
 
-        estudiantePropietarioFichaRule.validar(new PropietarioFichaCriteria(fichaPerfil, estudiante));
+        estudiantePropietarioFichaRule.validar(new PropietarioFicha(fichaPerfil, estudiante));
     }
 }

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.itemfichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemConRevisionesException;
-import com.arquisoft.fichas.domain.itemfichaperfil.model.RevisionesItemCriteria;
+import com.arquisoft.fichas.domain.itemfichaperfil.model.RevisionesItem;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -17,10 +17,10 @@ class ItemSinRevisionesRuleImplTest {
     void debeLanzarExcepcion_cuandoTieneRevisiones() {
         // Arrange
         UUID item = UUID.randomUUID();
-        var criteria = new RevisionesItemCriteria(item, 1);
+        var entrada = new RevisionesItem(item, 1);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(criteria))
+        assertThatThrownBy(() -> regla.validar(entrada))
                 .isInstanceOf(ItemConRevisionesException.class)
                 .hasMessageContaining(item.toString());
     }
@@ -28,9 +28,9 @@ class ItemSinRevisionesRuleImplTest {
     @Test
     void debePasar_cuandoSinRevisiones() {
         // Arrange
-        var criteria = new RevisionesItemCriteria(UUID.randomUUID(), 0);
+        var entrada = new RevisionesItem(UUID.randomUUID(), 0);
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(criteria)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
     }
 }

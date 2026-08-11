@@ -1,10 +1,9 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.ModificarFichaPerfilValidatorImpl;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropietarioFicha;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantePropietarioFichaRule;
 import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
-import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
-import com.arquisoft.fichas.domain.fichaperfil.model.TituloFichaCriteria;
-import com.arquisoft.fichas.domain.fichaperfil.rules.EstudiantePropietarioFichaRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloDisponibleRule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,9 +38,7 @@ class ModificarFichaPerfilValidatorTest {
         validator.validar(modificacion);
 
         // Assert
-        verify(estudiantePropietarioFichaRule)
-                .validar(new PropietarioFichaCriteria(fichaId, estudianteId));
-        verify(fichaPerfilTituloDisponibleRule)
-                .validar(new TituloFichaCriteria(fichaId, "Titulo nuevo"));
+        verify(estudiantePropietarioFichaRule).validar(new PropietarioFicha(fichaId, estudianteId));
+        verify(fichaPerfilTituloDisponibleRule).validar(modificacion);
     }
 }

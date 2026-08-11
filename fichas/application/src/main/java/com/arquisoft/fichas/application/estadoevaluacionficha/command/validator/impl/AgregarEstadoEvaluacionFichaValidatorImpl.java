@@ -1,16 +1,12 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.impl;
 
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
-import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.model.EstadoEvaluacionCriteria;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionNoDuplicadoRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EvaluacionFichaExisteRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.RepresentantePropietarioEvaluacionRule;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.PropietarioEvaluacionCriteria;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -21,11 +17,9 @@ public class AgregarEstadoEvaluacionFichaValidatorImpl implements AgregarEstadoE
     private final EstadoEvaluacionNoDuplicadoRule estadoEvaluacionNoDuplicadoRule;
 
     @Override
-    public void validar(UUID evaluacionFichaPerfil, UUID representanteComite, EstadoEvaluacion estadoEvaluacion) {
-        evaluacionFichaExisteRule.validar(evaluacionFichaPerfil);
-        representantePropietarioEvaluacionRule.validar(
-                new PropietarioEvaluacionCriteria(evaluacionFichaPerfil, representanteComite));
-        estadoEvaluacionNoDuplicadoRule.validar(
-                new EstadoEvaluacionCriteria(evaluacionFichaPerfil, estadoEvaluacion.getId()));
+    public void validar(AgregacionEstadoEvaluacionFichaDomain entrada) {
+        evaluacionFichaExisteRule.validar(entrada.getEvaluacionFichaPerfil());
+        representantePropietarioEvaluacionRule.validar(entrada);
+        estadoEvaluacionNoDuplicadoRule.validar(entrada);
     }
 }

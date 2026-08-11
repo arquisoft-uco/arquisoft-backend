@@ -2,7 +2,6 @@ package com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.impl.RegistrarEvaluacionFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.EvaluacionRepresentanteFichaCriteria;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.EvaluacionNoDuplicadaRule;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.RepresentanteComiteExisteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
@@ -46,7 +45,6 @@ class RegistrarEvaluacionFichaPerfilValidatorTest {
         InOrder inOrder = inOrder(fichaPerfilExisteRule, representanteComiteExisteRule, evaluacionNoDuplicadaRule);
         inOrder.verify(fichaPerfilExisteRule).validar(ficha);
         inOrder.verify(representanteComiteExisteRule).validar(representante);
-        inOrder.verify(evaluacionNoDuplicadaRule)
-                .validar(new EvaluacionRepresentanteFichaCriteria(representante, ficha));
+        inOrder.verify(evaluacionNoDuplicadaRule).validar(evaluacion);
     }
 }

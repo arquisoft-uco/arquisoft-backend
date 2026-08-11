@@ -68,9 +68,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
-        verify(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
-        verify(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
+        verify(agregarEstadoEvaluacionFichaValidator).validar(any());
         verify(estadoEvaluacionFichaOutputPort).obtenerUltimoEstado(evaluacionId);
         verify(estadoEvaluacionFichaOutputPort).agregarEstado(any(EstadoEvaluacionFichaDomain.class));
     }
@@ -83,7 +81,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
         doThrow(new EvaluacionFichaPerfilNoEncontradaException(evaluacionId))
-                .when(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
+                .when(agregarEstadoEvaluacionFichaValidator).validar(any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command)))
@@ -100,7 +98,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
         doThrow(new EvaluacionFichaNoPropiaException(evaluacionId))
-                .when(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
+                .when(agregarEstadoEvaluacionFichaValidator).validar(any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command)))
@@ -134,7 +132,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var command = new AgregarEstadoEvaluacionFichaCommand(evaluacionId, "APROBADA", representanteId);
 
         doThrow(new EstadoEvaluacionDuplicadoException(evaluacionId, "APROBADA"))
-                .when(agregarEstadoEvaluacionFichaValidator).validar(any(), any(), any());
+                .when(agregarEstadoEvaluacionFichaValidator).validar(any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(AgregarEstadoEvaluacionFichaMapper.toDomain(command)))

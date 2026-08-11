@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
+import com.arquisoft.fichas.domain.estudiantefichaperfil.RemocionEstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculacionEstudianteCriteria;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.VinculoEstudianteFichaExisteRule;
 
@@ -15,11 +15,11 @@ public class VinculoEstudianteFichaExisteRuleImpl implements VinculoEstudianteFi
     }
 
     @Override
-    public void validar(VinculacionEstudianteCriteria criteria) {
+    public void validar(RemocionEstudianteFichaPerfilDomain entrada) {
         if (!estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(
-                criteria.fichaPerfil(), criteria.estudiante())) {
+                entrada.getFichaPerfil(), entrada.getEstudiante())) {
             throw new EstudianteFichaPerfilNoEncontradoException(
-                    criteria.estudiante(), criteria.fichaPerfil());
+                    entrada.getEstudiante(), entrada.getFichaPerfil());
         }
     }
 }

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.impl;
 
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.EvaluacionRepresentanteFichaCriteria;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.EvaluacionNoDuplicadaRule;
 
@@ -14,11 +14,11 @@ public class EvaluacionNoDuplicadaRuleImpl implements EvaluacionNoDuplicadaRule 
     }
 
     @Override
-    public void validar(EvaluacionRepresentanteFichaCriteria criteria) {
+    public void validar(EvaluacionFichaPerfilDomain evaluacion) {
         if (evaluacionFichaPerfilOutputPort.existePorRepresentanteYFicha(
-                criteria.representanteComite(), criteria.fichaPerfil())) {
+                evaluacion.getRepresentanteComiteId(), evaluacion.getFichaPerfilId())) {
             throw new EvaluacionFichaPerfilDuplicadaException(
-                    criteria.representanteComite(), criteria.fichaPerfil());
+                    evaluacion.getRepresentanteComiteId(), evaluacion.getFichaPerfilId());
         }
     }
 }

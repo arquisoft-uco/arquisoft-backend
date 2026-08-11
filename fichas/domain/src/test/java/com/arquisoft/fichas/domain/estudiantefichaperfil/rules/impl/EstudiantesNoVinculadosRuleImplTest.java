@@ -2,7 +2,6 @@ package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculacionEstudiantesCriteria;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
 
@@ -22,10 +21,10 @@ class EstudiantesNoVinculadosRuleImplTest {
         // Arrange
         UUID vinculado = UUID.randomUUID();
         var regla = new EstudiantesNoVinculadosRuleImpl(new PortStub(Set.of(vinculado)));
-        var criteria = new VinculacionEstudiantesCriteria(FICHA_PERFIL, List.of(UUID.randomUUID(), vinculado));
+        var relaciones = EstudianteFichaPerfilDomain.crear(FICHA_PERFIL, List.of(UUID.randomUUID(), vinculado));
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(criteria))
+        assertThatThrownBy(() -> regla.validar(relaciones))
                 .isInstanceOf(EstudianteDuplicadoException.class)
                 .hasMessageContaining(vinculado.toString());
     }
@@ -34,11 +33,11 @@ class EstudiantesNoVinculadosRuleImplTest {
     void debePasar_cuandoNingunEstudianteEstaVinculado() {
         // Arrange
         var regla = new EstudiantesNoVinculadosRuleImpl(new PortStub(Set.of()));
-        var criteria = new VinculacionEstudiantesCriteria(
+        var relaciones = EstudianteFichaPerfilDomain.crear(
                 FICHA_PERFIL, List.of(UUID.randomUUID(), UUID.randomUUID()));
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(criteria)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(relaciones)).doesNotThrowAnyException();
     }
 
     @Test
@@ -47,7 +46,7 @@ class EstudiantesNoVinculadosRuleImplTest {
         var regla = new EstudiantesNoVinculadosRuleImpl(new PortStub(Set.of()));
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(new VinculacionEstudiantesCriteria(FICHA_PERFIL, null)))
+        assertThatCode(() -> regla.validar(null))
                 .doesNotThrowAnyException();
     }
 

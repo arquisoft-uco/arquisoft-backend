@@ -1,11 +1,8 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persistence;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
-import com.arquisoft.fichas.application.fichaperfil.query.criteria.PropietarioFichaCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilEntity;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
@@ -29,9 +26,6 @@ class FichaPerfilQueryOutputAdapterTest {
     @Autowired
     private FichaPerfilRepository fichaPerfilRepository;
 
-    @Autowired
-    private EstudianteFichaPerfilRepository estudianteFichaPerfilRepository;
-
     private FichaPerfilQueryOutputAdapter adapter;
 
     @BeforeEach
@@ -39,7 +33,6 @@ class FichaPerfilQueryOutputAdapterTest {
         adapter = new FichaPerfilQueryOutputAdapter(
                 fichaPerfilRepository,
                 new FichaPerfilJpaSpecification(),
-                estudianteFichaPerfilRepository,
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
                 CatalogoMensajesResourceBundle.porDefecto()
         );
@@ -85,79 +78,6 @@ class FichaPerfilQueryOutputAdapterTest {
         assertThat(resultado.getTotalElements()).isZero();
         assertThat(resultado.getPage()).isEqualTo(0);
         assertThat(resultado.getSize()).isEqualTo(10);
-    }
-
-    @Test
-    void debeRetornarTrue_cuandoEstudianteEsPropietario() {
-        // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-
-        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
-                .id(UUID.randomUUID())
-                .identificador("DOC-001")
-                .nombre("Juan Salazar")
-                .email("juan.salazar@soyuco.edu.co")
-                .build();
-        entityManager.persist(asesor);
-
-        FichaPerfilEntity ficha = FichaPerfilEntity.builder()
-                .id(fichaPerfilId)
-                .tituloProyecto("Arquisoft Backend")
-                .asesorFicha(asesor)
-                .build();
-        entityManager.persist(ficha);
-
-        EstudianteFichaPerfilEntity relacion = EstudianteFichaPerfilEntity.builder()
-                .id(UUID.randomUUID())
-                .fichaPerfilId(fichaPerfilId)
-                .estudianteId(estudianteId)
-                .build();
-        entityManager.persist(relacion);
-        entityManager.flush();
-
-        // Act
-        boolean esPropietario = adapter.esEstudiantePropietario(new PropietarioFichaCriteria(fichaPerfilId, estudianteId));
-
-        // Assert
-        assertThat(esPropietario).isTrue();
-    }
-
-    @Test
-    void debeRetornarFalse_cuandoEstudianteNoEsPropietario() {
-        // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        UUID otroEstudianteId = UUID.randomUUID();
-
-        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
-                .id(UUID.randomUUID())
-                .identificador("DOC-001")
-                .nombre("Juan Salazar")
-                .email("juan.salazar@soyuco.edu.co")
-                .build();
-        entityManager.persist(asesor);
-
-        FichaPerfilEntity ficha = FichaPerfilEntity.builder()
-                .id(fichaPerfilId)
-                .tituloProyecto("Arquisoft Backend")
-                .asesorFicha(asesor)
-                .build();
-        entityManager.persist(ficha);
-
-        EstudianteFichaPerfilEntity relacion = EstudianteFichaPerfilEntity.builder()
-                .id(UUID.randomUUID())
-                .fichaPerfilId(fichaPerfilId)
-                .estudianteId(otroEstudianteId)
-                .build();
-        entityManager.persist(relacion);
-        entityManager.flush();
-
-        // Act
-        boolean esPropietario = adapter.esEstudiantePropietario(new PropietarioFichaCriteria(fichaPerfilId, estudianteId));
-
-        // Assert
-        assertThat(esPropietario).isFalse();
     }
 
     @Test

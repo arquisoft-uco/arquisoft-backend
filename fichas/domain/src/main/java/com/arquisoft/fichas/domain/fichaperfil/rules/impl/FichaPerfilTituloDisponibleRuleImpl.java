@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
+import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.domain.fichaperfil.model.TituloFichaCriteria;
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloDisponibleRule;
 
@@ -14,9 +14,10 @@ public class FichaPerfilTituloDisponibleRuleImpl implements FichaPerfilTituloDis
     }
 
     @Override
-    public void validar(TituloFichaCriteria criteria) {
-        if (fichaPerfilOutputPort.existeTituloEnOtraFicha(criteria.fichaPerfil(), criteria.nuevoTitulo())) {
-            throw new FichaTituloDuplicadoException(criteria.nuevoTitulo());
+    public void validar(ModificacionFichaPerfilDomain modificacion) {
+        if (fichaPerfilOutputPort.existeTituloEnOtraFicha(
+                modificacion.getFichaPerfil(), modificacion.getTituloProyecto())) {
+            throw new FichaTituloDuplicadoException(modificacion.getTituloProyecto());
         }
     }
 }

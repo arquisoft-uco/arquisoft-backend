@@ -1,10 +1,9 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl.AgregarItemFichaPerfilValidatorImpl;
-import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropietarioFicha;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
 import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
-import com.arquisoft.fichas.domain.itemfichaperfil.model.ItemTipoCriteria;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemTipoNoDuplicadoRule;
 import org.junit.jupiter.api.Test;
@@ -46,8 +45,7 @@ class AgregarItemFichaPerfilValidatorTest {
         // Assert
         InOrder inOrder = inOrder(fichaPerfilExisteRule, itemFichaPropiaRule, itemTipoNoDuplicadoRule);
         inOrder.verify(fichaPerfilExisteRule).validar(ficha);
-        inOrder.verify(itemFichaPropiaRule).validar(new PropietarioFichaCriteria(ficha, estudiante));
-        inOrder.verify(itemTipoNoDuplicadoRule)
-                .validar(new ItemTipoCriteria(ficha, item.getTipoItem().getId()));
+        inOrder.verify(itemFichaPropiaRule).validar(new PropietarioFicha(ficha, estudiante));
+        inOrder.verify(itemTipoNoDuplicadoRule).validar(item);
     }
 }

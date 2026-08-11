@@ -16,10 +16,12 @@ import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
 import com.arquisoft.fichas.domain.estudiante.rules.impl.EstudiantesExistenRuleImpl;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantePropietarioFichaRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantesNoVinculadosRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantesSinDuplicadosRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.VinculoEstudianteFichaExisteRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl.EstudianteFichaPerfilCupoDisponibleRuleImpl;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl.EstudiantePropietarioFichaRuleImpl;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl.EstudiantesNoVinculadosRuleImpl;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl.EstudiantesSinDuplicadosRuleImpl;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl.VinculoEstudianteFichaExisteRuleImpl;
@@ -31,13 +33,11 @@ import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.impl.Representant
 import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaDiferenteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaExisteRule;
-import com.arquisoft.fichas.domain.fichaperfil.rules.EstudiantePropietarioFichaRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloDisponibleRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloUnicoRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.impl.AsesorFichaDiferenteRuleImpl;
 import com.arquisoft.fichas.domain.fichaperfil.rules.impl.AsesorFichaExisteRuleImpl;
-import com.arquisoft.fichas.domain.fichaperfil.rules.impl.EstudiantePropietarioFichaRuleImpl;
 import com.arquisoft.fichas.domain.fichaperfil.rules.impl.FichaPerfilExisteRuleImpl;
 import com.arquisoft.fichas.domain.fichaperfil.rules.impl.FichaPerfilTituloDisponibleRuleImpl;
 import com.arquisoft.fichas.domain.fichaperfil.rules.impl.FichaPerfilTituloUnicoRuleImpl;
@@ -79,6 +79,12 @@ public class FichasDomainRulesConfig {
     }
 
     @Bean
+    public EstudiantePropietarioFichaRule estudiantePropietarioFichaRule(
+            EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort) {
+        return new EstudiantePropietarioFichaRuleImpl(estudianteFichaPerfilOutputPort);
+    }
+
+    @Bean
     public EstudiantesExistenRule estudiantesExistenRule(EstudianteOutputPort estudianteOutputPort) {
         return new EstudiantesExistenRuleImpl(estudianteOutputPort);
     }
@@ -97,12 +103,6 @@ public class FichasDomainRulesConfig {
     public FichaPerfilTituloDisponibleRule fichaPerfilTituloDisponibleRule(
             FichaPerfilOutputPort fichaPerfilOutputPort) {
         return new FichaPerfilTituloDisponibleRuleImpl(fichaPerfilOutputPort);
-    }
-
-    @Bean
-    public EstudiantePropietarioFichaRule estudiantePropietarioFichaRule(
-            FichaPerfilOutputPort fichaPerfilOutputPort) {
-        return new EstudiantePropietarioFichaRuleImpl(fichaPerfilOutputPort);
     }
 
     @Bean
@@ -146,8 +146,8 @@ public class FichasDomainRulesConfig {
     }
 
     @Bean
-    public ItemFichaPropiaRule itemFichaPropiaRule(FichaPerfilOutputPort fichaPerfilOutputPort) {
-        return new ItemFichaPropiaRuleImpl(fichaPerfilOutputPort);
+    public ItemFichaPropiaRule itemFichaPropiaRule(EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort) {
+        return new ItemFichaPropiaRuleImpl(estudianteFichaPerfilOutputPort);
     }
 
     @Bean

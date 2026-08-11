@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.itemfichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.itemfichaperfil.model.ItemTipoCriteria;
+import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
@@ -27,8 +27,8 @@ class ItemTipoNoDuplicadoRuleImplTest {
     @Test
     void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
         // Arrange
-        var entrada = new ItemTipoCriteria(UUID.randomUUID(), "OBJETIVO_GENERAL");
-        when(puerto.existePorFichaYTipoItem(entrada.fichaPerfil(), entrada.tipoItem())).thenReturn(true);
+        var entrada = ItemFichaPerfilDomain.crear(UUID.randomUUID(), "OBJETIVO_GENERAL", "Contenido de prueba");
+        when(puerto.existePorFichaYTipoItem(entrada.getFichaPerfilId(), entrada.getTipoItem().getId())).thenReturn(true);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(entrada))
@@ -38,8 +38,8 @@ class ItemTipoNoDuplicadoRuleImplTest {
     @Test
     void debePasar_cuandoLaReglaSeCumple() {
         // Arrange
-        var entrada = new ItemTipoCriteria(UUID.randomUUID(), "OBJETIVO_GENERAL");
-        when(puerto.existePorFichaYTipoItem(entrada.fichaPerfil(), entrada.tipoItem())).thenReturn(false);
+        var entrada = ItemFichaPerfilDomain.crear(UUID.randomUUID(), "OBJETIVO_GENERAL", "Contenido de prueba");
+        when(puerto.existePorFichaYTipoItem(entrada.getFichaPerfilId(), entrada.getTipoItem().getId())).thenReturn(false);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();

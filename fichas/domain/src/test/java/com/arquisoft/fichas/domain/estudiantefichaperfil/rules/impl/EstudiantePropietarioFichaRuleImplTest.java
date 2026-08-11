@@ -1,8 +1,8 @@
-package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
+package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropietarioFicha;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
-import com.arquisoft.fichas.domain.fichaperfil.port.out.FichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 class EstudiantePropietarioFichaRuleImplTest {
 
     @Mock
-    private FichaPerfilOutputPort puerto;
+    private EstudianteFichaPerfilOutputPort puerto;
 
     @InjectMocks
     private EstudiantePropietarioFichaRuleImpl regla;
@@ -27,8 +27,8 @@ class EstudiantePropietarioFichaRuleImplTest {
     @Test
     void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
         // Arrange
-        var entrada = new PropietarioFichaCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.esEstudiantePropietario(entrada)).thenReturn(false);
+        var entrada = new PropietarioFicha(UUID.randomUUID(), UUID.randomUUID());
+        when(puerto.existePorFichaYEstudiante(entrada.fichaPerfil(), entrada.estudiante())).thenReturn(false);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(entrada))
@@ -38,8 +38,8 @@ class EstudiantePropietarioFichaRuleImplTest {
     @Test
     void debePasar_cuandoLaReglaSeCumple() {
         // Arrange
-        var entrada = new PropietarioFichaCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.esEstudiantePropietario(entrada)).thenReturn(true);
+        var entrada = new PropietarioFicha(UUID.randomUUID(), UUID.randomUUID());
+        when(puerto.existePorFichaYEstudiante(entrada.fichaPerfil(), entrada.estudiante())).thenReturn(true);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();

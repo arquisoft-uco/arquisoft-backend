@@ -1,12 +1,10 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.validator;
 
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.impl.AgregarEstadoEvaluacionFichaValidatorImpl;
-import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.model.EstadoEvaluacionCriteria;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionNoDuplicadoRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EvaluacionFichaExisteRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.RepresentantePropietarioEvaluacionRule;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.PropietarioEvaluacionCriteria;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -38,18 +36,16 @@ class AgregarEstadoEvaluacionFichaValidatorTest {
         // Arrange
         UUID evaluacion = UUID.randomUUID();
         UUID representante = UUID.randomUUID();
-        EstadoEvaluacion estado = EstadoEvaluacion.APROBADA;
+        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(evaluacion, "APROBADA", representante);
 
         // Act
-        validator.validar(evaluacion, representante, estado);
+        validator.validar(entrada);
 
         // Assert
         InOrder inOrder = inOrder(evaluacionFichaExisteRule, representantePropietarioEvaluacionRule,
                 estadoEvaluacionNoDuplicadoRule);
         inOrder.verify(evaluacionFichaExisteRule).validar(evaluacion);
-        inOrder.verify(representantePropietarioEvaluacionRule)
-                .validar(new PropietarioEvaluacionCriteria(evaluacion, representante));
-        inOrder.verify(estadoEvaluacionNoDuplicadoRule)
-                .validar(new EstadoEvaluacionCriteria(evaluacion, estado.getId()));
+        inOrder.verify(representantePropietarioEvaluacionRule).validar(entrada);
+        inOrder.verify(estadoEvaluacionNoDuplicadoRule).validar(entrada);
     }
 }

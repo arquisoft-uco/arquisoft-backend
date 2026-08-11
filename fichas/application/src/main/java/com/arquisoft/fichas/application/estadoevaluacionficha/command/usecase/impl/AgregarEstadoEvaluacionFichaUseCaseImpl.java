@@ -25,10 +25,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
 
     @Override
     public UUID ejecutar(AgregacionEstadoEvaluacionFichaDomain entrada) {
-        agregarEstadoEvaluacionFichaValidator.validar(
-                entrada.getEvaluacionFichaPerfil(),
-                entrada.getRepresentanteComite(),
-                entrada.getEstadoEvaluacion());
+        agregarEstadoEvaluacionFichaValidator.validar(entrada);
 
         var estadoEvaluacion = EstadoEvaluacionFichaDomain.crearConEstado(
                 entrada.getEvaluacionFichaPerfil(),

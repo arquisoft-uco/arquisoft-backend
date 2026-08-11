@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.EvaluacionRepresentanteFichaCriteria;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
@@ -27,8 +27,9 @@ class EvaluacionNoDuplicadaRuleImplTest {
     @Test
     void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
         // Arrange
-        var entrada = new EvaluacionRepresentanteFichaCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.existePorRepresentanteYFicha(entrada.representanteComite(), entrada.fichaPerfil())).thenReturn(true);
+        var entrada = EvaluacionFichaPerfilDomain.crear(UUID.randomUUID(), UUID.randomUUID());
+        when(puerto.existePorRepresentanteYFicha(entrada.getRepresentanteComiteId(), entrada.getFichaPerfilId()))
+                .thenReturn(true);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(entrada))
@@ -38,8 +39,9 @@ class EvaluacionNoDuplicadaRuleImplTest {
     @Test
     void debePasar_cuandoLaReglaSeCumple() {
         // Arrange
-        var entrada = new EvaluacionRepresentanteFichaCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.existePorRepresentanteYFicha(entrada.representanteComite(), entrada.fichaPerfil())).thenReturn(false);
+        var entrada = EvaluacionFichaPerfilDomain.crear(UUID.randomUUID(), UUID.randomUUID());
+        when(puerto.existePorRepresentanteYFicha(entrada.getRepresentanteComiteId(), entrada.getFichaPerfilId()))
+                .thenReturn(false);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();

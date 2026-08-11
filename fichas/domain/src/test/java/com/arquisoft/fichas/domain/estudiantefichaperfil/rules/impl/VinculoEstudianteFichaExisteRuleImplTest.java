@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculacionEstudianteCriteria;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.RemocionEstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
@@ -27,8 +27,8 @@ class VinculoEstudianteFichaExisteRuleImplTest {
     @Test
     void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
         // Arrange
-        var entrada = new VinculacionEstudianteCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.existePorFichaYEstudiante(entrada.fichaPerfil(), entrada.estudiante())).thenReturn(false);
+        var entrada = RemocionEstudianteFichaPerfilDomain.crear(UUID.randomUUID(), UUID.randomUUID());
+        when(puerto.existePorFichaYEstudiante(entrada.getFichaPerfil(), entrada.getEstudiante())).thenReturn(false);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(entrada))
@@ -38,8 +38,8 @@ class VinculoEstudianteFichaExisteRuleImplTest {
     @Test
     void debePasar_cuandoLaReglaSeCumple() {
         // Arrange
-        var entrada = new VinculacionEstudianteCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.existePorFichaYEstudiante(entrada.fichaPerfil(), entrada.estudiante())).thenReturn(true);
+        var entrada = RemocionEstudianteFichaPerfilDomain.crear(UUID.randomUUID(), UUID.randomUUID());
+        when(puerto.existePorFichaYEstudiante(entrada.getFichaPerfil(), entrada.getEstudiante())).thenReturn(true);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();

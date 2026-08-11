@@ -40,8 +40,6 @@ class FichaPerfilCommandOutputAdapterTest {
         fichaId = UUID.randomUUID();
         asesorId = UUID.randomUUID();
         adapter = new FichaPerfilCommandOutputAdapter(fichaPerfilRepository, asesorFichaRepository,
-                org.mockito.Mockito.mock(
-                        com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository.class),
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
                 CatalogoMensajesResourceBundle.porDefecto());
     }

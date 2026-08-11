@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.CambiarAsesorFichaValidatorImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
 import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
-import com.arquisoft.fichas.domain.fichaperfil.model.CambioAsesorFichaCriteria;
+import com.arquisoft.fichas.domain.fichaperfil.model.AsesorFichaComparacion;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaDiferenteRule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +40,6 @@ class CambiarAsesorFichaValidatorTest {
 
         // Assert
         verify(estadoFichaPerfilEnTerminalRule).validar(fichaId);
-        verify(asesorFichaDiferenteRule).validar(new CambioAsesorFichaCriteria(nuevoAsesorId, asesorActualId));
+        verify(asesorFichaDiferenteRule).validar(new AsesorFichaComparacion(nuevoAsesorId, asesorActualId));
     }
 }

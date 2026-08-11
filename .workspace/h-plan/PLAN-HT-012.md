@@ -2,11 +2,11 @@
 
 ## Metadata
 - **ID Historia:** HT-012
-- **Bounded Context:** transversal — `shared:message`, `shared:web`, `shared:domain`, `shared:exception` *(extracción, §2.2)*
-- **Módulos Gradle afectados:** los anteriores más la raíz (`build.gradle`, `settings.gradle`, `application*.yml`)
-- **Fecha de plan:** 2026-08-06 (v4)
+- **Bounded Context:** transversal — `shared:message`, `shared:web`, `shared:exception`
+- **Módulos Gradle afectados:** los anteriores más la raíz (`build.gradle`, `application*.yml`)
+- **Fecha de plan:** 2026-08-06 (v5)
 - **Rama sugerida:** `feature/HT-012-catalogo_mensajes_redis`
-- **Base:** commit `773b717` — catálogo tipado sobre `ClaveMensaje`, nomenclatura en español
+- **Base:** commit `e22be0e` — `shared:exception`, `shared:validation` y `shared:util` ya extraídos
 
 ### Historial de revisiones
 | v | Cambio | Motivo |
@@ -14,7 +14,8 @@
 | v1 | Módulo nuevo `shared:message-redis` | — |
 | v2 | Todo dentro de `shared:message`; excepciones `extends RuntimeException` | Verificado que `implementation` aísla Redis del dominio (§2.1) |
 | v3 | Análisis del ciclo `message → domain` | `shared:exception` resultó ser un *paquete*, no un módulo |
-| **v4** | **Extracción de `shared:exception` confirmada** + **nomenclatura en español** | Decisión del usuario: reutilizar la jerarquía existente y eliminar el spanglish |
+| v4 | Extracción de `shared:exception` + nomenclatura en español | Decisión del usuario: reutilizar la jerarquía existente |
+| **v5** | **Fase 0a ejecutada — fueron tres módulos, no uno** (§2.2). **Mensaje de usuario y técnico en `BaseError`** (§2.5) | La extracción destapó dos dependencias mutuas más. El diseño de dos audiencias de §4.2 se generaliza a toda la jerarquía |
 
 ---
 
@@ -83,34 +84,16 @@ Los módulos de dominio tendrán spring-data-redis en su **runtime** classpath. 
 contra él, que es donde está la garantía, y en la aplicación ensamblada ya estaba presente vía
 `shared:redis`.
 
-### 2.2 Extracción de `shared:exception` — fase 0a
+### 2.2 Extracción de módulos — fase 0a ✅ EJECUTADA (commit `e22be0e`)
 
-> **No se crean excepciones nuevas.** «Extraer» aquí significa mover una carpeta de un módulo
-> Gradle a otro. Las 8 clases son las mismas, con el mismo nombre de paquete Java
-> (`com.arquisoft.shared.exception`), la misma jerarquía y los mismos tipos.
-> `InfrastructureException` sigue siendo la clase que ya existe en `shared:domain`; el catálogo
-> extiende **esa**, no una copia. En los 69 archivos que la importan, la línea
-> `import com.arquisoft.shared.exception.InfrastructureException;` queda byte a byte idéntica.
-> Lo único que cambia es qué `build.gradle` es dueño de la carpeta.
+#### El problema
 
-#### El hecho de partida
+`shared:message` necesitaba extender `InfrastructureException`, pero esa jerarquía era un **paquete
+Java dentro de `shared:domain`**, no un módulo. Depender de `shared:domain` cerraba el ciclo, porque
+`shared:domain` ya declara `api project(':shared:message')`.
 
-`shared:exception` **no existe como módulo**. `settings.gradle` declara 9 módulos `shared:*` y
-ninguno se llama así: `com.arquisoft.shared.exception` es un **paquete Java dentro de
-`shared:domain`**, el mismo caso que CLAUDE.md documenta para `shared:validation`.
-
-Por eso «que `shared:message` use la excepción existente» significa hoy, en términos de Gradle,
-«que `shared:message` dependa de `shared:domain`». Y eso es el ciclo, porque `shared:domain` ya
-declara `api project(':shared:message')`.
-
-#### El ciclo, verificado
-
-```
-:shared:message → :shared:domain → :shared:message
-```
-
-Gradle no degrada, **rechaza el build**: `Circular dependency between the following tasks:`.
-Ningún scope lo evita — el ciclo es entre tareas de compilación, no entre configuraciones:
+Gradle no degrada, **rechaza el build**: `Circular dependency between the following tasks:`. Y
+ningún scope lo evita — el ciclo es entre tareas de compilación, no entre configuraciones:
 
 | Scope probado | ¿Evita el ciclo? |
 |---|---|
@@ -118,66 +101,85 @@ Ningún scope lo evita — el ciclo es entre tareas de compilación, no entre co
 | `compileOnly project(':shared:domain')` | ❌ |
 | `compileOnlyApi project(':shared:domain')` | ❌ |
 
-#### El corte
+#### El corte real: tres módulos, no uno
 
-`exception` y `validation` son **mutuamente dependientes** a nivel de paquete:
+El plan v4 preveía extraer un solo módulo. La ejecución destapó **dos dependencias mutuas más**,
+invisibles hasta ese momento porque Java permite ciclos entre paquetes de un mismo módulo y Gradle
+no los ve.
 
-```
-DomainValidationException      → ValidationResult
-ApplicationValidationException → ValidationResult
-ValidationResult               → DomainValidationException, ApplicationValidationException
-```
-
-No se pueden separar. Pero el otro archivo de `validation`, `DomainValidator`, importa `Mensajes` y
-`ValidadorKey` de `shared:message` — **si se lo lleva también, el ciclo vuelve por otra puerta.**
-
-| Va a `shared:exception` | Se queda en `shared:domain` |
-|---|---|
-| las 8 clases de `exception/` | `DomainValidator` *(usa `Mensajes` → shared:message)* |
-| `ValidationResult` | `util/`, `events/`, `rules/`, `usecase/`, `interactor/`, `query/`, `pagination/` |
-
-El módulo resultante es una **hoja del grafo**: sus 9 clases no importan nada de `com.arquisoft`
-fuera de sí mismas, y `shared:domain` no lleva Lombok, así que queda JDK puro.
+**Cadena 1 — el trío de validación.** Sacar solo `ValidationResult` a `shared:exception` no
+funciona, porque las dos excepciones de validación la importan y ella las lanza:
 
 ```
-shared:exception   (hoja, JDK puro)
-    ↑ api                    ↑ implementation
-shared:domain  ──api──→  shared:message
+ValidationResult               → lanza   DomainValidationException, ApplicationValidationException
+DomainValidationException      → recibe  ValidationResult
+ApplicationValidationException → recibe  ValidationResult
 ```
 
-#### Por qué el costo es bajo
+Las tres van juntas. Y como `DomainValidationException extends DomainException`, dejarlas en
+`shared:validation` hace que la flecha hacia `shared:exception` quede **en un solo sentido**.
 
-**Los paquetes Java no cambian.** `com.arquisoft.shared.exception.*` y
-`com.arquisoft.shared.validation.ValidationResult` conservan su nombre; solo se mueve el módulo
-Gradle que los contiene. Con `api project(':shared:exception')` en `shared:domain`, los
-consumidores lo siguen recibiendo transitivo.
-
-Verificado: **los 100 archivos que importan estos paquetes no se tocan** (69 de `exception`, 31 de
-`validation`), y los 6 módulos `shared:*` que los usan ya declaran `shared:domain`.
-
-| Cambio | Alcance |
-|---|---|
-| `settings.gradle` | +1 línea |
-| `shared/exception/build.gradle` | nuevo, 4 líneas |
-| `shared/domain/build.gradle` | +1 línea `api` |
-| `shared/message/build.gradle` | +1 línea `implementation` |
-| `git mv` | 9 archivos |
-| **Ediciones de código fuente** | **0** |
-
-#### Problemas
-
-| # | Problema | Peso |
-|---|---|---|
-| P1 | `api` es obligatorio en `shared:domain`. Con `implementation`, los 100 archivos dejan de compilar | **Alto** — único punto de fallo real, y falla ruidoso |
-| P2 | `ValidationResult` queda separado de `DomainValidator` | Medio — el acoplamiento mutuo no deja alternativa; se documenta |
-| P3 | Un módulo más (10 `shared:*`) | Bajo |
-| P4 | Alguien podría meter lógica de dominio en `shared:exception` con el tiempo | Bajo — comentario de cabecera en el `build.gradle` |
-| P5 | CLAUDE.md y AGENTS.md afirman que las excepciones viven en `shared:domain` | Bajo — actualizar |
-| P6 | JaCoCo excluye `shared:*`; el módulo nuevo hereda la exclusión | Nulo |
+**Cadena 2 — los helpers.** `DomainValidator` usa `UtilText`, `UtilObject`, `UtilUUID` y
+`UtilCollection`, que vivían en `shared:domain`. Dejarlos ahí reabre `validation → domain →
+validation`. Como las seis clases `Util*` son JDK puro sin una sola dependencia, salieron a una
+hoja propia.
 
 #### Resultado
 
-Las excepciones del catálogo extienden la jerarquía existente:
+| Módulo | Contenido |
+|---|---|
+| `shared:exception` | `BaseException`, `BaseError`, `DomainException`, `ApplicationException`, `AuthorizationException`, `InfrastructureException` |
+| `shared:validation` | `DomainValidator`, `ValidationResult`, `DomainValidationException`, `ApplicationValidationException` |
+| `shared:util` | `UtilText`, `UtilObject`, `UtilUUID`, `UtilCollection`, `UtilDate`, `UtilNumber` |
+
+```
+shared:util   shared:exception   shared:message   shared:logger      (4 hojas)
+      ↑              ↑                  ↑
+      └──────── shared:validation ──────┘
+                     ↑ api
+                shared:domain  →  amqp · minio · notification · postgres · redis · web
+```
+
+#### Costo real
+
+La v4 prometía **0 ediciones de código**. No se cumplió, y la razón es la cadena 1: las dos
+excepciones de validación cambiaron de paquete Java, de `com.arquisoft.shared.exception` a
+`com.arquisoft.shared.validation`.
+
+Se evaluó la alternativa —dejar el paquete `com.arquisoft.shared.exception` partido entre dos
+módulos Gradle— y se descartó: compila (se verificó que el proyecto no usa JPMS, así que los split
+packages son legales), pero es exactamente el tipo de suciedad oculta que este refactor elimina.
+
+| Cambio | Alcance real |
+|---|---|
+| `git mv` | 19 archivos |
+| `.java` con `import` reescrito | **21** |
+| `build.gradle` nuevos | 3 |
+| `settings.gradle` / `shared/domain/build.gradle` | 2 modificados |
+| README nuevos | 3 |
+
+#### Problemas, con su estado
+
+| # | Problema | Estado |
+|---|---|---|
+| P1 | `api` obligatorio en `shared:domain` para los cuatro módulos; con `implementation` caen ~160 archivos | ✅ Cubierto, con el porqué en el `build.gradle` |
+| P2 | `ValidationResult` separado de `DomainValidator` | ✅ **Resuelto** — van juntos en `shared:validation`, que es más de lo que la v4 lograba |
+| P3 | Tres módulos más (12 `shared:*`) | Aceptado |
+| P4 | Alguien podría meter lógica de negocio en los módulos nuevos | ✅ Regla explícita en el README de cada uno |
+| P5 | CLAUDE.md y AGENTS.md ubican excepciones, validación y utils en `shared:domain` | ⏳ **Pendiente** |
+| P6 | JaCoCo excluye `shared:*` | Nulo — heredado |
+
+#### Verificación
+
+- `clean build` completo en verde (238 tareas, todas ejecutadas).
+- **El ciclo está muerto**: se añadió temporalmente `implementation project(':shared:exception')` a
+  `shared:message` más una clase extendiendo `InfrastructureException` — compiló sin ciclo, y se
+  revirtió.
+- Dos fallos durante la ejecución, ambos corregidos: recrear el ciclo `exception ↔ validation` al
+  mover solo `ValidationResult` (detectado antes de compilar), y dos `import` redundantes en
+  `ValidationResult` tras el cambio de paquete (detectado por Checkstyle, `maxWarnings = 0`).
+
+#### Lo que habilita
 
 ```java
 public class CatalogoMensajesException extends InfrastructureException     // 503
@@ -189,6 +191,134 @@ public final class ClaveMensajeInvalidaException extends CatalogoMensajesExcepti
 dedicado para `CatalogoMensajesException`, porque construye sus respuestas llamando al catálogo, y
 usar el catálogo para describir el fallo del catálogo es circular. La extracción arregla la
 jerarquía de tipos, no la circularidad del camino de reporte — son problemas distintos (§4.3).
+
+### 2.2b Mensaje de usuario y mensaje técnico en `BaseError`
+
+**Sí es posible, sí lo procesa el handler, y el hueco que cierra es real.** Pero conviene ver
+primero qué existe ya, porque la mitad del mecanismo está construido.
+
+#### Lo que ya hay
+
+`BaseError` transporta **tres** cosas, no dos:
+
+```java
+private final String codigoError;
+private final String message;
+private final List<String> traza;   // cadena de causas, construida desde el Throwable
+```
+
+Y `ErrorResponseDTO.fromBaseException` ya separa audiencias:
+
+```java
+// La traza de causas NO se incluye en la respuesta al cliente — podría exponer
+// hostnames, URLs internas o detalles de infraestructura (OWASP A05).
+.message(ex.getMessage())    // ← esto SÍ llega al cliente
+```
+
+O sea: **el canal técnico existe (`traza`) y ya está excluido de la respuesta.** Lo que falta es
+que sea un mensaje que el autor escribe, en vez de una derivación automática del `Throwable`.
+
+#### El hueco
+
+`message` tiene que servir a las dos audiencias a la vez, y **nada obliga a que sea seguro para el
+cliente**. La evidencia está en el propio código: `RedisBucketResolver` lleva un comentario escrito
+a mano recordándolo —
+
+> `InfrastructureException` con mensaje generico: si llegara a la capa web el cliente ve un mensaje
+> sin detalles internos.
+
+— y `ProveedorIdentidadNoDisponibleException(String message, Throwable cause)` acepta lo que le
+pasen. Si alguien escribe `new InfrastructureException("No se pudo conectar a redis://10.0.1.5:6379", ...)`,
+ese host **sale en el JSON de respuesta**. La protección de hoy es disciplina y un comentario, no
+estructura.
+
+#### Dónde gana y dónde estorba
+
+La distinción no vale lo mismo en las cinco bases:
+
+| Base | HTTP | ¿El `message` es seguro por naturaleza? |
+|---|---|---|
+| `DomainException` | 422 | ✅ Sí — es texto de negocio: *«El título ya existe: X»* |
+| `ApplicationException` | 400 | ✅ Sí |
+| `AuthorizationException` | 403 | ✅ Sí |
+| `DomainValidationException` / `ApplicationValidationException` | 422/400 | ✅ Sí — se expande en `fieldErrors[]` |
+| **`InfrastructureException`** | **503** | ❌ **No** — describe un tercero caído: host, puerto, proveedor |
+
+**RD-10.** El campo se añade a `BaseError` para todas, pero **es la forma normal solo en
+`InfrastructureException`**. En las demás, un segundo mensaje añade ruido sin cerrar ningún hueco.
+
+#### La forma
+
+```java
+// BaseError — el campo es opcional; las factorías de 2 argumentos siguen existiendo
+public static BaseError of(String codigoError, String mensajeUsuario) { … }
+public static BaseError of(String codigoError, String mensajeUsuario, Throwable cause) { … }
+public static BaseError of(String codigoError, String mensajeUsuario, String mensajeTecnico) { … }
+public static BaseError of(String codigoError, String mensajeUsuario, String mensajeTecnico, Throwable cause) { … }
+
+public String getMensajeTecnico() { … }   // null cuando no se declaró
+```
+
+```java
+// BaseException
+public String getMensajeTecnico() {
+    return error.getMensajeTecnico();
+}
+```
+
+**Aditivo por construcción:** las firmas de 2 argumentos no cambian, así que **las 35 excepciones
+que extienden estas bases no se tocan**.
+
+#### El handler sí puede procesarlo, y casi no cambia
+
+`GlobalAppExceptionHandler.handleBaseException` ya construye el log y el cuerpo en sentencias
+separadas — es justo la separación que hace falta:
+
+```java
+// hoy
+log.error("Exception [{}] in {}: [{}] {}", …, ex.getMessage(), ex);
+
+// con RD-10 — degrada solo si no hay técnico, así que nada se rompe
+log.error("Exception [{}] in {}: [{}] {}", …,
+        ex.getMensajeTecnico() != null ? ex.getMensajeTecnico() : ex.getMessage(), ex);
+```
+
+El cuerpo sigue usando `ex.getMessage()`. **`ErrorResponseDTO` no gana ningún campo**, y eso es
+deliberado: un mensaje técnico en el JSON sería exactamente la fuga que se quiere evitar.
+
+#### Cómo llega el mensaje técnico al usuario técnico
+
+Por el `traceId`, que ya existe. `TraceIdFilter` lo pone en el MDC, viaja en el header
+`X-Correlation-Id` y en cada `ErrorResponseDTO`. El cliente reporta el id; quien opera busca por él
+en los logs y encuentra el mensaje técnico completo. No hace falta inventar canal.
+
+Para el catálogo hay además un segundo canal ya previsto: `IndicadorSaludCatalogo` (RD-07), que
+expone modo y causa sin pasar por una petición fallida.
+
+#### Encaje con el catálogo
+
+`CatalogoMensajesException` es el caso de libro:
+
+| | Texto |
+|---|---|
+| Usuario | `MensajesRespaldo.Usuario.SERVICIO_NO_DISPONIBLE` |
+| Técnico | `MensajesRespaldo.Tecnico.REDIS_NO_DISPONIBLE.formatted(host)` |
+
+Y ahí está lo que hace que esto valga la pena más allá del catálogo: **la división
+`Usuario` / `Tecnico` de §4.2 deja de ser un invento local del catálogo y pasa a ser una propiedad
+de toda la jerarquía de excepciones.** El catálogo la usa; no la posee.
+
+#### Riesgo
+
+Un campo opcional que nadie rellena. Se mitiga por dos vías: el handler degrada a `message` cuando
+es `null` (no hay regresión posible), y `InfrastructureException` documenta la forma de 3 argumentos
+como la normal. No se propone hacerlo obligatorio: forzarlo en las cinco bases rompería las 35
+excepciones existentes por un beneficio que solo aplica a una.
+
+#### Alcance
+
+**Va en fase propia (0c), no mezclada con Redis.** Toca `shared:exception`, que es shared kernel de
+los 9 contextos; el catálogo es su primer consumidor, no su justificación.
 
 ### 2.3 Nomenclatura
 
@@ -533,17 +663,19 @@ cambiara, dominio y aplicación resolverían contra fuentes distintas sin que na
 
 ## 11. Archivos
 
-### `shared:exception` — módulo nuevo por extracción (fase 0a, §2.2)
+### `shared:exception` / `shared:validation` / `shared:util` — ✅ hechos (commit `e22be0e`)
 
-| Ruta | Origen |
+Ver §2.2. Los tres módulos existen, con `build.gradle` y README propios, y `shared:domain` los
+reexpone con `api`.
+
+### `shared:exception` — modificados (fase 0c, §2.2b)
+
+| Ruta | Cambio |
 |---|---|
-| `shared/exception/build.gradle` | nuevo — `java-library`, sin dependencias |
-| `.../shared/exception/*.java` (8) | `git mv` desde `shared:domain`, **mismo paquete Java** |
-| `.../shared/validation/ValidationResult.java` | `git mv` desde `shared:domain`, **mismo paquete Java** |
-| `shared/exception/README.md` | por qué existe y qué no debe entrar (P4) |
-
-`shared/domain/build.gradle` añade `api project(':shared:exception')` — **`api`, no
-`implementation`** (P1). `settings.gradle` añade `include 'shared:exception'`.
+| `BaseError.java` | Campo `mensajeTecnico` (nullable) + dos factorías `of(...)` nuevas. Las de 2 argumentos no cambian |
+| `BaseException.java` | `getMensajeTecnico()` delegando en `error` |
+| `InfrastructureException.java` | Javadoc: la forma de 3 argumentos es la normal aquí (RD-10) |
+| `README.md` | Documentar la separación de audiencias |
 
 ### `shared:message` — nuevos
 
@@ -579,7 +711,7 @@ cambiara, dominio y aplicación resolverían contra fuentes distintas sin que na
 | Ruta | Cambio |
 |---|---|
 | `config/CatalogoMensajesConfig.java` | `@ConditionalOnMissingBean(CatalogoMensajes.class)`. Sin esto, dos beans del mismo tipo hacen ambigua la inyección en 40+ clases. Con esto, los 14 `@WebMvcTest` que ya lo importan siguen funcionando **sin tocarlos** |
-| `exception/GlobalAppExceptionHandler.java` | `@ExceptionHandler(CatalogoMensajesException.class)` que no consulta el catálogo (§4.3) |
+| `exception/GlobalAppExceptionHandler.java` | `@ExceptionHandler(CatalogoMensajesException.class)` que no consulta el catálogo (§4.3). En `handleBaseException`, loguear `getMensajeTecnico()` con degradación a `getMessage()` (§2.2b). `ErrorResponseDTO` **no** gana campo |
 
 ### Raíz
 
@@ -614,6 +746,11 @@ cascada y por escenario #20, #21, #22, #23; más
 **`MensajesRespaldoTest`** — que ninguna constante esté vacía y que los patrones con `%s` sean
 formateables. Es texto que solo se usa cuando todo lo demás falló; un fallo ahí no tiene red.
 
+**`BaseErrorTest`** (fase 0c) — `debeDegradarAMensajeUsuario_cuandoNoHayMensajeTecnico` y
+`debeConservarAmbos_cuandoSeDeclaranLosDos`. Más un test sobre `GlobalAppExceptionHandler` que
+afirma que **el mensaje técnico no aparece en el `ErrorResponseDTO`**: es la garantía de que RD-10
+no se convierte en la fuga que pretende evitar.
+
 **`VerificadorArranqueCatalogoTest`** — escenarios #1, #6, #7, #9, #12 (verificando que lista
 *todas*).
 
@@ -631,8 +768,9 @@ Redis vivo va en el `docker-compose` local, manual.
 
 | Fase | Contenido | Verificación |
 |---|---|---|
-| **0a** *(previa, obligatoria)* | Extraer `shared:exception` (§2.2). Solo `git mv` + 3 archivos de build; cero ediciones de código | `clean build` — si P1 falla, falla ruidoso |
+| ~~**0a**~~ | ~~Extraer `shared:exception`~~ → resultó ser `exception` + `validation` + `util` (§2.2) | ✅ **HECHA** — commit `e22be0e`, `clean build` en verde |
 | **0b** *(previa, opcional)* | Renombrar los dos enums colisionantes (§8) | `clean build` |
+| **0c** *(previa, recomendada)* | `mensajeTecnico` en `BaseError` + log en el handler (§2.2b). Aditivo: las 35 excepciones existentes no se tocan | `clean build` — y verificar que ningún `ErrorResponseDTO` expone el técnico |
 | **1** | `ValidadorClaveMensaje`, `RegistroClavesMensaje`, `MensajesRespaldo`, `AppCodes.Catalogo`, `PaquetesMensajes.DISTRIBUIBLES`, fix de caché y guarda de `formatear` | `clean build` |
 | **2** | `CatalogoMensajesEnCascada`, excepciones, handler dedicado. **Sin Redis**: `FuenteMensajesRemota` con implementación vacía | `clean build` — cascada en niveles 2→3→4 |
 | **3** | `FuenteMensajesRedis`, config, `@ConditionalOnMissingBean`, YAML | `bootRun` con y sin Redis |
@@ -649,7 +787,9 @@ Redis vivo va en el `docker-compose` local, manual.
 
 | # | Riesgo | Estado |
 |---|---|---|
-| R1 | Extracción de `shared:exception` | **Resuelto** — fase 0a. Único punto de fallo: olvidar `api` (P1) |
+| R1 | Extracción de módulos | ✅ **Cerrado** — commit `e22be0e`. Fueron tres módulos, no uno (§2.2) |
+| R8 | `mensajeTecnico` opcional que nadie rellena (§2.2b) | Mitigado: el handler degrada a `message` si es `null`, y `InfrastructureException` documenta la forma de 3 argumentos. No se hace obligatorio — rompería las 35 excepciones por un beneficio que solo aplica a una |
+| R9 | CLAUDE.md y AGENTS.md ubican excepciones, validación y utils en `shared:domain` (P5) | ⏳ **Pendiente** — desactualizados desde `e22be0e` |
 | R2 | Quién escribe a Redis | **Decisión del usuario.** La propagación en tiempo real no vale nada sin escritor, y ese escritor es una superficie de seguridad nueva: un texto malo llega a producción al instante. ¿Endpoint administrativo con auditoría y rol `ADMINISTRADOR`, o solo por despliegue? Cerrar antes de la fase 5 |
 | R3 | Patrones de formato editables (§5.4) | Mitigado con doble guarda (RD-06) |
 | R4 | Pub/Sub pierde eventos | Mitigado con reconciliación por versión (§5.2) |
@@ -661,10 +801,10 @@ Redis vivo va en el `docker-compose` local, manual.
 
 ## 15. Checklist
 
-- [ ] `shared:domain` declara `api project(':shared:exception')` — **no `implementation`** (P1)
-- [ ] `shared:exception` sin dependencias `com.arquisoft` y sin Lombok
-- [ ] Cero ediciones de `import` en los 100 archivos consumidores tras la fase 0a
-- [ ] CLAUDE.md / AGENTS.md actualizados: las excepciones ya no viven en `shared:domain` (P5)
+- [x] `shared:domain` declara con `api` los cuatro módulos hoja — **no `implementation`** (P1)
+- [x] `shared:exception` y `shared:util` sin dependencias `com.arquisoft` y sin Lombok
+- [ ] CLAUDE.md / AGENTS.md actualizados: excepciones, validación y utils ya no viven en `shared:domain` (R9)
+- [ ] `BaseError.mensajeTecnico` no aparece en ningún `ErrorResponseDTO` (§2.2b)
 - [ ] `shared:message` declara Spring como `implementation`, nunca `api`
 - [ ] `:fichas:domain:dependencies --configuration compileClasspath` sin spring-data-redis
 - [ ] Ningún `import org.springframework` fuera de `redis/` dentro de `shared:message`
@@ -689,7 +829,8 @@ Redis vivo va en el `docker-compose` local, manual.
 | Propagación en tiempo real | §5.2 — Pub/Sub + reconciliación por versión |
 | Mantener enums y constantes actuales | §1, §2.4 — `key.*`, `constant.*`, `annotation.*` intactos |
 | Alojar Redis en `shared:message`, sin módulo nuevo | §2.1 — verificado empíricamente |
-| Reutilizar la jerarquía de excepciones existente | §2.2 — extracción de `shared:exception`; `extends InfrastructureException` |
+| Reutilizar la jerarquía de excepciones existente | §2.2 — extracción ✅ hecha (`e22be0e`); `extends InfrastructureException` |
+| Mensaje de usuario y técnico en las excepciones base | §2.2b — `BaseError.mensajeTecnico`, aditivo; el handler lo loguea y **no** lo expone en la respuesta |
 | Nomenclatura en español | §2.3 — patrón derivado de `5ae1f19`, aplicado a las 14 clases nuevas |
 | Fail-fast con mensajes mínimos al arrancar | §10 — `InitializingBean`, verificación total |
 | Validar la clave antes de resolverla | §3 nivel 0, RD-05 — el borde real es Redis, no Java (§1.1) |

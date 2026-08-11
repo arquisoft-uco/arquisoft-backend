@@ -1,15 +1,15 @@
-package com.arquisoft.fichas.domain.itemfichaperfil.rules.impl;
+package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropietarioFicha;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.port.out.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
-import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantePropietarioFichaRule;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 
-public class ItemFichaPropiaRuleImpl implements ItemFichaPropiaRule {
+public class EstudiantePropietarioFichaRuleImpl implements EstudiantePropietarioFichaRule {
 
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
 
-    public ItemFichaPropiaRuleImpl(EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort) {
+    public EstudiantePropietarioFichaRuleImpl(EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort) {
         this.estudianteFichaPerfilOutputPort = estudianteFichaPerfilOutputPort;
     }
 
@@ -17,7 +17,7 @@ public class ItemFichaPropiaRuleImpl implements ItemFichaPropiaRule {
     public void validar(PropietarioFicha propietario) {
         if (!estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(
                 propietario.fichaPerfil(), propietario.estudiante())) {
-            throw new ItemFichaNoPropiaException(propietario.fichaPerfil());
+            throw new FichaNoPropietarioException(propietario.fichaPerfil(), propietario.estudiante());
         }
     }
 }

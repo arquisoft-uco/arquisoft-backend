@@ -2,8 +2,6 @@ package com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out;
 
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.PropietarioEvaluacionCriteria;
-
 import java.util.UUID;
 
 public interface EvaluacionFichaPerfilOutputPort {
@@ -14,5 +12,5 @@ public interface EvaluacionFichaPerfilOutputPort {
 
     boolean existePorRepresentanteYFicha(UUID representanteComiteId, UUID fichaPerfilId);
 
-    boolean esRepresentantePropietario(PropietarioEvaluacionCriteria criteria);
+    boolean esRepresentantePropietario(UUID evaluacionFichaPerfil, UUID representanteComite);
 }

@@ -2,8 +2,8 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl.RemoverItemFichaPerfilValidatorImpl;
-import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
-import com.arquisoft.fichas.domain.fichaperfil.rules.EstudiantePropietarioFichaRule;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropietarioFicha;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantePropietarioFichaRule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -40,6 +40,6 @@ class RemoverItemFichaPerfilValidatorTest {
         validator.validar(item, estudiante);
 
         // Assert
-        verify(estudiantePropietarioFichaRule).validar(new PropietarioFichaCriteria(ficha, estudiante));
+        verify(estudiantePropietarioFichaRule).validar(new PropietarioFicha(ficha, estudiante));
     }
 }

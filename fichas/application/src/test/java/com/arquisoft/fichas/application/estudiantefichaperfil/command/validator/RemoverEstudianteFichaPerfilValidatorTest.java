@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command.validator
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.impl.RemoverEstudianteFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculacionEstudianteCriteria;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.RemocionEstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.VinculoEstudianteFichaExisteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
 import org.junit.jupiter.api.Test;
@@ -37,16 +37,16 @@ class RemoverEstudianteFichaPerfilValidatorTest {
         // Arrange
         UUID ficha = UUID.randomUUID();
         UUID estudiante = UUID.randomUUID();
+        var entrada = RemocionEstudianteFichaPerfilDomain.crear(ficha, estudiante);
 
         // Act
-        validator.validar(ficha, estudiante);
+        validator.validar(entrada);
 
         // Assert
         InOrder inOrder = inOrder(fichaPerfilExisteRule, estudiantesExistenRule,
                 vinculoEstudianteFichaExisteRule);
         inOrder.verify(fichaPerfilExisteRule).validar(ficha);
         inOrder.verify(estudiantesExistenRule).validar(List.of(estudiante));
-        inOrder.verify(vinculoEstudianteFichaExisteRule)
-                .validar(new VinculacionEstudianteCriteria(ficha, estudiante));
+        inOrder.verify(vinculoEstudianteFichaExisteRule).validar(entrada);
     }
 }

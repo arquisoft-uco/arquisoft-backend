@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.itemfichaperfil.rules.impl;
 
+import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
-import com.arquisoft.fichas.domain.itemfichaperfil.model.ItemTipoCriteria;
 import com.arquisoft.fichas.domain.itemfichaperfil.port.out.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemTipoNoDuplicadoRule;
 
@@ -14,9 +14,9 @@ public class ItemTipoNoDuplicadoRuleImpl implements ItemTipoNoDuplicadoRule {
     }
 
     @Override
-    public void validar(ItemTipoCriteria criteria) {
-        if (itemFichaPerfilOutputPort.existePorFichaYTipoItem(criteria.fichaPerfil(), criteria.tipoItem())) {
-            throw new ItemTipoDuplicadoException(criteria.tipoItem());
+    public void validar(ItemFichaPerfilDomain item) {
+        if (itemFichaPerfilOutputPort.existePorFichaYTipoItem(item.getFichaPerfilId(), item.getTipoItem().getId())) {
+            throw new ItemTipoDuplicadoException(item.getTipoItem().getId());
         }
     }
 }

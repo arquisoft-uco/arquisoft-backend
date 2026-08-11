@@ -26,7 +26,7 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
         UUID fichaPerfil = entrada.getFichaPerfil();
         UUID estudiante = entrada.getEstudiante();
 
-        removerEstudianteFichaPerfilValidator.validar(fichaPerfil, estudiante);
+        removerEstudianteFichaPerfilValidator.validar(entrada);
 
         estudianteFichaPerfilOutputPort.desvincularEstudiante(fichaPerfil, estudiante);
 

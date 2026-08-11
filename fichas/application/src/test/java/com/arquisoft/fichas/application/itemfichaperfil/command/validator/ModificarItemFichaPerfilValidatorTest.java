@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl.ModificarItemFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
-import com.arquisoft.fichas.domain.fichaperfil.model.PropietarioFichaCriteria;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropietarioFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,7 +44,7 @@ class ModificarItemFichaPerfilValidatorTest {
         validator.validar(item, estudiante);
 
         // Assert
-        verify(itemFichaPropiaRule).validar(new PropietarioFichaCriteria(ficha, estudiante));
+        verify(itemFichaPropiaRule).validar(new PropietarioFicha(ficha, estudiante));
         verify(estadoFichaPerfilEnTerminalRule).validar(ficha);
     }
 }

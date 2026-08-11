@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.PropietarioEvaluacionCriteria;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.port.out.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilMapper;
@@ -36,8 +35,7 @@ public class EvaluacionFichaPerfilCommandOutputAdapter
                 fichaPerfilId);
     }
     @Override
-    public boolean esRepresentantePropietario(PropietarioEvaluacionCriteria criteria) {
-        return repository.existsByIdAndRepresentanteComiteId(
-                criteria.evaluacionFichaPerfil(), criteria.representanteComite());
+    public boolean esRepresentantePropietario(UUID evaluacionFichaPerfil, UUID representanteComite) {
+        return repository.existsByIdAndRepresentanteComiteId(evaluacionFichaPerfil, representanteComite);
     }
 }

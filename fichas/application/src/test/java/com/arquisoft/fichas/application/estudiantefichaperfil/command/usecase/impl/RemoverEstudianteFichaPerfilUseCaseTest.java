@@ -63,7 +63,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         useCase.ejecutar(RemoverEstudianteFichaPerfilMapper.toDomain(command));
 
         // Assert
-        verify(removerEstudianteFichaPerfilValidator, times(1)).validar(fichaPerfilId, estudianteId);
+        verify(removerEstudianteFichaPerfilValidator, times(1)).validar(any());
         verify(estudianteFichaPerfilOutputPort, times(1)).desvincularEstudiante(fichaPerfilId, estudianteId);
     }
 
@@ -79,7 +79,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
 
         // Assert
         InOrder inOrder = inOrder(removerEstudianteFichaPerfilValidator, estudianteFichaPerfilOutputPort);
-        inOrder.verify(removerEstudianteFichaPerfilValidator).validar(fichaPerfilId, estudianteId);
+        inOrder.verify(removerEstudianteFichaPerfilValidator).validar(any());
         inOrder.verify(estudianteFichaPerfilOutputPort).desvincularEstudiante(fichaPerfilId, estudianteId);
     }
 
@@ -91,7 +91,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
 
         doThrow(new FichaPerfilNoEncontradaException(fichaPerfilId))
-                .when(removerEstudianteFichaPerfilValidator).validar(any(), any());
+                .when(removerEstudianteFichaPerfilValidator).validar(any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(RemoverEstudianteFichaPerfilMapper.toDomain(command)))
@@ -109,7 +109,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
 
         doThrow(new EstudianteNoEncontradoException(estudianteId))
-                .when(removerEstudianteFichaPerfilValidator).validar(any(), any());
+                .when(removerEstudianteFichaPerfilValidator).validar(any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(RemoverEstudianteFichaPerfilMapper.toDomain(command)))
@@ -127,7 +127,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         var command = new RemoverEstudianteFichaPerfilCommand(fichaPerfilId, estudianteId);
 
         doThrow(new EstudianteFichaPerfilNoEncontradoException(estudianteId, fichaPerfilId))
-                .when(removerEstudianteFichaPerfilValidator).validar(any(), any());
+                .when(removerEstudianteFichaPerfilValidator).validar(any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(RemoverEstudianteFichaPerfilMapper.toDomain(command)))
