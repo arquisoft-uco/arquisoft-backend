@@ -40,15 +40,11 @@ public final class EstadoFichaPerfilDomain {
         return aggregate;
     }
 
-    // ─── Factory: reconstruir (desde persistencia — dato confiable) ──────────
-
     public static EstadoFichaPerfilDomain reconstruir(UUID id, UUID fichaPerfilId,
                                                          EstadoFicha estadoFicha,
                                                          Instant fechaActualizacion) {
         return new EstadoFichaPerfilDomain(id, fichaPerfilId, estadoFicha, fechaActualizacion);
     }
-
-    // ─── Private setters ──────────────────────────────────────────────────────
 
     private void setId() {
         this.id = UtilUUID.generateNewUUID();
@@ -70,8 +66,6 @@ public final class EstadoFichaPerfilDomain {
     private void setFechaActualizacion() {
         this.fechaActualizacion = UtilDate.generateNewInstantNow();
     }
-
-    // ─── Getters ──────────────────────────────────────────────────────────────
 
     public UUID getId() {
         return id;

@@ -7,13 +7,9 @@ public final class UtilNumber {
 
     private UtilNumber() {}
 
-    // ─── Comprobaciones ───────────────────────────────────────────────────────
-
     public static boolean isZero(final Number number) {
         return getDefault(number).equals(ZERO);
     }
-
-    // ─── Valor por defecto ────────────────────────────────────────────────────
 
     public static Number getDefault(final Number number, final Number defaultValue) {
         if (UtilObject.isNull(number)) {
@@ -25,8 +21,6 @@ public final class UtilNumber {
     public static Number getDefault(final Number number) {
         return getDefault(number, ZERO);
     }
-
-    // ─── Validación de formato ────────────────────────────────────────────────
 
     public static boolean isValidDecimalFormat(final Number number) {
         return UtilText.matchPattern(

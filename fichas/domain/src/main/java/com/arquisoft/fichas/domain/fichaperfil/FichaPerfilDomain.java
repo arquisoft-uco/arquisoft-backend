@@ -25,8 +25,6 @@ public final class FichaPerfilDomain extends AggregateRoot {
         this.asesorFicha = asesorFicha;
     }
 
-    // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
-
     public static FichaPerfilDomain crear(String titulo, UUID asesorFicha) {
         var ficha = new FichaPerfilDomain();
         var result = new ValidationResult();
@@ -39,13 +37,9 @@ public final class FichaPerfilDomain extends AggregateRoot {
         return ficha;
     }
 
-    // ─── Factory: reconstruir (desde persistencia — dato confiable) ──────────
-
     public static FichaPerfilDomain reconstruir(UUID id, String titulo, UUID asesorFichaId) {
         return new FichaPerfilDomain(id, titulo, asesorFichaId);
     }
-
-    // ─── Private setters ──────────────────────────────────────────────────────
 
     private void setId() {
         this.id = UtilUUID.generateNewUUID();
@@ -73,8 +67,6 @@ public final class FichaPerfilDomain extends AggregateRoot {
         }
         this.asesorFicha = asesorFicha;
     }
-
-    // ─── Getters ──────────────────────────────────────────────────────────────
 
     public UUID getId() {
         return id;

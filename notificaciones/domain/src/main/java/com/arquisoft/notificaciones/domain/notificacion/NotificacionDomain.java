@@ -36,8 +36,6 @@ public final class NotificacionDomain {
 
     private NotificacionDomain() {}
 
-    // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
-
     public static NotificacionDomain crear(
             String idEvento, TipoNotificacion tipo, String destinatario, String asunto) {
 
@@ -56,8 +54,6 @@ public final class NotificacionDomain {
         notificacion.fechaCreacion = Instant.now();
         return notificacion;
     }
-
-    // ─── Factory: reconstruir (desde persistencia — dato confiable) ──────────
 
     public static NotificacionDomain reconstruir(
             DatosNotificacion datos, EstadoNotificacion estado, String detalleError) {
@@ -99,8 +95,6 @@ public final class NotificacionDomain {
             Instant fechaEnvio) {
     }
 
-    // ─── Métodos de negocio ───────────────────────────────────────────────────
-
     public void marcarEnviada() {
         validarTransicionPermitida();
         this.estado = EstadoNotificacion.ENVIADA;
@@ -127,8 +121,6 @@ public final class NotificacionDomain {
             result.lanzarSiTieneErrores();
         }
     }
-
-    // ─── Private setters ──────────────────────────────────────────────────────
 
     private void setId() {
         this.id = UtilUUID.generateNewUUID();
@@ -192,8 +184,6 @@ public final class NotificacionDomain {
         }
         this.asunto = UtilText.applyTrim(asunto);
     }
-
-    // ─── Getters ──────────────────────────────────────────────────────────────
 
     public UUID getId() {
         return id;

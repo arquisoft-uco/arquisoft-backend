@@ -9,13 +9,9 @@ public final class UtilText {
 
     private UtilText() {}
 
-    // ─── Normalización ────────────────────────────────────────────────────────
-
     public static String applyTrim(final String text) {
         return UtilObject.isNull(text) ? EMPTY : text.trim();
     }
-
-    // ─── Comprobaciones ───────────────────────────────────────────────────────
 
     public static boolean isEmptyOrNull(final String text) {
         return applyTrim(text).equals(EMPTY);
@@ -26,8 +22,6 @@ public final class UtilText {
         String safePattern = UtilObject.isNull(pattern) ? EMPTY : pattern;
         return safeText.matches(safePattern);
     }
-
-    // ─── Validaciones de formato ──────────────────────────────────────────────
 
     public static boolean emailStringIsValid(final String emailValue) {
         return matchPattern(emailValue, EMAIL_RE);

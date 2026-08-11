@@ -10,8 +10,6 @@ public final class UtilDate {
 
     private UtilDate() {}
 
-    // ─── Generación ───────────────────────────────────────────────────────────
-
     public static LocalDate generateCurrentDate() {
         return LocalDate.now();
     }
@@ -20,13 +18,9 @@ public final class UtilDate {
         return Instant.now();
     }
 
-    // ─── Validación ───────────────────────────────────────────────────────────
-
     public static boolean dateStringIsValid(final String dateValue) {
         return !UtilObject.isNull(dateValue) && UtilText.matchPattern(dateValue, DATE_RE);
     }
-
-    // ─── Conversión ───────────────────────────────────────────────────────────
 
     public static LocalDate parseDateFromString(final String dateValue) {
         return dateStringIsValid(dateValue)

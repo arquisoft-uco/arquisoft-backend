@@ -29,8 +29,6 @@ public final class ItemFichaPerfilDomain {
 
     private ItemFichaPerfilDomain() {}
 
-    // ─── Factory: crear (entidad nueva — valida invariantes) ─────────────────
-
     public static ItemFichaPerfilDomain crear(UUID fichaPerfilId, String tipoItem, String contenido) {
         var result = new ValidationResult();
         var itemFichaPerfilDomain = crear(fichaPerfilId, tipoItem, contenido, result);
@@ -51,14 +49,10 @@ public final class ItemFichaPerfilDomain {
         return itemFichaPerfilDomain;
     }
 
-    // ─── Factory: reconstruir (desde persistencia — dato confiable) ──────────
-
     public static ItemFichaPerfilDomain reconstruir(UUID id, UUID fichaPerfilId, TipoItem tipoItem,
                                                        String contenido) {
         return new ItemFichaPerfilDomain(id, fichaPerfilId,  tipoItem, contenido);
     }
-
-    // ─── Private setters ──────────────────────────────────────────────────────
 
     private void setId() {
         this.id = UtilUUID.generateNewUUID();
@@ -103,8 +97,6 @@ public final class ItemFichaPerfilDomain {
         }
         this.contenido = UtilText.applyTrim(contenido);
     }
-
-    // ─── Getters ──────────────────────────────────────────────────────────────
 
     public UUID getId() {
         return id;
