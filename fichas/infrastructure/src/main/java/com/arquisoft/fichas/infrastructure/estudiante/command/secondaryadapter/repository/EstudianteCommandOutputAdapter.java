@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
-import com.arquisoft.fichas.infrastructure.estudiante.persistence.EstudianteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +10,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EstudianteCommandOutputAdapter implements EstudianteOutputPort {
 
-    private final EstudianteRepository estudianteRepository;
+    private final EstudianteCommandRepository estudianteRepository;
 
     @Override
     public boolean existePorId(UUID id) {

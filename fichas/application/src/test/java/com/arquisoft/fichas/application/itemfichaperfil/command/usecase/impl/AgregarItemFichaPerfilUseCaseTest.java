@@ -8,7 +8,9 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.finder.TipoItemE
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity.ItemFichaPerfilEntity;
 import com.arquisoft.fichas.domain.itemfichaperfil.AgregacionItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
@@ -28,6 +30,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -76,7 +79,7 @@ class AgregarItemFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(resultado).isEqualTo(entrada.getItem().getId());
-        verify(itemFichaPerfilOutputPort, times(1)).registrarItem(entrada.getItem());
+        verify(itemFichaPerfilOutputPort, times(1)).registrarItem(entidadDe(entrada.getItem()));
     }
 
     @Test
@@ -97,7 +100,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         inOrder.verify(tipoItemEnFichaExisteFinder).obtener(entrada.getItem());
         inOrder.verify(agregarItemFichaPerfilValidator)
                 .validar(entrada.getItem(), estudiante, true, true, false);
-        inOrder.verify(itemFichaPerfilOutputPort).registrarItem(entrada.getItem());
+        inOrder.verify(itemFichaPerfilOutputPort).registrarItem(entidadDe(entrada.getItem()));
     }
 
     @Test
@@ -154,7 +157,7 @@ class AgregarItemFichaPerfilUseCaseTest {
         var entrada = entrada();
         stubConsultas(entrada, true, true, false);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
-                .when(itemFichaPerfilOutputPort).registrarItem(entrada.getItem());
+                .when(itemFichaPerfilOutputPort).registrarItem(entidadDe(entrada.getItem()));
 
         // Act & Assert
         assertThatThrownBy(() -> agregarItemFichaPerfilUseCase.ejecutar(entrada))
@@ -172,5 +175,13 @@ class AgregarItemFichaPerfilUseCaseTest {
     private AgregacionItemFichaPerfilDomain entrada() {
         return AgregacionItemFichaPerfilDomain.crear(
                 fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item", estudiante);
+    }
+
+    // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.
+    private static ItemFichaPerfilEntity entidadDe(ItemFichaPerfilDomain item) {
+        return argThat(entity -> entity.getId().equals(item.getId())
+                && entity.getFichaPerfilId().equals(item.getFichaPerfilId())
+                && entity.getTipoItem().getId().equals(item.getTipoItem().getId())
+                && entity.getContenido().equals(item.getContenido()));
     }
 }

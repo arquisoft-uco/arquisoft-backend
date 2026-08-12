@@ -1,7 +1,7 @@
-package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence;
+package com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.entity;
 
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionEntity;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
+import com.arquisoft.fichas.application.estadoevaluacion.command.secondaryport.entity.EstadoEvaluacionEntity;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

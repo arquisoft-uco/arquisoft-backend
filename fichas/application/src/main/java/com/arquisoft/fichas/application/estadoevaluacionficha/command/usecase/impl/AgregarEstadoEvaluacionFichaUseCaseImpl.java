@@ -11,6 +11,7 @@ import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.mapper.EstadoEvaluacionFichaMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -43,7 +44,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
                 entrada.getEstadoEvaluacion(),
                 obtenerUltimoEstado(entrada.getEvaluacionFichaPerfil()));
 
-        estadoEvaluacionFichaOutputPort.agregarEstado(estadoEvaluacion);
+        estadoEvaluacionFichaOutputPort.agregarEstado(EstadoEvaluacionFichaMapper.toEntity(estadoEvaluacion));
 
         logger.info(
                 catalogo.obtener(EstadoEvaluacionFichaKey.LOG_AGREGADO),
@@ -56,6 +57,8 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
 
     private EstadoEvaluacion obtenerUltimoEstado(UUID evaluacionFichaPerfil) {
         return estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionFichaPerfil)
+                .map(EstadoEvaluacionFichaMapper::toDomain)
+                .map(EstadoEvaluacionFichaDomain::getEstadoEvaluacion)
                 .orElse(null);
     }
 }

@@ -7,6 +7,7 @@ import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.representantecomite.command.finder.RepresentanteComiteExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.RepresentanteComiteNoEncontradoException;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -78,7 +80,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(resultado).isEqualTo(evaluacion.getId());
-        verify(evaluacionFichaPerfilOutputPort, times(1)).registrarEvaluacion(evaluacion);
+        verify(evaluacionFichaPerfilOutputPort, times(1)).registrarEvaluacion(entidadDe(evaluacion));
         verify(estadoEvaluacionFichaOutputPort, times(1)).registrarEstadoInicial(any());
     }
 
@@ -99,7 +101,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         inOrder.verify(representanteComiteExisteFinder).obtener(representante);
         inOrder.verify(evaluacionDeRepresentanteExisteFinder).obtener(evaluacion);
         inOrder.verify(registrarEvaluacionFichaPerfilValidator).validar(evaluacion, true, true, false);
-        inOrder.verify(evaluacionFichaPerfilOutputPort).registrarEvaluacion(evaluacion);
+        inOrder.verify(evaluacionFichaPerfilOutputPort).registrarEvaluacion(entidadDe(evaluacion));
     }
 
     @Test
@@ -153,7 +155,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
         stubConsultas(evaluacion, true, true, false);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
-                .when(evaluacionFichaPerfilOutputPort).registrarEvaluacion(evaluacion);
+                .when(evaluacionFichaPerfilOutputPort).registrarEvaluacion(entidadDe(evaluacion));
 
         // Act & Assert
         assertThatThrownBy(() -> registrarEvaluacionFichaPerfilUseCase.ejecutar(evaluacion))
@@ -167,5 +169,12 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         when(fichaPerfilExisteFinder.obtener(ficha)).thenReturn(fichaExiste);
         when(representanteComiteExisteFinder.obtener(representante)).thenReturn(representanteExiste);
         when(evaluacionDeRepresentanteExisteFinder.obtener(evaluacion)).thenReturn(evaluacionYaExiste);
+    }
+
+    // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.
+    private static EvaluacionFichaPerfilEntity entidadDe(EvaluacionFichaPerfilDomain evaluacion) {
+        return argThat(entity -> entity.getId().equals(evaluacion.getId())
+                && entity.getRepresentanteComiteId().equals(evaluacion.getRepresentanteComiteId())
+                && entity.getFichaPerfilId().equals(evaluacion.getFichaPerfilId()));
     }
 }

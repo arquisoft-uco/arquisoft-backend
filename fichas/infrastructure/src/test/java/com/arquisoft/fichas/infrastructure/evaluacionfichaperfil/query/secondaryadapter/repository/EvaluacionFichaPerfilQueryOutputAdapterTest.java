@@ -1,8 +1,7 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.criteria.PropietarioEvaluacionCriteria;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilRepository;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EvaluacionFichaPerfilQueryOutputAdapterTest {
 
     @Autowired
-    private EvaluacionFichaPerfilRepository evaluacionFichaPerfilRepository;
+    private EvaluacionFichaPerfilQueryRepository evaluacionFichaPerfilRepository;
 
     private EvaluacionFichaPerfilQueryOutputAdapter adapter;
 

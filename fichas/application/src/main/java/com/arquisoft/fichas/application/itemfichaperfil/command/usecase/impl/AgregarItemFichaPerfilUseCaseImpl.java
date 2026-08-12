@@ -10,6 +10,7 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.validator.Agrega
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.AgregacionItemFichaPerfilDomain;
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.mapper.ItemFichaPerfilMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
         agregarItemFichaPerfilValidator.validar(
                 item, entrada.getEstudiante(), fichaExiste, esPropietario, tipoYaExiste);
 
-        itemFichaPerfilOutputPort.registrarItem(item);
+        itemFichaPerfilOutputPort.registrarItem(ItemFichaPerfilMapper.toEntity(item));
 
         logger.info(
                 catalogo.obtener(ItemFichaPerfilKey.LOG_AGREGADO),

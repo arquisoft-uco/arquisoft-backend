@@ -1,6 +1,5 @@
 package com.arquisoft.fichas.infrastructure.estudiante.query.secondaryadapter.repository;
 
-import com.arquisoft.fichas.infrastructure.estudiante.persistence.EstudianteRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +17,7 @@ import static org.mockito.Mockito.times;
 class EstudianteQueryOutputAdapterTest {
 
     @Mock
-    private EstudianteRepository estudianteRepository;
+    private EstudianteQueryRepository estudianteRepository;
 
     @InjectMocks
     private EstudianteQueryOutputAdapter adapter;

@@ -1,13 +1,13 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport;
 
-import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity.ItemFichaPerfilEntity;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public interface ItemFichaPerfilOutputPort {
 
-    void registrarItem(ItemFichaPerfilDomain item);
+    void registrarItem(ItemFichaPerfilEntity item);
 
     void actualizarContenido(UUID item, String contenido);
 

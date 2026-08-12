@@ -1,12 +1,13 @@
-package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence;
+package com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.mapper;
 
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
-import org.springframework.stereotype.Component;
 
-@Component
-public class EvaluacionFichaPerfilMapper {
+public final class EvaluacionFichaPerfilMapper {
 
-    public EvaluacionFichaPerfilEntity toEntity(EvaluacionFichaPerfilDomain aggregate) {
+    private EvaluacionFichaPerfilMapper() {}
+
+    public static EvaluacionFichaPerfilEntity toEntity(EvaluacionFichaPerfilDomain aggregate) {
         return EvaluacionFichaPerfilEntity.builder()
                 .id(aggregate.getId())
                 .representanteComiteId(aggregate.getRepresentanteComiteId())
@@ -15,7 +16,7 @@ public class EvaluacionFichaPerfilMapper {
                 .build();
     }
 
-    public EvaluacionFichaPerfilDomain toDomain(EvaluacionFichaPerfilEntity entity) {
+    public static EvaluacionFichaPerfilDomain toDomain(EvaluacionFichaPerfilEntity entity) {
         return EvaluacionFichaPerfilDomain.reconstruir(
                 entity.getId(),
                 entity.getRepresentanteComiteId(),

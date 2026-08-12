@@ -6,6 +6,9 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.Est
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EvaluacionFichaExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.RepresentantePropietarioEvaluacionFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
+import com.arquisoft.fichas.application.estadoevaluacion.command.secondaryport.entity.EstadoEvaluacionEntity;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.entity.EstadoEvaluacionFichaEntity;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
@@ -22,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -71,7 +75,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var entrada = entrada();
         stubConsultas(entrada, true, true, false);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacion))
-                .thenReturn(Optional.of(EstadoEvaluacion.EN_EVALUACION));
+                .thenReturn(Optional.of(entidadConEstado(EstadoEvaluacion.EN_EVALUACION)));
 
         // Act
         UUID resultado = agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada);
@@ -87,7 +91,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var entrada = entrada();
         stubConsultas(entrada, true, true, false);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacion))
-                .thenReturn(Optional.of(EstadoEvaluacion.EN_EVALUACION));
+                .thenReturn(Optional.of(entidadConEstado(EstadoEvaluacion.EN_EVALUACION)));
 
         // Act
         agregarEstadoEvaluacionFichaUseCase.ejecutar(entrada);
@@ -154,7 +158,7 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
         var entrada = entrada();
         stubConsultas(entrada, true, true, false);
         when(estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacion))
-                .thenReturn(Optional.of(EstadoEvaluacion.EN_EVALUACION));
+                .thenReturn(Optional.of(entidadConEstado(EstadoEvaluacion.EN_EVALUACION)));
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
                 .when(estadoEvaluacionFichaOutputPort).agregarEstado(any());
 
@@ -173,5 +177,15 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
     private AgregacionEstadoEvaluacionFichaDomain entrada() {
         return AgregacionEstadoEvaluacionFichaDomain.crear(
                 evaluacion, EstadoEvaluacion.APROBADA.getId(), representante);
+    }
+
+    // El puerto devuelve la entidad; convertirla al enum de dominio es tarea del mapper.
+    private EstadoEvaluacionFichaEntity entidadConEstado(EstadoEvaluacion estado) {
+        return EstadoEvaluacionFichaEntity.builder()
+                .id(UUID.randomUUID())
+                .evaluacionFichaPerfil(EvaluacionFichaPerfilEntity.builder().id(evaluacion).build())
+                .estadoEvaluacion(EstadoEvaluacionEntity.builder().id(estado.getId()).build())
+                .fechaActualizacion(Instant.now())
+                .build();
     }
 }

@@ -104,10 +104,10 @@ class ModificarFichaPerfilControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // ── 3. Excepción de autorización: no propietario ──
+    // ── 3. Excepción de dominio: no propietario ──
 
     @Test
-    void debeRetornar403_cuandoNoEsPropietario() throws Exception {
+    void debeRetornar422_cuandoNoEsPropietario() throws Exception {
         // Arrange
         doThrow(new FichaNoPropietarioException(FICHA_ID, ESTUDIANTE_ID))
                 .when(modificarFichaPerfilInteractor)
@@ -120,7 +120,7 @@ class ModificarFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     // ── 4. Excepción de dominio: ficha no existe ──

@@ -1,4 +1,4 @@
-package com.arquisoft.notificaciones.infrastructure.notificacion.persistence;
+package com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

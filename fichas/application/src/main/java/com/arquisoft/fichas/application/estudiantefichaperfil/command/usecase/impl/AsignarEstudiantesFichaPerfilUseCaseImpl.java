@@ -10,6 +10,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.mapper.EstudianteFichaPerfilMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -43,7 +44,9 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
         asignarEstudiantesFichaPerfilValidator.validar(
                 relaciones, fichaExiste, estudiantesExistentes, yaVinculados, vinculadosActuales);
 
-        relaciones.forEach(estudianteFichaPerfilOutputPort::vincularEstudiante);
+        relaciones.stream()
+                .map(EstudianteFichaPerfilMapper::toEntity)
+                .forEach(estudianteFichaPerfilOutputPort::vincularEstudiante);
 
         logger.info(catalogo.obtener(EstudianteFichaPerfilKey.LOG_ASIGNADO), fichaPerfil, relaciones.size());
     }

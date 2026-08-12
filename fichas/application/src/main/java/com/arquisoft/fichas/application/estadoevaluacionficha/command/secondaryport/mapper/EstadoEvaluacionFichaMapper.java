@@ -1,38 +1,41 @@
-package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence;
+package com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.mapper;
 
+import com.arquisoft.fichas.application.estadoevaluacion.command.secondaryport.entity.EstadoEvaluacionEntity;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.entity.EstadoEvaluacionFichaEntity;
+import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionNoEncontradoException;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionEntity;
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionRepository;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
-@Component
-@RequiredArgsConstructor
-public class EstadoEvaluacionFichaMapper {
+public final class EstadoEvaluacionFichaMapper {
 
-    private final EstadoEvaluacionRepository estadoEvaluacionRepository;
+    private EstadoEvaluacionFichaMapper() {}
 
-    public EstadoEvaluacionFichaDomain toDomain(EstadoEvaluacionFichaEntity entity) {
+    public static EstadoEvaluacionFichaDomain toDomain(EstadoEvaluacionFichaEntity entity) {
         return EstadoEvaluacionFichaDomain.reconstruir(
                 entity.getId(),
                 entity.getEvaluacionFichaPerfil().getId(),
-                EstadoEvaluacion.valueOf(entity.getEstadoEvaluacion().getId()),
+                convertir(entity.getEstadoEvaluacion().getId()),
                 entity.getFechaActualizacion());
     }
 
-    public EstadoEvaluacionFichaEntity toEntity(
-            EstadoEvaluacionFichaDomain aggregate,
-            EvaluacionFichaPerfilEntity evaluacionFichaPerfilRef) {
+    private static EstadoEvaluacion convertir(String estadoEvaluacionId) {
+        try {
+            return EstadoEvaluacion.valueOf(estadoEvaluacionId);
+        } catch (IllegalArgumentException ex) {
+            throw new EstadoEvaluacionNoEncontradoException(estadoEvaluacionId);
+        }
+    }
 
-        EstadoEvaluacionEntity estadoEvaluacionRef = estadoEvaluacionRepository
-                .getReferenceById(aggregate.getEstadoEvaluacion().name());
-
+    public static EstadoEvaluacionFichaEntity toEntity(EstadoEvaluacionFichaDomain aggregate) {
         return EstadoEvaluacionFichaEntity.builder()
                 .id(aggregate.getId())
-                .evaluacionFichaPerfil(evaluacionFichaPerfilRef)
-                .estadoEvaluacion(estadoEvaluacionRef)
+                .evaluacionFichaPerfil(EvaluacionFichaPerfilEntity.builder()
+                        .id(aggregate.getEvaluacionFichaPerfilId())
+                        .build())
+                .estadoEvaluacion(EstadoEvaluacionEntity.builder()
+                        .id(aggregate.getEstadoEvaluacion().name())
+                        .build())
                 .fechaActualizacion(aggregate.getFechaActualizacion())
                 .build();
     }

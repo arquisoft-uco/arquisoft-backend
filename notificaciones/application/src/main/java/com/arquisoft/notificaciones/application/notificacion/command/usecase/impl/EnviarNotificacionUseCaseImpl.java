@@ -6,6 +6,7 @@ import com.arquisoft.notificaciones.application.notificacion.command.usecase.Env
 import com.arquisoft.notificaciones.application.notificacion.command.validator.NotificacionValidator;
 import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.NotificacionOutputPort;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.mapper.NotificacionMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.notification.EnvioNotificacionOutputPort;
@@ -65,6 +66,6 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
                     entrada.destinatarioEmail());
         }
 
-        notificacionOutputPort.guardar(notificacion);
+        notificacionOutputPort.guardar(NotificacionMapper.toEntity(notificacion));
     }
 }

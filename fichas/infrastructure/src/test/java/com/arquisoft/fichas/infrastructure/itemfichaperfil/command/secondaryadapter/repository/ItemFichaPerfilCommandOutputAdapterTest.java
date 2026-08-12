@@ -1,10 +1,9 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
-import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilEntity;
-import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilRepository;
-import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemEntity;
-import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemRepository;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.mapper.ItemFichaPerfilMapper;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity.ItemFichaPerfilEntity;
+import com.arquisoft.fichas.application.tipoitem.command.secondaryport.entity.TipoItemEntity;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,10 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ItemFichaPerfilCommandOutputAdapterTest {
 
     @Autowired
-    private ItemFichaPerfilRepository repository;
-
-    @Autowired
-    private TipoItemRepository tipoItemRepository;
+    private ItemFichaPerfilCommandRepository repository;
 
     @Autowired
     private EntityManager entityManager;
@@ -37,7 +33,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new ItemFichaPerfilCommandOutputAdapter(repository, tipoItemRepository);
+        adapter = new ItemFichaPerfilCommandOutputAdapter(repository);
 
         // Seed: insertar tipo_item en H2 para que la referencia por id funcione
         entityManager.createNativeQuery(
@@ -62,7 +58,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         );
 
         // Act
-        adapter.registrarItem(aggregate);
+        adapter.registrarItem(ItemFichaPerfilMapper.toEntity(aggregate));
         entityManager.flush();
         entityManager.clear();
 
@@ -86,7 +82,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         );
 
         // Act
-        adapter.registrarItem(aggregate);
+        adapter.registrarItem(ItemFichaPerfilMapper.toEntity(aggregate));
         entityManager.flush();
 
         // Assert — getReference crea un proxy sin SELECT
@@ -102,7 +98,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
         UUID fichaPerfilId = UUID.randomUUID();
         String tipoItem = "OBJETIVO_GENERAL";
 
-        TipoItemEntity tipoItemRef = tipoItemRepository.getReferenceById(tipoItem);
+        TipoItemEntity tipoItemRef = entityManager.getReference(TipoItemEntity.class, tipoItem);
         ItemFichaPerfilEntity entity = ItemFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
@@ -137,7 +133,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeRetornarTrue_cuandoItemExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        TipoItemEntity tipoItemRef = tipoItemRepository.getReferenceById("OBJETIVO_GENERAL");
+        TipoItemEntity tipoItemRef = entityManager.getReference(TipoItemEntity.class, "OBJETIVO_GENERAL");
         ItemFichaPerfilEntity entity = ItemFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
@@ -176,7 +172,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
                 "OBJETIVO_GENERAL",
                 "Contenido inicial"
         );
-        adapter.registrarItem(aggregate);
+        adapter.registrarItem(ItemFichaPerfilMapper.toEntity(aggregate));
         entityManager.flush();
         entityManager.clear();
 
@@ -201,7 +197,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
                 "OBJETIVO_GENERAL",
                 "Contenido inicial"
         );
-        adapter.registrarItem(aggregate);
+        adapter.registrarItem(ItemFichaPerfilMapper.toEntity(aggregate));
         entityManager.flush();
         entityManager.clear();
 
@@ -225,7 +221,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
     void debeEliminar_cuandoIdValido() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        TipoItemEntity tipoItemRef = tipoItemRepository.getReferenceById("OBJETIVO_GENERAL");
+        TipoItemEntity tipoItemRef = entityManager.getReference(TipoItemEntity.class, "OBJETIVO_GENERAL");
         ItemFichaPerfilEntity entity = ItemFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)

@@ -105,7 +105,7 @@ class ModificarItemFichaPerfilControllerTest {
     }
 
     @Test
-    void debe403_cuandoEstudianteNoEsPropietario() throws Exception {
+    void debe422_cuandoEstudianteNoEsPropietario() throws Exception {
         // Arrange
         UUID itemId = UUID.randomUUID();
         UUID fichaPerfilId = UUID.randomUUID();
@@ -122,7 +122,7 @@ class ModificarItemFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

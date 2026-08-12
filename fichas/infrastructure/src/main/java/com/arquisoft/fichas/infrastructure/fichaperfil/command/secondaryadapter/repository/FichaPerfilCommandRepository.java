@@ -1,23 +1,15 @@
-package com.arquisoft.fichas.infrastructure.fichaperfil.persistence;
+package com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
-import org.springframework.data.jpa.repository.EntityGraph;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.UUID;
 
-public interface FichaPerfilRepository extends JpaRepository<FichaPerfilEntity, UUID>,
-        JpaSpecificationExecutor<FichaPerfilEntity> {
-
-    @EntityGraph(attributePaths = "asesorFicha")
-    Page<FichaPerfilEntity> findAll(Specification<FichaPerfilEntity> spec, Pageable pageable);
+public interface FichaPerfilCommandRepository extends JpaRepository<FichaPerfilEntity, UUID> {
 
     boolean existsByTituloProyecto(String tituloProyecto);
 

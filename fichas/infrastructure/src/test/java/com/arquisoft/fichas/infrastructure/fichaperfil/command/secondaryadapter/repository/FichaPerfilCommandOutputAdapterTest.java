@@ -1,10 +1,8 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,19 +14,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 class FichaPerfilCommandOutputAdapterTest {
 
     @Mock
-    private FichaPerfilRepository fichaPerfilRepository;
-
-    @Mock
-    private AsesorFichaRepository asesorFichaRepository;
+    private FichaPerfilCommandRepository fichaPerfilRepository;
 
     private FichaPerfilCommandOutputAdapter adapter;
 
@@ -39,56 +34,35 @@ class FichaPerfilCommandOutputAdapterTest {
     void setUp() {
         fichaId = UUID.randomUUID();
         asesorId = UUID.randomUUID();
-        adapter = new FichaPerfilCommandOutputAdapter(fichaPerfilRepository, asesorFichaRepository,
-                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
+        adapter = new FichaPerfilCommandOutputAdapter(
+                fichaPerfilRepository,
+                mock(AppLogger.class),
                 CatalogoMensajesResourceBundle.porDefecto());
     }
 
     @Test
-    void debeGuardarFichaPerfil_cuandoAgreggateEsValido() {
+    void debeGuardarLaEntidadTalCual_cuandoElCasoDeUsoYaLaMapeo() {
         // Arrange
-        FichaPerfilDomain aggregate = FichaPerfilDomain.reconstruir(
-                fichaId,
-                "Proyecto de Prueba",
-                asesorId
-        );
-
-        AsesorFichaEntity asesorRef = AsesorFichaEntity.builder()
-                .id(asesorId)
-                .build();
-
-        when(asesorFichaRepository.getReferenceById(asesorId)).thenReturn(asesorRef);
-        when(fichaPerfilRepository.save(any(FichaPerfilEntity.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        FichaPerfilEntity entity = fichaEntity();
 
         // Act
-        adapter.registrarFicha(aggregate);
+        adapter.registrarFicha(entity);
 
-        // Assert
-        verify(asesorFichaRepository, times(1)).getReferenceById(asesorId);
-        verify(fichaPerfilRepository, times(1)).save(any(FichaPerfilEntity.class));
+        // Assert — el adapter ya no traduce nada: delega la entidad que recibio
+        verify(fichaPerfilRepository, times(1)).save(entity);
     }
 
     @Test
-    void debeBuscarPorId_cuandoIdExiste() {
+    void debeDevolverLaEntidad_cuandoIdExiste() {
         // Arrange
-        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
-                .id(asesorId)
-                .build();
-
-        FichaPerfilEntity entity = FichaPerfilEntity.builder()
-                .id(fichaId)
-                .tituloProyecto("Proyecto Test")
-                .asesorFicha(asesor)
-                .build();
-
+        FichaPerfilEntity entity = fichaEntity();
         when(fichaPerfilRepository.findById(fichaId)).thenReturn(Optional.of(entity));
 
         // Act
-        Optional<FichaPerfilDomain> resultado = adapter.buscarPorId(fichaId);
+        Optional<FichaPerfilEntity> resultado = adapter.buscarPorId(fichaId);
 
         // Assert
-        assertThat(resultado).isPresent();
+        assertThat(resultado).contains(entity);
         verify(fichaPerfilRepository, times(1)).findById(fichaId);
     }
 
@@ -98,11 +72,23 @@ class FichaPerfilCommandOutputAdapterTest {
         when(fichaPerfilRepository.findById(fichaId)).thenReturn(Optional.empty());
 
         // Act
-        Optional<FichaPerfilDomain> resultado = adapter.buscarPorId(fichaId);
+        Optional<FichaPerfilEntity> resultado = adapter.buscarPorId(fichaId);
 
         // Assert
         assertThat(resultado).isEmpty();
         verify(fichaPerfilRepository, times(1)).findById(fichaId);
+    }
+
+    @Test
+    void debeDelegarLaReferenciaDelAsesor_cuandoActualizaElAsesor() {
+        // Arrange
+        AsesorFichaEntity nuevoAsesor = AsesorFichaEntity.builder().id(asesorId).build();
+
+        // Act
+        adapter.actualizarAsesor(fichaId, nuevoAsesor);
+
+        // Assert
+        verify(fichaPerfilRepository, times(1)).actualizarAsesorFicha(fichaId, nuevoAsesor);
     }
 
     @Test
@@ -111,11 +97,8 @@ class FichaPerfilCommandOutputAdapterTest {
         String titulo = "Proyecto Unico";
         when(fichaPerfilRepository.existsByTituloProyecto(titulo)).thenReturn(true);
 
-        // Act
-        boolean existe = adapter.existePorTituloProyecto(titulo);
-
-        // Assert
-        assertThat(existe).isTrue();
+        // Act & Assert
+        assertThat(adapter.existePorTituloProyecto(titulo)).isTrue();
         verify(fichaPerfilRepository, times(1)).existsByTituloProyecto(titulo);
     }
 
@@ -125,11 +108,16 @@ class FichaPerfilCommandOutputAdapterTest {
         String titulo = "Proyecto Nuevo";
         when(fichaPerfilRepository.existsByTituloProyecto(titulo)).thenReturn(false);
 
-        // Act
-        boolean existe = adapter.existePorTituloProyecto(titulo);
-
-        // Assert
-        assertThat(existe).isFalse();
+        // Act & Assert
+        assertThat(adapter.existePorTituloProyecto(titulo)).isFalse();
         verify(fichaPerfilRepository, times(1)).existsByTituloProyecto(titulo);
+    }
+
+    private FichaPerfilEntity fichaEntity() {
+        return FichaPerfilEntity.builder()
+                .id(fichaId)
+                .tituloProyecto("Proyecto de Prueba")
+                .asesorFicha(AsesorFichaEntity.builder().id(asesorId).build())
+                .build();
     }
 }

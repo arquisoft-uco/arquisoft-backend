@@ -1,5 +1,6 @@
-package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence;
+package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -9,10 +10,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class EstudianteFichaPerfilRepositoryTest {
+class EstudianteFichaPerfilCommandRepositoryTest {
 
     @Autowired
-    private EstudianteFichaPerfilRepository repository;
+    private EstudianteFichaPerfilCommandRepository repository;
 
     @Test
     void debeRetornarFalse_cuandoRelacionNoExiste() {

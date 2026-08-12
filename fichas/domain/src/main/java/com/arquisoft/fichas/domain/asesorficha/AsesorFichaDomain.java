@@ -1,8 +1,14 @@
 package com.arquisoft.fichas.domain.asesorficha;
 
+import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilUUID;
+
 import java.util.UUID;
 
 public final class AsesorFichaDomain {
+
+    public static final AsesorFichaDomain VACIO = new AsesorFichaDomain(
+            UtilUUID.getDefaultUUID(), UtilText.EMPTY, UtilText.EMPTY, UtilText.EMPTY);
 
     private final UUID id;
     private final String identificador;
@@ -34,5 +40,9 @@ public final class AsesorFichaDomain {
 
     public String getEmail() {
         return email;
+    }
+
+    public boolean esVacio() {
+        return this != VACIO;
     }
 }

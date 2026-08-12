@@ -1,9 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilMapper;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,13 +11,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFichaPerfilOutputPort {
 
-    private final EstudianteFichaPerfilRepository repository;
-    private final EstudianteFichaPerfilMapper mapper;
+    private final EstudianteFichaPerfilCommandRepository repository;
 
     @Override
-    public void vincularEstudiante(EstudianteFichaPerfilDomain relacion) {
-        var entity = mapper.toEntity(relacion);
-        repository.save(entity);
+    public void vincularEstudiante(EstudianteFichaPerfilEntity relacion) {
+        repository.save(relacion);
     }
 
     @Override

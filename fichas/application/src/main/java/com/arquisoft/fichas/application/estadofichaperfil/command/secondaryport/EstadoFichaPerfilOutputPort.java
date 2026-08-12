@@ -1,14 +1,13 @@
 package com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport;
 
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public interface EstadoFichaPerfilOutputPort {
 
-    void registrarEstadoInicial(EstadoFichaPerfilDomain estado);
+    void registrarEstadoInicial(EstadoFichaPerfilEntity estado);
 
-    Optional<EstadoFicha> obtenerEstadoActual(UUID fichaPerfilId);
+    Optional<EstadoFichaPerfilEntity> obtenerEstadoActual(UUID fichaPerfilId);
 }

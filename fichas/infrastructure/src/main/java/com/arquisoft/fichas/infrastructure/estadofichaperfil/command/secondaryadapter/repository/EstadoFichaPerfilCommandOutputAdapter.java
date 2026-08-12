@@ -1,11 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.EstadoFichaPerfilOutputPort;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
-import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilRepository;
-import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilMapper;
+import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,21 +12,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EstadoFichaPerfilCommandOutputAdapter implements EstadoFichaPerfilOutputPort {
 
-    private final EstadoFichaPerfilRepository repository;
-    private final EstadoFichaRepository estadoFichaRepository;
+    private final EstadoFichaPerfilCommandRepository repository;
 
     @Override
-    public void registrarEstadoInicial(EstadoFichaPerfilDomain aggregate) {
-        var estadoFichaRef =
-                estadoFichaRepository.getReferenceById(aggregate.getEstadoFicha().getId());
-        var entity = EstadoFichaPerfilMapper.toEntity(aggregate, estadoFichaRef);
-        repository.save(entity);
+    public void registrarEstadoInicial(EstadoFichaPerfilEntity estado) {
+        repository.save(estado);
     }
 
     @Override
-    public Optional<EstadoFicha> obtenerEstadoActual(UUID fichaPerfilId) {
-        return repository
-                .findFirstByFichaPerfilIdOrderByFechaActualizacionDesc(fichaPerfilId)
-                .map(entity -> EstadoFicha.valueOf(entity.getEstadoFicha().getId()));
+    public Optional<EstadoFichaPerfilEntity> obtenerEstadoActual(UUID fichaPerfilId) {
+        return repository.findFirstByFichaPerfilIdOrderByFechaActualizacionDesc(fichaPerfilId);
     }
 }

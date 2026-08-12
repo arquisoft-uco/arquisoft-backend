@@ -1,8 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
+import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +19,7 @@ import static org.mockito.Mockito.when;
 class EstadoFichaQueryOutputAdapterTest {
 
     @Mock
-    private EstadoFichaRepository repository;
+    private EstadoFichaQueryRepository repository;
 
     @InjectMocks
     private EstadoFichaQueryOutputAdapter adapter;

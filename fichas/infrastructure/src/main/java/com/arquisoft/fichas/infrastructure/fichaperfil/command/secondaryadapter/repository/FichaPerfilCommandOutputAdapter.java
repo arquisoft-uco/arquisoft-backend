@@ -1,14 +1,11 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,48 +16,45 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
-    private final FichaPerfilRepository fichaPerfilRepository;
-    private final AsesorFichaRepository asesorFichaRepository;
+    private final FichaPerfilCommandRepository fichaPerfilCommandRepository;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
 
     @Override
-    public void registrarFicha(FichaPerfilDomain ficha) {
-        AsesorFichaEntity asesorRef = asesorFichaRepository.getReferenceById(ficha.getAsesorFicha());
-        fichaPerfilRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));
+    public void registrarFicha(FichaPerfilEntity ficha) {
+        fichaPerfilCommandRepository.save(ficha);
         logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), ficha.getId());
     }
 
     @Override
     public void actualizarTitulo(UUID fichaPerfil, String tituloProyecto) {
-        fichaPerfilRepository.actualizarTitulo(fichaPerfil, tituloProyecto);
+        fichaPerfilCommandRepository.actualizarTitulo(fichaPerfil, tituloProyecto);
         logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), fichaPerfil);
     }
 
     @Override
-    public void actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha) {
-        AsesorFichaEntity asesorRef = asesorFichaRepository.getReferenceById(nuevoAsesorFicha);
-        fichaPerfilRepository.actualizarAsesorFicha(fichaPerfil, asesorRef);
+    public void actualizarAsesor(UUID fichaPerfil, AsesorFichaEntity nuevoAsesorFicha) {
+        fichaPerfilCommandRepository.actualizarAsesorFicha(fichaPerfil, nuevoAsesorFicha);
         logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), fichaPerfil);
     }
 
     @Override
-    public Optional<FichaPerfilDomain> buscarPorId(UUID id) {
-        return fichaPerfilRepository.findById(id).map(FichaPerfilMapper::toDomain);
+    public Optional<FichaPerfilEntity> buscarPorId(UUID id) {
+        return fichaPerfilCommandRepository.findById(id);
     }
 
     @Override
     public boolean existePorId(UUID id) {
-        return fichaPerfilRepository.existsById(id);
+        return fichaPerfilCommandRepository.existsById(id);
     }
 
     @Override
     public boolean existePorTituloProyecto(String titulo) {
-        return fichaPerfilRepository.existsByTituloProyecto(titulo);
+        return fichaPerfilCommandRepository.existsByTituloProyecto(titulo);
     }
 
     @Override
     public boolean existeTituloEnOtraFicha(UUID fichaPerfil, String titulo) {
-        return fichaPerfilRepository.existsByTituloProyectoAndIdNot(titulo, fichaPerfil);
+        return fichaPerfilCommandRepository.existsByTituloProyectoAndIdNot(titulo, fichaPerfil);
     }
 }

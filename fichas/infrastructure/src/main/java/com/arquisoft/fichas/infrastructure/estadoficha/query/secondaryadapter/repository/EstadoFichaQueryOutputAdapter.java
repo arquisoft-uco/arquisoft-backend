@@ -2,8 +2,7 @@ package com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.r
 
 import com.arquisoft.fichas.application.estadoficha.query.secondaryport.EstadoFichaQueryOutputPort;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
+import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +12,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EstadoFichaQueryOutputAdapter implements EstadoFichaQueryOutputPort {
 
-    private final EstadoFichaRepository repository;
+    private final EstadoFichaQueryRepository repository;
 
     @Override
     public List<EstadoFichaReadModel> findAll() {

@@ -1,12 +1,13 @@
-package com.arquisoft.fichas.infrastructure.estudiante.persistence;
+package com.arquisoft.fichas.application.estudiante.command.secondaryport.mapper;
 
+import com.arquisoft.fichas.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
-import org.springframework.stereotype.Component;
 
-@Component
-public class EstudianteMapper {
+public final class EstudianteMapper {
 
-    public EstudianteDomain toDomain(EstudianteEntity entity) {
+    private EstudianteMapper() {}
+
+    public static EstudianteDomain toDomain(EstudianteEntity entity) {
         return EstudianteDomain.reconstruir(
             entity.getId(),
             entity.getIdentificador(),
@@ -15,7 +16,7 @@ public class EstudianteMapper {
         );
     }
 
-    public EstudianteEntity toEntity(EstudianteDomain aggregate) {
+    public static EstudianteEntity toEntity(EstudianteDomain aggregate) {
         return EstudianteEntity.builder()
             .id(aggregate.getId())
             .identificador(aggregate.getIdentificador())

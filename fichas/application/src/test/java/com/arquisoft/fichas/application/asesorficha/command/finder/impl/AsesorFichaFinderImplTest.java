@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.application.asesorficha.command.finder.impl;
 
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
-import com.arquisoft.fichas.domain.asesorficha.model.ContactoAsesorFicha;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
+import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,17 +25,26 @@ class AsesorFichaFinderImplTest {
     private AsesorFichaFinderImpl finder;
 
     @Test
-    void debeRetornarElContacto_cuandoExiste() {
+    void debeConvertirLaEntidadADominio_cuandoExiste() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
-        var contacto = new ContactoAsesorFicha(asesorId, "Ana Asesora", "ana@arquisoft.com");
-        when(asesorFichaOutputPort.buscarContactoPorId(asesorId)).thenReturn(Optional.of(contacto));
+        var entity = AsesorFichaEntity.builder()
+                .id(asesorId)
+                .identificador("A001")
+                .nombre("Ana Asesora")
+                .email("ana@arquisoft.com")
+                .build();
+        when(asesorFichaOutputPort.buscarContactoPorId(asesorId)).thenReturn(Optional.of(entity));
 
         // Act
-        Optional<ContactoAsesorFicha> resultado = finder.obtener(asesorId);
+        Optional<AsesorFichaDomain> resultado = finder.obtener(asesorId);
 
         // Assert
-        assertThat(resultado).contains(contacto);
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().getId()).isEqualTo(asesorId);
+        assertThat(resultado.get().getIdentificador()).isEqualTo("A001");
+        assertThat(resultado.get().getNombre()).isEqualTo("Ana Asesora");
+        assertThat(resultado.get().getEmail()).isEqualTo("ana@arquisoft.com");
     }
 
     @Test
@@ -44,7 +54,7 @@ class AsesorFichaFinderImplTest {
         when(asesorFichaOutputPort.buscarContactoPorId(asesorId)).thenReturn(Optional.empty());
 
         // Act
-        Optional<ContactoAsesorFicha> resultado = finder.obtener(asesorId);
+        Optional<AsesorFichaDomain> resultado = finder.obtener(asesorId);
 
         // Assert — el finder nunca lanza por "no encontrado"; eso lo decide la rule
         assertThat(resultado).isEmpty();

@@ -1,10 +1,9 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
-import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilEntity;
-import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilRepository;
+import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
+import com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository.EstadoFichaQueryRepository;
+import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EstadoFichaPerfilQueryOutputAdapterTest {
 
     @Autowired
-    private EstadoFichaPerfilRepository estadoFichaPerfilRepository;
+    private EstadoFichaPerfilQueryRepository estadoFichaPerfilRepository;
 
     @Autowired
-    private EstadoFichaRepository estadoFichaRepository;
+    private EstadoFichaQueryRepository estadoFichaRepository;
 
     private EstadoFichaPerfilQueryOutputAdapter adapter;
 
@@ -65,16 +64,17 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
         persistirEstado(fichaPerfilId, "APROBADA", ahora);
 
         // Act
-        Optional<EstadoFicha> resultado = adapter.obtenerEstadoActual(fichaPerfilId);
+        Optional<EstadoFichaPerfilEntity> resultado = adapter.obtenerEstadoActual(fichaPerfilId);
 
         // Assert
-        assertThat(resultado).contains(EstadoFicha.APROBADA);
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().getEstadoFicha().getId()).isEqualTo(EstadoFicha.APROBADA.getId());
     }
 
     @Test
     void debeRetornarVacio_cuandoFichaNoTieneEstados() {
         // Act
-        Optional<EstadoFicha> resultado = adapter.obtenerEstadoActual(UUID.randomUUID());
+        Optional<EstadoFichaPerfilEntity> resultado = adapter.obtenerEstadoActual(UUID.randomUUID());
 
         // Assert
         assertThat(resultado).isEmpty();

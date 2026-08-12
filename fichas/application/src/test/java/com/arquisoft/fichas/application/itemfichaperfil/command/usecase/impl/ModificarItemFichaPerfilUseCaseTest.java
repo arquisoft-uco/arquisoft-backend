@@ -70,7 +70,7 @@ class ModificarItemFichaPerfilUseCaseTest {
     void debeActualizarElContenido_cuandoDatosValidos() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(true, Optional.of(EstadoFicha.EN_CONSTRUCCION));
+        stubConsultasConFicha(true, Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
 
         // Act
         modificarItemFichaPerfilUseCase.ejecutar(entrada);
@@ -83,7 +83,7 @@ class ModificarItemFichaPerfilUseCaseTest {
     void debeResolverLaFichaDelItemAntesDeValidar_cuandoSeEjecuta() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(true, Optional.of(EstadoFicha.EN_CONSTRUCCION));
+        stubConsultasConFicha(true, Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
 
         // Act
         modificarItemFichaPerfilUseCase.ejecutar(entrada);
@@ -96,7 +96,8 @@ class ModificarItemFichaPerfilUseCaseTest {
                 .obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante));
         inOrder.verify(estadoActualFichaPerfilFinder).obtener(fichaPerfil);
         inOrder.verify(modificarItemFichaPerfilValidator).validar(
-                item, estudiante, Optional.of(fichaPerfil), true, Optional.of(EstadoFicha.EN_CONSTRUCCION));
+                item, estudiante, Optional.of(fichaPerfil), true,
+                Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
         inOrder.verify(itemFichaPerfilOutputPort).actualizarContenido(item, entrada.getContenido());
     }
 
@@ -122,11 +123,11 @@ class ModificarItemFichaPerfilUseCaseTest {
     void debePropagarLaExcepcion_cuandoLaFichaNoEsDelEstudiante() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(false, Optional.of(EstadoFicha.EN_CONSTRUCCION));
+        stubConsultasConFicha(false, Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
         doThrow(new ItemFichaNoPropiaException(fichaPerfil))
                 .when(modificarItemFichaPerfilValidator).validar(
                         item, estudiante, Optional.of(fichaPerfil), false,
-                        Optional.of(EstadoFicha.EN_CONSTRUCCION));
+                        Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
 
         // Act & Assert
         assertThatThrownBy(() -> modificarItemFichaPerfilUseCase.ejecutar(entrada))
@@ -139,7 +140,7 @@ class ModificarItemFichaPerfilUseCaseTest {
     void debeLanzarExcepcion_cuandoRepositorioFalla() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(true, Optional.of(EstadoFicha.EN_CONSTRUCCION));
+        stubConsultasConFicha(true, Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
                 .when(itemFichaPerfilOutputPort).actualizarContenido(item, entrada.getContenido());
 
@@ -148,7 +149,7 @@ class ModificarItemFichaPerfilUseCaseTest {
                 .isInstanceOf(InfrastructureException.class);
     }
 
-    private void stubConsultasConFicha(boolean esPropietario, Optional<EstadoFicha> estadoActual) {
+    private void stubConsultasConFicha(boolean esPropietario, Optional<String> estadoActual) {
         when(fichaPerfilDelItemFinder.obtener(item)).thenReturn(Optional.of(fichaPerfil));
         when(vinculoEstudianteFichaExisteFinder.obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante)))
                 .thenReturn(esPropietario);

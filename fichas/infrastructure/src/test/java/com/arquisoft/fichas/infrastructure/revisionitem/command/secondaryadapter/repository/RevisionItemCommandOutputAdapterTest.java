@@ -1,6 +1,5 @@
 package com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.infrastructure.revisionitem.persistence.RevisionItemRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +17,7 @@ import static org.mockito.Mockito.when;
 class RevisionItemCommandOutputAdapterTest {
 
     @Mock
-    private RevisionItemRepository repository;
+    private RevisionItemCommandRepository repository;
 
     @InjectMocks
     private RevisionItemCommandOutputAdapter adapter;

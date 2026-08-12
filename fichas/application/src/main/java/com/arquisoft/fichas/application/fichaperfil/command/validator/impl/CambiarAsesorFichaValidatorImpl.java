@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
 import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
@@ -15,8 +15,6 @@ import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 @Component
 @RequiredArgsConstructor
 public class CambiarAsesorFichaValidatorImpl implements CambiarAsesorFichaValidator {
@@ -27,16 +25,17 @@ public class CambiarAsesorFichaValidatorImpl implements CambiarAsesorFichaValida
     private final AsesorFichaDiferenteRule asesorFichaDiferenteRule;
 
     @Override
-    public void validar(CambioAsesorFichaDomain cambio, Optional<FichaPerfilDomain> ficha, boolean asesorExiste,
-                        Optional<EstadoFicha> estadoActual) {
+    public void validar(CambioAsesorFichaDomain cambio, FichaPerfilDomain ficha, AsesorFichaDomain asesorFicha,
+                        String estadoActual) {
 
-        fichaPerfilExisteRule.validar(new ExistenciaFichaPerfil(cambio.getFichaPerfil(), ficha.isPresent()));
-        asesorFichaExisteRule.validar(new ExistenciaAsesorFicha(cambio.getNuevoAsesorFicha(), asesorExiste));
+        fichaPerfilExisteRule.validar(new ExistenciaFichaPerfil(cambio.getFichaPerfil(), ficha.esVacio()));
+        asesorFichaExisteRule.validar(
+                new ExistenciaAsesorFicha(cambio.getNuevoAsesorFicha(), asesorFicha.esVacio()));
 
-        estadoFichaPerfilEnTerminalRule.validar(new EstadoActualFicha(cambio.getFichaPerfil(), estadoActual));
+        estadoFichaPerfilEnTerminalRule.validar(
+                new EstadoActualFicha(ficha.getId(), estadoActual));
 
-        ficha.map(FichaPerfilDomain::getAsesorFicha)
-                .ifPresent(asesorActual -> asesorFichaDiferenteRule.validar(
-                        new AsesorFichaComparacion(cambio.getNuevoAsesorFicha(), asesorActual)));
+        asesorFichaDiferenteRule.validar(
+                new AsesorFichaComparacion(cambio.getNuevoAsesorFicha(), ficha.getAsesorFicha()));
     }
 }

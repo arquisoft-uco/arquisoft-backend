@@ -176,7 +176,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
     }
 
     @Test
-    void debe403_cuandoRepresentanteNoEsPropietario() throws Exception {
+    void debe422_cuandoRepresentanteNoEsPropietario() throws Exception {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         String requestBody = String.format(
@@ -193,7 +193,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

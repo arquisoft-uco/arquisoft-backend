@@ -141,7 +141,7 @@ class AgregarItemFichaPerfilControllerTest {
     }
 
     @Test
-    void debe403_cuandoFichaNoPropia() throws Exception {
+    void debe422_cuandoFichaNoPropia() throws Exception {
         when(agregarItemFichaPerfilInteractor.ejecutar(any()))
                 .thenThrow(new ItemFichaNoPropiaException(FICHA_PERFIL_ID));
 
@@ -151,7 +151,7 @@ class AgregarItemFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

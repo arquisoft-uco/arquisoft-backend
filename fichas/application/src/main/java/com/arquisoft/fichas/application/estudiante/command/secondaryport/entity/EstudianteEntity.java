@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.infrastructure.estudiante.persistence;
+package com.arquisoft.fichas.application.estudiante.command.secondaryport.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

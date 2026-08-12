@@ -10,8 +10,10 @@ import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilEx
 import com.arquisoft.fichas.application.representantecomite.command.finder.RepresentanteComiteExisteFinder;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.mapper.EstadoEvaluacionFichaMapper;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.EvaluacionFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.mapper.EvaluacionFichaPerfilMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -41,7 +43,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
         registrarEvaluacionFichaPerfilValidator.validar(
                 evaluacion, fichaExiste, representanteExiste, evaluacionYaExiste);
 
-        evaluacionFichaPerfilOutputPort.registrarEvaluacion(evaluacion);
+        evaluacionFichaPerfilOutputPort.registrarEvaluacion(EvaluacionFichaPerfilMapper.toEntity(evaluacion));
         asignarEstadoInicialEvaluacion(evaluacion.getId());
 
         logger.info(
@@ -55,7 +57,8 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
 
     private void asignarEstadoInicialEvaluacion(UUID evaluacionFichaPerfil) {
         var estadoInicial = EstadoEvaluacionFichaDomain.crear(evaluacionFichaPerfil);
-        estadoEvaluacionFichaOutputPort.registrarEstadoInicial(estadoInicial);
+        estadoEvaluacionFichaOutputPort.registrarEstadoInicial(
+                EstadoEvaluacionFichaMapper.toEntity(estadoInicial));
         logger.info(
                 catalogo.obtener(EstadoEvaluacionFichaKey.LOG_CREADO_AUTOMATICO),
                 estadoInicial.getId(),

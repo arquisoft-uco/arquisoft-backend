@@ -1,6 +1,5 @@
 package com.arquisoft.fichas.infrastructure.representantecomite.query.secondaryadapter.repository;
 
-import com.arquisoft.fichas.infrastructure.representantecomite.persistence.RepresentanteComiteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +16,7 @@ import static org.mockito.Mockito.when;
 class RepresentanteComiteQueryOutputAdapterTest {
 
     @Mock
-    private RepresentanteComiteRepository repository;
+    private RepresentanteComiteQueryRepository repository;
 
     private RepresentanteComiteQueryOutputAdapter adapter;
 

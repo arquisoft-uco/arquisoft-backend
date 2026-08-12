@@ -1,9 +1,10 @@
-package com.arquisoft.fichas.infrastructure.fichaperfil.persistence;
+package com.arquisoft.fichas.application.fichaperfil.command.secondaryport.mapper;
 
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.mapper.AsesorFichaMapper;
 import com.arquisoft.fichas.application.asesorficha.query.AsesorFichaReadModel;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
 
 public final class FichaPerfilMapper {
 
@@ -30,11 +31,11 @@ public final class FichaPerfilMapper {
                 .build();
     }
 
-    public static FichaPerfilEntity toEntity(FichaPerfilDomain domain, AsesorFichaEntity asesorRef) {
+    public static FichaPerfilEntity toEntity(FichaPerfilDomain domain) {
         return FichaPerfilEntity.builder()
                 .id(domain.getId())
                 .tituloProyecto(domain.getTituloProyecto())
-                .asesorFicha(asesorRef)
+                .asesorFicha(AsesorFichaMapper.toReferencia(domain.getAsesorFicha()))
                 .build();
     }
 }

@@ -1,6 +1,6 @@
-package com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence;
+package com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity;
 
-import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemEntity;
+import com.arquisoft.fichas.application.tipoitem.command.secondaryport.entity.TipoItemEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

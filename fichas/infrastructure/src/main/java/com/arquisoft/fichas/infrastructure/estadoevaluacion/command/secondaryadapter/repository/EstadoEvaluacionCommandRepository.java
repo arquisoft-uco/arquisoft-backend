@@ -1,6 +1,7 @@
-package com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence;
+package com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.estadoevaluacion.command.secondaryport.entity.EstadoEvaluacionEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface EstadoEvaluacionRepository extends JpaRepository<EstadoEvaluacionEntity, String> {
+public interface EstadoEvaluacionCommandRepository extends JpaRepository<EstadoEvaluacionEntity, String> {
 }

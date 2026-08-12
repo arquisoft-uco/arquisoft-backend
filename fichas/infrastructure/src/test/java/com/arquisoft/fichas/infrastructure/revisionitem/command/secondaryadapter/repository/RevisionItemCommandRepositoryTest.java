@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.infrastructure.revisionitem.persistence;
+package com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.repository;
 
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
@@ -16,10 +16,10 @@ import static org.assertj.core.api.Assertions.assertThat;
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.jpa.show-sql=false"
 })
-class RevisionItemRepositoryTest {
+class RevisionItemCommandRepositoryTest {
 
     @Autowired
-    private RevisionItemRepository repository;
+    private RevisionItemCommandRepository repository;
 
     @Autowired
     private EntityManager entityManager;

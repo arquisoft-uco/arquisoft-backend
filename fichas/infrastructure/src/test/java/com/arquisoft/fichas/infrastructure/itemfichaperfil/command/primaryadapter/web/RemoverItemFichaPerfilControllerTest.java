@@ -98,7 +98,7 @@ class RemoverItemFichaPerfilControllerTest {
     }
 
     @Test
-    void debe403_cuandoEstudianteNoEsPropietario() throws Exception {
+    void debe422_cuandoEstudianteNoEsPropietario() throws Exception {
         // Arrange
         UUID itemId = UUID.randomUUID();
         UUID fichaId = UUID.randomUUID();
@@ -112,7 +112,7 @@ class RemoverItemFichaPerfilControllerTest {
                         .with(jwt()
                                 .jwt(jwt -> jwt.subject(estudianteId.toString()))
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
-                .andExpect(status().isForbidden())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO));
     }
 

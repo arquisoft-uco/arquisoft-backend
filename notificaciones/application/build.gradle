@@ -7,6 +7,10 @@ dependencies {
     // value object, nunca un proveedor concreto: cambiar de SMTP a otro transporte no llega aqui.
     implementation project(':shared:notification')
 
+    // Entity JPA: las entidades viven en secondaryport/entity, asi que este modulo necesita las
+    // anotaciones @Entity/@Column — solo la API, no el starter de datos completo.
+    implementation "jakarta.persistence:jakarta.persistence-api"
+
     // Transactional — solo necesitamos @Transactional, no todo el starter
     implementation 'org.springframework:spring-tx'
 

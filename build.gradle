@@ -175,7 +175,7 @@ subprojects { subproject ->
             '**/*ReadModel.class',
             '**/*Application.class',
             '**/config/**',
-            '**/*JpaEntity.class'
+            '**/*Entity.class'
         ]
 
         jacocoTestReport {

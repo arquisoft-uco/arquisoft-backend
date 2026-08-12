@@ -8,6 +8,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFic
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.mapper.FichaPerfilMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -32,7 +33,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
 
         registrarFichaPerfilValidator.validar(ficha, asesorExiste, tituloYaExiste);
 
-        fichaPerfilOutputPort.registrarFicha(ficha);
+        fichaPerfilOutputPort.registrarFicha(FichaPerfilMapper.toEntity(ficha));
 
         logger.info(catalogo.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
         return ficha.getId();

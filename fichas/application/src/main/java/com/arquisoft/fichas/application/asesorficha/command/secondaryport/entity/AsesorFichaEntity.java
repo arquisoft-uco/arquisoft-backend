@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.infrastructure.asesorficha.persistence;
+package com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

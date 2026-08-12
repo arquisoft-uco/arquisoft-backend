@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.infrastructure.representantecomite.persistence;
+package com.arquisoft.fichas.application.representantecomite.command.secondaryport.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

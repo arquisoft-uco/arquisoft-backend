@@ -6,7 +6,8 @@ import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFi
 import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
-import com.arquisoft.fichas.domain.asesorficha.model.ContactoAsesorFicha;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
+import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
@@ -17,6 +18,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaP
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.util.UtilText;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -32,6 +34,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -72,8 +76,8 @@ class CambiarAsesorFichaUseCaseTest {
     private final UUID asesorActual = UUID.randomUUID();
     private final UUID nuevoAsesor = UUID.randomUUID();
     private final FichaPerfilDomain ficha = FichaPerfilDomain.crear("Título de prueba", asesorActual);
-    private final ContactoAsesorFicha contacto =
-            new ContactoAsesorFicha(UUID.randomUUID(), "Ana Asesora", "ana@arquisoft.com");
+    private final AsesorFichaDomain contacto =
+            AsesorFichaDomain.reconstruir(UUID.randomUUID(), "A001", "Ana Asesora", "ana@arquisoft.com");
 
     @Test
     void debeActualizarElAsesor_cuandoDatosValidos() {
@@ -85,7 +89,7 @@ class CambiarAsesorFichaUseCaseTest {
         cambiarAsesorFichaUseCase.ejecutar(cambio);
 
         // Assert
-        verify(fichaPerfilOutputPort, times(1)).actualizarAsesor(ficha.getId(), nuevoAsesor);
+        verify(fichaPerfilOutputPort, times(1)).actualizarAsesor(eq(ficha.getId()), referenciaA(nuevoAsesor));
     }
 
     @Test
@@ -104,8 +108,8 @@ class CambiarAsesorFichaUseCaseTest {
         inOrder.verify(asesorFichaFinder).obtener(nuevoAsesor);
         inOrder.verify(estadoActualFichaPerfilFinder).obtener(ficha.getId());
         inOrder.verify(cambiarAsesorFichaValidator).validar(
-                cambio, Optional.of(ficha), true, Optional.of(EstadoFicha.EN_CONSTRUCCION));
-        inOrder.verify(fichaPerfilOutputPort).actualizarAsesor(ficha.getId(), nuevoAsesor);
+                cambio, ficha, contacto, EstadoFicha.EN_CONSTRUCCION.name());
+        inOrder.verify(fichaPerfilOutputPort).actualizarAsesor(eq(ficha.getId()), referenciaA(nuevoAsesor));
     }
 
     @Test
@@ -133,7 +137,7 @@ class CambiarAsesorFichaUseCaseTest {
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.empty());
         doThrow(new FichaPerfilNoEncontradaException(ficha.getId()))
                 .when(cambiarAsesorFichaValidator)
-                .validar(cambio, Optional.empty(), true, Optional.empty());
+                .validar(cambio, FichaPerfilDomain.VACIO, contacto, UtilText.EMPTY);
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(cambio))
@@ -150,10 +154,10 @@ class CambiarAsesorFichaUseCaseTest {
         when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.of(ficha));
         when(asesorFichaFinder.obtener(asesorActual)).thenReturn(Optional.of(contacto));
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId()))
-                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
+                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
         doThrow(new MismoAsesorFichaException(asesorActual))
                 .when(cambiarAsesorFichaValidator).validar(
-                        cambio, Optional.of(ficha), true, Optional.of(EstadoFicha.EN_CONSTRUCCION));
+                        cambio, ficha, contacto, EstadoFicha.EN_CONSTRUCCION.name());
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(cambio))
@@ -168,7 +172,7 @@ class CambiarAsesorFichaUseCaseTest {
         var cambio = CambioAsesorFichaDomain.crear(ficha.getId(), nuevoAsesor);
         stubConsultas();
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
-                .when(fichaPerfilOutputPort).actualizarAsesor(ficha.getId(), nuevoAsesor);
+                .when(fichaPerfilOutputPort).actualizarAsesor(eq(ficha.getId()), referenciaA(nuevoAsesor));
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(cambio))
@@ -181,6 +185,11 @@ class CambiarAsesorFichaUseCaseTest {
         when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.of(ficha));
         when(asesorFichaFinder.obtener(nuevoAsesor)).thenReturn(Optional.of(contacto));
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId()))
-                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
+                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
+    }
+
+    // El puerto ya recibe la referencia JPA que construyo el mapper, no el UUID crudo.
+    private static AsesorFichaEntity referenciaA(UUID asesorFicha) {
+        return argThat(entity -> entity.getId().equals(asesorFicha));
     }
 }

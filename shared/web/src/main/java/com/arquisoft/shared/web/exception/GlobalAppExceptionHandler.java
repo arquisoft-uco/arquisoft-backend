@@ -5,7 +5,6 @@ import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.exception.ApplicationException;
-import com.arquisoft.shared.exception.AuthorizationException;
 import com.arquisoft.shared.exception.BaseException;
 import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.exception.InfrastructureException;
@@ -53,7 +52,6 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Map<Class<? extends BaseException>, ExceptionMapping> EXCEPTION_MAPPINGS = Map.of(
             DomainException.class,         new ExceptionMapping(HttpStatus.UNPROCESSABLE_CONTENT, HttpKey.ERROR_DOMINIO,          false),
             ApplicationException.class,    new ExceptionMapping(HttpStatus.BAD_REQUEST,           HttpKey.ERROR_APLICACION,       false),
-            AuthorizationException.class,  new ExceptionMapping(HttpStatus.FORBIDDEN,             HttpKey.ACCESO_DENEGADO,        false),
             InfrastructureException.class, new ExceptionMapping(HttpStatus.SERVICE_UNAVAILABLE,   HttpKey.SERVICIO_NO_DISPONIBLE, true)
     );
 

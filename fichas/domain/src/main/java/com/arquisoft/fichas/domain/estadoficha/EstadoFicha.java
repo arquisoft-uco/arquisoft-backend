@@ -6,7 +6,8 @@ public enum EstadoFicha {
     DISPONIBLE_PARA_EVALUACION("Disponible Para Evaluacion"),
     APROBADA("Aprobada"),
     APROBADA_CON_OBSERVACIONES("Aprobada Con Observaciones"),
-    NO_APROBADA("No Aprobada");
+    NO_APROBADA("No Aprobada"),
+    VACIO("");
 
     private final String id;
     private final String nombre;

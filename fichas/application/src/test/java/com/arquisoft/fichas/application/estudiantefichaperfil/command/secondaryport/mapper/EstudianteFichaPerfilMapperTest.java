@@ -1,5 +1,6 @@
-package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence;
+package com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.mapper;
 
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import org.junit.jupiter.api.Test;
 
@@ -8,8 +9,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class EstudianteFichaPerfilMapperTest {
-
-    private final EstudianteFichaPerfilMapper mapper = new EstudianteFichaPerfilMapper();
 
     @Test
     void debeMaperarADominio_cuandoEntityEsValida() {
@@ -25,7 +24,7 @@ class EstudianteFichaPerfilMapperTest {
                 .build();
 
         // Act
-        EstudianteFichaPerfilDomain aggregate = mapper.toDomain(entity);
+        EstudianteFichaPerfilDomain aggregate = EstudianteFichaPerfilMapper.toDomain(entity);
 
         // Assert
         assertThat(aggregate.getId()).isEqualTo(id);
@@ -47,7 +46,7 @@ class EstudianteFichaPerfilMapperTest {
         );
 
         // Act
-        EstudianteFichaPerfilEntity entity = mapper.toEntity(aggregate);
+        EstudianteFichaPerfilEntity entity = EstudianteFichaPerfilMapper.toEntity(aggregate);
 
         // Assert
         assertThat(entity.getId()).isEqualTo(id);
@@ -69,8 +68,8 @@ class EstudianteFichaPerfilMapperTest {
                 .build();
 
         // Act
-        EstudianteFichaPerfilDomain aggregate = mapper.toDomain(entityOriginal);
-        EstudianteFichaPerfilEntity entityMapeada = mapper.toEntity(aggregate);
+        EstudianteFichaPerfilDomain aggregate = EstudianteFichaPerfilMapper.toDomain(entityOriginal);
+        EstudianteFichaPerfilEntity entityMapeada = EstudianteFichaPerfilMapper.toEntity(aggregate);
 
         // Assert
         assertThat(entityMapeada.getId()).isEqualTo(idOriginal);

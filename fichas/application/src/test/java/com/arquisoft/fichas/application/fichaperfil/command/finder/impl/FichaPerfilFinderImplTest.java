@@ -1,7 +1,9 @@
 package com.arquisoft.fichas.application.fichaperfil.command.finder.impl;
 
-import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,16 +26,25 @@ class FichaPerfilFinderImplTest {
     private FichaPerfilFinderImpl finder;
 
     @Test
-    void debeDevolverLaFicha_cuandoExiste() {
+    void debeConvertirLaEntidadADominio_cuandoExiste() {
         // Arrange
-        var ficha = FichaPerfilDomain.crear("Titulo de prueba", UUID.randomUUID());
-        when(fichaPerfilOutputPort.buscarPorId(ficha.getId())).thenReturn(Optional.of(ficha));
+        UUID fichaId = UUID.randomUUID();
+        UUID asesorId = UUID.randomUUID();
+        var entity = FichaPerfilEntity.builder()
+                .id(fichaId)
+                .tituloProyecto("Titulo de prueba")
+                .asesorFicha(AsesorFichaEntity.builder().id(asesorId).build())
+                .build();
+        when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(entity));
 
         // Act
-        Optional<FichaPerfilDomain> resultado = finder.obtener(ficha.getId());
+        Optional<FichaPerfilDomain> resultado = finder.obtener(fichaId);
 
         // Assert
-        assertThat(resultado).contains(ficha);
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().getId()).isEqualTo(fichaId);
+        assertThat(resultado.get().getTituloProyecto()).isEqualTo("Titulo de prueba");
+        assertThat(resultado.get().getAsesorFicha()).isEqualTo(asesorId);
     }
 
     @Test

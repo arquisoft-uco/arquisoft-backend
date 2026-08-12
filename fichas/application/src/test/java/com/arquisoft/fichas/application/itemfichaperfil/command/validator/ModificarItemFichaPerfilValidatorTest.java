@@ -43,7 +43,7 @@ class ModificarItemFichaPerfilValidatorTest {
         UUID item = UUID.randomUUID();
         UUID estudiante = UUID.randomUUID();
         UUID fichaPerfil = UUID.randomUUID();
-        var estadoActual = Optional.of(EstadoFicha.EN_CONSTRUCCION);
+        var estadoActual = Optional.of(EstadoFicha.EN_CONSTRUCCION.name());
 
         // Act
         validator.validar(item, estudiante, Optional.of(fichaPerfil), true, estadoActual);
@@ -55,7 +55,7 @@ class ModificarItemFichaPerfilValidatorTest {
                 .validar(new FichaPerfilDelItem(item, Optional.of(fichaPerfil)));
         inOrder.verify(itemFichaPropiaRule).validar(new PropiedadFicha(fichaPerfil, estudiante, true));
         inOrder.verify(estadoFichaPerfilEnTerminalRule)
-                .validar(new EstadoActualFicha(fichaPerfil, estadoActual));
+                .validar(new EstadoActualFicha(fichaPerfil, estadoActual.get()));
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
@@ -24,6 +25,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -76,7 +78,7 @@ class RegistrarFichaPerfilUseCaseTest {
 
         // Assert
         assertThat(resultado).isEqualTo(ficha.getId());
-        verify(fichaPerfilOutputPort, times(1)).registrarFicha(ficha);
+        verify(fichaPerfilOutputPort, times(1)).registrarFicha(entidadDe(ficha));
     }
 
     @Test
@@ -94,7 +96,7 @@ class RegistrarFichaPerfilUseCaseTest {
         inOrder.verify(asesorFichaExisteFinder).obtener(ficha.getAsesorFicha());
         inOrder.verify(tituloFichaPerfilExisteFinder).obtener(ficha.getTituloProyecto());
         inOrder.verify(registrarFichaPerfilValidator).validar(ficha, true, false);
-        inOrder.verify(fichaPerfilOutputPort).registrarFicha(ficha);
+        inOrder.verify(fichaPerfilOutputPort).registrarFicha(entidadDe(ficha));
     }
 
     @Test
@@ -133,7 +135,7 @@ class RegistrarFichaPerfilUseCaseTest {
         FichaPerfilDomain ficha = fichaValida();
         stubConsultas(ficha, true, false);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
-                .when(fichaPerfilOutputPort).registrarFicha(ficha);
+                .when(fichaPerfilOutputPort).registrarFicha(entidadDe(ficha));
 
         // Act & Assert
         assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(ficha))
@@ -147,5 +149,12 @@ class RegistrarFichaPerfilUseCaseTest {
 
     private FichaPerfilDomain fichaValida() {
         return FichaPerfilDomain.crear("Título de prueba", UUID.randomUUID());
+    }
+
+    // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.
+    private static FichaPerfilEntity entidadDe(FichaPerfilDomain ficha) {
+        return argThat(entity -> entity.getId().equals(ficha.getId())
+                && entity.getTituloProyecto().equals(ficha.getTituloProyecto())
+                && entity.getAsesorFicha().getId().equals(ficha.getAsesorFicha()));
     }
 }

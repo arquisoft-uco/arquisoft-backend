@@ -3,8 +3,8 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.seconda
 import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
-import com.arquisoft.notificaciones.infrastructure.notificacion.persistence.NotificacionEntity;
-import com.arquisoft.notificaciones.infrastructure.notificacion.persistence.NotificacionRepository;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.mapper.NotificacionMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ class NotificacionCommandOutputAdapterTest {
     private static final String ASUNTO = "Se te asignó la ficha";
 
     @Autowired
-    private NotificacionRepository repository;
+    private NotificacionCommandRepository repository;
 
     private NotificacionCommandOutputAdapter adapter;
 
@@ -48,7 +48,7 @@ class NotificacionCommandOutputAdapterTest {
         notificacion.marcarEnviada();
 
         // Act
-        adapter.guardar(notificacion);
+        adapter.guardar(NotificacionMapper.toEntity(notificacion));
 
         // Assert
         NotificacionEntity guardada = repository.findById(notificacion.getId()).orElseThrow();
@@ -68,7 +68,7 @@ class NotificacionCommandOutputAdapterTest {
         notificacion.marcarFallida("servidor SMTP no disponible");
 
         // Act
-        adapter.guardar(notificacion);
+        adapter.guardar(NotificacionMapper.toEntity(notificacion));
 
         // Assert
         NotificacionEntity guardada = repository.findById(notificacion.getId()).orElseThrow();
@@ -80,7 +80,7 @@ class NotificacionCommandOutputAdapterTest {
     void debeReportarTrue_cuandoElEventoYaTieneNotificacion() {
         // Arrange
         String idEvento = UUID.randomUUID().toString();
-        adapter.guardar(notificacionCon(idEvento));
+        adapter.guardar(NotificacionMapper.toEntity(notificacionCon(idEvento)));
 
         // Act & Assert
         assertThat(adapter.existePorIdEvento(idEvento)).isTrue();

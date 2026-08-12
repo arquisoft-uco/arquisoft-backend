@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.infrastructure.revisionitem.persistence;
+package com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

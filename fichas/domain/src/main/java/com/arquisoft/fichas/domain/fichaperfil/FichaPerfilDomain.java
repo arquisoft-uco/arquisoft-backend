@@ -3,7 +3,6 @@ package com.arquisoft.fichas.domain.fichaperfil;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.events.AggregateRoot;
 import com.arquisoft.shared.util.UtilText;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
@@ -11,7 +10,12 @@ import com.arquisoft.shared.validation.ValidationResult;
 
 import java.util.UUID;
 
-public final class FichaPerfilDomain extends AggregateRoot {
+public final class FichaPerfilDomain {
+
+    public static final FichaPerfilDomain VACIO = new FichaPerfilDomain(
+            UtilUUID.getDefaultUUID(),
+            UtilText.EMPTY,
+            UtilUUID.getDefaultUUID());
 
     private UUID id;
     private String tituloProyecto;
@@ -78,5 +82,9 @@ public final class FichaPerfilDomain extends AggregateRoot {
 
     public UUID getAsesorFicha() {
         return asesorFicha;
+    }
+
+    public boolean esVacio() {
+        return this != VACIO;
     }
 }

@@ -1,15 +1,14 @@
 # shared:exception
 
 Jerarquía base de excepciones del proyecto. Todo módulo que necesite lanzar un error del sistema
-extiende una de estas cinco clases; ninguna capa define su propia raíz.
+extiende una de estas clases; ninguna capa define su propia raíz.
 
 ## Qué contiene
 
 | Clase | HTTP | Cuándo |
 |---|---|---|
-| `DomainException` | 422 | una regla de negocio del agregado se incumple |
+| `DomainException` | 422 | una regla de negocio del agregado se incumple (incluye "no es propietario") |
 | `ApplicationException` | 400 | existencia, unicidad o integridad de la petición |
-| `AuthorizationException` | 403 | el actor no es dueño del recurso |
 | `InfrastructureException` | 503 | un recurso externo no responde |
 | `DomainValidationException` | 422 | varias reglas a la vez — lleva `fieldErrors[]` |
 | `ApplicationValidationException` | 400 | varios errores de entrada a la vez |

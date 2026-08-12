@@ -6,9 +6,8 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCr
 import com.arquisoft.fichas.application.fichaperfil.query.secondaryport.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.exception.OrdenamientoInvalidoException;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilMapper;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.mapper.FichaPerfilMapper;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.SortDirection;
 import com.arquisoft.shared.postgres.util.PaginationMapper;
@@ -29,7 +28,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
 
-    private final FichaPerfilRepository fichaPerfilRepository;
+    private final FichaPerfilQueryRepository fichaPerfilRepository;
     private final FichaPerfilJpaSpecification specification;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;

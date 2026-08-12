@@ -1,10 +1,10 @@
 package com.arquisoft.notificaciones.application.notificacion.command.secondaryport;
 
-import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
 
 public interface NotificacionOutputPort {
 
-    void guardar(NotificacionDomain notificacion);
+    void guardar(NotificacionEntity notificacion);
 
     /**
      * Indica si el evento ya produjo una notificacion.

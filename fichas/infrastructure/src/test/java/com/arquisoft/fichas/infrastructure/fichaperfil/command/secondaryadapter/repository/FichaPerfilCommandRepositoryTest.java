@@ -1,7 +1,10 @@
-package com.arquisoft.fichas.infrastructure.fichaperfil.persistence;
+package com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.mapper.FichaPerfilMapper;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.repository.AsesorFichaCommandRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -11,13 +14,13 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class FichaPerfilRepositoryTest {
+class FichaPerfilCommandRepositoryTest {
 
     @Autowired
-    private FichaPerfilRepository fichaPerfilRepository;
+    private FichaPerfilCommandRepository fichaPerfilRepository;
 
     @Autowired
-    private AsesorFichaRepository asesorFichaRepository;
+    private AsesorFichaCommandRepository asesorFichaRepository;
 
     @Test
     void debeActualizarSoloElAsesor_cuandoLaFichaExiste() {
@@ -108,6 +111,23 @@ class FichaPerfilRepositoryTest {
         // Act & Assert — el título es el mismo de la propia ficha, no de otra
         assertThat(fichaPerfilRepository.existsByTituloProyectoAndIdNot("Titulo sin cambios", ficha.getId()))
                 .isFalse();
+    }
+
+    @Test
+    void debeEscribirLaClaveForanea_cuandoElAsesorLlegaComoReferenciaSoloConId() {
+        // Arrange — el caso de uso ya no puede pedir un proxy de Hibernate: el mapper construye
+        // la asociacion solo con el id. Sin cascada, esa instancia separada basta para la FK.
+        AsesorFichaEntity asesorPersistido = asesorFichaRepository.saveAndFlush(asesor());
+        FichaPerfilDomain dominio = FichaPerfilDomain.reconstruir(
+                UUID.randomUUID(), "Proyecto mapeado", asesorPersistido.getId());
+
+        // Act
+        fichaPerfilRepository.saveAndFlush(FichaPerfilMapper.toEntity(dominio));
+
+        // Assert
+        FichaPerfilEntity guardada = fichaPerfilRepository.findById(dominio.getId()).orElseThrow();
+        assertThat(guardada.getAsesorFicha().getId()).isEqualTo(asesorPersistido.getId());
+        assertThat(guardada.getTituloProyecto()).isEqualTo("Proyecto mapeado");
     }
 
     private AsesorFichaEntity asesor() {

@@ -1,10 +1,7 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
-import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilRepository;
-import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilMapper;
-import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemRepository;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity.ItemFichaPerfilEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,13 +12,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutputPort {
 
-    private final ItemFichaPerfilRepository repository;
-    private final TipoItemRepository tipoItemRepository;
+    private final ItemFichaPerfilCommandRepository repository;
 
     @Override
-    public void registrarItem(ItemFichaPerfilDomain item) {
-        var tipoItemRef = tipoItemRepository.getReferenceById(item.getTipoItem().getId());
-        repository.save(ItemFichaPerfilMapper.toEntity(item, tipoItemRef));
+    public void registrarItem(ItemFichaPerfilEntity item) {
+        repository.save(item);
     }
 
     @Override

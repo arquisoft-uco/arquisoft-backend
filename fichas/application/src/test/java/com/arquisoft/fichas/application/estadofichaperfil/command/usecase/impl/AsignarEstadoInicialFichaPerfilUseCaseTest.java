@@ -4,6 +4,7 @@ import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.fichas.application.estadofichaperfil.command.validator.AsignarEstadoInicialFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
+import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
@@ -21,6 +22,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -59,7 +61,7 @@ class AsignarEstadoInicialFichaPerfilUseCaseTest {
         asignarEstadoInicialFichaPerfilUseCase.ejecutar(estadoInicial);
 
         // Assert
-        verify(estadoFichaPerfilOutputPort, times(1)).registrarEstadoInicial(estadoInicial);
+        verify(estadoFichaPerfilOutputPort, times(1)).registrarEstadoInicial(entidadDe(estadoInicial));
     }
 
     @Test
@@ -77,7 +79,7 @@ class AsignarEstadoInicialFichaPerfilUseCaseTest {
         inOrder.verify(fichaPerfilExisteFinder).obtener(estadoInicial.getFichaPerfil());
         inOrder.verify(asignarEstadoInicialFichaPerfilValidator)
                 .validar(estadoInicial.getFichaPerfil(), true);
-        inOrder.verify(estadoFichaPerfilOutputPort).registrarEstadoInicial(estadoInicial);
+        inOrder.verify(estadoFichaPerfilOutputPort).registrarEstadoInicial(entidadDe(estadoInicial));
     }
 
     @Test
@@ -102,10 +104,17 @@ class AsignarEstadoInicialFichaPerfilUseCaseTest {
         var estadoInicial = EstadoFichaPerfilDomain.crear(UUID.randomUUID());
         when(fichaPerfilExisteFinder.obtener(estadoInicial.getFichaPerfil())).thenReturn(true);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
-                .when(estadoFichaPerfilOutputPort).registrarEstadoInicial(estadoInicial);
+                .when(estadoFichaPerfilOutputPort).registrarEstadoInicial(entidadDe(estadoInicial));
 
         // Act & Assert
         assertThatThrownBy(() -> asignarEstadoInicialFichaPerfilUseCase.ejecutar(estadoInicial))
                 .isInstanceOf(InfrastructureException.class);
+    }
+
+    // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.
+    private static EstadoFichaPerfilEntity entidadDe(EstadoFichaPerfilDomain estado) {
+        return argThat(entity -> entity.getId().equals(estado.getId())
+                && entity.getFichaPerfilId().equals(estado.getFichaPerfil())
+                && entity.getEstadoFicha().getId().equals(estado.getEstadoFicha().getId()));
     }
 }

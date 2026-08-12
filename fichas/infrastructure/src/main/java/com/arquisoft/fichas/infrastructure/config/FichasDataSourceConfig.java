@@ -67,7 +67,7 @@ public class FichasDataSourceConfig {
 
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.arquisoft.fichas.infrastructure");
+        em.setPackagesToScan("com.arquisoft.fichas.application");
         em.setPersistenceUnitName("fichas");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();

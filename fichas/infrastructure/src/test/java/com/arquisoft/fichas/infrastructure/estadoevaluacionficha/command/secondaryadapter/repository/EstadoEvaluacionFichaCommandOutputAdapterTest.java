@@ -2,13 +2,11 @@ package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.second
 
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionEntity;
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionRepository;
-import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaEntity;
-import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaRepository;
-import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaMapper;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilRepository;
+import com.arquisoft.fichas.application.estadoevaluacion.command.secondaryport.entity.EstadoEvaluacionEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.repository.EstadoEvaluacionCommandRepository;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.entity.EstadoEvaluacionFichaEntity;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.mapper.EstadoEvaluacionFichaMapper;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +18,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,24 +25,17 @@ import static org.mockito.Mockito.when;
 class EstadoEvaluacionFichaCommandOutputAdapterTest {
 
     @Mock
-    private EstadoEvaluacionFichaRepository estadoEvaluacionFichaRepository;
+    private EstadoEvaluacionFichaCommandRepository estadoEvaluacionFichaRepository;
 
     @Mock
-    private EvaluacionFichaPerfilRepository evaluacionFichaPerfilRepository;
-
-    @Mock
-    private EstadoEvaluacionRepository estadoEvaluacionRepository;
+    private EstadoEvaluacionCommandRepository estadoEvaluacionRepository;
 
     private EstadoEvaluacionFichaCommandOutputAdapter adapter;
-    private EstadoEvaluacionFichaMapper mapper;
 
     @BeforeEach
     void setUp() {
-        mapper = new EstadoEvaluacionFichaMapper(estadoEvaluacionRepository);
         adapter = new EstadoEvaluacionFichaCommandOutputAdapter(
                 estadoEvaluacionFichaRepository,
-                mapper,
-                evaluacionFichaPerfilRepository,
                 estadoEvaluacionRepository);
     }
 
@@ -55,35 +45,15 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         UUID evaluacionId = UUID.randomUUID();
         var aggregate = EstadoEvaluacionFichaDomain.crear(evaluacionId);
 
-        var evaluacionJpa = EvaluacionFichaPerfilEntity.builder()
-                .id(evaluacionId)
-                .build();
-        when(evaluacionFichaPerfilRepository.getReferenceById(evaluacionId))
-                .thenReturn(evaluacionJpa);
-
-        var estadoJpa = EstadoEvaluacionEntity.builder()
-                .id("EN_EVALUACION")
-                .nombre("En Evaluación")
-                .descripcion("")
-                .build();
-        when(estadoEvaluacionRepository.getReferenceById("EN_EVALUACION"))
-                .thenReturn(estadoJpa);
-
-        EstadoEvaluacionFichaEntity entityGuardada = EstadoEvaluacionFichaEntity.builder()
-                .id(aggregate.getId())
-                .evaluacionFichaPerfil(evaluacionJpa)
-                .estadoEvaluacion(estadoJpa)
-                .fechaActualizacion(aggregate.getFechaActualizacion())
-                .build();
-
-        when(estadoEvaluacionFichaRepository.save(any(EstadoEvaluacionFichaEntity.class)))
-                .thenReturn(entityGuardada);
+        EstadoEvaluacionFichaEntity entity = EstadoEvaluacionFichaMapper.toEntity(aggregate);
 
         // Act
-        adapter.registrarEstadoInicial(aggregate);
+        adapter.registrarEstadoInicial(entity);
 
-        // Assert
-        verify(estadoEvaluacionFichaRepository).save(any(EstadoEvaluacionFichaEntity.class));
+        // Assert — el adapter ya no resuelve referencias: guarda lo que le entrego el mapper
+        verify(estadoEvaluacionFichaRepository).save(entity);
+        assertThat(entity.getEvaluacionFichaPerfil().getId()).isEqualTo(evaluacionId);
+        assertThat(entity.getEstadoEvaluacion().getId()).isEqualTo(EstadoEvaluacion.EN_EVALUACION.getId());
     }
 
     @Test
@@ -115,7 +85,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         var resultado = estadoEvaluacionFichaRepository.findById(id);
         assertThat(resultado).isPresent();
 
-        var aggregateReconstruido = mapper.toDomain(resultado.get());
+        var aggregateReconstruido = EstadoEvaluacionFichaMapper.toDomain(resultado.get());
 
         // Assert
         assertThat(aggregateReconstruido.getId()).isEqualTo(id);

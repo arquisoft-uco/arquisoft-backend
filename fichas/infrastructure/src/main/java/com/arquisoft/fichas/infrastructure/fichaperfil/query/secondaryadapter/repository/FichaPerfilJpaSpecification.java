@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.shared.postgres.query.CampoSpec;
 import com.arquisoft.shared.postgres.query.QueryJpaSpecification;
 import org.springframework.stereotype.Component;

@@ -101,7 +101,11 @@ exception/                    # Domain exceptions shared across features (extend
     │   │   ├── {Concepto}Finder.java
     │   │   └── impl/
     │   ├── secondaryport/                      # Output port write-side (suffix OutputPort)
-    │   │   └── {Feature}OutputPort.java
+    │   │   ├── {Feature}OutputPort.java
+    │   │   ├── entity/                          # JPA @Entity — the port's persistence shape
+    │   │   │   └── {Feature}Entity.java
+    │   │   └── mapper/                          # Domain ↔ Entity (and Entity → ReadModel)
+    │   │       └── {Feature}Mapper.java
     │   └── result/
     │       └── {Concepto}Result.java          # Command output, only when it is not UUID/void
     └── query/
@@ -131,18 +135,16 @@ exception/                    # Domain exceptions shared across features (extend
     │   │       └── {Evento}InputAdapter.java
     │   └── secondaryadapter/
     │       └── repository/                       # Or another sub-package for non-JPA integrations (keycloak/, redis/, jwt/, ...)
-    │           └── {Feature}CommandOutputAdapter.java
-    ├── query/
-    │   ├── primaryadapter/
-    │   │   └── web/
-    │   │       └── {Consult}{Entity}Controller.java
-    │   └── secondaryadapter/
-    │       └── repository/
-    │           └── {Feature}QueryOutputAdapter.java
-    └── persistence/
-        ├── {Feature}Entity.java
-        ├── {Feature}Repository.java
-        └── {Feature}Mapper.java
+    │           ├── {Feature}CommandOutputAdapter.java
+    │           └── {Feature}CommandRepository.java   # Spring Data — only the write-side methods
+    └── query/
+        ├── primaryadapter/
+        │   └── web/
+        │       └── {Consult}{Entity}Controller.java
+        └── secondaryadapter/
+            └── repository/
+                ├── {Feature}QueryOutputAdapter.java
+                └── {Feature}QueryRepository.java    # Spring Data — only the read-side methods
 config/              # Spring configuration shared within context
 filter/              # HTTP filters (if applicable to context)
 db/migration/        # Flyway migrations
@@ -166,7 +168,13 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Input ports:** The entry point of a command is the `Interactor` interface in `application/{feature}/command/primaryport/interactor/`, implemented by `{Action}{Entity}InteractorImpl` in the nested `impl/` package — together with its `Command` (`primaryport/model/`) and, where the action maps to a non-root domain object, its `Mapper` (`primaryport/mapper/`), this is the "primary port" of the command. The use case it delegates to is the `UseCase` interface in `application/{feature}/command/usecase/` — **not** nested under `primaryport/`, since it is an internal collaborator, not the primary contract — or in `application/{feature}/query/primaryport/usecase/` on the read side, where the `UseCase` **is** the primary contract because there is no interactor. Both are implemented by `{Action}{Entity}UseCaseImpl`/`{Consult}{Entity}UseCaseImpl` in the nested `impl/` package. There is no `port/in/` package on the application layer — interfaces and implementations live together under `interactor/` and `usecase/`.
 
-**Output ports:** Both sides live in the application layer — write-side in `application/{feature}/command/secondaryport/`, read-side in `application/{feature}/query/secondaryport/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`). **The domain layer declares no ports and performs no I/O**; `{context}/domain` depends only on `shared:domain`, so a port under `domain/` would invert the module dependency and not compile.
+**Output ports:** Both sides live in the application layer — write-side in `application/{feature}/command/secondaryport/`, read-side in `application/{feature}/query/secondaryport/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`). **The domain layer declares no ports and performs no I/O**; `{context}/domain` depends only on `shared:domain`, so a port under `domain/` would invert the module dependency and not compile. **Output ports speak `Entity`, never `Domain`** — `registrarFicha(FichaPerfilEntity)`, `buscarPorId(...) → Optional<FichaPerfilEntity>` — because infrastructure must not see the domain layer at all.
+
+**Entities and mappers:** JPA `@Entity` classes live in `application/{feature}/command/secondaryport/entity/` (suffix `Entity`, Lombok `@Getter/@Builder/@NoArgsConstructor/@AllArgsConstructor`) and their mappers in the sibling `mapper/` package (suffix `Mapper`, `final`, private constructor, **static** methods `toDomain`/`toEntity`/`toReadModel` — no Spring, no injection). Both sit under `command/` even when the read side uses them: an entity is not command- or query-specific, and the query side imports it from there rather than duplicating it. The application module therefore declares `jakarta.persistence:jakarta.persistence-api` (only the annotations — not the JPA starter), and each context's `EntityManagerFactory` scans `com.arquisoft.{contexto}.application`; the `@DataJpaTest` anchor class carries a matching `@EntityScan`.
+
+**Where the conversion happens:** the **use case** maps `Domain → Entity` before calling the port, and the **finder** maps `Entity → Domain` after it returns. Adapters no longer translate anything — they delegate to the repository and nothing else. A mapper needing a `@ManyToOne` association builds it as an id-only detached instance (`AsesorFichaEntity.builder().id(...).build()`); with no cascade configured, Hibernate writes just the foreign key, which is what replaces the old `getReferenceById` proxy the adapter used to resolve. Enums are the mapper's job too: `EstadoFicha.valueOf(entity.getEstadoFicha().getId())` — degrading to `EstadoFicha.VACIO` on an unknown catalog id, since the rule already models that as a 422 and an `IllegalArgumentException` would surface as a 500.
+
+**Repositories:** Spring Data interfaces stay in infrastructure and are **split by side** — `{Feature}CommandRepository` in `command/secondaryadapter/repository/` and `{Feature}QueryRepository` in `query/secondaryadapter/repository/`, each declaring only the methods its side uses. There is no `infrastructure/{feature}/persistence/` package any more.
 
 **Input adapters:** REST controllers in `infrastructure/{feature}/command/primaryadapter/web/` (or `query/.../web/`), suffix `Controller` (e.g., `RegistrarFichaPerfilController`) — there is no Spanish exception for this suffix anymore. AMQP consumers in `infrastructure/{feature}/command/primaryadapter/amqp/`, suffix `InputAdapter` (e.g., `UsuarioCreadoInputAdapter`).
 
@@ -180,7 +188,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Finders:** every query the rules need is one `{Concepto}Finder` extending `com.arquisoft.shared.rules.Finder<T, R>` in `application/{feature}/command/finder/`, with `@Component` `{Concepto}FinderImpl` in `impl/` that delegates to an `OutputPort`. A Finder **always returns a value and never throws for "not found"**: existence queries return `Boolean`, counts `Long`, aggregate lookups `Optional<T>`. Deciding what an absent value means is the Rule's job, not the Finder's. Failures of the query itself (DB down, timeout) propagate as the adapter's `InfrastructureException` (503) — finders do not catch or re-wrap them.
 
-**Command flow:** `InteractorImpl` (`@Transactional`) → `UseCaseImpl` → finders fetch every piece of state → `validator.validar(entrada, …datos)` → rules decide → `OutputPort` persists. All I/O of a command lives in the use case; the validator and the rules are pure functions of what it fetched. When a query depends on the result of a previous one (item → its ficha → ownership of that ficha), chain it with `map`/`flatMap` on the `Optional` so the absent case degrades to a safe default and the first rule reports the real error.
+**Command flow:** `InteractorImpl` (`@Transactional`) → `UseCaseImpl` → finders fetch every piece of state (mapping the `Entity` the port returns back to `Domain`) → `validator.validar(entrada, …datos)` → rules decide → `{Feature}Mapper.toEntity(aggregate)` → `OutputPort` persists. All I/O of a command lives in the use case; the validator and the rules are pure functions of what it fetched. When a query depends on the result of a previous one (item → its ficha → ownership of that ficha), chain it with `map`/`flatMap` on the `Optional` so the absent case degrades to a safe default and the first rule reports the real error.
 
 **Validation order (mandatory):** 1) data integrity (format, required, length, duplicates within the payload — accumulable), 2) existence and uniqueness against the DB, 3) business rules in the aggregate. Never query the database on data whose integrity has not been established first.
 
@@ -202,11 +210,11 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Message catalog:** runtime texts (errors, logs) live in `.properties` under `shared:message` and resolve through the injectable `CatalogoMensajes` port — `private final CatalogoMensajes catalogo;` in application/infrastructure, the static `Mensajes` facade in domain (aggregates and exceptions have no injection point). Keys follow `contexto.capa.objeto.tipo.descripcion`. What the compiler forces to stay a constant — error codes (`*Codes`), limits (`*Limits`), field names (`*Fields`) — does not go to the bundle, because annotation values must be constant expressions (JLS §9.7.1). `CatalogoMensajesClavesTest` fails the build on a key with no text or a text with no key. See [shared/message/README.md](shared/message/README.md).
 
-**Exceptions:** Every context exception extends one of five bases from `com.arquisoft.shared.exception`: `DomainException` (422), `ApplicationException` (400), `AuthorizationException` (403), `InfrastructureException` (503), `DomainValidationException` (422 + `fieldErrors[]`). Never `RuntimeException` directly. The constructor signature is `super(message, errorCode)` — both are `String`, so swapping them compiles and silently swaps the two fields in the response. `GlobalAppExceptionHandler` (`shared:web`) resolves the HTTP status by walking the superclass chain; contexts do not define their own handler (only `seguridad` does, for a name clash with Spring Security).
+**Exceptions:** Every context exception extends one of four bases from `com.arquisoft.shared.exception`: `DomainException` (422), `ApplicationException` (400), `InfrastructureException` (503), `DomainValidationException` (422 + `fieldErrors[]`). Never `RuntimeException` directly. The constructor signature is `super(message, errorCode)` — both are `String`, so swapping them compiles and silently swaps the two fields in the response. `GlobalAppExceptionHandler` (`shared:web`) resolves the HTTP status by walking the superclass chain; contexts do not define their own handler (only `seguridad` does, for a name clash with Spring Security).
 
 **Business rules:** Invariants of a single aggregate are validated inside the aggregate (→ 422), never with `if/throw` in the use case. Checks that need state from outside the aggregate — existence, DB duplicates, ownership — are domain `Rule`s fed by the use case (see "Domain rules" above), never inline `if/throw`.
 
-**Where each exception lives:** an exception thrown by a `Rule` lives in `domain/{feature}/exception/` and extends `DomainException` (→ 422) — including "not found" and "duplicate", which used to be 400. The three ownership rules are the deliberate exception: `FichaNoPropietarioException`, `ItemFichaNoPropiaException` and `EvaluacionFichaNoPropiaException` stay in `domain/` but extend `AuthorizationException` (→ 403), because "you are not the owner" is semantically distinct from "invalid state". An exception thrown by application-layer orchestration lives in `application/{feature}/exception/` and extends `ApplicationException` (→ 400). Infrastructure failures stay `InfrastructureException` (→ 503) and are raised by the output adapters.
+**Where each exception lives:** an exception thrown by a `Rule` lives in `domain/{feature}/exception/` and extends `DomainException` (→ 422) — including "not found", "duplicate", and ownership checks (`FichaNoPropietarioException`, `ItemFichaNoPropiaException`, `EvaluacionFichaNoPropiaException`); there is no separate 403 case for "you are not the owner" — it is modeled as another invalid-state 422. An exception thrown by application-layer orchestration lives in `application/{feature}/exception/` and extends `ApplicationException` (→ 400). Infrastructure failures stay `InfrastructureException` (→ 503) and are raised by the output adapters.
 
 **Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Domain`, `Interactor`, `UseCase`, `Impl`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `Controller`, `ReadModel`, `DTO`, `Command`) — no Spanish exception remains; REST controllers were renamed from `Controlador` to `Controller` for consistency.
 

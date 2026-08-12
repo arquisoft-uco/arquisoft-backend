@@ -1,9 +1,7 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.command.secondaryadapter.repository;
 
-import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.NotificacionOutputPort;
-import com.arquisoft.notificaciones.infrastructure.notificacion.persistence.NotificacionMapper;
-import com.arquisoft.notificaciones.infrastructure.notificacion.persistence.NotificacionRepository;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -11,11 +9,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NotificacionCommandOutputAdapter implements NotificacionOutputPort {
 
-    private final NotificacionRepository repository;
+    private final NotificacionCommandRepository repository;
 
     @Override
-    public void guardar(NotificacionDomain notificacion) {
-        repository.save(NotificacionMapper.toEntity(notificacion));
+    public void guardar(NotificacionEntity notificacion) {
+        repository.save(notificacion);
     }
 
     @Override

@@ -1,19 +1,20 @@
 package com.arquisoft.fichas.application.fichaperfil.command.secondaryport;
 
-import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public interface FichaPerfilOutputPort {
 
-    void registrarFicha(FichaPerfilDomain ficha);
+    void registrarFicha(FichaPerfilEntity ficha);
 
     void actualizarTitulo(UUID fichaPerfil, String tituloProyecto);
 
-    void actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha);
+    void actualizarAsesor(UUID fichaPerfil, AsesorFichaEntity nuevoAsesorFicha);
 
-    Optional<FichaPerfilDomain> buscarPorId(UUID id);
+    Optional<FichaPerfilEntity> buscarPorId(UUID id);
 
     boolean existePorId(UUID id);
 

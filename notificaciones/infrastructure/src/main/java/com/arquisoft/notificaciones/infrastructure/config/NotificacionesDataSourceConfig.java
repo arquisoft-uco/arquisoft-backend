@@ -73,7 +73,7 @@ public class NotificacionesDataSourceConfig {
 
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.arquisoft.notificaciones.infrastructure");
+        em.setPackagesToScan("com.arquisoft.notificaciones.application");
         em.setPersistenceUnitName("notificaciones");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();

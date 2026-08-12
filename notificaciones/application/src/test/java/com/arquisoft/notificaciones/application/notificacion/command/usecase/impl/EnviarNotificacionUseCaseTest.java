@@ -2,7 +2,7 @@ package com.arquisoft.notificaciones.application.notificacion.command.usecase.im
 
 import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.validator.NotificacionValidator;
-import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;
@@ -71,10 +71,10 @@ class EnviarNotificacionUseCaseTest {
         // Assert
         verify(envioNotificacionOutputPort).enviar(any(MensajeNotificacion.class));
 
-        ArgumentCaptor<NotificacionDomain> captor =
-                ArgumentCaptor.forClass(NotificacionDomain.class);
+        ArgumentCaptor<NotificacionEntity> captor =
+                ArgumentCaptor.forClass(NotificacionEntity.class);
         verify(notificacionOutputPort).guardar(captor.capture());
-        assertThat(captor.getValue().getEstado()).isEqualTo(EstadoNotificacion.ENVIADA);
+        assertThat(captor.getValue().getEstado()).isEqualTo(EstadoNotificacion.ENVIADA.name());
         assertThat(captor.getValue().getIdEvento()).isEqualTo(ID_EVENTO);
     }
 
@@ -126,10 +126,10 @@ class EnviarNotificacionUseCaseTest {
         enviarNotificacionUseCase.ejecutar(comando());
 
         // Assert
-        ArgumentCaptor<NotificacionDomain> captor =
-                ArgumentCaptor.forClass(NotificacionDomain.class);
+        ArgumentCaptor<NotificacionEntity> captor =
+                ArgumentCaptor.forClass(NotificacionEntity.class);
         verify(notificacionOutputPort).guardar(captor.capture());
-        assertThat(captor.getValue().getEstado()).isEqualTo(EstadoNotificacion.FALLIDA);
+        assertThat(captor.getValue().getEstado()).isEqualTo(EstadoNotificacion.FALLIDA.name());
         assertThat(captor.getValue().getDetalleError()).contains("No se pudo entregar");
     }
 }

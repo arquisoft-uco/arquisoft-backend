@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.CambiarAsesorFichaValidatorImpl;
+import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
@@ -19,7 +20,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.Mockito.inOrder;
@@ -48,11 +48,12 @@ class CambiarAsesorFichaValidatorTest {
         UUID asesorActual = UUID.randomUUID();
         UUID nuevoAsesor = UUID.randomUUID();
         var ficha = FichaPerfilDomain.crear("Titulo de prueba", asesorActual);
+        var asesorFicha = AsesorFichaDomain.reconstruir(nuevoAsesor, "A001", "Ana Asesora", "ana@arquisoft.com");
         var cambio = CambioAsesorFichaDomain.crear(ficha.getId(), nuevoAsesor);
-        var estadoActual = Optional.of(EstadoFicha.EN_CONSTRUCCION);
+        var estadoActual = EstadoFicha.EN_CONSTRUCCION.name();
 
         // Act
-        validator.validar(cambio, Optional.of(ficha), true, estadoActual);
+        validator.validar(cambio, ficha, asesorFicha, estadoActual);
 
         // Assert
         InOrder inOrder = inOrder(fichaPerfilExisteRule, asesorFichaExisteRule,
@@ -62,7 +63,7 @@ class CambiarAsesorFichaValidatorTest {
         inOrder.verify(asesorFichaExisteRule)
                 .validar(new ExistenciaAsesorFicha(nuevoAsesor, true));
         inOrder.verify(estadoFichaPerfilEnTerminalRule)
-                .validar(new EstadoActualFicha(cambio.getFichaPerfil(), estadoActual));
+                .validar(new EstadoActualFicha(ficha.getId(), estadoActual));
         inOrder.verify(asesorFichaDiferenteRule)
                 .validar(new AsesorFichaComparacion(nuevoAsesor, asesorActual));
     }
@@ -75,7 +76,7 @@ class CambiarAsesorFichaValidatorTest {
         var cambio = CambioAsesorFichaDomain.crear(fichaId, nuevoAsesor);
 
         // Act — la regla de existencia es un mock que no lanza, pero recibe existe=false
-        validator.validar(cambio, Optional.empty(), false, Optional.empty());
+        validator.validar(cambio, FichaPerfilDomain.VACIO, AsesorFichaDomain.VACIO, null);
 
         // Assert
         inOrder(fichaPerfilExisteRule).verify(fichaPerfilExisteRule)

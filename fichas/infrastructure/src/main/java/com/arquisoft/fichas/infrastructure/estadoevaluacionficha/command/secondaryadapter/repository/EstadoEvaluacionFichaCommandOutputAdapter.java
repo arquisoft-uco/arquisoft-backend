@@ -1,13 +1,8 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.fichas.application.estadoevaluacionficha.exception.EstadoEvaluacionNoEncontradoException;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.EstadoEvaluacionFichaOutputPort;
-import com.arquisoft.fichas.infrastructure.estadoevaluacion.persistence.EstadoEvaluacionRepository;
-import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaRepository;
-import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.persistence.EstadoEvaluacionFichaMapper;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilRepository;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.entity.EstadoEvaluacionFichaEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.repository.EstadoEvaluacionCommandRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,32 +13,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluacionFichaOutputPort {
 
-    private final EstadoEvaluacionFichaRepository estadoEvaluacionFichaRepository;
-    private final EstadoEvaluacionFichaMapper estadoEvaluacionFichaMapper;
-    private final EvaluacionFichaPerfilRepository evaluacionFichaPerfilRepository;
-    private final EstadoEvaluacionRepository estadoEvaluacionRepository;
+    private final EstadoEvaluacionFichaCommandRepository estadoEvaluacionFichaCommandRepository;
+    private final EstadoEvaluacionCommandRepository estadoEvaluacionCommandRepository;
 
     @Override
-    public void registrarEstadoInicial(EstadoEvaluacionFichaDomain estado) {
-        persistir(estado);
+    public void registrarEstadoInicial(EstadoEvaluacionFichaEntity estado) {
+        estadoEvaluacionFichaCommandRepository.save(estado);
     }
 
     @Override
-    public void agregarEstado(EstadoEvaluacionFichaDomain estado) {
-        persistir(estado);
-    }
-
-    private void persistir(EstadoEvaluacionFichaDomain estado) {
-        var evaluacionRef = evaluacionFichaPerfilRepository
-                .getReferenceById(estado.getEvaluacionFichaPerfilId());
-
-        estadoEvaluacionFichaRepository.save(
-                estadoEvaluacionFichaMapper.toEntity(estado, evaluacionRef));
+    public void agregarEstado(EstadoEvaluacionFichaEntity estado) {
+        estadoEvaluacionFichaCommandRepository.save(estado);
     }
 
     @Override
     public boolean existePorEvaluacionYEstado(UUID evaluacionFichaPerfilId, String estadoEvaluacionId) {
-        return estadoEvaluacionFichaRepository
+        return estadoEvaluacionFichaCommandRepository
                 .existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(
                         evaluacionFichaPerfilId,
                         estadoEvaluacionId);
@@ -51,27 +36,18 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
 
     @Override
     public long contarEstadosPorEvaluacion(UUID evaluacionFichaPerfilId) {
-        return estadoEvaluacionFichaRepository.countByEvaluacionFichaPerfilId(evaluacionFichaPerfilId);
+        return estadoEvaluacionFichaCommandRepository
+                .countByEvaluacionFichaPerfilId(evaluacionFichaPerfilId);
     }
 
     @Override
     public boolean existeEstadoEvaluacionPorId(String estadoEvaluacionId) {
-        return estadoEvaluacionRepository.existsById(estadoEvaluacionId);
+        return estadoEvaluacionCommandRepository.existsById(estadoEvaluacionId);
     }
 
     @Override
-    public Optional<EstadoEvaluacion> obtenerUltimoEstado(UUID evaluacionFichaPerfilId) {
-        return estadoEvaluacionFichaRepository
-                .findFirstByEvaluacionFichaPerfilIdOrderByFechaActualizacionDesc(evaluacionFichaPerfilId)
-                .map(entity -> entity.getEstadoEvaluacion().getId())
-                .map(EstadoEvaluacionFichaCommandOutputAdapter::resolverEstado);
-    }
-
-    private static EstadoEvaluacion resolverEstado(String estadoEvaluacionId) {
-        try {
-            return EstadoEvaluacion.valueOf(estadoEvaluacionId);
-        } catch (IllegalArgumentException e) {
-            throw new EstadoEvaluacionNoEncontradoException(estadoEvaluacionId);
-        }
+    public Optional<EstadoEvaluacionFichaEntity> obtenerUltimoEstado(UUID evaluacionFichaPerfilId) {
+        return estadoEvaluacionFichaCommandRepository
+                .findFirstByEvaluacionFichaPerfilIdOrderByFechaActualizacionDesc(evaluacionFichaPerfilId);
     }
 }

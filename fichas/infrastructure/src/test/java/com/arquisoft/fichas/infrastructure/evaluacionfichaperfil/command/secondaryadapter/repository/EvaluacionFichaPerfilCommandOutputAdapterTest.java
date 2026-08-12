@@ -1,9 +1,8 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilEntity;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilRepository;
-import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.persistence.EvaluacionFichaPerfilMapper;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.mapper.EvaluacionFichaPerfilMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -21,15 +19,13 @@ import static org.mockito.Mockito.when;
 class EvaluacionFichaPerfilCommandOutputAdapterTest {
 
     @Mock
-    private EvaluacionFichaPerfilRepository repository;
+    private EvaluacionFichaPerfilCommandRepository repository;
 
-    private EvaluacionFichaPerfilMapper mapper;
     private EvaluacionFichaPerfilCommandOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        mapper = new EvaluacionFichaPerfilMapper();
-        adapter = new EvaluacionFichaPerfilCommandOutputAdapter(repository, mapper);
+        adapter = new EvaluacionFichaPerfilCommandOutputAdapter(repository);
     }
 
     @Test
@@ -39,20 +35,13 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
         UUID fichaId = UUID.randomUUID();
         var aggregate = EvaluacionFichaPerfilDomain.crear(representanteId, fichaId);
 
-        EvaluacionFichaPerfilEntity entityGuardada = EvaluacionFichaPerfilEntity.builder()
-                .id(aggregate.getId())
-                .representanteComiteId(representanteId)
-                .fichaPerfilId(fichaId)
-                .fechaCreacion(aggregate.getFechaCreacion())
-                .build();
-
-        when(repository.save(any(EvaluacionFichaPerfilEntity.class))).thenReturn(entityGuardada);
+        EvaluacionFichaPerfilEntity entity = EvaluacionFichaPerfilMapper.toEntity(aggregate);
 
         // Act
-        adapter.registrarEvaluacion(aggregate);
+        adapter.registrarEvaluacion(entity);
 
-        // Assert
-        verify(repository).save(any(EvaluacionFichaPerfilEntity.class));
+        // Assert — el adapter ya no traduce: guarda la entidad que le entrego el caso de uso
+        verify(repository).save(entity);
     }
 
     @Test

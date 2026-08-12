@@ -1,12 +1,13 @@
-package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence;
+package com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.mapper;
 
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
-import org.springframework.stereotype.Component;
 
-@Component
-public class EstudianteFichaPerfilMapper {
+public final class EstudianteFichaPerfilMapper {
 
-    public EstudianteFichaPerfilDomain toDomain(EstudianteFichaPerfilEntity entity) {
+    private EstudianteFichaPerfilMapper() {}
+
+    public static EstudianteFichaPerfilDomain toDomain(EstudianteFichaPerfilEntity entity) {
         return EstudianteFichaPerfilDomain.reconstruir(
             entity.getId(),
             entity.getFichaPerfilId(),
@@ -14,7 +15,7 @@ public class EstudianteFichaPerfilMapper {
         );
     }
 
-    public EstudianteFichaPerfilEntity toEntity(EstudianteFichaPerfilDomain aggregate) {
+    public static EstudianteFichaPerfilEntity toEntity(EstudianteFichaPerfilDomain aggregate) {
         return EstudianteFichaPerfilEntity.builder()
             .id(aggregate.getId())
             .fichaPerfilId(aggregate.getFichaPerfilId())

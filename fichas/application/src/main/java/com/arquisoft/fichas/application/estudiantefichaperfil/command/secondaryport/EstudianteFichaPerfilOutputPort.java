@@ -1,12 +1,12 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 
 import java.util.UUID;
 
 public interface EstudianteFichaPerfilOutputPort {
 
-    void vincularEstudiante(EstudianteFichaPerfilDomain relacion);
+    void vincularEstudiante(EstudianteFichaPerfilEntity relacion);
 
     boolean existePorFichaYEstudiante(UUID fichaPerfilId, UUID estudianteId);
 

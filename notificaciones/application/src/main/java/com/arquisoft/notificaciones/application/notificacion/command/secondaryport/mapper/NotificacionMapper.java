@@ -1,5 +1,6 @@
-package com.arquisoft.notificaciones.infrastructure.notificacion.persistence;
+package com.arquisoft.notificaciones.application.notificacion.command.secondaryport.mapper;
 
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
 import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;

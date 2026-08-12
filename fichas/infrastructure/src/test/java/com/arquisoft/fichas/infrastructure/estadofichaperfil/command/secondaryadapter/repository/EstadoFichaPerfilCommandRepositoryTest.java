@@ -1,7 +1,8 @@
-package com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence;
+package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaEntity;
-import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
+import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
+import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
+import com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository.EstadoFichaQueryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +15,13 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class EstadoFichaPerfilRepositoryTest {
+class EstadoFichaPerfilCommandRepositoryTest {
 
     @Autowired
-    private EstadoFichaPerfilRepository estadoFichaPerfilRepository;
+    private EstadoFichaPerfilCommandRepository estadoFichaPerfilRepository;
 
     @Autowired
-    private EstadoFichaRepository estadoFichaRepository;
+    private EstadoFichaQueryRepository estadoFichaRepository;
 
     private EstadoFichaEntity estadoFicha;
 

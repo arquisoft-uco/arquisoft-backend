@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +19,7 @@ import static org.mockito.Mockito.when;
 class AsesorFichaCommandOutputAdapterTest {
 
     @Mock
-    private AsesorFichaRepository asesorFichaRepository;
+    private AsesorFichaCommandRepository asesorFichaRepository;
 
     @InjectMocks
     private AsesorFichaCommandOutputAdapter adapter;
@@ -70,9 +69,10 @@ class AsesorFichaCommandOutputAdapterTest {
 
         // Assert
         assertThat(resultado).isPresent();
-        assertThat(resultado.get().id()).isEqualTo(asesorId);
-        assertThat(resultado.get().nombre()).isEqualTo("Ana Asesora");
-        assertThat(resultado.get().email()).isEqualTo("ana@arquisoft.com");
+        assertThat(resultado.get().getId()).isEqualTo(asesorId);
+        assertThat(resultado.get().getIdentificador()).isEqualTo("A001");
+        assertThat(resultado.get().getNombre()).isEqualTo("Ana Asesora");
+        assertThat(resultado.get().getEmail()).isEqualTo("ana@arquisoft.com");
     }
 
     @Test

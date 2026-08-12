@@ -1,5 +1,6 @@
-package com.arquisoft.fichas.infrastructure.estadoficha.persistence;
+package com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -9,10 +10,10 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class EstadoFichaRepositoryTest {
+class EstadoFichaQueryRepositoryTest {
 
     @Autowired
-    private EstadoFichaRepository estadoFichaRepository;
+    private EstadoFichaQueryRepository estadoFichaRepository;
 
     @Test
     void debeBuscarPorNombre_cuandoEstadoExiste() {

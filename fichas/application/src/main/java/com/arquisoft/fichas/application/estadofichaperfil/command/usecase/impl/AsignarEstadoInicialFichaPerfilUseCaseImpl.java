@@ -7,6 +7,7 @@ import com.arquisoft.fichas.application.estadofichaperfil.command.validator.Asig
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.EstadoFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.mapper.EstadoFichaPerfilMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ public class AsignarEstadoInicialFichaPerfilUseCaseImpl implements AsignarEstado
 
         asignarEstadoInicialFichaPerfilValidator.validar(estadoInicial.getFichaPerfil(), fichaExiste);
 
-        estadoFichaPerfilOutputPort.registrarEstadoInicial(estadoInicial);
+        estadoFichaPerfilOutputPort.registrarEstadoInicial(EstadoFichaPerfilMapper.toEntity(estadoInicial));
 
         logger.info(catalogo.obtener(EstadoFichaPerfilKey.LOG_CREADO),
                 estadoInicial.getId(),

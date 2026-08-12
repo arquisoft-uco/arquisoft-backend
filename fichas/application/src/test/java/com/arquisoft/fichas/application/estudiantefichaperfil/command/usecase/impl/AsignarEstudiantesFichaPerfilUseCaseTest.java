@@ -8,6 +8,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.Est
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
@@ -27,6 +28,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -77,7 +79,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones);
 
         // Assert
-        verify(estudianteFichaPerfilOutputPort, times(1)).vincularEstudiante(relaciones.getFirst());
+        verify(estudianteFichaPerfilOutputPort, times(1)).vincularEstudiante(entidadDe(relaciones.getFirst()));
     }
 
     @Test
@@ -99,7 +101,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         inOrder.verify(estudiantesVinculadosContadorFinder).obtener(fichaPerfil);
         inOrder.verify(asignarEstudiantesFichaPerfilValidator)
                 .validar(relaciones, true, List.of(estudiante), List.of(), 0L);
-        inOrder.verify(estudianteFichaPerfilOutputPort).vincularEstudiante(relaciones.getFirst());
+        inOrder.verify(estudianteFichaPerfilOutputPort).vincularEstudiante(entidadDe(relaciones.getFirst()));
     }
 
     @Test
@@ -156,7 +158,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         var relaciones = relaciones();
         stubConsultas(true, List.of(estudiante), List.of(), 0L);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
-                .when(estudianteFichaPerfilOutputPort).vincularEstudiante(relaciones.getFirst());
+                .when(estudianteFichaPerfilOutputPort).vincularEstudiante(entidadDe(relaciones.getFirst()));
 
         // Act & Assert
         assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
@@ -173,5 +175,11 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
 
     private List<EstudianteFichaPerfilDomain> relaciones() {
         return EstudianteFichaPerfilDomain.crear(fichaPerfil, List.of(estudiante));
+    }
+
+    // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.
+    private static EstudianteFichaPerfilEntity entidadDe(EstudianteFichaPerfilDomain relacion) {
+        return argThat(entity -> entity.getFichaPerfilId().equals(relacion.getFichaPerfilId())
+                && entity.getEstudianteId().equals(relacion.getEstudianteId()));
     }
 }

@@ -9,7 +9,6 @@ public enum HttpKey implements ClaveMensaje {
     // Títulos — campo "error" de ErrorResponseDTO
     ERROR_DOMINIO("app.infraestructura.http.error.dominio"),
     ERROR_APLICACION("app.infraestructura.http.error.aplicacion"),
-    ACCESO_DENEGADO("app.infraestructura.http.error.acceso-denegado"),
     SERVICIO_NO_DISPONIBLE("app.infraestructura.http.error.servicio-no-disponible"),
     ERROR_INTERNO("app.infraestructura.http.error.interno"),
     ERROR_VALIDACION_DOMINIO("app.infraestructura.http.error.validacion-dominio"),

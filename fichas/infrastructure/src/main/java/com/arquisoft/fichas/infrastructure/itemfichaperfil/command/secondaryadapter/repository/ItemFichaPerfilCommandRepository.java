@@ -1,5 +1,6 @@
-package com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence;
+package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity.ItemFichaPerfilEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -8,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface ItemFichaPerfilRepository extends JpaRepository<ItemFichaPerfilEntity, UUID> {
+public interface ItemFichaPerfilCommandRepository extends JpaRepository<ItemFichaPerfilEntity, UUID> {
 
     boolean existsByFichaPerfilIdAndTipoItemId(UUID fichaPerfilId, String tipoItemId);
 

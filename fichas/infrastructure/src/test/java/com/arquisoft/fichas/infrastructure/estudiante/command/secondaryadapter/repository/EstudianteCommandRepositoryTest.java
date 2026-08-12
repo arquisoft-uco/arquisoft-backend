@@ -1,5 +1,6 @@
-package com.arquisoft.fichas.infrastructure.estudiante.persistence;
+package com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -9,10 +10,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-class EstudianteRepositoryTest {
+class EstudianteCommandRepositoryTest {
 
     @Autowired
-    private EstudianteRepository repository;
+    private EstudianteCommandRepository repository;
 
     @Test
     void debeRetornarTrue_cuandoEstudianteExiste() {

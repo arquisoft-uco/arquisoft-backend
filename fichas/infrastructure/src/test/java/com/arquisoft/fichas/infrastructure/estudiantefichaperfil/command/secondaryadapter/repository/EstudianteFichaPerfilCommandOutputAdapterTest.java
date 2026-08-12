@@ -1,9 +1,8 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilEntity;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilRepository;
-import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.persistence.EstudianteFichaPerfilMapper;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.mapper.EstudianteFichaPerfilMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,16 +21,13 @@ import static org.mockito.Mockito.when;
 class EstudianteFichaPerfilCommandOutputAdapterTest {
 
     @Mock
-    private EstudianteFichaPerfilRepository repository;
-
-    @Mock
-    private EstudianteFichaPerfilMapper mapper;
+    private EstudianteFichaPerfilCommandRepository repository;
 
     private EstudianteFichaPerfilCommandOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EstudianteFichaPerfilCommandOutputAdapter(repository, mapper);
+        adapter = new EstudianteFichaPerfilCommandOutputAdapter(repository);
     }
 
     @Test
@@ -41,15 +37,12 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         UUID estudianteId = UUID.randomUUID();
         EstudianteFichaPerfilDomain relacion = EstudianteFichaPerfilDomain.crear(
                 fichaId, List.of(estudianteId)).get(0);
-        EstudianteFichaPerfilEntity entity = new EstudianteFichaPerfilEntity();
-
-        when(mapper.toEntity(relacion)).thenReturn(entity);
+        EstudianteFichaPerfilEntity entity = EstudianteFichaPerfilMapper.toEntity(relacion);
 
         // Act
-        adapter.vincularEstudiante(relacion);
+        adapter.vincularEstudiante(entity);
 
-        // Assert
-        verify(mapper, times(1)).toEntity(relacion);
+        // Assert — el adapter ya no traduce: guarda la entidad que le entrego el caso de uso
         verify(repository, times(1)).save(entity);
     }
 

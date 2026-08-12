@@ -2,9 +2,8 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.r
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
-import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilEntity;
-import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +23,7 @@ class FichaPerfilQueryOutputAdapterTest {
     private TestEntityManager entityManager;
 
     @Autowired
-    private FichaPerfilRepository fichaPerfilRepository;
+    private FichaPerfilQueryRepository fichaPerfilRepository;
 
     private FichaPerfilQueryOutputAdapter adapter;
 
