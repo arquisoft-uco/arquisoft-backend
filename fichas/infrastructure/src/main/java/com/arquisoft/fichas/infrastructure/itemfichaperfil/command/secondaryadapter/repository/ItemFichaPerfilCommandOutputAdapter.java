@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
-import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.persistence.ItemFichaPerfilMapper;
 import com.arquisoft.fichas.infrastructure.tipoitem.persistence.TipoItemRepository;

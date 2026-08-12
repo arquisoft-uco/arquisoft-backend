@@ -4,5 +4,5 @@ import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 
 public interface RegistrarFichaPerfilValidator {
 
-    void validar(FichaPerfilDomain ficha);
+    void validar(FichaPerfilDomain ficha, boolean asesorExiste, boolean tituloYaExiste);
 }

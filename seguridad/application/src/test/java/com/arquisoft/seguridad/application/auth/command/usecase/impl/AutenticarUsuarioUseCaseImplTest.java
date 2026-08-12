@@ -6,7 +6,7 @@ import com.arquisoft.seguridad.application.auth.command.primaryport.model.Autent
 import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
-import com.arquisoft.seguridad.domain.auth.secondaryport.AutenticacionOutputPort;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.AutenticacionOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

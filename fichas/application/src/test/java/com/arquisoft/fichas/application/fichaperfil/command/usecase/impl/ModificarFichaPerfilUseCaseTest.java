@@ -1,18 +1,20 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.fichaperfil.command.primaryport.mapper.ModificarFichaPerfilMapper;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.shared.message.constant.FichasCodes;
-import com.arquisoft.fichas.application.fichaperfil.command.primaryport.model.ModificarFichaPerfilCommand;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloEnOtraFichaExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
+import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
-import com.arquisoft.shared.exception.BaseException;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
+import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -20,13 +22,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ModificarFichaPerfilUseCaseTest {
@@ -35,13 +39,17 @@ class ModificarFichaPerfilUseCaseTest {
     private FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Mock
+    private VinculoEstudianteFichaExisteFinder vinculoEstudianteFichaExisteFinder;
+
+    @Mock
+    private TituloEnOtraFichaExisteFinder tituloEnOtraFichaExisteFinder;
+
+    @Mock
     private ModificarFichaPerfilValidator modificarFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
 
-    // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
     @Spy
     private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
@@ -49,58 +57,92 @@ class ModificarFichaPerfilUseCaseTest {
     private ModificarFichaPerfilUseCaseImpl modificarFichaPerfilUseCase;
 
     @Test
-    void debeModificarTitulo_cuandoDatosValidos() {
+    void debeActualizarElTitulo_cuandoDatosValidos() {
         // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        String tituloNuevo = "Titulo nuevo";
-        var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloNuevo);
+        var modificacion = modificacionValida();
+        stubConsultas(modificacion, true, false);
 
         // Act
-        modificarFichaPerfilUseCase.ejecutar(ModificarFichaPerfilMapper.toDomain(command));
+        modificarFichaPerfilUseCase.ejecutar(modificacion);
 
         // Assert
-        verify(fichaPerfilOutputPort, times(1)).actualizarTitulo(fichaId, tituloNuevo);
+        verify(fichaPerfilOutputPort, times(1))
+                .actualizarTitulo(modificacion.getFichaPerfil(), modificacion.getTituloProyecto());
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoEstudianteNoEsPropietario() {
+    void debeConsultarYValidarAntesDePersistir_cuandoSeEjecuta() {
         // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, "Titulo");
-
-        doThrow(new FichaNoPropietarioException(fichaId, estudianteId))
-                .when(modificarFichaPerfilValidator).validar(any());
+        var modificacion = modificacionValida();
+        stubConsultas(modificacion, true, false);
 
         // Act
-        Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(ModificarFichaPerfilMapper.toDomain(command)));
+        modificarFichaPerfilUseCase.ejecutar(modificacion);
 
         // Assert
-        assertThat(ex).isInstanceOf(FichaNoPropietarioException.class);
-        assertThat(((BaseException) ex).getCodigoError())
-                .isEqualTo(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO);
-        verify(fichaPerfilOutputPort, never()).actualizarTitulo(any(), any());
+        InOrder inOrder = inOrder(vinculoEstudianteFichaExisteFinder, tituloEnOtraFichaExisteFinder,
+                modificarFichaPerfilValidator, fichaPerfilOutputPort);
+        inOrder.verify(vinculoEstudianteFichaExisteFinder).obtener(
+                new VinculoEstudianteFicha(modificacion.getFichaPerfil(), modificacion.getEstudiante()));
+        inOrder.verify(tituloEnOtraFichaExisteFinder).obtener(modificacion);
+        inOrder.verify(modificarFichaPerfilValidator).validar(modificacion, true, false);
+        inOrder.verify(fichaPerfilOutputPort)
+                .actualizarTitulo(modificacion.getFichaPerfil(), modificacion.getTituloProyecto());
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoTituloDuplicado() {
+    void debePropagarLaExcepcion_cuandoElEstudianteNoEsPropietario() {
         // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        String tituloDuplicado = "Titulo duplicado";
-        var command = new ModificarFichaPerfilCommand(fichaId, estudianteId, tituloDuplicado);
+        var modificacion = modificacionValida();
+        stubConsultas(modificacion, false, false);
+        doThrow(new FichaNoPropietarioException(modificacion.getFichaPerfil(), modificacion.getEstudiante()))
+                .when(modificarFichaPerfilValidator).validar(modificacion, false, false);
 
-        doThrow(new FichaTituloDuplicadoException(tituloDuplicado))
-                .when(modificarFichaPerfilValidator).validar(any());
+        // Act & Assert
+        assertThatThrownBy(() -> modificarFichaPerfilUseCase.ejecutar(modificacion))
+                .isInstanceOf(FichaNoPropietarioException.class);
 
-        // Act
-        Throwable ex = catchThrowable(() -> modificarFichaPerfilUseCase.ejecutar(ModificarFichaPerfilMapper.toDomain(command)));
+        verify(fichaPerfilOutputPort, never()).actualizarTitulo(any(), anyString());
+    }
 
-        // Assert
-        assertThat(ex).isInstanceOf(FichaTituloDuplicadoException.class);
-        assertThat(((BaseException) ex).getCodigoError())
-                .isEqualTo(FichasCodes.FichaPerfil.FICHA_TITULO_DUPLICADO);
-        verify(fichaPerfilOutputPort, never()).actualizarTitulo(any(), any());
+    @Test
+    void debePropagarLaExcepcion_cuandoOtraFichaTieneEseTitulo() {
+        // Arrange
+        var modificacion = modificacionValida();
+        stubConsultas(modificacion, true, true);
+        doThrow(new FichaTituloDuplicadoException(modificacion.getTituloProyecto()))
+                .when(modificarFichaPerfilValidator).validar(modificacion, true, true);
+
+        // Act & Assert
+        assertThatThrownBy(() -> modificarFichaPerfilUseCase.ejecutar(modificacion))
+                .isInstanceOf(FichaTituloDuplicadoException.class);
+
+        verify(fichaPerfilOutputPort, never()).actualizarTitulo(any(), anyString());
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoRepositorioFalla() {
+        // Arrange
+        var modificacion = modificacionValida();
+        stubConsultas(modificacion, true, false);
+        doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
+                .when(fichaPerfilOutputPort)
+                .actualizarTitulo(modificacion.getFichaPerfil(), modificacion.getTituloProyecto());
+
+        // Act & Assert
+        assertThatThrownBy(() -> modificarFichaPerfilUseCase.ejecutar(modificacion))
+                .isInstanceOf(InfrastructureException.class);
+    }
+
+    private void stubConsultas(ModificacionFichaPerfilDomain modificacion, boolean esPropietario,
+                               boolean tituloYaExiste) {
+        when(vinculoEstudianteFichaExisteFinder.obtener(
+                new VinculoEstudianteFicha(modificacion.getFichaPerfil(), modificacion.getEstudiante())))
+                .thenReturn(esPropietario);
+        when(tituloEnOtraFichaExisteFinder.obtener(modificacion)).thenReturn(tituloYaExiste);
+    }
+
+    private ModificacionFichaPerfilDomain modificacionValida() {
+        return ModificacionFichaPerfilDomain.crear(UUID.randomUUID(), "Título modificado", UUID.randomUUID());
     }
 }

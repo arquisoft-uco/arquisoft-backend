@@ -6,7 +6,7 @@ import com.arquisoft.seguridad.application.auth.command.primaryport.model.Autent
 import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.AutenticarUsuarioUseCase;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
-import com.arquisoft.seguridad.domain.auth.secondaryport.AutenticacionOutputPort;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.AutenticacionOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

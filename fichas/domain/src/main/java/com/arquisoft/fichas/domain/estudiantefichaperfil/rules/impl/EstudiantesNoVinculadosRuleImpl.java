@@ -1,31 +1,17 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.secondaryport.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculosEstudiantesFicha;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantesNoVinculadosRule;
 import com.arquisoft.shared.util.UtilCollection;
 
-import java.util.List;
-
 public class EstudiantesNoVinculadosRuleImpl implements EstudiantesNoVinculadosRule {
 
-    private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
-
-    public EstudiantesNoVinculadosRuleImpl(EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort) {
-        this.estudianteFichaPerfilOutputPort = estudianteFichaPerfilOutputPort;
-    }
-
     @Override
-    public void validar(List<EstudianteFichaPerfilDomain> relaciones) {
-        if (UtilCollection.isEmptyOrNull(relaciones)) {
+    public void validar(VinculosEstudiantesFicha vinculos) {
+        if (UtilCollection.isEmptyOrNull(vinculos.yaVinculados())) {
             return;
         }
-        relaciones.forEach(relacion -> {
-            if (estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(
-                    relacion.getFichaPerfilId(), relacion.getEstudianteId())) {
-                throw new EstudianteDuplicadoException(relacion.getEstudianteId());
-            }
-        });
+        throw new EstudianteDuplicadoException(vinculos.yaVinculados().getFirst());
     }
 }

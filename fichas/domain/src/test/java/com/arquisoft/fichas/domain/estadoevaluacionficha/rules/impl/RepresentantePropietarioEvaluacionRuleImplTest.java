@@ -1,49 +1,35 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl;
 
-import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EvaluacionFichaNoPropiaException;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.secondaryport.EvaluacionFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.model.PropiedadEvaluacionFicha;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class RepresentantePropietarioEvaluacionRuleImplTest {
 
-    @Mock
-    private EvaluacionFichaPerfilOutputPort puerto;
-
-    @InjectMocks
-    private RepresentantePropietarioEvaluacionRuleImpl regla;
+    private final RepresentantePropietarioEvaluacionRuleImpl regla =
+            new RepresentantePropietarioEvaluacionRuleImpl();
 
     @Test
-    void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
+    void debeLanzarExcepcion_cuandoElRepresentanteNoEsDuenoDeLaEvaluacion() {
         // Arrange
-        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(UUID.randomUUID(), "APROBADA", UUID.randomUUID());
-        when(puerto.esRepresentantePropietario(entrada.getEvaluacionFichaPerfil(), entrada.getRepresentanteComite()))
-                .thenReturn(false);
+        var propiedad = new PropiedadEvaluacionFicha(UUID.randomUUID(), UUID.randomUUID(), false);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(entrada))
+        assertThatThrownBy(() -> regla.validar(propiedad))
                 .isInstanceOf(EvaluacionFichaNoPropiaException.class);
     }
 
     @Test
-    void debePasar_cuandoLaReglaSeCumple() {
+    void debePasar_cuandoElRepresentanteEsDuenoDeLaEvaluacion() {
         // Arrange
-        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(UUID.randomUUID(), "APROBADA", UUID.randomUUID());
-        when(puerto.esRepresentantePropietario(entrada.getEvaluacionFichaPerfil(), entrada.getRepresentanteComite()))
-                .thenReturn(true);
+        var propiedad = new PropiedadEvaluacionFicha(UUID.randomUUID(), UUID.randomUUID(), true);
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(propiedad)).doesNotThrowAnyException();
     }
 }

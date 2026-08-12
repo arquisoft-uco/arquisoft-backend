@@ -142,7 +142,7 @@ class RegistrarFichaPerfilControllerTest {
     }
 
     @Test
-    void debe400_cuandoTituloDuplicado() throws Exception {
+    void debe422_cuandoTituloDuplicado() throws Exception {
         // Arrange
         UUID asesorId = UUID.randomUUID();
         String tituloDuplicado = "Título duplicado";
@@ -162,11 +162,11 @@ class RegistrarFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
-    void debe400_cuandoAsesorNoEncontrado() throws Exception {
+    void debe422_cuandoAsesorNoEncontrado() throws Exception {
         // Arrange
         UUID asesorId = UUID.randomUUID();
         String body = String.format("""
@@ -185,7 +185,7 @@ class RegistrarFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
@@ -266,7 +266,7 @@ class RegistrarFichaPerfilControllerTest {
     }
 
     @Test
-    void debe400_cuandoEstudianteNoExiste() throws Exception {
+    void debe422_cuandoEstudianteNoExiste() throws Exception {
         // Arrange
         UUID asesorId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
@@ -287,11 +287,11 @@ class RegistrarFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
-    void debe400_cuandoEstudianteDuplicadoEnLista() throws Exception {
+    void debe422_cuandoEstudianteDuplicadoEnLista() throws Exception {
         // Arrange
         UUID asesorId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
@@ -312,6 +312,6 @@ class RegistrarFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 }

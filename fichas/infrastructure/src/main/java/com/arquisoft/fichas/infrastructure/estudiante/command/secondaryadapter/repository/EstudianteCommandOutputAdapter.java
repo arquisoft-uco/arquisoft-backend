@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.domain.estudiante.secondaryport.EstudianteOutputPort;
+import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
 import com.arquisoft.fichas.infrastructure.estudiante.persistence.EstudianteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

@@ -89,7 +89,7 @@ class RemoverEstudianteFichaPerfilControllerTest {
     }
 
     @Test
-    void debe400_cuandoFichaNoExiste() throws Exception {
+    void debe422_cuandoFichaNoExiste() throws Exception {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
@@ -103,11 +103,11 @@ class RemoverEstudianteFichaPerfilControllerTest {
                         fichaPerfilId, estudianteId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
-    void debe400_cuandoEstudianteNoExiste() throws Exception {
+    void debe422_cuandoEstudianteNoExiste() throws Exception {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
@@ -121,11 +121,11 @@ class RemoverEstudianteFichaPerfilControllerTest {
                         fichaPerfilId, estudianteId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
-    void debe400_cuandoRelacionNoExiste() throws Exception {
+    void debe422_cuandoRelacionNoExiste() throws Exception {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
@@ -139,7 +139,7 @@ class RemoverEstudianteFichaPerfilControllerTest {
                         fichaPerfilId, estudianteId)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTUDIANTE_FICHA_PERFIL_DELETE))))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

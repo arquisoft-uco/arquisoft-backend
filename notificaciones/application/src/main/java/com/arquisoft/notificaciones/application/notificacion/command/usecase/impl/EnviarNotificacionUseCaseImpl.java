@@ -5,7 +5,7 @@ import com.arquisoft.notificaciones.application.notificacion.command.primaryport
 import com.arquisoft.notificaciones.application.notificacion.command.usecase.EnviarNotificacionUseCase;
 import com.arquisoft.notificaciones.application.notificacion.command.validator.NotificacionValidator;
 import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
-import com.arquisoft.notificaciones.domain.notificacion.secondaryport.NotificacionOutputPort;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.NotificacionOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.notification.EnvioNotificacionOutputPort;

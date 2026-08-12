@@ -1,21 +1,15 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.model.DisponibilidadTituloFicha;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloUnicoRule;
 
 public class FichaPerfilTituloUnicoRuleImpl implements FichaPerfilTituloUnicoRule {
 
-    private final FichaPerfilOutputPort fichaPerfilOutputPort;
-
-    public FichaPerfilTituloUnicoRuleImpl(FichaPerfilOutputPort fichaPerfilOutputPort) {
-        this.fichaPerfilOutputPort = fichaPerfilOutputPort;
-    }
-
     @Override
-    public void validar(String tituloProyecto) {
-        if (fichaPerfilOutputPort.existePorTituloProyecto(tituloProyecto)) {
-            throw new FichaTituloDuplicadoException(tituloProyecto);
+    public void validar(DisponibilidadTituloFicha disponibilidad) {
+        if (disponibilidad.yaExiste()) {
+            throw new FichaTituloDuplicadoException(disponibilidad.tituloProyecto());
         }
     }
 }

@@ -8,7 +8,7 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.ModificarItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.ModificarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
-import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
+import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -85,7 +85,7 @@ class ModificarItemFichaPerfilControllerTest {
     }
 
     @Test
-    void debe400_cuandoItemNoExiste() throws Exception {
+    void debe422_cuandoItemNoExiste() throws Exception {
         // Arrange
         UUID itemId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
@@ -101,7 +101,7 @@ class ModificarItemFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

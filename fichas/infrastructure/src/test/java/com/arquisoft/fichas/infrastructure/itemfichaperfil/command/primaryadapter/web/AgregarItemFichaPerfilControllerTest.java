@@ -127,7 +127,7 @@ class AgregarItemFichaPerfilControllerTest {
     }
 
     @Test
-    void debe400_cuandoTipoDuplicado() throws Exception {
+    void debe422_cuandoTipoDuplicado() throws Exception {
         when(agregarItemFichaPerfilInteractor.ejecutar(any()))
                 .thenThrow(new ItemTipoDuplicadoException("OBJETIVO_GENERAL"));
 
@@ -137,7 +137,7 @@ class AgregarItemFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_CREATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

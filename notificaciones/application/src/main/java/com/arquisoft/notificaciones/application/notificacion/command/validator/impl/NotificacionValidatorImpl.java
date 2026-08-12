@@ -1,7 +1,7 @@
 package com.arquisoft.notificaciones.application.notificacion.command.validator.impl;
 
 import com.arquisoft.notificaciones.application.notificacion.command.validator.NotificacionValidator;
-import com.arquisoft.notificaciones.domain.notificacion.secondaryport.NotificacionOutputPort;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.NotificacionOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

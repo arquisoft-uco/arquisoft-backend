@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.domain.auth.TokenDomain;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
-import com.arquisoft.seguridad.domain.auth.secondaryport.ValidacionTokenOutputPort;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.ValidacionTokenOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

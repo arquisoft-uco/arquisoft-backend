@@ -6,5 +6,6 @@ import java.util.UUID;
 
 public interface AgregarItemFichaPerfilValidator {
 
-    void validar(ItemFichaPerfilDomain item, UUID estudiante);
+    void validar(ItemFichaPerfilDomain item, UUID estudiante, boolean fichaExiste, boolean esPropietario,
+                 boolean tipoYaExiste);
 }

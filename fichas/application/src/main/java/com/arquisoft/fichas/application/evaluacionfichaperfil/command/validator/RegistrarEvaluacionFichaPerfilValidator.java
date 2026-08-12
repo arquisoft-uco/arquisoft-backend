@@ -4,5 +4,6 @@ import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDo
 
 public interface RegistrarEvaluacionFichaPerfilValidator {
 
-    void validar(EvaluacionFichaPerfilDomain evaluacion);
+    void validar(EvaluacionFichaPerfilDomain evaluacion, boolean fichaExiste, boolean representanteExiste,
+                 boolean evaluacionYaExiste);
 }

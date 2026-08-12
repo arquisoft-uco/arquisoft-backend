@@ -1,31 +1,34 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.mapper.RemoverItemFichaPerfilMapper;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.shared.message.constant.FichasCodes;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
+import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
-import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
-import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.RemoverItemFichaPerfilCommand;
-import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.application.revisionitem.query.secondaryport.RevisionItemQueryOutputPort;
+import com.arquisoft.fichas.application.revisionitem.command.finder.RevisionesDelItemFinder;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
+import com.arquisoft.fichas.domain.itemfichaperfil.RemocionItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemConRevisionesException;
-import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemSinRevisionesRule;
+import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
+import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,118 +41,135 @@ class RemoverItemFichaPerfilUseCaseTest {
     private ItemFichaPerfilOutputPort itemOutputPort;
 
     @Mock
-    private RevisionItemQueryOutputPort revisionQueryPort;
+    private FichaPerfilDelItemFinder fichaPerfilDelItemFinder;
+
+    @Mock
+    private VinculoEstudianteFichaExisteFinder vinculoEstudianteFichaExisteFinder;
+
+    @Mock
+    private RevisionesDelItemFinder revisionesDelItemFinder;
 
     @Mock
     private RemoverItemFichaPerfilValidator removerItemFichaPerfilValidator;
 
     @Mock
-    private ItemSinRevisionesRule itemSinRevisionesRule;
-
-    @Mock
     private AppLogger logger;
 
-    // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
     @Spy
     private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
     @InjectMocks
-    private RemoverItemFichaPerfilUseCaseImpl useCase;
+    private RemoverItemFichaPerfilUseCaseImpl removerItemFichaPerfilUseCase;
+
+    private final UUID item = UUID.randomUUID();
+    private final UUID estudiante = UUID.randomUUID();
+    private final UUID fichaPerfil = UUID.randomUUID();
 
     @Test
-    void debeEliminar_cuandoDatosValidos() {
+    void debeRemoverElItem_cuandoDatosValidos() {
         // Arrange
-        UUID itemId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-
-        when(revisionQueryPort.contarPorItem(itemId)).thenReturn(0L);
-
-        var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
+        var entrada = entrada();
+        stubConsultasConFicha(true, 0L);
 
         // Act
-        useCase.ejecutar(RemoverItemFichaPerfilMapper.toDomain(command));
+        removerItemFichaPerfilUseCase.ejecutar(entrada);
 
         // Assert
-        verify(removerItemFichaPerfilValidator, times(1)).validar(itemId, estudianteId);
-        verify(revisionQueryPort, times(1)).contarPorItem(itemId);
-        verify(itemOutputPort, times(1)).removerItem(itemId);
+        verify(itemOutputPort, times(1)).removerItem(item);
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoItemNoExiste() {
+    void debeResolverLaFichaDelItemAntesDeValidar_cuandoSeEjecuta() {
         // Arrange
-        UUID itemId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-
-        doThrow(new ItemFichaPerfilNoEncontradoException(itemId))
-                .when(removerItemFichaPerfilValidator).validar(any(), any());
-
-        var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
+        var entrada = entrada();
+        stubConsultasConFicha(true, 0L);
 
         // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(RemoverItemFichaPerfilMapper.toDomain(command)));
+        removerItemFichaPerfilUseCase.ejecutar(entrada);
 
         // Assert
-        assertThat(exception)
-                .isInstanceOf(ItemFichaPerfilNoEncontradoException.class)
-                .hasMessageContaining(itemId.toString());
+        InOrder inOrder = inOrder(fichaPerfilDelItemFinder, vinculoEstudianteFichaExisteFinder,
+                revisionesDelItemFinder, removerItemFichaPerfilValidator, itemOutputPort);
+        inOrder.verify(fichaPerfilDelItemFinder).obtener(item);
+        inOrder.verify(vinculoEstudianteFichaExisteFinder)
+                .obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante));
+        inOrder.verify(revisionesDelItemFinder).obtener(item);
+        inOrder.verify(removerItemFichaPerfilValidator)
+                .validar(item, estudiante, Optional.of(fichaPerfil), true, 0L);
+        inOrder.verify(itemOutputPort).removerItem(item);
+    }
 
-        ItemFichaPerfilNoEncontradoException notFoundException =
-                (ItemFichaPerfilNoEncontradoException) exception;
-        assertThat(notFoundException.getCodigoError())
-                .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_NO_ENCONTRADO);
+    @Test
+    void noDebeConsultarPropiedad_cuandoElItemNoExiste() {
+        // Arrange
+        var entrada = entrada();
+        when(fichaPerfilDelItemFinder.obtener(item)).thenReturn(Optional.empty());
+        when(revisionesDelItemFinder.obtener(item)).thenReturn(0L);
+        doThrow(new ItemFichaPerfilNoEncontradoException(item))
+                .when(removerItemFichaPerfilValidator)
+                .validar(item, estudiante, Optional.empty(), false, 0L);
 
-        verify(revisionQueryPort, never()).contarPorItem(any());
+        // Act & Assert
+        assertThatThrownBy(() -> removerItemFichaPerfilUseCase.ejecutar(entrada))
+                .isInstanceOf(ItemFichaPerfilNoEncontradoException.class);
+
+        verify(vinculoEstudianteFichaExisteFinder, never()).obtener(any());
         verify(itemOutputPort, never()).removerItem(any());
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoEstudianteNoEsPropietario() {
+    void debePropagarLaExcepcion_cuandoElEstudianteNoEsPropietario() {
         // Arrange
-        UUID itemId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
-        UUID fichaPerfilId = UUID.randomUUID();
+        var entrada = entrada();
+        stubConsultasConFicha(false, 0L);
+        doThrow(new FichaNoPropietarioException(fichaPerfil, estudiante))
+                .when(removerItemFichaPerfilValidator)
+                .validar(item, estudiante, Optional.of(fichaPerfil), false, 0L);
 
-        doThrow(new FichaNoPropietarioException(fichaPerfilId, estudianteId))
-                .when(removerItemFichaPerfilValidator).validar(any(), any());
+        // Act & Assert
+        assertThatThrownBy(() -> removerItemFichaPerfilUseCase.ejecutar(entrada))
+                .isInstanceOf(FichaNoPropietarioException.class);
 
-        var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
-
-        // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(RemoverItemFichaPerfilMapper.toDomain(command)));
-
-        // Assert
-        assertThat(exception).isInstanceOf(FichaNoPropietarioException.class);
-
-        FichaNoPropietarioException authException = (FichaNoPropietarioException) exception;
-        assertThat(authException.getCodigoError())
-                .isEqualTo(FichasCodes.FichaPerfil.FICHA_NO_PROPIETARIO);
-
-        verify(revisionQueryPort, never()).contarPorItem(any());
         verify(itemOutputPort, never()).removerItem(any());
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoItemTieneRevisiones() {
+    void debePropagarLaExcepcion_cuandoElItemTieneRevisiones() {
         // Arrange
-        UUID itemId = UUID.randomUUID();
-        UUID estudianteId = UUID.randomUUID();
+        var entrada = entrada();
+        stubConsultasConFicha(true, 2L);
+        doThrow(new ItemConRevisionesException(item))
+                .when(removerItemFichaPerfilValidator)
+                .validar(item, estudiante, Optional.of(fichaPerfil), true, 2L);
 
-        when(revisionQueryPort.contarPorItem(itemId)).thenReturn(2L);
-        doThrow(new ItemConRevisionesException(itemId))
-                .when(itemSinRevisionesRule).validar(any());
-
-        var command = new RemoverItemFichaPerfilCommand(itemId, estudianteId);
-
-        // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(RemoverItemFichaPerfilMapper.toDomain(command)));
-
-        // Assert
-        assertThat(exception)
-                .isInstanceOf(ItemConRevisionesException.class)
-                .hasMessageContaining(itemId.toString());
+        // Act & Assert
+        assertThatThrownBy(() -> removerItemFichaPerfilUseCase.ejecutar(entrada))
+                .isInstanceOf(ItemConRevisionesException.class);
 
         verify(itemOutputPort, never()).removerItem(any());
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoRepositorioFalla() {
+        // Arrange
+        var entrada = entrada();
+        stubConsultasConFicha(true, 0L);
+        doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
+                .when(itemOutputPort).removerItem(item);
+
+        // Act & Assert
+        assertThatThrownBy(() -> removerItemFichaPerfilUseCase.ejecutar(entrada))
+                .isInstanceOf(InfrastructureException.class);
+    }
+
+    private void stubConsultasConFicha(boolean esPropietario, long totalRevisiones) {
+        when(fichaPerfilDelItemFinder.obtener(item)).thenReturn(Optional.of(fichaPerfil));
+        when(vinculoEstudianteFichaExisteFinder.obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante)))
+                .thenReturn(esPropietario);
+        when(revisionesDelItemFinder.obtener(item)).thenReturn(totalRevisiones);
+    }
+
+    private RemocionItemFichaPerfilDomain entrada() {
+        return RemocionItemFichaPerfilDomain.crear(item, estudiante);
     }
 }

@@ -1,13 +1,10 @@
 package com.arquisoft.fichas.domain.estadofichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
-import com.arquisoft.fichas.domain.estadofichaperfil.secondaryport.EstadoFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -17,56 +14,34 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EstadoFichaPerfilEnTerminalRuleImplTest {
 
-    @ParameterizedTest
-    @EnumSource(value = EstadoFicha.class, names = {"APROBADA", "APROBADA_CON_OBSERVACIONES", "NO_APROBADA"})
-    void debeLanzarExcepcion_cuandoEstadoEsTerminal(EstadoFicha estadoTerminal) {
+    private final EstadoFichaPerfilEnTerminalRuleImpl regla = new EstadoFichaPerfilEnTerminalRuleImpl();
+
+    @Test
+    void debeLanzarExcepcion_cuandoLaFichaNoTieneEstadoRegistrado() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        var regla = new EstadoFichaPerfilEnTerminalRuleImpl(
-                new EstadoFichaPerfilOutputPortStub(Optional.of(estadoTerminal)));
+        var estado = new EstadoActualFicha(UUID.randomUUID(), Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(fichaPerfilId))
-                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
-    }
-
-    @ParameterizedTest
-    @EnumSource(value = EstadoFicha.class, names = {"EN_CONSTRUCCION", "DISPONIBLE_PARA_EVALUACION"})
-    void noDebeLanzarExcepcion_cuandoEstadoNoEsTerminal(EstadoFicha estadoNoTerminal) {
-        // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        var regla = new EstadoFichaPerfilEnTerminalRuleImpl(
-                new EstadoFichaPerfilOutputPortStub(Optional.of(estadoNoTerminal)));
-
-        // Act & Assert
-        assertThatCode(() -> regla.validar(fichaPerfilId)).doesNotThrowAnyException();
+        assertThatThrownBy(() -> regla.validar(estado))
+                .isInstanceOf(EstadoFichaPerfilNoEncontradoException.class);
     }
 
     @Test
-    void debeLanzarEstadoFichaPerfilNoEncontradoException_cuandoNoHayEstadoRegistrado() {
+    void debeLanzarExcepcion_cuandoElEstadoActualEsTerminal() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        var regla = new EstadoFichaPerfilEnTerminalRuleImpl(
-                new EstadoFichaPerfilOutputPortStub(Optional.empty()));
+        var estado = new EstadoActualFicha(UUID.randomUUID(), Optional.of(EstadoFicha.APROBADA));
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(fichaPerfilId))
-                .isInstanceOf(EstadoFichaPerfilNoEncontradoException.class)
-                .hasMessageContaining(fichaPerfilId.toString());
+        assertThatThrownBy(() -> regla.validar(estado))
+                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
     }
 
-    /** fichas:domain no tiene Mockito en el classpath de test: el doble se escribe a mano. */
-    private record EstadoFichaPerfilOutputPortStub(Optional<EstadoFicha> estadoActual)
-            implements EstadoFichaPerfilOutputPort {
+    @Test
+    void debePasar_cuandoElEstadoActualNoEsTerminal() {
+        // Arrange
+        var estado = new EstadoActualFicha(UUID.randomUUID(), Optional.of(EstadoFicha.EN_CONSTRUCCION));
 
-        @Override
-        public void registrarEstadoInicial(EstadoFichaPerfilDomain aggregate) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Optional<EstadoFicha> obtenerEstadoActual(UUID fichaPerfilId) {
-            return estadoActual;
-        }
+        // Act & Assert
+        assertThatCode(() -> regla.validar(estado)).doesNotThrowAnyException();
     }
 }

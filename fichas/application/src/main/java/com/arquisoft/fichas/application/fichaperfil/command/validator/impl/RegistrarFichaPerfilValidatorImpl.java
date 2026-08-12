@@ -2,6 +2,8 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.model.DisponibilidadTituloFicha;
+import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaAsesorFicha;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaExisteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloUnicoRule;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +17,9 @@ public class RegistrarFichaPerfilValidatorImpl implements RegistrarFichaPerfilVa
     private final FichaPerfilTituloUnicoRule fichaPerfilTituloUnicoRule;
 
     @Override
-    public void validar(FichaPerfilDomain ficha) {
-        asesorFichaExisteRule.validar(ficha.getAsesorFicha());
-        fichaPerfilTituloUnicoRule.validar(ficha.getTituloProyecto());
+    public void validar(FichaPerfilDomain ficha, boolean asesorExiste, boolean tituloYaExiste) {
+        asesorFichaExisteRule.validar(new ExistenciaAsesorFicha(ficha.getAsesorFicha(), asesorExiste));
+        fichaPerfilTituloUnicoRule.validar(
+                new DisponibilidadTituloFicha(ficha.getTituloProyecto(), tituloYaExiste));
     }
 }

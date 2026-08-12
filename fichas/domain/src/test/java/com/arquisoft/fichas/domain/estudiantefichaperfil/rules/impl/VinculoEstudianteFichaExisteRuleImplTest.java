@@ -1,47 +1,34 @@
 package com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.RemocionEstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.secondaryport.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.ExistenciaVinculoEstudianteFicha;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class VinculoEstudianteFichaExisteRuleImplTest {
 
-    @Mock
-    private EstudianteFichaPerfilOutputPort puerto;
-
-    @InjectMocks
-    private VinculoEstudianteFichaExisteRuleImpl regla;
+    private final VinculoEstudianteFichaExisteRuleImpl regla = new VinculoEstudianteFichaExisteRuleImpl();
 
     @Test
-    void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
+    void debeLanzarExcepcion_cuandoElVinculoNoExiste() {
         // Arrange
-        var entrada = RemocionEstudianteFichaPerfilDomain.crear(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.existePorFichaYEstudiante(entrada.getFichaPerfil(), entrada.getEstudiante())).thenReturn(false);
+        var existencia = new ExistenciaVinculoEstudianteFicha(UUID.randomUUID(), UUID.randomUUID(), false);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(entrada))
+        assertThatThrownBy(() -> regla.validar(existencia))
                 .isInstanceOf(EstudianteFichaPerfilNoEncontradoException.class);
     }
 
     @Test
-    void debePasar_cuandoLaReglaSeCumple() {
+    void debePasar_cuandoElVinculoExiste() {
         // Arrange
-        var entrada = RemocionEstudianteFichaPerfilDomain.crear(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.existePorFichaYEstudiante(entrada.getFichaPerfil(), entrada.getEstudiante())).thenReturn(true);
+        var existencia = new ExistenciaVinculoEstudianteFicha(UUID.randomUUID(), UUID.randomUUID(), true);
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(existencia)).doesNotThrowAnyException();
     }
 }

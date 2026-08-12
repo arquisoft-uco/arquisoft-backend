@@ -1,26 +1,26 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.mapper.RegistrarEvaluacionFichaPerfilMapper;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.model.RegistrarEvaluacionFichaPerfilCommand;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.finder.EvaluacionDeRepresentanteExisteFinder;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
+import com.arquisoft.fichas.application.representantecomite.command.finder.RepresentanteComiteExisteFinder;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.RepresentanteComiteNoEncontradoException;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.secondaryport.EstadoEvaluacionFichaOutputPort;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.secondaryport.EvaluacionFichaPerfilOutputPort;
-import com.arquisoft.shared.validation.DomainValidationException;
+import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataAccessException;
 
 import java.util.UUID;
 
@@ -28,8 +28,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RegistrarEvaluacionFichaPerfilUseCaseTest {
@@ -41,86 +44,104 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
     private EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
 
     @Mock
-    private RegistrarEvaluacionFichaPerfilValidator registrarEvaluacionFichaPerfilValidator;
+    private FichaPerfilExisteFinder fichaPerfilExisteFinder;
 
+    @Mock
+    private RepresentanteComiteExisteFinder representanteComiteExisteFinder;
+
+    @Mock
+    private EvaluacionDeRepresentanteExisteFinder evaluacionDeRepresentanteExisteFinder;
+
+    @Mock
+    private RegistrarEvaluacionFichaPerfilValidator registrarEvaluacionFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
     @Spy
     private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
-@InjectMocks
-    private RegistrarEvaluacionFichaPerfilUseCaseImpl useCase;
+    @InjectMocks
+    private RegistrarEvaluacionFichaPerfilUseCaseImpl registrarEvaluacionFichaPerfilUseCase;
+
+    private final UUID representante = UUID.randomUUID();
+    private final UUID ficha = UUID.randomUUID();
 
     @Test
-    void debeRegistrar_cuandoDatosValidos() {
+    void debeRegistrarLaEvaluacionYSuEstadoInicial_cuandoDatosValidos() {
         // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID representanteId = UUID.randomUUID();
-        var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
+        var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
+        stubConsultas(evaluacion, true, true, false);
 
         // Act
-        UUID resultado = useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command));
+        UUID resultado = registrarEvaluacionFichaPerfilUseCase.ejecutar(evaluacion);
 
         // Assert
-        assertThat(resultado).isNotNull();
-        verify(registrarEvaluacionFichaPerfilValidator).validar(any());
-        verify(registrarEvaluacionFichaPerfilValidator).validar(any());
-        verify(registrarEvaluacionFichaPerfilValidator).validar(any());
-        verify(evaluacionFichaPerfilOutputPort).registrarEvaluacion(any(EvaluacionFichaPerfilDomain.class));
-        verify(estadoEvaluacionFichaOutputPort).registrarEstadoInicial(any(EstadoEvaluacionFichaDomain.class));
+        assertThat(resultado).isEqualTo(evaluacion.getId());
+        verify(evaluacionFichaPerfilOutputPort, times(1)).registrarEvaluacion(evaluacion);
+        verify(estadoEvaluacionFichaOutputPort, times(1)).registrarEstadoInicial(any());
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoFichaNoExiste() {
+    void debeConsultarYValidarAntesDePersistir_cuandoSeEjecuta() {
         // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID representanteId = UUID.randomUUID();
-        var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
+        var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
+        stubConsultas(evaluacion, true, true, false);
 
-        doThrow(new FichaPerfilNoEncontradaException(fichaId))
-                .when(registrarEvaluacionFichaPerfilValidator).validar(any());
+        // Act
+        registrarEvaluacionFichaPerfilUseCase.ejecutar(evaluacion);
+
+        // Assert
+        InOrder inOrder = inOrder(fichaPerfilExisteFinder, representanteComiteExisteFinder,
+                evaluacionDeRepresentanteExisteFinder, registrarEvaluacionFichaPerfilValidator,
+                evaluacionFichaPerfilOutputPort);
+        inOrder.verify(fichaPerfilExisteFinder).obtener(ficha);
+        inOrder.verify(representanteComiteExisteFinder).obtener(representante);
+        inOrder.verify(evaluacionDeRepresentanteExisteFinder).obtener(evaluacion);
+        inOrder.verify(registrarEvaluacionFichaPerfilValidator).validar(evaluacion, true, true, false);
+        inOrder.verify(evaluacionFichaPerfilOutputPort).registrarEvaluacion(evaluacion);
+    }
+
+    @Test
+    void debePropagarLaExcepcion_cuandoLaFichaNoExiste() {
+        // Arrange
+        var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
+        stubConsultas(evaluacion, false, true, false);
+        doThrow(new FichaPerfilNoEncontradaException(ficha))
+                .when(registrarEvaluacionFichaPerfilValidator).validar(evaluacion, false, true, false);
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command)))
+        assertThatThrownBy(() -> registrarEvaluacionFichaPerfilUseCase.ejecutar(evaluacion))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class);
 
         verify(evaluacionFichaPerfilOutputPort, never()).registrarEvaluacion(any());
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoRepresentanteNoExiste() {
+    void debePropagarLaExcepcion_cuandoElRepresentanteNoExiste() {
         // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID representanteId = UUID.randomUUID();
-        var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
-
-        doThrow(new RepresentanteComiteNoEncontradoException(representanteId))
-                .when(registrarEvaluacionFichaPerfilValidator).validar(any());
+        var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
+        stubConsultas(evaluacion, true, false, false);
+        doThrow(new RepresentanteComiteNoEncontradoException(representante))
+                .when(registrarEvaluacionFichaPerfilValidator).validar(evaluacion, true, false, false);
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command)))
+        assertThatThrownBy(() -> registrarEvaluacionFichaPerfilUseCase.ejecutar(evaluacion))
                 .isInstanceOf(RepresentanteComiteNoEncontradoException.class);
 
         verify(evaluacionFichaPerfilOutputPort, never()).registrarEvaluacion(any());
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoEvaluacionDuplicada() {
+    void debePropagarLaExcepcion_cuandoLaEvaluacionEstaDuplicada() {
         // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID representanteId = UUID.randomUUID();
-        var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
-
-        doThrow(new EvaluacionFichaPerfilDuplicadaException(representanteId, fichaId))
-                .when(registrarEvaluacionFichaPerfilValidator)
-                .validar(any());
+        var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
+        stubConsultas(evaluacion, true, true, true);
+        doThrow(new EvaluacionFichaPerfilDuplicadaException(representante, ficha))
+                .when(registrarEvaluacionFichaPerfilValidator).validar(evaluacion, true, true, true);
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command)))
+        assertThatThrownBy(() -> registrarEvaluacionFichaPerfilUseCase.ejecutar(evaluacion))
                 .isInstanceOf(EvaluacionFichaPerfilDuplicadaException.class);
 
         verify(evaluacionFichaPerfilOutputPort, never()).registrarEvaluacion(any());
@@ -129,42 +150,22 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
     @Test
     void debeLanzarExcepcion_cuandoRepositorioFalla() {
         // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID representanteId = UUID.randomUUID();
-        var command = new RegistrarEvaluacionFichaPerfilCommand(fichaId, representanteId);
-
-        doThrow(new DataAccessException("Error de BD") {})
-                .when(evaluacionFichaPerfilOutputPort).registrarEvaluacion(any(EvaluacionFichaPerfilDomain.class));
+        var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
+        stubConsultas(evaluacion, true, true, false);
+        doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
+                .when(evaluacionFichaPerfilOutputPort).registrarEvaluacion(evaluacion);
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command)))
-                .isInstanceOf(DataAccessException.class)
-                .hasMessageContaining("Error de BD");
+        assertThatThrownBy(() -> registrarEvaluacionFichaPerfilUseCase.ejecutar(evaluacion))
+                .isInstanceOf(InfrastructureException.class);
 
-        verify(evaluacionFichaPerfilOutputPort).registrarEvaluacion(any(EvaluacionFichaPerfilDomain.class));
+        verify(estadoEvaluacionFichaOutputPort, never()).registrarEstadoInicial(any());
     }
 
-    @Test
-    void debeConstruirAgregadoAntesDeConsultarLaBaseDeDatos_cuandoRepresentanteEsNull() {
-        // Arrange
-        var command = new RegistrarEvaluacionFichaPerfilCommand(null, UUID.randomUUID());
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command)))
-                .isInstanceOf(DomainValidationException.class);
-
-        verify(evaluacionFichaPerfilOutputPort, never()).registrarEvaluacion(any());
-    }
-
-    @Test
-    void debeCrearEstadoInicialAutomatico_cuandoRegistrarEvaluacion() {
-        // Arrange
-        var command = new RegistrarEvaluacionFichaPerfilCommand(UUID.randomUUID(), UUID.randomUUID());
-
-        // Act
-        useCase.ejecutar(RegistrarEvaluacionFichaPerfilMapper.toDomain(command));
-
-        // Assert
-        verify(estadoEvaluacionFichaOutputPort).registrarEstadoInicial(any(EstadoEvaluacionFichaDomain.class));
+    private void stubConsultas(EvaluacionFichaPerfilDomain evaluacion, boolean fichaExiste,
+                               boolean representanteExiste, boolean evaluacionYaExiste) {
+        when(fichaPerfilExisteFinder.obtener(ficha)).thenReturn(fichaExiste);
+        when(representanteComiteExisteFinder.obtener(representante)).thenReturn(representanteExiste);
+        when(evaluacionDeRepresentanteExisteFinder.obtener(evaluacion)).thenReturn(evaluacionYaExiste);
     }
 }

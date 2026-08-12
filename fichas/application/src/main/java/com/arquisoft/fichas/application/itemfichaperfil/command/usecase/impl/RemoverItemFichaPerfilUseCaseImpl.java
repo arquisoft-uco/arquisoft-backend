@@ -2,13 +2,14 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
+import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.RemoverItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
-import com.arquisoft.fichas.application.revisionitem.query.secondaryport.RevisionItemQueryOutputPort;
+import com.arquisoft.fichas.application.revisionitem.command.finder.RevisionesDelItemFinder;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.RemocionItemFichaPerfilDomain;
-import com.arquisoft.fichas.domain.itemfichaperfil.model.RevisionesItem;
-import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
-import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemSinRevisionesRule;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,18 +19,26 @@ import org.springframework.stereotype.Component;
 public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfilUseCase {
 
     private final ItemFichaPerfilOutputPort itemOutputPort;
-    private final RevisionItemQueryOutputPort revisionQueryPort;
+    private final FichaPerfilDelItemFinder fichaPerfilDelItemFinder;
+    private final VinculoEstudianteFichaExisteFinder vinculoEstudianteFichaExisteFinder;
+    private final RevisionesDelItemFinder revisionesDelItemFinder;
     private final RemoverItemFichaPerfilValidator removerItemFichaPerfilValidator;
-    private final ItemSinRevisionesRule itemSinRevisionesRule;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(RemocionItemFichaPerfilDomain entrada) {
-        removerItemFichaPerfilValidator.validar(entrada.getItem(), entrada.getEstudiante());
+        var fichaDelItem = fichaPerfilDelItemFinder.obtener(entrada.getItem());
 
-        long totalRevisiones = revisionQueryPort.contarPorItem(entrada.getItem());
-        itemSinRevisionesRule.validar(new RevisionesItem(entrada.getItem(), totalRevisiones));
+        boolean esPropietario = fichaDelItem
+                .map(ficha -> vinculoEstudianteFichaExisteFinder.obtener(
+                        new VinculoEstudianteFicha(ficha, entrada.getEstudiante())))
+                .orElse(false);
+
+        long totalRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());
+
+        removerItemFichaPerfilValidator.validar(
+                entrada.getItem(), entrada.getEstudiante(), fichaDelItem, esPropietario, totalRevisiones);
 
         itemOutputPort.removerItem(entrada.getItem());
 

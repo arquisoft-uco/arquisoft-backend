@@ -1,7 +1,7 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.repository;
 
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
-import com.arquisoft.usuarios.domain.usuario.secondaryport.UsuarioOutputPort;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 

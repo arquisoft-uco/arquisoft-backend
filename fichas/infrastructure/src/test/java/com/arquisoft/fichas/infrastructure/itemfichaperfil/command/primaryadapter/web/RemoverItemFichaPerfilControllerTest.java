@@ -8,7 +8,7 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.RemoverItemFichaPerfilInteractor;
-import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
+import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.infrastructure.FichasInfrastructureTestApplication;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.validation.DomainValidationException;
@@ -82,7 +82,7 @@ class RemoverItemFichaPerfilControllerTest {
     }
 
     @Test
-    void debe400_cuandoItemNoExiste() throws Exception {
+    void debe422_cuandoItemNoExiste() throws Exception {
         // Arrange
         UUID itemId = UUID.randomUUID();
         doThrow(new ItemFichaPerfilNoEncontradoException(itemId))
@@ -93,7 +93,7 @@ class RemoverItemFichaPerfilControllerTest {
                         .with(jwt()
                                 .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ITEM_FICHA_PERFIL_DELETE))))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.ItemFichaPerfil.ITEM_NO_ENCONTRADO));
     }
 

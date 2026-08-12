@@ -3,7 +3,7 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
-import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaEntity;
 import com.arquisoft.fichas.infrastructure.asesorficha.persistence.AsesorFichaRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilRepository;

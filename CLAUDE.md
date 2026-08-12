@@ -71,11 +71,10 @@ Only `seguridad`, `usuarios`, `fichas` and `notificaciones` have real implementa
 {context}/domain/
 └── {feature}/
     ├── {Entity}Domain.java   # Aggregate root (suffix Domain, noun) — no Lombok, no Spring; lives directly here, no subpackage
-    ├── secondaryport/        # Output port interfaces (suffix OutputPort)
-    ├── model/                # Value objects (optional) — no Lombok, no Spring
+    ├── model/                # Value objects — no Lombok, no Spring. Includes the input record of each Rule
     ├── rules/                # Business rule interfaces (suffix Rule), reusable across use cases
     │   └── impl/
-    │       └── {Regla}RuleImpl.java
+    │       └── {Regla}RuleImpl.java   # Pure: no ports, no constructor dependencies
     └── message/              # Domain message constants (optional)
 event/                        # Domain events shared across features (extend DomainEvent)
 exception/                    # Domain exceptions shared across features (extend DomainException)
@@ -97,10 +96,12 @@ exception/                    # Domain exceptions shared across features (extend
     │   │   └── impl/
     │   │       └── {Action}{Entity}UseCaseImpl.java   # Business orchestration (no transaction)
     │   ├── validator/
-    │   │   └── {Feature}Validator.java        # Reusable existence/uniqueness/ownership checks
-    │   ├── finder/                             # Optional — lookup helper implementing shared.rules.Finder<ID,T>
-    │   │   ├── {Feature}Finder.java
+    │   │   └── {Action}{Entity}Validator.java  # Pure: receives the already-fetched data and orchestrates the Rules
+    │   ├── finder/                             # One Finder per query, implementing shared.rules.Finder<T,R>
+    │   │   ├── {Concepto}Finder.java
     │   │   └── impl/
+    │   ├── secondaryport/                      # Output port write-side (suffix OutputPort)
+    │   │   └── {Feature}OutputPort.java
     │   └── result/
     │       └── {Concepto}Result.java          # Command output, only when it is not UUID/void
     └── query/
@@ -165,7 +166,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Input ports:** The entry point of a command is the `Interactor` interface in `application/{feature}/command/primaryport/interactor/`, implemented by `{Action}{Entity}InteractorImpl` in the nested `impl/` package — together with its `Command` (`primaryport/model/`) and, where the action maps to a non-root domain object, its `Mapper` (`primaryport/mapper/`), this is the "primary port" of the command. The use case it delegates to is the `UseCase` interface in `application/{feature}/command/usecase/` — **not** nested under `primaryport/`, since it is an internal collaborator, not the primary contract — or in `application/{feature}/query/primaryport/usecase/` on the read side, where the `UseCase` **is** the primary contract because there is no interactor. Both are implemented by `{Action}{Entity}UseCaseImpl`/`{Consult}{Entity}UseCaseImpl` in the nested `impl/` package. There is no `port/in/` package on the application layer — interfaces and implementations live together under `interactor/` and `usecase/`.
 
-**Output ports:** Write-side in `domain/{feature}/secondaryport/`; read-side in `application/{feature}/query/secondaryport/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`).
+**Output ports:** Both sides live in the application layer — write-side in `application/{feature}/command/secondaryport/`, read-side in `application/{feature}/query/secondaryport/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`). **The domain layer declares no ports and performs no I/O**; `{context}/domain` depends only on `shared:domain`, so a port under `domain/` would invert the module dependency and not compile.
 
 **Input adapters:** REST controllers in `infrastructure/{feature}/command/primaryadapter/web/` (or `query/.../web/`), suffix `Controller` (e.g., `RegistrarFichaPerfilController`) — there is no Spanish exception for this suffix anymore. AMQP consumers in `infrastructure/{feature}/command/primaryadapter/amqp/`, suffix `InputAdapter` (e.g., `UsuarioCreadoInputAdapter`).
 
@@ -173,9 +174,13 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Use case implementations:** `{Action}{Entity}UseCaseImpl` in `usecase/impl/`, implementing `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCaseImpl`, `AutenticarUsuarioUseCaseImpl`). Annotated `@Component` — **never `@Service`**, which is not used anywhere in this project. The use case is a plain collaborator invoked by its interactor — the adapter always injects the `Interactor`, never the `UseCase`.
 
-**Validators:** Existence, uniqueness and ownership checks live in `{Feature}Validator` (`application/{feature}/command/validator/`, `@Component`), not as inline `if/throw` blocks inside the use case — that keeps rules reusable across features (e.g., `EstudiantesFichaValidator` is shared by ficha registration and student assignment). Method names state the rule: `validarAsesorExiste`, `validarTituloUnico`, `validarSinDuplicados`. The Validator typically delegates the actual check to one or more domain Rules (see below) rather than querying a port directly.
+**Validators:** `{Action}{Entity}Validator` (`application/{feature}/command/validator/`, `@Component`) accumulates every business rule of one use case. It is **pure**: it injects only domain `Rule` beans — never an `OutputPort`, never a `Finder`. Its `validar(...)` signature takes the domain input plus the data the use case already fetched (`boolean asesorExiste`, `List<UUID> estudiantesExistentes`, `Optional<EstadoFicha> estadoActual`, …); from those it builds each Rule's input record and invokes the Rules in validation order. Where a piece of data may be absent, guard the dependent rules with `ifPresent` instead of `orElseThrow` — that keeps the validator correct on its own rather than relying on a previous rule having thrown.
 
-**Domain rules:** A single existence/uniqueness/comparison check that needs domain state is an interface `{Concepto}Rule` extending `com.arquisoft.shared.rules.DomainRule<T>`, in `domain/{feature}/rules/`, with a plain implementation (no Lombok, no Spring annotations — constructor injection only) in the nested `impl/` package, e.g. `AsesorFichaExisteRule`/`AsesorFichaExisteRuleImpl`, `FichaPerfilTituloUnicoRule`/`FichaPerfilTituloUnicoRuleImpl`. A `RuleImpl` that needs to check state injects the feature's own `OutputPort` and throws the corresponding domain exception from `validar(T)` — it is wired as a Spring bean from infrastructure config, keeping the class itself framework-free. This is the mechanism `{Feature}Validator` calls into; it is not a substitute for it; a command-side lookup helper (implementing `com.arquisoft.shared.rules.Finder<ID, T>`, suffix `Finder`/`FinderImpl`, in `application/{feature}/command/finder/`) fetches an aggregate for an interactor without going through the read side.
+**Domain rules:** A single existence/uniqueness/comparison/ownership check is an interface `{Concepto}Rule` extending `com.arquisoft.shared.rules.DomainRule<T>`, in `domain/{feature}/rules/`, with a plain implementation (no Lombok, no Spring, **no constructor dependencies at all**) in the nested `impl/` package. `T` is a record in `domain/{feature}/model/` carrying the already-fetched data plus whatever the error message needs — e.g. `ExistenciaAsesorFicha(UUID asesorFicha, boolean existe)`, `DisponibilidadTituloFicha(String tituloProyecto, boolean yaExiste)`, `PropiedadFicha(UUID fichaPerfil, UUID estudiante, boolean esPropietario)`. `validar(T)` is a pure decision over that record: it does not query anything, it only throws. Rules are wired as no-arg beans from `{Contexto}DomainRulesConfig` in infrastructure. Their unit tests need no Mockito.
+
+**Finders:** every query the rules need is one `{Concepto}Finder` extending `com.arquisoft.shared.rules.Finder<T, R>` in `application/{feature}/command/finder/`, with `@Component` `{Concepto}FinderImpl` in `impl/` that delegates to an `OutputPort`. A Finder **always returns a value and never throws for "not found"**: existence queries return `Boolean`, counts `Long`, aggregate lookups `Optional<T>`. Deciding what an absent value means is the Rule's job, not the Finder's. Failures of the query itself (DB down, timeout) propagate as the adapter's `InfrastructureException` (503) — finders do not catch or re-wrap them.
+
+**Command flow:** `InteractorImpl` (`@Transactional`) → `UseCaseImpl` → finders fetch every piece of state → `validator.validar(entrada, …datos)` → rules decide → `OutputPort` persists. All I/O of a command lives in the use case; the validator and the rules are pure functions of what it fetched. When a query depends on the result of a previous one (item → its ficha → ownership of that ficha), chain it with `map`/`flatMap` on the `Optional` so the absent case degrades to a safe default and the first rule reports the real error.
 
 **Validation order (mandatory):** 1) data integrity (format, required, length, duplicates within the payload — accumulable), 2) existence and uniqueness against the DB, 3) business rules in the aggregate. Never query the database on data whose integrity has not been established first.
 
@@ -199,7 +204,9 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Exceptions:** Every context exception extends one of five bases from `com.arquisoft.shared.exception`: `DomainException` (422), `ApplicationException` (400), `AuthorizationException` (403), `InfrastructureException` (503), `DomainValidationException` (422 + `fieldErrors[]`). Never `RuntimeException` directly. The constructor signature is `super(message, errorCode)` — both are `String`, so swapping them compiles and silently swaps the two fields in the response. `GlobalAppExceptionHandler` (`shared:web`) resolves the HTTP status by walking the superclass chain; contexts do not define their own handler (only `seguridad` does, for a name clash with Spring Security).
 
-**Business rules:** Validated inside the aggregate (→ 422), never with `if/throw` in the use case. The use case reads the state a rule needs via a port and passes it as a parameter to the factory. Existence, DB-duplicate and resource-ownership checks do belong in the use case (→ 400 / 403).
+**Business rules:** Invariants of a single aggregate are validated inside the aggregate (→ 422), never with `if/throw` in the use case. Checks that need state from outside the aggregate — existence, DB duplicates, ownership — are domain `Rule`s fed by the use case (see "Domain rules" above), never inline `if/throw`.
+
+**Where each exception lives:** an exception thrown by a `Rule` lives in `domain/{feature}/exception/` and extends `DomainException` (→ 422) — including "not found" and "duplicate", which used to be 400. The three ownership rules are the deliberate exception: `FichaNoPropietarioException`, `ItemFichaNoPropiaException` and `EvaluacionFichaNoPropiaException` stay in `domain/` but extend `AuthorizationException` (→ 403), because "you are not the owner" is semantically distinct from "invalid state". An exception thrown by application-layer orchestration lives in `application/{feature}/exception/` and extends `ApplicationException` (→ 400). Infrastructure failures stay `InfrastructureException` (→ 503) and are raised by the output adapters.
 
 **Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Domain`, `Interactor`, `UseCase`, `Impl`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `Controller`, `ReadModel`, `DTO`, `Command`) — no Spanish exception remains; REST controllers were renamed from `Controlador` to `Controller` for consistency.
 

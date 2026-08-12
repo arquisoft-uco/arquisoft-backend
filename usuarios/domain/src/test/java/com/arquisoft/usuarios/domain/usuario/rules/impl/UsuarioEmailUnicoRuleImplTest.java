@@ -1,41 +1,33 @@
 package com.arquisoft.usuarios.domain.usuario.rules.impl;
 
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEmailDuplicadoException;
-import com.arquisoft.usuarios.domain.usuario.secondaryport.UsuarioOutputPort;
+import com.arquisoft.usuarios.domain.usuario.model.DisponibilidadEmailUsuario;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class UsuarioEmailUnicoRuleImplTest {
 
-    @Mock
-    private UsuarioOutputPort usuarioOutputPort;
+    private final UsuarioEmailUnicoRuleImpl regla = new UsuarioEmailUnicoRuleImpl();
 
     @Test
-    void debePasar_cuandoEmailNoEstaRegistrado() {
+    void debeLanzarExcepcion_cuandoElEmailYaEstaRegistrado() {
         // Arrange
-        when(usuarioOutputPort.existePorEmail("nuevo@example.com")).thenReturn(false);
-        UsuarioEmailUnicoRuleImpl regla = new UsuarioEmailUnicoRuleImpl(usuarioOutputPort);
+        var disponibilidad = new DisponibilidadEmailUsuario("duplicado@arquisoft.com", true);
 
-        // Act / Assert
-        assertThatCode(() -> regla.validar("nuevo@example.com")).doesNotThrowAnyException();
+        // Act & Assert
+        assertThatThrownBy(() -> regla.validar(disponibilidad))
+                .isInstanceOf(UsuarioEmailDuplicadoException.class)
+                .hasMessageContaining("duplicado@arquisoft.com");
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoEmailYaEstaRegistrado() {
+    void debePasar_cuandoElEmailEstaLibre() {
         // Arrange
-        when(usuarioOutputPort.existePorEmail("repetido@example.com")).thenReturn(true);
-        UsuarioEmailUnicoRuleImpl regla = new UsuarioEmailUnicoRuleImpl(usuarioOutputPort);
+        var disponibilidad = new DisponibilidadEmailUsuario("nuevo@arquisoft.com", false);
 
-        // Act / Assert
-        assertThatThrownBy(() -> regla.validar("repetido@example.com"))
-                .isInstanceOf(UsuarioEmailDuplicadoException.class)
-                .hasMessageContaining("repetido@example.com");
+        // Act & Assert
+        assertThatCode(() -> regla.validar(disponibilidad)).doesNotThrowAnyException();
     }
 }

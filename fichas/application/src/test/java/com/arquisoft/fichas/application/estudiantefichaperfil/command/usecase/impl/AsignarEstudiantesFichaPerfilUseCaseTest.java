@@ -1,21 +1,22 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
-import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.shared.message.constant.FichasCodes;
-import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesVinculadosContadorFinder;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesYaVinculadosFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.secondaryport.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -24,15 +25,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AsignarEstudiantesFichaPerfilUseCaseTest {
@@ -41,129 +41,137 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     private EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
 
     @Mock
+    private FichaPerfilExisteFinder fichaPerfilExisteFinder;
+
+    @Mock
+    private EstudiantesExistentesFinder estudiantesExistentesFinder;
+
+    @Mock
+    private EstudiantesYaVinculadosFinder estudiantesYaVinculadosFinder;
+
+    @Mock
+    private EstudiantesVinculadosContadorFinder estudiantesVinculadosContadorFinder;
+
+    @Mock
     private AsignarEstudiantesFichaPerfilValidator asignarEstudiantesFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
     @Spy
     private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
-@InjectMocks
-    private AsignarEstudiantesFichaPerfilUseCaseImpl useCase;
+    @InjectMocks
+    private AsignarEstudiantesFichaPerfilUseCaseImpl asignarEstudiantesFichaPerfilUseCase;
+
+    private final UUID fichaPerfil = UUID.randomUUID();
+    private final UUID estudiante = UUID.randomUUID();
 
     @Test
-    void debeAsignarEstudiantes_cuandoLasReglasPasan() {
+    void debeVincularCadaEstudiante_cuandoDatosValidos() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        List<EstudianteFichaPerfilDomain> relaciones =
-                EstudianteFichaPerfilDomain.crear(fichaPerfilId, List.of(UUID.randomUUID(), UUID.randomUUID()));
+        var relaciones = relaciones();
+        stubConsultas(true, List.of(estudiante), List.of(), 0L);
 
         // Act
-        useCase.ejecutar(relaciones);
+        asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones);
 
         // Assert
-        verify(estudianteFichaPerfilOutputPort, times(2)).vincularEstudiante(any());
+        verify(estudianteFichaPerfilOutputPort, times(1)).vincularEstudiante(relaciones.getFirst());
     }
 
     @Test
-    void debeValidarAntesDePersistir_cuandoSeEjecuta() {
+    void debeConsultarYValidarAntesDePersistir_cuandoSeEjecuta() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        List<UUID> estudiantes = List.of(UUID.randomUUID());
-        List<EstudianteFichaPerfilDomain> relaciones = EstudianteFichaPerfilDomain.crear(fichaPerfilId, estudiantes);
+        var relaciones = relaciones();
+        stubConsultas(true, List.of(estudiante), List.of(), 0L);
 
         // Act
-        useCase.ejecutar(relaciones);
+        asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones);
 
         // Assert
-        verify(asignarEstudiantesFichaPerfilValidator)
-                .validar(eq(fichaPerfilId), eq(estudiantes), eq(relaciones));
+        InOrder inOrder = inOrder(fichaPerfilExisteFinder, estudiantesExistentesFinder,
+                estudiantesYaVinculadosFinder, estudiantesVinculadosContadorFinder,
+                asignarEstudiantesFichaPerfilValidator, estudianteFichaPerfilOutputPort);
+        inOrder.verify(fichaPerfilExisteFinder).obtener(fichaPerfil);
+        inOrder.verify(estudiantesExistentesFinder).obtener(List.of(estudiante));
+        inOrder.verify(estudiantesYaVinculadosFinder).obtener(relaciones);
+        inOrder.verify(estudiantesVinculadosContadorFinder).obtener(fichaPerfil);
+        inOrder.verify(asignarEstudiantesFichaPerfilValidator)
+                .validar(relaciones, true, List.of(estudiante), List.of(), 0L);
+        inOrder.verify(estudianteFichaPerfilOutputPort).vincularEstudiante(relaciones.getFirst());
     }
 
     @Test
-    void debePropagarFichaNoEncontrada_cuandoElValidadorFalla() {
+    void debePropagarLaExcepcion_cuandoLaFichaNoExiste() {
         // Arrange
-        UUID fichaPerfilId = UUID.randomUUID();
-        List<EstudianteFichaPerfilDomain> relaciones =
-                EstudianteFichaPerfilDomain.crear(fichaPerfilId, List.of(UUID.randomUUID()));
+        var relaciones = relaciones();
+        stubConsultas(false, List.of(estudiante), List.of(), 0L);
+        doThrow(new FichaPerfilNoEncontradaException(fichaPerfil))
+                .when(asignarEstudiantesFichaPerfilValidator)
+                .validar(relaciones, false, List.of(estudiante), List.of(), 0L);
 
-        doThrow(new FichaPerfilNoEncontradaException(fichaPerfilId))
-                .when(asignarEstudiantesFichaPerfilValidator).validar(any(), anyList(), anyList());
+        // Act & Assert
+        assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
+                .isInstanceOf(FichaPerfilNoEncontradaException.class);
 
-        // Act
-        Throwable ex = catchThrowable(() -> useCase.ejecutar(relaciones));
-
-        // Assert
-        assertThat(ex)
-                .isInstanceOf(FichaPerfilNoEncontradaException.class)
-                .hasMessageContaining(fichaPerfilId.toString());
         verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }
 
     @Test
-    void debePropagarEstudianteNoEncontrado_cuandoElValidadorFalla() {
+    void debePropagarLaExcepcion_cuandoAlgunEstudianteNoExiste() {
         // Arrange
-        UUID estudiante = UUID.randomUUID();
-        List<EstudianteFichaPerfilDomain> relaciones =
-                EstudianteFichaPerfilDomain.crear(UUID.randomUUID(), List.of(estudiante));
-
+        var relaciones = relaciones();
+        stubConsultas(true, List.of(), List.of(), 0L);
         doThrow(new EstudianteNoEncontradoException(estudiante))
-                .when(asignarEstudiantesFichaPerfilValidator).validar(any(), anyList(), anyList());
+                .when(asignarEstudiantesFichaPerfilValidator)
+                .validar(relaciones, true, List.of(), List.of(), 0L);
 
-        // Act
-        Throwable ex = catchThrowable(() -> useCase.ejecutar(relaciones));
+        // Act & Assert
+        assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
+                .isInstanceOf(EstudianteNoEncontradoException.class);
 
-        // Assert
-        assertThat(ex)
-                .isInstanceOf(EstudianteNoEncontradoException.class)
-                .hasMessageContaining(estudiante.toString());
-        assertThat(((EstudianteNoEncontradoException) ex).getCodigoError())
-                .isEqualTo(FichasCodes.Estudiante.ESTUDIANTE_NO_ENCONTRADO);
         verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }
 
     @Test
-    void debePropagarEstudianteDuplicado_cuandoElValidadorFalla() {
+    void debePropagarLaExcepcion_cuandoSeExcedeElCupo() {
         // Arrange
-        UUID estudiante = UUID.randomUUID();
-        List<EstudianteFichaPerfilDomain> relaciones =
-                EstudianteFichaPerfilDomain.crear(UUID.randomUUID(), List.of(estudiante));
+        var relaciones = relaciones();
+        stubConsultas(true, List.of(estudiante), List.of(), 5L);
+        doThrow(new CupoEstudiantesExcedidoException(3))
+                .when(asignarEstudiantesFichaPerfilValidator)
+                .validar(relaciones, true, List.of(estudiante), List.of(), 5L);
 
-        doThrow(new EstudianteDuplicadoException(estudiante))
-                .when(asignarEstudiantesFichaPerfilValidator).validar(any(), anyList(), anyList());
+        // Act & Assert
+        assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
+                .isInstanceOf(CupoEstudiantesExcedidoException.class);
 
-        // Act
-        Throwable ex = catchThrowable(() -> useCase.ejecutar(relaciones));
-
-        // Assert
-        assertThat(ex)
-                .isInstanceOf(EstudianteDuplicadoException.class)
-                .hasMessageContaining(estudiante.toString());
-        assertThat(((EstudianteDuplicadoException) ex).getCodigoError())
-                .isEqualTo(FichasCodes.EstudianteFichaPerfil.ESTUDIANTE_DUPLICADO);
         verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
     }
 
     @Test
-    void debePropagarLimiteExcedido_cuandoElValidadorFalla() {
+    void debeLanzarExcepcion_cuandoRepositorioFalla() {
         // Arrange
-        List<EstudianteFichaPerfilDomain> relaciones = EstudianteFichaPerfilDomain.crear(
-                UUID.randomUUID(), List.of(UUID.randomUUID(), UUID.randomUUID()));
+        var relaciones = relaciones();
+        stubConsultas(true, List.of(estudiante), List.of(), 0L);
+        doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
+                .when(estudianteFichaPerfilOutputPort).vincularEstudiante(relaciones.getFirst());
 
-        doThrow(new CupoEstudiantesExcedidoException(FichasLimits.FichaPerfil.ESTUDIANTES_MAX))
-                .when(asignarEstudiantesFichaPerfilValidator).validar(any(), anyList(), anyList());
+        // Act & Assert
+        assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
+                .isInstanceOf(InfrastructureException.class);
+    }
 
-        // Act
-        Throwable ex = catchThrowable(() -> useCase.ejecutar(relaciones));
+    private void stubConsultas(boolean fichaExiste, List<UUID> estudiantesExistentes,
+                               List<UUID> yaVinculados, long vinculadosActuales) {
+        when(fichaPerfilExisteFinder.obtener(fichaPerfil)).thenReturn(fichaExiste);
+        when(estudiantesExistentesFinder.obtener(List.of(estudiante))).thenReturn(estudiantesExistentes);
+        when(estudiantesYaVinculadosFinder.obtener(any())).thenReturn(yaVinculados);
+        when(estudiantesVinculadosContadorFinder.obtener(fichaPerfil)).thenReturn(vinculadosActuales);
+    }
 
-        // Assert
-        assertThat(ex)
-                .isInstanceOf(CupoEstudiantesExcedidoException.class)
-                .hasMessage(Mensajes.formatear(EstudianteFichaPerfilKey.ERROR_LIMITE_EXCEDIDO,
-                        FichasLimits.FichaPerfil.ESTUDIANTES_MAX));
-        verify(estudianteFichaPerfilOutputPort, never()).vincularEstudiante(any());
+    private List<EstudianteFichaPerfilDomain> relaciones() {
+        return EstudianteFichaPerfilDomain.crear(fichaPerfil, List.of(estudiante));
     }
 }

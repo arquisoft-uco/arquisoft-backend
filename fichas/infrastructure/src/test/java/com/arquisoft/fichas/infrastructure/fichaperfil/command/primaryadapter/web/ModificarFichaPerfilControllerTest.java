@@ -126,7 +126,7 @@ class ModificarFichaPerfilControllerTest {
     // ── 4. Excepción de dominio: ficha no existe ──
 
     @Test
-    void debeRetornar400_cuandoFichaNoExiste() throws Exception {
+    void debeRetornar422_cuandoFichaNoExiste() throws Exception {
         // Arrange
         doThrow(new FichaPerfilNoEncontradaException(FICHA_ID))
                 .when(modificarFichaPerfilInteractor)
@@ -139,13 +139,13 @@ class ModificarFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     // ── 5. Excepción de dominio: título duplicado ──
 
     @Test
-    void debeRetornar400_cuandoTituloDuplicado() throws Exception {
+    void debeRetornar422_cuandoTituloDuplicado() throws Exception {
         // Arrange
         doThrow(new FichaTituloDuplicadoException("Título duplicado"))
                 .when(modificarFichaPerfilInteractor)
@@ -158,7 +158,7 @@ class ModificarFichaPerfilControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(BODY_VALIDO))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     // ── 6. No autenticado ──

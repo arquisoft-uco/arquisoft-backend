@@ -1,47 +1,34 @@
 package com.arquisoft.fichas.domain.itemfichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropietarioFicha;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.secondaryport.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class ItemFichaPropiaRuleImplTest {
 
-    @Mock
-    private EstudianteFichaPerfilOutputPort puerto;
-
-    @InjectMocks
-    private ItemFichaPropiaRuleImpl regla;
+    private final ItemFichaPropiaRuleImpl regla = new ItemFichaPropiaRuleImpl();
 
     @Test
-    void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
+    void debeLanzarExcepcion_cuandoLaFichaNoEsDelEstudiante() {
         // Arrange
-        var entrada = new PropietarioFicha(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.existePorFichaYEstudiante(entrada.fichaPerfil(), entrada.estudiante())).thenReturn(false);
+        var propiedad = new PropiedadFicha(UUID.randomUUID(), UUID.randomUUID(), false);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(entrada))
+        assertThatThrownBy(() -> regla.validar(propiedad))
                 .isInstanceOf(ItemFichaNoPropiaException.class);
     }
 
     @Test
-    void debePasar_cuandoLaReglaSeCumple() {
+    void debePasar_cuandoLaFichaEsDelEstudiante() {
         // Arrange
-        var entrada = new PropietarioFicha(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.existePorFichaYEstudiante(entrada.fichaPerfil(), entrada.estudiante())).thenReturn(true);
+        var propiedad = new PropiedadFicha(UUID.randomUUID(), UUID.randomUUID(), true);
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(propiedad)).doesNotThrowAnyException();
     }
 }

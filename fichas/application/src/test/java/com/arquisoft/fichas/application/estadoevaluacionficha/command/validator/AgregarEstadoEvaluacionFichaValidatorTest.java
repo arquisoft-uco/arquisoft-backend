@@ -1,7 +1,11 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.validator;
 
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.impl.AgregarEstadoEvaluacionFichaValidatorImpl;
+import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.model.DisponibilidadEstadoEvaluacion;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.model.ExistenciaEvaluacionFicha;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.model.PropiedadEvaluacionFicha;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionNoDuplicadoRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EvaluacionFichaExisteRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.RepresentantePropietarioEvaluacionRule;
@@ -36,16 +40,39 @@ class AgregarEstadoEvaluacionFichaValidatorTest {
         // Arrange
         UUID evaluacion = UUID.randomUUID();
         UUID representante = UUID.randomUUID();
-        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(evaluacion, "APROBADA", representante);
+        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(
+                evaluacion, EstadoEvaluacion.APROBADA.getId(), representante);
 
         // Act
-        validator.validar(entrada);
+        validator.validar(entrada, true, true, false);
 
         // Assert
         InOrder inOrder = inOrder(evaluacionFichaExisteRule, representantePropietarioEvaluacionRule,
                 estadoEvaluacionNoDuplicadoRule);
-        inOrder.verify(evaluacionFichaExisteRule).validar(evaluacion);
-        inOrder.verify(representantePropietarioEvaluacionRule).validar(entrada);
-        inOrder.verify(estadoEvaluacionNoDuplicadoRule).validar(entrada);
+        inOrder.verify(evaluacionFichaExisteRule)
+                .validar(new ExistenciaEvaluacionFicha(evaluacion, true));
+        inOrder.verify(representantePropietarioEvaluacionRule)
+                .validar(new PropiedadEvaluacionFicha(evaluacion, representante, true));
+        inOrder.verify(estadoEvaluacionNoDuplicadoRule)
+                .validar(new DisponibilidadEstadoEvaluacion(evaluacion, EstadoEvaluacion.APROBADA, false));
+    }
+
+    @Test
+    void debeTrasladarLosDatosConsultados_cuandoNoEsPropietarioYElEstadoYaExiste() {
+        // Arrange
+        UUID evaluacion = UUID.randomUUID();
+        UUID representante = UUID.randomUUID();
+        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(
+                evaluacion, EstadoEvaluacion.APROBADA.getId(), representante);
+
+        // Act
+        validator.validar(entrada, true, false, true);
+
+        // Assert
+        InOrder inOrder = inOrder(representantePropietarioEvaluacionRule, estadoEvaluacionNoDuplicadoRule);
+        inOrder.verify(representantePropietarioEvaluacionRule)
+                .validar(new PropiedadEvaluacionFicha(evaluacion, representante, false));
+        inOrder.verify(estadoEvaluacionNoDuplicadoRule)
+                .validar(new DisponibilidadEstadoEvaluacion(evaluacion, EstadoEvaluacion.APROBADA, true));
     }
 }

@@ -1,47 +1,34 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.asesorficha.secondaryport.AsesorFichaOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
-
+import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaAsesorFicha;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class AsesorFichaExisteRuleImplTest {
 
-    @Mock
-    private AsesorFichaOutputPort puerto;
-
-    @InjectMocks
-    private AsesorFichaExisteRuleImpl regla;
+    private final AsesorFichaExisteRuleImpl regla = new AsesorFichaExisteRuleImpl();
 
     @Test
-    void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
+    void debeLanzarExcepcion_cuandoElAsesorNoExiste() {
         // Arrange
-        UUID entrada = UUID.randomUUID();
-        when(puerto.existePorId(entrada)).thenReturn(false);
+        var existencia = new ExistenciaAsesorFicha(UUID.randomUUID(), false);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(entrada))
+        assertThatThrownBy(() -> regla.validar(existencia))
                 .isInstanceOf(AsesorFichaNoEncontradoException.class);
     }
 
     @Test
-    void debePasar_cuandoLaReglaSeCumple() {
+    void debePasar_cuandoElAsesorExiste() {
         // Arrange
-        UUID entrada = UUID.randomUUID();
-        when(puerto.existePorId(entrada)).thenReturn(true);
+        var existencia = new ExistenciaAsesorFicha(UUID.randomUUID(), true);
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(existencia)).doesNotThrowAnyException();
     }
 }

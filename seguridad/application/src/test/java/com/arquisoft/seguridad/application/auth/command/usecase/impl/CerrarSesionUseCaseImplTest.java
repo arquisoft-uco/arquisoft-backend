@@ -3,7 +3,7 @@ package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.seguridad.application.auth.command.primaryport.model.TokenSesionCommand;
-import com.arquisoft.seguridad.domain.auth.secondaryport.TokenInvalidadoOutputPort;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
 import com.arquisoft.shared.exception.DomainException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

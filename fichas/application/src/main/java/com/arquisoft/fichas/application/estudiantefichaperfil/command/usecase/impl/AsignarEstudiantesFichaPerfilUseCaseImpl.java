@@ -2,10 +2,14 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.i
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesVinculadosContadorFinder;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesYaVinculadosFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.secondaryport.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -18,6 +22,10 @@ import java.util.UUID;
 public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudiantesFichaPerfilUseCase {
 
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
+    private final FichaPerfilExisteFinder fichaPerfilExisteFinder;
+    private final EstudiantesExistentesFinder estudiantesExistentesFinder;
+    private final EstudiantesYaVinculadosFinder estudiantesYaVinculadosFinder;
+    private final EstudiantesVinculadosContadorFinder estudiantesVinculadosContadorFinder;
     private final AsignarEstudiantesFichaPerfilValidator asignarEstudiantesFichaPerfilValidator;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
@@ -27,7 +35,13 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
         UUID fichaPerfil = relaciones.getFirst().getFichaPerfilId();
         List<UUID> estudiantes = relaciones.stream().map(EstudianteFichaPerfilDomain::getEstudianteId).toList();
 
-        asignarEstudiantesFichaPerfilValidator.validar(fichaPerfil, estudiantes, relaciones);
+        boolean fichaExiste = fichaPerfilExisteFinder.obtener(fichaPerfil);
+        List<UUID> estudiantesExistentes = estudiantesExistentesFinder.obtener(estudiantes);
+        List<UUID> yaVinculados = estudiantesYaVinculadosFinder.obtener(relaciones);
+        long vinculadosActuales = estudiantesVinculadosContadorFinder.obtener(fichaPerfil);
+
+        asignarEstudiantesFichaPerfilValidator.validar(
+                relaciones, fichaExiste, estudiantesExistentes, yaVinculados, vinculadosActuales);
 
         relaciones.forEach(estudianteFichaPerfilOutputPort::vincularEstudiante);
 

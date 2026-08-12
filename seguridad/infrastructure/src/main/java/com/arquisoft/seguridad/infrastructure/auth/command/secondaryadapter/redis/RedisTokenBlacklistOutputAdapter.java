@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.redis;
 
-import com.arquisoft.seguridad.domain.auth.secondaryport.TokenInvalidadoOutputPort;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;

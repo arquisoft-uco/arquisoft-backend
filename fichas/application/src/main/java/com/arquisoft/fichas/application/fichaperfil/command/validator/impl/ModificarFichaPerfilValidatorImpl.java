@@ -1,10 +1,11 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropietarioFicha;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantePropietarioFichaRule;
 import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
-import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloDisponibleRule;
+import com.arquisoft.fichas.domain.fichaperfil.model.DisponibilidadTituloFicha;
+import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloUnicoRule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,12 +14,16 @@ import org.springframework.stereotype.Component;
 public class ModificarFichaPerfilValidatorImpl implements ModificarFichaPerfilValidator {
 
     private final EstudiantePropietarioFichaRule estudiantePropietarioFichaRule;
-    private final FichaPerfilTituloDisponibleRule fichaPerfilTituloDisponibleRule;
+    private final FichaPerfilTituloUnicoRule fichaPerfilTituloUnicoRule;
 
     @Override
-    public void validar(ModificacionFichaPerfilDomain modificacion) {
-        estudiantePropietarioFichaRule.validar(
-                new PropietarioFicha(modificacion.getFichaPerfil(), modificacion.getEstudiante()));
-        fichaPerfilTituloDisponibleRule.validar(modificacion);
+    public void validar(ModificacionFichaPerfilDomain modificacion, boolean esPropietario,
+                        boolean tituloYaExiste) {
+
+        estudiantePropietarioFichaRule.validar(new PropiedadFicha(
+                modificacion.getFichaPerfil(), modificacion.getEstudiante(), esPropietario));
+
+        fichaPerfilTituloUnicoRule.validar(
+                new DisponibilidadTituloFicha(modificacion.getTituloProyecto(), tituloYaExiste));
     }
 }

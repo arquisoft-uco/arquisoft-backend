@@ -1,11 +1,9 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
-import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -13,63 +11,24 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FichaPerfilExisteRuleImplTest {
 
+    private final FichaPerfilExisteRuleImpl regla = new FichaPerfilExisteRuleImpl();
+
     @Test
-    void debeLanzarExcepcion_cuandoFichaNoExiste() {
+    void debeLanzarExcepcion_cuandoLaFichaNoExiste() {
         // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
-        var regla = new FichaPerfilExisteRuleImpl(new FichaPerfilOutputPortStub(false));
+        var existencia = new ExistenciaFichaPerfil(UUID.randomUUID(), false);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(fichaPerfil))
-                .isInstanceOf(FichaPerfilNoEncontradaException.class)
-                .hasMessageContaining(fichaPerfil.toString());
+        assertThatThrownBy(() -> regla.validar(existencia))
+                .isInstanceOf(FichaPerfilNoEncontradaException.class);
     }
 
     @Test
-    void debePasar_cuandoFichaExiste() {
+    void debePasar_cuandoLaFichaExiste() {
         // Arrange
-        var regla = new FichaPerfilExisteRuleImpl(new FichaPerfilOutputPortStub(true));
+        var existencia = new ExistenciaFichaPerfil(UUID.randomUUID(), true);
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(UUID.randomUUID())).doesNotThrowAnyException();
-    }
-
-    /** fichas:domain no tiene Mockito en el classpath de test: el doble se escribe a mano. */
-    private record FichaPerfilOutputPortStub(boolean existe) implements FichaPerfilOutputPort {
-
-        @Override
-        public boolean existePorId(UUID id) {
-            return existe;
-        }
-
-        @Override
-        public void registrarFicha(FichaPerfilDomain ficha) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void actualizarTitulo(UUID fichaPerfil, String tituloProyecto) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public Optional<FichaPerfilDomain> buscarPorId(UUID id) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean existePorTituloProyecto(String titulo) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public boolean existeTituloEnOtraFicha(UUID fichaPerfil, String titulo) {
-            throw new UnsupportedOperationException();
-        }
+        assertThatCode(() -> regla.validar(existencia)).doesNotThrowAnyException();
     }
 }

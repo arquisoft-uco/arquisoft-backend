@@ -3,11 +3,12 @@ package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.usuarios.application.usuario.command.finder.EmailUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.model.CrearUsuarioCommand;
 import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUseCase;
 import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuarioValidator;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
-import com.arquisoft.usuarios.domain.usuario.secondaryport.UsuarioOutputPort;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
     private final UsuarioOutputPort usuarioOutputPort;
+    private final EmailUsuarioExisteFinder emailUsuarioExisteFinder;
     private final CrearUsuarioValidator crearUsuarioValidator;
     private final EventPublisher eventPublisher;
     private final CatalogoMensajes catalogo;
@@ -28,7 +30,9 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
     public UUID ejecutar(CrearUsuarioCommand entrada) {
         UsuarioDomain usuario = UsuarioDomain.crear(entrada.email(), entrada.rol());
 
-        crearUsuarioValidator.validar(usuario);
+        boolean emailYaExiste = emailUsuarioExisteFinder.obtener(usuario.getEmail());
+
+        crearUsuarioValidator.validar(usuario, emailYaExiste);
 
         usuarioOutputPort.save(usuario);
 

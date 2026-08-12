@@ -4,9 +4,9 @@
 - **ID Historia:** HT-012
 - **Bounded Context:** transversal — `shared:message`, `shared:web`, `shared:exception`
 - **Módulos Gradle afectados:** los anteriores más la raíz (`build.gradle`, `application*.yml`)
-- **Fecha de plan:** 2026-08-06 (v5)
+- **Fecha de plan:** 2026-08-11 (v6)
 - **Rama sugerida:** `feature/HT-012-catalogo_mensajes_redis`
-- **Base:** commit `e22be0e` — `shared:exception`, `shared:validation` y `shared:util` ya extraídos
+- **Base:** commit `34cf89ff` — 12 commits después de la extracción `e22be0e`, que sigue siendo ancestro
 
 ### Historial de revisiones
 | v | Cambio | Motivo |
@@ -15,7 +15,29 @@
 | v2 | Todo dentro de `shared:message`; excepciones `extends RuntimeException` | Verificado que `implementation` aísla Redis del dominio (§2.1) |
 | v3 | Análisis del ciclo `message → domain` | `shared:exception` resultó ser un *paquete*, no un módulo |
 | v4 | Extracción de `shared:exception` + nomenclatura en español | Decisión del usuario: reutilizar la jerarquía existente |
-| **v5** | **Fase 0a ejecutada — fueron tres módulos, no uno** (§2.2). **Mensaje de usuario y técnico en `BaseError`** (§2.5) | La extracción destapó dos dependencias mutuas más. El diseño de dos audiencias de §4.2 se generaliza a toda la jerarquía |
+| v5 | Fase 0a ejecutada — fueron tres módulos, no uno (§2.2). Mensaje de usuario y técnico en `BaseError` (§2.2b) | La extracción destapó dos dependencias mutuas más |
+| **v6** | **Revalidación contra `34cf89ff`** — R9 cerrado, cifras corregidas, nomenclatura al día | 12 commits nuevos: refactor hexagonal `primaryport/secondaryport`, despanglish de `shared:logger`/`shared:amqp`, y actualización de CLAUDE.md |
+
+### Revalidación v6 — qué sobrevivió y qué no
+
+Verificado contra el repo en `34cf89ff`:
+
+| Afirmación del plan | Estado |
+|---|---|
+| `e22be0e` es ancestro de HEAD; los tres módulos existen | ✅ Confirmado |
+| `CatalogoMensajesConfig` en `shared/web/config` | ✅ Sin cambios |
+| 14 `@WebMvcTest` lo importan | ✅ Siguen siendo 14 |
+| 27 enums en `key.*` | ✅ Siguen siendo 27 |
+| `CatalogoMensajesResourceBundle:65` (caché) y `:74` (`formatted`) | ✅ Números de línea intactos |
+| `shared:message` sin dependencias de producción | ✅ Confirmado |
+| Dos nombres simples de enum duplicados (§8) | ✅ Siguen vivos |
+| ~~156 claves~~ | ❌ Ahora son **165** — corregido en §6 |
+| ~~R9: CLAUDE.md desactualizado~~ | ✅ **Cerrado** — CLAUDE.md:64/66 ya documenta los tres módulos |
+| ~~`shared:logger` y `shared:redis` siguen en inglés~~ | ❌ Ya no — ver §2.3 |
+
+El refactor hexagonal de `72aeef9a` (`primaryport`/`secondaryport`, `primaryadapter`/
+`secondaryadapter`, `Controlador`→`Controller`) **no afecta a este plan**: toca los módulos de
+contexto, y el trabajo del catálogo vive íntegramente en `shared:*`.
 
 ---
 
@@ -332,6 +354,21 @@ Las clases nuevas de este plan siguen ese patrón. **Aviso de terminología:** �
 sobrecargado — significa *paquete Java* y también *ResourceBundle* (`PaquetesMensajes`,
 `ClaveMensaje.paquete()`). En este documento se dice «paquete Java» cuando hay riesgo de confusión.
 
+**Actualización v6 — el despanglish siguió avanzando.** La v5 afirmaba que `shared:domain`,
+`shared:logger` y `shared:redis` seguían en inglés. Ya no es cierto para los dos primeros:
+`e161cf2e` tradujo las 7 claves de `MdcKeys` (nombre de constante **y** valor JSON:
+`traceId`→`idTraza`, `userId`→`idUsuario`, …) y renombró parámetros en `shared:amqp`.
+
+Dos consecuencias para este plan:
+
+- El handler y `IndicadorSaludCatalogo` deben leer **`MdcKeys.ID_TRAZA`**, no `MdcKeys.TRACE_ID`.
+- **El campo `ErrorResponseDTO.traceId` se dejó intacto a propósito** — es contrato JSON de la API,
+  igual que los headers AMQP `X-Trace-Id`/`X-User-Id`. Así que §2.2b sigue siendo válida tal cual:
+  el usuario técnico correlaciona por el mismo `traceId` de siempre; lo único que cambió es la clave
+  interna del MDC.
+
+`AppLogger` conserva su nombre.
+
 ### 2.4 Paquetes Java dentro de `shared:message`
 
 ```
@@ -540,7 +577,7 @@ pero anula el propósito del ejercicio sin que nadie se entere.
 | **CRITICO** | solo respaldo | los `.properties` no cargan | `MensajesRespaldo.Usuario` | `DOWN` |
 | **ABORTADO** | — | fail-fast en arranque | la app no acepta tráfico | proceso no levanta |
 
-- **DEGRADADO no afecta al usuario final.** Los `.properties` contienen las 156 claves; lo único que
+- **DEGRADADO no afecta al usuario final.** Los `.properties` contienen las 165 claves; lo único que
   se pierde es la propagación en caliente. Por eso el health lo reporta pero no marca `DOWN`: es un
   problema del operador, no del cliente.
 - **CRITICO sí lo afecta**, y es donde `MensajesRespaldo` gana su existencia.
@@ -789,7 +826,8 @@ Redis vivo va en el `docker-compose` local, manual.
 |---|---|---|
 | R1 | Extracción de módulos | ✅ **Cerrado** — commit `e22be0e`. Fueron tres módulos, no uno (§2.2) |
 | R8 | `mensajeTecnico` opcional que nadie rellena (§2.2b) | Mitigado: el handler degrada a `message` si es `null`, y `InfrastructureException` documenta la forma de 3 argumentos. No se hace obligatorio — rompería las 35 excepciones por un beneficio que solo aplica a una |
-| R9 | CLAUDE.md y AGENTS.md ubican excepciones, validación y utils en `shared:domain` (P5) | ⏳ **Pendiente** — desactualizados desde `e22be0e` |
+| R9 | CLAUDE.md ubicaba excepciones, validación y utils en `shared:domain` | ✅ **Cerrado** — CLAUDE.md:64/66 ya documenta los tres módulos y su razón de ser |
+| R10 | **CLAUDE.md:200 quedó impreciso tras la extracción** | ⏳ **Pendiente.** Afirma que las cinco bases viven en `com.arquisoft.shared.exception`, pero `DomainValidationException` y `ApplicationValidationException` se movieron a `com.arquisoft.shared.validation` — verificado en disco. CLAUDE.md:66 dice además «five base exception classes» cuando el módulo tiene cuatro concretas más `BaseException`/`BaseError`. Corregir junto con la fase 0c, que toca esas mismas clases |
 | R2 | Quién escribe a Redis | **Decisión del usuario.** La propagación en tiempo real no vale nada sin escritor, y ese escritor es una superficie de seguridad nueva: un texto malo llega a producción al instante. ¿Endpoint administrativo con auditoría y rol `ADMINISTRADOR`, o solo por despliegue? Cerrar antes de la fase 5 |
 | R3 | Patrones de formato editables (§5.4) | Mitigado con doble guarda (RD-06) |
 | R4 | Pub/Sub pierde eventos | Mitigado con reconciliación por versión (§5.2) |
@@ -803,8 +841,10 @@ Redis vivo va en el `docker-compose` local, manual.
 
 - [x] `shared:domain` declara con `api` los cuatro módulos hoja — **no `implementation`** (P1)
 - [x] `shared:exception` y `shared:util` sin dependencias `com.arquisoft` y sin Lombok
-- [ ] CLAUDE.md / AGENTS.md actualizados: excepciones, validación y utils ya no viven en `shared:domain` (R9)
+- [x] CLAUDE.md documenta `shared:exception` / `shared:validation` / `shared:util` (R9)
+- [ ] CLAUDE.md:200 corregido: las dos excepciones de validación viven en `shared.validation` (R10)
 - [ ] `BaseError.mensajeTecnico` no aparece en ningún `ErrorResponseDTO` (§2.2b)
+- [ ] El handler usa `MdcKeys.ID_TRAZA`, no `MdcKeys.TRACE_ID` (§2.3)
 - [ ] `shared:message` declara Spring como `implementation`, nunca `api`
 - [ ] `:fichas:domain:dependencies --configuration compileClasspath` sin spring-data-redis
 - [ ] Ningún `import org.springframework` fuera de `redis/` dentro de `shared:message`

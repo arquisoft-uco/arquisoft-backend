@@ -1,49 +1,34 @@
 package com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.secondaryport.EvaluacionFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.DisponibilidadEvaluacionFicha;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class EvaluacionNoDuplicadaRuleImplTest {
 
-    @Mock
-    private EvaluacionFichaPerfilOutputPort puerto;
-
-    @InjectMocks
-    private EvaluacionNoDuplicadaRuleImpl regla;
+    private final EvaluacionNoDuplicadaRuleImpl regla = new EvaluacionNoDuplicadaRuleImpl();
 
     @Test
-    void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
+    void debeLanzarExcepcion_cuandoElRepresentanteYaEvaluoLaFicha() {
         // Arrange
-        var entrada = EvaluacionFichaPerfilDomain.crear(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.existePorRepresentanteYFicha(entrada.getRepresentanteComiteId(), entrada.getFichaPerfilId()))
-                .thenReturn(true);
+        var disponibilidad = new DisponibilidadEvaluacionFicha(UUID.randomUUID(), UUID.randomUUID(), true);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(entrada))
+        assertThatThrownBy(() -> regla.validar(disponibilidad))
                 .isInstanceOf(EvaluacionFichaPerfilDuplicadaException.class);
     }
 
     @Test
-    void debePasar_cuandoLaReglaSeCumple() {
+    void debePasar_cuandoElRepresentanteNoHaEvaluadoLaFicha() {
         // Arrange
-        var entrada = EvaluacionFichaPerfilDomain.crear(UUID.randomUUID(), UUID.randomUUID());
-        when(puerto.existePorRepresentanteYFicha(entrada.getRepresentanteComiteId(), entrada.getFichaPerfilId()))
-                .thenReturn(false);
+        var disponibilidad = new DisponibilidadEvaluacionFicha(UUID.randomUUID(), UUID.randomUUID(), false);
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(disponibilidad)).doesNotThrowAnyException();
     }
 }

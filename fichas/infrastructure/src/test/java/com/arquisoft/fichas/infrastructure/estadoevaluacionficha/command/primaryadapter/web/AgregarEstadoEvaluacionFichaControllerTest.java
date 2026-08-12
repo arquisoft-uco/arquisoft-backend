@@ -97,7 +97,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
     }
 
     @Test
-    void debe400_cuandoEvaluacionNoExiste() throws Exception {
+    void debe422_cuandoEvaluacionNoExiste() throws Exception {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         String requestBody = String.format(
@@ -113,11 +113,11 @@ class AgregarEstadoEvaluacionFichaControllerTest {
                         .content(requestBody)
                         .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
-    void debe400_cuandoEstadoDuplicado() throws Exception {
+    void debe422_cuandoEstadoDuplicado() throws Exception {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         String requestBody = String.format(
@@ -133,7 +133,7 @@ class AgregarEstadoEvaluacionFichaControllerTest {
                         .content(requestBody)
                         .with(SecurityMockMvcRequestPostProcessors.jwt().jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.ESTADO_EVALUACION_FICHA_CREATE))))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test

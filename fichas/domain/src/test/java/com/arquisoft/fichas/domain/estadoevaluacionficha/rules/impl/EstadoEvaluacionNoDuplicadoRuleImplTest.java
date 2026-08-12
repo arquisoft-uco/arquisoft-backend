@@ -1,49 +1,37 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl;
 
-import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
+import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.exception.EstadoEvaluacionDuplicadoException;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.secondaryport.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.model.DisponibilidadEstadoEvaluacion;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class EstadoEvaluacionNoDuplicadoRuleImplTest {
 
-    @Mock
-    private EstadoEvaluacionFichaOutputPort puerto;
-
-    @InjectMocks
-    private EstadoEvaluacionNoDuplicadoRuleImpl regla;
+    private final EstadoEvaluacionNoDuplicadoRuleImpl regla = new EstadoEvaluacionNoDuplicadoRuleImpl();
 
     @Test
-    void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
+    void debeLanzarExcepcion_cuandoLaEvaluacionYaTieneEseEstado() {
         // Arrange
-        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(UUID.randomUUID(), "APROBADA", UUID.randomUUID());
-        when(puerto.existePorEvaluacionYEstado(entrada.getEvaluacionFichaPerfil(), entrada.getEstadoEvaluacion().getId()))
-                .thenReturn(true);
+        var disponibilidad = new DisponibilidadEstadoEvaluacion(
+                UUID.randomUUID(), EstadoEvaluacion.APROBADA, true);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(entrada))
+        assertThatThrownBy(() -> regla.validar(disponibilidad))
                 .isInstanceOf(EstadoEvaluacionDuplicadoException.class);
     }
 
     @Test
-    void debePasar_cuandoLaReglaSeCumple() {
+    void debePasar_cuandoLaEvaluacionNoTieneEseEstado() {
         // Arrange
-        var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(UUID.randomUUID(), "APROBADA", UUID.randomUUID());
-        when(puerto.existePorEvaluacionYEstado(entrada.getEvaluacionFichaPerfil(), entrada.getEstadoEvaluacion().getId()))
-                .thenReturn(false);
+        var disponibilidad = new DisponibilidadEstadoEvaluacion(
+                UUID.randomUUID(), EstadoEvaluacion.APROBADA, false);
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(disponibilidad)).doesNotThrowAnyException();
     }
 }

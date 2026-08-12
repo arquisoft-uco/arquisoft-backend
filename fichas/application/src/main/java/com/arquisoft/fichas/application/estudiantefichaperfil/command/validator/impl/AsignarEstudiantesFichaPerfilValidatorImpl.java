@@ -1,11 +1,15 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
+import com.arquisoft.fichas.domain.estudiante.model.ExistenciaEstudiantes;
 import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.CupoEstudiantesFicha;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculosEstudiantesFicha;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantesNoVinculadosRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantesSinDuplicadosRule;
+import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,15 +28,19 @@ public class AsignarEstudiantesFichaPerfilValidatorImpl implements AsignarEstudi
     private final EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
 
     @Override
-    public void validar(UUID fichaPerfil, List<UUID> estudiantes,
-                        List<EstudianteFichaPerfilDomain> relaciones) {
+    public void validar(List<EstudianteFichaPerfilDomain> relaciones, boolean fichaExiste,
+                        List<UUID> estudiantesExistentes, List<UUID> yaVinculados, long vinculadosActuales) {
+
+        UUID fichaPerfil = relaciones.getFirst().getFichaPerfilId();
+        List<UUID> estudiantes = relaciones.stream().map(EstudianteFichaPerfilDomain::getEstudianteId).toList();
 
         estudiantesSinDuplicadosRule.validar(estudiantes);
 
-        fichaPerfilExisteRule.validar(fichaPerfil);
-        estudiantesExistenRule.validar(estudiantes);
-        estudiantesNoVinculadosRule.validar(relaciones);
+        fichaPerfilExisteRule.validar(new ExistenciaFichaPerfil(fichaPerfil, fichaExiste));
+        estudiantesExistenRule.validar(new ExistenciaEstudiantes(estudiantes, estudiantesExistentes));
+        estudiantesNoVinculadosRule.validar(new VinculosEstudiantesFicha(yaVinculados));
 
-        estudianteFichaPerfilCupoDisponibleRule.validar(relaciones);
+        estudianteFichaPerfilCupoDisponibleRule.validar(
+                new CupoEstudiantesFicha(vinculadosActuales, relaciones.size()));
     }
 }

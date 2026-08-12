@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.finder.impl;
 
-import com.arquisoft.fichas.application.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -12,7 +11,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,28 +23,29 @@ class FichaPerfilDelItemFinderImplTest {
     private FichaPerfilDelItemFinderImpl finder;
 
     @Test
-    void debeRetornarElFichaPerfilId_cuandoElItemExiste() {
+    void debeDevolverLaFichaDelItem_cuandoElItemExiste() {
         // Arrange
-        UUID item = UUID.randomUUID();
-        UUID fichaPerfil = UUID.randomUUID();
-        when(itemFichaPerfilOutputPort.obtenerFichaPerfilId(item)).thenReturn(Optional.of(fichaPerfil));
+        UUID itemId = UUID.randomUUID();
+        UUID fichaId = UUID.randomUUID();
+        when(itemFichaPerfilOutputPort.obtenerFichaPerfilId(itemId)).thenReturn(Optional.of(fichaId));
 
         // Act
-        UUID resultado = finder.obtener(item);
+        Optional<UUID> resultado = finder.obtener(itemId);
 
         // Assert
-        assertThat(resultado).isEqualTo(fichaPerfil);
+        assertThat(resultado).contains(fichaId);
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoElItemNoExiste() {
+    void debeDevolverVacio_cuandoElItemNoExiste() {
         // Arrange
-        UUID item = UUID.randomUUID();
-        when(itemFichaPerfilOutputPort.obtenerFichaPerfilId(item)).thenReturn(Optional.empty());
+        UUID itemId = UUID.randomUUID();
+        when(itemFichaPerfilOutputPort.obtenerFichaPerfilId(itemId)).thenReturn(Optional.empty());
 
-        // Act & Assert
-        assertThatThrownBy(() -> finder.obtener(item))
-                .isInstanceOf(ItemFichaPerfilNoEncontradoException.class)
-                .hasMessageContaining(item.toString());
+        // Act
+        Optional<UUID> resultado = finder.obtener(itemId);
+
+        // Assert — el finder nunca lanza por "no encontrado"; eso lo decide la rule
+        assertThat(resultado).isEmpty();
     }
 }

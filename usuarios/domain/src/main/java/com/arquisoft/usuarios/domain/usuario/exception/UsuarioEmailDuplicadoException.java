@@ -3,9 +3,9 @@ package com.arquisoft.usuarios.domain.usuario.exception;
 import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.UsuariosCodes;
-import com.arquisoft.shared.exception.ApplicationException;
+import com.arquisoft.shared.exception.DomainException;
 
-public final class UsuarioEmailDuplicadoException extends ApplicationException {
+public final class UsuarioEmailDuplicadoException extends DomainException {
 
     public UsuarioEmailDuplicadoException(String email) {
         super(

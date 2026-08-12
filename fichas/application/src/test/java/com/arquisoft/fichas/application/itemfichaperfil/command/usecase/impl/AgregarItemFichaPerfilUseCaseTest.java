@@ -1,20 +1,19 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
-import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.mapper.AgregarItemFichaPerfilMapper;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.shared.message.constant.FichasCodes;
-import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
+import com.arquisoft.fichas.application.itemfichaperfil.command.finder.TipoItemEnFichaExisteFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.AgregarItemFichaPerfilValidator;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
-import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.AgregarItemFichaPerfilCommand;
+import com.arquisoft.fichas.domain.itemfichaperfil.AgregacionItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
-import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
-import com.arquisoft.fichas.domain.itemfichaperfil.secondaryport.ItemFichaPerfilOutputPort;
-import com.arquisoft.shared.exception.ApplicationException;
-import com.arquisoft.shared.validation.DomainValidationException;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.tipoitem.TipoItem;
+import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,164 +27,150 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AgregarItemFichaPerfilUseCaseTest {
-
-    private static final String TIPO_ITEM = "OBJETIVO_GENERAL";
-    private static final String CONTENIDO = "Contenido válido";
 
     @Mock
     private ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
 
     @Mock
-    private AgregarItemFichaPerfilValidator agregarItemFichaPerfilValidator;
+    private FichaPerfilExisteFinder fichaPerfilExisteFinder;
 
+    @Mock
+    private VinculoEstudianteFichaExisteFinder vinculoEstudianteFichaExisteFinder;
+
+    @Mock
+    private TipoItemEnFichaExisteFinder tipoItemEnFichaExisteFinder;
+
+    @Mock
+    private AgregarItemFichaPerfilValidator agregarItemFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
     @Spy
     private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
-@InjectMocks
-    private AgregarItemFichaPerfilUseCaseImpl useCase;
+    @InjectMocks
+    private AgregarItemFichaPerfilUseCaseImpl agregarItemFichaPerfilUseCase;
+
+    private final UUID fichaPerfil = UUID.randomUUID();
+    private final UUID estudiante = UUID.randomUUID();
 
     @Test
-    void debeAgregarItem_cuandoDatosValidos() {
+    void debeRegistrarElItem_cuandoDatosValidos() {
         // Arrange
-        AgregarItemFichaPerfilCommand command = comando();
+        var entrada = entrada();
+        stubConsultas(entrada, true, true, false);
 
         // Act
-        UUID resultado = useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command));
+        UUID resultado = agregarItemFichaPerfilUseCase.ejecutar(entrada);
 
         // Assert
-        assertThat(resultado).isNotNull();
-        verify(itemFichaPerfilOutputPort, times(1)).registrarItem(any(ItemFichaPerfilDomain.class));
+        assertThat(resultado).isEqualTo(entrada.getItem().getId());
+        verify(itemFichaPerfilOutputPort, times(1)).registrarItem(entrada.getItem());
     }
 
     @Test
-    void debeLanzarFichaNoEncontrada_cuandoFichaNoExiste() {
+    void debeConsultarYValidarAntesDePersistir_cuandoSeEjecuta() {
         // Arrange
-        AgregarItemFichaPerfilCommand command = comando();
-        doThrow(new FichaPerfilNoEncontradaException(command.fichaPerfil()))
-                .when(agregarItemFichaPerfilValidator).validar(any(), any());
+        var entrada = entrada();
+        stubConsultas(entrada, true, true, false);
 
         // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command)));
+        agregarItemFichaPerfilUseCase.ejecutar(entrada);
 
         // Assert
-        assertThat(exception).isInstanceOf(FichaPerfilNoEncontradaException.class);
-        verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
+        InOrder inOrder = inOrder(fichaPerfilExisteFinder, vinculoEstudianteFichaExisteFinder,
+                tipoItemEnFichaExisteFinder, agregarItemFichaPerfilValidator, itemFichaPerfilOutputPort);
+        inOrder.verify(fichaPerfilExisteFinder).obtener(fichaPerfil);
+        inOrder.verify(vinculoEstudianteFichaExisteFinder)
+                .obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante));
+        inOrder.verify(tipoItemEnFichaExisteFinder).obtener(entrada.getItem());
+        inOrder.verify(agregarItemFichaPerfilValidator)
+                .validar(entrada.getItem(), estudiante, true, true, false);
+        inOrder.verify(itemFichaPerfilOutputPort).registrarItem(entrada.getItem());
     }
 
     @Test
-    void debeLanzarItemFichaNoPropia_cuandoEstudianteNoEsPropietario() {
+    void debePropagarLaExcepcion_cuandoLaFichaNoExiste() {
         // Arrange
-        AgregarItemFichaPerfilCommand command = comando();
-        doThrow(new ItemFichaNoPropiaException(command.fichaPerfil()))
+        var entrada = entrada();
+        stubConsultas(entrada, false, false, false);
+        doThrow(new FichaPerfilNoEncontradaException(fichaPerfil))
                 .when(agregarItemFichaPerfilValidator)
-                .validar(any(), any());
-
-        // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command)));
-
-        // Assert
-        assertThat(exception)
-                .isInstanceOf(ItemFichaNoPropiaException.class)
-                .hasMessageContaining(command.fichaPerfil().toString());
-        verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
-    }
-
-    @Test
-    void debeLanzarItemTipoDuplicado_cuandoTipoYaExisteEnFicha() {
-        // Arrange
-        AgregarItemFichaPerfilCommand command = comando();
-        doThrow(new ItemTipoDuplicadoException(TIPO_ITEM))
-                .when(agregarItemFichaPerfilValidator)
-                .validar(any(), any());
-
-        // Act
-        Throwable exception = catchThrowable(() -> useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command)));
-
-        // Assert
-        assertThat(exception).isInstanceOf(ItemTipoDuplicadoException.class);
-        assertThat(((ApplicationException) exception).getCodigoError())
-                .isEqualTo(FichasCodes.ItemFichaPerfil.ITEM_TIPO_DUPLICADO);
-        assertThat(exception.getMessage())
-                .isEqualTo(Mensajes.formatear(ItemFichaPerfilKey.ERROR_TIPO_DUPLICADO, TIPO_ITEM));
-        verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
-    }
-
-    @Test
-    void debeValidarAntesDePersistir_cuandoSeEjecuta() {
-        // Arrange
-        AgregarItemFichaPerfilCommand command = comando();
-
-        // Act
-        useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command));
-
-        // Assert
-        InOrder inOrder = inOrder(agregarItemFichaPerfilValidator, itemFichaPerfilOutputPort);
-        inOrder.verify(agregarItemFichaPerfilValidator).validar(any(), any());
-        inOrder.verify(itemFichaPerfilOutputPort).registrarItem(any(ItemFichaPerfilDomain.class));
-    }
-
-    @Test
-    void debeConstruirAgregadoAntesDeConsultarLaBaseDeDatos_cuandoTipoItemEsInvalido() {
-        // Arrange
-        AgregarItemFichaPerfilCommand command = new AgregarItemFichaPerfilCommand(
-                UUID.randomUUID(), "TIPO_INEXISTENTE", CONTENIDO, UUID.randomUUID());
+                .validar(entrada.getItem(), estudiante, false, false, false);
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command)))
-                .isInstanceOf(DomainValidationException.class);
+        assertThatThrownBy(() -> agregarItemFichaPerfilUseCase.ejecutar(entrada))
+                .isInstanceOf(FichaPerfilNoEncontradaException.class);
 
-        verify(agregarItemFichaPerfilValidator, never()).validar(any(), any());
-        verify(agregarItemFichaPerfilValidator, never()).validar(any(), any());
-        verify(agregarItemFichaPerfilValidator, never()).validar(any(), any());
         verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
     }
 
     @Test
-    void debeRetornarUUID_cuandoExitoso() {
+    void debePropagarLaExcepcion_cuandoLaFichaNoEsDelEstudiante() {
         // Arrange
-        AgregarItemFichaPerfilCommand command = comando();
+        var entrada = entrada();
+        stubConsultas(entrada, true, false, false);
+        doThrow(new ItemFichaNoPropiaException(fichaPerfil))
+                .when(agregarItemFichaPerfilValidator)
+                .validar(entrada.getItem(), estudiante, true, false, false);
 
-        // Act
-        UUID resultado = useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command));
+        // Act & Assert
+        assertThatThrownBy(() -> agregarItemFichaPerfilUseCase.ejecutar(entrada))
+                .isInstanceOf(ItemFichaNoPropiaException.class);
 
-        // Assert
-        assertThat(resultado).isNotNull();
+        verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
     }
 
     @Test
-    void debePropagar_cuandoRepositorioFalla() {
+    void debePropagarLaExcepcion_cuandoElTipoDeItemEstaDuplicado() {
         // Arrange
-        AgregarItemFichaPerfilCommand command = comando();
-        doThrow(new RuntimeException("DB error")).when(itemFichaPerfilOutputPort).registrarItem(any());
+        var entrada = entrada();
+        stubConsultas(entrada, true, true, true);
+        doThrow(new ItemTipoDuplicadoException(TipoItem.OBJETIVO_GENERAL.getId()))
+                .when(agregarItemFichaPerfilValidator)
+                .validar(entrada.getItem(), estudiante, true, true, true);
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(AgregarItemFichaPerfilMapper.toDomain(command)))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("DB error");
+        assertThatThrownBy(() -> agregarItemFichaPerfilUseCase.ejecutar(entrada))
+                .isInstanceOf(ItemTipoDuplicadoException.class);
+
+        verify(itemFichaPerfilOutputPort, never()).registrarItem(any());
     }
 
-    private AgregarItemFichaPerfilCommand comando() {
-        return new AgregarItemFichaPerfilCommand(
-                UUID.randomUUID(),
-                TIPO_ITEM,
-                CONTENIDO,
-                UUID.randomUUID()
-        );
+    @Test
+    void debeLanzarExcepcion_cuandoRepositorioFalla() {
+        // Arrange
+        var entrada = entrada();
+        stubConsultas(entrada, true, true, false);
+        doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
+                .when(itemFichaPerfilOutputPort).registrarItem(entrada.getItem());
+
+        // Act & Assert
+        assertThatThrownBy(() -> agregarItemFichaPerfilUseCase.ejecutar(entrada))
+                .isInstanceOf(InfrastructureException.class);
+    }
+
+    private void stubConsultas(AgregacionItemFichaPerfilDomain entrada, boolean fichaExiste,
+                               boolean esPropietario, boolean tipoYaExiste) {
+        when(fichaPerfilExisteFinder.obtener(fichaPerfil)).thenReturn(fichaExiste);
+        when(vinculoEstudianteFichaExisteFinder.obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante)))
+                .thenReturn(esPropietario);
+        when(tipoItemEnFichaExisteFinder.obtener(entrada.getItem())).thenReturn(tipoYaExiste);
+    }
+
+    private AgregacionItemFichaPerfilDomain entrada() {
+        return AgregacionItemFichaPerfilDomain.crear(
+                fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item", estudiante);
     }
 }

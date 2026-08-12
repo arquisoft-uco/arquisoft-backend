@@ -2,11 +2,13 @@ package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaExisteFinder;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
@@ -27,6 +29,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * La asignación de estudiantes y del estado inicial ya no ocurren aquí: el
@@ -41,6 +44,12 @@ class RegistrarFichaPerfilUseCaseTest {
 
     @Mock
     private FichaPerfilOutputPort fichaPerfilOutputPort;
+
+    @Mock
+    private AsesorFichaExisteFinder asesorFichaExisteFinder;
+
+    @Mock
+    private TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
 
     @Mock
     private RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
@@ -60,6 +69,7 @@ class RegistrarFichaPerfilUseCaseTest {
     void debeRegistrar_cuandoDatosValidos() {
         // Arrange
         FichaPerfilDomain ficha = fichaValida();
+        stubConsultas(ficha, true, false);
 
         // Act
         UUID resultado = registrarFichaPerfilUseCase.ejecutar(ficha);
@@ -70,25 +80,30 @@ class RegistrarFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debeValidarAntesDePersistir_cuandoSeEjecuta() {
+    void debeConsultarYValidarAntesDePersistir_cuandoSeEjecuta() {
         // Arrange
         FichaPerfilDomain ficha = fichaValida();
+        stubConsultas(ficha, true, false);
 
         // Act
         registrarFichaPerfilUseCase.ejecutar(ficha);
 
         // Assert
-        InOrder inOrder = inOrder(registrarFichaPerfilValidator, fichaPerfilOutputPort);
-        inOrder.verify(registrarFichaPerfilValidator).validar(ficha);
+        InOrder inOrder = inOrder(asesorFichaExisteFinder, tituloFichaPerfilExisteFinder,
+                registrarFichaPerfilValidator, fichaPerfilOutputPort);
+        inOrder.verify(asesorFichaExisteFinder).obtener(ficha.getAsesorFicha());
+        inOrder.verify(tituloFichaPerfilExisteFinder).obtener(ficha.getTituloProyecto());
+        inOrder.verify(registrarFichaPerfilValidator).validar(ficha, true, false);
         inOrder.verify(fichaPerfilOutputPort).registrarFicha(ficha);
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoAsesorNoExiste() {
+    void debePasarElResultadoDeLasConsultasAlValidator_cuandoElAsesorNoExiste() {
         // Arrange
         FichaPerfilDomain ficha = fichaValida();
+        stubConsultas(ficha, false, false);
         doThrow(new AsesorFichaNoEncontradoException(ficha.getAsesorFicha()))
-                .when(registrarFichaPerfilValidator).validar(ficha);
+                .when(registrarFichaPerfilValidator).validar(ficha, false, false);
 
         // Act & Assert
         assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(ficha))
@@ -98,11 +113,12 @@ class RegistrarFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoTituloDuplicado() {
+    void debePasarElResultadoDeLasConsultasAlValidator_cuandoElTituloEstaDuplicado() {
         // Arrange
         FichaPerfilDomain ficha = fichaValida();
+        stubConsultas(ficha, true, true);
         doThrow(new FichaTituloDuplicadoException(ficha.getTituloProyecto()))
-                .when(registrarFichaPerfilValidator).validar(ficha);
+                .when(registrarFichaPerfilValidator).validar(ficha, true, true);
 
         // Act & Assert
         assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(ficha))
@@ -115,12 +131,18 @@ class RegistrarFichaPerfilUseCaseTest {
     void debeLanzarExcepcion_cuandoRepositorioFalla() {
         // Arrange
         FichaPerfilDomain ficha = fichaValida();
+        stubConsultas(ficha, true, false);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
                 .when(fichaPerfilOutputPort).registrarFicha(ficha);
 
         // Act & Assert
         assertThatThrownBy(() -> registrarFichaPerfilUseCase.ejecutar(ficha))
                 .isInstanceOf(InfrastructureException.class);
+    }
+
+    private void stubConsultas(FichaPerfilDomain ficha, boolean asesorExiste, boolean tituloYaExiste) {
+        when(asesorFichaExisteFinder.obtener(ficha.getAsesorFicha())).thenReturn(asesorExiste);
+        when(tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto())).thenReturn(tituloYaExiste);
     }
 
     private FichaPerfilDomain fichaValida() {

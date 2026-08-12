@@ -2,8 +2,11 @@ package com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.impl.RegistrarEvaluacionFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.DisponibilidadEvaluacionFicha;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.ExistenciaRepresentanteComite;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.EvaluacionNoDuplicadaRule;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.RepresentanteComiteExisteRule;
+import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,12 +42,30 @@ class RegistrarEvaluacionFichaPerfilValidatorTest {
         var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
 
         // Act
-        validator.validar(evaluacion);
+        validator.validar(evaluacion, true, true, false);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilExisteRule, representanteComiteExisteRule, evaluacionNoDuplicadaRule);
-        inOrder.verify(fichaPerfilExisteRule).validar(ficha);
-        inOrder.verify(representanteComiteExisteRule).validar(representante);
-        inOrder.verify(evaluacionNoDuplicadaRule).validar(evaluacion);
+        InOrder inOrder = inOrder(fichaPerfilExisteRule, representanteComiteExisteRule,
+                evaluacionNoDuplicadaRule);
+        inOrder.verify(fichaPerfilExisteRule).validar(new ExistenciaFichaPerfil(ficha, true));
+        inOrder.verify(representanteComiteExisteRule)
+                .validar(new ExistenciaRepresentanteComite(representante, true));
+        inOrder.verify(evaluacionNoDuplicadaRule)
+                .validar(new DisponibilidadEvaluacionFicha(representante, ficha, false));
+    }
+
+    @Test
+    void debeTrasladarLosDatosConsultados_cuandoLaEvaluacionYaExiste() {
+        // Arrange
+        UUID representante = UUID.randomUUID();
+        UUID ficha = UUID.randomUUID();
+        var evaluacion = EvaluacionFichaPerfilDomain.crear(representante, ficha);
+
+        // Act
+        validator.validar(evaluacion, true, true, true);
+
+        // Assert
+        inOrder(evaluacionNoDuplicadaRule).verify(evaluacionNoDuplicadaRule)
+                .validar(new DisponibilidadEvaluacionFicha(representante, ficha, true));
     }
 }

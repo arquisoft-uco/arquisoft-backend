@@ -2,6 +2,8 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.RegistrarFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.model.DisponibilidadTituloFicha;
+import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaAsesorFicha;
 import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaExisteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloUnicoRule;
 import org.junit.jupiter.api.Test;
@@ -34,11 +36,28 @@ class RegistrarFichaPerfilValidatorTest {
         var ficha = FichaPerfilDomain.crear("Titulo de prueba", asesor);
 
         // Act
-        validator.validar(ficha);
+        validator.validar(ficha, true, false);
 
         // Assert
         InOrder inOrder = inOrder(asesorFichaExisteRule, fichaPerfilTituloUnicoRule);
-        inOrder.verify(asesorFichaExisteRule).validar(asesor);
-        inOrder.verify(fichaPerfilTituloUnicoRule).validar(ficha.getTituloProyecto());
+        inOrder.verify(asesorFichaExisteRule).validar(new ExistenciaAsesorFicha(asesor, true));
+        inOrder.verify(fichaPerfilTituloUnicoRule)
+                .validar(new DisponibilidadTituloFicha(ficha.getTituloProyecto(), false));
+    }
+
+    @Test
+    void debeTrasladarLosDatosConsultados_cuandoLasConsultasSonNegativas() {
+        // Arrange
+        UUID asesor = UUID.randomUUID();
+        var ficha = FichaPerfilDomain.crear("Titulo tomado", asesor);
+
+        // Act
+        validator.validar(ficha, false, true);
+
+        // Assert
+        InOrder inOrder = inOrder(asesorFichaExisteRule, fichaPerfilTituloUnicoRule);
+        inOrder.verify(asesorFichaExisteRule).validar(new ExistenciaAsesorFicha(asesor, false));
+        inOrder.verify(fichaPerfilTituloUnicoRule)
+                .validar(new DisponibilidadTituloFicha("Titulo tomado", true));
     }
 }

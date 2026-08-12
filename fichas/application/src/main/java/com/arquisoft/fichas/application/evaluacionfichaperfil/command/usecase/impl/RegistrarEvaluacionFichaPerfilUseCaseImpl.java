@@ -3,12 +3,15 @@ package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.i
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.finder.EvaluacionDeRepresentanteExisteFinder;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.RegistrarEvaluacionFichaPerfilUseCase;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
+import com.arquisoft.fichas.application.representantecomite.command.finder.RepresentanteComiteExisteFinder;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
-import com.arquisoft.fichas.domain.estadoevaluacionficha.secondaryport.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
-import com.arquisoft.fichas.domain.evaluacionfichaperfil.secondaryport.EvaluacionFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,13 +24,22 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
 
     private final EvaluacionFichaPerfilOutputPort evaluacionFichaPerfilOutputPort;
     private final EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
+    private final FichaPerfilExisteFinder fichaPerfilExisteFinder;
+    private final RepresentanteComiteExisteFinder representanteComiteExisteFinder;
+    private final EvaluacionDeRepresentanteExisteFinder evaluacionDeRepresentanteExisteFinder;
     private final RegistrarEvaluacionFichaPerfilValidator registrarEvaluacionFichaPerfilValidator;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
 
     @Override
     public UUID ejecutar(EvaluacionFichaPerfilDomain evaluacion) {
-        registrarEvaluacionFichaPerfilValidator.validar(evaluacion);
+        boolean fichaExiste = fichaPerfilExisteFinder.obtener(evaluacion.getFichaPerfilId());
+        boolean representanteExiste = representanteComiteExisteFinder.obtener(
+                evaluacion.getRepresentanteComiteId());
+        boolean evaluacionYaExiste = evaluacionDeRepresentanteExisteFinder.obtener(evaluacion);
+
+        registrarEvaluacionFichaPerfilValidator.validar(
+                evaluacion, fichaExiste, representanteExiste, evaluacionYaExiste);
 
         evaluacionFichaPerfilOutputPort.registrarEvaluacion(evaluacion);
         asignarEstadoInicialEvaluacion(evaluacion.getId());

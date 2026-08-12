@@ -4,8 +4,9 @@ import com.arquisoft.shared.message.key.fichas.EstadoFichaPerfilKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estadofichaperfil.command.validator.AsignarEstadoInicialFichaPerfilValidator;
+import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estadofichaperfil.secondaryport.EstadoFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.EstadoFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,13 +16,16 @@ import org.springframework.stereotype.Component;
 public class AsignarEstadoInicialFichaPerfilUseCaseImpl implements AsignarEstadoInicialFichaPerfilUseCase {
 
     private final EstadoFichaPerfilOutputPort estadoFichaPerfilOutputPort;
+    private final FichaPerfilExisteFinder fichaPerfilExisteFinder;
     private final AsignarEstadoInicialFichaPerfilValidator asignarEstadoInicialFichaPerfilValidator;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(EstadoFichaPerfilDomain estadoInicial) {
-        asignarEstadoInicialFichaPerfilValidator.validar(estadoInicial.getFichaPerfil());
+        boolean fichaExiste = fichaPerfilExisteFinder.obtener(estadoInicial.getFichaPerfil());
+
+        asignarEstadoInicialFichaPerfilValidator.validar(estadoInicial.getFichaPerfil(), fichaExiste);
 
         estadoFichaPerfilOutputPort.registrarEstadoInicial(estadoInicial);
 

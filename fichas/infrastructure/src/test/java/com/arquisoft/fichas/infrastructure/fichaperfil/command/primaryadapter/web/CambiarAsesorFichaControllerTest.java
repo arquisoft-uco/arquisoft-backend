@@ -117,7 +117,7 @@ class CambiarAsesorFichaControllerTest {
     }
 
     @Test
-    void debeRetornar400_cuandoFichaNoEncontrada() throws Exception {
+    void debeRetornar422_cuandoFichaNoEncontrada() throws Exception {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
@@ -137,13 +137,13 @@ class CambiarAsesorFichaControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE_ASESOR)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.FichaPerfil.FICHA_NO_ENCONTRADA));
     }
 
     @Test
-    void debeRetornar400_cuandoAsesorNoEncontrado() throws Exception {
+    void debeRetornar422_cuandoAsesorNoEncontrado() throws Exception {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID nuevoAsesorId = UUID.randomUUID();
@@ -163,7 +163,7 @@ class CambiarAsesorFichaControllerTest {
                                 .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_UPDATE_ASESOR)))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.message").exists())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.FichaPerfil.ASESOR_NO_ENCONTRADO));
     }

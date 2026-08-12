@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondarya
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estadofichaperfil.secondaryport.EstadoFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.infrastructure.estadoficha.persistence.EstadoFichaRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilRepository;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.persistence.EstadoFichaPerfilMapper;

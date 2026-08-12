@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.seguridad.application.auth.command.primaryport.model.TokenSesionCommand;
 import com.arquisoft.seguridad.application.auth.command.usecase.CerrarSesionUseCase;
 import com.arquisoft.seguridad.domain.auth.SesionDomain;
-import com.arquisoft.seguridad.domain.auth.secondaryport.TokenInvalidadoOutputPort;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

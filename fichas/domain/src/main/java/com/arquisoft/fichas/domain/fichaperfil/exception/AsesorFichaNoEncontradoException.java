@@ -3,11 +3,11 @@ package com.arquisoft.fichas.domain.fichaperfil.exception;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.Mensajes;
-import com.arquisoft.shared.exception.ApplicationException;
+import com.arquisoft.shared.exception.DomainException;
 
 import java.util.UUID;
 
-public final class AsesorFichaNoEncontradoException extends ApplicationException {
+public final class AsesorFichaNoEncontradoException extends DomainException {
 
     public AsesorFichaNoEncontradoException(UUID id) {
         super(

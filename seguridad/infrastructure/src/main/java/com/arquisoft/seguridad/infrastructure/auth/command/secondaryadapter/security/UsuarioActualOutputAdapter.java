@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.security;
 
-import com.arquisoft.seguridad.domain.auth.secondaryport.UsuarioActualOutputPort;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.UsuarioActualOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;

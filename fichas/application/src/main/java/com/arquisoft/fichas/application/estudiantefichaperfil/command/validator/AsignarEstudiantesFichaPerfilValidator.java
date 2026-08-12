@@ -7,5 +7,6 @@ import java.util.UUID;
 
 public interface AsignarEstudiantesFichaPerfilValidator {
 
-    void validar(UUID fichaPerfil, List<UUID> estudiantes, List<EstudianteFichaPerfilDomain> relaciones);
+    void validar(List<EstudianteFichaPerfilDomain> relaciones, boolean fichaExiste,
+                 List<UUID> estudiantesExistentes, List<UUID> yaVinculados, long vinculadosActuales);
 }

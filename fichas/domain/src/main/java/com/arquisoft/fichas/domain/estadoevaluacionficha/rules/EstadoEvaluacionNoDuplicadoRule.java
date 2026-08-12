@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha.rules;
 
-import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.model.DisponibilidadEstadoEvaluacion;
 import com.arquisoft.shared.rules.DomainRule;
 
-public interface EstadoEvaluacionNoDuplicadoRule extends DomainRule<AgregacionEstadoEvaluacionFichaDomain> {
+public interface EstadoEvaluacionNoDuplicadoRule extends DomainRule<DisponibilidadEstadoEvaluacion> {
 }

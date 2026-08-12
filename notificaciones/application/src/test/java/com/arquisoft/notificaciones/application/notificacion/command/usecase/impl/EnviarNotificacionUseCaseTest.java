@@ -32,7 +32,7 @@ class EnviarNotificacionUseCaseTest {
     private static final String ID_EVENTO = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
 
     @Mock
-    private com.arquisoft.notificaciones.domain.notificacion.secondaryport.NotificacionOutputPort notificacionOutputPort;
+    private com.arquisoft.notificaciones.application.notificacion.command.secondaryport.NotificacionOutputPort notificacionOutputPort;
 
     @Mock
     private NotificacionValidator notificacionValidator;

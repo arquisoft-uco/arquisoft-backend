@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface AsignarEstadoInicialFichaPerfilValidator {
 
-    void validar(UUID fichaPerfil);
+    void validar(UUID fichaPerfil, boolean fichaExiste);
 }

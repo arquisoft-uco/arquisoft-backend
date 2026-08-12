@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
-import com.arquisoft.seguridad.domain.auth.secondaryport.AutenticacionOutputPort;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.AutenticacionOutputPort;
 import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
 import com.arquisoft.seguridad.infrastructure.exception.ProveedorIdentidadNoDisponibleException;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;

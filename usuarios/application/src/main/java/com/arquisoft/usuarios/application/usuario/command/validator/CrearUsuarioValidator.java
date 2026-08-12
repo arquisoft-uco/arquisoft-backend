@@ -4,5 +4,5 @@ import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 
 public interface CrearUsuarioValidator {
 
-    void validar(UsuarioDomain usuario);
+    void validar(UsuarioDomain usuario, boolean emailYaExiste);
 }

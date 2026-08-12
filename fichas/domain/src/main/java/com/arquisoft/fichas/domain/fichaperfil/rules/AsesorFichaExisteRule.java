@@ -1,8 +1,7 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules;
 
+import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaAsesorFicha;
 import com.arquisoft.shared.rules.DomainRule;
 
-import java.util.UUID;
-
-public interface AsesorFichaExisteRule extends DomainRule<UUID> {
+public interface AsesorFichaExisteRule extends DomainRule<ExistenciaAsesorFicha> {
 }

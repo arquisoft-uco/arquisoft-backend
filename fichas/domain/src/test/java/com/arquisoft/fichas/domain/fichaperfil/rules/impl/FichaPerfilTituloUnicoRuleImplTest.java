@@ -1,45 +1,33 @@
 package com.arquisoft.fichas.domain.fichaperfil.rules.impl;
 
-import com.arquisoft.fichas.domain.fichaperfil.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
-
+import com.arquisoft.fichas.domain.fichaperfil.model.DisponibilidadTituloFicha;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class FichaPerfilTituloUnicoRuleImplTest {
 
-    @Mock
-    private FichaPerfilOutputPort puerto;
-
-    @InjectMocks
-    private FichaPerfilTituloUnicoRuleImpl regla;
+    private final FichaPerfilTituloUnicoRuleImpl regla = new FichaPerfilTituloUnicoRuleImpl();
 
     @Test
-    void debeLanzarExcepcion_cuandoLaReglaNoSeCumple() {
+    void debeLanzarExcepcion_cuandoElTituloYaEstaTomado() {
         // Arrange
-        String entrada = "Titulo";
-        when(puerto.existePorTituloProyecto(entrada)).thenReturn(true);
+        var disponibilidad = new DisponibilidadTituloFicha("Titulo duplicado", true);
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(entrada))
-                .isInstanceOf(FichaTituloDuplicadoException.class);
+        assertThatThrownBy(() -> regla.validar(disponibilidad))
+                .isInstanceOf(FichaTituloDuplicadoException.class)
+                .hasMessageContaining("Titulo duplicado");
     }
 
     @Test
-    void debePasar_cuandoLaReglaSeCumple() {
+    void debePasar_cuandoElTituloEstaLibre() {
         // Arrange
-        String entrada = "Titulo";
-        when(puerto.existePorTituloProyecto(entrada)).thenReturn(false);
+        var disponibilidad = new DisponibilidadTituloFicha("Titulo libre", false);
 
         // Act & Assert
-        assertThatCode(() -> regla.validar(entrada)).doesNotThrowAnyException();
+        assertThatCode(() -> regla.validar(disponibilidad)).doesNotThrowAnyException();
     }
 }

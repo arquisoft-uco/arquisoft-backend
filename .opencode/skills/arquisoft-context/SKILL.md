@@ -125,24 +125,32 @@ Domain  ←  Application  ←  Infrastructure
 {contexto}/
 ├── domain/
 │   └── {entidad}/
-│       ├── aggregate/         # XxxAggregate (extiende AggregateRoot solo si emite eventos — ver sección AggregateRoot)
-│       ├── port/out/          # XxxOutputPort (interfaces de persistencia del write side)
+│       ├── {Entidad}Domain.java  # Aggregate root (sufijo Domain), directamente aquí, sin subpaquete
+│       ├── model/             # Value objects + el record de entrada de cada Rule
+│       ├── rules/             # {Concepto}Rule + impl/ — PUROS: sin puertos, sin dependencias de constructor
 │       ├── event/             # Eventos de dominio (extiende DomainEvent)
-│       └── exception/         # Excepciones del agregado (extienden DomainException)
+│       └── exception/         # Excepciones que lanzan las Rules (DomainException 422;
+│                              # las 3 de propiedad extienden AuthorizationException 403)
+│   # El dominio NO declara puertos y NO hace I/O: {contexto}/domain solo depende de shared:domain.
 │
 ├── application/
 │   └── {entidad}/
-│       ├── exception/         # XxxDuplicadaException, XxxNoEncontradaException (ApplicationException); XxxNoPropiaException (AuthorizationException)
+│       ├── exception/         # Excepciones de orquestación de application (extienden ApplicationException, 400)
 │       ├── command/
-│       │   ├── model/         # XxxCommand (record con la intención de negocio)
-│       │   ├── port/in/       # XxxInputPort (extends InputPort<Command, Result> o VoidInputPort)
-│       │   └── XxxUseCase.java   # Implementación (@Component)
+│       │   ├── primaryport/
+│       │   │   ├── interactor/   # {Accion}{Entidad}Interactor + impl/ (dueño de @Transactional)
+│       │   │   ├── model/        # {Accion}{Entidad}Command (record con crear(...))
+│       │   │   └── mapper/       # Opcional — Command → objeto de dominio
+│       │   ├── usecase/       # {Accion}{Entidad}UseCase + impl/ — consulta, valida, persiste
+│       │   ├── validator/     # {Accion}{Entidad}Validator + impl/ — PURO: solo Rules, sin puertos
+│       │   ├── finder/        # Un {Concepto}Finder por consulta, implementa Finder<T,R>
+│       │   ├── secondaryport/ # {Entidad}OutputPort — puerto de salida del write side
+│       │   └── result/        # {Concepto}Result, solo si el comando no devuelve UUID/void
 │       └── query/
 │           ├── criteria/      # XxxCriteria (extiende QueryCriteria, opcional)
 │           ├── readmodel/     # XxxReadModel (proyección plana de solo lectura)
-│           ├── port/in/       # Consultar{Entidad}InputPort
-│           ├── port/out/      # XxxQueryOutputPort (lectura — vive en application, no en domain)
-│           └── Consultar{Entidad}UseCase.java
+│           ├── primaryport/usecase/   # Consultar{Entidad}UseCase + impl/ (no hay interactor en read)
+│           └── secondaryport/ # XxxQueryOutputPort (lectura)
 │
 └── infrastructure/
     └── {entidad}/
@@ -164,11 +172,55 @@ Domain  ←  Application  ←  Infrastructure
 
 ### Reglas de la estructura
 
-1. **`port/in/` vive en `application`, NO en domain.** El dominio solo expone `port/out/` (write side). Las interfaces de entrada describen casos de uso, no son contratos puros del dominio.
-2. **`port/out/` se reparte entre dos sitios:** el **write side** (`XxxOutputPort`) en `domain/{entidad}/port/out/`. El **read side** (`XxxQueryOutputPort`) en `application/{entidad}/query/port/out/`. El read side no toca el agregado.
-3. **JPA Entities, repositorios y mappers viven en `infrastructure/{entidad}/persistence/`** (compartido entre command y query). Los adapters específicos van en `command/adapter/out/persistence/` y `query/adapter/out/persistence/`.
+1. **Ningún puerto vive en `domain`.** El contrato de entrada es el `Interactor` en `application/{entidad}/command/primaryport/interactor/`; los de salida están en `application/{entidad}/command/secondaryport/` (write) y `application/{entidad}/query/secondaryport/` (read). `{contexto}/domain` solo depende de `shared:domain`, así que un puerto bajo `domain/` invertiría la dependencia entre módulos y no compilaría.
+2. **El dominio no consulta: recibe.** Una `Rule` es una decisión pura sobre un record de `domain/{entidad}/model/` que ya trae el dato consultado (`ExistenciaAsesorFicha(UUID asesorFicha, boolean existe)`). Quien consulta es el use case, vía `Finder`s.
+3. **JPA Entities, repositorios y mappers viven en `infrastructure/{entidad}/persistence/`** (compartido entre command y query). Los adapters específicos van en `command/secondaryadapter/repository/` y `query/secondaryadapter/repository/`.
 4. **Vertical Slice por agregado:** todo lo de `FichaPerfil` vive bajo `domain/fichaperfil/`, `application/fichaperfil/`, `infrastructure/fichaperfil/`. NO hay carpeta genérica `domain/model/` con todos los agregados.
-5. **Subcarpetas obligatorias siempre**, aunque solo haya un tipo: `adapter/in/web/`, `adapter/out/persistence/`, etc. Nunca componentes directamente en `adapter/in/` o `adapter/out/`.
+5. **Subcarpetas obligatorias siempre**, aunque solo haya un tipo: `primaryadapter/web/`, `secondaryadapter/repository/`, etc. Nunca componentes directamente en `primaryadapter/` o `secondaryadapter/`.
+
+### Flujo de un comando — quién consulta, quién decide
+
+**Regla dura.** El I/O de un comando vive entero en el use case. El validator y las rules son funciones puras de lo que el use case ya consultó.
+
+```
+InteractorImpl (@Transactional)
+  └─> UseCaseImpl
+        ├─ finders  ......... consultan TODO el estado necesario
+        ├─ validator.validar(entrada, ...datos)   ← puro: solo orquesta Rules
+        │     └─> Rule.validar(record)            ← puro: decide y lanza
+        └─ outputPort.persistir(...)
+```
+
+**Rule.** Interfaz `{Concepto}Rule extends DomainRule<T>` en `domain/{entidad}/rules/`, impl en `rules/impl/`. **Sin Lombok, sin Spring, sin dependencias de constructor.** `T` es un record de `domain/{entidad}/model/` que trae el dato ya consultado **más** lo que necesite el mensaje de error:
+
+```java
+public record ExistenciaAsesorFicha(UUID asesorFicha, boolean existe) {}
+
+public class AsesorFichaExisteRuleImpl implements AsesorFichaExisteRule {
+    @Override
+    public void validar(ExistenciaAsesorFicha existencia) {
+        if (!existencia.existe()) {
+            throw new AsesorFichaNoEncontradoException(existencia.asesorFicha());
+        }
+    }
+}
+```
+
+Se cablean como beans **sin argumentos** en `{Contexto}DomainRulesConfig` (infrastructure). Sus tests no necesitan Mockito.
+
+**Finder.** Una consulta = un `{Concepto}Finder extends Finder<T, R>` en `application/{entidad}/command/finder/`, con impl `@Component` que delega en un `OutputPort`. **Siempre devuelve un valor y nunca lanza por "no encontrado":** existencia → `Boolean`, conteos → `Long`, agregados → `Optional<T>`. Interpretar la ausencia es trabajo de la Rule. Los fallos reales de consulta (BD caída) suben como la `InfrastructureException` (503) del adaptador; el finder no la captura ni la reenvuelve.
+
+**Validator.** `{Accion}{Entidad}Validator` inyecta **solo Rules** — nunca un `OutputPort`, nunca un `Finder`. Recibe la entrada de dominio más los datos ya consultados, construye los records de entrada y aplica las Rules en orden de validación. Cuando un dato puede faltar, protege las rules dependientes con `ifPresent`, no con `orElseThrow`: el validator debe ser correcto por sí solo, sin depender de que una rule anterior haya lanzado.
+
+**Encadenar consultas dependientes.** Si una consulta necesita el resultado de otra (item → su ficha → propiedad de esa ficha), encadénala con `map`/`flatMap` sobre el `Optional`, de forma que el caso ausente degrade a un valor seguro y sea la primera rule la que reporte el error real:
+
+```java
+var fichaDelItem = fichaPerfilDelItemFinder.obtener(entrada.getItem());   // Optional<UUID>
+boolean esPropietario = fichaDelItem
+        .map(ficha -> vinculoEstudianteFichaExisteFinder.obtener(
+                new VinculoEstudianteFicha(ficha, entrada.getEstudiante())))
+        .orElse(false);
+```
 
 ### Ubicación de `exists()` y lookups cross-aggregate en puertos de salida
 
@@ -176,9 +228,9 @@ El criterio es **de qué aggregate se consulta la existencia**, no quién consum
 
 | Caso | Lo invoca | Dónde vive el `exists()` | Razón |
 |---|---|---|---|
-| **1. Invariante del propio aggregate** (unicidad antes de guardar) | command use case | `domain/{entidad}/port/out/{Entidad}OutputPort` — junto a `guardar()` | Validación write-side; el booleano nunca sale al cliente |
-| **2. Precondición de lectura** (recurso no encontrado antes de proyectar → `ApplicationException` **400** por defecto; 404 solo con handler de contexto) | query use case | `application/{entidad}/query/port/out/{Entidad}QueryOutputPort` | El read side NUNCA toca un puerto write-side de `domain/` (segregación CQRS) — el método se duplica aquí, no se reutiliza el del dominio. "Proyectar" = mapear la JPA entity al `ReadModel`. Hoy ningún query use case lo usa (los dos existentes retornan colecciones); es el patrón para un futuro `GET /{id}` de un solo recurso |
-| **3. Lookup de OTRA feature** (validar FK ajena) | command **o** query use case | `application/{otraEntidad}/query/port/out/{OtraEntidad}QueryOutputPort` | El dominio que escribe no conoce puertos de otra feature; es lectura pura sin efecto. UN puerto, N consumidores (no se duplica el método) |
+| **1. Invariante del propio aggregate** (unicidad antes de guardar) | command use case | `application/{entidad}/command/secondaryport/{Entidad}OutputPort` — junto a `guardar()` | Validación write-side; el booleano nunca sale al cliente |
+| **2. Precondición de lectura** (recurso no encontrado antes de proyectar → `ApplicationException` **400** por defecto; 404 solo con handler de contexto) | query use case | `application/entidad/query/secondaryport/{Entidad}QueryOutputPort` | El read side NUNCA toca un puerto write-side de `domain/` (segregación CQRS) — el método se duplica aquí, no se reutiliza el del dominio. "Proyectar" = mapear la JPA entity al `ReadModel`. Hoy ningún query use case lo usa (los dos existentes retornan colecciones); es el patrón para un futuro `GET /{id}` de un solo recurso |
+| **3. Lookup de OTRA feature** (validar FK ajena) | command **o** query use case | `application/otraEntidad/query/secondaryport/{OtraEntidad}QueryOutputPort` | El dominio que escribe no conoce puertos de otra feature; es lectura pura sin efecto. UN puerto, N consumidores (no se duplica el método) |
 
 ```java
 // Caso 1 — en el puerto write-side, junto a guardar()
@@ -197,7 +249,7 @@ public interface AsesorFichaQueryOutputPort {
 }
 ```
 
-**Prohibido en el caso 3:** crear un `OutputPort` en `domain/{otraEntidad}/port/out/` para que otra feature lo consuma, o importar `domain/{otraEntidad}/` desde `domain/{entidadQueEscribe}/`. El cross-aggregate lookup vive SIEMPRE en un `QueryOutputPort` de `application/`, nunca en el dominio.
+**Prohibido en el caso 3:** crear un `OutputPort` en `domain/{otraEntidad}/` para que otra feature lo consuma, o importar `domain/{otraEntidad}/` desde `domain/{entidadQueEscribe}/`. El cross-aggregate lookup vive SIEMPRE en un `QueryOutputPort` de `application/`, nunca en el dominio.
 
 ### Convención de sufijos de clases
 
@@ -226,7 +278,7 @@ public interface AsesorFichaQueryOutputPort {
 
 > **Los segmentos de paquete de la entidad van en minúsculas, sin separadores.** El aggregate `FichaPerfilAggregate` vive bajo `domain/fichaperfil/`, no `domain/fichaPerfil/` ni `domain/ficha_perfil/`. Igual para `itemfichaperfil`, `estadoevaluacionficha`, `asesorficha`. Solo los **nombres de clase** llevan PascalCase y las **variables** camelCase.
 
-**Regla:** un componente está en `adapter/in/web/` si **solo se activa durante una request REST**. Si es transversal a más cosas (filtros que también aplican a actuator, configs globales), va en `filter/` o `config/`.
+**Regla:** un componente está en `primaryadapter/web/` si **solo se activa durante una request REST**. Si es transversal a más cosas (filtros que también aplican a actuator, configs globales), va en `filter/` o `config/`.
 
 ---
 
@@ -391,21 +443,21 @@ Si una misma clase responde "sí" a dos preguntas, está mezclando responsabilid
 |---|---|---|
 | Reglas de negocio del agregado | `domain/{entidad}/aggregate/` | `FichaPerfilAggregate` con `crear()`, `aprobar()`, invariantes |
 | Eventos de dominio | `domain/{entidad}/event/` | `FichaPerfilCreadaEvent extends DomainEvent` |
-| Puertos de salida write | `domain/{entidad}/port/out/` | `FichaPerfilOutputPort` (persistencia del aggregate) |
+| Puertos de salida write | `application/{entidad}/command/secondaryport/` | `FichaPerfilOutputPort` (persistencia del aggregate) |
 | Comandos (intención de negocio) | `application/{entidad}/command/model/` | `CrearFichaPerfilCommand` (record) |
 | Puertos de entrada write | `application/{entidad}/command/port/in/` | `CrearFichaPerfilInputPort extends InputPort<Command, UUID>` |
 | Casos de uso write (orquestación) | `application/{entidad}/command/` | `CrearFichaPerfilUseCase` (`@Component`) |
 | Criteria de consulta (opcional) | `application/{entidad}/query/criteria/` | `FichaPerfilCriteria extends QueryCriteria` |
 | Read models (proyección plana) | `application/{entidad}/query/readmodel/` | `FichaPerfilReadModel` (record) |
 | Puertos de entrada read | `application/{entidad}/query/port/in/` | `ConsultarFichasPerfilInputPort` |
-| Puertos de salida read | `application/{entidad}/query/port/out/` | `FichaPerfilQueryOutputPort` (vive en application, no en domain) |
+| Puertos de salida read | `application/entidad/query/secondaryport/` | `FichaPerfilQueryOutputPort` (vive en application, no en domain) |
 | Casos de uso read | `application/{entidad}/query/` | `ConsultarFichasPerfilUseCase` |
-| Request DTOs HTTP | `infrastructure/{entidad}/command/adapter/in/web/dto/` | `CrearFichaPerfilRequestDTO` |
-| Adaptadores REST write | `infrastructure/{entidad}/command/adapter/in/web/` | `CrearFichaPerfilInputAdapter` (`@RestController`) |
-| Adaptadores REST read | `infrastructure/{entidad}/query/adapter/in/web/` | `ConsultarFichasPerfilInputAdapter` (`@RestController`) |
-| Consumidores AMQP | `infrastructure/{entidad}/command/adapter/in/amqp/` | `XxxConsumerInputAdapter` (extiende `AbstractEventConsumer`) |
-| Adaptadores persistencia write | `infrastructure/{entidad}/command/adapter/out/persistence/` | `FichaPerfilCommandOutputAdapter` (implementa `FichaPerfilOutputPort`) |
-| Adaptadores persistencia read | `infrastructure/{entidad}/query/adapter/out/persistence/` | `FichaPerfilQueryOutputAdapter` + `FichaPerfilJpaSpecification` (si usa Criteria) |
+| Request DTOs HTTP | `infrastructure/{entidad}/command/primaryadapter/web/dto/` | `CrearFichaPerfilRequestDTO` |
+| Adaptadores REST write | `infrastructure/{entidad}/command/primaryadapter/web/` | `CrearFichaPerfilInputAdapter` (`@RestController`) |
+| Adaptadores REST read | `infrastructure/{entidad}/query/primaryadapter/web/` | `ConsultarFichasPerfilInputAdapter` (`@RestController`) |
+| Consumidores AMQP | `infrastructure/{entidad}/command/primaryadapter/amqp/` | `XxxConsumerInputAdapter` (extiende `AbstractEventConsumer`) |
+| Adaptadores persistencia write | `infrastructure/{entidad}/command/secondaryadapter/repository/` | `FichaPerfilCommandOutputAdapter` (implementa `FichaPerfilOutputPort`) |
+| Adaptadores persistencia read | `infrastructure/{entidad}/query/secondaryadapter/repository/` | `FichaPerfilQueryOutputAdapter` + `FichaPerfilJpaSpecification` (si usa Criteria) |
 | JPA Entity / Repository / Mapper | `infrastructure/{entidad}/persistence/` | `FichaPerfilJpaEntity`, `FichaPerfilJpaRepository`, `FichaPerfilMapper` |
 | Configuración técnica | `infrastructure/config/` | `RabbitMQQueueConfig`, `DataSourceConfig` (sin lógica de negocio) |
 | Filtros HTTP cross-cutting | `infrastructure/filter/` | `RateLimitFilter`, `RequestLoggingFilter` |
@@ -463,18 +515,18 @@ Si tienes una decisión que el negocio entendería, esa decisión vive en `domai
 
 Toda integración con un sistema externo (RabbitMQ, MinIO, Redis, SMTP, HTTP externo) sigue el patrón Puerto/Adaptador. Una regla, dos ejemplos.
 
-**Regla:** el `domain/` declara una **interfaz** (puerto) en `port/out/`. La implementación concreta vive en `infrastructure/.../adapter/out/{tipo}/`. La capa de aplicación llama al puerto sin conocer la tecnología.
+**Regla:** `application/` declara una **interfaz** (puerto) en `command/secondaryport/`. La implementación concreta vive en `infrastructure/.../command/secondaryadapter/{tipo}/`. La capa de aplicación llama al puerto sin conocer la tecnología.
 
 **Ejemplo 1 — Persistencia del aggregate:**
 
 ```java
-// domain/fichaperfil/port/out/FichaPerfilOutputPort.java
+// application/fichaperfil/command/secondaryport/FichaPerfilOutputPort.java
 public interface FichaPerfilOutputPort {
     void guardar(FichaPerfilAggregate aggregate);
     Optional<FichaPerfilAggregate> buscarPorId(UUID id);
 }
 
-// infrastructure/fichaperfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java
+// infrastructure/fichaperfil/command/secondaryadapter/repository/FichaPerfilCommandOutputAdapter.java
 @Component
 public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     private final FichaPerfilJpaRepository jpaRepository;  // tecnología: JPA
@@ -1009,7 +1061,7 @@ y respeta el modelo de dominio en el código interno.
 |---|---|---|---|
 | **`Command`** (intención de escritura) | **Español** (idéntico al aggregate) | `application/{entidad}/command/model/` | `CrearFichaPerfilCommand`, `AprobarFichaPerfilCommand` |
 | **`ReadModel`** (proyección de lectura) | **Español** (idéntico al aggregate) | `application/{entidad}/query/readmodel/` | `FichaPerfilReadModel` |
-| **`RequestDTO`** (entrada HTTP) | **Español** (idéntico al aggregate) | `infrastructure/{entidad}/command/adapter/in/web/dto/` | `CrearFichaPerfilRequestDTO` (con `@NotBlank`, `@Email`, etc.) |
+| **`RequestDTO`** (entrada HTTP) | **Español** (idéntico al aggregate) | `infrastructure/{entidad}/command/primaryadapter/web/dto/` | `CrearFichaPerfilRequestDTO` (con `@NotBlank`, `@Email`, etc.) |
 | **DTO técnico genérico** | **Inglés** (convención de la industria) | `shared:web` | `ErrorResponseDTO`, `PageResponseDTO<T>`, `QueryCriteriaRequestDTO`, `NodoFiltroDTO` |
 
 ### Reglas inviolables
@@ -1065,8 +1117,8 @@ y respeta el modelo de dominio en el código interno.
 | Pieza | Ubicación | Cuándo se crea |
 |---|---|---|
 | `XxxCriteria extends QueryCriteria` | `application/{entidad}/query/criteria/` | HU con paginación, ordenamiento o filtros |
-| `XxxJpaSpecification extends QueryJpaSpecification<JpaEntity>` | `infrastructure/{entidad}/query/adapter/out/persistence/` | Si la HU tiene filtros (árbol `NodoFiltro`) |
-| `XxxSortMapper` | `infrastructure/{entidad}/query/adapter/out/persistence/` | Si los campos de ordenamiento del cliente difieren de los paths JPA (joins implícitos) |
+| `XxxJpaSpecification extends QueryJpaSpecification<JpaEntity>` | `infrastructure/{entidad}/query/secondaryadapter/repository/` | Si la HU tiene filtros (árbol `NodoFiltro`) |
+| `XxxSortMapper` | `infrastructure/{entidad}/query/secondaryadapter/repository/` | Si los campos de ordenamiento del cliente difieren de los paths JPA (joins implícitos) |
 
 ### Tipos en `shared:domain`
 
@@ -1220,7 +1272,7 @@ public final class FichaPerfilCriteria extends QueryCriteria {
 ### Plantilla `FichaPerfilJpaSpecification`
 
 ```java
-// infrastructure/fichaperfil/query/adapter/out/persistence/FichaPerfilJpaSpecification.java
+// infrastructure/fichaperfil/query/secondaryadapter/repository/FichaPerfilJpaSpecification.java
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persistence;
 
 import com.arquisoft.shared.postgres.QueryJpaSpecification;
@@ -1250,7 +1302,7 @@ public class FichaPerfilJpaSpecification
 ### Plantilla `FichaPerfilQueryOutputAdapter` con Criteria
 
 ```java
-// infrastructure/fichaperfil/query/adapter/out/persistence/FichaPerfilQueryOutputAdapter.java
+// infrastructure/fichaperfil/query/secondaryadapter/repository/FichaPerfilQueryOutputAdapter.java
 @Component
 @RequiredArgsConstructor
 public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
@@ -1296,7 +1348,7 @@ public interface FichaPerfilJpaRepository extends JpaRepository<FichaPerfilJpaEn
 3. **Validación de profundidad del árbol ≤ 10 niveles.** Previene ataques de árboles maliciosamente profundos. Validado en el constructor de `QueryCriteria`.
 4. **`PaginatedResult<T>` vive en `shared:domain.pagination`** y es el retorno canónico del read side cuando hay paginación.
 5. **`PageResponseDTO.from(PaginatedResult)`** es la única conversión válida hacia HTTP. Nunca serializar `PaginatedResult` directamente.
-6. **NO usar `Pageable` ni `org.springframework.data.domain.Page` en `application/` ni `domain/`.** Esos tipos solo viven en `infrastructure/{entidad}/query/adapter/out/persistence/`. El read side de application maneja `XxxCriteria` y `PaginatedResult`.
+6. **NO usar `Pageable` ni `org.springframework.data.domain.Page` en `application/` ni `domain/`.** Esos tipos solo viven en `infrastructure/{entidad}/query/secondaryadapter/repository/`. El read side de application maneja `XxxCriteria` y `PaginatedResult`.
 7. **Cuando una HU de read NO necesita paginación, ordenamiento ni filtros**, NO se crean `Criteria`/`JpaSpecification`/`SortMapper`. El puerto recibe parámetros simples (ej. `UUID id`) y retorna `ReadModel` o `List<ReadModel>`.
 
 ---
@@ -1448,7 +1500,7 @@ public final class FichaPerfilCreadaEvent extends DomainEvent {
 #### 4. Puerto de salida (write — en `domain`)
 
 ```java
-// domain/fichaperfil/port/out/FichaPerfilOutputPort.java
+// application/fichaperfil/command/secondaryport/FichaPerfilOutputPort.java
 package com.arquisoft.fichas.domain.fichaperfil.port.out;
 
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
@@ -1522,7 +1574,7 @@ public class CrearFichaPerfilUseCase implements CrearFichaPerfilInputPort {
 #### 7. RequestDTO (en `infrastructure`)
 
 ```java
-// infrastructure/fichaperfil/command/adapter/in/web/dto/CrearFichaPerfilRequestDTO.java
+// infrastructure/fichaperfil/command/primaryadapter/web/dto/CrearFichaPerfilRequestDTO.java
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web.dto;
 
 import com.arquisoft.fichas.application.fichaperfil.command.model.CrearFichaPerfilCommand;
@@ -1545,7 +1597,7 @@ public record CrearFichaPerfilRequestDTO(
 #### 8. InputAdapter (REST controller)
 
 ```java
-// infrastructure/fichaperfil/command/adapter/in/web/CrearFichaPerfilInputAdapter.java
+// infrastructure/fichaperfil/command/primaryadapter/web/CrearFichaPerfilInputAdapter.java
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.in.web;
 
 import com.arquisoft.fichas.application.fichaperfil.command.port.in.CrearFichaPerfilInputPort;
@@ -1590,10 +1642,10 @@ public class CrearFichaPerfilInputAdapter {
 }
 ```
 
-El `ResponseDTO` es un `record` de un solo componente en `.../command/adapter/in/web/dto/`:
+El `ResponseDTO` es un `record` de un solo componente en `.../command/primaryadapter/web/dto/`:
 
 ```java
-// infrastructure/fichaperfil/command/adapter/in/web/dto/CrearFichaPerfilResponseDTO.java
+// infrastructure/fichaperfil/command/primaryadapter/web/dto/CrearFichaPerfilResponseDTO.java
 public record CrearFichaPerfilResponseDTO(UUID id) {}
 ```
 
@@ -1611,7 +1663,7 @@ Jackson lo serializa como `{"id": "b383883a-..."}`.
 #### 9. CommandOutputAdapter (persistencia write)
 
 ```java
-// infrastructure/fichaperfil/command/adapter/out/persistence/FichaPerfilCommandOutputAdapter.java
+// infrastructure/fichaperfil/command/secondaryadapter/repository/FichaPerfilCommandOutputAdapter.java
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.adapter.out.persistence;
 
 import com.arquisoft.fichas.domain.fichaperfil.aggregate.FichaPerfilAggregate;
@@ -1836,7 +1888,7 @@ public interface ConsultarFichaPerfilInputPort
 #### 3. QueryOutputPort (vive en `application`, NO en domain)
 
 ```java
-// application/fichaperfil/query/port/out/FichaPerfilQueryOutputPort.java
+// application/fichaperfil/query/secondaryport/FichaPerfilQueryOutputPort.java
 public interface FichaPerfilQueryOutputPort {
    Optional<FichaPerfilReadModel> findById(UUID id);
 }
@@ -1866,7 +1918,7 @@ public class ConsultarFichaPerfilUseCase implements ConsultarFichaPerfilInputPor
 #### 5. InputAdapter de lectura
 
 ```java
-// infrastructure/fichaperfil/query/adapter/in/web/ConsultarFichaPerfilInputAdapter.java
+// infrastructure/fichaperfil/query/primaryadapter/web/ConsultarFichaPerfilInputAdapter.java
 @RestController
 @RequestMapping("/fichas-perfil")
 @RequiredArgsConstructor
@@ -1885,7 +1937,7 @@ public class ConsultarFichaPerfilInputAdapter {
 #### 6. QueryOutputAdapter
 
 ```java
-// infrastructure/fichaperfil/query/adapter/out/persistence/FichaPerfilQueryOutputAdapter.java
+// infrastructure/fichaperfil/query/secondaryadapter/repository/FichaPerfilQueryOutputAdapter.java
 @Component
 @RequiredArgsConstructor
 public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort {
@@ -2009,7 +2061,7 @@ Solo en **dos casos concretos**:
 
 | Contexto Gradle | Nombre del handler | Archivo |
 |---|---|---|
-| `seguridad` | `SeguridadGlobalExceptionHandler` | `seguridad/.../infrastructure/adapter/in/web/SeguridadGlobalExceptionHandler.java` |
+| `seguridad` | `SeguridadGlobalExceptionHandler` | `seguridad/.../infrastructure/auth/command/primaryadapter/web/SeguridadGlobalExceptionHandler.java` |
 | `fichas` | `FichasGlobalExceptionHandler` | `fichas/.../infrastructure/exception/FichasGlobalExceptionHandler.java` |
 | `proyectos` | `ProyectosGlobalExceptionHandler` | `proyectos/.../infrastructure/exception/ProyectosGlobalExceptionHandler.java` |
 | `artefactos` | `ArtefactosGlobalExceptionHandler` | `artefactos/.../infrastructure/exception/ArtefactosGlobalExceptionHandler.java` |
@@ -2334,7 +2386,7 @@ public class FichaPerfilCreadaConsumerInputAdapter extends AbstractEventConsumer
 > **Regla crítica:** el contexto consumidor **NO importa la clase del evento del contexto publicador**. Declara un `record` propio con los campos que necesita.
 
 ```java
-// proyectos/infrastructure/fichaperfil/command/adapter/in/amqp/FichaPerfilCreadaPayload.java
+// proyectos/infrastructure/fichaperfil/command/primaryadapter/amqp/FichaPerfilCreadaPayload.java
 public record FichaPerfilCreadaPayload(
     String aggregateId,
     String tituloProyecto,
@@ -2386,7 +2438,7 @@ public class ProyectosFichaPerfilQueueConfig {
 | Reintentos de FAILED | `FailedEventRetryConfig` | Scheduler `@Scheduled` cada 5 min: `FailedEventPublications.resubmit(...)` con `withMinAge(2m)` |
 | Externalización a exchange | `shared:amqp` (`ModulithAmqpExternalizationConfig`) | `EventExternalizationConfiguration` con routing por `getTemaEvento()` |
 | Configura cola + DLX | `{contextoConsumidor}/infrastructure/config/` | `@Configuration` con Queue + Binding |
-| Consume el mensaje | `{contextoConsumidor}/infrastructure/{entidad}/command/adapter/in/amqp/` | Extiende `AbstractEventConsumer` |
+| Consume el mensaje | `{contextoConsumidor}/infrastructure/{entidad}/command/primaryadapter/amqp/` | Extiende `AbstractEventConsumer` |
 | Payload del consumidor | mismo paquete del consumer | `record` local, **NO** importa el evento del publicador |
 
 ### Reglas inviolables
@@ -2646,7 +2698,7 @@ Orden típico de consulta por subagente:
 2. Si un subagente detecta una contradicción entre este skill y otro archivo del repositorio, **gana este skill** y reporta la discrepancia al usuario.
 3. **DDD estricto por capas:** el dominio es Java puro (sin Spring, JPA, Lombok, Jackson, RabbitMQ, Keycloak, Swagger). La aplicación solo conoce dominio + librerías permitidas. La infraestructura es la única que habla con tecnologías externas.
 4. **Cero reglas de negocio en `infrastructure/`:** si una decisión tiene sentido de negocio, vive en `domain/`. Los `@Configuration` solo cablean; los adaptadores solo traducen.
-5. **Patrón puerto/adaptador obligatorio** para toda integración externa (Keycloak, RabbitMQ, Redis, servicios HTTP, SMTP, S3). Puerto en `domain/port/out/`, adaptador en `infrastructure/adapter/out/{tipo}/`.
+5. **Patrón puerto/adaptador obligatorio** para toda integración externa (Keycloak, RabbitMQ, Redis, servicios HTTP, SMTP, S3). Puerto en `application/{entidad}/command/secondaryport/`, adaptador en `infrastructure/{entidad}/command/secondaryadapter/{tipo}/`.
 6. **`AggregateRoot` es condicional a eventos:** una entidad raíz extiende `AggregateRoot` SOLO si su HU emite eventos de dominio (ver "AggregateRoot — Regla Estricta"). Sin eventos = clase plana con factories `crear`/`reconstruir`. `seguridad` nunca usa `AggregateRoot`.
 7. Los IDs son **siempre `UUID`**. Cualquier uso de `Long`/`Integer` como ID es un error.
 8. La dirección de dependencias `domain ← application ← infrastructure` **no se negocia**.

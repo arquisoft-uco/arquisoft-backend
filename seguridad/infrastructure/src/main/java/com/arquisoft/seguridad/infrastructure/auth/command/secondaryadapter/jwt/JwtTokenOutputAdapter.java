@@ -3,7 +3,7 @@ package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.jwt
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
-import com.arquisoft.seguridad.domain.auth.secondaryport.ValidacionTokenOutputPort;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.ValidacionTokenOutputPort;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
