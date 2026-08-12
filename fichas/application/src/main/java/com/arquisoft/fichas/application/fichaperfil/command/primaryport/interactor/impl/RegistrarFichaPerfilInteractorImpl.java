@@ -5,6 +5,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.primarypor
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.model.AsignarEstudiantesFichaPerfilCommand;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interactor.RegistrarFichaPerfilInteractor;
+import com.arquisoft.fichas.application.fichaperfil.command.primaryport.mapper.RegistrarFichaPerfilMapper;
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
@@ -26,7 +27,7 @@ public class RegistrarFichaPerfilInteractorImpl implements RegistrarFichaPerfilI
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(RegistrarFichaPerfilCommand command) {
-        FichaPerfilDomain ficha = FichaPerfilDomain.crear(command.tituloProyecto(), command.asesorFicha());
+        var ficha = RegistrarFichaPerfilMapper.toDomain(command);
 
         UUID fichaPerfil = registrarFichaPerfilUseCase.ejecutar(ficha);
 
