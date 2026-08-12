@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaContactoFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
@@ -49,7 +49,7 @@ class CambiarAsesorFichaUseCaseTest {
     private FichaPerfilFinder fichaPerfilFinder;
 
     @Mock
-    private AsesorFichaContactoFinder asesorFichaContactoFinder;
+    private AsesorFichaFinder asesorFichaFinder;
 
     @Mock
     private EstadoActualFichaPerfilFinder estadoActualFichaPerfilFinder;
@@ -98,10 +98,10 @@ class CambiarAsesorFichaUseCaseTest {
         cambiarAsesorFichaUseCase.ejecutar(cambio);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilFinder, asesorFichaContactoFinder, estadoActualFichaPerfilFinder,
+        InOrder inOrder = inOrder(fichaPerfilFinder, asesorFichaFinder, estadoActualFichaPerfilFinder,
                 cambiarAsesorFichaValidator, fichaPerfilOutputPort);
         inOrder.verify(fichaPerfilFinder).obtener(ficha.getId());
-        inOrder.verify(asesorFichaContactoFinder).obtener(nuevoAsesor);
+        inOrder.verify(asesorFichaFinder).obtener(nuevoAsesor);
         inOrder.verify(estadoActualFichaPerfilFinder).obtener(ficha.getId());
         inOrder.verify(cambiarAsesorFichaValidator).validar(
                 cambio, Optional.of(ficha), true, Optional.of(EstadoFicha.EN_CONSTRUCCION));
@@ -129,7 +129,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         var cambio = CambioAsesorFichaDomain.crear(ficha.getId(), nuevoAsesor);
         when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.empty());
-        when(asesorFichaContactoFinder.obtener(nuevoAsesor)).thenReturn(Optional.of(contacto));
+        when(asesorFichaFinder.obtener(nuevoAsesor)).thenReturn(Optional.of(contacto));
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.empty());
         doThrow(new FichaPerfilNoEncontradaException(ficha.getId()))
                 .when(cambiarAsesorFichaValidator)
@@ -148,7 +148,7 @@ class CambiarAsesorFichaUseCaseTest {
         // Arrange
         var cambio = CambioAsesorFichaDomain.crear(ficha.getId(), asesorActual);
         when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.of(ficha));
-        when(asesorFichaContactoFinder.obtener(asesorActual)).thenReturn(Optional.of(contacto));
+        when(asesorFichaFinder.obtener(asesorActual)).thenReturn(Optional.of(contacto));
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId()))
                 .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
         doThrow(new MismoAsesorFichaException(asesorActual))
@@ -179,7 +179,7 @@ class CambiarAsesorFichaUseCaseTest {
 
     private void stubConsultas() {
         when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.of(ficha));
-        when(asesorFichaContactoFinder.obtener(nuevoAsesor)).thenReturn(Optional.of(contacto));
+        when(asesorFichaFinder.obtener(nuevoAsesor)).thenReturn(Optional.of(contacto));
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId()))
                 .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION));
     }

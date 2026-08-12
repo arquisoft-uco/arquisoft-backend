@@ -15,13 +15,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AsesorFichaContactoFinderImplTest {
+class AsesorFichaFinderImplTest {
 
     @Mock
     private AsesorFichaOutputPort asesorFichaOutputPort;
 
     @InjectMocks
-    private AsesorFichaContactoFinderImpl finder;
+    private AsesorFichaFinderImpl finder;
 
     @Test
     void debeRetornarElContacto_cuandoExiste() {

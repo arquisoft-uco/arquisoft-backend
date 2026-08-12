@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.asesorficha.command.finder.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaContactoFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
 import com.arquisoft.fichas.domain.asesorficha.model.ContactoAsesorFicha;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class AsesorFichaContactoFinderImpl implements AsesorFichaContactoFinder {
+public class AsesorFichaFinderImpl implements AsesorFichaFinder {
 
     private final AsesorFichaOutputPort asesorFichaOutputPort;
 
