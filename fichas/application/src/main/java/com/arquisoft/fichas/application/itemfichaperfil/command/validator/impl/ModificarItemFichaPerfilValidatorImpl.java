@@ -1,17 +1,18 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ModificarItemFichaPerfilValidator;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.ExistenciaEstadoFichaPerfil;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilExisteRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
-import com.arquisoft.fichas.domain.itemfichaperfil.model.FichaPerfilDelItem;
+import com.arquisoft.fichas.domain.itemfichaperfil.model.ExistenciaItemFichaPerfil;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPerfilExisteRule;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
-import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -20,18 +21,20 @@ public class ModificarItemFichaPerfilValidatorImpl implements ModificarItemFicha
 
     private final ItemFichaPerfilExisteRule itemFichaPerfilExisteRule;
     private final ItemFichaPropiaRule itemFichaPropiaRule;
+    private final EstadoFichaPerfilExisteRule estadoFichaPerfilExisteRule;
     private final EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
 
     @Override
-    public void validar(UUID item, UUID estudiante, Optional<UUID> fichaDelItem, boolean esPropietario,
-                        Optional<String> estadoActual) {
+    public void validar(UUID item, UUID estudiante, UUID fichaDelItem, boolean itemExiste,
+                        boolean esPropietario, EstadoFichaPerfilDomain estadoActual) {
 
-        itemFichaPerfilExisteRule.validar(new FichaPerfilDelItem(item, fichaDelItem));
+        itemFichaPerfilExisteRule.validar(new ExistenciaItemFichaPerfil(item, itemExiste));
 
-        fichaDelItem.ifPresent(fichaPerfil -> {
-            itemFichaPropiaRule.validar(new PropiedadFicha(fichaPerfil, estudiante, esPropietario));
-            estadoFichaPerfilEnTerminalRule.validar(
-                    new EstadoActualFicha(fichaPerfil, estadoActual.orElse(UtilTexto.VACIO)));
-        });
+        itemFichaPropiaRule.validar(new PropiedadFicha(fichaDelItem, estudiante, esPropietario));
+
+        estadoFichaPerfilExisteRule.validar(
+                new ExistenciaEstadoFichaPerfil(fichaDelItem, !estadoActual.esVacio()));
+        estadoFichaPerfilEnTerminalRule.validar(
+                new EstadoActualFicha(fichaDelItem, estadoActual.getEstadoFicha()));
     }
 }

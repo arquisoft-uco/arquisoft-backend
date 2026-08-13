@@ -7,12 +7,16 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.Vin
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.ModificarItemFichaPerfilUseCase;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ModificarItemFichaPerfilValidator;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.ModificacionItemFichaPerfilDomain;
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.util.UtilUUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -28,17 +32,21 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
 
     @Override
     public void ejecutar(ModificacionItemFichaPerfilDomain entrada) {
-        var fichaDelItem = fichaPerfilDelItemFinder.obtener(entrada.getItem());
+        var fichaEncontrada = fichaPerfilDelItemFinder.obtener(entrada.getItem());
 
-        boolean esPropietario = fichaDelItem
+        boolean itemExiste = fichaEncontrada.isPresent();
+        UUID fichaDelItem = fichaEncontrada.orElse(UtilUUID.obtenerUUIDPorDefecto());
+
+        boolean esPropietario = fichaEncontrada
                 .map(ficha -> vinculoEstudianteFichaExisteFinder.obtener(
                         new VinculoEstudianteFicha(ficha, entrada.getEstudiante())))
                 .orElse(false);
 
-        var estadoActual = fichaDelItem.flatMap(estadoActualFichaPerfilFinder::obtener);
+        var estadoActual = fichaEncontrada.flatMap(estadoActualFichaPerfilFinder::obtener)
+                .orElse(EstadoFichaPerfilDomain.VACIO);
 
-        modificarItemFichaPerfilValidator.validar(
-                entrada.getItem(), entrada.getEstudiante(), fichaDelItem, esPropietario, estadoActual);
+        modificarItemFichaPerfilValidator.validar(entrada.getItem(), entrada.getEstudiante(),
+                fichaDelItem, itemExiste, esPropietario, estadoActual);
 
         itemFichaPerfilOutputPort.actualizarContenido(entrada.getItem(), entrada.getContenido());
 

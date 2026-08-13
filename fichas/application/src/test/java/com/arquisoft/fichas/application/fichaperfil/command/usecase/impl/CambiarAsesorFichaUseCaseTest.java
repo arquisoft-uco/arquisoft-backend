@@ -8,7 +8,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFi
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
@@ -18,7 +18,6 @@ import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaP
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.util.UtilTexto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -78,6 +77,8 @@ class CambiarAsesorFichaUseCaseTest {
     private final FichaPerfilDomain ficha = FichaPerfilDomain.crear("Título de prueba", asesorActual);
     private final AsesorFichaDomain contacto =
             AsesorFichaDomain.reconstruir(UUID.randomUUID(), "A001", "Ana Asesora", "ana@arquisoft.com");
+    private final EstadoFichaPerfilDomain estadoEnConstruccion =
+            EstadoFichaPerfilDomain.crear(ficha.getId());
 
     @Test
     void debeActualizarElAsesor_cuandoDatosValidos() {
@@ -108,7 +109,7 @@ class CambiarAsesorFichaUseCaseTest {
         inOrder.verify(asesorFichaFinder).obtener(nuevoAsesor);
         inOrder.verify(estadoActualFichaPerfilFinder).obtener(ficha.getId());
         inOrder.verify(cambiarAsesorFichaValidator).validar(
-                cambio, ficha, contacto, EstadoFicha.EN_CONSTRUCCION.name());
+                cambio, ficha, contacto, estadoEnConstruccion);
         inOrder.verify(fichaPerfilOutputPort).actualizarAsesor(eq(ficha.getId()), referenciaA(nuevoAsesor));
     }
 
@@ -137,7 +138,7 @@ class CambiarAsesorFichaUseCaseTest {
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.empty());
         doThrow(new FichaPerfilNoEncontradaException(ficha.getId()))
                 .when(cambiarAsesorFichaValidator)
-                .validar(cambio, FichaPerfilDomain.VACIO, contacto, UtilTexto.VACIO);
+                .validar(cambio, FichaPerfilDomain.VACIO, contacto, EstadoFichaPerfilDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(cambio))
@@ -154,10 +155,10 @@ class CambiarAsesorFichaUseCaseTest {
         when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.of(ficha));
         when(asesorFichaFinder.obtener(asesorActual)).thenReturn(Optional.of(contacto));
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId()))
-                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
+                .thenReturn(Optional.of(estadoEnConstruccion));
         doThrow(new MismoAsesorFichaException(asesorActual))
                 .when(cambiarAsesorFichaValidator).validar(
-                        cambio, ficha, contacto, EstadoFicha.EN_CONSTRUCCION.name());
+                        cambio, ficha, contacto, estadoEnConstruccion);
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(cambio))
@@ -185,10 +186,9 @@ class CambiarAsesorFichaUseCaseTest {
         when(fichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.of(ficha));
         when(asesorFichaFinder.obtener(nuevoAsesor)).thenReturn(Optional.of(contacto));
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId()))
-                .thenReturn(Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
+                .thenReturn(Optional.of(estadoEnConstruccion));
     }
 
-    // El puerto ya recibe la referencia JPA que construyo el mapper, no el UUID crudo.
     private static AsesorFichaEntity referenciaA(UUID asesorFicha) {
         return argThat(entity -> entity.getId().equals(asesorFicha));
     }

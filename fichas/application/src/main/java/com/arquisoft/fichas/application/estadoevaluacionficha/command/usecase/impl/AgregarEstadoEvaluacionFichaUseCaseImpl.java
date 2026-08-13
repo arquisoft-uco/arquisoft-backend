@@ -5,9 +5,9 @@ import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EstadoEnEvaluacionExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EvaluacionFichaExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.RepresentantePropietarioEvaluacionFinder;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.UltimoEstadoEvaluacionFichaFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.AgregarEstadoEvaluacionFichaUseCase;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.validator.AgregarEstadoEvaluacionFichaValidator;
-import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.EstadoEvaluacionFichaOutputPort;
@@ -26,6 +26,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
     private final EvaluacionFichaExisteFinder evaluacionFichaExisteFinder;
     private final RepresentantePropietarioEvaluacionFinder representantePropietarioEvaluacionFinder;
     private final EstadoEnEvaluacionExisteFinder estadoEnEvaluacionExisteFinder;
+    private final UltimoEstadoEvaluacionFichaFinder ultimoEstadoEvaluacionFichaFinder;
     private final AgregarEstadoEvaluacionFichaValidator agregarEstadoEvaluacionFichaValidator;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
@@ -35,14 +36,13 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
         boolean evaluacionExiste = evaluacionFichaExisteFinder.obtener(entrada.getEvaluacionFichaPerfil());
         boolean esPropietario = representantePropietarioEvaluacionFinder.obtener(entrada);
         boolean estadoYaExiste = estadoEnEvaluacionExisteFinder.obtener(entrada);
+        var ultimoEstado = ultimoEstadoEvaluacionFichaFinder.obtener(entrada.getEvaluacionFichaPerfil())
+                .orElse(EstadoEvaluacionFichaDomain.VACIO);
 
         agregarEstadoEvaluacionFichaValidator.validar(
-                entrada, evaluacionExiste, esPropietario, estadoYaExiste);
+                entrada, evaluacionExiste, esPropietario, estadoYaExiste, ultimoEstado);
 
-        var estadoEvaluacion = EstadoEvaluacionFichaDomain.crearConEstado(
-                entrada.getEvaluacionFichaPerfil(),
-                entrada.getEstadoEvaluacion(),
-                obtenerUltimoEstado(entrada.getEvaluacionFichaPerfil()));
+        var estadoEvaluacion = entrada.getEstadoEvaluacionFicha();
 
         estadoEvaluacionFichaOutputPort.agregarEstado(EstadoEvaluacionFichaMapper.toEntity(estadoEvaluacion));
 
@@ -53,12 +53,5 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
                 estadoEvaluacion.getEstadoEvaluacion());
 
         return estadoEvaluacion.getId();
-    }
-
-    private EstadoEvaluacion obtenerUltimoEstado(UUID evaluacionFichaPerfil) {
-        return estadoEvaluacionFichaOutputPort.obtenerUltimoEstado(evaluacionFichaPerfil)
-                .map(EstadoEvaluacionFichaMapper::toDomain)
-                .map(EstadoEvaluacionFichaDomain::getEstadoEvaluacion)
-                .orElse(null);
     }
 }

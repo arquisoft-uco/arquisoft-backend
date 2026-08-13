@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estadoficha.exception.EstadoFichaNoEncontradoException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,13 +37,14 @@ class EstadoActualFichaPerfilFinderImplTest {
                 .thenReturn(Optional.of(entidadCon(fichaId, EstadoFicha.EN_CONSTRUCCION.getId())));
 
         // Act & Assert
-        assertThat(finder.obtener(fichaId)).contains(EstadoFicha.EN_CONSTRUCCION.getId());
+        assertThat(finder.obtener(fichaId))
+                .map(EstadoFichaPerfilDomain::getEstadoFicha)
+                .contains(EstadoFicha.EN_CONSTRUCCION);
     }
 
     @Test
     void debeLanzarExcepcion_cuandoElCatalogoTraeUnEstadoDesconocido() {
-        // Arrange — un id sin constante equivalente ahora es un error de dominio explicito
-        // (EstadoFicha.desde lo lanza dentro del mapper), no un degrade silencioso.
+        // Arrange
         UUID fichaId = UUID.randomUUID();
         when(estadoFichaPerfilOutputPort.obtenerEstadoActual(fichaId))
                 .thenReturn(Optional.of(entidadCon(fichaId, "ESTADO_INVENTADO")));
@@ -58,7 +60,7 @@ class EstadoActualFichaPerfilFinderImplTest {
         UUID fichaId = UUID.randomUUID();
         when(estadoFichaPerfilOutputPort.obtenerEstadoActual(fichaId)).thenReturn(Optional.empty());
 
-        // Act & Assert — el finder nunca lanza; la ausencia la interpreta la rule
+        // Act & Assert
         assertThat(finder.obtener(fichaId)).isEmpty();
     }
 

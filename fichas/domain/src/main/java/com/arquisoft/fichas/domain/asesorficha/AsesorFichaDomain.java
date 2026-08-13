@@ -43,6 +43,6 @@ public final class AsesorFichaDomain {
     }
 
     public boolean esVacio() {
-        return this != VACIO;
+        return this == VACIO;
     }
 }

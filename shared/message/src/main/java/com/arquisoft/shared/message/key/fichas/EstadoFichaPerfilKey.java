@@ -6,6 +6,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de EstadoFichaPerfil. */
 public enum EstadoFichaPerfilKey implements ClaveMensaje {
 
+    ERROR_NO_ENCONTRADO("fichas.dominio.estadofichaperfil.error.no-encontrado"),
     ERROR_ESTADO_TERMINAL("fichas.dominio.estadofichaperfil.error.estado-terminal"),
     LOG_CREADO("fichas.aplicacion.estadofichaperfil.log.creado");
 

@@ -8,6 +8,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFi
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAsesorFichaUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
@@ -15,7 +16,6 @@ import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaP
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +41,8 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
 
         var ficha = fichaPerfilFinder.obtener(fichaPerfil).orElse(FichaPerfilDomain.VACIO);
         var asesorFicha = asesorFichaFinder.obtener(nuevoAsesorFicha).orElse(AsesorFichaDomain.VACIO);
-        var estadoActual = estadoActualFichaPerfilFinder.obtener(fichaPerfil).orElse(UtilTexto.VACIO);
+        var estadoActual = estadoActualFichaPerfilFinder.obtener(fichaPerfil)
+                .orElse(EstadoFichaPerfilDomain.VACIO);
 
         cambiarAsesorFichaValidator.validar(cambio, ficha, asesorFicha, estadoActual);
 

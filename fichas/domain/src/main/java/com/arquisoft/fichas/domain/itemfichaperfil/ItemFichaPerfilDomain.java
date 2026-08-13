@@ -73,14 +73,14 @@ public final class ItemFichaPerfilDomain {
                 FichasCodes.ItemFichaPerfil.TIPO_ITEM_REQUERIDO, result)) {
             return;
         }
-        try {
-            this.tipoItem = TipoItem.valueOf(UtilTexto.aplicarTrim(tipoItem));
-        } catch (IllegalArgumentException e) {
+        if (!TipoItem.esValido(tipoItem)) {
             result.agregarError(
                     FichasFields.ItemFichaPerfil.TIPO_ITEM,
                     FichasCodes.ItemFichaPerfil.TIPO_ITEM_INVALIDO,
                     Mensajes.formatear(ItemFichaPerfilKey.ERROR_TIPO_INVALIDO, tipoItem));
+            return;
         }
+        this.tipoItem = TipoItem.desde(tipoItem);
     }
 
     private void setContenido(String contenido, ValidationResult result) {

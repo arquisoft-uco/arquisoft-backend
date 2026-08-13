@@ -56,7 +56,7 @@ public class UsuarioCommandController {
         CrearUsuarioResponseDTO response = CrearUsuarioResponseDTO.builder()
                 .id(id)
                 .email(request.email())
-                .rol(request.rol().toDomain().getCode())
+                .rol(request.rol().toDomain().getCodigo())
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);

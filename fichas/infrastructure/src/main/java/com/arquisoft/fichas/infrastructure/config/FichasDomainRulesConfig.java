@@ -1,13 +1,19 @@
 package com.arquisoft.fichas.infrastructure.config;
 
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEnEvaluacionNoManualRule;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionEnTerminalRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionNoDuplicadoRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EvaluacionFichaExisteRule;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.RepresentantePropietarioEvaluacionRule;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EstadoEnEvaluacionNoManualRuleImpl;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EstadoEvaluacionEnTerminalRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EstadoEvaluacionNoDuplicadoRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EvaluacionFichaExisteRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.RepresentantePropietarioEvaluacionRuleImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilExisteRule;
 import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnTerminalRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilExisteRuleImpl;
 import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
 import com.arquisoft.fichas.domain.estudiante.rules.impl.EstudiantesExistenRuleImpl;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudianteFichaPerfilCupoDisponibleRule;
@@ -122,6 +128,16 @@ public class FichasDomainRulesConfig {
     }
 
     @Bean
+    public EstadoEnEvaluacionNoManualRule estadoEnEvaluacionNoManualRule() {
+        return new EstadoEnEvaluacionNoManualRuleImpl();
+    }
+
+    @Bean
+    public EstadoEvaluacionEnTerminalRule estadoEvaluacionEnTerminalRule() {
+        return new EstadoEvaluacionEnTerminalRuleImpl();
+    }
+
+    @Bean
     public ItemFichaPerfilExisteRule itemFichaPerfilExisteRule() {
         return new ItemFichaPerfilExisteRuleImpl();
     }
@@ -139,6 +155,11 @@ public class FichasDomainRulesConfig {
     @Bean
     public ItemSinRevisionesRule itemSinRevisionesRule() {
         return new ItemSinRevisionesRuleImpl();
+    }
+
+    @Bean
+    public EstadoFichaPerfilExisteRule estadoFichaPerfilExisteRule() {
+        return new EstadoFichaPerfilExisteRuleImpl();
     }
 
     @Bean

@@ -7,6 +7,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum UsuarioKey implements ClaveMensaje {
 
     ERROR_EMAIL_DUPLICADO("usuarios.dominio.usuario.error.email-duplicado"),
+    ERROR_ROL_NO_ENCONTRADO("usuarios.dominio.usuario.error.rol-no-encontrado"),
     LOG_CREADO("usuarios.aplicacion.usuario.log.creado");
 
     private final String clave;

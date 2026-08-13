@@ -38,7 +38,7 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
         usuario.extraerEventosSinPublicar().forEach(eventPublisher::publish);
 
-        log.info(catalogo.obtener(UsuarioKey.LOG_CREADO), usuario.getId(), entrada.email(), entrada.rol().getCode());
+        log.info(catalogo.obtener(UsuarioKey.LOG_CREADO), usuario.getId(), entrada.email(), entrada.rol().getCodigo());
         return usuario.getId();
     }
 }

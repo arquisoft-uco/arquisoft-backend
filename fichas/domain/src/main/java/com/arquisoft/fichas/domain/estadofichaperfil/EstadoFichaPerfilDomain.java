@@ -13,6 +13,12 @@ import java.util.UUID;
 
 public final class EstadoFichaPerfilDomain {
 
+    public static final EstadoFichaPerfilDomain VACIO = new EstadoFichaPerfilDomain(
+            UtilUUID.obtenerUUIDPorDefecto(),
+            UtilUUID.obtenerUUIDPorDefecto(),
+            EstadoFicha.VACIO,
+            UtilFecha.VACIO);
+
     private UUID id;
     private UUID fichaPerfil;
     private EstadoFicha estadoFicha;
@@ -81,5 +87,9 @@ public final class EstadoFichaPerfilDomain {
 
     public Instant getFechaActualizacion() {
         return fechaActualizacion;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

@@ -85,6 +85,6 @@ public final class FichaPerfilDomain {
     }
 
     public boolean esVacio() {
-        return this != VACIO;
+        return this == VACIO;
     }
 }

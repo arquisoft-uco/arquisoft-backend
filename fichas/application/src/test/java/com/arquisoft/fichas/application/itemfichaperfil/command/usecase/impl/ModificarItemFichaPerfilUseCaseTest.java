@@ -6,7 +6,7 @@ import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoA
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ModificarItemFichaPerfilValidator;
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.ModificacionItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
@@ -14,6 +14,7 @@ import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEn
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -65,12 +66,14 @@ class ModificarItemFichaPerfilUseCaseTest {
     private final UUID item = UUID.randomUUID();
     private final UUID estudiante = UUID.randomUUID();
     private final UUID fichaPerfil = UUID.randomUUID();
+    private final EstadoFichaPerfilDomain estadoEnConstruccion =
+            EstadoFichaPerfilDomain.crear(fichaPerfil);
 
     @Test
     void debeActualizarElContenido_cuandoDatosValidos() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(true, Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
+        stubConsultasConFicha(true, estadoEnConstruccion);
 
         // Act
         modificarItemFichaPerfilUseCase.ejecutar(entrada);
@@ -83,7 +86,7 @@ class ModificarItemFichaPerfilUseCaseTest {
     void debeResolverLaFichaDelItemAntesDeValidar_cuandoSeEjecuta() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(true, Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
+        stubConsultasConFicha(true, estadoEnConstruccion);
 
         // Act
         modificarItemFichaPerfilUseCase.ejecutar(entrada);
@@ -96,8 +99,8 @@ class ModificarItemFichaPerfilUseCaseTest {
                 .obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante));
         inOrder.verify(estadoActualFichaPerfilFinder).obtener(fichaPerfil);
         inOrder.verify(modificarItemFichaPerfilValidator).validar(
-                item, estudiante, Optional.of(fichaPerfil), true,
-                Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
+                item, estudiante, fichaPerfil, true, true,
+                estadoEnConstruccion);
         inOrder.verify(itemFichaPerfilOutputPort).actualizarContenido(item, entrada.getContenido());
     }
 
@@ -108,7 +111,8 @@ class ModificarItemFichaPerfilUseCaseTest {
         when(fichaPerfilDelItemFinder.obtener(item)).thenReturn(Optional.empty());
         doThrow(new ItemFichaPerfilNoEncontradoException(item))
                 .when(modificarItemFichaPerfilValidator)
-                .validar(item, estudiante, Optional.empty(), false, Optional.empty());
+                .validar(item, estudiante, UtilUUID.obtenerUUIDPorDefecto(), false, false,
+                        EstadoFichaPerfilDomain.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> modificarItemFichaPerfilUseCase.ejecutar(entrada))
@@ -123,11 +127,11 @@ class ModificarItemFichaPerfilUseCaseTest {
     void debePropagarLaExcepcion_cuandoLaFichaNoEsDelEstudiante() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(false, Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
+        stubConsultasConFicha(false, estadoEnConstruccion);
         doThrow(new ItemFichaNoPropiaException(fichaPerfil))
                 .when(modificarItemFichaPerfilValidator).validar(
-                        item, estudiante, Optional.of(fichaPerfil), false,
-                        Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
+                        item, estudiante, fichaPerfil, true, false,
+                        estadoEnConstruccion);
 
         // Act & Assert
         assertThatThrownBy(() -> modificarItemFichaPerfilUseCase.ejecutar(entrada))
@@ -140,7 +144,7 @@ class ModificarItemFichaPerfilUseCaseTest {
     void debeLanzarExcepcion_cuandoRepositorioFalla() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(true, Optional.of(EstadoFicha.EN_CONSTRUCCION.name()));
+        stubConsultasConFicha(true, estadoEnConstruccion);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
                 .when(itemFichaPerfilOutputPort).actualizarContenido(item, entrada.getContenido());
 
@@ -149,11 +153,11 @@ class ModificarItemFichaPerfilUseCaseTest {
                 .isInstanceOf(InfrastructureException.class);
     }
 
-    private void stubConsultasConFicha(boolean esPropietario, Optional<String> estadoActual) {
+    private void stubConsultasConFicha(boolean esPropietario, EstadoFichaPerfilDomain estadoActual) {
         when(fichaPerfilDelItemFinder.obtener(item)).thenReturn(Optional.of(fichaPerfil));
         when(vinculoEstudianteFichaExisteFinder.obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante)))
                 .thenReturn(esPropietario);
-        when(estadoActualFichaPerfilFinder.obtener(fichaPerfil)).thenReturn(estadoActual);
+        when(estadoActualFichaPerfilFinder.obtener(fichaPerfil)).thenReturn(Optional.of(estadoActual));
     }
 
     private ModificacionItemFichaPerfilDomain entrada() {

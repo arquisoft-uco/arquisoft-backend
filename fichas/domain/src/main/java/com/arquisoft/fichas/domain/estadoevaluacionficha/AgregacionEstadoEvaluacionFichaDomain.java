@@ -5,7 +5,6 @@ import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.Mensajes;
-import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
 
@@ -16,6 +15,7 @@ public final class AgregacionEstadoEvaluacionFichaDomain {
     private UUID evaluacionFichaPerfil;
     private EstadoEvaluacion estadoEvaluacion;
     private UUID representanteComite;
+    private EstadoEvaluacionFichaDomain estadoEvaluacionFicha;
 
     private AgregacionEstadoEvaluacionFichaDomain() {}
 
@@ -29,6 +29,8 @@ public final class AgregacionEstadoEvaluacionFichaDomain {
         transaccion.setRepresentanteComite(representanteComite, result);
 
         result.lanzarSiTieneErrores();
+
+        transaccion.setEstadoEvaluacionFicha();
         return transaccion;
     }
 
@@ -47,15 +49,15 @@ public final class AgregacionEstadoEvaluacionFichaDomain {
                 FichasCodes.EstadoEvaluacionFicha.ESTADO_REQUERIDO, result)) {
             return;
         }
-        try {
-            this.estadoEvaluacion = EstadoEvaluacion.valueOf(UtilTexto.aplicarTrim(estadoEvaluacion));
-        } catch (IllegalArgumentException e) {
+        if (!EstadoEvaluacion.esValido(estadoEvaluacion)) {
             result.agregarError(
                     FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
                     FichasCodes.EstadoEvaluacionFicha.ESTADO_NO_ENCONTRADO,
                     Mensajes.formatear(
                             EstadoEvaluacionFichaKey.ERROR_ESTADO_NO_ENCONTRADO, estadoEvaluacion));
+            return;
         }
+        this.estadoEvaluacion = EstadoEvaluacion.desde(estadoEvaluacion);
     }
 
     private void setRepresentanteComite(UUID representanteComite, ValidationResult result) {
@@ -67,8 +69,17 @@ public final class AgregacionEstadoEvaluacionFichaDomain {
         this.representanteComite = representanteComite;
     }
 
+    private void setEstadoEvaluacionFicha() {
+        this.estadoEvaluacionFicha =
+                EstadoEvaluacionFichaDomain.crearConEstado(evaluacionFichaPerfil, estadoEvaluacion);
+    }
+
     public UUID getEvaluacionFichaPerfil() {
         return evaluacionFichaPerfil;
+    }
+
+    public EstadoEvaluacionFichaDomain getEstadoEvaluacionFicha() {
+        return estadoEvaluacionFicha;
     }
 
     public EstadoEvaluacion getEstadoEvaluacion() {

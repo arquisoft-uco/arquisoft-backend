@@ -6,6 +6,8 @@ import java.time.format.DateTimeFormatter;
 
 public final class UtilFecha {
 
+    public static final Instant VACIO = Instant.EPOCH;
+
     private static final String PATRON_FECHA = "\\d{4}-\\d{2}-\\d{2}";
 
     private UtilFecha() {}

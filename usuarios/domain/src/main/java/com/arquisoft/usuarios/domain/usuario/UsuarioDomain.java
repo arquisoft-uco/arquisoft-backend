@@ -28,7 +28,7 @@ public final class UsuarioDomain extends AggregateRoot {
         }
 
         UsuarioDomain usuario = new UsuarioDomain(UUID.randomUUID(), email.trim().toLowerCase(), rol);
-        usuario.publicarEvento(new UsuarioCreadoEvent(usuario.id, usuario.email, usuario.rol.getCode()));
+        usuario.publicarEvento(new UsuarioCreadoEvent(usuario.id, usuario.email, usuario.rol.getCodigo()));
         return usuario;
     }
 

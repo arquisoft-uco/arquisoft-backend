@@ -13,10 +13,10 @@ public final class NotificacionMapper {
         return NotificacionEntity.builder()
                 .id(aggregate.getId())
                 .idEvento(aggregate.getIdEvento())
-                .tipo(aggregate.getTipo().getCodigo())
+                .tipo(aggregate.getTipo().getId())
                 .destinatario(aggregate.getDestinatario())
                 .asunto(aggregate.getAsunto())
-                .estado(aggregate.getEstado().name())
+                .estado(aggregate.getEstado().getId())
                 .detalleError(aggregate.getDetalleError())
                 .fechaCreacion(aggregate.getFechaCreacion())
                 .fechaEnvio(aggregate.getFechaEnvio())
@@ -28,12 +28,12 @@ public final class NotificacionMapper {
                 new NotificacionDomain.DatosNotificacion(
                         entity.getId(),
                         entity.getIdEvento(),
-                        TipoNotificacion.valueOf(entity.getTipo()),
+                        TipoNotificacion.desde(entity.getTipo()),
                         entity.getDestinatario(),
                         entity.getAsunto(),
                         entity.getFechaCreacion(),
                         entity.getFechaEnvio()),
-                EstadoNotificacion.valueOf(entity.getEstado()),
+                EstadoNotificacion.desde(entity.getEstado()),
                 entity.getDetalleError());
     }
 }

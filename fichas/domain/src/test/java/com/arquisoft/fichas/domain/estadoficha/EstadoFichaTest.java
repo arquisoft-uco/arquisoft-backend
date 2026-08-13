@@ -30,4 +30,24 @@ class EstadoFichaTest {
         assertThatThrownBy(() -> EstadoFicha.desde("ESTADO_INEXISTENTE"))
                 .isInstanceOf(EstadoFichaNoEncontradoException.class);
     }
+
+    @Test
+    void debeRechazarVacio_cuandoLlegaComoTextoDesdeLaBaseDeDatos() {
+        assertThatThrownBy(() -> EstadoFicha.desde("VACIO"))
+                .isInstanceOf(EstadoFichaNoEncontradoException.class);
+    }
+
+    @Test
+    void debeSerNoTerminal_cuandoEsElValorCero() {
+        assertThat(EstadoFicha.VACIO.esTerminal()).isFalse();
+        assertThat(EstadoFicha.VACIO.getNombre()).isEmpty();
+    }
+
+    @Test
+    void debeReportarValidez_sinLanzar_cuandoSeConsultaConEsValido() {
+        assertThat(EstadoFicha.esValido("APROBADA")).isTrue();
+        assertThat(EstadoFicha.esValido("NO_EXISTE")).isFalse();
+        assertThat(EstadoFicha.esValido("VACIO")).isFalse();
+        assertThat(EstadoFicha.esValido(null)).isFalse();
+    }
 }

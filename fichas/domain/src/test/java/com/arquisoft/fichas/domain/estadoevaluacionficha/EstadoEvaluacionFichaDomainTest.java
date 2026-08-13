@@ -32,13 +32,9 @@ class EstadoEvaluacionFichaDomainTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         EstadoEvaluacion estadoEvaluacion = EstadoEvaluacion.APROBADA;
-        EstadoEvaluacion ultimoEstado = EstadoEvaluacion.EN_EVALUACION;
 
         // Act
-        EstadoEvaluacionFichaDomain aggregate = EstadoEvaluacionFichaDomain.crearConEstado(
-                evaluacionId,
-                estadoEvaluacion,
-                ultimoEstado);
+        EstadoEvaluacionFichaDomain aggregate = EstadoEvaluacionFichaDomain.crearConEstado(evaluacionId, estadoEvaluacion);
 
         // Assert
         assertThat(aggregate).isNotNull();
@@ -86,13 +82,9 @@ class EstadoEvaluacionFichaDomainTest {
         // Arrange
         UUID evaluacionId = null;
         EstadoEvaluacion estadoEvaluacion = EstadoEvaluacion.APROBADA;
-        EstadoEvaluacion ultimoEstado = EstadoEvaluacion.EN_EVALUACION;
 
         // Act & Assert
-        assertThatThrownBy(() -> EstadoEvaluacionFichaDomain.crearConEstado(
-                evaluacionId,
-                estadoEvaluacion,
-                ultimoEstado))
+        assertThatThrownBy(() -> EstadoEvaluacionFichaDomain.crearConEstado(evaluacionId, estadoEvaluacion))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("no puede ser nulo");
     }
@@ -102,13 +94,9 @@ class EstadoEvaluacionFichaDomainTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         EstadoEvaluacion estadoEvaluacion = null;
-        EstadoEvaluacion ultimoEstado = EstadoEvaluacion.EN_EVALUACION;
 
         // Act & Assert
-        assertThatThrownBy(() -> EstadoEvaluacionFichaDomain.crearConEstado(
-                evaluacionId,
-                estadoEvaluacion,
-                ultimoEstado))
+        assertThatThrownBy(() -> EstadoEvaluacionFichaDomain.crearConEstado(evaluacionId, estadoEvaluacion))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining("no puede ser nulo");
     }

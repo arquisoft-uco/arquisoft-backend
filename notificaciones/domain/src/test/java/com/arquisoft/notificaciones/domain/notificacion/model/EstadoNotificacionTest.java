@@ -18,8 +18,8 @@ class EstadoNotificacionTest {
     }
 
     @Test
-    void debeExponerElCodigoDelTipo_cuandoSeConsultaGetCodigo() {
-        assertThat(TipoNotificacion.ASESOR_FICHA_CAMBIADO.getCodigo())
+    void debeExponerElIdDelTipo_cuandoSeConsultaGetId() {
+        assertThat(TipoNotificacion.ASESOR_FICHA_CAMBIADO.getId())
                 .isEqualTo("ASESOR_FICHA_CAMBIADO");
     }
 }

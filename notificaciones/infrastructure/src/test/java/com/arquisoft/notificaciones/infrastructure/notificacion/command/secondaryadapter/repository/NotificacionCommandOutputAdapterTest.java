@@ -53,7 +53,7 @@ class NotificacionCommandOutputAdapterTest {
         // Assert
         NotificacionEntity guardada = repository.findById(notificacion.getId()).orElseThrow();
         assertThat(guardada.getIdEvento()).isEqualTo(idEvento);
-        assertThat(guardada.getTipo()).isEqualTo(TipoNotificacion.ASESOR_FICHA_CAMBIADO.getCodigo());
+        assertThat(guardada.getTipo()).isEqualTo(TipoNotificacion.ASESOR_FICHA_CAMBIADO.getId());
         assertThat(guardada.getDestinatario()).isEqualTo(DESTINATARIO);
         assertThat(guardada.getAsunto()).isEqualTo(ASUNTO);
         assertThat(guardada.getEstado()).isEqualTo(EstadoNotificacion.ENVIADA.name());

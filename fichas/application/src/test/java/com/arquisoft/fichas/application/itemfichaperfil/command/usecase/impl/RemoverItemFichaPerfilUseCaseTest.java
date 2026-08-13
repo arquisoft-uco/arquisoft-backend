@@ -14,6 +14,7 @@ import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioExcep
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
@@ -95,7 +96,7 @@ class RemoverItemFichaPerfilUseCaseTest {
                 .obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante));
         inOrder.verify(revisionesDelItemFinder).obtener(item);
         inOrder.verify(removerItemFichaPerfilValidator)
-                .validar(item, estudiante, Optional.of(fichaPerfil), true, 0L);
+                .validar(item, estudiante, fichaPerfil, true, true, 0L);
         inOrder.verify(itemOutputPort).removerItem(item);
     }
 
@@ -107,7 +108,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         when(revisionesDelItemFinder.obtener(item)).thenReturn(0L);
         doThrow(new ItemFichaPerfilNoEncontradoException(item))
                 .when(removerItemFichaPerfilValidator)
-                .validar(item, estudiante, Optional.empty(), false, 0L);
+                .validar(item, estudiante, UtilUUID.obtenerUUIDPorDefecto(), false, false, 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> removerItemFichaPerfilUseCase.ejecutar(entrada))
@@ -124,7 +125,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         stubConsultasConFicha(false, 0L);
         doThrow(new FichaNoPropietarioException(fichaPerfil, estudiante))
                 .when(removerItemFichaPerfilValidator)
-                .validar(item, estudiante, Optional.of(fichaPerfil), false, 0L);
+                .validar(item, estudiante, fichaPerfil, true, false, 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> removerItemFichaPerfilUseCase.ejecutar(entrada))
@@ -140,7 +141,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         stubConsultasConFicha(true, 2L);
         doThrow(new ItemConRevisionesException(item))
                 .when(removerItemFichaPerfilValidator)
-                .validar(item, estudiante, Optional.of(fichaPerfil), true, 2L);
+                .validar(item, estudiante, fichaPerfil, true, true, 2L);
 
         // Act & Assert
         assertThatThrownBy(() -> removerItemFichaPerfilUseCase.ejecutar(entrada))
