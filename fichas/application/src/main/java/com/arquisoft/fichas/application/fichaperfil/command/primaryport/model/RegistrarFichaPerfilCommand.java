@@ -3,8 +3,8 @@ package com.arquisoft.fichas.application.fichaperfil.command.primaryport.model;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.util.UtilCollection;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilColeccion;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -18,8 +18,8 @@ public record RegistrarFichaPerfilCommand(
         List<UUID> estudiantes
 ) {
     public RegistrarFichaPerfilCommand {
-        tituloProyecto = UtilText.applyTrim(tituloProyecto);
-        estudiantes = UtilCollection.applyDefault(estudiantes);
+        tituloProyecto = UtilTexto.aplicarTrim(tituloProyecto);
+        estudiantes = UtilColeccion.aplicarPorDefecto(estudiantes);
     }
 
     public static RegistrarFichaPerfilCommand crear(
@@ -38,7 +38,7 @@ public record RegistrarFichaPerfilCommand(
                     FichasFields.FichaPerfil.ASESOR_FICHA, FichasCodes.FichaPerfil.ASESOR_REQUERIDO, result);
         }
 
-        List<String> lista = UtilCollection.applyDefault(estudiantes);
+        List<String> lista = UtilColeccion.aplicarPorDefecto(estudiantes);
         DomainValidator.tamanioMaximo(lista, FichasLimits.FichaPerfil.ESTUDIANTES_MAX,
                 FichasFields.FichaPerfil.ESTUDIANTES,
                 FichasCodes.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO, result);
@@ -50,7 +50,7 @@ public record RegistrarFichaPerfilCommand(
 
         return new RegistrarFichaPerfilCommand(
                 tituloProyecto,
-                UtilUUID.generateUUIDFromString(asesorFicha),
-                lista.stream().map(UtilUUID::generateUUIDFromString).toList());
+                UtilUUID.generarUUIDDesdeTexto(asesorFicha),
+                lista.stream().map(UtilUUID::generarUUIDDesdeTexto).toList());
     }
 }

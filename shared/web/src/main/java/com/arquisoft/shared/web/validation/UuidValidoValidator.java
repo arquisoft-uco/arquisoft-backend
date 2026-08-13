@@ -11,6 +11,6 @@ public class UuidValidoValidator implements ConstraintValidator<UuidValido, Stri
         if (value == null) {
             return true;
         }
-        return UtilUUID.uuidStringIsValid(value);
+        return UtilUUID.uuidValido(value);
     }
 }

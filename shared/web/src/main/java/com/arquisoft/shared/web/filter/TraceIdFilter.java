@@ -1,7 +1,7 @@
 package com.arquisoft.shared.web.filter;
 
 import com.arquisoft.shared.logger.MdcKeys;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -44,7 +44,7 @@ public class TraceIdFilter extends OncePerRequestFilter {
         }
 
         String traceparent = request.getHeader(CorrelationHeaders.TRACEPARENT);
-        if (!UtilText.isEmptyOrNull(traceparent)) {
+        if (!UtilTexto.esVacioONulo(traceparent)) {
             var matcher = TRACEPARENT_RE.matcher(traceparent);
             if (matcher.matches()) {
                 return matcher.group(1);
@@ -55,6 +55,6 @@ public class TraceIdFilter extends OncePerRequestFilter {
     }
 
     private boolean esCorrelacionValida(String valor) {
-        return !UtilText.isEmptyOrNull(valor) && CORRELATION_ID_SEGURO.matcher(valor).matches();
+        return !UtilTexto.esVacioONulo(valor) && CORRELATION_ID_SEGURO.matcher(valor).matches();
     }
 }

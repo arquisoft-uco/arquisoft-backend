@@ -4,8 +4,8 @@ import com.arquisoft.shared.message.key.app.PaginacionKey;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.exception.ApplicationException;
-import com.arquisoft.shared.util.UtilObject;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilTexto;
 
 public final class PaginationRequest {
 
@@ -22,7 +22,7 @@ public final class PaginationRequest {
         this.page = Math.max(0, page);
         this.size = size;
         this.sort = sort;
-        this.direction = (!UtilObject.isNull(direction)) ? direction : SortDirection.ASC;
+        this.direction = (!UtilObjeto.esNulo(direction)) ? direction : SortDirection.ASC;
     }
 
     public static PaginationRequest of(int page, int size) {
@@ -50,6 +50,6 @@ public final class PaginationRequest {
     }
 
     public boolean hasSort() {
-        return !UtilText.isEmptyOrNull(sort);
+        return !UtilTexto.esVacioONulo(sort);
     }
 }

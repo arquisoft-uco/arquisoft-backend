@@ -7,7 +7,7 @@ import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.model.FichaPerfilDelItem;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPerfilExisteRule;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +31,7 @@ public class ModificarItemFichaPerfilValidatorImpl implements ModificarItemFicha
         fichaDelItem.ifPresent(fichaPerfil -> {
             itemFichaPropiaRule.validar(new PropiedadFicha(fichaPerfil, estudiante, esPropietario));
             estadoFichaPerfilEnTerminalRule.validar(
-                    new EstadoActualFicha(fichaPerfil, estadoActual.orElse(UtilText.EMPTY)));
+                    new EstadoActualFicha(fichaPerfil, estadoActual.orElse(UtilTexto.VACIO)));
         });
     }
 }

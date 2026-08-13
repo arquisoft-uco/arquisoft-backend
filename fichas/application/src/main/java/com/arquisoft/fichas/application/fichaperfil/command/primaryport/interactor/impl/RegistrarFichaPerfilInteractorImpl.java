@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.primaryport.interactor.impl;
 
+import com.arquisoft.fichas.application.estadofichaperfil.command.primaryport.mapper.AsignarEstadoInicialFichaPerfilMapper;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.mapper.AsignarEstudiantesFichaPerfilMapper;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.model.AsignarEstudiantesFichaPerfilCommand;
@@ -8,8 +9,6 @@ import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interact
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.mapper.RegistrarFichaPerfilMapper;
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
-import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +30,7 @@ public class RegistrarFichaPerfilInteractorImpl implements RegistrarFichaPerfilI
 
         UUID fichaPerfil = registrarFichaPerfilUseCase.ejecutar(ficha);
 
-        asignarEstadoInicialFichaPerfilUseCase.ejecutar(EstadoFichaPerfilDomain.crear(fichaPerfil));
+        asignarEstadoInicialFichaPerfilUseCase.ejecutar(AsignarEstadoInicialFichaPerfilMapper.toDomain(fichaPerfil));
 
         asignarEstudiantesFichaPerfilUseCase.ejecutar(AsignarEstudiantesFichaPerfilMapper.toDomain(
                 new AsignarEstudiantesFichaPerfilCommand(fichaPerfil, command.estudiantes())));

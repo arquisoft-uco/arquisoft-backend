@@ -3,7 +3,7 @@ package com.arquisoft.fichas.domain.fichaperfil;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -13,9 +13,9 @@ import java.util.UUID;
 public final class FichaPerfilDomain {
 
     public static final FichaPerfilDomain VACIO = new FichaPerfilDomain(
-            UtilUUID.getDefaultUUID(),
-            UtilText.EMPTY,
-            UtilUUID.getDefaultUUID());
+            UtilUUID.obtenerUUIDPorDefecto(),
+            UtilTexto.VACIO,
+            UtilUUID.obtenerUUIDPorDefecto());
 
     private UUID id;
     private String tituloProyecto;
@@ -46,7 +46,7 @@ public final class FichaPerfilDomain {
     }
 
     private void setId() {
-        this.id = UtilUUID.generateNewUUID();
+        this.id = UtilUUID.generarNuevoUUID();
     }
 
     private void setTituloProyecto(String titulo, ValidationResult result) {
@@ -60,7 +60,7 @@ public final class FichaPerfilDomain {
                 FichasCodes.FichaPerfil.TITULO_DEMASIADO_LARGO, result)) {
             return;
         }
-        this.tituloProyecto = UtilText.applyTrim(titulo);
+        this.tituloProyecto = UtilTexto.aplicarTrim(titulo);
     }
 
     private void setAsesorFicha(UUID asesorFicha, ValidationResult result) {

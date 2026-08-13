@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.primaryport.model;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
 
@@ -16,7 +16,7 @@ public record ModificarFichaPerfilCommand(
 ) {
 
     public ModificarFichaPerfilCommand {
-        tituloProyecto = UtilText.applyTrim(tituloProyecto);
+        tituloProyecto = UtilTexto.aplicarTrim(tituloProyecto);
     }
 
     public static ModificarFichaPerfilCommand crear(UUID fichaPerfil, UUID estudiante, String tituloProyecto) {

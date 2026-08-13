@@ -5,8 +5,8 @@ import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
-import com.arquisoft.shared.util.UtilDate;
-import com.arquisoft.shared.util.UtilObject;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -76,7 +76,7 @@ public final class EstadoEvaluacionFichaDomain {
     }
 
     private void setId() {
-        this.id = UtilUUID.generateNewUUID();
+        this.id = UtilUUID.generarNuevoUUID();
     }
 
     private void setEvaluacionFichaPerfilId(UUID evaluacionFichaPerfilId, ValidationResult result) {
@@ -111,7 +111,7 @@ public final class EstadoEvaluacionFichaDomain {
             return;
         }
 
-        if (!UtilObject.isNull(ultimoEstado) && ultimoEstado.esTerminal()) {
+        if (!UtilObjeto.esNulo(ultimoEstado) && ultimoEstado.esTerminal()) {
             result.agregarError(
                     FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
                     FichasCodes.EstadoEvaluacionFicha.TRANSICION_INVALIDA,
@@ -121,7 +121,7 @@ public final class EstadoEvaluacionFichaDomain {
     }
 
     private void setFechaActualizacion() {
-        this.fechaActualizacion = UtilDate.generateNewInstantNow();
+        this.fechaActualizacion = UtilFecha.generarInstanteActual();
     }
 
     public UUID getId() {

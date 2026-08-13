@@ -3,15 +3,14 @@ package com.arquisoft.shared.message.key.fichas;
 import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
-/** Claves de EstadoFichaPerfil. */
-public enum EstadoFichaPerfilKey implements ClaveMensaje {
+/** Claves de EstadoFicha. */
+public enum EstadoFichaKey implements ClaveMensaje {
 
-    ERROR_ESTADO_TERMINAL("fichas.dominio.estadofichaperfil.error.estado-terminal"),
-    LOG_CREADO("fichas.aplicacion.estadofichaperfil.log.creado");
+    ERROR_NO_ENCONTRADO("fichas.dominio.estadoficha.error.no-encontrado");
 
     private final String clave;
 
-    EstadoFichaPerfilKey(String clave) {
+    EstadoFichaKey(String clave) {
         this.clave = clave;
     }
 

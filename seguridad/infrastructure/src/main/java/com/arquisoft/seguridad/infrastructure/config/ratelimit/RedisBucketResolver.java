@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.exception.InfrastructureException;
-import com.arquisoft.shared.util.UtilObject;
+import com.arquisoft.shared.util.UtilObjeto;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
@@ -55,7 +55,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
             // log.error: detalle tecnico para el desarrollador — nunca llega al cliente.
             // El nombre de la clase del cliente obtenido orienta rapidamente el diagnostico.
             log.error(catalogo.obtener(LimiteSolicitudesKey.LOG_CLIENTE_STANDALONE_ERROR),
-                    !UtilObject.isNull(nativeClient) ? nativeClient.getClass().getSimpleName() : "null");
+                    !UtilObjeto.esNulo(nativeClient) ? nativeClient.getClass().getSimpleName() : "null");
             // InfrastructureException con mensaje generico: si llegara a la capa web
             // (improbable desde @PostConstruct), el cliente ve un mensaje sin detalles internos.
             throw new InfrastructureException(
@@ -111,7 +111,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
 
     @Override
     public void destroy() {
-        if (!UtilObject.isNull(bucketConnection)) {
+        if (!UtilObjeto.esNulo(bucketConnection)) {
             bucketConnection.close();
         }
     }

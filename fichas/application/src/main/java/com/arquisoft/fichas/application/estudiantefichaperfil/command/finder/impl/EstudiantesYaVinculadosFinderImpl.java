@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.im
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesYaVinculadosFinder;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
-import com.arquisoft.shared.util.UtilCollection;
+import com.arquisoft.shared.util.UtilColeccion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +18,7 @@ public class EstudiantesYaVinculadosFinderImpl implements EstudiantesYaVinculado
 
     @Override
     public List<UUID> obtener(List<EstudianteFichaPerfilDomain> relaciones) {
-        if (UtilCollection.isEmptyOrNull(relaciones)) {
+        if (UtilColeccion.esVaciaONula(relaciones)) {
             return List.of();
         }
         return relaciones.stream()

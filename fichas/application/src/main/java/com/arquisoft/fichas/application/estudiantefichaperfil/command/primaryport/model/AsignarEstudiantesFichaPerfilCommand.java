@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command.primarypo
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.util.UtilCollection;
+import com.arquisoft.shared.util.UtilColeccion;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -17,7 +17,7 @@ public record AsignarEstudiantesFichaPerfilCommand(
 ) {
 
     public AsignarEstudiantesFichaPerfilCommand {
-        estudiantes = UtilCollection.applyDefault(estudiantes);
+        estudiantes = UtilColeccion.aplicarPorDefecto(estudiantes);
     }
 
     public static AsignarEstudiantesFichaPerfilCommand crear(UUID fichaPerfil, List<String> estudiantes) {
@@ -27,7 +27,7 @@ public record AsignarEstudiantesFichaPerfilCommand(
                 FichasFields.EstudianteFichaPerfil.FICHA_PERFIL,
                 FichasCodes.EstudianteFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result);
 
-        List<String> lista = UtilCollection.applyDefault(estudiantes);
+        List<String> lista = UtilColeccion.aplicarPorDefecto(estudiantes);
         if (DomainValidator.noVacia(lista,
                 FichasFields.EstudianteFichaPerfil.ESTUDIANTES,
                 FichasCodes.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS, result)) {
@@ -42,6 +42,6 @@ public record AsignarEstudiantesFichaPerfilCommand(
         result.lanzarSiTieneErroresDeEntrada();
 
         return new AsignarEstudiantesFichaPerfilCommand(
-                fichaPerfil, lista.stream().map(UtilUUID::generateUUIDFromString).toList());
+                fichaPerfil, lista.stream().map(UtilUUID::generarUUIDDesdeTexto).toList());
     }
 }

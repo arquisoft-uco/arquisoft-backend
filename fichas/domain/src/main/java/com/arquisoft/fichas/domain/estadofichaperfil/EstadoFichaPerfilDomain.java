@@ -3,7 +3,7 @@ package com.arquisoft.fichas.domain.estadofichaperfil;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.shared.util.UtilDate;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -47,7 +47,7 @@ public final class EstadoFichaPerfilDomain {
     }
 
     private void setId() {
-        this.id = UtilUUID.generateNewUUID();
+        this.id = UtilUUID.generarNuevoUUID();
     }
 
     private void setFichaPerfil(UUID fichaPerfil, ValidationResult result) {
@@ -64,7 +64,7 @@ public final class EstadoFichaPerfilDomain {
     }
 
     private void setFechaActualizacion() {
-        this.fechaActualizacion = UtilDate.generateNewInstantNow();
+        this.fechaActualizacion = UtilFecha.generarInstanteActual();
     }
 
     public UUID getId() {

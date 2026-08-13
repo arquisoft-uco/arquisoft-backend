@@ -2,7 +2,7 @@ package com.arquisoft.fichas.domain.evaluacionfichaperfil;
 
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.util.UtilDate;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -45,7 +45,7 @@ public final class EvaluacionFichaPerfilDomain {
     }
 
     private void setId() {
-        this.id = UtilUUID.generateNewUUID();
+        this.id = UtilUUID.generarNuevoUUID();
     }
 
     private void setRepresentanteComiteId(UUID representanteComiteId, ValidationResult result) {
@@ -71,7 +71,7 @@ public final class EvaluacionFichaPerfilDomain {
     }
 
     private void setFechaCreacion() {
-        this.fechaCreacion = UtilDate.generateNewInstantNow();
+        this.fechaCreacion = UtilFecha.generarInstanteActual();
     }
 
     public UUID getId() {

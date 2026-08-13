@@ -8,26 +8,26 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class UtilCollectionTest {
+class UtilColeccionTest {
 
     @Test
     void debeRetornarTrue_cuandoColeccionEsNula() {
-        assertThat(UtilCollection.isEmptyOrNull(null)).isTrue();
+        assertThat(UtilColeccion.esVaciaONula(null)).isTrue();
     }
 
     @Test
     void debeRetornarTrue_cuandoColeccionEstaVacia() {
-        assertThat(UtilCollection.isEmptyOrNull(new ArrayList<>())).isTrue();
+        assertThat(UtilColeccion.esVaciaONula(new ArrayList<>())).isTrue();
     }
 
     @Test
     void debeRetornarFalse_cuandoColeccionTieneElementos() {
-        assertThat(UtilCollection.isEmptyOrNull(List.of("a"))).isFalse();
+        assertThat(UtilColeccion.esVaciaONula(List.of("a"))).isFalse();
     }
 
     @Test
     void debeRetornarVacio_cuandoNoHayDuplicados() {
-        assertThat(UtilCollection.firstDuplicate(List.of("a", "b", "c"))).isEmpty();
+        assertThat(UtilColeccion.primerDuplicado(List.of("a", "b", "c"))).isEmpty();
     }
 
     @Test
@@ -35,12 +35,12 @@ class UtilCollectionTest {
         UUID repetido = UUID.randomUUID();
         List<UUID> valores = List.of(UUID.randomUUID(), repetido, UUID.randomUUID(), repetido);
 
-        assertThat(UtilCollection.firstDuplicate(valores)).contains(repetido);
+        assertThat(UtilColeccion.primerDuplicado(valores)).contains(repetido);
     }
 
     @Test
     void debeRetornarVacio_cuandoColeccionEsNulaOVacia() {
-        assertThat(UtilCollection.firstDuplicate(null)).isEmpty();
-        assertThat(UtilCollection.firstDuplicate(List.of())).isEmpty();
+        assertThat(UtilColeccion.primerDuplicado(null)).isEmpty();
+        assertThat(UtilColeccion.primerDuplicado(List.of())).isEmpty();
     }
 }

@@ -18,7 +18,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaP
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -137,7 +137,7 @@ class CambiarAsesorFichaUseCaseTest {
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId())).thenReturn(Optional.empty());
         doThrow(new FichaPerfilNoEncontradaException(ficha.getId()))
                 .when(cambiarAsesorFichaValidator)
-                .validar(cambio, FichaPerfilDomain.VACIO, contacto, UtilText.EMPTY);
+                .validar(cambio, FichaPerfilDomain.VACIO, contacto, UtilTexto.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(cambio))

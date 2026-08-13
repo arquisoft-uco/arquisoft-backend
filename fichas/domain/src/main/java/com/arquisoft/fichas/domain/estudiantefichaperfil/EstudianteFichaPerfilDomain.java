@@ -57,7 +57,7 @@ public final class EstudianteFichaPerfilDomain {
     }
 
     private void setId() {
-        this.id = UtilUUID.generateNewUUID();
+        this.id = UtilUUID.generarNuevoUUID();
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {

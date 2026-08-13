@@ -7,7 +7,7 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.NotificacionesCodes;
 import com.arquisoft.shared.message.constant.NotificacionesFields;
 import com.arquisoft.shared.message.constant.NotificacionesLimits;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -123,7 +123,7 @@ public final class NotificacionDomain {
     }
 
     private void setId() {
-        this.id = UtilUUID.generateNewUUID();
+        this.id = UtilUUID.generarNuevoUUID();
     }
 
     private void setIdEvento(String idEvento, ValidationResult result) {
@@ -138,7 +138,7 @@ public final class NotificacionDomain {
                 NotificacionesCodes.Notificacion.ID_EVENTO_REQUERIDO, result)) {
             return;
         }
-        this.idEvento = UtilText.applyTrim(idEvento);
+        this.idEvento = UtilTexto.aplicarTrim(idEvento);
     }
 
     private void setTipo(TipoNotificacion tipo, ValidationResult result) {
@@ -167,7 +167,7 @@ public final class NotificacionDomain {
                 NotificacionesCodes.Notificacion.DESTINATARIO_INVALIDO, result)) {
             return;
         }
-        this.destinatario = UtilText.applyTrim(destinatario);
+        this.destinatario = UtilTexto.aplicarTrim(destinatario);
     }
 
     private void setAsunto(String asunto, ValidationResult result) {
@@ -182,7 +182,7 @@ public final class NotificacionDomain {
                 NotificacionesCodes.Notificacion.ASUNTO_REQUERIDO, result)) {
             return;
         }
-        this.asunto = UtilText.applyTrim(asunto);
+        this.asunto = UtilTexto.aplicarTrim(asunto);
     }
 
     public UUID getId() {

@@ -15,7 +15,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaP
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -41,7 +41,7 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
 
         var ficha = fichaPerfilFinder.obtener(fichaPerfil).orElse(FichaPerfilDomain.VACIO);
         var asesorFicha = asesorFichaFinder.obtener(nuevoAsesorFicha).orElse(AsesorFichaDomain.VACIO);
-        var estadoActual = estadoActualFichaPerfilFinder.obtener(fichaPerfil).orElse(UtilText.EMPTY);
+        var estadoActual = estadoActualFichaPerfilFinder.obtener(fichaPerfil).orElse(UtilTexto.VACIO);
 
         cambiarAsesorFichaValidator.validar(cambio, ficha, asesorFicha, estadoActual);
 

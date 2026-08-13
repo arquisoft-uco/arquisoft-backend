@@ -6,7 +6,7 @@ import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -55,7 +55,7 @@ public final class ItemFichaPerfilDomain {
     }
 
     private void setId() {
-        this.id = UtilUUID.generateNewUUID();
+        this.id = UtilUUID.generarNuevoUUID();
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
@@ -74,7 +74,7 @@ public final class ItemFichaPerfilDomain {
             return;
         }
         try {
-            this.tipoItem = TipoItem.valueOf(UtilText.applyTrim(tipoItem));
+            this.tipoItem = TipoItem.valueOf(UtilTexto.aplicarTrim(tipoItem));
         } catch (IllegalArgumentException e) {
             result.agregarError(
                     FichasFields.ItemFichaPerfil.TIPO_ITEM,
@@ -95,7 +95,7 @@ public final class ItemFichaPerfilDomain {
                 FichasCodes.ItemFichaPerfil.CONTENIDO_DEMASIADO_LARGO, result)) {
             return;
         }
-        this.contenido = UtilText.applyTrim(contenido);
+        this.contenido = UtilTexto.aplicarTrim(contenido);
     }
 
     public UUID getId() {

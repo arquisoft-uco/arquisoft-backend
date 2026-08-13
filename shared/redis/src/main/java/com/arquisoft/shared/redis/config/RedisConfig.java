@@ -1,6 +1,6 @@
 package com.arquisoft.shared.redis.config;
 
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,10 +31,10 @@ public class RedisConfig {
     @Primary
     public LettuceConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-        if (!UtilText.isEmptyOrNull(username)) {
+        if (!UtilTexto.esVacioONulo(username)) {
             config.setUsername(username);
         }
-        if (!UtilText.isEmptyOrNull(password)) {
+        if (!UtilTexto.esVacioONulo(password)) {
             config.setPassword(password);
         }
         return new LettuceConnectionFactory(config);

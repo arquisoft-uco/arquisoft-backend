@@ -5,7 +5,7 @@ import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.Mensajes;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
 
@@ -48,7 +48,7 @@ public final class AgregacionEstadoEvaluacionFichaDomain {
             return;
         }
         try {
-            this.estadoEvaluacion = EstadoEvaluacion.valueOf(UtilText.applyTrim(estadoEvaluacion));
+            this.estadoEvaluacion = EstadoEvaluacion.valueOf(UtilTexto.aplicarTrim(estadoEvaluacion));
         } catch (IllegalArgumentException e) {
             result.agregarError(
                     FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,

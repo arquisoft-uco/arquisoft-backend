@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.domain.asesorficha;
 
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 
 import java.util.UUID;
@@ -8,7 +8,7 @@ import java.util.UUID;
 public final class AsesorFichaDomain {
 
     public static final AsesorFichaDomain VACIO = new AsesorFichaDomain(
-            UtilUUID.getDefaultUUID(), UtilText.EMPTY, UtilText.EMPTY, UtilText.EMPTY);
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO);
 
     private final UUID id;
     private final String identificador;

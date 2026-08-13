@@ -3,7 +3,7 @@ package com.arquisoft.seguridad.infrastructure.filter;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
-import com.arquisoft.shared.util.UtilObject;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -57,7 +57,7 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
             Jwt jwt = (Jwt) jwtAuth.getCredentials();
             String jti = jwt.getId();
 
-            if (!UtilObject.isNull(jti)) {
+            if (!UtilObjeto.esNulo(jti)) {
                 try {
                     if (tokenInvalidadoPort.estaInvalidado(jti)) {
                         // log.warn: error de cliente — token revocado (detalle interno, no se expone al cliente)

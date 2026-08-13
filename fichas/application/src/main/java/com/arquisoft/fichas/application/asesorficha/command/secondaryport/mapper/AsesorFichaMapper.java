@@ -17,12 +17,6 @@ public final class AsesorFichaMapper {
                 entity.getEmail());
     }
 
-    /**
-     * Referencia por identificador para una asociacion {@code @ManyToOne}.
-     *
-     * <p>Hibernate solo necesita el identificador para escribir la clave foranea, asi que el caso
-     * de uso puede construir la asociacion sin consultar la entidad completa.
-     */
     public static AsesorFichaEntity toReferencia(UUID asesorFicha) {
         return AsesorFichaEntity.builder().id(asesorFicha).build();
     }

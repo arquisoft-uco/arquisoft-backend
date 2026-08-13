@@ -24,22 +24,8 @@ public final class EstadoFichaPerfilMapper {
         return EstadoFichaPerfilDomain.reconstruir(
                 entity.getId(),
                 entity.getFichaPerfilId(),
-                convertir(entity.getEstadoFicha().getId()),
+                EstadoFicha.desde(entity.getEstadoFicha().getId()),
                 entity.getFechaActualizacion()
         );
-    }
-
-    /**
-     * Un identificador del catalogo que ya no tiene constante equivalente degrada a
-     * {@link EstadoFicha#VACIO} en lugar de romper: la regla de dominio ya trata ese valor como
-     * "estado no encontrado" (422) y propagar un {@code IllegalArgumentException} lo convertiria
-     * en un 500.
-     */
-    private static EstadoFicha convertir(String estadoFichaId) {
-        try {
-            return EstadoFicha.valueOf(estadoFichaId);
-        } catch (IllegalArgumentException ex) {
-            return EstadoFicha.VACIO;
-        }
     }
 }

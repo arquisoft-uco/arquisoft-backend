@@ -3,7 +3,7 @@ package com.arquisoft.fichas.domain.fichaperfil;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
 
@@ -50,7 +50,7 @@ public final class ModificacionFichaPerfilDomain {
                 FichasCodes.FichaPerfil.TITULO_DEMASIADO_LARGO, result)) {
             return;
         }
-        this.tituloProyecto = UtilText.applyTrim(tituloProyecto);
+        this.tituloProyecto = UtilTexto.aplicarTrim(tituloProyecto);
     }
 
     private void setEstudiante(UUID estudiante, ValidationResult result) {

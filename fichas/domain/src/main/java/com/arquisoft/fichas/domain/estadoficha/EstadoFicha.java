@@ -1,13 +1,15 @@
 package com.arquisoft.fichas.domain.estadoficha;
 
+import com.arquisoft.fichas.domain.estadoficha.exception.EstadoFichaNoEncontradoException;
+import com.arquisoft.shared.util.UtilTexto;
+
 public enum EstadoFicha {
 
     EN_CONSTRUCCION("En Construccion"),
     DISPONIBLE_PARA_EVALUACION("Disponible Para Evaluacion"),
     APROBADA("Aprobada"),
     APROBADA_CON_OBSERVACIONES("Aprobada Con Observaciones"),
-    NO_APROBADA("No Aprobada"),
-    VACIO("");
+    NO_APROBADA("No Aprobada");
 
     private final String id;
     private final String nombre;
@@ -31,6 +33,17 @@ public enum EstadoFicha {
 
     public boolean permiteModificacion() {
         return !esTerminal();
+    }
+
+    public static EstadoFicha desde(String id) {
+        if (UtilTexto.esVacioONulo(id)) {
+            throw new EstadoFichaNoEncontradoException(id);
+        }
+        try {
+            return valueOf(id);
+        } catch (IllegalArgumentException ex) {
+            throw new EstadoFichaNoEncontradoException(id);
+        }
     }
 
 }

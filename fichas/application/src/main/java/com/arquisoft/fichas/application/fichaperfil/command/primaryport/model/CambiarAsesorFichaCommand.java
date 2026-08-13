@@ -27,6 +27,6 @@ public record CambiarAsesorFichaCommand(
 
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new CambiarAsesorFichaCommand(fichaPerfil, UtilUUID.generateUUIDFromString(nuevoAsesorFicha));
+        return new CambiarAsesorFichaCommand(fichaPerfil, UtilUUID.generarUUIDDesdeTexto(nuevoAsesorFicha));
     }
 }

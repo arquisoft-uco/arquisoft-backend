@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadoficha.exception.EstadoFichaNoEncontradoException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,15 +40,16 @@ class EstadoActualFichaPerfilFinderImplTest {
     }
 
     @Test
-    void debeDegradarAVacio_cuandoElCatalogoTraeUnEstadoDesconocido() {
-        // Arrange — un id sin constante equivalente no puede reventar la consulta: la rule
-        // ya trata VACIO como "estado no encontrado" (422).
+    void debeLanzarExcepcion_cuandoElCatalogoTraeUnEstadoDesconocido() {
+        // Arrange — un id sin constante equivalente ahora es un error de dominio explicito
+        // (EstadoFicha.desde lo lanza dentro del mapper), no un degrade silencioso.
         UUID fichaId = UUID.randomUUID();
         when(estadoFichaPerfilOutputPort.obtenerEstadoActual(fichaId))
                 .thenReturn(Optional.of(entidadCon(fichaId, "ESTADO_INVENTADO")));
 
         // Act & Assert
-        assertThat(finder.obtener(fichaId)).contains(EstadoFicha.VACIO.getId());
+        assertThatThrownBy(() -> finder.obtener(fichaId))
+                .isInstanceOf(EstadoFichaNoEncontradoException.class);
     }
 
     @Test

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.usuario.command.primaryport.model;
 
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 
 import java.util.UUID;
 
@@ -11,7 +11,7 @@ public record RegistrarUsuarioCommand(
 ) {
 
     public RegistrarUsuarioCommand {
-        email = UtilText.applyTrim(email);
-        rol = UtilText.applyTrim(rol);
+        email = UtilTexto.aplicarTrim(email);
+        rol = UtilTexto.aplicarTrim(rol);
     }
 }

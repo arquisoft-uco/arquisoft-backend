@@ -3,7 +3,7 @@ package com.arquisoft.fichas.application.estadoevaluacionficha.command.primarypo
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -16,7 +16,7 @@ public record AgregarEstadoEvaluacionFichaCommand(
         UUID representanteComite) {
 
     public AgregarEstadoEvaluacionFichaCommand {
-        estadoEvaluacion = UtilText.applyTrim(estadoEvaluacion);
+        estadoEvaluacion = UtilTexto.aplicarTrim(estadoEvaluacion);
     }
 
     public static AgregarEstadoEvaluacionFichaCommand crear(
@@ -48,7 +48,7 @@ public record AgregarEstadoEvaluacionFichaCommand(
         result.lanzarSiTieneErroresDeEntrada();
 
         return new AgregarEstadoEvaluacionFichaCommand(
-                UtilUUID.generateUUIDFromString(evaluacionFichaPerfil),
+                UtilUUID.generarUUIDDesdeTexto(evaluacionFichaPerfil),
                 estadoEvaluacion,
                 representanteComite);
     }

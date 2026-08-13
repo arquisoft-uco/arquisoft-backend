@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.estudiante.command.finder.impl;
 
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
-import com.arquisoft.shared.util.UtilCollection;
+import com.arquisoft.shared.util.UtilColeccion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class EstudiantesExistentesFinderImpl implements EstudiantesExistentesFin
 
     @Override
     public List<UUID> obtener(List<UUID> estudiantes) {
-        if (UtilCollection.isEmptyOrNull(estudiantes)) {
+        if (UtilColeccion.esVaciaONula(estudiantes)) {
             return List.of();
         }
         return estudiantes.stream()

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.domain.estadofichaperfil.rules.impl;
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
+import com.arquisoft.fichas.domain.estadoficha.exception.EstadoFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
 import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class EstadoFichaPerfilEnTerminalRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(estado))
-                .isInstanceOf(EstadoFichaPerfilNoEncontradoException.class);
+                .isInstanceOf(EstadoFichaNoEncontradoException.class);
     }
 
     @Test
@@ -32,7 +32,7 @@ class EstadoFichaPerfilEnTerminalRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(estado))
-                .isInstanceOf(EstadoFichaPerfilNoEncontradoException.class);
+                .isInstanceOf(EstadoFichaNoEncontradoException.class);
     }
 
     @Test
@@ -42,7 +42,7 @@ class EstadoFichaPerfilEnTerminalRuleImplTest {
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(estado))
-                .isInstanceOf(EstadoFichaPerfilNoEncontradoException.class);
+                .isInstanceOf(EstadoFichaNoEncontradoException.class);
     }
 
     @Test
