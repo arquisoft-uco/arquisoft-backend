@@ -25,13 +25,14 @@ import java.io.IOException;
  * agregar otro consumidor con su plantilla, sin tocar la aplicacion ni el dominio.
  */
 @Component
-public class AsesorFichaCambiadoInputAdapter extends AbstractEventConsumer {
+public class AsesorFichaCambiadoConsumer extends AbstractEventConsumer {
 
+    
     private final EnviarNotificacionInteractor enviarNotificacionInteractor;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
 
-    public AsesorFichaCambiadoInputAdapter(
+    public AsesorFichaCambiadoConsumer(
             EnviarNotificacionInteractor enviarNotificacionInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,

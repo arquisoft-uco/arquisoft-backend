@@ -174,7 +174,7 @@ class AgregarItemFichaPerfilUseCaseTest {
 
     private AgregacionItemFichaPerfilDomain entrada() {
         return AgregacionItemFichaPerfilDomain.crear(
-                fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item", estudiante);
+                ItemFichaPerfilDomain.crear(fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item"), estudiante);
     }
 
     // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.

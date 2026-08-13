@@ -30,22 +30,15 @@ public final class ItemFichaPerfilDomain {
     private ItemFichaPerfilDomain() {}
 
     public static ItemFichaPerfilDomain crear(UUID fichaPerfilId, String tipoItem, String contenido) {
-        var result = new ValidationResult();
-        var itemFichaPerfilDomain = crear(fichaPerfilId, tipoItem, contenido, result);
-
-        result.lanzarSiTieneErrores();
-        return itemFichaPerfilDomain;
-    }
-
-    static ItemFichaPerfilDomain crear(
-            UUID fichaPerfilId, String tipoItem, String contenido, ValidationResult result) {
         var itemFichaPerfilDomain = new ItemFichaPerfilDomain();
+        var result = new ValidationResult();
 
         itemFichaPerfilDomain.setId();
         itemFichaPerfilDomain.setFichaPerfilId(fichaPerfilId, result);
         itemFichaPerfilDomain.setTipoItem(tipoItem, result);
         itemFichaPerfilDomain.setContenido(contenido, result);
 
+        result.lanzarSiTieneErrores();
         return itemFichaPerfilDomain;
     }
 

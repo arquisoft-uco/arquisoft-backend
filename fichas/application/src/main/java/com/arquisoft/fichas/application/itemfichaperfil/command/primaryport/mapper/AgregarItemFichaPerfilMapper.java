@@ -2,16 +2,18 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.map
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.AgregarItemFichaPerfilCommand;
 import com.arquisoft.fichas.domain.itemfichaperfil.AgregacionItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 
 public final class AgregarItemFichaPerfilMapper {
 
     private AgregarItemFichaPerfilMapper() {}
 
     public static AgregacionItemFichaPerfilDomain toDomain(AgregarItemFichaPerfilCommand command) {
-        return AgregacionItemFichaPerfilDomain.crear(
+        var item = ItemFichaPerfilDomain.crear(
                 command.fichaPerfil(),
                 command.tipoItem(),
-                command.contenido(),
-                command.estudiante());
+                command.contenido());
+
+        return AgregacionItemFichaPerfilDomain.crear(item, command.estudiante());
     }
 }

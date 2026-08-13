@@ -7,7 +7,7 @@ import com.arquisoft.fichas.application.fichaperfil.query.secondaryport.FichaPer
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.exception.OrdenamientoInvalidoException;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
-import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.mapper.FichaPerfilMapper;
+import com.arquisoft.fichas.application.fichaperfil.query.mapper.FichaPerfilQueryMapper;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.SortDirection;
 import com.arquisoft.shared.postgres.util.PaginationMapper;
@@ -40,7 +40,7 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
         try {
             return PaginationMapper.toResult(
                     fichaPerfilRepository.findAll(spec, pageable)
-                            .map(FichaPerfilMapper::toReadModel));
+                            .map(FichaPerfilQueryMapper::toReadModel));
         } catch (PropertyReferenceException ex) {
             logger.warn(catalogo.obtener(FichaPerfilKey.LOG_ORDENAMIENTO_INVALIDO), ex.getPropertyName());
             throw new OrdenamientoInvalidoException(ex.getPropertyName(), ex);

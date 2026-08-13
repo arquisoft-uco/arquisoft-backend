@@ -18,13 +18,13 @@ import java.io.IOException;
 import java.util.UUID;
 
 @Component
-public class UsuarioCreadoInputAdapter extends AbstractEventConsumer {
+public class UsuarioCreadoConsumer extends AbstractEventConsumer {
 
     private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
 
-    public UsuarioCreadoInputAdapter(
+    public UsuarioCreadoConsumer(
             RegistrarUsuarioUseCase registrarUsuarioUseCase,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,

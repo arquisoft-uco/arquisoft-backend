@@ -1,7 +1,9 @@
 package com.arquisoft.fichas.domain.estadoevaluacionficha;
 
+import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
@@ -52,7 +54,7 @@ public final class EstadoEvaluacionFichaDomain {
 
     public static EstadoEvaluacionFichaDomain crearConEstado(
             UUID evaluacionFichaPerfilId,
-            EstadoEvaluacion estadoEvaluacion) {
+            String estadoEvaluacion) {
         var aggregate = new EstadoEvaluacionFichaDomain();
         var result = new ValidationResult();
 
@@ -96,15 +98,23 @@ public final class EstadoEvaluacionFichaDomain {
         this.estadoEvaluacion = EstadoEvaluacion.EN_EVALUACION;
     }
 
-    private void setEstadoEvaluacion(EstadoEvaluacion estadoEvaluacion, ValidationResult result) {
-        if (!DomainValidator.noNulo(
+    private void setEstadoEvaluacion(String estadoEvaluacion, ValidationResult result) {
+        if (!DomainValidator.noEnBlanco(
                 estadoEvaluacion,
                 FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
                 FichasCodes.EstadoEvaluacionFicha.ESTADO_REQUERIDO,
                 result)) {
             return;
         }
-        this.estadoEvaluacion = estadoEvaluacion;
+        if (!EstadoEvaluacion.esValido(estadoEvaluacion)) {
+            result.agregarError(
+                    FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
+                    FichasCodes.EstadoEvaluacionFicha.ESTADO_NO_ENCONTRADO,
+                    Mensajes.formatear(
+                            EstadoEvaluacionFichaKey.ERROR_ESTADO_NO_ENCONTRADO, estadoEvaluacion));
+            return;
+        }
+        this.estadoEvaluacion = EstadoEvaluacion.desde(estadoEvaluacion);
     }
 
     private void setFechaActualizacion() {

@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.mapper;
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.model.AsignarEstudiantesFichaPerfilCommand;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,7 @@ class AsignarEstudiantesFichaPerfilMapperTest {
         var command = new AsignarEstudiantesFichaPerfilCommand(fichaId, List.of(estudiante));
 
         // Act
-        List<EstudianteFichaPerfilDomain> relaciones = AsignarEstudiantesFichaPerfilMapper.toDomain(command);
+        var relaciones = AsignarEstudiantesFichaPerfilMapper.toDomain(command).getRelaciones();
 
         // Assert
         assertThat(relaciones).hasSize(1);

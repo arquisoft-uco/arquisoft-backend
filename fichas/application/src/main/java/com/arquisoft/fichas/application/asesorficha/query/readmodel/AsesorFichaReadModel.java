@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.application.asesorficha.query;
+package com.arquisoft.fichas.application.asesorficha.query.readmodel;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -23,8 +23,8 @@ class AgregacionItemFichaPerfilDomainTest {
         UUID estudianteId = UUID.randomUUID();
 
         // Act
-        var transaccion = AgregacionItemFichaPerfilDomain.crear(
-                fichaId, TipoItem.OBJETIVO_GENERAL.name(), CONTENIDO, estudianteId);
+        var item = ItemFichaPerfilDomain.crear(fichaId, TipoItem.OBJETIVO_GENERAL.name(), CONTENIDO);
+        var transaccion = AgregacionItemFichaPerfilDomain.crear(item, estudianteId);
 
         // Assert
         assertThat(transaccion.getItem().getFichaPerfilId()).isEqualTo(fichaId);
@@ -35,25 +35,34 @@ class AgregacionItemFichaPerfilDomainTest {
 
     @Test
     void debeLanzarDomainValidationException_cuandoEstudianteEsNulo() {
+        // Arrange
+        var item = ItemFichaPerfilDomain.crear(
+                UUID.randomUUID(), TipoItem.OBJETIVO_GENERAL.name(), CONTENIDO);
+
         // Act & Assert
-        assertThatThrownBy(() -> AgregacionItemFichaPerfilDomain.crear(
-                UUID.randomUUID(), TipoItem.OBJETIVO_GENERAL.name(), CONTENIDO, null))
+        assertThatThrownBy(() -> AgregacionItemFichaPerfilDomain.crear(item, null))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining(FichasFields.ItemFichaPerfil.ESTUDIANTE);
     }
 
     @Test
-    void debeAcumularErroresDelItemYDelActor_enUnaSolaPasada() {
-        // Arrange — todo inválido a la vez: el ítem y el estudiante que lo solicita
+    void debeLanzarDomainValidationException_cuandoElItemEsNulo() {
+        // Act & Assert
+        assertThatThrownBy(() -> AgregacionItemFichaPerfilDomain.crear(null, UUID.randomUUID()))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasCodes.ItemFichaPerfil.ITEM_ID_REQUERIDO);
+    }
+
+    @Test
+    void debeAcumularLosErroresDelItem_enUnaSolaPasada() {
+        // Arrange
         String contenidoLargo = "x".repeat(FichasLimits.ItemFichaPerfil.CONTENIDO_MAX + 1);
 
-        // Act & Assert — el actor no puede quedar sin reportar porque el ítem falle primero
-        assertThatThrownBy(() -> AgregacionItemFichaPerfilDomain.crear(
-                null, "TIPO_INEXISTENTE", contenidoLargo, null))
+        // Act & Assert
+        assertThatThrownBy(() -> ItemFichaPerfilDomain.crear(null, "TIPO_INEXISTENTE", contenidoLargo))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining(FichasCodes.ItemFichaPerfil.FICHA_PERFIL_ID_REQUERIDO)
                 .hasMessageContaining(FichasCodes.ItemFichaPerfil.TIPO_ITEM_INVALIDO)
-                .hasMessageContaining(FichasCodes.ItemFichaPerfil.CONTENIDO_DEMASIADO_LARGO)
-                .hasMessageContaining(FichasCodes.ItemFichaPerfil.ESTUDIANTE_REQUERIDO);
+                .hasMessageContaining(FichasCodes.ItemFichaPerfil.CONTENIDO_DEMASIADO_LARGO);
     }
 }

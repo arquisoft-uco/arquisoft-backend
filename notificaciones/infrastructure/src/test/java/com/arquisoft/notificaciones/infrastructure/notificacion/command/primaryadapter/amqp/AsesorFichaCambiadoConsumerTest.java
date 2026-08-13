@@ -26,7 +26,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class AsesorFichaCambiadoInputAdapterTest {
+class AsesorFichaCambiadoConsumerTest {
 
     @Mock
     private EnviarNotificacionInteractor enviarNotificacionInteractor;
@@ -34,11 +34,11 @@ class AsesorFichaCambiadoInputAdapterTest {
     @Mock
     private Channel channel;
 
-    private AsesorFichaCambiadoInputAdapter adapter;
+    private AsesorFichaCambiadoConsumer adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new AsesorFichaCambiadoInputAdapter(
+        adapter = new AsesorFichaCambiadoConsumer(
                 enviarNotificacionInteractor,
                 new ObjectMapper(),
                 Mockito.mock(AppLogger.class),

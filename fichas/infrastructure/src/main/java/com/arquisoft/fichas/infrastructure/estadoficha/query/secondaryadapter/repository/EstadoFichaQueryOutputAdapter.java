@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.r
 
 import com.arquisoft.fichas.application.estadoficha.query.secondaryport.EstadoFichaQueryOutputPort;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
-import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
+import com.arquisoft.fichas.application.estadoficha.query.mapper.EstadoFichaQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,15 +18,7 @@ public class EstadoFichaQueryOutputAdapter implements EstadoFichaQueryOutputPort
     public List<EstadoFichaReadModel> findAll() {
         return repository.findAll()
                 .stream()
-                .map(this::toReadModel)
+                .map(EstadoFichaQueryMapper::toReadModel)
                 .toList();
-    }
-
-    private EstadoFichaReadModel toReadModel(EstadoFichaEntity entity) {
-        return new EstadoFichaReadModel(
-                entity.getId(),
-                entity.getNombre(),
-                entity.getDescripcion()
-        );
     }
 }

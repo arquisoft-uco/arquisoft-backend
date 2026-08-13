@@ -5,7 +5,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.As
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.AgregacionEstudiantesFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -104,12 +104,10 @@ class RegistrarFichaPerfilInteractorImplTest {
         registrarFichaPerfilInteractor.ejecutar(command);
 
         // Assert — la ficha ya persistida es la que se usa para asignar, no la de entrada
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<EstudianteFichaPerfilDomain>> asignarCaptor = ArgumentCaptor.forClass(List.class);
+        ArgumentCaptor<AgregacionEstudiantesFichaPerfilDomain> asignarCaptor =
+                ArgumentCaptor.forClass(AgregacionEstudiantesFichaPerfilDomain.class);
         verify(asignarEstudiantesFichaPerfilUseCase).ejecutar(asignarCaptor.capture());
-        assertThat(asignarCaptor.getValue())
-                .hasSize(1)
-                .allMatch(relacion -> relacion.getFichaPerfilId().equals(fichaId));
-        assertThat(asignarCaptor.getValue().get(0).getEstudianteId()).isEqualTo(estudiante);
+        assertThat(asignarCaptor.getValue().getFichaPerfil()).isEqualTo(fichaId);
+        assertThat(asignarCaptor.getValue().getEstudiantes()).containsExactly(estudiante);
     }
 }

@@ -14,20 +14,24 @@ public final class AgregacionItemFichaPerfilDomain {
 
     private AgregacionItemFichaPerfilDomain() {}
 
-    public static AgregacionItemFichaPerfilDomain crear(
-            UUID fichaPerfil, String tipoItem, String contenido, UUID estudiante) {
+    public static AgregacionItemFichaPerfilDomain crear(ItemFichaPerfilDomain item, UUID estudiante) {
         var transaccion = new AgregacionItemFichaPerfilDomain();
         var result = new ValidationResult();
 
-        transaccion.setItem(fichaPerfil, tipoItem, contenido, result);
+        transaccion.setItem(item, result);
         transaccion.setEstudiante(estudiante, result);
 
         result.lanzarSiTieneErrores();
         return transaccion;
     }
 
-    private void setItem(UUID fichaPerfil, String tipoItem, String contenido, ValidationResult result) {
-        this.item = ItemFichaPerfilDomain.crear(fichaPerfil, tipoItem, contenido, result);
+    private void setItem(ItemFichaPerfilDomain item, ValidationResult result) {
+        if (!DomainValidator.noNulo(item,
+                FichasFields.ItemFichaPerfil.ITEM,
+                FichasCodes.ItemFichaPerfil.ITEM_ID_REQUERIDO, result)) {
+            return;
+        }
+        this.item = item;
     }
 
     private void setEstudiante(UUID estudiante, ValidationResult result) {

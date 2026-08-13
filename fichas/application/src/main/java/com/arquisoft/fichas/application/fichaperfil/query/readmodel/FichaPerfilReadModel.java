@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.query.readmodel;
 
-import com.arquisoft.fichas.application.asesorficha.query.AsesorFichaReadModel;
+import com.arquisoft.fichas.application.asesorficha.query.readmodel.AsesorFichaReadModel;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

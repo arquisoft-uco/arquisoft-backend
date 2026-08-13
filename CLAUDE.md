@@ -116,6 +116,8 @@ exception/                    # Domain exceptions shared across features (extend
         │           └── {Consult}{Entity}UseCaseImpl.java
         ├── secondaryport/
         │   └── {Feature}QueryOutputPort.java  # Output port read-side
+        ├── mapper/
+        │   └── {Feature}QueryMapper.java   # Entity → ReadModel (read side only)
         ├── criteria/
         │   └── {Feature}Criteria.java
         └── readmodel/
@@ -132,7 +134,7 @@ exception/                    # Domain exceptions shared across features (extend
     │   │   │   └── mapper/                     # Optional — see "DTOs" below for when this exists
     │   │   │       └── {Action}{Entity}RequestMapper.java
     │   │   └── amqp/                            # Optional — AMQP consumers (input adapters)
-    │   │       └── {Evento}InputAdapter.java
+    │   │       └── {Evento}Consumer.java
     │   └── secondaryadapter/
     │       └── repository/                       # Or another sub-package for non-JPA integrations (keycloak/, redis/, jwt/, ...)
     │           ├── {Feature}CommandOutputAdapter.java
@@ -170,7 +172,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Output ports:** Both sides live in the application layer — write-side in `application/{feature}/command/secondaryport/`, read-side in `application/{feature}/query/secondaryport/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`). **The domain layer declares no ports and performs no I/O**; `{context}/domain` depends only on `shared:domain`, so a port under `domain/` would invert the module dependency and not compile. **Output ports speak `Entity`, never `Domain`** — `registrarFicha(FichaPerfilEntity)`, `buscarPorId(...) → Optional<FichaPerfilEntity>` — because infrastructure must not see the domain layer at all.
 
-**Entities and mappers:** JPA `@Entity` classes live in `application/{feature}/command/secondaryport/entity/` (suffix `Entity`, Lombok `@Getter/@Builder/@NoArgsConstructor/@AllArgsConstructor`) and their mappers in the sibling `mapper/` package (suffix `Mapper`, `final`, private constructor, **static** methods `toDomain`/`toEntity`/`toReadModel` — no Spring, no injection). Both sit under `command/` even when the read side uses them: an entity is not command- or query-specific, and the query side imports it from there rather than duplicating it. The application module therefore declares `jakarta.persistence:jakarta.persistence-api` (only the annotations — not the JPA starter), and each context's `EntityManagerFactory` scans `com.arquisoft.{contexto}.application`; the `@DataJpaTest` anchor class carries a matching `@EntityScan`.
+**Entities and mappers:** JPA `@Entity` classes live in `application/{feature}/command/secondaryport/entity/` (suffix `Entity`, Lombok `@Getter/@Builder/@NoArgsConstructor/@AllArgsConstructor`) and their mappers in the sibling `mapper/` package (suffix `Mapper`, `final`, private constructor, **static** methods `toDomain`/`toEntity` — no Spring, no injection). Both sit under `command/` even when the read side uses them: an entity is not command- or query-specific, and the query side imports it from there rather than duplicating it. **`toReadModel` does not live here** — a `ReadModel` is a query artifact, so mapping to it belongs to `application/{feature}/query/mapper/{Feature}QueryMapper.java` (same rules: `final`, private constructor, static). This keeps the dependency one-way: the query side may import the command-side `Entity`, but the command side never imports anything under `query/`. The query output adapter delegates to that mapper — it never declares a private `toReadModel` of its own. The application module therefore declares `jakarta.persistence:jakarta.persistence-api` (only the annotations — not the JPA starter), and each context's `EntityManagerFactory` scans `com.arquisoft.{contexto}.application`; the `@DataJpaTest` anchor class carries a matching `@EntityScan`.
 
 **Where the conversion happens:** the **use case** maps `Domain → Entity` before calling the port, and the **finder** maps `Entity → Domain` after it returns. Adapters no longer translate anything — they delegate to the repository and nothing else. A mapper needing a `@ManyToOne` association builds it as an id-only detached instance (`AsesorFichaEntity.builder().id(...).build()`); with no cascade configured, Hibernate writes just the foreign key, which is what replaces the old `getReferenceById` proxy the adapter used to resolve. Enums are the mapper's job too — see "Catalog enums" below: `EstadoFicha.desde(entity.getEstadoFicha().getId())`, never a bare `valueOf`.
 
@@ -186,7 +188,7 @@ Either way the rule that consumes existence gets its own `Existencia{Concepto}(�
 
 **Repositories:** Spring Data interfaces stay in infrastructure and are **split by side** — `{Feature}CommandRepository` in `command/secondaryadapter/repository/` and `{Feature}QueryRepository` in `query/secondaryadapter/repository/`, each declaring only the methods its side uses. There is no `infrastructure/{feature}/persistence/` package any more.
 
-**Input adapters:** REST controllers in `infrastructure/{feature}/command/primaryadapter/web/` (or `query/.../web/`), suffix `Controller` (e.g., `RegistrarFichaPerfilController`) — there is no Spanish exception for this suffix anymore. AMQP consumers in `infrastructure/{feature}/command/primaryadapter/amqp/`, suffix `InputAdapter` (e.g., `UsuarioCreadoInputAdapter`).
+**Input adapters:** REST controllers in `infrastructure/{feature}/command/primaryadapter/web/` (or `query/.../web/`), suffix `Controller` (e.g., `RegistrarFichaPerfilController`) — there is no Spanish exception for this suffix anymore. AMQP consumers in `infrastructure/{feature}/command/primaryadapter/amqp/`, suffix `Consumer` (e.g., `UsuarioCreadoConsumer`) — matching the `AbstractEventConsumer` base class they extend; `Controller` is reserved for HTTP entry points.
 
 **Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/{feature}/command/secondaryadapter/repository/` (or an appropriately named sub-package for non-JPA integrations, e.g. `secondaryadapter/keycloak/`, `secondaryadapter/redis/`, `secondaryadapter/jwt/` in `seguridad`), suffix `OutputAdapter` (e.g., `FichaPerfilCommandOutputAdapter`, `KeycloakAuthOutputAdapter`). Implement the corresponding `OutputPort` interface.
 
@@ -226,7 +228,7 @@ Either way the rule that consumes existence gets its own `Existencia{Concepto}(�
 
 **Where each exception lives:** an exception thrown by a `Rule` lives in `domain/{feature}/exception/` and extends `DomainException` (→ 422) — including "not found", "duplicate", and ownership checks (`FichaNoPropietarioException`, `ItemFichaNoPropiaException`, `EvaluacionFichaNoPropiaException`); there is no separate 403 case for "you are not the owner" — it is modeled as another invalid-state 422. An exception thrown by application-layer orchestration lives in `application/{feature}/exception/` and extends `ApplicationException` (→ 400). Infrastructure failures stay `InfrastructureException` (→ 503) and are raised by the output adapters.
 
-**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Domain`, `Interactor`, `UseCase`, `Impl`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `Controller`, `ReadModel`, `DTO`, `Command`) — no Spanish exception remains; REST controllers were renamed from `Controlador` to `Controller` for consistency.
+**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Domain`, `Interactor`, `UseCase`, `Impl`, `OutputPort`, `Consumer`, `OutputAdapter`, `Controller`, `ReadModel`, `DTO`, `Command`) — no Spanish exception remains; REST controllers were renamed from `Controlador` to `Controller` for consistency.
 
 **Injection:** Always constructor injection via `@RequiredArgsConstructor` — never `@Autowired`.
 

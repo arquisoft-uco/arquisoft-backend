@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryp
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.AgregacionEstadoEvaluacionFichaDomain;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -89,6 +90,7 @@ class EstadoEvaluacionFichaConsultasFinderTest {
 
     private AgregacionEstadoEvaluacionFichaDomain entrada() {
         return AgregacionEstadoEvaluacionFichaDomain.crear(
-                evaluacion, EstadoEvaluacion.APROBADA.getId(), representante);
+                EstadoEvaluacionFichaDomain.crearConEstado(evaluacion, EstadoEvaluacion.APROBADA.getId()),
+                representante);
     }
 }

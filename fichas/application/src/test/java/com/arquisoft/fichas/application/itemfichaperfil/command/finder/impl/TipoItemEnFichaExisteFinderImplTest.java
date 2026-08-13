@@ -2,6 +2,7 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.finder.impl;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.domain.itemfichaperfil.AgregacionItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +29,7 @@ class TipoItemEnFichaExisteFinderImplTest {
         // Arrange
         UUID fichaPerfil = UUID.randomUUID();
         var item = AgregacionItemFichaPerfilDomain.crear(
-                fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido", UUID.randomUUID()).getItem();
+                ItemFichaPerfilDomain.crear(fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido"), UUID.randomUUID()).getItem();
         when(itemFichaPerfilOutputPort.existePorFichaYTipoItem(
                 fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId())).thenReturn(true);
 
@@ -41,7 +42,7 @@ class TipoItemEnFichaExisteFinderImplTest {
         // Arrange
         UUID fichaPerfil = UUID.randomUUID();
         var item = AgregacionItemFichaPerfilDomain.crear(
-                fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido", UUID.randomUUID()).getItem();
+                ItemFichaPerfilDomain.crear(fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido"), UUID.randomUUID()).getItem();
         when(itemFichaPerfilOutputPort.existePorFichaYTipoItem(
                 fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId())).thenReturn(false);
 

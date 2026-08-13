@@ -5,6 +5,7 @@ import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
 import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
 import com.arquisoft.fichas.domain.itemfichaperfil.AgregacionItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.model.DisponibilidadTipoItem;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemTipoNoDuplicadoRule;
@@ -41,7 +42,7 @@ class AgregarItemFichaPerfilValidatorTest {
         UUID fichaPerfil = UUID.randomUUID();
         UUID estudiante = UUID.randomUUID();
         var agregacion = AgregacionItemFichaPerfilDomain.crear(
-                fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item", estudiante);
+                ItemFichaPerfilDomain.crear(fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item"), estudiante);
 
         // Act
         validator.validar(agregacion.getItem(), estudiante, true, true, false);
@@ -60,7 +61,7 @@ class AgregarItemFichaPerfilValidatorTest {
         UUID fichaPerfil = UUID.randomUUID();
         UUID estudiante = UUID.randomUUID();
         var agregacion = AgregacionItemFichaPerfilDomain.crear(
-                fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item", estudiante);
+                ItemFichaPerfilDomain.crear(fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item"), estudiante);
 
         // Act
         validator.validar(agregacion.getItem(), estudiante, true, false, true);

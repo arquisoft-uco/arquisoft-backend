@@ -31,7 +31,7 @@ class EstadoEvaluacionFichaDomainTest {
     void debeConstruirEntidadManual_cuandoFactoryCrearConEstado() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        EstadoEvaluacion estadoEvaluacion = EstadoEvaluacion.APROBADA;
+        String estadoEvaluacion = EstadoEvaluacion.APROBADA.getId();
 
         // Act
         EstadoEvaluacionFichaDomain aggregate = EstadoEvaluacionFichaDomain.crearConEstado(evaluacionId, estadoEvaluacion);
@@ -81,7 +81,7 @@ class EstadoEvaluacionFichaDomainTest {
     void debeLanzarExcepcion_cuandoEvaluacionIdEsNulEnFactoryCrearConEstado() {
         // Arrange
         UUID evaluacionId = null;
-        EstadoEvaluacion estadoEvaluacion = EstadoEvaluacion.APROBADA;
+        String estadoEvaluacion = EstadoEvaluacion.APROBADA.getId();
 
         // Act & Assert
         assertThatThrownBy(() -> EstadoEvaluacionFichaDomain.crearConEstado(evaluacionId, estadoEvaluacion))
@@ -93,11 +93,22 @@ class EstadoEvaluacionFichaDomainTest {
     void debeLanzarExcepcion_cuandoEstadoIdEsNulEnFactoryCrearConEstado() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
-        EstadoEvaluacion estadoEvaluacion = null;
+        String estadoEvaluacion = null;
 
         // Act & Assert
         assertThatThrownBy(() -> EstadoEvaluacionFichaDomain.crearConEstado(evaluacionId, estadoEvaluacion))
                 .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining("no puede ser nulo");
+                .hasMessageContaining("no puede ser");
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoEstadoNoPerteneceAlCatalogo() {
+        // Arrange
+        UUID evaluacionId = UUID.randomUUID();
+        String estadoEvaluacion = "INEXISTENTE";
+
+        // Act & Assert
+        assertThatThrownBy(() -> EstadoEvaluacionFichaDomain.crearConEstado(evaluacionId, estadoEvaluacion))
+                .isInstanceOf(DomainValidationException.class);
     }
 }

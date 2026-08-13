@@ -26,9 +26,8 @@ public class RegistrarFichaPerfilInteractorImpl implements RegistrarFichaPerfilI
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
     public UUID ejecutar(RegistrarFichaPerfilCommand command) {
-        var ficha = RegistrarFichaPerfilMapper.toDomain(command);
 
-        UUID fichaPerfil = registrarFichaPerfilUseCase.ejecutar(ficha);
+        UUID fichaPerfil = registrarFichaPerfilUseCase.ejecutar(RegistrarFichaPerfilMapper.toDomain(command));
 
         asignarEstadoInicialFichaPerfilUseCase.ejecutar(AsignarEstadoInicialFichaPerfilMapper.toDomain(fichaPerfil));
 

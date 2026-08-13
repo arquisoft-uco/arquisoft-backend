@@ -22,7 +22,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class UsuarioCreadoInputAdapterTest {
+class UsuarioCreadoConsumerTest {
 
     @Mock
     private RegistrarUsuarioUseCase registrarUsuarioUseCase;
@@ -30,12 +30,12 @@ class UsuarioCreadoInputAdapterTest {
     @Mock
     private Channel channel;
 
-    private UsuarioCreadoInputAdapter adapter;
+    private UsuarioCreadoConsumer adapter;
 
     @BeforeEach
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
-        adapter = new UsuarioCreadoInputAdapter(registrarUsuarioUseCase, objectMapper,
+        adapter = new UsuarioCreadoConsumer(registrarUsuarioUseCase, objectMapper,
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
                 CatalogoMensajesResourceBundle.porDefecto());
     }

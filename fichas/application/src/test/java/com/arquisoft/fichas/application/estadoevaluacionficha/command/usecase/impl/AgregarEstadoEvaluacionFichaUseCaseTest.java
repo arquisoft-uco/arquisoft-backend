@@ -182,7 +182,8 @@ class AgregarEstadoEvaluacionFichaUseCaseTest {
 
     private AgregacionEstadoEvaluacionFichaDomain entrada() {
         return AgregacionEstadoEvaluacionFichaDomain.crear(
-                evaluacion, EstadoEvaluacion.APROBADA.getId(), representante);
+                EstadoEvaluacionFichaDomain.crearConEstado(evaluacion, EstadoEvaluacion.APROBADA.getId()),
+                representante);
     }
 
     // El puerto devuelve la entidad; convertirla al enum de dominio es tarea del mapper.

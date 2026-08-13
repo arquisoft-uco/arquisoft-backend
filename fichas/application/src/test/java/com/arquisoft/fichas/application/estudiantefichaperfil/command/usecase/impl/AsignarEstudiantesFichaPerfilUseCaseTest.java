@@ -9,6 +9,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.AgregacionEstudiantesFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.CupoEstudiantesExcedidoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
@@ -79,7 +80,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones);
 
         // Assert
-        verify(estudianteFichaPerfilOutputPort, times(1)).vincularEstudiante(entidadDe(relaciones.getFirst()));
+        verify(estudianteFichaPerfilOutputPort, times(1)).vincularEstudiante(entidadDe(relaciones.getRelaciones().getFirst()));
     }
 
     @Test
@@ -97,11 +98,11 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
                 asignarEstudiantesFichaPerfilValidator, estudianteFichaPerfilOutputPort);
         inOrder.verify(fichaPerfilExisteFinder).obtener(fichaPerfil);
         inOrder.verify(estudiantesExistentesFinder).obtener(List.of(estudiante));
-        inOrder.verify(estudiantesYaVinculadosFinder).obtener(relaciones);
+        inOrder.verify(estudiantesYaVinculadosFinder).obtener(relaciones.getRelaciones());
         inOrder.verify(estudiantesVinculadosContadorFinder).obtener(fichaPerfil);
         inOrder.verify(asignarEstudiantesFichaPerfilValidator)
                 .validar(relaciones, true, List.of(estudiante), List.of(), 0L);
-        inOrder.verify(estudianteFichaPerfilOutputPort).vincularEstudiante(entidadDe(relaciones.getFirst()));
+        inOrder.verify(estudianteFichaPerfilOutputPort).vincularEstudiante(entidadDe(relaciones.getRelaciones().getFirst()));
     }
 
     @Test
@@ -158,7 +159,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         var relaciones = relaciones();
         stubConsultas(true, List.of(estudiante), List.of(), 0L);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
-                .when(estudianteFichaPerfilOutputPort).vincularEstudiante(entidadDe(relaciones.getFirst()));
+                .when(estudianteFichaPerfilOutputPort).vincularEstudiante(entidadDe(relaciones.getRelaciones().getFirst()));
 
         // Act & Assert
         assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
@@ -173,8 +174,9 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         when(estudiantesVinculadosContadorFinder.obtener(fichaPerfil)).thenReturn(vinculadosActuales);
     }
 
-    private List<EstudianteFichaPerfilDomain> relaciones() {
-        return EstudianteFichaPerfilDomain.crear(fichaPerfil, List.of(estudiante));
+    private AgregacionEstudiantesFichaPerfilDomain relaciones() {
+        return AgregacionEstudiantesFichaPerfilDomain.crear(
+                EstudianteFichaPerfilDomain.crear(fichaPerfil, List.of(estudiante)));
     }
 
     // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.

@@ -8,7 +8,7 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.Est
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.AgregacionEstudiantesFichaPerfilDomain;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.mapper.EstudianteFichaPerfilMapper;
 import com.arquisoft.shared.logger.AppLogger;
@@ -32,22 +32,20 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
     private final CatalogoMensajes catalogo;
 
     @Override
-    public void ejecutar(List<EstudianteFichaPerfilDomain> relaciones) {
-        UUID fichaPerfil = relaciones.getFirst().getFichaPerfilId();
-        List<UUID> estudiantes = relaciones.stream().map(EstudianteFichaPerfilDomain::getEstudianteId).toList();
-
-        boolean fichaExiste = fichaPerfilExisteFinder.obtener(fichaPerfil);
-        List<UUID> estudiantesExistentes = estudiantesExistentesFinder.obtener(estudiantes);
-        List<UUID> yaVinculados = estudiantesYaVinculadosFinder.obtener(relaciones);
-        long vinculadosActuales = estudiantesVinculadosContadorFinder.obtener(fichaPerfil);
+    public void ejecutar(AgregacionEstudiantesFichaPerfilDomain entrada) {
+        boolean fichaExiste = fichaPerfilExisteFinder.obtener(entrada.getFichaPerfil());
+        List<UUID> estudiantesExistentes = estudiantesExistentesFinder.obtener(entrada.getEstudiantes());
+        List<UUID> yaVinculados = estudiantesYaVinculadosFinder.obtener(entrada.getRelaciones());
+        long vinculadosActuales = estudiantesVinculadosContadorFinder.obtener(entrada.getFichaPerfil());
 
         asignarEstudiantesFichaPerfilValidator.validar(
-                relaciones, fichaExiste, estudiantesExistentes, yaVinculados, vinculadosActuales);
+                entrada, fichaExiste, estudiantesExistentes, yaVinculados, vinculadosActuales);
 
-        relaciones.stream()
+        entrada.getRelaciones().stream()
                 .map(EstudianteFichaPerfilMapper::toEntity)
                 .forEach(estudianteFichaPerfilOutputPort::vincularEstudiante);
 
-        logger.info(catalogo.obtener(EstudianteFichaPerfilKey.LOG_ASIGNADO), fichaPerfil, relaciones.size());
+        logger.info(catalogo.obtener(EstudianteFichaPerfilKey.LOG_ASIGNADO),
+                entrada.getFichaPerfil(), entrada.getCantidad());
     }
 }

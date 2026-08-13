@@ -52,7 +52,8 @@ class AgregarEstadoEvaluacionFichaValidatorTest {
         UUID evaluacion = UUID.randomUUID();
         UUID representante = UUID.randomUUID();
         var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(
-                evaluacion, EstadoEvaluacion.APROBADA.getId(), representante);
+                EstadoEvaluacionFichaDomain.crearConEstado(evaluacion, EstadoEvaluacion.APROBADA.getId()),
+                representante);
 
         // Act
         validator.validar(entrada, true, true, false, EstadoEvaluacionFichaDomain.VACIO);
@@ -78,7 +79,8 @@ class AgregarEstadoEvaluacionFichaValidatorTest {
         UUID evaluacion = UUID.randomUUID();
         UUID representante = UUID.randomUUID();
         var entrada = AgregacionEstadoEvaluacionFichaDomain.crear(
-                evaluacion, EstadoEvaluacion.APROBADA.getId(), representante);
+                EstadoEvaluacionFichaDomain.crearConEstado(evaluacion, EstadoEvaluacion.APROBADA.getId()),
+                representante);
 
         // Act
         validator.validar(entrada, true, false, true, EstadoEvaluacionFichaDomain.VACIO);
