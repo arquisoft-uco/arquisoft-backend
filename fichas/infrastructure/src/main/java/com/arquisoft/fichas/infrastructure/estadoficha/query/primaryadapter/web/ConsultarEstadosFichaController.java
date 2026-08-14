@@ -3,6 +3,8 @@ package com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web
 import com.arquisoft.shared.message.annotation.FichasApiKeys;
 import com.arquisoft.fichas.application.estadoficha.query.primaryport.usecase.ConsultarEstadosFichaUseCase;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
+import com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.dto.EstadoFichaResponseDTO;
+import com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.mapper.EstadoFichaResponseMapper;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
 import com.arquisoft.shared.web.openapi.ApiCodes;
@@ -42,7 +44,7 @@ public class ConsultarEstadosFichaController {
                     description = FichasApiKeys.EstadoFicha.CONSULTAR_RESP_200,
                     content = @Content(
                             mediaType = org.springframework.http.MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = EstadoFichaReadModel.class)
+                            schema = @Schema(implementation = EstadoFichaResponseDTO.class)
                     )),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
                     description = FichasApiKeys.EstadoFicha.CONSULTAR_RESP_401,
@@ -51,8 +53,11 @@ public class ConsultarEstadosFichaController {
                     description = FichasApiKeys.EstadoFicha.CONSULTAR_RESP_403,
                     content = @Content)
     })
-    public ResponseEntity<List<EstadoFichaReadModel>> consultarEstadosFicha() {
+    public ResponseEntity<List<EstadoFichaResponseDTO>> consultarEstadosFicha() {
         List<EstadoFichaReadModel> estados = consultarEstadosFichaUseCase.ejecutar(null);
-        return ResponseEntity.ok(estados);
+
+        return ResponseEntity.ok(estados.stream()
+                .map(EstadoFichaResponseMapper::toResponse)
+                .toList());
     }
 }

@@ -9,15 +9,13 @@ public final class FichaPerfilQueryMapper {
     private FichaPerfilQueryMapper() {}
 
     public static FichaPerfilReadModel toReadModel(FichaPerfilJpaQueryEntity entity) {
-        return FichaPerfilReadModel.builder()
-                .id(entity.getId())
-                .tituloProyecto(entity.getTituloProyecto())
-                .asesorFicha(AsesorFichaReadModel.builder()
-                        .id(entity.getAsesorId())
-                        .identificador(entity.getAsesorIdentificador())
-                        .nombre(entity.getAsesorNombre())
-                        .email(entity.getAsesorEmail())
-                        .build())
-                .build();
+        return new FichaPerfilReadModel(
+                entity.getId(),
+                entity.getTituloProyecto(),
+                new AsesorFichaReadModel(
+                        entity.getAsesorId(),
+                        entity.getAsesorIdentificador(),
+                        entity.getAsesorNombre(),
+                        entity.getAsesorEmail()));
     }
 }

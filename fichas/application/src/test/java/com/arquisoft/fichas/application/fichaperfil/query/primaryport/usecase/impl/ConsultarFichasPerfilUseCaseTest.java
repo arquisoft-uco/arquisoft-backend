@@ -41,10 +41,8 @@ class ConsultarFichasPerfilUseCaseTest {
     void debeRetornarFichasPaginadas_cuandoExistenFichas() {
         FichaPerfilCriteria criteria = FichaPerfilCriteria.builder().pagina(0).tamanio(10).build();
 
-        FichaPerfilReadModel ficha = FichaPerfilReadModel.builder()
-                .id(UUID.randomUUID())
-                .tituloProyecto("Arquisoft Backend")
-                .build();
+        FichaPerfilReadModel ficha = new FichaPerfilReadModel(
+                UUID.randomUUID(), "Arquisoft Backend", null);
 
         PaginatedResult<FichaPerfilReadModel> resultadoEsperado =
                 PaginatedResult.of(List.of(ficha), 0, 10, 1L);
@@ -55,7 +53,7 @@ class ConsultarFichasPerfilUseCaseTest {
 
         assertThat(resultado).isNotNull();
         assertThat(resultado.getContent()).hasSize(1);
-        assertThat(resultado.getContent().get(0).getTituloProyecto()).isEqualTo("Arquisoft Backend");
+        assertThat(resultado.getContent().get(0).tituloProyecto()).isEqualTo("Arquisoft Backend");
         assertThat(resultado.getTotalElements()).isEqualTo(1L);
         assertThat(resultado.getPage()).isEqualTo(0);
         assertThat(resultado.getSize()).isEqualTo(10);

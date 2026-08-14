@@ -6,6 +6,8 @@ import com.arquisoft.shared.message.annotation.FichasApiKeys;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.usecase.ConsultarFichasPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
+import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.dto.FichaPerfilResponseDTO;
+import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.FichaPerfilResponseMapper;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
 import com.arquisoft.shared.logger.AppLogger;
@@ -60,7 +62,7 @@ public class ConsultarFichasPerfilController {
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
                     description = FichasApiKeys.FichaPerfil.CONSULTAR_RESP_403)
     })
-    public ResponseEntity<PageResponseDTO<FichaPerfilReadModel>> consultarFichasCoordinador(
+    public ResponseEntity<PageResponseDTO<FichaPerfilResponseDTO>> consultarFichasCoordinador(
             @RequestBody(required = false) QueryCriteriaRequestDTO request) {
 
         QueryCriteriaRequestDTO solicitud = request != null ? request : new QueryCriteriaRequestDTO();
@@ -76,6 +78,7 @@ public class ConsultarFichasPerfilController {
 
         PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilUseCase.ejecutar(criteria);
 
-        return ResponseEntity.ok(PageResponseDTO.from(resultado));
+        return ResponseEntity.ok(PageResponseDTO.from(
+                resultado.map(FichaPerfilResponseMapper::toResponse)));
     }
 }

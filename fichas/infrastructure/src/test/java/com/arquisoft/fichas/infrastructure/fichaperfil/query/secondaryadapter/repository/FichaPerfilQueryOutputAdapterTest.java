@@ -63,8 +63,8 @@ class FichaPerfilQueryOutputAdapterTest {
         assertThat(resultado.getTotalElements()).isEqualTo(1L);
 
         FichaPerfilReadModel fichaLeida = resultado.getContent().get(0);
-        assertThat(fichaLeida.getTituloProyecto()).isEqualTo("Arquisoft Backend");
-        assertThat(fichaLeida.getAsesorFicha().getNombre()).isEqualTo("Juan Salazar");
+        assertThat(fichaLeida.tituloProyecto()).isEqualTo("Arquisoft Backend");
+        assertThat(fichaLeida.asesorFicha().nombre()).isEqualTo("Juan Salazar");
     }
 
     @Test
