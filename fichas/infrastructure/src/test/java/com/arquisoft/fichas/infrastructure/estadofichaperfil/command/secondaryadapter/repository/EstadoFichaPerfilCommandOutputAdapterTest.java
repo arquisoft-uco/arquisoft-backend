@@ -4,11 +4,11 @@ import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.mapper.EstadoFichaPerfilMapper;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository.EstadoFichaQueryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -22,7 +22,7 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
     private EstadoFichaPerfilCommandRepository estadoFichaPerfilRepository;
 
     @Autowired
-    private EstadoFichaQueryRepository estadoFichaRepository;
+    private TestEntityManager entityManager;
 
     private EstadoFichaPerfilCommandOutputAdapter adapter;
 
@@ -30,12 +30,12 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
     void setUp() {
         adapter = new EstadoFichaPerfilCommandOutputAdapter(estadoFichaPerfilRepository);
 
-        estadoFichaRepository.save(EstadoFichaEntity.builder()
+        entityManager.persist(EstadoFichaEntity.builder()
                 .id("EN_CONSTRUCCION")
                 .nombre("En Construccion")
                 .descripcion("Estado inicial")
                 .build());
-        estadoFichaRepository.save(EstadoFichaEntity.builder()
+        entityManager.persist(EstadoFichaEntity.builder()
                 .id("APROBADA")
                 .nombre("Aprobada")
                 .descripcion("Estado terminal")

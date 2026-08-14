@@ -10,9 +10,11 @@ import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true, transactionManager = "fichasTransactionManager")
 public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilUseCase {
 
     private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;

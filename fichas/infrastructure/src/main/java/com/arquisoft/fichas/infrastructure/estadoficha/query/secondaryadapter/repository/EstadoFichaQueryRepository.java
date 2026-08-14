@@ -1,11 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository;
 
-import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.arquisoft.shared.postgres.repository.ReadOnlyRepository;
 
-import java.util.Optional;
-
-public interface EstadoFichaQueryRepository extends JpaRepository<EstadoFichaEntity, String> {
-
-    Optional<EstadoFichaEntity> findByNombre(String nombre);
+public interface EstadoFichaQueryRepository extends ReadOnlyRepository<EstadoFichaJpaQueryEntity, String> {
 }

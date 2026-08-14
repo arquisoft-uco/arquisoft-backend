@@ -4,8 +4,8 @@ dependencies {
     // Expone shared:domain a los consumidores de este módulo
     api project(':shared:domain')
 
-    // Spring Data JPA — Specification, Root, CriteriaBuilder
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    // Spring Data JPA — Specification, Root, CriteriaBuilder, ReadOnlyRepository
+    api "org.springframework.boot:spring-boot-starter-data-jpa"
 
     // Lombok para @Slf4j si fuese necesario en futuras utilidades
     compileOnly "org.projectlombok:lombok:${lombokVersion}"

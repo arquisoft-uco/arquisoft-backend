@@ -2,12 +2,12 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.query.secondaryada
 
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
-import com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository.EstadoFichaQueryRepository;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -22,7 +22,7 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
     private EstadoFichaPerfilQueryRepository estadoFichaPerfilRepository;
 
     @Autowired
-    private EstadoFichaQueryRepository estadoFichaRepository;
+    private TestEntityManager entityManager;
 
     private EstadoFichaPerfilQueryOutputAdapter adapter;
 
@@ -35,24 +35,24 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
                 .nombre("En Construccion")
                 .descripcion("Estado inicial")
                 .build();
-        estadoFichaRepository.save(estadoFicha);
+        entityManager.persist(estadoFicha);
 
         var estadoAprobada = EstadoFichaEntity.builder()
                 .id("APROBADA")
                 .nombre("Aprobada")
                 .descripcion("Estado terminal")
                 .build();
-        estadoFichaRepository.save(estadoAprobada);
+        entityManager.persist(estadoAprobada);
     }
 
     private void persistirEstado(UUID fichaPerfilId, String estadoFichaId, Instant fechaActualizacion) {
         var entity = EstadoFichaPerfilEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
-                .estadoFicha(estadoFichaRepository.findById(estadoFichaId).orElseThrow())
+                .estadoFicha(entityManager.find(EstadoFichaEntity.class, estadoFichaId))
                 .fechaActualizacion(fechaActualizacion)
                 .build();
-        estadoFichaPerfilRepository.save(entity);
+        entityManager.persist(entity);
     }
 
     @Test

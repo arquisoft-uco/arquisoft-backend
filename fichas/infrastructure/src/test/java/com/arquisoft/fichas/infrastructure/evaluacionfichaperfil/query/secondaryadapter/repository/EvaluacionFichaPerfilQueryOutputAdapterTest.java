@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -17,6 +18,9 @@ class EvaluacionFichaPerfilQueryOutputAdapterTest {
 
     @Autowired
     private EvaluacionFichaPerfilQueryRepository evaluacionFichaPerfilRepository;
+
+    @Autowired
+    private TestEntityManager entityManager;
 
     private EvaluacionFichaPerfilQueryOutputAdapter adapter;
 
@@ -32,7 +36,7 @@ class EvaluacionFichaPerfilQueryOutputAdapterTest {
                 .fichaPerfilId(UUID.randomUUID())
                 .fechaCreacion(Instant.now())
                 .build();
-        evaluacionFichaPerfilRepository.save(entity);
+        entityManager.persist(entity);
         return entity.getId();
     }
 

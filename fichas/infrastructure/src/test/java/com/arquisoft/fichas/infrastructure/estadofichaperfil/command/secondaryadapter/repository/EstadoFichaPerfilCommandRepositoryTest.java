@@ -2,11 +2,11 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondarya
 
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
-import com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository.EstadoFichaQueryRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -21,7 +21,7 @@ class EstadoFichaPerfilCommandRepositoryTest {
     private EstadoFichaPerfilCommandRepository estadoFichaPerfilRepository;
 
     @Autowired
-    private EstadoFichaQueryRepository estadoFichaRepository;
+    private TestEntityManager entityManager;
 
     private EstadoFichaEntity estadoFicha;
 
@@ -32,7 +32,7 @@ class EstadoFichaPerfilCommandRepositoryTest {
                 .nombre("En Construccion")
                 .descripcion("Estado inicial")
                 .build();
-        estadoFichaRepository.save(estadoFicha);
+        entityManager.persist(estadoFicha);
     }
 
     @Test
@@ -47,7 +47,7 @@ class EstadoFichaPerfilCommandRepositoryTest {
                 .build();
 
         // Act
-        EstadoFichaPerfilEntity resultado = estadoFichaPerfilRepository.save(entity);
+        EstadoFichaPerfilEntity resultado = entityManager.persist(entity);
 
         // Assert
         assertThat(resultado).isNotNull();
@@ -66,7 +66,7 @@ class EstadoFichaPerfilCommandRepositoryTest {
                 .estadoFicha(estadoFicha)
                 .fechaActualizacion(Instant.now())
                 .build();
-        estadoFichaPerfilRepository.save(entity);
+        entityManager.persist(entity);
 
         // Act
         Optional<EstadoFichaPerfilEntity> resultado = estadoFichaPerfilRepository.findById(entity.getId());

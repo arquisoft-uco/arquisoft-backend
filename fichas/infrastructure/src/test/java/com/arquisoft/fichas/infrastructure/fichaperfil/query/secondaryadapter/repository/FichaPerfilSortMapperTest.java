@@ -27,7 +27,7 @@ class FichaPerfilSortMapperTest {
         String ruta = FichaPerfilSortMapper.traducir(clave);
 
         // Assert
-        assertThat(ruta).isEqualTo("asesorFicha.nombre");
+        assertThat(ruta).isEqualTo("asesorNombre");
     }
 
     @Test
@@ -39,7 +39,7 @@ class FichaPerfilSortMapperTest {
         String ruta = FichaPerfilSortMapper.traducir(clave);
 
         // Assert
-        assertThat(ruta).isEqualTo("asesorFicha.email");
+        assertThat(ruta).isEqualTo("asesorEmail");
     }
 
     @Test

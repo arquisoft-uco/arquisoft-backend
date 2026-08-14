@@ -6,8 +6,7 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCr
 import com.arquisoft.fichas.application.fichaperfil.query.secondaryport.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.exception.OrdenamientoInvalidoException;
-import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
-import com.arquisoft.fichas.application.fichaperfil.query.mapper.FichaPerfilQueryMapper;
+import com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.repository.mapper.FichaPerfilQueryMapper;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.SortDirection;
 import com.arquisoft.shared.postgres.util.PaginationMapper;
@@ -36,7 +35,7 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
     @Override
     public PaginatedResult<FichaPerfilReadModel> consultarTodas(FichaPerfilCriteria criteria) {
         Pageable pageable = toPageable(criteria);
-        Specification<FichaPerfilEntity> spec = specification.desdeCriteria(criteria);
+        Specification<FichaPerfilJpaQueryEntity> spec = specification.desdeCriteria(criteria);
         try {
             return PaginationMapper.toResult(
                     fichaPerfilRepository.findAll(spec, pageable)

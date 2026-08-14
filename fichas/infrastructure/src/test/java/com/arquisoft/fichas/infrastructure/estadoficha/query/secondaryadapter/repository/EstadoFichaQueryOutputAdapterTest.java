@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
-import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,25 +26,25 @@ class EstadoFichaQueryOutputAdapterTest {
     @Test
     void debeRetornarListaDeReadModels_cuandoFindAllEsInvocado() {
         // Arrange
-        EstadoFichaEntity entity1 = EstadoFichaEntity.builder()
+        EstadoFichaJpaQueryEntity entity1 = EstadoFichaJpaQueryEntity.builder()
                 .id("EN_CONSTRUCCION")
                 .nombre("En Construccion")
                 .descripcion("Ficha en desarrollo")
                 .build();
 
-        EstadoFichaEntity entity2 = EstadoFichaEntity.builder()
+        EstadoFichaJpaQueryEntity entity2 = EstadoFichaJpaQueryEntity.builder()
                 .id("APROBADA")
                 .nombre("Aprobada")
                 .descripcion("Ficha aprobada por el comite")
                 .build();
 
-        EstadoFichaEntity entity3 = EstadoFichaEntity.builder()
+        EstadoFichaJpaQueryEntity entity3 = EstadoFichaJpaQueryEntity.builder()
                 .id("NO_APROBADA")
                 .nombre("No Aprobada")
                 .descripcion("Ficha rechazada")
                 .build();
 
-        List<EstadoFichaEntity> entities = List.of(entity1, entity2, entity3);
+        List<EstadoFichaJpaQueryEntity> entities = List.of(entity1, entity2, entity3);
         when(repository.findAll()).thenReturn(entities);
 
         // Act
@@ -87,7 +86,7 @@ class EstadoFichaQueryOutputAdapterTest {
     @Test
     void debeMaperarCorrectamente_cuandoConvierteEntityAReadModel() {
         // Arrange
-        EstadoFichaEntity entity = EstadoFichaEntity.builder()
+        EstadoFichaJpaQueryEntity entity = EstadoFichaJpaQueryEntity.builder()
                 .id("DISPONIBLE_PARA_EVALUACION")
                 .nombre("Disponible para Evaluacion")
                 .descripcion("Ficha lista para ser evaluada")

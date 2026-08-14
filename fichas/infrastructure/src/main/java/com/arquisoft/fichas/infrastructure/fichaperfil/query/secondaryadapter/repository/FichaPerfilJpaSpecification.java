@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
-import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.shared.postgres.query.CampoSpec;
 import com.arquisoft.shared.postgres.query.QueryJpaSpecification;
 import org.springframework.stereotype.Component;
@@ -11,18 +10,18 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
-class FichaPerfilJpaSpecification extends QueryJpaSpecification<FichaPerfilEntity> {
+class FichaPerfilJpaSpecification extends QueryJpaSpecification<FichaPerfilJpaQueryEntity> {
 
-    private static final Map<String, CampoSpec<FichaPerfilEntity>> CAMPOS;
+    private static final Map<String, CampoSpec<FichaPerfilJpaQueryEntity>> CAMPOS;
 
     static {
-        Map<String, CampoSpec<FichaPerfilEntity>> m = new LinkedHashMap<>();
+        Map<String, CampoSpec<FichaPerfilJpaQueryEntity>> m = new LinkedHashMap<>();
         for (FichaPerfilCriteria.Campo campo : FichaPerfilCriteria.Campo.values()) {
-            CampoSpec<FichaPerfilEntity> spec = switch (campo) {
+            CampoSpec<FichaPerfilJpaQueryEntity> spec = switch (campo) {
                 case TITULO_PROYECTO -> CampoSpec.texto(root -> root.get("tituloProyecto"));
-                case ASESOR_NOMBRE   -> CampoSpec.texto(root -> root.get("asesorFicha").get("nombre"));
-                case ASESOR_EMAIL    -> CampoSpec.texto(root -> root.get("asesorFicha").get("email"));
-                case ASESOR_ID       -> CampoSpec.uuid(root -> root.get("asesorFicha").get("id"));
+                case ASESOR_NOMBRE   -> CampoSpec.texto(root -> root.get("asesorNombre"));
+                case ASESOR_EMAIL    -> CampoSpec.texto(root -> root.get("asesorEmail"));
+                case ASESOR_ID       -> CampoSpec.uuid(root -> root.get("asesorId"));
             };
             m.put(campo.getClave(), spec);
         }
@@ -30,7 +29,7 @@ class FichaPerfilJpaSpecification extends QueryJpaSpecification<FichaPerfilEntit
     }
 
     @Override
-    protected Map<String, CampoSpec<FichaPerfilEntity>> camposPermitidos() {
+    protected Map<String, CampoSpec<FichaPerfilJpaQueryEntity>> camposPermitidos() {
         return CAMPOS;
     }
 }

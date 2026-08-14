@@ -15,8 +15,8 @@ final class FichaPerfilSortMapper {
         for (FichaPerfilCriteria.Campo campo : FichaPerfilCriteria.Campo.values()) {
             String ruta = switch (campo) {
                 case TITULO_PROYECTO -> "tituloProyecto";
-                case ASESOR_NOMBRE   -> "asesorFicha.nombre";
-                case ASESOR_EMAIL    -> "asesorFicha.email";
+                case ASESOR_NOMBRE   -> "asesorNombre";
+                case ASESOR_EMAIL    -> "asesorEmail";
                 case ASESOR_ID       -> null; // no ordenable
             };
             if (ruta != null) {

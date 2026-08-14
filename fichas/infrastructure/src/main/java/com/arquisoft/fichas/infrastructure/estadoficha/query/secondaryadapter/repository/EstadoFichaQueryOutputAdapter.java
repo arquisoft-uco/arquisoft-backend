@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.r
 
 import com.arquisoft.fichas.application.estadoficha.query.secondaryport.EstadoFichaQueryOutputPort;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
-import com.arquisoft.fichas.application.estadoficha.query.mapper.EstadoFichaQueryMapper;
+import com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository.mapper.EstadoFichaQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
