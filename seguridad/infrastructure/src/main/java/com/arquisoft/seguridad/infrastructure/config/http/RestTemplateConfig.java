@@ -1,5 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.http;
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +26,7 @@ public class RestTemplateConfig {
     @Bean
     @Primary
     public RestTemplate restTemplate() {
-        log.info("Configuring RestTemplate with connect timeout: {}ms, read timeout: {}ms",
+        log.info(Mensajes.obtener(ConfiguracionKey.LOG_REST_TEMPLATE_CONFIGURADO),
                 connectTimeout, readTimeout);
 
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
@@ -49,13 +51,14 @@ public class RestTemplateConfig {
 
     private ClientHttpRequestInterceptor loggingInterceptor() {
         return (request, body, execution) -> {
-            log.debug("HTTP Request: {} {}", request.getMethod(), request.getURI());
+            log.debug(Mensajes.obtener(ConfiguracionKey.LOG_HTTP_PETICION),
+                    request.getMethod(), request.getURI());
 
             long startTime = System.currentTimeMillis();
             var response = execution.execute(request, body);
             long duration = System.currentTimeMillis() - startTime;
 
-            log.debug("HTTP Response: {} {} - Status: {} - Duration: {}ms",
+            log.debug(Mensajes.obtener(ConfiguracionKey.LOG_HTTP_RESPUESTA),
                     request.getMethod(),
                     request.getURI(),
                     response.getStatusCode(),

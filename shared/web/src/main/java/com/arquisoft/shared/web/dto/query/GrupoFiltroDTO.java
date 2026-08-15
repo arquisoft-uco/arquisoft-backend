@@ -6,6 +6,8 @@ import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.NodoFiltro;
+import com.arquisoft.shared.util.UtilColeccion;
+import com.arquisoft.shared.util.UtilTexto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,15 +26,16 @@ public class GrupoFiltroDTO implements NodoFiltroDTO {
 
     @Override
     public NodoFiltro toDomain() {
-        if (conector == null || conector.isBlank()) {
+        if (UtilTexto.esVacioONulo(conector)) {
             throw new ApplicationException(
                     Mensajes.obtener(ConsultaKey.ERROR_CONECTOR_REQUERIDO),
                     AppCodes.Consulta.CONECTOR_REQUERIDO);
         }
-        List<NodoFiltroDTO> lista = nodos != null ? nodos : List.of();
         return NodoFiltro.grupo(
                 FiltroConector.parse(conector),
-                lista.stream().map(NodoFiltroDTO::toDomain).toList()
+                UtilColeccion.aplicarPorDefecto(nodos).stream()
+                        .map(NodoFiltroDTO::toDomain)
+                        .toList()
         );
     }
 }

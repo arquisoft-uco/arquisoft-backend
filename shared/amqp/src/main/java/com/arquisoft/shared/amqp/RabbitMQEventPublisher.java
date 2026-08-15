@@ -2,6 +2,8 @@ package com.arquisoft.shared.amqp;
 
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
@@ -41,14 +43,14 @@ public class RabbitMQEventPublisher implements EventPublisher { // EventPublishe
                     evento,
                     corr
                 );
-                log.info("Evento publicado: tipo={} claveRuta={} idEvento={}",
+                log.info(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_PUBLICADO),
                         evento.getTipoEvento(), claveRuta, evento.getIdEvento());
                 return;
             } catch (AmqpException ex) {
                 // Error transitorio de conectividad: vale la pena reintentar.
                 lastException = ex;
                 if (attempt < MAX_ATTEMPTS) {
-                    log.warn("Error al publicar evento (intento {}/{}), reintentando en {} ms: tipo={} idEvento={}",
+                    log.warn(Mensajes.obtener(MensajeriaKey.LOG_PUBLICACION_REINTENTO),
                             attempt, MAX_ATTEMPTS, backoffMs, evento.getTipoEvento(), evento.getIdEvento());
                     sleepUninterruptibly(backoffMs);
                     backoffMs *= 2;
@@ -56,13 +58,13 @@ public class RabbitMQEventPublisher implements EventPublisher { // EventPublishe
             } catch (RuntimeException ex) {
                 // Error no transitorio (ej. fallo de serialización): no se reintenta.
                 // Se loguea aquí para preservar el contexto del evento antes de propagar.
-                log.error("Error no recuperable al publicar evento (sin reintentos): tipo={} claveRuta={} idEvento={}",
+                log.error(Mensajes.obtener(MensajeriaKey.LOG_PUBLICACION_NO_RECUPERABLE),
                         evento.getTipoEvento(), claveRuta, evento.getIdEvento(), ex);
                 throw ex;
             }
         }
 
-        log.error("Error al publicar evento tras {} intentos: tipo={} claveRuta={} idEvento={}",
+        log.error(Mensajes.obtener(MensajeriaKey.LOG_PUBLICACION_AGOTADA),
                 MAX_ATTEMPTS, evento.getTipoEvento(), claveRuta, evento.getIdEvento(), lastException);
         throw lastException;
     }

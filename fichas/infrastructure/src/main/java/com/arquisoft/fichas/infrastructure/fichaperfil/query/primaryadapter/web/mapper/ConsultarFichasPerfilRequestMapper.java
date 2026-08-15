@@ -8,7 +8,7 @@ public final class ConsultarFichasPerfilRequestMapper {
     private ConsultarFichasPerfilRequestMapper() {}
 
     public static FichaPerfilCriteria toCriteria(QueryCriteriaRequestDTO dto) {
-        QueryCriteriaRequestDTO solicitud = dto != null ? dto : new QueryCriteriaRequestDTO();
+        QueryCriteriaRequestDTO solicitud = QueryCriteriaRequestDTO.aplicarPorDefecto(dto);
 
         return FichaPerfilCriteria.builder()
                 .pagina(solicitud.getPagina())

@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.shared.logger.MdcKeys;
+import com.arquisoft.shared.logger.MdcValores;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
@@ -24,6 +25,13 @@ import java.util.regex.Pattern;
 @Component
 @Order(Ordered.LOWEST_PRECEDENCE)  // debe ejecutarse DESPUÉS de FilterChainProxy (orden -100)
 public class AuditFilter extends OncePerRequestFilter {
+
+    /**
+     * Marcador de la línea de auditoría. No va al catálogo: no es una frase que alguien lea —
+     * todo el contenido viaja en campos de MDC — sino la etiqueta exacta contra la que se filtra
+     * en Loki. Traducirla rompería las consultas y alertas ya escritas.
+     */
+    private static final String MARCA_AUDITORIA = "AUDIT";
 
     private static final Pattern IP_PATTERN = Pattern.compile("^[\\d.:a-fA-F]{3,45}$");
 
@@ -80,16 +88,16 @@ public class AuditFilter extends OncePerRequestFilter {
         if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
             return jwt.getSubject();
         }
-        return "ANONYMOUS";
+        return MdcValores.ANONIMO;
     }
 
     private void auditLog(int status) {
         if (status >= 200 && status < 300) {
-            log.info("AUDIT");
+            log.info(MARCA_AUDITORIA);
         } else if (status >= 400 && status < 500) {
-            log.warn("AUDIT");
+            log.warn(MARCA_AUDITORIA);
         } else if (status >= 500) {
-            log.error("AUDIT");
+            log.error(MARCA_AUDITORIA);
         }
     }
 

@@ -1,6 +1,10 @@
 package com.arquisoft.shared.amqp;
 
 import com.arquisoft.shared.logger.MdcKeys;
+import com.arquisoft.shared.logger.MdcValores;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.MensajeriaKey;
+import com.arquisoft.shared.util.UtilObjeto;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.amqp.core.DirectExchange;
@@ -26,6 +30,9 @@ public class RabbitMQConfig {
 
     public static final String DLX_NAME = "arquisoft.dlx";
 
+    /** Nombre del bean del mapper; constante porque lo referencian @Bean y @Qualifier. */
+    public static final String RABBIT_OBJECT_MAPPER = "rabbitObjectMapper";
+
     @Bean
     public TopicExchange arquisoftEventsExchange() {
         return ExchangeBuilder.topicExchange(EXCHANGE_NAME)
@@ -40,7 +47,7 @@ public class RabbitMQConfig {
                 .build();
     }
 
-    @Bean("rabbitObjectMapper")
+    @Bean(RABBIT_OBJECT_MAPPER)
     public JsonMapper rabbitObjectMapper() {
         return JsonMapper.builder()
                 // Tolerant Reader pattern: ignora campos desconocidos del evento.
@@ -51,7 +58,7 @@ public class RabbitMQConfig {
 
     @Bean
     public JacksonJsonMessageConverter jsonMessageConverter(
-            @Qualifier("rabbitObjectMapper") JsonMapper rabbitObjectMapper) {
+            @Qualifier(RABBIT_OBJECT_MAPPER) JsonMapper rabbitObjectMapper) {
         return new JacksonJsonMessageConverter(rabbitObjectMapper);
     }
 
@@ -60,10 +67,10 @@ public class RabbitMQConfig {
         return message -> {
             String idTraza = MDC.get(MdcKeys.ID_TRAZA);
             String idUsuario = MDC.get(MdcKeys.ID_USUARIO);
-            message.getMessageProperties().setHeader("X-Trace-Id",
-                    idTraza != null ? idTraza : UUID.randomUUID().toString().replace("-", ""));
-            message.getMessageProperties().setHeader("X-User-Id",
-                    idUsuario != null ? idUsuario : "SYSTEM");
+            message.getMessageProperties().setHeader(AmqpHeaders.X_TRACE_ID,
+                    UtilObjeto.aplicarPorDefecto(idTraza, UUID.randomUUID().toString().replace("-", "")));
+            message.getMessageProperties().setHeader(AmqpHeaders.X_USER_ID,
+                    UtilObjeto.aplicarPorDefecto(idUsuario, MdcValores.SISTEMA));
             return message;
         };
     }
@@ -84,7 +91,7 @@ public class RabbitMQConfig {
         // lo devuelve al publicador en lugar de descartarlo silenciosamente.
         template.setMandatory(true);
         template.setReturnsCallback(returned ->
-            log.error("Mensaje no enrutado — exchange={} routingKey={} replyText={}",
+            log.error(Mensajes.obtener(MensajeriaKey.LOG_MENSAJE_NO_ENRUTADO),
                     returned.getExchange(),
                     returned.getRoutingKey(),
                     returned.getReplyText())
@@ -94,8 +101,10 @@ public class RabbitMQConfig {
         // Si el broker envía NACK, se registra el error con el correlationId del evento.
         template.setConfirmCallback((correlation, ack, cause) -> {
             if (!ack) {
-                log.error("Broker rechazó el mensaje (NACK) — correlationId={} causa={}",
-                        correlation != null ? correlation.getId() : "desconocido", cause);
+                log.error(Mensajes.obtener(MensajeriaKey.LOG_BROKER_RECHAZO),
+                        correlation != null ? correlation.getId()
+                                : Mensajes.obtener(MensajeriaKey.VALOR_CORRELACION_DESCONOCIDA),
+                        cause);
             }
         });
 

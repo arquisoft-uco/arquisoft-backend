@@ -60,4 +60,15 @@ public final class AppCodes {
         public static final String FILTRO_INVALIDO = "FILTRO_INVALIDO";
         public static final String CONECTOR_REQUERIDO = "CONECTOR_REQUERIDO";
     }
+
+    /** Almacenamiento de objetos — transversal, lo produce {@code shared:minio}. */
+    public static final class Minio {
+
+        private Minio() {}
+
+        public static final String URL_CARGA_FALLIDA = "MINIO_URL_CARGA_FALLIDA";
+        public static final String URL_DESCARGA_FALLIDA = "MINIO_URL_DESCARGA_FALLIDA";
+        public static final String ELIMINACION_FALLIDA = "MINIO_ELIMINACION_FALLIDA";
+        public static final String VERIFICACION_FALLIDA = "MINIO_VERIFICACION_FALLIDA";
+    }
 }

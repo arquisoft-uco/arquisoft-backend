@@ -1,5 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.cors;
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,7 +61,7 @@ public class CorsConfig {
         configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(maxAge);
         
-        log.info("CORS configuration: origins={}, methods={}, maxAge={}", 
+        log.info(Mensajes.obtener(ConfiguracionKey.LOG_CORS_CONFIGURADO),
                 origins, methods, maxAge);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

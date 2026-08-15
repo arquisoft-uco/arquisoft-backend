@@ -29,8 +29,6 @@ public enum FiltroOperador {
     ES_NULO,
     NO_ES_NULO;
 
-    // Se deriva del propio enum en lugar de escribirse en el mensaje: una lista a mano se
-    // desincroniza en silencio en cuanto se agrega un operador.
     private static final String OPCIONES = Arrays.stream(values())
             .map(Enum::name)
             .collect(Collectors.joining(", "));

@@ -1,6 +1,11 @@
 package com.arquisoft.shared.amqp.consumer;
 
+import com.arquisoft.shared.amqp.AmqpHeaders;
 import com.arquisoft.shared.logger.MdcKeys;
+import com.arquisoft.shared.logger.MdcValores;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.MensajeriaKey;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -29,18 +34,18 @@ public abstract class AbstractEventConsumer {
 
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
-        String idTraza = header(message, "X-Trace-Id");
-        String idUsuario = header(message, "X-User-Id");
+        String idTraza = header(message, AmqpHeaders.X_TRACE_ID);
+        String idUsuario = header(message, AmqpHeaders.X_USER_ID);
 
         Map<String, String> prevMdc = MDC.getCopyOfContextMap();
-        MDC.put(MdcKeys.ID_TRAZA, idTraza != null ? idTraza
-                                 : UUID.randomUUID().toString().replace("-", ""));
-        MDC.put(MdcKeys.ID_USUARIO,  idUsuario != null ? idUsuario : "EVENT");
+        MDC.put(MdcKeys.ID_TRAZA, UtilObjeto.aplicarPorDefecto(
+                idTraza, UUID.randomUUID().toString().replace("-", "")));
+        MDC.put(MdcKeys.ID_USUARIO, UtilObjeto.aplicarPorDefecto(idUsuario, MdcValores.EVENTO));
 
         try {
             handler.handle();
         } catch (Exception ex) {
-            log.error("Error procesando evento — enviando a DLQ: deliveryTag={} error={}",
+            log.error(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_A_DLQ),
                     deliveryTag, ex.getMessage(), ex);
             // requeue=false → el mensaje va al Dead Letter Exchange en lugar de volver a la cola.
             // Evita bucles infinitos de re-entrega ante errores de negocio no recuperables.

@@ -2,6 +2,8 @@ package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.r
 
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +16,8 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
 
     @Override
     public void save(UsuarioDomain usuario) {
-        log.debug("Mock — usuario no persistido: id={} email={}", usuario.getId(), usuario.getEmail());
+        log.debug(Mensajes.obtener(UsuarioKey.LOG_MOCK_NO_PERSISTIDO),
+                usuario.getId(), usuario.getEmail());
     }
 
     @Override
@@ -24,7 +27,7 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
 
     @Override
     public boolean existePorEmail(String email) {
-        log.debug("Mock — verificacion de email omitida: email={}", email);
+        log.debug(Mensajes.obtener(UsuarioKey.LOG_MOCK_VERIFICACION_OMITIDA), email);
         return false;
     }
 }
