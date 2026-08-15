@@ -6,12 +6,17 @@ import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.pagination.SortDirection;
+import com.arquisoft.shared.query.FiltroOperador;
+import com.arquisoft.shared.query.NodoFiltro;
+import com.arquisoft.shared.query.SortOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -107,5 +112,104 @@ class FichaPerfilQueryOutputAdapterTest {
     void debeRetornarFalse_cuandoFichaNoExistePorId() {
         // Act & Assert
         assertThat(adapter.existePorId(UUID.randomUUID())).isFalse();
+    }
+
+    @Test
+    void debeFiltrarPorNombreDelAsesor_cuandoElCriteriaTraeEsePredicado() {
+        // Arrange
+        persistirFicha("Proyecto de Ana", "DOC-010", "Ana Ramirez", "ana@soyuco.edu.co");
+        persistirFicha("Proyecto de Juan", "DOC-011", "Juan Salazar", "juan@soyuco.edu.co");
+        entityManager.flush();
+
+        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("asesorNombre", FiltroOperador.CONTIENE, "Ramirez"))
+                .build();
+
+        // Act
+        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(1);
+        assertThat(resultado.getContent().get(0).asesorFicha().nombre()).isEqualTo("Ana Ramirez");
+    }
+
+    @Test
+    void debeFiltrarPorIdDelAsesor_cuandoElCriteriaTraeEsePredicado() {
+        // Arrange
+        UUID asesorBuscado = persistirFicha("Proyecto uno", "DOC-020", "Carla Diaz", "carla@soyuco.edu.co");
+        persistirFicha("Proyecto dos", "DOC-021", "Luis Peña", "luis@soyuco.edu.co");
+        entityManager.flush();
+
+        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("asesorId", FiltroOperador.ES, asesorBuscado.toString()))
+                .build();
+
+        // Act
+        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(1);
+        assertThat(resultado.getContent().get(0).asesorFicha().id()).isEqualTo(asesorBuscado);
+    }
+
+    @Test
+    void debeOrdenarPorNombreDelAsesorDescendente_cuandoElCriteriaLoPide() {
+        // Arrange
+        persistirFicha("Proyecto A", "DOC-030", "Ana Ramirez", "ana2@soyuco.edu.co");
+        persistirFicha("Proyecto Z", "DOC-031", "Zulma Torres", "zulma@soyuco.edu.co");
+        entityManager.flush();
+
+        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
+                .pagina(0).tamanio(10)
+                .ordenamiento(List.of(SortOrder.of("asesorNombre", SortDirection.DESC)))
+                .build();
+
+        // Act
+        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(ficha -> ficha.asesorFicha().nombre())
+                .containsExactly("Zulma Torres", "Ana Ramirez");
+    }
+
+    @Test
+    void debeFiltrarPorTituloDelProyecto_cuandoElCriteriaTraeEsePredicado() {
+        // Arrange
+        persistirFicha("Arquisoft Backend", "DOC-040", "Ana Ramirez", "ana3@soyuco.edu.co");
+        persistirFicha("Otro Proyecto", "DOC-041", "Juan Salazar", "juan3@soyuco.edu.co");
+        entityManager.flush();
+
+        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("tituloProyecto", FiltroOperador.EMPIEZA_CON, "Arquisoft"))
+                .build();
+
+        // Act
+        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(1);
+        assertThat(resultado.getContent().get(0).tituloProyecto()).isEqualTo("Arquisoft Backend");
+    }
+
+    private UUID persistirFicha(String titulo, String identificador, String nombre, String email) {
+        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
+                .id(UUID.randomUUID())
+                .identificador(identificador)
+                .nombre(nombre)
+                .email(email)
+                .build();
+        entityManager.persist(asesor);
+
+        entityManager.persist(FichaPerfilEntity.builder()
+                .id(UUID.randomUUID())
+                .tituloProyecto(titulo)
+                .asesorFicha(asesor)
+                .build());
+
+        return asesor.getId();
     }
 }

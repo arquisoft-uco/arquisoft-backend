@@ -31,8 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarFichasPerfilController.class)
-@Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class,
+@Import({GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class,
         ConsultarFichasPerfilControllerTest.TestSecurityConfig.class})
 class ConsultarFichasPerfilControllerTest {
 
