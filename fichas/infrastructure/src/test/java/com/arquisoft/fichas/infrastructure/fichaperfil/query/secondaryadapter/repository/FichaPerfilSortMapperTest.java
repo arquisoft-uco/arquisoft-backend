@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,5 +66,24 @@ class FichaPerfilSortMapperTest {
 
         // Assert
         assertThat(ruta).isNull();
+    }
+
+    // El Criteria rechaza en su builder toda clave que no sea ordenable, asi que el adapter solo
+    // recibe claves ya validadas contra este enum. Si el SortMapper no resolviera alguna de ellas,
+    // el fallo se manifestaria hasta la consulta como un error de Spring Data — un defecto de
+    // mapeo disfrazado de error del cliente. Este test obliga a que ambas fuentes declaren
+    // exactamente el mismo conjunto de campos ordenables.
+    @Test
+    void debeResolverUnaRutaJpa_paraTodoCampoQueElCriteriaDeclaraOrdenable() {
+        for (FichaPerfilCriteria.Campo campo : FichaPerfilCriteria.Campo.values()) {
+            // Act
+            String ruta = FichaPerfilSortMapper.traducir(campo.getClave());
+
+            // Assert
+            assertThat(FichaPerfilCriteria.Campo.esValidoParaOrdenar(campo.getClave()))
+                    .as("El campo '%s' debe ser ordenable en el Criteria si y solo si "
+                            + "el SortMapper le resuelve una ruta JPA", campo.getClave())
+                    .isEqualTo(ruta != null);
+        }
     }
 }

@@ -10,4 +10,7 @@ dependencies {
     // Lombok para @Slf4j si fuese necesario en futuras utilidades
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

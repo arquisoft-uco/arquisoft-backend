@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCr
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.SortDirection;
 import com.arquisoft.shared.query.FiltroOperador;
@@ -36,9 +35,7 @@ class FichaPerfilQueryOutputAdapterTest {
     void setUp() {
         adapter = new FichaPerfilQueryOutputAdapter(
                 fichaPerfilRepository,
-                new FichaPerfilJpaSpecification(),
-                org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
-                CatalogoMensajesResourceBundle.porDefecto()
+                new FichaPerfilJpaSpecification()
         );
     }
 

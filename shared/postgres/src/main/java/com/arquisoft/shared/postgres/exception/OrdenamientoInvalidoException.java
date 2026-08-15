@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.infrastructure.exception;
+package com.arquisoft.shared.postgres.exception;
 
 import com.arquisoft.shared.exception.ApplicationException;
 import com.arquisoft.shared.exception.BaseError;
