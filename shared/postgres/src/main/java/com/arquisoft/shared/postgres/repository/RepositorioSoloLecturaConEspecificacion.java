@@ -6,7 +6,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.repository.NoRepositoryBean;
 
 @NoRepositoryBean
-public interface ReadOnlySpecificationRepository<T, ID> extends ReadOnlyRepository<T, ID> {
+public interface RepositorioSoloLecturaConEspecificacion<T, ID> extends RepositorioSoloLectura<T, ID> {
 
     Page<T> findAll(Specification<T> spec, Pageable pageable);
 
