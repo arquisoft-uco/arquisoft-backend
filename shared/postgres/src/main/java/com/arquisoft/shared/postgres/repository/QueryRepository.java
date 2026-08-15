@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 @NoRepositoryBean
-public interface RepositorioSoloLectura<T, ID> extends Repository<T, ID> {
+public interface QueryRepository<T, ID> extends Repository<T, ID> {
 
     Optional<T> findById(ID id);
 

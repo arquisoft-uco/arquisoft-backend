@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository;
 
-import com.arquisoft.shared.postgres.repository.RepositorioSoloLectura;
+import com.arquisoft.shared.postgres.repository.QueryRepository;
 
-public interface EstadoFichaQueryRepository extends RepositorioSoloLectura<EstadoFichaJpaQueryEntity, String> {
+public interface EstadoFichaQueryRepository extends QueryRepository<EstadoFichaJpaQueryEntity, String> {
 }

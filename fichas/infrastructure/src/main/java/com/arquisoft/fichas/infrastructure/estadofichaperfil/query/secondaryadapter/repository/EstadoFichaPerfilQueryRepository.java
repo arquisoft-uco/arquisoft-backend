@@ -1,13 +1,13 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
-import com.arquisoft.shared.postgres.repository.RepositorioSoloLectura;
+import com.arquisoft.shared.postgres.repository.QueryRepository;
 
 import java.util.Optional;
 import java.util.UUID;
 
 public interface EstadoFichaPerfilQueryRepository
-        extends RepositorioSoloLectura<EstadoFichaPerfilEntity, UUID> {
+        extends QueryRepository<EstadoFichaPerfilEntity, UUID> {
 
     Optional<EstadoFichaPerfilEntity> findFirstByFichaPerfilIdOrderByFechaActualizacionDesc(UUID fichaPerfilId);
 }
