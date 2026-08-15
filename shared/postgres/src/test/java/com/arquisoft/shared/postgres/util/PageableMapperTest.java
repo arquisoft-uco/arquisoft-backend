@@ -1,7 +1,7 @@
 package com.arquisoft.shared.postgres.util;
 
+import com.arquisoft.shared.exception.BaseException;
 import com.arquisoft.shared.pagination.SortDirection;
-import com.arquisoft.shared.postgres.exception.OrdenamientoInvalidoException;
 import com.arquisoft.shared.query.QueryCriteria;
 import com.arquisoft.shared.query.SortOrder;
 import org.junit.jupiter.api.Test;
@@ -87,8 +87,12 @@ class PageableMapperTest {
                 .containsExactly("tituloProyecto", "asesorNombre");
     }
 
+    // Un campo que el traductor no resuelve no es error del cliente: el Criteria ya rechazo todo
+    // campo que no declare ordenable. Llegar aqui significa que el SortMapper de la feature y el
+    // Criteria divergieron, asi que debe aflorar como defecto (500) y no como un 4xx que le diria
+    // al cliente que su campo es invalido cuando no lo es.
     @Test
-    void debeLanzarOrdenamientoInvalido_cuandoElTraductorNoResuelveLaClave() {
+    void debeLanzarDefectoDeMapeo_cuandoElTraductorNoResuelveLaClave() {
         // Arrange
         QueryCriteria criteria = CriteriaDePrueba.builder()
                 .pagina(0).tamanio(10)
@@ -97,7 +101,8 @@ class PageableMapperTest {
 
         // Act & Assert
         assertThatThrownBy(() -> PageableMapper.toPageable(criteria, TRADUCTOR))
-                .isInstanceOf(OrdenamientoInvalidoException.class)
+                .isInstanceOf(IllegalStateException.class)
+                .isNotInstanceOf(BaseException.class)
                 .hasMessageContaining("desconocido");
     }
 }

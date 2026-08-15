@@ -2,6 +2,9 @@ package com.arquisoft.usuarios.domain.usuario;
 
 import com.arquisoft.shared.events.AggregateRoot;
 import com.arquisoft.shared.exception.DomainException;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.constant.UsuariosCodes;
+import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.domain.usuario.event.UsuarioCreadoEvent;
 
@@ -21,10 +24,14 @@ public final class UsuarioDomain extends AggregateRoot {
 
     public static UsuarioDomain crear(String email, UsuarioRole rol) {
         if (email == null || email.isBlank()) {
-            throw new DomainException("El email del usuario no puede ser vacio", "USUARIO_EMAIL_REQUERIDO");
+            throw new DomainException(
+                    Mensajes.obtener(UsuarioKey.ERROR_EMAIL_REQUERIDO),
+                    UsuariosCodes.Usuario.EMAIL_REQUERIDO);
         }
         if (rol == null) {
-            throw new DomainException("El rol del usuario no puede ser nulo", "USUARIO_ROL_REQUERIDO");
+            throw new DomainException(
+                    Mensajes.obtener(UsuarioKey.ERROR_ROL_REQUERIDO),
+                    UsuariosCodes.Usuario.ROL_REQUERIDO);
         }
 
         UsuarioDomain usuario = new UsuarioDomain(UUID.randomUUID(), email.trim().toLowerCase(), rol);

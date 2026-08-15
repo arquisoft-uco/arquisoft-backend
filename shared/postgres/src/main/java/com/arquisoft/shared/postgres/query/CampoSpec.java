@@ -1,5 +1,7 @@
 package com.arquisoft.shared.postgres.query;
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.postgres.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.FiltroOperador;
 import jakarta.persistence.criteria.Expression;
@@ -67,7 +69,7 @@ public sealed interface CampoSpec<E>
 
         @Override
         public Specification<E> construirSpec(FiltroOperador operador, String valor) {
-            validar(operador, VALIDOS, "texto");
+            validar(operador, VALIDOS, ConsultaKey.TIPO_TEXTO);
             return (root, q, cb) -> {
                 Expression<String> rawExpr = path.apply(root);
                 return switch (operador) {
@@ -106,7 +108,7 @@ public sealed interface CampoSpec<E>
 
         @Override
         public Specification<E> construirSpec(FiltroOperador operador, String valor) {
-            validar(operador, VALIDOS, "UUID");
+            validar(operador, VALIDOS, ConsultaKey.TIPO_UUID);
             return (root, q, cb) -> {
                 Path<UUID> p = path.apply(root);
                 return switch (operador) {
@@ -123,7 +125,7 @@ public sealed interface CampoSpec<E>
             try {
                 return UUID.fromString(v);
             } catch (IllegalArgumentException e) {
-                throw new FiltroInvalidoException("UUID inválido: '" + v + "'");
+                throw new FiltroInvalidoException(Mensajes.formatear(ConsultaKey.ERROR_UUID_INVALIDO, v));
             }
         }
     }
@@ -139,7 +141,7 @@ public sealed interface CampoSpec<E>
 
         @Override
         public Specification<E> construirSpec(FiltroOperador operador, String valor) {
-            validar(operador, VALIDOS, "entero");
+            validar(operador, VALIDOS, ConsultaKey.TIPO_ENTERO);
             return (root, q, cb) -> {
                 Path<Long> p = path.apply(root);
                 return switch (operador) {
@@ -160,7 +162,7 @@ public sealed interface CampoSpec<E>
             try {
                 return Long.parseLong(v);
             } catch (NumberFormatException e) {
-                throw new FiltroInvalidoException("Número entero inválido: '" + v + "'");
+                throw new FiltroInvalidoException(Mensajes.formatear(ConsultaKey.ERROR_ENTERO_INVALIDO, v));
             }
         }
     }
@@ -176,7 +178,7 @@ public sealed interface CampoSpec<E>
 
         @Override
         public Specification<E> construirSpec(FiltroOperador operador, String valor) {
-            validar(operador, VALIDOS, "decimal");
+            validar(operador, VALIDOS, ConsultaKey.TIPO_DECIMAL);
             return (root, q, cb) -> {
                 Path<BigDecimal> p = path.apply(root);
                 return switch (operador) {
@@ -197,7 +199,7 @@ public sealed interface CampoSpec<E>
             try {
                 return new BigDecimal(v);
             } catch (NumberFormatException e) {
-                throw new FiltroInvalidoException("Número decimal inválido: '" + v + "'");
+                throw new FiltroInvalidoException(Mensajes.formatear(ConsultaKey.ERROR_DECIMAL_INVALIDO, v));
             }
         }
     }
@@ -213,7 +215,7 @@ public sealed interface CampoSpec<E>
 
         @Override
         public Specification<E> construirSpec(FiltroOperador operador, String valor) {
-            validar(operador, VALIDOS, "fecha (yyyy-MM-dd)");
+            validar(operador, VALIDOS, ConsultaKey.TIPO_FECHA);
             return (root, q, cb) -> {
                 Path<LocalDate> p = path.apply(root);
                 return switch (operador) {
@@ -235,7 +237,7 @@ public sealed interface CampoSpec<E>
                 return LocalDate.parse(v);
             } catch (DateTimeParseException e) {
                 throw new FiltroInvalidoException(
-                        "Fecha inválida: '" + v + "'. Use formato ISO 8601 yyyy-MM-dd");
+                        Mensajes.formatear(ConsultaKey.ERROR_FECHA_INVALIDA, v));
             }
         }
     }
@@ -251,7 +253,7 @@ public sealed interface CampoSpec<E>
 
         @Override
         public Specification<E> construirSpec(FiltroOperador operador, String valor) {
-            validar(operador, VALIDOS, "fechaHora (ISO 8601)");
+            validar(operador, VALIDOS, ConsultaKey.TIPO_FECHA_HORA);
             return (root, q, cb) -> {
                 Path<LocalDateTime> p = path.apply(root);
                 return switch (operador) {
@@ -273,7 +275,7 @@ public sealed interface CampoSpec<E>
                 return LocalDateTime.parse(v);
             } catch (DateTimeParseException e) {
                 throw new FiltroInvalidoException(
-                        "FechaHora inválida: '" + v + "'. Use formato ISO 8601 yyyy-MM-dd'T'HH:mm:ss");
+                        Mensajes.formatear(ConsultaKey.ERROR_FECHA_HORA_INVALIDA, v));
             }
         }
     }
@@ -287,7 +289,7 @@ public sealed interface CampoSpec<E>
 
         @Override
         public Specification<E> construirSpec(FiltroOperador operador, String valor) {
-            validar(operador, VALIDOS, "booleano");
+            validar(operador, VALIDOS, ConsultaKey.TIPO_BOOLEANO);
             return (root, q, cb) -> {
                 Path<Boolean> p = path.apply(root);
                 return switch (operador) {
@@ -304,17 +306,17 @@ public sealed interface CampoSpec<E>
             if ("true".equalsIgnoreCase(v) || "false".equalsIgnoreCase(v)) {
                 return Boolean.parseBoolean(v);
             }
-            throw new FiltroInvalidoException("Booleano inválido: '" + v + "'. Use true o false");
+            throw new FiltroInvalidoException(Mensajes.formatear(ConsultaKey.ERROR_BOOLEANO_INVALIDO, v));
         }
     }
 
     // ── Utilidad compartida entre implementaciones ─────────────────────────────
 
-    private static void validar(FiltroOperador operador, Set<FiltroOperador> validos, String tipo) {
+    private static void validar(FiltroOperador operador, Set<FiltroOperador> validos, ConsultaKey tipo) {
         if (!validos.contains(operador)) {
             throw new FiltroInvalidoException(
-                    "El operador '" + operador + "' no es aplicable a campos de tipo " + tipo +
-                    ". Operadores válidos: " + validos
+                    Mensajes.formatear(ConsultaKey.ERROR_OPERADOR_NO_APLICABLE,
+                            operador, Mensajes.obtener(tipo), validos)
             );
         }
     }

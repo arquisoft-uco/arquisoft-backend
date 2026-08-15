@@ -6,6 +6,7 @@ import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.pagination.SortDirection;
+import com.arquisoft.shared.postgres.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DataJpaTest
 class FichaPerfilQueryOutputAdapterTest {
@@ -190,6 +192,22 @@ class FichaPerfilQueryOutputAdapterTest {
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
         assertThat(resultado.getContent().get(0).tituloProyecto()).isEqualTo("Arquisoft Backend");
+    }
+
+    // Cubre CampoSpec.Uuid.parseUuid, que solo se ejecuta dentro del lambda de la Specification
+    // y por tanto no se alcanza sin una consulta real.
+    @Test
+    void debeReportarUuidInvalido_cuandoElFiltroPorAsesorNoTraeUnUuid() {
+        // Arrange
+        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("asesorId", FiltroOperador.ES, "no-es-un-uuid"))
+                .build();
+
+        // Act & Assert
+        assertThatThrownBy(() -> adapter.consultarTodas(criteria))
+                .isInstanceOf(FiltroInvalidoException.class)
+                .hasMessageContaining("UUID inválido: 'no-es-un-uuid'");
     }
 
     private UUID persistirFicha(String titulo, String identificador, String nombre, String email) {

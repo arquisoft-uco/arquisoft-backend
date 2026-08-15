@@ -8,6 +8,8 @@ public enum UsuarioKey implements ClaveMensaje {
 
     ERROR_EMAIL_DUPLICADO("usuarios.dominio.usuario.error.email-duplicado"),
     ERROR_ROL_NO_ENCONTRADO("usuarios.dominio.usuario.error.rol-no-encontrado"),
+    ERROR_EMAIL_REQUERIDO("usuarios.dominio.usuario.error.email-requerido"),
+    ERROR_ROL_REQUERIDO("usuarios.dominio.usuario.error.rol-requerido"),
     LOG_CREADO("usuarios.aplicacion.usuario.log.creado");
 
     private final String clave;

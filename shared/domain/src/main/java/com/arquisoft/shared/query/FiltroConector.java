@@ -1,5 +1,8 @@
 package com.arquisoft.shared.query;
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.constant.AppCodes;
+import com.arquisoft.shared.message.key.app.ConsultaKey;
 
 public enum FiltroConector {
 
@@ -11,8 +14,8 @@ public enum FiltroConector {
             return FiltroConector.valueOf(valor.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new FiltroException(
-                    "Conector de filtro inválido: '" + valor + "'. Use AND u OR",
-                    "FILTRO_CONECTOR_INVALIDO"
+                    Mensajes.formatear(ConsultaKey.ERROR_CONECTOR_INVALIDO, valor),
+                    AppCodes.Consulta.FILTRO_CONECTOR_INVALIDO
             );
         }
     }

@@ -1,5 +1,7 @@
 package com.arquisoft.shared.postgres.query;
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.postgres.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.NodoFiltro;
@@ -46,8 +48,8 @@ public abstract class QueryJpaSpecification<E> {
         CampoSpec<E> spec = camposPermitidos().get(predicado.campo());
         if (spec == null) {
             throw new FiltroInvalidoException(
-                    "Campo de filtro desconocido: '" + predicado.campo() +
-                    "'. Campos disponibles: " + camposPermitidos().keySet()
+                    Mensajes.formatear(ConsultaKey.ERROR_CAMPO_FILTRO_DESCONOCIDO,
+                            predicado.campo(), camposPermitidos().keySet())
             );
         }
         return spec.construirSpec(predicado.operador(), predicado.valor());

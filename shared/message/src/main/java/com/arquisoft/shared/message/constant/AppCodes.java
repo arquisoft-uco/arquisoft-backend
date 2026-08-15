@@ -36,4 +36,28 @@ public final class AppCodes {
 
         public static final String ENVIO_FALLIDO = "NOTIFICACION_ENVIO_FALLIDO";
     }
+
+    /**
+     * Consultas dinámicas — filtros, ordenamiento y paginación.
+     *
+     * <p>El subsistema se reparte entre tres módulos: {@code shared:domain} valida el árbol de
+     * filtros y el ordenamiento que llega del cliente, {@code shared:postgres} lo traduce a JPA y
+     * {@code shared:web} lo deserializa. Los códigos viven juntos aquí porque el cliente de la API
+     * los ve como una sola familia, sin importar qué módulo los produjo.
+     */
+    public static final class Consulta {
+
+        private Consulta() {}
+
+        public static final String FILTRO_CONECTOR_INVALIDO = "FILTRO_CONECTOR_INVALIDO";
+        public static final String FILTRO_OPERADOR_INVALIDO = "FILTRO_OPERADOR_INVALIDO";
+        public static final String CAMPO_ORDEN_NO_PERMITIDO = "CAMPO_ORDEN_NO_PERMITIDO";
+        public static final String PROFUNDIDAD_FILTRO_EXCEDIDA = "PROFUNDIDAD_FILTRO_EXCEDIDA";
+        public static final String CAMPO_FILTRO_NO_PERMITIDO = "CAMPO_FILTRO_NO_PERMITIDO";
+        public static final String VALOR_REQUERIDO = "VALOR_REQUERIDO";
+        public static final String SORT_CAMPO_VACIO = "SORT_CAMPO_VACIO";
+        public static final String SORT_DIRECTION_INVALIDA = "SORT_DIRECTION_INVALIDA";
+        public static final String FILTRO_INVALIDO = "FILTRO_INVALIDO";
+        public static final String CONECTOR_REQUERIDO = "CONECTOR_REQUERIDO";
+    }
 }

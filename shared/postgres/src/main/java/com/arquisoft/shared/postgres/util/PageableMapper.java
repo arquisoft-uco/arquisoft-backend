@@ -1,7 +1,8 @@
 package com.arquisoft.shared.postgres.util;
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.pagination.SortDirection;
-import com.arquisoft.shared.postgres.exception.OrdenamientoInvalidoException;
 import com.arquisoft.shared.query.QueryCriteria;
 import com.arquisoft.shared.query.SortOrder;
 import org.springframework.data.domain.PageRequest;
@@ -28,7 +29,13 @@ public final class PageableMapper {
     private static Sort.Order aSortOrder(SortOrder orden, UnaryOperator<String> traductorDeCampo) {
         String ruta = traductorDeCampo.apply(orden.getCampo());
         if (ruta == null) {
-            throw new OrdenamientoInvalidoException(orden.getCampo());
+            // No es un error del cliente: el Criteria ya rechazó todo campo que no declare
+            // ordenable, asi que llegar aqui significa que el SortMapper de la feature no
+            // resuelve un campo que el Criteria si permite — las dos declaraciones divergieron.
+            // Devolver 4xx le diria al cliente que su campo es invalido cuando no lo es; se deja
+            // aflorar como 500 para que el defecto se vea.
+            throw new IllegalStateException(
+                    Mensajes.formatear(ConsultaKey.ERROR_RUTA_ORDEN_NO_MAPEADA, orden.getCampo()));
         }
         return orden.getDireccion() == SortDirection.ASC
                 ? Sort.Order.asc(ruta)

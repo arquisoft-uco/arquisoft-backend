@@ -1,5 +1,11 @@
 package com.arquisoft.shared.query;
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.constant.AppCodes;
+import com.arquisoft.shared.message.key.app.ConsultaKey;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public enum FiltroOperador {
 
@@ -23,6 +29,12 @@ public enum FiltroOperador {
     ES_NULO,
     NO_ES_NULO;
 
+    // Se deriva del propio enum en lugar de escribirse en el mensaje: una lista a mano se
+    // desincroniza en silencio en cuanto se agrega un operador.
+    private static final String OPCIONES = Arrays.stream(values())
+            .map(Enum::name)
+            .collect(Collectors.joining(", "));
+
     public boolean requiereValor() {
         return this != ES_NULO && this != NO_ES_NULO;
     }
@@ -32,10 +44,8 @@ public enum FiltroOperador {
             return FiltroOperador.valueOf(valor.trim().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new FiltroException(
-                    "Operador de filtro inválido: '" + valor +
-                    "'. Opciones: CONTIENE, NO_CONTIENE, EMPIEZA_CON, TERMINA_CON, " +
-                    "ES, NO_ES, MAYOR_QUE, MENOR_QUE, MAYOR_IGUAL_QUE, MENOR_IGUAL_QUE, ES_NULO, NO_ES_NULO",
-                    "FILTRO_OPERADOR_INVALIDO"
+                    Mensajes.formatear(ConsultaKey.ERROR_OPERADOR_INVALIDO, valor, OPCIONES),
+                    AppCodes.Consulta.FILTRO_OPERADOR_INVALIDO
             );
         }
     }

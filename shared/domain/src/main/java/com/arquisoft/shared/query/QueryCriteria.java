@@ -1,6 +1,10 @@
 package com.arquisoft.shared.query;
 
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.constant.AppCodes;
+import com.arquisoft.shared.message.key.app.ConsultaKey;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -74,9 +78,9 @@ public abstract class QueryCriteria {
                     ordenamiento.forEach(o -> {
                         if (!permitidos.contains(o.getCampo())) {
                             throw new FiltroException(
-                                    "Campo de ordenamiento no permitido: '" + o.getCampo() +
-                                    "'. Campos disponibles: " + permitidos,
-                                    "CAMPO_ORDEN_NO_PERMITIDO");
+                                    Mensajes.formatear(ConsultaKey.ERROR_CAMPO_ORDEN_NO_PERMITIDO,
+                                            o.getCampo(), permitidos),
+                                    AppCodes.Consulta.CAMPO_ORDEN_NO_PERMITIDO);
                         }
                     });
                 }
@@ -106,9 +110,9 @@ public abstract class QueryCriteria {
         private void validarProfundidad(NodoFiltro nodo, int profundidad) {
             if (profundidad > MAX_PROFUNDIDAD_FILTRO) {
                 throw new FiltroException(
-                        "El árbol de filtros supera la profundidad máxima de "
-                        + MAX_PROFUNDIDAD_FILTRO + " niveles",
-                        "PROFUNDIDAD_FILTRO_EXCEDIDA");
+                        Mensajes.formatear(ConsultaKey.ERROR_PROFUNDIDAD_FILTRO_EXCEDIDA,
+                                MAX_PROFUNDIDAD_FILTRO),
+                        AppCodes.Consulta.PROFUNDIDAD_FILTRO_EXCEDIDA);
             }
             if (nodo instanceof NodoFiltro.Grupo g) {
                 g.nodos().forEach(hijo -> validarProfundidad(hijo, profundidad + 1));
@@ -124,15 +128,15 @@ public abstract class QueryCriteria {
                 case NodoFiltro.Predicado p -> {
                     if (permitidos != null && !permitidos.contains(p.campo())) {
                         throw new FiltroException(
-                                "Campo de filtro no permitido: '" + p.campo() +
-                                "'. Campos disponibles: " + permitidos,
-                                "CAMPO_FILTRO_NO_PERMITIDO");
+                                Mensajes.formatear(ConsultaKey.ERROR_CAMPO_FILTRO_NO_PERMITIDO,
+                                        p.campo(), permitidos),
+                                AppCodes.Consulta.CAMPO_FILTRO_NO_PERMITIDO);
                     }
                     if (p.operador().requiereValor() && (p.valor() == null || p.valor().isBlank())) {
                         throw new FiltroException(
-                                "El operador '" + p.operador() + "' requiere un valor no vacío para el campo '"
-                                + p.campo() + "'",
-                                "VALOR_REQUERIDO");
+                                Mensajes.formatear(ConsultaKey.ERROR_VALOR_REQUERIDO,
+                                        p.operador(), p.campo()),
+                                AppCodes.Consulta.VALOR_REQUERIDO);
                     }
                 }
                 case NodoFiltro.Grupo g -> g.nodos().forEach(this::validarPredicados);

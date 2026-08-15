@@ -1,5 +1,8 @@
 package com.arquisoft.shared.query;
 
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.constant.AppCodes;
+import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.pagination.SortDirection;
 
 public final class SortOrder {
@@ -20,7 +23,9 @@ public final class SortOrder {
         String[] partes = expresion.split(":", 2);
         String campo = partes[0].trim();
         if (campo.isBlank()) {
-            throw new FiltroException("El campo de ordenamiento no puede estar vacío", "SORT_CAMPO_VACIO");
+            throw new FiltroException(
+                    Mensajes.obtener(ConsultaKey.ERROR_ORDEN_CAMPO_VACIO),
+                    AppCodes.Consulta.SORT_CAMPO_VACIO);
         }
         SortDirection dir = SortDirection.ASC;
         if (partes.length > 1 && !partes[1].isBlank()) {
@@ -28,8 +33,8 @@ public final class SortOrder {
                 dir = SortDirection.valueOf(partes[1].trim().toUpperCase());
             } catch (IllegalArgumentException e) {
                 throw new FiltroException(
-                        "Dirección de ordenamiento inválida: '" + partes[1].trim() + "'. Use ASC o DESC",
-                        "SORT_DIRECTION_INVALIDA");
+                        Mensajes.formatear(ConsultaKey.ERROR_ORDEN_DIRECCION_INVALIDA, partes[1].trim()),
+                        AppCodes.Consulta.SORT_DIRECTION_INVALIDA);
             }
         }
         return new SortOrder(campo, dir);
