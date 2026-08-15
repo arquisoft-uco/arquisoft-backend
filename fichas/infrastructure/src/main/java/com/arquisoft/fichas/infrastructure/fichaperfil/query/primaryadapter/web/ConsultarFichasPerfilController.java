@@ -1,16 +1,13 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web;
 
-import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.annotation.FichasApiKeys;
-import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.usecase.ConsultarFichasPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.dto.FichaPerfilResponseDTO;
+import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.ConsultarFichasPerfilRequestMapper;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.FichaPerfilResponseMapper;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.pagination.PaginatedResult;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.dto.PageResponseDTO;
@@ -39,8 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ConsultarFichasPerfilController {
 
     private final ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;
-    private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @PostMapping("${rutas.fichas.fichas-perfil.coordinador:/coordinador}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_VIEW)
@@ -65,18 +60,8 @@ public class ConsultarFichasPerfilController {
     public ResponseEntity<PageResponseDTO<FichaPerfilResponseDTO>> consultarFichasCoordinador(
             @RequestBody(required = false) QueryCriteriaRequestDTO request) {
 
-        QueryCriteriaRequestDTO solicitud = request != null ? request : new QueryCriteriaRequestDTO();
-        logger.debug(catalogo.obtener(FichaPerfilKey.LOG_CONSULTANDO),
-                solicitud.getPagina(), solicitud.getTamanio());
-
-        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
-                .pagina(solicitud.getPagina())
-                .tamanio(solicitud.getTamanio())
-                .ordenamiento(solicitud.parsearOrdenamiento())
-                .raiz(solicitud.parsearFiltros())
-                .build();
-
-        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilUseCase.ejecutar(criteria);
+        PaginatedResult<FichaPerfilReadModel> resultado = consultarFichasPerfilUseCase.ejecutar(
+                ConsultarFichasPerfilRequestMapper.toCriteria(request));
 
         return ResponseEntity.ok(PageResponseDTO.from(
                 resultado.map(FichaPerfilResponseMapper::toResponse)));
