@@ -30,7 +30,7 @@ public class RedisConfig {
     @Bean
     @Primary
     public LettuceConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+        var config = new RedisStandaloneConfiguration(host, port);
         if (!UtilTexto.esVacioONulo(username)) {
             config.setUsername(username);
         }
@@ -46,14 +46,14 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        StringRedisSerializer stringSerializer = new StringRedisSerializer();
+        var stringSerializer = new StringRedisSerializer();
         template.setKeySerializer(stringSerializer);
         template.setHashKeySerializer(stringSerializer);
 
         // GenericJacksonJsonRedisSerializer es el reemplazo Jackson 3.x de GenericJackson2JsonRedisSerializer.
         // builder().build() crea un mapper con DefaultTyping habilitado para serialización polimórfica
         // (tipo guardado como @class en el JSON), permitiendo deserializar sin conocer el tipo en tiempo de lectura.
-        GenericJacksonJsonRedisSerializer jsonSerializer = GenericJacksonJsonRedisSerializer.builder().build();
+        var jsonSerializer = GenericJacksonJsonRedisSerializer.builder().build();
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
 

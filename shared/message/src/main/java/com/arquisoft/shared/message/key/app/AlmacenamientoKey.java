@@ -3,7 +3,6 @@ package com.arquisoft.shared.message.key.app;
 import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
-/** Almacenamiento de objetos ({@code shared:minio}). */
 public enum AlmacenamientoKey implements ClaveMensaje {
 
     ERROR_URL_CARGA("app.infraestructura.almacenamiento.error.url-carga"),

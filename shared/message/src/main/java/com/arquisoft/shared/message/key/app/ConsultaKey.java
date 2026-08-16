@@ -3,17 +3,6 @@ package com.arquisoft.shared.message.key.app;
 import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
-/**
- * Consultas dinámicas: filtros, ordenamiento y traducción a JPA.
- *
- * <p>Las claves {@code dominio.*} las produce {@code shared:domain} al validar lo que llega del
- * cliente; las {@code infraestructura.*}, {@code shared:postgres} al traducirlo a Criteria API y
- * {@code shared:web} al deserializar el árbol de filtros.
- *
- * <p>Las de {@code tipo.*} no son mensajes completos sino la etiqueta del tipo de campo que se
- * sustituye dentro de {@link #ERROR_OPERADOR_NO_APLICABLE}. Están en el catálogo porque terminan
- * en un texto que ve el cliente.
- */
 public enum ConsultaKey implements ClaveMensaje {
 
     ERROR_CONECTOR_INVALIDO("app.dominio.consulta.error.conector-invalido"),

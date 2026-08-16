@@ -19,9 +19,9 @@ public class RedisCacheConfig {
     public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         // GenericJacksonJsonRedisSerializer: reemplazo Jackson 3.x de GenericJackson2JsonRedisSerializer.
         // Almacena tipo como @class en el JSON para deserialización correcta en @Cacheable sin conocer el tipo.
-        GenericJacksonJsonRedisSerializer jsonSerializer = GenericJacksonJsonRedisSerializer.builder().build();
+        var jsonSerializer = GenericJacksonJsonRedisSerializer.builder().build();
 
-        RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
+        var defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofMinutes(30))
                 .prefixCacheNameWith("arquisoft:")
                 .serializeValuesWith(SerializationPair.fromSerializer(jsonSerializer))

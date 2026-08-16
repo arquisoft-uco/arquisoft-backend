@@ -80,7 +80,7 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
             response.setContentType("application/json;charset=UTF-8");
             response.addHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitForRefill));
 
-            ErrorResponseDTO body = ErrorResponseDTO.builder()
+            var body = ErrorResponseDTO.builder()
                     .error(catalogo.obtener(LimiteSolicitudesKey.ERROR_HTTP_DEMASIADAS_SOLICITUDES))
                     .errorCode(SeguridadCodes.LimiteSolicitudes.LIMITE_SOLICITUDES_EXCEDIDO)
                     .message(catalogo.formatear(LimiteSolicitudesKey.ERROR_LIMITE_EXCEDIDO, waitForRefill))

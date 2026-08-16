@@ -7,8 +7,6 @@ import com.arquisoft.seguridad.application.auth.command.usecase.AutenticarUsuari
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-// El contexto seguridad no tiene DataSource propio (Keycloak + Redis), asi que el
-// interactor no declara @Transactional: no hay unidad de trabajo que delimitar.
 @Component
 @RequiredArgsConstructor
 public class AutenticarUsuarioInteractorImpl implements AutenticarUsuarioInteractor {

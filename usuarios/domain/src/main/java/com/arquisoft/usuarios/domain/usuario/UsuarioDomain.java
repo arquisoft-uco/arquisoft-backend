@@ -34,7 +34,7 @@ public final class UsuarioDomain extends AggregateRoot {
                     UsuariosCodes.Usuario.ROL_REQUERIDO);
         }
 
-        UsuarioDomain usuario = new UsuarioDomain(UUID.randomUUID(), email.trim().toLowerCase(), rol);
+        var usuario = new UsuarioDomain(UUID.randomUUID(), email.trim().toLowerCase(), rol);
         usuario.publicarEvento(new UsuarioCreadoEvent(usuario.id, usuario.email, usuario.rol.getCodigo()));
         return usuario;
     }

@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class MinioStorageClientImpl implements MinioStorageClient {
 
-    /** Código de error de la API de MinIO, no un texto: identifica la respuesta «objeto ausente». */
     private static final String CODIGO_OBJETO_INEXISTENTE = "NoSuchKey";
 
     private final MinioClient minioClient;

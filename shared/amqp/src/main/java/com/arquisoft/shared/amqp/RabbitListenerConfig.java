@@ -23,7 +23,7 @@ public class RabbitListenerConfig {
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
             ConnectionFactory connectionFactory) {
-        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        var factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         // Manual ACK: sincronizado con spring.rabbitmq.listener.simple.acknowledge-mode=manual
         factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);

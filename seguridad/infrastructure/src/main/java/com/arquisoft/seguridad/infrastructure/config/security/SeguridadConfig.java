@@ -56,10 +56,10 @@ public class SeguridadConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        String issuer = String.format("%s/realms/%s", keycloakServerUrl, realm);
+        var issuer = String.format("%s/realms/%s", keycloakServerUrl, realm);
         log.info(catalogo.obtener(IniciarSesionKey.LOG_JWT_DECODER_CONFIG), issuer, expectedAudience);
 
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
+        var decoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
         decoder.setJwtValidator(jwtValidator(issuer, expectedAudience));
         return decoder;
     }

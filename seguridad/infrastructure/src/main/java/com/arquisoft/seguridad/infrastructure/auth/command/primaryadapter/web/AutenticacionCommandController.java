@@ -78,7 +78,7 @@ public class AutenticacionCommandController {
     public ResponseEntity<LoginResponseDTO> iniciarSesion(@Valid @RequestBody LoginRequestDTO loginRequest) {
         AutenticacionResult result = autenticarUsuarioInteractor.ejecutar(loginRequest.toCommand());
 
-        LoginResponseDTO response = LoginResponseDTO.builder()
+        var response = LoginResponseDTO.builder()
                 .accessToken(result.accessToken())
                 .refreshToken(result.refreshToken())
                 .expiresIn(result.expiresIn())
@@ -111,7 +111,7 @@ public class AutenticacionCommandController {
                 refreshTokenRequest.refreshToken()
         );
 
-        LoginResponseDTO response = LoginResponseDTO.builder()
+        var response = LoginResponseDTO.builder()
                 .accessToken(result.accessToken())
                 .refreshToken(result.refreshToken())
                 .expiresIn(result.expiresIn())
@@ -168,7 +168,7 @@ public class AutenticacionCommandController {
                 TokenDomain.de(token)
         );
 
-        ValidateTokenResponseDTO response = ValidateTokenResponseDTO.builder()
+        var response = ValidateTokenResponseDTO.builder()
                 .valido(result.valido())
                 .identidadId(result.identidadId())
                 .correo(result.correo())

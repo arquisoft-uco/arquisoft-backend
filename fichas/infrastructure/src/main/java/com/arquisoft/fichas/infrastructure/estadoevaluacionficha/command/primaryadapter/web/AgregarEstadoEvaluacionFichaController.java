@@ -60,7 +60,7 @@ public class AgregarEstadoEvaluacionFichaController {
             @RequestBody AgregarEstadoEvaluacionFichaRequestDTO request,
             @AuthenticationPrincipal Jwt jwt) {
 
-        UUID representanteComiteId = UUID.fromString(jwt.getSubject());
+        var representanteComiteId = UUID.fromString(jwt.getSubject());
         var id = agregarEstadoEvaluacionFichaInteractor.ejecutar(AgregarEstadoEvaluacionFichaRequestMapper.toCommand(request, representanteComiteId));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new AgregarEstadoEvaluacionFichaResponseDTO(id));

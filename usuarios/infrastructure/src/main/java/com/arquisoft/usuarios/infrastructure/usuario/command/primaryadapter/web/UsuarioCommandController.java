@@ -53,7 +53,7 @@ public class UsuarioCommandController {
 
         UUID id = crearUsuarioInteractor.ejecutar(request.toCommand());
 
-        CrearUsuarioResponseDTO response = CrearUsuarioResponseDTO.builder()
+        var response = CrearUsuarioResponseDTO.builder()
                 .id(id)
                 .email(request.email())
                 .rol(request.rol().toDomain().getCodigo())

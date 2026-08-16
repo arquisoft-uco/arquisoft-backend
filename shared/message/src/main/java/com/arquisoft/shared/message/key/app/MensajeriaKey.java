@@ -3,7 +3,6 @@ package com.arquisoft.shared.message.key.app;
 import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
-/** Mensajería asíncrona ({@code shared:amqp}): publicación y consumo de eventos. */
 public enum MensajeriaKey implements ClaveMensaje {
 
     LOG_MENSAJE_NO_ENRUTADO("app.infraestructura.mensajeria.log.mensaje-no-enrutado"),

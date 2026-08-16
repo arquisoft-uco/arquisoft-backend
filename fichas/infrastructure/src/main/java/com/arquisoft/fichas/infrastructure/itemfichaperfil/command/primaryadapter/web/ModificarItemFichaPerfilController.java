@@ -58,7 +58,7 @@ public class ModificarItemFichaPerfilController {
             @RequestBody ModificarItemFichaPerfilRequestDTO dto,
             @AuthenticationPrincipal Jwt jwt) {
 
-        UUID estudianteId = UUID.fromString(jwt.getSubject());
+        var estudianteId = UUID.fromString(jwt.getSubject());
 
         modificarItemFichaPerfilInteractor.ejecutar(ModificarItemFichaPerfilRequestMapper.toCommand(dto, itemId, estudianteId));
 

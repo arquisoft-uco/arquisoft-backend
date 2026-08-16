@@ -48,7 +48,7 @@ public class FichasDataSourceConfig {
 
     @Bean(name = "fichasDataSource")
     public DataSource fichasDataSource() {
-        HikariConfig config = new HikariConfig();
+        var config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(username);
         config.setPassword(password);
@@ -65,14 +65,14 @@ public class FichasDataSourceConfig {
             @Qualifier("fichasDataSource") DataSource dataSource,
             @Qualifier("fichasFlyway") Flyway fichasFlyway) {
 
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        var em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
         em.setPackagesToScan(
                 "com.arquisoft.fichas.application",
                 "com.arquisoft.fichas.infrastructure");
         em.setPersistenceUnitName("fichas");
 
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        var vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
         Map<String, Object> properties = new HashMap<>();

@@ -49,7 +49,7 @@ public class UsuariosDataSourceConfig {
 
     @Bean(name = "usuariosDataSource")
     public DataSource usuariosDataSource() {
-        HikariConfig config = new HikariConfig();
+        var config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(username);
         config.setPassword(password);
@@ -66,12 +66,12 @@ public class UsuariosDataSourceConfig {
             @Qualifier("usuariosDataSource") DataSource dataSource,
             @Qualifier("usuariosFlyway") Flyway usuariosFlyway) {
 
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        var em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
         em.setPackagesToScan("com.arquisoft.usuarios.infrastructure");
         em.setPersistenceUnitName("usuarios");
 
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        var vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
         Map<String, Object> properties = new HashMap<>();

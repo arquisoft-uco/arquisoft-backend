@@ -37,14 +37,6 @@ public final class AppCodes {
         public static final String ENVIO_FALLIDO = "NOTIFICACION_ENVIO_FALLIDO";
     }
 
-    /**
-     * Consultas dinámicas — filtros, ordenamiento y paginación.
-     *
-     * <p>El subsistema se reparte entre tres módulos: {@code shared:domain} valida el árbol de
-     * filtros y el ordenamiento que llega del cliente, {@code shared:postgres} lo traduce a JPA y
-     * {@code shared:web} lo deserializa. Los códigos viven juntos aquí porque el cliente de la API
-     * los ve como una sola familia, sin importar qué módulo los produjo.
-     */
     public static final class Consulta {
 
         private Consulta() {}
@@ -61,7 +53,6 @@ public final class AppCodes {
         public static final String CONECTOR_REQUERIDO = "CONECTOR_REQUERIDO";
     }
 
-    /** Almacenamiento de objetos — transversal, lo produce {@code shared:minio}. */
     public static final class Minio {
 
         private Minio() {}

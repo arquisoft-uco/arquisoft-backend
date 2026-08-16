@@ -29,22 +29,22 @@ public class RestTemplateConfig {
         log.info(Mensajes.obtener(ConfiguracionKey.LOG_REST_TEMPLATE_CONFIGURADO),
                 connectTimeout, readTimeout);
 
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        var factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(connectTimeout);
         factory.setReadTimeout(readTimeout);
 
-        RestTemplate restTemplate = new RestTemplate(factory);
+        var restTemplate = new RestTemplate(factory);
         restTemplate.setInterceptors(List.of(loggingInterceptor()));
         return restTemplate;
     }
 
     @Bean(name = "fastRestTemplate")
     public RestTemplate fastRestTemplate() {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        var factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(2000);
         factory.setReadTimeout(5000);
 
-        RestTemplate restTemplate = new RestTemplate(factory);
+        var restTemplate = new RestTemplate(factory);
         restTemplate.setInterceptors(List.of(loggingInterceptor()));
         return restTemplate;
     }
@@ -70,7 +70,7 @@ public class RestTemplateConfig {
 
     @Bean
     public SimpleClientHttpRequestFactory clientHttpRequestFactory() {
-        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        var factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(connectTimeout);
         factory.setReadTimeout(readTimeout);
         return factory;

@@ -55,7 +55,7 @@ public class RegistrarEvaluacionFichaPerfilController {
             @PathVariable UUID fichaId,
             @AuthenticationPrincipal Jwt jwt) {
 
-        UUID representanteComiteId = UUID.fromString(jwt.getSubject());
+        var representanteComiteId = UUID.fromString(jwt.getSubject());
 
         var command = RegistrarEvaluacionFichaPerfilCommand.crear(
                 fichaId,

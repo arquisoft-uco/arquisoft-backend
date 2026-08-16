@@ -54,7 +54,7 @@ public class NotificacionesDataSourceConfig {
 
     @Bean(name = "notificacionesDataSource")
     public DataSource notificacionesDataSource() {
-        HikariConfig config = new HikariConfig();
+        var config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(username);
         config.setPassword(password);
@@ -71,12 +71,12 @@ public class NotificacionesDataSourceConfig {
             @Qualifier("notificacionesDataSource") DataSource dataSource,
             @Qualifier("notificacionesFlyway") Flyway notificacionesFlyway) {
 
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        var em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
         em.setPackagesToScan("com.arquisoft.notificaciones.application");
         em.setPersistenceUnitName("notificaciones");
 
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        var vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
         Map<String, Object> properties = new HashMap<>();

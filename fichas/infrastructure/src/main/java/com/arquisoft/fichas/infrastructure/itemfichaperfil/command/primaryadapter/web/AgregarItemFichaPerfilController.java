@@ -63,7 +63,7 @@ public class AgregarItemFichaPerfilController {
             @RequestBody AgregarItemFichaPerfilRequestDTO dto,
             @AuthenticationPrincipal Jwt jwt) {
 
-        UUID estudianteId = UUID.fromString(jwt.getSubject());
+        var estudianteId = UUID.fromString(jwt.getSubject());
 
         UUID itemId = agregarItemFichaPerfilInteractor.ejecutar(AgregarItemFichaPerfilRequestMapper.toCommand(dto, fichaPerfilId, estudianteId));
 

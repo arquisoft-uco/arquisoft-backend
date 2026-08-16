@@ -47,7 +47,7 @@ public class SmtpEnvioNotificacionOutputAdapter implements EnvioNotificacionOutp
 
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+            var helper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
 
             helper.setFrom(properties.getRemitenteEmail(), properties.getRemitenteNombre());
             helper.setTo(destinos.toArray(new String[0]));

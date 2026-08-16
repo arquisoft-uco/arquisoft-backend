@@ -158,7 +158,7 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
     private ResponseEntity<Map<String, Object>> executeTokenRequest(
             String tokenEndpoint, MultiValueMap<String, String> body) {
 
-        HttpHeaders headers = new HttpHeaders();
+        var headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);

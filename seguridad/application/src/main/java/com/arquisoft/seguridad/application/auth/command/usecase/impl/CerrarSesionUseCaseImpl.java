@@ -20,7 +20,7 @@ public class CerrarSesionUseCaseImpl implements CerrarSesionUseCase {
 
     @Override
     public void ejecutar(TokenSesionCommand entrada) {
-        SesionDomain sesion = SesionDomain.cerrar(
+        var sesion = SesionDomain.cerrar(
                 entrada.identificadorToken(), entrada.tiempoVidaRestante());
 
         tokenInvalidadoOutputPort.invalidarToken(

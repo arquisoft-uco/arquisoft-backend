@@ -30,7 +30,6 @@ public class RabbitMQConfig {
 
     public static final String DLX_NAME = "arquisoft.dlx";
 
-    /** Nombre del bean del mapper; constante porque lo referencian @Bean y @Qualifier. */
     public static final String RABBIT_OBJECT_MAPPER = "rabbitObjectMapper";
 
     @Bean
@@ -80,7 +79,7 @@ public class RabbitMQConfig {
             ConnectionFactory connectionFactory,
             JacksonJsonMessageConverter messageConverter,
             MessagePostProcessor traceHeadersPostProcessor) {
-        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+        var template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(messageConverter);
         template.setExchange(EXCHANGE_NAME);
         // Aplica traza en todos los mensajes publicados, incluidos los enviados

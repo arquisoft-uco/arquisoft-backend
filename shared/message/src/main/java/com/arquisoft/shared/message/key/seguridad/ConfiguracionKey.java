@@ -3,7 +3,6 @@ package com.arquisoft.shared.message.key.seguridad;
 import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
-/** Trazas de arranque y de cliente HTTP de la configuración del contexto seguridad. */
 public enum ConfiguracionKey implements ClaveMensaje {
 
     LOG_REST_TEMPLATE_CONFIGURADO("seguridad.infraestructura.configuracion.log.rest-template-configurado"),

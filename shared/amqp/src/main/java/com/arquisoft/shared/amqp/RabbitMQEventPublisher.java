@@ -28,7 +28,7 @@ public class RabbitMQEventPublisher implements EventPublisher { // EventPublishe
     @Override
     public void publish(DomainEvent evento) {
         String claveRuta = evento.getTemaEvento();
-        CorrelationData corr = new CorrelationData(evento.getIdEvento());
+        var corr = new CorrelationData(evento.getIdEvento());
 
         AmqpException lastException = null;
         long backoffMs = INITIAL_BACKOFF_MS;

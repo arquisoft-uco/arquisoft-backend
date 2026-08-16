@@ -117,11 +117,11 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
     }
 
     private Bucket createExhaustedBucket() {
-        Bandwidth limit = Bandwidth.builder()
+        var limit = Bandwidth.builder()
                 .capacity(1)
                 .refillIntervally(1, Duration.ofDays(1))
                 .build();
-        Bucket bucket = Bucket.builder().addLimit(limit).build();
+        var bucket = Bucket.builder().addLimit(limit).build();
         bucket.tryConsume(1);
         return bucket;
     }

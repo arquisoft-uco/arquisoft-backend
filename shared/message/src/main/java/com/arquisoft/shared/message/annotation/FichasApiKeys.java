@@ -153,4 +153,31 @@ public final class FichasApiKeys {
         public static final String CONSULTAR_RESP_401 = ABRE + "fichas.infraestructura.estadoficha.api.consultar-resp-401" + CIERRA;
         public static final String CONSULTAR_RESP_403 = ABRE + "fichas.infraestructura.estadoficha.api.consultar-resp-403" + CIERRA;
     }
+
+    public static final class MinioGuia {
+
+        private MinioGuia() {}
+
+        public static final String TAG_NAME = "MinIO Guía";
+        public static final String TAG_DESCRIPTION = "Endpoints de prueba para validar el módulo shared:minio. Eliminar tras el PoC.";
+
+        public static final String CARGA_SUMMARY = ABRE + "fichas.infraestructura.minioguia.api.carga-summary" + CIERRA;
+        public static final String CARGA_DESCRIPTION = ABRE + "fichas.infraestructura.minioguia.api.carga-description" + CIERRA;
+        public static final String CARGA_RESP_200 = ABRE + "fichas.infraestructura.minioguia.api.carga-resp-200" + CIERRA;
+
+        public static final String DESCARGA_SUMMARY = ABRE + "fichas.infraestructura.minioguia.api.descarga-summary" + CIERRA;
+        public static final String DESCARGA_DESCRIPTION = ABRE + "fichas.infraestructura.minioguia.api.descarga-description" + CIERRA;
+        public static final String DESCARGA_RESP_200 = ABRE + "fichas.infraestructura.minioguia.api.descarga-resp-200" + CIERRA;
+
+        public static final String EXISTE_SUMMARY = ABRE + "fichas.infraestructura.minioguia.api.existe-summary" + CIERRA;
+        public static final String EXISTE_DESCRIPTION = ABRE + "fichas.infraestructura.minioguia.api.existe-description" + CIERRA;
+        public static final String EXISTE_RESP_200 = ABRE + "fichas.infraestructura.minioguia.api.existe-resp-200" + CIERRA;
+
+        public static final String ELIMINAR_SUMMARY = ABRE + "fichas.infraestructura.minioguia.api.eliminar-summary" + CIERRA;
+        public static final String ELIMINAR_DESCRIPTION = ABRE + "fichas.infraestructura.minioguia.api.eliminar-description" + CIERRA;
+        public static final String ELIMINAR_RESP_204 = ABRE + "fichas.infraestructura.minioguia.api.eliminar-resp-204" + CIERRA;
+
+        public static final String PARAM_BUCKET = ABRE + "fichas.infraestructura.minioguia.api.param-bucket" + CIERRA;
+        public static final String PARAM_KEY = ABRE + "fichas.infraestructura.minioguia.api.param-key" + CIERRA;
+    }
 }

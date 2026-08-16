@@ -4,12 +4,6 @@ import com.arquisoft.shared.events.DomainEvent;
 
 import java.util.UUID;
 
-/**
- * Se asigno un asesor distinto a una ficha de perfil.
- *
- * <p>Carga el nombre y el correo del nuevo asesor a proposito: quien consuma el evento —hoy el
- * contexto {@code notificaciones}— no debe consultar a {@code fichas} para saber a quien avisar.
- */
 public class AsesorFichaCambiadoEvent extends DomainEvent {
 
     public static final String EVENT_TOPIC = "fichas.ficha_perfil.asesor_cambiado";

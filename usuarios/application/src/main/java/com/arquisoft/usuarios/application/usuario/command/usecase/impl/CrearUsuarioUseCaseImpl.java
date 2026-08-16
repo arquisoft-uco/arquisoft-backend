@@ -28,7 +28,7 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
     @Override
     public UUID ejecutar(CrearUsuarioCommand entrada) {
-        UsuarioDomain usuario = UsuarioDomain.crear(entrada.email(), entrada.rol());
+        var usuario = UsuarioDomain.crear(entrada.email(), entrada.rol());
 
         boolean emailYaExiste = emailUsuarioExisteFinder.obtener(usuario.getEmail());
 
