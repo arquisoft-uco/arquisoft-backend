@@ -27,11 +27,11 @@ docker-compose up -d
 ```
 
 Espera ~30 segundos para que todos los servicios se inicien:
-- PostgreSQL: `localhost:5432` (7 schemas creados automáticamente)
+- PostgreSQL: `localhost:5432` (8 bases de datos creadas automáticamente, una por contexto con implementación o scaffolding, más `keycloak`)
 - RabbitMQ: `localhost:5672` (UI: `localhost:15672`)
 - Redis: `localhost:6379`
 - Keycloak: `localhost:8081`
-- Nextcloud: `localhost:8082`
+- MinIO: `localhost:9000` (API), `localhost:9001` (consola)
 
 ### Paso 3: Compilar el Proyecto
 
@@ -101,7 +101,7 @@ evaluaciones/                    ← CONTEXTO: Evaluaciones (scaffolding)
 | **Backend** | http://localhost:8080/api | - | - |
 | **RabbitMQ** | http://localhost:15672 | guest | guest |
 | **Keycloak** | http://localhost:8081/admin | admin | admin |
-| **Nextcloud** | http://localhost:8082 | admin | admin123 |
+| **MinIO** | http://localhost:9001 | minioadmin | minioadmin |
 
 ---
 

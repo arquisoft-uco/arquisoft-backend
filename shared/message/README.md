@@ -47,23 +47,31 @@ shared/message/
     │   ├── CatalogoMensajesResourceBundle.java ← Implementación sobre ResourceBundle
     │   ├── Mensajes.java                       ← Fachada estática (solo para dominio)
     │   ├── PaquetesMensajes.java                ← Registro de bundles
-    │   ├── AppKeys / FichasKeys / SeguridadKeys / UsuariosKeys
-    │   ├── AppCodes / FichasCodes / SeguridadCodes / UsuariosCodes
-    │   ├── FichasFields, FichasLimits
-    │   ├── ValidationKeys                     ← Referencias "{clave}" para Jakarta
-    │   └── FichasApiKeys                      ← Referencias "${clave}" para springdoc
+    │   ├── constant/
+    │   │   ├── AppCodes, FichasCodes, NotificacionesCodes, SeguridadCodes, UsuariosCodes
+    │   │   └── FichasFields, FichasLimits, NotificacionesFields, NotificacionesLimits
+    │   ├── key/{contexto}/{Concepto}Key.java   ← una clase por concepto, no una por contexto
+    │   │   ├── app/       → ConsultaKey, MensajeriaKey, AlmacenamientoKey, PaginacionKey, ValidadorKey, HttpKey, NotificacionKey
+    │   │   ├── fichas/    → FichaPerfilKey, EstadoFichaKey, EstadoFichaPerfilKey, ItemFichaPerfilKey, EstudianteKey, EstudianteFichaPerfilKey, EvaluacionFichaPerfilKey, EstadoEvaluacionFichaKey, RepresentanteComiteKey, UsuarioKey, MinioGuiaKey
+    │   │   ├── seguridad/ → AutenticacionKey, CredencialesKey, IdentidadKey, IniciarSesionKey, LimiteSolicitudesKey, RolKey, SesionKey, TokenKey, TokenInvalidadoKey, ConfiguracionKey
+    │   │   ├── notificaciones/ → NotificacionKey, ConsumidorKey, PlantillaKey
+    │   │   └── usuarios/  → UsuarioKey
+    │   └── annotation/
+    │       ├── ValidationKeys                 ← Referencias "{clave}" para Jakarta
+    │       └── FichasApiKeys                  ← Referencias "${clave}" para springdoc
     └── resources/
         ├── ValidationMessages.properties      ← Lo lee Hibernate Validator
         └── messages/
-            ├── app.properties
-            ├── fichas.properties
-            ├── fichas-api.properties
-            ├── seguridad.properties
-            └── usuarios.properties
+            ├── app.properties, fichas.properties, fichas-api.properties
+            ├── seguridad.properties, usuarios.properties, notificaciones.properties
 ```
 
-Granularidad: **un archivo por contexto**, más uno extra cuando el volumen lo justifica
-(`fichas-api`, que no comparte ciclo de vida con los mensajes de negocio de `fichas`).
+Granularidad de las claves: **una clase por concepto** dentro del paquete de su contexto
+(`key/fichas/FichaPerfilKey`, `key/fichas/EstadoFichaKey`, …), no una única clase-contenedor
+por contexto con subclases anidadas — así una constante mal ubicada no obliga a tocar un
+archivo gigante compartido por todo el contexto. Granularidad de los `.properties`: **un
+archivo por contexto**, más uno extra cuando el volumen lo justifica (`fichas-api`, que no
+comparte ciclo de vida con los mensajes de negocio de `fichas`).
 
 ---
 
@@ -86,11 +94,13 @@ fichas.dominio.fichaperfil.error.titulo-duplicado=El título ya existe: %s
 fichas.aplicacion.fichaperfil.log.registrada=Ficha de perfil registrada — id={}
 ```
 
-Las constantes espejan el esquema:
+Las constantes espejan el esquema — pero, a diferencia de `*Codes` (que sí anida una clase
+interna por objeto, `FichasCodes.FichaPerfil.X`), cada `*Key` es un `enum` **plano** por
+concepto, ya en su propio paquete `key.{contexto}`:
 
 ```java
-FichasKeys.FichaPerfil.ERROR_TITULO_DUPLICADO
-FichasKeys.FichaPerfil.LOG_REGISTRADA
+FichaPerfilKey.ERROR_TITULO_DUPLICADO   // com.arquisoft.shared.message.key.fichas.FichaPerfilKey
+FichaPerfilKey.LOG_REGISTRADA
 ```
 
 ---
@@ -114,7 +124,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
     @Override
     public UUID ejecutar(RegistrarFichaPerfilCommand command) {
         // ...
-        logger.info(catalogo.obtener(FichasKeys.FichaPerfil.LOG_REGISTRADA), ficha.getId());
+        logger.info(catalogo.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
         return ficha.getId();
     }
 }
@@ -130,7 +140,7 @@ instancia** que recibe el resto de capas:
 public class TituloDuplicadoException extends DomainException {
 
     public TituloDuplicadoException(String titulo) {
-        super(Mensajes.formatear(FichasKeys.FichaPerfil.ERROR_TITULO_DUPLICADO, titulo),
+        super(Mensajes.formatear(FichaPerfilKey.ERROR_TITULO_DUPLICADO, titulo),
               FichasCodes.FichaPerfil.FICHA_TITULO_DUPLICADO);
     }
 }
@@ -189,8 +199,10 @@ añadir su constante — y al revés.
 
 1. Crear `src/main/resources/messages/{contexto}.properties`.
 2. Registrar su base name en `PaquetesMensajes.TODOS`.
-3. Crear `{Contexto}Keys` (claves) y `{Contexto}Codes` (códigos de error).
-4. Añadir la clase de claves a `CLASES_DE_CLAVES` en `CatalogoMensajesClavesTest`.
+3. Crear `key/{contexto}/{Concepto}Key.java` (una por concepto, no una sola para todo el
+   contexto) y `constant/{Contexto}Codes.java` (códigos de error, anidando una clase interna
+   por objeto).
+4. Añadir cada nueva clase de claves a `CLASES_DE_CLAVES` en `CatalogoMensajesClavesTest`.
 5. Ejecutar `./gradlew :shared:message:test`.
 
 ---

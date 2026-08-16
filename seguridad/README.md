@@ -29,11 +29,6 @@ seguridad/
 │           ├── model/
 │           │   ├── CredencialesSesion.java        Value object: resultado de autenticar/refrescar
 │           │   └── IdentidadToken.java            Value object: identidad extraída de un JWT validado
-│           ├── secondaryport/
-│           │   ├── AutenticacionOutputPort.java   Contrato con el proveedor de identidad (Keycloak)
-│           │   ├── ValidacionTokenOutputPort.java Contrato para validar y extraer info de un JWT
-│           │   ├── TokenInvalidadoOutputPort.java Contrato para blacklist de tokens revocados
-│           │   └── UsuarioActualOutputPort.java   Contrato para leer el usuario autenticado del contexto
 │           └── exception/
 │               └── AuthenticationException.java   Excepción base de autenticación del dominio
 │
@@ -57,6 +52,11 @@ seguridad/
 │               │   ├── RefrescarTokenUseCase.java
 │               │   ├── ValidarTokenUseCase.java
 │               │   └── impl/                                    *UseCaseImpl.java
+│               ├── secondaryport/                              Puertos de salida — viven en application, no en domain
+│               │   ├── AutenticacionOutputPort.java   Contrato con el proveedor de identidad (Keycloak)
+│               │   ├── ValidacionTokenOutputPort.java Contrato para validar y extraer info de un JWT
+│               │   ├── TokenInvalidadoOutputPort.java Contrato para blacklist de tokens revocados
+│               │   └── UsuarioActualOutputPort.java   Contrato para leer el usuario autenticado del contexto
 │               └── result/
 │                   ├── AutenticacionResult.java
 │                   ├── RefrescoTokenResult.java
@@ -155,7 +155,7 @@ La SPA `react-app` autentica con **Authorization Code + PKCE** (public client) y
 ### Rate limiting
 - Implementado con Bucket4j + Redis (distribuido, apto para múltiples instancias).
 - Bucket global: 100 req/min por IP (dev) / 60 req/min (prod).
-- Bucket login (`/auth/login`): 5 req/min por IP.
+- Bucket login (`/auth/login`): 5 req/min por IP (dev) / 3 req/min (prod).
 - Retorna `429 Too Many Requests` con cabecera `X-Rate-Limit-Retry-After-Seconds`.
 
 ### CORS

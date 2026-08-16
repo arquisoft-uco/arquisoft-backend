@@ -294,7 +294,7 @@ Jackson 3 moved `databind` to `tools.jackson.databind.*`; `com.fasterxml.jackson
 ## Security
 
 - JWT validated against Keycloak JWK Set (configured in `seguridad/infrastructure/config/security/SeguridadConfig`)
-- Rate limiting via Bucket4j: per-IP buckets in `ConcurrentHashMap` (100 req/min global dev, 60 prod; 5 login/min)
+- Rate limiting via Bucket4j: per-IP buckets backed by Redis (`RedisBucketResolver`, Lettuce) — no in-memory map, no `max-tracked-ips` (removed when the resolver migrated off `ConcurrentHashMap`). Defaults: 100 req/min global dev, 60 prod; 5 login/min dev, 3 login/min prod. On a Redis error, `resolveBucket`/`resolveLoginBucket` fail closed — return an already-exhausted bucket instead of propagating the exception.
 - `AuditFilter` logs all requests with METHOD, URI, USER, TIME, STATUS (skips Swagger paths)
 - CORS default origins: `localhost:3000`, `4200`, `5173` (configurable via `CORS_ALLOWED_ORIGINS`)
 - CSRF disabled, sessions stateless
@@ -312,5 +312,7 @@ Jackson 3 moved `databind` to `tools.jackson.databind.*`; `com.fasterxml.jackson
 
 - [AGENTS.md](AGENTS.md) — comprehensive project guide and ADR index
 - [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md) — long-form architecture reference (human-oriented, not for agent context)
+- [docs/ARQUITECTURA_ASINCRONICO_ARQUISOFT.md](docs/ARQUITECTURA_ASINCRONICO_ARQUISOFT.md) — domain events + outbox pattern in depth (human-oriented, not for agent context)
+- [docs/PATRON_QUERY_OBJECT_FILTROS_DINAMICOS.md](docs/PATRON_QUERY_OBJECT_FILTROS_DINAMICOS.md) — the dynamic-filter Query Object + Specification pattern in depth (human-oriented, not for agent context)
 - [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md) — full local setup guide
 - [CONTRIBUTING.md](CONTRIBUTING.md) — git workflow and branch naming

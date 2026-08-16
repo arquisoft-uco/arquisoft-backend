@@ -105,13 +105,20 @@ Con `refillGreedy`, los tokens se reabastecen **gradualmente**:
 
 ---
 
-## Los 4 tipos de buckets en este proyecto
+## Los buckets en este proyecto
 
-### 1. Bucket general (`createGeneralBucket`)
+> Los buckets viven en **Redis** (`RedisBucketResolver`, Bucket4j + Lettuce), no en un mapa en
+> memoria de la JVM — por eso ya no existe una propiedad `max-tracked-ips`: se eliminó al migrar
+> de un `ConcurrentHashMap` por IP a Redis. Cada bucket es una clave Redis
+> (`arquisoft:ratelimit:global:{ip}` / `arquisoft:ratelimit:login:{ip}`) con expiración
+> automática (`ExpirationAfterWriteStrategy`, 2 minutos desde el último refill) — Redis limpia
+> las IPs inactivas solo, sin lógica de aplicación.
+
+### 1. Bucket general (`RedisBucketResolver.resolveBucket(ip)`)
 
 ```java
 // Para cualquier endpoint autenticado
-capacity = requestsPerMinute          // ej: 60 en prod
+capacity = requestsPerMinute          // 100 en dev, 60 en prod
 refillIntervally(N, 1 minuto)         // recarga de golpe
 ```
 
@@ -127,11 +134,11 @@ Uso abusivo: un scraper que hace 100 req/s agota el balde en <1 segundo y recibe
 
 ---
 
-### 2. Bucket de login (`createLoginBucket`)
+### 2. Bucket de login (`RedisBucketResolver.resolveLoginBucket(ip)`)
 
 ```java
 // Solo para POST /auth/login
-capacity = loginRequestsPerMinute     // ej: 3 en prod
+capacity = loginRequestsPerMinute     // 5 en dev, 3 en prod
 refillGreedy(N, 1 minuto)             // 1 ficha cada (60/N) segundos
 ```
 
@@ -155,7 +162,7 @@ Protege contra fuerza bruta: máximo ~180 intentos/hora por IP (3/min × 60 min)
 ### 3. Bucket ilimitado (`createUnlimitedBucket`)
 
 ```java
-// Solo cuando rate-limit está deshabilitado (dev/test)
+// Solo cuando rate-limit está deshabilitado (security.rate-limit.enabled: false — dev por defecto)
 capacity = Long.MAX_VALUE
 refillIntervally(Long.MAX_VALUE, 1 día)
 ```
@@ -164,13 +171,14 @@ Balde con ~9 × 10¹⁸ fichas. Nunca se agota en la práctica. Evita el `null` 
 
 ---
 
-### 4. Bucket exhausto (`createExhaustedBucket`) — pendiente de implementar
+### 4. Bucket exhausto (`createExhaustedBucket`) — implementado, es el fallback de Redis caído
 
 ```java
-// Para IPs nuevas cuando el mapa está lleno (fail-closed)
+// Cuando Redis lanza una excepción al resolver el bucket (fail-closed)
 capacity = 1
 refillIntervally(1, Duration.ofDays(1))    // efectivamente no recarga
 // + consume inmediatamente la única ficha al crear el bucket
+bucket.tryConsume(1);
 ```
 
 **Visualización:**
@@ -180,8 +188,12 @@ refillIntervally(1, Duration.ofDays(1))    // efectivamente no recarga
 [.]  ← 0 fichas → cualquier petición recibe 429 inmediatamente
 ```
 
-Este bucket NO se guarda en el mapa — se crea y descarta en cada petición de IP desconocida.
-No consume memoria. Solo sirve para devolver 429 sin ejecutar lógica de aplicación.
+`resolveBucket`/`resolveLoginBucket` lo devuelven dentro de un `catch (Exception e)` alrededor de
+la llamada a `proxyManager.getProxy(...)` — es decir, **no** es para "IPs nuevas cuando un mapa
+está lleno" (ese escenario ya no existe, los buckets viven en Redis con expiración automática,
+no en un mapa acotado en memoria). Es la respuesta a una pregunta distinta y más importante:
+**¿qué pasa si Redis mismo no responde?** Este bucket, efímero y descartado en cada petición, es
+esa respuesta — sin consumir memoria ni ejecutar lógica de aplicación adicional.
 
 ---
 
@@ -199,25 +211,29 @@ El sistema prioriza **seguridad** sobre disponibilidad.
 
 ---
 
-## Comportamiento en Rate Limiting con mapa de IPs lleno
+## Comportamiento cuando Redis no responde
 
-### Fail-Open
-```
-Mapa lleno (10.000 IPs) → IP nueva → bucket LLENO → petición PASA
-```
-- El atacante con IP nueva obtiene un bucket fresco con fichas completas
-- Puede seguir enviando peticiones sin restricción
-- El heap no crece (protección OOM), pero la CPU, threads y DB sí se saturan
-- Resultado: el servicio puede colapsar por sobrecarga de recursos
+Con los buckets en Redis (no en un mapa acotado en memoria), la pregunta de fail-open vs
+fail-closed ya no es "¿qué pasa cuando el mapa de IPs se llena?" — es **"¿qué pasa cuando Redis
+mismo falla?"**. `RedisBucketResolver.resolveBucket`/`resolveLoginBucket` envuelven la llamada a
+`proxyManager.getProxy(...)` en un `try/catch`; el código real ya decidió esto:
 
-### Fail-Closed
+### Fail-Open (lo que el proyecto **no** hace)
 ```
-Mapa lleno (10.000 IPs) → IP nueva → bucket VACÍO → HTTP 429 inmediato
+Redis lanza excepción → catch → devolver bucket ILIMITADO → petición PASA sin límite
 ```
-- El atacante con IP nueva recibe rechazo directo en el filtro
-- La petición nunca llega a la aplicación, controladores ni base de datos
-- Los clientes legítimos ya registrados en el mapa siguen operando normalmente
-- Resultado: el servicio sobrevive bajo DDoS con IPs únicas
+- Si Redis cae, **todo el tráfico** (legítimo y malicioso) queda sin rate limiting hasta que
+  Redis se recupere
+- Resultado: una caída de Redis se convierte en una ventana abierta para abuso masivo
+
+### Fail-Closed (lo que el proyecto hace: `createExhaustedBucket()`)
+```
+Redis lanza excepción → catch → devolver bucket YA AGOTADO → HTTP 429 inmediato
+```
+- Toda petición recibe 429 mientras Redis no responda — incluidos los clientes legítimos
+- La petición nunca llega al controlador ni a la base de datos
+- Resultado: una caída de Redis degrada el servicio a "rechaza todo", nunca a "acepta todo sin
+  control"
 
 ---
 
@@ -231,7 +247,7 @@ Mapa lleno (10.000 IPs) → IP nueva → bucket VACÍO → HTTP 429 inmediato
 | **Perfil de usuarios** | Alta rotación de IPs únicas legítimas (proxies corporativos, NAT compartido) |
 | **Consecuencia del bloqueo** | Bloquear un usuario legítimo tiene alto impacto de negocio |
 | **Infraestructura** | Hay un WAF/Cloudflare delante que ya filtra DDoS reales |
-| **Límite calibrado** | El `max-tracked-ips` es tan alto que nunca se alcanza en condiciones normales |
+| **Disponibilidad de Redis** | Redis es un punto único de falla no aceptable — una caída de Redis no debe poder tumbar el servicio entero |
 
 ### Elige Fail-Closed cuando:
 
@@ -247,13 +263,12 @@ Mapa lleno (10.000 IPs) → IP nueva → bucket VACÍO → HTTP 429 inmediato
 
 ## Impacto en diferentes actores
 
-| Actor | Fail-Open (mapa lleno) | Fail-Closed (mapa lleno) |
+| Actor | Fail-Open (Redis caído) | Fail-Closed (Redis caído) — lo que hace el proyecto |
 |---|---|---|
-| Atacante DDoS (IPs nuevas) | Pasa sin restricción ❌ | Bloqueado con 429 ✅ |
-| Cliente legítimo conocido (en el mapa) | Pasa normalmente ✅ | Pasa normalmente ✅ |
-| Cliente legítimo NUEVO (IP no vista) | Pasa normalmente ✅ | Bloqueado hasta próxima limpieza ⚠️ |
-| Servicio bajo DDoS | Colapsa por sobrecarga ❌ | Sobrevive ✅ |
-| Heap JVM | Estable ✅ | Estable ✅ |
+| Atacante aprovechando la caída de Redis | Pasa sin restricción ❌ | Bloqueado con 429 ✅ |
+| Cualquier cliente legítimo mientras Redis está caído | Pasa normalmente (sin límite) ✅ | Bloqueado con 429 hasta que Redis se recupere ⚠️ |
+| Servicio bajo abuso durante la caída | Puede colapsar por sobrecarga ❌ | Se degrada a "rechaza todo", pero no colapsa ✅ |
+| Disponibilidad de Redis como punto único de falla | No importa (rate limiting deja de proteger) | Importa: una caída de Redis tumba el rate limiting para todos, aunque el resto de la app siga viva |
 
 ---
 
@@ -273,29 +288,25 @@ Load Balancer             ← distribuye carga, detecta patrones anómalos
 Aplicación (Bucket4j)     ← rate limit por IP y por endpoint (última línea)
 ```
 
-Con capas anteriores activas, el mapa de Bucket4j difícilmente se llena con IPs legítimas,
-lo que hace que **fail-closed sea la opción segura** sin impacto real en usuarios normales.
+Con capas anteriores activas, la propia disponibilidad de Redis se vuelve el punto crítico —
+no un mapa en memoria que pueda llenarse. Por eso **fail-closed ante un Redis caído** es la
+opción segura: prioriza que el servicio se degrade de forma predecible (rechaza todo) antes que
+quede completamente desprotegido.
 
 ---
 
-## Recomendación para este proyecto
+## Recomendación para este proyecto (y lo que ya implementa `RedisBucketResolver`)
 
-**Fail-closed** es la elección correcta porque:
+**Fail-closed ante un Redis caído** es la elección correcta, y es la que el código ya aplica
+(`createExhaustedBucket()` en el `catch` de `resolveBucket`/`resolveLoginBucket`), porque:
 
 1. Es una API con autenticación (usuarios conocidos)
-2. No hay evidencia de alta rotación de IPs legítimas
-3. El endpoint de login es especialmente sensible (credenciales)
-4. El impacto de bloquear un usuario nuevo legítimo es mínimo (máx 2 minutos)
-5. El impacto de no bloquear un DDoS es crítico (servicio caído para todos)
+2. El endpoint de login es especialmente sensible (credenciales)
+3. El impacto de que Redis esté caído unos segundos y algún request legítimo reciba 429 es
+   tolerable
+4. El impacto de que Redis caiga y el sistema quede **sin ningún control de tasa** durante ese
+   tiempo es crítico — es exactamente cuando más se necesita la protección
 
-### Calibración de `max-tracked-ips`
-
-Debe ser mayor que el **pico de usuarios simultáneos legítimos** esperado:
-
-```
-max-tracked-ips > pico_usuarios_simultáneos × factor_seguridad(1.5-2x)
-
-Ejemplo: 500 usuarios pico → max-tracked-ips = 1000-1500
-```
-
-El default de 10.000 es conservador y adecuado para la mayoría de despliegues universitarios/empresariales medianos.
+No hay una propiedad de capacidad que calibrar del lado de la aplicación (no existe
+`max-tracked-ips`): la capacidad relevante ahora es la del propio Redis, dimensionada como
+cualquier otra dependencia de infraestructura del despliegue.

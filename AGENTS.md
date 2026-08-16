@@ -14,7 +14,8 @@
 ./gradlew build -x test            # Compilar sin tests
 ./gradlew clean build              # Limpiar y compilar
 ./gradlew bootRun --args='--spring.profiles.active=dev'
-./gradlew projects                 # Listar los 28 subproyectos
+./gradlew projects                 # Listar los 50 subproyectos
+./gradlew checkstyleMain checkstyleTest  # Lint (Checkstyle 10.12.5, exigido por CI)
 ./gradlew test                     # Todos los tests
 ./gradlew seguridad:infrastructure:test   # Tests de un modulo
 ./gradlew test --tests "*.NombreTest.nombreMetodo"
@@ -23,7 +24,7 @@
 
 ## Estructura de Modulos
 
-49 subproyectos Gradle (9 contextos × [3 capas + 1 agregador] + 12 módulos shared + 1 agregador `shared`). Cada bounded context tiene 3 capas. Solo `seguridad`, `usuarios`, `fichas` y `notificaciones` tienen implementación real; `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables` y `evaluaciones` son scaffolding (solo `{Contexto}DataSourceConfig`, sin código de dominio/aplicación aún).
+50 subproyectos Gradle: 9 contextos × [3 capas + 1 agregador] = 36, + 13 módulos `shared` + 1 agregador `shared` = 14. Cada bounded context tiene 3 capas. Solo `seguridad`, `usuarios`, `fichas` y `notificaciones` tienen implementación real; `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables` y `evaluaciones` son scaffolding (solo `{Contexto}DataSourceConfig`, sin código de dominio/aplicación aún).
 
 ```
 {contexto}/domain        ← Java puro, sin Spring, sin Lombok
@@ -32,8 +33,10 @@
 ```
 
 **Contextos:**
-- `shared` → `util`, `exception`, `validation`, `domain`, `logger`, `redis`, `amqp`, `web`, `minio`, `postgres`, `message`, `notification`
+- `shared` → `util`, `exception`, `validation`, `domain`, `logger`, `redis`, `amqp`, `web`, `minio`, `jpa`, `query`, `message`, `notification`
 - `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones`
+
+`shared:postgres` fue renombrado a `shared:jpa` (Specification, QueryRepository, PageableMapper — todo lo que necesita Spring Data JPA) y se extrajo `shared:query` (QueryCriteria/SortOrder/NodoFiltro/FiltroOperador, PaginatedResult, los DTO de filtro — vocabulario de consulta sin dependencia de Spring).
 
 **Dirección de dependencias (estricta via Gradle):** `domain ← application ← infrastructure`
 Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:amqp`).
@@ -46,7 +49,9 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 | Aggregate Root | Entidades raíz extienden `AggregateRoot` de `shared:domain` (`com.arquisoft.shared.domain`). Sufijo de la clase concreta es `Domain` (sustantivo, no el verbo de la acción), no `Aggregate` — e.g. `FichaPerfilDomain`, no `FichaPerfilAggregate` ni `RegistrarFichaPerfilDomain`. Vive directo en `domain/{feature}/`, sin subcarpeta `aggregate/` ni `model/`. Gestiona eventos de dominio no publicados via `publicarEvento(DomainEvent)`. |
 | Eventos de dominio | Extienden `DomainEvent` de `shared:domain`. Cada subclase declara sus **propios campos** con nombres semánticamente correctos (e.g. `usuarioId`, `fichaId`). `DomainEvent` asigna `idEvento` (UUID), `ocurridoEn`, `tipoEvento` y `temaEvento` automáticamente. El constructor recibe `(temaEvento, tipoEvento)` — sin `aggregateId` genérico. |
 | Puertos de entrada | `{Accion}{Entidad}Interactor` en `application/{feature}/command/primaryport/interactor/` (lado comando, es lo que inyecta el adapter) y `{Accion}{Entidad}UseCase` en `application/{feature}/command/usecase/` (lado comando, sin `primaryport/` — es un colaborador interno, no el contrato primario) o en `application/{feature}/query/primaryport/usecase/` (lado consulta, donde sí es el contrato primario porque no hay interactor) |
-| Puertos de salida | `{Entidad}OutputPort` en `domain/{feature}/secondaryport/` (escritura) o `application/{feature}/query/secondaryport/` (lectura) |
+| Puertos de salida | `{Entidad}OutputPort` en `application/{feature}/command/secondaryport/` (escritura) o `application/{feature}/query/secondaryport/` (lectura) — **nunca en `domain/`**: el dominio no declara puertos ni hace I/O, solo depende de `shared:domain` |
+| Entity vs JpaEntity | `{Feature}Entity` (`application/{feature}/command/secondaryport/entity/`) es un **record plano sin JPA ni Lombok** — la forma de persistencia que habla el puerto. La forma JPA real vive en infraestructura: `{Feature}JpaEntity` (`infrastructure/{feature}/command/secondaryadapter/entity/`, con `@Entity`/Lombok) + `{Feature}JpaMapper` que convierte `Entity ↔ JpaEntity` en el adapter. `application` no depende de JPA en absoluto |
+| Aislamiento CQRS | `query` nunca importa nada de `secondaryadapter` de `command`, ni siquiera el `JpaEntity` — cada feature con lectura real tiene su propio `{Feature}JpaQueryEntity` (`@Subselect`/`@Immutable`/`@Synchronize`). Un `existePor`/`obtener` que solo necesita un `Validator`/`Rule` de `command` pertenece al `OutputPort` de `command`, consumido por un `Finder` — nunca duplicado bajo `query/` sin un `primaryport` real detrás |
 | Use cases | `{Accion}{Entidad}UseCaseImpl` en `application/{feature}/command/usecase/impl/` o `application/{feature}/query/primaryport/usecase/impl/`; el interactor en `application/{feature}/command/primaryport/interactor/impl/` |
 | DTOs | `record` con sufijo `DTO`, sin Lombok. En contextos pequeños (`seguridad`, `usuarios`) el propio DTO expone `toCommand()`; en contextos grandes con validación más pesada (`fichas`) el DTO es un record sin anotaciones y un `{Feature}RequestMapper` externo (`primaryadapter/web/mapper/`) hace `toCommand(dto)`, delegando el formato a `{Command}.crear(...)` |
 | Excepciones de dominio | Extienden `DomainException` (shared) con campo `errorCode` |
@@ -183,9 +188,11 @@ public class UsuarioCreadoEvent extends DomainEvent {
 
 ### LimiteSolicitudesConfig (`seguridad/infrastructure/.../config/ratelimit/LimiteSolicitudesConfig.java`)
 
-- Usa **Bucket4j** (`com.bucket4j:bucket4j_jdk17-core:8.18.0`) con per-IP buckets en `ConcurrentHashMap`
-- Propiedades: `security.rate-limit.enabled`, `requests-per-minute` (default 100), `login-requests-per-minute` (default 5)
-- **En `application-prod.yml`: habilitado con 60/min global, 3/min login**
+- Usa **Bucket4j** (`com.bucket4j:bucket4j_jdk17-core:8.18.0`) con `RedisBucketResolver` (Lettuce) — buckets en Redis, no en memoria; `max-tracked-ips` se eliminó al migrar de `ConcurrentHashMap` a Redis
+- Propiedades: `security.rate-limit.enabled`, `requests-per-minute`, `login-requests-per-minute` — sin default global, cada perfil los fija explícitamente
+- `application-dev.yml`: deshabilitado (`enabled: false`), 100/min global, 5/min login
+- **`application-prod.yml`: habilitado, 60/min global, 3/min login**
+- Si Redis falla al resolver el bucket, `RedisBucketResolver` responde **fail-closed**: devuelve un bucket ya agotado (`createExhaustedBucket()`) en vez de dejar pasar la petición o propagar la excepción
 
 ### application-security.properties (`seguridad/infrastructure/src/main/resources/`)
 
@@ -256,14 +263,14 @@ Para endpoints **públicos** (login, refresh, validate) omitir `@SecurityRequire
 
 ## Esquemas de Base de Datos
 
-El nombre del schema **NO coincide** con el nombre del contexto en 3 casos:
-
 | Contexto Gradle | Schema PostgreSQL |
 |---|---|
-| `seguridad` | `usuarios` |
+| `seguridad` | *(sin BD propia — auth vía Keycloak + Redis)* |
+| `usuarios` | `usuarios` |
 | `fichas` | `fichas_perfil` |
+| `notificaciones` | `notificaciones` |
 | `proyectos` | `proyectos_grado` |
-| Los demás | igual al nombre del contexto |
+| `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones` | igual al nombre del contexto |
 
 Migraciones Flyway en `{contexto}/infrastructure/src/main/resources/db/migration/`.
 
@@ -273,10 +280,11 @@ Migraciones Flyway en `{contexto}/infrastructure/src/main/resources/db/migration
 
 | Elemento | Ejemplo |
 |---|---|
-| Clases / Interfaces | `AuthController`, `FichaRepositoryPort` |
-| Implementaciones | `KeycloakAuthServiceImpl` |
-| DTOs | `LoginRequestDTO` |
-| Excepciones | `InvalidCredentialsException` |
+| Puertos de salida | `FichaPerfilOutputPort`, `AsesorFichaOutputPort` |
+| Adapters de salida | `KeycloakAuthOutputAdapter`, `FichaPerfilCommandOutputAdapter` |
+| Controllers | `RegistrarFichaPerfilController`, `AutenticacionCommandController` |
+| DTOs | `RegistrarFichaPerfilRequestDTO` |
+| Excepciones | `FichaPerfilNoEncontradaException` |
 | Métodos de test | `debeHacerAlgo_cuandoCondicion` |
 
 **Regla bilingüe:** español para dominio/negocio (`ProyectoGrado`, `crearFicha`), inglés para sufijos técnicos (`UseCase`, `Adapter`, `DTO`, `Controller`).
@@ -302,7 +310,8 @@ Migraciones Flyway en `{contexto}/infrastructure/src/main/resources/db/migration
 
 - Stack: JUnit 6 + Mockito + AssertJ. H2 para repositorios. `spring-security-test` para controllers.
 - Tests unitarios: `@ExtendWith(MockitoExtension.class)`, sin contexto Spring
-- Tests de integración de repositorio: `@SpringBootTest` con H2
+- Tests de repositorio (slice): `@DataJpaTest` con H2 — **`@SpringBootTest` no se usa en ningún test de este repositorio**
+- Tests de controller (slice): `@WebMvcTest` + `@Import(GlobalAppExceptionHandler.class)`, autenticando con `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)`
 - Patrón AAA: Arrange / Act / Assert
 
 ## Git y PRs
