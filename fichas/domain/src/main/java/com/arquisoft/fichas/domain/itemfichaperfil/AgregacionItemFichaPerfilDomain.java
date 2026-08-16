@@ -2,8 +2,8 @@ package com.arquisoft.fichas.domain.itemfichaperfil;
 
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.UUID;
 
@@ -26,7 +26,7 @@ public final class AgregacionItemFichaPerfilDomain {
     }
 
     private void setItem(ItemFichaPerfilDomain item, ValidationResult result) {
-        if (!DomainValidator.noNulo(item,
+        if (!ValidatorObjeto.noNulo(item,
                 FichasFields.ItemFichaPerfil.ITEM,
                 FichasCodes.ItemFichaPerfil.ITEM_ID_REQUERIDO, result)) {
             return;
@@ -35,7 +35,7 @@ public final class AgregacionItemFichaPerfilDomain {
     }
 
     private void setEstudiante(UUID estudiante, ValidationResult result) {
-        if (!DomainValidator.noNulo(estudiante,
+        if (!ValidatorObjeto.noNulo(estudiante,
                 FichasFields.ItemFichaPerfil.ESTUDIANTE,
                 FichasCodes.ItemFichaPerfil.ESTUDIANTE_REQUERIDO, result)) {
             return;

@@ -4,8 +4,10 @@ import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
 import com.arquisoft.shared.util.UtilTexto;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorLongitud;
+import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.util.UUID;
 
@@ -30,7 +32,7 @@ public final class ModificacionFichaPerfilDomain {
     }
 
     private void setFichaPerfil(UUID fichaPerfil, ValidationResult result) {
-        if (!DomainValidator.noNulo(fichaPerfil,
+        if (!ValidatorObjeto.noNulo(fichaPerfil,
                 FichasFields.FichaPerfil.ID,
                 FichasCodes.FichaPerfil.ID_REQUERIDO, result)) {
             return;
@@ -39,12 +41,12 @@ public final class ModificacionFichaPerfilDomain {
     }
 
     private void setTituloProyecto(String tituloProyecto, ValidationResult result) {
-        if (!DomainValidator.noEnBlanco(tituloProyecto,
+        if (!ValidatorTexto.noEnBlanco(tituloProyecto,
                 FichasFields.FichaPerfil.TITULO,
                 FichasCodes.FichaPerfil.TITULO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.longitudMaxima(tituloProyecto,
+        if (!ValidatorLongitud.longitudMaxima(tituloProyecto,
                 FichasLimits.FichaPerfil.TITULO_MAX,
                 FichasFields.FichaPerfil.TITULO,
                 FichasCodes.FichaPerfil.TITULO_DEMASIADO_LARGO, result)) {
@@ -54,7 +56,7 @@ public final class ModificacionFichaPerfilDomain {
     }
 
     private void setEstudiante(UUID estudiante, ValidationResult result) {
-        if (!DomainValidator.noNulo(estudiante,
+        if (!ValidatorObjeto.noNulo(estudiante,
                 FichasFields.FichaPerfil.ESTUDIANTE,
                 FichasCodes.FichaPerfil.ESTUDIANTE_REQUERIDO, result)) {
             return;

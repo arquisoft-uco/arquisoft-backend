@@ -5,8 +5,10 @@ import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
 import com.arquisoft.shared.util.UtilColeccion;
 import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorColeccion;
+import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.shared.validation.ValidatorUUID;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,18 +25,18 @@ public record AsignarEstudiantesFichaPerfilCommand(
     public static AsignarEstudiantesFichaPerfilCommand crear(UUID fichaPerfil, List<String> estudiantes) {
         var result = new ValidationResult();
 
-        DomainValidator.noNulo(fichaPerfil,
+        ValidatorObjeto.noNulo(fichaPerfil,
                 FichasFields.EstudianteFichaPerfil.FICHA_PERFIL,
                 FichasCodes.EstudianteFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result);
 
         List<String> lista = UtilColeccion.aplicarPorDefecto(estudiantes);
-        if (DomainValidator.noVacia(lista,
+        if (ValidatorColeccion.noVacia(lista,
                 FichasFields.EstudianteFichaPerfil.ESTUDIANTES,
                 FichasCodes.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS, result)) {
-            DomainValidator.tamanioMaximo(lista, FichasLimits.FichaPerfil.ESTUDIANTES_MAX,
+            ValidatorColeccion.tamanioMaximo(lista, FichasLimits.FichaPerfil.ESTUDIANTES_MAX,
                     FichasFields.EstudianteFichaPerfil.ESTUDIANTES,
                     FichasCodes.EstudianteFichaPerfil.LIMITE_ESTUDIANTES_EXCEDIDO, result);
-            lista.forEach(estudiante -> DomainValidator.uuidValido(estudiante,
+            lista.forEach(estudiante -> ValidatorUUID.uuidValido(estudiante,
                     FichasFields.EstudianteFichaPerfil.ESTUDIANTES,
                     FichasCodes.EstudianteFichaPerfil.ESTUDIANTE_ID_REQUERIDO, result));
         }

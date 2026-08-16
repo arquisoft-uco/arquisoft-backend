@@ -4,8 +4,8 @@ import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -49,7 +49,7 @@ public final class EvaluacionFichaPerfilDomain {
     }
 
     private void setRepresentanteComiteId(UUID representanteComiteId, ValidationResult result) {
-        if (!DomainValidator.noNulo(
+        if (!ValidatorObjeto.noNulo(
                 representanteComiteId,
                 FichasFields.EvaluacionFichaPerfil.REPRESENTANTE_COMITE,
                 FichasCodes.EvaluacionFichaPerfil.REPRESENTANTE_REQUERIDO,
@@ -60,7 +60,7 @@ public final class EvaluacionFichaPerfilDomain {
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
-        if (!DomainValidator.noNulo(
+        if (!ValidatorObjeto.noNulo(
                 fichaPerfilId,
                 FichasFields.EvaluacionFichaPerfil.FICHA_PERFIL,
                 FichasCodes.EvaluacionFichaPerfil.FICHA_REQUERIDA,

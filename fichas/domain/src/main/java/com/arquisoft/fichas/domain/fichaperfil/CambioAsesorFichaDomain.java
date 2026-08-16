@@ -2,8 +2,8 @@ package com.arquisoft.fichas.domain.fichaperfil;
 
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.UUID;
 
@@ -26,7 +26,7 @@ public final class CambioAsesorFichaDomain {
     }
 
     private void setFichaPerfil(UUID fichaPerfil, ValidationResult result) {
-        if (!DomainValidator.noNulo(fichaPerfil,
+        if (!ValidatorObjeto.noNulo(fichaPerfil,
                 FichasFields.FichaPerfil.ID,
                 FichasCodes.FichaPerfil.ID_REQUERIDO, result)) {
             return;
@@ -35,7 +35,7 @@ public final class CambioAsesorFichaDomain {
     }
 
     private void setNuevoAsesorFicha(UUID nuevoAsesorFicha, ValidationResult result) {
-        if (!DomainValidator.noNulo(nuevoAsesorFicha,
+        if (!ValidatorObjeto.noNulo(nuevoAsesorFicha,
                 FichasFields.FichaPerfil.ASESOR_FICHA,
                 FichasCodes.FichaPerfil.ASESOR_REQUERIDO, result)) {
             return;

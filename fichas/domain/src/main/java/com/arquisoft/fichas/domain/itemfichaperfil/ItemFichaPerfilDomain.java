@@ -8,8 +8,10 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorLongitud;
+import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.util.UUID;
 
@@ -52,7 +54,7 @@ public final class ItemFichaPerfilDomain {
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
-        if (!DomainValidator.noNulo(fichaPerfilId,
+        if (!ValidatorObjeto.noNulo(fichaPerfilId,
                 FichasFields.ItemFichaPerfil.FICHA_PERFIL,
                 FichasCodes.ItemFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;
@@ -61,7 +63,7 @@ public final class ItemFichaPerfilDomain {
     }
 
     private void setTipoItem(String tipoItem, ValidationResult result) {
-        if (!DomainValidator.noEnBlanco(tipoItem,
+        if (!ValidatorTexto.noEnBlanco(tipoItem,
                 FichasFields.ItemFichaPerfil.TIPO_ITEM,
                 FichasCodes.ItemFichaPerfil.TIPO_ITEM_REQUERIDO, result)) {
             return;
@@ -77,12 +79,12 @@ public final class ItemFichaPerfilDomain {
     }
 
     private void setContenido(String contenido, ValidationResult result) {
-        if (!DomainValidator.noEnBlanco(contenido,
+        if (!ValidatorTexto.noEnBlanco(contenido,
                 FichasFields.ItemFichaPerfil.CONTENIDO,
                 FichasCodes.ItemFichaPerfil.CONTENIDO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.longitudMaxima(contenido,
+        if (!ValidatorLongitud.longitudMaxima(contenido,
                 FichasLimits.ItemFichaPerfil.CONTENIDO_MAX,
                 FichasFields.ItemFichaPerfil.CONTENIDO,
                 FichasCodes.ItemFichaPerfil.CONTENIDO_DEMASIADO_LARGO, result)) {

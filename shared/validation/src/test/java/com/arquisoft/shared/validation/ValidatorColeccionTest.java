@@ -1,47 +1,18 @@
 package com.arquisoft.shared.validation;
 
-import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.ValidadorKey;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class DomainValidatorTest {
+class ValidatorColeccionTest {
 
     private static final String CAMPO = "identificador";
     private static final String CODIGO = "CODIGO_ERROR";
-
-    @Test
-    void debeAcumularError_cuandoUUIDTieneFormatoInvalido() {
-        // Arrange
-        var result = new ValidationResult();
-
-        // Act
-        boolean valido = DomainValidator.uuidValido("no-es-uuid", CAMPO, CODIGO, result);
-
-        // Assert
-        assertThat(valido).isFalse();
-        assertThat(result.tieneErrores()).isTrue();
-        assertThat(result.getErrores().get(0).mensaje())
-                .isEqualTo(Mensajes.formatear(ValidadorKey.UUID_INVALIDO, CAMPO));
-    }
-
-    @Test
-    void debePasar_cuandoUUIDTieneFormatoValido() {
-        // Arrange
-        var result = new ValidationResult();
-
-        // Act
-        boolean valido = DomainValidator.uuidValido(UUID.randomUUID().toString(), CAMPO, CODIGO, result);
-
-        // Assert
-        assertThat(valido).isTrue();
-        assertThat(result.tieneErrores()).isFalse();
-    }
 
     @Test
     void debeAcumularError_cuandoColeccionEstaVacia() {
@@ -49,7 +20,7 @@ class DomainValidatorTest {
         var result = new ValidationResult();
 
         // Act
-        boolean valido = DomainValidator.noVacia(new ArrayList<>(), CAMPO, CODIGO, result);
+        boolean valido = ValidatorColeccion.noVacia(new ArrayList<>(), CAMPO, CODIGO, result);
 
         // Assert
         assertThat(valido).isFalse();
@@ -62,7 +33,7 @@ class DomainValidatorTest {
         var result = new ValidationResult();
 
         // Act
-        boolean valido = DomainValidator.tamanioMaximo(List.of("a", "b", "c"), 2, CAMPO, CODIGO, result);
+        boolean valido = ValidatorColeccion.tamanioMaximo(List.of("a", "b", "c"), 2, CAMPO, CODIGO, result);
 
         // Assert
         assertThat(valido).isFalse();
@@ -76,8 +47,9 @@ class DomainValidatorTest {
         var result = new ValidationResult();
 
         // Act
-        boolean valido = DomainValidator.tamanioMaximo(null, 2, CAMPO, CODIGO, result);
+        boolean valido = ValidatorColeccion.tamanioMaximo(null, 2, CAMPO, CODIGO, result);
 
+        // Assert
         assertThat(valido).isTrue();
         assertThat(result.tieneErrores()).isFalse();
     }
@@ -88,7 +60,7 @@ class DomainValidatorTest {
         var result = new ValidationResult();
 
         // Act
-        boolean valido = DomainValidator.sinDuplicados(List.of("a", "b", "a"), CAMPO, CODIGO, result);
+        boolean valido = ValidatorColeccion.sinDuplicados(List.of("a", "b", "a"), CAMPO, CODIGO, result);
 
         // Assert
         assertThat(valido).isFalse();
@@ -102,7 +74,7 @@ class DomainValidatorTest {
         var result = new ValidationResult();
 
         // Act
-        boolean valido = DomainValidator.sinDuplicados(List.of("a", "b"), CAMPO, CODIGO, result);
+        boolean valido = ValidatorColeccion.sinDuplicados(List.of("a", "b"), CAMPO, CODIGO, result);
 
         // Assert
         assertThat(valido).isTrue();

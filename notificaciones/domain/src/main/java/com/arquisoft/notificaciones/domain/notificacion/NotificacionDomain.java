@@ -9,8 +9,10 @@ import com.arquisoft.shared.message.constant.NotificacionesFields;
 import com.arquisoft.shared.message.constant.NotificacionesLimits;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorLongitud;
+import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -127,12 +129,12 @@ public final class NotificacionDomain {
     }
 
     private void setIdEvento(String idEvento, ValidationResult result) {
-        if (!DomainValidator.noEnBlanco(idEvento,
+        if (!ValidatorTexto.noEnBlanco(idEvento,
                 NotificacionesFields.Notificacion.ID_EVENTO,
                 NotificacionesCodes.Notificacion.ID_EVENTO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.longitudMaxima(idEvento,
+        if (!ValidatorLongitud.longitudMaxima(idEvento,
                 NotificacionesLimits.Notificacion.ID_EVENTO_MAX,
                 NotificacionesFields.Notificacion.ID_EVENTO,
                 NotificacionesCodes.Notificacion.ID_EVENTO_REQUERIDO, result)) {
@@ -142,7 +144,7 @@ public final class NotificacionDomain {
     }
 
     private void setTipo(TipoNotificacion tipo, ValidationResult result) {
-        if (!DomainValidator.noNulo(tipo,
+        if (!ValidatorObjeto.noNulo(tipo,
                 NotificacionesFields.Notificacion.TIPO,
                 NotificacionesCodes.Notificacion.TIPO_REQUERIDO, result)) {
             return;
@@ -151,17 +153,17 @@ public final class NotificacionDomain {
     }
 
     private void setDestinatario(String destinatario, ValidationResult result) {
-        if (!DomainValidator.noEnBlanco(destinatario,
+        if (!ValidatorTexto.noEnBlanco(destinatario,
                 NotificacionesFields.Notificacion.DESTINATARIO,
                 NotificacionesCodes.Notificacion.DESTINATARIO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.correoValido(destinatario,
+        if (!ValidatorTexto.correoValido(destinatario,
                 NotificacionesFields.Notificacion.DESTINATARIO,
                 NotificacionesCodes.Notificacion.DESTINATARIO_INVALIDO, result)) {
             return;
         }
-        if (!DomainValidator.longitudMaxima(destinatario,
+        if (!ValidatorLongitud.longitudMaxima(destinatario,
                 NotificacionesLimits.Notificacion.DESTINATARIO_MAX,
                 NotificacionesFields.Notificacion.DESTINATARIO,
                 NotificacionesCodes.Notificacion.DESTINATARIO_INVALIDO, result)) {
@@ -171,12 +173,12 @@ public final class NotificacionDomain {
     }
 
     private void setAsunto(String asunto, ValidationResult result) {
-        if (!DomainValidator.noEnBlanco(asunto,
+        if (!ValidatorTexto.noEnBlanco(asunto,
                 NotificacionesFields.Notificacion.ASUNTO,
                 NotificacionesCodes.Notificacion.ASUNTO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.longitudMaxima(asunto,
+        if (!ValidatorLongitud.longitudMaxima(asunto,
                 NotificacionesLimits.Notificacion.ASUNTO_MAX,
                 NotificacionesFields.Notificacion.ASUNTO,
                 NotificacionesCodes.Notificacion.ASUNTO_REQUERIDO, result)) {

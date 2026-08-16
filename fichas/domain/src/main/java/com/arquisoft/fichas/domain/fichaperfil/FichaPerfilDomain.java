@@ -5,8 +5,10 @@ import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorLongitud;
+import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.util.UUID;
 
@@ -50,12 +52,12 @@ public final class FichaPerfilDomain {
     }
 
     private void setTituloProyecto(String titulo, ValidationResult result) {
-        if (!DomainValidator.noEnBlanco(titulo,
+        if (!ValidatorTexto.noEnBlanco(titulo,
                 FichasFields.FichaPerfil.TITULO,
                 FichasCodes.FichaPerfil.TITULO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.longitudMaxima(titulo, FichasLimits.FichaPerfil.TITULO_MAX,
+        if (!ValidatorLongitud.longitudMaxima(titulo, FichasLimits.FichaPerfil.TITULO_MAX,
                 FichasFields.FichaPerfil.TITULO,
                 FichasCodes.FichaPerfil.TITULO_DEMASIADO_LARGO, result)) {
             return;
@@ -64,7 +66,7 @@ public final class FichaPerfilDomain {
     }
 
     private void setAsesorFicha(UUID asesorFicha, ValidationResult result) {
-        if (!DomainValidator.noNulo(asesorFicha,
+        if (!ValidatorObjeto.noNulo(asesorFicha,
                 FichasFields.FichaPerfil.ASESOR_FICHA,
                 FichasCodes.FichaPerfil.ASESOR_REQUERIDO, result)) {
             return;

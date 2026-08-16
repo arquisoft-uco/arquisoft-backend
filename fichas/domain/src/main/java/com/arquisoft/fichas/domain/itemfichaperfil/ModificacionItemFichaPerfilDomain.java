@@ -4,8 +4,10 @@ import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.constant.FichasLimits;
 import com.arquisoft.shared.util.UtilTexto;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorLongitud;
+import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.util.UUID;
 
@@ -30,7 +32,7 @@ public final class ModificacionItemFichaPerfilDomain {
     }
 
     private void setItem(UUID item, ValidationResult result) {
-        if (!DomainValidator.noNulo(item,
+        if (!ValidatorObjeto.noNulo(item,
                 FichasFields.ItemFichaPerfil.ITEM,
                 FichasCodes.ItemFichaPerfil.ITEM_ID_REQUERIDO, result)) {
             return;
@@ -39,12 +41,12 @@ public final class ModificacionItemFichaPerfilDomain {
     }
 
     private void setContenido(String contenido, ValidationResult result) {
-        if (!DomainValidator.noEnBlanco(contenido,
+        if (!ValidatorTexto.noEnBlanco(contenido,
                 FichasFields.ItemFichaPerfil.CONTENIDO,
                 FichasCodes.ItemFichaPerfil.CONTENIDO_REQUERIDO, result)) {
             return;
         }
-        if (!DomainValidator.longitudMaxima(contenido,
+        if (!ValidatorLongitud.longitudMaxima(contenido,
                 FichasLimits.ItemFichaPerfil.CONTENIDO_MAX,
                 FichasFields.ItemFichaPerfil.CONTENIDO,
                 FichasCodes.ItemFichaPerfil.CONTENIDO_DEMASIADO_LARGO, result)) {
@@ -54,7 +56,7 @@ public final class ModificacionItemFichaPerfilDomain {
     }
 
     private void setEstudiante(UUID estudiante, ValidationResult result) {
-        if (!DomainValidator.noNulo(estudiante,
+        if (!ValidatorObjeto.noNulo(estudiante,
                 FichasFields.ItemFichaPerfil.ESTUDIANTE,
                 FichasCodes.ItemFichaPerfil.ESTUDIANTE_REQUERIDO, result)) {
             return;

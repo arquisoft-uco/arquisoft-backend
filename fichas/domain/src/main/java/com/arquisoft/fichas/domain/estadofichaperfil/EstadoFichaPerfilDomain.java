@@ -5,8 +5,8 @@ import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -57,7 +57,7 @@ public final class EstadoFichaPerfilDomain {
     }
 
     private void setFichaPerfil(UUID fichaPerfil, ValidationResult result) {
-        if (!DomainValidator.noNulo(fichaPerfil,
+        if (!ValidatorObjeto.noNulo(fichaPerfil,
                 FichasFields.EstadoFichaPerfil.FICHA_PERFIL,
                 FichasCodes.EstadoFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;

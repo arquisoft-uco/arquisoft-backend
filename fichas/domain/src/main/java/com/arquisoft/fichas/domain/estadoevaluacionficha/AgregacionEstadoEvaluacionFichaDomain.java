@@ -3,8 +3,8 @@ package com.arquisoft.fichas.domain.estadoevaluacionficha;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.UUID;
 
@@ -29,7 +29,7 @@ public final class AgregacionEstadoEvaluacionFichaDomain {
 
     private void setEstadoEvaluacionFicha(
             EstadoEvaluacionFichaDomain estadoEvaluacionFicha, ValidationResult result) {
-        if (!DomainValidator.noNulo(estadoEvaluacionFicha,
+        if (!ValidatorObjeto.noNulo(estadoEvaluacionFicha,
                 FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
                 FichasCodes.EstadoEvaluacionFicha.ESTADO_REQUERIDO, result)) {
             return;
@@ -38,7 +38,7 @@ public final class AgregacionEstadoEvaluacionFichaDomain {
     }
 
     private void setRepresentanteComite(UUID representanteComite, ValidationResult result) {
-        if (!DomainValidator.noNulo(representanteComite,
+        if (!ValidatorObjeto.noNulo(representanteComite,
                 FichasFields.EstadoEvaluacionFicha.REPRESENTANTE_COMITE,
                 FichasCodes.EstadoEvaluacionFicha.REPRESENTANTE_REQUERIDO, result)) {
             return;

@@ -7,8 +7,9 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -84,7 +85,7 @@ public final class EstadoEvaluacionFichaDomain {
     }
 
     private void setEvaluacionFichaPerfilId(UUID evaluacionFichaPerfilId, ValidationResult result) {
-        if (!DomainValidator.noNulo(
+        if (!ValidatorObjeto.noNulo(
                 evaluacionFichaPerfilId,
                 FichasFields.EstadoEvaluacionFicha.EVALUACION_FICHA_PERFIL,
                 FichasCodes.EstadoEvaluacionFicha.EVALUACION_REQUERIDA,
@@ -99,7 +100,7 @@ public final class EstadoEvaluacionFichaDomain {
     }
 
     private void setEstadoEvaluacion(String estadoEvaluacion, ValidationResult result) {
-        if (!DomainValidator.noEnBlanco(
+        if (!ValidatorTexto.noEnBlanco(
                 estadoEvaluacion,
                 FichasFields.EstadoEvaluacionFicha.ESTADO_EVALUACION,
                 FichasCodes.EstadoEvaluacionFicha.ESTADO_REQUERIDO,

@@ -3,8 +3,8 @@ package com.arquisoft.fichas.domain.estudiantefichaperfil;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.util.UtilColeccion;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorColeccion;
 
 import java.util.List;
 import java.util.UUID;
@@ -27,7 +27,7 @@ public final class AgregacionEstudiantesFichaPerfilDomain {
 
     private void setRelaciones(List<EstudianteFichaPerfilDomain> relaciones, ValidationResult result) {
         List<EstudianteFichaPerfilDomain> lista = UtilColeccion.aplicarPorDefecto(relaciones);
-        if (!DomainValidator.noVacia(lista,
+        if (!ValidatorColeccion.noVacia(lista,
                 FichasFields.EstudianteFichaPerfil.ESTUDIANTES,
                 FichasCodes.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS, result)) {
             return;

@@ -3,8 +3,9 @@ package com.arquisoft.fichas.domain.estudiantefichaperfil;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorColeccion;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +42,7 @@ public final class EstudianteFichaPerfilDomain {
 
         var result = new ValidationResult();
 
-        DomainValidator.noVacia(nuevosEstudiantesIds,
+        ValidatorColeccion.noVacia(nuevosEstudiantesIds,
                 FichasFields.EstudianteFichaPerfil.ESTUDIANTES,
                 FichasCodes.EstudianteFichaPerfil.ESTUDIANTES_REQUERIDOS, result);
 
@@ -61,7 +62,7 @@ public final class EstudianteFichaPerfilDomain {
     }
 
     private void setFichaPerfilId(UUID fichaPerfilId, ValidationResult result) {
-        if (!DomainValidator.noNulo(fichaPerfilId,
+        if (!ValidatorObjeto.noNulo(fichaPerfilId,
                 FichasFields.EstudianteFichaPerfil.FICHA_PERFIL,
                 FichasCodes.EstudianteFichaPerfil.FICHA_PERFIL_ID_REQUERIDO, result)) {
             return;
@@ -70,7 +71,7 @@ public final class EstudianteFichaPerfilDomain {
     }
 
     private void setEstudianteId(UUID estudianteId, ValidationResult result) {
-        if (!DomainValidator.noNulo(estudianteId,
+        if (!ValidatorObjeto.noNulo(estudianteId,
                 FichasFields.EstudianteFichaPerfil.ESTUDIANTE,
                 FichasCodes.EstudianteFichaPerfil.ESTUDIANTE_ID_REQUERIDO, result)) {
             return;
