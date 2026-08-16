@@ -1,12 +1,12 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
 public interface EstudianteFichaPerfilCommandRepository
-        extends JpaRepository<EstudianteFichaPerfilEntity, UUID> {
+        extends JpaRepository<EstudianteFichaPerfilJpaEntity, UUID> {
 
     boolean existsByFichaPerfilIdAndEstudianteId(UUID fichaPerfilId, UUID estudianteId);
 

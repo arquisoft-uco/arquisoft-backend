@@ -10,30 +10,29 @@ public final class NotificacionMapper {
     private NotificacionMapper() {}
 
     public static NotificacionEntity toEntity(NotificacionDomain aggregate) {
-        return NotificacionEntity.builder()
-                .id(aggregate.getId())
-                .idEvento(aggregate.getIdEvento())
-                .tipo(aggregate.getTipo().getId())
-                .destinatario(aggregate.getDestinatario())
-                .asunto(aggregate.getAsunto())
-                .estado(aggregate.getEstado().getId())
-                .detalleError(aggregate.getDetalleError())
-                .fechaCreacion(aggregate.getFechaCreacion())
-                .fechaEnvio(aggregate.getFechaEnvio())
-                .build();
+        return new NotificacionEntity(
+                aggregate.getId(),
+                aggregate.getIdEvento(),
+                aggregate.getTipo().getId(),
+                aggregate.getDestinatario(),
+                aggregate.getAsunto(),
+                aggregate.getEstado().getId(),
+                aggregate.getDetalleError(),
+                aggregate.getFechaCreacion(),
+                aggregate.getFechaEnvio());
     }
 
     public static NotificacionDomain toDomain(NotificacionEntity entity) {
         return NotificacionDomain.reconstruir(
                 new NotificacionDomain.DatosNotificacion(
-                        entity.getId(),
-                        entity.getIdEvento(),
-                        TipoNotificacion.desde(entity.getTipo()),
-                        entity.getDestinatario(),
-                        entity.getAsunto(),
-                        entity.getFechaCreacion(),
-                        entity.getFechaEnvio()),
-                EstadoNotificacion.desde(entity.getEstado()),
-                entity.getDetalleError());
+                        entity.id(),
+                        entity.idEvento(),
+                        TipoNotificacion.desde(entity.tipo()),
+                        entity.destinatario(),
+                        entity.asunto(),
+                        entity.fechaCreacion(),
+                        entity.fechaEnvio()),
+                EstadoNotificacion.desde(entity.estado()),
+                entity.detalleError());
     }
 }

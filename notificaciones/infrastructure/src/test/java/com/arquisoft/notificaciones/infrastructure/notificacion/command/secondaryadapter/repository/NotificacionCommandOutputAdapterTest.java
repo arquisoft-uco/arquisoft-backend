@@ -3,8 +3,8 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.seconda
 import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
-import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.mapper.NotificacionMapper;
+import com.arquisoft.notificaciones.infrastructure.notificacion.command.secondaryadapter.entity.NotificacionJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ class NotificacionCommandOutputAdapterTest {
         adapter.guardar(NotificacionMapper.toEntity(notificacion));
 
         // Assert
-        NotificacionEntity guardada = repository.findById(notificacion.getId()).orElseThrow();
+        NotificacionJpaEntity guardada = repository.findById(notificacion.getId()).orElseThrow();
         assertThat(guardada.getIdEvento()).isEqualTo(idEvento);
         assertThat(guardada.getTipo()).isEqualTo(TipoNotificacion.ASESOR_FICHA_CAMBIADO.getId());
         assertThat(guardada.getDestinatario()).isEqualTo(DESTINATARIO);
@@ -71,7 +71,7 @@ class NotificacionCommandOutputAdapterTest {
         adapter.guardar(NotificacionMapper.toEntity(notificacion));
 
         // Assert
-        NotificacionEntity guardada = repository.findById(notificacion.getId()).orElseThrow();
+        NotificacionJpaEntity guardada = repository.findById(notificacion.getId()).orElseThrow();
         assertThat(guardada.getEstado()).isEqualTo(EstadoNotificacion.FALLIDA.name());
         assertThat(guardada.getDetalleError()).isEqualTo("servidor SMTP no disponible");
     }

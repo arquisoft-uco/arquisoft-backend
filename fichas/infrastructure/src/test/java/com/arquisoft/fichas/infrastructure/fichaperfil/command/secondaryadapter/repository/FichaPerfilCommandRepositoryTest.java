@@ -1,10 +1,11 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.mapper.FichaPerfilMapper;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.repository.AsesorFichaCommandRepository;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.mapper.FichaPerfilJpaMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -25,10 +26,10 @@ class FichaPerfilCommandRepositoryTest {
     @Test
     void debeActualizarSoloElAsesor_cuandoLaFichaExiste() {
         // Arrange
-        AsesorFichaEntity asesorOriginal = asesorFichaRepository.saveAndFlush(asesor());
-        AsesorFichaEntity asesorNuevo = asesorFichaRepository.saveAndFlush(asesor());
+        AsesorFichaJpaEntity asesorOriginal = asesorFichaRepository.saveAndFlush(asesor());
+        AsesorFichaJpaEntity asesorNuevo = asesorFichaRepository.saveAndFlush(asesor());
 
-        FichaPerfilEntity ficha = fichaPerfilRepository.saveAndFlush(FichaPerfilEntity.builder()
+        FichaPerfilJpaEntity ficha = fichaPerfilRepository.saveAndFlush(FichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .tituloProyecto("Proyecto de Prueba")
                 .asesorFicha(asesorOriginal)
@@ -40,7 +41,7 @@ class FichaPerfilCommandRepositoryTest {
 
         // Assert
         assertThat(filasActualizadas).isEqualTo(1);
-        FichaPerfilEntity actualizada = fichaPerfilRepository.findById(ficha.getId()).orElseThrow();
+        FichaPerfilJpaEntity actualizada = fichaPerfilRepository.findById(ficha.getId()).orElseThrow();
         assertThat(actualizada.getAsesorFicha().getId()).isEqualTo(asesorNuevo.getId());
         assertThat(actualizada.getTituloProyecto()).isEqualTo("Proyecto de Prueba");
     }
@@ -48,7 +49,7 @@ class FichaPerfilCommandRepositoryTest {
     @Test
     void debeRetornarCero_cuandoLaFichaNoExiste() {
         // Arrange
-        AsesorFichaEntity asesorNuevo = asesorFichaRepository.saveAndFlush(asesor());
+        AsesorFichaJpaEntity asesorNuevo = asesorFichaRepository.saveAndFlush(asesor());
 
         // Act
         int filasActualizadas = fichaPerfilRepository.actualizarAsesorFicha(UUID.randomUUID(), asesorNuevo);
@@ -60,8 +61,8 @@ class FichaPerfilCommandRepositoryTest {
     @Test
     void debeActualizarSoloElTitulo_cuandoLaFichaExiste() {
         // Arrange
-        AsesorFichaEntity asesor = asesorFichaRepository.saveAndFlush(asesor());
-        FichaPerfilEntity ficha = fichaPerfilRepository.saveAndFlush(FichaPerfilEntity.builder()
+        AsesorFichaJpaEntity asesor = asesorFichaRepository.saveAndFlush(asesor());
+        FichaPerfilJpaEntity ficha = fichaPerfilRepository.saveAndFlush(FichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .tituloProyecto("Titulo original")
                 .asesorFicha(asesor)
@@ -73,7 +74,7 @@ class FichaPerfilCommandRepositoryTest {
 
         // Assert
         assertThat(filasActualizadas).isEqualTo(1);
-        FichaPerfilEntity actualizada = fichaPerfilRepository.findById(ficha.getId()).orElseThrow();
+        FichaPerfilJpaEntity actualizada = fichaPerfilRepository.findById(ficha.getId()).orElseThrow();
         assertThat(actualizada.getTituloProyecto()).isEqualTo("Titulo nuevo");
         assertThat(actualizada.getAsesorFicha().getId()).isEqualTo(asesor.getId());
     }
@@ -81,13 +82,13 @@ class FichaPerfilCommandRepositoryTest {
     @Test
     void debeDetectarTituloDuplicado_cuandoPerteneceAOtraFicha() {
         // Arrange
-        AsesorFichaEntity asesor = asesorFichaRepository.saveAndFlush(asesor());
-        fichaPerfilRepository.saveAndFlush(FichaPerfilEntity.builder()
+        AsesorFichaJpaEntity asesor = asesorFichaRepository.saveAndFlush(asesor());
+        fichaPerfilRepository.saveAndFlush(FichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .tituloProyecto("Titulo compartido")
                 .asesorFicha(asesor)
                 .build());
-        FichaPerfilEntity otraFicha = fichaPerfilRepository.saveAndFlush(FichaPerfilEntity.builder()
+        FichaPerfilJpaEntity otraFicha = fichaPerfilRepository.saveAndFlush(FichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .tituloProyecto("Titulo propio")
                 .asesorFicha(asesor)
@@ -101,8 +102,8 @@ class FichaPerfilCommandRepositoryTest {
     @Test
     void debePermitirElPropioTitulo_cuandoNoLoTieneOtraFicha() {
         // Arrange
-        AsesorFichaEntity asesor = asesorFichaRepository.saveAndFlush(asesor());
-        FichaPerfilEntity ficha = fichaPerfilRepository.saveAndFlush(FichaPerfilEntity.builder()
+        AsesorFichaJpaEntity asesor = asesorFichaRepository.saveAndFlush(asesor());
+        FichaPerfilJpaEntity ficha = fichaPerfilRepository.saveAndFlush(FichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .tituloProyecto("Titulo sin cambios")
                 .asesorFicha(asesor)
@@ -117,21 +118,22 @@ class FichaPerfilCommandRepositoryTest {
     void debeEscribirLaClaveForanea_cuandoElAsesorLlegaComoReferenciaSoloConId() {
         // Arrange — el caso de uso ya no puede pedir un proxy de Hibernate: el mapper construye
         // la asociacion solo con el id. Sin cascada, esa instancia separada basta para la FK.
-        AsesorFichaEntity asesorPersistido = asesorFichaRepository.saveAndFlush(asesor());
+        AsesorFichaJpaEntity asesorPersistido = asesorFichaRepository.saveAndFlush(asesor());
         FichaPerfilDomain dominio = FichaPerfilDomain.reconstruir(
                 UUID.randomUUID(), "Proyecto mapeado", asesorPersistido.getId());
 
         // Act
-        fichaPerfilRepository.saveAndFlush(FichaPerfilMapper.toEntity(dominio));
+        fichaPerfilRepository.saveAndFlush(
+                FichaPerfilJpaMapper.toJpaEntity(FichaPerfilMapper.toEntity(dominio)));
 
         // Assert
-        FichaPerfilEntity guardada = fichaPerfilRepository.findById(dominio.getId()).orElseThrow();
+        FichaPerfilJpaEntity guardada = fichaPerfilRepository.findById(dominio.getId()).orElseThrow();
         assertThat(guardada.getAsesorFicha().getId()).isEqualTo(asesorPersistido.getId());
         assertThat(guardada.getTituloProyecto()).isEqualTo("Proyecto mapeado");
     }
 
-    private AsesorFichaEntity asesor() {
-        return AsesorFichaEntity.builder()
+    private AsesorFichaJpaEntity asesor() {
+        return AsesorFichaJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador(UUID.randomUUID().toString().substring(0, 20))
                 .nombre("Ana Gomez")

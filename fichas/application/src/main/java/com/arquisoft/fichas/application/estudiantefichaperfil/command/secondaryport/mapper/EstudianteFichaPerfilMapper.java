@@ -9,17 +9,17 @@ public final class EstudianteFichaPerfilMapper {
 
     public static EstudianteFichaPerfilDomain toDomain(EstudianteFichaPerfilEntity entity) {
         return EstudianteFichaPerfilDomain.reconstruir(
-            entity.getId(),
-            entity.getFichaPerfilId(),
-            entity.getEstudianteId()
+            entity.id(),
+            entity.fichaPerfilId(),
+            entity.estudianteId()
         );
     }
 
     public static EstudianteFichaPerfilEntity toEntity(EstudianteFichaPerfilDomain aggregate) {
-        return EstudianteFichaPerfilEntity.builder()
-            .id(aggregate.getId())
-            .fichaPerfilId(aggregate.getFichaPerfilId())
-            .estudianteId(aggregate.getEstudianteId())
-            .build();
+        return new EstudianteFichaPerfilEntity(
+            aggregate.getId(),
+            aggregate.getFichaPerfilId(),
+            aggregate.getEstudianteId()
+        );
     }
 }

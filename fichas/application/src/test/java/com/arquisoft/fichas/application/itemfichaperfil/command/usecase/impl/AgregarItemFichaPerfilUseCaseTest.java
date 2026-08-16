@@ -179,9 +179,9 @@ class AgregarItemFichaPerfilUseCaseTest {
 
     // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.
     private static ItemFichaPerfilEntity entidadDe(ItemFichaPerfilDomain item) {
-        return argThat(entity -> entity.getId().equals(item.getId())
-                && entity.getFichaPerfilId().equals(item.getFichaPerfilId())
-                && entity.getTipoItem().getId().equals(item.getTipoItem().getId())
-                && entity.getContenido().equals(item.getContenido()));
+        return argThat(entity -> entity.id().equals(item.getId())
+                && entity.fichaPerfilId().equals(item.getFichaPerfilId())
+                && entity.tipoItem().equals(item.getTipoItem().getId())
+                && entity.contenido().equals(item.getContenido()));
     }
 }

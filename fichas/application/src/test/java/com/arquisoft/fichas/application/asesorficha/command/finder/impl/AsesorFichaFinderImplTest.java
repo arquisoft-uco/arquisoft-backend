@@ -28,12 +28,7 @@ class AsesorFichaFinderImplTest {
     void debeConvertirLaEntidadADominio_cuandoExiste() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
-        var entity = AsesorFichaEntity.builder()
-                .id(asesorId)
-                .identificador("A001")
-                .nombre("Ana Asesora")
-                .email("ana@arquisoft.com")
-                .build();
+        var entity = new AsesorFichaEntity(asesorId, "A001", "Ana Asesora", "ana@arquisoft.com");
         when(asesorFichaOutputPort.buscarContactoPorId(asesorId)).thenReturn(Optional.of(entity));
 
         // Act

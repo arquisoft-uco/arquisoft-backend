@@ -113,8 +113,8 @@ class AsignarEstadoInicialFichaPerfilUseCaseTest {
 
     // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.
     private static EstadoFichaPerfilEntity entidadDe(EstadoFichaPerfilDomain estado) {
-        return argThat(entity -> entity.getId().equals(estado.getId())
-                && entity.getFichaPerfilId().equals(estado.getFichaPerfil())
-                && entity.getEstadoFicha().getId().equals(estado.getEstadoFicha().getId()));
+        return argThat(entity -> entity.id().equals(estado.getId())
+                && entity.fichaPerfilId().equals(estado.getFichaPerfil())
+                && entity.estadoFicha().equals(estado.getEstadoFicha().getId()));
     }
 }

@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.estadofichaperfil.query.secondaryada
 
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import com.arquisoft.fichas.application.estadofichaperfil.query.secondaryport.EstadoFichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryadapter.mapper.EstadoFichaPerfilJpaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ public class EstadoFichaPerfilQueryOutputAdapter implements EstadoFichaPerfilQue
 
     @Override
     public Optional<EstadoFichaPerfilEntity> obtenerEstadoActual(UUID fichaPerfilId) {
-        return repository.findFirstByFichaPerfilIdOrderByFechaActualizacionDesc(fichaPerfilId);
+        return repository.findFirstByFichaPerfilIdOrderByFechaActualizacionDesc(fichaPerfilId)
+                .map(EstadoFichaPerfilJpaMapper::toEntity);
     }
 }

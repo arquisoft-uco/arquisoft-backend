@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
-import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
+import com.arquisoft.fichas.infrastructure.estadoficha.command.secondaryadapter.entity.EstadoFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryadapter.entity.EstadoFichaPerfilJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +23,11 @@ class EstadoFichaPerfilCommandRepositoryTest {
     @Autowired
     private TestEntityManager entityManager;
 
-    private EstadoFichaEntity estadoFicha;
+    private EstadoFichaJpaEntity estadoFicha;
 
     @BeforeEach
     void setUp() {
-        estadoFicha = EstadoFichaEntity.builder()
+        estadoFicha = EstadoFichaJpaEntity.builder()
                 .id("EN_CONSTRUCCION")
                 .nombre("En Construccion")
                 .descripcion("Estado inicial")
@@ -39,7 +39,7 @@ class EstadoFichaPerfilCommandRepositoryTest {
     void debeGuardar_cuandoEntidadEsValida() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        var entity = EstadoFichaPerfilEntity.builder()
+        var entity = EstadoFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
                 .estadoFicha(estadoFicha)
@@ -47,7 +47,7 @@ class EstadoFichaPerfilCommandRepositoryTest {
                 .build();
 
         // Act
-        EstadoFichaPerfilEntity resultado = entityManager.persist(entity);
+        EstadoFichaPerfilJpaEntity resultado = entityManager.persist(entity);
 
         // Assert
         assertThat(resultado).isNotNull();
@@ -60,7 +60,7 @@ class EstadoFichaPerfilCommandRepositoryTest {
     void debeBuscarPorId_cuandoIdExiste() {
         // Arrange
         UUID fichaPerfilId = UUID.randomUUID();
-        var entity = EstadoFichaPerfilEntity.builder()
+        var entity = EstadoFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
                 .estadoFicha(estadoFicha)
@@ -69,7 +69,7 @@ class EstadoFichaPerfilCommandRepositoryTest {
         entityManager.persist(entity);
 
         // Act
-        Optional<EstadoFichaPerfilEntity> resultado = estadoFichaPerfilRepository.findById(entity.getId());
+        Optional<EstadoFichaPerfilJpaEntity> resultado = estadoFichaPerfilRepository.findById(entity.getId());
 
         // Assert
         assertThat(resultado).isPresent();

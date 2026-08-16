@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,8 +43,11 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         // Act
         adapter.vincularEstudiante(entity);
 
-        // Assert — el adapter ya no traduce: guarda la entidad que le entrego el caso de uso
-        verify(repository, times(1)).save(entity);
+        // Assert — el adapter mapea a JpaEntity antes de guardar
+        verify(repository, times(1)).save(argThat(jpaEntity ->
+                jpaEntity.getId().equals(entity.id())
+                        && jpaEntity.getFichaPerfilId().equals(entity.fichaPerfilId())
+                        && jpaEntity.getEstudianteId().equals(entity.estudianteId())));
     }
 
     @Test

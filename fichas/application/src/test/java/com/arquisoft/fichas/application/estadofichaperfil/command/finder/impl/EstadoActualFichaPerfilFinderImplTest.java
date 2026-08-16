@@ -1,6 +1,5 @@
 package com.arquisoft.fichas.application.estadofichaperfil.command.finder.impl;
 
-import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.EstadoFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
@@ -65,11 +64,6 @@ class EstadoActualFichaPerfilFinderImplTest {
     }
 
     private EstadoFichaPerfilEntity entidadCon(UUID fichaId, String estadoFichaId) {
-        return EstadoFichaPerfilEntity.builder()
-                .id(UUID.randomUUID())
-                .fichaPerfilId(fichaId)
-                .estadoFicha(EstadoFichaEntity.builder().id(estadoFichaId).build())
-                .fechaActualizacion(Instant.now())
-                .build();
+        return new EstadoFichaPerfilEntity(UUID.randomUUID(), fichaId, estadoFichaId, Instant.now());
     }
 }

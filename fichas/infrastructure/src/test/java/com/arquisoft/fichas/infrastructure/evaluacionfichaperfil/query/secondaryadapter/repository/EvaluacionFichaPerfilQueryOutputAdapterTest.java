@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.query.criteria.PropietarioEvaluacionCriteria;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.entity.EvaluacionFichaPerfilJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +30,7 @@ class EvaluacionFichaPerfilQueryOutputAdapterTest {
     }
 
     private UUID persistirEvaluacion(UUID representanteComiteId) {
-        var entity = EvaluacionFichaPerfilEntity.builder()
+        var entity = EvaluacionFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .representanteComiteId(representanteComiteId)
                 .fichaPerfilId(UUID.randomUUID())

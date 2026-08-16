@@ -181,7 +181,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
 
     // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.
     private static EstudianteFichaPerfilEntity entidadDe(EstudianteFichaPerfilDomain relacion) {
-        return argThat(entity -> entity.getFichaPerfilId().equals(relacion.getFichaPerfilId())
-                && entity.getEstudianteId().equals(relacion.getEstudianteId()));
+        return argThat(entity -> entity.fichaPerfilId().equals(relacion.getFichaPerfilId())
+                && entity.estudianteId().equals(relacion.getEstudianteId()));
     }
 }

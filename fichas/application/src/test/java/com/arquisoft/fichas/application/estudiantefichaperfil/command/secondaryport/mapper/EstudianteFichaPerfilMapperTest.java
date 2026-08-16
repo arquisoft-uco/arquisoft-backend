@@ -17,11 +17,7 @@ class EstudianteFichaPerfilMapperTest {
         UUID fichaPerfilId = UUID.randomUUID();
         UUID estudianteId = UUID.randomUUID();
 
-        EstudianteFichaPerfilEntity entity = EstudianteFichaPerfilEntity.builder()
-                .id(id)
-                .fichaPerfilId(fichaPerfilId)
-                .estudianteId(estudianteId)
-                .build();
+        EstudianteFichaPerfilEntity entity = new EstudianteFichaPerfilEntity(id, fichaPerfilId, estudianteId);
 
         // Act
         EstudianteFichaPerfilDomain aggregate = EstudianteFichaPerfilMapper.toDomain(entity);
@@ -49,9 +45,9 @@ class EstudianteFichaPerfilMapperTest {
         EstudianteFichaPerfilEntity entity = EstudianteFichaPerfilMapper.toEntity(aggregate);
 
         // Assert
-        assertThat(entity.getId()).isEqualTo(id);
-        assertThat(entity.getFichaPerfilId()).isEqualTo(fichaPerfilId);
-        assertThat(entity.getEstudianteId()).isEqualTo(estudianteId);
+        assertThat(entity.id()).isEqualTo(id);
+        assertThat(entity.fichaPerfilId()).isEqualTo(fichaPerfilId);
+        assertThat(entity.estudianteId()).isEqualTo(estudianteId);
     }
 
     @Test
@@ -61,19 +57,16 @@ class EstudianteFichaPerfilMapperTest {
         UUID fichaPerfilIdOriginal = UUID.randomUUID();
         UUID estudianteIdOriginal = UUID.randomUUID();
 
-        EstudianteFichaPerfilEntity entityOriginal = EstudianteFichaPerfilEntity.builder()
-                .id(idOriginal)
-                .fichaPerfilId(fichaPerfilIdOriginal)
-                .estudianteId(estudianteIdOriginal)
-                .build();
+        EstudianteFichaPerfilEntity entityOriginal =
+                new EstudianteFichaPerfilEntity(idOriginal, fichaPerfilIdOriginal, estudianteIdOriginal);
 
         // Act
         EstudianteFichaPerfilDomain aggregate = EstudianteFichaPerfilMapper.toDomain(entityOriginal);
         EstudianteFichaPerfilEntity entityMapeada = EstudianteFichaPerfilMapper.toEntity(aggregate);
 
         // Assert
-        assertThat(entityMapeada.getId()).isEqualTo(idOriginal);
-        assertThat(entityMapeada.getFichaPerfilId()).isEqualTo(fichaPerfilIdOriginal);
-        assertThat(entityMapeada.getEstudianteId()).isEqualTo(estudianteIdOriginal);
+        assertThat(entityMapeada.id()).isEqualTo(idOriginal);
+        assertThat(entityMapeada.fichaPerfilId()).isEqualTo(fichaPerfilIdOriginal);
+        assertThat(entityMapeada.estudianteId()).isEqualTo(estudianteIdOriginal);
     }
 }

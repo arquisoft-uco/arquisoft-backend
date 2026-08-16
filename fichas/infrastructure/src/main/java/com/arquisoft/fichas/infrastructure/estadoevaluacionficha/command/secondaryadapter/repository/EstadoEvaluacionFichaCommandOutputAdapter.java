@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.second
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.EstadoEvaluacionFichaOutputPort;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.entity.EstadoEvaluacionFichaEntity;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.repository.EstadoEvaluacionCommandRepository;
+import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.mapper.EstadoEvaluacionFichaJpaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -18,18 +19,18 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
 
     @Override
     public void registrarEstadoInicial(EstadoEvaluacionFichaEntity estado) {
-        estadoEvaluacionFichaCommandRepository.save(estado);
+        estadoEvaluacionFichaCommandRepository.save(EstadoEvaluacionFichaJpaMapper.toJpaEntity(estado));
     }
 
     @Override
     public void agregarEstado(EstadoEvaluacionFichaEntity estado) {
-        estadoEvaluacionFichaCommandRepository.save(estado);
+        estadoEvaluacionFichaCommandRepository.save(EstadoEvaluacionFichaJpaMapper.toJpaEntity(estado));
     }
 
     @Override
     public boolean existePorEvaluacionYEstado(UUID evaluacionFichaPerfilId, String estadoEvaluacionId) {
         return estadoEvaluacionFichaCommandRepository
-                .existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(
+                .existsByEvaluacionFichaPerfilAndEstadoEvaluacion(
                         evaluacionFichaPerfilId,
                         estadoEvaluacionId);
     }
@@ -37,7 +38,7 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
     @Override
     public long contarEstadosPorEvaluacion(UUID evaluacionFichaPerfilId) {
         return estadoEvaluacionFichaCommandRepository
-                .countByEvaluacionFichaPerfilId(evaluacionFichaPerfilId);
+                .countByEvaluacionFichaPerfil(evaluacionFichaPerfilId);
     }
 
     @Override
@@ -48,6 +49,7 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
     @Override
     public Optional<EstadoEvaluacionFichaEntity> obtenerUltimoEstado(UUID evaluacionFichaPerfilId) {
         return estadoEvaluacionFichaCommandRepository
-                .findFirstByEvaluacionFichaPerfilIdOrderByFechaActualizacionDesc(evaluacionFichaPerfilId);
+                .findFirstByEvaluacionFichaPerfilIdOrderByFechaActualizacionDesc(evaluacionFichaPerfilId)
+                .map(EstadoEvaluacionFichaJpaMapper::toEntity);
     }
 }

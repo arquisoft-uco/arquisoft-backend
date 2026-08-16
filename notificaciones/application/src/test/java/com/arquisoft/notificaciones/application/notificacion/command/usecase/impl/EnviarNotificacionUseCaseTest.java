@@ -74,8 +74,8 @@ class EnviarNotificacionUseCaseTest {
         ArgumentCaptor<NotificacionEntity> captor =
                 ArgumentCaptor.forClass(NotificacionEntity.class);
         verify(notificacionOutputPort).guardar(captor.capture());
-        assertThat(captor.getValue().getEstado()).isEqualTo(EstadoNotificacion.ENVIADA.name());
-        assertThat(captor.getValue().getIdEvento()).isEqualTo(ID_EVENTO);
+        assertThat(captor.getValue().estado()).isEqualTo(EstadoNotificacion.ENVIADA.name());
+        assertThat(captor.getValue().idEvento()).isEqualTo(ID_EVENTO);
     }
 
     @Test
@@ -129,7 +129,7 @@ class EnviarNotificacionUseCaseTest {
         ArgumentCaptor<NotificacionEntity> captor =
                 ArgumentCaptor.forClass(NotificacionEntity.class);
         verify(notificacionOutputPort).guardar(captor.capture());
-        assertThat(captor.getValue().getEstado()).isEqualTo(EstadoNotificacion.FALLIDA.name());
-        assertThat(captor.getValue().getDetalleError()).contains("No se pudo entregar");
+        assertThat(captor.getValue().estado()).isEqualTo(EstadoNotificacion.FALLIDA.name());
+        assertThat(captor.getValue().detalleError()).contains("No se pudo entregar");
     }
 }

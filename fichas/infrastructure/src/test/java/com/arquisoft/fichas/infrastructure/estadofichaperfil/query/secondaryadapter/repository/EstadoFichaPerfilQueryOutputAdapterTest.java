@@ -1,8 +1,9 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.query.secondaryadapter.repository;
 
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
-import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.infrastructure.estadoficha.command.secondaryadapter.entity.EstadoFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryadapter.entity.EstadoFichaPerfilJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +31,14 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
     void setUp() {
         adapter = new EstadoFichaPerfilQueryOutputAdapter(estadoFichaPerfilRepository);
 
-        var estadoFicha = EstadoFichaEntity.builder()
+        var estadoFicha = EstadoFichaJpaEntity.builder()
                 .id("EN_CONSTRUCCION")
                 .nombre("En Construccion")
                 .descripcion("Estado inicial")
                 .build();
         entityManager.persist(estadoFicha);
 
-        var estadoAprobada = EstadoFichaEntity.builder()
+        var estadoAprobada = EstadoFichaJpaEntity.builder()
                 .id("APROBADA")
                 .nombre("Aprobada")
                 .descripcion("Estado terminal")
@@ -46,10 +47,10 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
     }
 
     private void persistirEstado(UUID fichaPerfilId, String estadoFichaId, Instant fechaActualizacion) {
-        var entity = EstadoFichaPerfilEntity.builder()
+        var entity = EstadoFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .fichaPerfilId(fichaPerfilId)
-                .estadoFicha(entityManager.find(EstadoFichaEntity.class, estadoFichaId))
+                .estadoFicha(entityManager.find(EstadoFichaJpaEntity.class, estadoFichaId))
                 .fechaActualizacion(fechaActualizacion)
                 .build();
         entityManager.persist(entity);
@@ -68,7 +69,7 @@ class EstadoFichaPerfilQueryOutputAdapterTest {
 
         // Assert
         assertThat(resultado).isPresent();
-        assertThat(resultado.get().getEstadoFicha().getId()).isEqualTo(EstadoFicha.APROBADA.getId());
+        assertThat(resultado.get().estadoFicha()).isEqualTo(EstadoFicha.APROBADA.getId());
     }
 
     @Test

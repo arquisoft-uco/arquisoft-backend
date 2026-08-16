@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.second
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.mapper.EstudianteFichaPerfilJpaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,7 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
 
     @Override
     public void vincularEstudiante(EstudianteFichaPerfilEntity relacion) {
-        repository.save(relacion);
+        repository.save(EstudianteFichaPerfilJpaMapper.toJpaEntity(relacion));
     }
 
     @Override

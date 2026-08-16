@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.second
 
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.EvaluacionFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.mapper.EvaluacionFichaPerfilJpaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,7 @@ public class EvaluacionFichaPerfilCommandOutputAdapter
 
     @Override
     public void registrarEvaluacion(EvaluacionFichaPerfilEntity evaluacion) {
-        repository.save(evaluacion);
+        repository.save(EvaluacionFichaPerfilJpaMapper.toJpaEntity(evaluacion));
     }
 
     @Override
