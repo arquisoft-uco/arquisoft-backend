@@ -298,7 +298,7 @@ dependencies {
 // fichas/infrastructure/build.gradle
 dependencies {
     implementation project(':shared:amqp')    // Para publicar eventos
-    implementation project(':shared:postgres') // Para repositorios JPA
+    implementation project(':shared:jpa') // Para repositorios JPA
 }
 ```
 

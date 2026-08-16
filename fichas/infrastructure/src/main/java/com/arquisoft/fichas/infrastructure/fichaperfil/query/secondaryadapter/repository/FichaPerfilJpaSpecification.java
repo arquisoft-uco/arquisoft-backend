@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
-import com.arquisoft.shared.postgres.query.CampoSpec;
-import com.arquisoft.shared.postgres.query.QueryJpaSpecification;
+import com.arquisoft.shared.jpa.query.CampoSpec;
+import com.arquisoft.shared.jpa.query.QueryJpaSpecification;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;

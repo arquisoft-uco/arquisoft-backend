@@ -2,6 +2,10 @@ dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:logger')
 
+    // shared:query — PageResponseDTO envuelve un PaginatedResult, y los controladores
+    // reciben QueryCriteriaRequestDTO desde este módulo.
+    implementation project(':shared:query')
+
     // Spring Web
     implementation "org.springframework.boot:spring-boot-starter-web"
 

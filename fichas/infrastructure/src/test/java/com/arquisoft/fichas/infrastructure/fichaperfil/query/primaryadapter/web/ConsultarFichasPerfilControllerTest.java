@@ -4,7 +4,7 @@ import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.usecase.ConsultarFichasPerfilUseCase;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +69,69 @@ class ConsultarFichasPerfilControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(0));
+    }
+
+    @Test
+    void debe400_cuandoElCampoDeFiltroNoEstaPermitido() throws Exception {
+        // Arrange
+        String body = """
+                {
+                  "filtros": {
+                    "tipo": "PREDICADO",
+                    "campo": "campoInventado",
+                    "operador": "ES",
+                    "valor": "x"
+                  }
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil/coordinador")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void debe400_cuandoElPredicadoNoTraeOperador() throws Exception {
+        // Arrange
+        String body = """
+                {
+                  "filtros": {
+                    "tipo": "PREDICADO",
+                    "campo": "tituloProyecto",
+                    "valor": "x"
+                  }
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil/coordinador")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void debe400_cuandoElCampoDeOrdenamientoNoEstaPermitido() throws Exception {
+        // Arrange
+        String body = """
+                {
+                  "ordenamiento": ["campoInventado:ASC"]
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post("/fichas-perfil/coordinador")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

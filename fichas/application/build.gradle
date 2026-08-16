@@ -1,6 +1,7 @@
 dependencies {
     implementation project(':fichas:domain')
     implementation project(':shared:domain')
+    implementation project(':shared:query')
 
     implementation project(':shared:logger')
 

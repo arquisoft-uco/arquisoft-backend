@@ -580,7 +580,7 @@ Ver detalle completo en `shared/message/README.md` y en el skill `arquisoft-cont
 ### Java 21 — Uso Balanceado
 
 - Records → `Command`, `ReadModel`, `RequestDTO`, payloads de eventos de dominio.
-- Pattern matching para `switch` → ramificación sobre `sealed interface` técnicos (`NodoFiltro`, `CampoSpec` de `shared:postgres`).
+- Pattern matching para `switch` → ramificación sobre `sealed interface` técnicos (`NodoFiltro`, `CampoSpec` de `shared:jpa`).
 - Pattern matching para `instanceof` → donde antes había `instanceof` + cast explícito.
 - Text blocks (`"""..."""`) → SQL inline, plantillas largas.
 - `var` → solo donde el tipo es evidente por el RHS.

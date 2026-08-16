@@ -154,7 +154,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                     request.getRequestURI(), ex.getCodigoError(), ex.getMessage());
         }
 
-        ErrorResponseDTO body = ErrorResponseDTO.fromBaseException(
+        var body = ErrorResponseDTO.fromBaseException(
                 ex, catalogo.obtener(mapping.errorKey()), mapping.status(), request.getRequestURI());
         body.setTraceId(currentTraceId());
         return ResponseEntity.status(mapping.status()).body(body);
@@ -259,7 +259,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
             HttpHeaders headers,
             HttpStatusCode statusCode,
             WebRequest webRequest) {
-        HttpStatus status = HttpStatus.resolve(statusCode.value());
+        var status = HttpStatus.resolve(statusCode.value());
         String path = ((ServletWebRequest) webRequest).getRequest().getRequestURI();
 
         log.warn(catalogo.obtener(HttpKey.LOG_EXCEPCION_SPRING_MVC), path, statusCode.value(), ex.getMessage());
@@ -347,7 +347,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private String describirPathJackson(tools.jackson.core.JacksonException jacksonEx) {
-        StringBuilder ruta = new StringBuilder();
+        var ruta = new StringBuilder();
         for (var referencia : jacksonEx.getPath()) {
             if (referencia.getPropertyName() != null) {
                 if (!ruta.isEmpty()) {

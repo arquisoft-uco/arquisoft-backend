@@ -18,7 +18,7 @@ que combina dos patrones arquitectónicos complementarios:
 4. [Estructura de carpetas](#4-estructura-de-carpetas)
 5. [Clases e interfaces — descripción](#5-clases-e-interfaces--descripción)
    - [shared:domain — capa de dominio puro](#51-shareddomain--capa-de-dominio-puro)
-   - [shared:postgres — capa de infraestructura compartida](#52-sharedpostgres--capa-de-infraestructura-compartida)
+   - [shared:jpa — capa de infraestructura compartida](#52-sharedpostgres--capa-de-infraestructura-compartida)
    - [shared:web — capa de transporte HTTP](#53-sharedweb--capa-de-transporte-http)
    - [fichas:application — criterio concreto](#54-fichasapplication--criterio-concreto)
    - [fichas:infrastructure — adaptadores concretos](#55-fichasinfrastructure--adaptadores-concretos)
@@ -75,10 +75,10 @@ Spring Data JPA. Es el único punto del sistema que conoce JPA.
      │  extends QueryJpaSpecification<FichaPerfilEntity>
      │
      ▼
- QueryJpaSpecification<E>      ← recorre NodoFiltro (shared:postgres)
+ QueryJpaSpecification<E>      ← recorre NodoFiltro (shared:jpa)
      │  camposPermitidos().get(campo).construirSpec(operador, valor)
      ▼
- CampoSpec<E>                  ← predicado JPA por tipo (shared:postgres)
+ CampoSpec<E>                  ← predicado JPA por tipo (shared:jpa)
      │
      ▼
  Specification<FichaPerfilEntity>  → SQL WHERE generado
@@ -95,7 +95,7 @@ todo lo que está por encima es **Query Object**; todo lo que está por debajo e
 | Módulo | Capa | Patrón | Responsabilidad |
 |--------|------|--------|----------------|
 | `shared:domain` | Dominio puro | Query Object | Modelo del árbol de filtros, operadores, conector, criteria base, Template Method de validación |
-| `shared:postgres` | Infraestructura compartida | Spring Data Specification | Traducción del árbol a predicados JPA, validación de tipos |
+| `shared:jpa` | Infraestructura compartida | Spring Data Specification | Traducción del árbol a predicados JPA, validación de tipos |
 | `shared:web` | Transporte HTTP compartido | — | Deserialización JSON del árbol de filtros y body del request |
 | `{ctx}:application` | Aplicación | Query Object | Criteria concreto del contexto (enum de campos + builder con hooks) |
 | `{ctx}:infrastructure` | Infraestructura | Spring Data Specification | Spec JPA concreta con el mapa de campos filtrables; mapper de sort |
@@ -117,7 +117,7 @@ shared/
 │       ├── SortOrder.java                  ← valor de ordenamiento (campo + dirección)
 │       └── QueryCriteria.java              ← clase abstracta base para criterios
 │
-├── postgres/src/main/java/com/arquisoft/shared/postgres/
+├── postgres/src/main/java/com/arquisoft/shared/jpa/
 │   ├── query/                              ← [SPRING DATA SPECIFICATION]
 │   │   ├── CampoSpec.java                  ← sealed interface: predicado JPA por tipo
 │   │   └── QueryJpaSpecification.java      ← abstract: recorre el árbol y compone specs
@@ -278,7 +278,7 @@ FichaPerfilCriteria.builder()
 
 ---
 
-### 5.2 `shared:postgres` — capa de infraestructura compartida
+### 5.2 `shared:jpa` — capa de infraestructura compartida
 
 > Usa Spring Data JPA (`Specification`, `Root`, `CriteriaBuilder`). No debe importarse
 > desde capas de dominio ni de aplicación.
@@ -714,11 +714,11 @@ public final class ProyectoCriteria extends QueryCriteria {
 }
 ```
 
-### 2. Agregar `shared:postgres` a las dependencias de `proyectos:infrastructure`
+### 2. Agregar `shared:jpa` a las dependencias de `proyectos:infrastructure`
 
 ```gradle
 // proyectos/infrastructure/build.gradle
-implementation project(':shared:postgres')
+implementation project(':shared:jpa')
 ```
 
 ### 3. Crear la specification concreta en `proyectos:infrastructure`

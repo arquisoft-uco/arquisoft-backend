@@ -4,9 +4,9 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCr
 import com.arquisoft.fichas.application.fichaperfil.query.secondaryport.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.repository.mapper.FichaPerfilQueryMapper;
-import com.arquisoft.shared.pagination.PaginatedResult;
-import com.arquisoft.shared.postgres.util.PageableMapper;
-import com.arquisoft.shared.postgres.util.PaginationMapper;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
+import com.arquisoft.shared.jpa.util.PageableMapper;
+import com.arquisoft.shared.jpa.util.PaginationMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

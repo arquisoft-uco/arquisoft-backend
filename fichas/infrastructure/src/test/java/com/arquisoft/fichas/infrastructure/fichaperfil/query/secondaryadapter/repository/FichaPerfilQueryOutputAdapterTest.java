@@ -4,9 +4,9 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCr
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
-import com.arquisoft.shared.pagination.PaginatedResult;
-import com.arquisoft.shared.pagination.SortDirection;
-import com.arquisoft.shared.postgres.exception.FiltroInvalidoException;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
+import com.arquisoft.shared.query.pagination.SortDirection;
+import com.arquisoft.shared.query.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
@@ -194,8 +194,34 @@ class FichaPerfilQueryOutputAdapterTest {
         assertThat(resultado.getContent().get(0).tituloProyecto()).isEqualTo("Arquisoft Backend");
     }
 
-    // Cubre CampoSpec.Uuid.parseUuid, que solo se ejecuta dentro del lambda de la Specification
-    // y por tanto no se alcanza sin una consulta real.
+    @Test
+    void debeTratarLosComodinesComoTextoLiteral_cuandoElValorDelFiltroLosContiene() {
+        // Arrange
+        persistirFicha("Avance 50% del proyecto", "DOC-050", "Ana Ramirez", "ana5@soyuco.edu.co");
+        persistirFicha("Otro Proyecto", "DOC-051", "Juan Salazar", "juan5@soyuco.edu.co");
+        entityManager.flush();
+
+        FichaPerfilCriteria comodinSolo = FichaPerfilCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("tituloProyecto", FiltroOperador.CONTIENE, "%"))
+                .build();
+
+        FichaPerfilCriteria comodinLiteral = FichaPerfilCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("tituloProyecto", FiltroOperador.CONTIENE, "50%"))
+                .build();
+
+        // Act & Assert
+        assertThat(adapter.consultarTodas(comodinSolo).getContent())
+                .as("'%%' debe buscarse literal: solo la ficha que lo contiene, no toda la tabla")
+                .extracting(FichaPerfilReadModel::tituloProyecto)
+                .containsExactly("Avance 50% del proyecto");
+
+        assertThat(adapter.consultarTodas(comodinLiteral).getContent())
+                .extracting(FichaPerfilReadModel::tituloProyecto)
+                .containsExactly("Avance 50% del proyecto");
+    }
+
     @Test
     void debeReportarUuidInvalido_cuandoElFiltroPorAsesorNoTraeUnUuid() {
         // Arrange

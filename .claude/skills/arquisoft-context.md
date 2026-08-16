@@ -111,7 +111,7 @@ Domain  ←  Application  ←  Infrastructure
 | `shared:domain` | `com.arquisoft.shared.*` (`events`, `validation`, `inputport`, `exception`, `pagination`, `query`, `util`, `model`) | `AggregateRoot`, `DomainEvent`, `EventPublisher` (interfaz), `InputPort<I, O>`, `VoidInputPort<I>`, `PaginatedResult<T>`, `QueryCriteria`, jerarquía base de excepciones |
 | `shared:amqp` | `com.arquisoft.shared.amqp` | `SpringModulithEventPublisher` (impl principal), `RabbitMQEventPublisher` (fallback), `AbstractEventConsumer`, `RabbitMQConfig`, `ModulithAmqpExternalizationConfig` |
 | `shared:web` | `com.arquisoft.shared.web` | `GlobalAppExceptionHandler`, `ErrorResponseDTO`, `PageResponseDTO<T>`, `QueryCriteriaRequestDTO`, `NodoFiltroDTO` (Jackson polimórfico) |
-| `shared:postgres` | `com.arquisoft.shared.postgres` | `QueryJpaSpecification<JpaEntity>`, `CampoSpec` (sealed: `Texto`, `Uuid`, `Entero`, `Decimal`, `Fecha`, `FechaHora`, `Booleano`). Utilería para traducir `Criteria` → `Specification` |
+| `shared:jpa` | `com.arquisoft.shared.jpa` | `QueryJpaSpecification<JpaEntity>`, `CampoSpec` (sealed: `Texto`, `Uuid`, `Entero`, `Decimal`, `Fecha`, `FechaHora`, `Booleano`). Utilería para traducir `Criteria` → `Specification` |
 | `shared:minio` | `com.arquisoft.shared.minio` | `MinioStorageClient` (presigned URLs PUT/GET, `objectExists`, `deleteObject`), `MinioConfig`, `MinioProperties` |
 | `shared:redis` | `com.arquisoft.shared.redis` | Esqueleto sin implementación |
 | `shared:logger` | `com.arquisoft.shared.logger` | Logging estructurado JSON (`traceId`, `userId`). En perfil `prod` usa el `StructuredLogEncoder` nativo de Spring Boot 4 |
@@ -484,7 +484,7 @@ y clases del propio proyecto:
 - `com.arquisoft.shared.*` (subpaquetes `events/`, `validation/`, `inputport/`, `exception/`, `pagination/`, `query/`, `util/`, `model/`)
 - `com.arquisoft.shared.message.*` (catálogo central de mensajes — Java puro, sin framework)
 
-> **NUNCA** en `domain/`: `com.arquisoft.shared.amqp.*`, `com.arquisoft.shared.web.*`, `com.arquisoft.shared.postgres.*`, `com.arquisoft.shared.minio.*`. Esos son adaptadores técnicos.
+> **NUNCA** en `domain/`: `com.arquisoft.shared.amqp.*`, `com.arquisoft.shared.web.*`, `com.arquisoft.shared.jpa.*`, `com.arquisoft.shared.minio.*`. Esos son adaptadores técnicos.
 
 #### En `application/**/*.java` — permitido:
 
@@ -769,7 +769,7 @@ Aplicar features de Java 21 **cuando aporten claridad o seguridad**, no por moda
 | Feature | Cuándo usar | Ejemplo |
 |---|---|---|
 | `record` | `Command`, `ReadModel`, `RequestDTO`, payloads de eventos (inmutabilidad + `equals`/`hashCode` gratis) | `public record CrearFichaPerfilCommand(String tituloProyecto, UUID asesorFichaId) {}` |
-| `sealed interface` + `permits` | Jerarquías cerradas técnicas — uso actual en el proyecto: `NodoFiltro`, `CampoSpec` de `shared:domain`/`shared:postgres`. No para modelar estados del dominio en este proyecto. | `sealed interface NodoFiltro permits NodoFiltro.Predicado, NodoFiltro.Grupo {}` |
+| `sealed interface` + `permits` | Jerarquías cerradas técnicas — uso actual en el proyecto: `NodoFiltro`, `CampoSpec` de `shared:domain`/`shared:jpa`. No para modelar estados del dominio en este proyecto. | `sealed interface NodoFiltro permits NodoFiltro.Predicado, NodoFiltro.Grupo {}` |
 | Pattern matching para `switch` | Ramificación sobre `sealed interface` (típicamente sobre `NodoFiltro` o `CampoSpec`) | `return switch (campo) { case CampoSpec.Texto t -> ...; case CampoSpec.Uuid u -> ...; };` |
 | Pattern matching para `instanceof` | Donde antes había `instanceof` + cast | `if (evento instanceof FichaCreadaEvent f) { use(f.getTitulo()); }` |
 | Text blocks (`"""..."""`) | SQL inline, JSON de test, plantillas | `String sql = """ SELECT ... """;` |
@@ -1173,7 +1173,7 @@ public class PageResponseDTO<T> {
 }
 ```
 
-### Tipos en `shared:postgres`
+### Tipos en `shared:jpa`
 
 ```java
 // QueryJpaSpecification — recorre el árbol NodoFiltro y produce Specification<JpaEntity>
@@ -1275,8 +1275,8 @@ public final class FichaPerfilCriteria extends QueryCriteria {
 // infrastructure/fichaperfil/query/secondaryadapter/repository/FichaPerfilJpaSpecification.java
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.adapter.out.persistence;
 
-import com.arquisoft.shared.postgres.QueryJpaSpecification;
-import com.arquisoft.shared.postgres.CampoSpec;
+import com.arquisoft.shared.jpa.QueryJpaSpecification;
+import com.arquisoft.shared.jpa.CampoSpec;
 import com.arquisoft.fichas.infrastructure.fichaperfil.persistence.FichaPerfilJpaEntity;
 import org.springframework.stereotype.Component;
 import java.util.Map;
@@ -1344,7 +1344,7 @@ public interface FichaPerfilJpaRepository extends JpaRepository<FichaPerfilJpaEn
 ### Reglas inviolables
 
 1. **Whitelist obligatoria de campos.** Si el cliente envía un campo no permitido en `Criteria.Campo.FILTRABLES` o `ORDENABLES`, el builder lanza excepción. Nunca se confía en input del cliente para construir SQL.
-2. **`QueryJpaSpecification` y `CampoSpec` viven en `shared:postgres`.** Nunca se reimplementan en el contexto. El contexto solo declara su `XxxJpaSpecification` con su mapa de campos.
+2. **`QueryJpaSpecification` y `CampoSpec` viven en `shared:jpa`.** Nunca se reimplementan en el contexto. El contexto solo declara su `XxxJpaSpecification` con su mapa de campos.
 3. **Validación de profundidad del árbol ≤ 10 niveles.** Previene ataques de árboles maliciosamente profundos. Validado en el constructor de `QueryCriteria`.
 4. **`PaginatedResult<T>` vive en `shared:domain.pagination`** y es el retorno canónico del read side cuando hay paginación.
 5. **`PageResponseDTO.from(PaginatedResult)`** es la única conversión válida hacia HTTP. Nunca serializar `PaginatedResult` directamente.

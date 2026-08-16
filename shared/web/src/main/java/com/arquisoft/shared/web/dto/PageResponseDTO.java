@@ -1,6 +1,6 @@
 package com.arquisoft.shared.web.dto;
 
-import com.arquisoft.shared.pagination.PaginatedResult;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

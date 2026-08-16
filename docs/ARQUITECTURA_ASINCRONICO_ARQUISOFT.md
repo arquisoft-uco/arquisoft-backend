@@ -205,7 +205,7 @@ dependencies {
     implementation project(':{contexto}:domain')
     implementation project(':{contexto}:application')
     implementation project(':shared:amqp')       // Para publicar eventos
-    implementation project(':shared:postgres')   // Para repositorios JPA
+    implementation project(':shared:jpa')   // Para repositorios JPA
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.springframework.amqp:spring-rabbit"
