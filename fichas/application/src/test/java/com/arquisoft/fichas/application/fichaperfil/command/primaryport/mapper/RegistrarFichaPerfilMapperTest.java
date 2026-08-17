@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.primaryport.mapper;
 
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.model.RegistrarFichaPerfilCommand;
-import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.RegistroFichaPerfilDomain;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
@@ -21,22 +21,26 @@ class RegistrarFichaPerfilMapperTest {
         var command = new RegistrarFichaPerfilCommand("Título de prueba", asesor, List.of(UUID.randomUUID()));
 
         // Act
-        FichaPerfilDomain ficha = RegistrarFichaPerfilMapper.toDomain(command);
+        RegistroFichaPerfilDomain registro = RegistrarFichaPerfilMapper.toDomain(command);
 
         // Assert
-        assertThat(ficha.getId()).isNotNull();
-        assertThat(ficha.getTituloProyecto()).isEqualTo("Título de prueba");
-        assertThat(ficha.getAsesorFicha()).isEqualTo(asesor);
+        assertThat(registro.getFicha().getId()).isNotNull();
+        assertThat(registro.getFicha().getTituloProyecto()).isEqualTo("Título de prueba");
+        assertThat(registro.getFicha().getAsesorFicha()).isEqualTo(asesor);
+        assertThat(registro.getEstadoInicial().getFichaPerfil()).isEqualTo(registro.getFichaPerfil());
+        assertThat(registro.getEstudiantes().getFichaPerfil()).isEqualTo(registro.getFichaPerfil());
+        assertThat(registro.getEstudiantes().getEstudiantes()).isEqualTo(command.estudiantes());
     }
 
     @Test
-    void debeIgnorarLosEstudiantes_cuandoMapeaADomain() {
-        // Arrange — estudiantes no es un dato de FichaPerfilDomain, el mapper no debe fallar por su
-        // ausencia ni filtrarlo hacia el agregado.
+    void debeLanzarDomainValidationException_cuandoNoHayEstudiantes() {
+        // Arrange
         var command = new RegistrarFichaPerfilCommand("Título de prueba", UUID.randomUUID(), List.of());
 
         // Act & Assert
-        assertThat(RegistrarFichaPerfilMapper.toDomain(command)).isNotNull();
+        assertThatThrownBy(() -> RegistrarFichaPerfilMapper.toDomain(command))
+                .isInstanceOf(DomainValidationException.class)
+                .hasMessageContaining(FichasFields.EstudianteFichaPerfil.ESTUDIANTES);
     }
 
     @Test

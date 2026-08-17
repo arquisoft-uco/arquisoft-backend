@@ -3,10 +3,15 @@ package com.arquisoft.fichas.application.estadofichaperfil.command.usecase.impl;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.fichas.application.estadofichaperfil.command.validator.AsignarEstadoInicialFichaPerfilValidator;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.AgregacionEstudiantesFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.EstadoFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.RegistroFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -18,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -43,6 +49,9 @@ class AsignarEstadoInicialFichaPerfilUseCaseTest {
     private AsignarEstadoInicialFichaPerfilValidator asignarEstadoInicialFichaPerfilValidator;
 
     @Mock
+    private AsignarEstudiantesFichaPerfilUseCase asignarEstudiantesFichaPerfilUseCase;
+
+    @Mock
     private AppLogger logger;
 
     @Spy
@@ -54,24 +63,26 @@ class AsignarEstadoInicialFichaPerfilUseCaseTest {
     @Test
     void debeRegistrarElEstadoInicial_cuandoLaFichaExiste() {
         // Arrange
-        var estadoInicial = EstadoFichaPerfilDomain.crear(UUID.randomUUID());
-        when(fichaPerfilExisteFinder.obtener(estadoInicial.getFichaPerfil())).thenReturn(true);
+        RegistroFichaPerfilDomain registro = registro();
+        stubFichaExiste(registro, true);
 
         // Act
-        asignarEstadoInicialFichaPerfilUseCase.ejecutar(estadoInicial);
+        asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro);
 
         // Assert
-        verify(estadoFichaPerfilOutputPort, times(1)).registrarEstadoInicial(entidadDe(estadoInicial));
+        verify(estadoFichaPerfilOutputPort, times(1))
+                .registrarEstadoInicial(entidadDe(registro.getEstadoInicial()));
     }
 
     @Test
     void debeConsultarYValidarAntesDePersistir_cuandoSeEjecuta() {
         // Arrange
-        var estadoInicial = EstadoFichaPerfilDomain.crear(UUID.randomUUID());
-        when(fichaPerfilExisteFinder.obtener(estadoInicial.getFichaPerfil())).thenReturn(true);
+        RegistroFichaPerfilDomain registro = registro();
+        var estadoInicial = registro.getEstadoInicial();
+        stubFichaExiste(registro, true);
 
         // Act
-        asignarEstadoInicialFichaPerfilUseCase.ejecutar(estadoInicial);
+        asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro);
 
         // Assert
         InOrder inOrder = inOrder(fichaPerfilExisteFinder, asignarEstadoInicialFichaPerfilValidator,
@@ -83,32 +94,69 @@ class AsignarEstadoInicialFichaPerfilUseCaseTest {
     }
 
     @Test
+    void debeAsignarLosEstudiantes_despuesDePersistirElEstadoInicial() {
+        // Arrange
+        RegistroFichaPerfilDomain registro = registro();
+        stubFichaExiste(registro, true);
+
+        // Act
+        asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro);
+
+        // Assert
+        verify(asignarEstudiantesFichaPerfilUseCase).ejecutar(registro.getEstudiantes());
+
+        InOrder inOrder = inOrder(estadoFichaPerfilOutputPort, asignarEstudiantesFichaPerfilUseCase);
+        inOrder.verify(estadoFichaPerfilOutputPort).registrarEstadoInicial(any());
+        inOrder.verify(asignarEstudiantesFichaPerfilUseCase).ejecutar(any());
+    }
+
+    @Test
     void debePropagarLaExcepcion_cuandoLaFichaNoExiste() {
         // Arrange
-        var estadoInicial = EstadoFichaPerfilDomain.crear(UUID.randomUUID());
-        when(fichaPerfilExisteFinder.obtener(estadoInicial.getFichaPerfil())).thenReturn(false);
+        RegistroFichaPerfilDomain registro = registro();
+        var estadoInicial = registro.getEstadoInicial();
+        stubFichaExiste(registro, false);
         doThrow(new FichaPerfilNoEncontradaException(estadoInicial.getFichaPerfil()))
                 .when(asignarEstadoInicialFichaPerfilValidator)
                 .validar(estadoInicial.getFichaPerfil(), false);
 
         // Act & Assert
-        assertThatThrownBy(() -> asignarEstadoInicialFichaPerfilUseCase.ejecutar(estadoInicial))
+        assertThatThrownBy(() -> asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro))
                 .isInstanceOf(FichaPerfilNoEncontradaException.class);
 
         verify(estadoFichaPerfilOutputPort, never()).registrarEstadoInicial(any());
+        verify(asignarEstudiantesFichaPerfilUseCase, never()).ejecutar(any());
     }
 
     @Test
     void debeLanzarExcepcion_cuandoRepositorioFalla() {
         // Arrange
-        var estadoInicial = EstadoFichaPerfilDomain.crear(UUID.randomUUID());
-        when(fichaPerfilExisteFinder.obtener(estadoInicial.getFichaPerfil())).thenReturn(true);
+        RegistroFichaPerfilDomain registro = registro();
+        stubFichaExiste(registro, true);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
-                .when(estadoFichaPerfilOutputPort).registrarEstadoInicial(entidadDe(estadoInicial));
+                .when(estadoFichaPerfilOutputPort)
+                .registrarEstadoInicial(entidadDe(registro.getEstadoInicial()));
 
         // Act & Assert
-        assertThatThrownBy(() -> asignarEstadoInicialFichaPerfilUseCase.ejecutar(estadoInicial))
+        assertThatThrownBy(() -> asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro))
                 .isInstanceOf(InfrastructureException.class);
+
+        verify(asignarEstudiantesFichaPerfilUseCase, never()).ejecutar(any());
+    }
+
+    private void stubFichaExiste(RegistroFichaPerfilDomain registro, boolean existe) {
+        when(fichaPerfilExisteFinder.obtener(registro.getEstadoInicial().getFichaPerfil()))
+                .thenReturn(existe);
+    }
+
+    private static RegistroFichaPerfilDomain registro() {
+        var ficha = FichaPerfilDomain.crear("Título de prueba", UUID.randomUUID());
+
+        return RegistroFichaPerfilDomain.crear(
+                ficha,
+                EstadoFichaPerfilDomain.crear(ficha.getId()),
+                AgregacionEstudiantesFichaPerfilDomain.crear(
+                        EstudianteFichaPerfilDomain.crear(ficha.getId(), List.of(UUID.randomUUID()))));
     }
 
     // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.
