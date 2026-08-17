@@ -1,5 +1,6 @@
 package com.arquisoft.notificaciones.infrastructure.config;
 
+import com.arquisoft.shared.jpa.config.PropiedadesJpa;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
@@ -16,8 +17,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * DataSource, EntityManagerFactory y Flyway propios del contexto notificaciones.
@@ -79,12 +78,7 @@ public class NotificacionesDataSourceConfig {
         var vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.hbm2ddl.auto", "validate");
-        properties.put("hibernate.format_sql", "true");
-        properties.put("hibernate.jdbc.batch_size", "25");
-        properties.put("hibernate.show_sql", "false");
-        em.setJpaPropertyMap(properties);
+        em.setJpaPropertyMap(PropiedadesJpa.porDefecto());
 
         return em;
     }
