@@ -9,19 +9,19 @@ public final class EstudianteMapper {
 
     public static EstudianteDomain toDomain(EstudianteEntity entity) {
         return EstudianteDomain.reconstruir(
-            entity.getId(),
-            entity.getIdentificador(),
-            entity.getNombre(),
-            entity.getEmail()
+            entity.id(),
+            entity.identificador(),
+            entity.nombre(),
+            entity.email()
         );
     }
 
     public static EstudianteEntity toEntity(EstudianteDomain aggregate) {
-        return EstudianteEntity.builder()
-            .id(aggregate.getId())
-            .identificador(aggregate.getIdentificador())
-            .nombre(aggregate.getNombre())
-            .email(aggregate.getEmail())
-            .build();
+        return new EstudianteEntity(
+            aggregate.getId(),
+            aggregate.getIdentificador(),
+            aggregate.getNombre(),
+            aggregate.getEmail()
+        );
     }
 }

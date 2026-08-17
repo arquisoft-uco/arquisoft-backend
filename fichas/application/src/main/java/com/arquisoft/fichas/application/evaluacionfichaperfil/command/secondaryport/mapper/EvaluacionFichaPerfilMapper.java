@@ -8,19 +8,18 @@ public final class EvaluacionFichaPerfilMapper {
     private EvaluacionFichaPerfilMapper() {}
 
     public static EvaluacionFichaPerfilEntity toEntity(EvaluacionFichaPerfilDomain aggregate) {
-        return EvaluacionFichaPerfilEntity.builder()
-                .id(aggregate.getId())
-                .representanteComiteId(aggregate.getRepresentanteComiteId())
-                .fichaPerfilId(aggregate.getFichaPerfilId())
-                .fechaCreacion(aggregate.getFechaCreacion())
-                .build();
+        return new EvaluacionFichaPerfilEntity(
+                aggregate.getId(),
+                aggregate.getRepresentanteComiteId(),
+                aggregate.getFichaPerfilId(),
+                aggregate.getFechaCreacion());
     }
 
     public static EvaluacionFichaPerfilDomain toDomain(EvaluacionFichaPerfilEntity entity) {
         return EvaluacionFichaPerfilDomain.reconstruir(
-                entity.getId(),
-                entity.getRepresentanteComiteId(),
-                entity.getFichaPerfilId(),
-                entity.getFechaCreacion());
+                entity.id(),
+                entity.representanteComiteId(),
+                entity.fichaPerfilId(),
+                entity.fechaCreacion());
     }
 }

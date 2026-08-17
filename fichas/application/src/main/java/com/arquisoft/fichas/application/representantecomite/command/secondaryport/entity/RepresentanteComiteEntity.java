@@ -1,34 +1,6 @@
 package com.arquisoft.fichas.application.representantecomite.command.secondaryport.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
 import java.util.UUID;
 
-@Entity
-@Table(name = "representante_comite_curriculum")
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class RepresentanteComiteEntity {
-
-    @Id
-    @Column(name = "id")
-    private UUID id;
-
-    @Column(name = "identificador", nullable = false, length = 30)
-    private String identificador;
-
-    @Column(name = "nombre", nullable = false, length = 50)
-    private String nombre;
-
-    @Column(name = "email", nullable = false, length = 50)
-    private String email;
+public record RepresentanteComiteEntity(UUID id, String identificador, String nombre, String email) {
 }

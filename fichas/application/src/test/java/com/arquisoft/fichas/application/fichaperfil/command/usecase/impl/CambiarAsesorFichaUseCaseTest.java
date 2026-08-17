@@ -6,7 +6,6 @@ import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFi
 import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.CambiarAsesorFichaValidator;
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
@@ -33,7 +32,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -90,7 +88,7 @@ class CambiarAsesorFichaUseCaseTest {
         cambiarAsesorFichaUseCase.ejecutar(cambio);
 
         // Assert
-        verify(fichaPerfilOutputPort, times(1)).actualizarAsesor(eq(ficha.getId()), referenciaA(nuevoAsesor));
+        verify(fichaPerfilOutputPort, times(1)).actualizarAsesor(eq(ficha.getId()), eq(nuevoAsesor));
     }
 
     @Test
@@ -110,7 +108,7 @@ class CambiarAsesorFichaUseCaseTest {
         inOrder.verify(estadoActualFichaPerfilFinder).obtener(ficha.getId());
         inOrder.verify(cambiarAsesorFichaValidator).validar(
                 cambio, ficha, contacto, estadoEnConstruccion);
-        inOrder.verify(fichaPerfilOutputPort).actualizarAsesor(eq(ficha.getId()), referenciaA(nuevoAsesor));
+        inOrder.verify(fichaPerfilOutputPort).actualizarAsesor(eq(ficha.getId()), eq(nuevoAsesor));
     }
 
     @Test
@@ -173,7 +171,7 @@ class CambiarAsesorFichaUseCaseTest {
         var cambio = CambioAsesorFichaDomain.crear(ficha.getId(), nuevoAsesor);
         stubConsultas();
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
-                .when(fichaPerfilOutputPort).actualizarAsesor(eq(ficha.getId()), referenciaA(nuevoAsesor));
+                .when(fichaPerfilOutputPort).actualizarAsesor(eq(ficha.getId()), eq(nuevoAsesor));
 
         // Act & Assert
         assertThatThrownBy(() -> cambiarAsesorFichaUseCase.ejecutar(cambio))
@@ -187,9 +185,5 @@ class CambiarAsesorFichaUseCaseTest {
         when(asesorFichaFinder.obtener(nuevoAsesor)).thenReturn(Optional.of(contacto));
         when(estadoActualFichaPerfilFinder.obtener(ficha.getId()))
                 .thenReturn(Optional.of(estadoEnConstruccion));
-    }
-
-    private static AsesorFichaEntity referenciaA(UUID asesorFicha) {
-        return argThat(entity -> entity.getId().equals(asesorFicha));
     }
 }

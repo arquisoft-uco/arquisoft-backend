@@ -2,7 +2,6 @@ package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.mapper.AsesorFichaMapper;
 import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAsesorFichaUseCase;
@@ -46,8 +45,7 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
 
         cambiarAsesorFichaValidator.validar(cambio, ficha, asesorFicha, estadoActual);
 
-        fichaPerfilOutputPort.actualizarAsesor(
-                fichaPerfil, AsesorFichaMapper.toReferencia(nuevoAsesorFicha));
+        fichaPerfilOutputPort.actualizarAsesor(fichaPerfil, nuevoAsesorFicha);
 
         eventPublisher.publish(new AsesorFichaCambiadoEvent(fichaPerfil, ficha.getTituloProyecto(),
                 asesorFicha.getId(), asesorFicha.getNombre(), asesorFicha.getEmail()));

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -56,7 +56,7 @@ class AsesorFichaCommandOutputAdapterTest {
     void debeRetornarElContacto_cuandoAsesorExiste() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
-        var entity = AsesorFichaEntity.builder()
+        var entity = AsesorFichaJpaEntity.builder()
                 .id(asesorId)
                 .identificador("A001")
                 .nombre("Ana Asesora")
@@ -69,10 +69,10 @@ class AsesorFichaCommandOutputAdapterTest {
 
         // Assert
         assertThat(resultado).isPresent();
-        assertThat(resultado.get().getId()).isEqualTo(asesorId);
-        assertThat(resultado.get().getIdentificador()).isEqualTo("A001");
-        assertThat(resultado.get().getNombre()).isEqualTo("Ana Asesora");
-        assertThat(resultado.get().getEmail()).isEqualTo("ana@arquisoft.com");
+        assertThat(resultado.get().id()).isEqualTo(asesorId);
+        assertThat(resultado.get().identificador()).isEqualTo("A001");
+        assertThat(resultado.get().nombre()).isEqualTo("Ana Asesora");
+        assertThat(resultado.get().email()).isEqualTo("ana@arquisoft.com");
     }
 
     @Test

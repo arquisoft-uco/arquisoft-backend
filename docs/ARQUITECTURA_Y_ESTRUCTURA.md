@@ -99,8 +99,8 @@ La arquitectura hexagonal divide cada contexto en tres capas principales:
 
 #### 5. Infraestructura (Infrastructure)
 
-- Implementa los puertos de salida mediante `OutputAdapter` (e.g., `FichaPerfilOutputAdapter`)
-- Contiene adaptadores de entrada (`InputAdapter`): REST controllers y AMQP consumers (e.g., `FichaPerfilInputAdapter`, `UsuarioCreadoInputAdapter`)
+- Implementa los puertos de salida mediante `OutputAdapter` (e.g., `FichaPerfilCommandOutputAdapter`)
+- Contiene adaptadores de entrada: REST controllers con sufijo `Controller` (e.g., `RegistrarFichaPerfilController`) y consumers AMQP con sufijo `Consumer` (e.g., `UsuarioCreadoConsumer`) — `InputAdapter` no se usa en el proyecto
 - Configuración de Spring Boot, Flyway, etc.
 
 ---
@@ -115,7 +115,7 @@ arquisoft-backend/
 ├── gradle.properties                     # Versiones de dependencias
 ├── docker-compose.yml                    # Orquestación de contenedores
 ├── Dockerfile                            # Imagen Docker multi-stage
-├── init-db.sql                           # Creación de 7 schemas
+├── init-db.sql                           # Creación de 8 bases de datos (una por contexto con implementación o scaffolding, sin contar `seguridad`) + `keycloak`
 │
 ├── config/                               # Configuraciones GENERALES del proyecto
 │   └── checkstyle/
@@ -132,17 +132,18 @@ arquisoft-backend/
 │           ├── application-dev.yml       # Perfil desarrollo
 │           └── application-prod.yml      # Perfil producción
 │
-├── shared/                               # Módulo compartido (12 sub-módulos)
-│   ├── util/                              # UtilText, UtilUUID, UtilCollection, UtilDate, UtilNumber, UtilObject
+├── shared/                               # Módulo compartido (13 sub-módulos)
+│   ├── util/                              # UtilTexto, UtilUUID, UtilColeccion, UtilFecha, UtilNumero, UtilObjeto
 │   ├── exception/                        # BaseException/BaseError y las 5 excepciones base
 │   ├── validation/                       # DomainValidator, ValidationResult (Notification Pattern)
 │   ├── domain/                           # DomainEvent, AggregateRoot
 │   ├── logger/                           # AppLogger
 │   ├── redis/                            # RedisClient
 │   ├── amqp/                             # EventPublisher
-│   ├── web/                              # HttpClient, TraceIdFilter, @UuidValido
+│   ├── web/                              # HttpClient, TraceIdFilter, GlobalAppExceptionHandler, @UuidValido
 │   ├── minio/                            # Cliente MinIO
-│   ├── postgres/                         # BaseRepository
+│   ├── jpa/                              # QueryRepository/SpecificationQueryRepository, CampoSpec, PageableMapper/PaginationMapper
+│   ├── query/                            # Vocabulario de consulta sin Spring: QueryCriteria, NodoFiltro, PaginatedResult, DTOs de filtro
 │   ├── message/                          # CatalogoMensajes
 │   └── notification/                     # EnvioNotificacionOutputPort (SMTP)
 │
@@ -153,20 +154,20 @@ arquisoft-backend/
 │   │           ├── SesionDomain.java       # Aggregate root: sesión activa
 │   │           ├── TokenDomain.java        # Aggregate root: validación de un JWT
 │   │           ├── model/                  # CredencialesSesion, IdentidadToken (value objects)
-│   │           ├── secondaryport/
-│   │           │   ├── AutenticacionOutputPort.java   # Contrato Keycloak
-│   │           │   ├── ValidacionTokenOutputPort.java # Contrato validación JWT
-│   │           │   ├── TokenInvalidadoOutputPort.java # Contrato Redis blacklist
-│   │           │   └── UsuarioActualOutputPort.java   # Contrato Spring Security context
 │   │           └── exception/
 │   │               └── AuthenticationException.java
 │   ├── application/
 │   │   └── src/main/java/com/arquisoft/seguridad/application/
 │   │       └── auth/command/
 │   │           ├── primaryport/
-│   │           │   ├── interactor/         # Autenticar/CerrarSesion/Refrescar/ValidarToken Interactor(+Impl)
+│   │           │   ├── interactor/         # Autenticar/CerrarSesion/Refrescar/ValidarToken Interactor(+Impl) — sin @Transactional, no hay DataSource
 │   │           │   └── model/              # AutenticarUsuarioCommand, TokenSesionCommand
 │   │           ├── usecase/                # *UseCase(+Impl); colaborador interno, no bajo primaryport/
+│   │           ├── secondaryport/          # Puertos de salida — application, NO domain (el dominio no hace I/O)
+│   │           │   ├── AutenticacionOutputPort.java   # Contrato Keycloak
+│   │           │   ├── ValidacionTokenOutputPort.java # Contrato validación JWT
+│   │           │   ├── TokenInvalidadoOutputPort.java # Contrato Redis blacklist
+│   │           │   └── UsuarioActualOutputPort.java   # Contrato Spring Security context
 │   │           └── result/                 # AutenticacionResult, RefrescoTokenResult, ValidacionTokenResult
 │   └── infrastructure/
 │       └── src/main/java/com/arquisoft/seguridad/infrastructure/
@@ -182,7 +183,7 @@ arquisoft-backend/
 │           ├── config/                   # Configuraciones de SEGURIDAD (no van en config/ raíz)
 │           │   ├── security/SeguridadConfig.java    # JWT + OAuth2 Resource Server + método security
 │           │   ├── cors/CorsConfig.java             # Orígenes, headers expuestos, credenciales
-│           │   ├── ratelimit/LimiteSolicitudesConfig.java   # Bucket4j per-IP (100/min global, 5/min login)
+│           │   ├── ratelimit/LimiteSolicitudesConfig.java   # Bucket4j per-IP via Redis — 100/min global dev, 5/min login dev (60/3 prod)
 │           │   └── http/RestTemplateConfig.java     # SimpleClientHttpRequestFactory (SB4 compat)
 │           └── filter/
 │               ├── LimitadorSolicitudesFilter.java  # OncePerRequestFilter: evalúa límite por IP
@@ -216,16 +217,23 @@ arquisoft-backend/
 |------|---------|--------|---------|
 | **Domain - aggregate roots** | `domain/{feature}/` (directo, sin subcarpeta) | `Domain` | `FichaPerfilDomain.java` |
 | **Domain - reglas de negocio** | `domain/{feature}/rules/` (+`impl/`) | `Rule`/`RuleImpl` | `FichaPerfilTituloUnicoRule.java` |
-| **Domain - puertos salida** | `domain/{feature}/secondaryport/` | `OutputPort` | `FichaPerfilOutputPort.java` |
+| **Application - puertos salida (escritura)** | `application/{feature}/command/secondaryport/` | `OutputPort` | `FichaPerfilOutputPort.java` |
+| **Application - puertos salida (lectura)** | `application/{feature}/query/secondaryport/` | `QueryOutputPort` | `FichaPerfilQueryOutputPort.java` |
+| **Application - Entity (record plano)** | `{feature}/command/secondaryport/entity/` | `Entity` | `FichaPerfilEntity.java` |
+| **Infrastructure - JpaEntity** | `{feature}/command/secondaryadapter/entity/` | `JpaEntity` | `FichaPerfilJpaEntity.java` |
 | **Domain - excepciones** | `exception/` | `Exception` | `FichaNoEncontradaException.java` |
 | **Application - Commands** | `{feature}/command/primaryport/model/` | `Command` | `RegistrarFichaPerfilCommand.java` |
 | **Application - ReadModels** | `{feature}/query/readmodel/` | `ReadModel` | `FichaPerfilReadModel.java` |
 | **Application - interactor (comando)** | `{feature}/command/primaryport/interactor/` | `Interactor` | `RegistrarFichaPerfilInteractor.java` |
 | **Application - use cases** | `{feature}/command/usecase/` o `{feature}/query/primaryport/usecase/` | `UseCase`/`UseCaseImpl` | `ConsultarFichasPerfilUseCaseImpl.java` |
 | **Infrastructure - entrada web** | `{feature}/command\|query/primaryadapter/web/` | `Controller` | `RegistrarFichaPerfilController.java` |
-| **Infrastructure - entrada AMQP** | `{feature}/command/primaryadapter/amqp/` | `InputAdapter` | `UsuarioCreadoInputAdapter.java` |
+| **Infrastructure - entrada AMQP** | `{feature}/command/primaryadapter/amqp/` | `Consumer` | `UsuarioCreadoConsumer.java` |
 | **Infrastructure - salida** | `{feature}/command\|query/secondaryadapter/...` | `OutputAdapter` | `FichaPerfilCommandOutputAdapter.java` |
 | **Infrastructure - config** | `config/` | `Config` | `FichasConfig.java` |
+
+`domain/` **nunca** declara puertos ni entidades de persistencia — no hace I/O de ningún tipo,
+solo depende de `shared:domain`. Un puerto bajo `domain/` no compilaría: invertiría la
+dirección de dependencia `domain ← application ← infrastructure`.
 
 ---
 
@@ -262,7 +270,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.security:spring-security-oauth2-jose'
     implementation 'org.keycloak:keycloak-admin-client:25.0.3'
-    implementation 'com.bucket4j:bucket4j-core:7.6.0'
+    implementation "com.bucket4j:bucket4j_jdk17-core"
+    implementation "com.bucket4j:bucket4j_jdk17-redis-common:${bucket4jVersion}"
+    implementation "com.bucket4j:bucket4j_jdk17-lettuce:${bucket4jVersion}"
 }
 ```
 
@@ -270,11 +280,11 @@ dependencies {
 
 ## Módulo Shared
 
-El módulo `shared` contiene **12 sub-módulos** reutilizables por cualquier contexto:
+El módulo `shared` contiene **13 sub-módulos** reutilizables por cualquier contexto:
 
 | Sub-módulo | Contenido | Uso |
 |-----------|-----------|-----|
-| `util` | UtilText, UtilUUID, UtilCollection, UtilDate, UtilNumber, UtilObject | Helpers estáticos sin estado |
+| `util` | UtilTexto, UtilUUID, UtilColeccion, UtilFecha, UtilNumero, UtilObjeto | Helpers estáticos sin estado |
 | `exception` | BaseException/BaseError + 5 excepciones base | Jerarquía de excepciones del proyecto; sin dependencias propias (hoja del grafo) |
 | `validation` | DomainValidator, ValidationResult, DomainValidationException, ApplicationValidationException | Notification Pattern: acumula errores en vez de lanzar en el primero |
 | `domain` | DomainEvent, AggregateRoot | Clases base para entidades con eventos |
@@ -283,9 +293,15 @@ El módulo `shared` contiene **12 sub-módulos** reutilizables por cualquier con
 | `amqp` | EventPublisher (interface) | Publicar eventos a RabbitMQ |
 | `web` | HttpClient, TraceIdFilter, GlobalAppExceptionHandler, `@UuidValido` | Llamadas HTTP entre contextos, trazabilidad, manejo global de errores |
 | `minio` | Cliente MinIO | Almacenamiento de archivos |
-| `postgres` | BaseRepository (JpaRepository) | Repositorios base JPA |
+| `jpa` | `QueryRepository`/`SpecificationQueryRepository`, `CampoSpec`, `PageableMapper`/`PaginationMapper` | Todo lo que necesita Spring Data JPA para el lado de consulta — nunca se importa desde `domain` ni `application` |
+| `query` | `QueryCriteria`/`NodoFiltro`/`FiltroOperador`/`SortOrder`, `PaginatedResult`, DTOs de filtro | Vocabulario de consulta **sin ninguna dependencia de Spring** — usable en cualquier capa |
 | `message` | CatalogoMensajes (interface + implementación ResourceBundle) | Catálogo de mensajes desacoplado de la tecnología |
 | `notification` | EnvioNotificacionOutputPort | Puerto de envío de notificaciones (SMTP), usado por `notificaciones` |
+
+`shared:jpa` fue `shared:postgres` hasta hace poco — se renombró porque no tiene nada
+específico de PostgreSQL (ni driver, ni SQL nativo, ni dialecto), y `shared:query` se extrajo
+de él (más `shared:domain` y `shared:web`) para que un módulo que solo necesita declarar un
+criterio de consulta no arrastre Spring Data JPA como dependencia transitiva.
 
 ### Ejemplo de Uso
 
@@ -298,7 +314,12 @@ dependencies {
 // fichas/infrastructure/build.gradle
 dependencies {
     implementation project(':shared:amqp')    // Para publicar eventos
-    implementation project(':shared:jpa') // Para repositorios JPA
+    implementation project(':shared:jpa')     // Para repositorios de consulta JPA
+}
+
+// fichas/application/build.gradle
+dependencies {
+    implementation project(':shared:query')   // Para declarar un Criteria — sin JPA
 }
 ```
 
@@ -472,16 +493,16 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
 ### Configuración
 
-> **Spring Boot 4.0.x (versión actual del proyecto):** Virtual Threads se activan **automáticamente** cuando la JVM es Java 21+. La propiedad `spring.threads.virtual.enabled=true` ya **no es necesaria** y fue eliminada de `application.yml` con la migración a Boot 4.0.5 (ADR-008).
->
-> Si el proyecto estuviera en Spring Boot 3.x, la propiedad requerida sería:
+> Habilitados explícitamente en `application.yml`:
 > ```yaml
 > spring:
 >   threads:
 >     virtual:
 >       enabled: true
 > ```
-> En Boot 4.x esto ocurre sin configuración adicional.
+> Java 21 + Spring Boot 4.x: la propiedad hace que Tomcat, `@Async` y los listeners de
+> RabbitMQ usen virtual threads automáticamente — no requiere configuración adicional en
+> código más allá de esa línea.
 
 Esta configuración hace que Spring Boot reemplace automáticamente los executors de OS threads en **Tomcat**, **`@Async`** y **RabbitMQ listeners**.
 
@@ -489,11 +510,11 @@ Esta configuración hace que Spring Boot reemplace automáticamente los executor
 
 | Componente del proyecto | Efecto |
 |---|---|
-| Todos los **InputAdapters** REST (requests HTTP) | Cada request corre en un virtual thread |
+| Todos los **Controllers** REST (requests HTTP) | Cada request corre en un virtual thread |
 | **`KeycloakAuthOutputAdapter`** (HTTP a Keycloak) | Bloqueo I/O sin consumir OS thread |
 | **`JwtTokenOutputAdapter`** (decodificación JWT) | Igual |
-| **`FichaPerfilOutputAdapter`** y todos los OutputAdapters JPA/JDBC | Queries a BD sin bloquear OS thread |
-| **`@RabbitListener`** en InputAdapters AMQP | Mensajes procesados en virtual threads |
+| **`FichaPerfilCommandOutputAdapter`** y todos los OutputAdapters JPA/JDBC | Queries a BD sin bloquear OS thread |
+| **`@RabbitListener`** en los `Consumer` AMQP | Mensajes procesados en virtual threads |
 | **`AuditFilter`**, **`LimitadorSolicitudesFilter`** | Mismo virtual thread del request |
 
 No hay que modificar ningún método ni clase — el beneficio es completamente transparente para el código de negocio.
@@ -547,13 +568,13 @@ RegistrarFichaPerfilInteractor.ejecutar(command)               [primaryport/inte
     ↓
 FichaPerfilDomain.crear(...)                                  [aggregate root — valida invariantes de dominio]
     ↓
-RegistrarFichaPerfilUseCase.ejecutar(ficha)                    [usecase — valida existencia/unicidad, orquesta]
+RegistrarFichaPerfilUseCase.ejecutar(ficha)                    [usecase — valida existencia/unicidad, mapea Domain → Entity]
     ↓
-FichaPerfilOutputPort.registrarFicha(ficha)                    [secondaryport — interfaz]
+FichaPerfilOutputPort.registrarFicha(entity)                   [secondaryport — interfaz, habla Entity]
     ↓
-FichaPerfilCommandOutputAdapter.registrarFicha(ficha)           [secondaryadapter/repository — implementación]
+FichaPerfilCommandOutputAdapter.registrarFicha(entity)          [secondaryadapter/repository — traduce Entity → JpaEntity]
     ↓
-FichaPerfilRepository.save(FichaPerfilMapper.toEntity(ficha))   [Spring Data JPA — INSERT]
+FichaPerfilCommandRepository.save(FichaPerfilJpaMapper.toJpaEntity(entity))   [Spring Data JPA — INSERT]
     ↓
 HTTP 201 Created
 ```
@@ -637,20 +658,29 @@ public final class FichaPerfilDomain extends AggregateRoot {   // ← sufijo Dom
 }
 ```
 
-**4. Puerto de Salida (domain, `secondaryport`)**
+**4. Puerto de Salida (application, `command/secondaryport`) — habla `Entity`, nunca `Domain`**
 
 ```java
-// fichas/domain/src/main/java/com/arquisoft/fichas/domain/fichaperfil/secondaryport/FichaPerfilOutputPort.java
+// fichas/application/.../fichaperfil/command/secondaryport/FichaPerfilOutputPort.java
 public interface FichaPerfilOutputPort {
-    void registrarFicha(FichaPerfilDomain ficha);
-    Optional<FichaPerfilDomain> buscarPorId(UUID id);
+    void registrarFicha(FichaPerfilEntity ficha);
+    Optional<FichaPerfilEntity> buscarPorId(UUID id);
     boolean existePorId(UUID id);
     boolean existePorTituloProyecto(String titulo);
     // ...
 }
 ```
 
-**5. UseCase (application, colaborador interno — no bajo `primaryport`)**
+`FichaPerfilEntity` (sibling `entity/`) es un **record plano sin JPA ni Lombok** — la forma
+de persistencia que habla el puerto, no el aggregate de dominio. El `domain` no declara
+puertos ni entidades de persistencia; solo depende de `shared:domain`.
+
+```java
+// fichas/application/.../fichaperfil/command/secondaryport/entity/FichaPerfilEntity.java
+public record FichaPerfilEntity(UUID id, String tituloProyecto, UUID asesorFicha) {}
+```
+
+**5. UseCase (application, colaborador interno — no bajo `primaryport`) — mapea `Domain → Entity` antes de llamar al puerto**
 
 ```java
 // fichas/application/.../fichaperfil/command/usecase/impl/RegistrarFichaPerfilUseCaseImpl.java
@@ -659,19 +689,29 @@ public interface FichaPerfilOutputPort {
 public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseCase {
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
+    private final AsesorFichaExisteFinder asesorFichaExisteFinder;
+    private final TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
     private final RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
 
     @Override
     public UUID ejecutar(FichaPerfilDomain ficha) {
-        registrarFichaPerfilValidator.validar(ficha);          // existencia/unicidad contra BD
-        fichaPerfilOutputPort.registrarFicha(ficha);
+        boolean asesorExiste = asesorFichaExisteFinder.obtener(ficha.getAsesorFicha());
+        boolean tituloYaExiste = tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto());
+
+        registrarFichaPerfilValidator.validar(ficha, asesorExiste, tituloYaExiste);
+
+        fichaPerfilOutputPort.registrarFicha(FichaPerfilMapper.toEntity(ficha));   // Domain → Entity aquí
+
         logger.info(catalogo.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
         return ficha.getId();
     }
 }
 ```
+
+Todo el I/O de un comando vive en el use case; el validator y las rules son funciones puras
+de lo que ya se consultó (ver "Validators"/"Finders" en `CLAUDE.md`).
 
 **6. Interactor (application, entry point — dueño de la transacción)**
 
@@ -719,7 +759,10 @@ public class RegistrarFichaPerfilController {
 }
 ```
 
-**8. Output Adapter (infrastructure, `secondaryadapter/repository`)**
+**8. Output Adapter (infrastructure, `secondaryadapter/repository`) — traduce `Entity ↔ JpaEntity` en la frontera**
+
+El adapter no traduce `Domain` (eso ya lo hizo el use case en el paso 5); traduce entre el
+`Entity` (record plano que recibe del puerto) y el `JpaEntity` real que necesita Spring Data:
 
 ```java
 // fichas/infrastructure/.../fichaperfil/command/secondaryadapter/repository/FichaPerfilCommandOutputAdapter.java
@@ -727,48 +770,76 @@ public class RegistrarFichaPerfilController {
 @RequiredArgsConstructor
 public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
-    private final FichaPerfilRepository fichaPerfilRepository;
-    private final AsesorFichaRepository asesorFichaRepository;
+    private final FichaPerfilCommandRepository fichaPerfilCommandRepository;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
 
     @Override
-    public void registrarFicha(FichaPerfilDomain ficha) {
-        AsesorFichaEntity asesorRef = asesorFichaRepository.getReferenceById(ficha.getAsesorFicha());
-        fichaPerfilRepository.save(FichaPerfilMapper.toEntity(ficha, asesorRef));
-        logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), ficha.getId());
+    public void registrarFicha(FichaPerfilEntity ficha) {
+        fichaPerfilCommandRepository.save(FichaPerfilJpaMapper.toJpaEntity(ficha));
+        logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), ficha.id());
     }
     // ... resto de métodos del OutputPort
+}
+```
+
+`FichaPerfilJpaMapper.toJpaEntity(ficha)` construye el `FichaPerfilJpaEntity` real (con
+`@Entity`/`@ManyToOne`) a partir del record plano; la referencia al asesor se arma como
+instancia *detached* solo con el id (`AsesorFichaJpaMapper.toReferencia(ficha.asesorFicha())`,
+invocado dentro del `toJpaEntity`) — sin cascada configurada, Hibernate escribe solo la FK.
+Ya no hace falta `getReferenceById`: ese proxy de Hibernate era del `AsesorFichaRepository`
+directamente inyectado en el adapter, que ya no existe aquí — la construcción de la
+referencia es responsabilidad del `JpaMapper`, no del adapter.
+
+```java
+// fichas/infrastructure/.../fichaperfil/command/secondaryadapter/entity/FichaPerfilJpaEntity.java
+@Entity
+@Table(name = "ficha_perfil")
+@Getter @NoArgsConstructor @AllArgsConstructor @Builder
+public class FichaPerfilJpaEntity {
+    @Id @Column(name = "id", columnDefinition = "uuid") private UUID id;
+    @Column(name = "titulo_proyecto", nullable = false, length = 100) private String tituloProyecto;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "asesor_ficha_id", nullable = false) private AsesorFichaJpaEntity asesorFicha;
 }
 ```
 
 ### Test Unitario
 
 ```java
-// fichas/application/src/test/java/com/arquisoft/fichas/application/fichaperfil/command/usecase/impl/RegistrarFichaPerfilUseCaseImplTest.java
+// fichas/application/src/test/java/com/arquisoft/fichas/application/fichaperfil/command/usecase/impl/RegistrarFichaPerfilUseCaseTest.java
 @ExtendWith(MockitoExtension.class)
-class RegistrarFichaPerfilUseCaseImplTest {
+class RegistrarFichaPerfilUseCaseTest {
 
     @Mock private FichaPerfilOutputPort fichaPerfilOutputPort;
+    @Mock private AsesorFichaExisteFinder asesorFichaExisteFinder;
+    @Mock private TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
     @Mock private RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
     @Mock private AppLogger logger;
-    @Mock private CatalogoMensajes catalogo;
+    @Spy  private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
     @InjectMocks
     private RegistrarFichaPerfilUseCaseImpl registrarFichaPerfilUseCase;
 
     @Test
-    void debeRegistrarFicha_cuandoDatosValidos() {
+    void debeRegistrar_cuandoDatosValidos() {
         FichaPerfilDomain ficha = FichaPerfilDomain.crear("Titulo", UUID.randomUUID());
+        when(asesorFichaExisteFinder.obtener(ficha.getAsesorFicha())).thenReturn(true);
+        when(tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto())).thenReturn(false);
 
         UUID id = registrarFichaPerfilUseCase.ejecutar(ficha);
 
         assertThat(id).isEqualTo(ficha.getId());
-        verify(registrarFichaPerfilValidator).validar(ficha);
-        verify(fichaPerfilOutputPort).registrarFicha(ficha);
+        verify(registrarFichaPerfilValidator).validar(ficha, true, false);
+        verify(fichaPerfilOutputPort).registrarFicha(argThat(entity ->
+                entity.id().equals(ficha.getId())
+                        && entity.tituloProyecto().equals(ficha.getTituloProyecto())));
     }
 }
 ```
+
+El `@Spy` sobre el catálogo real (no un mock) evita que mensajes usados en logs/resultados
+queden `null` — un mock los dejaría vacíos.
 
 ---
 
@@ -841,14 +912,21 @@ ConsultarFichasPerfilUseCase.ejecutar(FichaPerfilCriteria)  [query/primaryport/u
     ↓
 FichaPerfilQueryOutputPort.consultarTodas(criteria)   [query/secondaryport — interfaz]
     ↓
-FichaPerfilQueryOutputAdapter.consultarTodas(criteria)  [secondaryadapter/repository — implementación]
+FichaPerfilQueryOutputAdapter.consultarTodas(criteria)  [secondaryadapter/repository — pura delegación]
     ↓
-FichaPerfilJpaSpecification + FichaPerfilRepository.findAll(spec, pageable)
+PageableMapper.toPageable(criteria, sortMapper) + FichaPerfilJpaSpecification.desdeCriteria(criteria)
     ↓
-FichaPerfilReadModel                                  [proyección directa desde la entidad JPA, vía mapper]
+FichaPerfilQueryRepository.findAll(spec, pageable)     [contra FichaPerfilJpaQueryEntity — entidad de lectura
+    ↓                                                    dedicada, @Subselect, plana, no la del lado command]
+FichaPerfilQueryMapper.toReadModel(...)  →  FichaPerfilReadModel
     ↓
-HTTP Response 200 OK [PaginatedResult<FichaPerfilReadModel>]
+PaginationMapper.toResult(...)  →  PaginatedResult<FichaPerfilReadModel>
+    ↓
+HTTP Response 200 OK
 ```
+
+Ver `docs/PATRON_QUERY_OBJECT_FILTROS_DINAMICOS.md` para el detalle completo del patrón de
+filtrado dinámico (Query Object + Spring Data Specification).
 
 ### Flujo de Escritura (POST /fichas-perfil)
 
@@ -863,9 +941,9 @@ RegistrarFichaPerfilInteractor.ejecutar(command)        [command/primaryport/int
     ↓
 FichaPerfilDomain.crear(...)                           [aggregate root — invariantes de dominio]
     ↓ [existencia/unicidad validadas en el UseCase antes de persistir]
-FichaPerfilOutputPort.registrarFicha(ficha)             [secondaryport — interfaz]
+FichaPerfilOutputPort.registrarFicha(entity)            [secondaryport — interfaz, habla Entity]
     ↓
-FichaPerfilCommandOutputAdapter.registrarFicha(ficha)   [secondaryadapter/repository — implementación]
+FichaPerfilCommandOutputAdapter.registrarFicha(entity)  [secondaryadapter/repository — traduce Entity → JpaEntity]
     ↓
 INSERT en BD (schema fichas_perfil)
     ↓
@@ -887,7 +965,7 @@ HTTP Response 201 CREATED
 ### Perfil `prod` (application-prod.yml)
 
 - Todas las credenciales por variables de entorno
-- Rate limiting activo (60 req/min, 3 login/min)
+- Rate limiting activo (60 req/min global, 3 login/min) — buckets en Redis, no en memoria
 - CORS configurado para dominio de producción
 - Logging a archivo (`/var/log/arquisoft/`)
 - Pool de conexiones mayores
@@ -944,7 +1022,7 @@ con hexagonal:  Controller → Port (interface) ← Repository
 |--------|-------------|
 | **Patrón** | Hexagonal (Puertos y Adaptadores) |
 | **Contextos** | 9 independientes (4 con implementación real, 5 scaffolding) |
-| **Módulo compartido** | shared (12 sub-módulos) |
+| **Módulo compartido** | shared (13 sub-módulos) |
 | **Capas** | Domain → Application → Infrastructure |
 | **Framework** | Spring Boot 4.0.5 |
 | **BD** | PostgreSQL 18 (1 schema por contexto) |
@@ -953,7 +1031,7 @@ con hexagonal:  Controller → Port (interface) ← Repository
 | **Java** | 21 (Virtual Threads habilitados) |
 | **Testing** | JUnit 6.0.3 + Mockito + AssertJ |
 | **Auth** | Keycloak 26.6 (OAuth2/OIDC Resource Server) |
-| **Rate Limiting** | Bucket4j 7.6.0 |
+| **Rate Limiting** | Bucket4j 8.18.0 (`com.bucket4j:bucket4j_jdk17-core`) |
 | **Concurrencia** | Virtual Threads (`spring.threads.virtual.enabled=true`) |
 
 ---

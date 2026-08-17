@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -29,7 +30,7 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
     }
 
     @Test
-    void debeGuardar_cuandoEntidadEsValida() {
+    void debeMapearYGuardarLaEntidadComoJpaEntity_cuandoRegistraLaEvaluacion() {
         // Arrange
         UUID representanteId = UUID.randomUUID();
         UUID fichaId = UUID.randomUUID();
@@ -40,8 +41,11 @@ class EvaluacionFichaPerfilCommandOutputAdapterTest {
         // Act
         adapter.registrarEvaluacion(entity);
 
-        // Assert — el adapter ya no traduce: guarda la entidad que le entrego el caso de uso
-        verify(repository).save(entity);
+        // Assert
+        verify(repository).save(argThat(jpaEntity ->
+                jpaEntity.getId().equals(entity.id())
+                        && jpaEntity.getRepresentanteComiteId().equals(representanteId)
+                        && jpaEntity.getFichaPerfilId().equals(fichaId)));
     }
 
     @Test

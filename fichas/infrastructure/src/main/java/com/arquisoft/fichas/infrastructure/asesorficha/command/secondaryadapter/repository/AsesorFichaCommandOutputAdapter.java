@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter
 
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.mapper.AsesorFichaJpaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +22,6 @@ public class AsesorFichaCommandOutputAdapter implements AsesorFichaOutputPort {
 
     @Override
     public Optional<AsesorFichaEntity> buscarContactoPorId(UUID id) {
-        return asesorFichaCommandRepository.findById(id);
+        return asesorFichaCommandRepository.findById(id).map(AsesorFichaJpaMapper::toEntity);
     }
 }

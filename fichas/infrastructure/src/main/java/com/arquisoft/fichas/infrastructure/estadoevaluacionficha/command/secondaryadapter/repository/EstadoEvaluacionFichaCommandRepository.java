@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.entity.EstadoEvaluacionFichaEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.entity.EstadoEvaluacionFichaJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,17 +9,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface EstadoEvaluacionFichaCommandRepository
-        extends JpaRepository<EstadoEvaluacionFichaEntity, UUID> {
+        extends JpaRepository<EstadoEvaluacionFichaJpaEntity, UUID> {
 
-    boolean existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(
-            UUID evaluacionFichaPerfilId,
-            String estadoEvaluacionId);
+    boolean existsByEvaluacionFichaPerfilAndEstadoEvaluacion(
+            UUID evaluacionFichaPerfil,
+            String estadoEvaluacion);
 
-    long countByEvaluacionFichaPerfilId(UUID evaluacionFichaPerfilId);
+    long countByEvaluacionFichaPerfil(UUID evaluacionFichaPerfil);
 
-    @Query("SELECT e FROM EstadoEvaluacionFichaEntity e "
-            + "WHERE e.evaluacionFichaPerfil.id = :evaluacionId "
+    @Query("SELECT e FROM EstadoEvaluacionFichaJpaEntity e "
+            + "WHERE e.evaluacionFichaPerfil = :evaluacionId "
             + "ORDER BY e.fechaActualizacion DESC LIMIT 1")
-    Optional<EstadoEvaluacionFichaEntity> findFirstByEvaluacionFichaPerfilIdOrderByFechaActualizacionDesc(
+    Optional<EstadoEvaluacionFichaJpaEntity> findFirstByEvaluacionFichaPerfilIdOrderByFechaActualizacionDesc(
             @Param("evaluacionId") UUID evaluacionId);
 }

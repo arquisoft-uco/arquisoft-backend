@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryada
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity.ItemFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.mapper.ItemFichaPerfilJpaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +17,7 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
 
     @Override
     public void registrarItem(ItemFichaPerfilEntity item) {
-        repository.save(item);
+        repository.save(ItemFichaPerfilJpaMapper.toJpaEntity(item));
     }
 
     @Override

@@ -1,8 +1,9 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.mapper.AsesorFichaJpaMapper;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.mapper.FichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
@@ -22,8 +23,8 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
     @Override
     public void registrarFicha(FichaPerfilEntity ficha) {
-        fichaPerfilCommandRepository.save(ficha);
-        logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), ficha.getId());
+        fichaPerfilCommandRepository.save(FichaPerfilJpaMapper.toJpaEntity(ficha));
+        logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), ficha.id());
     }
 
     @Override
@@ -33,14 +34,15 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
     }
 
     @Override
-    public void actualizarAsesor(UUID fichaPerfil, AsesorFichaEntity nuevoAsesorFicha) {
-        fichaPerfilCommandRepository.actualizarAsesorFicha(fichaPerfil, nuevoAsesorFicha);
+    public void actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha) {
+        fichaPerfilCommandRepository.actualizarAsesorFicha(
+                fichaPerfil, AsesorFichaJpaMapper.toReferencia(nuevoAsesorFicha));
         logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), fichaPerfil);
     }
 
     @Override
     public Optional<FichaPerfilEntity> buscarPorId(UUID id) {
-        return fichaPerfilCommandRepository.findById(id);
+        return fichaPerfilCommandRepository.findById(id).map(FichaPerfilJpaMapper::toEntity);
     }
 
     @Override

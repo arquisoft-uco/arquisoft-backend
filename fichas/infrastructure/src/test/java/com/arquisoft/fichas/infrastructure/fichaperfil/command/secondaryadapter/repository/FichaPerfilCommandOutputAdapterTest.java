@@ -1,7 +1,8 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +15,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -41,28 +44,30 @@ class FichaPerfilCommandOutputAdapterTest {
     }
 
     @Test
-    void debeGuardarLaEntidadTalCual_cuandoElCasoDeUsoYaLaMapeo() {
+    void debeMapearYGuardarLaEntidadComoJpaEntity_cuandoRegistraLaFicha() {
         // Arrange
         FichaPerfilEntity entity = fichaEntity();
 
         // Act
         adapter.registrarFicha(entity);
 
-        // Assert — el adapter ya no traduce nada: delega la entidad que recibio
-        verify(fichaPerfilRepository, times(1)).save(entity);
+        // Assert
+        verify(fichaPerfilRepository, times(1)).save(argThat(jpaEntity ->
+                jpaEntity.getId().equals(fichaId)
+                        && jpaEntity.getTituloProyecto().equals("Proyecto de Prueba")
+                        && jpaEntity.getAsesorFicha().getId().equals(asesorId)));
     }
 
     @Test
-    void debeDevolverLaEntidad_cuandoIdExiste() {
+    void debeDevolverLaEntidadMapeada_cuandoIdExiste() {
         // Arrange
-        FichaPerfilEntity entity = fichaEntity();
-        when(fichaPerfilRepository.findById(fichaId)).thenReturn(Optional.of(entity));
+        when(fichaPerfilRepository.findById(fichaId)).thenReturn(Optional.of(fichaJpaEntity()));
 
         // Act
         Optional<FichaPerfilEntity> resultado = adapter.buscarPorId(fichaId);
 
         // Assert
-        assertThat(resultado).contains(entity);
+        assertThat(resultado).contains(fichaEntity());
         verify(fichaPerfilRepository, times(1)).findById(fichaId);
     }
 
@@ -80,15 +85,13 @@ class FichaPerfilCommandOutputAdapterTest {
     }
 
     @Test
-    void debeDelegarLaReferenciaDelAsesor_cuandoActualizaElAsesor() {
-        // Arrange
-        AsesorFichaEntity nuevoAsesor = AsesorFichaEntity.builder().id(asesorId).build();
-
+    void debeConstruirLaReferenciaDelAsesor_cuandoActualizaElAsesor() {
         // Act
-        adapter.actualizarAsesor(fichaId, nuevoAsesor);
+        adapter.actualizarAsesor(fichaId, asesorId);
 
         // Assert
-        verify(fichaPerfilRepository, times(1)).actualizarAsesorFicha(fichaId, nuevoAsesor);
+        verify(fichaPerfilRepository, times(1)).actualizarAsesorFicha(
+                eq(fichaId), argThat(referencia -> referencia.getId().equals(asesorId)));
     }
 
     @Test
@@ -114,10 +117,14 @@ class FichaPerfilCommandOutputAdapterTest {
     }
 
     private FichaPerfilEntity fichaEntity() {
-        return FichaPerfilEntity.builder()
+        return new FichaPerfilEntity(fichaId, "Proyecto de Prueba", asesorId);
+    }
+
+    private FichaPerfilJpaEntity fichaJpaEntity() {
+        return FichaPerfilJpaEntity.builder()
                 .id(fichaId)
                 .tituloProyecto("Proyecto de Prueba")
-                .asesorFicha(AsesorFichaEntity.builder().id(asesorId).build())
+                .asesorFicha(AsesorFichaJpaEntity.builder().id(asesorId).build())
                 .build();
     }
 }

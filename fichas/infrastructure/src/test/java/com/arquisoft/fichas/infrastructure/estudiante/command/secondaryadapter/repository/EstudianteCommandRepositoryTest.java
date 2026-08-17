@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.application.estudiante.command.secondaryport.entity.EstudianteEntity;
+import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -18,7 +18,7 @@ class EstudianteCommandRepositoryTest {
     @Test
     void debeRetornarTrue_cuandoEstudianteExiste() {
         // Arrange
-        EstudianteEntity estudiante = EstudianteEntity.builder()
+        EstudianteJpaEntity estudiante = EstudianteJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador("1234567890")
                 .nombre("Estudiante de prueba")

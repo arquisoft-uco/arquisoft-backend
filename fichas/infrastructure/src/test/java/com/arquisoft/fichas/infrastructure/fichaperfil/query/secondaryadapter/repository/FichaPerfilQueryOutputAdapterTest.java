@@ -2,8 +2,8 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.query.secondaryadapter.r
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
-import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.query.pagination.SortDirection;
 import com.arquisoft.shared.query.exception.FiltroInvalidoException;
@@ -43,7 +43,7 @@ class FichaPerfilQueryOutputAdapterTest {
 
     @Test
     void debeRetornarReadModel_cuandoExistenEnBD() {
-        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
+        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador("DOC-001")
                 .nombre("Juan Salazar")
@@ -51,7 +51,7 @@ class FichaPerfilQueryOutputAdapterTest {
                 .build();
         entityManager.persist(asesor);
 
-        FichaPerfilEntity ficha = FichaPerfilEntity.builder()
+        FichaPerfilJpaEntity ficha = FichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .tituloProyecto("Arquisoft Backend")
                 .asesorFicha(asesor)
@@ -86,7 +86,7 @@ class FichaPerfilQueryOutputAdapterTest {
     @Test
     void debeRetornarTrue_cuandoFichaExistePorId() {
         // Arrange
-        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
+        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador("DOC-002")
                 .nombre("Ana Ramirez")
@@ -95,7 +95,7 @@ class FichaPerfilQueryOutputAdapterTest {
         entityManager.persist(asesor);
 
         UUID fichaId = UUID.randomUUID();
-        FichaPerfilEntity ficha = FichaPerfilEntity.builder()
+        FichaPerfilJpaEntity ficha = FichaPerfilJpaEntity.builder()
                 .id(fichaId)
                 .tituloProyecto("Proyecto Existente")
                 .asesorFicha(asesor)
@@ -237,7 +237,7 @@ class FichaPerfilQueryOutputAdapterTest {
     }
 
     private UUID persistirFicha(String titulo, String identificador, String nombre, String email) {
-        AsesorFichaEntity asesor = AsesorFichaEntity.builder()
+        AsesorFichaJpaEntity asesor = AsesorFichaJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador(identificador)
                 .nombre(nombre)
@@ -245,7 +245,7 @@ class FichaPerfilQueryOutputAdapterTest {
                 .build();
         entityManager.persist(asesor);
 
-        entityManager.persist(FichaPerfilEntity.builder()
+        entityManager.persist(FichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .tituloProyecto(titulo)
                 .asesorFicha(asesor)

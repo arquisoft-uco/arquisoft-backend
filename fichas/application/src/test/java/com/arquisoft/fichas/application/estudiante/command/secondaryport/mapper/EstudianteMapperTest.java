@@ -14,12 +14,8 @@ class EstudianteMapperTest {
     void debeMaperarADominio_cuandoEntityEsValida() {
         // Arrange
         UUID id = UUID.randomUUID();
-        EstudianteEntity entity = EstudianteEntity.builder()
-                .id(id)
-                .identificador("20161020123")
-                .nombre("Juan Pérez")
-                .email("juan.perez@example.com")
-                .build();
+        EstudianteEntity entity = new EstudianteEntity(
+                id, "20161020123", "Juan Pérez", "juan.perez@example.com");
 
         // Act
         EstudianteDomain aggregate = EstudianteMapper.toDomain(entity);
@@ -46,31 +42,27 @@ class EstudianteMapperTest {
         EstudianteEntity entity = EstudianteMapper.toEntity(aggregate);
 
         // Assert
-        assertThat(entity.getId()).isEqualTo(id);
-        assertThat(entity.getIdentificador()).isEqualTo("20161020123");
-        assertThat(entity.getNombre()).isEqualTo("Juan Pérez");
-        assertThat(entity.getEmail()).isEqualTo("juan.perez@example.com");
+        assertThat(entity.id()).isEqualTo(id);
+        assertThat(entity.identificador()).isEqualTo("20161020123");
+        assertThat(entity.nombre()).isEqualTo("Juan Pérez");
+        assertThat(entity.email()).isEqualTo("juan.perez@example.com");
     }
 
     @Test
     void debePreservarId_cuandoMapeaIdaYVuelta() {
         // Arrange
         UUID idOriginal = UUID.randomUUID();
-        EstudianteEntity entityOriginal = EstudianteEntity.builder()
-                .id(idOriginal)
-                .identificador("20161020123")
-                .nombre("Juan Pérez")
-                .email("juan.perez@example.com")
-                .build();
+        EstudianteEntity entityOriginal = new EstudianteEntity(
+                idOriginal, "20161020123", "Juan Pérez", "juan.perez@example.com");
 
         // Act
         EstudianteDomain aggregate = EstudianteMapper.toDomain(entityOriginal);
         EstudianteEntity entityMapeada = EstudianteMapper.toEntity(aggregate);
 
         // Assert
-        assertThat(entityMapeada.getId()).isEqualTo(idOriginal);
-        assertThat(entityMapeada.getIdentificador()).isEqualTo(entityOriginal.getIdentificador());
-        assertThat(entityMapeada.getNombre()).isEqualTo(entityOriginal.getNombre());
-        assertThat(entityMapeada.getEmail()).isEqualTo(entityOriginal.getEmail());
+        assertThat(entityMapeada.id()).isEqualTo(idOriginal);
+        assertThat(entityMapeada.identificador()).isEqualTo(entityOriginal.identificador());
+        assertThat(entityMapeada.nombre()).isEqualTo(entityOriginal.nombre());
+        assertThat(entityMapeada.email()).isEqualTo(entityOriginal.email());
     }
 }

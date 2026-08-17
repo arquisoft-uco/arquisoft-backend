@@ -17,9 +17,9 @@ que combina dos patrones arquitectónicos complementarios:
 3. [Módulos involucrados](#3-módulos-involucrados)
 4. [Estructura de carpetas](#4-estructura-de-carpetas)
 5. [Clases e interfaces — descripción](#5-clases-e-interfaces--descripción)
-   - [shared:domain — capa de dominio puro](#51-shareddomain--capa-de-dominio-puro)
-   - [shared:jpa — capa de infraestructura compartida](#52-sharedpostgres--capa-de-infraestructura-compartida)
-   - [shared:web — capa de transporte HTTP](#53-sharedweb--capa-de-transporte-http)
+   - [shared:query — vocabulario de consulta sin Spring](#51-sharedquery--vocabulario-de-consulta-sin-spring)
+   - [shared:jpa — capa de infraestructura compartida](#52-sharedjpa--capa-de-infraestructura-compartida)
+   - [shared:query — DTOs de transporte HTTP](#53-sharedquery--dtos-de-transporte-http)
    - [fichas:application — criterio concreto](#54-fichasapplication--criterio-concreto)
    - [fichas:infrastructure — adaptadores concretos](#55-fichasinfrastructure--adaptadores-concretos)
 6. [Flujo de una solicitud](#6-flujo-de-una-solicitud)
@@ -68,11 +68,11 @@ Spring Data JPA. Es el único punto del sistema que conoce JPA.
  FichaPerfilQueryOutputPort    ← puerto de salida (fichas:application)
      │
      ▼
- FichaPerfilQueryOutputAdapter ← adaptador JPA (fichas:infrastructure)
-     │  specification.desdeCriteria(criteria)
+ FichaPerfilQueryOutputAdapter ← adaptador JPA (fichas:infrastructure) — pura delegación:
+     │  PageableMapper.toPageable(criteria, sortMapper) + specification.desdeCriteria(criteria)
      ▼
  FichaPerfilJpaSpecification   ← [SPRING DATA SPECIFICATION] spec concreta (fichas:infrastructure)
-     │  extends QueryJpaSpecification<FichaPerfilEntity>
+     │  extends QueryJpaSpecification<FichaPerfilJpaQueryEntity>
      │
      ▼
  QueryJpaSpecification<E>      ← recorre NodoFiltro (shared:jpa)
@@ -81,8 +81,13 @@ Spring Data JPA. Es el único punto del sistema que conoce JPA.
  CampoSpec<E>                  ← predicado JPA por tipo (shared:jpa)
      │
      ▼
- Specification<FichaPerfilEntity>  → SQL WHERE generado
+ Specification<FichaPerfilJpaQueryEntity>  → SQL WHERE generado
 ```
+
+`FichaPerfilJpaQueryEntity` es la entidad de lectura dedicada de `fichaperfil` (`@Subselect`,
+ver CLAUDE.md → "Read-side entities"), **plana** — sin `@ManyToOne` — porque el `@Subselect`
+ya resuelve el join `ficha_perfil ⋈ asesor_ficha` en SQL. Por eso `FichaPerfilJpaSpecification`
+direcciona campos como `root.get("asesorNombre")`, nunca `root.get("asesorFicha").get("nombre")`.
 
 La frontera entre los dos patrones está exactamente en `FichaPerfilQueryOutputPort`:
 todo lo que está por encima es **Query Object**; todo lo que está por debajo es
@@ -94,11 +99,15 @@ todo lo que está por encima es **Query Object**; todo lo que está por debajo e
 
 | Módulo | Capa | Patrón | Responsabilidad |
 |--------|------|--------|----------------|
-| `shared:domain` | Dominio puro | Query Object | Modelo del árbol de filtros, operadores, conector, criteria base, Template Method de validación |
-| `shared:jpa` | Infraestructura compartida | Spring Data Specification | Traducción del árbol a predicados JPA, validación de tipos |
-| `shared:web` | Transporte HTTP compartido | — | Deserialización JSON del árbol de filtros y body del request |
+| `shared:query` | Vocabulario de consulta, sin Spring | Query Object | Modelo del árbol de filtros, operadores, conector, criteria base, Template Method de validación, DTOs de deserialización JSON, paginación (`PaginatedResult`/`SortDirection`) |
+| `shared:jpa` | Infraestructura compartida | Spring Data Specification | Traducción del árbol a predicados JPA, validación de tipos, `PageableMapper`/`PaginationMapper` |
 | `{ctx}:application` | Aplicación | Query Object | Criteria concreto del contexto (enum de campos + builder con hooks) |
-| `{ctx}:infrastructure` | Infraestructura | Spring Data Specification | Spec JPA concreta con el mapa de campos filtrables; mapper de sort |
+| `{ctx}:infrastructure` | Infraestructura | Spring Data Specification | Spec JPA concreta con el mapa de campos filtrables; mapper de sort; entidad de lectura dedicada (`{Feature}JpaQueryEntity`) |
+
+`shared:query` no tiene dependencia de Spring en absoluto (ver CLAUDE.md → "shared:query owns
+the entire read-side vocabulary") — solo `shared:exception`/`shared:message` y `shared:util`.
+`shared:jpa` sí depende de Spring Data JPA y de `shared:query` (`api project(':shared:query')`),
+nunca al revés.
 
 > `{ctx}` = cualquier bounded context (`fichas`, `proyectos`, `evaluaciones`, etc.)
 
@@ -108,28 +117,35 @@ todo lo que está por encima es **Query Object**; todo lo que está por debajo e
 
 ```
 shared/
-├── domain/src/main/java/com/arquisoft/shared/
-│   └── query/                              ← [QUERY OBJECT]
-│       ├── FiltroOperador.java             ← enum de operadores de comparación
-│       ├── FiltroConector.java             ← enum AND / OR
-│       ├── FiltroException.java            ← excepción de dominio para validaciones del filtro
-│       ├── NodoFiltro.java                 ← sealed interface: árbol booleano
-│       ├── SortOrder.java                  ← valor de ordenamiento (campo + dirección)
-│       └── QueryCriteria.java              ← clase abstracta base para criterios
+├── query/src/main/java/com/arquisoft/shared/query/       ← [QUERY OBJECT] — sin Spring
+│   ├── FiltroOperador.java                 ← enum de operadores de comparación
+│   ├── FiltroConector.java                 ← enum AND / OR
+│   ├── NodoFiltro.java                     ← sealed interface: árbol booleano
+│   ├── SortOrder.java                      ← valor de ordenamiento (campo + dirección)
+│   ├── QueryCriteria.java                  ← clase abstracta base para criterios
+│   ├── exception/
+│   │   ├── FiltroException.java            ← excepción de dominio para validaciones del filtro
+│   │   └── FiltroInvalidoException.java    ← campo/valor inválido detectado al traducir a JPA
+│   ├── dto/
+│   │   ├── NodoFiltroDTO.java              ← interface Jackson con @JsonTypeInfo
+│   │   ├── PredicadoFiltroDTO.java         ← DTO para nodos hoja
+│   │   ├── GrupoFiltroDTO.java             ← DTO para nodos internos
+│   │   └── QueryCriteriaRequestDTO.java    ← body completo del endpoint POST
+│   └── pagination/
+│       ├── PaginatedResult.java            ← resultado paginado de salida
+│       ├── PaginationRequest.java
+│       └── SortDirection.java              ← ASC / DESC
 │
-├── postgres/src/main/java/com/arquisoft/shared/jpa/
-│   ├── query/                              ← [SPRING DATA SPECIFICATION]
-│   │   ├── CampoSpec.java                  ← sealed interface: predicado JPA por tipo
-│   │   └── QueryJpaSpecification.java      ← abstract: recorre el árbol y compone specs
-│   └── exception/
-│       └── FiltroInvalidoException.java    ← campo inválido o tipo incompatible en infraestructura
-│
-└── web/src/main/java/com/arquisoft/shared/web/dto/
-    └── query/
-        ├── NodoFiltroDTO.java              ← interface Jackson con @JsonTypeInfo
-        ├── PredicadoFiltroDTO.java         ← DTO para nodos hoja
-        ├── GrupoFiltroDTO.java             ← DTO para nodos internos
-        └── QueryCriteriaRequestDTO.java    ← body completo del endpoint POST
+└── jpa/src/main/java/com/arquisoft/shared/jpa/           ← [SPRING DATA SPECIFICATION]
+    ├── query/
+    │   ├── CampoSpec.java                  ← sealed interface: predicado JPA por tipo
+    │   └── QueryJpaSpecification.java      ← abstract: recorre el árbol y compone specs
+    ├── repository/
+    │   ├── QueryRepository.java            ← @NoRepositoryBean, solo findById/existsById/findAll/count
+    │   └── SpecificationQueryRepository.java  ← + Specification<T>
+    └── util/
+        ├── PageableMapper.java             ← QueryCriteria → Pageable
+        └── PaginationMapper.java           ← Page<T> → PaginatedResult<T>
 
 fichas/
 ├── application/src/main/java/com/arquisoft/fichas/application/fichaperfil/query/
@@ -138,21 +154,35 @@ fichas/
 │
 └── infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/fichaperfil/query/
     ├── primaryadapter/web/
-    │   └── ConsultarFichasPerfilController.java        ← endpoint POST
+    │   ├── ConsultarFichasPerfilController.java        ← endpoint POST
+    │   └── mapper/
+    │       └── ConsultarFichasPerfilRequestMapper.java ← QueryCriteriaRequestDTO → FichaPerfilCriteria
     └── secondaryadapter/repository/
+        ├── FichaPerfilJpaQueryEntity.java              ← entidad de lectura dedicada (@Subselect, plana)
         ├── FichaPerfilJpaSpecification.java            ← [SPRING DATA SPECIFICATION] mapa de campos
         ├── FichaPerfilSortMapper.java                  ← traduce claves lógicas a rutas JPA para sort
-        └── FichaPerfilQueryOutputAdapter.java          ← ejecuta la consulta JPA
+        ├── FichaPerfilQueryOutputAdapter.java          ← ejecuta la consulta JPA (pura delegación)
+        └── mapper/
+            └── FichaPerfilQueryMapper.java              ← FichaPerfilJpaQueryEntity → FichaPerfilReadModel
 ```
+
+`FiltroInvalidoException` vive en `shared:query` (agrupada junto a `FiltroException` — ambas son
+errores de consulta mal formada, 400) aunque quien la lanza es `CampoSpec` en `shared:jpa`, que es
+el único módulo con visibilidad del tipo Java destino (`UUID`, `LocalDate`, ...) para saber si el
+valor recibido no parsea.
 
 ---
 
 ## 5. Clases e interfaces — descripción
 
-### 5.1 `shared:domain` — capa de dominio puro
+### 5.1 `shared:query` — vocabulario de consulta sin Spring
 
-> Java puro. Sin dependencias de Spring, JPA ni Jackson. Usable en cualquier capa.
-> Todas las clases de este paquete pertenecen al **patrón Query Object**.
+> Módulo dedicado, sin dependencia de Spring, JPA ni de ningún otro módulo `shared` salvo
+> `shared:exception`/`shared:message` (`api`) y `shared:util`. Usable en cualquier capa —
+> incluida `domain` si algún contexto lo necesitara. Todas las clases de este módulo
+> pertenecen al **patrón Query Object**. Antes vivía repartido entre `shared:domain`,
+> `shared:web` y `shared:postgres`; se extrajo a su propio módulo precisamente para que
+> ningún consumidor que solo necesite declarar un criterio arrastre Spring Data JPA.
 
 ---
 
@@ -187,17 +217,20 @@ Factory: `parse(String)` — mismo comportamiento que `FiltroOperador.parse`.
 
 ---
 
-#### `FiltroException` — excepción de dominio
+#### `FiltroException` — excepción de consulta
 
-Extiende `DomainException`. Se lanza dentro de `shared:domain` cuando:
+Extiende `ApplicationException` (HTTP 400) — **nunca `DomainException`**: una consulta mal
+formada es una petición inválida, no una violación de una regla de negocio; devolver 422
+le diría al cliente que su payload se entendió semánticamente cuando no fue así. Se lanza
+dentro de `shared:query` cuando:
 
 - Un campo de filtro no está en los campos permitidos del contexto.
 - Un campo de ordenamiento no está en los campos ordenables del contexto.
 - Se usa un operador que requiere valor pero el valor es nulo o vacío.
 - El árbol de filtros supera la profundidad máxima (`MAX_PROFUNDIDAD_FILTRO = 10`).
 
-Mantiene la pureza del dominio: nunca se usa `ApplicationException` ni ninguna
-clase con dependencia de Spring en este paquete.
+`shared:query` sigue sin ninguna dependencia de Spring — la resolución de texto pasa por
+`Mensajes` (fachada estática de `shared:message`), igual que en el dominio.
 
 ---
 
@@ -284,15 +317,9 @@ FichaPerfilCriteria.builder()
 > desde capas de dominio ni de aplicación.
 > Todas las clases de este paquete pertenecen al **patrón Spring Data Specification**.
 
----
-
-#### `FiltroInvalidoException` — excepción
-
-Extiende `ApplicationException` (HTTP 400). Se lanza cuando:
-
-- El `campo` del predicado no existe en el mapa de campos permitidos del contexto.
-- El `operador` es incompatible con el tipo de dato del campo (e.g. `CONTIENE` sobre un UUID).
-- El `valor` no puede parsearse al tipo esperado (UUID malformado, fecha inválida, etc.).
+`FiltroInvalidoException` (campo inexistente en el mapa de campos permitidos, operador
+incompatible con el tipo, o valor que no parsea) se lanza desde `CampoSpec` — pero la clase
+en sí vive en `shared:query`, no aquí (ver "Estructura de carpetas" arriba).
 
 ---
 
@@ -324,10 +351,14 @@ Cada implementación sealed cubre **un único tipo de dato** y es responsable de
 
 ```java
 CampoSpec.texto(root -> root.get("tituloProyecto"))
-CampoSpec.uuid(root -> root.get("asesorFicha").get("id"))
+CampoSpec.uuid(root -> root.get("asesorId"))
 CampoSpec.fecha(root -> root.get("fechaCreacion"))
 CampoSpec.entero(root -> root.get("anio"))
 ```
+
+Los `root.get(...)` son siempre de un solo nivel — nunca `root.get("x").get("y")` — porque
+la entidad `E` es la `{Feature}JpaQueryEntity` de lectura (`@Subselect`, ver 5.5), que ya
+llega plana: el join se resolvió en el SQL del subselect, no aquí.
 
 ---
 
@@ -362,9 +393,12 @@ ya que Spring Data JPA parentesiza automáticamente los predicados compuestos.
 
 ---
 
-### 5.3 `shared:web` — capa de transporte HTTP
+### 5.3 `shared:query` — DTOs de transporte HTTP
 
-> Usa Jackson y Lombok. Depende de `shared:domain`. Solo relevante en la capa HTTP.
+> Usan Jackson y Lombok — las únicas clases de `shared:query` con esas dependencias.
+> Antes vivían en `shared:web/dto/query/`; se movieron aquí junto al resto del vocabulario
+> de consulta, ya que son la forma serializable de `NodoFiltro`/`QueryCriteria`, no algo
+> genérico de transporte HTTP.
 
 ---
 
@@ -472,54 +506,82 @@ el enum y el compilador señala todos los puntos que requieren actualización.
 
 ---
 
+#### `FichaPerfilJpaQueryEntity` — `@Entity` `@Immutable` `@Subselect`
+
+Entidad de lectura dedicada del feature (ver CLAUDE.md → "Read-side entities"). Resuelve
+el join `ficha_perfil ⋈ asesor_ficha` en el `@Subselect` y expone columnas **planas**
+(`tituloProyecto`, `asesorNombre`, `asesorEmail`, `asesorId`) — sin `@ManyToOne`. Es el
+tipo `E` que parametriza tanto `FichaPerfilJpaSpecification` como el `FichaPerfilQueryRepository`.
+
+---
+
 #### `FichaPerfilJpaSpecification` — `@Component` — [SPRING DATA SPECIFICATION]
 
-Extiende `QueryJpaSpecification<FichaPerfilEntity>`. Construye el mapa de campos
+Extiende `QueryJpaSpecification<FichaPerfilJpaQueryEntity>`. Construye el mapa de campos
 filtrables iterando `FichaPerfilCriteria.Campo` con un switch exhaustivo: si se agrega
 un campo al enum sin actualizar el switch, el compilador falla.
 
 ```java
 static {
     for (FichaPerfilCriteria.Campo campo : FichaPerfilCriteria.Campo.values()) {
-        CampoSpec<FichaPerfilEntity> spec = switch (campo) {
+        CampoSpec<FichaPerfilJpaQueryEntity> spec = switch (campo) {
             case TITULO_PROYECTO -> CampoSpec.texto(root -> root.get("tituloProyecto"));
-            case ASESOR_NOMBRE   -> CampoSpec.texto(root -> root.get("asesorFicha").get("nombre"));
-            case ASESOR_EMAIL    -> CampoSpec.texto(root -> root.get("asesorFicha").get("email"));
-            case ASESOR_ID       -> CampoSpec.uuid(root -> root.get("asesorFicha").get("id"));
+            case ASESOR_NOMBRE   -> CampoSpec.texto(root -> root.get("asesorNombre"));
+            case ASESOR_EMAIL    -> CampoSpec.texto(root -> root.get("asesorEmail"));
+            case ASESOR_ID       -> CampoSpec.uuid(root -> root.get("asesorId"));
         };
         m.put(campo.getClave(), spec);
     }
 }
 ```
 
+Los `root.get(...)` son de un solo nivel, no `root.get("asesorFicha").get("nombre")` — la
+entidad ya llega plana desde el `@Subselect` (ver `FichaPerfilJpaQueryEntity` arriba).
+
 ---
 
 #### `FichaPerfilSortMapper`
 
 Clase de utilidad (final, sin instancias) que traduce claves lógicas de ordenamiento
-(`"tituloProyecto"`) a rutas de propiedad JPA (`"asesorFicha.nombre"`). También itera
-`FichaPerfilCriteria.Campo` con un switch exhaustivo. Devuelve `null` para los campos
-declarados como no ordenables; el `OutputAdapter` convierte ese `null` en
-`OrdenamientoInvalidoException` antes de que llegue a JPA.
+(`"tituloProyecto"`) a rutas de propiedad JPA (`"asesorNombre"` — también plana, mismo
+motivo). También itera `FichaPerfilCriteria.Campo` con un switch exhaustivo y devuelve
+`null` para los campos declarados como no ordenables; `PageableMapper.toPageable`
+(`shared:jpa`) recibe esta función como `traductorDeCampo` y es quien lanza al recibir
+`null` — el `SortMapper` no lanza nada por sí mismo.
 
 ---
 
 #### `FichaPerfilQueryOutputAdapter` — `@Component`
 
-Implementa `FichaPerfilQueryOutputPort`. Recibe `FichaPerfilCriteria`, delega la
-construcción de la spec a `FichaPerfilJpaSpecification`, convierte el criteria a
-`Pageable` (usando `FichaPerfilSortMapper` para ordenamiento), ejecuta
-`findAll(spec, pageable)` y mapea el resultado a `PaginatedResult<FichaPerfilReadModel>`.
+Implementa `FichaPerfilQueryOutputPort`. Es **pura delegación** — no construye `Pageable`
+a mano ni atrapa excepciones de Spring Data JPA:
 
-Maneja dos excepciones de Spring Data JPA y las convierte en errores HTTP 400:
-- `PropertyReferenceException` → campo de ordenamiento inválido
-- `InvalidDataAccessApiUsageException` → uso incorrecto de la API JPA
+```java
+@Override
+public PaginatedResult<FichaPerfilReadModel> consultarTodas(FichaPerfilCriteria criteria) {
+    Pageable pageable = PageableMapper.toPageable(criteria, FichaPerfilSortMapper::traducir);
+    Specification<FichaPerfilJpaQueryEntity> spec = specification.desdeCriteria(criteria);
+
+    return PaginationMapper.toResult(
+            fichaPerfilRepository.findAll(spec, pageable)
+                    .map(FichaPerfilQueryMapper::toReadModel));
+}
+```
+
+`PageableMapper.toPageable` (`shared:jpa`) construye el `Pageable` a partir del criteria y
+del `traductorDeCampo` recibido; `PaginationMapper.toResult` (`shared:jpa`) convierte el
+`Page<T>` de Spring Data en el `PaginatedResult<T>` de `shared:query`. `FichaPerfilQueryMapper`
+(sibling `mapper/`, `final`, constructor privado, `toReadModel` estático) convierte
+`FichaPerfilJpaQueryEntity → FichaPerfilReadModel`.
 
 ---
 
-#### `ConsultarFichasPerfilInputAdapter` — `@RestController`
+#### `ConsultarFichasPerfilController` — `@RestController`
 
-Endpoint REST que recibe el body de consulta y construye el criteria.
+Endpoint REST que recibe el body de consulta. La conversión DTO → Criteria no ocurre en el
+controller: delega a `ConsultarFichasPerfilRequestMapper.toCriteria(request)`
+(`primaryadapter/web/mapper/`), el contraparte de lectura del `{Action}{Entity}RequestMapper`
+del lado comando.
 
 ```
 POST /fichas-perfil/coordinador
@@ -536,24 +598,28 @@ Body: QueryCriteriaRequestDTO     (opcional — sin body devuelve todo paginado)
 ```
 1. Cliente POST /fichas-perfil/coordinador  { "pagina":0, "tamanio":10, "filtros": {...} }
 
-2. ConsultarFichasPerfilInputAdapter
+2. ConsultarFichasPerfilController
    └─ Deserializa QueryCriteriaRequestDTO via Jackson
-   └─ dto.parsearFiltros()  →  NodoFiltro (árbol) via NodoFiltroDTO.toDomain()
-        └─ PredicadoFiltroDTO.toDomain() llama FiltroOperador.parse(operador)
-   └─ dto.parsearOrdenamiento()  →  List<SortOrder>
-   └─ FichaPerfilCriteria.builder()
-        .ordenamiento(...)   ← BaseBuilder valida contra Campo.CLAVES_ORDENABLES
-        .raiz(...)           ← BaseBuilder valida campos y operadores contra Campo.CLAVES_FILTRABLES
-        .build()
+   └─ ConsultarFichasPerfilRequestMapper.toCriteria(request)
+        └─ QueryCriteriaRequestDTO.aplicarPorDefecto(dto)  ← body nulo → criteria vacío, no NPE
+        └─ dto.parsearFiltros()  →  NodoFiltro (árbol) via NodoFiltroDTO.toDomain()
+             └─ PredicadoFiltroDTO.toDomain() llama FiltroOperador.parse(operador)
+        └─ dto.parsearOrdenamiento()  →  List<SortOrder>
+        └─ FichaPerfilCriteria.builder()
+             .ordenamiento(...)   ← BaseBuilder valida contra Campo.CLAVES_ORDENABLES
+             .raiz(...)           ← BaseBuilder valida campos y operadores contra Campo.CLAVES_FILTRABLES
+             .build()
    [Cualquier campo inválido lanza FiltroException aquí, antes de llegar al caso de uso]
 
 3. ConsultarFichasPerfilUseCase.ejecutar(criteria)
    └─ Delega a FichaPerfilQueryOutputPort.consultarTodas(criteria)
 
-4. FichaPerfilQueryOutputAdapter.consultarTodas(criteria)
-   └─ specification.desdeCriteria(criteria)  →  Specification<FichaPerfilEntity>
-   └─ FichaPerfilSortMapper.traducir(campo)  →  ruta JPA para Pageable
-   └─ fichaPerfilRepository.findAll(spec, pageable)
+4. FichaPerfilQueryOutputAdapter.consultarTodas(criteria)  — pura delegación
+   └─ PageableMapper.toPageable(criteria, FichaPerfilSortMapper::traducir)  →  Pageable
+   └─ specification.desdeCriteria(criteria)  →  Specification<FichaPerfilJpaQueryEntity>
+   └─ fichaPerfilRepository.findAll(spec, pageable)  →  Page<FichaPerfilJpaQueryEntity>
+   └─ .map(FichaPerfilQueryMapper::toReadModel)
+   └─ PaginationMapper.toResult(page)  →  PaginatedResult<FichaPerfilReadModel>
 
 5. FichaPerfilJpaSpecification → QueryJpaSpecification.desdeCriteria(criteria)
    └─ especDesdeNodo(raiz)
@@ -568,8 +634,9 @@ Body: QueryCriteriaRequestDTO     (opcional — sin body devuelve todo paginado)
    ORDER BY fp.titulo_proyecto ASC
    LIMIT 10 OFFSET 0
 
-7. Resultado mapeado a PaginatedResult<FichaPerfilReadModel>
-   └─ Envuelto en PageResponseDTO y retornado al cliente
+7. PaginatedResult<FichaPerfilReadModel> vuelve al Controller
+   └─ .map(FichaPerfilResponseMapper::toResponse) → PaginatedResult<FichaPerfilResponseDTO>
+   └─ Envuelto en PageResponseDTO.from(...) y retornado al cliente
 ```
 
 ---
@@ -721,22 +788,45 @@ public final class ProyectoCriteria extends QueryCriteria {
 implementation project(':shared:jpa')
 ```
 
-### 3. Crear la specification concreta en `proyectos:infrastructure`
+### 3. Crear la entidad de lectura y la specification concreta en `proyectos:infrastructure`
 
-Usar switch exhaustivo sobre `ProyectoCriteria.Campo` para que el compilador detecte
-campos olvidados.
+Una `{Feature}JpaQueryEntity` propia (`@Subselect`/`@Immutable`/`@Synchronize`) — **nunca**
+la `ProyectoEntity` del lado `command` como tipo genérico: eso ataría el lado de lectura al
+mapeo Hibernate del lado de escritura, justo lo que CQRS existe para evitar (ver CLAUDE.md
+→ "CQRS isolation is absolute at the infrastructure/JPA level"). Luego, switch exhaustivo
+sobre `ProyectoCriteria.Campo` para que el compilador detecte campos olvidados.
 
 ```java
-// proyectos/infrastructure/.../ProyectoJpaSpecification.java
-@Component
-class ProyectoJpaSpecification extends QueryJpaSpecification<ProyectoEntity> {
+// proyectos/infrastructure/.../secondaryadapter/repository/ProyectoJpaQueryEntity.java
+@Entity
+@Immutable
+@Subselect("""
+        SELECT p.id, p.titulo, p.estado, p.anio, p.fecha_inicio, p.activo
+        FROM proyecto p
+        """)
+@Synchronize("proyecto")
+@Getter @NoArgsConstructor @AllArgsConstructor @Builder
+public class ProyectoJpaQueryEntity {
+    @Id @Column(name = "id") private UUID id;
+    @Column(name = "titulo") private String titulo;
+    @Column(name = "estado") private String estado;
+    @Column(name = "anio") private Long anio;
+    @Column(name = "fecha_inicio") private LocalDate fechaInicio;
+    @Column(name = "activo") private Boolean activo;
+}
+```
 
-    private static final Map<String, CampoSpec<ProyectoEntity>> CAMPOS;
+```java
+// proyectos/infrastructure/.../secondaryadapter/repository/ProyectoJpaSpecification.java
+@Component
+class ProyectoJpaSpecification extends QueryJpaSpecification<ProyectoJpaQueryEntity> {
+
+    private static final Map<String, CampoSpec<ProyectoJpaQueryEntity>> CAMPOS;
 
     static {
-        Map<String, CampoSpec<ProyectoEntity>> m = new LinkedHashMap<>();
+        Map<String, CampoSpec<ProyectoJpaQueryEntity>> m = new LinkedHashMap<>();
         for (ProyectoCriteria.Campo campo : ProyectoCriteria.Campo.values()) {
-            CampoSpec<ProyectoEntity> spec = switch (campo) {
+            CampoSpec<ProyectoJpaQueryEntity> spec = switch (campo) {
                 case TITULO       -> CampoSpec.texto(root -> root.get("titulo"));
                 case ESTADO       -> CampoSpec.texto(root -> root.get("estado"));
                 case ANIO         -> CampoSpec.entero(root -> root.get("anio"));
@@ -749,7 +839,7 @@ class ProyectoJpaSpecification extends QueryJpaSpecification<ProyectoEntity> {
     }
 
     @Override
-    protected Map<String, CampoSpec<ProyectoEntity>> camposPermitidos() {
+    protected Map<String, CampoSpec<ProyectoJpaQueryEntity>> camposPermitidos() {
         return CAMPOS;
     }
 }
@@ -784,55 +874,66 @@ final class ProyectoSortMapper {
 }
 ```
 
-### 5. Inyectar en el OutputAdapter
+### 5. Inyectar en el OutputAdapter — pura delegación a `shared:jpa`
+
+Sin construir `Pageable` a mano ni atrapar excepciones de Spring Data JPA: `PageableMapper`
+y `PaginationMapper` (`shared:jpa`) hacen ese trabajo.
 
 ```java
 @Component
 @RequiredArgsConstructor
 public class ProyectoQueryOutputAdapter implements ProyectoQueryOutputPort {
 
-    private final ProyectoRepository repository;
+    private final ProyectoQueryRepository repository;
     private final ProyectoJpaSpecification specification;
 
     @Override
     public PaginatedResult<ProyectoReadModel> consultarTodos(ProyectoCriteria criteria) {
-        Pageable pageable = toPageable(criteria);
-        Specification<ProyectoEntity> spec = specification.desdeCriteria(criteria);
+        Pageable pageable = PageableMapper.toPageable(criteria, ProyectoSortMapper::traducir);
+        Specification<ProyectoJpaQueryEntity> spec = specification.desdeCriteria(criteria);
         return PaginationMapper.toResult(
-                repository.findAll(spec, pageable).map(ProyectoMapper::toReadModel));
-    }
-
-    private Pageable toPageable(ProyectoCriteria criteria) {
-        if (criteria.tieneOrden()) {
-            List<Sort.Order> orders = criteria.getOrdenamiento().stream()
-                    .map(o -> {
-                        String ruta = ProyectoSortMapper.traducir(o.getCampo());
-                        if (ruta == null) throw new OrdenamientoInvalidoException(o.getCampo());
-                        return o.getDireccion() == SortDirection.ASC
-                                ? Sort.Order.asc(ruta) : Sort.Order.desc(ruta);
-                    })
-                    .toList();
-            return PageRequest.of(criteria.getPagina(), criteria.getTamanio(), Sort.by(orders));
-        }
-        return PageRequest.of(criteria.getPagina(), criteria.getTamanio());
+                repository.findAll(spec, pageable).map(ProyectoQueryMapper::toReadModel));
     }
 }
 ```
 
-### 6. Exponer el endpoint en el InputAdapter
+`ProyectoQueryRepository` extiende `SpecificationQueryRepository<ProyectoJpaQueryEntity, UUID>`
+(`shared:jpa`) — nunca `JpaRepository`, para que el compilador impida `save`/`delete` en el
+lado de consulta. `ProyectoQueryMapper` (`final`, constructor privado, `toReadModel` estático,
+sibling `mapper/`) convierte `ProyectoJpaQueryEntity → ProyectoReadModel`.
+
+### 6. Exponer el endpoint — Controller + RequestMapper
+
+El Controller no arma el `Criteria` inline; delega a un `{Action}RequestMapper` dedicado,
+igual que el lado comando.
 
 ```java
+// proyectos/infrastructure/.../primaryadapter/web/ConsultarProyectosController.java
 @PostMapping("/coordinador")
-public ResponseEntity<PageResponseDTO<ProyectoReadModel>> consultar(
+public ResponseEntity<PageResponseDTO<ProyectoResponseDTO>> consultar(
         @RequestBody(required = false) QueryCriteriaRequestDTO request) {
-    QueryCriteriaRequestDTO req = request != null ? request : new QueryCriteriaRequestDTO();
-    ProyectoCriteria criteria = ProyectoCriteria.builder()
-        .pagina(req.getPagina())
-        .tamanio(req.getTamanio())
-        .ordenamiento(req.parsearOrdenamiento())
-        .raiz(req.parsearFiltros())
-        .build();
-    return ResponseEntity.ok(PageResponseDTO.from(port.ejecutar(criteria)));
+    var resultado = consultarProyectosUseCase.ejecutar(
+            ConsultarProyectosRequestMapper.toCriteria(request));
+    return ResponseEntity.ok(PageResponseDTO.from(
+            resultado.map(ProyectoResponseMapper::toResponse)));
+}
+```
+
+```java
+// proyectos/infrastructure/.../primaryadapter/web/mapper/ConsultarProyectosRequestMapper.java
+public final class ConsultarProyectosRequestMapper {
+
+    private ConsultarProyectosRequestMapper() {}
+
+    public static ProyectoCriteria toCriteria(QueryCriteriaRequestDTO dto) {
+        var solicitud = QueryCriteriaRequestDTO.aplicarPorDefecto(dto);  // body nulo → criteria vacío
+        return ProyectoCriteria.builder()
+                .pagina(solicitud.getPagina())
+                .tamanio(solicitud.getTamanio())
+                .ordenamiento(solicitud.parsearOrdenamiento())
+                .raiz(solicitud.parsearFiltros())
+                .build();
+    }
 }
 ```
 

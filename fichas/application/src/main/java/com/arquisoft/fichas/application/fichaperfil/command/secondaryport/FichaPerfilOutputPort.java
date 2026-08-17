@@ -1,6 +1,5 @@
 package com.arquisoft.fichas.application.fichaperfil.command.secondaryport;
 
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 
 import java.util.Optional;
@@ -12,7 +11,7 @@ public interface FichaPerfilOutputPort {
 
     void actualizarTitulo(UUID fichaPerfil, String tituloProyecto);
 
-    void actualizarAsesor(UUID fichaPerfil, AsesorFichaEntity nuevoAsesorFicha);
+    void actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha);
 
     Optional<FichaPerfilEntity> buscarPorId(UUID id);
 

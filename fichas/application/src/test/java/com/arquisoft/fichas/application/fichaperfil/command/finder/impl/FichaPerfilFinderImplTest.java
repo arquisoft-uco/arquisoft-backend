@@ -1,6 +1,5 @@
 package com.arquisoft.fichas.application.fichaperfil.command.finder.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
@@ -30,11 +29,7 @@ class FichaPerfilFinderImplTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID asesorId = UUID.randomUUID();
-        var entity = FichaPerfilEntity.builder()
-                .id(fichaId)
-                .tituloProyecto("Titulo de prueba")
-                .asesorFicha(AsesorFichaEntity.builder().id(asesorId).build())
-                .build();
+        var entity = new FichaPerfilEntity(fichaId, "Titulo de prueba", asesorId);
         when(fichaPerfilOutputPort.buscarPorId(fichaId)).thenReturn(Optional.of(entity));
 
         // Act

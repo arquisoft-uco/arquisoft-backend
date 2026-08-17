@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryadapter.repository;
 
-import com.arquisoft.fichas.application.estadoficha.command.secondaryport.entity.EstadoFichaEntity;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.mapper.EstadoFichaPerfilMapper;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.infrastructure.estadoficha.command.secondaryadapter.entity.EstadoFichaJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +30,12 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
     void setUp() {
         adapter = new EstadoFichaPerfilCommandOutputAdapter(estadoFichaPerfilRepository);
 
-        entityManager.persist(EstadoFichaEntity.builder()
+        entityManager.persist(EstadoFichaJpaEntity.builder()
                 .id("EN_CONSTRUCCION")
                 .nombre("En Construccion")
                 .descripcion("Estado inicial")
                 .build());
-        entityManager.persist(EstadoFichaEntity.builder()
+        entityManager.persist(EstadoFichaJpaEntity.builder()
                 .id("APROBADA")
                 .nombre("Aprobada")
                 .descripcion("Estado terminal")
@@ -54,11 +54,11 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
 
         // Assert
         Optional<EstadoFichaPerfilEntity> resultado =
-                estadoFichaPerfilRepository.findById(aggregate.getId());
+                adapter.obtenerEstadoActual(fichaPerfilId);
         assertThat(resultado).isPresent();
-        assertThat(resultado.get().getFichaPerfilId()).isEqualTo(fichaPerfilId);
-        assertThat(resultado.get().getEstadoFicha().getId()).isEqualTo("EN_CONSTRUCCION");
-        assertThat(resultado.get().getFechaActualizacion()).isNotNull();
+        assertThat(resultado.get().fichaPerfilId()).isEqualTo(fichaPerfilId);
+        assertThat(resultado.get().estadoFicha()).isEqualTo("EN_CONSTRUCCION");
+        assertThat(resultado.get().fechaActualizacion()).isNotNull();
     }
 
     @Test
@@ -73,7 +73,7 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
 
         // Assert
         assertThat(resultado).isPresent();
-        assertThat(resultado.get().getEstadoFicha().getId()).isEqualTo("EN_CONSTRUCCION");
+        assertThat(resultado.get().estadoFicha()).isEqualTo("EN_CONSTRUCCION");
     }
 
     @Test

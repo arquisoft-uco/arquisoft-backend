@@ -2,11 +2,13 @@ package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.second
 
 import com.arquisoft.fichas.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
-import com.arquisoft.fichas.application.estadoevaluacion.command.secondaryport.entity.EstadoEvaluacionEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.entity.EstadoEvaluacionJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.repository.EstadoEvaluacionCommandRepository;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.entity.EstadoEvaluacionFichaEntity;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.mapper.EstadoEvaluacionFichaMapper;
-import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.entity.EstadoEvaluacionFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.mapper.EstadoEvaluacionFichaJpaMapper;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.entity.EvaluacionFichaPerfilJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +20,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -40,7 +43,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
     }
 
     @Test
-    void debeGuardar_cuandoEntidadEsValida() {
+    void debeMapearYGuardarLaEntidadComoJpaEntity_cuandoRegistraElEstadoInicial() {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
         var aggregate = EstadoEvaluacionFichaDomain.crear(evaluacionId);
@@ -50,10 +53,11 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         // Act
         adapter.registrarEstadoInicial(entity);
 
-        // Assert — el adapter ya no resuelve referencias: guarda lo que le entrego el mapper
-        verify(estadoEvaluacionFichaRepository).save(entity);
-        assertThat(entity.getEvaluacionFichaPerfil().getId()).isEqualTo(evaluacionId);
-        assertThat(entity.getEstadoEvaluacion().getId()).isEqualTo(EstadoEvaluacion.EN_EVALUACION.getId());
+        // Assert
+        verify(estadoEvaluacionFichaRepository).save(argThat(jpaEntity ->
+                jpaEntity.getId().equals(entity.id())
+                        && jpaEntity.getEvaluacionFichaPerfil().getId().equals(evaluacionId)
+                        && jpaEntity.getEstadoEvaluacion().getId().equals(EstadoEvaluacion.EN_EVALUACION.getId())));
     }
 
     @Test
@@ -62,30 +66,31 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         UUID id = UUID.randomUUID();
         UUID evaluacionId = UUID.randomUUID();
 
-        var evaluacionJpa = EvaluacionFichaPerfilEntity.builder()
+        var evaluacionJpa = EvaluacionFichaPerfilJpaEntity.builder()
                 .id(evaluacionId)
                 .build();
 
-        var estadoJpa = EstadoEvaluacionEntity.builder()
+        var estadoJpa = EstadoEvaluacionJpaEntity.builder()
                 .id("APROBADA")
                 .nombre("Aprobada")
                 .descripcion("")
                 .build();
 
-        EstadoEvaluacionFichaEntity entity = EstadoEvaluacionFichaEntity.builder()
+        EstadoEvaluacionFichaJpaEntity jpaEntity = EstadoEvaluacionFichaJpaEntity.builder()
                 .id(id)
                 .evaluacionFichaPerfil(evaluacionJpa)
                 .estadoEvaluacion(estadoJpa)
                 .fechaActualizacion(Instant.now())
                 .build();
 
-        when(estadoEvaluacionFichaRepository.findById(id)).thenReturn(Optional.of(entity));
+        when(estadoEvaluacionFichaRepository.findById(id)).thenReturn(Optional.of(jpaEntity));
 
         // Act
         var resultado = estadoEvaluacionFichaRepository.findById(id);
         assertThat(resultado).isPresent();
 
-        var aggregateReconstruido = EstadoEvaluacionFichaMapper.toDomain(resultado.get());
+        var entity = EstadoEvaluacionFichaJpaMapper.toEntity(resultado.get());
+        var aggregateReconstruido = EstadoEvaluacionFichaMapper.toDomain(entity);
 
         // Assert
         assertThat(aggregateReconstruido.getId()).isEqualTo(id);
@@ -98,7 +103,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         UUID evaluacionId = UUID.randomUUID();
 
         when(estadoEvaluacionFichaRepository
-                .existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(evaluacionId, "EN_EVALUACION"))
+                .existsByEvaluacionFichaPerfilAndEstadoEvaluacion(evaluacionId, "EN_EVALUACION"))
                 .thenReturn(true);
 
         // Act
@@ -107,7 +112,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         // Assert
         assertThat(existe).isTrue();
         verify(estadoEvaluacionFichaRepository)
-                .existsByEvaluacionFichaPerfilIdAndEstadoEvaluacionId(evaluacionId, "EN_EVALUACION");
+                .existsByEvaluacionFichaPerfilAndEstadoEvaluacion(evaluacionId, "EN_EVALUACION");
     }
 
     @Test
@@ -115,7 +120,7 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
         // Arrange
         UUID evaluacionId = UUID.randomUUID();
 
-        when(estadoEvaluacionFichaRepository.countByEvaluacionFichaPerfilId(evaluacionId))
+        when(estadoEvaluacionFichaRepository.countByEvaluacionFichaPerfil(evaluacionId))
                 .thenReturn(2L);
 
         // Act
@@ -123,6 +128,6 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
 
         // Assert
         assertThat(count).isEqualTo(2);
-        verify(estadoEvaluacionFichaRepository).countByEvaluacionFichaPerfilId(evaluacionId);
+        verify(estadoEvaluacionFichaRepository).countByEvaluacionFichaPerfil(evaluacionId);
     }
 }

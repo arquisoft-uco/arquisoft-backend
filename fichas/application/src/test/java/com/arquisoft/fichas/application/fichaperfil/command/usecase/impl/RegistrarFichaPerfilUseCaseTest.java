@@ -188,8 +188,8 @@ class RegistrarFichaPerfilUseCaseTest {
 
     // El puerto ya recibe la entidad que construyo el mapper: se verifica por identidad de negocio.
     private static FichaPerfilEntity entidadDe(FichaPerfilDomain ficha) {
-        return argThat(entity -> entity.getId().equals(ficha.getId())
-                && entity.getTituloProyecto().equals(ficha.getTituloProyecto())
-                && entity.getAsesorFicha().getId().equals(ficha.getAsesorFicha()));
+        return argThat(entity -> entity.id().equals(ficha.getId())
+                && entity.tituloProyecto().equals(ficha.getTituloProyecto())
+                && entity.asesorFicha().equals(ficha.getAsesorFicha()));
     }
 }
