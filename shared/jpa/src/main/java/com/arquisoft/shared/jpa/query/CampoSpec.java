@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -25,6 +26,8 @@ public sealed interface CampoSpec<E>
                 CampoSpec.Booleano {
 
     Specification<E> construirSpec(FiltroOperador operador, String valor);
+
+    Specification<E> construirSpecMultivalor(FiltroOperador operador, List<String> valores);
 
     // ── Factories ─────────────────────────────────────────────────────────────
 
@@ -64,7 +67,8 @@ public sealed interface CampoSpec<E>
                 FiltroOperador.CONTIENE, FiltroOperador.NO_CONTIENE,
                 FiltroOperador.EMPIEZA_CON, FiltroOperador.TERMINA_CON,
                 FiltroOperador.ES, FiltroOperador.NO_ES,
-                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO
+                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO,
+                FiltroOperador.IN, FiltroOperador.NOT_IN
         );
 
         private static final char ESCAPE_LIKE = '\\';
@@ -89,6 +93,19 @@ public sealed interface CampoSpec<E>
             };
         }
 
+        @Override
+        public Specification<E> construirSpecMultivalor(FiltroOperador operador, List<String> valores) {
+            validar(operador, VALIDOS, ConsultaKey.TIPO_TEXTO);
+            return (root, q, cb) -> {
+                Expression<String> rawExpr = path.apply(root);
+                return switch (operador) {
+                    case IN     -> rawExpr.in(valores);
+                    case NOT_IN -> cb.not(rawExpr.in(valores));
+                    default     -> throw new IllegalStateException();
+                };
+            };
+        }
+
         // Sin esto, un '%' o '_' en el texto buscado se interpreta como comodín de LIKE:
         // buscar "50%" devolvería toda la tabla en lugar de las filas que contienen "50%".
         private static String escaparComodines(String valor) {
@@ -106,7 +123,8 @@ public sealed interface CampoSpec<E>
 
         private static final Set<FiltroOperador> VALIDOS = EnumSet.of(
                 FiltroOperador.ES, FiltroOperador.NO_ES,
-                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO
+                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO,
+                FiltroOperador.IN, FiltroOperador.NOT_IN
         );
 
         @Override
@@ -120,6 +138,20 @@ public sealed interface CampoSpec<E>
                     case ES_NULO    -> cb.isNull(p);
                     case NO_ES_NULO -> cb.isNotNull(p);
                     default         -> throw new IllegalStateException();
+                };
+            };
+        }
+
+        @Override
+        public Specification<E> construirSpecMultivalor(FiltroOperador operador, List<String> valores) {
+            validar(operador, VALIDOS, ConsultaKey.TIPO_UUID);
+            List<UUID> vs = valores.stream().map(this::parseUuid).toList();
+            return (root, q, cb) -> {
+                Path<UUID> p = path.apply(root);
+                return switch (operador) {
+                    case IN     -> p.in(vs);
+                    case NOT_IN -> cb.not(p.in(vs));
+                    default     -> throw new IllegalStateException();
                 };
             };
         }
@@ -139,7 +171,8 @@ public sealed interface CampoSpec<E>
                 FiltroOperador.ES, FiltroOperador.NO_ES,
                 FiltroOperador.MAYOR_QUE, FiltroOperador.MENOR_QUE,
                 FiltroOperador.MAYOR_IGUAL_QUE, FiltroOperador.MENOR_IGUAL_QUE,
-                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO
+                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO,
+                FiltroOperador.IN, FiltroOperador.NOT_IN
         );
 
         @Override
@@ -161,6 +194,20 @@ public sealed interface CampoSpec<E>
             };
         }
 
+        @Override
+        public Specification<E> construirSpecMultivalor(FiltroOperador operador, List<String> valores) {
+            validar(operador, VALIDOS, ConsultaKey.TIPO_ENTERO);
+            List<Long> vs = valores.stream().map(this::parseLong).toList();
+            return (root, q, cb) -> {
+                Path<Long> p = path.apply(root);
+                return switch (operador) {
+                    case IN     -> p.in(vs);
+                    case NOT_IN -> cb.not(p.in(vs));
+                    default     -> throw new IllegalStateException();
+                };
+            };
+        }
+
         private Long parseLong(String v) {
             try {
                 return Long.parseLong(v);
@@ -176,7 +223,8 @@ public sealed interface CampoSpec<E>
                 FiltroOperador.ES, FiltroOperador.NO_ES,
                 FiltroOperador.MAYOR_QUE, FiltroOperador.MENOR_QUE,
                 FiltroOperador.MAYOR_IGUAL_QUE, FiltroOperador.MENOR_IGUAL_QUE,
-                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO
+                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO,
+                FiltroOperador.IN, FiltroOperador.NOT_IN
         );
 
         @Override
@@ -198,6 +246,20 @@ public sealed interface CampoSpec<E>
             };
         }
 
+        @Override
+        public Specification<E> construirSpecMultivalor(FiltroOperador operador, List<String> valores) {
+            validar(operador, VALIDOS, ConsultaKey.TIPO_DECIMAL);
+            List<BigDecimal> vs = valores.stream().map(this::parseDecimal).toList();
+            return (root, q, cb) -> {
+                Path<BigDecimal> p = path.apply(root);
+                return switch (operador) {
+                    case IN     -> p.in(vs);
+                    case NOT_IN -> cb.not(p.in(vs));
+                    default     -> throw new IllegalStateException();
+                };
+            };
+        }
+
         private BigDecimal parseDecimal(String v) {
             try {
                 return new BigDecimal(v);
@@ -213,7 +275,8 @@ public sealed interface CampoSpec<E>
                 FiltroOperador.ES, FiltroOperador.NO_ES,
                 FiltroOperador.MAYOR_QUE, FiltroOperador.MENOR_QUE,
                 FiltroOperador.MAYOR_IGUAL_QUE, FiltroOperador.MENOR_IGUAL_QUE,
-                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO
+                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO,
+                FiltroOperador.IN, FiltroOperador.NOT_IN
         );
 
         @Override
@@ -235,6 +298,20 @@ public sealed interface CampoSpec<E>
             };
         }
 
+        @Override
+        public Specification<E> construirSpecMultivalor(FiltroOperador operador, List<String> valores) {
+            validar(operador, VALIDOS, ConsultaKey.TIPO_FECHA);
+            List<LocalDate> vs = valores.stream().map(this::parseFecha).toList();
+            return (root, q, cb) -> {
+                Path<LocalDate> p = path.apply(root);
+                return switch (operador) {
+                    case IN     -> p.in(vs);
+                    case NOT_IN -> cb.not(p.in(vs));
+                    default     -> throw new IllegalStateException();
+                };
+            };
+        }
+
         private LocalDate parseFecha(String v) {
             try {
                 return LocalDate.parse(v);
@@ -251,7 +328,8 @@ public sealed interface CampoSpec<E>
                 FiltroOperador.ES, FiltroOperador.NO_ES,
                 FiltroOperador.MAYOR_QUE, FiltroOperador.MENOR_QUE,
                 FiltroOperador.MAYOR_IGUAL_QUE, FiltroOperador.MENOR_IGUAL_QUE,
-                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO
+                FiltroOperador.ES_NULO, FiltroOperador.NO_ES_NULO,
+                FiltroOperador.IN, FiltroOperador.NOT_IN
         );
 
         @Override
@@ -269,6 +347,20 @@ public sealed interface CampoSpec<E>
                     case ES_NULO         -> cb.isNull(p);
                     case NO_ES_NULO      -> cb.isNotNull(p);
                     default              -> throw new IllegalStateException();
+                };
+            };
+        }
+
+        @Override
+        public Specification<E> construirSpecMultivalor(FiltroOperador operador, List<String> valores) {
+            validar(operador, VALIDOS, ConsultaKey.TIPO_FECHA_HORA);
+            List<LocalDateTime> vs = valores.stream().map(this::parseFechaHora).toList();
+            return (root, q, cb) -> {
+                Path<LocalDateTime> p = path.apply(root);
+                return switch (operador) {
+                    case IN     -> p.in(vs);
+                    case NOT_IN -> cb.not(p.in(vs));
+                    default     -> throw new IllegalStateException();
                 };
             };
         }
@@ -303,6 +395,12 @@ public sealed interface CampoSpec<E>
                     default         -> throw new IllegalStateException();
                 };
             };
+        }
+
+        @Override
+        public Specification<E> construirSpecMultivalor(FiltroOperador operador, List<String> valores) {
+            validar(operador, VALIDOS, ConsultaKey.TIPO_BOOLEANO);
+            throw new IllegalStateException();
         }
 
         private Boolean parseBooleano(String v) {

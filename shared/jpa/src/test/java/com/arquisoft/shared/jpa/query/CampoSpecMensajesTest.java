@@ -6,6 +6,7 @@ import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.QueryCriteria;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -57,6 +58,15 @@ class CampoSpecMensajesTest {
         assertThatThrownBy(() -> campo.construirSpec(FiltroOperador.CONTIENE, "x"))
                 .isInstanceOf(FiltroInvalidoException.class)
                 .hasMessageContaining("campos de tipo fecha (yyyy-MM-dd)");
+    }
+
+    @Test
+    void debeNombrarTipoYOperadoresValidos_cuandoInNoAplicaAlTipoDeCampo() {
+        CampoSpec<Fila> campo = CampoSpec.booleano(root -> root.get("activo"));
+
+        assertThatThrownBy(() -> campo.construirSpecMultivalor(FiltroOperador.IN, List.of("true")))
+                .isInstanceOf(FiltroInvalidoException.class)
+                .hasMessageContaining("El operador 'IN' no es aplicable a campos de tipo booleano");
     }
 
     @Test

@@ -25,7 +25,8 @@ public abstract class QueryJpaSpecification<E> {
     private Specification<E> especDesdeNodo(NodoFiltro nodo) {
         return switch (nodo) {
             case NodoFiltro.Predicado p -> especDesdePredicado(p);
-            case NodoFiltro.Grupo g     -> especDesdeGrupo(g);
+            case NodoFiltro.PredicadoMultivalor p -> especDesdePredicadoMultivalor(p);
+            case NodoFiltro.Grupo g -> especDesdeGrupo(g);
         };
     }
 
@@ -53,5 +54,16 @@ public abstract class QueryJpaSpecification<E> {
             );
         }
         return spec.construirSpec(predicado.operador(), predicado.valor());
+    }
+
+    private Specification<E> especDesdePredicadoMultivalor(NodoFiltro.PredicadoMultivalor predicado) {
+        CampoSpec<E> spec = camposPermitidos().get(predicado.campo());
+        if (spec == null) {
+            throw new FiltroInvalidoException(
+                    Mensajes.formatear(ConsultaKey.ERROR_CAMPO_FILTRO_DESCONOCIDO,
+                            predicado.campo(), camposPermitidos().keySet())
+            );
+        }
+        return spec.construirSpecMultivalor(predicado.operador(), predicado.valores());
     }
 }

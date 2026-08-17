@@ -1,5 +1,7 @@
 package com.arquisoft.shared.query.dto;
 
+import com.arquisoft.shared.query.FiltroOperador;
+import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.exception.FiltroException;
 import org.junit.jupiter.api.Test;
 
@@ -67,6 +69,21 @@ class QueryCriteriaRequestDTOTest {
         // Act & Assert
         assertThatThrownBy(solicitud::parsearFiltros)
                 .isInstanceOf(FiltroException.class);
+    }
+
+    @Test
+    void debeParsearUnPredicadoMultivalor_cuandoElFiltroTraeVariosValores() {
+        PredicadoMultivalorFiltroDTO predicado = new PredicadoMultivalorFiltroDTO();
+        predicado.setCampo("asesorId");
+        predicado.setOperador("IN");
+        predicado.setValores(List.of("a", "b"));
+
+        QueryCriteriaRequestDTO solicitud = new QueryCriteriaRequestDTO();
+        solicitud.setFiltros(predicado);
+
+        assertThat(solicitud.parsearFiltros())
+                .isInstanceOf(NodoFiltro.PredicadoMultivalor.class)
+                .isEqualTo(NodoFiltro.predicadoMultivalor("asesorId", FiltroOperador.IN, List.of("a", "b")));
     }
 
     @Test

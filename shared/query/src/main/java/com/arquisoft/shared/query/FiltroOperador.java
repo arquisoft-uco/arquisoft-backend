@@ -29,7 +29,11 @@ public enum FiltroOperador {
 
     // Nulidad — aplica a cualquier tipo; no requieren valor
     ES_NULO,
-    NO_ES_NULO;
+    NO_ES_NULO,
+
+    // Pertenencia — requieren una lista de valores, no un único valor
+    IN,
+    NOT_IN;
 
     private static final String OPCIONES = Arrays.stream(values())
             .map(Enum::name)
@@ -37,6 +41,10 @@ public enum FiltroOperador {
 
     public boolean requiereValor() {
         return this != ES_NULO && this != NO_ES_NULO;
+    }
+
+    public boolean esMultivalor() {
+        return this == IN || this == NOT_IN;
     }
 
     public static FiltroOperador parse(String valor) {

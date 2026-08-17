@@ -127,11 +127,12 @@ public abstract class QueryCriteria {
             Set<String> permitidos = camposFiltrables();
             switch (nodo) {
                 case NodoFiltro.Predicado p -> {
-                    if (permitidos != null && !permitidos.contains(p.campo())) {
+                    validarCampoPermitido(p.campo(), permitidos);
+                    if (p.operador().esMultivalor()) {
                         throw new FiltroException(
-                                Mensajes.formatear(ConsultaKey.ERROR_CAMPO_FILTRO_NO_PERMITIDO,
-                                        p.campo(), permitidos),
-                                AppCodes.Consulta.CAMPO_FILTRO_NO_PERMITIDO);
+                                Mensajes.formatear(ConsultaKey.ERROR_OPERADOR_REQUIERE_LISTA,
+                                        p.operador(), p.campo()),
+                                AppCodes.Consulta.OPERADOR_REQUIERE_LISTA);
                     }
                     if (p.operador().requiereValor() && (p.valor() == null || p.valor().isBlank())) {
                         throw new FiltroException(
@@ -140,7 +141,30 @@ public abstract class QueryCriteria {
                                 AppCodes.Consulta.VALOR_REQUERIDO);
                     }
                 }
+                case NodoFiltro.PredicadoMultivalor p -> {
+                    validarCampoPermitido(p.campo(), permitidos);
+                    if (!p.operador().esMultivalor()) {
+                        throw new FiltroException(
+                                Mensajes.formatear(ConsultaKey.ERROR_OPERADOR_NO_ACEPTA_LISTA,
+                                        p.operador(), p.campo()),
+                                AppCodes.Consulta.OPERADOR_NO_ACEPTA_LISTA);
+                    }
+                    if (p.valores().isEmpty()) {
+                        throw new FiltroException(
+                                Mensajes.formatear(ConsultaKey.ERROR_VALOR_REQUERIDO,
+                                        p.operador(), p.campo()),
+                                AppCodes.Consulta.VALOR_REQUERIDO);
+                    }
+                }
                 case NodoFiltro.Grupo g -> g.nodos().forEach(this::validarPredicados);
+            }
+        }
+
+        private void validarCampoPermitido(String campo, Set<String> permitidos) {
+            if (permitidos != null && !permitidos.contains(campo)) {
+                throw new FiltroException(
+                        Mensajes.formatear(ConsultaKey.ERROR_CAMPO_FILTRO_NO_PERMITIDO, campo, permitidos),
+                        AppCodes.Consulta.CAMPO_FILTRO_NO_PERMITIDO);
             }
         }
     }

@@ -7,7 +7,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "tipo")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = PredicadoFiltroDTO.class, name = "PREDICADO"),
-        @JsonSubTypes.Type(value = GrupoFiltroDTO.class,     name = "GRUPO")
+        @JsonSubTypes.Type(value = PredicadoMultivalorFiltroDTO.class, name = "PREDICADO_MULTIVALOR"),
+        @JsonSubTypes.Type(value = GrupoFiltroDTO.class, name = "GRUPO")
 })
 public interface NodoFiltroDTO {
 

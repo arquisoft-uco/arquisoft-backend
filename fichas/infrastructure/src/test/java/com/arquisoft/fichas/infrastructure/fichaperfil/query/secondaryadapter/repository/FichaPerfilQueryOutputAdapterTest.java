@@ -154,6 +154,51 @@ class FichaPerfilQueryOutputAdapterTest {
     }
 
     @Test
+    void debeFiltrarPorVariosIdsDeAsesor_cuandoElCriteriaTraeUnPredicadoIn() {
+        // Arrange
+        UUID asesorUno = persistirFicha("Proyecto uno", "DOC-060", "Carla Diaz", "carla6@soyuco.edu.co");
+        UUID asesorDos = persistirFicha("Proyecto dos", "DOC-061", "Luis Peña", "luis6@soyuco.edu.co");
+        persistirFicha("Proyecto tres", "DOC-062", "Marco Vidal", "marco6@soyuco.edu.co");
+        entityManager.flush();
+
+        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicadoMultivalor("asesorId", FiltroOperador.IN,
+                        List.of(asesorUno.toString(), asesorDos.toString())))
+                .build();
+
+        // Act
+        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(ficha -> ficha.asesorFicha().id())
+                .containsExactlyInAnyOrder(asesorUno, asesorDos);
+    }
+
+    @Test
+    void debeExcluirLosIdsDeAsesor_cuandoElCriteriaTraeUnPredicadoNotIn() {
+        // Arrange
+        UUID asesorExcluido = persistirFicha("Proyecto uno", "DOC-070", "Carla Diaz", "carla7@soyuco.edu.co");
+        persistirFicha("Proyecto dos", "DOC-071", "Luis Peña", "luis7@soyuco.edu.co");
+        entityManager.flush();
+
+        FichaPerfilCriteria criteria = FichaPerfilCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicadoMultivalor("asesorId", FiltroOperador.NOT_IN,
+                        List.of(asesorExcluido.toString())))
+                .build();
+
+        // Act
+        PaginatedResult<FichaPerfilReadModel> resultado = adapter.consultarTodas(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(ficha -> ficha.asesorFicha().id())
+                .doesNotContain(asesorExcluido);
+    }
+
+    @Test
     void debeOrdenarPorNombreDelAsesorDescendente_cuandoElCriteriaLoPide() {
         // Arrange
         persistirFicha("Proyecto A", "DOC-030", "Ana Ramirez", "ana2@soyuco.edu.co");

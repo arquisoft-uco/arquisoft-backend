@@ -56,6 +56,8 @@ public final class AppCodes {
         public static final String PROFUNDIDAD_FILTRO_EXCEDIDA = "PROFUNDIDAD_FILTRO_EXCEDIDA";
         public static final String CAMPO_FILTRO_NO_PERMITIDO = "CAMPO_FILTRO_NO_PERMITIDO";
         public static final String VALOR_REQUERIDO = "VALOR_REQUERIDO";
+        public static final String OPERADOR_REQUIERE_LISTA = "OPERADOR_REQUIERE_LISTA";
+        public static final String OPERADOR_NO_ACEPTA_LISTA = "OPERADOR_NO_ACEPTA_LISTA";
         public static final String SORT_CAMPO_VACIO = "SORT_CAMPO_VACIO";
         public static final String SORT_DIRECTION_INVALIDA = "SORT_DIRECTION_INVALIDA";
         public static final String FILTRO_INVALIDO = "FILTRO_INVALIDO";

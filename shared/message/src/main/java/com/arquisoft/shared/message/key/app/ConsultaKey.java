@@ -11,6 +11,8 @@ public enum ConsultaKey implements ClaveMensaje {
     ERROR_PROFUNDIDAD_FILTRO_EXCEDIDA("app.dominio.consulta.error.profundidad-filtro-excedida"),
     ERROR_CAMPO_FILTRO_NO_PERMITIDO("app.dominio.consulta.error.campo-filtro-no-permitido"),
     ERROR_VALOR_REQUERIDO("app.dominio.consulta.error.valor-requerido"),
+    ERROR_OPERADOR_REQUIERE_LISTA("app.dominio.consulta.error.operador-requiere-lista"),
+    ERROR_OPERADOR_NO_ACEPTA_LISTA("app.dominio.consulta.error.operador-no-acepta-lista"),
     ERROR_ORDEN_CAMPO_VACIO("app.dominio.consulta.error.orden-campo-vacio"),
     ERROR_ORDEN_DIRECCION_INVALIDA("app.dominio.consulta.error.orden-direccion-invalida"),
 

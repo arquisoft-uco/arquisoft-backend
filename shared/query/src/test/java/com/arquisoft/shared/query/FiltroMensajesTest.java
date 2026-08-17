@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FiltroMensajesTest {
@@ -80,6 +81,41 @@ class FiltroMensajesTest {
                 .raiz(NodoFiltro.predicado("titulo", FiltroOperador.CONTIENE, "  ")))
                 .isInstanceOf(FiltroException.class)
                 .hasMessage("El operador 'CONTIENE' requiere un valor no vacío para el campo 'titulo'");
+    }
+
+    @Test
+    void debeNombrarOperadorYCampo_cuandoUnPredicadoSimpleUsaUnOperadorMultivalor() {
+        assertThatThrownBy(() -> CriteriaDePrueba.builder()
+                .raiz(NodoFiltro.predicado("titulo", FiltroOperador.IN, "x")))
+                .isInstanceOf(FiltroException.class)
+                .hasMessage("El operador 'IN' requiere una lista de valores "
+                        + "(nodo PREDICADO_MULTIVALOR) para el campo 'titulo'");
+    }
+
+    @Test
+    void debeNombrarOperadorYCampo_cuandoUnPredicadoMultivalorUsaUnOperadorNoMultivalor() {
+        assertThatThrownBy(() -> CriteriaDePrueba.builder()
+                .raiz(NodoFiltro.predicadoMultivalor("titulo", FiltroOperador.ES, List.of("x"))))
+                .isInstanceOf(FiltroException.class)
+                .hasMessage("El operador 'ES' no acepta una lista de valores; "
+                        + "use un nodo PREDICADO para el campo 'titulo'");
+    }
+
+    @Test
+    void debeNombrarOperadorYCampo_cuandoElPredicadoMultivalorNoTraeValores() {
+        assertThatThrownBy(() -> CriteriaDePrueba.builder()
+                .raiz(NodoFiltro.predicadoMultivalor("titulo", FiltroOperador.IN, List.of())))
+                .isInstanceOf(FiltroException.class)
+                .hasMessage("El operador 'IN' requiere un valor no vacío para el campo 'titulo'");
+    }
+
+    @Test
+    void debeAceptarElPredicadoMultivalor_cuandoElOperadorEsMultivalorYTraeValores() {
+        CriteriaDePrueba criteria = CriteriaDePrueba.builder()
+                .raiz(NodoFiltro.predicadoMultivalor("titulo", FiltroOperador.IN, List.of("a", "b")))
+                .build();
+
+        assertThat(criteria.tieneFiltros()).isTrue();
     }
 
     @Test
