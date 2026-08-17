@@ -140,7 +140,7 @@ arquisoft-backend/
 │   ├── logger/                           # AppLogger
 │   ├── redis/                            # RedisClient
 │   ├── amqp/                             # EventPublisher
-│   ├── web/                              # HttpClient, TraceIdFilter, GlobalAppExceptionHandler, @UuidValido
+│   ├── web/                              # HttpClient, TraceIdFilter, GlobalAppExceptionHandler
 │   ├── minio/                            # Cliente MinIO
 │   ├── jpa/                              # QueryRepository/SpecificationQueryRepository, CampoSpec, PageableMapper/PaginationMapper
 │   ├── query/                            # Vocabulario de consulta sin Spring: QueryCriteria, NodoFiltro, PaginatedResult, DTOs de filtro
@@ -291,7 +291,7 @@ El módulo `shared` contiene **13 sub-módulos** reutilizables por cualquier con
 | `logger` | AppLogger (interface) | Logging desacoplado de SLF4J |
 | `redis` | RedisClient (interface) | Operaciones de cache |
 | `amqp` | EventPublisher (interface) | Publicar eventos a RabbitMQ |
-| `web` | HttpClient, TraceIdFilter, GlobalAppExceptionHandler, `@UuidValido` | Llamadas HTTP entre contextos, trazabilidad, manejo global de errores |
+| `web` | HttpClient, TraceIdFilter, GlobalAppExceptionHandler | Llamadas HTTP entre contextos, trazabilidad, manejo global de errores |
 | `minio` | Cliente MinIO | Almacenamiento de archivos |
 | `jpa` | `QueryRepository`/`SpecificationQueryRepository`, `CampoSpec`, `PageableMapper`/`PaginationMapper` | Todo lo que necesita Spring Data JPA para el lado de consulta — nunca se importa desde `domain` ni `application` |
 | `query` | `QueryCriteria`/`NodoFiltro`/`FiltroOperador`/`SortOrder`, `PaginatedResult`, DTOs de filtro | Vocabulario de consulta **sin ninguna dependencia de Spring** — usable en cualquier capa |

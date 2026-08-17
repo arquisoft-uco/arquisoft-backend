@@ -13,10 +13,12 @@ package com.arquisoft.shared.message;
  * recorrido por reflexión que puede dejarse campos fuera en silencio.
  *
  * <p>Quedan fuera de este contrato las claves que se consumen dentro de una anotación
- * ({@code annotation.ValidationKeys}, {@code annotation.FichasApiKeys}): el valor de un atributo de
- * anotación debe ser una expresión constante (JLS §9.7.1) y una llamada a {@link #clave()} no lo es.
- * Esas siguen siendo {@code String} por obligación del lenguaje, y no las resuelve este catálogo
- * sino Hibernate Validator y springdoc.
+ * ({@code annotation.FichasApiKeys}): el valor de un atributo de anotación debe ser una expresión
+ * constante (JLS §9.7.1) y una llamada a {@link #clave()} no lo es. Esas siguen siendo
+ * {@code String} por obligación del lenguaje, y no las resuelve este catálogo sino springdoc.
+ * La validación de formato de un identificador (por ejemplo un UUID) nunca vive en una anotación
+ * Jakarta — ni propia ni de librería — precisamente para no necesitar esta segunda vía: se valida
+ * en el {@code Command} y su texto sale de este catálogo como cualquier otro.
  */
 public interface ClaveMensaje {
 

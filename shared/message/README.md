@@ -26,12 +26,19 @@ anotación puede salir al bundle. De ahí el reparto:
 | Qué | Dónde vive | Por qué |
 |---|---|---|
 | Mensajes de error, logs | `messages/*.properties` | Texto puro, resuelto en runtime |
-| Textos de validación Jakarta | `ValidationMessages.properties` | Los resuelve Hibernate Validator vía `message="{clave}"` |
 | Textos OpenAPI (`@Operation`, `@ApiResponse`) | `messages/fichas-api.properties` | springdoc resuelve `${clave}` contra el `Environment` |
 | Códigos de error (`FICHA_TITULO_DUPLICADO`) | `*Codes.java` | Contrato de la API: viajan en `ErrorResponseDTO.errorCode` y los asientan los tests |
-| Límites (`TITULO_MAX = 100`) | `*Limits.java` | Se usan en `@Size(max = …)` — imposible externalizar |
-| Nombres de campo (`asesorFicha`) | `*Fields.java` | Identifican el campo en `fieldErrors[]`; también se usan en anotaciones |
+| Límites (`TITULO_MAX = 100`) | `*Limits.java` | Se pasan como argumento a `ValidatorLongitud`/`ValidatorColeccion` dentro de `{Command}.crear()` — nunca en una anotación Jakarta |
+| Nombres de campo (`asesorFicha`) | `*Fields.java` | Identifican el campo en `fieldErrors[]` que produce el `Command` |
 | Textos de `@Tag` | `FichasApiKeys.TAG_*` | springdoc **no** resuelve `${…}` en `@Tag` (verificado en 2.8.8) |
+
+> No hay una fila "textos de validación Jakarta" porque no hay ninguna anotación Jakarta que
+> valide *formato* de datos en este proyecto — ni un `@UuidValido` propio ni uno de librería.
+> Esa validación vive siempre en el `Command` (`{Command}.crear(...)` o `toCommand()`, según la
+> convención de DTO del contexto — ver más abajo) y sus textos son mensajes normales de este
+> mismo catálogo, no interpolación de Hibernate Validator. `seguridad`/`usuarios` sí usan
+> `@NotBlank`/`@Email`/`@NotNull` para presencia/forma, pero hoy con el mensaje literal en la
+> anotación, no resuelto contra el catálogo — es deuda preexistente, no el mecanismo descrito aquí.
 
 ---
 
@@ -57,10 +64,8 @@ shared/message/
     │   │   ├── notificaciones/ → NotificacionKey, ConsumidorKey, PlantillaKey
     │   │   └── usuarios/  → UsuarioKey
     │   └── annotation/
-    │       ├── ValidationKeys                 ← Referencias "{clave}" para Jakarta
     │       └── FichasApiKeys                  ← Referencias "${clave}" para springdoc
     └── resources/
-        ├── ValidationMessages.properties      ← Lo lee Hibernate Validator
         └── messages/
             ├── app.properties, fichas.properties, fichas-api.properties
             ├── seguridad.properties, usuarios.properties, notificaciones.properties
@@ -146,19 +151,44 @@ public class TituloDuplicadoException extends DomainException {
 }
 ```
 
-### DTOs — interpolación nativa de Jakarta
+### DTOs — el `Command` valida su propio formato, nunca una anotación de identificador
+
+`fichas` (contexto grande, con validación pesada) deja el DTO como un record sin anotaciones y
+mueve toda la validación de formato al factory estático `crear(...)` del `Command`, vía
+`shared:validation` — este es el mecanismo obligatorio para cualquier campo de identificador
+(`String` con forma de `UUID`), en todo contexto:
 
 ```java
-public record RegistrarFichaPerfilRequestDTO(
+public record RegistrarFichaPerfilCommand(String tituloProyecto, UUID asesorFicha, List<UUID> estudiantes) {
 
-        @NotBlank(message = ValidationKeys.FichaPerfil.TITULO_OBLIGATORIO)
-        @Size(max = FichasLimits.FichaPerfil.TITULO_MAX,
-              message = ValidationKeys.FichaPerfil.TITULO_MAXIMO)
-        String tituloProyecto) { }
+    public static RegistrarFichaPerfilCommand crear(String tituloProyecto, String asesorFicha, List<String> estudiantes) {
+        var result = new ValidationResult();
+
+        if (ValidatorTexto.noEnBlanco(tituloProyecto, FichasFields.FichaPerfil.TITULO,
+                FichasCodes.FichaPerfil.TITULO_REQUERIDO, result)) {
+            ValidatorLongitud.longitudMaxima(tituloProyecto, FichasLimits.FichaPerfil.TITULO_MAX,
+                    FichasFields.FichaPerfil.TITULO, FichasCodes.FichaPerfil.TITULO_DEMASIADO_LARGO, result);
+        }
+        ValidatorUUID.uuidValido(asesorFicha, FichasFields.FichaPerfil.ASESOR_FICHA,
+                FichasCodes.FichaPerfil.ASESOR_REQUERIDO, result);
+
+        result.lanzarSiTieneErroresDeEntrada();
+
+        return new RegistrarFichaPerfilCommand(tituloProyecto,
+                UtilUUID.generarUUIDDesdeTexto(asesorFicha),
+                estudiantes.stream().map(UtilUUID::generarUUIDDesdeTexto).toList());
+    }
+}
 ```
 
-El número del mensaje sale del propio `{max}` de la restricción, así que cambiar
-`FichasLimits.FichaPerfil.TITULO_MAX` actualiza también el texto que ve el usuario.
+`ValidatorUUID.uuidValido(...)` es el único mecanismo sancionado para validar formato de
+identificador — nunca `@UuidValido` (existió como anotación Jakarta en `shared:web`, se eliminó
+precisamente para no dejar dos sitios donde mirar la misma regla) ni una anotación equivalente de
+otra librería. `seguridad`/`usuarios` (contextos pequeños) siguen la otra convención — el DTO
+lleva `@NotBlank`/`@Email`/`@NotNull` y expone su propio `toCommand()` — pero eso es válido solo
+para presencia/forma de campos que **no** son identificadores; ninguno de sus DTO tiene hoy un
+campo de identificador, y el día que lo tenga, el formato se valida igual: dentro de `toCommand()`
+llamando a `ValidatorUUID.uuidValido(...)`, no con una anotación.
 
 ---
 
@@ -187,7 +217,7 @@ degrada el mensaje, no tumba la petición.
 Externalizar texto cuesta la verificación del compilador: una clave mal escrita ya no rompe el
 build. `CatalogoMensajesClavesTest` devuelve esa garantía y **falla el build** si:
 
-- una constante de `*Keys` / `ValidationKeys` / `FichasApiKeys` no resuelve a ningún texto;
+- una constante de `*Keys` / `FichasApiKeys` no resuelve a ningún texto;
 - un texto del `.properties` queda huérfano, sin constante que lo referencie.
 
 Ese test es la razón por la que se puede confiar en el catálogo. Si se añade una clave, hay que
@@ -224,9 +254,10 @@ por constructor:
 @Import({GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class})
 ```
 
-Para afirmar sobre un texto de validación Jakarta, resolverlo desde el catálogo en lugar de
-repetirlo:
+Para afirmar sobre un texto de error de formato producido por un `Command` (por ejemplo el que
+levanta `ValidatorUUID.uuidValido(...)` o `ValidatorTexto.noEnBlanco(...)` desde `shared:validation`),
+resolverlo desde el catálogo en lugar de repetirlo:
 
 ```java
-.value(Mensajes.obtener(ValidationKeys.sinLlaves(ValidationKeys.FichaPerfil.ASESOR_OBLIGATORIO)))
+.value(Mensajes.formatear(ValidadorKey.NO_EN_BLANCO, FichasFields.FichaPerfil.ASESOR_FICHA))
 ```

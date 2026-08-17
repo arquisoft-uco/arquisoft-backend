@@ -80,21 +80,6 @@ public final class CatalogoMensajesResourceBundle implements CatalogoMensajes {
     }
 
     /**
-     * Indica si una clave suelta resuelve en alguno de los bundles cargados.
-     *
-     * <p>Es la vía para las claves que no pueden ser {@link ClaveMensaje} porque las consume una
-     * anotación ({@code annotation.ValidationKeys}, {@code annotation.FichasApiKeys}): al no
-     * declarar bundle, hay que buscarlas. Lo usa la prueba de claves; el código de producción
-     * resuelve siempre por {@link ClaveMensaje}.
-     *
-     * @param clave clave completa del catálogo
-     * @return {@code true} si algún bundle la declara
-     */
-    public boolean contieneClave(String clave) {
-        return paquetesPorNombre.values().stream().anyMatch(paquete -> paquete.containsKey(clave));
-    }
-
-    /**
      * Devuelve todas las claves declaradas en los bundles cargados.
      *
      * <p>Lo usa la prueba que verifica que cada clave del catálogo tiene texto y que

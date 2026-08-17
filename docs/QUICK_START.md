@@ -71,7 +71,7 @@ shared/                          ← Componentes reutilizables (12 sub-módulos)
 ├── logger/                      ← AppLogger
 ├── redis/                       ← RedisClient
 ├── amqp/                        ← EventPublisher (RabbitMQ)
-├── web/                         ← HttpClient, TraceIdFilter, GlobalAppExceptionHandler, @UuidValido
+├── web/                         ← HttpClient, TraceIdFilter, GlobalAppExceptionHandler
 ├── minio/                       ← Cliente MinIO
 ├── postgres/                    ← BaseRepository (JPA)
 ├── message/                     ← CatalogoMensajes (catálogo de mensajes)

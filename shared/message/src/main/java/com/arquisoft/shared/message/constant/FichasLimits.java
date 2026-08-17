@@ -3,11 +3,10 @@ package com.arquisoft.shared.message.constant;
 /**
  * Límites de longitud y cardinalidad del contexto fichas.
  *
- * <p>No pueden salir al bundle: se usan en {@code @Size(max = ...)}, y el compilador exige que el
- * valor de un atributo de anotación sea una expresión constante (JLS §9.7.1). Los mensajes que
- * acompañan a esas restricciones sí están externalizados, en
- * {@code ValidationMessages.properties}, donde toman el número del propio {@code {max}} — de modo
- * que cambiar un límite aquí actualiza también el texto que ve el usuario.
+ * <p>Viajan como argumento plano a {@code ValidatorLongitud}/{@code ValidatorColeccion} dentro de
+ * {@code {Command}.crear(...)}, nunca como atributo de una anotación Jakarta ({@code fichas} no
+ * anota sus DTO — ver "DTOs" en {@code CLAUDE.md}). El mensaje de error que produce esa llamada
+ * sale del catálogo normal ({@code ValidadorKey}), interpolando este mismo valor.
  */
 public final class FichasLimits {
 

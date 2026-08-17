@@ -35,13 +35,6 @@ public final class PaquetesMensajes {
     public static final String NOTIFICACIONES = "messages.notificaciones";
 
     /**
-     * Mensajes de las restricciones Jakarta. Lo lee Hibernate Validator por su cuenta para
-     * resolver los {@code message="{clave}"} de las anotaciones; se registra además aquí para que
-     * las pruebas puedan afirmar sobre el texto esperado sin volver a escribirlo.
-     */
-    public static final String VALIDACION = "ValidationMessages";
-
-    /**
      * Orden de resolución de claves. Una clave se busca en cada bundle hasta encontrarla,
      * por lo que el orden solo importa si dos bundles declaran la misma clave — situación
      * que {@code CatalogoMensajesClavesTest} impide.
@@ -53,6 +46,5 @@ public final class PaquetesMensajes {
         SEGURIDAD,
         USUARIOS,
         NOTIFICACIONES,
-        VALIDACION,
     };
 }

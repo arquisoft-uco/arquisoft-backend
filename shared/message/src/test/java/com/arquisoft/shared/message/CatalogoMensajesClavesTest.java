@@ -1,7 +1,6 @@
 package com.arquisoft.shared.message;
 
 import com.arquisoft.shared.message.annotation.FichasApiKeys;
-import com.arquisoft.shared.message.annotation.ValidationKeys;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -67,21 +66,6 @@ class CatalogoMensajesClavesTest {
     }
 
     @Test
-    @DisplayName("toda clave de ValidationKeys resuelve contra ValidationMessages.properties")
-    void debeResolverTodaClaveDeValidacion_cuandoSeRecorreValidationKeys() {
-        List<String> sinTexto = new ArrayList<>();
-
-        for (String referencia : constantesDe(ValidationKeys.class)) {
-            String clave = ValidationKeys.sinLlaves(referencia);
-            if (!catalogo.contieneClave(clave)) {
-                sinTexto.add(clave);
-            }
-        }
-
-        assertThat(sinTexto).isEmpty();
-    }
-
-    @Test
     @DisplayName("toda clave de FichasApiKeys existe en el bundle de documentación")
     void debeResolverTodaClaveDeApi_cuandoSeRecorreFichasApiKeys() {
         ResourceBundle apiDocs = ResourceBundle.getBundle(PaquetesMensajes.FICHAS_API, Locale.ROOT);
@@ -107,9 +91,6 @@ class CatalogoMensajesClavesTest {
     void debeTenerClave_cuandoSeRecorrenLasClavesDelBundle() {
         Set<String> declaradas = new LinkedHashSet<>();
         clavesDeclaradas().forEach(clave -> declaradas.add(clave.clave()));
-        for (String referencia : constantesDe(ValidationKeys.class)) {
-            declaradas.add(ValidationKeys.sinLlaves(referencia));
-        }
         for (String referencia : constantesDe(FichasApiKeys.class)) {
             if (esReferenciaDeApi(referencia)) {
                 declaradas.add(claveDeApi(referencia));
