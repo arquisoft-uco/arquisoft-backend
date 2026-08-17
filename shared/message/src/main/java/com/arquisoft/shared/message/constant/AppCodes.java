@@ -22,6 +22,15 @@ public final class AppCodes {
         public static final String CAMPO_FORMATO_INVALIDO = "CAMPO_FORMATO_INVALIDO";
     }
 
+    /** Notification Pattern — los produce {@code shared:validation} al agrupar los fieldErrors. */
+    public static final class Validacion {
+
+        private Validacion() {}
+
+        public static final String DOMINIO = "DOMAIN_VALIDATION_ERROR";
+        public static final String APLICACION = "APPLICATION_VALIDATION_ERROR";
+    }
+
     public static final class Paginacion {
 
         private Paginacion() {}

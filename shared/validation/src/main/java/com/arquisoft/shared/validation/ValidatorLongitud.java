@@ -28,8 +28,6 @@ public final class ValidatorLongitud {
         return true;
     }
 
-    // Un solo error con el rango completo, no dos: al usuario le sirve más "entre 3 y 100"
-    // que enterarse de un extremo por petición.
     public static boolean longitudEntre(
             String valor, int min, int max, String campo, String codigoError, ValidationResult resultado) {
         int longitud = UtilTexto.aplicarTrim(valor).length();

@@ -30,6 +30,32 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
 
+    // Identificadores del protocolo OAuth2/OIDC. No son catálogo: los fija el estándar y
+    // Keycloak los compara literalmente. Van separados por rol porque tres de ellos colisionan
+    // — "password" es a la vez grant_type y nombre de campo, y "refresh_token" es grant_type,
+    // parámetro de la petición y clave de la respuesta.
+    private static final String PARAM_GRANT_TYPE = "grant_type";
+    private static final String PARAM_CLIENT_ID = "client_id";
+    private static final String PARAM_CLIENT_SECRET = "client_secret";
+    private static final String PARAM_USERNAME = "username";
+    private static final String PARAM_PASSWORD = "password";
+    private static final String PARAM_REFRESH_TOKEN = "refresh_token";
+
+    private static final String GRANT_TYPE_PASSWORD = "password";
+    private static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
+
+    private static final String RESPUESTA_ACCESS_TOKEN = "access_token";
+    private static final String RESPUESTA_REFRESH_TOKEN = "refresh_token";
+    private static final String RESPUESTA_EXPIRES_IN = "expires_in";
+    private static final String RESPUESTA_TOKEN_TYPE = "token_type";
+    private static final String RESPUESTA_SCOPE = "scope";
+
+    private static final long EXPIRACION_POR_DEFECTO = 3600L;
+    private static final String TOKEN_TYPE_POR_DEFECTO = "Bearer";
+    private static final String SCOPE_POR_DEFECTO = "";
+
+    private static final String PLANTILLA_TOKEN_ENDPOINT = "%s/realms/%s/protocol/openid-connect/token";
+
     private final RestTemplate restTemplate;
     private final CatalogoMensajes catalogo;
 
@@ -51,10 +77,10 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
             String tokenEndpoint = buildTokenEndpoint();
 
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-            body.add("grant_type", "password");
-            body.add("client_id", clientId);
-            body.add("username", correo);
-            body.add("password", contrasena);
+            body.add(PARAM_GRANT_TYPE, GRANT_TYPE_PASSWORD);
+            body.add(PARAM_CLIENT_ID, clientId);
+            body.add(PARAM_USERNAME, correo);
+            body.add(PARAM_PASSWORD, contrasena);
 
             addClientSecretIfPresent(body);
 
@@ -89,9 +115,9 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
             String tokenEndpoint = buildTokenEndpoint();
 
             MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
-            body.add("grant_type", "refresh_token");
-            body.add("client_id", clientId);
-            body.add("refresh_token", tokenRefresco);
+            body.add(PARAM_GRANT_TYPE, GRANT_TYPE_REFRESH_TOKEN);
+            body.add(PARAM_CLIENT_ID, clientId);
+            body.add(PARAM_REFRESH_TOKEN, tokenRefresco);
 
             addClientSecretIfPresent(body);
 
@@ -133,24 +159,21 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
 
     private CredencialesSesion mapToCredenciales(Map<String, Object> body) {
         return CredencialesSesion.de(
-                (String) body.get("access_token"),
-                (String) body.get("refresh_token"),
-                ((Number) body.getOrDefault("expires_in", 3600)).longValue(),
-                (String) body.getOrDefault("token_type", "Bearer"),
-                (String) body.getOrDefault("scope", "")
+                (String) body.get(RESPUESTA_ACCESS_TOKEN),
+                (String) body.get(RESPUESTA_REFRESH_TOKEN),
+                ((Number) body.getOrDefault(RESPUESTA_EXPIRES_IN, EXPIRACION_POR_DEFECTO)).longValue(),
+                (String) body.getOrDefault(RESPUESTA_TOKEN_TYPE, TOKEN_TYPE_POR_DEFECTO),
+                (String) body.getOrDefault(RESPUESTA_SCOPE, SCOPE_POR_DEFECTO)
         );
     }
 
     private String buildTokenEndpoint() {
-        return String.format(
-                "%s/realms/%s/protocol/openid-connect/token",
-                keycloakServerUrl, realm
-        );
+        return PLANTILLA_TOKEN_ENDPOINT.formatted(keycloakServerUrl, realm);
     }
 
     private void addClientSecretIfPresent(MultiValueMap<String, String> body) {
         if (clientSecret != null && !clientSecret.isEmpty()) {
-            body.add("client_secret", clientSecret);
+            body.add(PARAM_CLIENT_SECRET, clientSecret);
         }
     }
 

@@ -30,6 +30,14 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SeguridadConfig {
 
+    // Rutas públicas y plantilla del issuer: son contrato con Keycloak y con las herramientas
+    // (actuator, springdoc), que las resuelven literalmente. No van al catálogo.
+    private static final String PLANTILLA_ISSUER = "%s/realms/%s";
+    private static final String RUTA_ACTUATOR_HEALTH = "/actuator/health/**";
+    private static final String RUTA_SWAGGER_UI = "/swagger-ui/**";
+    private static final String RUTA_API_DOCS = "/v3/api-docs/**";
+    private static final String RUTA_SWAGGER_RESOURCES = "/swagger-resources/**";
+
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
     private final SecurityAccessDeniedHandler securityAccessDeniedHandler;
     private final SecurityAuthenticationEntryPoint securityAuthenticationEntryPoint;
@@ -56,7 +64,7 @@ public class SeguridadConfig {
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        var issuer = String.format("%s/realms/%s", keycloakServerUrl, realm);
+        var issuer = PLANTILLA_ISSUER.formatted(keycloakServerUrl, realm);
         log.info(catalogo.obtener(IniciarSesionKey.LOG_JWT_DECODER_CONFIG), issuer, expectedAudience);
 
         var decoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
@@ -80,8 +88,8 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.POST, authLoginPath).permitAll()
                         .requestMatchers(HttpMethod.POST, authRefreshPath).permitAll()
                         .requestMatchers(HttpMethod.POST, authValidatePath).permitAll()
-                        .requestMatchers("/actuator/health/**").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**").permitAll()
+                        .requestMatchers(RUTA_ACTUATOR_HEALTH).permitAll()
+                        .requestMatchers(RUTA_SWAGGER_UI, RUTA_API_DOCS, RUTA_SWAGGER_RESOURCES).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

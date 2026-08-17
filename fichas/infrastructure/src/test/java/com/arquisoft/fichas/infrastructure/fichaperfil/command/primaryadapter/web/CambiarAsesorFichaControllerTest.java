@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.w
 import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
+import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.Mensajes;
@@ -198,7 +199,7 @@ class CambiarAsesorFichaControllerTest {
                         .content(requestBody))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.errorCode").value("DOMAIN_VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.errorCode").value(AppCodes.Validacion.DOMINIO))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ASESOR_FICHA))
                 .andExpect(jsonPath("$.fieldErrors[0].message").value(Mensajes.formatear(FichaPerfilKey.ERROR_MISMO_ASESOR, asesorId)));
     }
@@ -233,7 +234,7 @@ class CambiarAsesorFichaControllerTest {
                         .content(requestBody))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.errorCode").value("DOMAIN_VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.errorCode").value(AppCodes.Validacion.DOMINIO))
                 .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ESTADO_FICHA))
                 .andExpect(jsonPath("$.fieldErrors[0].message").value(Mensajes.formatear(FichaPerfilKey.ERROR_ESTADO_TERMINAL, "APROBADA")));
     }

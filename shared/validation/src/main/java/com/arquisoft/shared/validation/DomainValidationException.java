@@ -1,25 +1,18 @@
 package com.arquisoft.shared.validation;
 
 import com.arquisoft.shared.exception.DomainException;
-
-import java.util.stream.Collectors;
+import com.arquisoft.shared.message.constant.AppCodes;
 
 public final class DomainValidationException extends DomainException {
 
     private final ValidationResult validationResult;
 
     public DomainValidationException(ValidationResult validationResult) {
-        super(construirMensaje(validationResult), "DOMAIN_VALIDATION_ERROR");
+        super(validationResult.describirErrores(), AppCodes.Validacion.DOMINIO);
         this.validationResult = validationResult;
     }
 
     public ValidationResult getValidationResult() {
         return validationResult;
-    }
-
-    private static String construirMensaje(ValidationResult result) {
-        return result.getErrores().stream()
-            .map(e -> "[%s] %s".formatted(e.codigoError(), e.mensaje()))
-            .collect(Collectors.joining(" | "));
     }
 }

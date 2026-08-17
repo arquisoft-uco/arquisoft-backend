@@ -1,25 +1,18 @@
 package com.arquisoft.shared.validation;
 
 import com.arquisoft.shared.exception.ApplicationException;
-
-import java.util.stream.Collectors;
+import com.arquisoft.shared.message.constant.AppCodes;
 
 public final class ApplicationValidationException extends ApplicationException {
 
     private final transient ValidationResult validationResult;
 
     public ApplicationValidationException(ValidationResult validationResult) {
-        super(construirMensaje(validationResult), "APPLICATION_VALIDATION_ERROR");
+        super(validationResult.describirErrores(), AppCodes.Validacion.APLICACION);
         this.validationResult = validationResult;
     }
 
     public ValidationResult getValidationResult() {
         return validationResult;
-    }
-
-    private static String construirMensaje(ValidationResult result) {
-        return result.getErrores().stream()
-                .map(e -> "[%s] %s".formatted(e.codigoError(), e.mensaje()))
-                .collect(Collectors.joining(" | "));
     }
 }

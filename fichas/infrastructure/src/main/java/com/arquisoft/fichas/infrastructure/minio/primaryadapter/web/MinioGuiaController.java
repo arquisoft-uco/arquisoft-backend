@@ -31,6 +31,16 @@ public class MinioGuiaController {
 
     private static final String AUTENTICADO = "isAuthenticated()";
 
+    // Claves del JSON de respuesta: son contrato con el cliente, no texto traducible.
+    private static final String CAMPO_BUCKET = "bucket";
+    private static final String CAMPO_KEY = "key";
+    private static final String CAMPO_METHOD = "method";
+    private static final String CAMPO_URL = "url";
+    private static final String CAMPO_EXISTE = "existe";
+
+    private static final String METODO_CARGA = "PUT";
+    private static final String METODO_DESCARGA = "GET";
+
     private final MinioStorageClient minioStorageClient;
     private final AppLogger logger;
     private final CatalogoMensajes catalogo;
@@ -52,10 +62,10 @@ public class MinioGuiaController {
         logger.debug(catalogo.obtener(MinioGuiaKey.LOG_UPLOAD_URL), bucket, key);
         var url = minioStorageClient.generateUploadPresignedUrl(bucket, key);
         return ResponseEntity.ok(Map.of(
-                "bucket", bucket,
-                "key", key,
-                "method", "PUT",
-                "url", url
+                CAMPO_BUCKET, bucket,
+                CAMPO_KEY, key,
+                CAMPO_METHOD, METODO_CARGA,
+                CAMPO_URL, url
         ));
     }
 
@@ -76,10 +86,10 @@ public class MinioGuiaController {
         logger.debug(catalogo.obtener(MinioGuiaKey.LOG_DOWNLOAD_URL), bucket, key);
         var url = minioStorageClient.generateDownloadPresignedUrl(bucket, key);
         return ResponseEntity.ok(Map.of(
-                "bucket", bucket,
-                "key", key,
-                "method", "GET",
-                "url", url
+                CAMPO_BUCKET, bucket,
+                CAMPO_KEY, key,
+                CAMPO_METHOD, METODO_DESCARGA,
+                CAMPO_URL, url
         ));
     }
 
@@ -98,7 +108,7 @@ public class MinioGuiaController {
             @RequestParam String key) {
 
         var existe = minioStorageClient.objectExists(bucket, key);
-        return ResponseEntity.ok(Map.of("bucket", bucket, "key", key, "existe", existe));
+        return ResponseEntity.ok(Map.of(CAMPO_BUCKET, bucket, CAMPO_KEY, key, CAMPO_EXISTE, existe));
     }
 
     @DeleteMapping("${rutas.fichas.minio-guia.objeto:/objeto}")
