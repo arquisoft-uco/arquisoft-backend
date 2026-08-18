@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web;
 
+import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteDuplicadoException;
@@ -34,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(RegistrarFichaPerfilController.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class,
+        GlobalAppExceptionHandler.class, TrazabilidadConfig.class, CatalogoMensajesConfig.class,
         RegistrarFichaPerfilControllerTest.TestSecurityConfig.class})
 class RegistrarFichaPerfilControllerTest {
 

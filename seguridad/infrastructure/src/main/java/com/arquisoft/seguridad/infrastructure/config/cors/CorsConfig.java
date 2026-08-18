@@ -11,6 +11,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.arquisoft.shared.tracing.infrastructure.traza.propagacion.TrazaHeaders;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,7 +57,9 @@ public class CorsConfig {
                 "Content-Type",
                 "X-Total-Count",
                 "X-Page-Number",
-                "X-Page-Size"
+                "X-Page-Size",
+                TrazaHeaders.X_CORRELATION_ID,
+                TrazaHeaders.X_TRANSACTION_ID
         ));
         
         configuration.setAllowCredentials(allowCredentials);

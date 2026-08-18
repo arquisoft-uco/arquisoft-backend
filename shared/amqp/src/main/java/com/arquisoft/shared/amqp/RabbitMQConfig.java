@@ -1,12 +1,10 @@
 package com.arquisoft.shared.amqp;
 
-import com.arquisoft.shared.logger.MdcKeys;
-import com.arquisoft.shared.logger.MdcValores;
+import com.arquisoft.shared.amqp.trazabilidad.TrazaMessagePostProcessor;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
-import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.MessagePostProcessor;
@@ -19,8 +17,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
-
-import java.util.UUID;
 
 @Slf4j
 @Configuration
@@ -62,16 +58,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public MessagePostProcessor traceHeadersPostProcessor() {
-        return message -> {
-            String idTraza = MDC.get(MdcKeys.ID_TRAZA);
-            String idUsuario = MDC.get(MdcKeys.ID_USUARIO);
-            message.getMessageProperties().setHeader(AmqpHeaders.X_TRACE_ID,
-                    UtilObjeto.aplicarPorDefecto(idTraza, UUID.randomUUID().toString().replace("-", "")));
-            message.getMessageProperties().setHeader(AmqpHeaders.X_USER_ID,
-                    UtilObjeto.aplicarPorDefecto(idUsuario, MdcValores.SISTEMA));
-            return message;
-        };
+    public MessagePostProcessor traceHeadersPostProcessor(GestorTraza gestorTraza) {
+        return new TrazaMessagePostProcessor(gestorTraza);
     }
 
     @Bean

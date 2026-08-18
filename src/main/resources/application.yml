@@ -284,6 +284,15 @@ datasource:
 # No se usa el adapter keycloak-spring-boot-adapter (removido en SB3+).
 # La validación JWT usa Spring Security OAuth2 Resource Server de forma nativa.
 arquisoft:
+  # Trazabilidad (shared:tracing). Claves MDC emitidas como campos JSON de primer nivel en
+  # perfil prod: correlacionId, transaccionId, origen, usuarioId, clienteIp, metodoHttp,
+  # rutaUri, tiempoEntrada; y solo en la linea AUDIT: codigoEstado, duracionMs, tiempoSalida.
+  trazas:
+    # La IP completa esta cubierta por la base legal de interes legitimo (seguridad y abuso
+    # de la API). Activar para anonimizar el ultimo octeto IPv4 / truncar IPv6 a /48.
+    anonimizar-ip: ${TRAZAS_ANONIMIZAR_IP:false}
+    rutas-excluidas-auditoria: /api/actuator/,/api/swagger-ui,/api/v3/api-docs,/api/swagger-resources
+
   keycloak:
     server-url: ${KEYCLOAK_URL:http://localhost:8081}
     realm: ${KEYCLOAK_REALM:arquisoft}
@@ -311,7 +320,7 @@ server:
     context-path: /api
   # ForwardedHeaderFilter de Spring valida X-Forwarded-For/X-Real-IP contra trusted-proxies
   # antes de reescribir request.getRemoteAddr() — evita IP spoofing desde internet.
-  # AuditFilter lee solo request.getRemoteAddr() y obtiene la IP real del cliente.
+  # TrazabilidadFilter lee solo request.getRemoteAddr() y obtiene la IP real del cliente.
   forward-headers-strategy: FRAMEWORK
   compression:
     enabled: true
@@ -325,6 +334,17 @@ logging:
   level:
     root: INFO
     org.springframework.web: INFO
+  # servicioNombre y version NO van al MDC: son constantes del proceso, no contexto de la
+  # peticion. El formateador logstash de Spring Boot 4 solo serializa el MDC y los
+  # KeyValuePairs del evento — nunca las propiedades de contexto de Logback, asi que
+  # <springProperty scope="context"> no funcionaria aqui. StructuredLogEncoder resuelve
+  # estas propiedades desde el Environment aunque el encoder se declare en logback-spring.xml.
+  structured:
+    json:
+      add:
+        servicioNombre: ${spring.application.name}
+        version: ${spring.application.version}
+
 
 # ==================== ACTUATOR ====================
 management:

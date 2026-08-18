@@ -10,12 +10,11 @@ import com.arquisoft.shared.exception.DomainException;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.validation.ApplicationValidationException;
 import com.arquisoft.shared.validation.DomainValidationException;
-import com.arquisoft.shared.logger.MdcKeys;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -42,9 +41,11 @@ import java.util.stream.Collectors;
 public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final CatalogoMensajes catalogo;
+    private final GestorTraza gestorTraza;
 
-    public GlobalAppExceptionHandler(CatalogoMensajes catalogo) {
+    public GlobalAppExceptionHandler(CatalogoMensajes catalogo, GestorTraza gestorTraza) {
         this.catalogo = catalogo;
+        this.gestorTraza = gestorTraza;
     }
 
     // El mapa guarda la CLAVE del catálogo, no el texto: es estático y se inicializa antes de que
@@ -107,6 +108,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                         .status(HttpStatus.UNPROCESSABLE_CONTENT.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
+                        .transaccionId(currentTransaccionId())
                         .build());
     }
 
@@ -133,6 +135,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                         .status(HttpStatus.BAD_REQUEST.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
+                        .transaccionId(currentTransaccionId())
                         .build());
     }
 
@@ -177,6 +180,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                         .status(HttpStatus.UNAUTHORIZED.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
+                        .transaccionId(currentTransaccionId())
                         .build());
     }
 
@@ -193,6 +197,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                         .status(HttpStatus.FORBIDDEN.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
+                        .transaccionId(currentTransaccionId())
                         .build());
     }
 
@@ -223,6 +228,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                         .status(HttpStatus.BAD_REQUEST.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
+                        .transaccionId(currentTransaccionId())
                         .build());
     }
 
@@ -243,6 +249,7 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                         .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                         .path(request.getRequestURI())
                         .traceId(currentTraceId())
+                        .transaccionId(currentTransaccionId())
                         .build());
     }
 
@@ -284,7 +291,8 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
                 .message(message)
                 .status(status.value())
                 .path(path)
-                .traceId(currentTraceId());
+                .traceId(currentTraceId())
+                .transaccionId(currentTransaccionId());
 
         if (status == HttpStatus.CONTENT_TOO_LARGE) {
             builder.errorCode(AppCodes.Http.ARCHIVO_DEMASIADO_GRANDE);
@@ -362,6 +370,10 @@ public class GlobalAppExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     private String currentTraceId() {
-        return MDC.get(MdcKeys.ID_TRAZA);
+        return gestorTraza.correlacionActual();
+    }
+
+    private String currentTransaccionId() {
+        return gestorTraza.transaccionActual();
     }
 }

@@ -13,7 +13,7 @@ Contexto acotado responsable de la autenticación y autorización del sistema. D
 | Cierre de sesión | Blacklist JTI en Redis con TTL automático |
 | Validación de tokens entre servicios | JwtDecoder + JWK Set de Keycloak |
 | Autorización de endpoints | Permisos finos (`resource_access.{clientId}.roles`) vía JWT Resource Server |
-| Protección de endpoints | Rate limiting por IP, CORS, AuditFilter |
+| Protección de endpoints | Rate limiting por IP, CORS, auditoría vía `shared:tracing` |
 
 ---
 
@@ -95,7 +95,7 @@ seguridad/
         │   ├── TokenInvalidoException.java
         │   └── ProveedorIdentidadNoDisponibleException.java
         ├── filter/
-        │   ├── AuditFilter.java              Log de cada request (METHOD, URI, STATUS, duración, IP)
+        │   ├── IdentidadTrazaFilter.java     Añade el sub del JWT a la traza (dentro de la cadena de Security)
         │   ├── JwtBlacklistFilter.java        Bloquea tokens revocados; fail-closed ante Redis caído
         │   └── LimitadorSolicitudesFilter.java 429 por IP; bucket global y bucket login (más estricto)
         └── web/
@@ -163,5 +163,5 @@ La SPA `react-app` autentica con **Authorization Code + PKCE** (public client) y
 - La SPA autentica con **Bearer token (no cookies)**: `allow-credentials=false` (default) y `allowed-headers=Authorization,Content-Type` (sin `*`). Configurables vía `CORS_ALLOW_CREDENTIALS` y `CORS_ALLOWED_HEADERS`. En producción, incluir el origen real de la SPA en `CORS_ALLOWED_ORIGINS`.
 
 ### Auditoría
-- `AuditFilter` registra cada request: METHOD, URI, STATUS, duración (ms), IP y userId (del JWT si presente).
+- La auditoría de requests la emite `TrazabilidadFilter` (`shared:web`), no este contexto. `IdentidadTrazaFilter` solo aporta el `usuarioId`: se registra con `addFilterAfter(BearerTokenAuthenticationFilter.class)`, es decir **antes** de `AuthorizationFilter`, para que un 403 se audite con el usuario real y no como anónimo.
 - Excluye rutas de Swagger, actuator y docs.

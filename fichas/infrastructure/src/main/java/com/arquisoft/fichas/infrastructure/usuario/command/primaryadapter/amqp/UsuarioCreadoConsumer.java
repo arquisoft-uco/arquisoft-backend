@@ -7,6 +7,7 @@ import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuario
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -28,8 +29,9 @@ public class UsuarioCreadoConsumer extends AbstractEventConsumer {
             RegistrarUsuarioUseCase registrarUsuarioUseCase,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
-            CatalogoMensajes catalogo) {
-        super(objectMapper);
+            CatalogoMensajes catalogo,
+            GestorTraza gestorTraza) {
+        super(objectMapper, gestorTraza);
         this.registrarUsuarioUseCase = registrarUsuarioUseCase;
         this.logger = logger;
         this.catalogo = catalogo;

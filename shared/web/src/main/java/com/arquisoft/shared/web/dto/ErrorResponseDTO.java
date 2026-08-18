@@ -26,6 +26,8 @@ public class ErrorResponseDTO {
 
     private String traceId;
 
+    private String transaccionId;
+
     @Builder.Default
     private Instant timestamp = Instant.now();
 

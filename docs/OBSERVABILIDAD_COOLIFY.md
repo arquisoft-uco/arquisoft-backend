@@ -114,9 +114,14 @@ Configurar en Grafana (Server 2): **Connections → Data sources → Add → Lok
 # Búsqueda en texto
 {container="arquisoft-backend", job="backend-java-coolify"} |= "Exception"
 
-# Trazabilidad
-{container="arquisoft-backend"} | json | idTraza="<uuid>"
-{container="arquisoft-backend"} | json | idUsuario="<uuid>"
+# Trazabilidad — ver docs/OBSERVABILIDAD_LOCAL.md para el catálogo completo de campos
+# correlacionId agrupa la transacción entera (HTTP + saltos AMQP); transaccionId, un solo salto.
+{container="arquisoft-backend"} | json | correlacionId="<id>"
+{container="arquisoft-backend"} | json | transaccionId="<id>"
+{container="arquisoft-backend"} | json | usuarioId="<uuid>"
+
+# Auditoría de accesos denegados
+{container="arquisoft-backend"} | json | message="AUDIT" | codigoEstado=~"401|403|429"
 
 # Métricas
 rate({container="arquisoft-backend", level="ERROR"}[1m])

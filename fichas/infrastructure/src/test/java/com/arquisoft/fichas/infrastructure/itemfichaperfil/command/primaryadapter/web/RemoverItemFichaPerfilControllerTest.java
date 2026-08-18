@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web;
 
+import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
@@ -40,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = RemoverItemFichaPerfilController.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, CatalogoMensajesConfig.class,
+        GlobalAppExceptionHandler.class, TrazabilidadConfig.class, CatalogoMensajesConfig.class,
         RemoverItemFichaPerfilControllerTest.TestSecurityConfig.class,
         FichasInfrastructureTestApplication.class
 })

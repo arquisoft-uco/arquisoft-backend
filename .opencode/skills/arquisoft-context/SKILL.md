@@ -1104,7 +1104,7 @@ y respeta el modelo de dominio en el código interno.
 - **Posición = significado.** El segmento inmediatamente después de una colección es el id **de esa colección**: en `/fichas-perfil/{X}/items`, `X` es un `fichaPerfilId`. Colocar el id de otra entidad en esa posición hace que la URL diga algo distinto de lo que la operación hace, y colisiona con los endpoints hermanos que sí respetan la posición.
 - **Padre anidado pero no usado = peso muerto — no lo anides.** Si el use case ignora el `{padreId}` (porque el `hijoId` es UUID y basta para localizar), la forma correcta es `/hijos/{hijoId}`. Anidarlo te obliga a validar el emparejamiento (`hijo.getPadreId().equals(padreIdDelPath)` → 404) **solo para justificar un campo que tú mismo agregaste**.
 - **El `{padreId}` del path NO aporta seguridad — nunca lo anides "por autorización".** La autorización por instancia se resuelve sin él: el use case deriva el padre **desde el propio hijo** (`hijo.getPadreId()`, leído de BD) y la identidad del actor **desde el JWT** (`jwt.getSubject()`). El path no participa en esa decisión. Ejemplo real: `ModificarItemFichaPerfilUseCase` carga el ítem con `buscarPorId(itemId)` y llama `esEstudiantePropietario(item.getFichaPerfilId(), command.estudianteId())` → 403. Lo único que el cliente controla es el `{hijoId}`; padre y actor los deriva el servidor.
-- **Nunca datos sensibles o personales en el path ni en query params** — el `AuditFilter` loguea la URI de toda petición.
+- **Nunca datos sensibles o personales en el path** — `TrazabilidadFilter` loguea `rutaUri` en toda petición. El query string NO entra al MDC (se usa `getRequestURI()`), pero los path variables sí.
 
 ---
 

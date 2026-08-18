@@ -74,8 +74,13 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-amqp"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
 
-    // Logging estructurado (ADR-005): JSON encoder con traceId/userId en MDC via AuditFilter
+    // Logging estructurado (ADR-005): JSON encoder que emite el MDC como campos de primer nivel
     implementation project(':shared:logger')
+
+    // Trazabilidad: GestorTraza y su adaptador MDC. Se declara explicitamente aunque llegue
+    // transitivamente — si el jar no esta en el classpath de runtime, los @Component del
+    // modulo no se registran y la aplicacion arranca sin trazas y sin ningun error.
+    implementation project(':shared:tracing')
 
     // Catálogo de mensajes: MessageCatalogConfig lo expone como bean y publica los textos
     // de OpenAPI en el Environment.

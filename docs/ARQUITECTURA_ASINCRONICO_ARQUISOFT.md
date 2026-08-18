@@ -184,7 +184,7 @@ El `RabbitTemplate` (mismo archivo) resuelve dos problemas de confiabilidad que 
 - **Publisher Confirms** (`setConfirmCallback`): el broker confirma o rechaza cada publicación;
   un `NACK` se registra con el `correlationId` del evento (`evento.getIdEvento()`).
 
-Un `MessagePostProcessor` inyecta los headers `X-Trace-Id`/`X-User-Id` (`AmqpHeaders`, tomados
+Un `MessagePostProcessor` inyecta los headers `X-Trace-Id`/`X-Transaction-Id`/`X-User-Id` (`TrazaHeaders`, tomados
 del MDC) en cada mensaje publicado, incluidos los reintentos del outbox — así el consumidor
 puede reconstruir la traza aunque el evento se haya reintentado horas después.
 
@@ -305,7 +305,7 @@ comodín (`#`).
   en el MDC por `AbstractEventConsumer.withCorrelation`), de modo que un log del consumidor se
   puede correlacionar con el request HTTP original que disparó el evento.
 
-`AuditFilter` (`seguridad/infrastructure/filter/`) registra además cada request HTTP síncrono
+`TrazabilidadFilter` (`shared:web/filter/`) registra además cada request HTTP síncrono
 (`METHOD`, `URI`, `USER`, `TIME`, `STATUS`) — complementario a la trazabilidad asíncrona, no
 parte de ella.
 

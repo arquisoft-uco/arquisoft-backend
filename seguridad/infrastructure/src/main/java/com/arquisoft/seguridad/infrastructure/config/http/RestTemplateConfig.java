@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.http;
 
 import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.web.client.TrazaClientHttpRequestInterceptor;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,13 @@ import java.util.List;
 @Slf4j
 @Configuration
 public class RestTemplateConfig {
+
+    private final TrazaClientHttpRequestInterceptor trazaInterceptor;
+
+    public RestTemplateConfig(TrazaClientHttpRequestInterceptor trazaInterceptor) {
+        this.trazaInterceptor = trazaInterceptor;
+    }
+
 
     @Value("${http.client.connect-timeout:5000}")
     private int connectTimeout;
@@ -34,7 +42,7 @@ public class RestTemplateConfig {
         factory.setReadTimeout(readTimeout);
 
         var restTemplate = new RestTemplate(factory);
-        restTemplate.setInterceptors(List.of(loggingInterceptor()));
+        restTemplate.setInterceptors(List.of(trazaInterceptor, loggingInterceptor()));
         return restTemplate;
     }
 
@@ -45,7 +53,7 @@ public class RestTemplateConfig {
         factory.setReadTimeout(5000);
 
         var restTemplate = new RestTemplate(factory);
-        restTemplate.setInterceptors(List.of(loggingInterceptor()));
+        restTemplate.setInterceptors(List.of(trazaInterceptor, loggingInterceptor()));
         return restTemplate;
     }
 

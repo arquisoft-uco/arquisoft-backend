@@ -1,0 +1,30 @@
+// java-library habilita 'api': GestorTraza, AlcanceTraza y las constantes de propagacion
+// aparecen en las firmas publicas que consumen shared:web, shared:amqp y
+// seguridad:infrastructure.
+//
+// El modulo NO depende de spring-web, spring-security ni spring-boot-autoconfigure:
+// los adaptadores de transporte viven en los modulos que ya arrastran esas dependencias.
+// Dentro del modulo la direccion es domain <- application <- infrastructure, y solo
+// infrastructure/ conoce SLF4J y Spring.
+apply plugin: 'java-library'
+
+dependencies {
+    // MDC. Va con 'api' porque el adaptador secundario lo expone al resto del classpath
+    // de quienes ya loguean con SLF4J.
+    api "org.slf4j:slf4j-api"
+
+    // Helpers estaticos sin estado: UtilTexto.esVacioONulo, UtilObjeto.aplicarPorDefecto,
+    // UtilFecha.generarInstanteActual.
+    implementation project(':shared:util')
+
+    // @Component/@Configuration/@Bean para el adaptador y la configuracion. Nada mas de Spring.
+    implementation "org.springframework:spring-context"
+
+    testImplementation "org.assertj:assertj-core"
+
+    // Sin un binding de SLF4J, MDC usa el adaptador NOP: los put se descartan y los get
+    // devuelven null, con lo que las pruebas del adaptador pasarian sin ejercitar nada.
+    // En produccion el binding llega via spring-boot-starter-logging (shared:logger).
+    testRuntimeOnly "ch.qos.logback:logback-classic"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

@@ -140,7 +140,8 @@ arquisoft-backend/
 │   ├── logger/                           # AppLogger
 │   ├── redis/                            # RedisClient
 │   ├── amqp/                             # EventPublisher
-│   ├── web/                              # HttpClient, TraceIdFilter, GlobalAppExceptionHandler
+│   ├── web/                              # TrazabilidadFilter, GlobalAppExceptionHandler, DTOs comunes
+│   ├── tracing/                          # Contexto de traza sobre MDC (hexagonal interno)
 │   ├── minio/                            # Cliente MinIO
 │   ├── jpa/                              # QueryRepository/SpecificationQueryRepository, CampoSpec, PageableMapper/PaginationMapper
 │   ├── query/                            # Vocabulario de consulta sin Spring: QueryCriteria, NodoFiltro, PaginatedResult, DTOs de filtro
@@ -187,7 +188,7 @@ arquisoft-backend/
 │           │   └── http/RestTemplateConfig.java     # SimpleClientHttpRequestFactory (SB4 compat)
 │           └── filter/
 │               ├── LimitadorSolicitudesFilter.java  # OncePerRequestFilter: evalúa límite por IP
-│               └── AuditFilter.java         # Registra METHOD, URI, USER, TIME, STATUS
+│               └── IdentidadTrazaFilter.java # Añade el sub del JWT a la traza abierta
 │
 ├── usuarios/                              # CONTEXTO: alta de usuarios (extraído de seguridad)
 │   ├── domain/                            # UsuarioDomain, secondaryport/UsuarioOutputPort
@@ -291,7 +292,8 @@ El módulo `shared` contiene **13 sub-módulos** reutilizables por cualquier con
 | `logger` | AppLogger (interface) | Logging desacoplado de SLF4J |
 | `redis` | RedisClient (interface) | Operaciones de cache |
 | `amqp` | EventPublisher (interface) | Publicar eventos a RabbitMQ |
-| `web` | HttpClient, TraceIdFilter, GlobalAppExceptionHandler | Llamadas HTTP entre contextos, trazabilidad, manejo global de errores |
+| `web` | TrazabilidadFilter, GlobalAppExceptionHandler, DTOs comunes | Adaptadores HTTP transversales y manejo global de errores |
+| `tracing` | GestorTraza, AlcanceTraza, TrazaKeys, TrazaHeaders | Contexto de traza sobre MDC: correlación, transacción, propagación HTTP/AMQP |
 | `minio` | Cliente MinIO | Almacenamiento de archivos |
 | `jpa` | `QueryRepository`/`SpecificationQueryRepository`, `CampoSpec`, `PageableMapper`/`PaginationMapper` | Todo lo que necesita Spring Data JPA para el lado de consulta — nunca se importa desde `domain` ni `application` |
 | `query` | `QueryCriteria`/`NodoFiltro`/`FiltroOperador`/`SortOrder`, `PaginatedResult`, DTOs de filtro | Vocabulario de consulta **sin ninguna dependencia de Spring** — usable en cualquier capa |
@@ -515,7 +517,7 @@ Esta configuración hace que Spring Boot reemplace automáticamente los executor
 | **`JwtTokenOutputAdapter`** (decodificación JWT) | Igual |
 | **`FichaPerfilCommandOutputAdapter`** y todos los OutputAdapters JPA/JDBC | Queries a BD sin bloquear OS thread |
 | **`@RabbitListener`** en los `Consumer` AMQP | Mensajes procesados en virtual threads |
-| **`AuditFilter`**, **`LimitadorSolicitudesFilter`** | Mismo virtual thread del request |
+| **`TrazabilidadFilter`**, **`LimitadorSolicitudesFilter`** | Mismo virtual thread del request |
 
 No hay que modificar ningún método ni clase — el beneficio es completamente transparente para el código de negocio.
 

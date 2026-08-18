@@ -9,6 +9,7 @@ import com.arquisoft.notificaciones.infrastructure.config.NotificacionesFichasQu
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -36,8 +37,9 @@ public class AsesorFichaCambiadoConsumer extends AbstractEventConsumer {
             EnviarNotificacionInteractor enviarNotificacionInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
-            CatalogoMensajes catalogo) {
-        super(objectMapper);
+            CatalogoMensajes catalogo,
+            GestorTraza gestorTraza) {
+        super(objectMapper, gestorTraza);
         this.enviarNotificacionInteractor = enviarNotificacionInteractor;
         this.logger = logger;
         this.catalogo = catalogo;

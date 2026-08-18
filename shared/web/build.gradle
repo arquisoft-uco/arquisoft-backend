@@ -2,6 +2,10 @@ dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:logger')
 
+    // shared:tracing — TrazabilidadFilter abre el alcance de traza y
+    // GlobalAppExceptionHandler lee la correlacion para el ErrorResponseDTO.
+    implementation project(':shared:tracing')
+
     // shared:query — PageResponseDTO envuelve un PaginatedResult, y los controladores
     // reciben QueryCriteriaRequestDTO desde este módulo.
     implementation project(':shared:query')

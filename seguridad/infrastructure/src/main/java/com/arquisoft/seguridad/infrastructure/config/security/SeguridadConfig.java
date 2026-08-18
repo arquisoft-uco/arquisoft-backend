@@ -2,7 +2,10 @@ package com.arquisoft.seguridad.infrastructure.config.security;
 
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.seguridad.infrastructure.filter.IdentidadTrazaFilter;
 import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -43,6 +46,20 @@ public class SeguridadConfig {
     private final SecurityAuthenticationEntryPoint securityAuthenticationEntryPoint;
     private final JwtBlacklistFilter jwtBlacklistFilter;
     private final CatalogoMensajes catalogo;
+    private final GestorTraza gestorTraza;
+
+    @Bean
+    public IdentidadTrazaFilter identidadTrazaFilter() {
+        return new IdentidadTrazaFilter(gestorTraza);
+    }
+
+    @Bean
+    public FilterRegistrationBean<IdentidadTrazaFilter> identidadTrazaFilterSinRegistroServlet(
+            IdentidadTrazaFilter filtro) {
+        var registro = new FilterRegistrationBean<>(filtro);
+        registro.setEnabled(false);
+        return registro;
+    }
 
     @Value("${arquisoft.keycloak.server-url}")
     private String keycloakServerUrl;
@@ -107,6 +124,8 @@ public class SeguridadConfig {
         // Verifica blacklist de tokens revocados en cada request autenticado.
         // Corre despues de BearerTokenAuthenticationFilter (autenticacion ya verificada).
         http.addFilterAfter(jwtBlacklistFilter, BearerTokenAuthenticationFilter.class);
+
+        http.addFilterAfter(identidadTrazaFilter(), BearerTokenAuthenticationFilter.class);
 
         return http.build();
     }

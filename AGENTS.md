@@ -215,7 +215,7 @@ La documentación de la API se gestiona con **springdoc-openapi 2.x** (Spring Bo
 | `application.yml` | `springdoc.swagger-ui.enabled: true` + `springdoc.api-docs.enabled: true` |
 | `application-prod.yml` | Ambos **deshabilitados** en prod |
 | `SeguridadConfig.java` | `/swagger-ui/**`, `/v3/api-docs/**` son permit-all |
-| `AuditFilter.java` | Paths de Swagger excluidos del log de auditoría |
+| `TrazabilidadFilter.java` (`shared:web`) | Paths de Swagger/actuator excluidos del log de auditoría (`arquisoft.trazas.rutas-excluidas-auditoria`) |
 
 URL en dev: `http://localhost:8080/api/swagger-ui/index.html` — sin autenticación.
 
@@ -303,7 +303,7 @@ Migraciones Flyway en `{contexto}/infrastructure/src/main/resources/db/migration
 
 ### Trazabilidad
 
-- `TraceIdFilter` (`shared:web`) reutiliza el header `X-Correlation-Id` entrante, cae al trace-id de `traceparent` (W3C) y solo si no hay ninguno genera un UUID
+- `TrazabilidadFilter` (`shared:web`, orden -300) reutiliza el header `X-Correlation-Id` entrante **verbatim**, cae al trace-id de `traceparent` (W3C) y solo si no hay ninguno genera uno de 32 hex. Genera además un `transaccionId` nuevo por salto. El contexto lo gobierna `shared:tracing` vía `GestorTraza`/`AlcanceTraza`
 - El id resuelto va al MDC, se devuelve en el header `X-Correlation-Id` de la respuesta y viaja como `traceId` en `ErrorResponseDTO`, de modo que un error reportado se puede reconstruir desde los logs
 
 ## Testing
