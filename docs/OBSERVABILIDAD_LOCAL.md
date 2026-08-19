@@ -140,7 +140,8 @@ Usar siempre `{container="arquisoft-backend"}` — **no** solo `{origin="..."}` 
 
 # Trazabilidad — alta cardinalidad: usar | json
 # Toda la transacción, extremo a extremo: incluye los saltos por AMQP, que conservan
-# la correlación del request HTTP que los originó.
+# la correlación del request HTTP que los originó (gracias a MdcTaskDecorator, que
+# propaga el MDC al hilo @Async que publica el evento — ver ARQUITECTURA_ASINCRONICO_ARQUISOFT.md).
 {container="arquisoft-backend"} | json | correlacionId="<id>"
 
 # Un solo salto dentro de esa transacción (un request, o un consumo de evento)

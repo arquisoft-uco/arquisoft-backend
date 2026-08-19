@@ -13,7 +13,7 @@
     <springProfile name="dev">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
-                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%X{correlacionId:-—}] [%X{usuarioId:-—}] --- [%15.15t] %cyan(%-40.40logger{39}) : %m%n%throwable</pattern>
+                <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%X{origen:-—}] [%X{correlacionId:-—}] [%X{transaccionId:-—}] [%X{usuarioId:-—}] --- [%15.15t] %cyan(%-40.40logger{39}) : %m%n%throwable</pattern>
                 <charset>UTF-8</charset>
             </encoder>
         </appender>
@@ -38,7 +38,7 @@
     <springProfile name="!dev &amp; !prod">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
-                <pattern>%d{HH:mm:ss.SSS} %-5level [%X{correlacionId:-—}] --- [%15.15t] %-40.40logger{39} : %m%n%throwable</pattern>
+                <pattern>%d{HH:mm:ss.SSS} %-5level [%X{origen:-—}] [%X{correlacionId:-—}] [%X{transaccionId:-—}] [%X{usuarioId:-—}] --- [%15.15t] %-40.40logger{39} : %m%n%throwable</pattern>
                 <charset>UTF-8</charset>
             </encoder>
         </appender>

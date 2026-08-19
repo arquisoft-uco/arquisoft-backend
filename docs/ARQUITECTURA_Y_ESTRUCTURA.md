@@ -817,6 +817,16 @@ public TaskExecutor miExecutor() {
 
 En este proyecto no hay ningún `TaskExecutor` declarado manualmente, por lo que toda la concurrencia queda cubierta con la propiedad ya configurada.
 
+> **`@Async` sí necesita un `TaskDecorator` para el MDC.** Virtual threads resuelve qué *tipo*
+> de hilo ejecuta la tarea async, pero no resuelve que el `MDC` (`ThreadLocal`) del hilo del
+> request no viaja solo al hilo nuevo. El listener interno de `spring-modulith-events-amqp` que
+> publica eventos a RabbitMQ es `@Async`, y sin ayuda pierde `correlacionId`/`transaccionId` al
+> cruzar ese hilo. `MdcTaskDecorator` (`shared:tracing/infrastructure/traza/config/`, `@Bean
+> TaskDecorator` en `TrazabilidadConfig`) es el único ajuste manual que este proyecto sí declara
+> para `@Async` — Spring Boot lo recoge automáticamente para el `applicationTaskExecutor` sin
+> tocar la configuración de virtual threads. Ver [ARQUITECTURA_ASINCRONICO_ARQUISOFT.md → "El
+> salto de hilo que casi rompe la trazabilidad"](ARQUITECTURA_ASINCRONICO_ARQUISOFT.md#el-salto-de-hilo-que-casi-rompe-la-trazabilidad).
+
 ### Separación entre `config/` raíz y `seguridad/infrastructure/config/`
 
 | Carpeta | Qué va aquí |

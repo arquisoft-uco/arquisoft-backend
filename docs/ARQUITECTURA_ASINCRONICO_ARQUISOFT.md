@@ -309,6 +309,29 @@ comodín (`#`).
 (`METHOD`, `URI`, `USER`, `TIME`, `STATUS`) — complementario a la trazabilidad asíncrona, no
 parte de ella.
 
+### El salto de hilo que casi rompe la trazabilidad
+
+La publicación real hacia RabbitMQ (arriba, "tras el commit, Spring Modulith publica...") no
+ocurre en el hilo del request: internamente `spring-modulith-events-amqp` la resuelve con un
+listener `@Async @Transactional(REQUIRES_NEW) @TransactionalEventListener`, ejecutado en el
+`applicationTaskExecutor` que autoconfigura Spring Boot. El `MDC` es un `ThreadLocal` — ese
+hilo del executor arranca vacío, así que `traceHeadersPostProcessor` (`TrazaMessagePostProcessor`)
+no encontraba `correlacionId`/`transaccionId` reales y generaba unos nuevos al momento de
+publicar, rompiendo la correlación entre el productor y cualquier consumidor.
+
+`MdcTaskDecorator` (`shared:tracing/infrastructure/traza/config/`) cierra ese hueco: captura el
+MDC del hilo que encola la tarea (todavía dentro del `AlcanceTraza` del request) y lo restaura
+en el hilo del executor antes de correr la tarea real, revirtiéndolo al terminar para no filtrar
+contexto entre tareas no relacionadas que reutilicen el mismo hilo del pool. Se registra como
+`@Bean TaskDecorator` en `TrazabilidadConfig`; Spring Boot lo recoge automáticamente para el
+`applicationTaskExecutor` sin declarar `@EnableAsync` ni un executor propio.
+
+Es, a propósito, un problema de **hilos dentro del mismo proceso**, no de propagación entre
+contextos — la propagación entre contextos siempre viajó en los headers del mensaje AMQP (arriba)
+y no depende de memoria compartida. Por eso este decorator seguirá siendo necesario aunque algún
+contexto se extraiga a su propio microservicio: cada productor seguirá teniendo su propio salto
+de hilo (request → executor async) antes de que el evento llegue al broker.
+
 ---
 
 ## Stack tecnológico

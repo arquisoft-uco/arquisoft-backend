@@ -310,6 +310,7 @@ Migraciones Flyway en `{contexto}/infrastructure/src/main/resources/db/migration
 
 - `TrazabilidadFilter` (`shared:web`, orden -300) reutiliza el header `X-Correlation-Id` entrante **verbatim**, cae al trace-id de `traceparent` (W3C) y solo si no hay ninguno genera uno de 32 hex. Genera además un `transaccionId` nuevo por salto. El contexto lo gobierna `shared:tracing` vía `GestorTraza`/`AlcanceTraza`
 - El id resuelto va al MDC, se devuelve en el header `X-Correlation-Id` de la respuesta y viaja como `traceId` en `ErrorResponseDTO`, de modo que un error reportado se puede reconstruir desde los logs
+- El MDC no cruza hilos por sí solo: la externalización de eventos a RabbitMQ de Spring Modulith corre en un `@Async` propio (el `applicationTaskExecutor` autoconfigurado), distinto del hilo que abrió el `AlcanceTraza`. `MdcTaskDecorator` (`shared:tracing/infrastructure/traza/config/`, registrado como `@Bean TaskDecorator` en `TrazabilidadConfig`) copia el MDC del hilo que encola la tarea al hilo que la ejecuta, para que `TrazaMessagePostProcessor` inyecte el `correlacionId`/`transaccionId`/`usuarioId` reales en el mensaje AMQP en vez de generar unos nuevos
 
 ## Testing
 
