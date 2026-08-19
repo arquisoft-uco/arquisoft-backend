@@ -14,14 +14,17 @@
 1. [Visión General](#visión-general)
 2. [Arquitectura Hexagonal (Puertos y Adaptadores)](#arquitectura-hexagonal-puertos-y-adaptadores)
 3. [Estructura del Proyecto](#estructura-del-proyecto)
-4. [Módulo Seguridad](#módulo-seguridad)
-5. [Módulo Shared](#módulo-shared)
-6. [AggregateRoot y Eventos de Dominio](#aggregateroot-y-eventos-de-dominio)
-7. [Virtual Threads (ADR-008)](#virtual-threads-adr-008)
-8. [Ejemplos Prácticos](#ejemplos-prácticos)
-9. [Configuración y Build](#configuración-y-build)
-10. [Flujos de Datos](#flujos-de-datos)
-11. [Perfiles de Ejecución](#perfiles-de-ejecución)
+   - [Estructura de una feature dentro de un contexto](#estructura-de-una-feature-dentro-de-un-contexto)
+   - [Convenciones de Nomenclatura](#convenciones-de-nomenclatura)
+4. [Desviaciones conocidas respecto a la convención](#desviaciones-conocidas-respecto-a-la-convención)
+5. [Módulo Seguridad](#módulo-seguridad)
+6. [Módulo Shared](#módulo-shared)
+7. [AggregateRoot y Eventos de Dominio](#aggregateroot-y-eventos-de-dominio)
+8. [Virtual Threads (ADR-008)](#virtual-threads-adr-008)
+9. [Ejemplos Prácticos](#ejemplos-prácticos)
+10. [Configuración y Build](#configuración-y-build)
+11. [Flujos de Datos](#flujos-de-datos)
+12. [Perfiles de Ejecución](#perfiles-de-ejecución)
 
 ---
 
@@ -132,20 +135,20 @@ arquisoft-backend/
 │           ├── application-dev.yml       # Perfil desarrollo
 │           └── application-prod.yml      # Perfil producción
 │
-├── shared/                               # Módulo compartido (13 sub-módulos)
-│   ├── util/                              # UtilTexto, UtilUUID, UtilColeccion, UtilFecha, UtilNumero, UtilObjeto
-│   ├── exception/                        # BaseException/BaseError y las 5 excepciones base
-│   ├── validation/                       # DomainValidator, ValidationResult (Notification Pattern)
-│   ├── domain/                           # DomainEvent, AggregateRoot
-│   ├── logger/                           # AppLogger
+├── shared/                               # Módulo compartido (14 sub-módulos + el agregador `shared`)
+│   ├── util/                             # UtilTexto, UtilUUID, UtilColeccion, UtilFecha, UtilNumero, UtilObjeto, UtilEnum
+│   ├── exception/                        # BaseException/BaseError y las 5 excepciones base (módulo hoja, sin dependencias)
+│   ├── validation/                       # ValidatorObjeto/Texto/Longitud/Numero/UUID/Coleccion + ValidationResult (Notification Pattern)
+│   ├── domain/                           # DomainEvent, AggregateRoot, EventPublisher (com.arquisoft.shared.events), DomainRule/Finder (com.arquisoft.shared.rules)
+│   ├── logger/                           # AppLogger + Slf4jAppLogger (bean prototype de AppLoggerConfig)
 │   ├── redis/                            # RedisClient
-│   ├── amqp/                             # EventPublisher
-│   ├── web/                              # TrazabilidadFilter, GlobalAppExceptionHandler, DTOs comunes
-│   ├── tracing/                          # Contexto de traza sobre MDC (hexagonal interno)
+│   ├── amqp/                             # SpringModulithEventPublisher, RabbitMQEventPublisher, AbstractEventConsumer, RabbitMQConfig
+│   ├── web/                              # TrazabilidadFilter, GlobalAppExceptionHandler, ErrorResponseDTO/PageResponseDTO, ApiCodes, HttpClient
+│   ├── tracing/                          # Contexto de traza sobre MDC — único shared con capas hexagonales internas
 │   ├── minio/                            # Cliente MinIO
-│   ├── jpa/                              # QueryRepository/SpecificationQueryRepository, CampoSpec, PageableMapper/PaginationMapper
+│   ├── jpa/                              # QueryRepository/SpecificationQueryRepository, CampoSpec/QueryJpaSpecification, PageableMapper/PaginationMapper
 │   ├── query/                            # Vocabulario de consulta sin Spring: QueryCriteria, NodoFiltro, PaginatedResult, DTOs de filtro
-│   ├── message/                          # CatalogoMensajes
+│   ├── message/                          # CatalogoMensajes + los .properties del catálogo
 │   └── notification/                     # EnvioNotificacionOutputPort (SMTP)
 │
 ├── seguridad/                            # CONTEXTO: sin DB propia (Keycloak + Redis)
@@ -212,6 +215,92 @@ arquisoft-backend/
 └── evaluaciones/                          # CONTEXTO: scaffolding
 ```
 
+### Estructura de una feature dentro de un contexto
+
+La unidad de organización dentro de un contexto **no es la capa, es la feature**. Las tres capas
+(`domain`, `application`, `infrastructure`) son módulos Gradle separados, y cada una abre el mismo
+paquete `{feature}/` en su interior. El segmento de paquete de la feature va todo en minúscula y sin
+separadores: `fichaperfil/`, no `fichaPerfil/` ni `ficha_perfil/`.
+
+Dentro de `application` e `infrastructure`, la feature se parte además en `command/` y `query/`.
+Ese corte es **CQRS y es total**: son dos árboles independientes que no comparten ninguna clase de
+persistencia (ver *Aislamiento CQRS* más abajo).
+
+```
+{contexto}/domain/src/main/java/com/arquisoft/{contexto}/domain/
+└── {feature}/
+    ├── {Entidad}Domain.java              # Aggregate root. Sustantivo, sin subcarpeta propia
+    ├── {Accion}{Entidad}Domain.java      # Objeto de acción (ver abajo). Mismo nivel que el agregado
+    ├── model/                            # Value objects + el record de entrada de cada Rule
+    ├── rules/
+    │   ├── {Regla}Rule.java              # Interfaz, extiende shared.rules.DomainRule<T>
+    │   └── impl/{Regla}RuleImpl.java     # POJO puro: sin Spring, sin Lombok, sin dependencias
+    ├── event/{Concepto}Event.java        # Eventos de dominio (extienden DomainEvent)
+    └── exception/{X}Exception.java       # Excepciones de dominio (extienden DomainException → 422)
+
+{contexto}/application/src/main/java/com/arquisoft/{contexto}/application/
+└── {feature}/
+    ├── command/
+    │   ├── primaryport/                          # Contrato primario del comando
+    │   │   ├── interactor/{Accion}{Entidad}Interactor.java
+    │   │   │   └── impl/{Accion}{Entidad}InteractorImpl.java   # Dueño de @Transactional
+    │   │   ├── model/{Accion}{Entidad}Command.java             # Entrada (record + crear(...))
+    │   │   └── mapper/{Accion}{Entidad}Mapper.java             # Command → dominio (estático)
+    │   ├── usecase/{Accion}{Entidad}UseCase.java               # NO va bajo primaryport/
+    │   │   └── impl/{Accion}{Entidad}UseCaseImpl.java          # @Component, orquesta, sin transacción
+    │   ├── validator/{Accion}{Entidad}Validator.java           # Interfaz
+    │   │   └── impl/{Accion}{Entidad}ValidatorImpl.java        # @Component, solo inyecta Rules
+    │   ├── finder/{Concepto}Finder.java                        # Extiende shared.rules.Finder<T,R>
+    │   │   └── impl/{Concepto}FinderImpl.java                  # @Component, delega en el OutputPort
+    │   ├── secondaryport/{Entidad}OutputPort.java              # Puerto de salida (escritura)
+    │   │   ├── entity/{Entidad}Entity.java                     # record plano: sin JPA, sin Lombok
+    │   │   └── mapper/{Entidad}Mapper.java                     # Entity ↔ Domain (estático)
+    │   └── result/{Concepto}Result.java                        # Solo si el comando no devuelve UUID/void
+    └── query/
+        ├── primaryport/usecase/{Consultar}{Entidad}UseCase.java   # Aquí el UseCase SÍ es el contrato
+        │   └── impl/{Consultar}{Entidad}UseCaseImpl.java          # @Transactional(readOnly = true)
+        ├── secondaryport/{Entidad}QueryOutputPort.java
+        ├── criteria/{Entidad}Criteria.java                        # Entrada de la consulta
+        └── readmodel/{Entidad}ReadModel.java                      # Salida de la consulta
+
+{contexto}/infrastructure/src/main/java/com/arquisoft/{contexto}/infrastructure/
+├── {feature}/
+│   ├── command/
+│   │   ├── primaryadapter/
+│   │   │   ├── web/{Accion}{Entidad}Controller.java
+│   │   │   │   ├── dto/{Accion}{Entidad}RequestDTO.java
+│   │   │   │   ├── dto/{Accion}{Entidad}ResponseDTO.java   # Cuando el comando devuelve cuerpo
+│   │   │   │   └── mapper/{Accion}{Entidad}RequestMapper.java
+│   │   │   └── amqp/{Evento}Consumer.java                  # + {Evento}Payload.java (record)
+│   │   └── secondaryadapter/
+│   │       ├── entity/{Entidad}JpaEntity.java              # La JPA real: @Entity/@Table/Lombok
+│   │       ├── mapper/{Entidad}JpaMapper.java              # Entity ↔ JpaEntity (estático)
+│   │       └── repository/{Entidad}CommandOutputAdapter.java
+│   │           └──          {Entidad}CommandRepository.java   # Spring Data: solo escritura
+│   └── query/
+│       ├── primaryadapter/web/{Consultar}{Entidad}Controller.java
+│       │   ├── dto/{Entidad}ResponseDTO.java
+│       │   └── mapper/{Consultar}{Entidad}RequestMapper.java   # DTO genérico → Criteria
+│       │       └──   {Entidad}ResponseMapper.java              # ReadModel → ResponseDTO
+│       └── secondaryadapter/repository/
+│           ├── {Entidad}JpaQueryEntity.java     # @Subselect + @Immutable + @Synchronize
+│           ├── {Entidad}JpaSpecification.java   # NodoFiltro → Specification
+│           ├── {Entidad}SortMapper.java         # clave de ordenamiento → columna
+│           ├── {Entidad}QueryOutputAdapter.java
+│           ├── {Entidad}QueryRepository.java    # Extiende QueryRepository, NO JpaRepository
+│           └── mapper/{Entidad}QueryMapper.java # JpaQueryEntity → ReadModel
+├── config/                  # {Contexto}DataSourceConfig, {Contexto}DomainRulesConfig, colas AMQP
+├── security/                # {Contexto}Authorities
+├── web/                     # {Contexto}Routes
+├── exception/               # Excepciones de infraestructura (extienden InfrastructureException → 503)
+├── filter/                  # Filtros HTTP propios del contexto
+└── db/migration/{contexto}/ # Flyway
+```
+
+Ninguna feature usa todos los paquetes. La regla es **no crear un paquete vacío ni un puerto sin
+consumidor**: `representantecomite` y `revisionitem` solo tienen `finder/`, `secondaryport/` y su
+adaptador, porque su único papel es responder consultas de existencia que necesita otra feature.
+
 ### Convenciones de Nomenclatura
 
 | Capa | Paquete | Sufijo | Ejemplo |
@@ -232,9 +321,196 @@ arquisoft-backend/
 | **Infrastructure - salida** | `{feature}/command\|query/secondaryadapter/...` | `OutputAdapter` | `FichaPerfilCommandOutputAdapter.java` |
 | **Infrastructure - config** | `config/` | `Config` | `FichasConfig.java` |
 
-`domain/` **nunca** declara puertos ni entidades de persistencia — no hace I/O de ningún tipo,
-solo depende de `shared:domain`. Un puerto bajo `domain/` no compilaría: invertiría la
-dirección de dependencia `domain ← application ← infrastructure`.
+**Regla bilingüe:** español para el concepto de negocio, inglés para el sufijo técnico
+(`RegistrarFichaPerfilInteractor`). No queda ningún sufijo en español: los controladores REST se
+llaman `Controller`, no `Controlador`.
+
+#### Domain
+
+| Elemento | Paquete | Sufijo | Ejemplo real |
+|---|---|---|---|
+| Aggregate root | `domain/{feature}/` (directo) | `Domain` | `FichaPerfilDomain` |
+| Objeto de acción | `domain/{feature}/` (directo) | `Domain` | `RegistroFichaPerfilDomain` |
+| Value object / entrada de Rule | `domain/{feature}/model/` | — | `ExistenciaAsesorFicha` |
+| Regla de negocio | `domain/{feature}/rules/` (+ `impl/`) | `Rule` / `RuleImpl` | `AsesorFichaExisteRule` |
+| Evento de dominio | `domain/{feature}/event/` | `Event` | `AsesorFichaCambiadoEvent` |
+| Excepción de dominio | `domain/{feature}/exception/` | `Exception` | `FichaPerfilNoEncontradaException` |
+
+El **aggregate root** es un sustantivo, nunca el infinitivo de la acción que lo crea: `FichaPerfilDomain`,
+no `RegistrarFichaPerfilDomain`. Vive directo en `domain/{feature}/`, sin subcarpeta `aggregate/`.
+
+El **objeto de acción** es un patrón aparte y conviene no confundirlo con el agregado. Cuando una acción
+no mapea al agregado raíz sino a un conjunto de cosas que esa acción arrastra, se declara un objeto de
+dominio propio nombrado por **nominalización del verbo** — `Registro`, `Modificacion`, `Cambio`,
+`Agregacion`, `Remocion` — que agrupa el agregado con lo demás:
+
+```
+RegistroFichaPerfilDomain          ← agrupa FichaPerfilDomain + estado inicial + estudiantes
+CambioAsesorFichaDomain            AgregacionItemFichaPerfilDomain
+ModificacionFichaPerfilDomain      RemocionEstudianteFichaPerfilDomain
+AgregacionEstadoEvaluacionFichaDomain
+```
+
+Es lo que construye el `{Accion}{Entidad}Mapper` de `command/primaryport/mapper/` y lo que recibe el
+`UseCase`. Sigue siendo un sustantivo, así que no rompe la regla del agregado.
+
+`domain/` **nunca** declara puertos ni entidades de persistencia y no hace I/O de ningún tipo: solo
+depende de `shared:domain`, `shared:validation` y `shared:util`. Un puerto bajo `domain/` no
+compilaría — invertiría la dirección `domain ← application ← infrastructure`.
+
+#### Application
+
+| Elemento | Paquete | Sufijo | Ejemplo real |
+|---|---|---|---|
+| Interactor (comando) | `{feature}/command/primaryport/interactor/` (+ `impl/`) | `Interactor` / `InteractorImpl` | `RegistrarFichaPerfilInteractorImpl` |
+| Command (entrada) | `{feature}/command/primaryport/model/` | `Command` | `RegistrarFichaPerfilCommand` |
+| Mapper Command → dominio | `{feature}/command/primaryport/mapper/` | `Mapper` | `RegistrarFichaPerfilMapper` |
+| Use case (comando) | `{feature}/command/usecase/` (+ `impl/`) | `UseCase` / `UseCaseImpl` | `RegistrarFichaPerfilUseCaseImpl` |
+| Validator | `{feature}/command/validator/` (+ `impl/`) | `Validator` / `ValidatorImpl` | `RegistrarFichaPerfilValidatorImpl` |
+| Finder | `{feature}/command/finder/` (+ `impl/`) | `Finder` / `FinderImpl` | `AsesorFichaExisteFinderImpl` |
+| Puerto de salida (escritura) | `{feature}/command/secondaryport/` | `OutputPort` | `FichaPerfilOutputPort` |
+| Entity (record plano) | `{feature}/command/secondaryport/entity/` | `Entity` | `FichaPerfilEntity` |
+| Mapper Entity ↔ Domain | `{feature}/command/secondaryport/mapper/` | `Mapper` | `FichaPerfilMapper` |
+| Resultado de comando | `{feature}/command/result/` | `Result` | `AutenticacionResult` |
+| Use case (consulta) | `{feature}/query/primaryport/usecase/` (+ `impl/`) | `UseCase` / `UseCaseImpl` | `ConsultarFichasPerfilUseCaseImpl` |
+| Puerto de salida (lectura) | `{feature}/query/secondaryport/` | `QueryOutputPort` | `FichaPerfilQueryOutputPort` |
+| Criteria (entrada) | `{feature}/query/criteria/` | `Criteria` | `FichaPerfilCriteria` |
+| ReadModel (salida) | `{feature}/query/readmodel/` | `ReadModel` | `FichaPerfilReadModel` |
+
+Tres asimetrías deliberadas entre los dos lados:
+
+- **El `Interactor` va bajo `primaryport/`; el `UseCase` de comando no.** El interactor es el contrato
+  primario — es lo que inyecta el adaptador — mientras que el use case es un colaborador interno.
+- **En el lado consulta no hay interactor**, así que ahí el `UseCase` **sí** es el contrato primario y
+  por eso vive en `query/primaryport/usecase/`.
+- **`Validator` y `Finder` son interfaz + `impl/`**, igual que `Rule`, `Interactor` y `UseCase`. El
+  `@Component` va siempre en el `Impl`; lo que se inyecta es la interfaz.
+
+`{Entidad}Entity` y `{Entidad}JpaEntity` viven bajo `command/` **aunque el lado consulta también las
+necesite**: una entidad no es de comando ni de consulta. Lo que el lado consulta no hace es importarlas
+(ver *Aislamiento CQRS*).
+
+#### Infrastructure
+
+| Elemento | Paquete | Sufijo | Ejemplo real |
+|---|---|---|---|
+| Controller de comando | `{feature}/command/primaryadapter/web/` | `Controller` | `RegistrarFichaPerfilController` |
+| Controller de consulta | `{feature}/query/primaryadapter/web/` | `Controller` | `ConsultarFichasPerfilController` |
+| RequestDTO / ResponseDTO | `.../primaryadapter/web/dto/` | `RequestDTO` / `ResponseDTO` | `RegistrarFichaPerfilRequestDTO` |
+| Mapper DTO → Command | `.../command/primaryadapter/web/mapper/` | `RequestMapper` | `RegistrarFichaPerfilRequestMapper` |
+| Mapper DTO → Criteria | `.../query/primaryadapter/web/mapper/` | `RequestMapper` | `ConsultarFichasPerfilRequestMapper` |
+| Mapper ReadModel → DTO | `.../query/primaryadapter/web/mapper/` | `ResponseMapper` | `FichaPerfilResponseMapper` |
+| Consumer AMQP | `{feature}/command/primaryadapter/amqp/` | `Consumer` | `AsesorFichaCambiadoConsumer` |
+| Payload AMQP | `{feature}/command/primaryadapter/amqp/` | `Payload` | `AsesorFichaCambiadoPayload` |
+| JpaEntity (escritura) | `{feature}/command/secondaryadapter/entity/` | `JpaEntity` | `FichaPerfilJpaEntity` |
+| Mapper Entity ↔ JpaEntity | `{feature}/command/secondaryadapter/mapper/` | `JpaMapper` | `FichaPerfilJpaMapper` |
+| OutputAdapter (escritura) | `{feature}/command/secondaryadapter/repository/` | `CommandOutputAdapter` | `FichaPerfilCommandOutputAdapter` |
+| Repositorio (escritura) | `{feature}/command/secondaryadapter/repository/` | `CommandRepository` | `FichaPerfilCommandRepository` |
+| JpaEntity (lectura) | `{feature}/query/secondaryadapter/repository/` | `JpaQueryEntity` | `FichaPerfilJpaQueryEntity` |
+| Specification | `{feature}/query/secondaryadapter/repository/` | `JpaSpecification` | `FichaPerfilJpaSpecification` |
+| Traductor de ordenamiento | `{feature}/query/secondaryadapter/repository/` | `SortMapper` | `FichaPerfilSortMapper` |
+| OutputAdapter (lectura) | `{feature}/query/secondaryadapter/repository/` | `QueryOutputAdapter` | `FichaPerfilQueryOutputAdapter` |
+| Repositorio (lectura) | `{feature}/query/secondaryadapter/repository/` | `QueryRepository` | `FichaPerfilQueryRepository` |
+| Mapper JpaQueryEntity → ReadModel | `{feature}/query/secondaryadapter/repository/mapper/` | `QueryMapper` | `FichaPerfilQueryMapper` |
+| Adaptador no-JPA | `{feature}/command/secondaryadapter/{tecnologia}/` | `OutputAdapter` | `KeycloakAuthOutputAdapter` |
+| Configuración | `config/` | `Config` | `FichasDataSourceConfig` |
+
+Un adaptador de salida que no habla JPA no usa `repository/`, usa un subpaquete con el nombre de su
+tecnología: `secondaryadapter/keycloak/`, `secondaryadapter/redis/`, `secondaryadapter/jwt/`,
+`secondaryadapter/security/`.
+
+`Controller` queda reservado para entradas HTTP. Un consumidor AMQP se llama `Consumer`, que es
+además el nombre que corresponde a la clase base que extiende (`AbstractEventConsumer`).
+
+#### Mappers: uno por frontera, todos estáticos
+
+Todos los mappers son clases `final`, con constructor privado y métodos `static`. **Ninguno es un
+bean**, por eso jamás aparecen como dependencia inyectada. Hay exactamente uno por frontera y el
+nombre dice cuál cruza:
+
+| Mapper | Convierte | Capa | Lo invoca |
+|---|---|---|---|
+| `{Accion}{Entidad}RequestMapper` | `RequestDTO` → `Command` | infrastructure | el Controller |
+| `{Accion}{Entidad}Mapper` | `Command` → dominio | application (primaryport) | el Interactor |
+| `{Entidad}Mapper` | `Entity` ↔ `Domain` | application (secondaryport) | `toEntity` el UseCase, `toDomain` el Finder |
+| `{Entidad}JpaMapper` | `Entity` ↔ `JpaEntity` | infrastructure | el OutputAdapter |
+| `{Entidad}QueryMapper` | `JpaQueryEntity` → `ReadModel` | infrastructure | el QueryOutputAdapter |
+| `{Consultar}{Entidad}RequestMapper` | `QueryCriteriaRequestDTO` → `Criteria` | infrastructure | el Controller de consulta |
+| `{Entidad}ResponseMapper` | `ReadModel` → `ResponseDTO` | infrastructure | el Controller de consulta |
+
+Los mappers de comando se nombran **por la acción** (`RegistrarFichaPerfilRequestMapper`); los de
+persistencia, **por la entidad** (`FichaPerfilJpaMapper`), porque son los mismos para todas las
+acciones de la feature.
+
+#### Aislamiento CQRS
+
+El corte `command/` ↔ `query/` es total en infraestructura: **`query/secondaryadapter` no importa
+nada de `command/secondaryadapter`, ni siquiera el `{Entidad}JpaEntity`**. Cada feature con lectura
+real declara su propio `{Entidad}JpaQueryEntity` con `@Subselect` + `@Immutable` + `@Synchronize`.
+Reutilizar la `JpaEntity` de escritura ataría el camino de lectura a su mapeo Hibernate —sus
+`@ManyToOne`, su configuración de cascada— que es justo lo que la separación existe para evitar.
+Como el subselect ya resuelve los joins, la entidad de lectura es **plana**: `asesorNombre`, no
+`asesorFicha.nombre`.
+
+Por la misma razón el repositorio está partido en dos: `{Entidad}CommandRepository` extiende
+`JpaRepository`, y `{Entidad}QueryRepository` extiende `QueryRepository` /
+`SpecificationQueryRepository` de `shared:jpa` — interfaces `@NoRepositoryBean` que exponen solo
+`findById`/`existsById`/`findAll`/`count`. **El repositorio de lectura no hereda `save` ni `delete`:
+es el compilador, no la convención, el que mantiene honesto el CQRS.**
+
+#### Cuándo existe un paquete `query/`
+
+Solo cuando la feature tiene una lectura real que se alcanza por un `primaryport` — un `UseCase` con
+su `Controller`, algo que un cliente efectivamente llama. Una comprobación de existencia o de estado
+que necesita un `Validator`/`Rule` del lado comando (*¿existe este estudiante?*, *¿es este
+representante el dueño de la evaluación?*) es un asunto **de comando** aunque solo lea: va en el
+`{Entidad}OutputPort` de `command/`, consumida por un `Finder`. Por eso `estudiante`,
+`representantecomite`, `evaluacionfichaperfil` y `estadofichaperfil` no tienen paquete `query/`.
+
+La única excepción es la **proyección anidada**: `asesorficha` tiene `query/readmodel/AsesorFichaReadModel`
+y un `AsesorFichaResponseDTO` sin `UseCase` ni `Controller` propios, porque ambos son componentes
+anidados dentro de `FichaPerfilReadModel` y `FichaPerfilResponseDTO`. El ReadModel anidado vive en la
+feature que describe, no en la que lo compone.
+
+---
+
+## Desviaciones conocidas respecto a la convención
+
+Estos casos existen hoy en el código y **no** son ejemplos a seguir. Se listan para que nadie los
+copie creyendo que son la regla, y para que se resuelvan cuando se toque esa parte del código.
+
+| Qué | Dónde | Convención | Estado |
+|---|---|---|---|
+| `NotificacionValidator` / `NotificacionValidatorImpl` | `notificaciones/application/notificacion/command/validator/` | Debería ser `EnviarNotificacionValidator`: el validator se nombra por la **acción**, no por la entidad | Pendiente de renombrar |
+| `AutenticacionCommandController` | `seguridad/infrastructure/auth/command/primaryadapter/web/` | Agrupa 4 endpoints; la convención es **un controller por acción** (`{Accion}{Entidad}Controller`) | Pendiente de partir |
+| `UsuarioCommandController` | `usuarios/infrastructure/usuario/command/primaryadapter/web/` | Igual que el anterior — debería ser `CrearUsuarioController` | Pendiente de partir |
+| `EstadoEvaluacionCommandRepository` | `fichas/infrastructure/estadoevaluacion/command/secondaryadapter/repository/` | Código muerto: no hay `OutputPort` ni `OutputAdapter` que lo consuma | Pendiente de eliminar |
+| `UsuarioOutputPort` habla `UsuarioDomain` | `usuarios/application/usuario/command/secondaryport/` | **Los puertos de salida hablan `Entity`, nunca `Domain`** — infraestructura no debe ver la capa de dominio. Falta el `UsuarioEntity` (record plano) y su `UsuarioMapper` | Pendiente |
+| `UsuarioCommandOutputAdapter` es un mock | `usuarios/infrastructure/usuario/command/secondaryadapter/repository/` | No persiste nada (`save` solo loguea, `findById` devuelve vacío, `existePorEmail` devuelve `false`) pese a que existe la tabla `usuario`. Además usa `@Repository` en vez de `@Component`, y los métodos van en inglés (`save`, `findById`) en vez de nombrarse por el negocio. Falta el `UsuarioJpaEntity` + `UsuarioJpaMapper` + `UsuarioCommandRepository` | Pendiente de implementar |
+| `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub con `// TODO: persistir en tabla espejo`. Por eso no tiene `Interactor`, ni `@Transactional`, ni `Validator`, y el `UsuarioCreadoConsumer` inyecta el `UseCase` directo — cuando persista de verdad debe pasar por un `Interactor` | Pendiente de implementar |
+| `@Slf4j` en vez de `AppLogger` | `seguridad`, `usuarios` | El resto del proyecto inyecta el puerto `AppLogger` de `shared:logger` | Migración pendiente |
+
+### Decisión abierta: dónde vive un enum de catálogo
+
+Hoy conviven dos ubicaciones y **todavía no hay regla acordada**:
+
+| Enum | Contexto | Ubicación | ¿Tabla propia? |
+|---|---|---|---|
+| `EstadoFicha`, `TipoItem`, `EstadoEvaluacion` | fichas | `domain/{catalogo}/` — feature propia, con su `exception/`, su `Entity`/`JpaEntity` y, en el caso de `EstadoFicha`, un `query/` completo | Sí (`estado_ficha`, `tipo_item`, `estado_evaluacion`) |
+| `EstadoNotificacion`, `TipoNotificacion` | notificaciones | `domain/notificacion/model/` — value object de la feature | No (columnas `VARCHAR` de `notificacion`) |
+| `UsuarioRole` | usuarios | `domain/usuario/model/` — value object de la feature | No (columna `usuario.rol`; la verdad vive en Keycloak) |
+
+La correlación con "¿el catálogo tiene tabla propia en Postgres?" es exacta en los 6 casos, pero
+**está pendiente de discutir con el asesor del proyecto** si se adopta ese criterio, si se unifica
+todo en `domain/{catalogo}/`, o si se unifica todo en `domain/{feature}/model/`. Hasta entonces,
+un enum de catálogo nuevo debe seguir la ubicación que ya use su contexto.
+
+Lo que sí es regla, y no está en discusión: `valueOf` **nunca** se llama fuera del enum. Cada enum de
+catálogo expone `desde(String)` —que devuelve la constante o lanza su propia
+`{Enum}NoEncontradoException` (`DomainException` → 422)— y `esValido(String)` cuando el valor también
+llega por el `crear(...)` de un agregado, para que el error se acumule en el `ValidationResult` en vez
+de abortar en el primero. Ambos delegan en `UtilEnum`. Y todo enum de catálogo expone `getId()`: los
+mappers persisten `getId()`, nunca un `.name()` pelado.
 
 ---
 
