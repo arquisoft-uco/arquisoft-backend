@@ -24,7 +24,7 @@
 
 ## Estructura de Modulos
 
-50 subproyectos Gradle: 9 contextos × [3 capas + 1 agregador] = 36, + 13 módulos `shared` + 1 agregador `shared` = 14. Cada bounded context tiene 3 capas. Solo `seguridad`, `usuarios`, `fichas` y `notificaciones` tienen implementación real; `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables` y `evaluaciones` son scaffolding (solo `{Contexto}DataSourceConfig`, sin código de dominio/aplicación aún).
+51 subproyectos Gradle: 9 contextos × [3 capas + 1 agregador] = 36, + 14 módulos `shared` + 1 agregador `shared` = 15. Cada bounded context tiene 3 capas. Solo `seguridad`, `usuarios`, `fichas` y `notificaciones` tienen implementación real; `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables` y `evaluaciones` son scaffolding (solo `{Contexto}DataSourceConfig`, sin código de dominio/aplicación aún).
 
 ```
 {contexto}/domain        ← Java puro, sin Spring, sin Lombok
@@ -33,7 +33,7 @@
 ```
 
 **Contextos:**
-- `shared` → `util`, `exception`, `validation`, `domain`, `logger`, `redis`, `amqp`, `web`, `minio`, `jpa`, `query`, `message`, `notification`
+- `shared` → `util`, `exception`, `validation`, `domain`, `logger`, `tracing`, `redis`, `amqp`, `web`, `minio`, `jpa`, `query`, `message`, `notification`
 - `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones`
 
 `shared:postgres` fue renombrado a `shared:jpa` (Specification, QueryRepository, PageableMapper — todo lo que necesita Spring Data JPA) y se extrajo `shared:query` (QueryCriteria/SortOrder/NodoFiltro/FiltroOperador, PaginatedResult, los DTO de filtro — vocabulario de consulta sin dependencia de Spring).
@@ -58,8 +58,10 @@ Los contextos nunca dependen entre sí — se comunican via RabbitMQ (`shared:am
 | IDs | Siempre `UUID` — nunca `Long` ni `Integer` |
 | Interactor (lado comando) | `{Accion}{Entidad}InteractorImpl` implementa `{Accion}{Entidad}Interactor` y declara `@Transactional(transactionManager = "{contexto}TransactionManager")`; delega en el use case, que ya no implementa el puerto ni maneja la transacción. Aplicado en `fichas` y `usuarios`; `seguridad` tiene interactor pero sin `@Transactional` (no tiene DataSource propio: Keycloak + Redis) |
 | Resultados de comando | Un comando devuelve `UUID` o `void`; si devuelve algo mas rico, el record vive en `application/{feature}/command/result/` con sufijo `Result` — nunca anidado en la interfaz `UseCase` ni en `model/`, que es solo entrada |
-| Reglas de dominio | `{Regla}Rule` (extiende `shared.rules.DomainRule<T>`) en `domain/{feature}/rules/` con su `{Regla}RuleImpl` en `rules/impl/` (POJO sin Spring, inyecta el `OutputPort` de la feature); se registran como bean en `{Contexto}DomainRulesConfig` de infrastructure (e.g. `FichasDomainRulesConfig`, `UsuariosDomainRulesConfig`) |
-| Validators | Existencia, unicidad y propiedad en `{Feature}Validator` (`application/{feature}/command/validator/`), reutilizables entre features — no bloques `if/throw` dentro del use case; delega en las `Rule` de dominio de arriba |
+| Reglas de dominio | `{Regla}Rule` (extiende `shared.rules.DomainRule<T>`) en `domain/{feature}/rules/` con su `{Regla}RuleImpl` en `rules/impl/`: POJO sin Spring, sin Lombok y **sin ninguna dependencia de constructor** — `validar(T)` es una decisión pura sobre un record de `domain/{feature}/model/`, no consulta nada, solo lanza. Se registran como bean no-arg en `{Contexto}DomainRulesConfig` de infrastructure (e.g. `FichasDomainRulesConfig`, `UsuariosDomainRulesConfig`) |
+| Finders | Toda consulta que necesita una regla es un `{Concepto}Finder` (extiende `shared.rules.Finder<T,R>`) en `application/{feature}/command/finder/` + `{Concepto}FinderImpl` `@Component` en `impl/` que delega en el `OutputPort`. **Siempre devuelve valor, nunca lanza por "no encontrado"**: `Boolean`, `Long` u `Optional`. Decidir qué significa la ausencia es trabajo de la `Rule` |
+| Validators | Interfaz `{Accion}{Entidad}Validator` (`application/{feature}/command/validator/`) + `{Accion}{Entidad}ValidatorImpl` `@Component` en `impl/`. Se nombra por la **acción**, no por la entidad. Es **puro**: solo inyecta `Rule` de dominio, jamás un `OutputPort` ni un `Finder`, y **no contiene un solo `if`** — recibe el dato ya consultado y orquesta las `Rule` en orden |
+| Objetos de acción de dominio | Cuando la acción no mapea al agregado raíz sino al conjunto que arrastra, se declara `{Accion}{Entidad}Domain` en `domain/{feature}/` (junto al agregado, sin subcarpeta), nombrado por nominalización del verbo: `RegistroFichaPerfilDomain`, `CambioAsesorFichaDomain`, `AgregacionItemFichaPerfilDomain`, `RemocionEstudianteFichaPerfilDomain`. Lo construye `{Accion}{Entidad}Mapper` de `command/primaryport/mapper/` y lo recibe el `UseCase` |
 | Orden de validación | 1) integridad del dato (formato, obligatoriedad, longitud, duplicados en la petición), 2) existencia/unicidad en BD, 3) reglas de negocio del agregado |
 | Identificadores en el body | Se reciben como `String`, nunca tipados `UUID` en el DTO. Regla general para todo contexto: el formato **nunca** se valida con una anotación Jakarta — ni propia ni de librería (`shared:web` ya no ofrece `@UuidValido`, se eliminó por esto); siempre en el `Command`, vía `ValidatorUUID.uuidValido(...)` (`shared:validation`), llamado desde `{Command}.crear(...)` o desde `toCommand()` según la convención de DTO del contexto. Convierte con `UtilUUID.generarUUIDDesdeTexto` |
 | Nombres del contrato | Objetuales: `asesorFicha`, `estudiantes` — no `asesorFichaId`, `estudiantesIds` |
@@ -282,10 +284,13 @@ Migraciones Flyway en `{contexto}/infrastructure/src/main/resources/db/migration
 |---|---|
 | Puertos de salida | `FichaPerfilOutputPort`, `AsesorFichaOutputPort` |
 | Adapters de salida | `KeycloakAuthOutputAdapter`, `FichaPerfilCommandOutputAdapter` |
-| Controllers | `RegistrarFichaPerfilController`, `AutenticacionCommandController` |
-| DTOs | `RegistrarFichaPerfilRequestDTO` |
+| Controllers | `RegistrarFichaPerfilController`, `ConsultarFichasPerfilController` — **uno por acción** |
+| DTOs | `RegistrarFichaPerfilRequestDTO`, `RegistrarFichaPerfilResponseDTO`, `FichaPerfilResponseDTO` |
+| Mappers (todos `final`, constructor privado, `static`, **no son beans**) | `RegistrarFichaPerfilRequestMapper` (DTO→Command), `RegistrarFichaPerfilMapper` (Command→dominio), `FichaPerfilMapper` (Entity↔Domain), `FichaPerfilJpaMapper` (Entity↔JpaEntity), `FichaPerfilQueryMapper` (JpaQueryEntity→ReadModel), `FichaPerfilResponseMapper` (ReadModel→DTO) |
 | Excepciones | `FichaPerfilNoEncontradaException` |
 | Métodos de test | `debeHacerAlgo_cuandoCondicion` |
+
+**Desviaciones que existen hoy y no se deben copiar:** `NotificacionValidator` (debería nombrarse por la acción), `AutenticacionCommandController` y `UsuarioCommandController` (agregan varios endpoints en vez de uno por acción), `EstadoEvaluacionCommandRepository` (código muerto), `fichas/application/usuario` (stub sin `Interactor`), `UsuarioOutputPort`/`UsuarioCommandOutputAdapter` de `usuarios` (el puerto habla `UsuarioDomain` en vez de `Entity`, y el adapter es un mock que no persiste), y `@Slf4j` en `seguridad`/`usuarios` en vez del puerto `AppLogger`. La ubicación de los enums de catálogo (`domain/{catalogo}/` vs `domain/{feature}/model/`) es una **decisión abierta**: sigue la que ya use el contexto que estés tocando. Detalle completo en [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md#desviaciones-conocidas-respecto-a-la-convención).
 
 **Regla bilingüe:** español para dominio/negocio (`ProyectoGrado`, `crearFicha`), inglés para sufijos técnicos (`UseCase`, `Adapter`, `DTO`, `Controller`).
 

@@ -76,14 +76,15 @@ The validators are split by the **type they validate**, mirroring `shared:util`:
 ```
 {context}/domain/
 └── {feature}/
-    ├── {Entity}Domain.java   # Aggregate root (suffix Domain, noun) — no Lombok, no Spring; lives directly here, no subpackage
+    ├── {Entity}Domain.java          # Aggregate root (suffix Domain, noun) — no Lombok, no Spring; lives directly here, no subpackage
+    ├── {Action}{Entity}Domain.java  # Action object — same level as the aggregate, no subpackage. See "Action domain objects"
     ├── model/                # Value objects — no Lombok, no Spring. Includes the input record of each Rule
     ├── rules/                # Business rule interfaces (suffix Rule), reusable across use cases
     │   └── impl/
     │       └── {Regla}RuleImpl.java   # Pure: no ports, no constructor dependencies
+    ├── event/                # Domain events of THIS feature (extend DomainEvent)
+    ├── exception/            # Domain exceptions of THIS feature (extend DomainException)
     └── message/              # Domain message constants (optional)
-event/                        # Domain events shared across features (extend DomainEvent)
-exception/                    # Domain exceptions shared across features (extend DomainException)
 
 {context}/application/
 └── {feature}/
@@ -101,11 +102,14 @@ exception/                    # Domain exceptions shared across features (extend
     │   │   ├── {Action}{Entity}UseCase.java
     │   │   └── impl/
     │   │       └── {Action}{Entity}UseCaseImpl.java   # Business orchestration (no transaction)
-    │   ├── validator/
-    │   │   └── {Action}{Entity}Validator.java  # Pure: receives the already-fetched data and orchestrates the Rules
+    │   ├── validator/                          # Interface + impl, like every other application port
+    │   │   ├── {Action}{Entity}Validator.java
+    │   │   └── impl/
+    │   │       └── {Action}{Entity}ValidatorImpl.java  # @Component. Pure: takes the already-fetched data, orchestrates the Rules
     │   ├── finder/                             # One Finder per query, implementing shared.rules.Finder<T,R>
     │   │   ├── {Concepto}Finder.java
     │   │   └── impl/
+    │   │       └── {Concepto}FinderImpl.java   # @Component, delegates to the OutputPort
     │   ├── secondaryport/                      # Output port write-side (suffix OutputPort)
     │   │   ├── {Feature}OutputPort.java
     │   │   ├── entity/                          # Plain record — the port's persistence shape, no JPA/Lombok
@@ -138,13 +142,15 @@ exception/                    # Domain exceptions shared across features (extend
     ├── command/
     │   ├── primaryadapter/
     │   │   ├── web/
-    │   │   │   ├── {Action}{Entity}Controller.java
+    │   │   │   ├── {Action}{Entity}Controller.java   # One controller per action — never an aggregate of endpoints
     │   │   │   ├── dto/
-    │   │   │   │   └── {Action}{Entity}RequestDTO.java
+    │   │   │   │   ├── {Action}{Entity}RequestDTO.java
+    │   │   │   │   └── {Action}{Entity}ResponseDTO.java  # Only when the command answers with a body
     │   │   │   └── mapper/                     # Optional — see "DTOs" below for when this exists
     │   │   │       └── {Action}{Entity}RequestMapper.java
     │   │   └── amqp/                            # Optional — AMQP consumers (input adapters)
-    │   │       └── {Evento}Consumer.java
+    │   │       ├── {Evento}Consumer.java        # extends AbstractEventConsumer
+    │   │       └── {Evento}Payload.java         # record owned by THIS adapter, never the producer's event class
     │   └── secondaryadapter/
     │       ├── entity/                            # JPA @Entity — the real persistence shape, Lombok
     │       │   └── {Feature}JpaEntity.java
@@ -156,12 +162,25 @@ exception/                    # Domain exceptions shared across features (extend
     └── query/
         ├── primaryadapter/
         │   └── web/
-        │       └── {Consult}{Entity}Controller.java
+        │       ├── {Consult}{Entity}Controller.java
+        │       ├── dto/
+        │       │   └── {Feature}ResponseDTO.java
+        │       └── mapper/
+        │           ├── {Consult}{Entity}RequestMapper.java  # QueryCriteriaRequestDTO → {Feature}Criteria
+        │           └── {Feature}ResponseMapper.java         # ReadModel → ResponseDTO
         └── secondaryadapter/
             └── repository/
+                ├── {Feature}JpaQueryEntity.java   # @Subselect + @Immutable + @Synchronize — flat, no @ManyToOne
+                ├── {Feature}JpaSpecification.java # @Component — NodoFiltro → Specification
+                ├── {Feature}SortMapper.java       # sort key → column
                 ├── {Feature}QueryOutputAdapter.java
-                └── {Feature}QueryRepository.java    # Spring Data — only the read-side methods
-config/              # Spring configuration shared within context
+                ├── {Feature}QueryRepository.java  # extends QueryRepository/SpecificationQueryRepository — NOT JpaRepository
+                └── mapper/
+                    └── {Feature}QueryMapper.java  # JpaQueryEntity → ReadModel
+config/              # Spring configuration shared within context ({Context}DataSourceConfig, {Context}DomainRulesConfig, queue configs)
+security/            # {Context}Authorities
+web/                 # {Context}Routes
+exception/           # Infrastructure exceptions (extend InfrastructureException)
 filter/              # HTTP filters (if applicable to context)
 db/migration/        # Flyway migrations
 ```
@@ -171,6 +190,8 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 ## Key Conventions
 
 **Aggregate roots:** No public constructor, private non-`final` fields assigned by private setters (Notification Pattern — a `final` field cannot be assigned from a method), only public getters, extend `AggregateRoot` (`shared:domain`), suffix `Domain` — a noun, not the infinitive verb of the action that creates it (e.g., `UsuarioDomain`, `FichaPerfilDomain`, not `RegistrarFichaPerfilDomain`). The class lives directly under `domain/{feature}/`, with no `aggregate/` or `model/` subpackage of its own. Use `crear(...)` for new instances, `reconstruir(...)` for reconstructing from DB — **not** `build()`/`rebuild()`. Entity package segments are all-lowercase with no separators (`domain/fichaperfil/`, not `domain/fichaPerfil/`).
+
+**Action domain objects:** when the action does not map to the aggregate root but to the bundle of things that action drags along, it gets a domain object of its own, named by **nominalizing the verb** — `Registro`, `Modificacion`, `Cambio`, `Agregacion`, `Remocion` — still a noun, so it does not break the rule above: `RegistroFichaPerfilDomain` (aggregate + initial state + students), `CambioAsesorFichaDomain`, `ModificacionItemFichaPerfilDomain`, `AgregacionEstudiantesFichaPerfilDomain`, `RemocionItemFichaPerfilDomain`. It lives directly under `domain/{feature}/`, next to the aggregate, with no subpackage of its own. It is what `{Action}{Entity}Mapper` (`command/primaryport/mapper/`) builds from the `Command`, and what the `UseCase` receives — the use case then reaches the aggregate through it (`registro.getFicha()`). This is exactly the case the "optional" `primaryport/mapper/` exists for.
 
 **IDs:** Always UUID — never `Long` or `Integer`.
 
@@ -194,9 +215,13 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **But a `query/` package only exists for a feature that has a genuine read use case reached through a `primaryport` — a `UseCase`/`Controller` driven by a `Criteria`, a listing, a lookup a client actually calls.** An existence or lookup check that a *command-side* `Validator`/`Rule` needs (`¿existe este estudiante?`, `¿es este representante el dueño de la evaluación?`, `¿cuál es el estado actual de la ficha?`) is a command-side concern even when it only reads: it belongs on that feature's own command `{Feature}OutputPort`, consumed by a command `Finder` — never duplicated under `query` "just in case," and never wired to nothing. Before adding a `{Feature}QueryOutputPort`, confirm something under `primaryport` actually calls it; if the only candidate caller is a command `Finder`, the check belongs in `command/secondaryport`, full stop. `estudiante`, `representantecomite`, `evaluacionfichaperfil`, and `estadofichaperfil` have no `query/` package at all today for exactly this reason — their only "reads" are existence/state checks a command `Finder` already gets from the command `OutputPort`.
 
+The one exception is the **nested projection**: `asesorficha` owns `query/readmodel/AsesorFichaReadModel` and `query/primaryadapter/web/dto/AsesorFichaResponseDTO` with no `UseCase`, `Controller` or port of its own, because both are nested components of `FichaPerfilReadModel`/`FichaPerfilResponseDTO`. A nested read model belongs to the feature it describes, not to the one that composes it — that is what keeps `FichaPerfilQueryMapper` and `FichaPerfilResponseMapper` from redeclaring the advisor's shape.
+
 **Where the conversion happens:** the **use case** maps `Domain → Entity` before calling the port, and the **finder** maps `Entity → Domain` after it returns — both via the application-layer `{Feature}Mapper`, working on the plain record. The **output adapter** is where `Entity ↔ JpaEntity` happens (via `{Feature}JpaMapper`), immediately around each repository call — `registrarFicha(FichaPerfilEntity)` becomes `repository.save(FichaPerfilJpaMapper.toJpaEntity(ficha))`, `buscarPorId(id)` becomes `repository.findById(id).map(FichaPerfilJpaMapper::toEntity)`. A `JpaMapper` needing a `@ManyToOne` association builds it as an id-only detached instance via the target feature's own `{Other}JpaMapper.toReferencia(id)` (e.g. `AsesorFichaJpaMapper.toReferencia(asesorFicha)`); with no cascade configured, Hibernate writes just the foreign key, which is what replaces the old `getReferenceById` proxy the adapter used to resolve. A port method that only ever needed a FK id (e.g. `actualizarAsesor(UUID fichaPerfil, AsesorFichaEntity nuevoAsesorFicha)`, where the entity carried nothing but an id) is simplified to take that id directly (`actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha)`); the adapter builds the `toReferencia(...)` reference internally before calling the repository. Enums are the application-layer mapper's job too — see "Catalog enums" below: `EstadoFicha.desde(entity.estadoFicha())`, never a bare `valueOf`.
 
 **Catalog enums:** a domain enum validates its own text form, the same way an aggregate validates its own invariants — **`valueOf` is never called directly outside the enum**. Each catalog enum exposes `desde(String)`, which returns the constant or throws its own `{Enum}NoEncontradoException` (`DomainException` → 422) in `domain/{catalogo}/exception/`; a blank, null, or unrecognized id is a domain error, never a raw `IllegalArgumentException` that `GlobalAppExceptionHandler` would surface as a 500. Enums whose value also arrives through an aggregate's `crear(...)` additionally expose `esValido(String)`, so the aggregate can accumulate the error into its `ValidationResult` (Notification Pattern → `fieldErrors[]`) instead of aborting on the first one — the aggregate calls `esValido(...)` to decide, then `desde(...)` to convert. Both delegate to `UtilEnum.desde(Class, String)` (`shared:util`), which owns the "blank or unknown → absent" policy and the trimming in exactly one place. Every catalog enum also exposes `getId()` returning `name()` — mappers persist `getId()`, **never a bare `.name()`**. Applied to `EstadoFicha`, `EstadoEvaluacion`, `TipoItem`, `EstadoNotificacion`, `TipoNotificacion` and `UsuarioRole`. `UsuarioRole` is the one variant: its external identifier is the Keycloak role (`asesor-ficha`), not `name()`, so it keeps `getCodigo()` and its lookup pair is `desdeCodigo(String)`/`esCodigoValido(String)` matching case-insensitively on that field instead of delegating to `UtilEnum`.
+
+**Where a catalog enum lives is an OPEN DECISION — do not "fix" either side.** Two locations coexist today and the correlation is exact, but no rule has been agreed yet: enums whose catalog has its own Postgres table sit in `domain/{catalogo}/` as a feature of their own, with sibling `exception/`, an `Entity`/`JpaEntity` and (for `EstadoFicha`) a full `query/` package — `EstadoFicha`, `TipoItem`, `EstadoEvaluacion` (tables `estado_ficha`, `tipo_item`, `estado_evaluacion`). Enums with no table of their own sit in `domain/{feature}/model/` as a value object of the feature that uses them — `EstadoNotificacion`, `TipoNotificacion` (plain `VARCHAR` columns of `notificacion`) and `UsuarioRole` (column `usuario.rol`; the source of truth is Keycloak). Pending a decision with the project advisor, **a new catalog enum follows whichever location its own context already uses**; the rest of this paragraph (`desde`/`esValido`/`getId`, never `valueOf`) is settled and applies either way.
 
 **No `Optional` in domain records or validator signatures:** `Optional` is a *finder* return type and nothing else. It is unwrapped in the use case and never reaches a `Validator` parameter nor a domain `Rule`'s input record. Two shapes carry absence past that boundary, and which one applies depends on what was fetched:
 - **An aggregate** travels as its `VACIO` sentinel: the finder returns `Optional<{Entity}Domain>`, the use case does `.orElse({Entity}Domain.VACIO)`, and the validator takes the plain aggregate and asks `esVacio()`. Every such aggregate declares `public static final X VACIO` populated with the zero value of each field (`UtilUUID.obtenerUUIDPorDefecto()`, `UtilTexto.VACIO`, `UtilFecha.VACIO`, `EstadoFicha.VACIO`) so its getters stay readable, plus `esVacio()` returning `this == VACIO` — identity, not field comparison.
@@ -218,7 +243,7 @@ Either way the rule that consumes existence gets its own `Existencia{Concepto}(�
 
 **Use case implementations:** `{Action}{Entity}UseCaseImpl` in `usecase/impl/`, implementing `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCaseImpl`, `AutenticarUsuarioUseCaseImpl`). Annotated `@Component` — **never `@Service`**, which is not used anywhere in this project. The use case is a plain collaborator invoked by its interactor — the adapter always injects the `Interactor`, never the `UseCase`.
 
-**Validators:** `{Action}{Entity}Validator` (`application/{feature}/command/validator/`, `@Component`) accumulates every business rule of one use case. It is **pure**: it injects only domain `Rule` beans — never an `OutputPort`, never a `Finder`. Its `validar(...)` signature takes the domain input plus the data the use case already fetched (`boolean asesorExiste`, `List<UUID> estudiantesExistentes`, `Optional<EstadoFicha> estadoActual`, …); from those it builds each Rule's input record and invokes the Rules in validation order. **A validator never decides, it only orchestrates — it contains no `if` at all.** Rules run in sequence and each one throws on its own violation, so a rule that depends on a previous one simply trusts that the previous one already threw: guarding it is dead code, because the existence rule aborts the flow before the dependent rule is reached. When absence must change what a rule concludes, that decision lives **inside the rule** — `EstadoFichaPerfilEnTerminalRule` is invoked unconditionally and returns silently on `EstadoFicha.VACIO`. Tests that need to prove a dependent rule does not run must stub the preceding rule to throw (as it does in production), never rely on a defensive branch in the validator.
+**Validators:** interface `{Action}{Entity}Validator` in `application/{feature}/command/validator/` plus `{Action}{Entity}ValidatorImpl` (`@Component`) in the nested `impl/` — the same interface + `impl/` split as `Interactor`, `UseCase`, `Finder` and `Rule`; what the use case injects is the interface. It is named after the **action**, never after the entity alone (`EnviarNotificacionValidator`, not `NotificacionValidator` — see *Known deviations*). It accumulates every business rule of one use case. It is **pure**: it injects only domain `Rule` beans — never an `OutputPort`, never a `Finder`. Its `validar(...)` signature takes the domain input plus the data the use case already fetched (`boolean asesorExiste`, `List<UUID> estudiantesExistentes`, `Optional<EstadoFicha> estadoActual`, …); from those it builds each Rule's input record and invokes the Rules in validation order. **A validator never decides, it only orchestrates — it contains no `if` at all.** Rules run in sequence and each one throws on its own violation, so a rule that depends on a previous one simply trusts that the previous one already threw: guarding it is dead code, because the existence rule aborts the flow before the dependent rule is reached. When absence must change what a rule concludes, that decision lives **inside the rule** — `EstadoFichaPerfilEnTerminalRule` is invoked unconditionally and returns silently on `EstadoFicha.VACIO`. Tests that need to prove a dependent rule does not run must stub the preceding rule to throw (as it does in production), never rely on a defensive branch in the validator.
 
 **Domain rules:** A single existence/uniqueness/comparison/ownership check is an interface `{Concepto}Rule` extending `com.arquisoft.shared.rules.DomainRule<T>`, in `domain/{feature}/rules/`, with a plain implementation (no Lombok, no Spring, **no constructor dependencies at all**) in the nested `impl/` package. `T` is a record in `domain/{feature}/model/` carrying the already-fetched data plus whatever the error message needs — e.g. `ExistenciaAsesorFicha(UUID asesorFicha, boolean existe)`, `DisponibilidadTituloFicha(String tituloProyecto, boolean yaExiste)`, `PropiedadFicha(UUID fichaPerfil, UUID estudiante, boolean esPropietario)`. `validar(T)` is a pure decision over that record: it does not query anything, it only throws. Rules are wired as no-arg beans from `{Contexto}DomainRulesConfig` in infrastructure. Their unit tests need no Mockito.
 
@@ -263,6 +288,21 @@ Substitution is `String.formatted`, so patterns use `%s`, **not** `{0}`; log pat
 **Where each exception lives:** an exception thrown by a `Rule` lives in `domain/{feature}/exception/` and extends `DomainException` (→ 422) — including "not found", "duplicate", and ownership checks (`FichaNoPropietarioException`, `ItemFichaNoPropiaException`, `EvaluacionFichaNoPropiaException`); there is no separate 403 case for "you are not the owner" — it is modeled as another invalid-state 422. An exception thrown by application-layer orchestration lives in `application/{feature}/exception/` and extends `ApplicationException` (→ 400). Infrastructure failures stay `InfrastructureException` (→ 503) and are raised by the output adapters.
 
 **Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Domain`, `Interactor`, `UseCase`, `Impl`, `OutputPort`, `Consumer`, `OutputAdapter`, `Controller`, `ReadModel`, `DTO`, `Command`) — no Spanish exception remains; REST controllers were renamed from `Controlador` to `Controller` for consistency.
+
+**Known deviations — present in the code, NOT to be copied.** Follow the convention, not these:
+
+| What | Where | Convention it breaks |
+|---|---|---|
+| `NotificacionValidator`/`Impl` | `notificaciones/application/notificacion/command/validator/` | Named after the entity instead of the action — should be `EnviarNotificacionValidator` |
+| `AutenticacionCommandController` | `seguridad/infrastructure/auth/command/primaryadapter/web/` | Aggregates 4 endpoints; the rule is **one controller per action** |
+| `UsuarioCommandController` | `usuarios/infrastructure/usuario/command/primaryadapter/web/` | Same — should be `CrearUsuarioController` |
+| `EstadoEvaluacionCommandRepository` | `fichas/infrastructure/estadoevaluacion/command/secondaryadapter/repository/` | Dead code: no `OutputPort`/`OutputAdapter` consumes it |
+| `UsuarioOutputPort` typed in `UsuarioDomain` | `usuarios/application/usuario/command/secondaryport/` | **Output ports speak `Entity`, never `Domain`** — `UsuarioEntity` + `UsuarioMapper` are missing |
+| `UsuarioCommandOutputAdapter` is a mock | `usuarios/infrastructure/usuario/command/secondaryadapter/repository/` | Persists nothing despite the `usuario` table existing; also `@Repository` instead of `@Component` and English method names (`save`, `findById`). No `UsuarioJpaEntity`/`UsuarioJpaMapper`/`UsuarioCommandRepository` |
+| `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub (`// TODO: persistir en tabla espejo`); that is why it has no `Interactor`, no `@Transactional` and the `Consumer` injects the `UseCase` directly. When it really persists it must go through an `Interactor` |
+| `@Slf4j` instead of the `AppLogger` port | `seguridad`, `usuarios` | Migration pending |
+
+For the full write-up plus the open catalog-enum decision, see [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md#desviaciones-conocidas-respecto-a-la-convención).
 
 **Injection:** Always constructor injection via `@RequiredArgsConstructor` — never `@Autowired`.
 
