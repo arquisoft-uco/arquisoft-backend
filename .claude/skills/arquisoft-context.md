@@ -149,7 +149,9 @@ Domain  ←  Application  ←  Infrastructure
 │       └── query/
 │           ├── criteria/      # XxxCriteria (extiende QueryCriteria, opcional)
 │           ├── readmodel/     # XxxReadModel (proyección plana de solo lectura)
-│           ├── primaryport/usecase/   # Consultar{Entidad}UseCase + impl/ (no hay interactor en read)
+│           ├── primaryport/interactor/ # Consultar{Entidad}Interactor + impl/ (@Transactional readOnly)
+│           ├── primaryport/model/     # Consultar{Entidad}Query (solo si hay input extra al Criteria)
+│           ├── usecase/               # Consultar{Entidad}UseCase + impl/ (colaborador interno)
 │           └── secondaryport/ # XxxQueryOutputPort (lectura)
 │
 └── infrastructure/

@@ -226,7 +226,7 @@ arquisoft-backend/
 | **Application - Commands** | `{feature}/command/primaryport/model/` | `Command` | `RegistrarFichaPerfilCommand.java` |
 | **Application - ReadModels** | `{feature}/query/readmodel/` | `ReadModel` | `FichaPerfilReadModel.java` |
 | **Application - interactor (comando)** | `{feature}/command/primaryport/interactor/` | `Interactor` | `RegistrarFichaPerfilInteractor.java` |
-| **Application - use cases** | `{feature}/command/usecase/` o `{feature}/query/primaryport/usecase/` | `UseCase`/`UseCaseImpl` | `ConsultarFichasPerfilUseCaseImpl.java` |
+| **Application - use cases** | `{feature}/command/usecase/` o `{feature}/query/usecase/` (con su interactor en `{feature}/query/primaryport/interactor/`) | `UseCase`/`UseCaseImpl` | `ConsultarFichasPerfilUseCaseImpl.java` |
 | **Infrastructure - entrada web** | `{feature}/command\|query/primaryadapter/web/` | `Controller` | `RegistrarFichaPerfilController.java` |
 | **Infrastructure - entrada AMQP** | `{feature}/command/primaryadapter/amqp/` | `Consumer` | `UsuarioCreadoConsumer.java` |
 | **Infrastructure - salida** | `{feature}/command\|query/secondaryadapter/...` | `OutputAdapter` | `FichaPerfilCommandOutputAdapter.java` |
@@ -910,7 +910,9 @@ dependencies {
 ```
 ConsultarFichasPerfilController.consultar(criteria)   [primaryadapter/web — REST Controller]
     ↓
-ConsultarFichasPerfilUseCase.ejecutar(FichaPerfilCriteria)  [query/primaryport/usecase — contrato primario, sin interactor]
+ConsultarFichasPerfilInteractor.ejecutar(FichaPerfilCriteria)  [query/primaryport/interactor — contrato primario, @Transactional(readOnly)]
+    ↓
+ConsultarFichasPerfilUseCase.ejecutar(FichaPerfilCriteria)  [query/usecase — colaborador interno]
     ↓
 FichaPerfilQueryOutputPort.consultarTodas(criteria)   [query/secondaryport — interfaz]
     ↓

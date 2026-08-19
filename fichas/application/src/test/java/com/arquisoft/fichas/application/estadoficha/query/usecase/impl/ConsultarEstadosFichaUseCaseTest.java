@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.application.estadoficha.query.primaryport.usecase.impl;
+package com.arquisoft.fichas.application.estadoficha.query.usecase.impl;
 
 import com.arquisoft.fichas.application.estadoficha.query.secondaryport.EstadoFichaQueryOutputPort;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;

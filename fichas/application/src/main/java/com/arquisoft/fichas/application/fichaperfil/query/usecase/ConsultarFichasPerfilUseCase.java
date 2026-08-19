@@ -1,4 +1,4 @@
-package com.arquisoft.fichas.application.fichaperfil.query.primaryport.usecase;
+package com.arquisoft.fichas.application.fichaperfil.query.usecase;
 
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
