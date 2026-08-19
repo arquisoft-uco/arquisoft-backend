@@ -1,7 +1,7 @@
-package com.arquisoft.fichas.application.fichaperfil.query.primaryport.usecase.impl;
+package com.arquisoft.fichas.application.fichaperfil.query.usecase.impl;
 
 import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
+import com.arquisoft.shared.message.prueba.CatalogoMensajesPrueba;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.secondaryport.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
@@ -32,7 +32,7 @@ class ConsultarFichasPerfilUseCaseTest {
     private AppLogger logger;
 
     @Spy
-    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
+    private CatalogoMensajes catalogo = CatalogoMensajesPrueba.porDefecto();
 
     @InjectMocks
     private ConsultarFichasPerfilUseCaseImpl consultarFichasPerfilUseCase;

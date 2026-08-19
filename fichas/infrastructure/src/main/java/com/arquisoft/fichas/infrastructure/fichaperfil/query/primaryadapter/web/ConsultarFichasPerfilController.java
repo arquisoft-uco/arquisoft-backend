@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web;
 
 import com.arquisoft.shared.message.annotation.FichasApiKeys;
-import com.arquisoft.fichas.application.fichaperfil.query.primaryport.usecase.ConsultarFichasPerfilUseCase;
+import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.dto.FichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.ConsultarFichasPerfilRequestMapper;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.FichaPerfilResponseMapper;
@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
 public class ConsultarFichasPerfilController {
 
-    private final ConsultarFichasPerfilUseCase consultarFichasPerfilUseCase;
+    private final ConsultarFichasPerfilInteractor consultarFichasPerfilInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.coordinador:/coordinador}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_VIEW)
@@ -58,7 +58,7 @@ public class ConsultarFichasPerfilController {
     public ResponseEntity<PageResponseDTO<FichaPerfilResponseDTO>> consultarFichasCoordinador(
             @RequestBody(required = false) QueryCriteriaRequestDTO request) {
 
-        var resultado = consultarFichasPerfilUseCase.ejecutar(
+        var resultado = consultarFichasPerfilInteractor.ejecutar(
                 ConsultarFichasPerfilRequestMapper.toCriteria(request));
 
         return ResponseEntity.ok(PageResponseDTO.from(

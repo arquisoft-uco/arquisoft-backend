@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web;
 
 import com.arquisoft.shared.message.annotation.FichasApiKeys;
-import com.arquisoft.fichas.application.estadoficha.query.primaryport.usecase.ConsultarEstadosFichaUseCase;
+import com.arquisoft.fichas.application.estadoficha.query.primaryport.interactor.ConsultarEstadosFichaInteractor;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.dto.EstadoFichaResponseDTO;
 import com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.mapper.EstadoFichaResponseMapper;
@@ -30,7 +30,7 @@ import java.util.List;
 @Tag(name = FichasApiKeys.EstadoFicha.TAG_NAME, description = FichasApiKeys.EstadoFicha.TAG_DESCRIPTION)
 public class ConsultarEstadosFichaController {
 
-    private final ConsultarEstadosFichaUseCase consultarEstadosFichaUseCase;
+    private final ConsultarEstadosFichaInteractor consultarEstadosFichaInteractor;
 
     @GetMapping("${rutas.fichas.fichas-perfil.estados-ficha:/estados-ficha}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_FICHA_VIEW)
@@ -54,7 +54,7 @@ public class ConsultarEstadosFichaController {
                     content = @Content)
     })
     public ResponseEntity<List<EstadoFichaResponseDTO>> consultarEstadosFicha() {
-        List<EstadoFichaReadModel> estados = consultarEstadosFichaUseCase.ejecutar(null);
+        List<EstadoFichaReadModel> estados = consultarEstadosFichaInteractor.ejecutar(null);
 
         return ResponseEntity.ok(estados.stream()
                 .map(EstadoFichaResponseMapper::toResponse)

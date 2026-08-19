@@ -2,7 +2,7 @@ package com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
-import com.arquisoft.fichas.application.estadoficha.query.primaryport.usecase.ConsultarEstadosFichaUseCase;
+import com.arquisoft.fichas.application.estadoficha.query.primaryport.interactor.ConsultarEstadosFichaInteractor;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
@@ -57,7 +57,7 @@ class ConsultarEstadosFichaControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ConsultarEstadosFichaUseCase consultarEstadosFichaUseCase;
+    private ConsultarEstadosFichaInteractor consultarEstadosFichaInteractor;
 
     @Test
     void debe200_cuandoConsultaExitosa() throws Exception {
@@ -66,7 +66,7 @@ class ConsultarEstadosFichaControllerTest {
                 new EstadoFichaReadModel("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo"),
                 new EstadoFichaReadModel("APROBADA", "Aprobada", "Ficha aprobada")
         );
-        when(consultarEstadosFichaUseCase.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaInteractor.ejecutar(isNull())).thenReturn(estados);
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -85,7 +85,7 @@ class ConsultarEstadosFichaControllerTest {
     @Test
     void debe200ConListaVacia_cuandoNoHayEstados() throws Exception {
         // Arrange
-        when(consultarEstadosFichaUseCase.ejecutar(isNull())).thenReturn(List.of());
+        when(consultarEstadosFichaInteractor.ejecutar(isNull())).thenReturn(List.of());
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -103,7 +103,7 @@ class ConsultarEstadosFichaControllerTest {
                 new EstadoFichaReadModel("DISPONIBLE_PARA_EVALUACION", "Disponible para Evaluacion", "Lista para evaluar"),
                 new EstadoFichaReadModel("APROBADA_CON_OBSERVACIONES", "Aprobada con Observaciones", "Aprobada condicionalmente")
         );
-        when(consultarEstadosFichaUseCase.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaInteractor.ejecutar(isNull())).thenReturn(estados);
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -133,12 +133,12 @@ class ConsultarEstadosFichaControllerTest {
     }
 
     @Test
-    void debeInvocarUseCase_cuandoEndpointEsLlamado() throws Exception {
+    void debeInvocarInteractor_cuandoEndpointEsLlamado() throws Exception {
         // Arrange
         List<EstadoFichaReadModel> estados = List.of(
                 new EstadoFichaReadModel("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo")
         );
-        when(consultarEstadosFichaUseCase.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaInteractor.ejecutar(isNull())).thenReturn(estados);
 
         // Act
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -147,7 +147,7 @@ class ConsultarEstadosFichaControllerTest {
                 .andExpect(status().isOk());
 
         // Assert
-        verify(consultarEstadosFichaUseCase, times(1)).ejecutar(isNull());
+        verify(consultarEstadosFichaInteractor, times(1)).ejecutar(isNull());
     }
 
     @Test
@@ -156,7 +156,7 @@ class ConsultarEstadosFichaControllerTest {
         List<EstadoFichaReadModel> estados = List.of(
                 new EstadoFichaReadModel("APROBADA", "Aprobada", "Ficha aprobada")
         );
-        when(consultarEstadosFichaUseCase.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaInteractor.ejecutar(isNull())).thenReturn(estados);
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
