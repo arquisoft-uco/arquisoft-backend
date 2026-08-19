@@ -48,8 +48,16 @@ if [ -z "${REDIS_HOST:-}" ] || [ -z "${REDIS_PORT:-}" ]; then
     exit 1
 fi
 
+# Redis no publica binarios nativos para Windows, así que en local lo normal es no tener redis-cli.
+# La vía prevista es el contenedor: 'docker compose up catalogo-loader' para la instancia local, o
+# 'docker run --rm redis:7-alpine' montando este directorio para una instancia remota.
 if ! command -v redis-cli > /dev/null 2>&1; then
     echo "ERROR: redis-cli no está en el PATH." >&2
+    echo "       En local:  docker compose up catalogo-loader" >&2
+    echo "       Remoto:    MSYS_NO_PATHCONV=1 docker run --rm -v \"\$(pwd)/catalogo:/catalogo\" \\" >&2
+    echo "                    -e REDIS_HOST=... -e REDIS_PORT=6379 \\" >&2
+    echo "                    -e REDIS_USER=... -e REDIS_PASSWORD=... \\" >&2
+    echo "                    redis:7-alpine sh /catalogo/cargar.sh" >&2
     exit 1
 fi
 
@@ -59,9 +67,12 @@ LC_ALL=C.UTF-8
 LANG=C.UTF-8
 export LC_ALL LANG
 
+# Con ACL de Redis 6+ hacen falta usuario Y contraseña: pasar solo --user deja la autenticación
+# incompleta y el servidor responde NOAUTH, que aquí se vería como "Redis no responde".
 redis() {
     if [ -n "${REDIS_USER:-}" ]; then
-        redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" --user "$REDIS_USER" --no-auth-warning "$@"
+        redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" \
+            --user "$REDIS_USER" --pass "${REDIS_PASSWORD:-}" --no-auth-warning "$@"
     elif [ -n "${REDIS_PASSWORD:-}" ]; then
         redis-cli -h "$REDIS_HOST" -p "$REDIS_PORT" -a "$REDIS_PASSWORD" --no-auth-warning "$@"
     else

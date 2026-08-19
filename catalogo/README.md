@@ -24,12 +24,32 @@ lo que este mecanismo aporta.
 
 ## Cargar en Redis
 
+**No hace falta instalar `redis-cli`.** Redis no publica binarios nativos para Windows, así que la
+vía prevista es un contenedor. Contra cualquier instancia —nube, staging, la que sea— con un
+contenedor de usar y tirar:
+
 ```sh
-REDIS_HOST=... REDIS_PORT=6379 REDIS_PASSWORD=... sh catalogo/cargar.sh
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/catalogo:/catalogo" \
+    -e REDIS_HOST=... -e REDIS_PORT=6379 -e REDIS_USER=... -e REDIS_PASSWORD=... \
+    redis:7-alpine sh /catalogo/cargar.sh
 ```
 
-En local no hace falta: `docker-compose up` lo ejecuta solo, en el servicio `catalogo-loader`, antes
-de levantar el backend.
+Los valores son los mismos que ya usa la aplicación: lee exactamente esas cuatro variables. Con ACL
+de Redis 6+ hacen falta usuario **y** contraseña, no solo una.
+
+El prefijo `MSYS_NO_PATHCONV=1` es para Git Bash en Windows, que si no reescribe **los dos** lados:
+el `/catalogo` del volumen y el `/catalogo/cargar.sh` del argumento, este último a algo como
+`C:/Program Files/Git/catalogo/cargar.sh`. En Linux y macOS la variable sobra y no molesta, así que
+el comando es el mismo en todas partes.
+
+Contra la instancia local de `docker-compose` basta con el servicio, que ya trae las variables:
+
+```sh
+docker compose up catalogo-loader
+```
+
+Levantando la pila completa con `docker-compose up`, la carga ocurre sola: el backend espera al
+servicio `catalogo-loader` con `service_completed_successfully`.
 
 El script es **re-ejecutable** y sobrescribe clave por clave. Nunca hace `FLUSHDB`: esta instancia de
 Redis comparte espacio con los buckets de rate limit y los tokens invalidados de seguridad.
