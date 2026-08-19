@@ -115,11 +115,17 @@ exception/                    # Domain exceptions shared across features (extend
     │   └── result/
     │       └── {Concepto}Result.java          # Command output, only when it is not UUID/void
     └── query/
-        ├── primaryport/
-        │   └── usecase/                        # Primary contract of the query: there is no interactor on this side
-        │       ├── {Consult}{Entity}UseCase.java
-        │       └── impl/
-        │           └── {Consult}{Entity}UseCaseImpl.java
+        ├── primaryport/                         # Primary contract of the query, symmetric to the command side
+        │   ├── interactor/
+        │   │   ├── {Consult}{Entity}Interactor.java
+        │   │   └── impl/
+        │   │       └── {Consult}{Entity}InteractorImpl.java  # Owns @Transactional(readOnly = true)
+        │   └── model/                           # Optional — only when the query carries input
+        │       └── {Consult}{Entity}Query.java   #   beyond the Criteria
+        ├── usecase/                             # NOT nested under primaryport — internal collaborator
+        │   ├── {Consult}{Entity}UseCase.java
+        │   └── impl/
+        │       └── {Consult}{Entity}UseCaseImpl.java   # Reads through the port (no transaction)
         ├── secondaryport/
         │   └── {Feature}QueryOutputPort.java  # Output port read-side
         ├── criteria/
@@ -174,9 +180,11 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 
 **Transactional (command):** the qualifier is always explicit — `@Transactional(transactionManager = "{context}TransactionManager")` — and lives on the interactor. It is required for outbox atomicity when the operation publishes events. Example: `@Transactional(transactionManager = "usuariosTransactionManager")`. `seguridad` is the exception: no `DataSource`, so no annotation.
 
-**Transactional (query):** Query use cases annotate the class with `@Transactional(readOnly = true, transactionManager = "{context}TransactionManager")`. The qualifier is mandatory here too: `usuariosTransactionManager` is the `@Primary` bean, so a bare `@Transactional` does not fail at startup — it silently binds to the `usuarios` transaction manager.
+**Transactional (query):** the read-side interactor annotates `ejecutar` with `@Transactional(readOnly = true, transactionManager = "{context}TransactionManager")`; the query use case carries no transaction, exactly as on the command side. The qualifier is mandatory here too: `usuariosTransactionManager` is the `@Primary` bean, so a bare `@Transactional` does not fail at startup — it silently binds to the `usuarios` transaction manager.
 
-**Input ports:** The entry point of a command is the `Interactor` interface in `application/{feature}/command/primaryport/interactor/`, implemented by `{Action}{Entity}InteractorImpl` in the nested `impl/` package — together with its `Command` (`primaryport/model/`) and, where the action maps to a non-root domain object, its `Mapper` (`primaryport/mapper/`), this is the "primary port" of the command. The use case it delegates to is the `UseCase` interface in `application/{feature}/command/usecase/` — **not** nested under `primaryport/`, since it is an internal collaborator, not the primary contract — or in `application/{feature}/query/primaryport/usecase/` on the read side, where the `UseCase` **is** the primary contract because there is no interactor. Both are implemented by `{Action}{Entity}UseCaseImpl`/`{Consult}{Entity}UseCaseImpl` in the nested `impl/` package. There is no `port/in/` package on the application layer — interfaces and implementations live together under `interactor/` and `usecase/`.
+**Query objects:** a read-side `{Consult}{Entity}Query` (`query/primaryport/model/`) exists **only when the query carries input beyond the criteria** — a path variable, the subject taken from the JWT, a filter the client must not control. It is a `record` with a `crear(...)` factory validating format exactly like a `Command`, and the interactor turns it into the `Criteria` before calling the use case, so the `camposFiltrables()`/`camposOrdenables()` validation happens in the application layer instead of in the web mapper. When the query has no such input the `Criteria` **is** the query object: the interactor takes it directly and no `Query` type is declared — `ConsultarFichasPerfil` and `ConsultarEstadosFicha` are both of this second shape today. A `Query`'s DTO follows the same convention as the command side of its context, with one difference: it never redefines paging, sorting or filters — it composes `QueryCriteriaRequestDTO` as a component.
+
+**Input ports:** The entry point of a command is the `Interactor` interface in `application/{feature}/command/primaryport/interactor/`, implemented by `{Action}{Entity}InteractorImpl` in the nested `impl/` package — together with its `Command` (`primaryport/model/`) and, where the action maps to a non-root domain object, its `Mapper` (`primaryport/mapper/`), this is the "primary port" of the command. The use case it delegates to is the `UseCase` interface in `application/{feature}/command/usecase/` — **not** nested under `primaryport/`, since it is an internal collaborator, not the primary contract — and the read side mirrors this: `{Consult}{Entity}Interactor` in `application/{feature}/query/primaryport/interactor/` is the primary contract the controller injects, and its `UseCase` lives in `application/{feature}/query/usecase/`. Both are implemented by `{Action}{Entity}UseCaseImpl`/`{Consult}{Entity}UseCaseImpl` in the nested `impl/` package. There is no `port/in/` package on the application layer — interfaces and implementations live together under `interactor/` and `usecase/`.
 
 **Output ports:** Both sides live in the application layer — write-side in `application/{feature}/command/secondaryport/`, read-side in `application/{feature}/query/secondaryport/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`). **The domain layer declares no ports and performs no I/O**; `{context}/domain` depends only on `shared:domain`, so a port under `domain/` would invert the module dependency and not compile. **Output ports speak `Entity`, never `Domain`** — `registrarFicha(FichaPerfilEntity)`, `buscarPorId(...) → Optional<FichaPerfilEntity>` — because infrastructure must not see the domain layer at all.
 
