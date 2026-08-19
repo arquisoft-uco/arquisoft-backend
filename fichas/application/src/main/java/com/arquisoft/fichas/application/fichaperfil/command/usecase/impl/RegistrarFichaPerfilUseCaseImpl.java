@@ -32,8 +32,8 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
     public UUID ejecutar(RegistroFichaPerfilDomain registro) {
         var ficha = registro.getFicha();
 
-        boolean asesorExiste = asesorFichaExisteFinder.obtener(ficha.getAsesorFicha());
-        boolean tituloYaExiste = tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto());
+        var asesorExiste = asesorFichaExisteFinder.obtener(ficha.getAsesorFicha());
+        var tituloYaExiste = tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto());
 
         registrarFichaPerfilValidator.validar(ficha, asesorExiste, tituloYaExiste);
 
