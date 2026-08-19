@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web;
 
-import com.arquisoft.shared.message.annotation.FichasApiKeys;
+import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.RemoverItemFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -26,8 +26,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
-@Tag(name = FichasApiKeys.ItemFichaPerfil.TAG_NAME,
-        description = FichasApiKeys.ItemFichaPerfil.TAG_DESCRIPTION)
+@Tag(name = FichasApiMessages.ItemFichaPerfil.TAG_NAME,
+        description = FichasApiMessages.ItemFichaPerfil.TAG_DESCRIPTION)
 public class RemoverItemFichaPerfilController {
 
     private final RemoverItemFichaPerfilInteractor removerItemFichaPerfilInteractor;
@@ -35,21 +35,21 @@ public class RemoverItemFichaPerfilController {
     @DeleteMapping("${rutas.fichas.fichas-perfil.item-por-id:/items/{itemId}}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_DELETE)
     @Operation(
-            summary = FichasApiKeys.ItemFichaPerfil.REMOVER_SUMMARY,
-            description = FichasApiKeys.ItemFichaPerfil.REMOVER_DESCRIPTION,
+            summary = FichasApiMessages.ItemFichaPerfil.REMOVER_SUMMARY,
+            description = FichasApiMessages.ItemFichaPerfil.REMOVER_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.NO_CONTENT,
-                    description = FichasApiKeys.ItemFichaPerfil.REMOVER_RESP_204),
+                    description = FichasApiMessages.ItemFichaPerfil.REMOVER_RESP_204),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
-                    description = FichasApiKeys.ItemFichaPerfil.REMOVER_RESP_400),
+                    description = FichasApiMessages.ItemFichaPerfil.REMOVER_RESP_400),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiKeys.Comun.RESP_401),
+                    description = FichasApiMessages.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiKeys.ItemFichaPerfil.REMOVER_RESP_403),
+                    description = FichasApiMessages.ItemFichaPerfil.REMOVER_RESP_403),
             @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
-                    description = FichasApiKeys.ItemFichaPerfil.REMOVER_RESP_422)
+                    description = FichasApiMessages.ItemFichaPerfil.REMOVER_RESP_422)
     })
     public ResponseEntity<Void> remover(
             @PathVariable UUID itemId,

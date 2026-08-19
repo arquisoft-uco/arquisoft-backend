@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.primaryadapter.web;
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
-import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.shared.message.constant.FichasLimits;
 import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.interactor.AsignarEstudiantesFichaPerfilInteractor;
@@ -36,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AsignarEstudiantesFichaPerfilController.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, TrazabilidadConfig.class, CatalogoMensajesConfig.class,
+        GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         AsignarEstudiantesFichaPerfilControllerTest.TestSecurityConfig.class})
 class AsignarEstudiantesFichaPerfilControllerTest {
 

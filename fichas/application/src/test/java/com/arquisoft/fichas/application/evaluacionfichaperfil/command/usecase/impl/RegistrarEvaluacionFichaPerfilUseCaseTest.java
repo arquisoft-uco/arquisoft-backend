@@ -1,7 +1,5 @@
 package com.arquisoft.fichas.application.evaluacionfichaperfil.command.usecase.impl;
 
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.finder.EvaluacionDeRepresentanteExisteFinder;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
@@ -20,7 +18,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
@@ -59,10 +56,6 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
 
     @Mock
     private AppLogger logger;
-
-    @Spy
-    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
-
     @InjectMocks
     private RegistrarEvaluacionFichaPerfilUseCaseImpl registrarEvaluacionFichaPerfilUseCase;
 

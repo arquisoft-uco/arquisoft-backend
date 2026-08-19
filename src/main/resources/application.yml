@@ -313,6 +313,11 @@ arquisoft:
     # Formato ISO-8601: PT5M = 5 minutos, PT30S = 30 segundos.
     failed-retry-interval: PT5M
 
+  # Catálogo de mensajes (ADR-013). Intervalo del monitor que reintenta la conexión con Redis
+  # cuando el catálogo quedó degradado. Solo consulta Redis mientras está en ese estado.
+  catalogo:
+    reintento-intervalo: PT30S
+
 # ==================== SERVER ====================
 server:
   port: 8080

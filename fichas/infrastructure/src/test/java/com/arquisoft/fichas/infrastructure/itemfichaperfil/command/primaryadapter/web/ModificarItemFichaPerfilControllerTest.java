@@ -2,7 +2,6 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapt
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.Mensajes;
@@ -40,7 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(ModificarItemFichaPerfilController.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, TrazabilidadConfig.class, CatalogoMensajesConfig.class,
+        GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ModificarItemFichaPerfilControllerTest.TestSecurityConfig.class})
 class ModificarItemFichaPerfilControllerTest {
 

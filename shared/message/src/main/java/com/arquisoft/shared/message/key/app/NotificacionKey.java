@@ -1,17 +1,18 @@
 package com.arquisoft.shared.message.key.app;
 
-import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Envío de notificaciones — transversal, lo produce {@code shared:notification}. */
 public enum NotificacionKey implements ClaveMensaje {
 
-    ERROR_ENVIO_FALLIDO("app.infraestructura.notificacion.error.envio-fallido");
+    ERROR_ENVIO_FALLIDO("app.infraestructura.notificacion.error.envio-fallido", 1);
 
     private final String clave;
+    private final int parametros;
 
-    NotificacionKey(String clave) {
+    NotificacionKey(String clave, int parametros) {
         this.clave = clave;
+        this.parametros = parametros;
     }
 
     @Override
@@ -20,7 +21,7 @@ public enum NotificacionKey implements ClaveMensaje {
     }
 
     @Override
-    public String paquete() {
-        return PaquetesMensajes.APP;
+    public int parametros() {
+        return parametros;
     }
 }

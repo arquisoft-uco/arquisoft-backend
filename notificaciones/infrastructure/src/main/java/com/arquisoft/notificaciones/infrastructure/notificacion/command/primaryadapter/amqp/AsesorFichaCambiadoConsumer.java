@@ -8,7 +8,7 @@ import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.notificaciones.infrastructure.config.NotificacionesFichasQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
@@ -31,18 +31,15 @@ public class AsesorFichaCambiadoConsumer extends AbstractEventConsumer {
     
     private final EnviarNotificacionInteractor enviarNotificacionInteractor;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     public AsesorFichaCambiadoConsumer(
             EnviarNotificacionInteractor enviarNotificacionInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
-            CatalogoMensajes catalogo,
             GestorTraza gestorTraza) {
         super(objectMapper, gestorTraza);
         this.enviarNotificacionInteractor = enviarNotificacionInteractor;
         this.logger = logger;
-        this.catalogo = catalogo;
     }
 
     @RabbitListener(queues = NotificacionesFichasQueueConfig.ASESOR_CAMBIADO_QUEUE)
@@ -52,7 +49,7 @@ public class AsesorFichaCambiadoConsumer extends AbstractEventConsumer {
                     deserialize(message, AsesorFichaCambiadoPayload.class);
 
             logger.info(
-                    catalogo.obtener(ConsumidorKey.LOG_ASESOR_CAMBIADO_RECIBIDO),
+                    Mensajes.obtener(ConsumidorKey.LOG_ASESOR_CAMBIADO_RECIBIDO),
                     payload.fichaPerfilId(),
                     payload.asesorEmail());
 
@@ -61,10 +58,10 @@ public class AsesorFichaCambiadoConsumer extends AbstractEventConsumer {
                     TipoNotificacion.ASESOR_FICHA_CAMBIADO,
                     payload.asesorNombre(),
                     payload.asesorEmail(),
-                    catalogo.formatear(
+                    Mensajes.formatear(
                             PlantillaKey.ASUNTO_ASESOR_CAMBIADO,
                             payload.tituloProyecto()),
-                    catalogo.formatear(
+                    Mensajes.formatear(
                             PlantillaKey.CUERPO_ASESOR_CAMBIADO,
                             payload.asesorNombre(),
                             payload.tituloProyecto())));

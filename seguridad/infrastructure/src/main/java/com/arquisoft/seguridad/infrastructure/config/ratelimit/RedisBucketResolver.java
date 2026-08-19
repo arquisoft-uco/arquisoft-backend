@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.ratelimit;
 
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.util.UtilObjeto;
@@ -33,7 +33,6 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
 
     private final LimiteSolicitudesProperties properties;
     private final LettuceConnectionFactory lettuceConnectionFactory;
-    private final CatalogoMensajes catalogo;
 
     private LettuceBasedProxyManager<String> proxyManager;
     private StatefulRedisConnection<String, byte[]> bucketConnection;
@@ -50,16 +49,16 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
                     .expirationAfterWrite(ExpirationAfterWriteStrategy
                             .basedOnTimeForRefillingBucketUpToMax(Duration.ofMinutes(2)))
                     .build();
-            log.debug(catalogo.obtener(LimiteSolicitudesKey.LOG_INIT_OK));
+            log.debug(Mensajes.obtener(LimiteSolicitudesKey.LOG_INIT_OK));
         } else {
             // log.error: detalle tecnico para el desarrollador — nunca llega al cliente.
             // El nombre de la clase del cliente obtenido orienta rapidamente el diagnostico.
-            log.error(catalogo.obtener(LimiteSolicitudesKey.LOG_CLIENTE_STANDALONE_ERROR),
+            log.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_CLIENTE_STANDALONE_ERROR),
                     !UtilObjeto.esNulo(nativeClient) ? nativeClient.getClass().getSimpleName() : "null");
             // InfrastructureException con mensaje generico: si llegara a la capa web
             // (improbable desde @PostConstruct), el cliente ve un mensaje sin detalles internos.
             throw new InfrastructureException(
-                    catalogo.obtener(LimiteSolicitudesKey.ERROR_CLIENTE_STANDALONE),
+                    Mensajes.obtener(LimiteSolicitudesKey.ERROR_CLIENTE_STANDALONE),
                     SeguridadCodes.LimiteSolicitudes.REDIS_CLIENTE_STANDALONE_REQUERIDO);
         }
     }
@@ -78,7 +77,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
                                     .refillIntervally(properties.requestsPerMinute(), Duration.ofMinutes(1)))
                             .build());
         } catch (Exception e) {
-            log.error(catalogo.obtener(LimiteSolicitudesKey.LOG_BUCKET_REDIS_ERROR),
+            log.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_REDIS_ERROR),
                     ip, e.getMessage());
             return createExhaustedBucket();
         }
@@ -98,7 +97,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
                                     .refillGreedy(properties.loginRequestsPerMinute(), Duration.ofMinutes(1)))
                             .build());
         } catch (Exception e) {
-            log.error(catalogo.obtener(LimiteSolicitudesKey.LOG_BUCKET_LOGIN_REDIS_ERROR),
+            log.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_LOGIN_REDIS_ERROR),
                     ip, e.getMessage());
             return createExhaustedBucket();
         }

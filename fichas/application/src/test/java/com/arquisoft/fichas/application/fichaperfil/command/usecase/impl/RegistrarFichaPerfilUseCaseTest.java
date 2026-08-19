@@ -1,7 +1,5 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaExisteFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
@@ -22,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -67,9 +64,6 @@ class RegistrarFichaPerfilUseCaseTest {
 
     // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
-    @Spy
-    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
-
     @InjectMocks
     private RegistrarFichaPerfilUseCaseImpl registrarFichaPerfilUseCase;
 

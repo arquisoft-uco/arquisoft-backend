@@ -5,11 +5,12 @@ package com.arquisoft.shared.message;
  *
  * <p>Se declara como interfaz para que dominio, aplicación e infraestructura dependan
  * de una abstracción de JDK puro: no hay Spring, Jakarta ni SLF4J detrás de este contrato.
- * La implementación por defecto ({@link CatalogoMensajesResourceBundle}) resuelve las claves
- * contra archivos {@code .properties} mediante {@link java.util.ResourceBundle}.
+ * La implementación real vive en {@code shared:redis} y resuelve las claves contra Redis; el
+ * respaldo compilado ({@link com.arquisoft.shared.message.respaldo.CatalogoMensajesRespaldo}) es el
+ * valor por defecto mientras no se haya instalado ninguna.
  *
  * <p>Las claves siguen el esquema {@code contexto.capa.objeto.tipo.descripcion}, por ejemplo
- * {@code fichas.dominio.fichaperfil.error.titulo-duplicado}. Ver {@link PaquetesMensajes}.
+ * {@code fichas.dominio.fichaperfil.error.titulo-duplicado}.
  *
  * <p>El contrato se tipa sobre {@link ClaveMensaje}, no sobre {@code String}: así el compilador
  * rechaza una clave inventada o mal escrita, que antes solo se notaba en ejecución.

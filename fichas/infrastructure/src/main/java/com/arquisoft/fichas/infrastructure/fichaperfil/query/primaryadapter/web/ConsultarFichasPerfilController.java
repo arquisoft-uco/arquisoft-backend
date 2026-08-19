@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web;
 
-import com.arquisoft.shared.message.annotation.FichasApiKeys;
+import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.dto.FichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.ConsultarFichasPerfilRequestMapper;
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
-@Tag(name = FichasApiKeys.FichaPerfil.TAG_NAME, description = FichasApiKeys.FichaPerfil.TAG_DESCRIPTION)
+@Tag(name = FichasApiMessages.FichaPerfil.TAG_NAME, description = FichasApiMessages.FichaPerfil.TAG_DESCRIPTION)
 public class ConsultarFichasPerfilController {
 
     private final ConsultarFichasPerfilInteractor consultarFichasPerfilInteractor;
@@ -38,22 +38,22 @@ public class ConsultarFichasPerfilController {
     @PostMapping("${rutas.fichas.fichas-perfil.coordinador:/coordinador}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_VIEW)
     @Operation(
-            summary = FichasApiKeys.FichaPerfil.CONSULTAR_SUMMARY,
-            description = FichasApiKeys.FichaPerfil.CONSULTAR_DESCRIPTION,
+            summary = FichasApiMessages.FichaPerfil.CONSULTAR_SUMMARY,
+            description = FichasApiMessages.FichaPerfil.CONSULTAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.OK,
-                    description = FichasApiKeys.FichaPerfil.CONSULTAR_RESP_200,
+                    description = FichasApiMessages.FichaPerfil.CONSULTAR_RESP_200,
                     content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = PageResponseDTO.class))),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
-                    description = FichasApiKeys.FichaPerfil.CONSULTAR_RESP_400,
+                    description = FichasApiMessages.FichaPerfil.CONSULTAR_RESP_400,
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiKeys.Comun.RESP_401),
+                    description = FichasApiMessages.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiKeys.FichaPerfil.CONSULTAR_RESP_403)
+                    description = FichasApiMessages.FichaPerfil.CONSULTAR_RESP_403)
     })
     public ResponseEntity<PageResponseDTO<FichaPerfilResponseDTO>> consultarFichasCoordinador(
             @RequestBody(required = false) QueryCriteriaRequestDTO request) {

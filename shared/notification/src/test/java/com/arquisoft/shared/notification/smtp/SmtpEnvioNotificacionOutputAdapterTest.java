@@ -2,8 +2,6 @@ package com.arquisoft.shared.notification.smtp;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.AppCodes;
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.notification.config.NotificacionProperties;
 import com.arquisoft.shared.notification.exception.EnvioNotificacionFallidoException;
 import com.arquisoft.shared.notification.model.MensajeNotificacion;
@@ -37,20 +35,17 @@ class SmtpEnvioNotificacionOutputAdapterTest {
     @Mock
     private AppLogger logger;
 
-    private CatalogoMensajes catalogo;
     private NotificacionProperties properties;
     private SmtpEnvioNotificacionOutputAdapter sender;
 
     @BeforeEach
     void setUp() {
-        catalogo = CatalogoMensajesResourceBundle.porDefecto();
-
         properties = new NotificacionProperties();
         properties.setProveedor("smtp");
         properties.setRemitenteEmail("no-reply@arquisoft.local");
         properties.setRemitenteNombre("Arquisoft");
 
-        sender = new SmtpEnvioNotificacionOutputAdapter(mailSender, properties, catalogo, logger);
+        sender = new SmtpEnvioNotificacionOutputAdapter(mailSender, properties, logger);
     }
 
     private MimeMessage mimeMessageVacio() {

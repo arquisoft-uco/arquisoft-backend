@@ -1,6 +1,5 @@
 package com.arquisoft.seguridad.infrastructure.config.keycloak;
 
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -28,8 +27,7 @@ class KeycloakRolExtractorTest {
         // El campo clientId se inyecta normalmente via @Value("${KEYCLOAK_CLIENT_ID}").
         ReflectionTestUtils.setField(rolExtractor, "clientId", CLIENT_ID);
         converter = new KeycloakJwtConverterConfig(
-                rolExtractor,
-                CatalogoMensajesResourceBundle.porDefecto())
+                rolExtractor)
                 .jwtAuthenticationConverter();
     }
 

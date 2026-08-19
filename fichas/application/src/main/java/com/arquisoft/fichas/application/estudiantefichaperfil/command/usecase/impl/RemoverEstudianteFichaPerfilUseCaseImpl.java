@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.RemoverEstudianteFichaPerfilUseCase;
@@ -27,7 +27,6 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
     private final VinculoEstudianteFichaExisteFinder vinculoEstudianteFichaExisteFinder;
     private final RemoverEstudianteFichaPerfilValidator removerEstudianteFichaPerfilValidator;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(RemocionEstudianteFichaPerfilDomain entrada) {
@@ -44,6 +43,6 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
 
         estudianteFichaPerfilOutputPort.desvincularEstudiante(fichaPerfil, estudiante);
 
-        logger.info(catalogo.obtener(EstudianteFichaPerfilKey.LOG_REMOVIDO), fichaPerfil, estudiante);
+        logger.info(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_REMOVIDO), fichaPerfil, estudiante);
     }
 }

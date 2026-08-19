@@ -1,19 +1,20 @@
 package com.arquisoft.shared.message.key.fichas;
 
-import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de MinioGuia. */
 public enum MinioGuiaKey implements ClaveMensaje {
 
-    LOG_UPLOAD_URL("fichas.infraestructura.minioguia.log.upload-url"),
-    LOG_DOWNLOAD_URL("fichas.infraestructura.minioguia.log.download-url"),
-    LOG_DELETE("fichas.infraestructura.minioguia.log.delete");
+    LOG_UPLOAD_URL("fichas.infraestructura.minioguia.log.upload-url", 0),
+    LOG_DOWNLOAD_URL("fichas.infraestructura.minioguia.log.download-url", 0),
+    LOG_DELETE("fichas.infraestructura.minioguia.log.delete", 0);
 
     private final String clave;
+    private final int parametros;
 
-    MinioGuiaKey(String clave) {
+    MinioGuiaKey(String clave, int parametros) {
         this.clave = clave;
+        this.parametros = parametros;
     }
 
     @Override
@@ -22,7 +23,7 @@ public enum MinioGuiaKey implements ClaveMensaje {
     }
 
     @Override
-    public String paquete() {
-        return PaquetesMensajes.FICHAS;
+    public int parametros() {
+        return parametros;
     }
 }

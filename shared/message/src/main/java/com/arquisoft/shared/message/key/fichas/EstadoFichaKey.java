@@ -1,17 +1,18 @@
 package com.arquisoft.shared.message.key.fichas;
 
-import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de EstadoFicha. */
 public enum EstadoFichaKey implements ClaveMensaje {
 
-    ERROR_NO_ENCONTRADO("fichas.dominio.estadoficha.error.no-encontrado");
+    ERROR_NO_ENCONTRADO("fichas.dominio.estadoficha.error.no-encontrado", 1);
 
     private final String clave;
+    private final int parametros;
 
-    EstadoFichaKey(String clave) {
+    EstadoFichaKey(String clave, int parametros) {
         this.clave = clave;
+        this.parametros = parametros;
     }
 
     @Override
@@ -20,7 +21,7 @@ public enum EstadoFichaKey implements ClaveMensaje {
     }
 
     @Override
-    public String paquete() {
-        return PaquetesMensajes.FICHAS;
+    public int parametros() {
+        return parametros;
     }
 }

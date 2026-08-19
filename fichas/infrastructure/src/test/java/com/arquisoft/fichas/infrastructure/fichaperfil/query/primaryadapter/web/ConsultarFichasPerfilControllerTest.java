@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web;
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
-import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -32,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ConsultarFichasPerfilController.class)
-@Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class, CatalogoMensajesConfig.class,
+@Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         ConsultarFichasPerfilControllerTest.TestSecurityConfig.class})
 class ConsultarFichasPerfilControllerTest {
 

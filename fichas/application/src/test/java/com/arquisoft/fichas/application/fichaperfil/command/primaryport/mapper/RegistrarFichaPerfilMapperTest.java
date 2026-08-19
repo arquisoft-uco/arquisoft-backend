@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class RegistrarFichaPerfilMapperTest {
 
@@ -38,9 +38,10 @@ class RegistrarFichaPerfilMapperTest {
         var command = new RegistrarFichaPerfilCommand("Título de prueba", UUID.randomUUID(), List.of());
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistrarFichaPerfilMapper.toDomain(command))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasFields.EstudianteFichaPerfil.ESTUDIANTES);
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> RegistrarFichaPerfilMapper.toDomain(command));
+
+        assertThat(excepcion.getValidationResult().tieneErroresDeCampo(FichasFields.EstudianteFichaPerfil.ESTUDIANTES)).isTrue();
     }
 
     @Test
@@ -49,9 +50,10 @@ class RegistrarFichaPerfilMapperTest {
         var command = new RegistrarFichaPerfilCommand(null, UUID.randomUUID(), List.of());
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistrarFichaPerfilMapper.toDomain(command))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasFields.FichaPerfil.TITULO);
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> RegistrarFichaPerfilMapper.toDomain(command));
+
+        assertThat(excepcion.getValidationResult().tieneErroresDeCampo(FichasFields.FichaPerfil.TITULO)).isTrue();
     }
 
     @Test
@@ -60,8 +62,9 @@ class RegistrarFichaPerfilMapperTest {
         var command = new RegistrarFichaPerfilCommand("Título de prueba", null, List.of());
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistrarFichaPerfilMapper.toDomain(command))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasFields.FichaPerfil.ASESOR_FICHA);
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> RegistrarFichaPerfilMapper.toDomain(command));
+
+        assertThat(excepcion.getValidationResult().tieneErroresDeCampo(FichasFields.FichaPerfil.ASESOR_FICHA)).isTrue();
     }
 }

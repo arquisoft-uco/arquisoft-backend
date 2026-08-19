@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web;
 
+import com.arquisoft.shared.message.annotation.UsuariosApiMessages;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor.CrearUsuarioInteractor;
 import com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web.dto.CrearUsuarioRequestDTO;
 import com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web.dto.CrearUsuarioResponseDTO;
@@ -27,7 +28,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("${rutas.usuarios.usuarios.base:/usuarios}")
 @RequiredArgsConstructor
-@Tag(name = "Usuarios", description = "Gestion de usuarios del sistema")
+@Tag(name = UsuariosApiMessages.Usuario.TAG_NAME, description = UsuariosApiMessages.Usuario.TAG_DESCRIPTION)
 public class UsuarioCommandController {
 
     private final CrearUsuarioInteractor crearUsuarioInteractor;
@@ -35,18 +36,16 @@ public class UsuarioCommandController {
     @PostMapping
     @PreAuthorize("hasAuthority('usuarios:usuario:create')")
     @Operation(
-            summary = "Crear usuario",
-            description = "Crea un nuevo usuario en el sistema con el email y rol indicados. "
-                    + "Publica el evento UsuarioCreadoEvent para que otros contextos registren "
-                    + "al usuario en sus bases de datos espejo.",
+            summary = UsuariosApiMessages.Usuario.CREAR_SUMMARY,
+            description = UsuariosApiMessages.Usuario.CREAR_DESCRIPTION,
             security = @SecurityRequirement(name = "bearerAuth")
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Usuario creado exitosamente",
+            @ApiResponse(responseCode = "201", description = UsuariosApiMessages.Usuario.CREAR_RESP_201,
                     content = @Content(schema = @Schema(implementation = CrearUsuarioResponseDTO.class))),
-            @ApiResponse(responseCode = "400", description = "Datos invalidos (email mal formado, rol nulo)"),
-            @ApiResponse(responseCode = "401", description = "No autenticado"),
-            @ApiResponse(responseCode = "403", description = "Sin permisos — se requiere rol administrador")
+            @ApiResponse(responseCode = "400", description = UsuariosApiMessages.Usuario.CREAR_RESP_400),
+            @ApiResponse(responseCode = "401", description = UsuariosApiMessages.Usuario.CREAR_RESP_401),
+            @ApiResponse(responseCode = "403", description = UsuariosApiMessages.Usuario.CREAR_RESP_403)
     })
     public ResponseEntity<CrearUsuarioResponseDTO> crear(
             @Valid @RequestBody CrearUsuarioRequestDTO request) {

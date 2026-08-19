@@ -1,7 +1,5 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.primaryadapter.web;
 
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.seguridad.application.auth.command.primaryport.interactor.AutenticarUsuarioInteractor;
 import com.arquisoft.seguridad.application.auth.command.primaryport.interactor.CerrarSesionInteractor;
 import com.arquisoft.seguridad.application.auth.command.primaryport.interactor.RefrescarTokenInteractor;
@@ -20,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -50,9 +47,6 @@ class AutenticacionCommandControllerTest {
 
         // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
-    @Spy
-    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
-
 @InjectMocks
     private AutenticacionCommandController adapter;
 

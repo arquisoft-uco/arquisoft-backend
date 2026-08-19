@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.application.auth.command.primaryport.model.AutenticarUsuarioCommand;
 import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.AutenticarUsuarioUseCase;
@@ -17,15 +17,14 @@ import org.springframework.stereotype.Component;
 public class AutenticarUsuarioUseCaseImpl implements AutenticarUsuarioUseCase {
 
     private final AutenticacionOutputPort autenticacionOutputPort;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public AutenticacionResult ejecutar(AutenticarUsuarioCommand entrada) {
-        log.debug(catalogo.obtener(AutenticacionKey.LOG_AUTENTICAR_DEBUG));
+        log.debug(Mensajes.obtener(AutenticacionKey.LOG_AUTENTICAR_DEBUG));
 
         CredencialesSesion credenciales = autenticacionOutputPort.autenticar(entrada.email(), entrada.contrasena());
 
-        log.info(catalogo.obtener(AutenticacionKey.LOG_AUTENTICAR_EXITOSO));
+        log.info(Mensajes.obtener(AutenticacionKey.LOG_AUTENTICAR_EXITOSO));
 
         return new AutenticacionResult(
                 credenciales.tokenAcceso(),

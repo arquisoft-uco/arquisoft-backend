@@ -6,8 +6,6 @@ import com.arquisoft.notificaciones.application.notificacion.command.secondarypo
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.notification.EnvioNotificacionOutputPort;
 import com.arquisoft.shared.notification.exception.EnvioNotificacionFallidoException;
 import com.arquisoft.shared.notification.model.MensajeNotificacion;
@@ -16,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,9 +41,6 @@ class EnviarNotificacionUseCaseTest {
     private AppLogger logger;
 
     // Catalogo real, no mock: los textos acaban en el log y en la notificacion persistida.
-    @Spy
-    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
-
     @InjectMocks
     private EnviarNotificacionUseCaseImpl enviarNotificacionUseCase;
 

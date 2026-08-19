@@ -1,13 +1,10 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.jwt;
 
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -29,9 +26,6 @@ class JwtTokenOutputAdapterTest {
 
         // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
-    @Spy
-    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
-
 @InjectMocks
     private JwtTokenOutputAdapter jwtTokenAdapter;
 

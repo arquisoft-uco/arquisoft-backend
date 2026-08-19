@@ -1,18 +1,19 @@
 package com.arquisoft.shared.message.key.fichas;
 
-import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de Usuario. */
 public enum UsuarioKey implements ClaveMensaje {
 
-    LOG_USUARIO_CREADO_RECIBIDO("fichas.infraestructura.usuario.log.usuario-creado-recibido"),
-    LOG_REGISTRADO_ESPEJO_SIMULADO("fichas.infraestructura.usuario.log.registrado-espejo-simulado");
+    LOG_USUARIO_CREADO_RECIBIDO("fichas.infraestructura.usuario.log.usuario-creado-recibido", 0),
+    LOG_REGISTRADO_ESPEJO_SIMULADO("fichas.infraestructura.usuario.log.registrado-espejo-simulado", 0);
 
     private final String clave;
+    private final int parametros;
 
-    UsuarioKey(String clave) {
+    UsuarioKey(String clave, int parametros) {
         this.clave = clave;
+        this.parametros = parametros;
     }
 
     @Override
@@ -21,7 +22,7 @@ public enum UsuarioKey implements ClaveMensaje {
     }
 
     @Override
-    public String paquete() {
-        return PaquetesMensajes.FICHAS;
+    public int parametros() {
+        return parametros;
     }
 }

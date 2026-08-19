@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web;
 
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web.mapper.AgregarItemFichaPerfilRequestMapper;
-import com.arquisoft.shared.message.annotation.FichasApiKeys;
+import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.AgregarItemFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web.dto.AgregarItemFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web.dto.AgregarItemFichaPerfilResponseDTO;
@@ -32,8 +32,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
-@Tag(name = FichasApiKeys.ItemFichaPerfil.TAG_NAME,
-        description = FichasApiKeys.ItemFichaPerfil.TAG_DESCRIPTION)
+@Tag(name = FichasApiMessages.ItemFichaPerfil.TAG_NAME,
+        description = FichasApiMessages.ItemFichaPerfil.TAG_DESCRIPTION)
 public class AgregarItemFichaPerfilController {
 
     private final AgregarItemFichaPerfilInteractor agregarItemFichaPerfilInteractor;
@@ -41,22 +41,22 @@ public class AgregarItemFichaPerfilController {
     @PostMapping("${rutas.fichas.fichas-perfil.items:/{fichaPerfilId}/items}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ITEM_FICHA_PERFIL_CREATE)
     @Operation(
-            summary = FichasApiKeys.ItemFichaPerfil.AGREGAR_SUMMARY,
-            description = FichasApiKeys.ItemFichaPerfil.AGREGAR_DESCRIPTION,
+            summary = FichasApiMessages.ItemFichaPerfil.AGREGAR_SUMMARY,
+            description = FichasApiMessages.ItemFichaPerfil.AGREGAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.CREATED,
-                    description = FichasApiKeys.ItemFichaPerfil.AGREGAR_RESP_201,
+                    description = FichasApiMessages.ItemFichaPerfil.AGREGAR_RESP_201,
                     content = @Content(schema = @Schema(implementation = AgregarItemFichaPerfilResponseDTO.class))),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
-                    description = FichasApiKeys.ItemFichaPerfil.AGREGAR_RESP_400),
+                    description = FichasApiMessages.ItemFichaPerfil.AGREGAR_RESP_400),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiKeys.Comun.RESP_401),
+                    description = FichasApiMessages.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiKeys.ItemFichaPerfil.AGREGAR_RESP_403),
+                    description = FichasApiMessages.ItemFichaPerfil.AGREGAR_RESP_403),
             @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
-                    description = FichasApiKeys.ItemFichaPerfil.AGREGAR_RESP_422)
+                    description = FichasApiMessages.ItemFichaPerfil.AGREGAR_RESP_422)
     })
     public ResponseEntity<AgregarItemFichaPerfilResponseDTO> agregarItem(
             @PathVariable UUID fichaPerfilId,

@@ -1,17 +1,18 @@
 package com.arquisoft.shared.message.key.notificaciones;
 
-import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Consumidores AMQP. */
 public enum ConsumidorKey implements ClaveMensaje {
 
-    LOG_ASESOR_CAMBIADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.asesor-cambiado-recibido");
+    LOG_ASESOR_CAMBIADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.asesor-cambiado-recibido", 0);
 
     private final String clave;
+    private final int parametros;
 
-    ConsumidorKey(String clave) {
+    ConsumidorKey(String clave, int parametros) {
         this.clave = clave;
+        this.parametros = parametros;
     }
 
     @Override
@@ -20,7 +21,7 @@ public enum ConsumidorKey implements ClaveMensaje {
     }
 
     @Override
-    public String paquete() {
-        return PaquetesMensajes.NOTIFICACIONES;
+    public int parametros() {
+        return parametros;
     }
 }

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesVinculadosContadorFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesYaVinculadosFinder;
@@ -29,7 +29,6 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
     private final EstudiantesVinculadosContadorFinder estudiantesVinculadosContadorFinder;
     private final AsignarEstudiantesFichaPerfilValidator asignarEstudiantesFichaPerfilValidator;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(AgregacionEstudiantesFichaPerfilDomain entrada) {
@@ -45,7 +44,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
                 .map(EstudianteFichaPerfilMapper::toEntity)
                 .forEach(estudianteFichaPerfilOutputPort::vincularEstudiante);
 
-        logger.info(catalogo.obtener(EstudianteFichaPerfilKey.LOG_ASIGNADO),
+        logger.info(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_ASIGNADO),
                 entrada.getFichaPerfil(), entrada.getCantidad());
     }
 }

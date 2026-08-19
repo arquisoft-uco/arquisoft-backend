@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AsignarEstudiantesFichaPerfilMapperTest {
 
@@ -35,9 +35,10 @@ class AsignarEstudiantesFichaPerfilMapperTest {
         var command = new AsignarEstudiantesFichaPerfilCommand(UUID.randomUUID(), List.of());
 
         // Act & Assert
-        assertThatThrownBy(() -> AsignarEstudiantesFichaPerfilMapper.toDomain(command))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasFields.EstudianteFichaPerfil.ESTUDIANTES);
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> AsignarEstudiantesFichaPerfilMapper.toDomain(command));
+
+        assertThat(excepcion.getValidationResult().tieneErroresDeCampo(FichasFields.EstudianteFichaPerfil.ESTUDIANTES)).isTrue();
     }
 
     @Test
@@ -46,8 +47,9 @@ class AsignarEstudiantesFichaPerfilMapperTest {
         var command = new AsignarEstudiantesFichaPerfilCommand(null, List.of(UUID.randomUUID()));
 
         // Act & Assert
-        assertThatThrownBy(() -> AsignarEstudiantesFichaPerfilMapper.toDomain(command))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasFields.EstudianteFichaPerfil.FICHA_PERFIL);
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> AsignarEstudiantesFichaPerfilMapper.toDomain(command));
+
+        assertThat(excepcion.getValidationResult().tieneErroresDeCampo(FichasFields.EstudianteFichaPerfil.FICHA_PERFIL)).isTrue();
     }
 }

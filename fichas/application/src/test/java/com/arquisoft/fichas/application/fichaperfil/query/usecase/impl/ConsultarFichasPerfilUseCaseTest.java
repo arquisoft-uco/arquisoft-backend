@@ -1,7 +1,5 @@
 package com.arquisoft.fichas.application.fichaperfil.query.usecase.impl;
 
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.prueba.CatalogoMensajesPrueba;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
 import com.arquisoft.fichas.application.fichaperfil.query.secondaryport.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
@@ -11,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
@@ -30,10 +27,6 @@ class ConsultarFichasPerfilUseCaseTest {
 
     @Mock
     private AppLogger logger;
-
-    @Spy
-    private CatalogoMensajes catalogo = CatalogoMensajesPrueba.porDefecto();
-
     @InjectMocks
     private ConsultarFichasPerfilUseCaseImpl consultarFichasPerfilUseCase;
 

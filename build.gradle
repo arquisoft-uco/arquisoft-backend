@@ -86,6 +86,11 @@ dependencies {
     // de OpenAPI en el Environment.
     implementation project(':shared:message')
 
+    // Catálogo de mensajes sobre Redis (ADR-013). Se declara explícitamente porque hoy solo llega
+    // por seguridad:infrastructure: el catálogo pasó a ser nuclear y no puede depender de que un
+    // contexto siga arrastrándolo.
+    implementation project(':shared:redis')
+
     // Flyway — version gestionada por el BOM de Spring Boot 4.0.5 (12.4.0).
     // flyway-database-postgresql es necesario en Flyway 11+ para soportar PostgreSQL.
     implementation "org.flywaydb:flyway-core"
@@ -270,5 +275,15 @@ subprojects { subproject ->
 
     compileJava {
         options.compilerArgs.addAll(['-parameters', '-Xlint:deprecation'])
+    }
+
+    // Catálogo de prueba (ADR-013): permite que los tests resuelvan el texto real de
+    // catalogo/*.properties. Se declara aquí y no módulo a módulo porque lo necesita cualquier test
+    // que afirme sobre un mensaje — incluidos los que lo resuelven por la fachada estática del
+    // dominio sin saberlo — y averiguar por qué falla uno que no lo declaró cuesta más que esto.
+    if (subproject.path != ':shared:message') {
+        dependencies {
+            testImplementation testFixtures(project(':shared:message'))
+        }
     }
 }

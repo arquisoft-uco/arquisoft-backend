@@ -8,8 +8,6 @@ import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.jpa.util.PageableMapper;
 import com.arquisoft.shared.jpa.util.PaginationMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -23,8 +21,8 @@ public class FichaPerfilQueryOutputAdapter implements FichaPerfilQueryOutputPort
 
     @Override
     public PaginatedResult<FichaPerfilReadModel> consultarTodas(FichaPerfilCriteria criteria) {
-        Pageable pageable = PageableMapper.toPageable(criteria, FichaPerfilSortMapper::traducir);
-        Specification<FichaPerfilJpaQueryEntity> spec = specification.desdeCriteria(criteria);
+        var pageable = PageableMapper.toPageable(criteria, FichaPerfilSortMapper::traducir);
+        var spec = specification.desdeCriteria(criteria);
 
         return PaginationMapper.toResult(
                 fichaPerfilRepository.findAll(spec, pageable)

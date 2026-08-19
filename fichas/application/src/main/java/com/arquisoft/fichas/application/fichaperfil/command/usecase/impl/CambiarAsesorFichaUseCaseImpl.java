@@ -14,7 +14,7 @@ import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +31,6 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
     private final CambiarAsesorFichaValidator cambiarAsesorFichaValidator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(CambioAsesorFichaDomain cambio) {
@@ -50,6 +49,6 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
         eventPublisher.publish(new AsesorFichaCambiadoEvent(fichaPerfil, ficha.getTituloProyecto(),
                 asesorFicha.getId(), asesorFicha.getNombre(), asesorFicha.getEmail()));
 
-        logger.info(catalogo.obtener(FichaPerfilKey.LOG_ASESOR_CAMBIADO), fichaPerfil, nuevoAsesorFicha);
+        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_ASESOR_CAMBIADO), fichaPerfil, nuevoAsesorFicha);
     }
 }

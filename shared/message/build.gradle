@@ -2,15 +2,41 @@
 // transitivamente a los consumidores del módulo.
 //
 // shared:message es el catálogo central de mensajes del proyecto (Message Catalog Pattern).
-// Contiene todos los textos del sistema — mensajes de error, validaciones, logs,
-// códigos de error — como constantes Java type-safe.
+// Contiene las claves tipadas del sistema — errores, validaciones, logs, códigos — como
+// constantes Java. Los textos ya no viven aquí: se cargan en Redis desde catalogo/*.properties
+// (ADR-013) y los resuelve el adaptador de shared:redis.
 //
 // No tiene dependencias externas: solo constantes Java puras. Cualquier capa
 // (domain, application, infrastructure) de cualquier contexto puede importarlo
 // sin violar la regla "domain sin Spring ni Jakarta".
 apply plugin: 'java-library'
 
+// java-test-fixtures publica un artefacto de test aparte con el catálogo de prueba, para que los
+// tests de los demás módulos resuelvan el texto real sin que ese código llegue al jar de producción.
+apply plugin: 'java-test-fixtures'
+
 dependencies {
+    // El instalador es un LauncherSessionListener del JUnit Platform, no una extensión de Jupiter:
+    // así se descubre por ServiceLoader sin activar la autodetección global de extensiones.
+    testFixturesImplementation "org.junit.platform:junit-platform-launcher"
+
     testImplementation "org.assertj:assertj-core"
+    // La salida del source set y no testFixtures(project(':shared:message')): esa forma trae el jar
+    // del propio módulo al classpath de test, y entonces el escaneo de key/ resuelve una URL 'jar:'
+    // en lugar del directorio de clases y no puede recorrerla.
+    testImplementation sourceSets.testFixtures.output
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+// Los .properties del catálogo viven en la raíz del repositorio, no en src/main/resources: son
+// datos de despliegue que carga catalogo/cargar.sh, no recursos de la aplicación. Se copian
+// al artefacto de test fixtures para que CatalogoMensajesPrueba lea exactamente el mismo archivo que
+// se sube a Redis — sin una segunda copia que pueda divergir.
+processTestFixturesResources {
+    from(rootProject.file('catalogo')) {
+        // Solo los datos: el script de carga y el README también viven ahí y no pintan nada
+        // dentro de un artefacto de test.
+        include '*.properties'
+        into 'catalogo'
+    }
 }

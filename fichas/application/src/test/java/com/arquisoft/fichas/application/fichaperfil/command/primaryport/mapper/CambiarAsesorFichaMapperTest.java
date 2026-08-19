@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class CambiarAsesorFichaMapperTest {
 
@@ -34,9 +34,9 @@ class CambiarAsesorFichaMapperTest {
         var command = new CambiarAsesorFichaCommand(UUID.randomUUID(), null);
 
         // Act & Assert
-        assertThatThrownBy(() -> CambiarAsesorFichaMapper.toDomain(command))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasFields.FichaPerfil.ASESOR_FICHA);
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class, () -> CambiarAsesorFichaMapper.toDomain(command));
+
+        assertThat(excepcion.getValidationResult().tieneErroresDeCampo(FichasFields.FichaPerfil.ASESOR_FICHA)).isTrue();
     }
 
     @Test
@@ -45,8 +45,8 @@ class CambiarAsesorFichaMapperTest {
         var command = new CambiarAsesorFichaCommand(null, UUID.randomUUID());
 
         // Act & Assert
-        assertThatThrownBy(() -> CambiarAsesorFichaMapper.toDomain(command))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasFields.FichaPerfil.ID);
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class, () -> CambiarAsesorFichaMapper.toDomain(command));
+
+        assertThat(excepcion.getValidationResult().tieneErroresDeCampo(FichasFields.FichaPerfil.ID)).isTrue();
     }
 }

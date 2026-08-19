@@ -1,14 +1,11 @@
 package com.arquisoft.fichas.infrastructure.minio.primaryadapter.web;
 
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.minio.MinioStorageClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
 
@@ -29,9 +26,6 @@ class MinioGuiaControllerTest {
 
         // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
-    @Spy
-    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
-
 @InjectMocks
     private MinioGuiaController minioGuiaController;
 

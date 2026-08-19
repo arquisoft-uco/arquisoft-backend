@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.seguridad.infrastructure.config.ratelimit.BucketResolver;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
@@ -35,7 +35,6 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
 
     private final BucketResolver bucketResolver;
     private final ObjectMapper objectMapper;
-    private final CatalogoMensajes catalogo;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -81,15 +80,15 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
             response.addHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitForRefill));
 
             var body = ErrorResponseDTO.builder()
-                    .error(catalogo.obtener(LimiteSolicitudesKey.ERROR_HTTP_DEMASIADAS_SOLICITUDES))
+                    .error(Mensajes.obtener(LimiteSolicitudesKey.ERROR_HTTP_DEMASIADAS_SOLICITUDES))
                     .errorCode(SeguridadCodes.LimiteSolicitudes.LIMITE_SOLICITUDES_EXCEDIDO)
-                    .message(catalogo.formatear(LimiteSolicitudesKey.ERROR_LIMITE_EXCEDIDO, waitForRefill))
+                    .message(Mensajes.formatear(LimiteSolicitudesKey.ERROR_LIMITE_EXCEDIDO, waitForRefill))
                     .status(HttpStatus.TOO_MANY_REQUESTS.value())
                     .path(request.getRequestURI())
                     .build();
             objectMapper.writeValue(response.getWriter(), body);
 
-            log.warn(catalogo.obtener(LimiteSolicitudesKey.LOG_LIMITE_EXCEDIDO), clientIp, request.getRequestURI());
+            log.warn(Mensajes.obtener(LimiteSolicitudesKey.LOG_LIMITE_EXCEDIDO), clientIp, request.getRequestURI());
         }
     }
 

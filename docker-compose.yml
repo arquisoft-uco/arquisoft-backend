@@ -57,6 +57,30 @@ services:
       timeout: 5s
       retries: 5
 
+  # ==================== CARGADOR DEL CATÁLOGO DE MENSAJES (ADR-013) ====================
+  # Un solo disparo: carga el catálogo en Redis y termina. El backend lo espera con
+  # service_completed_successfully porque con el fail-fast de arranque no puede levantar sin
+  # catálogo — sin esta compuerta arrancaría antes de la carga y moriría en bucle.
+  #
+  # Solo afecta al flujo local con docker-compose. Contra la instancia en la nube, el mismo script
+  # se ejecuta suelto como paso previo del despliegue.
+  catalogo-loader:
+    image: redis:7-alpine
+    container_name: arquisoft-catalogo-loader
+    restart: "no"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: default123
+    volumes:
+      - ./catalogo:/catalogo:ro
+    command: ["sh", "/catalogo/cargar.sh"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - arquisoft-network
+
   # ==================== KEYCLOAK ====================
   keycloak:
     image: quay.io/keycloak/keycloak:26.6
@@ -184,6 +208,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      catalogo-loader:
+        condition: service_completed_successfully
       keycloak:
         condition: service_healthy  # ✅ Backend espera Keycloak listo
       minio:

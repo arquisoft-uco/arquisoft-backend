@@ -297,7 +297,7 @@ El módulo `shared` contiene **13 sub-módulos** reutilizables por cualquier con
 | `minio` | Cliente MinIO | Almacenamiento de archivos |
 | `jpa` | `QueryRepository`/`SpecificationQueryRepository`, `CampoSpec`, `PageableMapper`/`PaginationMapper` | Todo lo que necesita Spring Data JPA para el lado de consulta — nunca se importa desde `domain` ni `application` |
 | `query` | `QueryCriteria`/`NodoFiltro`/`FiltroOperador`/`SortOrder`, `PaginatedResult`, DTOs de filtro | Vocabulario de consulta **sin ninguna dependencia de Spring** — usable en cualquier capa |
-| `message` | CatalogoMensajes (interface + implementación ResourceBundle) | Catálogo de mensajes desacoplado de la tecnología |
+| `message` | `CatalogoMensajes` (puerto), `Mensajes` (fachada estática), `ClavesCatalogo`, `*Codes`/`*Fields`/`*Limits` | Puerto y registro del catálogo; el texto vive en `catalogo/*.properties` y lo sirve `shared:redis` |
 | `notification` | EnvioNotificacionOutputPort | Puerto de envío de notificaciones (SMTP), usado por `notificaciones` |
 
 `shared:jpa` fue `shared:postgres` hasta hace poco — se renombró porque no tiene nada
@@ -818,7 +818,6 @@ class RegistrarFichaPerfilUseCaseTest {
     @Mock private TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
     @Mock private RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
     @Mock private AppLogger logger;
-    @Spy  private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
 
     @InjectMocks
     private RegistrarFichaPerfilUseCaseImpl registrarFichaPerfilUseCase;

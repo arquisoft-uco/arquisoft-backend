@@ -2,7 +2,6 @@ package com.arquisoft.fichas.infrastructure.usuario.command.primaryadapter.amqp;
 
 import com.arquisoft.fichas.application.usuario.command.primaryport.model.RegistrarUsuarioCommand;
 import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
 import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.MdcContextoDiagnosticoOutputAdapter;
 import com.rabbitmq.client.Channel;
@@ -40,7 +39,6 @@ class UsuarioCreadoConsumerTest {
         var gestorTraza = new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false);
         adapter = new UsuarioCreadoConsumer(registrarUsuarioUseCase, objectMapper,
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
-                CatalogoMensajesResourceBundle.porDefecto(),
                 gestorTraza);
     }
 

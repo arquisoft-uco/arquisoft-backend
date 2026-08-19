@@ -1,17 +1,18 @@
 package com.arquisoft.shared.message.key.seguridad;
 
-import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de Rol. */
 public enum RolKey implements ClaveMensaje {
 
-    LOG_ROLES_RECURSO("seguridad.infraestructura.rol.log.roles-recurso");
+    LOG_ROLES_RECURSO("seguridad.infraestructura.rol.log.roles-recurso", 0);
 
     private final String clave;
+    private final int parametros;
 
-    RolKey(String clave) {
+    RolKey(String clave, int parametros) {
         this.clave = clave;
+        this.parametros = parametros;
     }
 
     @Override
@@ -20,7 +21,7 @@ public enum RolKey implements ClaveMensaje {
     }
 
     @Override
-    public String paquete() {
-        return PaquetesMensajes.SEGURIDAD;
+    public int parametros() {
+        return parametros;
     }
 }

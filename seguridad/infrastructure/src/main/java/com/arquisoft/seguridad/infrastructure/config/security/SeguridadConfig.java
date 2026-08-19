@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.infrastructure.filter.IdentidadTrazaFilter;
 import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -45,7 +45,6 @@ public class SeguridadConfig {
     private final SecurityAccessDeniedHandler securityAccessDeniedHandler;
     private final SecurityAuthenticationEntryPoint securityAuthenticationEntryPoint;
     private final JwtBlacklistFilter jwtBlacklistFilter;
-    private final CatalogoMensajes catalogo;
     private final GestorTraza gestorTraza;
 
     @Bean
@@ -82,7 +81,7 @@ public class SeguridadConfig {
     @Bean
     public JwtDecoder jwtDecoder() {
         var issuer = PLANTILLA_ISSUER.formatted(keycloakServerUrl, realm);
-        log.info(catalogo.obtener(IniciarSesionKey.LOG_JWT_DECODER_CONFIG), issuer, expectedAudience);
+        log.info(Mensajes.obtener(IniciarSesionKey.LOG_JWT_DECODER_CONFIG), issuer, expectedAudience);
 
         var decoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
         decoder.setJwtValidator(jwtValidator(issuer, expectedAudience));

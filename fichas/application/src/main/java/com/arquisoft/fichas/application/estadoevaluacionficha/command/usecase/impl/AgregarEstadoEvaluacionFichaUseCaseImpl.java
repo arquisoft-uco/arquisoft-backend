@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EstadoEnEvaluacionExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.EvaluacionFichaExisteFinder;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.finder.RepresentantePropietarioEvaluacionFinder;
@@ -29,7 +29,6 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
     private final UltimoEstadoEvaluacionFichaFinder ultimoEstadoEvaluacionFichaFinder;
     private final AgregarEstadoEvaluacionFichaValidator agregarEstadoEvaluacionFichaValidator;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public UUID ejecutar(AgregacionEstadoEvaluacionFichaDomain entrada) {
@@ -47,7 +46,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
         estadoEvaluacionFichaOutputPort.agregarEstado(EstadoEvaluacionFichaMapper.toEntity(estadoEvaluacion));
 
         logger.info(
-                catalogo.obtener(EstadoEvaluacionFichaKey.LOG_AGREGADO),
+                Mensajes.obtener(EstadoEvaluacionFichaKey.LOG_AGREGADO),
                 estadoEvaluacion.getId(),
                 estadoEvaluacion.getEvaluacionFichaPerfilId(),
                 estadoEvaluacion.getEstadoEvaluacion());

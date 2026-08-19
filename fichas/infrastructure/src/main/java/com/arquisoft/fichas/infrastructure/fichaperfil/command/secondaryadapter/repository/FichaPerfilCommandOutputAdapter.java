@@ -5,7 +5,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.mapper.AsesorFichaJpaMapper;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.mapper.FichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,25 +19,24 @@ public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
 
     private final FichaPerfilCommandRepository fichaPerfilCommandRepository;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public void registrarFicha(FichaPerfilEntity ficha) {
         fichaPerfilCommandRepository.save(FichaPerfilJpaMapper.toJpaEntity(ficha));
-        logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), ficha.id());
+        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_GUARDADA), ficha.id());
     }
 
     @Override
     public void actualizarTitulo(UUID fichaPerfil, String tituloProyecto) {
         fichaPerfilCommandRepository.actualizarTitulo(fichaPerfil, tituloProyecto);
-        logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), fichaPerfil);
+        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_GUARDADA), fichaPerfil);
     }
 
     @Override
     public void actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha) {
         fichaPerfilCommandRepository.actualizarAsesorFicha(
                 fichaPerfil, AsesorFichaJpaMapper.toReferencia(nuevoAsesorFicha));
-        logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), fichaPerfil);
+        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_GUARDADA), fichaPerfil);
     }
 
     @Override

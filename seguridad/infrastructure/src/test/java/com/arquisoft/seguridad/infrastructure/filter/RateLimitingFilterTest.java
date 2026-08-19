@@ -1,7 +1,5 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.seguridad.infrastructure.config.ratelimit.BucketResolver;
 import tools.jackson.databind.ObjectMapper;
 import io.github.bucket4j.Bucket;
@@ -13,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.PrintWriter;
@@ -36,9 +33,6 @@ class RateLimitingFilterTest {
 
         // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
-    @Spy
-    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
-
 @InjectMocks
     private LimitadorSolicitudesFilter filter;
 

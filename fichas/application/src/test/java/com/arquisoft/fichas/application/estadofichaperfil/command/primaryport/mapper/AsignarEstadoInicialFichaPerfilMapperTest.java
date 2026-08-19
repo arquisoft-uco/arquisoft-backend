@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AsignarEstadoInicialFichaPerfilMapperTest {
 
@@ -28,8 +28,9 @@ class AsignarEstadoInicialFichaPerfilMapperTest {
     @Test
     void debeLanzarDomainValidationException_cuandoFichaPerfilEsNula() {
         // Act & Assert
-        assertThatThrownBy(() -> AsignarEstadoInicialFichaPerfilMapper.toDomain(null))
-                .isInstanceOf(DomainValidationException.class)
-                .hasMessageContaining(FichasFields.EstadoFichaPerfil.FICHA_PERFIL);
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> AsignarEstadoInicialFichaPerfilMapper.toDomain(null));
+
+        assertThat(excepcion.getValidationResult().tieneErroresDeCampo(FichasFields.EstadoFichaPerfil.FICHA_PERFIL)).isTrue();
     }
 }

@@ -1,7 +1,5 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
-import com.arquisoft.shared.message.CatalogoMensajes;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.exception.DomainException;
@@ -16,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
@@ -46,9 +43,6 @@ class CrearUsuarioUseCaseTest {
 
         // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
     // resultado, y un mock los dejaria en null.
-    @Spy
-    private CatalogoMensajes catalogo = CatalogoMensajesResourceBundle.porDefecto();
-
 @InjectMocks
     private CrearUsuarioUseCaseImpl crearUsuarioUseCase;
 

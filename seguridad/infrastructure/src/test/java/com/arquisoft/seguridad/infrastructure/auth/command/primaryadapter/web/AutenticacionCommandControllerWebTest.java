@@ -1,7 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.primaryadapter.web;
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
-import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.seguridad.application.auth.command.primaryport.interactor.AutenticarUsuarioInteractor;
 import com.arquisoft.seguridad.application.auth.command.primaryport.interactor.CerrarSesionInteractor;
 import com.arquisoft.seguridad.application.auth.command.primaryport.interactor.RefrescarTokenInteractor;
@@ -44,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         excludeFilters = @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 classes = {JwtBlacklistFilter.class, LimitadorSolicitudesFilter.class}))
-@Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class, CatalogoMensajesConfig.class,
+@Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         AutenticacionCommandControllerWebTest.TestSeguridadConfig.class})
 class AutenticacionCommandControllerWebTest {
 

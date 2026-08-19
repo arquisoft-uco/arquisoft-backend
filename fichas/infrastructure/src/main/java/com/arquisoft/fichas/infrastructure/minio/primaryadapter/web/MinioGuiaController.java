@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.infrastructure.minio.primaryadapter.web;
 
-import com.arquisoft.shared.message.annotation.FichasApiKeys;
+import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.minio.MinioStorageClient;
 import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
 import com.arquisoft.shared.web.openapi.ApiCodes;
@@ -26,7 +26,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("${rutas.fichas.minio-guia.base:/fichas/minio/guia}")
 @RequiredArgsConstructor
-@Tag(name = FichasApiKeys.MinioGuia.TAG_NAME, description = FichasApiKeys.MinioGuia.TAG_DESCRIPTION)
+@Tag(name = FichasApiMessages.MinioGuia.TAG_NAME, description = FichasApiMessages.MinioGuia.TAG_DESCRIPTION)
 public class MinioGuiaController {
 
     private static final String AUTENTICADO = "isAuthenticated()";
@@ -43,23 +43,22 @@ public class MinioGuiaController {
 
     private final MinioStorageClient minioStorageClient;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @GetMapping("${rutas.fichas.minio-guia.upload-url:/upload-url}")
     @PreAuthorize(AUTENTICADO)
     @Operation(
-            summary = FichasApiKeys.MinioGuia.CARGA_SUMMARY,
-            description = FichasApiKeys.MinioGuia.CARGA_DESCRIPTION,
+            summary = FichasApiMessages.MinioGuia.CARGA_SUMMARY,
+            description = FichasApiMessages.MinioGuia.CARGA_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
-    @ApiResponse(responseCode = ApiCodes.OK, description = FichasApiKeys.MinioGuia.CARGA_RESP_200)
+    @ApiResponse(responseCode = ApiCodes.OK, description = FichasApiMessages.MinioGuia.CARGA_RESP_200)
     public ResponseEntity<Map<String, String>> generarUrlCarga(
-            @Parameter(description = FichasApiKeys.MinioGuia.PARAM_BUCKET)
+            @Parameter(description = FichasApiMessages.MinioGuia.PARAM_BUCKET)
             @RequestParam String bucket,
-            @Parameter(description = FichasApiKeys.MinioGuia.PARAM_KEY)
+            @Parameter(description = FichasApiMessages.MinioGuia.PARAM_KEY)
             @RequestParam String key) {
 
-        logger.debug(catalogo.obtener(MinioGuiaKey.LOG_UPLOAD_URL), bucket, key);
+        logger.debug(Mensajes.obtener(MinioGuiaKey.LOG_UPLOAD_URL), bucket, key);
         var url = minioStorageClient.generateUploadPresignedUrl(bucket, key);
         return ResponseEntity.ok(Map.of(
                 CAMPO_BUCKET, bucket,
@@ -72,18 +71,18 @@ public class MinioGuiaController {
     @GetMapping("${rutas.fichas.minio-guia.download-url:/download-url}")
     @PreAuthorize(AUTENTICADO)
     @Operation(
-            summary = FichasApiKeys.MinioGuia.DESCARGA_SUMMARY,
-            description = FichasApiKeys.MinioGuia.DESCARGA_DESCRIPTION,
+            summary = FichasApiMessages.MinioGuia.DESCARGA_SUMMARY,
+            description = FichasApiMessages.MinioGuia.DESCARGA_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
-    @ApiResponse(responseCode = ApiCodes.OK, description = FichasApiKeys.MinioGuia.DESCARGA_RESP_200)
+    @ApiResponse(responseCode = ApiCodes.OK, description = FichasApiMessages.MinioGuia.DESCARGA_RESP_200)
     public ResponseEntity<Map<String, String>> generarUrlDescarga(
-            @Parameter(description = FichasApiKeys.MinioGuia.PARAM_BUCKET)
+            @Parameter(description = FichasApiMessages.MinioGuia.PARAM_BUCKET)
             @RequestParam String bucket,
-            @Parameter(description = FichasApiKeys.MinioGuia.PARAM_KEY)
+            @Parameter(description = FichasApiMessages.MinioGuia.PARAM_KEY)
             @RequestParam String key) {
 
-        logger.debug(catalogo.obtener(MinioGuiaKey.LOG_DOWNLOAD_URL), bucket, key);
+        logger.debug(Mensajes.obtener(MinioGuiaKey.LOG_DOWNLOAD_URL), bucket, key);
         var url = minioStorageClient.generateDownloadPresignedUrl(bucket, key);
         return ResponseEntity.ok(Map.of(
                 CAMPO_BUCKET, bucket,
@@ -96,15 +95,15 @@ public class MinioGuiaController {
     @GetMapping("${rutas.fichas.minio-guia.existe:/existe}")
     @PreAuthorize(AUTENTICADO)
     @Operation(
-            summary = FichasApiKeys.MinioGuia.EXISTE_SUMMARY,
-            description = FichasApiKeys.MinioGuia.EXISTE_DESCRIPTION,
+            summary = FichasApiMessages.MinioGuia.EXISTE_SUMMARY,
+            description = FichasApiMessages.MinioGuia.EXISTE_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
-    @ApiResponse(responseCode = ApiCodes.OK, description = FichasApiKeys.MinioGuia.EXISTE_RESP_200)
+    @ApiResponse(responseCode = ApiCodes.OK, description = FichasApiMessages.MinioGuia.EXISTE_RESP_200)
     public ResponseEntity<Map<String, Object>> verificarExistencia(
-            @Parameter(description = FichasApiKeys.MinioGuia.PARAM_BUCKET)
+            @Parameter(description = FichasApiMessages.MinioGuia.PARAM_BUCKET)
             @RequestParam String bucket,
-            @Parameter(description = FichasApiKeys.MinioGuia.PARAM_KEY)
+            @Parameter(description = FichasApiMessages.MinioGuia.PARAM_KEY)
             @RequestParam String key) {
 
         var existe = minioStorageClient.objectExists(bucket, key);
@@ -114,18 +113,18 @@ public class MinioGuiaController {
     @DeleteMapping("${rutas.fichas.minio-guia.objeto:/objeto}")
     @PreAuthorize(AUTENTICADO)
     @Operation(
-            summary = FichasApiKeys.MinioGuia.ELIMINAR_SUMMARY,
-            description = FichasApiKeys.MinioGuia.ELIMINAR_DESCRIPTION,
+            summary = FichasApiMessages.MinioGuia.ELIMINAR_SUMMARY,
+            description = FichasApiMessages.MinioGuia.ELIMINAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
-    @ApiResponse(responseCode = ApiCodes.NO_CONTENT, description = FichasApiKeys.MinioGuia.ELIMINAR_RESP_204)
+    @ApiResponse(responseCode = ApiCodes.NO_CONTENT, description = FichasApiMessages.MinioGuia.ELIMINAR_RESP_204)
     public ResponseEntity<Void> eliminarObjeto(
-            @Parameter(description = FichasApiKeys.MinioGuia.PARAM_BUCKET)
+            @Parameter(description = FichasApiMessages.MinioGuia.PARAM_BUCKET)
             @RequestParam String bucket,
-            @Parameter(description = FichasApiKeys.MinioGuia.PARAM_KEY)
+            @Parameter(description = FichasApiMessages.MinioGuia.PARAM_KEY)
             @RequestParam String key) {
 
-        logger.debug(catalogo.obtener(MinioGuiaKey.LOG_DELETE), bucket, key);
+        logger.debug(Mensajes.obtener(MinioGuiaKey.LOG_DELETE), bucket, key);
         minioStorageClient.deleteObject(bucket, key);
         return ResponseEntity.noContent().build();
     }

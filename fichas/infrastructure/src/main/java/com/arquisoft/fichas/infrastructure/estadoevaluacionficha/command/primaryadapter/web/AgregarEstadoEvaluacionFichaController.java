@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.primaryadapter.web;
 
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.primaryadapter.web.mapper.AgregarEstadoEvaluacionFichaRequestMapper;
-import com.arquisoft.shared.message.annotation.FichasApiKeys;
+import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.estadoevaluacionficha.command.primaryport.interactor.AgregarEstadoEvaluacionFichaInteractor;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.primaryadapter.web.dto.AgregarEstadoEvaluacionFichaRequestDTO;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.primaryadapter.web.dto.AgregarEstadoEvaluacionFichaResponseDTO;
@@ -31,8 +31,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("${rutas.fichas.estado-evaluacion-ficha.base:/fichas-perfil/estado-evaluacion-ficha}")
 @RequiredArgsConstructor
-@Tag(name = FichasApiKeys.EstadoEvaluacionFicha.TAG_NAME,
-        description = FichasApiKeys.EstadoEvaluacionFicha.TAG_DESCRIPTION)
+@Tag(name = FichasApiMessages.EstadoEvaluacionFicha.TAG_NAME,
+        description = FichasApiMessages.EstadoEvaluacionFicha.TAG_DESCRIPTION)
 public class AgregarEstadoEvaluacionFichaController {
 
     private final AgregarEstadoEvaluacionFichaInteractor agregarEstadoEvaluacionFichaInteractor;
@@ -40,21 +40,21 @@ public class AgregarEstadoEvaluacionFichaController {
     @PostMapping
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_ESTADO_EVALUACION_FICHA_CREATE)
     @Operation(
-            summary = FichasApiKeys.EstadoEvaluacionFicha.AGREGAR_SUMMARY,
-            description = FichasApiKeys.EstadoEvaluacionFicha.AGREGAR_DESCRIPTION,
+            summary = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_SUMMARY,
+            description = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME))
     @ApiResponses(value = {
             @ApiResponse(responseCode = ApiCodes.CREATED,
-                    description = FichasApiKeys.EstadoEvaluacionFicha.AGREGAR_RESP_201,
+                    description = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_RESP_201,
                     content = @Content(schema = @Schema(implementation = AgregarEstadoEvaluacionFichaResponseDTO.class))),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
-                    description = FichasApiKeys.EstadoEvaluacionFicha.AGREGAR_RESP_400),
+                    description = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_RESP_400),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiKeys.Comun.RESP_401),
+                    description = FichasApiMessages.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiKeys.EstadoEvaluacionFicha.AGREGAR_RESP_403),
+                    description = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_RESP_403),
             @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
-                    description = FichasApiKeys.EstadoEvaluacionFicha.AGREGAR_RESP_422)
+                    description = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_RESP_422)
     })
     public ResponseEntity<AgregarEstadoEvaluacionFichaResponseDTO> agregar(
             @RequestBody AgregarEstadoEvaluacionFichaRequestDTO request,

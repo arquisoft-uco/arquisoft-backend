@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.jwt;
 
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
 import com.arquisoft.seguridad.application.auth.command.secondaryport.ValidacionTokenOutputPort;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
@@ -20,7 +20,6 @@ import java.util.Map;
 public class JwtTokenOutputAdapter implements ValidacionTokenOutputPort {
 
     private final JwtDecoder jwtDecoder;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public IdentidadToken extraerInfo(String token) {
@@ -33,8 +32,8 @@ public class JwtTokenOutputAdapter implements ValidacionTokenOutputPort {
                     extraerRolesRealm(jwt)
             );
         } catch (Exception e) {
-            log.error(catalogo.obtener(TokenKey.LOG_ERROR_EXTRAER_INFO), e.getMessage());
-            throw new TokenInvalidoException(catalogo.formatear(TokenKey.ERROR_INVALIDO_DETALLE, e.getMessage()), e);
+            log.error(Mensajes.obtener(TokenKey.LOG_ERROR_EXTRAER_INFO), e.getMessage());
+            throw new TokenInvalidoException(Mensajes.formatear(TokenKey.ERROR_INVALIDO_DETALLE, e.getMessage()), e);
         }
     }
 
@@ -44,7 +43,7 @@ public class JwtTokenOutputAdapter implements ValidacionTokenOutputPort {
             jwtDecoder.decode(token);
             return true;
         } catch (Exception e) {
-            log.warn(catalogo.obtener(TokenKey.LOG_VALIDACION_FALLIDA), e.getMessage());
+            log.warn(Mensajes.obtener(TokenKey.LOG_VALIDACION_FALLIDA), e.getMessage());
             return false;
         }
     }

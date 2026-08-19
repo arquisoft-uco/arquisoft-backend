@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
@@ -31,7 +31,6 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
 
     private final TokenInvalidadoOutputPort tokenInvalidadoPort;
     private final ObjectMapper objectMapper;
-    private final CatalogoMensajes catalogo;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -61,22 +60,22 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
                 try {
                     if (tokenInvalidadoPort.estaInvalidado(jti)) {
                         // log.warn: error de cliente — token revocado (detalle interno, no se expone al cliente)
-                        log.warn(catalogo.obtener(TokenInvalidadoKey.LOG_TOKEN_REVOCADO),
+                        log.warn(Mensajes.obtener(TokenInvalidadoKey.LOG_TOKEN_REVOCADO),
                                 jti, request.getRequestURI());
                         writeErrorResponse(response, request,
                                 HttpStatus.UNAUTHORIZED,
-                                catalogo.obtener(TokenInvalidadoKey.ERROR_HTTP_401),
-                                catalogo.obtener(TokenInvalidadoKey.ERROR_HTTP_401_DETALLE));
+                                Mensajes.obtener(TokenInvalidadoKey.ERROR_HTTP_401),
+                                Mensajes.obtener(TokenInvalidadoKey.ERROR_HTTP_401_DETALLE));
                         return;
                     }
                 } catch (Exception e) {
                     // log.error: error de servidor — Redis no disponible
-                    log.error(catalogo.obtener(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE),
+                    log.error(Mensajes.obtener(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE),
                             e.getMessage(), e);
                     writeErrorResponse(response, request,
                             HttpStatus.SERVICE_UNAVAILABLE,
-                            catalogo.obtener(TokenInvalidadoKey.ERROR_HTTP_503),
-                            catalogo.obtener(TokenInvalidadoKey.ERROR_HTTP_503_DETALLE));
+                            Mensajes.obtener(TokenInvalidadoKey.ERROR_HTTP_503),
+                            Mensajes.obtener(TokenInvalidadoKey.ERROR_HTTP_503_DETALLE));
                     return;
                 }
             }

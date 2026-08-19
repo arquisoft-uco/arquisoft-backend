@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.RemoverItemFichaPerfilUseCase;
@@ -27,7 +27,6 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
     private final RevisionesDelItemFinder revisionesDelItemFinder;
     private final RemoverItemFichaPerfilValidator removerItemFichaPerfilValidator;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(RemocionItemFichaPerfilDomain entrada) {
@@ -48,6 +47,6 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
 
         itemOutputPort.removerItem(entrada.getItem());
 
-        logger.info(catalogo.obtener(ItemFichaPerfilKey.LOG_REMOVIDO), entrada.getItem());
+        logger.info(Mensajes.obtener(ItemFichaPerfilKey.LOG_REMOVIDO), entrada.getItem());
     }
 }

@@ -1,6 +1,6 @@
 package com.arquisoft.shared.minio;
 
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
 import com.arquisoft.shared.minio.config.MinioProperties;
@@ -28,7 +28,6 @@ public class MinioStorageClientImpl implements MinioStorageClient {
 
     private final MinioClient minioClient;
     private final MinioProperties properties;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public String generateUploadPresignedUrl(String bucket, String objectKey) {
@@ -44,9 +43,9 @@ public class MinioStorageClientImpl implements MinioStorageClient {
         } catch (MinioOperationException e) {
             throw e;
         } catch (Exception e) {
-            log.error(catalogo.obtener(AlmacenamientoKey.LOG_URL_CARGA_FALLIDA), bucket, objectKey, e);
+            log.error(Mensajes.obtener(AlmacenamientoKey.LOG_URL_CARGA_FALLIDA), bucket, objectKey, e);
             throw new MinioOperationException(
-                    catalogo.obtener(AlmacenamientoKey.ERROR_URL_CARGA),
+                    Mensajes.obtener(AlmacenamientoKey.ERROR_URL_CARGA),
                     AppCodes.Minio.URL_CARGA_FALLIDA, e);
         }
     }
@@ -62,9 +61,9 @@ public class MinioStorageClientImpl implements MinioStorageClient {
                             .expiry(properties.getPresignedUrlExpiry().getDownloadMinutes(), TimeUnit.MINUTES)
                             .build());
         } catch (Exception e) {
-            log.error(catalogo.obtener(AlmacenamientoKey.LOG_URL_DESCARGA_FALLIDA), bucket, objectKey, e);
+            log.error(Mensajes.obtener(AlmacenamientoKey.LOG_URL_DESCARGA_FALLIDA), bucket, objectKey, e);
             throw new MinioOperationException(
-                    catalogo.obtener(AlmacenamientoKey.ERROR_URL_DESCARGA),
+                    Mensajes.obtener(AlmacenamientoKey.ERROR_URL_DESCARGA),
                     AppCodes.Minio.URL_DESCARGA_FALLIDA, e);
         }
     }
@@ -78,9 +77,9 @@ public class MinioStorageClientImpl implements MinioStorageClient {
                             .object(objectKey)
                             .build());
         } catch (Exception e) {
-            log.error(catalogo.obtener(AlmacenamientoKey.LOG_ELIMINACION_FALLIDA), bucket, objectKey, e);
+            log.error(Mensajes.obtener(AlmacenamientoKey.LOG_ELIMINACION_FALLIDA), bucket, objectKey, e);
             throw new MinioOperationException(
-                    catalogo.obtener(AlmacenamientoKey.ERROR_ELIMINACION),
+                    Mensajes.obtener(AlmacenamientoKey.ERROR_ELIMINACION),
                     AppCodes.Minio.ELIMINACION_FALLIDA, e);
         }
     }
@@ -106,7 +105,7 @@ public class MinioStorageClientImpl implements MinioStorageClient {
 
     private MinioOperationException errorDeVerificacion(Exception causa) {
         return new MinioOperationException(
-                catalogo.obtener(AlmacenamientoKey.ERROR_VERIFICACION),
+                Mensajes.obtener(AlmacenamientoKey.ERROR_VERIFICACION),
                 AppCodes.Minio.VERIFICACION_FALLIDA, causa);
     }
 
@@ -115,7 +114,7 @@ public class MinioStorageClientImpl implements MinioStorageClient {
                 BucketExistsArgs.builder().bucket(bucket).build());
         if (!exists) {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
-            log.info(catalogo.obtener(AlmacenamientoKey.LOG_BUCKET_CREADO), bucket);
+            log.info(Mensajes.obtener(AlmacenamientoKey.LOG_BUCKET_CREADO), bucket);
         }
     }
 }

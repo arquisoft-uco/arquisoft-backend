@@ -2,7 +2,7 @@ package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.key
 
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
 import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
 import com.arquisoft.seguridad.application.auth.command.secondaryport.AutenticacionOutputPort;
@@ -57,7 +57,6 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
     private static final String PLANTILLA_TOKEN_ENDPOINT = "%s/realms/%s/protocol/openid-connect/token";
 
     private final RestTemplate restTemplate;
-    private final CatalogoMensajes catalogo;
 
     @Value("${arquisoft.keycloak.server-url}")
     private String keycloakServerUrl;
@@ -90,22 +89,22 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
                 return mapToCredenciales(response.getBody());
             }
 
-            throw new CredencialesInvalidasException(catalogo.obtener(IniciarSesionKey.ERROR_AUTENTICAR_KEYCLOAK));
+            throw new CredencialesInvalidasException(Mensajes.obtener(IniciarSesionKey.ERROR_AUTENTICAR_KEYCLOAK));
 
         } catch (HttpClientErrorException.Unauthorized e) {
-            log.warn(catalogo.obtener(IniciarSesionKey.LOG_CREDENCIALES_INVALIDAS));
-            throw new CredencialesInvalidasException(catalogo.obtener(IniciarSesionKey.ERROR_CREDENCIALES_INVALIDAS));
+            log.warn(Mensajes.obtener(IniciarSesionKey.LOG_CREDENCIALES_INVALIDAS));
+            throw new CredencialesInvalidasException(Mensajes.obtener(IniciarSesionKey.ERROR_CREDENCIALES_INVALIDAS));
         } catch (HttpClientErrorException e) {
-            log.error(catalogo.obtener(IniciarSesionKey.LOG_ERROR_AUTENTICACION_KEYCLOAK), e.getStatusCode(), e.getMessage());
-            throw new AuthenticationException(catalogo.formatear(IniciarSesionKey.ERROR_COMUNICACION_KEYCLOAK, e.getMessage()));
+            log.error(Mensajes.obtener(IniciarSesionKey.LOG_ERROR_AUTENTICACION_KEYCLOAK), e.getStatusCode(), e.getMessage());
+            throw new AuthenticationException(Mensajes.formatear(IniciarSesionKey.ERROR_COMUNICACION_KEYCLOAK, e.getMessage()));
         } catch (ResourceAccessException e) {
-            log.error(catalogo.obtener(IniciarSesionKey.LOG_KEYCLOAK_NO_DISPONIBLE), e.getMessage());
-            throw new ProveedorIdentidadNoDisponibleException(catalogo.obtener(IniciarSesionKey.ERROR_SERVICIO_NO_DISPONIBLE), e);
+            log.error(Mensajes.obtener(IniciarSesionKey.LOG_KEYCLOAK_NO_DISPONIBLE), e.getMessage());
+            throw new ProveedorIdentidadNoDisponibleException(Mensajes.obtener(IniciarSesionKey.ERROR_SERVICIO_NO_DISPONIBLE), e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {
-            log.error(catalogo.obtener(IniciarSesionKey.LOG_ERROR_INESPERADO), e.getMessage());
-            throw new AuthenticationException(catalogo.formatear(IniciarSesionKey.ERROR_INESPERADO_AUTENTICACION, e.getMessage()), e);
+            log.error(Mensajes.obtener(IniciarSesionKey.LOG_ERROR_INESPERADO), e.getMessage());
+            throw new AuthenticationException(Mensajes.formatear(IniciarSesionKey.ERROR_INESPERADO_AUTENTICACION, e.getMessage()), e);
         }
     }
 
@@ -127,22 +126,22 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
                 return mapToCredenciales(response.getBody());
             }
 
-            throw new TokenInvalidoException(catalogo.obtener(TokenKey.ERROR_REFRESCAR));
+            throw new TokenInvalidoException(Mensajes.obtener(TokenKey.ERROR_REFRESCAR));
 
         } catch (HttpClientErrorException.BadRequest e) {
-            log.warn(catalogo.obtener(TokenKey.LOG_REFRESH_INVALIDO));
-            throw new TokenInvalidoException(catalogo.obtener(TokenKey.ERROR_REFRESH_INVALIDO_EXPIRADO));
+            log.warn(Mensajes.obtener(TokenKey.LOG_REFRESH_INVALIDO));
+            throw new TokenInvalidoException(Mensajes.obtener(TokenKey.ERROR_REFRESH_INVALIDO_EXPIRADO));
         } catch (HttpClientErrorException e) {
-            log.error(catalogo.obtener(TokenKey.LOG_ERROR_REFRESCO_KEYCLOAK), e.getStatusCode(), e.getMessage());
-            throw new AuthenticationException(catalogo.formatear(TokenKey.ERROR_REFRESCAR_DETALLE, e.getMessage()));
+            log.error(Mensajes.obtener(TokenKey.LOG_ERROR_REFRESCO_KEYCLOAK), e.getStatusCode(), e.getMessage());
+            throw new AuthenticationException(Mensajes.formatear(TokenKey.ERROR_REFRESCAR_DETALLE, e.getMessage()));
         } catch (ResourceAccessException e) {
-            log.error(catalogo.obtener(TokenKey.LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO), e.getMessage());
-            throw new ProveedorIdentidadNoDisponibleException(catalogo.obtener(IniciarSesionKey.ERROR_SERVICIO_NO_DISPONIBLE), e);
+            log.error(Mensajes.obtener(TokenKey.LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO), e.getMessage());
+            throw new ProveedorIdentidadNoDisponibleException(Mensajes.obtener(IniciarSesionKey.ERROR_SERVICIO_NO_DISPONIBLE), e);
         } catch (AuthenticationException e) {
             throw e;
         } catch (Exception e) {
-            log.error(catalogo.obtener(TokenKey.LOG_ERROR_INESPERADO_REFRESCO), e.getMessage());
-            throw new AuthenticationException(catalogo.formatear(TokenKey.ERROR_INESPERADO_REFRESCO, e.getMessage()), e);
+            log.error(Mensajes.obtener(TokenKey.LOG_ERROR_INESPERADO_REFRESCO), e.getMessage());
+            throw new AuthenticationException(Mensajes.formatear(TokenKey.ERROR_INESPERADO_REFRESCO, e.getMessage()), e);
         }
     }
 
@@ -152,7 +151,7 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
             refrescar(tokenRefresco);
             return true;
         } catch (Exception e) {
-            log.debug(catalogo.obtener(TokenKey.LOG_VALIDACION_REFRESH_FALLIDA), e.getMessage());
+            log.debug(Mensajes.obtener(TokenKey.LOG_VALIDACION_REFRESH_FALLIDA), e.getMessage());
             return false;
         }
     }

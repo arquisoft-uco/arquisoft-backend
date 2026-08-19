@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.application.auth.command.result.ValidacionTokenResult;
 import com.arquisoft.seguridad.application.auth.command.usecase.ValidarTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.TokenDomain;
@@ -17,11 +17,10 @@ import org.springframework.stereotype.Component;
 public class ValidarTokenUseCaseImpl implements ValidarTokenUseCase {
 
     private final ValidacionTokenOutputPort validacionTokenOutputPort;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public ValidacionTokenResult ejecutar(TokenDomain entrada) {
-        log.debug(catalogo.obtener(TokenKey.LOG_VALIDAR_DEBUG));
+        log.debug(Mensajes.obtener(TokenKey.LOG_VALIDAR_DEBUG));
 
         try {
             if (validacionTokenOutputPort.validarToken(entrada.valor())) {
@@ -31,16 +30,16 @@ public class ValidarTokenUseCaseImpl implements ValidarTokenUseCase {
                         true,
                         identidad.identidadId(),
                         identidad.correo(),
-                        catalogo.obtener(TokenKey.LOG_VALIDO)
+                        Mensajes.obtener(TokenKey.LOG_VALIDO)
                 );
             } else {
                 return new ValidacionTokenResult(false, null, null,
-                        catalogo.obtener(TokenKey.LOG_INVALIDO));
+                        Mensajes.obtener(TokenKey.LOG_INVALIDO));
             }
         } catch (Exception e) {
-            log.debug(catalogo.obtener(TokenKey.LOG_VALIDACION_FALLIDA), e.getMessage());
+            log.debug(Mensajes.obtener(TokenKey.LOG_VALIDACION_FALLIDA), e.getMessage());
             return new ValidacionTokenResult(false, null, null,
-                    catalogo.formatear(TokenKey.ERROR_VALIDAR_DETALLE, e.getMessage()));
+                    Mensajes.formatear(TokenKey.ERROR_VALIDAR_DETALLE, e.getMessage()));
         }
     }
 }

@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.application.auth.command.primaryport.model.TokenSesionCommand;
 import com.arquisoft.seguridad.application.auth.command.usecase.CerrarSesionUseCase;
 import com.arquisoft.seguridad.domain.auth.SesionDomain;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Component;
 public class CerrarSesionUseCaseImpl implements CerrarSesionUseCase {
 
     private final TokenInvalidadoOutputPort tokenInvalidadoOutputPort;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(TokenSesionCommand entrada) {
@@ -26,7 +25,7 @@ public class CerrarSesionUseCaseImpl implements CerrarSesionUseCase {
         tokenInvalidadoOutputPort.invalidarToken(
                 sesion.identificadorToken(), sesion.tiempoVidaRestante());
 
-        log.info(catalogo.obtener(SesionKey.LOG_LOGOUT_EXITOSO),
+        log.info(Mensajes.obtener(SesionKey.LOG_LOGOUT_EXITOSO),
                 sesion.identificadorToken(), sesion.tiempoVidaRestante());
     }
 }

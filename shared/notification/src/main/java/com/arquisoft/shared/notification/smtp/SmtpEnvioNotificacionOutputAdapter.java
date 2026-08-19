@@ -3,7 +3,7 @@ package com.arquisoft.shared.notification.smtp;
 import com.arquisoft.shared.message.key.app.NotificacionKey;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.AppCodes;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.notification.EnvioNotificacionOutputPort;
 import com.arquisoft.shared.notification.config.NotificacionProperties;
 import com.arquisoft.shared.notification.exception.EnvioNotificacionFallidoException;
@@ -36,7 +36,6 @@ public class SmtpEnvioNotificacionOutputAdapter implements EnvioNotificacionOutp
 
     private final JavaMailSender mailSender;
     private final NotificacionProperties properties;
-    private final CatalogoMensajes catalogo;
     private final AppLogger logger;
 
     @Override
@@ -58,7 +57,7 @@ public class SmtpEnvioNotificacionOutputAdapter implements EnvioNotificacionOutp
             logger.info(LOG_ENVIADO, destinos, mensaje.asunto());
         } catch (MailException | jakarta.mail.MessagingException | UnsupportedEncodingException e) {
             throw new EnvioNotificacionFallidoException(
-                    catalogo.formatear(NotificacionKey.ERROR_ENVIO_FALLIDO, destinos),
+                    Mensajes.formatear(NotificacionKey.ERROR_ENVIO_FALLIDO, destinos),
                     AppCodes.Notificacion.ENVIO_FALLIDO,
                     e);
         }

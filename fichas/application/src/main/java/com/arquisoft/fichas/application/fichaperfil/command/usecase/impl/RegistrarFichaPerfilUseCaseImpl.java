@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaExisteFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
@@ -26,7 +26,6 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
     private final RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
     private final AsignarEstadoInicialFichaPerfilUseCase asignarEstadoInicialFichaPerfilUseCase;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public UUID ejecutar(RegistroFichaPerfilDomain registro) {
@@ -39,7 +38,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
 
         fichaPerfilOutputPort.registrarFicha(FichaPerfilMapper.toEntity(ficha));
 
-        logger.info(catalogo.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
+        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
 
         asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro);
 

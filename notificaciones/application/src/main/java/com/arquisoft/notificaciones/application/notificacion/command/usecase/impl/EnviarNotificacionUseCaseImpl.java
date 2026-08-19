@@ -8,7 +8,7 @@ import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.NotificacionOutputPort;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.mapper.NotificacionMapper;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.notification.EnvioNotificacionOutputPort;
 import com.arquisoft.shared.notification.exception.EnvioNotificacionFallidoException;
 import com.arquisoft.shared.notification.model.MensajeNotificacion;
@@ -24,14 +24,13 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
     private final NotificacionValidator notificacionValidator;
     private final EnvioNotificacionOutputPort envioNotificacionOutputPort;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(EnviarNotificacionCommand entrada) {
         // Un evento reentregado por el broker no debe producir un segundo correo.
         if (notificacionValidator.yaFueProcesado(entrada.idEvento())) {
             logger.info(
-                    catalogo.obtener(NotificacionKey.LOG_EVENTO_DUPLICADO),
+                    Mensajes.obtener(NotificacionKey.LOG_EVENTO_DUPLICADO),
                     entrada.idEvento());
             return;
         }
@@ -50,7 +49,7 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
 
             notificacion.marcarEnviada();
             logger.info(
-                    catalogo.obtener(NotificacionKey.LOG_ENVIADA),
+                    Mensajes.obtener(NotificacionKey.LOG_ENVIADA),
                     entrada.idEvento(),
                     entrada.destinatarioEmail());
         } catch (EnvioNotificacionFallidoException e) {
@@ -60,7 +59,7 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
             // insumo de un reintento posterior.
             notificacion.marcarFallida(e.getMessage());
             logger.error(
-                    catalogo.obtener(NotificacionKey.LOG_FALLIDA),
+                    Mensajes.obtener(NotificacionKey.LOG_FALLIDA),
                     e,
                     entrada.idEvento(),
                     entrada.destinatarioEmail());

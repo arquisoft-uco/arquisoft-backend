@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.primaryadapter.web;
 
-import com.arquisoft.shared.message.annotation.FichasApiKeys;
+import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.model.RegistrarEvaluacionFichaPerfilCommand;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.interactor.RegistrarEvaluacionFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.primaryadapter.web.dto.RegistrarEvaluacionFichaPerfilResponseDTO;
@@ -28,8 +28,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
-@Tag(name = FichasApiKeys.EvaluacionFichaPerfil.TAG_NAME,
-        description = FichasApiKeys.EvaluacionFichaPerfil.TAG_DESCRIPTION)
+@Tag(name = FichasApiMessages.EvaluacionFichaPerfil.TAG_NAME,
+        description = FichasApiMessages.EvaluacionFichaPerfil.TAG_DESCRIPTION)
 public class RegistrarEvaluacionFichaPerfilController {
 
     private final RegistrarEvaluacionFichaPerfilInteractor registrarEvaluacionFichaPerfilInteractor;
@@ -37,19 +37,19 @@ public class RegistrarEvaluacionFichaPerfilController {
     @PostMapping("${rutas.fichas.fichas-perfil.evaluaciones:/{fichaId}/evaluaciones}")
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_EVALUACION_FICHA_PERFIL_CREATE)
     @Operation(
-            summary = FichasApiKeys.EvaluacionFichaPerfil.REGISTRAR_SUMMARY,
-            description = FichasApiKeys.EvaluacionFichaPerfil.REGISTRAR_DESCRIPTION,
+            summary = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_SUMMARY,
+            description = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_DESCRIPTION,
             security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.CREATED,
-                    description = FichasApiKeys.EvaluacionFichaPerfil.REGISTRAR_RESP_201),
+                    description = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_RESP_201),
             @ApiResponse(responseCode = ApiCodes.BAD_REQUEST,
-                    description = FichasApiKeys.EvaluacionFichaPerfil.REGISTRAR_RESP_400),
+                    description = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_RESP_400),
             @ApiResponse(responseCode = ApiCodes.UNAUTHORIZED,
-                    description = FichasApiKeys.Comun.RESP_401),
+                    description = FichasApiMessages.Comun.RESP_401),
             @ApiResponse(responseCode = ApiCodes.FORBIDDEN,
-                    description = FichasApiKeys.Comun.RESP_403)
+                    description = FichasApiMessages.Comun.RESP_403)
     })
     public ResponseEntity<RegistrarEvaluacionFichaPerfilResponseDTO> registrarEvaluacion(
             @PathVariable UUID fichaId,

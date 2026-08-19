@@ -1,20 +1,21 @@
 package com.arquisoft.shared.message.key.seguridad;
 
-import com.arquisoft.shared.message.PaquetesMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 
 /** Claves de Autenticacion. */
 public enum AutenticacionKey implements ClaveMensaje {
 
-    LOG_AUTENTICAR_DEBUG("seguridad.aplicacion.autenticacion.log.autenticar-debug"),
-    LOG_AUTENTICAR_EXITOSO("seguridad.aplicacion.autenticacion.log.autenticar-exitoso"),
-    LOG_REFRESCO_EXITOSO("seguridad.aplicacion.autenticacion.log.refresco-exitoso"),
-    LOG_VALIDAR_DEBUG("seguridad.aplicacion.autenticacion.log.validar-debug");
+    LOG_AUTENTICAR_DEBUG("seguridad.aplicacion.autenticacion.log.autenticar-debug", 0),
+    LOG_AUTENTICAR_EXITOSO("seguridad.aplicacion.autenticacion.log.autenticar-exitoso", 0),
+    LOG_REFRESCO_EXITOSO("seguridad.aplicacion.autenticacion.log.refresco-exitoso", 0),
+    LOG_VALIDAR_DEBUG("seguridad.aplicacion.autenticacion.log.validar-debug", 0);
 
     private final String clave;
+    private final int parametros;
 
-    AutenticacionKey(String clave) {
+    AutenticacionKey(String clave, int parametros) {
         this.clave = clave;
+        this.parametros = parametros;
     }
 
     @Override
@@ -23,7 +24,7 @@ public enum AutenticacionKey implements ClaveMensaje {
     }
 
     @Override
-    public String paquete() {
-        return PaquetesMensajes.SEGURIDAD;
+    public int parametros() {
+        return parametros;
     }
 }

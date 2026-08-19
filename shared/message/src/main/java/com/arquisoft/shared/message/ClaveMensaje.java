@@ -13,7 +13,7 @@ package com.arquisoft.shared.message;
  * recorrido por reflexión que puede dejarse campos fuera en silencio.
  *
  * <p>Quedan fuera de este contrato las claves que se consumen dentro de una anotación
- * ({@code annotation.FichasApiKeys}): el valor de un atributo de anotación debe ser una expresión
+ * ({@code annotation.FichasApiMessages}): el valor de un atributo de anotación debe ser una expresión
  * constante (JLS §9.7.1) y una llamada a {@link #clave()} no lo es. Esas siguen siendo
  * {@code String} por obligación del lenguaje, y no las resuelve este catálogo sino springdoc.
  * La validación de formato de un identificador (por ejemplo un UUID) nunca vive en una anotación
@@ -30,12 +30,18 @@ public interface ClaveMensaje {
     String clave();
 
     /**
-     * Base name del bundle que declara esta clave.
+     * Número de parámetros que sustituye el patrón de esta clave.
      *
-     * <p>Permite resolverla contra su archivo directamente, en lugar de recorrer todos los bundles
-     * hasta acertar. Ver {@link PaquetesMensajes}.
+     * <p>Cierra un hueco asimétrico de {@code String.formatted}: si faltan argumentos lanza, pero si
+     * sobran los ignora en silencio. Declarada aquí, la aridad se comprueba en el arranque contra el
+     * texto cargado desde Redis — a un patrón editado en caliente al que le añadan o le quiten un
+     * marcador no se le nota hasta que un usuario dispara ese error concreto; con la aridad
+     * declarada, el despliegue siguiente no levanta.
      *
-     * @return el base name del bundle propietario
+     * <p>Es 0 para las claves de log: su patrón lleva marcadores {@code {}} que resuelve SLF4J, no
+     * este catálogo.
+     *
+     * @return cuántos argumentos espera {@link CatalogoMensajes#formatear}
      */
-    String paquete();
+    int parametros();
 }

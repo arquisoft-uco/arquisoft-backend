@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.CatalogoMensajesResourceBundle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,8 +38,7 @@ class FichaPerfilCommandOutputAdapterTest {
         asesorId = UUID.randomUUID();
         adapter = new FichaPerfilCommandOutputAdapter(
                 fichaPerfilRepository,
-                mock(AppLogger.class),
-                CatalogoMensajesResourceBundle.porDefecto());
+                mock(AppLogger.class));
     }
 
     @Test

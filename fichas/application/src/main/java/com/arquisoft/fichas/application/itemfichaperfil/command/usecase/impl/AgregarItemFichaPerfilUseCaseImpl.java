@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.TipoItemEnFichaExisteFinder;
@@ -27,7 +27,6 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
     private final TipoItemEnFichaExisteFinder tipoItemEnFichaExisteFinder;
     private final AgregarItemFichaPerfilValidator agregarItemFichaPerfilValidator;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public UUID ejecutar(AgregacionItemFichaPerfilDomain entrada) {
@@ -44,7 +43,7 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
         itemFichaPerfilOutputPort.registrarItem(ItemFichaPerfilMapper.toEntity(item));
 
         logger.info(
-                catalogo.obtener(ItemFichaPerfilKey.LOG_AGREGADO),
+                Mensajes.obtener(ItemFichaPerfilKey.LOG_AGREGADO),
                 item.getId(),
                 item.getFichaPerfilId(),
                 item.getTipoItem()

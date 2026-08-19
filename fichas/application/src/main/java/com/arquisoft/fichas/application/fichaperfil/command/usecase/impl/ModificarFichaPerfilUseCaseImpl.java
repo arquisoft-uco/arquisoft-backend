@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloEnOtraFichaExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.ModificarFichaPerfilUseCase;
@@ -22,7 +22,6 @@ public class ModificarFichaPerfilUseCaseImpl implements ModificarFichaPerfilUseC
     private final TituloEnOtraFichaExisteFinder tituloEnOtraFichaExisteFinder;
     private final ModificarFichaPerfilValidator modificarFichaPerfilValidator;
     private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
 
     @Override
     public void ejecutar(ModificacionFichaPerfilDomain entrada) {
@@ -34,6 +33,6 @@ public class ModificarFichaPerfilUseCaseImpl implements ModificarFichaPerfilUseC
 
         fichaPerfilOutputPort.actualizarTitulo(entrada.getFichaPerfil(), entrada.getTituloProyecto());
 
-        logger.info(catalogo.obtener(FichaPerfilKey.LOG_MODIFICADA), entrada.getFichaPerfil());
+        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_MODIFICADA), entrada.getFichaPerfil());
     }
 }

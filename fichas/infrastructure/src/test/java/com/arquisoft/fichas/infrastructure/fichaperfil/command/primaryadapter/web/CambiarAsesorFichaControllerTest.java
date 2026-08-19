@@ -3,7 +3,6 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.w
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.shared.web.config.CatalogoMensajesConfig;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
@@ -43,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(CambiarAsesorFichaController.class)
 @Import({com.arquisoft.shared.logger.AppLoggerConfig.class,
-        GlobalAppExceptionHandler.class, TrazabilidadConfig.class, CatalogoMensajesConfig.class,
+        GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
         CambiarAsesorFichaControllerTest.TestSecurityConfig.class
 })
 class CambiarAsesorFichaControllerTest {
