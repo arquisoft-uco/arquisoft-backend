@@ -80,7 +80,7 @@ class GestorTrazaTest {
     @Test
     void debeConservarLaSemilla_cuandoElUsuarioRegistradoEstaEnBlanco() {
         // Arrange
-        try (var alcance = gestor.abrir(SolicitudTraza.paraEvento("abc-123"))) {
+        try (var alcance = gestor.abrir(SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado"))) {
             // Act
             gestor.registrarUsuario("   ");
 
@@ -109,7 +109,7 @@ class GestorTrazaTest {
         // Arrange
         try (var externo = gestor.abrir(SolicitudTraza.paraHttp("externa", null, "203.0.113.25", "GET", "/api"))) {
             // Act
-            try (var interno = gestor.abrir(SolicitudTraza.paraEvento("interna"))) {
+            try (var interno = gestor.abrir(SolicitudTraza.paraEvento("interna", "usuarios.usuario-creado"))) {
                 // Assert
                 assertThat(gestor.correlacionActual()).isEqualTo("interna");
                 assertThat(interno.correlacionId()).isEqualTo("interna");

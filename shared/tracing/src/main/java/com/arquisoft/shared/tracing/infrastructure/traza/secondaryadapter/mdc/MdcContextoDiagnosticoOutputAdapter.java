@@ -2,6 +2,7 @@ package com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc;
 
 import com.arquisoft.shared.tracing.application.traza.secondaryport.ContextoDiagnosticoOutputPort;
 import com.arquisoft.shared.tracing.domain.traza.TrazaDomain;
+import com.arquisoft.shared.tracing.domain.traza.model.DetalleOrigenTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.SalidaTraza;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
@@ -24,10 +25,20 @@ public class MdcContextoDiagnosticoOutputAdapter implements ContextoDiagnosticoO
         escribir(TrazaKeys.TRANSACCION_ID, traza.getTransaccionId());
         escribir(TrazaKeys.USUARIO_ID, traza.getUsuarioId());
         escribir(TrazaKeys.ORIGEN, traza.getOrigen().getId());
-        escribir(TrazaKeys.CLIENTE_IP, traza.getClienteIp());
-        escribir(TrazaKeys.METODO_HTTP, traza.getMetodoHttp());
-        escribir(TrazaKeys.RUTA_URI, traza.getRutaUri());
+        escribirDetalle(traza.getDetalle());
         escribir(TrazaKeys.TIEMPO_ENTRADA, formatear(traza.getTiempoEntrada()));
+    }
+
+    private void escribirDetalle(final DetalleOrigenTraza detalle) {
+        switch (detalle) {
+            case DetalleOrigenTraza.DetalleHttpTraza http -> {
+                escribir(TrazaKeys.CLIENTE_IP, http.clienteIp());
+                escribir(TrazaKeys.METODO_HTTP, http.metodoHttp());
+                escribir(TrazaKeys.RUTA_URI, http.rutaUri());
+            }
+            case DetalleOrigenTraza.DetalleEventoTraza evento -> escribir(TrazaKeys.COLA_EVENTO, evento.colaEvento());
+            case DetalleOrigenTraza.DetalleProgramadoTraza programado -> { }
+        }
     }
 
     @Override

@@ -39,7 +39,7 @@ class MdcContextoDiagnosticoOutputAdapterTest {
     @Test
     void debeOmitirLasClavesVacias_cuandoLaTrazaNoEsHttp() {
         // Arrange
-        var traza = TrazaDomain.crear(SolicitudTraza.paraEvento("abc-123"), false);
+        var traza = TrazaDomain.crear(SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado"), false);
 
         // Act
         adaptador.escribirTraza(traza);
@@ -47,7 +47,20 @@ class MdcContextoDiagnosticoOutputAdapterTest {
         // Assert
         assertThat(MDC.get(TrazaKeys.METODO_HTTP)).isNull();
         assertThat(MDC.get(TrazaKeys.RUTA_URI)).isNull();
+        assertThat(MDC.get(TrazaKeys.CLIENTE_IP)).isNull();
         assertThat(MDC.getCopyOfContextMap()).doesNotContainKey(TrazaKeys.METODO_HTTP);
+    }
+
+    @Test
+    void debeEscribirLaColaDelEvento_cuandoLaTrazaEsDeEvento() {
+        // Arrange
+        var traza = TrazaDomain.crear(SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado"), false);
+
+        // Act
+        adaptador.escribirTraza(traza);
+
+        // Assert
+        assertThat(MDC.get(TrazaKeys.COLA_EVENTO)).isEqualTo("usuarios.usuario-creado");
     }
 
     @Test

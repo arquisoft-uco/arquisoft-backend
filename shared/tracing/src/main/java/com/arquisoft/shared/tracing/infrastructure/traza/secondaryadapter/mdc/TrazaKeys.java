@@ -9,6 +9,7 @@ public final class TrazaKeys {
     public static final String CLIENTE_IP = "clienteIp";
     public static final String METODO_HTTP = "metodoHttp";
     public static final String RUTA_URI = "rutaUri";
+    public static final String COLA_EVENTO = "colaEvento";
     public static final String TIEMPO_ENTRADA = "tiempoEntrada";
 
     public static final String TIEMPO_SALIDA = "tiempoSalida";

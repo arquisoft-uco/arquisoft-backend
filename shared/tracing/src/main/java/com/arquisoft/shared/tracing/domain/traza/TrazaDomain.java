@@ -2,6 +2,7 @@ package com.arquisoft.shared.tracing.domain.traza;
 
 import com.arquisoft.shared.tracing.domain.traza.model.ClienteIp;
 import com.arquisoft.shared.tracing.domain.traza.model.CorrelacionEntrante;
+import com.arquisoft.shared.tracing.domain.traza.model.DetalleOrigenTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.IdentificadorTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.OrigenTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.RutaUri;
@@ -19,10 +20,9 @@ public final class TrazaDomain {
 
     private String correlacionId;
     private String transaccionId;
+    private String transaccionPadreId;
     private String usuarioId;
-    private String clienteIp;
-    private String metodoHttp;
-    private String rutaUri;
+    private DetalleOrigenTraza detalle;
     private OrigenTraza origen;
     private Instant tiempoEntrada;
     private Instant tiempoSalida;
@@ -37,10 +37,9 @@ public final class TrazaDomain {
         var traza = new TrazaDomain();
         traza.asignarCorrelacion(solicitud);
         traza.setTransaccionId(IdentificadorTraza.nuevaTransaccion());
+        traza.setTransaccionPadreId(padreDe(solicitud));
         traza.setUsuarioId(usuarioSemilla(solicitud.origen()));
-        traza.setClienteIp(ClienteIp.paraTraza(solicitud.clienteIp(), anonimizarIp));
-        traza.setMetodoHttp(UtilTexto.aplicarTrim(solicitud.metodoHttp()));
-        traza.setRutaUri(rutaDe(solicitud));
+        traza.setDetalle(detalleDe(solicitud, anonimizarIp));
         traza.setOrigen(solicitud.origen());
         traza.setTiempoEntrada(UtilFecha.generarInstanteActual());
         traza.setInicioNano(System.nanoTime());
@@ -64,6 +63,10 @@ public final class TrazaDomain {
                 .orElseGet(IdentificadorTraza::nuevaCorrelacion));
     }
 
+    private static String padreDe(final SolicitudTraza solicitud) {
+        return Traceparent.extraerParentId(solicitud.traceparentEntrante()).orElse(UtilTexto.VACIO);
+    }
+
     private static String usuarioSemilla(final OrigenTraza origen) {
         return switch (origen) {
             case PROGRAMADO -> TrazaValores.SISTEMA;
@@ -72,10 +75,27 @@ public final class TrazaDomain {
         };
     }
 
+    private static DetalleOrigenTraza detalleDe(final SolicitudTraza solicitud, final boolean anonimizarIp) {
+        return switch (solicitud.origen()) {
+            case HTTP -> new DetalleOrigenTraza.DetalleHttpTraza(
+                    ClienteIp.paraTraza(solicitud.clienteIp(), anonimizarIp),
+                    UtilTexto.aplicarTrim(solicitud.metodoHttp()),
+                    rutaDe(solicitud));
+            case EVENTO -> new DetalleOrigenTraza.DetalleEventoTraza(colaDe(solicitud));
+            case PROGRAMADO -> new DetalleOrigenTraza.DetalleProgramadoTraza();
+        };
+    }
+
     private static String rutaDe(final SolicitudTraza solicitud) {
         return UtilTexto.esVacioONulo(solicitud.rutaUri())
                 ? UtilTexto.VACIO
                 : RutaUri.sanear(solicitud.rutaUri());
+    }
+
+    private static String colaDe(final SolicitudTraza solicitud) {
+        return UtilTexto.esVacioONulo(solicitud.colaEvento())
+                ? TrazaValores.DESCONOCIDO
+                : UtilTexto.aplicarTrim(solicitud.colaEvento());
     }
 
     public String getCorrelacionId() {
@@ -94,6 +114,14 @@ public final class TrazaDomain {
         this.transaccionId = transaccionId;
     }
 
+    public String getTransaccionPadreId() {
+        return transaccionPadreId;
+    }
+
+    private void setTransaccionPadreId(final String transaccionPadreId) {
+        this.transaccionPadreId = transaccionPadreId;
+    }
+
     public String getUsuarioId() {
         return usuarioId;
     }
@@ -102,28 +130,12 @@ public final class TrazaDomain {
         this.usuarioId = usuarioId;
     }
 
-    public String getClienteIp() {
-        return clienteIp;
+    public DetalleOrigenTraza getDetalle() {
+        return detalle;
     }
 
-    private void setClienteIp(final String clienteIp) {
-        this.clienteIp = clienteIp;
-    }
-
-    public String getMetodoHttp() {
-        return metodoHttp;
-    }
-
-    private void setMetodoHttp(final String metodoHttp) {
-        this.metodoHttp = metodoHttp;
-    }
-
-    public String getRutaUri() {
-        return rutaUri;
-    }
-
-    private void setRutaUri(final String rutaUri) {
-        this.rutaUri = rutaUri;
+    private void setDetalle(final DetalleOrigenTraza detalle) {
+        this.detalle = detalle;
     }
 
     public OrigenTraza getOrigen() {

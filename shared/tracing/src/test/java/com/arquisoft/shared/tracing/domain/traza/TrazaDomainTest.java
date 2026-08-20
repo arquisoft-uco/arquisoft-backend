@@ -1,5 +1,6 @@
 package com.arquisoft.shared.tracing.domain.traza;
 
+import com.arquisoft.shared.tracing.domain.traza.model.DetalleOrigenTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.OrigenTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.SolicitudTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.TrazaValores;
@@ -107,7 +108,58 @@ class TrazaDomainTest {
         var traza = TrazaDomain.crear(solicitud, false);
 
         // Assert
-        assertThat(traza.getRutaUri()).isEqualTo("/api__ERROR");
+        var detalle = (DetalleOrigenTraza.DetalleHttpTraza) traza.getDetalle();
+        assertThat(detalle.rutaUri()).isEqualTo("/api__ERROR");
+    }
+
+    @Test
+    void debePoblarElDetalleHttp_cuandoElOrigenEsHttp() {
+        // Arrange
+        var solicitud = SolicitudTraza.paraHttp(null, null, "203.0.113.25", "GET", "/api/fichas");
+
+        // Act
+        var traza = TrazaDomain.crear(solicitud, false);
+
+        // Assert
+        var detalle = (DetalleOrigenTraza.DetalleHttpTraza) traza.getDetalle();
+        assertThat(detalle.clienteIp()).isEqualTo("203.0.113.25");
+        assertThat(detalle.metodoHttp()).isEqualTo("GET");
+        assertThat(detalle.rutaUri()).isEqualTo("/api/fichas");
+    }
+
+    @Test
+    void debePoblarLaColaDelEvento_cuandoElOrigenEsEvento() {
+        // Arrange
+        var solicitud = SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado");
+
+        // Act
+        var traza = TrazaDomain.crear(solicitud, false);
+
+        // Assert
+        var detalle = (DetalleOrigenTraza.DetalleEventoTraza) traza.getDetalle();
+        assertThat(detalle.colaEvento()).isEqualTo("usuarios.usuario-creado");
+    }
+
+    @Test
+    void debeDevolverColaDesconocida_cuandoElEventoNoTraeNombreDeCola() {
+        // Arrange
+        var solicitud = SolicitudTraza.paraEvento("abc-123", null);
+
+        // Act
+        var traza = TrazaDomain.crear(solicitud, false);
+
+        // Assert
+        var detalle = (DetalleOrigenTraza.DetalleEventoTraza) traza.getDetalle();
+        assertThat(detalle.colaEvento()).isEqualTo(TrazaValores.DESCONOCIDO);
+    }
+
+    @Test
+    void debePoblarElDetalleProgramado_cuandoElOrigenEsProgramado() {
+        // Act
+        var traza = TrazaDomain.crear(SolicitudTraza.paraProgramado(), false);
+
+        // Assert
+        assertThat(traza.getDetalle()).isInstanceOf(DetalleOrigenTraza.DetalleProgramadoTraza.class);
     }
 
     @Test
