@@ -75,7 +75,7 @@ level=info msg="finished transferring logs" component=tailer container=docker/..
 | `origin` | `external_labels` en `config.alloy` | `local-tuNombre` |
 | `job` | `external_labels` | `backend-java-local` |
 
-`correlacionId`, `transaccionId` y `usuarioId` son alta cardinalidad — se consultan con `| json`, no como stream labels.
+`correlacionId`, `transaccionId`, `transaccionPadreId` y `usuarioId` son alta cardinalidad — se consultan con `| json`, no como stream labels.
 
 > **Nota sobre `__meta_docker_*`:** estos metadatos solo están disponibles en `discovery.relabel` referenciado via `relabel_rules` en `loki.source.docker`. No están disponibles en `loki.relabel` usado como `forward_to`. Ver comentarios en `config.alloy`.
 
@@ -89,13 +89,31 @@ El backend usa `StructuredLogEncoder` (Spring Boot 4.x nativo, perfil `prod`). C
 |---|---|---|
 | `level`, `message`, `logger_name` | Logback | Siempre |
 | `servicioNombre`, `version` | `logging.structured.json.add` en `application.yml` | Siempre (perfil `prod`) |
-| `correlacionId` | `TrazabilidadFilter` (orden -300) / `AbstractEventConsumer` | Todo el request o consumo (ausente en startup) |
-| `transaccionId` | idem — **nuevo en cada salto** | Todo el request o consumo |
-| `origen` | idem — `HTTP`, `EVENTO`, `PROGRAMADO` | Todo el request o consumo |
+| `correlacionId` | `TrazabilidadFilter` (orden -300) / `AbstractEventConsumer` / `@Scheduled` (`gestorTraza.abrir`) | Todo request, consumo o job programado (ausente en startup) |
+| `transaccionId` | idem — **nuevo en cada salto** | idem |
+| `transaccionPadreId` | idem — solo si hay un salto anterior conocido | Ver tabla "Origen del `transaccionPadreId`" abajo |
+| `origen` | idem — `HTTP`, `EVENTO`, `PROGRAMADO` | idem |
 | `usuarioId` | `IdentidadTrazaFilter` (`seguridad`) / consumidor AMQP | Todo el request; ver semillas abajo |
-| `clienteIp`, `metodoHttp`, `rutaUri` | `TrazabilidadFilter` | Todo el request |
-| `tiempoEntrada` | `TrazabilidadFilter` | Todo el request |
-| `codigoEstado`, `duracionMs`, `tiempoSalida` | `TrazabilidadFilter` (al cerrar) | Solo en evento `AUDIT` |
+| `clienteIp`, `metodoHttp`, `rutaUri` | `TrazabilidadFilter` | **Solo `origen=HTTP`** |
+| `colaEvento` | `AbstractEventConsumer` | **Solo `origen=EVENTO`** — nombre de la cola/routing key que entregó el mensaje |
+| `tiempoEntrada` | `TrazabilidadFilter` / `AbstractEventConsumer` / `@Scheduled` | Todo request, consumo o job programado |
+| `codigoEstado`, `duracionMs`, `tiempoSalida` | `TrazabilidadFilter` (al cerrar) | Solo en evento `AUDIT` (solo HTTP) |
+
+`clienteIp`/`metodoHttp`/`rutaUri` y `colaEvento` son mutuamente excluyentes por diseño: `TrazaDomain`
+modela el detalle propio de cada origen con un tipo sellado (`DetalleOrigenTraza` — un record por origen),
+así que una traza `EVENTO` o `PROGRAMADO` nunca escribe esas tres claves HTTP en el log (antes de corregirlo,
+salían con valores basura como `clienteIp=INVALID`/`rutaUri=UNKNOWN`).
+
+### Origen del `transaccionPadreId`
+
+Identifica de qué salto anterior nació este — útil para reconstruir el orden exacto de una cadena
+HTTP → evento → evento, no solo que pertenecen a la misma `correlacionId`.
+
+| `origen` | De dónde sale | Cuándo está ausente |
+|---|---|---|
+| `HTTP` | Segmento `parent-id` del header `traceparent` entrante (W3C) | Primer salto: nadie llamó a este endpoint con `traceparent` |
+| `EVENTO` | Header AMQP `X-Transaction-Id`, que el productor ya escribe con su propio `transaccionId` (`TrazaMessagePostProcessor`) | El mensaje no trae esa cabecera (mensajes muy antiguos, o publicados fuera del pipeline estándar) |
+| `PROGRAMADO` | — | Siempre ausente: un job programado no tiene llamador |
 
 Rutas excluidas del evento `AUDIT`: `/api/actuator/`, `/api/swagger-ui`, `/api/v3/api-docs`, `/api/swagger-resources`
 (configurable en `arquisoft.trazas.rutas-excluidas-auditoria`).
@@ -146,6 +164,10 @@ Usar siempre `{container="arquisoft-backend"}` — **no** solo `{origin="..."}` 
 
 # Un solo salto dentro de esa transacción (un request, o un consumo de evento)
 {container="arquisoft-backend"} | json | transaccionId="<id>"
+
+# Qué salto originó este: reconstruye el orden exacto de la cadena, no solo que
+# comparten correlacionId. Tomar el transaccionId de un salto y buscarlo como padre:
+{container="arquisoft-backend"} | json | transaccionPadreId="<transaccionId del salto anterior>"
 
 # Todo lo que hizo un usuario
 {container="arquisoft-backend", origin="local-tuNombre"} | json | usuarioId="<uuid>"
