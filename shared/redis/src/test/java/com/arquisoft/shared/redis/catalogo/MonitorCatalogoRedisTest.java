@@ -1,6 +1,9 @@
 package com.arquisoft.shared.redis.catalogo;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.tracing.application.traza.primaryport.AlcanceTraza;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,8 +31,19 @@ class MonitorCatalogoRedisTest {
     @Mock
     private AppLogger logger;
 
+    @Mock
+    private GestorTraza gestorTraza;
+
+    @Mock
+    private AlcanceTraza alcance;
+
     @InjectMocks
     private MonitorCatalogoRedis monitor;
+
+    @BeforeEach
+    void abrirAlcance() {
+        when(gestorTraza.abrir(any())).thenReturn(alcance);
+    }
 
     @Test
     @DisplayName("no consulta a Redis cuando el catálogo está sano")

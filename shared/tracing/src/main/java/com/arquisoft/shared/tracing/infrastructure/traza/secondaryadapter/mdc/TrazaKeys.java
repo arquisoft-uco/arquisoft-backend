@@ -4,6 +4,7 @@ public final class TrazaKeys {
 
     public static final String CORRELACION_ID = "correlacionId";
     public static final String TRANSACCION_ID = "transaccionId";
+    public static final String TRANSACCION_PADRE_ID = "transaccionPadreId";
     public static final String USUARIO_ID = "usuarioId";
     public static final String ORIGEN = "origen";
     public static final String CLIENTE_IP = "clienteIp";

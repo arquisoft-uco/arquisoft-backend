@@ -8,6 +8,10 @@ dependencies {
     // shared:logger — AppLogger, el puerto de logging que usan el adaptador y el monitor.
     implementation project(':shared:logger')
 
+    // shared:tracing — GestorTraza, para que MonitorCatalogoRedis abra su propio alcance de
+    // traza antes de loguear: es un @Scheduled, no hereda ningun contexto de peticion/evento.
+    implementation project(':shared:tracing')
+
     // Actuator — CatalogoMensajesHealthIndicator publica el estado degradado en /actuator/health.
     implementation "org.springframework.boot:spring-boot-starter-actuator"
 

@@ -130,7 +130,7 @@ class TrazaDomainTest {
     @Test
     void debePoblarLaColaDelEvento_cuandoElOrigenEsEvento() {
         // Arrange
-        var solicitud = SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado");
+        var solicitud = SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado", "00f067aa0ba902b7");
 
         // Act
         var traza = TrazaDomain.crear(solicitud, false);
@@ -143,7 +143,7 @@ class TrazaDomainTest {
     @Test
     void debeDevolverColaDesconocida_cuandoElEventoNoTraeNombreDeCola() {
         // Arrange
-        var solicitud = SolicitudTraza.paraEvento("abc-123", null);
+        var solicitud = SolicitudTraza.paraEvento("abc-123", null, "00f067aa0ba902b7");
 
         // Act
         var traza = TrazaDomain.crear(solicitud, false);
@@ -151,6 +151,30 @@ class TrazaDomainTest {
         // Assert
         var detalle = (DetalleOrigenTraza.DetalleEventoTraza) traza.getDetalle();
         assertThat(detalle.colaEvento()).isEqualTo(TrazaValores.DESCONOCIDO);
+    }
+
+    @Test
+    void debePoblarLaTransaccionPadre_cuandoElEventoTraeLaTransaccionDelProductor() {
+        // Arrange
+        var solicitud = SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado", "00f067aa0ba902b7");
+
+        // Act
+        var traza = TrazaDomain.crear(solicitud, false);
+
+        // Assert
+        assertThat(traza.getTransaccionPadreId()).isEqualTo("00f067aa0ba902b7");
+    }
+
+    @Test
+    void debeDejarLaTransaccionPadreVacia_cuandoElEventoNoTraeLaCabecera() {
+        // Arrange
+        var solicitud = SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado", null);
+
+        // Act
+        var traza = TrazaDomain.crear(solicitud, false);
+
+        // Assert
+        assertThat(traza.getTransaccionPadreId()).isEmpty();
     }
 
     @Test

@@ -64,7 +64,11 @@ public final class TrazaDomain {
     }
 
     private static String padreDe(final SolicitudTraza solicitud) {
-        return Traceparent.extraerParentId(solicitud.traceparentEntrante()).orElse(UtilTexto.VACIO);
+        return switch (solicitud.origen()) {
+            case HTTP -> Traceparent.extraerParentId(solicitud.traceparentEntrante()).orElse(UtilTexto.VACIO);
+            case EVENTO -> UtilTexto.aplicarTrim(solicitud.transaccionPadreEntrante());
+            case PROGRAMADO -> UtilTexto.VACIO;
+        };
     }
 
     private static String usuarioSemilla(final OrigenTraza origen) {

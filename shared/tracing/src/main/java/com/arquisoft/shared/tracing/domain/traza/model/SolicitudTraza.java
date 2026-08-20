@@ -10,22 +10,24 @@ public record SolicitudTraza(
         String clienteIp,
         String metodoHttp,
         String rutaUri,
-        String colaEvento) {
+        String colaEvento,
+        String transaccionPadreEntrante) {
 
     public static SolicitudTraza paraHttp(final String correlacionEntrante, final String traceparentEntrante,
                                           final String clienteIp, final String metodoHttp, final String rutaUri) {
         return new SolicitudTraza(OrigenTraza.HTTP, correlacionEntrante, traceparentEntrante,
-                clienteIp, metodoHttp, rutaUri, UtilTexto.VACIO);
+                clienteIp, metodoHttp, rutaUri, UtilTexto.VACIO, UtilTexto.VACIO);
     }
 
-    public static SolicitudTraza paraEvento(final String correlacionEntrante, final String colaEvento) {
+    public static SolicitudTraza paraEvento(final String correlacionEntrante, final String colaEvento,
+                                            final String transaccionPadreEntrante) {
         return new SolicitudTraza(OrigenTraza.EVENTO, correlacionEntrante, UtilTexto.VACIO,
-                TrazaValores.DESCONOCIDO, UtilTexto.VACIO, UtilTexto.VACIO, colaEvento);
+                TrazaValores.DESCONOCIDO, UtilTexto.VACIO, UtilTexto.VACIO, colaEvento, transaccionPadreEntrante);
     }
 
     public static SolicitudTraza paraProgramado() {
         return new SolicitudTraza(OrigenTraza.PROGRAMADO, UtilTexto.VACIO, UtilTexto.VACIO,
-                TrazaValores.DESCONOCIDO, UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO);
+                TrazaValores.DESCONOCIDO, UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO);
     }
 
     public SolicitudTraza {

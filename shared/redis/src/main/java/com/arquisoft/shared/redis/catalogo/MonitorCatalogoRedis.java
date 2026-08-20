@@ -1,6 +1,8 @@
 package com.arquisoft.shared.redis.catalogo;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import com.arquisoft.shared.tracing.domain.traza.model.SolicitudTraza;
 import org.springframework.scheduling.annotation.Scheduled;
 
 /**
@@ -23,10 +25,12 @@ public class MonitorCatalogoRedis {
 
     private final CatalogoMensajesRedis catalogo;
     private final AppLogger logger;
+    private final GestorTraza gestorTraza;
 
-    public MonitorCatalogoRedis(CatalogoMensajesRedis catalogo, AppLogger logger) {
+    public MonitorCatalogoRedis(CatalogoMensajesRedis catalogo, AppLogger logger, GestorTraza gestorTraza) {
         this.catalogo = catalogo;
         this.logger = logger;
+        this.gestorTraza = gestorTraza;
     }
 
     /**
@@ -37,7 +41,7 @@ public class MonitorCatalogoRedis {
      */
     @Scheduled(fixedDelayString = "${arquisoft.catalogo.reintento-intervalo:PT30S}")
     public void reintentar() {
-        try {
+        try (var alcance = gestorTraza.abrir(SolicitudTraza.paraProgramado())) {
             if (!catalogo.estaDegradado()) {
                 return;
             }

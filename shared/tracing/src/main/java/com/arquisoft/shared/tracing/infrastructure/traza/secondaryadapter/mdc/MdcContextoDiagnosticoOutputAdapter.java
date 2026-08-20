@@ -23,6 +23,7 @@ public class MdcContextoDiagnosticoOutputAdapter implements ContextoDiagnosticoO
     public void escribirTraza(final TrazaDomain traza) {
         escribir(TrazaKeys.CORRELACION_ID, traza.getCorrelacionId());
         escribir(TrazaKeys.TRANSACCION_ID, traza.getTransaccionId());
+        escribir(TrazaKeys.TRANSACCION_PADRE_ID, traza.getTransaccionPadreId());
         escribir(TrazaKeys.USUARIO_ID, traza.getUsuarioId());
         escribir(TrazaKeys.ORIGEN, traza.getOrigen().getId());
         escribirDetalle(traza.getDetalle());

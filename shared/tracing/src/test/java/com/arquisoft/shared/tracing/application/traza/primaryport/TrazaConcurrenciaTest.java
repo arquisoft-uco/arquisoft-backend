@@ -77,7 +77,7 @@ class TrazaConcurrenciaTest {
                     if (previo != null && !previo.isEmpty()) {
                         contaminados.add("tarea " + i + " heredo " + previo);
                     }
-                    try (var alcance = gestor.abrir(SolicitudTraza.paraEvento("evento-" + i, "cola-" + i))) {
+                    try (var alcance = gestor.abrir(SolicitudTraza.paraEvento("evento-" + i, "cola-" + i, "padre-" + i))) {
                         gestor.registrarUsuario("usuario-" + i);
                         assertThat(alcance.correlacionId()).isEqualTo("evento-" + i);
                     }
@@ -103,7 +103,7 @@ class TrazaConcurrenciaTest {
         // Act — la primera tarea revienta dentro del alcance; la segunda reutiliza el hilo
         try {
             pool.submit(() -> {
-                try (var alcance = gestor.abrir(SolicitudTraza.paraEvento("evento-roto", "cola-rota"))) {
+                try (var alcance = gestor.abrir(SolicitudTraza.paraEvento("evento-roto", "cola-rota", "padre-roto"))) {
                     assertThat(alcance.correlacionId()).isNotBlank();
                     throw new IllegalStateException("fallo simulado");
                 }
@@ -144,7 +144,7 @@ class TrazaConcurrenciaTest {
         try (ExecutorService pool = Executors.newVirtualThreadPerTaskExecutor()) {
             IntStream.range(0, 500).forEach(i -> pool.execute(() -> {
                 try (var externo = gestor.abrir(SolicitudTraza.paraHttp("ext-" + i, null, "1.1.1.1", "GET", "/x"))) {
-                    try (var interno = gestor.abrir(SolicitudTraza.paraEvento("int-" + i, "cola-" + i))) {
+                    try (var interno = gestor.abrir(SolicitudTraza.paraEvento("int-" + i, "cola-" + i, "padre-" + i))) {
                         Thread.yield();
                         if (!("int-" + i).equals(gestor.correlacionActual())) {
                             fallos.add("anidado " + i + " incorrecto");

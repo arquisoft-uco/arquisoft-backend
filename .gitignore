@@ -48,3 +48,4 @@ logs/
 *.key
 
 .claude/settings.local.json
+/commit

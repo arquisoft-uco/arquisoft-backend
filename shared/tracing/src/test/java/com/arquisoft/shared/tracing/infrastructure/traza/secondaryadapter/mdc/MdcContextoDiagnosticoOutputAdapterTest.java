@@ -39,7 +39,7 @@ class MdcContextoDiagnosticoOutputAdapterTest {
     @Test
     void debeOmitirLasClavesVacias_cuandoLaTrazaNoEsHttp() {
         // Arrange
-        var traza = TrazaDomain.crear(SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado"), false);
+        var traza = TrazaDomain.crear(SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado", "00f067aa0ba902b7"), false);
 
         // Act
         adaptador.escribirTraza(traza);
@@ -52,9 +52,36 @@ class MdcContextoDiagnosticoOutputAdapterTest {
     }
 
     @Test
+    void debeEscribirLaTransaccionPadre_cuandoLlegaUnTraceparentValido() {
+        // Arrange
+        var traceparent = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
+        var traza = TrazaDomain.crear(
+                SolicitudTraza.paraHttp(null, traceparent, "203.0.113.25", "GET", "/api/fichas"), false);
+
+        // Act
+        adaptador.escribirTraza(traza);
+
+        // Assert
+        assertThat(MDC.get(TrazaKeys.TRANSACCION_PADRE_ID)).isEqualTo("00f067aa0ba902b7");
+    }
+
+    @Test
+    void debeOmitirLaTransaccionPadre_cuandoNoLlegaTraceparent() {
+        // Arrange
+        var traza = TrazaDomain.crear(
+                SolicitudTraza.paraHttp("abc-123", null, "203.0.113.25", "GET", "/api/fichas"), false);
+
+        // Act
+        adaptador.escribirTraza(traza);
+
+        // Assert
+        assertThat(MDC.get(TrazaKeys.TRANSACCION_PADRE_ID)).isNull();
+    }
+
+    @Test
     void debeEscribirLaColaDelEvento_cuandoLaTrazaEsDeEvento() {
         // Arrange
-        var traza = TrazaDomain.crear(SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado"), false);
+        var traza = TrazaDomain.crear(SolicitudTraza.paraEvento("abc-123", "usuarios.usuario-creado", "00f067aa0ba902b7"), false);
 
         // Act
         adaptador.escribirTraza(traza);

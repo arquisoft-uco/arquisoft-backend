@@ -33,7 +33,8 @@ public abstract class AbstractEventConsumer {
         long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
         var solicitud = SolicitudTraza.paraEvento(header(message, TrazaHeaders.AMQP_TRACE_ID),
-                message.getMessageProperties().getConsumerQueue());
+                message.getMessageProperties().getConsumerQueue(),
+                header(message, TrazaHeaders.AMQP_TRANSACTION_ID));
 
         try (var alcance = gestorTraza.abrir(solicitud)) {
             gestorTraza.registrarUsuario(header(message, TrazaHeaders.AMQP_USER_ID));
