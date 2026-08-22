@@ -1,9 +1,9 @@
 package com.arquisoft.seguridad.infrastructure.config.keycloak;
 
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.RolKey;
 import com.arquisoft.shared.message.Mensajes;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,10 +14,11 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import java.util.Collection;
 import java.util.List;
 
-@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class KeycloakJwtConverterConfig {
+
+    private final AppLogger logger;
 
     private final KeycloakRolExtractor rolExtractor;
 
@@ -31,7 +32,7 @@ public class KeycloakJwtConverterConfig {
     private Collection<GrantedAuthority> construirAuthorities(Jwt jwt) {
         List<String> rolesRecurso = rolExtractor.extraerRolesRecurso(jwt);
 
-        log.debug(Mensajes.obtener(RolKey.LOG_ROLES_RECURSO), rolesRecurso);
+        logger.debug(Mensajes.obtener(RolKey.LOG_ROLES_RECURSO), rolesRecurso);
 
         return rolesRecurso.stream()
                 .map(SimpleGrantedAuthority::new)

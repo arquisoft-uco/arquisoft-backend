@@ -244,7 +244,7 @@ public class CrearFichaInteractorImpl implements CrearFichaInteractor {
 ```java
 // fichas/infrastructure/src/main/java/com/arquisoft/fichas/infrastructure/ficha/command/primaryadapter/web/FichaController.java
 @RestController
-@RequestMapping(FichasRoutes.FICHAS)
+@RequestMapping("${rutas.fichas.base:/fichas}")
 @RequiredArgsConstructor
 public class FichaController {
     private final CrearFichaInteractor crearFichaInteractor; // se inyecta el Interactor, nunca el UseCase

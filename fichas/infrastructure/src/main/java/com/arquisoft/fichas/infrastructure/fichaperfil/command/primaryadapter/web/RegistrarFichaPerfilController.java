@@ -6,9 +6,9 @@ import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interact
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web.dto.RegistrarFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web.dto.RegistrarFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
+import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
-import com.arquisoft.shared.web.openapi.ApiCodes;
+import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -40,7 +40,7 @@ public class RegistrarFichaPerfilController {
     @Operation(
             summary = FichasApiMessages.FichaPerfil.REGISTRAR_SUMMARY,
             description = FichasApiMessages.FichaPerfil.REGISTRAR_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.CREATED,

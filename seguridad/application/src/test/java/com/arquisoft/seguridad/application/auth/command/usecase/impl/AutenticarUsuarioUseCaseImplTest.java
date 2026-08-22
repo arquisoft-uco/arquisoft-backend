@@ -1,9 +1,10 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
-import com.arquisoft.seguridad.application.auth.command.primaryport.model.AutenticarUsuarioCommand;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
-import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
-import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
+import com.arquisoft.seguridad.application.auth.exception.AutenticacionException;
+import com.arquisoft.seguridad.domain.auth.AutenticacionDomain;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.model.CredencialesProveedor;
 import com.arquisoft.seguridad.application.auth.command.secondaryport.AutenticacionOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,20 +23,21 @@ class AutenticarUsuarioUseCaseImplTest {
     @Mock
     private AutenticacionOutputPort autenticacionOutputPort;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
-@InjectMocks
+    @Mock
+    private AppLogger logger;
+
+    @InjectMocks
     private AutenticarUsuarioUseCaseImpl autenticarUsuarioUseCase;
 
     @Test
     void debeRetornarCredenciales_cuandoAutenticacionEsExitosa() {
         // Arrange
-        AutenticarUsuarioCommand command = new AutenticarUsuarioCommand("test@example.com", "secreto");
+        var entrada = autenticacionDe("test@example.com", "secreto");
         when(autenticacionOutputPort.autenticar("test@example.com", "secreto"))
-                .thenReturn(CredencialesSesion.de("access-token", "refresh-token", 300L, "Bearer", "openid"));
+                .thenReturn(new CredencialesProveedor("access-token", "refresh-token", 300L, "Bearer", "openid"));
 
         // Act
-        AutenticacionResult resultado = autenticarUsuarioUseCase.ejecutar(command);
+        AutenticacionResult resultado = autenticarUsuarioUseCase.ejecutar(entrada);
 
         // Assert
         assertThat(resultado.accessToken()).isEqualTo("access-token");
@@ -48,26 +50,30 @@ class AutenticarUsuarioUseCaseImplTest {
     @Test
     void debeDelegarEnElPuerto_cuandoEjecutar() {
         // Arrange
-        AutenticarUsuarioCommand command = new AutenticarUsuarioCommand("otro@example.com", "clave");
-        when(autenticacionOutputPort.autenticar("otro@example.com", "clave"))
-                .thenReturn(CredencialesSesion.de("a", "r", 60L, "Bearer", ""));
+        var entrada = autenticacionDe("otro@example.com", "clave-larga");
+        when(autenticacionOutputPort.autenticar("otro@example.com", "clave-larga"))
+                .thenReturn(new CredencialesProveedor("a", "r", 60L, "Bearer", ""));
 
         // Act
-        autenticarUsuarioUseCase.ejecutar(command);
+        autenticarUsuarioUseCase.ejecutar(entrada);
 
         // Assert
-        verify(autenticacionOutputPort).autenticar("otro@example.com", "clave");
+        verify(autenticacionOutputPort).autenticar("otro@example.com", "clave-larga");
     }
 
     @Test
     void debePropagarExcepcion_cuandoCredencialesSonInvalidas() {
         // Arrange
-        AutenticarUsuarioCommand command = new AutenticarUsuarioCommand("test@example.com", "mala");
-        when(autenticacionOutputPort.autenticar("test@example.com", "mala"))
-                .thenThrow(new AuthenticationException("Credenciales invalidas"));
+        var entrada = autenticacionDe("test@example.com", "mala-clave");
+        when(autenticacionOutputPort.autenticar("test@example.com", "mala-clave"))
+                .thenThrow(new AutenticacionException("Credenciales invalidas"));
 
         // Act / Assert
-        assertThatThrownBy(() -> autenticarUsuarioUseCase.ejecutar(command))
-                .isInstanceOf(AuthenticationException.class);
+        assertThatThrownBy(() -> autenticarUsuarioUseCase.ejecutar(entrada))
+                .isInstanceOf(AutenticacionException.class);
+    }
+
+    private AutenticacionDomain autenticacionDe(String correo, String clave) {
+        return AutenticacionDomain.crear(correo, clave);
     }
 }

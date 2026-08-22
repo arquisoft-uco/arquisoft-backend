@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web;
 
+import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.UsuariosApiMessages;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor.CrearUsuarioInteractor;
 import com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web.dto.CrearUsuarioRequestDTO;
@@ -38,7 +39,7 @@ public class UsuarioCommandController {
     @Operation(
             summary = UsuariosApiMessages.Usuario.CREAR_SUMMARY,
             description = UsuariosApiMessages.Usuario.CREAR_DESCRIPTION,
-            security = @SecurityRequirement(name = "bearerAuth")
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = UsuariosApiMessages.Usuario.CREAR_RESP_201,

@@ -1,37 +1,32 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
-import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
-import com.arquisoft.shared.message.Mensajes;
-import com.arquisoft.seguridad.application.auth.command.primaryport.model.AutenticarUsuarioCommand;
 import com.arquisoft.seguridad.application.auth.command.result.AutenticacionResult;
-import com.arquisoft.seguridad.application.auth.command.usecase.AutenticarUsuarioUseCase;
-import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
+import com.arquisoft.seguridad.application.auth.command.result.mapper.AutenticacionResultMapper;
 import com.arquisoft.seguridad.application.auth.command.secondaryport.AutenticacionOutputPort;
+import com.arquisoft.seguridad.application.auth.command.usecase.AutenticarUsuarioUseCase;
+import com.arquisoft.seguridad.domain.auth.AutenticacionDomain;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AutenticarUsuarioUseCaseImpl implements AutenticarUsuarioUseCase {
 
     private final AutenticacionOutputPort autenticacionOutputPort;
+    private final AppLogger logger;
 
     @Override
-    public AutenticacionResult ejecutar(AutenticarUsuarioCommand entrada) {
-        log.debug(Mensajes.obtener(AutenticacionKey.LOG_AUTENTICAR_DEBUG));
+    public AutenticacionResult ejecutar(AutenticacionDomain entrada) {
+        logger.debug(Mensajes.obtener(AutenticacionKey.LOG_AUTENTICAR_DEBUG));
 
-        CredencialesSesion credenciales = autenticacionOutputPort.autenticar(entrada.email(), entrada.contrasena());
+        var credenciales = autenticacionOutputPort.autenticar(
+                entrada.getCorreo(), entrada.getClaveAcceso());
 
-        log.info(Mensajes.obtener(AutenticacionKey.LOG_AUTENTICAR_EXITOSO));
+        logger.info(Mensajes.obtener(AutenticacionKey.LOG_AUTENTICAR_EXITOSO));
 
-        return new AutenticacionResult(
-                credenciales.tokenAcceso(),
-                credenciales.tokenRefresco(),
-                credenciales.expiraEn(),
-                credenciales.tipoToken(),
-                credenciales.alcance()
-        );
+        return AutenticacionResultMapper.toResult(credenciales);
     }
 }

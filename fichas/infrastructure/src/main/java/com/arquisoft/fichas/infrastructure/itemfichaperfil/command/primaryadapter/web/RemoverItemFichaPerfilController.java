@@ -4,8 +4,8 @@ import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.model.RemoverItemFichaPerfilCommand;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.RemoverItemFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.web.openapi.ApiCodes;
+import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -37,7 +37,7 @@ public class RemoverItemFichaPerfilController {
     @Operation(
             summary = FichasApiMessages.ItemFichaPerfil.REMOVER_SUMMARY,
             description = FichasApiMessages.ItemFichaPerfil.REMOVER_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.NO_CONTENT,

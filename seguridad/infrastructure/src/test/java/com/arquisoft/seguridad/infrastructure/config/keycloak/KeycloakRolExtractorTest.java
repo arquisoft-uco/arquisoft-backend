@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.keycloak;
 
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -12,6 +13,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import static org.mockito.Mockito.mock;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class KeycloakRolExtractorTest {
@@ -26,8 +28,7 @@ class KeycloakRolExtractorTest {
         rolExtractor = new KeycloakRolExtractor();
         // El campo clientId se inyecta normalmente via @Value("${KEYCLOAK_CLIENT_ID}").
         ReflectionTestUtils.setField(rolExtractor, "clientId", CLIENT_ID);
-        converter = new KeycloakJwtConverterConfig(
-                rolExtractor)
+        converter = new KeycloakJwtConverterConfig(mock(AppLogger.class), rolExtractor)
                 .jwtAuthenticationConverter();
     }
 

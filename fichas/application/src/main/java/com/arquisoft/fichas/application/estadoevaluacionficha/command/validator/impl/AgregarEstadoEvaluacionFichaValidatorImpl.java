@@ -9,22 +9,25 @@ import com.arquisoft.fichas.domain.estadoevaluacionficha.model.PropiedadEvaluaci
 import com.arquisoft.fichas.domain.estadoevaluacionficha.model.SolicitudEstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.model.UltimoEstadoEvaluacion;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEnEvaluacionNoManualRule;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EstadoEnEvaluacionNoManualRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionEnTerminalRule;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EstadoEvaluacionEnTerminalRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EstadoEvaluacionNoDuplicadoRule;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EstadoEvaluacionNoDuplicadoRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.EvaluacionFichaExisteRule;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.EvaluacionFichaExisteRuleImpl;
 import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.RepresentantePropietarioEvaluacionRule;
-import lombok.RequiredArgsConstructor;
+import com.arquisoft.fichas.domain.estadoevaluacionficha.rules.impl.RepresentantePropietarioEvaluacionRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class AgregarEstadoEvaluacionFichaValidatorImpl implements AgregarEstadoEvaluacionFichaValidator {
 
-    private final EvaluacionFichaExisteRule evaluacionFichaExisteRule;
-    private final RepresentantePropietarioEvaluacionRule representantePropietarioEvaluacionRule;
-    private final EstadoEvaluacionNoDuplicadoRule estadoEvaluacionNoDuplicadoRule;
-    private final EstadoEnEvaluacionNoManualRule estadoEnEvaluacionNoManualRule;
-    private final EstadoEvaluacionEnTerminalRule estadoEvaluacionEnTerminalRule;
+    private final EvaluacionFichaExisteRule evaluacionFichaExisteRule = new EvaluacionFichaExisteRuleImpl();
+    private final RepresentantePropietarioEvaluacionRule representantePropietarioEvaluacionRule = new RepresentantePropietarioEvaluacionRuleImpl();
+    private final EstadoEvaluacionNoDuplicadoRule estadoEvaluacionNoDuplicadoRule = new EstadoEvaluacionNoDuplicadoRuleImpl();
+    private final EstadoEnEvaluacionNoManualRule estadoEnEvaluacionNoManualRule = new EstadoEnEvaluacionNoManualRuleImpl();
+    private final EstadoEvaluacionEnTerminalRule estadoEvaluacionEnTerminalRule = new EstadoEvaluacionEnTerminalRuleImpl();
 
     @Override
     public void validar(AgregacionEstadoEvaluacionFichaDomain entrada, boolean evaluacionExiste,

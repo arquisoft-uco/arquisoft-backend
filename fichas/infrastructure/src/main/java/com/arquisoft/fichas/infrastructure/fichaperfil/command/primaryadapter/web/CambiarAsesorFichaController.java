@@ -5,8 +5,8 @@ import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interactor.CambiarAsesorFichaInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.primaryadapter.web.dto.CambiarAsesorFichaRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.web.openapi.ApiCodes;
+import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -48,7 +48,7 @@ public class CambiarAsesorFichaController {
             @ApiResponse(responseCode = ApiCodes.UNPROCESSABLE,
                     description = FichasApiMessages.FichaPerfil.CAMBIAR_ASESOR_RESP_422)
     })
-    @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+    @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_UPDATE_ASESOR)
     public ResponseEntity<Void> cambiarAsesor(
             @PathVariable UUID id,

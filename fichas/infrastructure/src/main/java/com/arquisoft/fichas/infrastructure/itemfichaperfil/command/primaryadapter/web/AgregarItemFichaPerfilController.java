@@ -6,8 +6,8 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.inte
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web.dto.AgregarItemFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.primaryadapter.web.dto.AgregarItemFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.web.openapi.ApiCodes;
+import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -43,7 +43,7 @@ public class AgregarItemFichaPerfilController {
     @Operation(
             summary = FichasApiMessages.ItemFichaPerfil.AGREGAR_SUMMARY,
             description = FichasApiMessages.ItemFichaPerfil.AGREGAR_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.CREATED,

@@ -4,14 +4,13 @@ import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuario
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.model.DisponibilidadEmailUsuario;
 import com.arquisoft.usuarios.domain.usuario.rules.UsuarioEmailUnicoRule;
-import lombok.RequiredArgsConstructor;
+import com.arquisoft.usuarios.domain.usuario.rules.impl.UsuarioEmailUnicoRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class CrearUsuarioValidatorImpl implements CrearUsuarioValidator {
 
-    private final UsuarioEmailUnicoRule usuarioEmailUnicoRule;
+    private final UsuarioEmailUnicoRule usuarioEmailUnicoRule = new UsuarioEmailUnicoRuleImpl();
 
     @Override
     public void validar(UsuarioDomain usuario, boolean emailYaExiste) {

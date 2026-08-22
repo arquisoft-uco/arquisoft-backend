@@ -2,62 +2,58 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.RegistrarFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
-import com.arquisoft.fichas.domain.fichaperfil.model.DisponibilidadTituloFicha;
-import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaAsesorFicha;
-import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaExisteRule;
-import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloUnicoRule;
+import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.inOrder;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith(MockitoExtension.class)
 class RegistrarFichaPerfilValidatorTest {
 
-    @Mock
-    private AsesorFichaExisteRule asesorFichaExisteRule;
-
-    @Mock
-    private FichaPerfilTituloUnicoRule fichaPerfilTituloUnicoRule;
-
-    @InjectMocks
-    private RegistrarFichaPerfilValidatorImpl validator;
+    private final RegistrarFichaPerfilValidatorImpl validator = new RegistrarFichaPerfilValidatorImpl();
 
     @Test
-    void debeAplicarLasReglasEnOrden_cuandoValida() {
+    void debePasar_cuandoElAsesorExisteYElTituloEstaLibre() {
+        // Arrange
+        var ficha = FichaPerfilDomain.crear("Titulo de prueba", UUID.randomUUID());
+
+        // Act / Assert
+        assertThatCode(() -> validator.validar(ficha, true, false)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarAsesorNoEncontrado_cuandoElAsesorNoExiste() {
         // Arrange
         UUID asesor = UUID.randomUUID();
         var ficha = FichaPerfilDomain.crear("Titulo de prueba", asesor);
 
-        // Act
-        validator.validar(ficha, true, false);
-
-        // Assert
-        InOrder inOrder = inOrder(asesorFichaExisteRule, fichaPerfilTituloUnicoRule);
-        inOrder.verify(asesorFichaExisteRule).validar(new ExistenciaAsesorFicha(asesor, true));
-        inOrder.verify(fichaPerfilTituloUnicoRule)
-                .validar(new DisponibilidadTituloFicha(ficha.getTituloProyecto(), false));
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(ficha, false, false))
+                .isInstanceOf(AsesorFichaNoEncontradoException.class)
+                .hasMessageContaining(asesor.toString());
     }
 
     @Test
-    void debeTrasladarLosDatosConsultados_cuandoLasConsultasSonNegativas() {
+    void debeLanzarTituloDuplicado_cuandoElTituloYaEstaTomado() {
         // Arrange
-        UUID asesor = UUID.randomUUID();
-        var ficha = FichaPerfilDomain.crear("Titulo tomado", asesor);
+        var ficha = FichaPerfilDomain.crear("Titulo tomado", UUID.randomUUID());
 
-        // Act
-        validator.validar(ficha, false, true);
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(ficha, true, true))
+                .isInstanceOf(FichaTituloDuplicadoException.class)
+                .hasMessageContaining("Titulo tomado");
+    }
 
-        // Assert
-        InOrder inOrder = inOrder(asesorFichaExisteRule, fichaPerfilTituloUnicoRule);
-        inOrder.verify(asesorFichaExisteRule).validar(new ExistenciaAsesorFicha(asesor, false));
-        inOrder.verify(fichaPerfilTituloUnicoRule)
-                .validar(new DisponibilidadTituloFicha("Titulo tomado", true));
+    @Test
+    void debeReportarPrimeroLaAusenciaDelAsesor_cuandoAmbasReglasFallan() {
+        // Arrange — el orden es parte del contrato: primero existencia, despues unicidad
+        var ficha = FichaPerfilDomain.crear("Titulo tomado", UUID.randomUUID());
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(ficha, false, true))
+                .isInstanceOf(AsesorFichaNoEncontradoException.class);
     }
 }

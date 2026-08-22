@@ -83,7 +83,9 @@ dependencies {
     implementation project(':shared:tracing')
 
     // Catálogo de mensajes: MessageCatalogConfig lo expone como bean y publica los textos
-    // de OpenAPI en el Environment.
+    // de OpenAPI en el Environment. También aporta message/openapi/, donde OpenApiConfig
+    // declara el esquema de seguridad (ApiSecurity.BEARER_AUTH) que referencian los
+    // controllers de cada contexto.
     implementation project(':shared:message')
 
     // Catálogo de mensajes sobre Redis (ADR-013). Se declara explícitamente porque hoy solo llega

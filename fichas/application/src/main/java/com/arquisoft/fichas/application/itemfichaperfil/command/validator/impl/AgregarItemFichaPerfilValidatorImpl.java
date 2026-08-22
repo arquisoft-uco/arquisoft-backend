@@ -4,22 +4,23 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.validator.Agrega
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
 import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
+import com.arquisoft.fichas.domain.fichaperfil.rules.impl.FichaPerfilExisteRuleImpl;
 import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.model.DisponibilidadTipoItem;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
+import com.arquisoft.fichas.domain.itemfichaperfil.rules.impl.ItemFichaPropiaRuleImpl;
 import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemTipoNoDuplicadoRule;
-import lombok.RequiredArgsConstructor;
+import com.arquisoft.fichas.domain.itemfichaperfil.rules.impl.ItemTipoNoDuplicadoRuleImpl;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
 public class AgregarItemFichaPerfilValidatorImpl implements AgregarItemFichaPerfilValidator {
 
-    private final FichaPerfilExisteRule fichaPerfilExisteRule;
-    private final ItemFichaPropiaRule itemFichaPropiaRule;
-    private final ItemTipoNoDuplicadoRule itemTipoNoDuplicadoRule;
+    private final FichaPerfilExisteRule fichaPerfilExisteRule = new FichaPerfilExisteRuleImpl();
+    private final ItemFichaPropiaRule itemFichaPropiaRule = new ItemFichaPropiaRuleImpl();
+    private final ItemTipoNoDuplicadoRule itemTipoNoDuplicadoRule = new ItemTipoNoDuplicadoRuleImpl();
 
     @Override
     public void validar(ItemFichaPerfilDomain item, UUID estudiante, boolean fichaExiste, boolean esPropietario,

@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.infrastructure.filter.IdentidadTrazaFilter;
@@ -7,10 +8,11 @@ import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,12 +28,13 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Slf4j
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 public class SeguridadConfig {
+
+    private final AppLogger logger;
 
     // Rutas públicas y plantilla del issuer: son contrato con Keycloak y con las herramientas
     // (actuator, springdoc), que las resuelven literalmente. No van al catálogo.
@@ -46,6 +49,7 @@ public class SeguridadConfig {
     private final SecurityAuthenticationEntryPoint securityAuthenticationEntryPoint;
     private final JwtBlacklistFilter jwtBlacklistFilter;
     private final GestorTraza gestorTraza;
+    private final RutasAutenticacion rutasAutenticacion;
 
     @Bean
     public IdentidadTrazaFilter identidadTrazaFilter() {
@@ -69,20 +73,9 @@ public class SeguridadConfig {
     @Value("${arquisoft.keycloak.expected-audience:arquisoft-api}")
     private String expectedAudience;
 
-    @Value("${rutas.seguridad.auth.base:/auth}${rutas.seguridad.auth.login:/login}")
-    private String authLoginPath;
-
-    @Value("${rutas.seguridad.auth.base:/auth}${rutas.seguridad.auth.refresh:/refresh}")
-    private String authRefreshPath;
-
-    @Value("${rutas.seguridad.auth.base:/auth}${rutas.seguridad.auth.validate:/validate}")
-    private String authValidatePath;
-
     @Bean
     public JwtDecoder jwtDecoder() {
         var issuer = PLANTILLA_ISSUER.formatted(keycloakServerUrl, realm);
-        log.info(Mensajes.obtener(IniciarSesionKey.LOG_JWT_DECODER_CONFIG), issuer, expectedAudience);
-
         var decoder = NimbusJwtDecoder.withIssuerLocation(issuer).build();
         decoder.setJwtValidator(jwtValidator(issuer, expectedAudience));
         return decoder;
@@ -101,9 +94,9 @@ public class SeguridadConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(HttpMethod.POST, authLoginPath).permitAll()
-                        .requestMatchers(HttpMethod.POST, authRefreshPath).permitAll()
-                        .requestMatchers(HttpMethod.POST, authValidatePath).permitAll()
+                        .requestMatchers(HttpMethod.POST, rutasAutenticacion.login()).permitAll()
+                        .requestMatchers(HttpMethod.POST, rutasAutenticacion.refresh()).permitAll()
+                        .requestMatchers(HttpMethod.POST, rutasAutenticacion.validate()).permitAll()
                         .requestMatchers(RUTA_ACTUATOR_HEALTH).permitAll()
                         .requestMatchers(RUTA_SWAGGER_UI, RUTA_API_DOCS, RUTA_SWAGGER_RESOURCES).permitAll()
                         .anyRequest().authenticated()
@@ -127,5 +120,13 @@ public class SeguridadConfig {
         http.addFilterAfter(identidadTrazaFilter(), BearerTokenAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    // Ver la nota de CorsConfig: en tiempo de construccion del @Bean el catalogo de mensajes
+    // aun puede no estar instalado y el log saldria como clave cruda, sin sus argumentos.
+    @EventListener(ApplicationReadyEvent.class)
+    public void registrarConfiguracionAplicada() {
+        logger.info(Mensajes.obtener(IniciarSesionKey.LOG_JWT_DECODER_CONFIG),
+                PLANTILLA_ISSUER.formatted(keycloakServerUrl, realm), expectedAudience);
     }
 }

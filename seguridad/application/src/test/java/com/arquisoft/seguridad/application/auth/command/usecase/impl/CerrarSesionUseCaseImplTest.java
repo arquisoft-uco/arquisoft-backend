@@ -1,15 +1,16 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
-import com.arquisoft.seguridad.application.auth.command.primaryport.model.TokenSesionCommand;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
-import com.arquisoft.shared.exception.DomainException;
+import com.arquisoft.seguridad.domain.auth.SesionDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -19,42 +20,33 @@ class CerrarSesionUseCaseImplTest {
     @Mock
     private TokenInvalidadoOutputPort tokenInvalidadoOutputPort;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
-@InjectMocks
+    @Mock
+    private AppLogger logger;
+
+    @InjectMocks
     private CerrarSesionUseCaseImpl cerrarSesionUseCase;
 
     @Test
     void debeInvalidarToken_cuandoSesionEsValida() {
         // Arrange
-        TokenSesionCommand command = new TokenSesionCommand("jti-123", 120L);
+        SesionDomain sesion = SesionDomain.crear("jti-123", 120L);
 
         // Act
-        cerrarSesionUseCase.ejecutar(command);
+        cerrarSesionUseCase.ejecutar(sesion);
 
         // Assert
         verify(tokenInvalidadoOutputPort).invalidarToken("jti-123", 120L);
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoIdentificadorEsVacio() {
-        // Arrange
-        TokenSesionCommand command = new TokenSesionCommand("   ", 120L);
+    void noDebeInvalidarNada_cuandoElTokenYaExpiro() {
+        // Arrange — logout idempotente: un token vencido ya no sirve, no hay nada que revocar
+        SesionDomain sesion = SesionDomain.crear("jti-123", 0L);
 
-        // Act / Assert
-        assertThatThrownBy(() -> cerrarSesionUseCase.ejecutar(command))
-                .isInstanceOf(DomainException.class);
-        verify(tokenInvalidadoOutputPort, never()).invalidarToken(org.mockito.ArgumentMatchers.anyString(),
-                org.mockito.ArgumentMatchers.anyLong());
-    }
+        // Act
+        cerrarSesionUseCase.ejecutar(sesion);
 
-    @Test
-    void debeLanzarExcepcion_cuandoTiempoDeVidaNoEsPositivo() {
-        // Arrange
-        TokenSesionCommand command = new TokenSesionCommand("jti-123", 0L);
-
-        // Act / Assert
-        assertThatThrownBy(() -> cerrarSesionUseCase.ejecutar(command))
-                .isInstanceOf(DomainException.class);
+        // Assert
+        verify(tokenInvalidadoOutputPort, never()).invalidarToken(anyString(), anyLong());
     }
 }

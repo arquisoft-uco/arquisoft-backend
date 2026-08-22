@@ -23,6 +23,8 @@ public final class SeguridadApiMessages {
         public static final String TAG_NAME = "Seguridad - Autenticacion";
         public static final String TAG_DESCRIPTION = "Comandos de autenticacion: login, refresh y logout";
 
+        public static final String INICIAR_SESION_DEPRECADO_DESDE =
+                "OAuth 2.1 / RFC 9700 — usar Authorization Code + PKCE en la SPA";
         public static final String INICIAR_SESION_SUMMARY = "Iniciar sesion (ROPC — desaconsejado para navegadores)";
         public static final String INICIAR_SESION_DESCRIPTION =
                 "Autentica al usuario contra Keycloak usando email y contrasena "

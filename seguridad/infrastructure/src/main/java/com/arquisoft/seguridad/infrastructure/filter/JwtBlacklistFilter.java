@@ -1,18 +1,21 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
+import com.arquisoft.seguridad.infrastructure.config.security.RutasAutenticacion;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
+import com.arquisoft.shared.web.filter.RutasTecnicas;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -22,26 +25,25 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
-@Slf4j
 @Component
 @Order(-100)
 @RequiredArgsConstructor
 public class JwtBlacklistFilter extends OncePerRequestFilter {
 
+    // Oculta deliberadamente el campo heredado GenericFilterBean.logger (Commons Logging):
+    // el proyecto registra a traves del puerto AppLogger, no del logger del framework.
+    private final AppLogger logger;
+
+    private final RutasAutenticacion rutasAutenticacion;
     private final TokenInvalidadoOutputPort tokenInvalidadoPort;
     private final ObjectMapper objectMapper;
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String uri = request.getRequestURI();
-        return uri.startsWith("/api/swagger-ui")
-                || uri.startsWith("/api/v3/api-docs")
-                || uri.startsWith("/api/swagger-resources")
-                || uri.startsWith("/api/actuator")
-                || uri.equals("/api/auth/login")
-                || uri.equals("/api/auth/refresh")
-                || uri.equals("/api/auth/validate");
+        return RutasTecnicas.esRutaTecnica(uri) || rutasAutenticacion.esPublica(uri);
     }
 
     @Override
@@ -59,8 +61,8 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
             if (!UtilObjeto.esNulo(jti)) {
                 try {
                     if (tokenInvalidadoPort.estaInvalidado(jti)) {
-                        // log.warn: error de cliente — token revocado (detalle interno, no se expone al cliente)
-                        log.warn(Mensajes.obtener(TokenInvalidadoKey.LOG_TOKEN_REVOCADO),
+                        // logger.warn: error de cliente — token revocado (detalle interno, no se expone al cliente)
+                        logger.warn(Mensajes.obtener(TokenInvalidadoKey.LOG_TOKEN_REVOCADO),
                                 jti, request.getRequestURI());
                         writeErrorResponse(response, request,
                                 HttpStatus.UNAUTHORIZED,
@@ -69,8 +71,8 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
                         return;
                     }
                 } catch (Exception e) {
-                    // log.error: error de servidor — Redis no disponible
-                    log.error(Mensajes.obtener(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE),
+                    // logger.error: error de servidor — Redis no disponible
+                    logger.error(Mensajes.obtener(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE),
                             e.getMessage(), e);
                     writeErrorResponse(response, request,
                             HttpStatus.SERVICE_UNAVAILABLE,
@@ -91,7 +93,8 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
                                     String message) throws IOException {
         SecurityContextHolder.clearContext();
         response.setStatus(status.value());
-        response.setContentType("application/json;charset=UTF-8");
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         objectMapper.writeValue(response.getWriter(),
                 ErrorResponseDTO.builder()
                         .error(error)

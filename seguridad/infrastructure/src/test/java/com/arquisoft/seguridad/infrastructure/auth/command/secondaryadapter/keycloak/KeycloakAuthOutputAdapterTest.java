@@ -1,7 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.keycloak;
 
-import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
-import com.arquisoft.seguridad.domain.auth.model.CredencialesSesion;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.seguridad.application.auth.exception.AutenticacionException;
 import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
 import com.arquisoft.seguridad.infrastructure.exception.ProveedorIdentidadNoDisponibleException;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,9 +38,10 @@ class KeycloakAuthOutputAdapterTest {
     @Mock
     private RestTemplate restTemplate;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
-@InjectMocks
+    @Mock
+    private AppLogger logger;
+
+    @InjectMocks
     private KeycloakAuthOutputAdapter adapter;
 
     @BeforeEach
@@ -68,7 +70,7 @@ class KeycloakAuthOutputAdapterTest {
                 .thenReturn(responseEntity);
 
         // Act
-        CredencialesSesion credenciales = adapter.autenticar("estudiante@uco.edu.co", "password123");
+        var credenciales = adapter.autenticar("estudiante@uco.edu.co", "password123");
 
         // Assert
         assertThat(credenciales).isNotNull();
@@ -91,7 +93,7 @@ class KeycloakAuthOutputAdapterTest {
         // Act + Assert
         assertThatThrownBy(() -> adapter.autenticar("estudiante@uco.edu.co", "wrong-password"))
                 .isInstanceOf(CredencialesInvalidasException.class)
-                .hasMessageContaining("Credenciales invalidas");
+                .hasMessageContaining("Credenciales inválidas");
     }
 
     @Test
@@ -102,7 +104,7 @@ class KeycloakAuthOutputAdapterTest {
 
         // Act + Assert
         assertThatThrownBy(() -> adapter.autenticar("estudiante@uco.edu.co", "password"))
-                .isInstanceOf(AuthenticationException.class)
+                .isInstanceOf(AutenticacionException.class)
                 .hasMessageContaining("Error al comunicarse con Keycloak");
     }
 
@@ -115,19 +117,30 @@ class KeycloakAuthOutputAdapterTest {
         // Act + Assert
         assertThatThrownBy(() -> adapter.autenticar("estudiante@uco.edu.co", "password"))
                 .isInstanceOf(ProveedorIdentidadNoDisponibleException.class)
-                .hasMessageContaining("Servicio de autenticacion no disponible temporalmente");
+                .hasMessageContaining("Servicio de autenticación no disponible temporalmente");
     }
 
     @Test
-    void debeLanzarAuthenticationException_cuandoExcepcionInesperada() {
+    void debePropagarExcepcionInesperada_cuandoFallaAlgoNoPrevisto() {
         // Arrange
         when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq((Class<Map<String, Object>>) (Class<?>) Map.class)))
-                .thenThrow(new RuntimeException("Unexpected error"));
+                .thenThrow(new IllegalStateException("Defecto de mapeo"));
+
+        // Act + Assert — un defecto no se disfraza de fallo de autenticacion: debe salir como 500
+        assertThatThrownBy(() -> adapter.autenticar("estudiante@uco.edu.co", "password"))
+                .isInstanceOf(IllegalStateException.class)
+                .isNotInstanceOf(AutenticacionException.class);
+    }
+
+    @Test
+    void debeLanzarProveedorNoDisponibleException_cuandoKeycloakRetorna5xx() {
+        // Arrange
+        when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq((Class<Map<String, Object>>) (Class<?>) Map.class)))
+                .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Keycloak caido"));
 
         // Act + Assert
         assertThatThrownBy(() -> adapter.autenticar("estudiante@uco.edu.co", "password"))
-                .isInstanceOf(AuthenticationException.class)
-                .hasMessageContaining("Error inesperado durante la autenticacion");
+                .isInstanceOf(ProveedorIdentidadNoDisponibleException.class);
     }
 
     @Test
@@ -146,7 +159,7 @@ class KeycloakAuthOutputAdapterTest {
                 .thenReturn(responseEntity);
 
         // Act
-        CredencialesSesion credenciales = adapter.refrescar("eyJhbGc-refresh-old...");
+        var credenciales = adapter.refrescar("eyJhbGc-refresh-old...");
 
         // Assert
         assertThat(credenciales).isNotNull();
@@ -165,7 +178,7 @@ class KeycloakAuthOutputAdapterTest {
         // Act + Assert
         assertThatThrownBy(() -> adapter.refrescar("invalid-refresh-token"))
                 .isInstanceOf(TokenInvalidoException.class)
-                .hasMessageContaining("Refresh token invalido o expirado");
+                .hasMessageContaining("Refresh token inválido o expirado");
     }
 
     @Test
@@ -177,41 +190,7 @@ class KeycloakAuthOutputAdapterTest {
         // Act + Assert
         assertThatThrownBy(() -> adapter.refrescar("token-refresco"))
                 .isInstanceOf(ProveedorIdentidadNoDisponibleException.class)
-                .hasMessageContaining("Servicio de autenticacion no disponible temporalmente");
-    }
-
-    @Test
-    void debeRetornarTrue_cuandoValidarTokenRefrescoExitoso() {
-        // Arrange
-        Map<String, Object> keycloakResponse = Map.of(
-                "access_token", "eyJhbGc...",
-                "refresh_token", "eyJhbGc-refresh...",
-                "expires_in", 3600
-        );
-        ResponseEntity<Map<String, Object>> responseEntity = ResponseEntity.ok(keycloakResponse);
-
-        when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq((Class<Map<String, Object>>) (Class<?>) Map.class)))
-                .thenReturn(responseEntity);
-
-        // Act
-        boolean valido = adapter.validarTokenRefresco("token-refresco-valido");
-
-        // Assert
-        assertThat(valido).isTrue();
-    }
-
-    @Test
-    void debeRetornarFalso_cuandoValidarTokenRefrescoFalla() {
-        // Arrange
-        when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq((Class<Map<String, Object>>) (Class<?>) Map.class)))
-                .thenThrow(HttpClientErrorException.BadRequest.create(
-                        HttpStatus.BAD_REQUEST, "Bad Request", null, null, null));
-
-        // Act
-        boolean valido = adapter.validarTokenRefresco("token-refresco-invalido");
-
-        // Assert
-        assertThat(valido).isFalse();
+                .hasMessageContaining("Servicio de autenticación no disponible temporalmente");
     }
 
     @Test
@@ -255,7 +234,7 @@ class KeycloakAuthOutputAdapterTest {
                 .thenReturn(responseEntity);
 
         // Act
-        CredencialesSesion credenciales = adapter.autenticar("test@uco.edu.co", "password");
+        var credenciales = adapter.autenticar("test@uco.edu.co", "password");
 
         // Assert - valores por defecto aplicados
         assertThat(credenciales.expiraEn()).isEqualTo(3600L);

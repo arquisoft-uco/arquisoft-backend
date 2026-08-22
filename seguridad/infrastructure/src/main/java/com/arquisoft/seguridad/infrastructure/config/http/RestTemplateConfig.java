@@ -1,12 +1,15 @@
 package com.arquisoft.seguridad.infrastructure.config.http;
 
+import com.arquisoft.shared.logger.AppLogger;
+import lombok.RequiredArgsConstructor;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.web.client.TrazaClientHttpRequestInterceptor;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -14,16 +17,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
-@Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class RestTemplateConfig {
 
+    private final AppLogger logger;
     private final TrazaClientHttpRequestInterceptor trazaInterceptor;
-
-    public RestTemplateConfig(TrazaClientHttpRequestInterceptor trazaInterceptor) {
-        this.trazaInterceptor = trazaInterceptor;
-    }
-
 
     @Value("${http.client.connect-timeout:5000}")
     private int connectTimeout;
@@ -34,9 +33,6 @@ public class RestTemplateConfig {
     @Bean
     @Primary
     public RestTemplate restTemplate() {
-        log.info(Mensajes.obtener(ConfiguracionKey.LOG_REST_TEMPLATE_CONFIGURADO),
-                connectTimeout, readTimeout);
-
         var factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(connectTimeout);
         factory.setReadTimeout(readTimeout);
@@ -46,27 +42,16 @@ public class RestTemplateConfig {
         return restTemplate;
     }
 
-    @Bean(name = "fastRestTemplate")
-    public RestTemplate fastRestTemplate() {
-        var factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(2000);
-        factory.setReadTimeout(5000);
-
-        var restTemplate = new RestTemplate(factory);
-        restTemplate.setInterceptors(List.of(trazaInterceptor, loggingInterceptor()));
-        return restTemplate;
-    }
-
     private ClientHttpRequestInterceptor loggingInterceptor() {
         return (request, body, execution) -> {
-            log.debug(Mensajes.obtener(ConfiguracionKey.LOG_HTTP_PETICION),
+            logger.debug(Mensajes.obtener(ConfiguracionKey.LOG_HTTP_PETICION),
                     request.getMethod(), request.getURI());
 
             long startTime = System.currentTimeMillis();
             var response = execution.execute(request, body);
             long duration = System.currentTimeMillis() - startTime;
 
-            log.debug(Mensajes.obtener(ConfiguracionKey.LOG_HTTP_RESPUESTA),
+            logger.debug(Mensajes.obtener(ConfiguracionKey.LOG_HTTP_RESPUESTA),
                     request.getMethod(),
                     request.getURI(),
                     response.getStatusCode(),
@@ -76,11 +61,11 @@ public class RestTemplateConfig {
         };
     }
 
-    @Bean
-    public SimpleClientHttpRequestFactory clientHttpRequestFactory() {
-        var factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(connectTimeout);
-        factory.setReadTimeout(readTimeout);
-        return factory;
+    // Ver la nota de CorsConfig: en tiempo de construccion del @Bean el catalogo de mensajes
+    // aun puede no estar instalado y el log saldria como clave cruda, sin sus argumentos.
+    @EventListener(ApplicationReadyEvent.class)
+    public void registrarConfiguracionAplicada() {
+        logger.info(Mensajes.obtener(ConfiguracionKey.LOG_REST_TEMPLATE_CONFIGURADO),
+                connectTimeout, readTimeout);
     }
 }

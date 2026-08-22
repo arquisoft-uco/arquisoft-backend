@@ -2,113 +2,97 @@ package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.CambiarAsesorFichaValidatorImpl;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
-import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.model.ExistenciaEstadoFichaPerfil;
-import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
-import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilExisteRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
-import com.arquisoft.fichas.domain.fichaperfil.model.AsesorFichaComparacion;
-import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaAsesorFicha;
-import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
-import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaDiferenteRule;
-import com.arquisoft.fichas.domain.fichaperfil.rules.AsesorFichaExisteRule;
-import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
+import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.MismoAsesorFichaException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith(MockitoExtension.class)
 class CambiarAsesorFichaValidatorTest {
 
-    @Mock
-    private FichaPerfilExisteRule fichaPerfilExisteRule;
+    private final CambiarAsesorFichaValidatorImpl validator = new CambiarAsesorFichaValidatorImpl();
 
-    @Mock
-    private AsesorFichaExisteRule asesorFichaExisteRule;
+    private final UUID asesorActual = UUID.randomUUID();
+    private final UUID nuevoAsesor = UUID.randomUUID();
+    private final FichaPerfilDomain ficha = FichaPerfilDomain.crear("Titulo de prueba", asesorActual);
 
-    @Mock
-    private EstadoFichaPerfilExisteRule estadoFichaPerfilExisteRule;
+    private AsesorFichaDomain asesor(UUID id) {
+        return AsesorFichaDomain.reconstruir(id, "A001", "Ana Asesora", "ana@arquisoft.com");
+    }
 
-    @Mock
-    private EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
-
-    @Mock
-    private AsesorFichaDiferenteRule asesorFichaDiferenteRule;
-
-    @InjectMocks
-    private CambiarAsesorFichaValidatorImpl validator;
+    private CambioAsesorFichaDomain cambio(UUID nuevo) {
+        return CambioAsesorFichaDomain.crear(ficha.getId(), nuevo);
+    }
 
     @Test
-    void debeAplicarLasReglasEnOrden_cuandoValida() {
+    void debePasar_cuandoTodoExisteYElAsesorEsDistinto() {
         // Arrange
-        UUID asesorActual = UUID.randomUUID();
-        UUID nuevoAsesor = UUID.randomUUID();
-        var ficha = FichaPerfilDomain.crear("Titulo de prueba", asesorActual);
-        var asesorFicha = AsesorFichaDomain.reconstruir(nuevoAsesor, "A001", "Ana Asesora", "ana@arquisoft.com");
-        var cambio = CambioAsesorFichaDomain.crear(ficha.getId(), nuevoAsesor);
         var estadoActual = EstadoFichaPerfilDomain.crear(ficha.getId());
 
-        // Act
-        validator.validar(cambio, ficha, asesorFicha, estadoActual);
-
-        // Assert
-        InOrder inOrder = inOrder(fichaPerfilExisteRule, asesorFichaExisteRule,
-                estadoFichaPerfilExisteRule, estadoFichaPerfilEnTerminalRule, asesorFichaDiferenteRule);
-        inOrder.verify(fichaPerfilExisteRule)
-                .validar(new ExistenciaFichaPerfil(cambio.getFichaPerfil(), true));
-        inOrder.verify(asesorFichaExisteRule)
-                .validar(new ExistenciaAsesorFicha(nuevoAsesor, true));
-        inOrder.verify(estadoFichaPerfilExisteRule)
-                .validar(new ExistenciaEstadoFichaPerfil(ficha.getId(), true));
-        inOrder.verify(estadoFichaPerfilEnTerminalRule)
-                .validar(new EstadoActualFicha(ficha.getId(), estadoActual.getEstadoFicha()));
-        inOrder.verify(asesorFichaDiferenteRule)
-                .validar(new AsesorFichaComparacion(nuevoAsesor, asesorActual));
+        // Act / Assert
+        assertThatCode(() -> validator.validar(
+                cambio(nuevoAsesor), ficha, asesor(nuevoAsesor), estadoActual))
+                .doesNotThrowAnyException();
     }
 
     @Test
-    void debeDelegarLaAusenciaDeEstadoALaRegla_cuandoLaFichaNoTieneEstado() {
-        // Arrange
-        UUID asesorActual = UUID.randomUUID();
-        UUID nuevoAsesor = UUID.randomUUID();
-        var ficha = FichaPerfilDomain.crear("Titulo de prueba", asesorActual);
-        var asesorFicha = AsesorFichaDomain.reconstruir(nuevoAsesor, "A001", "Ana Asesora", "ana@arquisoft.com");
-        var cambio = CambioAsesorFichaDomain.crear(ficha.getId(), nuevoAsesor);
-
-        // Act
-        validator.validar(cambio, ficha, asesorFicha, EstadoFichaPerfilDomain.VACIO);
-
-        // Assert
-        verify(estadoFichaPerfilExisteRule)
-                .validar(new ExistenciaEstadoFichaPerfil(ficha.getId(), false));
-        verify(estadoFichaPerfilEnTerminalRule)
-                .validar(new EstadoActualFicha(ficha.getId(), EstadoFicha.VACIO));
-    }
-
-    @Test
-    void debeTrasladarLaAusenciaDeFicha_cuandoLaFichaNoExiste() {
-        // Arrange
+    void debeLanzarFichaNoEncontrada_cuandoLaFichaEsVacia() {
+        // Arrange — VACIO es como viaja la ausencia de un agregado hasta el validator
         UUID fichaId = UUID.randomUUID();
-        UUID nuevoAsesor = UUID.randomUUID();
         var cambio = CambioAsesorFichaDomain.crear(fichaId, nuevoAsesor);
 
-        // Act
-        validator.validar(cambio, FichaPerfilDomain.VACIO, AsesorFichaDomain.VACIO,
-                EstadoFichaPerfilDomain.VACIO);
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(cambio, FichaPerfilDomain.VACIO,
+                AsesorFichaDomain.VACIO, EstadoFichaPerfilDomain.VACIO))
+                .isInstanceOf(FichaPerfilNoEncontradaException.class)
+                .hasMessageContaining(fichaId.toString());
+    }
 
-        // Assert
-        inOrder(fichaPerfilExisteRule).verify(fichaPerfilExisteRule)
-                .validar(new ExistenciaFichaPerfil(fichaId, false));
+    @Test
+    void debeLanzarAsesorNoEncontrado_cuandoElAsesorEsVacio() {
+        // Arrange
+        var estadoActual = EstadoFichaPerfilDomain.crear(ficha.getId());
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(
+                cambio(nuevoAsesor), ficha, AsesorFichaDomain.VACIO, estadoActual))
+                .isInstanceOf(AsesorFichaNoEncontradoException.class)
+                .hasMessageContaining(nuevoAsesor.toString());
+    }
+
+    @Test
+    void debeLanzarEstadoNoEncontrado_cuandoLaFichaNoTieneEstado() {
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(
+                cambio(nuevoAsesor), ficha, asesor(nuevoAsesor), EstadoFichaPerfilDomain.VACIO))
+                .isInstanceOf(EstadoFichaPerfilNoEncontradoException.class)
+                .hasMessageContaining(ficha.getId().toString());
+    }
+
+    @Test
+    void debeLanzarMismoAsesor_cuandoElNuevoAsesorEsElActual() {
+        // Arrange
+        var estadoActual = EstadoFichaPerfilDomain.crear(ficha.getId());
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(
+                cambio(asesorActual), ficha, asesor(asesorActual), estadoActual))
+                .isInstanceOf(MismoAsesorFichaException.class);
+    }
+
+    @Test
+    void debeReportarPrimeroLaAusenciaDeLaFicha_cuandoTodasLasReglasFallan() {
+        // Act / Assert — el orden es parte del contrato: ficha, asesor, estado y por ultimo comparacion
+        assertThatThrownBy(() -> validator.validar(cambio(nuevoAsesor), FichaPerfilDomain.VACIO,
+                AsesorFichaDomain.VACIO, EstadoFichaPerfilDomain.VACIO))
+                .isInstanceOf(FichaPerfilNoEncontradaException.class);
     }
 }

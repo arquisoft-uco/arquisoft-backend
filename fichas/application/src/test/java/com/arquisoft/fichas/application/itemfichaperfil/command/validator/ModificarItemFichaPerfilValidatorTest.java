@@ -2,87 +2,74 @@ package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl.ModificarItemFichaPerfilValidatorImpl;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
-import com.arquisoft.fichas.domain.estadofichaperfil.model.ExistenciaEstadoFichaPerfil;
-import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
-import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilExisteRule;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
+import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.domain.itemfichaperfil.model.ExistenciaItemFichaPerfil;
-import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPerfilExisteRule;
-import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 
-@ExtendWith(MockitoExtension.class)
 class ModificarItemFichaPerfilValidatorTest {
 
-    @Mock
-    private ItemFichaPerfilExisteRule itemFichaPerfilExisteRule;
+    private final ModificarItemFichaPerfilValidatorImpl validator =
+            new ModificarItemFichaPerfilValidatorImpl();
 
-    @Mock
-    private ItemFichaPropiaRule itemFichaPropiaRule;
-
-    @Mock
-    private EstadoFichaPerfilExisteRule estadoFichaPerfilExisteRule;
-
-    @Mock
-    private EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
-
-    @InjectMocks
-    private ModificarItemFichaPerfilValidatorImpl validator;
+    private final UUID item = UUID.randomUUID();
+    private final UUID estudiante = UUID.randomUUID();
+    private final UUID fichaPerfil = UUID.randomUUID();
 
     @Test
-    void debeAplicarLasReglasEnOrden_cuandoElItemExiste() {
+    void debePasar_cuandoElItemExisteEsPropioYElEstadoNoEsTerminal() {
         // Arrange
-        UUID item = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
-        UUID fichaPerfil = UUID.randomUUID();
         var estadoActual = EstadoFichaPerfilDomain.crear(fichaPerfil);
 
-        // Act
-        validator.validar(item, estudiante, fichaPerfil, true, true, estadoActual);
+        // Act / Assert
+        assertThatCode(() -> validator.validar(item, estudiante, fichaPerfil, true, true, estadoActual))
+                .doesNotThrowAnyException();
+    }
 
-        // Assert
-        InOrder inOrder = inOrder(itemFichaPerfilExisteRule, itemFichaPropiaRule,
-                estadoFichaPerfilExisteRule, estadoFichaPerfilEnTerminalRule);
-        inOrder.verify(itemFichaPerfilExisteRule)
-                .validar(new ExistenciaItemFichaPerfil(item, true));
-        inOrder.verify(itemFichaPropiaRule).validar(new PropiedadFicha(fichaPerfil, estudiante, true));
-        inOrder.verify(estadoFichaPerfilExisteRule)
-                .validar(new ExistenciaEstadoFichaPerfil(fichaPerfil, true));
-        inOrder.verify(estadoFichaPerfilEnTerminalRule)
-                .validar(new EstadoActualFicha(fichaPerfil, estadoActual.getEstadoFicha()));
+    @Test
+    void debeLanzarItemNoEncontrado_cuandoElItemNoExiste() {
+        // Arrange
+        var estadoActual = EstadoFichaPerfilDomain.crear(fichaPerfil);
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, false, true, estadoActual))
+                .isInstanceOf(ItemFichaPerfilNoEncontradoException.class)
+                .hasMessageContaining(item.toString());
+    }
+
+    @Test
+    void debeLanzarItemNoPropio_cuandoElEstudianteNoEsDuenoDeLaFicha() {
+        // Arrange
+        var estadoActual = EstadoFichaPerfilDomain.crear(fichaPerfil);
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, true, false, estadoActual))
+                .isInstanceOf(ItemFichaNoPropiaException.class);
+    }
+
+    @Test
+    void debeLanzarEstadoNoEncontrado_cuandoLaFichaNoTieneEstado() {
+        // Act / Assert — EstadoFichaPerfilDomain.VACIO representa la ausencia de estado
+        assertThatThrownBy(() -> validator.validar(
+                item, estudiante, fichaPerfil, true, true, EstadoFichaPerfilDomain.VACIO))
+                .isInstanceOf(EstadoFichaPerfilNoEncontradoException.class)
+                .hasMessageContaining(fichaPerfil.toString());
     }
 
     @Test
     void noDebeAplicarLasReglasDependientesDeLaFicha_cuandoElItemNoExiste() {
-        // Arrange
-        UUID item = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
-        doThrow(new ItemFichaPerfilNoEncontradoException(item))
-                .when(itemFichaPerfilExisteRule).validar(new ExistenciaItemFichaPerfil(item, false));
+        // Arrange — sin item, el use case no pudo resolver su ficha: llega el UUID por defecto y
+        // las reglas siguientes fallarian si llegaran a ejecutarse.
 
-        // Act
+        // Act / Assert — gana la primera regla, prueba de que las dependientes no corren
         assertThatThrownBy(() -> validator.validar(item, estudiante, UtilUUID.obtenerUUIDPorDefecto(),
                 false, false, EstadoFichaPerfilDomain.VACIO))
                 .isInstanceOf(ItemFichaPerfilNoEncontradoException.class);
-
-        // Assert
-        verify(itemFichaPropiaRule, never()).validar(org.mockito.ArgumentMatchers.any());
-        verify(estadoFichaPerfilEnTerminalRule, never()).validar(org.mockito.ArgumentMatchers.any());
     }
 }

@@ -6,8 +6,8 @@ import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaR
 import com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.dto.EstadoFichaResponseDTO;
 import com.arquisoft.fichas.infrastructure.estadoficha.query.primaryadapter.web.mapper.EstadoFichaResponseMapper;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.web.openapi.ApiCodes;
+import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,7 +37,7 @@ public class ConsultarEstadosFichaController {
     @Operation(
             summary = FichasApiMessages.EstadoFicha.CONSULTAR_SUMMARY,
             description = FichasApiMessages.EstadoFicha.CONSULTAR_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.OK,

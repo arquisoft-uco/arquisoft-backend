@@ -1,10 +1,16 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.seguridad.infrastructure.config.security.RutasAutenticacion;
 import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
+import org.springframework.http.MediaType;
+
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,14 +37,18 @@ class JwtBlacklistFilterTest {
     private static final String JTI = "jti-123";
 
     @Mock
+    private RutasAutenticacion rutasAutenticacion;
+
+    @Mock
     private TokenInvalidadoOutputPort tokenInvalidadoPort;
 
     @Mock
     private ObjectMapper objectMapper;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
-@InjectMocks
+    @Mock
+    private AppLogger logger;
+
+    @InjectMocks
     private JwtBlacklistFilter filter;
 
     @AfterEach
@@ -75,7 +85,8 @@ class JwtBlacklistFilterTest {
 
         // Assert
         verify(response).setStatus(401);
-        verify(response).setContentType("application/json;charset=UTF-8");
+        verify(response).setContentType(MediaType.APPLICATION_JSON_VALUE);
+        verify(response).setCharacterEncoding(StandardCharsets.UTF_8.name());
         verify(filterChain, never()).doFilter(request, response);
     }
 

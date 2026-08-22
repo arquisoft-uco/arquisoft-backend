@@ -81,6 +81,29 @@ services:
     networks:
       - arquisoft-network
 
+  # Poda del catálogo: borra de Redis las claves que ya no están en los .properties.
+  # Bajo perfil 'mantenimiento' a propósito — 'docker compose up' NO debe borrar nada por su
+  # cuenta. Se invoca a mano:  docker compose --profile mantenimiento up catalogo-podador
+  # Para ver qué borraría sin borrarlo, añadir DRY_RUN=1 al environment.
+  catalogo-podador:
+    image: redis:7-alpine
+    container_name: arquisoft-catalogo-podador
+    restart: "no"
+    profiles: ["mantenimiento"]
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: default123
+      DRY_RUN: "${DRY_RUN:-0}"
+    volumes:
+      - ./catalogo:/catalogo:ro
+    command: ["sh", "/catalogo/podar.sh"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - arquisoft-network
+
   # ==================== KEYCLOAK ====================
   keycloak:
     image: quay.io/keycloak/keycloak:26.6

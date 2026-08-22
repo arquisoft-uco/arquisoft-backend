@@ -4,8 +4,8 @@ import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.minio.MinioStorageClient;
-import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.web.openapi.ApiCodes;
+import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -49,7 +49,7 @@ public class MinioGuiaController {
     @Operation(
             summary = FichasApiMessages.MinioGuia.CARGA_SUMMARY,
             description = FichasApiMessages.MinioGuia.CARGA_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponse(responseCode = ApiCodes.OK, description = FichasApiMessages.MinioGuia.CARGA_RESP_200)
     public ResponseEntity<Map<String, String>> generarUrlCarga(
@@ -73,7 +73,7 @@ public class MinioGuiaController {
     @Operation(
             summary = FichasApiMessages.MinioGuia.DESCARGA_SUMMARY,
             description = FichasApiMessages.MinioGuia.DESCARGA_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponse(responseCode = ApiCodes.OK, description = FichasApiMessages.MinioGuia.DESCARGA_RESP_200)
     public ResponseEntity<Map<String, String>> generarUrlDescarga(
@@ -97,7 +97,7 @@ public class MinioGuiaController {
     @Operation(
             summary = FichasApiMessages.MinioGuia.EXISTE_SUMMARY,
             description = FichasApiMessages.MinioGuia.EXISTE_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponse(responseCode = ApiCodes.OK, description = FichasApiMessages.MinioGuia.EXISTE_RESP_200)
     public ResponseEntity<Map<String, Object>> verificarExistencia(
@@ -115,7 +115,7 @@ public class MinioGuiaController {
     @Operation(
             summary = FichasApiMessages.MinioGuia.ELIMINAR_SUMMARY,
             description = FichasApiMessages.MinioGuia.ELIMINAR_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponse(responseCode = ApiCodes.NO_CONTENT, description = FichasApiMessages.MinioGuia.ELIMINAR_RESP_204)
     public ResponseEntity<Void> eliminarObjeto(

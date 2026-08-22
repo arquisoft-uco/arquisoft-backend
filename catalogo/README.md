@@ -12,6 +12,7 @@ El diseño está en ADR-013 (repositorio `arquisoft-docs`) y en `.workspace/h-pl
 | Archivo | Contenido |
 |---|---|
 | `cargar.sh` | Carga el catálogo en Redis. Paso previo obligatorio del despliegue. |
+| `podar.sh` | Borra de Redis las claves que ya no están en los `.properties`. Manual, nunca automático. |
 | `app.properties` | Textos transversales (`shared:*`) |
 | `fichas.properties` | Contexto `fichas` |
 | `seguridad.properties` | Contexto `seguridad` |
@@ -25,14 +26,44 @@ lo que este mecanismo aporta.
 ## Cargar en Redis
 
 **No hace falta instalar `redis-cli`.** Redis no publica binarios nativos para Windows, así que la
-vía prevista es un contenedor. Contra cualquier instancia —nube, staging, la que sea— con un
-contenedor de usar y tirar:
+vía prevista es un contenedor. Eso implica una condición previa: **Docker tiene que estar corriendo**
+antes de cualquiera de las dos formas de abajo. En Windows y macOS eso significa abrir Docker Desktop
+y esperar a que el icono deje de estar en «starting»; si no, el error que sale no habla de Docker
+sino de un pipe (`docker API at npipe:...`, o `/var/run/docker.sock` en Linux), y despista.
+
+Para comprobarlo antes de nada:
+
+```sh
+docker info > /dev/null 2>&1 && echo "Docker listo" || echo "Docker no está corriendo"
+```
+
+### Instancia local (docker-compose)
+
+Con la pila local basta el servicio, que ya trae las variables apuntando al Redis del compose:
+
+```sh
+docker compose up redis
+docker compose up catalogo-loader
+```
+
+El primer comando es necesario si el Redis no está ya levantado: `catalogo-loader` depende de él con
+`service_healthy` y se queda esperando hasta que responda.
+
+Levantando la pila completa con `docker-compose up`, la carga ocurre sola: el backend espera al
+servicio `catalogo-loader` con `service_completed_successfully`.
+
+### Cualquier otra instancia (nube, staging)
+
+Con un contenedor de usar y tirar, montando este directorio:
 
 ```sh
 MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/catalogo:/catalogo" \
     -e REDIS_HOST=... -e REDIS_PORT=6379 -e REDIS_USER=... -e REDIS_PASSWORD=... \
     redis:7-alpine sh /catalogo/cargar.sh
 ```
+
+Se ejecuta **desde la raíz del repositorio**, no desde `catalogo/`: el `$(pwd)/catalogo` del volumen
+lo da por hecho.
 
 Los valores son los mismos que ya usa la aplicación: lee exactamente esas cuatro variables. Con ACL
 de Redis 6+ hacen falta usuario **y** contraseña, no solo una.
@@ -42,22 +73,83 @@ el `/catalogo` del volumen y el `/catalogo/cargar.sh` del argumento, este últim
 `C:/Program Files/Git/catalogo/cargar.sh`. En Linux y macOS la variable sobra y no molesta, así que
 el comando es el mismo en todas partes.
 
-Contra la instancia local de `docker-compose` basta con el servicio, que ya trae las variables:
+> El runtime de msys mira si la variable **está definida**, no qué vale. `MSYS_NO_PATHCONV=`,
+> `MSYS_NO_PATHCONV=1` y hasta `MSYS_NO_PATHCONV=0` desactivan por igual la conversión de rutas.
+> Se documenta con `=1` porque `=0` se lee como «desactivado» y significa lo contrario de lo que
+> parece, y la forma vacía no dice nada a quien la ve por primera vez.
+
+### Qué actualiza exactamente
+
+El script recorre los cinco `.properties` y hace un `SET` por clave, así que **toda clave presente en
+los archivos queda con el texto de los archivos**: es re-ejecutable y sobrescribe siempre, no compara
+ni omite lo que no cambió.
+
+Lo que **no** hace es borrar. Nunca ejecuta `FLUSHDB` —esta instancia de Redis comparte espacio con
+los buckets de rate limit y los tokens invalidados de seguridad—, ni un `DEL` de las claves que
+sobran. Consecuencia práctica: si renombras o eliminas una clave del `.properties`, la vieja **sigue
+en Redis** después de recargar. No rompe nada (nadie la pide, y el fail-fast del arranque solo
+comprueba que no falte ninguna de las declaradas), pero se acumula. Para limpiarla hay que borrarla a
+mano:
 
 ```sh
-docker compose up catalogo-loader
+docker compose exec redis redis-cli -a default123 --no-auth-warning DEL la.clave.vieja
 ```
 
-Levantando la pila completa con `docker-compose up`, la carga ocurre sola: el backend espera al
-servicio `catalogo-loader` con `service_completed_successfully`.
-
-El script es **re-ejecutable** y sobrescribe clave por clave. Nunca hace `FLUSHDB`: esta instancia de
-Redis comparte espacio con los buckets de rate limit y los tokens invalidados de seguridad.
+El script termina verificando con `EXISTS` que todo lo escrito está presente, y sale con error si no:
+para que el fallo aparezca en la carga y no en el arranque.
 
 > **La carga es obligatoria antes de desplegar.** Con el fail-fast de arranque, una sola clave
-> declarada en Java sin texto en Redis impide que la aplicación levante. Por eso el script termina
-> verificando con `EXISTS` que todo lo escrito está presente, y sale con error si no: para que el
-> fallo aparezca en la carga y no en el arranque.
+> declarada en Java sin texto en Redis impide que la aplicación levante.
+
+## Podar lo que sobra
+
+`cargar.sh` nunca borra (ver arriba), así que las claves renombradas o eliminadas se quedan en Redis.
+`podar.sh` es la otra mitad: compara lo que hay en Redis con lo que declaran los `.properties` y borra
+la diferencia.
+
+Va en un script aparte a propósito. Cargar es un paso obligatorio del despliegue y debe poder
+ejecutarse sin pensarlo; borrar es destructivo y merece una decisión explícita.
+
+Solo toca claves cuyo nombre empieza por `<contexto>.` — el espacio del catálogo. El resto de claves
+de esta instancia usan el prefijo `arquisoft:` (buckets de rate limit, blacklist de jti, caché), así
+que no hay solape posible. Recorre con `SCAN`, no con `KEYS`: la instancia es compartida y `KEYS` la
+bloquea entera mientras recorre el espacio de claves.
+
+### En seco, primero
+
+```sh
+DRY_RUN=1 docker compose --profile mantenimiento up catalogo-podador
+```
+
+Lista las claves sobrantes y no borra nada. Conviene mirar esa lista antes de la pasada real.
+
+### Local
+
+```sh
+docker compose --profile mantenimiento up catalogo-podador
+```
+
+El perfil `mantenimiento` es deliberado: mantiene el servicio fuera de `docker compose up`, para que
+levantar la pila no borre nada por su cuenta.
+
+### Cualquier otra instancia
+
+```sh
+MSYS_NO_PATHCONV=1 docker run --rm -v "$(pwd)/catalogo:/catalogo" \
+    -e REDIS_HOST=... -e REDIS_PORT=6379 -e REDIS_USER=... -e REDIS_PASSWORD=... \
+    redis:7-alpine sh /catalogo/podar.sh
+```
+
+### Salvaguardas
+
+El riesgo real de un script que borra es ejecutarlo apuntando al directorio equivocado: sin claves
+declaradas, «no sobra nada» y «sobra todo» son la misma lectura. Hay dos cortes antes de tocar Redis:
+
+1. Si falta cualquiera de los cinco `.properties`, aborta nombrando el que falta.
+2. Si los archivos existen pero no declaran ni una clave, aborta diciendo que continuar borraría el
+   catálogo entero.
+
+Es re-ejecutable: una segunda pasada informa de 0 sobrantes y sale con éxito.
 
 ## Añadir un mensaje
 
@@ -97,7 +189,7 @@ enums que `ClavesCatalogo.ENUMS` no registra. Aquí es donde el error sale grati
 El catálogo guarda prosa que lee una persona. Lo que una herramienta o un contrato compara de forma
 exacta se queda como constante de Java, porque traducirlo rompe justo lo que lo lee:
 
-- Códigos de error (`*Codes`), nombres de campo (`*Fields`), rutas (`*Routes`), límites (`*Limits`)
+- Códigos de error (`*Codes`), nombres de campo (`*Fields`), límites (`*Limits`)
 - Claves y valores centinela del MDC (`TrazaKeys`, `TrazaValores`), cabeceras (`TrazaHeaders`)
 - Marcadores de log que se buscan en Loki (`AUDIT`), nombres de infraestructura
   (`RabbitMQConfig.EXCHANGE_NAME`), códigos de API externas (`NoSuchKey` de MinIO)

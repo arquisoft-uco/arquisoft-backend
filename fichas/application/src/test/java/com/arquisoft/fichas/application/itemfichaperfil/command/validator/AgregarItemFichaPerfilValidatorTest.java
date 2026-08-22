@@ -1,75 +1,75 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl.AgregarItemFichaPerfilValidatorImpl;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
-import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
-import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
-import com.arquisoft.fichas.domain.itemfichaperfil.AgregacionItemFichaPerfilDomain;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
-import com.arquisoft.fichas.domain.itemfichaperfil.model.DisponibilidadTipoItem;
-import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemFichaPropiaRule;
-import com.arquisoft.fichas.domain.itemfichaperfil.rules.ItemTipoNoDuplicadoRule;
+import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
+import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemTipoDuplicadoException;
 import com.arquisoft.fichas.domain.tipoitem.TipoItem;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.inOrder;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith(MockitoExtension.class)
 class AgregarItemFichaPerfilValidatorTest {
 
-    @Mock
-    private FichaPerfilExisteRule fichaPerfilExisteRule;
+    private final AgregarItemFichaPerfilValidatorImpl validator = new AgregarItemFichaPerfilValidatorImpl();
 
-    @Mock
-    private ItemFichaPropiaRule itemFichaPropiaRule;
-
-    @Mock
-    private ItemTipoNoDuplicadoRule itemTipoNoDuplicadoRule;
-
-    @InjectMocks
-    private AgregarItemFichaPerfilValidatorImpl validator;
-
-    @Test
-    void debeAplicarLasReglasEnOrden_cuandoValida() {
-        // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
-        var agregacion = AgregacionItemFichaPerfilDomain.crear(
-                ItemFichaPerfilDomain.crear(fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item"), estudiante);
-
-        // Act
-        validator.validar(agregacion.getItem(), estudiante, true, true, false);
-
-        // Assert
-        InOrder inOrder = inOrder(fichaPerfilExisteRule, itemFichaPropiaRule, itemTipoNoDuplicadoRule);
-        inOrder.verify(fichaPerfilExisteRule).validar(new ExistenciaFichaPerfil(fichaPerfil, true));
-        inOrder.verify(itemFichaPropiaRule).validar(new PropiedadFicha(fichaPerfil, estudiante, true));
-        inOrder.verify(itemTipoNoDuplicadoRule)
-                .validar(new DisponibilidadTipoItem(TipoItem.OBJETIVO_GENERAL, false));
+    private ItemFichaPerfilDomain item(UUID fichaPerfil) {
+        return ItemFichaPerfilDomain.crear(
+                fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item");
     }
 
     @Test
-    void debeTrasladarLosDatosConsultados_cuandoNoEsPropietarioYElTipoYaExiste() {
+    void debePasar_cuandoLaFichaExisteEsPropiaYElTipoEstaLibre() {
         // Arrange
         UUID fichaPerfil = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
-        var agregacion = AgregacionItemFichaPerfilDomain.crear(
-                ItemFichaPerfilDomain.crear(fichaPerfil, TipoItem.OBJETIVO_GENERAL.getId(), "Contenido del item"), estudiante);
 
-        // Act
-        validator.validar(agregacion.getItem(), estudiante, true, false, true);
+        // Act / Assert
+        assertThatCode(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), true, true, false))
+                .doesNotThrowAnyException();
+    }
 
-        // Assert
-        InOrder inOrder = inOrder(itemFichaPropiaRule, itemTipoNoDuplicadoRule);
-        inOrder.verify(itemFichaPropiaRule).validar(new PropiedadFicha(fichaPerfil, estudiante, false));
-        inOrder.verify(itemTipoNoDuplicadoRule)
-                .validar(new DisponibilidadTipoItem(TipoItem.OBJETIVO_GENERAL, true));
+    @Test
+    void debeLanzarFichaNoEncontrada_cuandoLaFichaNoExiste() {
+        // Arrange
+        UUID fichaPerfil = UUID.randomUUID();
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), false, true, false))
+                .isInstanceOf(FichaPerfilNoEncontradaException.class)
+                .hasMessageContaining(fichaPerfil.toString());
+    }
+
+    @Test
+    void debeLanzarItemNoPropio_cuandoElEstudianteNoEsDuenoDeLaFicha() {
+        // Arrange
+        UUID fichaPerfil = UUID.randomUUID();
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), true, false, false))
+                .isInstanceOf(ItemFichaNoPropiaException.class);
+    }
+
+    @Test
+    void debeLanzarTipoDuplicado_cuandoLaFichaYaTieneEseTipoDeItem() {
+        // Arrange
+        UUID fichaPerfil = UUID.randomUUID();
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), true, true, true))
+                .isInstanceOf(ItemTipoDuplicadoException.class);
+    }
+
+    @Test
+    void debeReportarPrimeroLaAusenciaDeLaFicha_cuandoTodasLasReglasFallan() {
+        // Arrange — el orden es parte del contrato: existencia, propiedad y por ultimo duplicidad
+        UUID fichaPerfil = UUID.randomUUID();
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(item(fichaPerfil), UUID.randomUUID(), false, false, true))
+                .isInstanceOf(FichaPerfilNoEncontradaException.class);
     }
 }

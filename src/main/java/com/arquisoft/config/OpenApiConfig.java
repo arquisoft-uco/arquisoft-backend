@@ -1,5 +1,6 @@
 package com.arquisoft.config;
 
+import com.arquisoft.shared.message.annotation.ApiSecurity;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -37,10 +38,10 @@ import org.springframework.context.annotation.Configuration;
 /*            ,
         @Server(url = "https://arquisoft.uco.edu.co/api", description = "Servidor de produccion UCO")*/
     },
-    security = @SecurityRequirement(name = "bearerAuth")
+    security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
 )
 @SecurityScheme(
-    name = "bearerAuth",
+    name = ApiSecurity.BEARER_AUTH,
     type = SecuritySchemeType.HTTP,
     scheme = "bearer",
     bearerFormat = "JWT",

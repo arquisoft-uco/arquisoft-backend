@@ -1,26 +1,37 @@
 package com.arquisoft.seguridad.domain.auth;
 
-import com.arquisoft.shared.message.key.seguridad.TokenKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
-import com.arquisoft.shared.exception.DomainException;
+import com.arquisoft.shared.message.constant.SeguridadFields;
+import com.arquisoft.shared.util.UtilTexto;
+import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorTexto;
 
 public final class TokenDomain {
 
-    private final String valor;
+    private String valor;
 
-    private TokenDomain(String valor) {
-        this.valor = valor;
+    private TokenDomain() {}
+
+    public static TokenDomain crear(String valor) {
+        var token = new TokenDomain();
+        var result = new ValidationResult();
+
+        token.setValor(valor, result);
+
+        result.lanzarSiTieneErrores();
+        return token;
     }
 
-    public static TokenDomain de(String valor) {
-        if (valor == null || valor.isBlank()) {
-            throw new DomainException(Mensajes.obtener(TokenKey.ERROR_VALOR_REQUERIDO), SeguridadCodes.Token.TOKEN_VALOR_REQUERIDO);
+    private void setValor(String valor, ValidationResult result) {
+        if (!ValidatorTexto.noEnBlanco(valor,
+                SeguridadFields.Token.VALOR,
+                SeguridadCodes.Token.TOKEN_VALOR_REQUERIDO, result)) {
+            return;
         }
-        return new TokenDomain(valor);
+        this.valor = UtilTexto.aplicarTrim(valor);
     }
 
-    public String valor() {
+    public String getValor() {
         return valor;
     }
 }

@@ -6,8 +6,8 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.primarypor
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.primaryadapter.web.dto.AgregarEstadoEvaluacionFichaRequestDTO;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.primaryadapter.web.dto.AgregarEstadoEvaluacionFichaResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.web.openapi.ApiCodes;
+import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -42,7 +42,7 @@ public class AgregarEstadoEvaluacionFichaController {
     @Operation(
             summary = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_SUMMARY,
             description = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME))
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH))
     @ApiResponses(value = {
             @ApiResponse(responseCode = ApiCodes.CREATED,
                     description = FichasApiMessages.EstadoEvaluacionFicha.AGREGAR_RESP_201,

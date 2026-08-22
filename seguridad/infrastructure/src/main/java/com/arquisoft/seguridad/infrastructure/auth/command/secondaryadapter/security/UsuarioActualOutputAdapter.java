@@ -1,47 +1,49 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.security;
 
 import com.arquisoft.seguridad.application.auth.command.secondaryport.UsuarioActualOutputPort;
-import lombok.RequiredArgsConstructor;
+import com.arquisoft.shared.util.UtilObjeto;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
-@RequiredArgsConstructor
 public class UsuarioActualOutputAdapter implements UsuarioActualOutputPort {
+
+    // Claims estándar de OIDC: los fija el estándar y Keycloak los emite literalmente,
+    // así que son contrato con el proveedor de identidad, no texto de catálogo.
+    private static final String CLAIM_EMAIL = "email";
+    private static final String CLAIM_NOMBRE_PREFERIDO = "preferred_username";
 
     @Override
     public String obtenerIdUsuario() {
-        Jwt jwt = extraerJwt();
-        return jwt != null ? jwt.getSubject() : null;
+        var jwt = extraerJwt();
+        return !UtilObjeto.esNulo(jwt) ? jwt.getSubject() : null;
     }
 
     @Override
     public String obtenerCorreo() {
-        Jwt jwt = extraerJwt();
-        return jwt != null ? jwt.getClaimAsString("email") : null;
+        var jwt = extraerJwt();
+        return !UtilObjeto.esNulo(jwt) ? jwt.getClaimAsString(CLAIM_EMAIL) : null;
     }
 
     @Override
     public String obtenerNombreUsuario() {
-        Jwt jwt = extraerJwt();
-        if (jwt == null) {
+        var jwt = extraerJwt();
+        if (UtilObjeto.esNulo(jwt)) {
             return null;
         }
-        String nombrePreferido = jwt.getClaimAsString("preferred_username");
-        return nombrePreferido != null ? nombrePreferido : jwt.getClaimAsString("email");
+        return UtilObjeto.aplicarPorDefecto(
+                jwt.getClaimAsString(CLAIM_NOMBRE_PREFERIDO), jwt.getClaimAsString(CLAIM_EMAIL));
     }
 
     @Override
     public boolean tieneRol(String rol) {
-        Authentication auth = obtenerAutenticacion();
-        if (auth == null) {
+        var auth = obtenerAutenticacion();
+        if (UtilObjeto.esNulo(auth)) {
             return false;
         }
         return auth.getAuthorities().stream()
@@ -51,13 +53,13 @@ public class UsuarioActualOutputAdapter implements UsuarioActualOutputPort {
 
     @Override
     public List<String> obtenerRoles() {
-        Authentication auth = obtenerAutenticacion();
-        if (auth == null) {
-            return Collections.emptyList();
+        var auth = obtenerAutenticacion();
+        if (UtilObjeto.esNulo(auth)) {
+            return List.of();
         }
         return auth.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Authentication obtenerAutenticacion() {
@@ -65,8 +67,8 @@ public class UsuarioActualOutputAdapter implements UsuarioActualOutputPort {
     }
 
     private Jwt extraerJwt() {
-        Authentication auth = obtenerAutenticacion();
-        if (auth != null && auth.getPrincipal() instanceof Jwt jwt) {
+        var auth = obtenerAutenticacion();
+        if (!UtilObjeto.esNulo(auth) && auth.getPrincipal() instanceof Jwt jwt) {
             return jwt;
         }
         return null;

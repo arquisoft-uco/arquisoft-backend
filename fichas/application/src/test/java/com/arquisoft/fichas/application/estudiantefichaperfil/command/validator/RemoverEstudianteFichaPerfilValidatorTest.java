@@ -1,72 +1,61 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.impl.RemoverEstudianteFichaPerfilValidatorImpl;
-import com.arquisoft.fichas.domain.estudiante.model.ExistenciaEstudiantes;
-import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
+import com.arquisoft.fichas.domain.estudiante.exception.EstudianteNoEncontradoException;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.RemocionEstudianteFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.ExistenciaVinculoEstudianteFicha;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.VinculoEstudianteFichaExisteRule;
-import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
-import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.exception.EstudianteFichaPerfilNoEncontradoException;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.Mockito.inOrder;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith(MockitoExtension.class)
 class RemoverEstudianteFichaPerfilValidatorTest {
 
-    @Mock
-    private FichaPerfilExisteRule fichaPerfilExisteRule;
+    private final RemoverEstudianteFichaPerfilValidatorImpl validator =
+            new RemoverEstudianteFichaPerfilValidatorImpl();
 
-    @Mock
-    private EstudiantesExistenRule estudiantesExistenRule;
-
-    @Mock
-    private VinculoEstudianteFichaExisteRule vinculoEstudianteFichaExisteRule;
-
-    @InjectMocks
-    private RemoverEstudianteFichaPerfilValidatorImpl validator;
+    private final UUID fichaPerfil = UUID.randomUUID();
+    private final UUID estudiante = UUID.randomUUID();
+    private final RemocionEstudianteFichaPerfilDomain entrada =
+            RemocionEstudianteFichaPerfilDomain.crear(fichaPerfil, estudiante);
 
     @Test
-    void debeAplicarLasReglasEnOrden_cuandoValida() {
-        // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
-        var entrada = RemocionEstudianteFichaPerfilDomain.crear(fichaPerfil, estudiante);
-
-        // Act
-        validator.validar(entrada, true, List.of(estudiante), true);
-
-        // Assert
-        InOrder inOrder = inOrder(fichaPerfilExisteRule, estudiantesExistenRule,
-                vinculoEstudianteFichaExisteRule);
-        inOrder.verify(fichaPerfilExisteRule).validar(new ExistenciaFichaPerfil(fichaPerfil, true));
-        inOrder.verify(estudiantesExistenRule)
-                .validar(new ExistenciaEstudiantes(List.of(estudiante), List.of(estudiante)));
-        inOrder.verify(vinculoEstudianteFichaExisteRule)
-                .validar(new ExistenciaVinculoEstudianteFicha(fichaPerfil, estudiante, true));
+    void debePasar_cuandoLaFichaExisteElEstudianteExisteYHayVinculo() {
+        // Act / Assert
+        assertThatCode(() -> validator.validar(entrada, true, List.of(estudiante), true))
+                .doesNotThrowAnyException();
     }
 
     @Test
-    void debeTrasladarLosDatosConsultados_cuandoNoHayVinculo() {
-        // Arrange
-        UUID fichaPerfil = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
-        var entrada = RemocionEstudianteFichaPerfilDomain.crear(fichaPerfil, estudiante);
+    void debeLanzarFichaNoEncontrada_cuandoLaFichaNoExiste() {
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(entrada, false, List.of(estudiante), true))
+                .isInstanceOf(FichaPerfilNoEncontradaException.class)
+                .hasMessageContaining(fichaPerfil.toString());
+    }
 
-        // Act
-        validator.validar(entrada, true, List.of(estudiante), false);
+    @Test
+    void debeLanzarEstudianteNoEncontrado_cuandoElEstudianteNoExiste() {
+        // Act / Assert — lista de existentes vacia: el solicitado no esta
+        assertThatThrownBy(() -> validator.validar(entrada, true, List.of(), true))
+                .isInstanceOf(EstudianteNoEncontradoException.class);
+    }
 
-        // Assert
-        inOrder(vinculoEstudianteFichaExisteRule).verify(vinculoEstudianteFichaExisteRule)
-                .validar(new ExistenciaVinculoEstudianteFicha(fichaPerfil, estudiante, false));
+    @Test
+    void debeLanzarVinculoNoEncontrado_cuandoNoHayVinculo() {
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(entrada, true, List.of(estudiante), false))
+                .isInstanceOf(EstudianteFichaPerfilNoEncontradoException.class);
+    }
+
+    @Test
+    void debeReportarPrimeroLaAusenciaDeLaFicha_cuandoTodasLasReglasFallan() {
+        // Act / Assert — el orden es parte del contrato: ficha, estudiante y por ultimo vinculo
+        assertThatThrownBy(() -> validator.validar(entrada, false, List.of(), false))
+                .isInstanceOf(FichaPerfilNoEncontradaException.class);
     }
 }

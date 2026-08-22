@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.web;
 
-import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.seguridad.application.auth.exception.AutenticacionException;
 import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
 import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
@@ -22,9 +23,10 @@ class SeguridadGlobalExceptionHandlerTest {
     @Mock
     private HttpServletRequest request;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
-@InjectMocks
+    @Mock
+    private AppLogger logger;
+
+    @InjectMocks
     private SeguridadGlobalExceptionHandler handler;
 
     @Test
@@ -66,7 +68,7 @@ class SeguridadGlobalExceptionHandlerTest {
     @Test
     void debeRetornar401_cuandoAuthenticationException() {
         // Arrange
-        AuthenticationException exception = new AuthenticationException("Error de autenticacion generico");
+        AutenticacionException exception = new AutenticacionException("Error de autenticacion generico");
         when(request.getRequestURI()).thenReturn("/api/auth/validate");
 
         // Act

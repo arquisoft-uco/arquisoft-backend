@@ -5,8 +5,8 @@ import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.primaryport.interactor.AsignarEstudiantesFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.primaryadapter.web.dto.AsignarEstudiantesFichaPerfilRequestDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.web.openapi.ApiCodes;
+import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -37,7 +37,7 @@ public class AsignarEstudiantesFichaPerfilController {
     @Operation(
             summary = FichasApiMessages.EstudianteFichaPerfil.ASIGNAR_SUMMARY,
             description = FichasApiMessages.EstudianteFichaPerfil.ASIGNAR_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.NO_CONTENT,

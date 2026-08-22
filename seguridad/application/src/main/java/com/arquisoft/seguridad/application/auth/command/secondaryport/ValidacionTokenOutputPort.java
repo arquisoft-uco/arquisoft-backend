@@ -1,10 +1,10 @@
 package com.arquisoft.seguridad.application.auth.command.secondaryport;
 
-import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.model.IdentidadProveedor;
+
+import java.util.Optional;
 
 public interface ValidacionTokenOutputPort {
 
-    boolean validarToken(String token);
-
-    IdentidadToken extraerInfo(String token);
+    Optional<IdentidadProveedor> extraerIdentidad(String token);
 }

@@ -1,10 +1,10 @@
 package com.arquisoft.seguridad.infrastructure.exception;
 
 import com.arquisoft.shared.message.constant.SeguridadCodes;
-import com.arquisoft.seguridad.domain.auth.exception.AuthenticationException;
+import com.arquisoft.seguridad.application.auth.exception.AutenticacionException;
 import com.arquisoft.shared.exception.BaseError;
 
-public final class CredencialesInvalidasException extends AuthenticationException {
+public final class CredencialesInvalidasException extends AutenticacionException {
 
     public CredencialesInvalidasException(String message) {
         super(BaseError.of(SeguridadCodes.Autenticacion.CREDENCIALES_INVALIDAS, message));

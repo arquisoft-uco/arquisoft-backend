@@ -1,67 +1,63 @@
 package com.arquisoft.fichas.application.fichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.fichaperfil.command.validator.impl.ModificarFichaPerfilValidatorImpl;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantePropietarioFichaRule;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
-import com.arquisoft.fichas.domain.fichaperfil.model.DisponibilidadTituloFicha;
-import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilTituloUnicoRule;
+import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
-import static org.mockito.Mockito.inOrder;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith(MockitoExtension.class)
 class ModificarFichaPerfilValidatorTest {
 
-    @Mock
-    private EstudiantePropietarioFichaRule estudiantePropietarioFichaRule;
+    private final ModificarFichaPerfilValidatorImpl validator = new ModificarFichaPerfilValidatorImpl();
 
-    @Mock
-    private FichaPerfilTituloUnicoRule fichaPerfilTituloUnicoRule;
-
-    @InjectMocks
-    private ModificarFichaPerfilValidatorImpl validator;
-
-    @Test
-    void debeAplicarLasReglasEnOrden_cuandoValida() {
-        // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
-        var modificacion = ModificacionFichaPerfilDomain.crear(fichaId, "Titulo nuevo", estudiante);
-
-        // Act
-        validator.validar(modificacion, true, false);
-
-        // Assert
-        InOrder inOrder = inOrder(estudiantePropietarioFichaRule, fichaPerfilTituloUnicoRule);
-        inOrder.verify(estudiantePropietarioFichaRule)
-                .validar(new PropiedadFicha(fichaId, estudiante, true));
-        inOrder.verify(fichaPerfilTituloUnicoRule)
-                .validar(new DisponibilidadTituloFicha("Titulo nuevo", false));
+    private ModificacionFichaPerfilDomain modificacion(UUID ficha, UUID estudiante, String titulo) {
+        return ModificacionFichaPerfilDomain.crear(ficha, titulo, estudiante);
     }
 
     @Test
-    void debeTrasladarLosDatosConsultados_cuandoNoEsPropietarioYElTituloEstaTomado() {
+    void debePasar_cuandoEsPropietarioYElTituloEstaLibre() {
         // Arrange
-        UUID fichaId = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
-        var modificacion = ModificacionFichaPerfilDomain.crear(fichaId, "Titulo tomado", estudiante);
+        var modificacion = modificacion(UUID.randomUUID(), UUID.randomUUID(), "Titulo nuevo");
 
-        // Act
-        validator.validar(modificacion, false, true);
+        // Act / Assert
+        assertThatCode(() -> validator.validar(modificacion, true, false)).doesNotThrowAnyException();
+    }
 
-        // Assert
-        InOrder inOrder = inOrder(estudiantePropietarioFichaRule, fichaPerfilTituloUnicoRule);
-        inOrder.verify(estudiantePropietarioFichaRule)
-                .validar(new PropiedadFicha(fichaId, estudiante, false));
-        inOrder.verify(fichaPerfilTituloUnicoRule)
-                .validar(new DisponibilidadTituloFicha("Titulo tomado", true));
+    @Test
+    void debeLanzarNoPropietario_cuandoElEstudianteNoEsDuenoDeLaFicha() {
+        // Arrange
+        UUID ficha = UUID.randomUUID();
+        var modificacion = modificacion(ficha, UUID.randomUUID(), "Titulo nuevo");
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(modificacion, false, false))
+                .isInstanceOf(FichaNoPropietarioException.class)
+                .hasMessageContaining(ficha.toString());
+    }
+
+    @Test
+    void debeLanzarTituloDuplicado_cuandoElTituloYaEstaTomado() {
+        // Arrange
+        var modificacion = modificacion(UUID.randomUUID(), UUID.randomUUID(), "Titulo tomado");
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(modificacion, true, true))
+                .isInstanceOf(FichaTituloDuplicadoException.class)
+                .hasMessageContaining("Titulo tomado");
+    }
+
+    @Test
+    void debeReportarPrimeroLaPropiedad_cuandoAmbasReglasFallan() {
+        // Arrange — el orden es parte del contrato: primero propiedad, despues unicidad
+        var modificacion = modificacion(UUID.randomUUID(), UUID.randomUUID(), "Titulo tomado");
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(modificacion, false, true))
+                .isInstanceOf(FichaNoPropietarioException.class);
     }
 }

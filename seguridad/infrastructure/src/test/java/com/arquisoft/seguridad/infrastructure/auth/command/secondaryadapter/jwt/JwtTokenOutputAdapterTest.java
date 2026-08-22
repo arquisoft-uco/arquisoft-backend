@@ -1,6 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.jwt;
 
-import com.arquisoft.seguridad.domain.auth.model.IdentidadToken;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -24,9 +25,10 @@ class JwtTokenOutputAdapterTest {
     @Mock
     private JwtDecoder jwtDecoder;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
-@InjectMocks
+    @Mock
+    private AppLogger logger;
+
+    @InjectMocks
     private JwtTokenOutputAdapter jwtTokenAdapter;
 
     private Jwt buildJwt(Map<String, Object> claims) {
@@ -48,7 +50,7 @@ class JwtTokenOutputAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
+        var info = jwtTokenAdapter.extraerIdentidad("token-de-prueba").orElseThrow();
 
         assertThat(info).isNotNull();
         assertThat(info.roles()).containsExactly("estudiante");
@@ -63,7 +65,7 @@ class JwtTokenOutputAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
+        var info = jwtTokenAdapter.extraerIdentidad("token-de-prueba").orElseThrow();
 
         assertThat(info.roles()).containsExactly("asesor-ficha");
     }
@@ -77,7 +79,7 @@ class JwtTokenOutputAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
+        var info = jwtTokenAdapter.extraerIdentidad("token-de-prueba").orElseThrow();
 
         assertThat(info.roles()).hasSize(2).containsExactlyInAnyOrder("estudiante", "coordinador");
     }
@@ -90,7 +92,7 @@ class JwtTokenOutputAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
+        var info = jwtTokenAdapter.extraerIdentidad("token-de-prueba").orElseThrow();
 
         assertThat(info.roles()).isEmpty();
     }
@@ -107,7 +109,7 @@ class JwtTokenOutputAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
+        var info = jwtTokenAdapter.extraerIdentidad("token-de-prueba").orElseThrow();
 
         assertThat(info.roles()).containsExactly("jurado");
         assertThat(info.roles()).doesNotContain("manage-account");
@@ -122,18 +124,26 @@ class JwtTokenOutputAdapterTest {
         ));
         when(jwtDecoder.decode(anyString())).thenReturn(jwt);
 
-        IdentidadToken info = jwtTokenAdapter.extraerInfo("token-de-prueba");
+        var info = jwtTokenAdapter.extraerIdentidad("token-de-prueba").orElseThrow();
 
         assertThat(info.identidadId()).isEqualTo("uuid-usuario");
         assertThat(info.correo()).isEqualTo("usuario@uco.edu.co");
     }
 
     @Test
-    void debeRetornarFalso_cuandoTokenEsMalformado() {
+    void debeRetornarVacio_cuandoTokenEsMalformado() {
         when(jwtDecoder.decode(anyString())).thenThrow(new JwtException("Token malformado"));
 
-        boolean resultado = jwtTokenAdapter.validarToken("token-basura");
+        assertThat(jwtTokenAdapter.extraerIdentidad("token-basura")).isEmpty();
+    }
 
-        assertThat(resultado).isFalse();
+    @Test
+    void debePropagarExcepcion_cuandoElFalloNoEsDelToken() {
+        // Un fallo al traer el JWK Set no es un token invalido: disfrazarlo de
+        // Optional.empty() haria pasar por expirada una sesion perfectamente valida.
+        when(jwtDecoder.decode(anyString())).thenThrow(new IllegalStateException("JWK Set no disponible"));
+
+        assertThatThrownBy(() -> jwtTokenAdapter.extraerIdentidad("token-valido"))
+                .isInstanceOf(IllegalStateException.class);
     }
 }

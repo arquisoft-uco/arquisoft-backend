@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.redis;
 
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -25,6 +26,9 @@ class RedisTokenBlacklistOutputAdapterTest {
 
     @Mock
     private ValueOperations<String, String> valueOperations;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private RedisTokenBlacklistOutputAdapter adapter;

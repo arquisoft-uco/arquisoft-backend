@@ -3,16 +3,15 @@ package com.arquisoft.fichas.application.estadofichaperfil.command.validator.imp
 import com.arquisoft.fichas.application.estadofichaperfil.command.validator.AsignarEstadoInicialFichaPerfilValidator;
 import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
-import lombok.RequiredArgsConstructor;
+import com.arquisoft.fichas.domain.fichaperfil.rules.impl.FichaPerfilExisteRuleImpl;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
 public class AsignarEstadoInicialFichaPerfilValidatorImpl implements AsignarEstadoInicialFichaPerfilValidator {
 
-    private final FichaPerfilExisteRule fichaPerfilExisteRule;
+    private final FichaPerfilExisteRule fichaPerfilExisteRule = new FichaPerfilExisteRuleImpl();
 
     @Override
     public void validar(UUID fichaPerfil, boolean fichaExiste) {

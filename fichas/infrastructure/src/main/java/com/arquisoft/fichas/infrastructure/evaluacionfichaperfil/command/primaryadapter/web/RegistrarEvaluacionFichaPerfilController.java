@@ -5,8 +5,8 @@ import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primarypor
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.primaryport.interactor.RegistrarEvaluacionFichaPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.primaryadapter.web.dto.RegistrarEvaluacionFichaPerfilResponseDTO;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.fichas.infrastructure.web.FichasRoutes;
-import com.arquisoft.shared.web.openapi.ApiCodes;
+import com.arquisoft.shared.message.annotation.ApiSecurity;
+import com.arquisoft.shared.message.annotation.ApiCodes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -39,7 +39,7 @@ public class RegistrarEvaluacionFichaPerfilController {
     @Operation(
             summary = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_SUMMARY,
             description = FichasApiMessages.EvaluacionFichaPerfil.REGISTRAR_DESCRIPTION,
-            security = @SecurityRequirement(name = FichasRoutes.SECURITY_SCHEME)
+            security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
     )
     @ApiResponses({
             @ApiResponse(responseCode = ApiCodes.CREATED,

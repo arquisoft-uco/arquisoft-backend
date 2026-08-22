@@ -29,15 +29,13 @@ public class TrazabilidadFilter extends OncePerRequestFilter {
     private static final int PRIMER_ESTADO_CLIENTE = 400;
     private static final int PRIMER_ESTADO_SERVIDOR = 500;
 
-    private static final String RUTAS_EXCLUIDAS_POR_DEFECTO =
-            "/api/actuator/,/api/swagger-ui,/api/v3/api-docs,/api/swagger-resources";
 
     private final GestorTraza gestorTraza;
     private final List<String> rutasExcluidas;
 
     public TrazabilidadFilter(
             GestorTraza gestorTraza,
-            @Value("${arquisoft.trazas.rutas-excluidas-auditoria:" + RUTAS_EXCLUIDAS_POR_DEFECTO + "}")
+            @Value("${arquisoft.trazas.rutas-excluidas-auditoria:" + RutasTecnicas.PREFIJOS_CSV + "}")
             List<String> rutasExcluidas) {
         this.gestorTraza = gestorTraza;
         this.rutasExcluidas = List.copyOf(rutasExcluidas);

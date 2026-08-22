@@ -5,19 +5,20 @@ import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDo
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.DisponibilidadEvaluacionFicha;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.model.ExistenciaRepresentanteComite;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.EvaluacionNoDuplicadaRule;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.impl.EvaluacionNoDuplicadaRuleImpl;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.RepresentanteComiteExisteRule;
+import com.arquisoft.fichas.domain.evaluacionfichaperfil.rules.impl.RepresentanteComiteExisteRuleImpl;
 import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
-import lombok.RequiredArgsConstructor;
+import com.arquisoft.fichas.domain.fichaperfil.rules.impl.FichaPerfilExisteRuleImpl;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class RegistrarEvaluacionFichaPerfilValidatorImpl implements RegistrarEvaluacionFichaPerfilValidator {
 
-    private final FichaPerfilExisteRule fichaPerfilExisteRule;
-    private final RepresentanteComiteExisteRule representanteComiteExisteRule;
-    private final EvaluacionNoDuplicadaRule evaluacionNoDuplicadaRule;
+    private final FichaPerfilExisteRule fichaPerfilExisteRule = new FichaPerfilExisteRuleImpl();
+    private final RepresentanteComiteExisteRule representanteComiteExisteRule = new RepresentanteComiteExisteRuleImpl();
+    private final EvaluacionNoDuplicadaRule evaluacionNoDuplicadaRule = new EvaluacionNoDuplicadaRuleImpl();
 
     @Override
     public void validar(EvaluacionFichaPerfilDomain evaluacion, boolean fichaExiste, boolean representanteExiste,

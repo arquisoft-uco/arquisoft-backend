@@ -143,7 +143,7 @@ arquisoft-backend/
 │   ├── logger/                           # AppLogger + Slf4jAppLogger (bean prototype de AppLoggerConfig)
 │   ├── redis/                            # RedisClient
 │   ├── amqp/                             # SpringModulithEventPublisher, RabbitMQEventPublisher, AbstractEventConsumer, RabbitMQConfig
-│   ├── web/                              # TrazabilidadFilter, GlobalAppExceptionHandler, ErrorResponseDTO/PageResponseDTO, ApiCodes, HttpClient
+│   ├── web/                              # TrazabilidadFilter, GlobalAppExceptionHandler, ErrorResponseDTO/PageResponseDTO, HttpClient
 │   ├── tracing/                          # Contexto de traza sobre MDC — único shared con capas hexagonales internas
 │   ├── minio/                            # Cliente MinIO
 │   ├── jpa/                              # QueryRepository/SpecificationQueryRepository, CampoSpec/QueryJpaSpecification, PageableMapper/PaginationMapper
@@ -289,7 +289,7 @@ persistencia (ver *Aislamiento CQRS* más abajo).
 │           ├── {Entidad}QueryOutputAdapter.java
 │           ├── {Entidad}QueryRepository.java    # Extiende QueryRepository, NO JpaRepository
 │           └── mapper/{Entidad}QueryMapper.java # JpaQueryEntity → ReadModel
-├── config/                  # {Contexto}DataSourceConfig, {Contexto}DomainRulesConfig, colas AMQP
+├── config/                  # {Contexto}DataSourceConfig, colas AMQP
 ├── security/                # {Contexto}Authorities
 ├── web/                     # {Contexto}Routes
 ├── exception/               # Excepciones de infraestructura (extienden InfrastructureException → 503)
