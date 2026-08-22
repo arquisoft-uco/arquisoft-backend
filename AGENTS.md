@@ -326,15 +326,19 @@ Migraciones Flyway en `{contexto}/infrastructure/src/main/resources/db/migration
 - Ramas desde `develop`: `feature/HU-XXX-descripcion_snake_case`
 - PRs hacia `develop`, 1 aprobación requerida, usar `.github/PULL_REQUEST_TEMPLATE.md`
 
-## Pipeline de Agentes (.opencode/)
+## Pipeline de Agentes (`.claude/agents/`)
 
-El repositorio usa un pipeline de 5 agentes:
+El repositorio usa un pipeline de 6 agentes de Claude Code:
 
 1. `@planificador` — genera `PLAN-{HU|HT}-{ID}.md` en `.workspace/h-plan/`
 2. `@implementador` — lee el plan como contrato, implementa capa a capa
 3. `@tester` — genera tests JUnit 6 + Mockito por capa
-4. `@validator` — verifica criterios, genera reporte en `.workspace/validator/`, propone commit (sin ejecutar git)
-5. `@commit` — lee el reporte aprobado por `@validator` y ejecuta el commit git
+4. `@validator-analyze` — aplica los checks DDD/hexagonal y produce el análisis (no escribe nada)
+5. `@validator-report` — persiste el análisis aprobado en `.workspace/validator/` y actualiza la trazabilidad del plan
+6. `@commit` — lee el reporte aprobado por `@validator-report` y ejecuta el commit git
 
-**Antes de planificar cualquier HU:** usar skill `gh-docs-reader` para leer la HU del repo de documentación.
-**Antes de generar cualquier archivo Java:** usar skill `context7-stack` para obtener IDs de Context7 actualizados.
+Cada agente carga primero las skills `.claude/skills/arquisoft-arquitectura.md` y
+`.claude/skills/arquisoft-estandares.md` (contexto conciso, referencias al código real de
+`fichas/fichaperfil`) y, cuando aplica, `.claude/skills/arquisoft-mcps.md` (MCPs recomendados),
+`.claude/skills/gh-docs-reader.md` (lectura del repo `arquisoft-docs`) y
+`.claude/skills/context7-stack.md` (IDs de Context7 del stack).
