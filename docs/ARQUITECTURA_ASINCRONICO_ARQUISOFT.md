@@ -1,11 +1,7 @@
-> [!WARNING]
-> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
->
-> Este archivo es documentación de referencia para desarrolladores humanos.
-> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
-> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
-> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
-> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+> [!NOTE]
+> Documentación de referencia humana. Los agentes cargan `.claude/skills/arquisoft-arquitectura.md`
+> y `.claude/skills/arquisoft-estandares.md` como contexto conciso, y vienen aquí solo para el
+> detalle extendido.
 
 # Arquitectura Asincrónica de Arquisoft — Eventos de Dominio + Outbox
 

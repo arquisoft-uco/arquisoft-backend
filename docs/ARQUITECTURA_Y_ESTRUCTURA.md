@@ -1,11 +1,8 @@
-> [!WARNING]
-> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
->
-> Este archivo es documentación de referencia para desarrolladores humanos.
-> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
-> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
-> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
-> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+> [!NOTE]
+> Referencia profunda de arquitectura, con más detalle del que necesitan las skills de agentes.
+> Los agentes cargan primero `.claude/skills/arquisoft-arquitectura.md` (resumen conciso con
+> referencias al código real de `fichas/fichaperfil`) y vienen aquí solo si necesitan el detalle
+> extendido. Para estándares de código/testing/git, ver `.claude/skills/arquisoft-estandares.md`.
 
 # Arquitectura Hexagonal Modular - Documentación Completa
 
@@ -654,110 +651,14 @@ event/                                ← eventos de dominio compartidos entre f
 
 ### Ejemplo completo: aggregate con AggregateRoot (caso real, `usuarios`)
 
-```java
-// usuarios/domain/src/main/java/com/arquisoft/usuarios/domain/usuario/UsuarioDomain.java
-package com.arquisoft.usuarios.domain.usuario;
+Un aggregate que sí extiende `AggregateRoot` y emite un evento en `crear(...)`, con su evento y el
+use case que drena y publica tras persistir — código real, no reproducido aquí:
 
-import com.arquisoft.shared.events.AggregateRoot;
-import com.arquisoft.shared.exception.DomainException;
-import com.arquisoft.usuarios.domain.usuario.event.UsuarioCreadoEvent;
-import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
-
-import java.util.UUID;
-
-public final class UsuarioDomain extends AggregateRoot {  // ← sufijo Domain, no Aggregate
-
-    private final UUID id;
-    private final String email;
-    private final UsuarioRole rol;
-
-    private UsuarioDomain(UUID id, String email, UsuarioRole rol) {
-        this.id = id;
-        this.email = email;
-        this.rol = rol;
-    }
-
-    // Factory para NUEVA entidad — valida, genera UUID y registra evento
-    public static UsuarioDomain crear(String email, UsuarioRole rol) {
-        if (email == null || email.isBlank()) {
-            throw new DomainException("El email del usuario no puede ser vacio", "USUARIO_EMAIL_REQUERIDO");
-        }
-        UsuarioDomain usuario = new UsuarioDomain(UUID.randomUUID(), email.trim().toLowerCase(), rol);
-        usuario.publicarEvento(new UsuarioCreadoEvent(usuario.id, usuario.email, usuario.rol.getCode()));
-        return usuario;
-    }
-
-    // Factory para RECONSTRUIR desde persistencia — sin evento
-    public static UsuarioDomain reconstruir(UUID id, String email, UsuarioRole rol) {
-        return new UsuarioDomain(id, email, rol);
-    }
-
-    public UUID getId()          { return id; }
-    public String getEmail()     { return email; }
-    public UsuarioRole getRol()  { return rol; }
-}
-```
-
-```java
-// usuarios/domain/src/main/java/com/arquisoft/usuarios/domain/usuario/event/UsuarioCreadoEvent.java
-package com.arquisoft.usuarios.domain.usuario.event;
-
-import com.arquisoft.shared.events.DomainEvent;
-import java.util.UUID;
-
-public class UsuarioCreadoEvent extends DomainEvent {
-
-    public static final String EVENT_TOPIC = "usuarios.usuario.creado";
-    public static final String EVENT_TYPE  = "UsuarioCreadoEvent";
-
-    // Cada evento declara sus propios campos con nombres semánticamente correctos.
-    // DomainEvent NO tiene aggregateId genérico — el ID del objeto de dominio
-    // pertenece al evento concreto, no a la clase base.
-    private final UUID usuarioId;
-    private final String email;
-    private final String rol;
-
-    public UsuarioCreadoEvent(UUID usuarioId, String email, String rol) {
-        super(EVENT_TOPIC, EVENT_TYPE);  // idEvento, ocurridoEn se generan automáticamente
-        this.usuarioId = usuarioId;
-        this.email = email;
-        this.rol = rol;
-    }
-
-    public UUID getUsuarioId()  { return usuarioId; }
-    public String getEmail()    { return email; }
-    public String getRol()      { return rol; }
-}
-```
-
-### Use Case: drenar y publicar eventos tras persistir
-
-El **use case** es responsable de drenar los eventos del aggregate y entregarlos a RabbitMQ tras persistir. Nunca lo hace el controller ni el repositorio.
-
-```java
-// usuarios/application/src/main/java/com/arquisoft/usuarios/application/usuario/command/usecase/impl/CrearUsuarioUseCaseImpl.java
-@Component
-@RequiredArgsConstructor
-public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
-
-    private final UsuarioOutputPort usuarioOutputPort;
-    private final CrearUsuarioValidator crearUsuarioValidator;
-    private final EventPublisher eventPublisher;      // shared:amqp
-
-    @Override
-    public UUID ejecutar(CrearUsuarioCommand entrada) {
-        UsuarioDomain usuario = UsuarioDomain.crear(entrada.email(), entrada.rol());  // 1. crear + acumular evento
-
-        crearUsuarioValidator.validar(usuario);
-
-        usuarioOutputPort.save(usuario);                                              // 2. persistir
-
-        usuario.extraerEventosSinPublicar().forEach(eventPublisher::publish);          // 3. drenar y publicar
-
-        return usuario.getId();
-    }
-}
-```
+| Pieza | Archivo real |
+|---|---|
+| Aggregate root con `extends AggregateRoot` + `publicarEvento(...)` en `crear(...)` | `usuarios/domain/src/main/java/com/arquisoft/usuarios/domain/usuario/UsuarioDomain.java` |
+| Evento de dominio (`EVENT_TOPIC`, campos propios, sin `aggregateId` genérico) | `usuarios/domain/.../usuario/event/UsuarioCreadoEvent.java` |
+| Use case: crea, valida, persiste, drena y publica (`extraerEventosSinPublicar().forEach(eventPublisher::publish)`) | `usuarios/application/.../usuario/command/usecase/impl/CrearUsuarioUseCaseImpl.java` |
 
 ### Regla importante
 
@@ -871,262 +772,27 @@ El `Interactor` es el único que orquesta varios casos de uso y posee la transac
 
 #### Código
 
-**1. DTO + Mapper (infrastructure)**
+Cada paso del flujo tiene su archivo real bajo `fichas/{capa}/.../fichaperfil/` — ábrelos con
+`Read` en vez de buscar el código aquí:
 
-```java
-// fichas/infrastructure/.../fichaperfil/command/primaryadapter/web/dto/RegistrarFichaPerfilRequestDTO.java
-public record RegistrarFichaPerfilRequestDTO(
-        String tituloProyecto, String asesorFicha, List<String> estudiantes) {}
-```
+| # | Pieza | Archivo real |
+|---|---|---|
+| 1 | DTO + `RequestMapper` (DTO sin anotaciones, el mapper delega el formato a `Command.crear(...)`) | `fichas/infrastructure/.../fichaperfil/command/primaryadapter/web/dto/RegistrarFichaPerfilRequestDTO.java` + `.../mapper/RegistrarFichaPerfilRequestMapper.java` |
+| 2 | Command (`crear(...)` valida integridad con `ValidationResult`) | `fichas/application/.../fichaperfil/command/primaryport/model/RegistrarFichaPerfilCommand.java` |
+| 3 | Aggregate root | `fichas/domain/.../fichaperfil/FichaPerfilDomain.java` |
+| 4 | Puerto de salida (habla `Entity`, nunca `Domain`) + su `Entity` (record plano) | `fichas/application/.../fichaperfil/command/secondaryport/FichaPerfilOutputPort.java` + `secondaryport/entity/FichaPerfilEntity.java` |
+| 5 | UseCase (consulta Finders, valida, mapea `Domain → Entity`, persiste) | `fichas/application/.../fichaperfil/command/usecase/impl/RegistrarFichaPerfilUseCaseImpl.java` |
+| 6 | Interactor (dueño de la transacción, orquesta varios UseCases) | `fichas/application/.../fichaperfil/command/primaryport/interactor/impl/RegistrarFichaPerfilInteractorImpl.java` |
+| 7 | Controller (inyecta el Interactor, nunca el UseCase) | `fichas/infrastructure/.../fichaperfil/command/primaryadapter/web/RegistrarFichaPerfilController.java` |
+| 8 | OutputAdapter (traduce `Entity ↔ JpaEntity`) + `JpaEntity` real | `fichas/infrastructure/.../fichaperfil/command/secondaryadapter/repository/FichaPerfilCommandOutputAdapter.java` + `secondaryadapter/entity/FichaPerfilJpaEntity.java` |
 
-```java
-// fichas/infrastructure/.../fichaperfil/command/primaryadapter/web/mapper/RegistrarFichaPerfilRequestMapper.java
-public final class RegistrarFichaPerfilRequestMapper {
-
-    private RegistrarFichaPerfilRequestMapper() {}
-
-    public static RegistrarFichaPerfilCommand toCommand(RegistrarFichaPerfilRequestDTO dto) {
-        return RegistrarFichaPerfilCommand.crear(dto.tituloProyecto(), dto.asesorFicha(), dto.estudiantes());
-    }
-}
-```
-
-El DTO es un record "tonto" sin anotaciones; el `Mapper` externo delega toda la validación de formato al `Command.crear(...)` (ver "DTOs" en `CLAUDE.md` — `seguridad`/`usuarios` usan en cambio un `toCommand()` propio del DTO, por ser contextos más pequeños).
-
-**2. Command (application, `primaryport/model`)**
-
-```java
-// fichas/application/.../fichaperfil/command/primaryport/model/RegistrarFichaPerfilCommand.java
-public record RegistrarFichaPerfilCommand(String tituloProyecto, UUID asesorFicha, List<UUID> estudiantes) {
-
-    public static RegistrarFichaPerfilCommand crear(
-            String tituloProyecto, String asesorFicha, List<String> estudiantes) {
-        var result = new ValidationResult();
-        // ... DomainValidator.noEnBlanco / uuidValido / tamanioMaximo, acumulando en result
-        result.lanzarSiTieneErroresDeEntrada();
-        return new RegistrarFichaPerfilCommand(
-                tituloProyecto,
-                UtilUUID.generateUUIDFromString(asesorFicha),
-                estudiantes.stream().map(UtilUUID::generateUUIDFromString).toList());
-    }
-}
-```
-
-**3. Aggregate root (domain)**
-
-```java
-// fichas/domain/src/main/java/com/arquisoft/fichas/domain/fichaperfil/FichaPerfilDomain.java
-public final class FichaPerfilDomain extends AggregateRoot {   // ← sufijo Domain, no Aggregate
-
-    private UUID id;
-    private String tituloProyecto;
-    private UUID asesorFicha;
-
-    private FichaPerfilDomain() {}
-
-    // Factory para NUEVA ficha — valida invariantes de dominio
-    public static FichaPerfilDomain crear(String titulo, UUID asesorFicha) {
-        var ficha = new FichaPerfilDomain();
-        var result = new ValidationResult();
-        ficha.setId();
-        ficha.setTituloProyecto(titulo, result);
-        ficha.setAsesorFicha(asesorFicha, result);
-        result.lanzarSiTieneErrores();
-        return ficha;
-    }
-
-    // Factory para RECONSTRUIR desde persistencia — dato confiable, sin re-validar
-    public static FichaPerfilDomain reconstruir(UUID id, String titulo, UUID asesorFicha) {
-        return new FichaPerfilDomain(id, titulo, asesorFicha);
-    }
-
-    public UUID getId() { return id; }
-    public String getTituloProyecto() { return tituloProyecto; }
-    public UUID getAsesorFicha() { return asesorFicha; }
-}
-```
-
-**4. Puerto de Salida (application, `command/secondaryport`) — habla `Entity`, nunca `Domain`**
-
-```java
-// fichas/application/.../fichaperfil/command/secondaryport/FichaPerfilOutputPort.java
-public interface FichaPerfilOutputPort {
-    void registrarFicha(FichaPerfilEntity ficha);
-    Optional<FichaPerfilEntity> buscarPorId(UUID id);
-    boolean existePorId(UUID id);
-    boolean existePorTituloProyecto(String titulo);
-    // ...
-}
-```
-
-`FichaPerfilEntity` (sibling `entity/`) es un **record plano sin JPA ni Lombok** — la forma
-de persistencia que habla el puerto, no el aggregate de dominio. El `domain` no declara
-puertos ni entidades de persistencia; solo depende de `shared:domain`.
-
-```java
-// fichas/application/.../fichaperfil/command/secondaryport/entity/FichaPerfilEntity.java
-public record FichaPerfilEntity(UUID id, String tituloProyecto, UUID asesorFicha) {}
-```
-
-**5. UseCase (application, colaborador interno — no bajo `primaryport`) — mapea `Domain → Entity` antes de llamar al puerto**
-
-```java
-// fichas/application/.../fichaperfil/command/usecase/impl/RegistrarFichaPerfilUseCaseImpl.java
-@Component
-@RequiredArgsConstructor
-public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseCase {
-
-    private final FichaPerfilOutputPort fichaPerfilOutputPort;
-    private final AsesorFichaExisteFinder asesorFichaExisteFinder;
-    private final TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
-    private final RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
-    private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
-
-    @Override
-    public UUID ejecutar(FichaPerfilDomain ficha) {
-        boolean asesorExiste = asesorFichaExisteFinder.obtener(ficha.getAsesorFicha());
-        boolean tituloYaExiste = tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto());
-
-        registrarFichaPerfilValidator.validar(ficha, asesorExiste, tituloYaExiste);
-
-        fichaPerfilOutputPort.registrarFicha(FichaPerfilMapper.toEntity(ficha));   // Domain → Entity aquí
-
-        logger.info(catalogo.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
-        return ficha.getId();
-    }
-}
-```
-
-Todo el I/O de un comando vive en el use case; el validator y las rules son funciones puras
-de lo que ya se consultó (ver "Validators"/"Finders" en `CLAUDE.md`).
-
-**6. Interactor (application, entry point — dueño de la transacción)**
-
-```java
-// fichas/application/.../fichaperfil/command/primaryport/interactor/impl/RegistrarFichaPerfilInteractorImpl.java
-@Component
-@RequiredArgsConstructor
-public class RegistrarFichaPerfilInteractorImpl implements RegistrarFichaPerfilInteractor {
-
-    private final RegistrarFichaPerfilUseCase registrarFichaPerfilUseCase;
-    private final AsignarEstadoInicialFichaPerfilUseCase asignarEstadoInicialFichaPerfilUseCase;
-    private final AsignarEstudiantesFichaPerfilUseCase asignarEstudiantesFichaPerfilUseCase;
-
-    @Override
-    @Transactional(transactionManager = "fichasTransactionManager")
-    public UUID ejecutar(RegistrarFichaPerfilCommand command) {
-        FichaPerfilDomain ficha = FichaPerfilDomain.crear(command.tituloProyecto(), command.asesorFicha());
-        UUID fichaPerfil = registrarFichaPerfilUseCase.ejecutar(ficha);
-        asignarEstadoInicialFichaPerfilUseCase.ejecutar(EstadoFichaPerfilDomain.crear(fichaPerfil));
-        asignarEstudiantesFichaPerfilUseCase.ejecutar(AsignarEstudiantesFichaPerfilMapper.toDomain(
-                new AsignarEstudiantesFichaPerfilCommand(fichaPerfil, command.estudiantes())));
-        return fichaPerfil;
-    }
-}
-```
-
-**7. Controller (infrastructure, `primaryadapter/web`) — inyecta el Interactor, nunca el UseCase**
-
-```java
-// fichas/infrastructure/.../fichaperfil/command/primaryadapter/web/RegistrarFichaPerfilController.java
-@RestController
-@RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
-@RequiredArgsConstructor
-public class RegistrarFichaPerfilController {
-
-    private final RegistrarFichaPerfilInteractor registrarFichaPerfilInteractor;
-
-    @PostMapping
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_CREATE)
-    public ResponseEntity<RegistrarFichaPerfilResponseDTO> registrar(
-            @RequestBody RegistrarFichaPerfilRequestDTO request) {
-        UUID id = registrarFichaPerfilInteractor.ejecutar(RegistrarFichaPerfilRequestMapper.toCommand(request));
-        return ResponseEntity.status(HttpStatus.CREATED).body(new RegistrarFichaPerfilResponseDTO(id));
-    }
-}
-```
-
-**8. Output Adapter (infrastructure, `secondaryadapter/repository`) — traduce `Entity ↔ JpaEntity` en la frontera**
-
-El adapter no traduce `Domain` (eso ya lo hizo el use case en el paso 5); traduce entre el
-`Entity` (record plano que recibe del puerto) y el `JpaEntity` real que necesita Spring Data:
-
-```java
-// fichas/infrastructure/.../fichaperfil/command/secondaryadapter/repository/FichaPerfilCommandOutputAdapter.java
-@Component
-@RequiredArgsConstructor
-public class FichaPerfilCommandOutputAdapter implements FichaPerfilOutputPort {
-
-    private final FichaPerfilCommandRepository fichaPerfilCommandRepository;
-    private final AppLogger logger;
-    private final CatalogoMensajes catalogo;
-
-    @Override
-    public void registrarFicha(FichaPerfilEntity ficha) {
-        fichaPerfilCommandRepository.save(FichaPerfilJpaMapper.toJpaEntity(ficha));
-        logger.debug(catalogo.obtener(FichaPerfilKey.LOG_GUARDADA), ficha.id());
-    }
-    // ... resto de métodos del OutputPort
-}
-```
-
-`FichaPerfilJpaMapper.toJpaEntity(ficha)` construye el `FichaPerfilJpaEntity` real (con
-`@Entity`/`@ManyToOne`) a partir del record plano; la referencia al asesor se arma como
-instancia *detached* solo con el id (`AsesorFichaJpaMapper.toReferencia(ficha.asesorFicha())`,
-invocado dentro del `toJpaEntity`) — sin cascada configurada, Hibernate escribe solo la FK.
-Ya no hace falta `getReferenceById`: ese proxy de Hibernate era del `AsesorFichaRepository`
-directamente inyectado en el adapter, que ya no existe aquí — la construcción de la
-referencia es responsabilidad del `JpaMapper`, no del adapter.
-
-```java
-// fichas/infrastructure/.../fichaperfil/command/secondaryadapter/entity/FichaPerfilJpaEntity.java
-@Entity
-@Table(name = "ficha_perfil")
-@Getter @NoArgsConstructor @AllArgsConstructor @Builder
-public class FichaPerfilJpaEntity {
-    @Id @Column(name = "id", columnDefinition = "uuid") private UUID id;
-    @Column(name = "titulo_proyecto", nullable = false, length = 100) private String tituloProyecto;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "asesor_ficha_id", nullable = false) private AsesorFichaJpaEntity asesorFicha;
-}
-```
+Todo el I/O de un comando vive en el use case; el validator y las rules son funciones puras de lo
+que ya se consultó (ver skill `arquisoft-estandares`).
 
 ### Test Unitario
 
-```java
-// fichas/application/src/test/java/com/arquisoft/fichas/application/fichaperfil/command/usecase/impl/RegistrarFichaPerfilUseCaseTest.java
-@ExtendWith(MockitoExtension.class)
-class RegistrarFichaPerfilUseCaseTest {
-
-    @Mock private FichaPerfilOutputPort fichaPerfilOutputPort;
-    @Mock private AsesorFichaExisteFinder asesorFichaExisteFinder;
-    @Mock private TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
-    @Mock private RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
-    @Mock private AppLogger logger;
-
-    @InjectMocks
-    private RegistrarFichaPerfilUseCaseImpl registrarFichaPerfilUseCase;
-
-    @Test
-    void debeRegistrar_cuandoDatosValidos() {
-        FichaPerfilDomain ficha = FichaPerfilDomain.crear("Titulo", UUID.randomUUID());
-        when(asesorFichaExisteFinder.obtener(ficha.getAsesorFicha())).thenReturn(true);
-        when(tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto())).thenReturn(false);
-
-        UUID id = registrarFichaPerfilUseCase.ejecutar(ficha);
-
-        assertThat(id).isEqualTo(ficha.getId());
-        verify(registrarFichaPerfilValidator).validar(ficha, true, false);
-        verify(fichaPerfilOutputPort).registrarFicha(argThat(entity ->
-                entity.id().equals(ficha.getId())
-                        && entity.tituloProyecto().equals(ficha.getTituloProyecto())));
-    }
-}
-```
-
-El `@Spy` sobre el catálogo real (no un mock) evita que mensajes usados en logs/resultados
-queden `null` — un mock los dejaría vacíos.
+Ejemplo real con Mockito + AAA:
+`fichas/application/src/test/java/com/arquisoft/fichas/application/fichaperfil/command/usecase/impl/RegistrarFichaPerfilUseCaseTest.java`.
 
 ---
 

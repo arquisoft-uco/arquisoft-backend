@@ -1,11 +1,8 @@
-> [!WARNING]
-> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
->
-> Este archivo es documentación de referencia para desarrolladores humanos.
-> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
-> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
-> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
-> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+> [!NOTE]
+> Este índice es documentación de referencia profunda. Los agentes cargan primero las skills
+> `.claude/skills/arquisoft-arquitectura.md` y `.claude/skills/arquisoft-estandares.md` (resúmenes
+> concisos con referencias al código real) y solo vienen a estos documentos cuando necesitan el
+> detalle extendido.
 
 # Arquisoft Backend — Índice de documentación
 
@@ -29,7 +26,7 @@ note la contradicción.
 | Entender el flujo de eventos de dominio + outbox pattern | `ARQUITECTURA_ASINCRONICO_ARQUISOFT.md` |
 | Entender el patrón de filtrado dinámico (Query Object + Specification) | `PATRON_QUERY_OBJECT_FILTROS_DINAMICOS.md` |
 | Contribuir código (branching, commits, PRs) | `CONTRIBUTING.md` (raíz del repo) |
-| Referencia rápida de convenciones para IA/agentes | `AGENTS.md` (raíz del repo) — **la fuente autoritativa** |
+| Referencia rápida de convenciones para IA/agentes | `AGENTS.md` (raíz del repo) + skills `.claude/skills/arquisoft-arquitectura.md` / `arquisoft-estandares.md` / `arquisoft-mcps.md` — **la fuente autoritativa** que cargan los agentes |
 | Desplegar a producción | `DESPLIEGUE_CD_SSH.md`, `DESPLIEGUE_ALLOY_COOLIFY.md`, `GUIA_DOCKERFILE.md` |
 | Observabilidad (logs, métricas, trazas) | `OBSERVABILIDAD_LOCAL.md`, `OBSERVABILIDAD_COOLIFY.md` |
 | Configurar Redis | `REDIS_GUIA.md` |
