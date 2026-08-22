@@ -21,10 +21,21 @@ import java.util.UUID;
 @Component
 public class ModificarItemFichaPerfilValidatorImpl implements ModificarItemFichaPerfilValidator {
 
-    private final ItemFichaPerfilExisteRule itemFichaPerfilExisteRule = new ItemFichaPerfilExisteRuleImpl();
-    private final ItemFichaPropiaRule itemFichaPropiaRule = new ItemFichaPropiaRuleImpl();
-    private final EstadoFichaPerfilExisteRule estadoFichaPerfilExisteRule = new EstadoFichaPerfilExisteRuleImpl();
-    private final EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule = new EstadoFichaPerfilEnTerminalRuleImpl();
+    private final ItemFichaPerfilExisteRule itemFichaPerfilExisteRule;
+    private final ItemFichaPropiaRule itemFichaPropiaRule;
+    private final EstadoFichaPerfilExisteRule estadoFichaPerfilExisteRule;
+    private final EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
+
+    // Las Rules no son beans y no necesitan serlo: son funciones puras, sin estado ni
+    // dependencias, asi que no hay variabilidad ni ciclo de vida que un contenedor deba
+    // gestionar. Construirlas aqui deja en un unico sitio que reglas ejecuta este
+    // validator, y elimina el bean por regla que habia que recordar en cada regla nueva.
+    public ModificarItemFichaPerfilValidatorImpl() {
+        this.itemFichaPerfilExisteRule = new ItemFichaPerfilExisteRuleImpl();
+        this.itemFichaPropiaRule = new ItemFichaPropiaRuleImpl();
+        this.estadoFichaPerfilExisteRule = new EstadoFichaPerfilExisteRuleImpl();
+        this.estadoFichaPerfilEnTerminalRule = new EstadoFichaPerfilEnTerminalRuleImpl();
+    }
 
     @Override
     public void validar(UUID item, UUID estudiante, UUID fichaDelItem, boolean itemExiste,
