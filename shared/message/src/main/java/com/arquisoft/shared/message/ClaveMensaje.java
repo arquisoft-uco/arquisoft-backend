@@ -44,6 +44,15 @@ public interface ClaveMensaje {
      * argumentos de menos imprime el {@code {}} literal en el log de producción, donde nadie mira
      * hasta que está depurando un incidente. Declarar la aridad es lo que permite comprobarla.
      *
+     * <p>Este valor alimenta dos comprobaciones distintas, en momentos distintos, y no hay que
+     * confundirlas. La descrita arriba es de <em>build</em>/arranque: compara esta aridad contra los
+     * marcadores reales del <strong>texto</strong> cargado desde Redis, para atrapar un
+     * {@code .properties} editado en caliente al que le sobra o falta un marcador. La otra es de
+     * <em>llamada</em>: {@link AridadClave#alFormatear} compara esta misma aridad contra cuántos
+     * argumentos pasó el código que invoca {@link Mensajes#formatear}, para atrapar un call site que
+     * pasa de más o de menos aunque el texto en Redis sea perfecto. Ambas conviven — una sin la otra
+     * deja pasar la mitad de los casos.
+     *
      * @return cuántos marcadores lleva el patrón: {@code %s} para el resto, {@code {}} para log
      */
     int parametros();
