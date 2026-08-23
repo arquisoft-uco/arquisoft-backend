@@ -234,6 +234,7 @@ Para Controllers añade: @Tag, y por endpoint: @Operation(summary), @ApiResponse
 | Validación | @validator-analyze | ⏳ Pendiente | | |
 | Reporte | @validator-report | ⏳ Pendiente | | |
 | Commit | @commit | ⏳ Pendiente | | |
+| PR | @commit | ⏳ Pendiente | | |
 ```
 
 ### Plantilla de árbol de archivos (sección 6) — usa exactamente estas rutas

@@ -322,12 +322,17 @@ Un solo bloqueante = RECHAZADO, sin importar el score.
  (o "ninguno"), tests que afirman 500 (o "ninguno"), coherencia con Tipo de UC.}
 {Si ⏳ Pendiente: "Tests no ejecutados — invoca @tester y repite el análisis."}
 
-## Datos para el commit
+## Datos para la entrega
+> Esta sección es el insumo de `@commit`: de aquí saca el mensaje, la rama y los archivos, y del
+> Score/Tests/bloqueantes de arriba saca la evidencia para marcar el checklist del PR. Un dato que
+> no dejes aquí es una casilla que ese agente **no** podrá marcar.
+
 **Mensaje:** {tipo}({contexto}): {descripción corta}
 **Cuerpo:** {bullets: qué se implementó, capas afectadas, eventos emitidos, migración}
 **Rama:** `feature/{HU|HT}-{ID}-{descripcion}`
 **Archivos a incluir:** {lista} + `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` +
 `.workspace/validator/validator-{HU|HT}-{ID}.md`
+**Endpoints documentados:** {Sí / N/A — la HU no expone endpoints}
 
 ## Próximos pasos
 {Si APROBADO: "Invoca @validator-report genera el reporte de {HU|HT}-{ID} y pega este reporte

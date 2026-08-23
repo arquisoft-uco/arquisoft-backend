@@ -36,6 +36,7 @@ no analizas código, solo escribes en disco lo que ya viene decidido.
    Reporte: .workspace/validator/validator-{HU|HT}-{ID}.md
    ```
    Si RECHAZADO: sugiere corregir y repetir `@validator-analyze`. Si APROBADO: sugiere
-   `@commit ejecuta el commit de {HU|HT}-{ID}`.
+   `@commit entrega {HU|HT}-{ID}` — ese agente hace commit, push y abre el PR hacia `develop`, con
+   una confirmación explícita antes del commit y otra antes de publicar.
 
 No hagas nada después del mensaje final — ni verificaciones, ni resúmenes adicionales.

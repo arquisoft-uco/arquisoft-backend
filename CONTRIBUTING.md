@@ -23,7 +23,7 @@
   - Formato: `<prefijo>/<id>-<descripcion_snake_case>`
 - **Nomenclatura:** Español para negocio (`ProyectoGrado`), inglés para sufijos técnicos (`UseCase`, `Adapter`, `DTO`)
 - **Arquitectura:** Hexagonal (puertos y adaptadores) por Bounded Context
-- **Testing:** JUnit 5 + Mockito + AssertJ — Convención: `debeHacerAlgo_cuandoCondicion()`
+- **Testing:** JUnit 6 + Mockito + AssertJ — Convención: `debeHacerAlgo_cuandoCondicion()`
 
 ## Estructura del PR
 
