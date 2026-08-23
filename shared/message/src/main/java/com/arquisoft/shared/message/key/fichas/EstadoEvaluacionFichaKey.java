@@ -11,8 +11,8 @@ public enum EstadoEvaluacionFichaKey implements ClaveMensaje {
     ERROR_ESTADO_DUPLICADO("fichas.dominio.estadoevaluacionficha.error.estado-duplicado", 2),
     ERROR_TRANSICION_DESDE_TERMINAL("fichas.dominio.estadoevaluacionficha.error.transicion-desde-terminal", 0),
     ERROR_EN_EVALUACION_NO_MANUAL("fichas.dominio.estadoevaluacionficha.error.en-evaluacion-no-manual", 0),
-    LOG_AGREGADO("fichas.aplicacion.estadoevaluacionficha.log.agregado", 0),
-    LOG_CREADO_AUTOMATICO("fichas.aplicacion.estadoevaluacionficha.log.creado-automatico", 0);
+    LOG_AGREGADO("fichas.aplicacion.estadoevaluacionficha.log.agregado", 3),
+    LOG_CREADO_AUTOMATICO("fichas.aplicacion.estadoevaluacionficha.log.creado-automatico", 3);
 
     private final String clave;
     private final int parametros;

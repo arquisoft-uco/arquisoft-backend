@@ -9,9 +9,9 @@ public enum UsuarioKey implements ClaveMensaje {
     ERROR_ROL_NO_ENCONTRADO("usuarios.dominio.usuario.error.rol-no-encontrado", 1),
     ERROR_EMAIL_REQUERIDO("usuarios.dominio.usuario.error.email-requerido", 0),
     ERROR_ROL_REQUERIDO("usuarios.dominio.usuario.error.rol-requerido", 0),
-    LOG_CREADO("usuarios.aplicacion.usuario.log.creado", 0),
-    LOG_MOCK_NO_PERSISTIDO("usuarios.infraestructura.usuario.log.mock-no-persistido", 0),
-    LOG_MOCK_VERIFICACION_OMITIDA("usuarios.infraestructura.usuario.log.mock-verificacion-omitida", 0);
+    LOG_CREADO("usuarios.aplicacion.usuario.log.creado", 3),
+    LOG_MOCK_NO_PERSISTIDO("usuarios.infraestructura.usuario.log.mock-no-persistido", 2),
+    LOG_MOCK_VERIFICACION_OMITIDA("usuarios.infraestructura.usuario.log.mock-verificacion-omitida", 1);
 
     private final String clave;
     private final int parametros;

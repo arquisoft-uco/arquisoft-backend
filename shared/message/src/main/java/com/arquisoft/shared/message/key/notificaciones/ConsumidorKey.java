@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Consumidores AMQP. */
 public enum ConsumidorKey implements ClaveMensaje {
 
-    LOG_ASESOR_CAMBIADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.asesor-cambiado-recibido", 0);
+    LOG_ASESOR_CAMBIADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.asesor-cambiado-recibido", 2);
 
     private final String clave;
     private final int parametros;

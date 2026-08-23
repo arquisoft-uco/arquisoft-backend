@@ -11,8 +11,7 @@ public class EvaluacionFichaPerfilDuplicadaException extends DomainException {
 
     public EvaluacionFichaPerfilDuplicadaException(UUID representanteId, UUID fichaId) {
         super(
-                Mensajes.obtener(EvaluacionFichaPerfilKey.ERROR_DUPLICADA)
-                        .formatted(representanteId, fichaId),
+                Mensajes.formatear(EvaluacionFichaPerfilKey.ERROR_DUPLICADA, representanteId, fichaId),
                 FichasCodes.EvaluacionFichaPerfil.EVALUACION_DUPLICADA
         );
     }

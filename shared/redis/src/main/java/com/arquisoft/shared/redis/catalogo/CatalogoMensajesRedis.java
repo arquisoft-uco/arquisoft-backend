@@ -1,6 +1,7 @@
 package com.arquisoft.shared.redis.catalogo;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.AridadClave;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.ClavesCatalogo;
@@ -10,10 +11,9 @@ import java.util.ArrayList;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Catálogo de mensajes respaldado por Redis, con caché en memoria y degradación sin caída.
@@ -45,13 +45,10 @@ public class CatalogoMensajesRedis implements CatalogoMensajes {
             "Clave del catálogo sin texto ni en Redis ni en caché, se devuelve el respaldo. Clave: {}";
     private static final String LOG_FORMATO_INVALIDO =
             "El patrón del catálogo no admite los argumentos recibidos, se devuelve el respaldo. Clave: {}, argumentos: {}";
+    private static final String LOG_USO_INCOHERENTE =
+            "Uso incoherente de una clave del catálogo, se devuelve el respaldo. Clave: {}, problema: {}";
 
     private static final int TAMANIO_LOTE = 500;
-
-    // Conversión de java.util.Formatter. El escape %% se cuenta aparte porque no consume argumento.
-    private static final String ESCAPE_PORCENTAJE = "%%";
-    private static final Pattern MARCADOR_FORMATO =
-            Pattern.compile("%(?:%|[-#+ 0,(]*\\d*(?:\\.\\d+)?[a-zA-Z])");
 
     private final StringRedisTemplate plantilla;
     private final CatalogoMensajes respaldo;
@@ -68,12 +65,26 @@ public class CatalogoMensajesRedis implements CatalogoMensajes {
 
     @Override
     public String obtener(ClaveMensaje clave) {
+        Optional<String> problema = AridadClave.alObtener(clave);
+        if (problema.isPresent()) {
+            logger.error(LOG_USO_INCOHERENTE, clave.clave(), problema.get());
+            return respaldo.obtener(clave);
+        }
+
         String texto = resolver(clave);
         return texto != null ? texto : respaldo.obtener(clave);
     }
 
     @Override
     public String formatear(ClaveMensaje clave, Object... args) {
+        // String.formatted solo cubre la mitad del problema: lanza si faltan argumentos, pero los que
+        // sobran los descarta sin decir nada. La aridad declarada es lo que hace visible esa mitad.
+        Optional<String> problema = AridadClave.alFormatear(clave, args.length);
+        if (problema.isPresent()) {
+            logger.error(LOG_USO_INCOHERENTE, clave.clave(), problema.get());
+            return respaldo.formatear(clave, args);
+        }
+
         String patron = resolver(clave);
         if (patron == null) {
             return respaldo.formatear(clave, args);
@@ -123,7 +134,10 @@ public class CatalogoMensajesRedis implements CatalogoMensajes {
                 }
 
                 cargadas.put(nombres.get(i), texto);
-                if (contarMarcadores(texto) != lote.get(i).parametros()) {
+                // La aridad se comprueba también en el build, contra los .properties. Repetirla aquí no es
+                // redundante: lo que se despliega es lo que Redis tenga, y entre el build y el arranque hay
+                // una carga manual que puede haber quedado a medias o apuntando a otra instancia.
+                if (AridadClave.marcadores(lote.get(i), texto) != lote.get(i).parametros()) {
                     desajustes.add(nombres.get(i));
                 }
             }
@@ -132,22 +146,6 @@ public class CatalogoMensajesRedis implements CatalogoMensajes {
         cache.putAll(cargadas);
         return new ResultadoCarga(cargadas.size(), declaradas.size(),
                 List.copyOf(faltantes), List.copyOf(desajustes));
-    }
-
-    // La aridad se comprueba también en el build, contra los .properties. Repetirla aquí no es
-    // redundante: lo que se despliega es lo que Redis tenga, y entre el build y el arranque hay una
-    // carga manual por medio que puede haber quedado a medias o apuntando a otra instancia.
-    private static int contarMarcadores(String patron) {
-        Matcher coincidencias = MARCADOR_FORMATO.matcher(patron);
-        int total = 0;
-
-        while (coincidencias.find()) {
-            if (!ESCAPE_PORCENTAJE.equals(coincidencias.group())) {
-                total++;
-            }
-        }
-
-        return total;
     }
 
     /**

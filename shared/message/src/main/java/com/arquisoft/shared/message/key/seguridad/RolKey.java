@@ -5,7 +5,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de Rol. */
 public enum RolKey implements ClaveMensaje {
 
-    LOG_ROLES_RECURSO("seguridad.infraestructura.rol.log.roles-recurso", 0);
+    LOG_ROLES_RECURSO("seguridad.infraestructura.rol.log.roles-recurso", 1);
 
     private final String clave;
     private final int parametros;

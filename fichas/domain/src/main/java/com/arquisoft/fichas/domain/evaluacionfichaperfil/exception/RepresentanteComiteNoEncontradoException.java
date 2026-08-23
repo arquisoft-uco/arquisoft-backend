@@ -11,8 +11,7 @@ public class RepresentanteComiteNoEncontradoException extends DomainException {
 
     public RepresentanteComiteNoEncontradoException(UUID representanteId) {
         super(
-                Mensajes.obtener(RepresentanteComiteKey.ERROR_NO_ENCONTRADO)
-                        .formatted(representanteId),
+                Mensajes.formatear(RepresentanteComiteKey.ERROR_NO_ENCONTRADO, representanteId),
                 FichasCodes.RepresentanteComite.REPRESENTANTE_NO_ENCONTRADO
 
         );

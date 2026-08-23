@@ -3,6 +3,7 @@ package com.arquisoft.shared.redis.catalogo;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
+import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.respaldo.CatalogoMensajesRespaldo;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,8 +17,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
@@ -27,10 +26,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CatalogoMensajesRedisTest {
 
-    // El adaptador no consulta la aridad declarada: aplica String.formatted sobre lo que Redis
-    // devuelva. Por eso el patrón se fija aquí y la clave solo aporta su categoría, que es lo que
-    // decide el texto de respaldo.
-    private static final ClaveMensaje CLAVE_ERROR = FichaPerfilKey.ERROR_NO_ENCONTRADA;
+    // El patrón se fija en el test y no se lee del catálogo: lo que aporta cada clave es su aridad
+    // declarada y su categoría, que son las dos cosas que el adaptador consulta.
+    //
+    // Por eso hay tres, y no una: la vía por la que se resuelve tiene que encajar con los marcadores
+    // del patrón, así que una clave sin parámetros se pide por obtener, una con %s por formatear, y
+    // una de log siempre por obtener, porque sus {} los sustituye SLF4J.
+    private static final ClaveMensaje CLAVE_ERROR = EstadoEvaluacionFichaKey.ERROR_EN_EVALUACION_NO_MANUAL;
+    private static final ClaveMensaje CLAVE_CON_PARAMETRO = FichaPerfilKey.ERROR_TITULO_DUPLICADO;
     private static final ClaveMensaje CLAVE_LOG = FichaPerfilKey.LOG_REGISTRADA;
 
     private static final String PATRON_CON_PARAMETRO = "El título ya existe: %s";
@@ -132,7 +135,7 @@ class CatalogoMensajesRedisTest {
 
         // Act & Assert
         assertThat(catalogo.obtener(CLAVE_ERROR)).isNotNull();
-        assertThat(catalogo.formatear(CLAVE_ERROR, "Mi proyecto")).isNotNull();
+        assertThat(catalogo.formatear(CLAVE_ERROR)).isNotNull();
         assertThat(catalogo.contiene(CLAVE_ERROR)).isFalse();
     }
 
@@ -167,24 +170,20 @@ class CatalogoMensajesRedisTest {
     @Test
     @DisplayName("devuelve el respaldo cuando faltan argumentos para el patrón")
     void debeDevolverElRespaldo_cuandoFaltanArgumentos() {
-        // Arrange
-        redisDevuelve(CLAVE_ERROR, PATRON_CON_PARAMETRO);
-
         // Act
-        String texto = catalogo.formatear(CLAVE_ERROR);
+        String texto = catalogo.formatear(CLAVE_CON_PARAMETRO);
 
         // Assert
-        assertThat(texto).isEqualTo(respaldo.formatear(CLAVE_ERROR));
+        assertThat(texto)
+                .as("la aridad declarada corta antes de consultar Redis, asi que ni siquiera se pregunta")
+                .isEqualTo(respaldo.formatear(CLAVE_CON_PARAMETRO));
     }
 
     @Test
     @DisplayName("no expone el patrón crudo cuando la aridad no coincide")
     void debeNoExponerElPatronCrudo_cuandoLaAridadNoCoincide() {
-        // Arrange
-        redisDevuelve(CLAVE_ERROR, PATRON_CON_PARAMETRO);
-
         // Act
-        String texto = catalogo.formatear(CLAVE_ERROR);
+        String texto = catalogo.formatear(CLAVE_CON_PARAMETRO);
 
         // Assert
         assertThat(texto)
@@ -195,43 +194,64 @@ class CatalogoMensajesRedisTest {
     @Test
     @DisplayName("registra el error cuando la aridad no coincide")
     void debeRegistrarError_cuandoLaAridadNoCoincide() {
-        // Arrange
-        redisDevuelve(CLAVE_ERROR, PATRON_CON_PARAMETRO);
-
         // Act
-        catalogo.formatear(CLAVE_ERROR);
+        catalogo.formatear(CLAVE_CON_PARAMETRO);
 
         // Assert
-        verify(logger).error(anyString(), any(Throwable.class), anyString(), anyInt());
+        verify(logger).error(anyString(), anyString(), anyString());
     }
 
     @Test
     @DisplayName("sustituye los parámetros cuando la aridad coincide")
     void debeSustituirParametros_cuandoLaAridadCoincide() {
         // Arrange
-        redisDevuelve(CLAVE_ERROR, PATRON_CON_PARAMETRO);
+        redisDevuelve(CLAVE_CON_PARAMETRO, PATRON_CON_PARAMETRO);
 
         // Act
-        String texto = catalogo.formatear(CLAVE_ERROR, "Mi proyecto");
+        String texto = catalogo.formatear(CLAVE_CON_PARAMETRO, "Mi proyecto");
 
         // Assert
         assertThat(texto).isEqualTo("El título ya existe: Mi proyecto");
     }
 
     @Test
-    @DisplayName("ignora los argumentos que sobran, como hace String.formatted")
-    void debeIgnorarLosArgumentosQueSobran_cuandoElPatronDeclaraMenos() {
-        // Arrange
-        redisDevuelve(CLAVE_ERROR, PATRON_CON_PARAMETRO);
-
+    @DisplayName("degrada al respaldo cuando sobran argumentos")
+    void debeDegradarAlRespaldo_cuandoSobranArgumentos() {
         // Act
-        String texto = catalogo.formatear(CLAVE_ERROR, "Mi proyecto", "de más");
+        String texto = catalogo.formatear(CLAVE_CON_PARAMETRO, "Mi proyecto", "de más");
 
         // Assert
         assertThat(texto)
-                .as("String.formatted los descarta en silencio; quien vigila esto es la aridad "
-                        + "declarada, comprobada en el build y en el arranque, no el adaptador")
-                .isEqualTo("El título ya existe: Mi proyecto");
+                .as("String.formatted los descartaría en silencio y el mensaje parecería correcto; "
+                        + "la aridad declarada es lo único que distingue ese caso de una llamada buena")
+                .isEqualTo(respaldo.formatear(CLAVE_CON_PARAMETRO));
+    }
+
+    @Test
+    @DisplayName("degrada al respaldo cuando un patrón con %s se pide por obtener")
+    void debeDegradarAlRespaldo_cuandoUnPatronConParametrosSePidePorObtener() {
+        // Act
+        String texto = catalogo.obtener(CLAVE_CON_PARAMETRO);
+
+        // Assert
+        assertThat(texto)
+                .as("obtener no sustituye nada, así que devolver el patrón dejaría los %s a la vista "
+                        + "del usuario final")
+                .doesNotContain("%s")
+                .isEqualTo(respaldo.obtener(CLAVE_CON_PARAMETRO));
+    }
+
+    @Test
+    @DisplayName("degrada al respaldo cuando un patrón de log se pide por formatear")
+    void debeDegradarAlRespaldo_cuandoUnPatronDeLogSePidePorFormatear() {
+        // Act
+        String texto = catalogo.formatear(CLAVE_LOG, "id-1");
+
+        // Assert
+        assertThat(texto)
+                .as("los {} de SLF4J no los sustituye String.formatted: el patrón saldría intacto y "
+                        + "el argumento se perdería sin ruido")
+                .isEqualTo(respaldo.formatear(CLAVE_LOG, "id-1"));
     }
 
     @Test

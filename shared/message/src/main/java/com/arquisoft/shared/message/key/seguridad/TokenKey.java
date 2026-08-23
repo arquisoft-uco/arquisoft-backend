@@ -14,14 +14,14 @@ public enum TokenKey implements ClaveMensaje {
     LOG_VALIDAR_DEBUG("seguridad.aplicacion.token.log.validar-debug", 0),
     LOG_VALIDO("seguridad.aplicacion.token.log.valido", 0),
     LOG_INVALIDO("seguridad.aplicacion.token.log.invalido", 0),
-    LOG_VALIDACION_FALLIDA("seguridad.aplicacion.token.log.validacion-fallida", 0),
+    LOG_VALIDACION_FALLIDA("seguridad.aplicacion.token.log.validacion-fallida", 1),
     LOG_REFRESH_DEBUG("seguridad.aplicacion.token.log.refresh-debug", 0),
     LOG_REFRESH_EXITOSO("seguridad.aplicacion.token.log.refresh-exitoso", 0),
     LOG_REFRESH_INVALIDO("seguridad.infraestructura.token.log.refresh-invalido", 0),
-    LOG_ERROR_REFRESCO_KEYCLOAK("seguridad.infraestructura.token.log.error-refresco-keycloak", 0),
-    LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO("seguridad.infraestructura.token.log.keycloak-no-disponible-refresco", 0),
-    LOG_ERROR_EXTRAER_INFO("seguridad.infraestructura.token.log.error-extraer-info", 0),
-    LOG_INVALIDO_HANDLER("seguridad.infraestructura.token.log.invalido-handler", 0);
+    LOG_ERROR_REFRESCO_KEYCLOAK("seguridad.infraestructura.token.log.error-refresco-keycloak", 2),
+    LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO("seguridad.infraestructura.token.log.keycloak-no-disponible-refresco", 1),
+    LOG_ERROR_EXTRAER_INFO("seguridad.infraestructura.token.log.error-extraer-info", 1),
+    LOG_INVALIDO_HANDLER("seguridad.infraestructura.token.log.invalido-handler", 3);
 
     private final String clave;
     private final int parametros;

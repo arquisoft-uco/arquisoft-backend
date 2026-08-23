@@ -5,9 +5,9 @@ import com.arquisoft.shared.message.ClaveMensaje;
 /** Claves de MinioGuia. */
 public enum MinioGuiaKey implements ClaveMensaje {
 
-    LOG_UPLOAD_URL("fichas.infraestructura.minioguia.log.upload-url", 0),
-    LOG_DOWNLOAD_URL("fichas.infraestructura.minioguia.log.download-url", 0),
-    LOG_DELETE("fichas.infraestructura.minioguia.log.delete", 0);
+    LOG_UPLOAD_URL("fichas.infraestructura.minioguia.log.upload-url", 2),
+    LOG_DOWNLOAD_URL("fichas.infraestructura.minioguia.log.download-url", 2),
+    LOG_DELETE("fichas.infraestructura.minioguia.log.delete", 2);
 
     private final String clave;
     private final int parametros;

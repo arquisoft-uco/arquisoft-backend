@@ -1,6 +1,6 @@
 package com.arquisoft.shared.notification.smtp;
 
-import com.arquisoft.shared.message.key.app.NotificacionKey;
+import com.arquisoft.shared.message.key.app.EnvioNotificacionKey;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.message.Mensajes;
@@ -57,7 +57,7 @@ public class SmtpEnvioNotificacionOutputAdapter implements EnvioNotificacionOutp
             logger.info(LOG_ENVIADO, destinos, mensaje.asunto());
         } catch (MailException | jakarta.mail.MessagingException | UnsupportedEncodingException e) {
             throw new EnvioNotificacionFallidoException(
-                    Mensajes.formatear(NotificacionKey.ERROR_ENVIO_FALLIDO, destinos),
+                    Mensajes.formatear(EnvioNotificacionKey.ERROR_ENVIO_FALLIDO, destinos),
                     AppCodes.Notificacion.ENVIO_FALLIDO,
                     e);
         }

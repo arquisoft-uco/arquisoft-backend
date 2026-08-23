@@ -1,6 +1,7 @@
 package com.arquisoft.shared.redis.catalogo.config;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.CategoriaMensaje;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.ClavesCatalogo;
 import com.arquisoft.shared.message.Mensajes;
@@ -164,12 +165,19 @@ class CatalogoMensajesRedisConfigTest {
         when(operaciones.multiGet(anyCollection())).thenReturn(textos);
     }
 
-    /** Un texto por clave declarada, cada uno con tantos {@code %s} como su clave dice llevar. */
+    /**
+     * Un texto por clave declarada, con tantos marcadores como su clave dice llevar.
+     *
+     * <p>El marcador depende de la categoría: los patrones de log los sustituye SLF4J con {@code {}}
+     * y el resto los sustituye el catálogo con {@code %s}. Rellenar todos con %s daría por incoherente
+     * a la mitad del catálogo.
+     */
     private static List<String> textosCoherentes() {
         List<String> textos = new ArrayList<>();
 
         for (ClaveMensaje clave : ClavesCatalogo.TODAS) {
-            textos.add(TEXTO_SIN_PARAMETROS + " %s".repeat(clave.parametros()));
+            String marcador = CategoriaMensaje.LOG == CategoriaMensaje.desde(clave.clave()) ? " {}" : " %s";
+            textos.add(TEXTO_SIN_PARAMETROS + marcador.repeat(clave.parametros()));
         }
 
         return textos;

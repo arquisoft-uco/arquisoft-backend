@@ -349,5 +349,5 @@ de hilo (request → executor async) antes de que el evento llegue al broker.
 ## Referencias
 
 - **Arquitectura y Estructura**: `docs/ARQUITECTURA_Y_ESTRUCTURA.md`
-- **Convenciones completas del proyecto**: `AGENTS.md` (raíz) y `CLAUDE.md` (raíz)
+- **Convenciones completas del proyecto**: `CLAUDE.md` (raíz)
 - **Spring Modulith Event Publication Registry**: https://docs.spring.io/spring-modulith/docs/current/reference/html/#events

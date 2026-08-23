@@ -1,5 +1,6 @@
 package com.arquisoft.shared.message.prueba;
 
+import com.arquisoft.shared.message.AridadClave;
 import com.arquisoft.shared.message.CatalogoMensajes;
 import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.ContextosCatalogo;
@@ -49,12 +50,35 @@ public final class CatalogoMensajesPrueba implements CatalogoMensajes {
 
     @Override
     public String obtener(ClaveMensaje clave) {
-        return textos.getOrDefault(clave.clave(), MARCADOR_AUSENTE.formatted(clave.clave()));
+        AridadClave.alObtener(clave).ifPresent(problema -> fallar(clave, problema));
+        return patron(clave);
     }
 
     @Override
     public String formatear(ClaveMensaje clave, Object... args) {
-        return obtener(clave).formatted(args);
+        AridadClave.alFormatear(clave, args.length).ifPresent(problema -> fallar(clave, problema));
+        return patron(clave).formatted(args);
+    }
+
+    /**
+     * Devuelve el patrón crudo, sin comprobar por qué vía se está resolviendo.
+     *
+     * <p>Lo necesita el propio test del catálogo, que recorre todas las claves para contar sus
+     * marcadores: pedir por {@code obtener} el patrón de un mensaje con {@code %s} es justo lo que
+     * las comprobaciones de arriba rechazan.
+     *
+     * @param clave clave del catálogo
+     * @return el texto tal cual está en el archivo
+     */
+    public String patron(ClaveMensaje clave) {
+        return textos.getOrDefault(clave.clave(), MARCADOR_AUSENTE.formatted(clave.clave()));
+    }
+
+    // Aquí sí se lanza, al revés que en el catálogo de Redis: allí esto ocurre construyendo la
+    // respuesta de un error ya ocurrido y convertirlo en un 500 sería peor que el propio desajuste,
+    // pero en un test no hay nada que degradar y un fallo silencioso no lo vería nadie.
+    private static void fallar(ClaveMensaje clave, String problema) {
+        throw new IllegalArgumentException("Uso incoherente de " + clave.clave() + ": " + problema);
     }
 
     @Override

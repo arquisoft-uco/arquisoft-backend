@@ -159,9 +159,11 @@ Es re-ejecutable: una segunda pasada informa de 0 sobrantes y sale con éxito.
 ERROR_ASESOR_NO_ENCONTRADO("fichas.dominio.asesorficha.error.no-encontrado", 1),
 ```
 
-El segundo argumento es cuántos parámetros lleva el patrón. No es decorativo: `String.formatted`
-lanza si faltan argumentos y los ignora en silencio si sobran; la aridad declarada es lo que
-convierte ambos casos en un fallo visible.
+El segundo argumento es cuántos marcadores lleva el patrón. No es decorativo, y cuenta también los
+de las claves de log: `String.formatted` lanza si faltan argumentos y los ignora en silencio si
+sobran, y SLF4J no protesta en ninguno de los dos casos — se come los sobrantes e imprime el `{}`
+literal cuando faltan, en un log de producción que nadie mira hasta que hay un incidente. La aridad
+declarada es lo que convierte los cuatro casos en un fallo visible.
 
 Si el enum es nuevo —no una constante más en uno existente— hay que registrarlo también en
 `ClavesCatalogo.ENUMS`.
@@ -176,10 +178,17 @@ La clave sigue el patrón `contexto.capa.objeto.tipo.descripcion`. La sustituci�
 `String.formatted`, así que los parámetros son `%s`, **no** `{0}`. Los patrones de log son la
 excepción: conservan los `{}` de SLF4J y se resuelven con `obtener`, nunca con `formatear`.
 
+La vía y el marcador van juntos, y el catálogo lo comprueba en cada llamada (`AridadClave`): pedir
+por `obtener` un patrón con `%s` devolvería los marcadores crudos al usuario final, y pedir por
+`formatear` uno de log no sustituiría nada porque ahí no hay ningún `%s`. En ambos casos el catálogo
+de Redis registra el error y degrada al respaldo, y el de pruebas lanza — en un test no hay nada que
+degradar y un fallo silencioso no lo vería nadie.
+
 **3.** `./gradlew :shared:message:test`
 
 `CatalogoCargaTest` es la compuerta, y comprueba las dos direcciones: clave sin texto, texto sin
-clave, aridad que no coincide con los `%s` reales del patrón, clave declarada en dos archivos, y
+clave, aridad que no coincide con los marcadores reales del patrón —`%s`, o `{}` si es de log—,
+clave declarada en dos archivos, y
 enums que `ClavesCatalogo.ENUMS` no registra. Aquí es donde el error sale gratis.
 
 **4.** Cargar en Redis antes de desplegar (ver arriba).

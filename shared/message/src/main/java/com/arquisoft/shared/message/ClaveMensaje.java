@@ -38,10 +38,13 @@ public interface ClaveMensaje {
      * marcador no se le nota hasta que un usuario dispara ese error concreto; con la aridad
      * declarada, el despliegue siguiente no levanta.
      *
-     * <p>Es 0 para las claves de log: su patrón lleva marcadores {@code {}} que resuelve SLF4J, no
-     * este catálogo.
+     * <p>Cuenta también los marcadores de las claves de log, que son {@code {}} de SLF4J y no
+     * {@code %s}. Ahí el catálogo no sustituye nada —lo hace el logger— pero el desajuste es igual
+     * de silencioso y peor de diagnosticar: con argumentos de más SLF4J los descarta, y con
+     * argumentos de menos imprime el {@code {}} literal en el log de producción, donde nadie mira
+     * hasta que está depurando un incidente. Declarar la aridad es lo que permite comprobarla.
      *
-     * @return cuántos argumentos espera {@link CatalogoMensajes#formatear}
+     * @return cuántos marcadores lleva el patrón: {@code %s} para el resto, {@code {}} para log
      */
     int parametros();
 }

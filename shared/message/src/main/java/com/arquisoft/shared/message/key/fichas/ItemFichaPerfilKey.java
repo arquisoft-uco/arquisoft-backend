@@ -11,9 +11,9 @@ public enum ItemFichaPerfilKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADO("fichas.dominio.itemfichaperfil.error.no-encontrado", 1),
     ERROR_ESTADO_FICHA_NO_MODIFICABLE("fichas.dominio.itemfichaperfil.error.estado-ficha-no-modificable", 1),
     ERROR_CON_REVISIONES("fichas.dominio.itemfichaperfil.error.con-revisiones", 1),
-    LOG_AGREGADO("fichas.aplicacion.itemfichaperfil.log.agregado", 0),
-    LOG_MODIFICADO("fichas.aplicacion.itemfichaperfil.log.modificado", 0),
-    LOG_REMOVIDO("fichas.aplicacion.itemfichaperfil.log.removido", 0);
+    LOG_AGREGADO("fichas.aplicacion.itemfichaperfil.log.agregado", 3),
+    LOG_MODIFICADO("fichas.aplicacion.itemfichaperfil.log.modificado", 1),
+    LOG_REMOVIDO("fichas.aplicacion.itemfichaperfil.log.removido", 1);
 
     private final String clave;
     private final int parametros;

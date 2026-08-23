@@ -6,10 +6,9 @@ description: Estándares de código, convenciones y buenas prácticas de Arquiso
 # Skill: arquisoft-estandares
 
 Complementa a `arquisoft-arquitectura` (esa skill cubre capas y paquetes; esta cubre reglas de
-código transversales). Detalle profundo en [`../../CLAUDE.md`](../../CLAUDE.md) y
-[`../../AGENTS.md`](../../AGENTS.md) (rutas relativas a la raíz del repo). Cada regla referencia un
-archivo real de `fichas/.../fichaperfil/` en vez de un snippet — ábrelo con `Read` si necesitas el
-código exacto.
+código transversales). Detalle profundo en [`../../CLAUDE.md`](../../CLAUDE.md) (ruta relativa a
+la raíz del repo). Cada regla referencia un archivo real de `fichas/.../fichaperfil/` en vez de un
+snippet — ábrelo con `Read` si necesitas el código exacto.
 
 ## Notification Pattern y orden de validación
 

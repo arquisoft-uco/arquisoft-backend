@@ -35,15 +35,15 @@ public enum HttpKey implements ClaveMensaje {
     UUID_FORMATO_INVALIDO_DETALLE("app.infraestructura.http.error.uuid-formato-invalido-detalle", 0),
 
     // Logs — GlobalAppExceptionHandler
-    LOG_VALIDACION_DOMINIO_FALLIDA("app.infraestructura.http.log.validacion-dominio-fallida", 0),
-    LOG_VALIDACION_APLICACION_FALLIDA("app.infraestructura.http.log.validacion-aplicacion-fallida", 0),
-    LOG_EXCEPCION("app.infraestructura.http.log.excepcion", 0),
-    LOG_AUTENTICACION_FALLIDA("app.infraestructura.http.log.autenticacion-fallida", 0),
-    LOG_ACCESO_DENEGADO("app.infraestructura.http.log.acceso-denegado", 0),
-    LOG_VIOLACION_RESTRICCION("app.infraestructura.http.log.violacion-restriccion", 0),
-    LOG_ERROR_INESPERADO("app.infraestructura.http.log.error-inesperado", 0),
-    LOG_EXCEPCION_SPRING_MVC("app.infraestructura.http.log.excepcion-spring-mvc", 0),
-    LOG_ERROR_VALIDACION_CAMPOS("app.infraestructura.http.log.error-validacion-campos", 0);
+    LOG_VALIDACION_DOMINIO_FALLIDA("app.infraestructura.http.log.validacion-dominio-fallida", 3),
+    LOG_VALIDACION_APLICACION_FALLIDA("app.infraestructura.http.log.validacion-aplicacion-fallida", 3),
+    LOG_EXCEPCION("app.infraestructura.http.log.excepcion", 4),
+    LOG_AUTENTICACION_FALLIDA("app.infraestructura.http.log.autenticacion-fallida", 2),
+    LOG_ACCESO_DENEGADO("app.infraestructura.http.log.acceso-denegado", 2),
+    LOG_VIOLACION_RESTRICCION("app.infraestructura.http.log.violacion-restriccion", 2),
+    LOG_ERROR_INESPERADO("app.infraestructura.http.log.error-inesperado", 2),
+    LOG_EXCEPCION_SPRING_MVC("app.infraestructura.http.log.excepcion-spring-mvc", 3),
+    LOG_ERROR_VALIDACION_CAMPOS("app.infraestructura.http.log.error-validacion-campos", 1);
 
     private final String clave;
     private final int parametros;

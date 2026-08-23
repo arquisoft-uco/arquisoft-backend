@@ -6,6 +6,7 @@ import java.util.Set;
 import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.message.key.app.HttpKey;
+import com.arquisoft.shared.message.key.app.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.message.key.app.PaginacionKey;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
@@ -18,8 +19,10 @@ import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
+import com.arquisoft.shared.message.key.fichas.UsuarioEspejoKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
+import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
@@ -31,6 +34,7 @@ import com.arquisoft.shared.message.key.seguridad.RolKey;
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
+import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 
 
 /**
@@ -53,18 +57,22 @@ public final class ClavesCatalogo {
     /**
      * Los enums registrados, uno por feature.
      *
-     * <p>Es un {@code Set.of} y no un {@code List.of} a propósito: cuatro de estos nombres colisionan
-     * por pares ({@code NotificacionKey} en app y notificaciones, {@code UsuarioKey} en fichas y
-     * usuarios) y por eso van cualificados. Si alguien —o el "optimizar imports" del IDE— colapsa esos
-     * nombres, el duplicado resultante revienta aquí al inicializar la clase en lugar de dejar dos
-     * enums registrados dos veces y otros dos sin registrar, en silencio. Ya pasó una vez.
+     * <p>Es un {@code Set.of} y no un {@code List.of} a propósito: rechaza duplicados al inicializar
+     * la clase, así que una línea repetida revienta en el arranque en vez de dejar un enum registrado
+     * dos veces y otro sin registrar, en silencio.
+     *
+     * <p>Ese fallo ya ocurrió una vez, cuando cuatro nombres colisionaban por pares y había que
+     * cualificarlos aquí: bastaba con que el "optimizar imports" del IDE colapsara un par para que dos
+     * enums desaparecieran del registro. La defensa de verdad no era el {@code Set} sino renombrarlos
+     * —{@code EnvioNotificacionKey} y {@code UsuarioEspejoKey}—, porque un nombre único no se puede
+     * colapsar. Lo que queda aquí es la red por si alguien duplica una línea a mano.
      */
     public static final Set<Class<? extends ClaveMensaje>> ENUMS = Set.of(
             AlmacenamientoKey.class,
             ConsultaKey.class,
             HttpKey.class,
             MensajeriaKey.class,
-            com.arquisoft.shared.message.key.app.NotificacionKey.class,
+            EnvioNotificacionKey.class,
             PaginacionKey.class,
             ValidadorKey.class,
             EstadoEvaluacionFichaKey.class,
@@ -77,9 +85,9 @@ public final class ClavesCatalogo {
             ItemFichaPerfilKey.class,
             MinioGuiaKey.class,
             RepresentanteComiteKey.class,
-            com.arquisoft.shared.message.key.fichas.UsuarioKey.class,
+            UsuarioEspejoKey.class,
             ConsumidorKey.class,
-            com.arquisoft.shared.message.key.notificaciones.NotificacionKey.class,
+            NotificacionKey.class,
             PlantillaKey.class,
             AutenticacionKey.class,
             ConfiguracionKey.class,
@@ -91,7 +99,7 @@ public final class ClavesCatalogo {
             SesionKey.class,
             TokenInvalidadoKey.class,
             TokenKey.class,
-            com.arquisoft.shared.message.key.usuarios.UsuarioKey.class
+            UsuarioKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

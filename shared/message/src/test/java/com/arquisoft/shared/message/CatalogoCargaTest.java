@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -51,10 +50,6 @@ class CatalogoCargaTest {
     private static final String PAQUETE_CLAVES = "com.arquisoft.shared.message.key";
     private static final String SUFIJO_FUENTE = "Key.java";
     private static final String RUTA_CATALOGO = "/catalogo/%s.properties";
-
-    // Conversión de java.util.Formatter, excluyendo el escape %%.
-    private static final Pattern MARCADOR_FORMATO =
-            Pattern.compile("%(?:%|[-#+ 0,(]*\\d*(?:\\.\\d+)?[a-zA-Z])");
 
     private final CatalogoMensajesPrueba catalogo = CatalogoMensajesPrueba.porDefecto();
 
@@ -102,7 +97,7 @@ class CatalogoCargaTest {
                 continue;
             }
 
-            int encontrados = contarMarcadores(catalogo.obtener(clave));
+            int encontrados = AridadClave.marcadores(clave, catalogo.patron(clave));
             if (encontrados != clave.parametros()) {
                 discrepancias.add("%s (declara %d, el patrón tiene %d)"
                         .formatted(clave.clave(), clave.parametros(), encontrados));
@@ -110,8 +105,10 @@ class CatalogoCargaTest {
         }
 
         assertThat(discrepancias)
-                .as("String.formatted lanza si faltan argumentos y los ignora en silencio si sobran; "
-                        + "la aridad declarada es lo que convierte ambos casos en un fallo visible")
+                .as("String.formatted lanza si faltan argumentos y los ignora en silencio si sobran, y "
+                        + "SLF4J no protesta en ninguno de los dos casos: se come los sobrantes e "
+                        + "imprime el {} literal cuando faltan. La aridad declarada es lo que convierte "
+                        + "los cuatro casos en un fallo del build")
                 .isEmpty();
     }
 
@@ -205,19 +202,6 @@ class CatalogoCargaTest {
     private static String segmentoDeTipo(String clave) {
         String[] segmentos = clave.split(SEPARADOR);
         return segmentos.length > SEGMENTO_TIPO ? segmentos[SEGMENTO_TIPO] : "";
-    }
-
-    private static int contarMarcadores(String patron) {
-        Matcher coincidencias = MARCADOR_FORMATO.matcher(patron);
-        int total = 0;
-
-        while (coincidencias.find()) {
-            if (!"%%".equals(coincidencias.group())) {
-                total++;
-            }
-        }
-
-        return total;
     }
 
     private static Properties leer(String ruta) {
