@@ -1,8 +1,8 @@
 > [!NOTE]
 > Referencia profunda de arquitectura, con más detalle del que necesitan las skills de agentes.
-> Los agentes cargan primero `.claude/skills/arquisoft-arquitectura.md` (resumen conciso con
+> Los agentes cargan primero `.claude/skills/arquisoft-arquitectura/SKILL.md` (resumen conciso con
 > referencias al código real de `fichas/fichaperfil`) y vienen aquí solo si necesitan el detalle
-> extendido. Para estándares de código/testing/git, ver `.claude/skills/arquisoft-estandares.md`.
+> extendido. Para estándares de código/testing/git, ver `.claude/skills/arquisoft-estandares/SKILL.md`.
 
 # Arquitectura Hexagonal Modular - Documentación Completa
 

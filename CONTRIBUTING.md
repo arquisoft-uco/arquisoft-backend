@@ -2,7 +2,7 @@
 
 ## Antes de Contribuir
 
-1. Lee los estándares de código: [`.claude/skills/arquisoft-estandares.md`](.claude/skills/arquisoft-estandares.md) (local, siempre actualizado) — el repo privado [arquisoft-docs](https://github.com/arquisoft-uco/arquisoft-docs/blob/main/docs/architecture/coding-standards.md) tiene una versión complementaria de más alto nivel
+1. Lee los estándares de código: [`.claude/skills/arquisoft-estandares/SKILL.md`](.claude/skills/arquisoft-estandares/SKILL.md) (local, siempre actualizado) — el repo privado [arquisoft-docs](https://github.com/arquisoft-uco/arquisoft-docs/blob/main/docs/architecture/coding-standards.md) tiene una versión complementaria de más alto nivel
 2. Asegúrate de tener asignada la tarea correspondiente
 
 ## Flujo de Trabajo

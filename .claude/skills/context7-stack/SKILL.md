@@ -1,12 +1,6 @@
 ---
 name: context7-stack
-description:
-  IDs de librerias Context7 del stack Arquisoft (Spring Boot 4.0.5, Java 21, Gradle 9.0.0). Usar antes de generar cualquier archivo Java o de configuracion para obtener documentacion actualizada y especifica por version de cada dependencia del proyecto. Incluye tabla de IDs directos validados, IDs alternativos con mas snippets, y ejemplos de consulta por tipo de archivo.
-license: MIT
-compatibility: opencode
-metadata:
-  stack: java21-spring-boot-4.0.5
-  build: gradle-9.0.0
+description: IDs de librerias Context7 del stack Arquisoft (Spring Boot 4.0.5, Java 21, Gradle 9.0.0). Usar antes de generar cualquier archivo Java o de configuracion para obtener documentacion actualizada y especifica por version de cada dependencia del proyecto. Incluye tabla de IDs directos validados, IDs alternativos con mas snippets, y ejemplos de consulta por tipo de archivo.
 ---
 
 # Skill: context7-stack
@@ -24,25 +18,44 @@ Usa estos IDs directamente con `query-docs` para saltarte el paso `resolve-libra
 
 ## Tabla de IDs Validados — Stack Arquisoft
 
+> Versiones tomadas de `gradle.properties` y del BOM de Spring Boot 4.0.5 (raíz del repo). Si
+> `gradle.properties` cambia, esta tabla se actualiza — no la des por buena sin mirarla.
+
 | Libreria | ID Recomendado ★ | Snippets | Version en proyecto |
 |----------|-----------------|----------|---------------------|
 | Spring Boot | `/websites/spring_io_spring-boot` | 295 000+ | **4.0.5** |
 | Spring Framework (MVC/Web/Tx) | `/websites/spring_io_spring-framework_reference_6_2` | 6 761 | 7.x (via Boot 4.0) |
-| Spring Security + OAuth2 | `/websites/spring_io_spring-security_reference_6_5` | 11 697 | 6.5.x (via Boot 4.0) |
-| Spring AMQP / RabbitMQ | `/websites/spring_io` | 50 638 | 3.2.x (via Boot 4.0) |
-| Spring Data JPA | `/spring-projects/spring-data-jpa` | 315 | 3.4.x (via Boot 4.0) |
-| Spring Data Redis | `/spring-projects/spring-data-redis` | 357 | 3.4.x (via Boot 4.0) |
-| Flyway | `/flyway/flyway` | 2 434 | **10.10.0** |
+| Spring Security + OAuth2 | `/websites/spring_io_spring-security_reference_6_5` | 11 697 | via Boot 4.0 |
+| Spring AMQP / RabbitMQ | `/websites/spring_io` | 50 638 | via Boot 4.0 (broker RabbitMQ 4.2.5) |
+| Spring Data JPA | `/spring-projects/spring-data-jpa` | 315 | via Boot 4.0 |
+| Spring Data Redis | `/spring-projects/spring-data-redis` | 357 | via Boot 4.0 (Lettuce, Redis 7) |
+| Spring Modulith | `/spring-projects/spring-modulith` | — | **2.0.0** (outbox + externalización AMQP) |
+| Flyway | `/flyway/flyway` | 2 434 | **12.4.0** (via BOM; requiere `flyway-database-postgresql`) |
 | JUnit 5 | `/websites/junit_current` | 5 740 | **6.0.3** (compatible con anotaciones JUnit 5) |
-| Mockito | `/mockito/mockito` | 120 | 5.x (via Boot 4.0) |
-| AssertJ | `/assertj/assertj` | 81 | 3.x (via Boot 4.0) |
-| Lombok | `/projectlombok/lombok` | 638 | 1.18.x |
+| Mockito | `/mockito/mockito` | 120 | via Boot 4.0 |
+| AssertJ | `/assertj/assertj` | 81 | via Boot 4.0 |
+| Lombok | `/projectlombok/lombok` | 638 | **1.18.36** |
 | Gradle | `/websites/gradle_current_userguide` | 4 607 | **9.0.0** |
-| JJWT | `/jwtk/jjwt` | 166 | 0.12.3 |
-| Keycloak | `/keycloak/keycloak` | 2 453 | **26.6** |
-| Bucket4j | `/bucket4j/bucket4j` | 301 | 7.6.0 |
-| Jackson | `/fasterxml/jackson-databind` | 47 | 2.15.2 |
-| Hibernate ORM | `/hibernate/hibernate-orm` | 4 278 | 6.x (via JPA Boot 3.2) |
+| Keycloak | `/keycloak/keycloak` | 2 453 | **26.6** (solo como IdP — sin `keycloak-admin-client`) |
+| Bucket4j | `/bucket4j/bucket4j` | 301 | **8.18.0** (`com.bucket4j:bucket4j_jdk17-core`) |
+| Jackson 3 | `/fasterxml/jackson-databind` | 47 | **3.1.2** vía BOM — paquete `tools.jackson.databind.*` |
+| Hibernate ORM | `/hibernate/hibernate-orm` | 4 278 | via Boot 4.0 (`@Subselect`/`@Immutable`/`@Synchronize`) |
+| PostgreSQL (driver) | `/websites/postgresql` | — | **42.7.2** (servidor PostgreSQL 18) |
+| MinIO | `/minio/minio` | — | **8.5.12** |
+| springdoc-openapi | `/springdoc/springdoc-openapi` | — | **2.8.8** |
+
+**Trampas de versión de este stack — verifícalas antes de copiar cualquier snippet de Context7:**
+
+- **Jackson 3:** `databind` vive en `tools.jackson.databind.*`; `com.fasterxml.jackson.databind.ObjectMapper`
+  **no resuelve**. Las *anotaciones* siguen en `com.fasterxml.jackson.annotation.*`. Jackson 2
+  coexiste en el classpath solo porque springdoc 2.8.8 aún depende de él.
+- **Slices de test de Spring Boot 4:** `org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`
+  y `org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`. Las rutas de Boot 3
+  (`org.springframework.boot.test.autoconfigure.*`) ya no existen. `@MockitoBean`, no `@MockBean`.
+- **JUnit 6.0.3** con anotaciones de JUnit 5 — la doc de `/websites/junit_current` aplica.
+- **Virtual Threads** ya activos por Boot: nunca declares un `TaskExecutor` propio.
+- Ya no hay `jjwt` ni `logstash-logback-encoder` en el proyecto (el perfil prod usa el
+  `StructuredLogEncoder` nativo de Boot 4).
 
 ### IDs alternativos utiles (mas snippets para consultas amplias)
 
@@ -74,8 +87,8 @@ query-docs /websites/spring_io_spring-framework_reference_6_2 "use case interfac
 # Puerto de salida: interfaz de repositorio
 query-docs /spring-projects/spring-data-jpa "repository interface port out hexagonal"
 
-# Excepcion de dominio personalizada
-query-docs /websites/spring_io_spring-framework_reference_6_2 "custom RuntimeException domain exception errorCode"
+# Excepcion de dominio (extiende DomainException de shared:exception — nunca RuntimeException directa)
+query-docs /websites/spring_io_spring-framework_reference_6_2 "custom checked exception hierarchy error code"
 
 # Value Object Java 21
 query-docs /websites/spring_io_spring-framework_reference_6_2 "value object immutable record Java 21"
@@ -84,27 +97,24 @@ query-docs /websites/spring_io_spring-framework_reference_6_2 "value object immu
 ### Capa application — DTOs y Casos de Uso
 
 ```
-# DTO con Lombok (Builder, Data, NoArgsConstructor, AllArgsConstructor)
-query-docs /projectlombok/lombok "Builder Data NoArgsConstructor AllArgsConstructor toDomain fromDomain"
-
-# DTO con validaciones Jakarta Bean Validation
-query-docs /websites/spring_io_spring-boot "Valid NotBlank Email Size validation DTO"
+# Command / ReadModel / DTO como record Java 21 (sin Lombok, sin @Builder)
+query-docs /websites/spring_io_spring-boot "record DTO serialization Java 21"
 
 # Implementacion de caso de uso con @Component y @RequiredArgsConstructor
-query-docs /projectlombok/lombok "RequiredArgsConstructor Component service constructor injection"
+query-docs /projectlombok/lombok "RequiredArgsConstructor Component constructor injection"
 
-# Caso de uso transaccional
-query-docs /websites/spring_io_spring-framework_reference_6_2 "Transactional service component use case"
-
-# @Builder.Default para valores por defecto en DTO
-query-docs /projectlombok/lombok "Builder Default field value initialization"
+# Transaccion en el Interactor con transactionManager explicito
+query-docs /websites/spring_io_spring-framework_reference_6_2 "Transactional transactionManager qualifier multiple datasources"
 ```
 
 ### Capa infrastructure — Persistencia JPA + Flyway
 
 ```
-# Entidad JPA con esquema especifico de PostgreSQL
-query-docs /spring-projects/spring-data-jpa "Entity Table schema Column mapping PostgreSQL"
+# Entidad JPA (el schema lo fija el DataSource del contexto — @Table nunca lleva schema)
+query-docs /spring-projects/spring-data-jpa "Entity Table Column name mapping PostgreSQL"
+
+# Entidad de solo lectura para el lado query
+query-docs /hibernate/hibernate-orm "Subselect Immutable Synchronize read-only entity"
 
 # Adaptador de repositorio (implementacion del puerto de salida)
 query-docs /spring-projects/spring-data-jpa "JpaRepository save findById custom query adapter"
@@ -128,8 +138,8 @@ query-docs /websites/spring_io_spring-boot "HikariCP connection pool maximum-poo
 # Controller REST con validacion y manejo de respuestas
 query-docs /websites/spring_io_spring-framework_reference_6_2 "RestController RequestMapping PostMapping Valid RequestBody ResponseEntity"
 
-# Manejo de errores centralizado con GlobalExceptionHandler
-query-docs /websites/spring_io_spring-framework_reference_6_2 "RestControllerAdvice ExceptionHandler MethodArgumentNotValidException"
+# Manejo de errores: ya lo cubre GlobalAppExceptionHandler (shared:web) — un contexto no crea el suyo
+query-docs /websites/spring_io_spring-framework_reference_6_2 "RestControllerAdvice ExceptionHandler response entity"
 
 # Filtro HTTP personalizado (audit, rate limiting)
 query-docs /websites/spring_io_spring-framework_reference_6_2 "OncePerRequestFilter doFilterInternal HttpServletRequest"
@@ -152,9 +162,6 @@ query-docs /websites/spring_io_spring-security_reference_6_5 "SecurityContextHol
 
 # Keycloak: configurar realm, client y roles
 query-docs /keycloak/keycloak "realm client configuration roles Spring Boot adapter"
-
-# JJWT: crear y validar tokens JWT manualmente
-query-docs /jwtk/jjwt "Jwts builder signWith parseSignedClaims SecretKey 0.12"
 
 # Rate limiting con Bucket4j
 query-docs /bucket4j/bucket4j "Bucket tryConsume refill bandwidth filter Spring"
@@ -188,8 +195,8 @@ query-docs /websites/spring_io "DomainEvent publish ApplicationEventPublisher as
 # RedisTemplate: operaciones clave-valor
 query-docs /spring-projects/spring-data-redis "RedisTemplate opsForValue set get expire TTL"
 
-# Configurar Jedis como cliente Redis
-query-docs /spring-projects/spring-data-redis "JedisConnectionFactory JedisPoolConfig Spring Boot"
+# Configurar Lettuce como cliente Redis (el que usa el proyecto)
+query-docs /spring-projects/spring-data-redis "LettuceConnectionFactory client configuration Spring Boot"
 
 # Cache con @Cacheable y @CacheEvict
 query-docs /websites/spring_io_spring-boot "Cacheable CacheEvict CachePut Redis Spring Boot"
@@ -233,11 +240,11 @@ query-docs /assertj/assertj "assertThatThrownBy assertThatExceptionOfType isInst
 # Assertions fluidas con AssertJ
 query-docs /assertj/assertj "assertThat isEqualTo isNotNull extracting containsExactly"
 
-# Test de integracion con Spring Boot y H2
-query-docs /websites/junit_current "SpringBootTest DataJpaTest TestPropertySource H2"
+# Slice de repositorio con H2 (@SpringBootTest no se usa en este repo)
+query-docs /websites/spring_io_spring-boot "DataJpaTest TestEntityManager H2 slice test"
 
-# Test de controller con Spring Security Mock
-query-docs /websites/spring_io_spring-security_reference_6_5 "MockMvc WithMockUser SecurityMockMvcRequestPostProcessors"
+# Test de controller con Spring Security Mock (jwt().authorities — nunca @WithMockUser)
+query-docs /websites/spring_io_spring-security_reference_6_5 "MockMvc SecurityMockMvcRequestPostProcessors jwt authorities"
 
 # Test con DynamicPropertySource (Testcontainers o H2)
 query-docs /websites/junit_current "DynamicPropertySource DynamicPropertyRegistry test configuration"
@@ -307,12 +314,6 @@ consulta: "Entity Table schema name Column insertable updatable"
 ```
 
 ```
-# Construir y parsear JWT con JJWT 0.12
-use library /jwtk/jjwt
-consulta: "Jwts builder signWith HS256 parseSignedClaims getPayload 0.12"
-```
-
-```
 # Aplicar rate limiting por IP con Bucket4j en un filtro
 use library /bucket4j/bucket4j
 consulta: "Bucket tryConsume refill bandwidth local rate limiting filter"
@@ -332,8 +333,13 @@ consulta: "Mock InjectMocks when thenReturn verify times never"
 |----------|-------|----------|
 | `resolve-library-id` devuelve ID equivocado | Nombre demasiado generico | Usar directamente el ID de esta tabla |
 | Documentacion desactualizada o irrelevante | ID con pocos snippets | Preferir IDs con mayor numero de snippets de la tabla de alternativas |
-| Resultados sobre Spring Boot 2.x | ID no especifica version | Usar `/websites/spring_io_spring-boot` que cubre 3.x |
-| No encuentra configuracion de Flyway 10 | Query demasiado generica | Incluir "flyway-database-postgresql" o "flyway 10" en la query |
-| Timeout o sin respuesta | Rate limit o red | Reintentar con query mas corta; agregar API key en opencode.json |
-| Snippets de Keycloak muy viejos | Version antigua | Indicar "Keycloak 22 23" explicitamente en la query |
-| JJWT muestra API antigua (0.9.x) | Cambio de API en 0.12 | Incluir "0.12 parseSignedClaims Jwts parser" en la query |
+| Resultados sobre Spring Boot 2.x/3.x | El ID no fija version | Incluir "Spring Boot 4" en la query y contrastar con el codigo real de `fichas` antes de copiar |
+| Snippets con `com.fasterxml.jackson.databind` | Doc de Jackson 2 | El proyecto usa Jackson 3 (`tools.jackson.databind`) — traducir el import |
+| Snippets con `@MockBean` o `org.springframework.boot.test.autoconfigure.*` | Doc de Boot 3 | Usar `@MockitoBean` y las rutas de slice de Boot 4 |
+| No encuentra configuracion de Flyway 12 | Query demasiado generica | Incluir "flyway-database-postgresql" en la query |
+| Timeout o sin respuesta | Rate limit o red | Reintentar con una query mas corta |
+| Snippets de Keycloak muy viejos | Version antigua | Indicar "Keycloak 26" explicitamente en la query |
+
+> **Regla final:** Context7 da la API de la libreria, no la convención del proyecto. Ante cualquier
+> choque entre un snippet y `arquisoft-arquitectura`/`arquisoft-estandares`, **gana la skill** — el
+> snippet se adapta, no al revés.

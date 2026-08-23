@@ -1,6 +1,6 @@
 > [!NOTE]
-> Documentación de referencia humana. Los agentes cargan `.claude/skills/arquisoft-arquitectura.md`
-> y `.claude/skills/arquisoft-estandares.md` como contexto conciso, y vienen aquí solo para el
+> Documentación de referencia humana. Los agentes cargan `.claude/skills/arquisoft-arquitectura/SKILL.md`
+> y `.claude/skills/arquisoft-estandares/SKILL.md` como contexto conciso, y vienen aquí solo para el
 > detalle extendido.
 
 # Guía de Inicio Rápido - Arquisoft Backend

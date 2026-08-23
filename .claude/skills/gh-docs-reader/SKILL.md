@@ -1,13 +1,6 @@
 ---
 name: gh-docs-reader
-description:
-  Consulta archivos markdown del repositorio privado de documentacion de arquisoft-uco (arquisoft-docs) usando el GitHub CLI. Permite leer historias de usuario (HU, en propuestas-hu/), historias tecnicas (HT, en docs/stories/), event storming, modelos de dominio, funcionalidades criticas, atributos de calidad, ADRs y flujos de arquitectura sin clonar el repositorio. Usar antes de planificar cualquier Historia de Usuario.
-license: MIT
-compatibility: opencode
-metadata:
-  org: arquisoft-uco
-  repo: arquisoft-docs
-  branch: main
+description: Consulta archivos markdown del repositorio privado de documentacion de arquisoft-uco (arquisoft-docs) usando el GitHub CLI. Permite leer historias de usuario (HU, en propuestas-hu/), historias tecnicas (HT, en docs/stories/), event storming, modelos de dominio, funcionalidades criticas, atributos de calidad, ADRs y flujos de arquitectura sin clonar el repositorio. Usar antes de planificar cualquier Historia de Usuario.
 ---
 
 # Skill: gh-docs-reader
@@ -352,7 +345,7 @@ Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
 
 | Contexto Backend | Event Storming | Modelo Anemico | Modelo Enriquecido | SQL del MER |
 |------------------|---------------|----------------|-------------------|-------------|
-| `seguridad` (usuarios) | `Usuario - Event Storming.md` | `05_delimitar_contextos_usuarios.md` | `05_usuarios_modelo_enriquecido.md` | `02_tablas_usuarios.sql` |
+| `usuarios` y `seguridad` | `Usuario - Event Storming.md` | `05_delimitar_contextos_usuarios.md` | `05_usuarios_modelo_enriquecido.md` | `02_tablas_usuarios.sql` |
 | `fichas` | `Ficha Perfil - Event Storming.md` | `06_delimitar_contextos_fichas_trabajos_grado.md` | `06_fichas_trabajos_grado_modelo_enriquecido.md` | `03_tablas_fichas_perfil.sql` |
 | `artefactos` | `Artefactos - Event Storming.md` | `07_delimitar_contextos_artefactos.md` | `07_artefactos_modelo_enriquecido.md` | `04_tablas_artefactos.sql` |
 | `repositorio_artefactos` | `Repositorio Artefactos - Event Storming.md` | `08_delimitar_contextos_repositorio_artefactos.md` | `08_repositorio_artefactos_modelo_enriquecido.md` | `05_tablas_repositorio_artefactos.sql` |
@@ -392,7 +385,13 @@ biblioteca            → usuarios
 solicitudes           → usuarios
 ```
 
-**Regla para migraciones Flyway con FKs cruzadas:** si una tabla del contexto A referencia una tabla del schema B (dependencia), la migracion de A debe ejecutarse DESPUES de que el schema B ya exista y tenga sus tablas creadas. Verificar en `01_base_datos_y_esquemas.sql` si el contexto tiene dependencias antes de definir el orden de los scripts `V{n}__*.sql`.
+**El backend NO crea esas FKs cruzadas.** El grafo de arriba es el modelo lógico del MER; en el
+código cada contexto tiene su propio `DataSource`, su propio schema y sus propias migraciones
+Flyway, así que una dependencia hacia otro contexto se resuelve con una **tabla réplica local
+poblada por eventos AMQP**, no con un `REFERENCES otro_schema.tabla`. Es lo que hace `fichas` con
+`asesor_ficha` y `estudiante` (ver `V1.0`/`V1.1` de `db/migration/fichas/`). Usa el grafo para
+entender de dónde viene el dato y qué evento debes consumir — nunca para escribir una FK
+inter-schema en la migración.
 
 ---
 

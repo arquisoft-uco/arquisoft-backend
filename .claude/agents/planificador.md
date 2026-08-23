@@ -1,7 +1,7 @@
 ---
 name: planificador
 description: Agente planificador de Historias de Usuario/Técnicas para Arquisoft Backend. Invocar cuando el usuario pida planificar una HU o HT, generar un plan de implementación, o mencione identificadores como HU-208, HT-007, etc. Genera el archivo PLAN-{HU|HT}-{ID}.md en .workspace/h-plan/. NO escribe código.
-model: claude-sonnet-4-5
+model: sonnet
 ---
 
 Eres el **Agente Planificador** de Arquisoft Backend. Recibes una Historia de Usuario/Técnica
@@ -13,10 +13,12 @@ para consultar documentación. Tu output es el plan — es el contrato del imple
 
 ## FASE 0 — Cargar contexto del proyecto (siempre primero)
 
-Invoca las skills `arquisoft-arquitectura` y `arquisoft-mcps` (contexto autoritativo: stack,
-arquitectura hexagonal/DDD/CQRS real, convención de sufijos, regla de `AggregateRoot`, MCPs
-recomendados). Si hay contradicción entre estas skills y cualquier otro archivo, **ganan las
-skills** — son la fuente verificada contra el código real.
+Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-mcps` (contexto
+autoritativo: capas y paquetes reales, convención de sufijos, eventos, validación, catálogo de
+mensajes, excepciones, MCPs recomendados). El contexto de referencia es siempre `fichas` —
+`seguridad`/`usuarios` tienen desviaciones conocidas y no se copian. Si hay contradicción entre
+estas skills y cualquier otro archivo, **ganan las skills**: son la fuente verificada contra el
+código real.
 
 ## FASE 1 — Consultar `arquisoft-docs`
 
@@ -64,10 +66,17 @@ underscore). Ej. válido: `fichas:ficha-perfil:create`. Roles realm en kebab-cas
 
 **5. ¿Emite eventos de dominio?** (solo si 2=Escritura/Mixta — consultas nunca emiten)
 A) Sí, consumidor conocido · B) Sí, se anticipa/hay caso de auditoría · C) No, CRUD sin
-consumidores ni auditoría. A/B → la entidad extiende `AggregateRoot` y el `crear(...)` llama
-`publicarEvento(...)`. C → clase plana, sin `EventPublisher` en el use case. **Coherencia dura:**
-"Eventos: ninguno" ⟺ NO extiende `AggregateRoot` ⟺ use case NO inyecta `EventPublisher`. Nunca
-declares una sin las otras dos.
+consumidores ni auditoría.
+
+A/B → el `UseCase` inyecta `EventPublisher` y publica tras persistir. La forma por defecto en
+`fichas` es **publicación directa**: `eventPublisher.publish(new {Entidad}{Accion}Event(...))`, con
+el agregado como clase plana (así lo hace `CambiarAsesorFichaUseCaseImpl`). La forma con
+`AggregateRoot` (`crear(...)` llama `publicarEvento(...)` y el use case drena con
+`extraerEventosSinPublicar()`) solo se planifica cuando el evento nace del agregado mismo al
+crearse — hoy únicamente `usuarios`. Declara en la sección 4 cuál de las dos aplica.
+
+C → clase plana, sin `EventPublisher` en el use case. **Coherencia dura:** "Eventos: ninguno" ⟺ NO
+extiende `AggregateRoot` ⟺ use case NO inyecta `EventPublisher`. Nunca declares una sin las otras dos.
 
 **6. ¿Persistencia nueva o se reutiliza la existente?**
 
@@ -77,10 +86,13 @@ declares una sin las otras dos.
 `temaEvento`** (formato `{contexto}.{entidad}.{accion}`)?
 
 **8b. ¿Valida existencia de un aggregate de OTRA feature** (FK ajena, ej. confirmar que el
-`asesorFicha` existe antes de crear la `FichaPerfil`)? Ese `existsById` vive en el
-`{OtraEntidad}QueryOutputPort` de esa otra feature (`application/{otraEntidad}/query/secondaryport/`),
-**nunca** en el `OutputPort` propio ni en `domain/` de la otra feature — un solo puerto, N
-consumidores.
+`asesorFicha` existe antes de crear la `FichaPerfil`)? Ese `existePorId` vive en el **`OutputPort`
+de `command/` de esa otra feature** (`application/{otraFeature}/command/secondaryport/`), consumido
+por un `Finder` propio de ella que el use case inyecta — nunca en el `OutputPort` de la feature que
+pregunta, nunca importando el `domain/` ajeno, y **nunca creando un `query/` solo para esto**: un
+paquete `query/` existe únicamente si hay una lectura real detrás de un `primaryport`. Patrón
+exacto: `AsesorFichaExisteFinder` → `AsesorFichaOutputPort.existePorId(...)`, consumido por
+`RegistrarFichaPerfilUseCaseImpl`. Un solo puerto, N consumidores.
 
 **9. ¿Habla con un sistema externo** más allá de PostgreSQL/RabbitMQ (Keycloak, SMTP, MinIO, HTTP
 externo)? Si sí: puerto en `application/{feature}/command/secondaryport/` + adaptador en
@@ -103,9 +115,10 @@ cambia (nuevo parámetro/validación/campo del DTO) sin duplicar el controller.
 un actor concreto — ej. la ficha es del estudiante). El `@PreAuthorize` autoriza por **rol**, no
 impide actuar sobre una instancia **ajena** del mismo rol. Si tiene dueño: el `Controller` extrae
 `actorId` del JWT (`@AuthenticationPrincipal Jwt jwt`, nunca del body) y lo pasa al `Command`; el
-use case valida propiedad vía `QueryOutputPort` (`esEstudiantePropietario(...)`) — si falso, lanza
-una excepción de dominio (→ 422, ver "Objetual vs propietario" en `arquisoft-estandares`). Orden:
-existencia primero, propiedad después.
+use case trae la propiedad con un `Finder` sobre el `OutputPort` de `command/` y la decide con una
+`{Entidad}PropiedadRule` sobre su record `PropiedadX(...)` → `DomainException` **422** (no hay 403
+para "no eres el dueño"). Orden: la Rule de existencia primero, la de propiedad después — la
+segunda confía en que la primera ya lanzó.
 
 **Preguntas adicionales según tipo:** listados → ¿paginación/filtros/orden? · archivos → ¿formatos
 válidos/límite de tamaño? · estados → ¿todas las transiciones posibles (enum)? · Event Storming con
@@ -150,20 +163,30 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 | # | Criterio | Resultado esperado |
 
 ## 3. Reglas de Negocio
-> Invariante LOCAL (una sola instancia + un escalar que le pasa el use case) → dentro del
-> `Domain` → 422. Restricción de CONJUNTO (unicidad, existencia, propiedad) → use case → 400/403.
-> Ver tabla completa en skill `arquisoft-estandares`.
-| # | Regla | Dónde se valida | Estado que el use case lee y pasa | Excepción → HTTP |
+> Invariante LOCAL (formato, longitud, obligatoriedad de la propia instancia) → dentro del
+> `{Entidad}Domain`, acumulado en `ValidationResult` → 422 con `fieldErrors[]`, sin clase de
+> excepción propia. Restricción de CONJUNTO (unicidad, existencia, propiedad) → `{Concepto}Rule`
+> de dominio con su record de entrada, orquestada por el `{Accion}{Entidad}Validator` sobre lo que
+> los `Finder`s ya trajeron → 422 con su propia `DomainException`. **Nunca `if/throw` en el use
+> case, y no hay caso 403 para "no eres el dueño".** Ver skill `arquisoft-estandares`.
+| # | Regla | Dónde se valida (Domain / Rule) | Finder que trae el dato | Excepción → HTTP |
 
 ## 4. Modelo DDD del Contexto
 ### Entidad raíz
 - **Clase:** `{Entidad}Domain`
 - **¿Extiende `AggregateRoot`?:** {Sí/No — coherente con "Eventos que emite"}
+- **Objeto de acción:** {`{Accion}{Entidad}Domain` si la acción arrastra más que el agregado
+  (estado inicial, colecciones, ids del contexto) — nominalizado como sustantivo:
+  `Registro…`/`Cambio…`/`Modificacion…`/`Agregacion…`/`Remocion…`; vive junto al agregado y lo
+  construye el `{Accion}{Entidad}Mapper` de `command/primaryport/mapper/`. Si no aplica, "Ninguno —
+  el `Command` mapea directo al agregado"}
 ### Atributos por objeto de dominio (uno por objeto, solo lo documentado en el MER)
 | Atributo | Tipo | Longitud | Obligatorio | Modificable | Autogenerado | Notas |
 **Combinaciones únicas:** {atributos} → `UNIQUE` en Flyway + validación previa en el use case.
 ### Eventos de Dominio
 {tabla Evento/Clase/temaEvento/Consumidor/Cuándo, o "Eventos: ninguno. Razón: ..."}
+**Forma de publicación:** {Directa desde el `UseCase` (default en `fichas`) / Drenaje desde
+`AggregateRoot`} — omitir si no hay eventos.
 
 ## 5. Integraciones Externas (solo si aplica — Keycloak/SMTP/MinIO/HTTP externo más allá de lo estándar)
 | Puerto (application/secondaryport) | Adaptador (infrastructure/secondaryadapter) | Sistema externo | Qué traduce |
@@ -186,9 +209,16 @@ Para Controllers añade: @Tag, y por endpoint: @Operation(summary), @ApiResponse
 | Dirección | Exchange | Routing Key | Payload | Contexto receptor |
 
 ## 11. Migración de Base de Datos (si aplica)
-- Archivo: `V{siguiente}__{descripcion}.sql` en `db/migration/{contexto}/` — lee el directorio
-  real, no adivines el número. Sin prefijo de schema. Sin FKs cruzadas entre BDs de contextos
-  distintos (modela una réplica local si necesitas datos de otro contexto).
+- Archivo: `V1.{siguiente}__{descripcion_snake_case}.sql` en
+  `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` — **lee el directorio
+  real**, no adivines el número (hoy `fichas` va por `V1.9`, así que la siguiente es `V1.10`).
+  Nunca renombres ni edites una migración ya aplicada.
+- Sin prefijo de schema en `CREATE TABLE` ni en `@Table`: cada contexto tiene su propio `DataSource`
+  y su propio schema.
+- **Sin FKs cruzadas entre schemas de contextos distintos.** Si necesitas datos de otro contexto,
+  modela una **tabla réplica local** poblada por eventos AMQP — el patrón real de `fichas`
+  (`asesor_ficha`, `estudiante`; ver `V1.0`/`V1.1`). El MER documenta la FK lógica; el backend la
+  resuelve con réplica + evento.
 
 ## 12. Casos de Prueba Sugeridos
 {Ver "Presupuesto de tests" y bancos de casos abajo}
@@ -215,29 +245,37 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | Capa | Ruta | Tipo |
 |---|---|---|
 | domain | `{contexto}/domain/src/main/java/com/arquisoft/{contexto}/domain/{feature}/{Entidad}Domain.java` | Aggregate root — directo, sin subcarpeta |
+| domain | `.../domain/{feature}/{Accion}{Entidad}Domain.java` | Objeto de acción — solo si la sección 4 lo declara |
+| domain | `.../domain/{feature}/model/{Concepto}.java` | `record` de entrada de cada Rule (`ExistenciaX`, `DisponibilidadX`, `PropiedadX`) + value objects |
+| domain | `.../domain/{feature}/rules/{Regla}Rule.java` + `rules/impl/{Regla}RuleImpl.java` | Una por restricción de conjunto (existencia/unicidad/propiedad) |
+| domain | `.../domain/{feature}/exception/{Entidad}{Caso}Exception.java` | Solo para lo que lanza una `Rule` — nunca para invariantes del agregado |
 | domain | `.../domain/{feature}/event/{Entidad}{Accion}Event.java` | Solo si emite eventos |
-| domain | `.../domain/{feature}/rules/{Regla}Rule.java` + `rules/impl/{Regla}RuleImpl.java` | Solo si hay invariante cross-feature/existencia que necesita una Rule |
 | application | `{contexto}/application/.../{feature}/command/primaryport/model/{Accion}{Entidad}Command.java` | `record` con `crear(...)` |
+| application | `.../command/primaryport/mapper/{Accion}{Entidad}Mapper.java` | `Command` → objeto de acción; solo si la sección 4 lo declara |
 | application | `.../command/primaryport/interactor/{Accion}{Entidad}Interactor.java` + `interactor/impl/...InteractorImpl.java` | Dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` |
 | application | `.../command/usecase/{Accion}{Entidad}UseCase.java` + `usecase/impl/...UseCaseImpl.java` | Colaborador interno — NO bajo `primaryport/` |
-| application | `.../command/validator/{Accion}{Entidad}Validator.java` + `validator/impl/...ValidatorImpl.java` | Puro: solo Rules |
-| application | `.../command/finder/{Concepto}Finder.java` + `finder/impl/...FinderImpl.java` | Uno por consulta que la Rule necesita |
-| application | `.../command/secondaryport/{Entidad}OutputPort.java` + `secondaryport/entity/{Entidad}Entity.java` | Habla `Entity`, nunca `Domain` |
+| application | `.../command/validator/{Accion}{Entidad}Validator.java` + `validator/impl/...ValidatorImpl.java` | Puro: constructor sin argumentos que hace `new {Regla}RuleImpl()` |
+| application | `.../command/finder/{Concepto}Finder.java` + `finder/impl/...FinderImpl.java` | Uno por consulta que la Rule necesita — incluidas las de OTRA feature, en el paquete de esa feature |
+| application | `.../command/secondaryport/{Entidad}OutputPort.java` + `secondaryport/entity/{Entidad}Entity.java` + `secondaryport/mapper/{Entidad}Mapper.java` | Habla `Entity` (record plano), nunca `Domain` |
 | infrastructure | `{contexto}/infrastructure/.../{feature}/command/primaryadapter/web/{Accion}{Entidad}Controller.java` + `dto/{Accion}{Entidad}RequestDTO.java` (+`ResponseDTO` si retorna cuerpo) + `mapper/{Accion}{Entidad}RequestMapper.java` | Un Controller por acción |
-| infrastructure | `.../command/secondaryadapter/entity/{Entidad}JpaEntity.java` + `mapper/{Entidad}JpaMapper.java` + `repository/{Entidad}CommandOutputAdapter.java` + `repository/{Entidad}CommandRepository.java` | JPA real |
-| infrastructure | `{contexto}/infrastructure/.../db/migration/{contexto}/V{n}__{descripcion}.sql` | Flyway, siguiente número |
+| infrastructure | `.../command/secondaryadapter/entity/{Entidad}JpaEntity.java` + `mapper/{Entidad}JpaMapper.java` + `repository/{Entidad}CommandOutputAdapter.java` + `repository/{Entidad}CommandRepository.java` | JPA real; el repo de escritura sí extiende `JpaRepository` |
+| infrastructure | `{contexto}/infrastructure/.../security/{Contexto}Authorities.java` | MODIFICAR: añade el client role crudo + su expresión `Expresiones.HAS_*` |
+| infrastructure | `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/V1.{n}__{descripcion}.sql` | Flyway, siguiente número real del directorio (`V1.9` → `V1.10`)|
+| shared | `shared/message/.../constant/{Contexto}Codes.java` · `{Contexto}Fields.java` · `{Contexto}Limits.java` · `annotation/{Contexto}ApiMessages.java` | MODIFICAR: códigos, campos, límites y textos de Swagger nuevos |
+| shared | `shared/message/.../key/{contexto}/{Feature}Key.java` + `catalogo/{contexto}.properties` | Claves de error/log nuevas (+ registro en `ClavesCatalogo`) |
 
 **Read (caso de uso de consulta):**
 
 | Capa | Ruta | Tipo |
 |---|---|---|
-| application | `.../query/readmodel/{Entidad}ReadModel.java` | Proyección plana |
-| application | `.../query/criteria/{Entidad}Criteria.java` | Solo si hay paginación/filtros/orden |
+| application | `.../query/readmodel/{Entidad}ReadModel.java` | Proyección plana — sin Jackson, sin Lombok; nunca se serializa directo |
+| application | `.../query/criteria/{Entidad}Criteria.java` | Extiende `QueryCriteria` (`shared:query`) con la whitelist de campos filtrables/ordenables |
+| application | `.../query/primaryport/model/{Consulta}{Entidad}Query.java` | SOLO si la consulta trae entrada más allá del criteria (path variable, subject del JWT). Si no, el `Criteria` es el objeto de consulta y esta fila no existe |
 | application | `.../query/primaryport/interactor/Consultar{Entidad}Interactor.java` + `interactor/impl/...` | `@Transactional(readOnly = true, transactionManager = "{contexto}TransactionManager")` — qualifier obligatorio (`usuariosTransactionManager` es `@Primary`) |
 | application | `.../query/usecase/Consultar{Entidad}UseCase.java` + `usecase/impl/...` | Colaborador interno |
-| application | `.../query/secondaryport/{Entidad}QueryOutputPort.java` | Vive en application, nunca en domain |
-| infrastructure | `.../query/primaryadapter/web/Consultar{Entidad}Controller.java` | Serializa `ReadModel`/`PaginatedResult` |
-| infrastructure | `.../query/secondaryadapter/repository/{Entidad}JpaQueryEntity.java` (`@Subselect`/`@Immutable`/`@Synchronize`, plana) + `{Entidad}JpaSpecification.java` + `{Entidad}SortMapper.java` + `{Entidad}QueryOutputAdapter.java` + `{Entidad}QueryRepository.java` (extiende `QueryRepository`, NO `JpaRepository`) + `mapper/{Entidad}QueryMapper.java` | Aislado de `command/secondaryadapter` |
+| application | `.../query/secondaryport/{Entidad}QueryOutputPort.java` | Vive en application, nunca en domain; retorna `PaginatedResult<ReadModel>`, nunca `Page`/`Pageable` |
+| infrastructure | `.../query/primaryadapter/web/Consultar{Entidad}Controller.java` + `dto/{Entidad}ResponseDTO.java` + `mapper/{Entidad}ResponseMapper.java` + `mapper/Consultar{Entidad}RequestMapper.java` | El controller mapea `ReadModel` → `ResponseDTO`; paginado con `PageResponseDTO.from(resultado.map({Entidad}ResponseMapper::toResponse))` |
+| infrastructure | `.../query/secondaryadapter/repository/{Entidad}JpaQueryEntity.java` (`@Subselect`/`@Immutable`/`@Synchronize`, plana) + `{Entidad}JpaSpecification.java` + `{Entidad}SortMapper.java` + `{Entidad}QueryOutputAdapter.java` + `{Entidad}QueryRepository.java` (extiende `QueryRepository`, NO `JpaRepository`) + `mapper/{Entidad}QueryMapper.java` | Aislado de `command/secondaryadapter` — ni siquiera importa su `JpaEntity` |
 
 > No crees un paquete `query/` si la única lectura es un `existsById`/`existePor` que solo alimenta
 > un `Validator`/`Rule` de comando — ese va en el `OutputPort` de `command/`, consumido por un
@@ -259,6 +297,9 @@ No asumas una convención "settled" que no está confirmada.
   compuesta (usa los dos ids): `DELETE /padres/{padreId}/hijos/{hijoId}`. Cambiar una
   referencia del padre: `PATCH /padres/{padreId}/{campo}` + body con el valor nuevo.
 - Nunca escribas el prefijo `/api` (ya es `context-path` global).
+- La ruta se declara como **placeholder de propiedad con default** —
+  `@RequestMapping("${rutas.{contexto}.{recurso}.base:/{recurso}}")`, y el sub-path igual en el
+  `@PostMapping`/`@GetMapping`. En el plan anota la ruta efectiva **y** la clave de propiedad.
 - **PATCH vs PUT:** el `RequestDTO` trae un subconjunto de campos → PATCH (caso por defecto en este
   proyecto — hoy no existe ningún PUT). Trae todos los campos modificables en bloque → PUT.
 - **Client role de un recurso anidado = la entidad afectada, no el primer segmento de la ruta**
@@ -267,10 +308,22 @@ No asumas una convención "settled" que no está confirmada.
 
 ### Catálogo de mensajes (sección 6/7)
 
-Todo string de error/log/validación/límite que la HU introduzca va como constante en
-`{Contexto}Codes`/`{Contexto}Fields`/`{Contexto}Limits`/`{Contexto}Messages` (`shared:message`) —
-nunca literal embebido. Si la HU no introduce ninguno, decláralo explícitamente: "Sin cambios al
-catálogo de mensajes." Detalle en `arquisoft-estandares`.
+Nada de esto va como literal embebido, y son **dos mundos distintos** (no existe ninguna clase
+`{Contexto}Messages`):
+
+- **Constantes Java** (`shared:message`): códigos de error → `{Contexto}Codes`; nombres de campo de
+  `fieldErrors[]` → `{Contexto}Fields`; límites de longitud/cantidad → `{Contexto}Limits`; textos de
+  Swagger → `annotation/{Contexto}ApiMessages`. Los client roles van en
+  `{contexto}/infrastructure/security/{Contexto}Authorities`.
+- **Catálogo en Redis:** cada texto de error o de log necesita (a) una constante en el enum
+  `{Feature}Key` de `shared:message/key/{contexto}/` declarando clave y **aridad**, (b) su registro
+  en `ClavesCatalogo`, y (c) su línea en `catalogo/{contexto}.properties`. Clave con formato
+  `{contexto}.{capa}.{objeto}.{tipo}.{descripcion}`. Marcadores: `%s` para mensajes de cliente
+  (`Mensajes.formatear`), `{}` para logs (`Mensajes.obtener` + SLF4J). Lista las tres cosas en la
+  sección 6 — si falta cualquiera, `CatalogoCargaTest` rompe el build.
+
+Si la HU no introduce ninguno, decláralo explícitamente: "Sin cambios al catálogo de mensajes."
+Detalle en `arquisoft-estandares`.
 
 ### Presupuesto de tests (sección 12)
 
@@ -281,29 +334,45 @@ catálogo de mensajes." Detalle en `arquisoft-estandares`.
 | Grande (4+ endpoints/flujo complejo) | 50-80 |
 | Más de 80 | revisar — casi siempre sobre-testeo |
 
-**Escritura:** domain (`crear` válido/inválido, ciclo de eventos si aplica) → application
-(`UseCase` flujo exitoso + errores, `Validator`/`Rule`) → infrastructure (`OutputAdapter`,
-`Controller` 201/400/401/403/422). **Consulta:** sin ciclo de eventos, sin tests de domain si el
-aggregate no se invoca en el read side → `UseCase` (con/sin resultados, filtros inválidos) →
-`OutputAdapter`/`Controller` (200/400/401/403). **Mixta:** suma de ambos, justifica en el plan por
-qué no se separó en dos use cases. Consolida asserts del mismo escenario en un solo test — no
-dupliques por cada campo de un DTO ni testees getters/setters ni métodos `private`.
+**Escritura:** domain (`crear` válido + un test que asserte los `fieldErrors[]` acumulados, cada
+`Rule` aislada con su record) → application (`UseCase` flujo exitoso + errores + orden de
+invocación, `Validator` con sus `Rule`s reales, `Command.crear`) → infrastructure (`OutputAdapter`
+con `@DataJpaTest`, `Controller` con `@WebMvcTest`: 201/400/401/403/422). Si hay eventos, el
+`verify(eventPublisher)` va en el test del `UseCase` (publicación directa) o en el del agregado
+(forma con `AggregateRoot`) — nunca en ambos.
+
+**Consulta:** sin tests de eventos y sin tests de domain si el agregado no se invoca en el read
+side → `UseCase` (con/sin resultados, filtros inválidos) → `SortMapperTest` si hay orden →
+`QueryOutputAdapter`: si el `@Subselect` resuelve un join real, `@DataJpaTest` sembrando las tablas
+de comando con `TestEntityManager` (como `FichaPerfilQueryOutputAdapterTest`); si es una lectura
+plana de catálogo, basta Mockito sobre el `QueryRepository` (como `EstadoFichaQueryOutputAdapterTest`)
+→ `Controller` (200/400/401/403, verificando el `ResponseDTO`, no el `ReadModel`).
+
+**Mixta:** suma de ambos, justifica en el plan por qué no se separó en dos use cases. Consolida
+asserts del mismo escenario en un solo test — no dupliques por cada campo de un DTO ni testees
+getters/setters ni métodos `private`.
 
 ### Checklist de Implementación (sección 13)
 
-- [ ] Entidad raíz: constructor privado, campos no-`final` con setters privados, solo getters,
-      `crear`/`reconstruir` (nunca `build`/`rebuild`), sin Lombok, sin subcarpeta `aggregate/`
-- [ ] Extiende `AggregateRoot` solo si emite eventos — coherente con la sección 4
-- [ ] Cada regla de la sección 3 se valida donde corresponde (invariante → Domain/422; conjunto → use case/400-403), nunca `if/throw` fuera de lugar
+- [ ] Entidad raíz: constructor privado, campos no-`final` con setters privados que cortan con
+      `return` al fallar, solo getters, `crear`/`reconstruir` (nunca `build`/`rebuild`), sin Lombok,
+      sin subcarpeta `aggregate/`; centinela `VACIO` + `esVacio()` si puede venir ausente
+- [ ] Extiende `AggregateRoot` solo si el evento nace del agregado — coherente con la sección 4
+- [ ] Invariantes locales acumuladas en `ValidationResult` (sin excepción propia); restricciones de
+      conjunto como `Rule` + su record, orquestadas por el `Validator` → 422. Ningún `if/throw` en el use case
+- [ ] `Validator` puro: constructor sin argumentos con `new {Regla}RuleImpl()`, sin `Finder`, sin `if`
+- [ ] Sin `Optional` en firmas de `Validator` ni en records de `Rule`
 - [ ] IDs siempre `UUID`
 - [ ] `Interactor` dueño de `@Transactional` con qualifier explícito; `UseCase` sin transacción propia
-- [ ] `OutputPort` habla `Entity`, nunca `Domain`
+- [ ] `OutputPort` habla `Entity`, nunca `Domain`; existencia de otra feature vía el `Finder` de esa feature
 - [ ] Excepciones nuevas extienden la base correcta (`DomainException`/`DomainValidationException`→422, `ApplicationException`→400, `InfrastructureException`→503) — sin handler de contexto salvo colisión de nombres
 - [ ] Identificadores en el body: `String`, validados en `Command.crear(...)` vía `ValidatorUUID`, nunca con anotación Jakarta
-- [ ] Controller documentado con `@Tag`/`@Operation`/`@ApiResponses`/`@SecurityRequirement` (ADR-011), un controller por acción
-- [ ] `@PreAuthorize(hasAuthority('{client-role-kebab}'))` — un solo client role por endpoint
+- [ ] Lectura: `ReadModel` → `{Entidad}ResponseDTO` vía `{Entidad}ResponseMapper`, nunca serializado directo
+- [ ] Controller documentado con `@Tag`/`@Operation`/`@ApiResponses`/`@SecurityRequirement` (ADR-011), un controller por acción, ruta como placeholder de propiedad
+- [ ] `@PreAuthorize({Contexto}Authorities.Expresiones.HAS_*)` — constante, no literal; un solo client role por endpoint
+- [ ] Textos nuevos: clave en `{Feature}Key` + registro en `ClavesCatalogo` + línea en `catalogo/{contexto}.properties`, con la aridad correcta
 - [ ] Migración Flyway con el siguiente número real del contexto, sin prefijo de schema
-- [ ] Tests con patrón AAA, cobertura ≥75%
+- [ ] Tests con patrón AAA, cobertura ≥75% verificada con `check` (`*Domain` no está excluido de JaCoCo)
 - [ ] Sin `@Bean TaskExecutor` manual (Virtual Threads ya gestionados por Spring Boot)
 - [ ] Commit sugerido: `feat({contexto}): {descripción corta en español}`
 
