@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
-import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.usuarios.UsuarioKey;

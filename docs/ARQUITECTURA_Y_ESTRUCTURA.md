@@ -136,7 +136,8 @@ arquisoft-backend/
 │   ├── util/                             # UtilTexto, UtilUUID, UtilColeccion, UtilFecha, UtilNumero, UtilObjeto, UtilEnum
 │   ├── exception/                        # BaseException/BaseError y las 5 excepciones base (módulo hoja, sin dependencias)
 │   ├── validation/                       # ValidatorObjeto/Texto/Longitud/Numero/UUID/Coleccion + ValidationResult (Notification Pattern)
-│   ├── domain/                           # DomainEvent, EventPublisher (com.arquisoft.shared.events), DomainRule/Finder (com.arquisoft.shared.rules)
+│   ├── domain/                           # DomainEvent (com.arquisoft.shared.events), DomainRule (com.arquisoft.shared.rules) — lo unico que la capa de dominio puede ver
+│   ├── application/                      # UseCase/Interactor/Finder + EventPublisher (puerto) — contratos de la capa de aplicacion
 │   ├── logger/                           # AppLogger + Slf4jAppLogger (bean prototype de AppLoggerConfig)
 │   ├── redis/                            # RedisClient
 │   ├── amqp/                             # SpringModulithEventPublisher, RabbitMQEventPublisher, AbstractEventConsumer, RabbitMQConfig
@@ -249,7 +250,7 @@ persistencia (ver *Aislamiento CQRS* más abajo).
     │   │   └── impl/{Accion}{Entidad}UseCaseImpl.java          # @Component, orquesta, sin transacción
     │   ├── validator/{Accion}{Entidad}Validator.java           # Interfaz
     │   │   └── impl/{Accion}{Entidad}ValidatorImpl.java        # @Component, solo inyecta Rules
-    │   ├── finder/{Concepto}Finder.java                        # Extiende shared.rules.Finder<T,R>
+    │   ├── finder/{Concepto}Finder.java                        # Extiende shared.finder.Finder<T,R>
     │   │   └── impl/{Concepto}FinderImpl.java                  # @Component, delega en el OutputPort
     │   ├── secondaryport/{Entidad}OutputPort.java              # Puerto de salida (escritura)
     │   │   ├── entity/{Entidad}Entity.java                     # record plano: sin JPA, sin Lombok
@@ -560,7 +561,8 @@ El módulo `shared` contiene **13 sub-módulos** reutilizables por cualquier con
 | `util` | UtilTexto, UtilUUID, UtilColeccion, UtilFecha, UtilNumero, UtilObjeto | Helpers estáticos sin estado |
 | `exception` | BaseException/BaseError + 5 excepciones base | Jerarquía de excepciones del proyecto; sin dependencias propias (hoja del grafo) |
 | `validation` | DomainValidator, ValidationResult, DomainValidationException, ApplicationValidationException | Notification Pattern: acumula errores en vez de lanzar en el primero |
-| `domain` | DomainEvent | Clase base para eventos de dominio |
+| `domain` | DomainEvent, DomainRule | Lo unico que la capa de dominio puede ver |
+| `application` | UseCase, VoidUseCase, Interactor, VoidInteractor, Finder, EventPublisher | Contratos de la capa de aplicacion. Separado de `domain` para que el compilador impida que un agregado implemente un `UseCase` o inyecte un puerto |
 | `logger` | AppLogger (interface) | Logging desacoplado de SLF4J |
 | `redis` | RedisClient (interface) | Operaciones de cache |
 | `amqp` | EventPublisher (interface) | Publicar eventos a RabbitMQ |

@@ -1,7 +1,7 @@
 package com.arquisoft.shared.amqp;
 
 import com.arquisoft.shared.events.DomainEvent;
-import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import lombok.extern.slf4j.Slf4j;

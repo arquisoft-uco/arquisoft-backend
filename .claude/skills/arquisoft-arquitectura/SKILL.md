@@ -231,6 +231,22 @@ Ejemplo real: `RegistrarFichaPerfilUseCaseImpl` confirma que el asesor existe co
 `estudiante`, `representantecomite` y `evaluacionfichaperfil` no tienen paquete `query/` por lo
 mismo.
 
+
+## `shared:domain` vs `shared:application` — la frontera la sostiene el compilador
+
+`shared:domain` solo tiene `DomainEvent` (`com.arquisoft.shared.events`) y `DomainRule`
+(`com.arquisoft.shared.rules`). Todo lo demás vive en `shared:application`: `UseCase`/`VoidUseCase`
+(`com.arquisoft.shared.usecase`), `Interactor`/`VoidInteractor` (`com.arquisoft.shared.interactor`),
+`Finder` (`com.arquisoft.shared.finder`) y el puerto `EventPublisher`
+(`com.arquisoft.shared.publisher`).
+
+Antes eran un solo módulo llamado `domain`, así que `{contexto}/domain` recibía `UseCase` e
+`Interactor` en su classpath y un agregado podía implementarlos sin que nada fallara. Hoy no
+compila. **Un `{contexto}/domain/build.gradle` nunca declara `shared:application`** — si parece
+necesitarlo, el tipo que se está buscando pertenece a la capa de aplicación. `{contexto}/application`
+e `{contexto}/infrastructure` sí lo declaran: el controller inyecta el `Interactor`, cuyo
+`ejecutar(...)` se declara en la interfaz compartida.
+
 ## Eventos de dominio — una sola forma
 
 El `UseCase` publica directamente tras persistir —
