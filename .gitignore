@@ -48,7 +48,6 @@ logs/
 .env.properties
 .env*.properties
 .env
-.env.example
 *.key
 
 .claude/settings.local.json
