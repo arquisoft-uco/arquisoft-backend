@@ -4,6 +4,7 @@ dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:jpa')
     implementation project(':shared:web')
+    implementation project(':shared:logger')
 
     // shared:tracing — GlobalAppExceptionHandler lee la correlacion de la traza, y los
     // slices @WebMvcTest importan TrazabilidadConfig para satisfacer esa dependencia.
