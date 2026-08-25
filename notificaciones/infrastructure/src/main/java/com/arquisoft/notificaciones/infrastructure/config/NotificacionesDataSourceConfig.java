@@ -96,7 +96,7 @@ public class NotificacionesDataSourceConfig {
         return Flyway.configure()
                 .dataSource(dataSource)
                 .locations("classpath:db/migration/notificaciones")
-                .baselineOnMigrate(true)
+                .baselineOnMigrate(false)
                 .load();
     }
 }

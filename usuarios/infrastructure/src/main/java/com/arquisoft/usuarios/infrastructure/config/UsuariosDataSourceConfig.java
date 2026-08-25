@@ -90,7 +90,7 @@ public class UsuariosDataSourceConfig {
         return Flyway.configure()
                 .dataSource(dataSource)
                 .locations("classpath:db/migration/usuarios")
-                .baselineOnMigrate(true)
+                .baselineOnMigrate(false)
                 .load();
     }
 }
