@@ -1,633 +1,353 @@
-> [!WARNING]
-> **SOLO LECTURA — NO USAR COMO CONTEXTO DE AGENTES O IA**
->
-> Este archivo es documentación de referencia para desarrolladores humanos.
-> **No debe ser leído ni indexado por agentes, asistentes de IA ni herramientas de generación de código.**
-> El contexto autoritativo del proyecto para agentes reside exclusivamente en `AGENTS.md` (raíz del repositorio)
-> y en los skills de `.opencode/skills/`. Usar este archivo como contexto puede producir código incorrecto,
-> versiones desactualizadas o convenciones que no reflejan el estado real del proyecto.
+> [!NOTE]
+> Documentación de referencia humana. Los agentes cargan `.claude/skills/arquisoft-arquitectura/SKILL.md`
+> y `.claude/skills/arquisoft-estandares/SKILL.md` como contexto conciso, y vienen aquí solo para el
+> detalle extendido.
 
-# Arquitectura Hexagonal Asincrónica para Arquisoft
+# Arquitectura Asincrónica de Arquisoft — Eventos de Dominio + Outbox
 
 ## Índice
 
 1. [Visión General](#visión-general)
-2. [Los 7 Contextos de Arquisoft](#los-7-contextos-de-arquisoft)
-3. [Desacoplamiento Asincrónico via Message Queue](#desacoplamiento-asincrónico-via-message-queue)
-4. [Estructura Modular Multi-Contexto](#estructura-modular-multi-contexto)
-5. [Stack Tecnológico Completo](#stack-tecnológico-completo)
-6. [Ejemplo: Flujo de Eventos End-to-End](#ejemplo-flujo-de-eventos-end-to-end)
-7. [Configuración RabbitMQ por Contexto](#configuración-rabbitmq-por-contexto)
-8. [Monitoreo y Trazabilidad](#monitoreo-y-trazabilidad)
-9. [Despliegue](#despliegue)
+2. [Qué contextos publican y consumen eventos hoy](#qué-contextos-publican-y-consumen-eventos-hoy)
+3. [Outbox Pattern — Atomicidad entre BD y broker](#outbox-pattern--atomicidad-entre-bd-y-broker)
+4. [Configuración de RabbitMQ](#configuración-de-rabbitmq)
+5. [Ejemplo real end-to-end: `AsesorFichaCambiadoEvent`](#ejemplo-real-end-to-end-asesorfichacambiadoevent)
+6. [Convención de colas y routing keys](#convención-de-colas-y-routing-keys)
+7. [Confiabilidad: reintentos, DLQ, trazabilidad](#confiabilidad-reintentos-dlq-trazabilidad)
+8. [Stack tecnológico](#stack-tecnológico)
+9. [Referencias](#referencias)
 
 ---
 
 ## Visión General
 
-Arquisoft implementa una **Arquitectura Hexagonal Modular con Desacoplamiento Asincrónico**:
+Arquisoft es un **monolito modular** con **9 bounded contexts** (`seguridad`, `usuarios`,
+`fichas`, `notificaciones`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`,
+`evaluaciones`), cada uno con su propia base de datos y sin dependencias directas entre sí en
+tiempo de compilación. **Solo `seguridad`, `usuarios`, `fichas` y `notificaciones` tienen
+implementación real hoy**; el resto es scaffolding (solo `{Contexto}DataSourceConfig`, sin
+dominio ni casos de uso todavía) — por eso este documento no describe flujos de eventos para
+esos cinco contextos: no existen todavía.
 
-- **7 Contextos Independientes** en un único backend monolítico
-- **Comunicación Asincrónica** via RabbitMQ para desacoplamiento entre contextos
-- **Baja Latencia** en respuestas al usuario (procesar en background)
-- **Logs Centralizados** para auditoría y trazabilidad
-- **Stack Completo** (Keycloak, PostgreSQL, RabbitMQ, Redis, Nextcloud)
-
-### Arquitectura: Hexagonal + Async
+Donde dos contextos con implementación real necesitan comunicarse, lo hacen exclusivamente
+**publicando y consumiendo eventos de dominio via RabbitMQ** — nunca con una llamada directa
+entre módulos ni compartiendo su base de datos. El publicador no sabe quién consume el evento
+ni cuántos consumidores hay.
 
 ```
-ARQUITECTURA ARQUISOFT (HEXAGONAL + ASYNC):
-┌──────────────┐       ┌──────────────┐       ┌──────────────┐
-│ Controller   │       │ EventListener│       │ ScheduledTask│
-│   (IN)       │       │   (IN)       │       │   (IN)       │
-└──────┬───────┘       └──────┬───────┘       └──────┬───────┘
-       │ (SÍNCRONO)            │ (ASYNC)            │ (ASYNC)
-       ▼                       ▼                     ▼
-┌─────────────────────────────────────────────────────────┐
-│                     RabbitMQ                            │
-│            (Topic Exchange: arquisoft.events)           │
-└──────────────────────┬────────────────────────────────┘
-                       │
-       ┌───────────────┼───────────────┐
-       │               │               │
-       ▼               ▼               ▼
-   CONTEXT A      CONTEXT B       CONTEXT C
-   (Fichas)      (Proyectos)    (Evaluaciones)
-   
-   ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-   │ Domain      │ │ Domain      │ │ Domain      │
-   │ UseCase     │ │ UseCase     │ │ UseCase     │
-   │ Repository  │ │ Repository  │ │ Repository  │
-   └──────┬──────┘ └──────┬──────┘ └──────┬──────┘
-          │               │               │
-          └───────────────┼───────────────┘
-                          │
-                          ▼
-                  [PostgreSQL + Redis]
+UseCase (transacción)
+    │
+    ├── persiste el aggregate en la BD del contexto
+    └── EventPublisher.publish(evento)
+            │
+            ▼
+    Spring Modulith intercepta y persiste el evento
+    en event_publication — MISMA transacción, MISMA BD
+            │
+        (COMMIT)
+            │
+            ▼
+    Tras el commit, Spring Modulith publica a RabbitMQ
+    (routing key = temaEvento del evento)
+            │
+            ▼
+    Exchange "arquisoft.events" (Topic, durable)
+            │
+    ┌───────┴───────┐
+    ▼               ▼
+Cola contexto A   Cola contexto B
+(un @RabbitListener por contexto consumidor)
 ```
 
 ---
 
-## Los 7 Contextos de Arquisoft
+## Qué contextos publican y consumen eventos hoy
 
-Cada contexto es un **módulo hexagonal independiente** con su propio:
-- Domain (modelos + puertos)
-- Application (casos de uso + DTOs)
-- Infrastructure (controladores + repositorios + event listeners)
+| Evento | `temaEvento` (routing key) | Publica | Consume | Efecto |
+|---|---|---|---|---|
+| `UsuarioCreadoEvent` | `usuarios.usuario.creado` | `usuarios` | `fichas` (`UsuarioCreadoConsumer`) | `fichas` necesita saber que un usuario existe para ciertos flujos propios |
+| `AsesorFichaCambiadoEvent` | `fichas.ficha_perfil.asesor_cambiado` | `fichas` | `notificaciones` (`AsesorFichaCambiadoConsumer`) | Envía el correo de notificación al nuevo asesor |
 
-### Contextos
+Estos son, hoy, los **únicos dos flujos de eventos reales** del sistema. No existe un exchange
+o cola por cada combinación teórica de contextos — solo se crea la cola que un consumidor real
+necesita, cuando existe ese consumidor.
 
-| # | Contexto | Responsabilidad | Entidades Principales | Eventos que Emite |
-|---|----------|----------------|----------------------|-------------------|
-| 1 | **Seguridad** | Autenticación, autorización, roles, rate limiting | UserRole, Token, Session | `seguridad.usuario.creado` |
-| 2 | **Fichas** | Fichas de caracterización de trabajos de grado | Ficha, TemaProyecto, AreaConocimiento | `FichaCreada`, `FichaAprobada`, `FichaRechazada` |
-| 3 | **Proyectos** | Creación y gestión de proyectos de grado | Proyecto, EstadoProyecto, Línea | `ProyectoCreado`, `ProyectoAsignado`, `ProyectoFinalizado` |
-| 4 | **Artefactos** | Gestión de documentos y artefactos | Artefacto, VersionArtefacto, Observacion | `ArtefactoCreado`, `ArtefactoCatalogado`, `ArtefactoEvaluado` |
-| 5 | **Repositorio Artefactos** | Control de versiones y almacenamiento | RepositorioArtefacto, Version | `VersionPublicada`, `VersionArchivada` |
-| 6 | **Entregables** | Gestión de entregables e hitos | EntregableProyectoGrado, Hito | `EntregableCreado`, `EntregableSubido`, `EntregableEvaluado` |
-| 7 | **Evaluaciones** | Evaluaciones finales y calificaciones | EvaluacionFinal, Criterio, Calificacion | `EvaluacionCreada`, `EvaluacionCalificada`, `EvaluacionFinalizada` |
-
----
-
-## Desacoplamiento Asincrónico via Message Queue
-
-### Arquitectura de Eventos
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    CONTEXTO FICHAS                               │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │ Controller: POST /api/fichas → Crear Ficha               │   │
-│  │ • Responde inmediatamente al cliente (~100ms)            │   │
-│  │ • Retorna: {"id": 1, "titulo": "Mi Ficha"}              │   │
-│  └──────────────────┬───────────────────────────────────────┘   │
-│                     │                                             │
-│  ┌──────────────────▼───────────────────────────────────────┐   │
-│  │ UseCase: CrearFichaUseCase                               │   │
-│  │ • Validar datos                                          │   │
-│  │ • Guardar en BD                                          │   │
-│  │ • Emitir evento: FichaCreada { id, titulo, area }       │   │
-│  └──────────────────┬───────────────────────────────────────┘   │
-│                     │                                             │
-│  ┌──────────────────▼───────────────────────────────────────┐   │
-│  │ EventPublisher: Publish a RabbitMQ                       │   │
-│  │ • Routing Key: fichas.creada                             │   │
-│  │ • Exchange: arquisoft.events                             │   │
-│  └──────────────────┬───────────────────────────────────────┘   │
-└─────────────────────┼─────────────────────────────────────────────┘
-                      │
-                      │ [ASYNC - No bloquea al usuario]
-                      │
-        ┌─────────────▼──────────────┐
-        │    RabbitMQ Exchange        │
-        │ (tipo: Topic)               │
-        │ (nombre: arquisoft.events)  │
-        └─────────────┬──────────────┘
-                      │
-        ┌─────────────┴───────────────┐
-        │                             │
-        ▼                             ▼
-   Queue:                        Queue:
-   proyectos.events          artefactos.events
-        │                         │
-        ▼                         ▼
-   ┌──────────────┐        ┌──────────────┐
-   │ CONTEXTO     │        │ CONTEXTO     │
-   │ PROYECTOS    │        │ ARTEFACTOS   │
-   │ EventListener│        │ EventListener│
-   └──────────────┘        └──────────────┘
-```
-
-### Beneficios
-
-- **Latencia Baja**: Respuesta inmediata al usuario (~100ms)
-- **Desacoplamiento**: Contextos independientes en tiempo de ejecución
-- **Escalabilidad**: Más eventos sin degradar respuestas
-- **Confiabilidad**: Si falla un consumer, el evento sigue en la queue
-- **Auditoría**: Todos los eventos quedan registrados
-
----
-
-## Estructura Modular Multi-Contexto
-
-### Estructura Base
-
-```
-arquisoft-backend/
-│
-├── build.gradle
-├── settings.gradle
-├── gradle.properties
-├── docker-compose.yml
-├── init-db.sql
-│
-├── shared/                           # Utilidades compartidas (7 sub-módulos)
-│   ├── domain/                       # DomainEvent, AggregateRoot
-│   ├── exceptions/                   # DomainException
-│   ├── amqp/                         # EventPublisher interface
-│   ├── postgres/                     # BaseRepository
-│   ├── redis/                        # RedisClient
-│   ├── web/                          # HttpClient
-│   └── validation/                   # @ValidEmail
-│
-├── seguridad/                        # CONTEXTO 1: Auth/Seguridad
-│   ├── domain/
-│   ├── application/
-│   └── infrastructure/
-│
-├── fichas/                           # CONTEXTO 2
-│   ├── domain/
-│   ├── application/
-│   └── infrastructure/
-│
-├── proyectos/                        # CONTEXTO 3
-├── artefactos/                       # CONTEXTO 4
-├── repositorio_artefactos/           # CONTEXTO 5
-├── entregables/                      # CONTEXTO 6
-└── evaluaciones/                     # CONTEXTO 7
-```
-
-### Dependencias Gradle (por contexto)
-
-```gradle
-// {contexto}/domain/build.gradle
-dependencies {
-    implementation project(':shared:domain')
-}
-
-// {contexto}/application/build.gradle
-dependencies {
-    implementation project(':{contexto}:domain')
-}
-
-// {contexto}/infrastructure/build.gradle
-dependencies {
-    implementation project(':{contexto}:domain')
-    implementation project(':{contexto}:application')
-    implementation project(':shared:amqp')       // Para publicar eventos
-    implementation project(':shared:postgres')   // Para repositorios JPA
-    implementation "org.springframework.boot:spring-boot-starter-web"
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
-    implementation "org.springframework.amqp:spring-rabbit"
-    runtimeOnly 'org.postgresql:postgresql'
-}
-```
-
----
-
-## Stack Tecnológico Completo
-
-### Backend
-
-```
-Framework: Spring Boot 4.0.5
-├─ Spring Web (REST APIs)
-├─ Spring Data JPA (ORM)
-├─ Spring AMQP (RabbitMQ)
-├─ Spring Data Redis (Cache)
-├─ Spring Security + OAuth2 (Keycloak)
-├─ Lombok (reduce boilerplate)
-└─ JUnit 6.0.3 + Mockito + AssertJ (testing)
-```
-
-### Infraestructura
-
-```
-Message Queue: RabbitMQ 4.2.5
-├─ Exchange: Topic (arquisoft.events)
-├─ Queues: Una por contexto
-├─ DLQ: Dead Letter Queue para errores
-└─ Persistence: Durable queues
-
-Database: PostgreSQL 18
-├─ 7 Schemas (1 por contexto)
-├─ Migrations: Flyway 11.20.3
-├─ Connection Pool: HikariCP
-└─ Testing: H2
-
-Cache: Redis 7+
-├─ Session store
-├─ Cache distribuido
-└─ Rate limiting data
-
-Auth: Keycloak 26.6
-├─ OpenID Connect
-├─ OAuth2 / JWT
-└─ 8 roles predefinidos
-
-Storage: Nextcloud 27+
-├─ WebDAV API
-├─ Versioning
-└─ Activity Log
-```
-
----
-
-## Ejemplo: Flujo de Eventos End-to-End
-
-### Caso de Uso: Estudiante Sube Entregable
-
-#### Paso 1: Request Síncrono
-
-```http
-POST /api/entregables HTTP/1.1
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
-
-proyectoId=123
-descripcion=Entrega Fase 1
-archivo=documento.pdf
-```
-
-#### Paso 2: Controller responde inmediatamente
+Cada evento de dominio extiende `DomainEvent` (`shared:domain`, paquete
+`com.arquisoft.shared.events`) y declara sus propios campos tipados — `DomainEvent` no tiene
+`aggregateId` genérico:
 
 ```java
-// entregables/infrastructure/adapter/in/EntregablesController.java
-@RestController
-@RequestMapping("/api/entregables")
-@RequiredArgsConstructor
-public class EntregablesController {
-    private final CrearEntregableUseCase crearEntregableUseCase;
+// fichas/domain/.../fichaperfil/event/AsesorFichaCambiadoEvent.java
+public class AsesorFichaCambiadoEvent extends DomainEvent {
 
-    @PostMapping
-    public ResponseEntity<EntregableResponse> crearEntregable(
-            @Valid @RequestBody CrearEntregableRequest request) {
-        
-        Entregable entregable = crearEntregableUseCase.ejecutar(
-            new CrearEntregableCommand(
-                request.getProyectoId(),
-                request.getDescripcion(),
-                request.getArchivo()
-            )
-        );
-        
-        return ResponseEntity.status(HttpStatus.CREATED)
-            .body(EntregableResponse.from(entregable));
+    public static final String EVENT_TOPIC = "fichas.ficha_perfil.asesor_cambiado";
+    public static final String EVENT_TYPE  = "AsesorFichaCambiadoEvent";
+
+    private final UUID fichaPerfilId;
+    private final String tituloProyecto;
+    private final UUID asesorFichaId;
+    private final String asesorNombre;
+    private final String asesorEmail;
+
+    public AsesorFichaCambiadoEvent(UUID fichaPerfilId, String tituloProyecto,
+            UUID asesorFichaId, String asesorNombre, String asesorEmail) {
+        super(EVENT_TOPIC, EVENT_TYPE);   // idEvento, ocurridoEn se generan automáticamente
+        this.fichaPerfilId = fichaPerfilId;
+        this.tituloProyecto = tituloProyecto;
+        this.asesorFichaId = asesorFichaId;
+        this.asesorNombre = asesorNombre;
+        this.asesorEmail = asesorEmail;
     }
+    // getters...
 }
-```
-
-#### Paso 3: Domain emite evento
-
-```java
-// entregables/domain/model/Entregable.java
-public class Entregable extends AggregateRoot {
-    private Long id;
-    private Long proyectoId;
-    private String descripcion;
-    private String archivoUrl;
-    private LocalDateTime fechaCreacion;
-
-    public static Entregable crear(Long proyectoId, String descripcion, String archivoUrl) {
-        Entregable e = new Entregable();
-        e.proyectoId = proyectoId;
-        e.descripcion = descripcion;
-        e.archivoUrl = archivoUrl;
-        e.fechaCreacion = LocalDateTime.now();
-        
-        e.publishEvent(new EntregableSubidoEvent(
-            e.id, proyectoId, descripcion, archivoUrl, LocalDateTime.now()
-        ));
-        return e;
-    }
-}
-```
-
-#### Paso 4: UseCase publica evento
-
-```java
-// entregables/application/usecase/CrearEntregableUseCaseImpl.java
-@Service
-@RequiredArgsConstructor
-public class CrearEntregableUseCaseImpl implements CrearEntregableUseCase {
-    private final EntregableRepositoryPort entregableRepository;
-    private final EventPublisher eventPublisher;
-
-    @Override
-    public Entregable ejecutar(CrearEntregableCommand command) {
-        Entregable entregable = Entregable.crear(
-            command.getProyectoId(),
-            command.getDescripcion(),
-            command.getArchivoUrl()
-        );
-
-        Entregable saved = entregableRepository.save(entregable);
-        saved.getUnPublishedEvents().forEach(eventPublisher::publish);
-        saved.clearUnPublishedEvents();
-        return saved;
-    }
-}
-```
-
-#### Paso 5: Otros contextos escuchan (Background)
-
-```java
-// evaluaciones/infrastructure/adapter/in/EvaluacionesEventListener.java
-@Component
-@RequiredArgsConstructor
-public class EvaluacionesEventListener {
-    private final CrearEvaluacionUseCase crearEvaluacionUseCase;
-
-    @RabbitListener(bindings = @QueueBinding(
-        value = @Queue(name = "evaluaciones.queue", durable = true),
-        exchange = @Exchange(name = "arquisoft.events", type = ExchangeTypes.TOPIC),
-        key = "entregables.subido"
-    ))
-    public void onEntregableSubido(String message) {
-        EntregableSubidoEvent event = objectMapper.readValue(message, EntregableSubidoEvent.class);
-        crearEvaluacionUseCase.ejecutar(
-            new CrearEvaluacionCommand(event.entregableId, event.proyectoId)
-        );
-    }
-}
-```
-
-#### Timeline
-
-```
-T=0ms     → Cliente: POST /api/entregables
-T=10ms    → Controller recibe request
-T=30ms    → BD: INSERT INTO entregables
-T=50ms    → RabbitMQ: Evento publicado
-T=100ms   → Cliente RECIBE: 201 Created ✅
-
-[BACKGROUND]
-T=110ms   → EVALUACIONES: Crea evaluación pendiente
-T=150ms   → REPOSITORIO_ARTEFACTOS: Crea versión inicial
-T=200ms   → Todos los contextos han procesado ✅
 ```
 
 ---
 
-## Configuración RabbitMQ por Contexto
+## Outbox Pattern — Atomicidad entre BD y broker
 
-### Exchange Principal
-
-```java
-// shared/amqp — EventPublisher interface
-public interface EventPublisher {
-    void publish(DomainEvent event);
-}
-```
-
-```properties
-Exchange Name: arquisoft.events
-Type: Topic
-Durable: true
-```
-
-### Ejemplo: Config de Evaluaciones
-
-```java
-// evaluaciones/infrastructure/config/EvaluacionesRabbitMQConfig.java
-@Configuration
-public class EvaluacionesRabbitMQConfig {
-
-    @Bean
-    public Queue evaluacionesQueue() {
-        return QueueBuilder
-            .durable("evaluaciones.queue")
-            .withArgument("x-dead-letter-exchange", "evaluaciones.dlx")
-            .build();
-    }
-
-    @Bean
-    public Binding bindEntregableSubido(Queue evaluacionesQueue, TopicExchange exchange) {
-        return BindingBuilder.bind(evaluacionesQueue)
-            .to(exchange).with("entregables.subido");
-    }
-
-    @Bean
-    public Binding bindProyectoFinalizado(Queue evaluacionesQueue, TopicExchange exchange) {
-        return BindingBuilder.bind(evaluacionesQueue)
-            .to(exchange).with("proyectos.finalizado");
-    }
-}
-```
-
-### Tabla de Routing Keys
-
-| Evento | Routing Key | Publisher | Subscribers |
-|--------|-------------|----------|-------------|
-| Ficha creada | `fichas.creada` | FICHAS | PROYECTOS |
-| Ficha aprobada | `fichas.aprobada` | FICHAS | PROYECTOS |
-| Proyecto creado | `proyectos.creado` | PROYECTOS | ARTEFACTOS, ENTREGABLES, EVALUACIONES |
-| Proyecto asignado | `proyectos.asignado` | PROYECTOS | ENTREGABLES, EVALUACIONES |
-| Proyecto finalizado | `proyectos.finalizado` | PROYECTOS | EVALUACIONES |
-| Artefacto creado | `artefactos.creado` | ARTEFACTOS | REPOSITORIO_ARTEFACTOS |
-| Artefacto evaluado | `artefactos.evaluado` | ARTEFACTOS | ENTREGABLES |
-| Version publicada | `repositorio.version-publicada` | REPOSITORIO_ARTEFACTOS | ARTEFACTOS |
-| Entregable creado | `entregables.creado` | ENTREGABLES | EVALUACIONES, ARTEFACTOS |
-| Entregable subido | `entregables.subido` | ENTREGABLES | EVALUACIONES, REPOSITORIO_ARTEFACTOS |
-| Entregable evaluado | `entregables.evaluado` | ENTREGABLES | EVALUACIONES |
-| Evaluación creada | `evaluaciones.creada` | EVALUACIONES | ENTREGABLES |
-| Evaluación calificada | `evaluaciones.calificada` | EVALUACIONES | PROYECTOS |
-| Evaluación finalizada | `evaluaciones.finalizada` | EVALUACIONES | PROYECTOS |
-
----
-
-## Monitoreo y Trazabilidad
-
-### Spring Boot Actuator
-
-```yaml
-# application.yml
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,metrics,prometheus,info,loggers
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-```
-
-### Endpoints de Monitoreo
-
-```
-GET /api/actuator/health         → Estado de salud
-GET /api/actuator/metrics        → Métricas del sistema
-GET /api/actuator/prometheus     → Formato Prometheus
-```
-
-### AuditFilter (incluido en seguridad/)
-
-El filtro `AuditFilter` registra todas las peticiones HTTP:
-```
-[AUDIT] METHOD=POST URI=/api/fichas USER=juan@uco.edu.co TIME=45ms STATUS=201
-```
-
----
-
-## Despliegue
-
-### Docker Compose (Desarrollo)
-
-```yaml
-services:
-  arquisoft-backend:
-    build: .
-    ports: ["8080:8080"]
-    environment:
-      SPRING_PROFILES_ACTIVE: dev
-    depends_on: [postgres, rabbitmq, redis, keycloak]
-
-  postgres:
-    image: postgres:18-alpine
-    environment:
-      POSTGRES_DB: arquisoft
-      POSTGRES_USER: arquisoft
-      POSTGRES_PASSWORD: arquisoft123
-    volumes:
-      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
-    ports: ["5432:5432"]
-
-  rabbitmq:
-    image: rabbitmq:4.2.5-management-alpine
-    ports: ["5672:5672", "15672:15672"]
-
-  redis:
-    image: redis:7-alpine
-    ports: ["6379:6379"]
-
-  keycloak:
-    image: quay.io/keycloak/keycloak:26.6
-    command: start-dev
-    ports: ["8081:8080"]
-    depends_on: [postgres]
-
-  nextcloud:
-    image: nextcloud:28-apache
-    ports: ["8082:80"]
-```
-
-### Producción
-
-```bash
-# Build
-docker build -t arquisoft-backend:latest .
-
-# Run con perfil prod
-docker run -p 8080:8080 \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  -e DATABASE_URL=jdbc:postgresql://db:5432/arquisoft \
-  -e DATABASE_USERNAME=arquisoft \
-  -e DATABASE_PASSWORD=secret \
-  -e RABBITMQ_HOST=mq \
-  -e KEYCLOAK_ISSUER_URI=https://auth.uco.edu.co/realms/arquisoft \
-  arquisoft-backend:latest
-```
-
----
-
-## Resumen Arquitectónico
-
-| Aspecto | Especificación |
-|---------|----------------|
-| **Patrón** | Hexagonal Modular + Async Event-Driven |
-| **Contextos** | 7 independientes (Seguridad, Fichas, Proyectos, Artefactos, Repositorio Artefactos, Entregables, Evaluaciones) |
-| **Comunicación** | RabbitMQ Topic Exchange + Durable Queues |
-| **Latencia** | ~100ms (respuesta síncrona al usuario) |
-| **Base de Datos** | PostgreSQL 18 (1 schema por contexto) |
-| **Cache** | Redis 7 (sesiones + cache distribuido) |
-| **Almacenamiento** | Nextcloud (WebDAV) |
-| **Autenticación** | Keycloak 26.6 (OAuth2/JWT) |
-| **Rate Limiting** | Bucket4j 7.6.0 |
-| **Framework** | Spring Boot 4.0.5 (Java 21) |
-| **Build** | Gradle 9.0.0 |
-| **Testing** | JUnit 6.0.3 + Mockito + AssertJ |
-
----
-
-## Outbox Pattern — Atomicidad entre BD y Broker
-
-Sin el Outbox Pattern, `save(aggregate)` y `eventPublisher.publish(event)` son dos operaciones independientes. Si el broker cae después del `save`, el evento se pierde y el sistema queda inconsistente.
+Sin el Outbox Pattern, `save(aggregate)` y `eventPublisher.publish(event)` son dos operaciones
+independientes: si el broker cae justo después del `save`, el evento se pierde y el sistema
+queda inconsistente sin que nadie se entere.
 
 ### Solución: Spring Modulith 2.0.0 Event Publication Registry
 
-```
-[UseCase] @Transactional
-    │
-    ├── BEGIN TX
-    │     ├── INSERT aggregate en BD del contexto
-    │     └── INSERT event_publication en arquisoft_events  ← misma TX
-    └── COMMIT
-            │
-    [Spring Modulith — post-commit]
-            ├── Publica a RabbitMQ (routing key = eventTopic)
-            │     ├── OK   → borra fila de event_publication
-            │     └── FAIL → status = FAILED, fila permanece
-            │
-    [FailedEventRetryConfig — cada 5 min]
-            └── Reintenta todos los eventos con status FAILED
+```java
+// {Accion}UseCaseImpl — sin @Transactional propia; corre dentro de la
+// transacción abierta por el Interactor
+XxxDomain xxx = XxxDomain.crear(...);        // 1. crea + acumula el evento en memoria
+xxxOutputPort.save(xxx);                     // 2. persiste el aggregate
+xxx.extraerEventosSinPublicar()
+   .forEach(eventPublisher::publish);        // 3. drena y publica
 ```
 
-### BD centralizada `arquisoft_events`
+`eventPublisher` es `SpringModulithEventPublisher` (`shared:amqp`), que delega en
+`ApplicationEventPublisher`. Spring Modulith intercepta ese `publish` y, dentro de la misma
+transacción que el `save` del paso 2, inserta una fila en la tabla `event_publication` — **de
+la base de datos del propio contexto**. Tras el commit, publica el evento a RabbitMQ con
+`temaEvento` como routing key.
 
-Todos los contextos comparten la tabla `event_publication` en la base de datos `arquisoft_events`. Cada evento persistido incluye el JSON completo del objeto, lo que permite republicarlo sin intervención manual.
+### `event_publication` es por contexto, no centralizada
 
-### Configuración de retries
+**No existe una base de datos `arquisoft_events` compartida.** Cada contexto que publica
+eventos tiene su propia tabla `event_publication` en su propia BD — hoy, `fichas` y `usuarios`:
+
+```sql
+-- fichas/infrastructure/src/main/resources/db/migration/fichas/V1.9__crear_event_publication.sql
+-- usuarios/infrastructure/src/main/resources/db/migration/usuarios/V1.1__crear_event_publication.sql
+CREATE TABLE event_publication (
+    id UUID NOT NULL, listener_id TEXT NOT NULL, event_type TEXT NOT NULL,
+    serialized_event TEXT NOT NULL, publication_date TIMESTAMPTZ NOT NULL,
+    completion_date TIMESTAMPTZ, status TEXT, completion_attempts INT,
+    last_resubmission_date TIMESTAMPTZ, PRIMARY KEY (id)
+);
+```
+
+`ContextAwareEventPublicationRepository` (`src/main/java/com/arquisoft/config/outbox/`)
+auto-detecta al arranque qué `DataSource` tiene la tabla y enruta el `INSERT` a la transacción
+activa de ese contexto — habilitar el outbox en un contexto nuevo es solo agregar esta
+migración, sin tocar código Java.
+
+### Reintentos
 
 | Mecanismo | Cuándo actúa | Qué hace |
 |---|---|---|
-| `republish-outstanding-events-on-restart` | Al arrancar la app | Republica TODO lo que no tenga `completion_date` |
-| Staleness checker (`processing: 2m`) | Cada 1 minuto | Marca como `FAILED` eventos atascados en `PROCESSING` |
-| Staleness checker (`resubmission: 10m`) | Cada 1 minuto | Marca como `FAILED` eventos atascados en `RESUBMITTED` |
-| `FailedEventRetryConfig` | Cada 5 minutos | Reintenta eventos con status `FAILED` |
+| `republish-outstanding-events-on-restart` | Al arrancar la app | Republica todo lo que no tenga `completion_date` |
+| Staleness checker | Periódico | Marca como `FAILED` eventos atascados sin completar |
+| `FailedEventRetryConfig` (`src/main/config`) | Cada 5 minutos | Llama `FailedEventPublications.resubmit()` — reintenta lo marcado `FAILED` |
 
-> El staleness checker **no reintenta** — solo marca. El reintento real lo hace `FailedEventRetryConfig`.
+El staleness checker **no reintenta**, solo marca. El reintento real lo hace
+`FailedEventRetryConfig`.
+
+---
+
+## Configuración de RabbitMQ
+
+Un único exchange y una única cola de dead-letter, compartidos por todo el proyecto
+(`shared:amqp/RabbitMQConfig.java`):
+
+```java
+public static final String EXCHANGE_NAME = "arquisoft.events";  // Topic, durable
+public static final String DLX_NAME = "arquisoft.dlx";          // Direct, durable
+```
+
+El `RabbitTemplate` (mismo archivo) resuelve dos problemas de confiabilidad que un
+`convertAndSend` desnudo no cubre:
+
+- **Publisher Returns** (`setMandatory(true)` + `setReturnsCallback`): si el broker no puede
+  enrutar el mensaje a ninguna cola, se lo devuelve al publicador en vez de descartarlo en
+  silencio.
+- **Publisher Confirms** (`setConfirmCallback`): el broker confirma o rechaza cada publicación;
+  un `NACK` se registra con el `correlationId` del evento (`evento.getIdEvento()`).
+
+Un `MessagePostProcessor` inyecta los headers `X-Trace-Id`/`X-Transaction-Id`/`X-User-Id` (`TrazaHeaders`, tomados
+del MDC) en cada mensaje publicado, incluidos los reintentos del outbox — así el consumidor
+puede reconstruir la traza aunque el evento se haya reintentado horas después.
+
+El `JsonMapper` de RabbitMQ (`rabbitObjectMapper`) desactiva
+`FAIL_ON_UNKNOWN_PROPERTIES` — **Tolerant Reader**: un consumidor no se rompe si el productor
+agrega un campo nuevo al evento.
+
+---
+
+## Ejemplo real end-to-end: `AsesorFichaCambiadoEvent`
+
+### Productor — `fichas`
+
+El `CambiarAsesorFichaUseCaseImpl` construye y publica el evento tras persistir el cambio (ver
+CLAUDE.md → "Domain events" para el patrón completo de drenado/publicación).
+
+### Consumidor — `notificaciones`
+
+```java
+// notificaciones/infrastructure/.../notificacion/command/primaryadapter/amqp/AsesorFichaCambiadoConsumer.java
+@Component
+public class AsesorFichaCambiadoConsumer extends AbstractEventConsumer {
+
+    private final EnviarNotificacionInteractor enviarNotificacionInteractor;
+    private final AppLogger logger;
+    private final CatalogoMensajes catalogo;
+
+    public AsesorFichaCambiadoConsumer(
+            EnviarNotificacionInteractor enviarNotificacionInteractor,
+            @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
+            AppLogger logger, CatalogoMensajes catalogo) {
+        super(objectMapper);
+        this.enviarNotificacionInteractor = enviarNotificacionInteractor;
+        this.logger = logger;
+        this.catalogo = catalogo;
+    }
+
+    @RabbitListener(queues = NotificacionesFichasQueueConfig.ASESOR_CAMBIADO_QUEUE)
+    public void onAsesorFichaCambiado(Message message, Channel channel) throws IOException {
+        withCorrelation(message, channel, () -> {
+            var payload = deserialize(message, AsesorFichaCambiadoPayload.class);
+            enviarNotificacionInteractor.ejecutar(new EnviarNotificacionCommand(
+                    payload.idEvento(),
+                    TipoNotificacion.ASESOR_FICHA_CAMBIADO,
+                    payload.asesorNombre(),
+                    payload.asesorEmail(),
+                    catalogo.formatear(PlantillaKey.ASUNTO_ASESOR_CAMBIADO, payload.tituloProyecto()),
+                    catalogo.formatear(PlantillaKey.CUERPO_ASESOR_CAMBIADO,
+                            payload.asesorNombre(), payload.tituloProyecto())));
+        });
+    }
+}
+```
+
+`AbstractEventConsumer` (`shared:amqp/consumer/`) centraliza lo que todo consumidor necesita:
+deserializar el body (`deserialize`), propagar la correlación al MDC (`X-Trace-Id`/`X-User-Id`
+del mensaje), y el ack/nack manual — si `handler.handle()` lanza, hace
+`channel.basicNack(deliveryTag, false, false)` (sin *requeue*: el mensaje va directo al DLX en
+vez de reintentarse infinitamente ante un error de negocio no recuperable); si no lanza, hace
+`channel.basicAck`.
+
+La traducción de "qué dice el correo" vive en el consumer, no en el caso de uso de
+`notificaciones` — agregar un evento nuevo es agregar otro consumer con su propia plantilla,
+sin tocar dominio ni aplicación.
+
+---
+
+## Convención de colas y routing keys
+
+La cola sigue el patrón `{contextoConsumidor}.{routingKey}`, y la routing key es el
+`temaEvento` (`EVENT_TOPIC`) del evento del productor — así el nombre de la cola deja claro,
+solo con leerlo, quién la escucha y qué está esperando:
+
+```java
+// notificaciones/infrastructure/.../config/NotificacionesFichasQueueConfig.java
+public static final String ASESOR_CAMBIADO_QUEUE =
+        "notificaciones.fichas.ficha_perfil.asesor_cambiado";
+public static final String ASESOR_CAMBIADO_ROUTING_KEY =
+        "fichas.ficha_perfil.asesor_cambiado";   // == AsesorFichaCambiadoEvent.EVENT_TOPIC
+
+@Bean
+public Queue notificacionesAsesorCambiadoQueue() {
+    return QueueBuilder.durable(ASESOR_CAMBIADO_QUEUE)
+            .withArgument("x-dead-letter-exchange", RabbitMQConfig.DLX_NAME)
+            .withArgument("x-dead-letter-routing-key", ASESOR_CAMBIADO_QUEUE + ".dead")
+            .build();
+}
+
+@Bean
+public Binding notificacionesAsesorCambiadoBinding(
+        Queue notificacionesAsesorCambiadoQueue,
+        @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange) {
+    return BindingBuilder.bind(notificacionesAsesorCambiadoQueue)
+            .to(arquisoftEventsExchange).with(ASESOR_CAMBIADO_ROUTING_KEY);
+}
+```
+
+Cada contexto consumidor declara su propia clase `{ContextoConsumidor}{ContextoProductor}QueueConfig`
+con una cola por evento que realmente consume — no hay una cola "genérica" ni un binding
+comodín (`#`).
+
+---
+
+## Confiabilidad: reintentos, DLQ, trazabilidad
+
+- **Nivel broker (publicación):** Publisher Confirms + Publisher Returns (ver arriba).
+- **Nivel aplicación (publicación):** `RabbitMQEventPublisher` reintenta hasta 3 veces con
+  backoff exponencial (500ms, 1s, 2s) ante `AmqpException` transitorias; un error no
+  transitorio (p. ej. fallo de serialización) no se reintenta, se loguea y se propaga. En la
+  práctica, la ruta activa hoy es `SpringModulithEventPublisher` (ver Outbox arriba);
+  `RabbitMQEventPublisher` es la implementación de respaldo (`@ConditionalOnMissingBean`).
+- **Nivel consumidor:** `AbstractEventConsumer` — `nack` sin *requeue* ante excepción envía el
+  mensaje al DLX (`arquisoft.dlx`) en vez de reintroducirlo en la cola original, evitando
+  bucles de re-entrega ante errores de negocio no recuperables.
+- **Nivel outbox:** ver "Reintentos" en la sección de Outbox Pattern arriba.
+- **Trazabilidad:** `X-Trace-Id`/`X-User-Id` viajan en los headers del mensaje AMQP desde la
+  publicación (inyectados por `traceHeadersPostProcessor`) hasta el consumo (leídos y puestos
+  en el MDC por `AbstractEventConsumer.withCorrelation`), de modo que un log del consumidor se
+  puede correlacionar con el request HTTP original que disparó el evento.
+
+`TrazabilidadFilter` (`shared:web/filter/`) registra además cada request HTTP síncrono
+(`METHOD`, `URI`, `USER`, `TIME`, `STATUS`) — complementario a la trazabilidad asíncrona, no
+parte de ella.
+
+### El salto de hilo que casi rompe la trazabilidad
+
+La publicación real hacia RabbitMQ (arriba, "tras el commit, Spring Modulith publica...") no
+ocurre en el hilo del request: internamente `spring-modulith-events-amqp` la resuelve con un
+listener `@Async @Transactional(REQUIRES_NEW) @TransactionalEventListener`, ejecutado en el
+`applicationTaskExecutor` que autoconfigura Spring Boot. El `MDC` es un `ThreadLocal` — ese
+hilo del executor arranca vacío, así que `traceHeadersPostProcessor` (`TrazaMessagePostProcessor`)
+no encontraba `correlacionId`/`transaccionId` reales y generaba unos nuevos al momento de
+publicar, rompiendo la correlación entre el productor y cualquier consumidor.
+
+`MdcTaskDecorator` (`shared:tracing/infrastructure/traza/config/`) cierra ese hueco: captura el
+MDC del hilo que encola la tarea (todavía dentro del `AlcanceTraza` del request) y lo restaura
+en el hilo del executor antes de correr la tarea real, revirtiéndolo al terminar para no filtrar
+contexto entre tareas no relacionadas que reutilicen el mismo hilo del pool. Se registra como
+`@Bean TaskDecorator` en `TrazabilidadConfig`; Spring Boot lo recoge automáticamente para el
+`applicationTaskExecutor` sin declarar `@EnableAsync` ni un executor propio.
+
+Es, a propósito, un problema de **hilos dentro del mismo proceso**, no de propagación entre
+contextos — la propagación entre contextos siempre viajó en los headers del mensaje AMQP (arriba)
+y no depende de memoria compartida. Por eso este decorator seguirá siendo necesario aunque algún
+contexto se extraiga a su propio microservicio: cada productor seguirá teniendo su propio salto
+de hilo (request → executor async) antes de que el evento llegue al broker.
+
+---
+
+## Stack tecnológico
+
+| Componente | Versión / detalle |
+|---|---|
+| Message Queue | RabbitMQ 4.2.5 — exchange Topic durable + DLX Direct durable |
+| Base de datos | PostgreSQL 18, una por contexto (no un schema compartido) |
+| Outbox | Spring Modulith 2.0.0 — tabla `event_publication` por contexto |
+| Cache | Redis 7 (Lettuce) |
+| Almacenamiento de archivos | MinIO (`shared:minio`) — usado hoy por `fichas` para la guía de elaboración (`MinioGuiaController`) |
+| Autenticación | Keycloak 26.6 (OAuth2/OIDC Resource Server) |
+| Framework | Spring Boot 4.0.5, Java 21 (Virtual Threads habilitados) |
+| Build | Gradle 9.0.0 |
+| Testing | JUnit 6.0.3 + Mockito + AssertJ |
 
 ---
 
 ## Referencias
 
-- **Arquitectura y Estructura**: `ARQUITECTURA_Y_ESTRUCTURA.md`
-- **Deuda Técnica Outbox (resuelta)**: `DEUDA_TECNICA_OUTBOX_PATTERN.md`
-- **Arquitectura Hexagonal**: Alistair Cockburn
-- **Event-Driven DDD**: Chris Richardson, "Microservices Patterns"
-- **Spring Modulith**: https://docs.spring.io/spring-modulith/docs/current/reference/html/#events
-
----
-
-**Versión**: 2.0.0
+- **Arquitectura y Estructura**: `docs/ARQUITECTURA_Y_ESTRUCTURA.md`
+- **Convenciones completas del proyecto**: `CLAUDE.md` (raíz)
+- **Spring Modulith Event Publication Registry**: https://docs.spring.io/spring-modulith/docs/current/reference/html/#events

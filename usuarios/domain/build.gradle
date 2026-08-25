@@ -3,10 +3,16 @@ dependencies {
 
     // Domain puro: sin dependencias de framework
     // - Las excepciones de dominio extienden DomainException (shared:domain → exceptions)
-    // - UsuarioRole reside en shared:domain (compartido con seguridad)
+    // - Validator*/ValidationResult (shared:validation) acumulan los errores de invariante
+    // - UtilTexto/UtilUUID (shared:util) normalizan el email y generan el identificador
 
     // Test: AssertJ + JUnit launcher (versiones gestionadas por BOM heredado del raiz)
     testImplementation "org.assertj:assertj-core"
+
+    // Mockito para los tests de las reglas de dominio: sin el, cada regla exige un
+    // doble del puerto escrito a mano con todos sus metodos.
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-junit-jupiter"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
 }

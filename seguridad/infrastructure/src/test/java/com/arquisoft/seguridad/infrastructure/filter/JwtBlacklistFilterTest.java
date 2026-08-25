@@ -1,10 +1,16 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
-import com.arquisoft.seguridad.domain.auth.port.out.TokenBlacklistOutputPort;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.seguridad.infrastructure.config.security.RutasAutenticacion;
+import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
+import org.springframework.http.MediaType;
+
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,10 +37,16 @@ class JwtBlacklistFilterTest {
     private static final String JTI = "jti-123";
 
     @Mock
-    private TokenBlacklistOutputPort tokenBlacklistPort;
+    private RutasAutenticacion rutasAutenticacion;
+
+    @Mock
+    private TokenInvalidadoOutputPort tokenInvalidadoPort;
 
     @Mock
     private ObjectMapper objectMapper;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private JwtBlacklistFilter filter;
@@ -65,7 +77,7 @@ class JwtBlacklistFilterTest {
         FilterChain filterChain = mock(FilterChain.class);
 
         when(request.getRequestURI()).thenReturn("/api/fichas-perfil");
-        when(tokenBlacklistPort.estaInvalidado(JTI)).thenReturn(true);
+        when(tokenInvalidadoPort.estaInvalidado(JTI)).thenReturn(true);
         when(response.getWriter()).thenReturn(new PrintWriter(new StringWriter()));
 
         // Act
@@ -73,7 +85,8 @@ class JwtBlacklistFilterTest {
 
         // Assert
         verify(response).setStatus(401);
-        verify(response).setContentType("application/json;charset=UTF-8");
+        verify(response).setContentType(MediaType.APPLICATION_JSON_VALUE);
+        verify(response).setCharacterEncoding(StandardCharsets.UTF_8.name());
         verify(filterChain, never()).doFilter(request, response);
     }
 
@@ -85,7 +98,7 @@ class JwtBlacklistFilterTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
 
-        when(tokenBlacklistPort.estaInvalidado(JTI)).thenReturn(false);
+        when(tokenInvalidadoPort.estaInvalidado(JTI)).thenReturn(false);
 
         // Act
         filter.doFilterInternal(request, response, filterChain);

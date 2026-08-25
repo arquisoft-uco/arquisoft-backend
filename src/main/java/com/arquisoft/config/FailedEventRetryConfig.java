@@ -1,5 +1,7 @@
 package com.arquisoft.config;
 
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import com.arquisoft.shared.tracing.domain.traza.model.SolicitudTraza;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.modulith.events.FailedEventPublications;
@@ -13,27 +15,21 @@ import java.time.Duration;
 public class FailedEventRetryConfig {
 
     private final FailedEventPublications failedEventPublications;
+    private final GestorTraza gestorTraza;
 
-    public FailedEventRetryConfig(FailedEventPublications failedEventPublications) {
+    public FailedEventRetryConfig(FailedEventPublications failedEventPublications, GestorTraza gestorTraza) {
         this.failedEventPublications = failedEventPublications;
+        this.gestorTraza = gestorTraza;
     }
 
-    /**
-     * Reintenta periódicamente los eventos de dominio con estado FAILED.
-     *
-     * El staleness checker de Spring Modulith solo marca eventos como FAILED cuando llevan
-     * demasiado tiempo en PROCESSING/RESUBMITTED — nunca los reintenta. Este scheduler
-     * cubre el caso donde RabbitMQ cae mientras la app está corriendo: el evento queda
-     * FAILED inmediatamente y aquí se reintenta cuando el broker vuelve a estar disponible.
-     *
-     * withMinAge(2m): evita reintentar un evento que acaba de fallar milisegundos atrás,
-     * dando tiempo al broker para recuperarse entre intentos.
-     */
     @Scheduled(fixedDelayString = "${arquisoft.events.failed-retry-interval:PT5M}")
     public void retryFailedEvents() {
-        log.debug("Verificando eventos de dominio con estado FAILED para reintento...");
-        failedEventPublications.resubmit(
-                ResubmissionOptions.defaults().withMinAge(Duration.ofMinutes(2))
-        );
+        try (var alcance = gestorTraza.abrir(SolicitudTraza.paraProgramado())) {
+            log.debug("Verificando eventos de dominio con estado FAILED para reintento (traza {})",
+                    alcance.correlacionId());
+            failedEventPublications.resubmit(
+                    ResubmissionOptions.defaults().withMinAge(Duration.ofMinutes(2))
+            );
+        }
     }
 }

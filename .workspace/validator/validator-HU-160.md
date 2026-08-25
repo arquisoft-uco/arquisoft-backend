@@ -100,7 +100,7 @@ _Ninguno._
 
 **Tests apropiados para Tipo de UC (sección 2.13):**
 - Tipo de UC declarado: **Consulta**
-- ✅ Tests apropiados. No hay verificaciones de `publishEvent`, `getUnPublishedEvents`, `clearUnPublishedEvents` ni `verify(eventPublisher)` en los tests de use case (`ConsultarFichasPerfilUseCaseImplTest`).
+- ✅ Tests apropiados. No hay verificaciones de `publicarEvento`, `obtenerEventosSinPublicar`, `clearUnPublishedEvents` ni `verify(eventPublisher)` en los tests de use case (`ConsultarFichasPerfilUseCaseImplTest`).
 - Nota: `FichaPerfilTest.debeReconstruirSinEventos_cuandoRebuildEsInvocado` verifica que `getUnPublishedEvents()` está vacío tras `rebuild()`. Esto es correcto para un test de dominio que verifica la invariante de `rebuild` — no es un test de ciclo de eventos del use case de consulta.
 
 ---

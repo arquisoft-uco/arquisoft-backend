@@ -1,8 +1,10 @@
 package com.arquisoft.shared.amqp;
 
-import com.arquisoft.shared.logger.MdcKeys;
+import com.arquisoft.shared.amqp.trazabilidad.TrazaMessagePostProcessor;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.MensajeriaKey;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.ExchangeBuilder;
 import org.springframework.amqp.core.MessagePostProcessor;
@@ -16,37 +18,15 @@ import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.util.UUID;
-
-/**
- * Configuración de RabbitMQ para el exchange central de eventos de dominio.
- *
- * <p>Topología:
- * <ul>
- *   <li>{@value #EXCHANGE_NAME} — TopicExchange principal donde se publican todos los eventos.
- *   <li>{@value #DLX_NAME} — Dead Letter Exchange (direct) al que RabbitMQ reenvía mensajes
- *       que fueron rechazados (NACK sin requeue) después de agotar los reintentos del consumer.
- *       Cada contexto declara su propia DLQ y la vincula a este exchange.
- * </ul>
- *
- * <p>Publisher Confirms están habilitados vía {@code spring.rabbitmq.publisher-confirm-type=CORRELATED}
- * en {@code application.yml}. El {@link RabbitTemplate} registra callbacks de confirmación
- * y devolución para detectar mensajes no entregados.
- *
- * <p>Usa Jackson 3.x (tools.jackson) — soporte de java.time integrado en jackson-databind 3.x.
- */
 @Slf4j
 @Configuration
 public class RabbitMQConfig {
 
     public static final String EXCHANGE_NAME = "arquisoft.events";
 
-    /**
-     * Dead Letter Exchange: recibe los mensajes rechazados por consumers tras agotar reintentos.
-     * Cada bounded context declara su propia DLQ y la vincula aquí con routing key
-     * {@code {queue-name}.dead}.
-     */
     public static final String DLX_NAME = "arquisoft.dlx";
+
+    public static final String RABBIT_OBJECT_MAPPER = "rabbitObjectMapper";
 
     @Bean
     public TopicExchange arquisoftEventsExchange() {
@@ -62,15 +42,7 @@ public class RabbitMQConfig {
                 .build();
     }
 
-    /**
-     * {@code ObjectMapper} dedicado a la capa AMQP (serialización/deserialización de mensajes).
-     *
-     * <p>Se nombra {@code rabbitObjectMapper} (en lugar de {@code objectMapper}) para evitar
-     * colisionar con el bean auto-configurado por Spring Boot ({@code JacksonAutoConfiguration})
-     * que se usa en la capa HTTP. Cada consumer lo inyecta con
-     * {@code @Qualifier("rabbitObjectMapper")}.
-     */
-    @Bean("rabbitObjectMapper")
+    @Bean(RABBIT_OBJECT_MAPPER)
     public JsonMapper rabbitObjectMapper() {
         return JsonMapper.builder()
                 // Tolerant Reader pattern: ignora campos desconocidos del evento.
@@ -79,39 +51,15 @@ public class RabbitMQConfig {
                 .build();
     }
 
-    /**
-     * Usado exclusivamente por {@link RabbitTemplate} para <b>publicar</b> eventos:
-     * serializa objetos Java a JSON y añade el header {@code __TypeId__}.
-     *
-     * <p>Los consumers usan {@code SimpleMessageConverter} (bytes crudos) configurado
-     * en {@code RabbitListenerConfig} de la aplicación principal.
-     */
     @Bean
     public JacksonJsonMessageConverter jsonMessageConverter(
-            @Qualifier("rabbitObjectMapper") JsonMapper rabbitObjectMapper) {
+            @Qualifier(RABBIT_OBJECT_MAPPER) JsonMapper rabbitObjectMapper) {
         return new JacksonJsonMessageConverter(rabbitObjectMapper);
     }
 
-    /**
-     * Inyecta headers de traza ({@code X-Trace-Id}, {@code X-User-Id}) en todos los mensajes
-     * AMQP publicados, tanto desde {@link SpringModulithEventPublisher} (vía Spring Modulith)
-     * como desde {@link RabbitMQEventPublisher} (fallback).
-     *
-     * <p>En escenarios de retry de Spring Modulith (eventos republished desde BD), el MDC puede
-     * estar vacío: se generan valores de fallback (UUID aleatorio / "SYSTEM") de forma idéntica
-     * a la lógica preexistente en {@link RabbitMQEventPublisher}.
-     */
     @Bean
-    public MessagePostProcessor traceHeadersPostProcessor() {
-        return message -> {
-            String traceId = MDC.get(MdcKeys.TRACE_ID);
-            String userId  = MDC.get(MdcKeys.USER_ID);
-            message.getMessageProperties().setHeader("X-Trace-Id",
-                    traceId != null ? traceId : UUID.randomUUID().toString().replace("-", ""));
-            message.getMessageProperties().setHeader("X-User-Id",
-                    userId != null ? userId : "SYSTEM");
-            return message;
-        };
+    public MessagePostProcessor traceHeadersPostProcessor(GestorTraza gestorTraza) {
+        return new TrazaMessagePostProcessor(gestorTraza);
     }
 
     @Bean
@@ -119,7 +67,7 @@ public class RabbitMQConfig {
             ConnectionFactory connectionFactory,
             JacksonJsonMessageConverter messageConverter,
             MessagePostProcessor traceHeadersPostProcessor) {
-        RabbitTemplate template = new RabbitTemplate(connectionFactory);
+        var template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(messageConverter);
         template.setExchange(EXCHANGE_NAME);
         // Aplica traza en todos los mensajes publicados, incluidos los enviados
@@ -130,7 +78,7 @@ public class RabbitMQConfig {
         // lo devuelve al publicador en lugar de descartarlo silenciosamente.
         template.setMandatory(true);
         template.setReturnsCallback(returned ->
-            log.error("Mensaje no enrutado — exchange={} routingKey={} replyText={}",
+            log.error(Mensajes.obtener(MensajeriaKey.LOG_MENSAJE_NO_ENRUTADO),
                     returned.getExchange(),
                     returned.getRoutingKey(),
                     returned.getReplyText())
@@ -140,8 +88,10 @@ public class RabbitMQConfig {
         // Si el broker envía NACK, se registra el error con el correlationId del evento.
         template.setConfirmCallback((correlation, ack, cause) -> {
             if (!ack) {
-                log.error("Broker rechazó el mensaje (NACK) — correlationId={} causa={}",
-                        correlation != null ? correlation.getId() : "desconocido", cause);
+                log.error(Mensajes.obtener(MensajeriaKey.LOG_BROKER_RECHAZO),
+                        correlation != null ? correlation.getId()
+                                : Mensajes.obtener(MensajeriaKey.VALOR_CORRELACION_DESCONOCIDA),
+                        cause);
             }
         });
 

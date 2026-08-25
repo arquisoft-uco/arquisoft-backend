@@ -31,7 +31,7 @@
 |---|----------|------------|-----------|
 | CA-1 | `UserRole` con 8 roles SCREAMING_CASE y `getCode()` == nombre en Keycloak | ✅ | `UserRole.java`: 8 constantes, `getCode()` devuelve `this.name()` |
 | CA-2 | `JwtTokenAdapter` extrae roles de `realm_access.roles` → `ROLE_{ROL}` | ✅ | `JwtTokenAdapter.java`: solo lee `realm_access.roles`; prefijo `ROLE_` aplicado |
-| CA-3 | `SecurityConfig` configura `JwtAuthenticationConverter` desde `realm_access.roles` | ✅ | `SecurityConfig.java`: inyecta `JwtAuthenticationConverter` vía constructor; `oauth2ResourceServer` usa `.jwtAuthenticationConverter(...)` |
+| CA-3 | `SeguridadConfig` configura `JwtAuthenticationConverter` desde `realm_access.roles` | ✅ | `SecurityConfig.java`: inyecta `JwtAuthenticationConverter` vía constructor; `oauth2ResourceServer` usa `.jwtAuthenticationConverter(...)` |
 | CA-4 | `keycloak.resource` apunta a `arquisoft-backend` | ✅ | `application-security.properties`: `keycloak.resource=${KEYCLOAK_CLIENT_ID:arquisoft-backend}` |
 | CA-5 | Endpoints protegidos rechazan tokens sin rol con HTTP 403 | ✅ | `SecurityConfig.java`: `@EnableMethodSecurity(prePostEnabled = true)` activo; `@PreAuthorize` soportado |
 | CA-6 | Tests de `JwtTokenAdapter` cubren extracción de `realm_access.roles` para los 8 roles | ✅ | `JwtTokenAdapterTest.java`: 6 tests, todos en verde |
@@ -81,7 +81,7 @@
 | Entidades de dominio inmutables | ✅ — `UserRole` es enum (inmutable por naturaleza) |
 | Puertos de entrada/salida en `domain/port/` | N/A — esta HT no agrega casos de uso nuevos |
 | `application` usa `@RequiredArgsConstructor` | N/A — no hay nuevos use cases |
-| `infrastructure` usa interfaces (puertos) | ✅ — `SecurityConfig` inyecta `JwtAuthenticationConverter` (interfaz Spring) |
+| `infrastructure` usa interfaces (puertos) | ✅ — `SeguridadConfig` inyecta `JwtAuthenticationConverter` (interfaz Spring) |
 | IDs siempre `UUID` | N/A — no hay nuevas entidades |
 | Dirección de dependencias: domain ← application ← infrastructure | ✅ — `KeycloakJwtConverterConfig` importa `UserRole` del módulo `domain` |
 
@@ -92,7 +92,7 @@
 | Convención | Estado | Detalle |
 |------------|--------|---------|
 | Nomenclatura bilingüe | ✅ | Sufijos técnicos en inglés; dominio en español |
-| Inyección por constructor con `@RequiredArgsConstructor` | ✅ | `SecurityConfig`, `KeycloakJwtConverterConfig`, `KeycloakRoleExtractor` |
+| Inyección por constructor con `@RequiredArgsConstructor` | ✅ | `SeguridadConfig`, `KeycloakJwtConverterConfig`, `KeycloakRolExtractor` |
 | Sin `@Autowired` | ✅ | No encontrado en archivos nuevos/modificados |
 | Logging `@Slf4j` 4xx/5xx | N/A | No hay nuevos endpoints |
 | `@Operation`, `@Tag` (ADR-011) | N/A | No hay nuevos endpoints REST |

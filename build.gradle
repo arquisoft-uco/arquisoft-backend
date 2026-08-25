@@ -74,8 +74,24 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-amqp"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
 
-    // Logging estructurado (ADR-005): JSON encoder con traceId/userId en MDC via AuditFilter
+    // Logging estructurado (ADR-005): JSON encoder que emite el MDC como campos de primer nivel
     implementation project(':shared:logger')
+
+    // Trazabilidad: GestorTraza y su adaptador MDC. Se declara explicitamente aunque llegue
+    // transitivamente — si el jar no esta en el classpath de runtime, los @Component del
+    // modulo no se registran y la aplicacion arranca sin trazas y sin ningun error.
+    implementation project(':shared:tracing')
+
+    // Catálogo de mensajes: MessageCatalogConfig lo expone como bean y publica los textos
+    // de OpenAPI en el Environment. También aporta message/openapi/, donde OpenApiConfig
+    // declara el esquema de seguridad (ApiSecurity.BEARER_AUTH) que referencian los
+    // controllers de cada contexto.
+    implementation project(':shared:message')
+
+    // Catálogo de mensajes sobre Redis (ADR-013). Se declara explícitamente porque hoy solo llega
+    // por seguridad:infrastructure: el catálogo pasó a ser nuclear y no puede depender de que un
+    // contexto siga arrastrándolo.
+    implementation project(':shared:redis')
 
     // Flyway — version gestionada por el BOM de Spring Boot 4.0.5 (12.4.0).
     // flyway-database-postgresql es necesario en Flyway 11+ para soportar PostgreSQL.
@@ -171,7 +187,7 @@ subprojects { subproject ->
             '**/*ReadModel.class',
             '**/*Application.class',
             '**/config/**',
-            '**/*JpaEntity.class'
+            '**/*Entity.class'
         ]
 
         jacocoTestReport {
@@ -261,5 +277,15 @@ subprojects { subproject ->
 
     compileJava {
         options.compilerArgs.addAll(['-parameters', '-Xlint:deprecation'])
+    }
+
+    // Catálogo de prueba (ADR-013): permite que los tests resuelvan el texto real de
+    // catalogo/*.properties. Se declara aquí y no módulo a módulo porque lo necesita cualquier test
+    // que afirme sobre un mensaje — incluidos los que lo resuelven por la fachada estática del
+    // dominio sin saberlo — y averiguar por qué falla uno que no lo declaró cuesta más que esto.
+    if (subproject.path != ':shared:message') {
+        dependencies {
+            testImplementation testFixtures(project(':shared:message'))
+        }
     }
 }

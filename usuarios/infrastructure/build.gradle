@@ -2,7 +2,13 @@ dependencies {
     implementation project(':usuarios:domain')
     implementation project(':usuarios:application')
     implementation project(':shared:domain')
+    implementation project(':shared:jpa')
     implementation project(':shared:web')
+    implementation project(':shared:logger')
+
+    // shared:tracing — GlobalAppExceptionHandler lee la correlacion de la traza, y los
+    // slices @WebMvcTest importan TrazabilidadConfig para satisfacer esa dependencia.
+    implementation project(':shared:tracing')
 
     // Spring Security (para @PreAuthorize y @EnableMethodSecurity)
     implementation "org.springframework.boot:spring-boot-starter-security"

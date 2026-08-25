@@ -41,52 +41,105 @@ docker-compose up postgres rabbitmq redis keycloak  # infra only
 
 ## Architecture
 
-Hexagonal Architecture (Ports & Adapters) with **8 bounded contexts** and **8 shared modules**. Contexts communicate exclusively via RabbitMQ domain events — they never import each other.
+Hexagonal Architecture (Ports & Adapters) with **9 bounded contexts** and **14 shared modules**. Contexts communicate exclusively via RabbitMQ domain events — they never import each other.
 
 ### Bounded Contexts
 
-| Context | DB Schema |
-|---------|-----------|
+Only `seguridad`, `usuarios`, `fichas` and `notificaciones` have real implementation today; `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables` and `evaluaciones` are scaffolding — each has only a `{Contexto}DataSourceConfig` in `infrastructure/config/`, no domain/application code yet.
+
+| Context | Database |
+|---------|----------|
 | `seguridad` | *(sin DB — auth vía Keycloak + Redis)* |
 | `usuarios` | `usuarios` |
 | `fichas` | `fichas_perfil` |
+| `notificaciones` | `notificaciones` |
 | `proyectos` | `proyectos_grado` |
 | `artefactos` | `artefactos` |
 | `repositorio_artefactos` | `repositorio_artefactos` |
 | `entregables` | `entregables` |
 | `evaluaciones` | `evaluaciones` |
 
+**These are separate databases, not schemas of a common one.** `init-db.sql` issues one `CREATE DATABASE` per bounded context and each `{Contexto}DataSourceConfig` points its own `DataSource` at a distinct JDBC URL (`DB_FICHAS_URL=…/fichas_perfil`), so every context also gets its own `EntityManagerFactory`, its own transaction manager, and — the consequence that bites hardest — **its own `flyway_schema_history` table**. Two things follow and neither is negotiable:
+
+- **Migrations live in `db/migration/{contexto}/`, never in `db/migration/` directly.** Each context's Flyway bean declares `.locations("classpath:db/migration/{contexto}")`, and all of them share one classpath at runtime: a file left at the root of `db/migration/` is picked up by *every* context's Flyway, which then records it in its own history and tries to run SQL meant for a different database.
+- **A foreign key between contexts is impossible.** Postgres cannot reference across databases, which is exactly why contexts talk over RabbitMQ domain events and why an event carries everything its consumer needs (see *Domain events*). If a plan asks for an FK to another context's table, the plan is wrong, not the schema.
+
+`baselineOnMigrate` is `false` on every context so Flyway refuses to invent a baseline over a database that already has objects — an empty history against a non-empty database is a real error worth failing on, not something to paper over. Migration versions are **timestamps**, `V{yyyyMMddHHmmss}__descripcion.sql` (e.g. `V20260812143000__crear_tabla_ficha_perfil.sql`): with several branches in flight, sequential numbering collides on merge and Flyway rejects the duplicate version. Never backdate a timestamp to slot a migration ahead of one already applied.
+
 ### Shared Modules
 
-`shared:domain`, `shared:amqp`, `shared:logger`, `shared:redis`, `shared:web`, `shared:minio`, `shared:postgres`, `shared:message`
+`shared:util`, `shared:exception`, `shared:validation`, `shared:domain`, `shared:query`, `shared:logger`, `shared:tracing`, `shared:redis`, `shared:amqp`, `shared:web`, `shared:minio`, `shared:jpa`, `shared:message`, `shared:notification`
 
-There is no `shared:validation` module — `DomainValidator` / `ValidationResult` live in the `com.arquisoft.shared.validation` **package** inside `shared:domain`.
+`shared:query` owns the entire read-side vocabulary, in one package root (`com.arquisoft.shared.query`): `QueryCriteria`/`SortOrder`/`NodoFiltro`/`FiltroOperador`/`FiltroConector` at the root, `pagination/` (`PaginatedResult`, `PaginationRequest`, `SortDirection`), `dto/` (the `QueryCriteriaRequestDTO` + `NodoFiltroDTO` hierarchy the controllers bind), and `exception/`. It has **no Spring dependency at all** — only `shared:exception`/`shared:message` (`api`), `shared:util`, and Jackson *annotations* (never `databind`, never the web starter), so it stays usable from any layer. The split from `shared:jpa` is deliberate: everything in `shared:jpa` is irreducibly bound to Spring Data JPA (`Specification`, `Root`, `Pageable`, `Repository`), and merging the two would force that dependency on every module that only needs to declare a criteria.
+
+**Both query exceptions are `ApplicationException` (400), never `DomainException`.** `FiltroException` (bad sort/filter field, unknown operator or connector, missing value) and `FiltroInvalidoException` (the value does not parse as the column's type) both live in `shared:query/exception/`. A malformed query is a bad *request*, not a violated business invariant — 422 would tell the client their payload was semantically understood when it was not.
+
+`shared:validation` is its own module (not a package inside `shared:domain`) — the `Validator*` family plus `ValidationResult` live there, in the `com.arquisoft.shared.validation` package, together with `DomainValidationException`/`ApplicationValidationException`; it depends on `shared:exception` (`api`) for the exception types it extends, and on `shared:message`/`shared:util` (`implementation`) internally. `shared:exception` holds the five base exception classes plus `BaseException`/`BaseError` and has zero dependencies of its own — it is deliberately a leaf module so `shared:message` (which extends `InfrastructureException`) can depend on it without creating a cycle back through `shared:domain`. `shared:util` holds the stateless helpers referenced throughout this document (`UtilTexto`, `UtilUUID`, `UtilColeccion`, `UtilFecha`, `UtilNumero`, `UtilObjeto`) — the `Util` prefix stays in English, everything after it is Spanish (`UtilUUID` is the exception: `UUID` is a technical acronym, not a translatable word). Method names inside them are Spanish too (e.g. `UtilTexto.aplicarTrim`, `UtilUUID.generarUUIDDesdeTexto`). `shared:notification` defines `EnvioNotificacionOutputPort` and the SMTP adapter consumed by the `notificaciones` context. `shared:tracing` owns the trace context (MDC keys, id generation, W3C `traceparent`, propagation headers) and is the only shared module with internal hexagonal layers — see *Correlation* below; it depends on `slf4j-api`, `shared:util` and `spring-context`, deliberately **not** on spring-web or spring-security, so `shared:amqp` can consume it without pulling in the web stack.
+
+The validators are split by the **type they validate**, mirroring `shared:util`: `ValidatorObjeto` (`noNulo`), `ValidatorTexto` (`noEnBlanco`, `correoValido`), `ValidatorLongitud` (`longitudMaxima`, `longitudMinima`, `longitudEntre`), `ValidatorNumero` (`valorMinimo`, `valorMaximo`, `valorEntre`), `ValidatorUUID` (`uuidValido`), `ValidatorColeccion` (`noVacia`, `tamanioMaximo`, `sinDuplicados`). All are `final`, private constructor, static methods with the uniform signature `(valor, …, campo, codigoError, ValidationResult) → boolean`. The `Validator` prefix stays English like `Util`, everything after it is Spanish. There is no `DomainValidator` any more: the name implied the helpers were domain-only, when a `Command.crear(...)` in the application layer calls exactly the same ones — dropping the prefix is what makes that shared use honest. The range methods (`longitudEntre`, `valorEntre`) accumulate **one** error naming both bounds, not two; the single-bound methods remain for the cases that only have one. Note these are the low-level *helpers*, not to be confused with `{Action}{Entity}Validator` in `application/{feature}/command/validator/`, which orchestrates domain `Rule`s.
 
 ### Layer Structure per Context
 
 ```
 {context}/domain/
 └── {feature}/
-    ├── aggregate/   # Aggregate roots (suffix Aggregate) — no Lombok, no Spring
-    ├── port/out/    # Output port interfaces write-side (suffix OutputPort)
-    ├── model/       # Value objects (optional) — no Lombok, no Spring
-    └── message/     # Domain message constants (optional)
-event/               # Domain events shared across features (extend DomainEvent)
-exception/           # Domain exceptions shared across features (extend DomainException)
+    ├── {Entity}Domain.java          # Aggregate root (suffix Domain, noun) — no Lombok, no Spring; lives directly here, no subpackage
+    ├── {Action}{Entity}Domain.java  # Action object — same level as the aggregate, no subpackage. See "Action domain objects"
+    ├── model/                # Value objects — no Lombok, no Spring. Includes the input record of each Rule
+    ├── rules/                # Business rule interfaces (suffix Rule), reusable across use cases
+    │   └── impl/
+    │       └── {Regla}RuleImpl.java   # Pure: no ports, no constructor dependencies
+    ├── event/                # Domain events of THIS feature (extend DomainEvent)
+    ├── exception/            # Domain exceptions of THIS feature (extend DomainException)
+    └── message/              # Domain message constants (optional)
 
 {context}/application/
 └── {feature}/
     ├── command/
-    │   ├── {Action}{Entity}UseCase.java       # Use case implementation
-    │   ├── port/in/
-    │   │   └── {Action}{Entity}InputPort.java
-    │   └── model/
-    │       └── {Action}{Entity}Command.java
+    │   ├── primaryport/                                  # Primary contract of the command: interactor + Command + mapper
+    │   │   ├── interactor/
+    │   │   │   ├── {Action}{Entity}Interactor.java        # Entry-point interface
+    │   │   │   └── impl/
+    │   │   │       └── {Action}{Entity}InteractorImpl.java  # Owns @Transactional
+    │   │   ├── model/
+    │   │   │   └── {Action}{Entity}Command.java   # Command input
+    │   │   └── mapper/                            # Optional — Command → domain object mapping when it's not the root
+    │   │       └── {Action}{Entity}Mapper.java     # toDomain(command)
+    │   ├── usecase/                                # NOT nested under primaryport — internal collaborator, not the primary contract
+    │   │   ├── {Action}{Entity}UseCase.java
+    │   │   └── impl/
+    │   │       └── {Action}{Entity}UseCaseImpl.java   # Business orchestration (no transaction)
+    │   ├── validator/                          # Interface + impl, like every other application port
+    │   │   ├── {Action}{Entity}Validator.java
+    │   │   └── impl/
+    │   │       └── {Action}{Entity}ValidatorImpl.java  # @Component. Pure: takes the already-fetched data, orchestrates the Rules
+    │   ├── finder/                             # One Finder per query, implementing shared.rules.Finder<T,R>
+    │   │   ├── {Concepto}Finder.java
+    │   │   └── impl/
+    │   │       └── {Concepto}FinderImpl.java   # @Component, delegates to the OutputPort
+    │   ├── secondaryport/                      # Output port write-side (suffix OutputPort)
+    │   │   ├── {Feature}OutputPort.java
+    │   │   ├── entity/                          # Plain record — the port's persistence shape, no JPA/Lombok
+    │   │   │   └── {Feature}Entity.java
+    │   │   └── mapper/                          # Domain ↔ Entity
+    │   │       └── {Feature}Mapper.java
+    │   └── result/                              # Only when the command returns neither UUID nor void
+    │       ├── {Concepto}Result.java            # Command output — plain record
+    │       └── mapper/
+    │           └── {Concepto}ResultMapper.java  # secondaryport model → Result; the UseCaseImpl calls it
     └── query/
-        ├── {Consult}{Entity}UseCase.java
-        ├── port/in/
-        │   └── {Consult}{Entity}InputPort.java
-        ├── port/out/
+        ├── primaryport/                         # Primary contract of the query, symmetric to the command side
+        │   ├── interactor/
+        │   │   ├── {Consult}{Entity}Interactor.java
+        │   │   └── impl/
+        │   │       └── {Consult}{Entity}InteractorImpl.java  # Owns @Transactional(readOnly = true)
+        │   └── model/                           # Optional — only when the query carries input
+        │       └── {Consult}{Entity}Query.java   #   beyond the Criteria
+        ├── usecase/                             # NOT nested under primaryport — internal collaborator
+        │   ├── {Consult}{Entity}UseCase.java
+        │   └── impl/
+        │       └── {Consult}{Entity}UseCaseImpl.java   # Reads through the port (no transaction)
+        ├── secondaryport/
         │   └── {Feature}QueryOutputPort.java  # Output port read-side
         ├── criteria/
         │   └── {Feature}Criteria.java
@@ -95,68 +148,233 @@ exception/           # Domain exceptions shared across features (extend DomainEx
 
 {context}/infrastructure/
 └── {feature}/
+    ├── exception/                # Infrastructure exceptions of THIS feature (extend InfrastructureException)
     ├── command/
-    │   ├── adapter/in/web/
-    │   │   ├── {Action}{Entity}InputAdapter.java
-    │   │   └── dto/
-    │   │       └── {Action}{Entity}RequestDTO.java
-    │   └── adapter/out/persistence/
-    │       └── {Feature}CommandOutputAdapter.java
-    ├── query/
-    │   ├── adapter/in/web/
-    │   │   └── {Consult}{Entity}InputAdapter.java
-    │   └── adapter/out/persistence/
-    │       └── {Feature}QueryOutputAdapter.java
-    └── persistence/
-        ├── {Feature}JpaEntity.java
-        ├── {Feature}JpaRepository.java
-        └── {Feature}Mapper.java
-config/              # Spring configuration shared within context
+    │   ├── primaryadapter/
+    │   │   ├── web/
+    │   │   │   ├── {Action}{Entity}Controller.java   # One controller per action — never an aggregate of endpoints
+    │   │   │   ├── dto/
+    │   │   │   │   ├── {Action}{Entity}RequestDTO.java
+    │   │   │   │   └── {Action}{Entity}ResponseDTO.java  # Only when the command answers with a body
+    │   │   │   └── mapper/                     # Optional — see "DTOs" below for when this exists
+    │   │   │       └── {Action}{Entity}RequestMapper.java
+    │   │   └── amqp/                            # Optional — AMQP consumers (input adapters)
+    │   │       ├── {Evento}Consumer.java        # extends AbstractEventConsumer
+    │   │       └── {Evento}Payload.java         # record owned by THIS adapter, never the producer's event class
+    │   └── secondaryadapter/
+    │       ├── entity/                            # JPA @Entity — the real persistence shape, Lombok
+    │       │   └── {Feature}JpaEntity.java
+    │       ├── mapper/                            # Entity ↔ JpaEntity (+ toReferencia(id) if this
+    │       │   └── {Feature}JpaMapper.java         #   feature is a @ManyToOne target of another one)
+    │       └── repository/                       # Or another sub-package for non-JPA integrations (keycloak/, redis/, jwt/, ...)
+    │           ├── {Feature}CommandOutputAdapter.java
+    │           └── {Feature}CommandRepository.java   # Spring Data — only the write-side methods
+    └── query/
+        ├── primaryadapter/
+        │   └── web/
+        │       ├── {Consult}{Entity}Controller.java
+        │       ├── dto/
+        │       │   └── {Feature}ResponseDTO.java
+        │       └── mapper/
+        │           ├── {Consult}{Entity}RequestMapper.java  # QueryCriteriaRequestDTO → {Feature}Criteria
+        │           └── {Feature}ResponseMapper.java         # ReadModel → ResponseDTO
+        └── secondaryadapter/
+            └── repository/
+                ├── {Feature}JpaQueryEntity.java   # @Subselect + @Immutable + @Synchronize — flat, no @ManyToOne
+                ├── {Feature}JpaSpecification.java # @Component — NodoFiltro → Specification
+                ├── {Feature}SortMapper.java       # sort key → column
+                ├── {Feature}QueryOutputAdapter.java
+                ├── {Feature}QueryRepository.java  # extends QueryRepository/SpecificationQueryRepository — NOT JpaRepository
+                └── mapper/
+                    └── {Feature}QueryMapper.java  # JpaQueryEntity → ReadModel
+config/              # Spring configuration shared within context ({Context}DataSourceConfig, queue configs)
+security/            # {Context}Authorities
+handler/             # {Context}GlobalExceptionHandler (@RestControllerAdvice) — only seguridad has one
 filter/              # HTTP filters (if applicable to context)
-db/migration/        # Flyway migrations
+db/migration/{contexto}/   # Flyway migrations — ALWAYS in the per-context subfolder, never at the root
 ```
 
 Dependency direction is strictly enforced: `domain ← application ← infrastructure`.
 
 ## Key Conventions
 
-**Aggregate roots:** No public constructor, private non-`final` fields assigned by private setters (Notification Pattern — a `final` field cannot be assigned from a method), only public getters, suffix `Aggregate` (e.g., `UsuarioAggregate`, `FichaPerfilAggregate`). Use `crear(...)` for new instances, `reconstruir(...)` for reconstructing from DB — **not** `build()`/`rebuild()`. Entity package segments are all-lowercase with no separators (`domain/fichaperfil/`, not `domain/fichaPerfil/`).
+**Aggregate roots:** No public constructor, private non-`final` fields assigned by private setters (Notification Pattern — a `final` field cannot be assigned from a method), only public getters, extend `AggregateRoot` (`shared:domain`), suffix `Domain` — a noun, not the infinitive verb of the action that creates it (e.g., `UsuarioDomain`, `FichaPerfilDomain`, not `RegistrarFichaPerfilDomain`). The class lives directly under `domain/{feature}/`, with no `aggregate/` or `model/` subpackage of its own. Use `crear(...)` for new instances, `reconstruir(...)` for reconstructing from DB — **not** `build()`/`rebuild()`. Entity package segments are all-lowercase with no separators (`domain/fichaperfil/`, not `domain/fichaPerfil/`).
+
+**Action domain objects:** when the action does not map to the aggregate root but to the bundle of things that action drags along, it gets a domain object of its own, named by **nominalizing the verb** — `Registro`, `Modificacion`, `Cambio`, `Agregacion`, `Remocion` — still a noun, so it does not break the rule above: `RegistroFichaPerfilDomain` (aggregate + initial state + students), `CambioAsesorFichaDomain`, `ModificacionItemFichaPerfilDomain`, `AgregacionEstudiantesFichaPerfilDomain`, `RemocionItemFichaPerfilDomain`. It lives directly under `domain/{feature}/`, next to the aggregate, with no subpackage of its own. It is what `{Action}{Entity}Mapper` (`command/primaryport/mapper/`) builds from the `Command`, and what the `UseCase` receives — the use case then reaches the aggregate through it (`registro.getFicha()`). This is exactly the case the "optional" `primaryport/mapper/` exists for.
 
 **IDs:** Always UUID — never `Long` or `Integer`.
 
-**Domain events:** Extend `DomainEvent`. After persisting an aggregate, drain its unpublished events and publish via `EventPublisher` (RabbitMQ, publisher confirms, manual ACK, prefetch=1).
+**Domain events:** Extend `DomainEvent`. After persisting an aggregate, drain its unpublished events and publish via `EventPublisher` (RabbitMQ, publisher confirms, manual ACK, prefetch=1). An event carries everything its consumers need to act, even when that duplicates data the producer already owns — `AsesorFichaCambiadoEvent` ships `asesorNombre` and `asesorEmail` so `notificaciones` never calls back into `fichas` to find out whom to notify. A thin event that forces the consumer to query the producer reintroduces the coupling the events exist to remove.
 
-**Transactional (command):** Always use `@Transactional(transactionManager = "{context}TransactionManager")` with explicit qualifier in command use cases that publish events — required for outbox atomicity. Example: `@Transactional(transactionManager = "seguridadTransactionManager")`.
+**Interactor (command side):** The interactor — not the use case — is the entry point and owns the transaction: `{Action}{Entity}InteractorImpl` implements `{Action}{Entity}Interactor`, annotates `ejecutar` with `@Transactional(transactionManager = "{context}TransactionManager")` and delegates to the use case. Rationale: an operation may lean on several use cases, so the unit of work belongs one layer above; it also guarantees the right transaction manager is active when domain events reach the outbox (`ContextAwareEventPublicationRepository`). Applied in `fichas` and `usuarios`. `seguridad` also has the interactor layer, but its interactors declare no `@Transactional`: the context has no `DataSource` of its own (Keycloak + Redis), so there is no unit of work to delimit. The use case must **not** implement the `Interactor` interface — two beans for the same port make injection ambiguous.
 
-**Transactional (query):** Query use cases annotate the class with `@Transactional(readOnly = true, transactionManager = "{context}TransactionManager")`. The qualifier is mandatory here too: `usuariosTransactionManager` is the `@Primary` bean, so a bare `@Transactional` does not fail at startup — it silently binds to the `usuarios` transaction manager.
+**Transactional (command):** the qualifier is always explicit — `@Transactional(transactionManager = "{context}TransactionManager")` — and lives on the interactor. It is required for outbox atomicity when the operation publishes events. Example: `@Transactional(transactionManager = "usuariosTransactionManager")`. `seguridad` is the exception: no `DataSource`, so no annotation.
 
-**Input ports:** Interfaces in `application/{feature}/command/port/in/` or `application/{feature}/query/port/in/`, suffix `InputPort` (e.g., `RegistrarFichaPerfilInputPort`, `ConsultarFichasPerfilInputPort`).
+**Transactional (query):** the read-side interactor annotates `ejecutar` with `@Transactional(readOnly = true, transactionManager = "{context}TransactionManager")`; the query use case carries no transaction, exactly as on the command side. The qualifier is mandatory here too: `usuariosTransactionManager` is the `@Primary` bean, so a bare `@Transactional` does not fail at startup — it silently binds to the `usuarios` transaction manager.
 
-**Output ports:** Write-side in `domain/{feature}/port/out/`; read-side in `application/{feature}/query/port/out/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`).
+**Query objects:** a read-side `{Consult}{Entity}Query` (`query/primaryport/model/`) exists **only when the query carries input beyond the criteria** — a path variable, the subject taken from the JWT, a filter the client must not control. It is a `record` with a `crear(...)` factory validating format exactly like a `Command`, and the interactor turns it into the `Criteria` before calling the use case, so the `camposFiltrables()`/`camposOrdenables()` validation happens in the application layer instead of in the web mapper. When the query has no such input the `Criteria` **is** the query object: the interactor takes it directly and no `Query` type is declared — `ConsultarFichasPerfil` and `ConsultarEstadosFicha` are both of this second shape today. A `Query`'s DTO follows the same convention as the command side of its context, with one difference: it never redefines paging, sorting or filters — it composes `QueryCriteriaRequestDTO` as a component.
 
-**Input adapters:** REST controllers in `infrastructure/{feature}/command/adapter/in/web/`; AMQP consumers in `infrastructure/{feature}/command/adapter/in/amqp/`, suffix `InputAdapter` (e.g., `RegistrarFichaPerfilInputAdapter`, `UsuarioCreadoInputAdapter`).
+**Input ports:** The entry point of a command is the `Interactor` interface in `application/{feature}/command/primaryport/interactor/`, implemented by `{Action}{Entity}InteractorImpl` in the nested `impl/` package — together with its `Command` (`primaryport/model/`) and, where the action maps to a non-root domain object, its `Mapper` (`primaryport/mapper/`), this is the "primary port" of the command. The use case it delegates to is the `UseCase` interface in `application/{feature}/command/usecase/` — **not** nested under `primaryport/`, since it is an internal collaborator, not the primary contract — and the read side mirrors this: `{Consult}{Entity}Interactor` in `application/{feature}/query/primaryport/interactor/` is the primary contract the controller injects, and its `UseCase` lives in `application/{feature}/query/usecase/`. Both are implemented by `{Action}{Entity}UseCaseImpl`/`{Consult}{Entity}UseCaseImpl` in the nested `impl/` package. There is no `port/in/` package on the application layer — interfaces and implementations live together under `interactor/` and `usecase/`.
 
-**Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/{feature}/command/adapter/out/persistence/` (or appropriate sub-package for non-JPA), suffix `OutputAdapter` (e.g., `FichaPerfilCommandOutputAdapter`, `KeycloakAuthOutputAdapter`). Implement the corresponding `OutputPort` interface.
+**Output ports:** Both sides live in the application layer — write-side in `application/{feature}/command/secondaryport/`, read-side in `application/{feature}/query/secondaryport/`, suffix `OutputPort` (e.g., `FichaPerfilOutputPort`, `FichaPerfilQueryOutputPort`). **The domain layer declares no ports and performs no I/O**; `{context}/domain` depends only on `shared:domain`, so a port under `domain/` would invert the module dependency and not compile. **Output ports speak `Entity`, never `Domain`** — `registrarFicha(FichaPerfilEntity)`, `buscarPorId(...) → Optional<FichaPerfilEntity>` — because infrastructure must not see the domain layer at all.
 
-**Use case implementations:** `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCase`, `AutenticarUsuarioUseCase`), implement the corresponding `InputPort`. Annotated `@Component` — **never `@Service`**, which is not used anywhere in this project.
+**Entities and mappers:** `{Feature}Entity` (`application/{feature}/command/secondaryport/entity/`) is a **plain, technology-agnostic `record`** — no JPA, no Lombok, no annotations of any kind. It carries only the fields the port needs, and a `@ManyToOne`-shaped relationship to another feature's entity is stored as the bare id of that entity (`UUID` or `String`, matching the target's `@Id` type — never a nested `{Other}Entity`), the same way most entities already store plain foreign keys. Its mapper, `{Feature}Mapper` (sibling `mapper/` package, `final`, private constructor, **static** methods `toDomain`/`toEntity` — no Spring, no injection), converts `Entity ↔ Domain`; with the record flattened, this mapper never builds a nested reference itself. The real JPA entity lives in infrastructure: `{Feature}JpaEntity` in `infrastructure/{feature}/command/secondaryadapter/entity/` (suffix `JpaEntity`, the same `@Entity`/`@Table`/`@Column`/Lombok `@Getter/@Builder/@NoArgsConstructor/@AllArgsConstructor` the old application-layer entity used to carry), with a `{Feature}JpaMapper` (sibling `mapper/` package, `final`, private constructor, static `toEntity`/`toJpaEntity`) converting `Entity ↔ JpaEntity` — this is the only place either module needs a JPA/Hibernate dependency, and `application` no longer declares `jakarta.persistence-api` at all. If a `@ManyToOne` on the `JpaEntity` points at another feature's `JpaEntity`, that other feature's `{Other}JpaMapper` exposes the id-only detached-reference helper (`toReferencia(id)`, see "Where the conversion happens" below) — only features that are actually a FK *target* need one. Both the `Entity` and its `JpaEntity` sit under `command/` even when the read side uses them: an entity is not command- or query-specific, and the query side imports what it needs from there rather than duplicating it. **`toReadModel` does not live here** — a `ReadModel` is a query artifact and the read side has its own entity (below), so the mapping lives in infrastructure next to that entity. The command side never imports anything under `query/`. Applied throughout `fichas` and `notificaciones`.
 
-**Commands:** Input data for use cases in `application/{feature}/command/model/`, suffix `Command` (e.g., `RegistrarFichaPerfilCommand`). Implemented as Java `record`. DTOs in `infrastructure/{feature}/command/adapter/in/web/dto/` own a `toCommand()` factory method.
+**Read-side entities (`{Feature}JpaQueryEntity`):** a feature that projects a `ReadModel` outward does **not** read through the command-side `Entity`. It declares its own JPA entity in `infrastructure/{feature}/query/secondaryadapter/repository/`, suffix `JpaQueryEntity` — the `Jpa` prefix marks it as a technical artifact of the adapter, not an application type. It is mapped with Hibernate's `@Subselect` (the read query inline) plus `@Immutable` and `@Synchronize({"tabla", ...})`, which lists the tables it derives from so Hibernate flushes pending writes before querying. `@Subselect` needs `hibernate-core`, which only the infrastructure module has — this is why the entity cannot live in `application`. The subselect resolves the joins, so the entity is **flat — no `@ManyToOne`, no `@EntityGraph`, no lazy loading** — and `Specification`/sort paths address the flat columns (`asesorNombre`, not `asesorFicha.nombre`). Its mapper, `{Feature}QueryMapper` (`final`, private constructor, static `toReadModel`), sits in the sibling `mapper/` package; the query output adapter delegates to it and never declares a private `toReadModel`. Because the SQL travels in the Java, `@DataJpaTest` exercises the real join against H2: seed the underlying command tables with `TestEntityManager` and read through the port. Both the `EntityManagerFactory` (`{Contexto}DataSourceConfig`) and the `@DataJpaTest` anchor's `@EntityScan` must therefore scan `com.arquisoft.{contexto}.infrastructure` in addition to `.application`. **CQRS isolation is absolute at the infrastructure/JPA level: `query`'s `secondaryadapter` never imports anything from `command`'s `secondaryadapter`, not even the command side's `{Feature}JpaEntity`.** A feature whose query-side need is genuinely a `boolean`/`count`/lookup **and nothing else** gets its own minimal `{Feature}JpaQueryEntity` — a `@Subselect`/`@Immutable`/`@Synchronize` entity declaring only the columns that query needs (often just `id`), never a `@ManyToOne`, never reusing the command side's `JpaEntity` as its generic type: that would bind the read path to the write path's Hibernate mapping (its `@ManyToOne`s, its cascade config), exactly what CQRS separation exists to prevent. If the query-side method returns entity data rather than a `boolean`/`long`, a `{Feature}QueryMapper` (sibling `mapper/` package, `final`, private constructor, static `toEntity`/`toReadModel`) converts the `JpaQueryEntity` to whatever the application-layer `{Feature}QueryOutputPort` declares.
 
-**ReadModels:** Flat query projections in `application/{feature}/query/readmodel/`, suffix `ReadModel` (e.g., `FichaPerfilReadModel`). Implemented as Java `record`. The read side projects straight from the JPA entity via the mapper — there is no `fromDomain(Aggregate)` factory.
+**But a `query/` package only exists for a feature that has a genuine read use case reached through a `primaryport` — a `UseCase`/`Controller` driven by a `Criteria`, a listing, a lookup a client actually calls.** An existence or lookup check that a *command-side* `Validator`/`Rule` needs (`¿existe este estudiante?`, `¿es este representante el dueño de la evaluación?`, `¿cuál es el estado actual de la ficha?`) is a command-side concern even when it only reads: it belongs on that feature's own command `{Feature}OutputPort`, consumed by a command `Finder` — never duplicated under `query` "just in case," and never wired to nothing. Before adding a `{Feature}QueryOutputPort`, confirm something under `primaryport` actually calls it; if the only candidate caller is a command `Finder`, the check belongs in `command/secondaryport`, full stop. `estudiante`, `representantecomite`, `evaluacionfichaperfil`, and `estadofichaperfil` have no `query/` package at all today for exactly this reason — their only "reads" are existence/state checks a command `Finder` already gets from the command `OutputPort`.
 
-**DTOs:** `RequestDTO` is a Java `record` with Jakarta annotations (`@NotBlank`, `@NotNull`) and a `toCommand()` method, living in `infrastructure/{feature}/command/adapter/in/web/dto/`. Generic technical DTOs (`ErrorResponseDTO`, `PageResponseDTO<T>`) come from `shared:web` — never redefine them per context.
+The one exception is the **nested projection**: `asesorficha` owns `query/readmodel/AsesorFichaReadModel` and `query/primaryadapter/web/dto/AsesorFichaResponseDTO` with no `UseCase`, `Controller` or port of its own, because both are nested components of `FichaPerfilReadModel`/`FichaPerfilResponseDTO`. A nested read model belongs to the feature it describes, not to the one that composes it — that is what keeps `FichaPerfilQueryMapper` and `FichaPerfilResponseMapper` from redeclaring the advisor's shape.
 
-**Exceptions:** Every context exception extends one of five bases from `com.arquisoft.shared.exception`: `DomainException` (422), `ApplicationException` (400), `AuthorizationException` (403), `InfrastructureException` (503), `DomainValidationException` (422 + `fieldErrors[]`). Never `RuntimeException` directly. The constructor signature is `super(message, errorCode)` — both are `String`, so swapping them compiles and silently swaps the two fields in the response. `GlobalAppExceptionHandler` (`shared:web`) resolves the HTTP status by walking the superclass chain; contexts do not define their own handler (only `seguridad` does, for a name clash with Spring Security).
+**Where the conversion happens:** the **use case** maps `Domain → Entity` before calling the port, and the **finder** maps `Entity → Domain` after it returns — both via the application-layer `{Feature}Mapper`, working on the plain record. The **output adapter** is where `Entity ↔ JpaEntity` happens (via `{Feature}JpaMapper`), immediately around each repository call — `registrarFicha(FichaPerfilEntity)` becomes `repository.save(FichaPerfilJpaMapper.toJpaEntity(ficha))`, `buscarPorId(id)` becomes `repository.findById(id).map(FichaPerfilJpaMapper::toEntity)`. A `JpaMapper` needing a `@ManyToOne` association builds it as an id-only detached instance via the target feature's own `{Other}JpaMapper.toReferencia(id)` (e.g. `AsesorFichaJpaMapper.toReferencia(asesorFicha)`); with no cascade configured, Hibernate writes just the foreign key, which is what replaces the old `getReferenceById` proxy the adapter used to resolve. A port method that only ever needed a FK id (e.g. `actualizarAsesor(UUID fichaPerfil, AsesorFichaEntity nuevoAsesorFicha)`, where the entity carried nothing but an id) is simplified to take that id directly (`actualizarAsesor(UUID fichaPerfil, UUID nuevoAsesorFicha)`); the adapter builds the `toReferencia(...)` reference internally before calling the repository. Enums are the application-layer mapper's job too — see "Catalog enums" below: `EstadoFicha.desde(entity.estadoFicha())`, never a bare `valueOf`.
 
-**Business rules:** Validated inside the aggregate (→ 422), never with `if/throw` in the use case. The use case reads the state a rule needs via a port and passes it as a parameter to the factory. Existence, DB-duplicate and resource-ownership checks do belong in the use case (→ 400 / 403).
+**Catalog enums:** a domain enum validates its own text form, the same way an aggregate validates its own invariants — **`valueOf` is never called directly outside the enum**. Each catalog enum exposes `desde(String)`, which returns the constant or throws its own `{Enum}NoEncontradoException` (`DomainException` → 422) in `domain/{catalogo}/exception/`; a blank, null, or unrecognized id is a domain error, never a raw `IllegalArgumentException` that `GlobalAppExceptionHandler` would surface as a 500. Enums whose value also arrives through an aggregate's `crear(...)` additionally expose `esValido(String)`, so the aggregate can accumulate the error into its `ValidationResult` (Notification Pattern → `fieldErrors[]`) instead of aborting on the first one — the aggregate calls `esValido(...)` to decide, then `desde(...)` to convert. Both delegate to `UtilEnum.desde(Class, String)` (`shared:util`), which owns the "blank or unknown → absent" policy and the trimming in exactly one place. Every catalog enum also exposes `getId()` returning `name()` — mappers persist `getId()`, **never a bare `.name()`**. Applied to `EstadoFicha`, `EstadoEvaluacion`, `TipoItem`, `EstadoNotificacion`, `TipoNotificacion` and `UsuarioRole`. `UsuarioRole` is the one variant: its external identifier is the Keycloak role (`asesor-ficha`), not `name()`, so it keeps `getCodigo()` and its lookup pair is `desdeCodigo(String)`/`esCodigoValido(String)` matching case-insensitively on that field instead of delegating to `UtilEnum`.
 
-**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Aggregate`, `InputPort`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `UseCase`, `ReadModel`, `DTO`, `Command`).
+**Where a catalog enum lives is an OPEN DECISION — do not "fix" either side.** Two locations coexist today and the correlation is exact, but no rule has been agreed yet: enums whose catalog has its own Postgres table sit in `domain/{catalogo}/` as a feature of their own, with sibling `exception/`, an `Entity`/`JpaEntity` and (for `EstadoFicha`) a full `query/` package — `EstadoFicha`, `TipoItem`, `EstadoEvaluacion` (tables `estado_ficha`, `tipo_item`, `estado_evaluacion`). Enums with no table of their own sit in `domain/{feature}/model/` as a value object of the feature that uses them — `EstadoNotificacion`, `TipoNotificacion` (plain `VARCHAR` columns of `notificacion`) and `UsuarioRole` (column `usuario.rol`; the source of truth is Keycloak). Pending a decision with the project advisor, **a new catalog enum follows whichever location its own context already uses**; the rest of this paragraph (`desde`/`esValido`/`getId`, never `valueOf`) is settled and applies either way.
+
+**No `Optional` in domain records or validator signatures:** `Optional` is a *finder* return type and nothing else. It is unwrapped in the use case and never reaches a `Validator` parameter nor a domain `Rule`'s input record. Two shapes carry absence past that boundary, and which one applies depends on what was fetched:
+- **An aggregate** travels as its `VACIO` sentinel: the finder returns `Optional<{Entity}Domain>`, the use case does `.orElse({Entity}Domain.VACIO)`, and the validator takes the plain aggregate and asks `esVacio()`. Every such aggregate declares `public static final X VACIO` populated with the zero value of each field (`UtilUUID.obtenerUUIDPorDefecto()`, `UtilTexto.VACIO`, `UtilFecha.VACIO`, `EstadoFicha.VACIO`) so its getters stay readable, plus `esVacio()` returning `this == VACIO` — identity, not field comparison.
+- **A bare value** (a `UUID`, a count) travels as the value plus an explicit `boolean`: `validar(UUID item, UUID estudiante, UUID fichaDelItem, boolean itemExiste, …)`, with the use case filling the absent case with the zero value (`.orElse(UtilUUID.obtenerUUIDPorDefecto())`). This is the dominant validator shape — `boolean asesorExiste`, `boolean fichaExiste`, `boolean esPropietario`.
+
+Either way the rule that consumes existence gets its own `Existencia{Concepto}(… , boolean existe)` record, and the value rules run only after that boolean says the data is there.
+
+**Enums in ports and finders:** once the mapper has validated the text against the catalog, the enum stays an enum — do not convert it back to `String` to carry it across the application layer. Absence is modeled the way every other rule models it: as a `boolean` in its own existence record (`ExistenciaEstadoFichaPerfil(UUID fichaPerfil, boolean existe)` → `EstadoFichaPerfilExisteRule`), while the value rule takes the plain enum (`EstadoActualFicha(UUID fichaPerfil, EstadoFicha estadoActual)`) and the validator guards it behind `esVacio()`. Note the two distinct errors this keeps separate: `EstadoFichaPerfilNoEncontradoException` (no row for that ficha — it can name the ficha) versus the catalog-level `EstadoFichaNoEncontradoException` (the stored id is not a known constant).
+
+**Repositories:** Spring Data interfaces stay in infrastructure and are **split by side** — `{Feature}CommandRepository` in `command/secondaryadapter/repository/` and `{Feature}QueryRepository` in `query/secondaryadapter/repository/`, each declaring only the methods its side uses. The write side extends `JpaRepository`; the read side extends `QueryRepository<T, ID>` (or `SpecificationQueryRepository<T, ID>` when it needs `Specification`) from `shared:jpa` — both `@NoRepositoryBean` interfaces over Spring Data's `Repository`, exposing only `findById`/`existsById`/`findAll`/`count`. A query repository must never inherit `save`/`delete`/`flush`: the compiler, not the convention, keeps CQRS honest. Tests that need to seed data in a `@DataJpaTest` use `TestEntityManager`, never a query repository. There is no `infrastructure/{feature}/persistence/` package any more.
+
+**Query output adapters are pure delegation.** The translation work sits in `shared:jpa/util/`, in two symmetric mappers: `PageableMapper.toPageable(criteria, traductorDeCampo)` converts `QueryCriteria` → `Pageable` on the way in, `PaginationMapper.toResult(page)` converts `Page` → `PaginatedResult` on the way out. The adapter supplies only the feature-specific piece — a method reference to its `{Feature}SortMapper::traducir` — and never builds a `PageRequest`/`Sort` itself. `shared:jpa` holds only what genuinely needs Spring Data JPA: these two mappers, `CampoSpec`/`QueryJpaSpecification`, and the `QueryRepository`/`SpecificationQueryRepository` interfaces. Everything Spring-free lives in `shared:query`.
+
+**Do not catch Spring Data exceptions in an adapter to re-map them as 4xx.** Invalid sort and filter fields are already rejected up front, before any SQL runs: `QueryCriteria.BaseBuilder` validates `ordenamiento` against `camposOrdenables()` and `raiz` against `camposFiltrables()` (throwing `FiltroException` → 400), and `QueryJpaSpecification` rejects unknown filter fields. So a `PropertyReferenceException` or `InvalidDataAccessApiUsageException` reaching the adapter can only mean the feature's own `SortMapper`/`Specification` points at a column the entity does not have — a mapping defect. Translating that to a 400 tells the client their field was wrong when it was not, and hides the bug; let it surface as a 500. What guards the mapping instead is a test: `{Feature}SortMapperTest` asserts that `Campo.esValidoParaOrdenar(clave)` and `{Feature}SortMapper.traducir(clave) != null` agree for every field, so the two declarations of "what is sortable" cannot drift apart.
+
+**Input adapters:** REST controllers in `infrastructure/{feature}/command/primaryadapter/web/` (or `query/.../web/`), suffix `Controller` (e.g., `RegistrarFichaPerfilController`) — there is no Spanish exception for this suffix anymore. AMQP consumers in `infrastructure/{feature}/command/primaryadapter/amqp/`, suffix `Consumer` (e.g., `UsuarioCreadoConsumer`) — matching the `AbstractEventConsumer` base class they extend; `Controller` is reserved for HTTP entry points.
+
+**Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/{feature}/command/secondaryadapter/repository/` (or an appropriately named sub-package for non-JPA integrations, e.g. `secondaryadapter/keycloak/`, `secondaryadapter/redis/`, `secondaryadapter/jwt/` in `seguridad`), suffix `OutputAdapter` (e.g., `FichaPerfilCommandOutputAdapter`, `KeycloakAuthOutputAdapter`). Implement the corresponding `OutputPort` interface.
+
+**Use case implementations:** `{Action}{Entity}UseCaseImpl` in `usecase/impl/`, implementing `{Action}{Entity}UseCase` (e.g., `RegistrarFichaPerfilUseCaseImpl`, `AutenticarUsuarioUseCaseImpl`). Annotated `@Component` — **never `@Service`**, which is not used anywhere in this project. The use case is a plain collaborator invoked by its interactor — the adapter always injects the `Interactor`, never the `UseCase`.
+
+**Validators:** interface `{Action}{Entity}Validator` in `application/{feature}/command/validator/` plus `{Action}{Entity}ValidatorImpl` (`@Component`) in the nested `impl/` — the same interface + `impl/` split as `Interactor`, `UseCase`, `Finder` and `Rule`; what the use case injects is the interface. It is named after the **action**, never after the entity alone. It accumulates every business rule of one use case. It is **pure**: it holds only domain `Rule` instances, created inline with `new` — never an `OutputPort`, never a `Finder`, and nothing injected through its constructor. Its `validar(...)` signature takes the domain input plus the data the use case already fetched (`boolean asesorExiste`, `List<UUID> estudiantesExistentes`, `Optional<EstadoFicha> estadoActual`, …); from those it builds each Rule's input record and invokes the Rules in validation order. **A validator never decides, it only orchestrates — it contains no `if` at all.** Rules run in sequence and each one throws on its own violation, so a rule that depends on a previous one simply trusts that the previous one already threw: guarding it is dead code, because the existence rule aborts the flow before the dependent rule is reached. When absence must change what a rule concludes, that decision lives **inside the rule** — `EstadoFichaPerfilEnTerminalRule` is invoked unconditionally and returns silently on `EstadoFicha.VACIO`. Validator tests exercise the real rules — there is nothing to mock. A test that needs to prove a dependent rule does not run feeds input that makes the preceding rule throw and asserts that its exception is the one that surfaces; ordering is asserted the same way, by making two rules fail at once and checking which exception wins.
+
+**Domain rules:** A single existence/uniqueness/comparison/ownership check is an interface `{Concepto}Rule` extending `com.arquisoft.shared.rules.DomainRule<T>`, in `domain/{feature}/rules/`, with a plain implementation (no Lombok, no Spring, **no constructor dependencies at all**) in the nested `impl/` package. `T` is a record in `domain/{feature}/model/` carrying the already-fetched data plus whatever the error message needs — e.g. `ExistenciaAsesorFicha(UUID asesorFicha, boolean existe)`, `DisponibilidadTituloFicha(String tituloProyecto, boolean yaExiste)`, `PropiedadFicha(UUID fichaPerfil, UUID estudiante, boolean esPropietario)`. `validar(T)` is a pure decision over that record: it does not query anything, it only throws. A rule is **not a Spring bean, and does not need to be**. DI manages two things — variability of implementation and lifecycle — and a rule has neither: it is a pure decision with no state, no I/O and no configuration, and nothing substitutes it in production (changing the business rule means editing the rule, not swapping an implementation). So the `{Action}{Entity}ValidatorImpl` declares a **single no-arg constructor** that builds the rules it runs (`this.asesorFichaExisteRule = new AsesorFichaExisteRuleImpl();`), no `@RequiredArgsConstructor`. That keeps "which rules does this validator apply" readable in one place, and removes the bean-per-rule that had to be remembered on every new rule. `@Component` stays on the validator, which is the only thing Spring builds. There is no `{Contexto}DomainRulesConfig` any more. **Revisit this only if a rule ever needs a dependency** — a clock, a configuration value: at that point it stops being a pure function and that rule alone should become a bean. Their unit tests need no Mockito.
+
+**Finders:** every query the rules need is one `{Concepto}Finder` extending `com.arquisoft.shared.rules.Finder<T, R>` in `application/{feature}/command/finder/`, with `@Component` `{Concepto}FinderImpl` in `impl/` that delegates to an `OutputPort`. A Finder **always returns a value and never throws for "not found"**: existence queries return `Boolean`, counts `Long`, aggregate lookups `Optional<T>`. Deciding what an absent value means is the Rule's job, not the Finder's. Failures of the query itself (DB down, timeout) propagate as the adapter's `InfrastructureException` (503) — finders do not catch or re-wrap them.
+
+**Command flow:** `InteractorImpl` (`@Transactional`) → `UseCaseImpl` → finders fetch every piece of state (mapping the `Entity` the port returns back to `Domain`) → `validator.validar(entrada, …datos)` → rules decide → `{Feature}Mapper.toEntity(aggregate)` → `OutputPort` persists. All I/O of a command lives in the use case; the validator and the rules are pure functions of what it fetched. When a query depends on the result of a previous one (item → its ficha → ownership of that ficha), chain it with `map`/`flatMap` on the `Optional` so the absent case degrades to a safe default and the first rule reports the real error.
+
+**Validation order (mandatory):** 1) data integrity (format, required, length, duplicates within the payload — accumulable), 2) existence and uniqueness against the DB, 3) business rules in the aggregate. Never query the database on data whose integrity has not been established first.
+
+**Command results:** a command normally returns `UUID` or `void`, and then it needs no type of its own. When it does return something richer, the record lives in `application/{feature}/command/result/` with suffix `Result` — never nested inside the `UseCase` interface, and never in `model/`, which is reserved for input. This mirrors the read side, where `criteria/` is the input and `readmodel/` the output. Only `seguridad` has one today (`AutenticacionResult`, `RefrescoTokenResult`, `ValidacionTokenResult`), but the package is not seguridad-specific: **a business context that needs it declares exactly this same structure**, and the plan for such a use case must say so up front — "does this write return `void`, a `UUID`, or an object?" is the question whose third answer creates a `result/`.
+
+The `Result` never builds itself. A sibling `{Concepto}ResultMapper` (`command/result/mapper/`, `final`, private constructor, static `toResult(...)`) converts what the **secondary port** returned into it — `AutenticacionResultMapper.toResult(CredencialesProveedor)`. Who calls that mapper is the part that is easy to get wrong: it is the **`UseCaseImpl`**, not the interactor. The interactor only declares the type (`Interactor<AutenticarUsuarioCommand, AutenticacionResult>`) and delegates, exactly as it does when the return is a bare `UUID`. A mapper with more than one absence-handling branch keeps both factories side by side (`toResult` / `toResultInvalido`) so the use case can chain `.map(...).orElseGet(...)` without an `if`.
+
+Like a `ReadModel`, **a `Result` is never serialized directly**: it carries no Jackson annotation and no Lombok, and the controller maps it to a `{Action}{Entity}ResponseDTO` through a `{Action}{Entity}ResponseMapper` in `infrastructure/{feature}/command/primaryadapter/web/mapper/` (`IniciarSesionResponseMapper.toResponse(AutenticacionResult)`). That keeps the JSON contract out of the application layer on the write side just as it is on the read side. Note for coverage: `*Result` and `*ResultMapper` are **not** in the JaCoCo exclusion list the way `*Command` and `*ReadModel` are, so the use-case test asserting the result's fields is what covers the mapper.
+
+**Commands:** Input data for use cases in `application/{feature}/command/primaryport/model/`, suffix `Command` (e.g., `RegistrarFichaPerfilCommand`). Implemented as Java `record`, with a static `crear(...)` factory that runs data-integrity validation (`Validator*`/`ValidationResult`, accumulable) before returning the typed instance — this is where request-level format validation lives today, not on the DTO. DTOs live in `infrastructure/{feature}/command/primaryadapter/web/dto/`; see "DTOs" below for how they convert to a `Command`.
+
+**ReadModels:** Flat query projections in `application/{feature}/query/readmodel/`, suffix `ReadModel` (e.g., `FichaPerfilReadModel`). Implemented as Java `record`. The read side projects straight from the JPA entity via the mapper — there is no `fromDomain(...)` factory from the aggregate root. A `ReadModel` is **never serialized directly**: it carries no Jackson annotation and no Lombok, so the JSON contract cannot drift into the secondary port's return type. The query controller maps it to a `{Entity}ResponseDTO` (`record`, in `infrastructure/{feature}/query/primaryadapter/web/dto/`) through a `{Entity}ResponseMapper` (`final`, private constructor, static `toResponse`) in the sibling `mapper/` — the read-side counterpart of the command's `{Action}{Entity}RequestMapper`. Serialization policy (`@JsonInclude`, field naming) lives on that DTO. For paginated endpoints, convert before wrapping: `PageResponseDTO.from(resultado.map({Entity}ResponseMapper::toResponse))`.
+
+**DTOs:** `RequestDTO` is a Java `record` living in `infrastructure/{feature}/command/primaryadapter/web/dto/`. Generic technical DTOs (`ErrorResponseDTO`, `PageResponseDTO<T>`) come from `shared:web` — never redefine them per context. The DTO is a pass-through: it carries data and guarantees its integrity, it does not run business rules.
+
+**There is one convention for the DTO → Command conversion, and no per-context choice about it:** the DTO is a **bare record with no annotations at all**, and a sibling `{Action}{Entity}RequestMapper` (`final`, private constructor, static `toCommand(dto)`) in `primaryadapter/web/mapper/` performs the conversion, delegating every format check to the Command's own `crear(...)` factory (see "Commands" above) rather than to Jakarta Bean Validation. `fichas` and `seguridad` both follow it. This used to be split into a "small context" variant where the DTO carried `@NotBlank`/`@NotNull` and its own `toCommand()` instance method; that split is gone, because two validation entry points meant two places to look for the same rule and produced two error shapes for the same class of failure — Jakarta's `MethodArgumentNotValidException` versus the accumulated `fieldErrors[]` of `DomainValidationException`. `usuarios` is the last holdout and is a known deviation, not an alternative (see *Known deviations*).
+
+A `RequestDTO` carries no logic, with one exception worth copying: overriding `toString()` to mask a secret. `IniciarSesionRequestDTO` does it because the compiler-generated `toString()` of a record prints every component, so any log of the DTO would dump the password in clear.
+
+**Identifiers in request bodies:** received as `String`, never as `UUID` — a malformed `UUID` field would otherwise surface as a blind Jackson deserialization error. **Format validation of an identifier is never a Jakarta Bean Validation annotation — neither a custom one nor a library-provided one** (`org.hibernate.validator.constraints.UUID` and equivalents are off the table too). This is a hard rule for every context, present or future: the check always happens at the Command boundary — `ValidatorUUID.uuidValido(...)` (`shared:validation`), called from `{Command}.crear(...)` — accumulating into the same `fieldErrors[]` shape as every other format error. `shared:web` used to ship a custom `@UuidValido` constraint for this; it was removed because a Jakarta annotation on the DTO and a `Command`-level check are two competing places to look for the same rule, and the annotation could silently go unused (as it did) while the DTO looked validated. `seguridad` and `usuarios` have no identifier fields in their request DTOs today — `fichas` is simply the context where this rule already has something to show. Conversion to `UUID` happens via `UtilUUID.generarUUIDDesdeTexto` inside `{Command}.crear()`; the Command itself stays typed `UUID`. Path variables remain `UUID`.
+
+**Objectual naming in contracts:** DTO and Command components carry what they represent, not the column name: `asesorFicha` (not `asesorFichaId`), `estudiantes` (not `estudiantesIds`). Field-name constants live in `FichasFields.{Entity}.*`.
+
+**No hardcoded literals in adapters:** response codes come from `ApiCodes` (`shared:message/annotation/`), Swagger texts from `{Contexto}ApiMessages` (same package: `FichasApiMessages`, `SeguridadApiMessages`, `UsuariosApiMessages`), authorities from `FichasAuthorities` (`@PreAuthorize(FichasAuthorities.Expresiones.HAS_...)`, with the raw authority available for tests), and the OpenAPI security-scheme name from `ApiSecurity.BEARER_AUTH` (same package again) — declared once by `@SecurityScheme` in the root `OpenApiConfig` and referenced by every `@SecurityRequirement`, since springdoc silently drops the padlock instead of failing when the two names diverge. **Route paths are the exception and stay inline** in each controller's `@RequestMapping`/`@PostMapping` as a property placeholder (`"${rutas.seguridad.auth.login:/login}"`): they come from the yml, so a Java constants class would only add a second place to look. There is no `{Contexto}Routes` class any more. Length limits come from `FichasLimits`, passed as a plain argument to `ValidatorLongitud`/`ValidatorColeccion` inside `{Command}.crear()` — never a Jakarta `@Size`/`@Max` annotation, since the request DTO carries no annotations at all (see "DTOs" above). Changing a length must never require touching two places. The `{Contexto}ApiMessages` texts are the one family that stays **embedded** instead of going to the Redis catalog: an annotation value must be a constant expression (JLS §9.7.1), and the OpenAPI spec is frozen at startup, so it gains nothing from being external and would cost a key in the startup fail-fast.
+
+**Message catalog:** runtime texts (errors, logs) live in Redis, loaded from the versioned `catalogo/*.properties` at the repo root by the `catalogo/cargar.sh` script that sits beside them (ADR-013). Every layer resolves them through the **static `Mensajes` facade** — there is no injectable `CatalogoMensajes` bean, and that is deliberate. The domain could not use one anyway (its exceptions and aggregates are built with `new` and static factories, never as beans), and in application/infrastructure the injection turned out to be ceremony: no test ever substituted the catalog in the 53 sites that received it, while having two ways to resolve a message did produce a real bug — one HTTP response mixing catalog text with fallback text. The port stays an interface, so a locale-aware implementation can be installed later without touching call sites; i18n needs an ambient locale (like `shared:tracing` already does for the trace context), not injection, because the locale is per-request and an injected singleton would be equally blind to it. Keys follow `contexto.capa.objeto.tipo.descripcion`, and each declares its arity (`ClaveMensaje.parametros()`) — see *Arity and resolution path* below. What the compiler forces to stay a constant — error codes (`*Codes`), limits (`*Limits`), field names (`*Fields`) — does not go to the catalog, because annotation values must be constant expressions (JLS §9.7.1). `CatalogoCargaTest` fails the build on a key with no text, a text with no key, an enum missing from `ClavesCatalogo`, or a pattern whose marker count contradicts its declared arity. See [catalogo/README.md](catalogo/README.md) for the procedure to add a message.
+
+**What is text and what is an identifier.** The catalog holds prose a human reads. It does **not** hold strings that tooling or a contract matches exactly — translating those silently breaks the thing that reads them. Identifiers stay Java constants next to their use: error codes (`*Codes`), MDC field names and sentinel values (`TrazaKeys`, `TrazaValores.ANONIMO/SISTEMA/EVENTO`), HTTP and AMQP header names (`TrazaHeaders`), log markers greppable in Loki (`TrazabilidadFilter`'s `AUDIT`), infrastructure names (`RabbitMQConfig.EXCHANGE_NAME`, bean names referenced by both `@Bean` and `@Qualifier`), and external API codes (MinIO's `NoSuchKey`). The display labels of catalog enums (`EstadoFicha.getNombre()`) also stay in Java: their source of truth is the MER, and a copy in `.properties` would be a second one.
+
+The rule covers `shared:*` too, not only the contexts — `shared:query` and `shared:jpa` resolve the dynamic-query texts from `ConsultaKey` + `AppCodes.Consulta`. Library classes there (records, sealed interfaces, static utilities, DTOs deserialized by Jackson) have no injection point either, so they use the static `Mensajes` facade like everything else. Two things that look like text but are **not** catalog material: error codes, and infrastructure identifiers such as `RabbitMQConfig.EXCHANGE_NAME` — both are contract, not presentation.
+
+**Where an identifier lives depends on its reach, and the default is narrow.** A `*Codes`/`*Fields`/`*Routes` class in `shared:message` is for identifiers that cross a boundary — something outside the declaring class asserts on them. An identifier used **only inside one class** stays a `private static final` field of that class: the JSON keys a controller assembles (`MinioGuiaController.CAMPO_BUCKET`), the protocol parameters an adapter sends (`KeycloakAuthOutputAdapter.PARAM_GRANT_TYPE`), the URL templates and public route patterns of a config (`SeguridadConfig.PLANTILLA_ISSUER`), the format skeletons of a message (`ValidationResult.SEPARADOR_ERRORES`), the regexes of a utility (`UtilFecha.PATRON_FECHA`). Promoting those to a shared catalog widens their reach for no gain and invites use from places that should not know them. The trigger for promotion is a **second reader**: `AppCodes.Validacion.DOMINIO` moved out of `DomainValidationException` because a controller test asserts on it, so the literal existed in two modules at once.
+
+Naming these private constants is not cosmetic. In `KeycloakAuthOutputAdapter`, `"refresh_token"` is simultaneously a grant type, a request parameter and a response field, and `"password"` is both a grant type and a parameter name — three constants with distinct names for the same literal, because the reader cannot otherwise tell which role is meant. Extract when the literal repeats, carries a role the name clarifies, or is a magic value (`EXPIRACION_POR_DEFECTO`); a single-use `", "` inside one `Collectors.joining` is not worth a constant.
+
+**Arity and resolution path.** The catalog has two families of pattern and they do not share marker syntax: messages for the client carry `%s` and the catalog substitutes them with `String.formatted`; log patterns carry `{}` and SLF4J substitutes them. `ClaveMensaje.parametros()` declares the count for **both** — a log key is not 0 just because the catalog does not do the substituting.
+
+Each family fails silently in its own way, and mixing up the path is the third failure and the worst of the three:
+
+| Call | What happens without a guard |
+|---|---|
+| `formatear` with too few args | `IllegalFormatException` — the only one that announces itself |
+| `formatear` with too many args | `String.formatted` discards them; the message looks correct |
+| `formatear` on a log pattern | nothing is substituted — there is no `%s` there — and the args are lost |
+| `obtener` on a `%s` pattern | the raw pattern, markers and all, reaches the end user |
+| log with too few args | SLF4J prints the literal `{}` into a production log |
+
+`AridadClave` (`shared:message`) is the single place that decides all of this: it counts the markers with the syntax its category calls for (`CategoriaMensaje.LOG`), and diagnoses a call whose path or argument count does not match. It only diagnoses — **what to do with the diagnosis is each catalog's decision, and it differs on purpose**. `CatalogoMensajesRedis` logs it and degrades to the fallback, because it usually runs inside `GlobalAppExceptionHandler` building the response of an error that already happened: throwing there would turn a readable 422 into a bodyless 500. `CatalogoMensajesPrueba` throws, because in a test there is nothing to degrade and a silent failure would go unseen — which makes every call site a test exercises a build-time check, the closest thing to compile-time enforcement available here. Real compile-time is off the table: the signature is `formatear(ClaveMensaje, Object...)`, and putting the arity in the type would mean each key being a distinct type — impossible while keys are enums, and enums are what give `ClavesCatalogo.TODAS` its exhaustive `values()`.
+
+Never call `Mensajes.obtener(clave).formatted(args)`. It reads like the same thing and is not: it bypasses the catalog's own formatting path, so there is no fallback and no diagnosis. Two domain exceptions did exactly this until the guard caught them.
+
+The counting is shared, not duplicated: `AridadClave.marcadores` is what `CatalogoCargaTest` uses against the `.properties` and what the startup fail-fast uses against what Redis actually holds. Both guard the count, not the wording — only a test asserting on the **rendered** text does that (`FiltroMensajesTest`, `CampoSpecMensajesTest`), so the two are complementary.
+
+**Exceptions:** Every context exception extends one of four bases from `com.arquisoft.shared.exception`: `DomainException` (422), `ApplicationException` (400), `InfrastructureException` (503), `DomainValidationException` (422 + `fieldErrors[]`). Never `RuntimeException` directly. The constructor signature is `super(message, errorCode)` — both are `String`, so swapping them compiles and silently swaps the two fields in the response. `GlobalAppExceptionHandler` (`shared:web`, package `com.arquisoft.shared.web.handler`) resolves the HTTP status by walking the superclass chain; contexts do not define their own handler (only `seguridad` does, in `seguridad/infrastructure/handler/`, for a name clash with Spring Security).
+
+**A `@RestControllerAdvice` goes in `handler/`, never in `exception/`.** Every package in this repo is named after the suffix of the classes it holds — `filter/` → `*Filter`, `mapper/` → `*Mapper`, `interactor/` → `*Interactor` — so `exception/` means "here live the exception types" in all ~20 places it appears. A handler is not an exception; putting it there overloaded the one package name whose meaning the rest of the codebase relies on, and left an `exception/` directory containing no exception at all. `advice/` was rejected too: it is Spring jargon and the class is not named `*Advice`.
+
+**Business rules:** Invariants of a single aggregate are validated inside the aggregate (→ 422), never with `if/throw` in the use case. Checks that need state from outside the aggregate — existence, DB duplicates, ownership — are domain `Rule`s fed by the use case (see "Domain rules" above), never inline `if/throw`.
+
+**Where each exception lives:** an exception thrown by a `Rule` lives in `domain/{feature}/exception/` and extends `DomainException` (→ 422) — including "not found", "duplicate", and ownership checks (`FichaNoPropietarioException`, `ItemFichaNoPropiaException`, `EvaluacionFichaNoPropiaException`); there is no separate 403 case for "you are not the owner" — it is modeled as another invalid-state 422. An exception thrown by application-layer orchestration lives in `application/{feature}/exception/` and extends `ApplicationException` (→ 400). Infrastructure failures stay `InfrastructureException` (→ 503) and are raised by the output adapters, from `infrastructure/{feature}/exception/`.
+
+**All three live inside the feature's vertical slice — there is no context-level `exception/` package.** The layer that owns the exception is the layer whose base class it extends, and the whole hierarchy of one concept must sit in one layer: `AutenticacionException`, `CredencialesInvalidasException` and `TokenInvalidoException` are all in `seguridad/application/auth/exception/` because the two subclasses extend the first, which is an `ApplicationException` — while `ProveedorIdentidadNoDisponibleException` (503, Keycloak down, thrown by `KeycloakAuthOutputAdapter`) sits in `seguridad/infrastructure/auth/exception/`. A subclass that lands in a different layer from its parent splits one hierarchy across two modules; the redundant imports Checkstyle reports when you try are the symptom.
+
+**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Domain`, `Interactor`, `UseCase`, `Impl`, `OutputPort`, `Consumer`, `OutputAdapter`, `Controller`, `ReadModel`, `DTO`, `Command`) — no Spanish exception remains; REST controllers were renamed from `Controlador` to `Controller` for consistency.
+
+**Known deviations — present in the code, NOT to be copied.** Follow the convention, not these:
+
+| What | Where | Convention it breaks |
+|---|---|---|
+| `CrearUsuarioRequestDTO` with Jakarta annotations + `toCommand()` | `usuarios/infrastructure/usuario/command/primaryadapter/web/dto/` | The only DTO left on the retired "small context" convention — should be a bare record + `CrearUsuarioRequestMapper` (see *DTOs*). It also nests a `RolUsuarioDTO` enum mirroring `UsuarioRole`, and builds its `Command` with `new` instead of `crear(...)`, so nothing validates format |
+| `EstadoEvaluacionCommandRepository` | `fichas/infrastructure/estadoevaluacion/command/secondaryadapter/repository/` | Dead code: no `OutputPort`/`OutputAdapter` consumes it |
+| `UsuarioCommandOutputAdapter` no persiste | `usuarios/infrastructure/usuario/command/secondaryadapter/repository/` | **Deliberate, not a pending task.** `usuarios` is an example context today: the adapter only logs, so invoking the flow leaves no rows, and that is why there is no `UsuarioJpaEntity`/`UsuarioJpaMapper`/`UsuarioCommandRepository`. The shape *is* final (port speaks `Entity`, Spanish method names, `AppLogger`); only data access is absent. Consequence to keep in mind: `UsuarioEmailUnicoRule` never fires, because `existePorEmail` always returns `false` |
+| `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub (`// TODO: persistir en tabla espejo`); that is why it has no `Interactor`, no `@Transactional` and the `Consumer` injects the `UseCase` directly. When it really persists it must go through an `Interactor` |
+| `*ResponseDTO` as a Lombok `@Data`/`@Builder` class | `seguridad/infrastructure/auth/command/primaryadapter/web/dto/` (all four) | Response DTOs are `record`s, as in `fichas`. Copy the `Result → ResponseMapper → ResponseDTO` chain from `seguridad`, not the shape of the DTO itself |
+
+For the full write-up plus the open catalog-enum decision, see [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md#desviaciones-conocidas-respecto-a-la-convención).
 
 **Injection:** Always constructor injection via `@RequiredArgsConstructor` — never `@Autowired`.
 
-**Logging:** `@Slf4j`. `warn` for 4xx, `error` for 5xx. Structured JSON via `shared:logger` (includes `traceId`, `userId`).
+**Logging:** never log from a `@Bean` method or a `@PostConstruct`. `Mensajes.instalar(...)` runs inside a `@Bean` of `CatalogoMensajesRedisConfig`, so anything constructed before it resolves to the raw key — and since a key carries no `{}`, SLF4J drops the arguments too, losing both the text and the values. A startup log that reports effective configuration belongs in an `@EventListener(ApplicationReadyEvent.class)` method. The exception is the branch that aborts startup: it keeps its log in place, because `ApplicationReadyEvent` never fires if the context does not come up, and a raw key in the stack trace still identifies the failure. Otherwise, inject the `AppLogger` port (`shared:logger`) by constructor — `private final AppLogger logger;` — instead of `@Slf4j`, so application and infrastructure code does not depend on SLF4J. `Slf4jAppLogger` is the default strategy, wired as a prototype bean by `AppLoggerConfig` (each class gets a logger named after itself). Applied in every context — `fichas`, `notificaciones`, `seguridad` and `usuarios` all inject `AppLogger`; no `@Slf4j` remains outside `shared:*` and the root `config/`. `warn` for 4xx, `error` for 5xx. Structured JSON via `shared:logger`; the trace context itself comes from `shared:tracing` (see *Correlation* below). In `@WebMvcTest` slices add `AppLoggerConfig.class` to `@Import`; in unit tests pass a mock.
+
+**Nunca resuelvas un mensaje del catálogo en tiempo de construcción de un bean.** `Mensajes.instalar(...)` ocurre dentro de un `` de `CatalogoMensajesRedisConfig`, así que cualquier bean construido antes recibe el respaldo y `Mensajes.obtener(...)` devuelve **la clave cruda**; peor aún, como esa clave no contiene ningún `{}`, SLF4J descarta también los argumentos, y el log pierde a la vez el texto y los valores. Un log de arranque que reporte configuración efectiva (orígenes CORS, issuer de Keycloak, timeouts) va en un método `@EventListener(ApplicationReadyEvent.class)`, no dentro del `@Bean` ni en un `@PostConstruct`. La excepción es la rama que aborta el arranque: ahí el log se queda donde está, porque `ApplicationReadyEvent` no llega a dispararse si el contexto no levanta, y una clave cruda en el stack trace sigue identificando el fallo.
+
+**Correlation:** `shared:tracing` owns the whole trace context. It is the one shared module laid out in hexagonal layers internally (`domain/traza` → `application/traza/{primaryport,secondaryport}` → `infrastructure/traza`), so `MdcContextoDiagnosticoOutputAdapter` is the only class in the codebase that touches `org.slf4j.MDC` and the domain (`Traceparent`, `IdentificadorTraza`, `ClienteIp`, `CorrelacionEntrante`) stays pure Java. `TrazaDomain` keeps only the attributes every origin shares (`correlacionId`, `transaccionId`, `transaccionPadreId`, `usuarioId`, `origen`, timing/status); the fields that only make sense for one origin live in `DetalleOrigenTraza` (`domain/traza/model/`), a sealed interface with one record per origin — `DetalleHttpTraza(clienteIp, metodoHttp, rutaUri)`, `DetalleEventoTraza(colaEvento)`, `DetalleProgramadoTraza()`. `MdcContextoDiagnosticoOutputAdapter.escribirDetalle(...)` pattern-matches over it exhaustively, so an HTTP-only field can never leak into an `EVENTO`/`PROGRAMADO` log line (and the compiler forces every new origin variant to be handled there).
+
+**Other modules never implement a contract of `shared:tracing`** — the module exposes the mechanism instead. Inject `GestorTraza`, open a scope, and call named methods on it:
+
+```java
+try (var alcance = gestorTraza.abrir(SolicitudTraza.paraHttp(...))) { ... }   // cierra y limpia el MDC
+gestorTraza.registrarUsuario(jwt.getSubject());                              // enriquece el alcance abierto
+```
+
+`AlcanceTraza` is `AutoCloseable` and **must** be used with try-with-resources: `close()` restores the previously captured MDC map (not a `remove`, so nested scopes — a consumer inside a consumer — give back the outer value). There is deliberately **no generic `registrarAtributo(clave, valor)`**: a free-form put is how tokens and PII end up in the MDC, so each new field costs a key in `TrazaKeys` plus a named method.
+
+`correlacionId` groups the whole transaction across hops; `transaccionId` is regenerated on every hop (a request, an AMQP consumption), so the consumer of an event shares the producer's correlation but gets its own transaction. An incoming `X-Correlation-Id` is reused **verbatim** (never normalised to 32 hex — rewriting it breaks correlation with the caller), falling back to the W3C `traceparent` trace-id and only then generating one. Incoming values are sanitised against a whitelist (log injection). `ErrorResponseDTO` carries both as `traceId` and `transaccionId` — `traceId` keeps its name because it is a contract with the frontend. `transaccionPadreId` names which hop's transaction spawned this one, so a chain of hops can be reconstructed in log order and not just grouped by `correlacionId`: for `HTTP` it is the `parent-id` segment of an incoming `traceparent` (empty on the first hop, since there is nothing upstream); for `EVENTO` it is the producer's own `transaccionId`, arriving on the `X-Transaction-Id` AMQP header that `TrazaMessagePostProcessor` already sets on every outgoing message; `PROGRAMADO` has none, a scheduled job has no caller.
+
+MDC is not ambient: it only holds trace data inside an open `AlcanceTraza`. `TrazabilidadFilter` opens one per HTTP request and `AbstractEventConsumer` opens one per AMQP consumption, but a `@Scheduled` method gets neither for free — it must open its own with `gestorTraza.abrir(SolicitudTraza.paraProgramado())` before logging, or its log lines carry no trace fields at all. `FailedEventRetryConfig` and `MonitorCatalogoRedis` (`shared:redis`) are the two `@Scheduled` jobs that do this today; any new one must follow the same pattern.
+
+Two filters, and the split is not cosmetic: `TrazabilidadFilter` (`shared:web`, `@Order(-300)`) is the outermost one and owns the scope plus the `AUDIT` line; `IdentidadTrazaFilter` (`seguridad:infrastructure`) only adds the user, and is registered **inside the Spring Security chain** via `addFilterAfter(BearerTokenAuthenticationFilter.class)` — at `LOWEST_PRECEDENCE` it would sit after `AuthorizationFilter` and every 403 would be audited as anonymous. It is declared as a `@Bean` plus a disabled `FilterRegistrationBean`, because any `Filter` bean is also auto-registered in the servlet chain and `OncePerRequestFilter` would then skip the second pass entirely.
+
+`servicioNombre`/`version` are **not** MDC keys: they are process constants added as static JSON members through `logging.structured.json.add.*`. Spring Boot's logstash formatter only serialises the MDC map and the event's key-value pairs — never Logback context properties — so `<springProperty scope="context">` would not surface them.
+
+**MDC across `@Async` boundaries:** `MDC` is a `ThreadLocal`, so it does not survive a hop to a different thread on its own — and Spring Modulith's event externalization to RabbitMQ (`spring-modulith-events-amqp`) runs on exactly such a hop: internally it is `@Async @Transactional(REQUIRES_NEW) @TransactionalEventListener`, executed on Spring Boot's auto-configured `applicationTaskExecutor` after the publishing transaction commits — not on the request thread that opened the `AlcanceTraza`. Without help, `TrazaMessagePostProcessor` (below) would find an empty MDC on that thread and fabricate a new `correlacionId`/`transaccionId` instead of reusing the real one. `MdcTaskDecorator` (`shared:tracing/infrastructure/traza/config/`) closes that gap: it implements `TaskDecorator`, captures the calling thread's context via `ContextoDiagnosticoOutputPort.capturar()` when the task is handed to the executor, and restores it (then reverts) inside the executor thread around `runnable.run()` — so it never touches `org.slf4j.MDC` directly either. It is registered as a plain `TaskDecorator` `@Bean` in `TrazabilidadConfig`; Spring Boot's `TaskExecutorBuilder` picks up any `TaskDecorator` bean automatically and applies it to `applicationTaskExecutor`, so no `@EnableAsync` or custom executor is declared anywhere in the project. This is a same-process, cross-*thread* problem — distinct from the cross-*process* propagation `TrazaMessagePostProcessor`/`AbstractEventConsumer` already handle via the `X-Trace-Id`/`X-Transaction-Id`/`X-User-Id` AMQP headers (see "Two filters" above) — so it stays necessary even if a context is later split into its own microservice: each producer would still have its own request-thread-to-publish-thread hop to bridge before the event reaches the wire.
 
 **No Lombok in domain layer.**
+
+**Comments and Javadoc.** Do not write Javadoc, and do not comment code that already says what it does — a comment restating the method name, the type, or the control flow is noise that goes stale. `domain/` and `application/` carry **no** Javadoc and no comments at all; the names of the aggregate, the rule, and the use case are the documentation. Elsewhere a comment is justified only when it records something the code cannot show: an external constraint, a non-obvious consequence, or why an obvious alternative was rejected. Prefer putting that reasoning in the commit message or in this file rather than in the source. Test method names follow `debeHacerAlgo_cuandoCondicion()` and the `// Arrange` / `// Act` / `// Assert` markers stay — they are structure, not explanation.
+
+**`var` for local variables.** Prefer `var` when the right-hand side already names the type — `var config = new HikariConfig()`, `var id = UUID.fromString(...)`, `var solicitud = QueryCriteriaRequestDTO.aplicarPorDefecto(dto)` — and when it removes a long generic repetition, as in `var resultado = useCase.ejecutar(criteria)` instead of restating `PaginatedResult<FichaPerfilReadModel>`. It applies only to locals: fields, parameters, and return types stay explicit.
+
+Three cases where the explicit type stays, and they are not style preferences:
+- **Diamond on the right.** `var m = new LinkedHashMap<>()` infers `LinkedHashMap<Object, Object>` and the error surfaces far from here. Either keep the declared type or spell the type arguments inside the diamond.
+- **Anonymous classes.** `var x = new X509TrustManager() { … }` infers the anonymous type, hiding the interface that the surrounding code actually consumes.
+- **The declared type is deliberately an interface** the right-hand side does not name — `CatalogoMensajes respaldo = CatalogoMensajesRespaldo.porDefecto()` states the contract on purpose.
+
+Short type names (`String`, `int`, `UUID` when the right side is not a factory) gain nothing from `var`; leave them.
 
 ## Technology Stack
 
@@ -165,7 +383,7 @@ Dependency direction is strictly enforced: `domain ← application ← infrastru
 | Java | 21 (Virtual Threads active automatically) |
 | Spring Boot | 4.0.5 |
 | Gradle | 9.0.0 |
-| PostgreSQL | 18 (7 schemas, separate DataSource per context) |
+| PostgreSQL | 18 (one **database** per context — not schemas; own DataSource, EntityManagerFactory and Flyway each) |
 | RabbitMQ | 4.2.5 |
 | Redis | 7 (Lettuce) |
 | Keycloak | 26.6 (OAuth2/OIDC Resource Server) |
@@ -182,9 +400,9 @@ Jackson 3 moved `databind` to `tools.jackson.databind.*`; `com.fasterxml.jackson
 
 ## Security
 
-- JWT validated against Keycloak JWK Set (configured in `seguridad/infrastructure/config/SecurityConfig`)
-- Rate limiting via Bucket4j: per-IP buckets in `ConcurrentHashMap` (100 req/min global dev, 60 prod; 5 login/min)
-- `AuditFilter` logs all requests with METHOD, URI, USER, TIME, STATUS (skips Swagger paths)
+- JWT validated against Keycloak JWK Set (configured in `seguridad/infrastructure/config/security/SeguridadConfig`)
+- Rate limiting via Bucket4j: per-IP buckets backed by Redis (`RedisBucketResolver`, Lettuce) — no in-memory map, no `max-tracked-ips` (removed when the resolver migrated off `ConcurrentHashMap`). Defaults: 100 req/min global dev, 60 prod; 5 login/min dev, 3 login/min prod. On a Redis error, `resolveBucket`/`resolveLoginBucket` fail closed — return an already-exhausted bucket instead of propagating the exception.
+- `TrazabilidadFilter` (`shared:web`) emits an `AUDIT` line per request with method, URI, user, duration and status (skips Swagger/actuator paths). Being the outermost filter, it also audits 401, 403 and 429 — the old `AuditFilter` sat inside `FilterChainProxy` and never saw them
 - CORS default origins: `localhost:3000`, `4200`, `5173` (configurable via `CORS_ALLOWED_ORIGINS`)
 - CSRF disabled, sessions stateless
 
@@ -192,14 +410,15 @@ Jackson 3 moved `databind` to `tools.jackson.databind.*`; `com.fasterxml.jackson
 
 - **Unit:** JUnit 6 + Mockito + AssertJ, `@ExtendWith(MockitoExtension.class)`, no Spring context loaded
 - **Repository slice:** `@DataJpaTest` with H2 (`org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`). `@SpringBootTest` is not used anywhere in this repo
-- **Controller slice:** `@WebMvcTest` (`org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`) + `@Import(GlobalAppExceptionHandler.class)` — without that import every exception surfaces as 500. Mock the `InputPort` with `@MockitoBean` (not `@MockBean`), authenticate with `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` using the exact client role (not `@WithMockUser`)
+- **Controller slice:** `@WebMvcTest` (`org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`) + `@Import(GlobalAppExceptionHandler.class)` — without that import every exception surfaces as 500. Mock the `Interactor` (or the `UseCase`, where no interactor exists) with `@MockitoBean` (not `@MockBean`), authenticate with `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` using the exact client role (not `@WithMockUser`)
 - Spring Boot 4 relocated the slice-test packages; the Spring Boot 3 `org.springframework.boot.test.autoconfigure.*` paths do not exist
 - Method naming: `debeHacerAlgo_cuandoCondicion()`
 - Pattern: Arrange / Act / Assert
 
 ## Reference Documentation
 
-- [AGENTS.md](AGENTS.md) — comprehensive project guide and ADR index
-- [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md) — 900-line architecture reference
+- [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md) — long-form architecture reference (human-oriented, not for agent context)
+- [docs/ARQUITECTURA_ASINCRONICO_ARQUISOFT.md](docs/ARQUITECTURA_ASINCRONICO_ARQUISOFT.md) — domain events + outbox pattern in depth (human-oriented, not for agent context)
+- [docs/PATRON_QUERY_OBJECT_FILTROS_DINAMICOS.md](docs/PATRON_QUERY_OBJECT_FILTROS_DINAMICOS.md) — the dynamic-filter Query Object + Specification pattern in depth (human-oriented, not for agent context)
 - [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md) — full local setup guide
 - [CONTRIBUTING.md](CONTRIBUTING.md) — git workflow and branch naming

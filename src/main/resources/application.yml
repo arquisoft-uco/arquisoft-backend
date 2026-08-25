@@ -15,6 +15,11 @@ spring:
       - "optional:file:./.env[.properties]"
       - "optional:file:./.env.properties"
       - "optional:file:./.env-${spring.profiles.active:dev}.properties"
+      # Rutas de controladores por bounded context: cada modulo infrastructure trae su propio
+      # archivo, para poder llevarselo intacto si ese contexto se extrae a microservicio.
+      - "classpath:rutas-seguridad.yml"
+      - "classpath:rutas-usuarios.yml"
+      - "classpath:rutas-fichas.yml"
   banner:
     location: classpath:banner.txt
   application:
@@ -142,6 +147,34 @@ spring:
               authorization-grant-type: password
               scope: openid, profile, email
 
+# ==================== NOTIFICACIONES (envío de correos) ====================
+# 'proveedor' decide qué implementación de NotificationSender queda activa:
+#   log  → LoggingNotificationSender: registra y NO entrega. Es el valor por defecto a propósito,
+#          para que un entorno mal configurado nunca escriba a una persona real.
+#   smtp → SmtpNotificationSender: entrega vía spring.mail.*, que sirve para Brevo, Gmail o
+#          Mailpit sin tocar código — solo cambian host, puerto y credenciales.
+# Agregar un proveedor con API REST es añadir una clase con @ConditionalOnProperty y su valor;
+# ni el dominio ni la aplicación se enteran.
+notificacion:
+  proveedor: ${NOTIFICACION_PROVEEDOR:log}
+  remitente-email: ${NOTIFICACION_REMITENTE_EMAIL:no-reply@arquisoft.local}
+  remitente-nombre: ${NOTIFICACION_REMITENTE_NOMBRE:Arquisoft}
+
+# ==================== SMTP ====================
+# Valores por defecto apuntando a Mailpit (docker-compose): captura los correos en local
+# sin enviar nada a internet. En prod: smtp-relay.brevo.com:587 con auth y STARTTLS.
+spring.mail:
+  host: ${MAIL_HOST:localhost}
+  port: ${MAIL_PORT:1025}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
+  properties:
+    mail:
+      smtp:
+        auth: ${MAIL_SMTP_AUTH:false}
+        starttls:
+          enable: ${MAIL_SMTP_STARTTLS:false}
+
 # ==================== MINIO (Object Storage) ====================
 # Presigned URLs permiten subir/descargar archivos directamente desde el cliente,
 # sin que el backend actúe como proxy — conserva recursos en servidores limitados.
@@ -235,11 +268,31 @@ datasource:
       connection-timeout: 20000
       pool-name: HikariPool-Evaluaciones
 
+  notificaciones:
+    url: ${DB_NOTIFICACIONES_URL:jdbc:postgresql://localhost:5432/notificaciones}
+    username: ${DB_NOTIFICACIONES_USERNAME:arquisoft_user}
+    password: ${DB_NOTIFICACIONES_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Notificaciones
+
 # ==================== KEYCLOAK ====================
 # Propiedades propias para KeycloakAuthAdapter y SecurityConfig.
 # No se usa el adapter keycloak-spring-boot-adapter (removido en SB3+).
 # La validación JWT usa Spring Security OAuth2 Resource Server de forma nativa.
 arquisoft:
+  # Trazabilidad (shared:tracing). Claves MDC emitidas como campos JSON de primer nivel en
+  # perfil prod: correlacionId, transaccionId, origen, usuarioId, clienteIp, metodoHttp,
+  # rutaUri, tiempoEntrada; y solo en la linea AUDIT: codigoEstado, duracionMs, tiempoSalida.
+  trazas:
+    # La IP completa esta cubierta por la base legal de interes legitimo (seguridad y abuso
+    # de la API). Activar para anonimizar el ultimo octeto IPv4 / truncar IPv6 a /48.
+    anonimizar-ip: ${TRAZAS_ANONIMIZAR_IP:false}
+    rutas-excluidas-auditoria: /api/actuator/,/api/swagger-ui,/api/v3/api-docs,/api/swagger-resources
+
   keycloak:
     server-url: ${KEYCLOAK_URL:http://localhost:8081}
     realm: ${KEYCLOAK_REALM:arquisoft}
@@ -247,27 +300,43 @@ arquisoft:
     client-secret: ${KEYCLOAK_CLIENT_SECRET:}
     expected-audience: ${KEYCLOAK_EXPECTED_AUDIENCE:arquisoft-api}
 
-  security:
-    cors:
-      allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
-      allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type}
-      allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
-    rate-limit:
-      enabled: ${RATE_LIMIT_ENABLED:true}
-
   events:
     # Intervalo entre reintentos de eventos con estado FAILED.
     # Formato ISO-8601: PT5M = 5 minutos, PT30S = 30 segundos.
     failed-retry-interval: PT5M
 
+  # Catálogo de mensajes (ADR-013). Intervalo del monitor que reintenta la conexión con Redis
+  # cuando el catálogo quedó degradado. Solo consulta Redis mientras está en ese estado.
+  catalogo:
+    reintento-intervalo: PT30S
+
 # ==================== SERVER ====================
+# ==================== CORS Y RATE LIMITING (BASE) ====================
+# En la RAIZ, no bajo 'arquisoft:'. Quien las lee espera exactamente estos prefijos:
+# LimiteSolicitudesProperties bindea @ConfigurationProperties("security.rate-limit") y
+# CorsConfig resuelve @Value("${security.cors.*}"). Anidadas bajo 'arquisoft:' quedaban
+# como 'arquisoft.security.*' y no las veia nadie: los valores efectivos salian de
+# application-dev.yml / application-prod.yml, que si las declaran en la raiz, y estos
+# supuestos "valores base" no eran base de nada.
+security:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173}
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type}
+    max-age: ${CORS_MAX_AGE:3600}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:100}
+    login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:5}
+
 server:
   port: 8080
   servlet:
     context-path: /api
   # ForwardedHeaderFilter de Spring valida X-Forwarded-For/X-Real-IP contra trusted-proxies
   # antes de reescribir request.getRemoteAddr() — evita IP spoofing desde internet.
-  # AuditFilter lee solo request.getRemoteAddr() y obtiene la IP real del cliente.
+  # TrazabilidadFilter lee solo request.getRemoteAddr() y obtiene la IP real del cliente.
   forward-headers-strategy: FRAMEWORK
   compression:
     enabled: true
@@ -281,6 +350,17 @@ logging:
   level:
     root: INFO
     org.springframework.web: INFO
+  # servicioNombre y version NO van al MDC: son constantes del proceso, no contexto de la
+  # peticion. El formateador logstash de Spring Boot 4 solo serializa el MDC y los
+  # KeyValuePairs del evento — nunca las propiedades de contexto de Logback, asi que
+  # <springProperty scope="context"> no funcionaria aqui. StructuredLogEncoder resuelve
+  # estas propiedades desde el Environment aunque el encoder se declare en logback-spring.xml.
+  structured:
+    json:
+      add:
+        servicioNombre: ${spring.application.name}
+        version: ${spring.application.version}
+
 
 # ==================== ACTUATOR ====================
 management:

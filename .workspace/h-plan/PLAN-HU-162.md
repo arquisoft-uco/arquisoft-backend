@@ -86,7 +86,7 @@ Ya implementada en HU-161. No hay cambios en atributos ni constraints.
 
 **Implicaciones:**
 - La entidad raíz `EstudianteFichaPerfilAggregate` NO extiende `AggregateRoot` — es una clase plana con factories `crear`/`reconstruir`.
-- El factory `crear(...)` NO acumula eventos (no existe `publishEvent`).
+- El factory `crear(...)` NO acumula eventos (no existe `publicarEvento`).
 - El use case `RemoverEstudianteFichaPerfilUseCase` NO inyecta `EventPublisher`, no hay drenado de eventos.
 - No se crean archivos en `domain/estudiantefichaperfil/event/`.
 
@@ -339,7 +339,7 @@ Estimación para esta HU: **~18 tests** (6 domain/application + 12 infrastructur
 | `RemoverEstudianteFichaPerfilUseCaseTest` | `debeLanzarExcepcion_cuandoRelacionNoExiste` | Lanza `EstudianteFichaPerfilNoEncontradoException` (400) cuando `estudianteFichaPerfilOutputPort.existePorFichaYEstudiante(...)` retorna `false` |
 | `RemoverEstudianteFichaPerfilUseCaseTest` | `debeLanzarExcepcion_cuandoRepositorioFalla` | Propaga error de repositorio (ej. `DataAccessException`) sin envolverla |
 
-> **NO incluir:** tests de `publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents`, ni `verify(eventPublisher).publish(...)` — esta HU NO emite eventos.
+> **NO incluir:** tests de `publicarEvento`, `obtenerEventosSinPublicar`, `extraerEventosSinPublicar`, ni `verify(eventPublisher).publish(...)` — esta HU NO emite eventos.
 
 ---
 

@@ -2,6 +2,9 @@ HELP.md
 .gradle
 build/
 META-INF/
+# ...pero el META-INF de un source set es codigo fuente, no salida de compilacion:
+# ahi vive el registro por ServiceLoader del instalador del catalogo de prueba.
+!**/src/*/resources/META-INF/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -48,3 +51,4 @@ logs/
 *.key
 
 .claude/settings.local.json
+/commit

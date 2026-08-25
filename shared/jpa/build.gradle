@@ -1,0 +1,22 @@
+// Adaptación del vocabulario neutro de shared:query a Spring Data JPA. El módulo no tiene
+// nada específico de PostgreSQL —ni driver, ni SQL nativo, ni dialecto—, de ahí el nombre.
+apply plugin: 'java-library'
+
+dependencies {
+    // Expone shared:domain a los consumidores de este módulo
+    api project(':shared:domain')
+
+    // shared:query — QueryCriteria/SortOrder/PaginatedResult y las excepciones de consulta.
+    // Va con 'api': aparecen en las firmas de PageableMapper, PaginationMapper y QueryJpaSpecification.
+    api project(':shared:query')
+
+    // Spring Data JPA — Specification, Root, CriteriaBuilder, QueryRepository
+    api "org.springframework.boot:spring-boot-starter-data-jpa"
+
+    // Lombok para @Slf4j si fuese necesario en futuras utilidades
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

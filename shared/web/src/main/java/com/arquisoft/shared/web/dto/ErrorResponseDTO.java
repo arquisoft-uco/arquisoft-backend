@@ -11,9 +11,6 @@ import org.springframework.http.HttpStatus;
 import java.time.Instant;
 import java.util.List;
 
-/**
- * DTO unificado para respuestas de error estandarizadas en todos los contextos.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,6 +24,10 @@ public class ErrorResponseDTO {
     private Integer status;
     private String path;
 
+    private String traceId;
+
+    private String transaccionId;
+
     @Builder.Default
     private Instant timestamp = Instant.now();
 
@@ -39,16 +40,13 @@ public class ErrorResponseDTO {
         // el stack trace completo en los logs del servidor.
         return ErrorResponseDTO.builder()
                 .error(error)
-                .errorCode(ex.getErrorCode())
+                .errorCode(ex.getCodigoError())
                 .message(ex.getMessage())
                 .status(status.value())
                 .path(path)
                 .build();
     }
 
-    /**
-     * DTO para errores de validación de campos específicos.
-     */
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

@@ -123,7 +123,7 @@ El catálogo `EstadoEvaluacion` es un conjunto cerrado de valores documentados. 
 
 **Implicaciones:**
 - La entidad raíz `EstadoEvaluacionFichaAggregate` **NO extiende `AggregateRoot`** — es una clase plana con factories `crear`/`reconstruir`.
-- Los factories `crear(...)` **NO acumulan eventos** (no existe `publishEvent`).
+- Los factories `crear(...)` **NO acumulan eventos** (no existe `publicarEvento`).
 - Los use cases **NO inyectan `EventPublisher`**, no hay drenado de eventos.
 - No se crean archivos en `domain/estadoevaluacionficha/event/`.
 
@@ -423,7 +423,7 @@ private void setEstadoEvaluacion(EstadoEvaluacion estadoEvaluacion, ValidationRe
 | `EstadoEvaluacionFichaAggregateTest` | `debeLanzarExcepcion_cuandoEvaluacionIdEsNulEnFactoryCrearConEstado` | factory `crearConEstado(UUID, EstadoEvaluacion)` con evaluacionId nulo lanza |
 | `EstadoEvaluacionFichaAggregateTest` | `debeLanzarExcepcion_cuandoEstadoIdEsNulEnFactoryCrearConEstado` | factory `crearConEstado(UUID, EstadoEvaluacion)` con enum nulo lanza |
 
-**NO incluir:** tests de ciclo de eventos (`publishEvent`, `drainUnPublishedEvents`, `getUnPublishedEvents`) — el aggregate NO extiende `AggregateRoot`.
+**NO incluir:** tests de ciclo de eventos (`publicarEvento`, `extraerEventosSinPublicar`, `obtenerEventosSinPublicar`) — el aggregate NO extiende `AggregateRoot`.
 
 ### Tests capa `application` (DOS use cases)
 
@@ -483,8 +483,8 @@ private void setEstadoEvaluacion(EstadoEvaluacion estadoEvaluacion, ValidationRe
 - [ ] **DDD:** Entidad de dominio **NO extiende `AggregateRoot`** (CRUD sin eventos)
 - [ ] Entidad inmutable: constructor privado, campos `final`, **DOS factories sin sobrecarga** (nombres distintos) `crear(UUID)` / `crearConEstado(UUID, String)` + `reconstruir`, sin Lombok — patrón del proyecto
 - [ ] **NO se crean archivos en `domain/estadoevaluacionficha/event/`** — la HU no emite eventos
-- [ ] Factory automático `crear(UUID)` **NO llama `publishEvent`** — hardcodea `"EN_EVALUACION"` en setter privado `setEstadoEvaluacionInicial()` sin parámetro
-- [ ] Factory manual `crearConEstado(UUID, EstadoEvaluacion)` **NO llama `publishEvent`** — valida enum parametrizado en setter privado `setEstadoEvaluacion(EstadoEvaluacion, ValidationResult)` con `DomainValidator.notNull`
+- [ ] Factory automático `crear(UUID)` **NO llama `publicarEvento`** — hardcodea `"EN_EVALUACION"` en setter privado `setEstadoEvaluacionInicial()` sin parámetro
+- [ ] Factory manual `crearConEstado(UUID, EstadoEvaluacion)` **NO llama `publicarEvento`** — valida enum parametrizado en setter privado `setEstadoEvaluacion(EstadoEvaluacion, ValidationResult)` con `DomainValidator.notNull`
 - [ ] IDs siempre `UUID` (nunca `Long` / `Integer`) — salvo PK semántica del catálogo (VARCHAR)
 - [ ] Puerto de entrada manual (`AgregarEstadoEvaluacionFichaInputPort`) extiende `InputPort<Command, UUID>`
 - [ ] Puerto de salida write (`EstadoEvaluacionFichaOutputPort`) definido en `domain/` con métodos `guardar`, `existsByEvaluacionAndEstado`, `contarEstadosPorEvaluacion`

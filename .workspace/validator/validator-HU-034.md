@@ -35,7 +35,7 @@
 **Hash:** 3fa0237  
 **Fecha de ejecución:** 2026-07-24
 
-**Corrección post-commit (2026-07-24):** el hallazgo menor original (check 2.14 — endpoint sin JWT respondía 403 en vez de 401) fue corregido. La causa raíz era el `TestSecurityConfig` de `RemoverItemFichaPerfilInputAdapterTest`, que usaba `.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())` — esto dejaba pasar la request sin autenticación hasta el `@PreAuthorize`, que ante un usuario anónimo lanza `AuthorizationDeniedException` → 403 en vez de disparar el flujo de autenticación. Se corrigió alineando el `TestSecurityConfig` con el patrón ya establecido en el proyecto (p. ej. `ModificarItemFichaPerfilInputAdapterTest`): `.anyRequest().authenticated()` + `.exceptionHandling(...)` con `authenticationEntryPoint` (401) y `accessDeniedHandler` (403) explícitos. Con el fix, `debe401_cuandoNoAutenticado` verifica `status().isUnauthorized()` y pasa correctamente. Verificado con `./gradlew :fichas:infrastructure:test --tests "*RemoverItemFichaPerfilInputAdapterTest*"` (6/6 tests OK) y `./gradlew :fichas:infrastructure:check` (BUILD SUCCESSFUL, gate de cobertura y checkstyle incluido).
+**Corrección post-commit (2026-07-24):** el hallazgo menor original (check 2.14 — endpoint sin JWT respondía 403 en vez de 401) fue corregido. La causa raíz era el `TestSeguridadConfig` de `RemoverItemFichaPerfilInputAdapterTest`, que usaba `.authorizeHttpRequests(auth -> auth.anyRequest().permitAll())` — esto dejaba pasar la request sin autenticación hasta el `@PreAuthorize`, que ante un usuario anónimo lanza `AuthorizationDeniedException` → 403 en vez de disparar el flujo de autenticación. Se corrigió alineando el `TestSeguridadConfig` con el patrón ya establecido en el proyecto (p. ej. `ModificarItemFichaPerfilInputAdapterTest`): `.anyRequest().authenticated()` + `.exceptionHandling(...)` con `authenticationEntryPoint` (401) y `accessDeniedHandler` (403) explícitos. Con el fix, `debe401_cuandoNoAutenticado` verifica `status().isUnauthorized()` y pasa correctamente. Verificado con `./gradlew :fichas:infrastructure:test --tests "*RemoverItemFichaPerfilInputAdapterTest*"` (6/6 tests OK) y `./gradlew :fichas:infrastructure:check` (BUILD SUCCESSFUL, gate de cobertura y checkstyle incluido).
 
 ---
 
@@ -74,7 +74,7 @@
 
 **Tests apropiados para Tipo de UC (sección 2.13):**
 - Tipo de UC declarado en plan: **Escritura**
-- ✅ Tests apropiados — **NO** se detectaron tests de ciclo de eventos del Aggregate (`publishEvent`, `getUnPublishedEvents`, `drainUnPublishedEvents`) ni `verify(eventPublisher)` en ningún archivo, lo cual es correcto porque el plan declara explícitamente "Eventos: ninguno" (sección 4). El aggregate NO extiende `AggregateRoot` y el use case NO inyecta `EventPublisher`.
+- ✅ Tests apropiados — **NO** se detectaron tests de ciclo de eventos del Aggregate (`publicarEvento`, `obtenerEventosSinPublicar`, `extraerEventosSinPublicar`) ni `verify(eventPublisher)` en ningún archivo, lo cual es correcto porque el plan declara explícitamente "Eventos: ninguno" (sección 4). El aggregate NO extiende `AggregateRoot` y el use case NO inyecta `EventPublisher`.
 
 ---
 
@@ -91,7 +91,7 @@
 - Migración Flyway: `V1.8__crear_revision_item.sql` con FK `ON DELETE CASCADE` sobre `item(id)`, constraint unique `(item_id, fecha_creacion)`
 - Catálogo `shared:message`: constantes agregadas a `FichasMessages.ItemFichaPerfil` (CAMPO_REVISIONES, ITEM_NO_ENCONTRADO, ITEM_NO_ENCONTRADO_MSG, ITEM_CON_REVISIONES, ITEM_CON_REVISIONES_MSG, LOG_REMOVIDO)
 - Tests: 17 tests (2 domain, 4 application, 11 infrastructure) — cobertura: domain 94%, application 89%, infrastructure 88% (todas ≥75%, gate `check` pasó)
-- Sin eventos de dominio — la entidad `ItemFichaPerfilAggregate` NO extiende `AggregateRoot` (es clase plana con factories `crear`/`reconstruir`, sin `publishEvent`)
+- Sin eventos de dominio — la entidad `ItemFichaPerfilAggregate` NO extiende `AggregateRoot` (es clase plana con factories `crear`/`reconstruir`, sin `publicarEvento`)
 
 **Tipo:** `feat`
 **Rama:** `feature/HU-034-remover-informacion-item`

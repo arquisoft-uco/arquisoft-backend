@@ -16,7 +16,7 @@ class SecurityConfigJwtValidatorTest {
     private static final String EXPECTED_AUDIENCE = "arquisoft-api";
 
     private final OAuth2TokenValidator<Jwt> validator =
-            SecurityConfig.jwtValidator(ISSUER, EXPECTED_AUDIENCE);
+            SeguridadConfig.jwtValidator(ISSUER, EXPECTED_AUDIENCE);
 
     private Jwt jwt(String issuer, List<String> audiencias) {
         return Jwt.withTokenValue("token")

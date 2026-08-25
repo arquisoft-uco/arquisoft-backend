@@ -1,6 +1,9 @@
 dependencies {
     implementation project(':fichas:domain')
     implementation project(':shared:domain')
+    implementation project(':shared:query')
+
+    implementation project(':shared:logger')
 
     // Transactional — solo necesitamos @Transactional, no todo el starter
     implementation 'org.springframework:spring-tx'

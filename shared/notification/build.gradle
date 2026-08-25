@@ -1,0 +1,22 @@
+dependencies {
+    implementation project(':shared:domain')
+    implementation project(':shared:logger')
+
+    // Spring Boot — provee @Component, @Configuration, @ConfigurationProperties, @ConditionalOnProperty
+    implementation "org.springframework.boot:spring-boot-starter"
+
+    // JavaMailSender + MimeMessageHelper. Es la unica dependencia de transporte del modulo:
+    // el puerto NotificationSender no la expone, de modo que un proveedor con API REST se
+    // agrega como un @Component mas sin tocar el contrato.
+    implementation "org.springframework.boot:spring-boot-starter-mail"
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.assertj:assertj-core"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+}

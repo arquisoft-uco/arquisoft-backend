@@ -2,6 +2,10 @@ dependencies {
     implementation project(':shared:domain')
     implementation project(':shared:logger')
 
+    // shared:tracing — el consumidor abre el alcance de traza de cada evento y el
+    // post-processor propaga la correlacion en las cabeceras AMQP.
+    implementation project(':shared:tracing')
+
     // Spring AMQP (RabbitMQ)
     implementation "org.springframework.boot:spring-boot-starter-amqp"
 

@@ -1,8 +1,10 @@
 package com.arquisoft.shared.minio.exception;
 
-public final class MinioOperationException extends RuntimeException {
+import com.arquisoft.shared.exception.InfrastructureException;
 
-    public MinioOperationException(String message, Throwable cause) {
-        super(message, cause);
+public final class MinioOperationException extends InfrastructureException {
+
+    public MinioOperationException(String message, String errorCode, Throwable cause) {
+        super(message, errorCode, cause);
     }
 }

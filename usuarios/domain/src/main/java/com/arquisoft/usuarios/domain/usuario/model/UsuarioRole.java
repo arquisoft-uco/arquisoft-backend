@@ -1,13 +1,10 @@
 package com.arquisoft.usuarios.domain.usuario.model;
 
-import com.arquisoft.shared.exception.DomainException;
+import com.arquisoft.usuarios.domain.usuario.exception.RolUsuarioNoEncontradoException;
 
-/**
- * Roles de negocio del usuario, definidos en Keycloak (ADR-003).
- *
- * <p>El código de cada rol coincide exactamente con el nombre emitido en el claim
- * {@code realm_access.roles} del token JWT (kebab-case).
- */
+import java.util.Arrays;
+import java.util.Optional;
+
 public enum UsuarioRole {
     ESTUDIANTE("estudiante", "Estudiante que presenta proyecto de grado"),
     ASESOR("asesor", "Asesor asignado a un proyecto de grado"),
@@ -18,31 +15,37 @@ public enum UsuarioRole {
     REPRESENTANTE_COMITE_CURRICULUM("representante-comite", "Representante que aprueba fichas de perfil"),
     ADMINISTRADOR("administrador", "Administrador del sistema");
 
-    private final String code;
-    private final String description;
+    private final String codigo;
+    private final String descripcion;
 
-    UsuarioRole(String code, String description) {
-        this.code = code;
-        this.description = description;
+    UsuarioRole(String codigo, String descripcion) {
+        this.codigo = codigo;
+        this.descripcion = descripcion;
     }
 
-    public String getCode() {
-        return code;
+    public String getId() {
+        return name();
     }
 
-    public String getDescription() {
-        return description;
+    public String getCodigo() {
+        return codigo;
     }
 
-    /**
-     * Busca el rol a partir del codigo emitido por Keycloak en realm_access.roles (case-insensitive).
-     */
-    public static UsuarioRole fromCode(String code) {
-        for (UsuarioRole role : UsuarioRole.values()) {
-            if (role.code.equalsIgnoreCase(code)) {
-                return role;
-            }
-        }
-        throw new DomainException("Rol desconocido: " + code, "ROL_DESCONOCIDO");
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public static UsuarioRole desdeCodigo(String codigo) {
+        return delCatalogo(codigo).orElseThrow(() -> new RolUsuarioNoEncontradoException(codigo));
+    }
+
+    public static boolean esCodigoValido(String codigo) {
+        return delCatalogo(codigo).isPresent();
+    }
+
+    private static Optional<UsuarioRole> delCatalogo(String codigo) {
+        return Arrays.stream(values())
+                .filter(rol -> rol.codigo.equalsIgnoreCase(codigo))
+                .findFirst();
     }
 }

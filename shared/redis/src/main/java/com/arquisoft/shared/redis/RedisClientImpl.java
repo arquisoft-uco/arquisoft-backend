@@ -1,6 +1,6 @@
 package com.arquisoft.shared.redis;
 
-import com.arquisoft.shared.util.UtilObject;
+import com.arquisoft.shared.util.UtilObjeto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -40,6 +40,6 @@ public class RedisClientImpl implements RedisClient {
     @Override
     public long increment(String key) {
         Long result = stringRedisTemplate.opsForValue().increment(key);
-        return !UtilObject.isNull(result) ? result : 0L;
+        return !UtilObjeto.esNulo(result) ? result : 0L;
     }
 }

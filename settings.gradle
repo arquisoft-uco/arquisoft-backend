@@ -2,14 +2,20 @@ rootProject.name = 'arquisoft-backend'
 
 // ==================== SHARED (Commons) ====================
 include 'shared'
+include 'shared:util'
+include 'shared:exception'
+include 'shared:validation'
 include 'shared:domain'
 include 'shared:logger'
+include 'shared:tracing'
 include 'shared:redis'
 include 'shared:amqp'
 include 'shared:web'
 include 'shared:minio'
-include 'shared:postgres'
+include 'shared:jpa'
+include 'shared:query'
 include 'shared:message'
+include 'shared:notification'
 
 // ==================== CONTEXTOS DE NEGOCIO ====================
 
@@ -60,3 +66,9 @@ include 'usuarios'
 include 'usuarios:domain'
 include 'usuarios:application'
 include 'usuarios:infrastructure'
+
+// Contexto 9: Notificaciones (avisos por correo ante eventos de dominio)
+include 'notificaciones'
+include 'notificaciones:domain'
+include 'notificaciones:application'
+include 'notificaciones:infrastructure'

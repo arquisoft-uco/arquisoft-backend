@@ -99,7 +99,7 @@ Esta HU permite al Representante del Comité de Currículum registrar una nueva 
 
 **Implicaciones:**
 - La entidad raíz `EvaluacionFichaPerfilAggregate` NO extiende `AggregateRoot` — es una clase plana con factories `crear`/`reconstruir`.
-- El factory `crear(...)` NO acumula eventos (no existe `publishEvent`).
+- El factory `crear(...)` NO acumula eventos (no existe `publicarEvento`).
 - El use case NO inyecta `EventPublisher`, no hay drenado de eventos.
 - No se crean archivos en `domain/evaluacionfichaperfil/event/`.
 

@@ -3,26 +3,26 @@
 > **Estado: RESUELTA** — Implementado con Spring Modulith 2.0.0 en la rama
 > `feature/spring-modulith-outbox-pattern`. Ver sección [Solución implementada](#solución-implementada).
 
-**Contexto afectado:** `seguridad`  
-**Clase afectada:** `CrearUsuarioUseCase`  
+**Contexto afectado:** `usuarios`  
+**Clase afectada:** `CrearUsuarioUseCaseImpl`  
 **Prioridad:** ~~Media~~ → Resuelta
 
 ---
 
 ## Problema original
 
-En `CrearUsuarioUseCase`, la persistencia del aggregate y la publicación del evento eran dos operaciones **no atómicas**:
+En `CrearUsuarioUseCaseImpl`, la persistencia del aggregate y la publicación del evento eran dos operaciones **no atómicas**:
 
 ```java
 usuarioOutputPort.save(usuario);
-usuario.drainUnPublishedEvents().forEach(eventPublisher::publish);
+usuario.extraerEventosSinPublicar().forEach(eventPublisher::publish);
 ```
 
 Si el paso (1) se completaba y el paso (2) fallaba (broker caído, timeout, etc.), el sistema quedaba inconsistente:
 
-- El usuario **existía** en la base de datos de `seguridad`.
-- El contexto `fichas` **nunca recibía** el evento `seguridad.usuario.creado`.
-- El usuario no tenía ficha perfil asociada.
+- El usuario **existía** en la base de datos de `usuarios`.
+- El contexto `fichas` **nunca recibía** el evento `usuarios.usuario.creado`.
+- `fichas` quedaba sin enterarse de un usuario que ya existía.
 
 ---
 
@@ -33,13 +33,14 @@ Se integró **Spring Modulith 2.0.0** con su Event Publication Registry (Outbox 
 ### Flujo actual
 
 ```
-[CrearUsuarioUseCase] — @Transactional
+[CrearUsuarioInteractorImpl.ejecutar] — @Transactional(transactionManager = "usuariosTransactionManager")
         │
-        ├── BEGIN TRANSACTION
-        │     ├── INSERT usuarios (aggregate)
-        │     └── INSERT event_publication (outbox — misma TX)
-        └── COMMIT
-                │
+        ├── delega en CrearUsuarioUseCaseImpl.ejecutar (sin @Transactional propia)
+        │     ├── BEGIN TRANSACTION (abierta por el Interactor)
+        │     │     ├── INSERT usuarios (aggregate, BD del contexto `usuarios`)
+        │     │     └── INSERT event_publication (outbox — misma TX, misma BD)
+        │     └── COMMIT
+        │
         [Spring Modulith — post-commit]
                 │
                 ├── Publica a RabbitMQ vía AMQP externalization
@@ -57,10 +58,10 @@ Se integró **Spring Modulith 2.0.0** con su Event Publication Registry (Outbox 
 | Componente | Ubicación | Responsabilidad |
 |---|---|---|
 | `SpringModulithEventPublisher` | `shared/amqp` | Delega a `ApplicationEventPublisher` — Spring Modulith intercepta y persiste |
-| `ModulithAmqpExternalizationConfig` | `shared/amqp` | Routing: `DomainEvent` → exchange `arquisoft.events` con routing key del `eventTopic` |
-| `ArquisoftEventsDataSourceConfig` | `src/main/config` | DataSource `@Primary` para la BD centralizada `arquisoft_events` |
+| `ModulithAmqpExternalizationConfig` | `shared/amqp` | Routing: `DomainEvent` → exchange `arquisoft.events` con routing key del `temaEvento` |
+| `ContextAwareEventPublicationRepository` | `src/main/java/com/arquisoft/config/outbox/` | Auto-detecta al arranque qué `DataSource` de contexto tiene la tabla `event_publication` y enruta el `INSERT` a la transacción activa de ese contexto |
 | `FailedEventRetryConfig` | `src/main/config` | Reintenta eventos `FAILED` periódicamente sin reinicio |
-| `arquisoft_events` DB | PostgreSQL | BD centralizada que contiene la tabla `event_publication` |
+| `event_publication` (tabla) | PostgreSQL, **por contexto** | **No hay una BD centralizada.** Cada contexto que publica eventos (hoy: `usuarios`, `fichas`) tiene su propia tabla `event_publication` en su propia BD — ver migraciones `V1.1__crear_event_publication.sql` (`usuarios`) y `V1.9__crear_event_publication.sql` (`fichas`) |
 
 ### Tabla `event_publication` (schema v2)
 

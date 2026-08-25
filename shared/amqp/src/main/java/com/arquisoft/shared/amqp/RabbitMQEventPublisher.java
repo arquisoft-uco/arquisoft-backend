@@ -2,6 +2,8 @@ package com.arquisoft.shared.amqp;
 
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
@@ -9,18 +11,6 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
 
-/**
- * Fallback de {@link EventPublisher} activo únicamente cuando {@link SpringModulithEventPublisher}
- * no está en el contexto (Spring Modulith ausente o deshabilitado).
- *
- * <p><b>Política de reintentos:</b> backoff exponencial ante errores de conectividad
- * ({@link AmqpException}) — hasta 3 intentos: 500 ms → 1 s → 2 s. {@code RuntimeException}
- * no se reintenta (error de serialización u otro fallo de programación).
- *
- * <p><b>Trazabilidad:</b> los headers {@code X-Trace-Id} y {@code X-User-Id} son inyectados
- * por el {@code traceHeadersPostProcessor} registrado en el {@link RabbitTemplate}
- * ({@link RabbitMQConfig}).
- */
 @Slf4j
 @Component
 @ConditionalOnMissingBean(EventPublisher.class)
@@ -36,9 +26,9 @@ public class RabbitMQEventPublisher implements EventPublisher { // EventPublishe
     }
 
     @Override
-    public void publish(DomainEvent event) {
-        String routingKey = event.getEventTopic();
-        CorrelationData corr = new CorrelationData(event.getEventId());
+    public void publish(DomainEvent evento) {
+        String claveRuta = evento.getTemaEvento();
+        var corr = new CorrelationData(evento.getIdEvento());
 
         AmqpException lastException = null;
         long backoffMs = INITIAL_BACKOFF_MS;
@@ -49,33 +39,33 @@ public class RabbitMQEventPublisher implements EventPublisher { // EventPublishe
                 // registrado en RabbitMQConfig#rabbitTemplate — no se duplican aquí.
                 rabbitTemplate.convertAndSend(
                     RabbitMQConfig.EXCHANGE_NAME,
-                    routingKey,
-                    event,
+                    claveRuta,
+                    evento,
                     corr
                 );
-                log.info("Evento publicado: type={} routingKey={} eventId={}",
-                        event.getEventType(), routingKey, event.getEventId());
+                log.info(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_PUBLICADO),
+                        evento.getTipoEvento(), claveRuta, evento.getIdEvento());
                 return;
             } catch (AmqpException ex) {
                 // Error transitorio de conectividad: vale la pena reintentar.
                 lastException = ex;
                 if (attempt < MAX_ATTEMPTS) {
-                    log.warn("Error al publicar evento (intento {}/{}), reintentando en {} ms: type={} eventId={}",
-                            attempt, MAX_ATTEMPTS, backoffMs, event.getEventType(), event.getEventId());
+                    log.warn(Mensajes.obtener(MensajeriaKey.LOG_PUBLICACION_REINTENTO),
+                            attempt, MAX_ATTEMPTS, backoffMs, evento.getTipoEvento(), evento.getIdEvento());
                     sleepUninterruptibly(backoffMs);
                     backoffMs *= 2;
                 }
             } catch (RuntimeException ex) {
                 // Error no transitorio (ej. fallo de serialización): no se reintenta.
                 // Se loguea aquí para preservar el contexto del evento antes de propagar.
-                log.error("Error no recuperable al publicar evento (sin reintentos): type={} routingKey={} eventId={}",
-                        event.getEventType(), routingKey, event.getEventId(), ex);
+                log.error(Mensajes.obtener(MensajeriaKey.LOG_PUBLICACION_NO_RECUPERABLE),
+                        evento.getTipoEvento(), claveRuta, evento.getIdEvento(), ex);
                 throw ex;
             }
         }
 
-        log.error("Error al publicar evento tras {} intentos: type={} routingKey={} eventId={}",
-                MAX_ATTEMPTS, event.getEventType(), routingKey, event.getEventId(), lastException);
+        log.error(Mensajes.obtener(MensajeriaKey.LOG_PUBLICACION_AGOTADA),
+                MAX_ATTEMPTS, evento.getTipoEvento(), claveRuta, evento.getIdEvento(), lastException);
         throw lastException;
     }
 

@@ -7,6 +7,13 @@ spring:
   jpa:
     show-sql: true
 
+# ==================== NOTIFICACIONES (DEV) ====================
+# Por defecto en dev NO se entrega nada: la estrategia 'log' solo registra el envío.
+# Para probar la entrega real contra Mailpit (docker-compose up mailpit):
+#   NOTIFICACION_PROVEEDOR=smtp  →  bandeja en http://localhost:8025
+notificacion:
+  proveedor: ${NOTIFICACION_PROVEEDOR:log}
+
 # ==================== CORS (DEV) ====================
 security:
   cors:

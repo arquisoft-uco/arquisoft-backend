@@ -1,29 +1,28 @@
 package com.arquisoft.seguridad.infrastructure.config.security;
 
-import com.arquisoft.shared.message.SeguridadMessages;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
+import com.arquisoft.shared.message.Mensajes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-/**
- * Entry point de autenticación que delega al {@link HandlerExceptionResolver} de Spring MVC,
- * garantizando que los 401 generados a nivel de filtro (token ausente, expirado o inválido)
- * devuelvan un body {@code ErrorResponseDTO} consistente con el resto de la API,
- * en lugar del comportamiento por defecto que solo escribe el header {@code WWW-Authenticate}.
- */
-@Slf4j
 @Component
 public class SecurityAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+    private final AppLogger logger;
     private final HandlerExceptionResolver resolver;
 
+    // Constructor explicito en lugar de @RequiredArgsConstructor: Lombok no propaga
+    // el @Qualifier al parametro generado y Spring inyectaria el resolver equivocado.
     public SecurityAuthenticationEntryPoint(
+            AppLogger logger,
             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
+        this.logger = logger;
         this.resolver = resolver;
     }
 
@@ -32,7 +31,7 @@ public class SecurityAuthenticationEntryPoint implements AuthenticationEntryPoin
                          HttpServletResponse response,
                          AuthenticationException authException) {
 
-        log.warn(SeguridadMessages.Login.LOG_UNAUTHORIZED, request.getRequestURI(), authException.getMessage());
+        logger.warn(Mensajes.obtener(IniciarSesionKey.LOG_UNAUTHORIZED), request.getRequestURI(), authException.getMessage());
         resolver.resolveException(request, response, null, authException);
     }
 }

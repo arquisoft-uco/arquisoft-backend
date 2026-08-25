@@ -1,5 +1,8 @@
 package com.arquisoft.fichas.domain.tipoitem;
 
+import com.arquisoft.fichas.domain.tipoitem.exception.TipoItemNoEncontradoException;
+import com.arquisoft.shared.util.UtilEnum;
+
 public enum TipoItem {
 
     OBJETIVO_GENERAL("Objetivo General"),
@@ -23,5 +26,14 @@ public enum TipoItem {
 
     public String getNombre() {
         return nombre;
+    }
+
+    public static TipoItem desde(String id) {
+        return UtilEnum.desde(TipoItem.class, id)
+                .orElseThrow(() -> new TipoItemNoEncontradoException(id));
+    }
+
+    public static boolean esValido(String id) {
+        return UtilEnum.esValido(TipoItem.class, id);
     }
 }

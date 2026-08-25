@@ -45,7 +45,7 @@ El trabajo pendiente en el backend es:
 |---|----------|--------------------|
 | 1 | El enum `UserRole` tiene exactamente los 8 roles del ADR-003 actualizado con los códigos que Keycloak emite en el token | Los códigos en `getCode()` coinciden con el nombre del rol en Keycloak (case-sensitive) |
 | 2 | `JwtTokenAdapter` extrae roles de `realm_access.roles` y los mapea a `ROLE_{NOMBRE}` en mayúsculas | Un token con rol `Estudiante` genera `ROLE_ESTUDIANTE` en el contexto de seguridad |
-| 3 | `SecurityConfig` configura un `JwtAuthenticationConverter` que lee roles de `realm_access.roles` | Spring Security reconoce el rol sin configuración adicional en cada controller |
+| 3 | `SeguridadConfig` configura un `JwtAuthenticationConverter` que lee roles de `realm_access.roles` | Spring Security reconoce el rol sin configuración adicional en cada controller |
 | 4 | La propiedad `keycloak.resource` apunta a `arquisoft-backend` | La autenticación con `/auth/login` usa el cliente correcto |
 | 5 | Los endpoints protegidos rechazan tokens sin rol o con rol incorrecto con HTTP 403 | `@PreAuthorize("hasRole('ESTUDIANTE')")` funciona correctamente |
 | 6 | Tests unitarios de `JwtTokenAdapter` cubren extracción de roles desde `realm_access.roles` | Cobertura ≥ 75% en las capas afectadas |
@@ -267,7 +267,7 @@ No aplica — los roles globales viven en Keycloak; los roles contextuales por p
 ## 10. Checklist de Implementación
 
 - [x] `UserRole.java` verificado y corregido — 8 roles, `getCode()` devuelve el nombre exacto tal como Keycloak lo emite en el token
-- [x] `KeycloakJwtConverterConfig.java` creado — bean `JwtAuthenticationConverter` que usa `UserRole.fromCode()` para mapear a SCREAMING_CASE correctamente; arquitectura extendida con `KeycloakRoleExtractor` y `RoleAuthorityMapper`
+- [x] `KeycloakJwtConverterConfig.java` creado — bean `JwtAuthenticationConverter` que usa `UserRole.fromCode()` para mapear a SCREAMING_CASE correctamente; arquitectura extendida con `KeycloakRolExtractor` y `RoleAuthorityMapper`
 - [x] `SecurityConfig.java` modificado — inyecta `JwtAuthenticationConverter` en `oauth2ResourceServer`
 - [x] `JwtTokenAdapter.java` modificado — `extractRoles()` lee únicamente de `realm_access.roles`
 - [x] `application-security.properties` modificado — `keycloak.resource=arquisoft-backend`, CORS incluye `localhost:5173`

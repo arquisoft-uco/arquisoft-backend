@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.config;
 
+import com.arquisoft.shared.jpa.config.PropiedadesJpa;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
@@ -16,18 +17,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.Map;
 
-/**
- * Configuración de persistencia para el bounded context {@code fichas}.
- *
- * <p>Registra DataSource, EntityManagerFactory, TransactionManager y Flyway
- * para la base de datos {@code fichas_perfil}.
- *
- * <p>Sin {@code @Primary} — {@code usuariosTransactionManager} es el primario
- * (declarado en {@code UsuariosDataSourceConfig}).
- */
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
@@ -57,7 +47,7 @@ public class FichasDataSourceConfig {
 
     @Bean(name = "fichasDataSource")
     public DataSource fichasDataSource() {
-        HikariConfig config = new HikariConfig();
+        var config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(username);
         config.setPassword(password);
@@ -74,20 +64,15 @@ public class FichasDataSourceConfig {
             @Qualifier("fichasDataSource") DataSource dataSource,
             @Qualifier("fichasFlyway") Flyway fichasFlyway) {
 
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        var em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
         em.setPackagesToScan("com.arquisoft.fichas.infrastructure");
         em.setPersistenceUnitName("fichas");
 
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        var vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.hbm2ddl.auto", "validate");
-        properties.put("hibernate.format_sql", "true");
-        properties.put("hibernate.jdbc.batch_size", "25");
-        properties.put("hibernate.show_sql", "false");
-        em.setJpaPropertyMap(properties);
+        em.setJpaPropertyMap(PropiedadesJpa.porDefecto());
 
         return em;
     }
@@ -103,7 +88,7 @@ public class FichasDataSourceConfig {
         return Flyway.configure()
                 .dataSource(dataSource)
                 .locations("classpath:db/migration/fichas")
-                .baselineOnMigrate(true)
+                .baselineOnMigrate(false)
                 .load();
     }
 }

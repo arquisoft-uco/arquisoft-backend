@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.seguridad.infrastructure.config.ratelimit.BucketResolver;
 import tools.jackson.databind.ObjectMapper;
 import io.github.bucket4j.Bucket;
@@ -7,6 +8,10 @@ import io.github.bucket4j.ConsumptionProbe;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.MediaType;
+
+import java.nio.charset.StandardCharsets;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,8 +36,11 @@ class RateLimitingFilterTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    @Mock
+    private AppLogger logger;
+
     @InjectMocks
-    private RateLimitingFilter filter;
+    private LimitadorSolicitudesFilter filter;
 
     @Test
     void debeContinuar_cuandoRateLimitDeshabilitado() throws Exception {
@@ -41,7 +49,7 @@ class RateLimitingFilterTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
 
-        when(bucketResolver.isRateLimitEnabled()).thenReturn(false);
+        when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(false);
 
         // Act
         filter.doFilterInternal(request, response, filterChain);
@@ -58,7 +66,7 @@ class RateLimitingFilterTest {
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
 
-        when(bucketResolver.isRateLimitEnabled()).thenReturn(true);
+        when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
         when(request.getMethod()).thenReturn("OPTIONS");
 
         // Act
@@ -81,7 +89,7 @@ class RateLimitingFilterTest {
         when(probe.isConsumed()).thenReturn(true);
         when(probe.getRemainingTokens()).thenReturn(50L);
 
-        when(bucketResolver.isRateLimitEnabled()).thenReturn(true);
+        when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
         when(bucketResolver.resolveBucket(anyString())).thenReturn(bucket);
         when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
 
@@ -109,7 +117,7 @@ class RateLimitingFilterTest {
         when(probe.isConsumed()).thenReturn(true);
         when(probe.getRemainingTokens()).thenReturn(3L);
 
-        when(bucketResolver.isRateLimitEnabled()).thenReturn(true);
+        when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
         when(bucketResolver.resolveLoginBucket(anyString())).thenReturn(bucket);
         when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
 
@@ -137,7 +145,7 @@ class RateLimitingFilterTest {
         when(probe.isConsumed()).thenReturn(false);
         when(probe.getNanosToWaitForRefill()).thenReturn(60_000_000_000L);
 
-        when(bucketResolver.isRateLimitEnabled()).thenReturn(true);
+        when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
         when(bucketResolver.resolveBucket(anyString())).thenReturn(bucket);
         when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
 
@@ -153,7 +161,8 @@ class RateLimitingFilterTest {
 
         // Assert
         verify(response).setStatus(429);
-        verify(response).setContentType("application/json;charset=UTF-8");
+        verify(response).setContentType(MediaType.APPLICATION_JSON_VALUE);
+        verify(response).setCharacterEncoding(StandardCharsets.UTF_8.name());
         verify(response).addHeader("X-Rate-Limit-Retry-After-Seconds", "60");
         verify(filterChain, never()).doFilter(request, response);
     }
@@ -170,7 +179,7 @@ class RateLimitingFilterTest {
         when(probe.isConsumed()).thenReturn(false);
         when(probe.getNanosToWaitForRefill()).thenReturn(30_000_000_000L);
 
-        when(bucketResolver.isRateLimitEnabled()).thenReturn(true);
+        when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
         when(bucketResolver.resolveLoginBucket(anyString())).thenReturn(bucket);
         when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
 
@@ -202,7 +211,7 @@ class RateLimitingFilterTest {
         when(probe.isConsumed()).thenReturn(true);
         when(probe.getRemainingTokens()).thenReturn(10L);
 
-        when(bucketResolver.isRateLimitEnabled()).thenReturn(true);
+        when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
         when(bucketResolver.resolveBucket("192.168.1.100")).thenReturn(bucket);
         when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
 
@@ -230,7 +239,7 @@ class RateLimitingFilterTest {
         when(probe.isConsumed()).thenReturn(true);
         when(probe.getRemainingTokens()).thenReturn(10L);
 
-        when(bucketResolver.isRateLimitEnabled()).thenReturn(true);
+        when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
         when(bucketResolver.resolveBucket("INVALID")).thenReturn(bucket);
         when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
 

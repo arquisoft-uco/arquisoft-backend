@@ -1,8 +1,11 @@
 package com.arquisoft.seguridad.infrastructure.config.ratelimit;
 
-import com.arquisoft.shared.message.SeguridadMessages;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.exception.InfrastructureException;
-import com.arquisoft.shared.util.UtilObject;
+import com.arquisoft.shared.util.UtilObjeto;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
@@ -17,38 +20,41 @@ import io.lettuce.core.codec.RedisCodec;
 import io.lettuce.core.codec.StringCodec;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
-/**
- * Implementacion distribuida de {@link BucketResolver} usando Bucket4j + Lettuce (Redis).
- *
- * <p>Sustituye InMemoryBucketResolver. Comportamientos preservados:</p>
- * <ul>
- *   <li>{@code rate-limit.enabled=false}  → unlimited bucket (sin cuota)</li>
- *   <li>Redis no disponible               → exhausted bucket, fail-closed (HTTP 429 inmediato)</li>
- *   <li>bucket login                      → refillGreedy (anti-ventana-fija, igual que antes)</li>
- *   <li>bucket general                    → refillIntervally (igual que antes)</li>
- * </ul>
- *
- * <p>Ventajas sobre la implementacion en memoria:</p>
- * <ul>
- *   <li>Estado compartido entre instancias (horizontal scaling)</li>
- *   <li>Sin limite de IPs rastreadas — Redis gestiona la eviction por TTL</li>
- *   <li>Sin @Scheduled de eviction manual</li>
- *   <li>Estado sobrevive reinicios de la app</li>
- * </ul>
- */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RedisBucketResolver implements BucketResolver, DisposableBean {
 
-    private final RateLimitProperties properties;
+    // Prefijos de clave en Redis: identificadores de infraestructura compartidos con cualquier
+    // otra instancia del backend que lea el mismo Redis. No son texto y no van al catalogo.
+    private static final String CLAVE_LIMITE_GLOBAL = "arquisoft:ratelimit:global:";
+    private static final String CLAVE_LIMITE_LOGIN = "arquisoft:ratelimit:login:";
+
+    // Valor que se registra cuando el cliente Lettuce obtenido no es del tipo esperado y
+    // ni siquiera existe — evita imprimir un null crudo en el log de diagnostico.
+    private static final String CLIENTE_AUSENTE = "null";
+
+    // Margen sobre el que Redis expira la entrada del bucket: el doble de la ventana de
+    // recarga (1 minuto), para que un bucket a medio consumir no desaparezca antes de tiempo.
+    private static final Duration EXPIRACION_BUCKET = Duration.ofMinutes(2);
+
+    private static final Duration VENTANA_RECARGA = Duration.ofMinutes(1);
+
+    // Bucket agotado: capacidad 1 ya consumida y recarga a un dia, de modo que toda
+    // solicitud siguiente se rechace mientras Redis siga caido (fail closed).
+    private static final long CAPACIDAD_BUCKET_AGOTADO = 1L;
+    private static final Duration RECARGA_INERTE = Duration.ofDays(1);
+
+    private final AppLogger logger;
+
+    private final LimiteSolicitudesProperties properties;
     private final LettuceConnectionFactory lettuceConnectionFactory;
 
     private LettuceBasedProxyManager<String> proxyManager;
@@ -64,37 +70,49 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
             // Bucket4jLettuce.casBasedBuilder es la API no-deprecated en Bucket4j 8.x
             this.proxyManager = Bucket4jLettuce.casBasedBuilder(bucketConnection)
                     .expirationAfterWrite(ExpirationAfterWriteStrategy
-                            .basedOnTimeForRefillingBucketUpToMax(Duration.ofMinutes(2)))
+                            .basedOnTimeForRefillingBucketUpToMax(EXPIRACION_BUCKET))
                     .build();
-            log.debug(SeguridadMessages.RateLimit.INIT_OK);
         } else {
-            // log.error: detalle tecnico para el desarrollador — nunca llega al cliente.
+            // logger.error: detalle tecnico para el desarrollador — nunca llega al cliente.
             // El nombre de la clase del cliente obtenido orienta rapidamente el diagnostico.
-            log.error(SeguridadMessages.RateLimit.CLIENTE_STANDALONE_ERROR_LOG,
-                    !UtilObject.isNull(nativeClient) ? nativeClient.getClass().getSimpleName() : "null");
+            logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_CLIENTE_STANDALONE_ERROR),
+                    !UtilObjeto.esNulo(nativeClient) ? nativeClient.getClass().getSimpleName() : CLIENTE_AUSENTE);
             // InfrastructureException con mensaje generico: si llegara a la capa web
             // (improbable desde @PostConstruct), el cliente ve un mensaje sin detalles internos.
             throw new InfrastructureException(
-                    SeguridadMessages.RateLimit.CLIENTE_STANDALONE_EXCEPCION_MSG,
-                    SeguridadMessages.RateLimit.REDIS_CLIENTE_STANDALONE_REQUERIDO);
+                    Mensajes.obtener(LimiteSolicitudesKey.ERROR_CLIENTE_STANDALONE),
+                    SeguridadCodes.LimiteSolicitudes.REDIS_CLIENTE_STANDALONE_REQUERIDO);
         }
+    }
+
+    // El log NO va en @PostConstruct: este bean se construye antes que el catalogo de mensajes
+    // (CatalogoMensajesRedisConfig), asi que alli Mensajes.obtener devolveria la clave cruda.
+    // En ApplicationReadyEvent el catalogo ya esta instalado siempre.
+    //
+    // La rama de error del init si conserva su log ahi mismo: aborta el arranque, y una clave
+    // cruda en el stack trace sigue diciendo que fallo — mientras que diferirla no llegaria a
+    // emitirse nunca, porque ApplicationReadyEvent no ocurre si el contexto no levanta.
+    @EventListener(ApplicationReadyEvent.class)
+    public void registrarInicializacion() {
+        logger.debug(Mensajes.obtener(LimiteSolicitudesKey.LOG_INIT_OK));
     }
 
     @Override
     public Bucket resolveBucket(String ip) {
+
         if (!properties.enabled()) {
             return createUnlimitedBucket();
         }
         try {
             return proxyManager.getProxy(
-                    "arquisoft:ratelimit:global:" + ip,
+                    CLAVE_LIMITE_GLOBAL + ip,
                     () -> BucketConfiguration.builder()
                             .addLimit(limit -> limit
                                     .capacity(properties.requestsPerMinute())
-                                    .refillIntervally(properties.requestsPerMinute(), Duration.ofMinutes(1)))
+                                    .refillIntervally(properties.requestsPerMinute(), VENTANA_RECARGA))
                             .build());
         } catch (Exception e) {
-            log.error(SeguridadMessages.RateLimit.BUCKET_REDIS_ERROR,
+            logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_REDIS_ERROR),
                     ip, e.getMessage());
             return createExhaustedBucket();
         }
@@ -107,52 +125,46 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         }
         try {
             return proxyManager.getProxy(
-                    "arquisoft:ratelimit:login:" + ip,
+                    CLAVE_LIMITE_LOGIN + ip,
                     () -> BucketConfiguration.builder()
                             .addLimit(limit -> limit
                                     .capacity(properties.loginRequestsPerMinute())
-                                    .refillGreedy(properties.loginRequestsPerMinute(), Duration.ofMinutes(1)))
+                                    .refillGreedy(properties.loginRequestsPerMinute(), VENTANA_RECARGA))
                             .build());
         } catch (Exception e) {
-            log.error(SeguridadMessages.RateLimit.BUCKET_LOGIN_REDIS_ERROR,
+            logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_LOGIN_REDIS_ERROR),
                     ip, e.getMessage());
             return createExhaustedBucket();
         }
     }
 
     @Override
-    public boolean isRateLimitEnabled() {
+    public boolean estaLimiteSolicitudesHabilitado() {
         return properties.enabled();
     }
 
     @Override
     public void destroy() {
-        if (!UtilObject.isNull(bucketConnection)) {
+        if (!UtilObjeto.esNulo(bucketConnection)) {
             bucketConnection.close();
         }
     }
 
-    /**
-     * Bucket exhausto: cualquier peticion recibe HTTP 429 de inmediato.
-     * Se usa en modo fail-closed cuando Redis no esta disponible.
-     * No se almacena en cache — se crea y descarta por peticion, sin consumo de memoria.
-     */
     private Bucket createExhaustedBucket() {
-        Bandwidth limit = Bandwidth.builder()
-                .capacity(1)
-                .refillIntervally(1, Duration.ofDays(1))
+        var limit = Bandwidth.builder()
+                .capacity(CAPACIDAD_BUCKET_AGOTADO)
+                .refillIntervally(CAPACIDAD_BUCKET_AGOTADO, RECARGA_INERTE)
                 .build();
-        Bucket bucket = Bucket.builder().addLimit(limit).build();
+        var bucket = Bucket.builder().addLimit(limit).build();
         bucket.tryConsume(1);
         return bucket;
     }
 
-    /** Bucket ilimitado: usado cuando rate-limit.enabled=false. */
     private Bucket createUnlimitedBucket() {
         return Bucket.builder()
                 .addLimit(Bandwidth.builder()
                         .capacity(Long.MAX_VALUE)
-                        .refillIntervally(Long.MAX_VALUE, Duration.ofDays(1))
+                        .refillIntervally(Long.MAX_VALUE, RECARGA_INERTE)
                         .build())
                 .build();
     }

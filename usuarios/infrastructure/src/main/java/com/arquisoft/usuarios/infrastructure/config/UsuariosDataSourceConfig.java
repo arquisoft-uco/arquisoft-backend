@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.config;
 
+import com.arquisoft.shared.jpa.config.PropiedadesJpa;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import jakarta.persistence.EntityManagerFactory;
@@ -17,19 +18,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.Map;
 
-/**
- * Configuración de persistencia para el bounded context {@code usuarios}.
- *
- * <p>Registra DataSource, EntityManagerFactory, TransactionManager y Flyway
- * para la base de datos {@code usuarios}.
- *
- * <p>{@code usuariosTransactionManager} es declarado {@code @Primary} porque
- * contiene la tabla {@code event_publication} del Outbox Pattern. Todos los use
- * cases deben especificar el qualifier explícito en {@code @Transactional}.
- */
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
@@ -59,7 +48,7 @@ public class UsuariosDataSourceConfig {
 
     @Bean(name = "usuariosDataSource")
     public DataSource usuariosDataSource() {
-        HikariConfig config = new HikariConfig();
+        var config = new HikariConfig();
         config.setJdbcUrl(url);
         config.setUsername(username);
         config.setPassword(password);
@@ -76,20 +65,15 @@ public class UsuariosDataSourceConfig {
             @Qualifier("usuariosDataSource") DataSource dataSource,
             @Qualifier("usuariosFlyway") Flyway usuariosFlyway) {
 
-        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        var em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
         em.setPackagesToScan("com.arquisoft.usuarios.infrastructure");
         em.setPersistenceUnitName("usuarios");
 
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        var vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.hbm2ddl.auto", "validate");
-        properties.put("hibernate.format_sql", "true");
-        properties.put("hibernate.jdbc.batch_size", "25");
-        properties.put("hibernate.show_sql", "false");
-        em.setJpaPropertyMap(properties);
+        em.setJpaPropertyMap(PropiedadesJpa.porDefecto());
 
         return em;
     }
@@ -106,7 +90,7 @@ public class UsuariosDataSourceConfig {
         return Flyway.configure()
                 .dataSource(dataSource)
                 .locations("classpath:db/migration/usuarios")
-                .baselineOnMigrate(true)
+                .baselineOnMigrate(false)
                 .load();
     }
 }
