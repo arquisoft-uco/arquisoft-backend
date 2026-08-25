@@ -13,4 +13,5 @@ public final class ApiCodes {
     public static final String NOT_FOUND    = "404";
     public static final String CONFLICT     = "409";
     public static final String UNPROCESSABLE = "422";
+    public static final String SERVICE_UNAVAILABLE = "503";
 }
