@@ -37,12 +37,14 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | PATCH/PUT/DELETE con el `id` en `@PathVariable`, nunca en el body | ❌ |
 | Client role de un endpoint anidado usa la **entidad afectada**, no el primer segmento de la ruta (ej. `fichas:estudiante-ficha-perfil:delete`, no `fichas:ficha-perfil:delete`, en `DELETE /fichas-perfil/{id}/estudiantes/{eid}`) | ❌ |
 | `Controller` con `@Tag`/`@Operation`/`@ApiResponses`, y `@SecurityRequirement` si no es público (ADR-011) | ❌ |
-| Migración Flyway nombrada `V1.{n}__{descripcion_snake_case}.sql` con el siguiente número real del directorio (`V1.9` → `V1.10`) | ❌ |
+| Migración dentro de la subcarpeta del contexto, `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` — suelta en `db/migration/` la recogería el Flyway de otro contexto y la aplicaría en su base | ❌ |
+| Migración nombrada `V{yyyyMMddHHmmss}__{descripcion_snake_case}.sql` (14 dígitos). Cualquier numeración secuencial (`V1.0`, `V2__`) es convención retirada | ❌ |
+| Timestamp **anterior** al de una migración ya aplicada del mismo contexto — con `baselineOnMigrate=false` rompe el arranque por orden | ❌ |
 | Migración YA aplicada fue renombrada/editada en vez de agregar una nueva | ❌ |
-| Migración en `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` (no directo en `db/migration/`) | ❌ |
-| FK que referencia una tabla de otro schema/contexto en vez de una tabla réplica local poblada por eventos (patrón `asesor_ficha`/`estudiante` en `fichas`) | ❌ |
+| `.locations(...)` del `{Contexto}DataSourceConfig` apunta a `classpath:db/migration/{contexto}`, y `baselineOnMigrate` está en `false` | ❌ si se cambió |
+| FK que referencia una tabla de la base de otro contexto en vez de una tabla réplica local poblada por eventos (patrón `asesor_ficha`/`estudiante` en `fichas`) | ❌ |
 | Columnas de cada tabla ↔ atributos documentados en el plan (sin columnas inventadas) | ❌ |
-| `@Table` sin `schema`; todo `@Column`/`@JoinColumn`/`@Id` con `name` explícito en snake_case, igual a la columna Flyway | ⚠️/❌ si no coincide |
+| `@Table` sin `schema` ni catálogo (la conexión ya apunta a la base del contexto); todo `@Column`/`@JoinColumn`/`@Id` con `name` explícito en snake_case, igual a la columna Flyway | ⚠️/❌ si no coincide |
 
 ### Nivel 2.1 — Arquitectura hexagonal + CQRS
 

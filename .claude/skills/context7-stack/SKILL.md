@@ -110,7 +110,7 @@ query-docs /websites/spring_io_spring-framework_reference_6_2 "Transactional tra
 ### Capa infrastructure — Persistencia JPA + Flyway
 
 ```
-# Entidad JPA (el schema lo fija el DataSource del contexto — @Table nunca lleva schema)
+# Entidad JPA (el DataSource ya apunta a la base del contexto — @Table nunca lleva schema)
 query-docs /spring-projects/spring-data-jpa "Entity Table Column name mapping PostgreSQL"
 
 # Entidad de solo lectura para el lado query
@@ -119,7 +119,7 @@ query-docs /hibernate/hibernate-orm "Subselect Immutable Synchronize read-only e
 # Adaptador de repositorio (implementacion del puerto de salida)
 query-docs /spring-projects/spring-data-jpa "JpaRepository save findById custom query adapter"
 
-# Migracion Flyway con esquema propio por contexto
+# Migracion Flyway: version por timestamp VyyyyMMddHHmmss, en db/migration/{contexto}/
 query-docs /flyway/flyway "SQL migration versioned V naming convention schema"
 
 # Flyway con modulo postgresql (flyway-database-postgresql)
@@ -296,7 +296,7 @@ consulta: "RabbitListener manual ack acknowledgment Channel basicAck basicNack"
 ```
 
 ```
-# Crear migracion Flyway para esquema fichas
+# Crear migracion Flyway para la base de fichas (db/migration/fichas/)
 use library /flyway/flyway
 consulta: "versioned migration V naming convention schema create table"
 ```

@@ -388,10 +388,14 @@ solicitudes           → usuarios
 **El backend NO crea esas FKs cruzadas.** El grafo de arriba es el modelo lógico del MER; en el
 código cada contexto tiene su propio `DataSource`, su propio schema y sus propias migraciones
 Flyway, así que una dependencia hacia otro contexto se resuelve con una **tabla réplica local
-poblada por eventos AMQP**, no con un `REFERENCES otro_schema.tabla`. Es lo que hace `fichas` con
-`asesor_ficha` y `estudiante` (ver `V1.0`/`V1.1` de `db/migration/fichas/`). Usa el grafo para
-entender de dónde viene el dato y qué evento debes consumir — nunca para escribir una FK
-inter-schema en la migración.
+poblada por eventos AMQP**, no con un `REFERENCES`. Es lo que hace `fichas` con `asesor_ficha` y
+`estudiante` (las dos primeras migraciones de `db/migration/fichas/`). Usa el grafo para entender de
+dónde viene el dato y qué evento debes consumir — nunca para escribir una FK entre contextos.
+
+Ojo con la diferencia de modelo: el MER habla de **schemas** dentro de una base, pero el backend
+crea **una base de datos por contexto** (`init-db.sql`), cada una con su propio
+`flyway_schema_history` y sus migraciones en `db/migration/{contexto}/`. Una FK entre contextos no
+es "desaconsejada", es imposible.
 
 ---
 

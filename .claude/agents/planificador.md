@@ -209,16 +209,28 @@ Para Controllers añade: @Tag, y por endpoint: @Operation(summary), @ApiResponse
 | Dirección | Exchange | Routing Key | Payload | Contexto receptor |
 
 ## 11. Migración de Base de Datos (si aplica)
-- Archivo: `V1.{siguiente}__{descripcion_snake_case}.sql` en
-  `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` — **lee el directorio
-  real**, no adivines el número (hoy `fichas` va por `V1.9`, así que la siguiente es `V1.10`).
-  Nunca renombres ni edites una migración ya aplicada.
-- Sin prefijo de schema en `CREATE TABLE` ni en `@Table`: cada contexto tiene su propio `DataSource`
-  y su propio schema.
-- **Sin FKs cruzadas entre schemas de contextos distintos.** Si necesitas datos de otro contexto,
-  modela una **tabla réplica local** poblada por eventos AMQP — el patrón real de `fichas`
-  (`asesor_ficha`, `estudiante`; ver `V1.0`/`V1.1`). El MER documenta la FK lógica; el backend la
-  resuelve con réplica + evento.
+- **Ubicación — subcarpeta propia del contexto, obligatoria:**
+  `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/`, nunca suelta en
+  `db/migration/`. El `{Contexto}DataSourceConfig` apunta su Flyway a
+  `.locations("classpath:db/migration/{contexto}")`, y **cada contexto tiene su propia base de
+  datos** (`fichas_perfil`, `usuarios`, `notificaciones`, …) con su propio
+  `flyway_schema_history`. Si una migración cae fuera de su subcarpeta, el Flyway de *otro*
+  contexto la ve, intenta aplicarla en la base equivocada y corrompe ambos historiales.
+- **Versión = timestamp `VyyyyMMddHHmmss`**, generado **en el momento de crear el archivo**:
+  `V20260724005914__crear_revision_item.sql`. No hay numeración secuencial (`V1.0`, `V2`…). Si una
+  misma HU aporta dos migraciones, la segunda lleva el timestamp un segundo después, para fijar el
+  orden (ver `V20260724005914` / `V20260724005915` en `fichas`).
+- **Nunca fabriques un timestamp anterior al de una migración ya aplicada.** `baselineOnMigrate`
+  está en **`false`** en los tres contextos: Flyway ya no acepta en silencio una base con objetos
+  preexistentes ni una migración que aparece fuera de orden — falla el arranque. Por eso el
+  timestamp se toma del reloj al crear el archivo, y una migración ya aplicada **jamás** se renombra
+  ni se edita: se agrega una nueva.
+- Sin prefijo de base ni de schema en `CREATE TABLE` ni en `@Table`: la conexión ya está apuntando a
+  la base del contexto.
+- **Sin FKs cruzadas hacia la base de otro contexto** — son bases distintas, la FK no es siquiera
+  posible. Si necesitas datos de otro contexto, modela una **tabla réplica local** poblada por
+  eventos AMQP: el patrón real de `fichas` (`asesor_ficha`, `estudiante`). El MER documenta la
+  relación lógica; el backend la resuelve con réplica + evento.
 
 ## 12. Casos de Prueba Sugeridos
 {Ver "Presupuesto de tests" y bancos de casos abajo}
@@ -261,7 +273,7 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | infrastructure | `{contexto}/infrastructure/.../{feature}/command/primaryadapter/web/{Accion}{Entidad}Controller.java` + `dto/{Accion}{Entidad}RequestDTO.java` (+`ResponseDTO` si retorna cuerpo) + `mapper/{Accion}{Entidad}RequestMapper.java` | Un Controller por acción |
 | infrastructure | `.../command/secondaryadapter/entity/{Entidad}JpaEntity.java` + `mapper/{Entidad}JpaMapper.java` + `repository/{Entidad}CommandOutputAdapter.java` + `repository/{Entidad}CommandRepository.java` | JPA real; el repo de escritura sí extiende `JpaRepository` |
 | infrastructure | `{contexto}/infrastructure/.../security/{Contexto}Authorities.java` | MODIFICAR: añade el client role crudo + su expresión `Expresiones.HAS_*` |
-| infrastructure | `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/V1.{n}__{descripcion}.sql` | Flyway, siguiente número real del directorio (`V1.9` → `V1.10`)|
+| infrastructure | `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/V{yyyyMMddHHmmss}__{descripcion}.sql` | Flyway con versión por timestamp, siempre dentro de la subcarpeta del contexto |
 | shared | `shared/message/.../constant/{Contexto}Codes.java` · `{Contexto}Fields.java` · `{Contexto}Limits.java` · `annotation/{Contexto}ApiMessages.java` | MODIFICAR: códigos, campos, límites y textos de Swagger nuevos |
 | shared | `shared/message/.../key/{contexto}/{Feature}Key.java` + `catalogo/{contexto}.properties` | Claves de error/log nuevas (+ registro en `ClavesCatalogo`) |
 
@@ -372,7 +384,8 @@ getters/setters ni métodos `private`.
 - [ ] Controller documentado con `@Tag`/`@Operation`/`@ApiResponses`/`@SecurityRequirement` (ADR-011), un controller por acción, ruta como placeholder de propiedad
 - [ ] `@PreAuthorize({Contexto}Authorities.Expresiones.HAS_*)` — constante, no literal; un solo client role por endpoint
 - [ ] Textos nuevos: clave en `{Feature}Key` + registro en `ClavesCatalogo` + línea en `catalogo/{contexto}.properties`, con la aridad correcta
-- [ ] Migración Flyway con el siguiente número real del contexto, sin prefijo de schema
+- [ ] Migración Flyway en `db/migration/{contexto}/`, versión `V{yyyyMMddHHmmss}` tomada al crear el
+      archivo, sin prefijo de base/schema y sin FK hacia otra base de contexto
 - [ ] Tests con patrón AAA, cobertura ≥75% verificada con `check` (`*Domain` no está excluido de JaCoCo)
 - [ ] Sin `@Bean TaskExecutor` manual (Virtual Threads ya gestionados por Spring Boot)
 - [ ] Commit sugerido: `feat({contexto}): {descripción corta en español}`

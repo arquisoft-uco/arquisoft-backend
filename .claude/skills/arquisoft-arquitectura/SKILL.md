@@ -72,7 +72,8 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 | `command/secondaryadapter/entity/` (+`mapper/`, `repository/`) | JPA real + `OutputAdapter` + repo Spring Data | `entity/FichaPerfilJpaEntity.java`, `mapper/FichaPerfilJpaMapper.java`, `repository/FichaPerfilCommandOutputAdapter.java`, `repository/FichaPerfilCommandRepository.java` |
 | `query/primaryadapter/web/` (+`dto/`, `mapper/`) | `Controller` de lectura + **`{Entidad}ResponseDTO` + `{Entidad}ResponseMapper`** + `RequestMapper` que arma el `Criteria` | `ConsultarFichasPerfilController.java`, `dto/FichaPerfilResponseDTO.java`, `mapper/FichaPerfilResponseMapper.java`, `mapper/ConsultarFichasPerfilRequestMapper.java` |
 | `query/secondaryadapter/repository/` (+`mapper/`) | `@Subselect`/`@Immutable`/`@Synchronize`, plana; specification, sort, adapter, repo | `FichaPerfilJpaQueryEntity.java`, `FichaPerfilJpaSpecification.java`, `FichaPerfilSortMapper.java`, `FichaPerfilQueryOutputAdapter.java`, `FichaPerfilQueryRepository.java`, `mapper/FichaPerfilQueryMapper.java` |
-| `security/`, `config/`, `exception/`, `db/migration/{contexto}/` | Transversales del contexto | `security/FichasAuthorities.java` |
+| `security/`, `config/`, `exception/` | Transversales del contexto | `security/FichasAuthorities.java`, `config/FichasDataSourceConfig.java` |
+| `src/main/resources/db/migration/{contexto}/` | Migraciones Flyway del contexto — subcarpeta propia obligatoria | `db/migration/fichas/V20260504181427__crear_tablas_fichas_perfil.sql` |
 
 ## El `ReadModel` nunca sale por HTTP
 
@@ -159,6 +160,31 @@ Extenderlo "por consistencia" arrastra maquinaria muerta. `FichaPerfilDomain` ho
 (`AsesorFichaCambiadoEvent` lleva nombre y email del asesor) para que el consumidor no tenga que
 volver a consultar al productor. La publicación está centralizada en `shared:amqp` — nunca se crea
 un `{Entidad}EventPublisher` local.
+
+## Aislamiento de persistencia: una base de datos por contexto
+
+No son schemas dentro de una base común: `init-db.sql` crea una **base por bounded context**
+(`usuarios`, `fichas_perfil`, `proyectos_grado`, `notificaciones`, …). Cada
+`{Contexto}DataSourceConfig` levanta su propio `DataSource`, `EntityManagerFactory`,
+`TransactionManager` y bean de `Flyway`. `seguridad` no aparece: se apoya en Keycloak + Redis.
+
+Consecuencias que se notan al escribir código:
+
+- **Cada base tiene su propio `flyway_schema_history`.** Por eso el bean de Flyway apunta a
+  `.locations("classpath:db/migration/{contexto}")` y las migraciones viven en esa subcarpeta: una
+  migración suelta en `db/migration/` la recogerían todos los contextos y cada uno la aplicaría en
+  su propia base.
+- **`baselineOnMigrate` está en `false`** en los tres contextos con implementación. Flyway ya no
+  acepta en silencio una base con objetos preexistentes ni una versión fuera de orden — falla el
+  arranque, que es justo lo que se quiere para no corromper el historial.
+- **La versión es un timestamp `VyyyyMMddHHmmss`** tomado al crear el archivo
+  (`V20260504181427__crear_tablas_fichas_perfil.sql`), no una secuencia. Dos migraciones de la misma
+  entrega se separan por un segundo. Nunca se retrocede un timestamp ni se renombra/edita una
+  migración ya aplicada: se agrega otra.
+- **Una FK hacia otro contexto no es posible** — son bases distintas. Se modela como tabla réplica
+  local poblada por eventos AMQP (`asesor_ficha`, `estudiante` en `fichas`).
+- `@Table` no lleva `schema` ni catálogo, y el SQL no prefija nombres de base: la conexión ya apunta
+  a la base correcta.
 
 ## Rutas y autorización viven en constantes, no en literales
 

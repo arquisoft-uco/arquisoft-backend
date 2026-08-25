@@ -97,11 +97,26 @@ omites).
 `SortMapper` + `QueryOutputAdapter` + `QueryRepository` (extiende `QueryRepository`, nunca
 `JpaRepository`) + `mapper/{Entidad}QueryMapper` → `Consumer` AMQP si el contexto consume eventos
 (extiende `AbstractEventConsumer`, payload `record` local) → `{Contexto}Authorities` (client role
-nuevo + su expresión) → migración Flyway en
-`{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/`, nombrada
-`V1.{siguiente}__{descripcion_snake_case}.sql` — lee el directorio real (`V1.9` → `V1.10`), sin
-prefijo de schema, sin FK cruzada a otro schema (réplica local + evento), y nunca renombres ni
-edites una ya aplicada.
+nuevo + su expresión) → migración Flyway (reglas abajo).
+
+**Migraciones Flyway — tres reglas duras, las tres por la misma razón:** cada contexto tiene su
+**propia base de datos** con su propio `flyway_schema_history`, y `baselineOnMigrate` está en
+**`false`**, así que Flyway ya no perdona nada en silencio.
+
+1. **Subcarpeta del contexto, siempre:** el archivo va en
+   `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/`, nunca suelto en
+   `db/migration/`. El `{Contexto}DataSourceConfig` apunta a
+   `.locations("classpath:db/migration/{contexto}")`; una migración fuera de su subcarpeta la
+   recogería el Flyway de otro contexto y la aplicaría en la base equivocada.
+2. **Versión = timestamp `VyyyyMMddHHmmss`**, tomado del reloj **en el momento de crear el archivo**
+   (`date +V%Y%m%d%H%M%S`): `V20260724005914__crear_revision_item.sql`. No existe numeración
+   secuencial. Dos migraciones de la misma HU: la segunda va un segundo después.
+3. **Nunca un timestamp anterior a una migración ya aplicada, y nunca renombres ni edites una ya
+   aplicada.** Con `baselineOnMigrate=false` eso rompe el arranque en vez de pasar inadvertido. Si
+   hay que corregir algo, se agrega una migración nueva.
+
+Sin prefijo de base ni de schema en `CREATE TABLE` (la conexión ya apunta a la base del contexto), y
+sin FK hacia la base de otro contexto — eso se modela como tabla réplica local poblada por eventos.
 
 El `QueryOutputAdapter` es pura delegación: `PageableMapper.toPageable(criteria, {Entidad}SortMapper::traducir)`
 y `PaginationMapper.toResult(page)` (`shared:jpa/util/`); no construye `PageRequest`/`Sort` ni
