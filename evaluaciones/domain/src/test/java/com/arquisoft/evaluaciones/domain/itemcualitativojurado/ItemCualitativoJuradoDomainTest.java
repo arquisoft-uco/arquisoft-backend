@@ -1,6 +1,5 @@
 package com.arquisoft.evaluaciones.domain.itemcualitativojurado;
 
-import com.arquisoft.evaluaciones.domain.itemcualitativojurado.event.ItemCualitativoJuradoRegistradoEvent;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.validation.DomainValidationException;
@@ -14,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ItemCualitativoJuradoDomainTest {
 
     @Test
-    void debeCrearItemYPublicarEvento_cuandoDatosValidos() {
+    void debeCrearItemYAplicarTrim_cuandoDatosValidos() {
         // Arrange
         String nombre = "  Claridad conceptual  ";
         String descripcion = "  Evalúa la claridad de la exposición  ";
@@ -22,26 +21,11 @@ class ItemCualitativoJuradoDomainTest {
         // Act
         ItemCualitativoJuradoDomain item =
                 ItemCualitativoJuradoDomain.crear(nombre, descripcion);
-        var eventos = item.extraerEventosSinPublicar();
 
         // Assert
         assertThat(item.getId()).isNotNull();
         assertThat(item.getNombre()).isEqualTo("Claridad conceptual");
         assertThat(item.getDescripcion()).isEqualTo("Evalúa la claridad de la exposición");
-        assertThat(eventos).singleElement().isInstanceOfSatisfying(
-                ItemCualitativoJuradoRegistradoEvent.class,
-                evento -> {
-                    assertThat(evento.getItemCualitativoJuradoId()).isEqualTo(item.getId());
-                    assertThat(evento.getNombre()).isEqualTo(item.getNombre());
-                    assertThat(evento.getDescripcion()).isEqualTo(item.getDescripcion());
-                    assertThat(evento.getTemaEvento())
-                            .isEqualTo(ItemCualitativoJuradoRegistradoEvent.EVENT_TOPIC);
-                    assertThat(evento.getTipoEvento())
-                            .isEqualTo(ItemCualitativoJuradoRegistradoEvent.EVENT_TYPE);
-                    assertThat(evento.getIdEvento()).isNotBlank();
-                    assertThat(evento.getOcurridoEn()).isNotNull();
-                });
-        assertThat(item.extraerEventosSinPublicar()).isEmpty();
     }
 
     @Test
@@ -85,7 +69,7 @@ class ItemCualitativoJuradoDomainTest {
     }
 
     @Test
-    void debeReconstruirSinValidarNiPublicar_cuandoSeCargaDesdePersistencia() {
+    void debeReconstruirSinValidar_cuandoSeCargaDesdePersistencia() {
         // Arrange
         UUID id = UUID.randomUUID();
         String nombrePersistido = "";
@@ -99,6 +83,5 @@ class ItemCualitativoJuradoDomainTest {
         assertThat(item.getId()).isEqualTo(id);
         assertThat(item.getNombre()).isEqualTo(nombrePersistido);
         assertThat(item.getDescripcion()).isNull();
-        assertThat(item.extraerEventosSinPublicar()).isEmpty();
     }
 }

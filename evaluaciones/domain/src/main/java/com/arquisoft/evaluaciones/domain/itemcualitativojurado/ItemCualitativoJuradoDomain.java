@@ -1,7 +1,5 @@
 package com.arquisoft.evaluaciones.domain.itemcualitativojurado;
 
-import com.arquisoft.evaluaciones.domain.itemcualitativojurado.event.ItemCualitativoJuradoRegistradoEvent;
-import com.arquisoft.shared.events.AggregateRoot;
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.constant.EvaluacionesLimits;
@@ -13,7 +11,7 @@ import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.util.UUID;
 
-public final class ItemCualitativoJuradoDomain extends AggregateRoot {
+public final class ItemCualitativoJuradoDomain {
 
     private UUID id;
     private String nombre;
@@ -36,8 +34,6 @@ public final class ItemCualitativoJuradoDomain extends AggregateRoot {
         item.setDescripcion(descripcion, resultado);
 
         resultado.lanzarSiTieneErrores();
-        item.publicarEvento(new ItemCualitativoJuradoRegistradoEvent(
-                item.id, item.nombre, item.descripcion));
         return item;
     }
 

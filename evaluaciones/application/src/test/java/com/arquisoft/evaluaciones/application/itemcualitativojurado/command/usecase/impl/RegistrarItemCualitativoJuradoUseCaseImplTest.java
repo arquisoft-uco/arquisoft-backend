@@ -6,7 +6,6 @@ import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.seco
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.validator.RegistrarItemCualitativoJuradoValidator;
 import com.arquisoft.evaluaciones.domain.itemcualitativojurado.ItemCualitativoJuradoDomain;
 import com.arquisoft.evaluaciones.domain.itemcualitativojurado.exception.NombreItemCualitativoJuradoDuplicadoException;
-import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
@@ -22,8 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
@@ -43,16 +42,13 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
     private RegistrarItemCualitativoJuradoValidator validator;
 
     @Mock
-    private EventPublisher eventPublisher;
-
-    @Mock
     private AppLogger logger;
 
     @InjectMocks
     private RegistrarItemCualitativoJuradoUseCaseImpl useCase;
 
     @Test
-    void debePersistirPublicarYRetornarId_cuandoNombreEstaDisponible() {
+    void debePersistirYRetornarId_cuandoNombreEstaDisponible() {
         // Arrange
         ItemCualitativoJuradoDomain item = itemValido();
         when(finder.obtener(item.getNombre())).thenReturn(false);
@@ -62,11 +58,10 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
 
         // Assert
         assertThat(resultado).isEqualTo(item.getId());
-        InOrder orden = inOrder(finder, validator, outputPort, eventPublisher, logger);
+        InOrder orden = inOrder(finder, validator, outputPort, logger);
         orden.verify(finder).obtener(item.getNombre());
         orden.verify(validator).validar(item, false);
         orden.verify(outputPort).registrar(entidadDe(item));
-        orden.verify(eventPublisher).publish(any());
         orden.verify(logger).info(anyString(), eq(item.getId()));
     }
 
@@ -82,12 +77,11 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(item))
                 .isInstanceOf(NombreItemCualitativoJuradoDuplicadoException.class);
         verify(outputPort, never()).registrar(any());
-        verify(eventPublisher, never()).publish(any());
         verify(logger, never()).info(anyString(), any());
     }
 
     @Test
-    void debeEvitarPublicacion_cuandoPersistenciaFalla() {
+    void debeDetenerFlujo_cuandoPersistenciaFalla() {
         // Arrange
         ItemCualitativoJuradoDomain item = itemValido();
         when(finder.obtener(item.getNombre())).thenReturn(false);
@@ -97,7 +91,6 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(item))
                 .isInstanceOf(InfrastructureException.class);
-        verify(eventPublisher, never()).publish(any());
         verify(logger, never()).info(anyString(), any());
     }
 

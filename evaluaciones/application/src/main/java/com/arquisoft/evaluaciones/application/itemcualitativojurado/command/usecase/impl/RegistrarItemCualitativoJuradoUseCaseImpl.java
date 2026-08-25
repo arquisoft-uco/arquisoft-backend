@@ -6,7 +6,6 @@ import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.seco
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.usecase.RegistrarItemCualitativoJuradoUseCase;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.validator.RegistrarItemCualitativoJuradoValidator;
 import com.arquisoft.evaluaciones.domain.itemcualitativojurado.ItemCualitativoJuradoDomain;
-import com.arquisoft.shared.events.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
@@ -23,7 +22,6 @@ public class RegistrarItemCualitativoJuradoUseCaseImpl
     private final ItemCualitativoJuradoOutputPort itemCualitativoJuradoOutputPort;
     private final NombreItemCualitativoJuradoExisteFinder nombreItemCualitativoJuradoExisteFinder;
     private final RegistrarItemCualitativoJuradoValidator registrarItemCualitativoJuradoValidator;
-    private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
@@ -32,7 +30,6 @@ public class RegistrarItemCualitativoJuradoUseCaseImpl
 
         registrarItemCualitativoJuradoValidator.validar(item, nombreYaExiste);
         itemCualitativoJuradoOutputPort.registrar(ItemCualitativoJuradoMapper.toEntity(item));
-        item.extraerEventosSinPublicar().forEach(eventPublisher::publish);
         logger.info(Mensajes.obtener(ItemCualitativoJuradoKey.LOG_REGISTRADO), item.getId());
 
         return item.getId();
