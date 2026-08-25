@@ -51,6 +51,7 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 | `command/validator/` (+`impl/`) | Puro: construye sus `Rule`s con `new` en un constructor sin argumentos; sin `OutputPort`, sin `Finder`, **sin un solo `if`** | `validator/impl/RegistrarFichaPerfilValidatorImpl.java` |
 | `command/finder/` (+`impl/`) | Uno por consulta; siempre devuelve valor (`Boolean`/`Long`/`Optional`), nunca lanza por "no encontrado" | `finder/impl/TituloFichaPerfilExisteFinderImpl.java` |
 | `command/secondaryport/` (+`entity/`, `mapper/`) | Puerto de salida — habla `Entity`, nunca `Domain` | `FichaPerfilOutputPort.java`, `entity/FichaPerfilEntity.java`, `mapper/FichaPerfilMapper.java` |
+| `command/result/` (+`mapper/`) | Salida del comando cuando **no** es `UUID` ni `void` — ver abajo | (hoy solo en `seguridad`) `auth/command/result/AutenticacionResult.java` + `result/mapper/AutenticacionResultMapper.java` |
 
 ### application — lado query
 
@@ -75,6 +76,35 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 | `security/`, `config/`, `exception/` | Transversales del contexto | `security/FichasAuthorities.java`, `config/FichasDataSourceConfig.java` |
 | `src/main/resources/db/migration/{contexto}/` | Migraciones Flyway del contexto — subcarpeta propia obligatoria | `db/migration/fichas/V20260504181427__crear_tablas_fichas_perfil.sql` |
 
+## Cuando un comando devuelve un objeto: `command/result/`
+
+Un comando normalmente devuelve `UUID` (el id de lo creado) o `void`, y entonces no necesita tipo
+propio. Cuando devuelve algo más rico, ese algo es un **`{Concepto}Result`**: un `record` plano en
+`application/{feature}/command/result/`, sin anotaciones, sin Lombok.
+
+Hoy solo existe en `seguridad` (`AutenticacionResult`, `RefrescoTokenResult`,
+`ValidacionTokenResult`), porque es el único contexto con comandos que devuelven algo que no es un
+id. **Los contextos de negocio no lo tienen todavía, pero cuando una HU lo requiera se crea ahí con
+esta misma estructura** — no se inventa una variante nueva ni se devuelve el `Domain`, el `Entity`
+o el DTO desde la capa de aplicación.
+
+La cadena completa, con `seguridad/auth` como referencia:
+
+| Paso | Quién | Qué hace |
+|---|---|---|
+| 1 | `{Concepto}ResultMapper` (`command/result/mapper/`) | `final`, constructor privado, **`static toResult(...)`**. Convierte lo que devolvió el puerto secundario (`CredencialesProveedor`, de `secondaryport/model/`) en el `Result` |
+| 2 | `{Accion}{Entidad}UseCaseImpl` | Es quien **llama** al `ResultMapper` y retorna el `Result` |
+| 3 | `{Accion}{Entidad}Interactor` | Solo declara el tipo: `Interactor<{Accion}{Entidad}Command, {Concepto}Result>`, con su `@Transactional` |
+| 4 | `{Accion}{Entidad}ResponseMapper` (`infrastructure/.../command/primaryadapter/web/mapper/`) | `static toResponse(result)` → `{Accion}{Entidad}ResponseDTO` |
+
+**El `Result` nunca se serializa directo**, exactamente por la misma razón que el `ReadModel` (ver
+abajo): el contrato JSON vive en el `ResponseDTO`, no en el tipo de retorno de la capa de
+aplicación. Por eso el lado comando tiene su propio `{Accion}{Entidad}ResponseMapper`, simétrico al
+`{Entidad}ResponseMapper` del lado lectura.
+
+Simetría que conviene tener presente: en `command/`, `primaryport/model/` es la entrada y `result/`
+la salida; en `query/`, `criteria/` es la entrada y `readmodel/` la salida.
+
 ## El `ReadModel` nunca sale por HTTP
 
 El `Controller` de lectura mapea `ReadModel` → `{Entidad}ResponseDTO` con
@@ -92,9 +122,9 @@ Un `ReadModel` anidado pertenece a la feature que describe, no a la que lo compo
 
 `Domain · Interactor/InteractorImpl · UseCase/UseCaseImpl · Validator/ValidatorImpl ·
 Rule/RuleImpl · Finder/FinderImpl · OutputPort · QueryOutputPort · Entity · JpaEntity ·
-JpaQueryEntity · Command · Query · Criteria · ReadModel · RequestDTO/ResponseDTO ·
-RequestMapper/ResponseMapper · Controller (web) · Consumer (AMQP) · CommandOutputAdapter ·
-QueryOutputAdapter · SortMapper · JpaSpecification`.
+JpaQueryEntity · Command · Query · Criteria · ReadModel · Result/ResultMapper ·
+RequestDTO/ResponseDTO · RequestMapper/ResponseMapper · Controller (web) · Consumer (AMQP) ·
+CommandOutputAdapter · QueryOutputAdapter · SortMapper · JpaSpecification`.
 
 Español para el concepto de negocio, inglés para el sufijo técnico. No hay sufijos en español —
 `Controller`, no `Controlador`. El paquete de la feature va todo en minúsculas y sin separadores:

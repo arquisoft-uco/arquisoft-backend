@@ -87,6 +87,11 @@ eventos:** `verify(eventPublisher, times(N)).publish(any())` — nunca inspeccio
 `obtenerEventosSinPublicar()` desde application (es `protected`). Si dice "Eventos: ninguno", no
 mockees `EventPublisher`.
 
+Si el comando devuelve un `{Concepto}Result`, el test del `UseCase` asserta sus campos — con eso
+queda cubierto el `{Concepto}ResultMapper`, que **sí cuenta para JaCoCo** (`*Result` y
+`*ResultMapper` no están en la lista de exclusiones, a diferencia de `*Command` y `*ReadModel`). No
+le escribas un test propio al mapper salvo que tenga lógica que el flujo del use case no ejercite.
+
 **Infrastructure — `OutputAdapter`/`Controller`:** `@DataJpaTest` con H2, sembrando con
 `TestEntityManager` (nunca con un `QueryRepository`, que no tiene `save`); confirma que el adapter
 usa `reconstruir(...)`, nunca `crear(...)`, al leer de BD.

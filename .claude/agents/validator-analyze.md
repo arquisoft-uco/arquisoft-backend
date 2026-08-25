@@ -139,6 +139,11 @@ excepción o mapear a `Entity`.
 | Paginado que no envuelve con `PageResponseDTO.from(resultado.map({Entidad}ResponseMapper::toResponse))` | ❌ |
 | `ReadModel` anidado y su `ResponseDTO` declarados en la feature que los compone en vez de en la feature que describen (ej. `AsesorFichaReadModel` vive en `asesorficha`) | ⚠️ |
 | Lado write con retorno de UUID crudo (`ResponseEntity<UUID>`) en vez de `{Accion}{Entidad}ResponseDTO(UUID id)` | ❌ |
+| Comando que devuelve un objeto (plan, pregunta 11 = **C**) sin `{Concepto}Result` en `command/result/`: retorna el `Domain`, el `Entity`, un `ReadModel` o directamente el DTO desde `application/` | ❌ |
+| `{Concepto}Result` que no es un `record` plano, o lleva Jackson/Lombok | ❌ |
+| Falta `{Concepto}ResultMapper` en `command/result/mapper/` (`final`, constructor privado, `static toResult(...)`), o lo invoca el `Interactor` en vez del `UseCaseImpl` | ❌ |
+| El `Controller` serializa el `{Concepto}Result` directo en vez de mapearlo con `{Accion}{Entidad}ResponseMapper` a su `ResponseDTO` | ❌ |
+| Existe `command/result/` en una HU cuyo retorno es `UUID` o `void` (paquete sin razón de ser) | ⚠️ |
 | `ErrorResponseDTO`/`PageResponseDTO`/`QueryCriteriaRequestDTO` duplicados localmente en vez de importados de `shared:web` | ❌ |
 | Lombok (`@Data`, `@Builder`) en `Command` o `ReadModel` | ❌ |
 

@@ -106,10 +106,17 @@ cambia (nuevo parámetro/validación/campo del DTO) sin duplicar el controller.
 **11. ¿Qué retorna una HU de escritura?** (solo Escritura/Mixta — consultas devuelven `ReadModel`/
 `PaginatedResult<ReadModel>` automáticamente)
 - **A) UUID (default).** `Interactor`/`UseCase` retornan `UUID`; el `Controller` envuelve en
-  `{Accion}{Entidad}ResponseDTO(UUID id)` con `201` — **nunca** `ResponseEntity<UUID>` crudo.
-- **B) Void.** `201`/`204` sin body, opcionalmente header `Location`.
-- **C) Objeto específico** (ej. `ReadModel` completo) — justifica en sección 8 por qué rompe el
-  default A.
+  `{Accion}{Entidad}ResponseDTO(UUID id)` con `201` — **nunca** `ResponseEntity<UUID>` crudo. No
+  hace falta ningún tipo propio.
+- **B) Void.** `201`/`204` sin body, opcionalmente header `Location`. Tampoco necesita tipo propio.
+- **C) Objeto específico.** Justifica en la sección 8 por qué rompe el default A, y **declara un
+  `{Concepto}Result`** — es la única de las tres opciones que agrega archivos al árbol:
+  `application/{feature}/command/result/{Concepto}Result.java` (`record` plano) +
+  `result/mapper/{Concepto}ResultMapper.java` (`static toResult(...)`), más el
+  `{Accion}{Entidad}ResponseMapper` en infraestructura. Nunca devuelvas el `Domain`, el `Entity` ni
+  un `ReadModel` desde el lado comando: el `ReadModel` es del lado lectura y el `Result` es su
+  equivalente de escritura. Patrón de referencia: `seguridad/auth` (`AutenticacionResult`) — hoy es
+  el único contexto que lo tiene, pero la estructura es idéntica para un contexto de negocio.
 
 **12. ¿Actúa sobre un recurso EXISTENTE con dueño?** (solo si modifica/extiende algo ya creado por
 un actor concreto — ej. la ficha es del estudiante). El `@PreAuthorize` autoriza por **rol**, no
@@ -270,7 +277,8 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | application | `.../command/validator/{Accion}{Entidad}Validator.java` + `validator/impl/...ValidatorImpl.java` | Puro: constructor sin argumentos que hace `new {Regla}RuleImpl()` |
 | application | `.../command/finder/{Concepto}Finder.java` + `finder/impl/...FinderImpl.java` | Uno por consulta que la Rule necesita — incluidas las de OTRA feature, en el paquete de esa feature |
 | application | `.../command/secondaryport/{Entidad}OutputPort.java` + `secondaryport/entity/{Entidad}Entity.java` + `secondaryport/mapper/{Entidad}Mapper.java` | Habla `Entity` (record plano), nunca `Domain` |
-| infrastructure | `{contexto}/infrastructure/.../{feature}/command/primaryadapter/web/{Accion}{Entidad}Controller.java` + `dto/{Accion}{Entidad}RequestDTO.java` (+`ResponseDTO` si retorna cuerpo) + `mapper/{Accion}{Entidad}RequestMapper.java` | Un Controller por acción |
+| application | `.../command/result/{Concepto}Result.java` + `result/mapper/{Concepto}ResultMapper.java` | SOLO si la pregunta 11 fue **C) Objeto específico**. Con A) UUID o B) Void estas dos filas no existen |
+| infrastructure | `{contexto}/infrastructure/.../{feature}/command/primaryadapter/web/{Accion}{Entidad}Controller.java` + `dto/{Accion}{Entidad}RequestDTO.java` (+`ResponseDTO` si retorna cuerpo) + `mapper/{Accion}{Entidad}RequestMapper.java` (+`mapper/{Accion}{Entidad}ResponseMapper.java` si la pregunta 11 fue **C**) | Un Controller por acción; el `Result` nunca se serializa directo |
 | infrastructure | `.../command/secondaryadapter/entity/{Entidad}JpaEntity.java` + `mapper/{Entidad}JpaMapper.java` + `repository/{Entidad}CommandOutputAdapter.java` + `repository/{Entidad}CommandRepository.java` | JPA real; el repo de escritura sí extiende `JpaRepository` |
 | infrastructure | `{contexto}/infrastructure/.../security/{Contexto}Authorities.java` | MODIFICAR: añade el client role crudo + su expresión `Expresiones.HAS_*` |
 | infrastructure | `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/V{yyyyMMddHHmmss}__{descripcion}.sql` | Flyway con versión por timestamp, siempre dentro de la subcarpeta del contexto |
@@ -381,6 +389,8 @@ getters/setters ni métodos `private`.
 - [ ] Excepciones nuevas extienden la base correcta (`DomainException`/`DomainValidationException`→422, `ApplicationException`→400, `InfrastructureException`→503) — sin handler de contexto salvo colisión de nombres
 - [ ] Identificadores en el body: `String`, validados en `Command.crear(...)` vía `ValidatorUUID`, nunca con anotación Jakarta
 - [ ] Lectura: `ReadModel` → `{Entidad}ResponseDTO` vía `{Entidad}ResponseMapper`, nunca serializado directo
+- [ ] Escritura que devuelve objeto (pregunta 11 = C): `{Concepto}Result` + `{Concepto}ResultMapper`
+      en `command/result/`, y `Result` → `ResponseDTO` vía `{Accion}{Entidad}ResponseMapper`
 - [ ] Controller documentado con `@Tag`/`@Operation`/`@ApiResponses`/`@SecurityRequirement` (ADR-011), un controller por acción, ruta como placeholder de propiedad
 - [ ] `@PreAuthorize({Contexto}Authorities.Expresiones.HAS_*)` — constante, no literal; un solo client role por endpoint
 - [ ] Textos nuevos: clave en `{Feature}Key` + registro en `ClavesCatalogo` + línea en `catalogo/{contexto}.properties`, con la aridad correcta

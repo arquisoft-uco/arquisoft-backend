@@ -88,6 +88,12 @@ omites).
 - `application/{feature}/exception/` (→ `ApplicationException`, 400) es solo para fallos de
   **orquestación** de la capa. "No encontrado", "duplicado" y "no eres el dueño" son restricciones
   de conjunto: van en una `Rule` de dominio con su `DomainException` (422).
+- **Si el plan declaró retorno "C) Objeto específico"**, agrega
+  `command/result/{Concepto}Result.java` (`record` plano, sin anotaciones ni Lombok) y
+  `command/result/mapper/{Concepto}ResultMapper.java` (`final`, constructor privado, `static
+  toResult(...)`). Quien **llama** al `ResultMapper` es el `UseCaseImpl`; el `Interactor` solo
+  declara el tipo. Con retorno `UUID` o `void` este paquete no se crea. Referencia:
+  `seguridad/auth/command/result/AutenticacionResult.java`.
 
 **infrastructure:** DTOs + `RequestMapper` → `Controller` (uno por acción; si el plan dice
 "Endpoint EXISTENTE" modifica el existente, no crees uno nuevo) → `JpaEntity` + `JpaMapper` +
@@ -194,6 +200,10 @@ espera respuesta: "¿Sigues con @tester (recomendado) o vas directo a @validator
 - **Lectura:** el `Controller` nunca serializa el `ReadModel` — lo mapea a `{Entidad}ResponseDTO`
   con `{Entidad}ResponseMapper.toResponse`, y en paginado envuelve con
   `PageResponseDTO.from(resultado.map({Entidad}ResponseMapper::toResponse))`.
+- **Escritura que devuelve objeto:** misma regla — el `Controller` no serializa el `{Concepto}Result`,
+  lo mapea con `{Accion}{Entidad}ResponseMapper.toResponse(result)` a su `ResponseDTO`. El DTO sigue
+  la convención de su contexto (record desnudo en `fichas`; Lombok en `seguridad`), no la del
+  ejemplo que copies.
 - **Virtual Threads:** ya activos globalmente — nunca crear `@Bean TaskExecutor` manual salvo
   instrucción explícita del plan.
 - **Java 21 balanceado:** records para Command/ReadModel/RequestDTO/payloads de evento; `var`
