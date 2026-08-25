@@ -16,4 +16,14 @@ public final class UsuariosCodes {
         public static final String EMAIL_REQUERIDO = "USUARIO_EMAIL_REQUERIDO";
         public static final String ROL_REQUERIDO = "USUARIO_ROL_REQUERIDO";
     }
+
+    public static final class RepresentanteComiteCurriculum {
+
+        private RepresentanteComiteCurriculum() {}
+
+        public static final String USUARIO_REQUERIDO = "usuarios.representante_comite_curriculum.usuario.requerido";
+        public static final String USUARIO_FORMATO_INVALIDO = "usuarios.representante_comite_curriculum.usuario.formato_invalido";
+        public static final String USUARIO_NO_ENCONTRADO = "usuarios.representante_comite_curriculum.usuario.no_encontrado";
+        public static final String USUARIO_YA_ES_REPRESENTANTE = "usuarios.representante_comite_curriculum.usuario.ya_es_representante";
+    }
 }

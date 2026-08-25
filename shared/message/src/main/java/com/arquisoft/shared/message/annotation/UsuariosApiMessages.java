@@ -28,4 +28,20 @@ public final class UsuariosApiMessages {
         public static final String CREAR_RESP_401 = "No autenticado";
         public static final String CREAR_RESP_403 = "Sin permisos — se requiere rol administrador";
     }
+
+    public static final class RepresentanteComiteCurriculum {
+
+        private RepresentanteComiteCurriculum() {}
+
+        public static final String TAG_NAME = "Representantes del Comite Curriculum";
+        public static final String TAG_DESCRIPTION = "Operaciones para gestionar representantes del comite curriculum";
+
+        public static final String AGREGAR_SUMMARY = "Agregar un nuevo representante del comite curriculum";
+        public static final String AGREGAR_DESCRIPTION = "Registra un usuario existente como representante del comite curriculum";
+        public static final String AGREGAR_RESP_201 = "Representante agregado exitosamente";
+        public static final String AGREGAR_RESP_400 = "Solicitud invalida";
+        public static final String AGREGAR_RESP_401 = "No autenticado";
+        public static final String AGREGAR_RESP_403 = "Acceso denegado";
+        public static final String AGREGAR_RESP_422 = "Usuario no encontrado o ya es representante";
+    }
 }

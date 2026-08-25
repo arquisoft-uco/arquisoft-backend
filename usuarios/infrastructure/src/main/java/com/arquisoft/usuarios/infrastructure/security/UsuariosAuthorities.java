@@ -5,6 +5,7 @@ public final class UsuariosAuthorities {
     private UsuariosAuthorities() {}
 
     public static final String USUARIO_CREATE = "usuarios:usuario:create";
+    public static final String AGREGAR_REPRESENTANTE_COMITE_CURRICULUM = "usuarios:representante-comite-curriculum:create";
 
     public static final class Expresiones {
 
@@ -15,5 +16,7 @@ public final class UsuariosAuthorities {
 
         public static final String HAS_USUARIO_CREATE =
                 HAS_AUTHORITY_INICIO + USUARIO_CREATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_AGREGAR_REPRESENTANTE_COMITE_CURRICULUM =
+                HAS_AUTHORITY_INICIO + AGREGAR_REPRESENTANTE_COMITE_CURRICULUM + HAS_AUTHORITY_FIN;
     }
 }

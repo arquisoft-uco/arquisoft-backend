@@ -34,6 +34,7 @@ import com.arquisoft.shared.message.key.seguridad.RolKey;
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
+import com.arquisoft.shared.message.key.usuarios.RepresentanteComiteCurriculumKey;
 import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 
 
@@ -99,6 +100,7 @@ public final class ClavesCatalogo {
             SesionKey.class,
             TokenInvalidadoKey.class,
             TokenKey.class,
+            RepresentanteComiteCurriculumKey.class,
             UsuarioKey.class
     );
 

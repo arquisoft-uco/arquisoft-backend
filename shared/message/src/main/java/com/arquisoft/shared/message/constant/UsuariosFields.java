@@ -15,4 +15,11 @@ public final class UsuariosFields {
         public static final String EMAIL = "email";
         public static final String ROL = "rol";
     }
+
+    public static final class RepresentanteComiteCurriculum {
+
+        private RepresentanteComiteCurriculum() {}
+
+        public static final String USUARIO = "usuario";
+    }
 }
