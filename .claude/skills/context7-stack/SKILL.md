@@ -120,7 +120,7 @@ query-docs /hibernate/hibernate-orm "Subselect Immutable Synchronize read-only e
 query-docs /spring-projects/spring-data-jpa "JpaRepository save findById custom query adapter"
 
 # Migracion Flyway: version por timestamp VyyyyMMddHHmmss, en db/migration/{contexto}/
-query-docs /flyway/flyway "SQL migration versioned V naming convention schema"
+query-docs /flyway/flyway "SQL migration versioned V naming convention"
 
 # Flyway con modulo postgresql (flyway-database-postgresql)
 query-docs /flyway/flyway "PostgreSQL specific migration flyway-database-postgresql"
@@ -135,10 +135,10 @@ query-docs /websites/spring_io_spring-boot "HikariCP connection pool maximum-poo
 ### Capa infrastructure — Controllers REST
 
 ```
-# Controller REST con validacion y manejo de respuestas
-query-docs /websites/spring_io_spring-framework_reference_6_2 "RestController RequestMapping PostMapping Valid RequestBody ResponseEntity"
+# Controller REST (el RequestDTO es un record desnudo: la validacion vive en Command.crear, no en @Valid)
+query-docs /websites/spring_io_spring-framework_reference_6_2 "RestController RequestMapping PostMapping RequestBody ResponseEntity"
 
-# Manejo de errores: ya lo cubre GlobalAppExceptionHandler (shared:web) — un contexto no crea el suyo
+# Manejo de errores: ya lo cubre GlobalAppExceptionHandler (shared:web/handler) — un contexto no crea el suyo
 query-docs /websites/spring_io_spring-framework_reference_6_2 "RestControllerAdvice ExceptionHandler response entity"
 
 # Filtro HTTP personalizado (audit, rate limiting)
@@ -296,9 +296,9 @@ consulta: "RabbitListener manual ack acknowledgment Channel basicAck basicNack"
 ```
 
 ```
-# Crear migracion Flyway para la base de fichas (db/migration/fichas/)
+# Crear migracion Flyway para la base de fichas (db/migration/fichas/, version timestamp)
 use library /flyway/flyway
-consulta: "versioned migration V naming convention schema create table"
+consulta: "versioned migration V naming convention create table"
 ```
 
 ```
@@ -308,9 +308,9 @@ consulta: "JWT decoder Keycloak issuer-uri public key NimbusJwtDecoder"
 ```
 
 ```
-# Mapear entidad JPA con esquema especifico
+# Mapear entidad JPA (@Table NUNCA lleva schema: el DataSource ya apunta a la base del contexto)
 use library /spring-projects/spring-data-jpa
-consulta: "Entity Table schema name Column insertable updatable"
+consulta: "Entity Table name Column insertable updatable"
 ```
 
 ```

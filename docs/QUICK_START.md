@@ -77,7 +77,7 @@ shared/                          ← Componentes reutilizables (12 sub-módulos)
 seguridad/                       ← CONTEXTO: Autenticación/Autorización (sin DB propia)
 ├── domain/                      ← SesionDomain, TokenDomain, secondaryport/
 ├── application/                 ← AutenticarUsuarioCommand, primaryport/interactor, usecase
-└── infrastructure/               ← SeguridadConfig, AutenticacionCommandController, Keycloak
+└── infrastructure/               ← SeguridadConfig, IniciarSesionController (uno por acción), Keycloak
 
 usuarios/                        ← CONTEXTO: Usuarios (implementación real, mínima)
 fichas/                          ← CONTEXTO: Fichas (implementación real, la más completa)

@@ -82,7 +82,17 @@ evento se verifica en application, no aquí. Si el plan dice "Eventos: ninguno",
 (incluido el `Validator`, con `doThrow(...)` para simular la violación) y verifica el flujo
 exitoso, los errores y el orden de invocación (`inOrder`). El `Validator` tiene su **propio** test,
 con las `Rule`s reales: para probar que una regla dependiente no corre, alimenta input que haga
-lanzar a la anterior y asserta cuál excepción gana. **Solo si el plan declara
+lanzar a la anterior y asserta cuál excepción gana.
+
+Si la HU no declara ninguna `Rule`, el use case **no tiene `Validator`** y no hay nada que mockear
+ni que testear aparte — no inventes uno. El `Finder` sí lleva su propio test (mock del `OutputPort`,
+assert sobre el valor devuelto; nunca esperes que lance). Cuando el use case consulta un `Finder`
+para cortar temprano sin lanzar — la idempotencia de un consumidor AMQP —, el test del caso
+"duplicado" asserta **ausencia de efectos**: `verify(outputPort, never()).guardar(any())` y
+`verify(envioOutputPort, never()).enviar(any())`, no una excepción. Ver
+`notificaciones/.../EnviarNotificacionUseCaseTest.noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado`.
+
+**Solo si el plan declara
 eventos:** `verify(eventPublisher, times(N)).publish(any())` — nunca inspecciones
 `obtenerEventosSinPublicar()` desde application (es `protected`). Si dice "Eventos: ninguno", no
 mockees `EventPublisher`.

@@ -75,6 +75,15 @@ omites).
   `this.xRule = new XRuleImpl();`. Nada de `@RequiredArgsConstructor`, nada de `Finder`/`OutputPort`,
   ni un solo `if` — solo arma el record de cada Rule y las invoca en orden.
 - Las `Rule`s **no son beans**: no llevan `@Component` y no se registran en ninguna config.
+- **Si la HU no declara ninguna `Rule`, no escribas `Validator`**: una capa que no orquesta nada es
+  ruido. `notificaciones/.../EnviarNotificacionUseCaseImpl` es el caso real de un comando sin él.
+- **Una consulta que no debe lanzar no es una `Rule`.** El corte de idempotencia de un consumidor
+  AMQP es el ejemplo: `if (xFinder.obtener(entrada.idEvento())) { logger.info(...); return; }` en el
+  propio `UseCase`. Convertirlo en `Rule` haría que lanzara, y la excepción mandaría el mensaje a la
+  DLQ con rollback de la fila por lo que era una reentrega normal del broker. La regla para decidir:
+  si el resultado ausente/presente **es un error de negocio** → `Rule`; si solo decide seguir o no →
+  `Finder` + `if/return`. Las interfaces de `shared:rules` son `DomainRule<T>.validar(T)` (void,
+  lanza) y `Finder<T, R>.obtener(T)` (devuelve, nunca lanza).
 - Todo el I/O del comando vive en el `UseCase`: los `Finder`s traen el estado, se desenvuelve el
   `Optional` ahí (centinela `VACIO` para agregados, valor + `boolean` para escalares), se valida, se
   mapea `Domain → Entity` y se persiste.
@@ -128,9 +137,19 @@ El `QueryOutputAdapter` es pura delegación: `PageableMapper.toPageable(criteria
 y `PaginationMapper.toResult(page)` (`shared:jpa/util/`); no construye `PageRequest`/`Sort` ni
 captura excepciones de Spring Data para remapearlas a 4xx.
 
-**Manejo de errores:** por defecto `GlobalAppExceptionHandler` (`shared:web`) resuelve el HTTP por
-jerarquía de la excepción — no crees `{Contexto}GlobalExceptionHandler` propio salvo que el plan lo
-declare explícitamente (colisión de nombres con el framework, o HTTP fuera del default).
+**Manejo de errores:** por defecto `GlobalAppExceptionHandler` (`shared:web`, paquete
+`com.arquisoft.shared.web.handler`) resuelve el HTTP por jerarquía de la excepción — no crees
+`{Contexto}GlobalExceptionHandler` propio salvo que el plan lo declare explícitamente (colisión de
+nombres con el framework, o HTTP fuera del default). Si el plan sí lo declara, va en
+`infrastructure/handler/`, **nunca** en `infrastructure/exception/`: cada paquete se llama como el
+sufijo de las clases que aloja, y `exception/` significa "aquí viven los `*Exception`". Referencia:
+`seguridad/infrastructure/handler/SeguridadGlobalExceptionHandler`.
+
+**Ubicación de cada excepción nueva:** dentro del slice vertical del feature, en la capa de su clase
+base — `domain/{feature}/exception/` (422), `application/{feature}/exception/` (400),
+`infrastructure/{feature}/exception/` (503). No crees un `exception/` a nivel de contexto. Y si la
+excepción nueva **extiende** a otra del feature, ambas van en la misma capa: una subclase
+`ApplicationException` colgando en `infrastructure/` parte la jerarquía en dos módulos.
 
 ## FASE 4 — Protocolo de auto-corrección de compilación
 
@@ -182,12 +201,16 @@ espera respuesta: "¿Sigues con @tester (recomendado) o vas directo a @validator
     `logger.info(Mensajes.obtener(clave), args)` para logs (`{}`). **Nunca
     `Mensajes.obtener(clave).formatted(...)`.** Si falta cualquiera de las tres piezas,
     `CatalogoCargaTest` rompe el build.
-- **Logging:** inyecta el puerto `AppLogger` (`shared:logger`) por constructor — no `@Slf4j` (es una
-  desviación conocida en `seguridad`/`usuarios`, no la repliques en código nuevo). Nunca loguees
+- **Logging:** inyecta el puerto `AppLogger` (`shared:logger`) por constructor — no `@Slf4j` (queda
+  como desviación conocida solo en `usuarios`; `seguridad` ya migró). Nunca loguees
   desde un método `@Bean` ni desde un `@PostConstruct`: el catálogo aún no está instalado y saldría
   la clave cruda sin argumentos.
-- **DTOs:** sigue la convención del contexto (pequeño: DTO con Jakarta + `toCommand()` propio;
-  grande como `fichas`: DTO sin anotaciones + `RequestMapper` externo que llama a `Command.crear(...)`).
+- **DTOs:** una sola convención, sin variantes por contexto — el `RequestDTO` es un `record` **sin
+  ninguna anotación** y un `{Accion}{Entidad}RequestMapper` externo (`final`, constructor privado,
+  `static toCommand`) llama a `Command.crear(...)`. Lo cumplen `fichas` y `seguridad`. El
+  `CrearUsuarioRequestDTO` de `usuarios`, con Jakarta y `toCommand()` propio, es desviación conocida:
+  no lo copies ni siquiera trabajando en `usuarios`. La única lógica admisible en un `RequestDTO` es
+  sobrescribir `toString()` para enmascarar un secreto (`IniciarSesionRequestDTO` con la contraseña).
 - **Inyección:** `@RequiredArgsConstructor`, nunca `@Autowired`; interfaces, nunca implementaciones.
   Use cases siempre `@Component`, nunca `@Service`.
 - **Controllers:** `@Tag`/`@Operation`/`@ApiResponses`/`@SecurityRequirement` (ADR-011) con textos
@@ -201,9 +224,10 @@ espera respuesta: "¿Sigues con @tester (recomendado) o vas directo a @validator
   con `{Entidad}ResponseMapper.toResponse`, y en paginado envuelve con
   `PageResponseDTO.from(resultado.map({Entidad}ResponseMapper::toResponse))`.
 - **Escritura que devuelve objeto:** misma regla — el `Controller` no serializa el `{Concepto}Result`,
-  lo mapea con `{Accion}{Entidad}ResponseMapper.toResponse(result)` a su `ResponseDTO`. El DTO sigue
-  la convención de su contexto (record desnudo en `fichas`; Lombok en `seguridad`), no la del
-  ejemplo que copies.
+  lo mapea con `{Accion}{Entidad}ResponseMapper.toResponse(result)` a su `ResponseDTO`. Ese
+  `ResponseDTO` es un **`record`**, como en `fichas`. Los cuatro de `seguridad`
+  (`IniciarSesionResponseDTO` y hermanos) son clases Lombok `@Data`/`@Builder`: copia de ahí la
+  *cadena* `Result → ResponseMapper → ResponseDTO`, no la forma del DTO.
 - **Virtual Threads:** ya activos globalmente — nunca crear `@Bean TaskExecutor` manual salvo
   instrucción explícita del plan.
 - **Java 21 balanceado:** records para Command/ReadModel/RequestDTO/payloads de evento; `var`

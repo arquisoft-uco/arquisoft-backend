@@ -42,6 +42,30 @@ en secuencia y cada una lanza en su violación, así que una regla dependiente *
 anterior ya lanzó** — guardarla con un `if` es código muerto. Si la ausencia debe cambiar la
 conclusión, esa decisión va **dentro de la Rule**.
 
+Ambas interfaces viven en `shared:rules` y sus métodos son fijos: `DomainRule<T>.validar(T)` (void,
+lanza) y `Finder<T, R>.obtener(T)` (devuelve, nunca lanza por "no encontrado").
+
+**Un comando sin restricciones de conjunto no lleva `Validator`.** No es opcional por pereza: un
+`Validator` que no orquesta ninguna `Rule` es una capa vacía. `notificaciones` es el caso real —
+`EnviarNotificacionUseCaseImpl` no tiene `Validator` porque no hay nada que validar.
+
+**Y no todo lo que consulta existencia es una `Rule`.** El criterio es si debe *lanzar*:
+
+| Situación | Forma correcta |
+|---|---|
+| La existencia (o su ausencia) es un error de negocio | `Finder` → `Validator` → `Rule` → `DomainException` 422 |
+| La existencia solo decide si vale la pena seguir, y no es un error | `Finder` consultado directo desde el `UseCase`, con `if (...) return;` |
+
+El segundo caso es el corte de idempotencia de `notificaciones`: si
+`notificacionProcesadaFinder.obtener(idEvento)` da `true`, el use case loguea y retorna. Modelarlo
+como `Rule` sería un bug — lanzaría, el mensaje se iría a la DLQ y se haría rollback de la fila,
+cuando RabbitMQ solo estaba reentregando algo ya procesado. Un duplicado ahí no es un error, es el
+comportamiento normal de un broker con ACK manual.
+
+Señal de que algo mal nombrado es en realidad un `Finder`: la clase termina en `Validator`, inyecta
+un `OutputPort` y devuelve un `boolean` que el use case consume con un `if`. Eso no valida nada —
+consulta. Va a `command/finder/` con nombre de lo que responde (`NotificacionProcesadaFinder`).
+
 **Sin `Optional` en records de dominio ni en firmas de validator.** `Optional` es tipo de retorno de
 un `Finder` y nada más: el `UseCase` lo desenvuelve. Un agregado ausente viaja como su centinela
 `VACIO` (`.orElse(FichaPerfilDomain.VACIO)`, con `esVacio()` comparando identidad); un valor suelto
@@ -56,12 +80,22 @@ con una anotación Jakarta — ni custom ni de librería — sino en `Command.cr
 sí está tipado `UUID`. Los `@PathVariable` sí son `UUID`. Ver
 `fichas/application/.../fichaperfil/command/primaryport/model/RegistrarFichaPerfilCommand.java`.
 
-Dos convenciones de DTO coexisten — no mezclar dentro de un mismo contexto:
-- Contextos pequeños (`seguridad`, `usuarios`): el DTO lleva `@NotBlank`/`@NotNull` y su propio `toCommand()`.
-- **Contextos grandes (`fichas` — el patrón a seguir):** el DTO es un `record` sin ninguna
-  anotación; un `{Accion}{Entidad}RequestMapper` externo (`final`, constructor privado, `static
-  toCommand`) llama a `Command.crear(...)`. Ver
-  `fichas/infrastructure/.../fichaperfil/command/primaryadapter/web/mapper/RegistrarFichaPerfilRequestMapper.java`.
+**Hay una sola convención de DTO, no dos.** El `RequestDTO` es un `record` **sin ninguna
+anotación**, y un `{Accion}{Entidad}RequestMapper` externo (`final`, constructor privado, `static
+toCommand`) llama a `Command.crear(...)`. La siguen `fichas` y `seguridad`. Ver
+`fichas/infrastructure/.../fichaperfil/command/primaryadapter/web/mapper/RegistrarFichaPerfilRequestMapper.java`
+y `seguridad/infrastructure/.../auth/command/primaryadapter/web/mapper/IniciarSesionRequestMapper.java`.
+
+Existió una variante "contexto pequeño" con `@NotBlank`/`@NotNull` y `toCommand()` propio en el DTO;
+se retiró porque dejaba dos puertas de validación para la misma regla y dos formas de error distintas
+(`MethodArgumentNotValidException` de Jakarta vs. los `fieldErrors[]` acumulados de
+`DomainValidationException`). `usuarios/.../CrearUsuarioRequestDTO` es el último rezagado: es
+**desviación conocida**, no una alternativa a elegir. Si trabajas en `usuarios`, escribe DTO desnudo +
+`RequestMapper`; no copies el que está ahí.
+
+El DTO de request no lleva lógica, con una excepción que sí vale copiar: sobrescribir `toString()`
+para enmascarar un secreto. `IniciarSesionRequestDTO` lo hace porque el `toString()` que el
+compilador genera para un `record` imprime todos sus componentes y volcaría la contraseña en claro.
 
 Nombres objetuales en contratos: `asesorFicha`, no `asesorFichaId`; `estudiantes`, no
 `estudiantesIds`. Los nombres de campo son constantes en `FichasFields.{Entidad}.*`.
@@ -129,7 +163,7 @@ declares "settled" una convención que no lo está.
 | `DomainException` | 422 | Invariante, "no encontrado", duplicado, **propiedad/no-propietario** | `domain/{feature}/exception/` |
 | `DomainValidationException` | 422 + `fieldErrors[]` | Notification Pattern con varios errores | la lanza `ValidationResult` |
 | `ApplicationException` | 400 | Orquestación de application; también `FiltroException`/`FiltroInvalidoException` de `shared:query` | `application/{feature}/exception/` |
-| `InfrastructureException` | 503 | Fallo real de infraestructura (BD caída, timeout) | la levantan los `OutputAdapter` |
+| `InfrastructureException` | 503 | Fallo real de infraestructura (BD caída, timeout) | `infrastructure/{feature}/exception/`, la levantan los `OutputAdapter` |
 
 Nunca `RuntimeException` directa. Constructor `super(message, errorCode)` — ambos `String`, así que
 invertirlos compila y produce un bug silencioso. **No hay un caso 403 propio para "no eres el
@@ -137,11 +171,35 @@ dueño"**: se modela como otro 422 (`FichaNoPropietarioException` extiende `Doma
 `GlobalAppExceptionHandler` de `shared:web` resuelve el status recorriendo la jerarquía; un contexto
 no define handler propio (solo `seguridad`, por colisión de nombres con Spring Security).
 
+**Las tres viven dentro del slice vertical del feature — no hay `exception/` a nivel de contexto.**
+La capa que la aloja es la de su clase base, y toda la jerarquía de un concepto va junta en una sola
+capa: `AutenticacionException`, `CredencialesInvalidasException` y `TokenInvalidoException` están las
+tres en `seguridad/application/auth/exception/` porque las dos subclases extienden a la primera, que
+es `ApplicationException`; en cambio `ProveedorIdentidadNoDisponibleException` (503, Keycloak caído,
+la lanza `KeycloakAuthOutputAdapter`) está en `seguridad/infrastructure/auth/exception/`. Una
+subclase que cae en otra capa que su padre parte una jerarquía en dos módulos — los imports
+redundantes que reporta Checkstyle son el síntoma.
+
+**Un `@RestControllerAdvice` va en `handler/`, nunca en `exception/`:**
+`shared/web/handler/GlobalAppExceptionHandler` y `seguridad/infrastructure/handler/SeguridadGlobalExceptionHandler`.
+Cada paquete del repo se llama como el sufijo de las clases que contiene (`filter/` → `*Filter`,
+`mapper/` → `*Mapper`), y en los ~20 sitios donde aparece `exception/` significa "aquí viven los
+tipos de excepción". Un handler no es una excepción. `advice/` también se descartó: es jerga de
+Spring y la clase no se llama `*Advice`.
+
 ## Checkstyle (obligatorio en CI — `config/checkstyle/checkstyle.xml`)
 
 Línea máx. 150 caracteres · archivo máx. 500 líneas · método máx. 60 líneas · máx. 7 parámetros ·
 sin tabs · sin wildcard imports · PascalCase tipos / camelCase métodos-campos / UPPER_SNAKE
 constantes · `_` permitido solo en nombres de test.
+
+**Cuando `reconstruir(...)` pasa de 7 parámetros**, la salida no es partir el método ni silenciar la
+regla: se agrupan los campos en un `record` **anidado dentro del propio agregado**, y los que el
+lector necesita ver sueltos se quedan sueltos. `NotificacionDomain` (9 campos) declara
+`public record DatosNotificacion(...)` con los siete de identidad y firma
+`reconstruir(DatosNotificacion datos, EstadoNotificacion estado, String detalleError)` — el estado y
+el motivo del fallo siguen visibles porque son lo que distingue una reconstrucción de otra. Es el
+único agregado del proyecto que lo necesita hoy; los de `fichas` caben sin agrupar.
 
 ## Testing
 
@@ -180,7 +238,7 @@ El gate real es `check` (tests + `checkstyleMain`/`checkstyleTest` + cobertura),
 Constructor injection con `@RequiredArgsConstructor` — nunca `@Autowired`, nunca `@Service` (todo
 use case y adaptador es `@Component`). Se inyectan interfaces, nunca implementaciones. Logging vía
 el puerto `AppLogger` (`shared:logger`) inyectado por constructor — no `@Slf4j` (desviación conocida
-en `seguridad`/`usuarios`; no replicarla). `warn` para 4xx, `error` para 5xx.
+solo en `usuarios`; `seguridad` ya migró — no replicarla). `warn` para 4xx, `error` para 5xx.
 
 **Nunca loguear desde un método `@Bean` ni desde un `@PostConstruct`:** `Mensajes.instalar(...)`
 ocurre dentro de un `@Bean`, así que cualquier bean construido antes resuelve la **clave cruda** y,

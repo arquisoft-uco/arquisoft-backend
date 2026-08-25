@@ -111,6 +111,23 @@ el use case: el `Finder` trae el dato, el `Validator` arma el record (`Existenci
 `DisponibilidadTituloFicha`, `PropiedadFicha`) y la `Rule` lanza su `DomainException`. No existe un
 caso 403 propio para "no eres el dueño" — es otro 422.
 
+**No confundas esto con un corte de idempotencia.** El check de arriba es sobre `if/`**`throw`**. Un
+`Finder` consultado con `if/`**`return`**, sin lanzar nada, es otra cosa y es correcta:
+
+```java
+if (notificacionProcesadaFinder.obtener(entrada.idEvento())) {
+    logger.info(...);
+    return;              // reentrega normal del broker: no es un error
+}
+```
+
+Una `Rule` **siempre lanza** en su violación; aquí lanzar sería el bug — mandaría el mensaje a la DLQ
+cuando RabbitMQ solo estaba reentregando algo ya procesado. Así que no existe `Rule` que modele esto,
+y el `Finder` se consulta directo desde el use case. Marca ❌ solo si ese `if` **lanza** o si el
+resultado ausente representa un error de negocio. Referencia real:
+`notificaciones/.../EnviarNotificacionUseCaseImpl` — un comando **sin `Validator` en absoluto**,
+porque no tiene ninguna restricción de conjunto que validar.
+
 **No son violación:** getters usados solo para retornar/loguear el id, construir el mensaje de una
 excepción o mapear a `Entity`.
 
@@ -124,6 +141,9 @@ excepción o mapear a `Entity`.
 | `errorCode` presente, constructor `super(mensaje, errorCode)` en ese orden (invertido compila mal — bug silencioso) | ❌ |
 | Se creó `{Contexto}GlobalExceptionHandler` sin que el plan lo declare explícitamente | ❌ (regla por defecto: no se crea) |
 | Handler de contexto (si el plan lo declara) con `@ExceptionHandler(Exception.class)` u otro cross-cutting que ya cubre `GlobalAppExceptionHandler` de `shared:web` | ❌ |
+| `@RestControllerAdvice` ubicado en `exception/` en vez de `infrastructure/handler/` — un handler no es una excepción y `exception/` significa "aquí viven los `*Exception`" en los ~20 sitios donde aparece. Referencias: `shared/web/handler/`, `seguridad/infrastructure/handler/` | ❌ |
+| Excepción nueva creada en un `exception/` **a nivel de contexto** en vez de dentro del slice del feature (`{capa}/{feature}/exception/`) | ❌ |
+| Subclase de excepción en distinta capa que su clase base — parte una jerarquía en dos módulos. Si `X extends YException` y `Y` es `ApplicationException`, `X` va en `application/{feature}/exception/`, no en `infrastructure/` | ❌ |
 
 ### Nivel 2.5 — Command / ReadModel / DTOs
 
@@ -132,8 +152,10 @@ excepción o mapear a `Entity`.
 | `Command` es `record` en `command/primaryport/model/`; `ReadModel` es `record` en `query/readmodel/` | ❌ |
 | Campos en español idénticos al agregado (sin traducir a inglés) y con nombre **objetual**: `asesorFicha`, no `asesorFichaId`; `estudiantes`, no `estudiantesIds` | ❌ |
 | Identificador en el body tipado `UUID` en vez de `String` | ❌ |
-| Identificador en el body validado con anotación Jakarta en vez de `ValidatorUUID.uuidValido(...)` en `Command.crear(...)`/`toCommand()` | ❌ |
-| En un contexto grande (`fichas`): `RequestDTO` con anotaciones Jakarta en vez de ser un `record` desnudo + `{Accion}{Entidad}RequestMapper` que llama a `Command.crear(...)`; o mezcla de ambas convenciones dentro del mismo contexto | ❌ |
+| Identificador en el body validado con anotación Jakarta en vez de `ValidatorUUID.uuidValido(...)` dentro de `Command.crear(...)` | ❌ |
+| `RequestDTO` con **cualquier** anotación (Jakarta, Lombok, Jackson) en vez de ser un `record` desnudo + `{Accion}{Entidad}RequestMapper` (`final`, constructor privado, `static toCommand`) que llama a `Command.crear(...)`. Convención única, sin variante por tamaño de contexto — `usuarios/CrearUsuarioRequestDTO` es desviación conocida, no precedente | ❌ |
+| `RequestDTO` con lógica propia. Única excepción admitida: sobrescribir `toString()` para enmascarar un secreto (`IniciarSesionRequestDTO`) | ❌ |
+| `Command` construido con `new` en vez de su fábrica `crear(...)` — se salta toda la validación de formato | ❌ |
 | El `Controller` de lectura **serializa el `ReadModel` directo** en vez de mapearlo a `{Entidad}ResponseDTO` con `{Entidad}ResponseMapper` (`final`, constructor privado, `static toResponse`) | ❌ |
 | `ReadModel` con anotaciones Jackson o Lombok (el contrato JSON vive en el `ResponseDTO`, no en el puerto) | ❌ |
 | Paginado que no envuelve con `PageResponseDTO.from(resultado.map({Entidad}ResponseMapper::toResponse))` | ❌ |
@@ -157,6 +179,9 @@ excepción o mapear a `Entity`.
 | `Validator` inyecta un `OutputPort`/`Finder`, recibe algo por `@RequiredArgsConstructor`, o contiene un `if` (debe ser puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`) | ❌ |
 | `Rule` declarada como bean (`@Component`) o con dependencias de constructor | ❌ |
 | `Finder` lanza por "no encontrado" en vez de devolver `Boolean`/`Long`/`Optional` | ❌ |
+| `Finder` que no extiende `Finder<T, R>` de `shared:rules`, o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
+| `Validator` **vacío** o que no orquesta ninguna `Rule`, creado solo porque la plantilla lo listaba. Un comando sin restricciones de conjunto no lleva `Validator`: ver `notificaciones/.../EnviarNotificacionUseCaseImpl` | ❌ |
+| Clase con sufijo `Validator` que en realidad inyecta un `OutputPort` y devuelve un `boolean` — eso es un `Finder`, no un `Validator`; renómbralo y muévelo a `command/finder/` | ❌ |
 | `{Entidad}OutputPort` declara un método sobre **otro** aggregate (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |
 | Un command use case lee estado de otra feature importando su `domain/` o su adaptador, en vez de pasar por el `Finder` + `OutputPort` de `command/` de esa feature | ❌ |
 | Se creó un `{Otra}QueryOutputPort` cuya única razón de existir es una verificación de existencia para un `Validator`/`Rule` de comando (eso va en el `OutputPort` de `command/`; ver `AsesorFichaExisteFinder` → `AsesorFichaOutputPort.existePorId`) | ❌ |
@@ -217,7 +242,7 @@ excepción o mapear a `Entity`.
 |---|:---:|
 | Setter privado nombrado distinto al atributo (`setTipoItemCode` en vez de `setTipoItem`) | ❌ |
 | Valor autogenerado (`UUID`/`Instant`) generado en el cuerpo de `crear(...)` en vez de dentro del setter | ❌ |
-| `UUID.randomUUID()`/`Instant.now()`/`.trim()` directo en dominio en vez de `UtilUUID`/`UtilFecha`/`UtilTexto` (`shared:util`) | ❌ |
+| `UUID.randomUUID()`/`Instant.now()`/`LocalDate.now()`/`.trim()` directo en **cualquier** capa de un contexto en vez de `UtilUUID`/`UtilFecha.generarInstanteActual()`/`UtilTexto` (`shared:util`) — hoy no queda ni un `Instant.now()` en `fichas`, `notificaciones`, `seguridad` ni `usuarios` | ❌ |
 | `Enum.valueOf(...)` de un código externo sin `try/catch` + `result.addError(...)` con constantes del catálogo | ❌ |
 
 ### Nivel 2.12 — Catálogo de mensajes (`shared:message`)

@@ -15,10 +15,12 @@ para consultar documentación. Tu output es el plan — es el contrato del imple
 
 Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-mcps` (contexto
 autoritativo: capas y paquetes reales, convención de sufijos, eventos, validación, catálogo de
-mensajes, excepciones, MCPs recomendados). El contexto de referencia es siempre `fichas` —
-`seguridad`/`usuarios` tienen desviaciones conocidas y no se copian. Si hay contradicción entre
-estas skills y cualquier otro archivo, **ganan las skills**: son la fuente verificada contra el
-código real.
+mensajes, excepciones, MCPs recomendados). El contexto de referencia es siempre `fichas`.
+`usuarios` acumula desviaciones conocidas y no se copia en nada. `seguridad` ya se alineó y sí sirve
+como referencia para dos cosas que `fichas` no tiene hoy — el paquete `command/result/` y el layout
+de excepciones por capa dentro del slice — pero no tiene base de datos, así que ahí no hay ni
+`JpaEntity`, ni Flyway, ni `@Transactional` que imitar. Si hay contradicción entre estas skills y
+cualquier otro archivo, **ganan las skills**: son la fuente verificada contra el código real.
 
 ## FASE 1 — Consultar `arquisoft-docs`
 
@@ -176,6 +178,13 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 > de dominio con su record de entrada, orquestada por el `{Accion}{Entidad}Validator` sobre lo que
 > los `Finder`s ya trajeron → 422 con su propia `DomainException`. **Nunca `if/throw` en el use
 > case, y no hay caso 403 para "no eres el dueño".** Ver skill `arquisoft-estandares`.
+>
+> Antes de declarar una `Rule`, pregúntate si el caso debe **lanzar**. Si la consulta solo decide si
+> vale la pena seguir y su resultado no es un error de negocio — el corte de idempotencia de un
+> consumidor AMQP es el caso típico — entonces **no hay `Rule`**: es un `Finder` que el use case
+> consulta directo con `if (...) return;`. Declararlo como `Rule` haría que lanzara, mandando el
+> mensaje a la DLQ por una reentrega normal del broker. Y si la HU no tiene ninguna restricción de
+> conjunto, tampoco hay `Validator`: no planifiques una capa vacía.
 | # | Regla | Dónde se valida (Domain / Rule) | Finder que trae el dato | Excepción → HTTP |
 
 ## 4. Modelo DDD del Contexto
@@ -268,14 +277,14 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | domain | `.../domain/{feature}/{Accion}{Entidad}Domain.java` | Objeto de acción — solo si la sección 4 lo declara |
 | domain | `.../domain/{feature}/model/{Concepto}.java` | `record` de entrada de cada Rule (`ExistenciaX`, `DisponibilidadX`, `PropiedadX`) + value objects |
 | domain | `.../domain/{feature}/rules/{Regla}Rule.java` + `rules/impl/{Regla}RuleImpl.java` | Una por restricción de conjunto (existencia/unicidad/propiedad) |
-| domain | `.../domain/{feature}/exception/{Entidad}{Caso}Exception.java` | Solo para lo que lanza una `Rule` — nunca para invariantes del agregado |
+| domain | `.../domain/{feature}/exception/{Entidad}{Caso}Exception.java` | Solo para lo que lanza una `Rule` — nunca para invariantes del agregado. El `exception/` va **dentro del slice**, no a nivel de contexto (igual en `application/` e `infrastructure/`) |
 | domain | `.../domain/{feature}/event/{Entidad}{Accion}Event.java` | Solo si emite eventos |
 | application | `{contexto}/application/.../{feature}/command/primaryport/model/{Accion}{Entidad}Command.java` | `record` con `crear(...)` |
 | application | `.../command/primaryport/mapper/{Accion}{Entidad}Mapper.java` | `Command` → objeto de acción; solo si la sección 4 lo declara |
 | application | `.../command/primaryport/interactor/{Accion}{Entidad}Interactor.java` + `interactor/impl/...InteractorImpl.java` | Dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` |
 | application | `.../command/usecase/{Accion}{Entidad}UseCase.java` + `usecase/impl/...UseCaseImpl.java` | Colaborador interno — NO bajo `primaryport/` |
-| application | `.../command/validator/{Accion}{Entidad}Validator.java` + `validator/impl/...ValidatorImpl.java` | Puro: constructor sin argumentos que hace `new {Regla}RuleImpl()` |
-| application | `.../command/finder/{Concepto}Finder.java` + `finder/impl/...FinderImpl.java` | Uno por consulta que la Rule necesita — incluidas las de OTRA feature, en el paquete de esa feature |
+| application | `.../command/validator/{Accion}{Entidad}Validator.java` + `validator/impl/...ValidatorImpl.java` | Puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`. **Solo si la sección 3 declaró al menos una `Rule`** — sin restricciones de conjunto estas dos filas no existen (ver `notificaciones`) |
+| application | `.../command/finder/{Concepto}Finder.java` + `finder/impl/...FinderImpl.java` | Extiende `Finder<T, R>` (método `obtener`). Uno por consulta que la `Rule` necesita — incluidas las de OTRA feature, en el paquete de esa feature. También el corte de idempotencia, que va sin `Rule` |
 | application | `.../command/secondaryport/{Entidad}OutputPort.java` + `secondaryport/entity/{Entidad}Entity.java` + `secondaryport/mapper/{Entidad}Mapper.java` | Habla `Entity` (record plano), nunca `Domain` |
 | application | `.../command/result/{Concepto}Result.java` + `result/mapper/{Concepto}ResultMapper.java` | SOLO si la pregunta 11 fue **C) Objeto específico**. Con A) UUID o B) Void estas dos filas no existen |
 | infrastructure | `{contexto}/infrastructure/.../{feature}/command/primaryadapter/web/{Accion}{Entidad}Controller.java` + `dto/{Accion}{Entidad}RequestDTO.java` (+`ResponseDTO` si retorna cuerpo) + `mapper/{Accion}{Entidad}RequestMapper.java` (+`mapper/{Accion}{Entidad}ResponseMapper.java` si la pregunta 11 fue **C**) | Un Controller por acción; el `Result` nunca se serializa directo |
@@ -382,12 +391,17 @@ getters/setters ni métodos `private`.
 - [ ] Invariantes locales acumuladas en `ValidationResult` (sin excepción propia); restricciones de
       conjunto como `Rule` + su record, orquestadas por el `Validator` → 422. Ningún `if/throw` en el use case
 - [ ] `Validator` puro: constructor sin argumentos con `new {Regla}RuleImpl()`, sin `Finder`, sin `if`
+      — y **no existe** si la HU no declara ninguna `Rule`
+- [ ] Consulta que no debe lanzar (idempotencia, corte temprano): `Finder` consultado directo desde
+      el use case con `if (...) return;`, sin `Rule` de por medio
 - [ ] Sin `Optional` en firmas de `Validator` ni en records de `Rule`
 - [ ] IDs siempre `UUID`
 - [ ] `Interactor` dueño de `@Transactional` con qualifier explícito; `UseCase` sin transacción propia
 - [ ] `OutputPort` habla `Entity`, nunca `Domain`; existencia de otra feature vía el `Finder` de esa feature
-- [ ] Excepciones nuevas extienden la base correcta (`DomainException`/`DomainValidationException`→422, `ApplicationException`→400, `InfrastructureException`→503) — sin handler de contexto salvo colisión de nombres
+- [ ] Excepciones nuevas extienden la base correcta (`DomainException`/`DomainValidationException`→422, `ApplicationException`→400, `InfrastructureException`→503) y viven en el `exception/` **del slice del feature en la capa de esa base** — nunca en un `exception/` a nivel de contexto, y una subclase nunca en distinta capa que su padre
+- [ ] Sin handler de contexto salvo colisión de nombres; si el plan lo declara, va en `infrastructure/handler/`, nunca en `exception/`
 - [ ] Identificadores en el body: `String`, validados en `Command.crear(...)` vía `ValidatorUUID`, nunca con anotación Jakarta
+- [ ] `RequestDTO` = `record` desnudo + `{Accion}{Entidad}RequestMapper`; `ResponseDTO` = `record`. Sin Jakarta, sin Lombok, sin `toCommand()` en el DTO
 - [ ] Lectura: `ReadModel` → `{Entidad}ResponseDTO` vía `{Entidad}ResponseMapper`, nunca serializado directo
 - [ ] Escritura que devuelve objeto (pregunta 11 = C): `{Concepto}Result` + `{Concepto}ResultMapper`
       en `command/result/`, y `Result` → `ResponseDTO` vía `{Accion}{Entidad}ResponseMapper`

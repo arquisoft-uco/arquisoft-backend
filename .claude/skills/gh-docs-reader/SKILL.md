@@ -366,7 +366,7 @@ Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
 
 **Para que usar cada fuente:**
 - `modelo_entidad_relacion.md` → vision completa de todas las tablas, tipos de dato, PKs, FKs, indices y restricciones
-- `01_base_datos_y_esquemas.sql` → orden de creacion de schemas y **grafo de dependencias entre contextos** (LEER SIEMPRE antes de planificar migraciones Flyway que involucren FKs cruzadas entre schemas)
+- `01_base_datos_y_esquemas.sql` → orden de creacion de schemas y **grafo de dependencias entre contextos**. Leelo para saber de que otro contexto viene un dato y por tanto que evento AMQP hay que consumir — **no** para escribir una FK cruzada, que en el backend es imposible (ver abajo)
 - `{NN}_tablas_{contexto}.sql` → DDL exacto listo para Flyway; columnas, constraints y nombres de tabla tal como van a la BD
 - El agente planificador DEBE consultar el SQL del MER del contexto correspondiente para definir las migraciones Flyway en el plan
 
@@ -386,7 +386,7 @@ solicitudes           → usuarios
 ```
 
 **El backend NO crea esas FKs cruzadas.** El grafo de arriba es el modelo lógico del MER; en el
-código cada contexto tiene su propio `DataSource`, su propio schema y sus propias migraciones
+código cada contexto tiene su propio `DataSource`, su propia base de datos y sus propias migraciones
 Flyway, así que una dependencia hacia otro contexto se resuelve con una **tabla réplica local
 poblada por eventos AMQP**, no con un `REFERENCES`. Es lo que hace `fichas` con `asesor_ficha` y
 `estudiante` (las dos primeras migraciones de `db/migration/fichas/`). Usa el grafo para entender de
@@ -421,9 +421,12 @@ Sigue este orden en la FASE 0. Distingue entre **HU** (Historias de Usuario) y *
  8. Si el Event Storming revela Aspectos por solucionar → Registrarlos para preguntar en FASE 2
  9. Si las Politicas mencionan atributos de calidad poco claros → Leer QA relevantes
 10. Leer el SQL del MER del contexto (OBLIGATORIO)     → Tablas, columnas exactas, tipos, PKs, FKs
-    a) Leer primero `01_base_datos_y_esquemas.sql` para identificar si el contexto tiene
-       dependencias de otros schemas (FK cruzadas). Si las tiene, anotar cuales schemas
-       deben preexistir antes de correr las migraciones Flyway del contexto actual.
+    a) Leer primero `01_base_datos_y_esquemas.sql` para identificar de que otros contextos
+       depende este. En el MER esas dependencias son FK cruzadas entre schemas; en el backend
+       NO se traducen a un `REFERENCES` — cada contexto tiene su propia base de datos y la FK
+       es imposible. Anotar cada dependencia como "tabla replica local + evento AMQP a consumir"
+       (como hace `fichas` con `asesor_ficha` y `estudiante`), no como prerrequisito de orden
+       entre migraciones.
        Comando:
          gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/01_base_datos_y_esquemas.sql" \
            -H "Accept: application/vnd.github.raw+json"

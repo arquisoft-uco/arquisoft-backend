@@ -11,8 +11,19 @@ excepciones, Checkstyle y testing, ver la skill `arquisoft-estandares`.
 
 **Regla de esta skill:** ningún ejemplo se pega como bloque de código. Cada fila apunta al archivo
 real de `fichas` — el único contexto de negocio completo del proyecto y el patrón a copiar. Ábrelo
-con `Read` cuando necesites el detalle exacto. `seguridad`/`usuarios` son contextos pequeños con
-desviaciones conocidas (`@Slf4j`, controller agregado, adapter mock): **no los uses como modelo**.
+con `Read` cuando necesites el detalle exacto.
+
+Sobre los otros dos contextos con código, porque la respuesta cambió y conviene no arrastrar la vieja:
+
+- **`usuarios` es el que acumula desviaciones conocidas** — `@Slf4j` en vez de `AppLogger`,
+  `UsuarioCommandController` agregando endpoints, `UsuarioCommandOutputAdapter` que no persiste nada,
+  `UsuarioOutputPort` tipado en `UsuarioDomain` en vez de `Entity`, y `CrearUsuarioRequestDTO` con
+  anotaciones Jakarta. **No lo uses como modelo de nada.**
+- **`seguridad` ya se alineó** y sí sirve de referencia para dos cosas que `fichas` no tiene hoy:
+  el paquete `command/result/` (+ su `mapper/`) y el layout de excepciones por capa dentro del slice.
+  Sus controllers están partidos uno por acción, sus DTO son `record` desnudos con `RequestMapper`, y
+  usa `AppLogger`. Lo único que no tiene es base de datos: se apoya en Keycloak + Redis, así que no
+  busques ahí `JpaEntity`, `Flyway` ni `@Transactional`.
 
 ## Dirección de dependencias (no negociable)
 
@@ -73,7 +84,9 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 | `command/secondaryadapter/entity/` (+`mapper/`, `repository/`) | JPA real + `OutputAdapter` + repo Spring Data | `entity/FichaPerfilJpaEntity.java`, `mapper/FichaPerfilJpaMapper.java`, `repository/FichaPerfilCommandOutputAdapter.java`, `repository/FichaPerfilCommandRepository.java` |
 | `query/primaryadapter/web/` (+`dto/`, `mapper/`) | `Controller` de lectura + **`{Entidad}ResponseDTO` + `{Entidad}ResponseMapper`** + `RequestMapper` que arma el `Criteria` | `ConsultarFichasPerfilController.java`, `dto/FichaPerfilResponseDTO.java`, `mapper/FichaPerfilResponseMapper.java`, `mapper/ConsultarFichasPerfilRequestMapper.java` |
 | `query/secondaryadapter/repository/` (+`mapper/`) | `@Subselect`/`@Immutable`/`@Synchronize`, plana; specification, sort, adapter, repo | `FichaPerfilJpaQueryEntity.java`, `FichaPerfilJpaSpecification.java`, `FichaPerfilSortMapper.java`, `FichaPerfilQueryOutputAdapter.java`, `FichaPerfilQueryRepository.java`, `mapper/FichaPerfilQueryMapper.java` |
-| `security/`, `config/`, `exception/` | Transversales del contexto | `security/FichasAuthorities.java`, `config/FichasDataSourceConfig.java` |
+| `{feature}/exception/` | Excepciones de infraestructura del feature (→ 503) — **dentro del slice, no a nivel de contexto** | `seguridad/infrastructure/auth/exception/ProveedorIdentidadNoDisponibleException.java` |
+| `security/`, `config/`, `filter/` | Transversales del contexto | `security/FichasAuthorities.java`, `config/FichasDataSourceConfig.java` |
+| `handler/` | El `@RestControllerAdvice` del contexto, si lo tiene — **nunca en `exception/`** | `seguridad/infrastructure/handler/SeguridadGlobalExceptionHandler.java` (solo `seguridad` tiene uno; `fichas` no) |
 | `src/main/resources/db/migration/{contexto}/` | Migraciones Flyway del contexto — subcarpeta propia obligatoria | `db/migration/fichas/V20260504181427__crear_tablas_fichas_perfil.sql` |
 
 ## Cuando un comando devuelve un objeto: `command/result/`
@@ -97,10 +110,24 @@ La cadena completa, con `seguridad/auth` como referencia:
 | 3 | `{Accion}{Entidad}Interactor` | Solo declara el tipo: `Interactor<{Accion}{Entidad}Command, {Concepto}Result>`, con su `@Transactional` |
 | 4 | `{Accion}{Entidad}ResponseMapper` (`infrastructure/.../command/primaryadapter/web/mapper/`) | `static toResponse(result)` → `{Accion}{Entidad}ResponseDTO` |
 
+El paso 2 es el que más se equivoca: como el mapper vive en `application`, tienta llamarlo desde el
+`Interactor`. No — el `Interactor` solo declara el tipo y delega, igual que cuando el retorno es un
+`UUID` pelado.
+
+Cuando el resultado tiene más de una rama (encontrado / no encontrado), el mapper expone **las dos
+fábricas** en vez de recibir un `Optional`: `ValidacionTokenResultMapper` tiene `toResult(identidad)`
+y `toResultInvalido()`, y el use case encadena
+`.map(ValidacionTokenResultMapper::toResult).orElseGet(ValidacionTokenResultMapper::toResultInvalido)`.
+Así el use case sigue sin un solo `if`.
+
 **El `Result` nunca se serializa directo**, exactamente por la misma razón que el `ReadModel` (ver
 abajo): el contrato JSON vive en el `ResponseDTO`, no en el tipo de retorno de la capa de
 aplicación. Por eso el lado comando tiene su propio `{Accion}{Entidad}ResponseMapper`, simétrico al
 `{Entidad}ResponseMapper` del lado lectura.
+
+Para cobertura: `*Result` y `*ResultMapper` **no** están en las exclusiones de JaCoCo (a diferencia
+de `*Command` y `*ReadModel`), así que el test del use case que asserta los campos del `Result` es lo
+que cubre el mapper.
 
 Simetría que conviene tener presente: en `command/`, `primaryport/model/` es la entrada y `result/`
 la salida; en `query/`, `criteria/` es la entrada y `readmodel/` la salida.
@@ -129,6 +156,34 @@ CommandOutputAdapter · QueryOutputAdapter · SortMapper · JpaSpecification`.
 Español para el concepto de negocio, inglés para el sufijo técnico. No hay sufijos en español —
 `Controller`, no `Controlador`. El paquete de la feature va todo en minúsculas y sin separadores:
 `fichaperfil`, nunca `fichaPerfil`.
+
+**Cada paquete se llama como el sufijo de las clases que contiene** — `filter/` → `*Filter`,
+`mapper/` → `*Mapper`, `interactor/` → `*Interactor`, `exception/` → `*Exception`. De ahí sale la
+regla que más se equivoca: **un `@RestControllerAdvice` va en `handler/`, no en `exception/`**
+(`shared/web/handler/GlobalAppExceptionHandler`,
+`seguridad/infrastructure/handler/SeguridadGlobalExceptionHandler`). Un handler no es una excepción,
+y meterlo ahí sobrecargaba el único nombre de paquete cuyo significado el resto del repo da por
+sentado en ~20 sitios. `advice/` también se descartó: es jerga de Spring y la clase no se llama
+`*Advice`.
+
+## Dónde vive cada excepción: en el slice, y en la capa de su clase base
+
+No hay `exception/` a nivel de contexto. Las tres familias viven dentro del slice vertical del
+feature, y la capa la decide la clase base que extienden:
+
+| Excepción | Capa y paquete | HTTP |
+|---|---|---|
+| La que lanza un `Rule` (incluye "no encontrado", duplicado, propiedad) | `domain/{feature}/exception/` | 422 |
+| La que lanza la orquestación de application | `application/{feature}/exception/` | 400 |
+| Fallo real de infraestructura, lo levanta un `OutputAdapter` | `infrastructure/{feature}/exception/` | 503 |
+
+**Toda la jerarquía de un concepto va junta en una capa.** `AutenticacionException`,
+`CredencialesInvalidasException` y `TokenInvalidoException` están las tres en
+`seguridad/application/auth/exception/` porque las dos subclases extienden a la primera, que es
+`ApplicationException`. En cambio `ProveedorIdentidadNoDisponibleException` (503, Keycloak caído, la
+lanza `KeycloakAuthOutputAdapter`) baja a `seguridad/infrastructure/auth/exception/`. Una subclase en
+distinta capa que su padre parte una jerarquía en dos módulos; los imports redundantes que reporta
+Checkstyle al moverla son el síntoma de que estaba mal ubicada.
 
 ## Puertos: hablan `Entity`, nunca `Domain`
 
