@@ -12,6 +12,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class DomainEventTest {
 
     private static final String TIPO = "EventoDePrueba";
+    private static final String EJEMPLO_INICIO = "(ej. '";
+    private static final String EJEMPLO_FIN = "')";
 
     private static final class EventoDePrueba extends DomainEvent {
         private EventoDePrueba(String tema) {
@@ -46,6 +48,27 @@ class DomainEventTest {
         assertThatThrownBy(() -> new EventoDePrueba(tema))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("{contexto}.{entidad}.{accion}");
+    }
+
+    @Test
+    void debeSerValidoElEjemploQueCitaElMensajeDeError() {
+        // Arrange — el mensaje cita un tema de ejemplo; si dejara de cumplir el patron,
+        // estaria enseniando como correcto algo que la propia clase rechaza
+        var mensaje = capturarMensajeDeError("tema-invalido");
+        var ejemplo = mensaje.substring(mensaje.indexOf(EJEMPLO_INICIO) + EJEMPLO_INICIO.length(),
+                mensaje.lastIndexOf(EJEMPLO_FIN));
+
+        // Act & Assert
+        assertThatCode(() -> new EventoDePrueba(ejemplo)).doesNotThrowAnyException();
+    }
+
+    private static String capturarMensajeDeError(String temaInvalido) {
+        try {
+            new EventoDePrueba(temaInvalido);
+            throw new AssertionError("se esperaba que el tema fuera rechazado");
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
     }
 
     @Test
