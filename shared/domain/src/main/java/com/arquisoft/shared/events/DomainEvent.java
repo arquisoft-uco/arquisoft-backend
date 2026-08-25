@@ -25,7 +25,7 @@ public abstract class DomainEvent {
         if (tema == null || !PATRON_TEMA.matcher(tema).matches()) {
             throw new IllegalArgumentException(
                 "El tema del evento '" + tema + "' no cumple el formato requerido '{contexto}.{entidad}.{accion}' "
-                + "(ej. 'seguridad.usuario.creado')");
+                + "(ej. 'usuarios.usuario.creado')");
         }
     }
 
