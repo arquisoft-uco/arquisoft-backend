@@ -1,15 +1,10 @@
 package com.arquisoft.usuarios.application.usuario.command.secondaryport;
 
-import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
-
-import java.util.Optional;
-import java.util.UUID;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
 
 public interface UsuarioOutputPort {
 
-    void save(UsuarioDomain usuario);
-
-    Optional<UsuarioDomain> findById(UUID id);
+    void guardar(UsuarioEntity usuario);
 
     boolean existePorEmail(String email);
 }

@@ -195,7 +195,7 @@ arquisoft-backend/
 ├── usuarios/                              # CONTEXTO: alta de usuarios (extraído de seguridad)
 │   ├── domain/                            # UsuarioDomain, secondaryport/UsuarioOutputPort
 │   ├── application/                       # CrearUsuarioCommand, command/primaryport/interactor, usecase
-│   └── infrastructure/                    # UsuarioCommandController, secondaryadapter/repository
+│   └── infrastructure/                    # CrearUsuarioController, secondaryadapter/repository
 │
 ├── fichas/                                # CONTEXTO: implementación real más completa
 │   ├── domain/
@@ -480,14 +480,10 @@ copie creyendo que son la regla, y para que se resuelvan cuando se toque esa par
 
 | Qué | Dónde | Convención | Estado |
 |---|---|---|---|
-| `UsuarioCommandController` | `usuarios/infrastructure/usuario/command/primaryadapter/web/` | Agrupa endpoints; la convención es **un controller por acción** (`{Accion}{Entidad}Controller`) — debería ser `CrearUsuarioController` | Pendiente de partir |
 | `CrearUsuarioRequestDTO` con anotaciones Jakarta + `toCommand()` propio | `usuarios/infrastructure/usuario/command/primaryadapter/web/dto/` | Único DTO que queda en la convención "contexto pequeño", ya retirada: debería ser un `record` desnudo + `CrearUsuarioRequestMapper` que llame a `CrearUsuarioCommand.crear(...)`. Además anida un enum `RolUsuarioDTO` que duplica `UsuarioRole`, y construye el `Command` con `new` en vez de `crear(...)`, así que nada valida el formato | Pendiente de migrar |
 | `*ResponseDTO` como clase Lombok `@Data`/`@Builder` | `seguridad/infrastructure/auth/command/primaryadapter/web/dto/` (los cuatro) | Los DTO de respuesta son `record`, como en `fichas` | Pendiente de migrar |
 | `EstadoEvaluacionCommandRepository` | `fichas/infrastructure/estadoevaluacion/command/secondaryadapter/repository/` | Código muerto: no hay `OutputPort` ni `OutputAdapter` que lo consuma | Pendiente de eliminar |
-| `UsuarioOutputPort` habla `UsuarioDomain` | `usuarios/application/usuario/command/secondaryport/` | **Los puertos de salida hablan `Entity`, nunca `Domain`** — infraestructura no debe ver la capa de dominio. Falta el `UsuarioEntity` (record plano) y su `UsuarioMapper` | Pendiente |
-| `UsuarioCommandOutputAdapter` es un mock | `usuarios/infrastructure/usuario/command/secondaryadapter/repository/` | No persiste nada (`save` solo loguea, `findById` devuelve vacío, `existePorEmail` devuelve `false`) pese a que existe la tabla `usuario`. Además usa `@Repository` en vez de `@Component`, y los métodos van en inglés (`save`, `findById`) en vez de nombrarse por el negocio. Falta el `UsuarioJpaEntity` + `UsuarioJpaMapper` + `UsuarioCommandRepository` | Pendiente de implementar |
 | `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub con `// TODO: persistir en tabla espejo`. Por eso no tiene `Interactor`, ni `@Transactional`, ni `Validator`, y el `UsuarioCreadoConsumer` inyecta el `UseCase` directo — cuando persista de verdad debe pasar por un `Interactor` | Pendiente de implementar |
-| `@Slf4j` en vez de `AppLogger` | `usuarios` (`CrearUsuarioUseCaseImpl`, `UsuarioCommandController`, `UsuarioCommandOutputAdapter`) | El resto del proyecto inyecta el puerto `AppLogger` de `shared:logger`. `seguridad` ya migró y deja de ser ejemplo de esto | Migración pendiente |
 
 ### Decisión abierta: dónde vive un enum de catálogo
 

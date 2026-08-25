@@ -22,13 +22,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class UsuarioCommandControllerTest {
+class CrearUsuarioControllerTest {
 
     @Mock
     private CrearUsuarioInteractor crearUsuarioInteractor;
 
     @InjectMocks
-    private UsuarioCommandController adapter;
+    private CrearUsuarioController adapter;
 
     @Test
     void debeRetornar201_cuandoRequestValido() {
@@ -46,9 +46,9 @@ class UsuarioCommandControllerTest {
         // Assert
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getId()).isEqualTo(expectedId);
-        assertThat(response.getBody().getEmail()).isEqualTo("test@example.com");
-        assertThat(response.getBody().getRol()).isEqualTo("estudiante");
+        assertThat(response.getBody().id()).isEqualTo(expectedId);
+        assertThat(response.getBody().email()).isEqualTo("test@example.com");
+        assertThat(response.getBody().rol()).isEqualTo("estudiante");
     }
 
     @Test

@@ -1,21 +1,21 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
-import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.model.CrearUsuarioCommand;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.mapper.UsuarioMapper;
 import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUseCase;
 import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuarioValidator;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
-import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
@@ -24,6 +24,7 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
     private final EmailUsuarioExisteFinder emailUsuarioExisteFinder;
     private final CrearUsuarioValidator crearUsuarioValidator;
     private final EventPublisher eventPublisher;
+    private final AppLogger logger;
 
     @Override
     public UUID ejecutar(CrearUsuarioCommand entrada) {
@@ -33,11 +34,15 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
         crearUsuarioValidator.validar(usuario, emailYaExiste);
 
-        usuarioOutputPort.save(usuario);
+        usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));
 
         usuario.extraerEventosSinPublicar().forEach(eventPublisher::publish);
 
-        log.info(Mensajes.obtener(UsuarioKey.LOG_CREADO), usuario.getId(), entrada.email(), entrada.rol().getCodigo());
+        logger.info(
+                Mensajes.obtener(UsuarioKey.LOG_CREADO),
+                usuario.getId(),
+                usuario.getEmail(),
+                usuario.getRol().getCodigo());
         return usuario.getId();
     }
 }

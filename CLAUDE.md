@@ -328,13 +328,9 @@ The counting is shared, not duplicated: `AridadClave.marcadores` is what `Catalo
 
 | What | Where | Convention it breaks |
 |---|---|---|
-| `UsuarioCommandController` | `usuarios/infrastructure/usuario/command/primaryadapter/web/` | Aggregates endpoints; the rule is **one controller per action** — should be `CrearUsuarioController` |
 | `CrearUsuarioRequestDTO` with Jakarta annotations + `toCommand()` | `usuarios/infrastructure/usuario/command/primaryadapter/web/dto/` | The only DTO left on the retired "small context" convention — should be a bare record + `CrearUsuarioRequestMapper` (see *DTOs*). It also nests a `RolUsuarioDTO` enum mirroring `UsuarioRole`, and builds its `Command` with `new` instead of `crear(...)`, so nothing validates format |
 | `EstadoEvaluacionCommandRepository` | `fichas/infrastructure/estadoevaluacion/command/secondaryadapter/repository/` | Dead code: no `OutputPort`/`OutputAdapter` consumes it |
-| `UsuarioOutputPort` typed in `UsuarioDomain` | `usuarios/application/usuario/command/secondaryport/` | **Output ports speak `Entity`, never `Domain`** — `UsuarioEntity` + `UsuarioMapper` are missing |
-| `UsuarioCommandOutputAdapter` is a mock | `usuarios/infrastructure/usuario/command/secondaryadapter/repository/` | Persists nothing despite the `usuario` table existing; also `@Repository` instead of `@Component` and English method names (`save`, `findById`). No `UsuarioJpaEntity`/`UsuarioJpaMapper`/`UsuarioCommandRepository` |
 | `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub (`// TODO: persistir en tabla espejo`); that is why it has no `Interactor`, no `@Transactional` and the `Consumer` injects the `UseCase` directly. When it really persists it must go through an `Interactor` |
-| `@Slf4j` instead of the `AppLogger` port | `usuarios` (`CrearUsuarioUseCaseImpl`, `UsuarioCommandController`, `UsuarioCommandOutputAdapter`) | Migration pending. `seguridad` already completed it — it is no longer an example of this |
 | `*ResponseDTO` as a Lombok `@Data`/`@Builder` class | `seguridad/infrastructure/auth/command/primaryadapter/web/dto/` (all four) | Response DTOs are `record`s, as in `fichas`. Copy the `Result → ResponseMapper → ResponseDTO` chain from `seguridad`, not the shape of the DTO itself |
 
 For the full write-up plus the open catalog-enum decision, see [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md#desviaciones-conocidas-respecto-a-la-convención).

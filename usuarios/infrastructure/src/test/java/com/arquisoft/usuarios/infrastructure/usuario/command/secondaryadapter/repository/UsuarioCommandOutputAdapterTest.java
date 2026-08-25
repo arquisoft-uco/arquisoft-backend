@@ -1,46 +1,63 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.repository;
 
-import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
-import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
+import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.test.context.TestPropertySource;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
+@DataJpaTest
+@TestPropertySource(properties = {
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.jpa.show-sql=false"
+})
 class UsuarioCommandOutputAdapterTest {
 
-    private final UsuarioCommandOutputAdapter adapter = new UsuarioCommandOutputAdapter();
+    private static final String EMAIL = "ana.gomez@soyuco.edu.co";
+    private static final String ROL = "estudiante";
 
-    @Test
-    void debeNoLanzarExcepcion_cuandoSaveEsInvocado() {
-        // Arrange
-        UsuarioDomain usuario = UsuarioDomain.crear("test@example.com", UsuarioRole.ESTUDIANTE);
+    @Autowired
+    private UsuarioCommandRepository repository;
 
-        // Act / Assert
-        assertThatCode(() -> adapter.save(usuario)).doesNotThrowAnyException();
+    private UsuarioCommandOutputAdapter adapter;
+
+    @BeforeEach
+    void setUp() {
+        adapter = new UsuarioCommandOutputAdapter(repository);
     }
 
     @Test
-    void debeRetornarEmpty_cuandoFindByIdEsInvocado() {
+    void debePersistirLaFila_cuandoGuardaUnUsuario() {
         // Arrange
         UUID id = UUID.randomUUID();
 
         // Act
-        Optional<UsuarioDomain> resultado = adapter.findById(id);
+        adapter.guardar(new UsuarioEntity(id, EMAIL, ROL));
 
         // Assert
-        assertThat(resultado).isEmpty();
+        UsuarioJpaEntity persistido = repository.findById(id).orElseThrow();
+        assertThat(persistido.getEmail()).isEqualTo(EMAIL);
+        assertThat(persistido.getRol()).isEqualTo(ROL);
     }
 
     @Test
-    void debeRetornarFalse_cuandoExistePorEmailEsInvocado() {
-        // Arrange / Act
-        boolean existe = adapter.existePorEmail("test@example.com");
+    void debeReportarExistente_cuandoElEmailYaFuePersistido() {
+        // Arrange
+        adapter.guardar(new UsuarioEntity(UUID.randomUUID(), EMAIL, ROL));
 
-        // Assert
-        assertThat(existe).isFalse();
+        // Act & Assert
+        assertThat(adapter.existePorEmail(EMAIL)).isTrue();
+    }
+
+    @Test
+    void debeReportarNoExistente_cuandoElEmailEsNuevo() {
+        // Act & Assert
+        assertThat(adapter.existePorEmail("nadie@soyuco.edu.co")).isFalse();
     }
 }

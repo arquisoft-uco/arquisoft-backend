@@ -7,8 +7,9 @@ import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.model.CrearUsuarioCommand;
 import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuarioValidator;
-import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -41,9 +42,10 @@ class CrearUsuarioUseCaseTest {
     @Mock
     private EventPublisher eventPublisher;
 
-        // Catalogo real, no mock: varios mensajes acaban en la excepcion o en el
-    // resultado, y un mock los dejaria en null.
-@InjectMocks
+    @Mock
+    private AppLogger logger;
+
+    @InjectMocks
     private CrearUsuarioUseCaseImpl crearUsuarioUseCase;
 
     @Test
@@ -57,7 +59,7 @@ class CrearUsuarioUseCaseTest {
 
         // Assert
         assertThat(resultado).isNotNull();
-        verify(usuarioOutputPort, times(1)).save(any(UsuarioDomain.class));
+        verify(usuarioOutputPort, times(1)).guardar(any(UsuarioEntity.class));
     }
 
     @Test
@@ -77,17 +79,17 @@ class CrearUsuarioUseCaseTest {
     void debeGuardarAggregate_cuandoEjecutar() {
         // Arrange
         CrearUsuarioCommand command = new CrearUsuarioCommand("admin@example.com", UsuarioRole.ADMINISTRADOR);
-        ArgumentCaptor<UsuarioDomain> captor = ArgumentCaptor.forClass(UsuarioDomain.class);
+        ArgumentCaptor<UsuarioEntity> captor = ArgumentCaptor.forClass(UsuarioEntity.class);
         when(emailUsuarioExisteFinder.obtener(anyString())).thenReturn(false);
 
         // Act
         crearUsuarioUseCase.ejecutar(command);
 
         // Assert
-        verify(usuarioOutputPort).save(captor.capture());
-        UsuarioDomain saved = captor.getValue();
-        assertThat(saved.getEmail()).isEqualTo("admin@example.com");
-        assertThat(saved.getRol()).isEqualTo(UsuarioRole.ADMINISTRADOR);
+        verify(usuarioOutputPort).guardar(captor.capture());
+        UsuarioEntity guardado = captor.getValue();
+        assertThat(guardado.email()).isEqualTo("admin@example.com");
+        assertThat(guardado.rol()).isEqualTo(UsuarioRole.ADMINISTRADOR.getCodigo());
     }
 
     @Test

@@ -1,33 +1,24 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.repository;
 
-import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
-import com.arquisoft.shared.message.Mensajes;
-import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
+import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
+import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.mapper.UsuarioJpaMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-import java.util.UUID;
-
-@Slf4j
-@Repository
+@Component
+@RequiredArgsConstructor
 public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
 
-    @Override
-    public void save(UsuarioDomain usuario) {
-        log.debug(Mensajes.obtener(UsuarioKey.LOG_MOCK_NO_PERSISTIDO),
-                usuario.getId(), usuario.getEmail());
-    }
+    private final UsuarioCommandRepository usuarioCommandRepository;
 
     @Override
-    public Optional<UsuarioDomain> findById(UUID id) {
-        return Optional.empty();
+    public void guardar(UsuarioEntity usuario) {
+        usuarioCommandRepository.save(UsuarioJpaMapper.toJpaEntity(usuario));
     }
 
     @Override
     public boolean existePorEmail(String email) {
-        log.debug(Mensajes.obtener(UsuarioKey.LOG_MOCK_VERIFICACION_OMITIDA), email);
-        return false;
+        return usuarioCommandRepository.existsByEmail(email);
     }
 }
