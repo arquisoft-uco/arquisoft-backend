@@ -7,6 +7,7 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.NotificacionesCodes;
 import com.arquisoft.shared.message.constant.NotificacionesFields;
 import com.arquisoft.shared.message.constant.NotificacionesLimits;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -17,13 +18,6 @@ import com.arquisoft.shared.validation.ValidatorTexto;
 import java.time.Instant;
 import java.util.UUID;
 
-/**
- * Registro de una notificacion: a quien se le aviso, por que, y como termino el intento.
- *
- * <p>Existe para dos cosas que el envio por si solo no da: idempotencia —{@code idEvento} es unico,
- * de modo que un reintento del broker no genera un segundo correo— y auditoria de lo que se
- * entrego.
- */
 public final class NotificacionDomain {
 
     private UUID id;
@@ -53,7 +47,7 @@ public final class NotificacionDomain {
         result.lanzarSiTieneErrores();
 
         notificacion.estado = EstadoNotificacion.PENDIENTE;
-        notificacion.fechaCreacion = Instant.now();
+        notificacion.fechaCreacion = UtilFecha.generarInstanteActual();
         return notificacion;
     }
 
@@ -73,20 +67,6 @@ public final class NotificacionDomain {
         return notificacion;
     }
 
-    /**
-     * Datos de reconstruccion agrupados.
-     *
-     * <p>Van juntos porque {@code reconstruir} superaria el limite de parametros del proyecto si se
-     * pasaran sueltos, y porque describen una sola cosa: la fila leida de la tabla.
-     *
-     * @param id            identificador de la notificacion
-     * @param idEvento      evento de dominio que la origino
-     * @param tipo          motivo de la notificacion
-     * @param destinatario  correo al que se dirige
-     * @param asunto        linea de asunto
-     * @param fechaCreacion momento en que se registro
-     * @param fechaEnvio    momento de la entrega, o {@code null} si aun no se resolvio
-     */
     public record DatosNotificacion(
             UUID id,
             String idEvento,
@@ -101,14 +81,14 @@ public final class NotificacionDomain {
         validarTransicionPermitida();
         this.estado = EstadoNotificacion.ENVIADA;
         this.detalleError = null;
-        this.fechaEnvio = Instant.now();
+        this.fechaEnvio = UtilFecha.generarInstanteActual();
     }
 
     public void marcarFallida(String motivo) {
         validarTransicionPermitida();
         this.estado = EstadoNotificacion.FALLIDA;
         this.detalleError = motivo;
-        this.fechaEnvio = Instant.now();
+        this.fechaEnvio = UtilFecha.generarInstanteActual();
     }
 
     private void validarTransicionPermitida() {

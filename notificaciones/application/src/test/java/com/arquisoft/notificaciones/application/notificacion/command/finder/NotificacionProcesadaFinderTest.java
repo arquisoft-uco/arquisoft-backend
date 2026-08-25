@@ -1,6 +1,6 @@
-package com.arquisoft.notificaciones.application.notificacion.command.validator;
+package com.arquisoft.notificaciones.application.notificacion.command.finder;
 
-import com.arquisoft.notificaciones.application.notificacion.command.validator.impl.NotificacionValidatorImpl;
+import com.arquisoft.notificaciones.application.notificacion.command.finder.impl.NotificacionProcesadaFinderImpl;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.NotificacionOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class NotificacionValidatorTest {
+class NotificacionProcesadaFinderTest {
 
     private static final String ID_EVENTO = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
 
@@ -20,7 +20,7 @@ class NotificacionValidatorTest {
     private NotificacionOutputPort notificacionOutputPort;
 
     @InjectMocks
-    private NotificacionValidatorImpl notificacionValidator;
+    private NotificacionProcesadaFinderImpl notificacionProcesadaFinder;
 
     @Test
     void debeReportarProcesado_cuandoYaExisteUnaNotificacionParaElEvento() {
@@ -28,7 +28,7 @@ class NotificacionValidatorTest {
         when(notificacionOutputPort.existePorIdEvento(ID_EVENTO)).thenReturn(true);
 
         // Act & Assert
-        assertThat(notificacionValidator.yaFueProcesado(ID_EVENTO)).isTrue();
+        assertThat(notificacionProcesadaFinder.obtener(ID_EVENTO)).isTrue();
     }
 
     @Test
@@ -37,6 +37,6 @@ class NotificacionValidatorTest {
         when(notificacionOutputPort.existePorIdEvento(ID_EVENTO)).thenReturn(false);
 
         // Act & Assert
-        assertThat(notificacionValidator.yaFueProcesado(ID_EVENTO)).isFalse();
+        assertThat(notificacionProcesadaFinder.obtener(ID_EVENTO)).isFalse();
     }
 }

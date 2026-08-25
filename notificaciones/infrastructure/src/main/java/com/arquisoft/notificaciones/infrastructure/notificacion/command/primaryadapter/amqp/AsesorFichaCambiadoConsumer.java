@@ -28,7 +28,6 @@ import java.io.IOException;
 @Component
 public class AsesorFichaCambiadoConsumer extends AbstractEventConsumer {
 
-    
     private final EnviarNotificacionInteractor enviarNotificacionInteractor;
     private final AppLogger logger;
 

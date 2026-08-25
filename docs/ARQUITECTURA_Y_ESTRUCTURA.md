@@ -140,7 +140,7 @@ arquisoft-backend/
 │   ├── logger/                           # AppLogger + Slf4jAppLogger (bean prototype de AppLoggerConfig)
 │   ├── redis/                            # RedisClient
 │   ├── amqp/                             # SpringModulithEventPublisher, RabbitMQEventPublisher, AbstractEventConsumer, RabbitMQConfig
-│   ├── web/                              # TrazabilidadFilter, GlobalAppExceptionHandler, ErrorResponseDTO/PageResponseDTO, HttpClient
+│   ├── web/                              # filter/TrazabilidadFilter, handler/GlobalAppExceptionHandler, dto/ErrorResponseDTO+PageResponseDTO, client/HttpClient
 │   ├── tracing/                          # Contexto de traza sobre MDC — único shared con capas hexagonales internas
 │   ├── minio/                            # Cliente MinIO
 │   ├── jpa/                              # QueryRepository/SpecificationQueryRepository, CampoSpec/QueryJpaSpecification, PageableMapper/PaginationMapper
@@ -173,9 +173,11 @@ arquisoft-backend/
 │   └── infrastructure/
 │       └── src/main/java/com/arquisoft/seguridad/infrastructure/
 │           ├── auth/command/
-│           │   ├── primaryadapter/web/
-│           │   │   ├── AutenticacionCommandController.java
-│           │   │   └── dto/                # LoginRequestDTO (con su propio toCommand()), LoginResponseDTO, ...
+│           │   ├── primaryadapter/web/     # Un controller por acción
+│           │   │   ├── IniciarSesionController.java, CerrarSesionController.java,
+│           │   │   ├── RefrescarTokenController.java, ValidarTokenController.java
+│           │   │   ├── dto/                # IniciarSesionRequestDTO (record desnudo), ...ResponseDTO
+│           │   │   └── mapper/             # IniciarSesionRequestMapper (→ Command), IniciarSesionResponseMapper (Result → DTO)
 │           │   └── secondaryadapter/
 │           │       ├── keycloak/KeycloakAuthOutputAdapter.java
 │           │       ├── redis/RedisTokenBlacklistOutputAdapter.java
@@ -478,14 +480,14 @@ copie creyendo que son la regla, y para que se resuelvan cuando se toque esa par
 
 | Qué | Dónde | Convención | Estado |
 |---|---|---|---|
-| `NotificacionValidator` / `NotificacionValidatorImpl` | `notificaciones/application/notificacion/command/validator/` | Debería ser `EnviarNotificacionValidator`: el validator se nombra por la **acción**, no por la entidad | Pendiente de renombrar |
-| `AutenticacionCommandController` | `seguridad/infrastructure/auth/command/primaryadapter/web/` | Agrupa 4 endpoints; la convención es **un controller por acción** (`{Accion}{Entidad}Controller`) | Pendiente de partir |
-| `UsuarioCommandController` | `usuarios/infrastructure/usuario/command/primaryadapter/web/` | Igual que el anterior — debería ser `CrearUsuarioController` | Pendiente de partir |
+| `UsuarioCommandController` | `usuarios/infrastructure/usuario/command/primaryadapter/web/` | Agrupa endpoints; la convención es **un controller por acción** (`{Accion}{Entidad}Controller`) — debería ser `CrearUsuarioController` | Pendiente de partir |
+| `CrearUsuarioRequestDTO` con anotaciones Jakarta + `toCommand()` propio | `usuarios/infrastructure/usuario/command/primaryadapter/web/dto/` | Único DTO que queda en la convención "contexto pequeño", ya retirada: debería ser un `record` desnudo + `CrearUsuarioRequestMapper` que llame a `CrearUsuarioCommand.crear(...)`. Además anida un enum `RolUsuarioDTO` que duplica `UsuarioRole`, y construye el `Command` con `new` en vez de `crear(...)`, así que nada valida el formato | Pendiente de migrar |
+| `*ResponseDTO` como clase Lombok `@Data`/`@Builder` | `seguridad/infrastructure/auth/command/primaryadapter/web/dto/` (los cuatro) | Los DTO de respuesta son `record`, como en `fichas` | Pendiente de migrar |
 | `EstadoEvaluacionCommandRepository` | `fichas/infrastructure/estadoevaluacion/command/secondaryadapter/repository/` | Código muerto: no hay `OutputPort` ni `OutputAdapter` que lo consuma | Pendiente de eliminar |
 | `UsuarioOutputPort` habla `UsuarioDomain` | `usuarios/application/usuario/command/secondaryport/` | **Los puertos de salida hablan `Entity`, nunca `Domain`** — infraestructura no debe ver la capa de dominio. Falta el `UsuarioEntity` (record plano) y su `UsuarioMapper` | Pendiente |
 | `UsuarioCommandOutputAdapter` es un mock | `usuarios/infrastructure/usuario/command/secondaryadapter/repository/` | No persiste nada (`save` solo loguea, `findById` devuelve vacío, `existePorEmail` devuelve `false`) pese a que existe la tabla `usuario`. Además usa `@Repository` en vez de `@Component`, y los métodos van en inglés (`save`, `findById`) en vez de nombrarse por el negocio. Falta el `UsuarioJpaEntity` + `UsuarioJpaMapper` + `UsuarioCommandRepository` | Pendiente de implementar |
 | `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub con `// TODO: persistir en tabla espejo`. Por eso no tiene `Interactor`, ni `@Transactional`, ni `Validator`, y el `UsuarioCreadoConsumer` inyecta el `UseCase` directo — cuando persista de verdad debe pasar por un `Interactor` | Pendiente de implementar |
-| `@Slf4j` en vez de `AppLogger` | `seguridad`, `usuarios` | El resto del proyecto inyecta el puerto `AppLogger` de `shared:logger` | Migración pendiente |
+| `@Slf4j` en vez de `AppLogger` | `usuarios` (`CrearUsuarioUseCaseImpl`, `UsuarioCommandController`, `UsuarioCommandOutputAdapter`) | El resto del proyecto inyecta el puerto `AppLogger` de `shared:logger`. `seguridad` ya migró y deja de ser ejemplo de esto | Migración pendiente |
 
 ### Decisión abierta: dónde vive un enum de catálogo
 
@@ -565,7 +567,7 @@ El módulo `shared` contiene **13 sub-módulos** reutilizables por cualquier con
 | `logger` | AppLogger (interface) | Logging desacoplado de SLF4J |
 | `redis` | RedisClient (interface) | Operaciones de cache |
 | `amqp` | EventPublisher (interface) | Publicar eventos a RabbitMQ |
-| `web` | TrazabilidadFilter, GlobalAppExceptionHandler, DTOs comunes | Adaptadores HTTP transversales y manejo global de errores |
+| `web` | `filter/TrazabilidadFilter`, `handler/GlobalAppExceptionHandler`, DTOs comunes | Adaptadores HTTP transversales y manejo global de errores |
 | `tracing` | GestorTraza, AlcanceTraza, TrazaKeys, TrazaHeaders | Contexto de traza sobre MDC: correlación, transacción, propagación HTTP/AMQP |
 | `minio` | Cliente MinIO | Almacenamiento de archivos |
 | `jpa` | `QueryRepository`/`SpecificationQueryRepository`, `CampoSpec`, `PageableMapper`/`PaginationMapper` | Todo lo que necesita Spring Data JPA para el lado de consulta — nunca se importa desde `domain` ni `application` |
@@ -952,7 +954,7 @@ con hexagonal:  Controller → Port (interface) ← Repository
 
 - Los contextos **nunca** dependen directamente entre sí
 - Comunicación exclusivamente via **eventos RabbitMQ**
-- Cada contexto tiene su propio schema de BD
+- Cada contexto tiene su propia **base de datos** (no un schema): `init-db.sql` hace un `CREATE DATABASE` por contexto, y cada uno lleva su propio `flyway_schema_history` y sus migraciones en `db/migration/{contexto}/`. Una FK entre contextos es imposible, no solo desaconsejada
 
 ---
 
