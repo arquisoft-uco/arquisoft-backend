@@ -2,9 +2,9 @@ package com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.key
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.seguridad.application.auth.exception.AutenticacionException;
-import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
-import com.arquisoft.seguridad.infrastructure.exception.ProveedorIdentidadNoDisponibleException;
-import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
+import com.arquisoft.seguridad.application.auth.exception.CredencialesInvalidasException;
+import com.arquisoft.seguridad.infrastructure.auth.exception.ProveedorIdentidadNoDisponibleException;
+import com.arquisoft.seguridad.application.auth.exception.TokenInvalidoException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

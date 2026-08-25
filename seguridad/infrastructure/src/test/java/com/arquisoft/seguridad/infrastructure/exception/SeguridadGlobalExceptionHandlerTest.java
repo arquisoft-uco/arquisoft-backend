@@ -1,9 +1,9 @@
-package com.arquisoft.seguridad.infrastructure.web;
+package com.arquisoft.seguridad.infrastructure.exception;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.seguridad.application.auth.exception.AutenticacionException;
-import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
-import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
+import com.arquisoft.seguridad.application.auth.exception.CredencialesInvalidasException;
+import com.arquisoft.seguridad.application.auth.exception.TokenInvalidoException;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;

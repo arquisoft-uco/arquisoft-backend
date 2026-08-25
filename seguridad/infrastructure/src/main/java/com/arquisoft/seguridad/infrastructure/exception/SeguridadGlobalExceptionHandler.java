@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.web;
+package com.arquisoft.seguridad.infrastructure.exception;
 
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
@@ -6,8 +6,8 @@ import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.application.auth.exception.AutenticacionException;
-import com.arquisoft.seguridad.infrastructure.exception.CredencialesInvalidasException;
-import com.arquisoft.seguridad.infrastructure.exception.TokenInvalidoException;
+import com.arquisoft.seguridad.application.auth.exception.CredencialesInvalidasException;
+import com.arquisoft.seguridad.application.auth.exception.TokenInvalidoException;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.Ordered;

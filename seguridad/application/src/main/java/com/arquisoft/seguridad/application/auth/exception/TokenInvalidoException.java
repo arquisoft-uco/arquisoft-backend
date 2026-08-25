@@ -1,7 +1,6 @@
-package com.arquisoft.seguridad.infrastructure.exception;
+package com.arquisoft.seguridad.application.auth.exception;
 
 import com.arquisoft.shared.message.constant.SeguridadCodes;
-import com.arquisoft.seguridad.application.auth.exception.AutenticacionException;
 import com.arquisoft.shared.exception.BaseError;
 
 public final class TokenInvalidoException extends AutenticacionException {

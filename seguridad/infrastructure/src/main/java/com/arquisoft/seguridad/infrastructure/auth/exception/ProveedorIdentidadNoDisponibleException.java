@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.exception;
+package com.arquisoft.seguridad.infrastructure.auth.exception;
 
 import com.arquisoft.shared.message.constant.SeguridadCodes;
 import com.arquisoft.shared.exception.BaseError;
