@@ -63,7 +63,7 @@ class CrearUsuarioUseCaseTest {
     }
 
     @Test
-    void debePublicarEventoDrenado_cuandoEjecucionExitosa() {
+    void debePublicarEvento_cuandoEjecucionExitosa() {
         // Arrange
         CrearUsuarioCommand command = new CrearUsuarioCommand("test@example.com", UsuarioRole.ASESOR_FICHA);
         when(emailUsuarioExisteFinder.obtener(anyString())).thenReturn(false);
@@ -76,7 +76,7 @@ class CrearUsuarioUseCaseTest {
     }
 
     @Test
-    void debeGuardarAggregate_cuandoEjecutar() {
+    void debeMapearAggregateAEntity_cuandoGuarda() {
         // Arrange
         CrearUsuarioCommand command = new CrearUsuarioCommand("admin@example.com", UsuarioRole.ADMINISTRADOR);
         ArgumentCaptor<UsuarioEntity> captor = ArgumentCaptor.forClass(UsuarioEntity.class);
