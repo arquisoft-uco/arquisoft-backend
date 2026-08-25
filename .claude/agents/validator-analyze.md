@@ -16,8 +16,8 @@ código real — si el plan las contradice, repórtalo como observación.
 
 ## FASE 1 — Cargar plan y código
 
-Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa). Extrae: contexto, si usa
-`AggregateRoot`, eventos declarados (sección 4), integraciones externas (sección 5), árbol de
+Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa). Extrae: contexto, eventos
+declarados (sección 4), integraciones externas (sección 5), árbol de
 archivos (sección 6), criterios de aceptación, endpoints (sección 8), eventos RabbitMQ (sección
 10), migración Flyway (sección 11), estado de la fila `Tests` en la Trazabilidad. Lee cada archivo
 `.java`/`.sql` que el árbol del plan lista.
@@ -64,7 +64,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 **Prueba del algodón:** "si mañana cambio Keycloak/RabbitMQ/PostgreSQL por otra tecnología, ¿este
 archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio filtrada (bloqueante).
 
-### Nivel 2.2 — AggregateRoot y eventos (condicional a lo que declare el plan)
+### Nivel 2.2 — Eventos de dominio (condicional a lo que declare el plan)
 
 > Determina primero qué dice la sección 4 del plan. Marcar checks de "con eventos" en una HU "sin
 > eventos" (o viceversa) es un falso positivo — no lo reportes.
@@ -73,26 +73,20 @@ archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio fil
 `reconstruir(...)` · el dominio no inyecta `EventPublisher` · no existe un `{Entidad}EventPublisher`
 local (la publicación está centralizada en `shared:amqp`).
 
-**Si el plan declara eventos**, hay dos formas válidas y el plan decide cuál — no exijas la otra:
+**Si el plan declara eventos**, hay una sola forma: el `UseCase` inyecta `EventPublisher` (la
+interfaz, nunca una implementación concreta) y tras persistir hace
+`eventPublisher.publish(new {Entidad}{Accion}Event(...))`. El agregado es una clase plana que no
+acumula eventos — `AggregateRoot` fue eliminado de `shared:domain`, así que `extends AggregateRoot`,
+`publicarEvento` o `extraerEventosSinPublicar` en el código bajo revisión no compilan y son
+bloqueantes. Ver `fichas/application/.../fichaperfil/command/usecase/impl/CambiarAsesorFichaUseCaseImpl.java`.
 
-- **Publicación directa desde el `UseCase` (forma por defecto en `fichas`):** el `UseCase` inyecta
-  `EventPublisher` (la interfaz, nunca una implementación concreta) y tras persistir hace
-  `eventPublisher.publish(new {Entidad}{Accion}Event(...))`. El agregado **no** extiende
-  `AggregateRoot` — el evento nace de la acción, no del agregado. Ver
-  `fichas/application/.../fichaperfil/command/usecase/impl/CambiarAsesorFichaUseCaseImpl.java`.
-- **Drenaje desde `AggregateRoot` (hoy solo `usuarios`):** la entidad extiende `AggregateRoot`,
-  `crear(...)` llama `publicarEvento(...)`, y el `UseCase` drena con
-  `aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)` — un solo método; no
-  existe `limpiarEventosSinPublicar()`.
-
-En ambas: eventos en `domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
+Además: eventos en `domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
 (`{contexto}.{entidad}.{accion}`, minúsculas+snake_case) pasado a `super(EVENT_TOPIC, EVENT_TYPE)`,
 ningún `@Override` de `getTemaEvento()` (es `final`), y el evento carga todo lo que su consumidor
 necesita (nombre, email…) para que no tenga que reconsultar al productor.
 
-**Si el plan dice "Eventos: ninguno":** la entidad **no** extiende `AggregateRoot` (extenderlo "por
-consistencia" es bloqueante — arrastra maquinaria muerta) · no hay archivos en `event/` · el
-`UseCase` no inyecta `EventPublisher`.
+**Si el plan dice "Eventos: ninguno":** no hay archivos en `event/` · el `UseCase` no inyecta
+`EventPublisher`.
 
 ### Nivel 2.3 — Entidad de dominio
 
@@ -287,12 +281,10 @@ delegación pura (`verify(...)` sin más) · 6. Test propio de una excepción co
 inválido es bloqueante — indica que la excepción no extiende la base correcta y cae en el fallback
 de `GlobalAppExceptionHandler`; la corrección es la clase base de la excepción, no un handler local.
 
-**Coherencia tipo de UC:** si la Metadata declara **Consulta**, cualquier test de eventos
-(`publicarEvento`/`extraerEventosSinPublicar`/`verify(eventPublisher)`) es bloqueante por sobra. Si
-declara **Escritura** con eventos, su ausencia es bloqueante por falta — pero el test correcto
-depende de la forma que use el plan: `verify(eventPublisher).publish(any())` para publicación
-directa desde el `UseCase`, o el ciclo `publicarEvento`/`extraerEventosSinPublicar` para la forma
-con `AggregateRoot`. Si el plan no declara el campo, repórtalo como ⚠️ menor.
+**Coherencia tipo de UC:** si la Metadata declara **Consulta**, cualquier `verify(eventPublisher)`
+es bloqueante por sobra. Si declara **Escritura** con eventos, su ausencia es bloqueante por falta:
+el test correcto es `verify(eventPublisher).publish(any())` en el test del `UseCase`. Si el plan no
+declara el campo, repórtalo como ⚠️ menor.
 
 **Slice de infraestructura (`fichas`):** un `@WebMvcTest` sin `@Import` de
 `GlobalAppExceptionHandler` (toda excepción sale 500) o de `AppLoggerConfig` (falta el bean
@@ -323,7 +315,7 @@ Cualquier error de compilación es siempre bloqueante — incluye el mensaje exa
 # Reporte de Validación — {HU|HT}-{ID}
 
 ## Metadata
-- **Bounded Context:** {contexto} · **Usa AggregateRoot:** {Sí/No}
+- **Bounded Context:** {contexto}
 - **Fecha:** {fecha} · **Rama propuesta:** `feature/{HU|HT}-{ID}-{descripcion}`
 
 ## Score

@@ -23,8 +23,7 @@ y cada uno tiene un límite que hay que conocer antes de copiar:
   Lombok en vez de `record` — ese detalle no se copia.
 - **`notificaciones`** — referencia del `Consumer` AMQP y, sobre todo, del comando **sin `Validator`**:
   su única consulta es un corte de idempotencia resuelto con `Finder` + `if/return`, no con una `Rule`.
-- **`usuarios`** — referencia del **drenaje de eventos desde `AggregateRoot`**, que es la única forma
-  que `fichas` no usa (ver más abajo), y de un flujo de comando completo y correcto:
+- **`usuarios`** — referencia de un flujo de comando completo y correcto:
   `CrearUsuarioController` → `CrearUsuarioInteractor` (`@Transactional`) → `UseCase` → `Finder` →
   `Validator` puro → `Rule` → `OutputPort` que habla `Entity`. *Límite, y es grande:* **el flujo no
   funciona**. `UsuarioCommandOutputAdapter` está inerte a propósito — solo loguea, no escribe, y por
@@ -232,26 +231,25 @@ Ejemplo real: `RegistrarFichaPerfilUseCaseImpl` confirma que el asesor existe co
 `estudiante`, `representantecomite` y `evaluacionfichaperfil` no tienen paquete `query/` por lo
 mismo.
 
-## Eventos de dominio — dos formas, según quién los origina
+## Eventos de dominio — una sola forma
 
-**Forma por defecto en `fichas` (objeto de acción):** el `UseCase` publica directamente tras
-persistir — `eventPublisher.publish(new AsesorFichaCambiadoEvent(...))`. El agregado no extiende
-`AggregateRoot` porque el evento no nace de él sino de la acción. Ver
-`CambiarAsesorFichaUseCaseImpl.java`.
+El `UseCase` publica directamente tras persistir —
+`eventPublisher.publish(new AsesorFichaCambiadoEvent(...))`. El agregado no acumula eventos: no
+extiende nada para esto, no tiene `publicarEvento(...)` ni `extraerEventosSinPublicar()`. Ver
+`CambiarAsesorFichaUseCaseImpl.java` (fichas) y `CrearUsuarioUseCaseImpl.java` (usuarios), que hoy
+siguen la misma forma.
 
-**Forma con `AggregateRoot` (hoy solo `usuarios`):** el agregado extiende `AggregateRoot`,
-`crear(...)` llama `publicarEvento(...)`, y el `UseCase` drena tras persistir con
-`aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)` — un solo método, no
-existe `limpiarEventosSinPublicar()`. `obtenerEventosSinPublicar()` es `protected`. Ver
-`usuarios/domain/usuario/UsuarioDomain.java` + `CrearUsuarioUseCaseImpl.java`: es el único ejemplo
-completo de esta forma en el repo, y su flujo de comando (`Controller` → `Interactor` →
-`UseCase` → `Finder` → `Validator` → `Rule` → `OutputPort` en `Entity`) sí es correcto — lo que no
-funciona ahí es la persistencia, que está inerte a propósito.
+**`AggregateRoot` ya no existe.** Era la otra forma —el agregado acumulaba eventos en memoria y el
+`UseCase` los drenaba— y se eliminó de `shared:domain`: su único consumidor era `UsuarioDomain`, y
+mantener dos formas válidas para lo mismo no aportaba nada. Si un plan, un ejemplo o tu memoria
+mencionan `extends AggregateRoot`, `publicarEvento` o `extraerEventosSinPublicar`, es material
+viejo: la clase no está en el repo y ese código no compila.
 
-**Coherencia dura, sea cual sea la forma:** si el plan dice "Eventos: ninguno" → no hay clases en
-`event/`, el `UseCase` no inyecta `EventPublisher`, y el agregado no extiende `AggregateRoot`.
-Extenderlo "por consistencia" arrastra maquinaria muerta. `FichaPerfilDomain` hoy es
-`public final class` sin `AggregateRoot` — ese es el caso normal.
+**Coherencia dura:** si el plan dice "Eventos: ninguno" → no hay clases en `event/` y el `UseCase`
+no inyecta `EventPublisher`. `DomainEvent` sí sigue vigente: es la clase base de cada evento
+(`AsesorFichaCambiadoEvent`, `UsuarioCreadoEvent`), aporta `idEvento`/`ocurridoEn`/`tipoEvento` y
+valida que `EVENT_TOPIC` tenga el formato `{contexto}.{entidad}.{accion}` — que es además la
+routing key de RabbitMQ.
 
 `reconstruir(...)` nunca publica eventos y el `CommandOutputAdapter` siempre lee con
 `reconstruir(...)`, nunca con `crear(...)`. Un evento carga todo lo que su consumidor necesita

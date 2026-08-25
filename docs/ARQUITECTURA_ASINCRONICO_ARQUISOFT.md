@@ -115,10 +115,9 @@ queda inconsistente sin que nadie se entere.
 ```java
 // {Accion}UseCaseImpl — sin @Transactional propia; corre dentro de la
 // transacción abierta por el Interactor
-XxxDomain xxx = XxxDomain.crear(...);        // 1. crea + acumula el evento en memoria
-xxxOutputPort.save(xxx);                     // 2. persiste el aggregate
-xxx.extraerEventosSinPublicar()
-   .forEach(eventPublisher::publish);        // 3. drena y publica
+XxxDomain xxx = XxxDomain.crear(...);        // 1. crea el aggregate
+xxxOutputPort.guardar(XxxMapper.toEntity(xxx));  // 2. persiste
+eventPublisher.publish(new XxxEvent(...));   // 3. construye y publica el evento
 ```
 
 `eventPublisher` es `SpringModulithEventPublisher` (`shared:amqp`), que delega en

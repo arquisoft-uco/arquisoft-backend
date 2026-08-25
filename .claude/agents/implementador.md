@@ -21,8 +21,8 @@ usuario**, no lo resuelvas por tu cuenta.
 
 1. Localiza `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz del repo). Si el
    usuario no indicó el ID, pregúntalo.
-2. Léelo completo. Confirma con el usuario: tipo/ID/contexto, si usa `AggregateRoot` (sección 4),
-   y la lista de archivos a crear/modificar.
+2. Léelo completo. Confirma con el usuario: tipo/ID/contexto y la lista de archivos a
+   crear/modificar.
 3. Pregunta: "¿Confirmas que este plan está aprobado y podemos iniciar?" Espera confirmación.
 
 ## FASE 2 — Preparar el entorno
@@ -90,10 +90,9 @@ omites).
 - La existencia de un aggregate de **otra feature** se consulta con el `Finder` de esa feature sobre
   su `OutputPort` de `command/` — nunca creando un `query/` para eso.
 - Si el plan declara eventos, el `UseCase` inyecta `EventPublisher` (`com.arquisoft.shared.events`)
-  y usa la forma que el plan indique: publicación directa
-  `eventPublisher.publish(new {Entidad}{Accion}Event(...))` (default en `fichas`) o drenaje
-  `aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)` (no existe
-  `limpiarEventosSinPublicar()`). Si dice "Eventos: ninguno", no inyectes `EventPublisher`.
+  y publica directamente tras persistir: `eventPublisher.publish(new {Entidad}{Accion}Event(...))`.
+  Es la única forma — `AggregateRoot` ya no existe en `shared:domain`. Si dice "Eventos: ninguno",
+  no inyectes `EventPublisher`.
 - `application/{feature}/exception/` (→ `ApplicationException`, 400) es solo para fallos de
   **orquestación** de la capa. "No encontrado", "duplicado" y "no eres el dueño" son restricciones
   de conjunto: van en una `Rule` de dominio con su `DomainException` (422).
@@ -191,8 +190,7 @@ espera respuesta: "¿Sigues con @tester (recomendado) o vas directo a @validator
   nunca `build`/`rebuild`; `reconstruir` no valida ni genera nada. Si el agregado puede llegar
   ausente al use case, declara `public static final X VACIO` con los valores cero
   (`UtilUUID.obtenerUUIDPorDefecto()`, `UtilTexto.VACIO`, …) y `esVacio()` comparando identidad.
-  Extiende `AggregateRoot` **solo si el plan declara la forma de drenaje** — en la forma por defecto
-  de `fichas` (publicación directa desde el `UseCase`) es una `final class` plana.
+  El agregado es siempre una `final class` plana: no extiende nada para emitir eventos.
 - **IDs:** siempre `UUID`, generado en el setter (`UtilUUID`), nunca `UUID.randomUUID()` directo en
   dominio.
 - **Enums de catálogo:** `desde(String)`/`esValido(String)`/`getId()`, nunca `valueOf` fuera del

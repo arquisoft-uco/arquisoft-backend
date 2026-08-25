@@ -70,12 +70,8 @@ Pattern — `ValidationResult` acumula y `lanzarSiTieneErrores()` lanza **una so
 `reconstruir(...)` sin re-validar. Cada `Rule` (`domain/{feature}/rules/impl/`) se testea aislada
 con su record de entrada: **no necesita Mockito**, es una función pura.
 
-**Solo si el plan declara la forma de drenaje** (la entidad extiende `AggregateRoot`): ciclo
-`publicarEvento(...)` en `crear` → `extraerEventosSinPublicar()` retorna la lista y la limpia en una
-sola operación (no existe `limpiarEventosSinPublicar()`); `reconstruir(...)` no emite nada.
-`obtenerEventosSinPublicar()` es `protected` — solo accesible desde un test en el **mismo paquete**
-que la entidad. En la forma por defecto de `fichas` (publicación directa desde el `UseCase`) el
-evento se verifica en application, no aquí. Si el plan dice "Eventos: ninguno", nada de esto aplica
+El agregado no emite eventos: los publica el `UseCase`, así que el `verify(eventPublisher)` se
+testea en application, nunca en domain. Si el plan dice "Eventos: ninguno", nada de esto aplica
 — generarlo sería sobre-testeo.
 
 **Application — `Validator`/`Finder`/`UseCase`:** en el test del `UseCase`, mockea sus colaboradores
@@ -132,8 +128,8 @@ ordenable".
 ## Flujo de trabajo
 
 1. **Cargar plan y código.** Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa) y cada
-   archivo de producción implementado. Extrae: contexto, tipo de use case, si usa `AggregateRoot`,
-   eventos declarados, árbol de archivos.
+   archivo de producción implementado. Extrae: contexto, tipo de use case, eventos declarados,
+   árbol de archivos.
 2. **Estimar y confirmar.** Presenta la distribución de tests por capa con la estimación total y
    los anti-patrones que vas a evitar. Espera "sí"/"ajustar" antes de generar. Si supera 80, avisa
    explícitamente del riesgo de sobre-testeo.

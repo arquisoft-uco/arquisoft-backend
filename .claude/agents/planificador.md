@@ -22,7 +22,7 @@ tres ya están alineados y cada uno aporta algo que `fichas` no tiene:
 |---|---|---|
 | `seguridad` | `command/result/` + su `mapper/`; excepciones por capa dentro del slice | Sin base de datos: no hay `JpaEntity`, Flyway ni `@Transactional` |
 | `notificaciones` | `Consumer` AMQP; comando **sin `Validator`** con corte de idempotencia | No emite eventos, solo los consume |
-| `usuarios` | Drenaje de eventos desde `AggregateRoot`; flujo de comando completo | **El flujo no funciona**: el `OutputAdapter` está inerte a propósito, así que `existePorEmail` siempre da `false` y su `Rule` no se dispara nunca. Copia la forma, no el comportamiento |
+| `usuarios` | Flujo de comando completo | **El flujo no funciona**: el `OutputAdapter` está inerte a propósito, así que `existePorEmail` siempre da `false` y su `Rule` no se dispara nunca. Copia la forma, no el comportamiento |
 
 Si hay contradicción entre estas skills y cualquier otro archivo, **ganan las skills**: son la fuente
 verificada contra el código real.
@@ -44,8 +44,7 @@ Registra los archivos consultados para el Metadata del plan.
 4. **Verifica si la entidad raíz ya existe en el código** — no lo asumas, ábrela:
    `{contexto}/domain/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/{Entidad}Domain.java`
    (vive directo ahí, sin subcarpeta `aggregate/`). Si ya existe, va en "Archivos a MODIFICAR", no
-   en "NUEVOS" — y si la HU añade eventos a una entidad que hoy no extiende `AggregateRoot`, el plan
-   declara explícitamente "modificar `{Entidad}Domain.java` para añadir `extends AggregateRoot`".
+   en "NUEVOS".
    Si NO existe (primera HU del contexto que la toca), créala como archivo NUEVO **incluso si la HU
    es de Consulta** — sin la entidad raíz el puerto no puede usar `reconstruir(...)`.
 5. Lee el Modelo Enriquecido del contexto (tabla de mapeo en `gh-docs-reader`) y extrae, por cada
@@ -75,15 +74,13 @@ underscore). Ej. válido: `fichas:ficha-perfil:create`. Roles realm en kebab-cas
 A) Sí, consumidor conocido · B) Sí, se anticipa/hay caso de auditoría · C) No, CRUD sin
 consumidores ni auditoría.
 
-A/B → el `UseCase` inyecta `EventPublisher` y publica tras persistir. La forma por defecto en
-`fichas` es **publicación directa**: `eventPublisher.publish(new {Entidad}{Accion}Event(...))`, con
-el agregado como clase plana (así lo hace `CambiarAsesorFichaUseCaseImpl`). La forma con
-`AggregateRoot` (`crear(...)` llama `publicarEvento(...)` y el use case drena con
-`extraerEventosSinPublicar()`) solo se planifica cuando el evento nace del agregado mismo al
-crearse — hoy únicamente `usuarios`. Declara en la sección 4 cuál de las dos aplica.
+A/B → el `UseCase` inyecta `EventPublisher` y publica tras persistir. Hay **una sola forma**:
+`eventPublisher.publish(new {Entidad}{Accion}Event(...))`, con el agregado como clase plana (así lo
+hacen `CambiarAsesorFichaUseCaseImpl` y `CrearUsuarioUseCaseImpl`). `AggregateRoot` fue eliminado de
+`shared:domain` — no planifiques `extends AggregateRoot` ni drenaje: no compila.
 
-C → clase plana, sin `EventPublisher` en el use case. **Coherencia dura:** "Eventos: ninguno" ⟺ NO
-extiende `AggregateRoot` ⟺ use case NO inyecta `EventPublisher`. Nunca declares una sin las otras dos.
+C → clase plana, sin `EventPublisher` en el use case. **Coherencia dura:** "Eventos: ninguno" ⟺ no
+hay clases en `event/` ⟺ use case NO inyecta `EventPublisher`. Nunca declares una sin la otra.
 
 **6. ¿Persistencia nueva o se reutiliza la existente?**
 
@@ -163,7 +160,6 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 - **ID Historia:** {HU|HT}-{ID}
 - **Bounded Context:** {contexto}
 - **Tipo de Use Case:** {Escritura/Consulta/Mixto}
-- **¿Usa AggregateRoot?:** {Sí/No + justificación}
 - **Módulos Gradle afectados:** `{contexto}:domain`, `:application`, `:infrastructure`
 - **Fecha de plan:** {fecha}
 - **Rama sugerida:** `feature/{HU|HT}-{ID}-{descripcion_snake_case}`
@@ -195,7 +191,6 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 ## 4. Modelo DDD del Contexto
 ### Entidad raíz
 - **Clase:** `{Entidad}Domain`
-- **¿Extiende `AggregateRoot`?:** {Sí/No — coherente con "Eventos que emite"}
 - **Objeto de acción:** {`{Accion}{Entidad}Domain` si la acción arrastra más que el agregado
   (estado inicial, colecciones, ids del contexto) — nominalizado como sustantivo:
   `Registro…`/`Cambio…`/`Modificacion…`/`Agregacion…`/`Remocion…`; vive junto al agregado y lo
@@ -206,8 +201,7 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 **Combinaciones únicas:** {atributos} → `UNIQUE` en Flyway + validación previa en el use case.
 ### Eventos de Dominio
 {tabla Evento/Clase/temaEvento/Consumidor/Cuándo, o "Eventos: ninguno. Razón: ..."}
-**Forma de publicación:** {Directa desde el `UseCase` (default en `fichas`) / Drenaje desde
-`AggregateRoot`} — omitir si no hay eventos.
+**Publicación:** directa desde el `UseCase` tras persistir — omitir si no hay eventos.
 
 ## 5. Integraciones Externas (solo si aplica — Keycloak/SMTP/MinIO/HTTP externo más allá de lo estándar)
 | Puerto (application/secondaryport) | Adaptador (infrastructure/secondaryadapter) | Sistema externo | Qué traduce |
@@ -373,8 +367,7 @@ Detalle en `arquisoft-estandares`.
 `Rule` aislada con su record) → application (`UseCase` flujo exitoso + errores + orden de
 invocación, `Validator` con sus `Rule`s reales, `Command.crear`) → infrastructure (`OutputAdapter`
 con `@DataJpaTest`, `Controller` con `@WebMvcTest`: 201/400/401/403/422). Si hay eventos, el
-`verify(eventPublisher)` va en el test del `UseCase` (publicación directa) o en el del agregado
-(forma con `AggregateRoot`) — nunca en ambos.
+`verify(eventPublisher)` va en el test del `UseCase`.
 
 **Consulta:** sin tests de eventos y sin tests de domain si el agregado no se invoca en el read
 side → `UseCase` (con/sin resultados, filtros inválidos) → `SortMapperTest` si hay orden →
@@ -392,7 +385,6 @@ getters/setters ni métodos `private`.
 - [ ] Entidad raíz: constructor privado, campos no-`final` con setters privados que cortan con
       `return` al fallar, solo getters, `crear`/`reconstruir` (nunca `build`/`rebuild`), sin Lombok,
       sin subcarpeta `aggregate/`; centinela `VACIO` + `esVacio()` si puede venir ausente
-- [ ] Extiende `AggregateRoot` solo si el evento nace del agregado — coherente con la sección 4
 - [ ] Invariantes locales acumuladas en `ValidationResult` (sin excepción propia); restricciones de
       conjunto como `Rule` + su record, orquestadas por el `Validator` → 422. Ningún `if/throw` en el use case
 - [ ] `Validator` puro: constructor sin argumentos con `new {Regla}RuleImpl()`, sin `Finder`, sin `if`

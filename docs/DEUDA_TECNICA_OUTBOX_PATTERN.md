@@ -18,6 +18,11 @@ usuarioOutputPort.save(usuario);
 usuario.extraerEventosSinPublicar().forEach(eventPublisher::publish);
 ```
 
+> Código histórico: `AggregateRoot` y su ciclo `publicarEvento`/`extraerEventosSinPublicar` se
+> eliminaron de `shared:domain`. Hoy el `UseCase` construye y publica el evento directamente. El
+> problema de atomicidad que describe esta sección es independiente de esa forma y sigue siendo
+> real — lo que lo resuelve es el outbox, no la manera de emitir el evento.
+
 Si el paso (1) se completaba y el paso (2) fallaba (broker caído, timeout, etc.), el sistema quedaba inconsistente:
 
 - El usuario **existía** en la base de datos de `usuarios`.
