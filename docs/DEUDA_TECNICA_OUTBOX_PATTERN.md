@@ -37,12 +37,18 @@ Se integró **Spring Modulith 2.0.0** con su Event Publication Registry (Outbox 
 
 ### Flujo actual
 
+El ejemplo usa `fichas` y no `usuarios`, que es donde nació esta deuda: el
+`UsuarioCommandOutputAdapter` quedó inerte a propósito (ver *Desviaciones conocidas* en
+`CLAUDE.md`), así que en `usuarios` ya no hay escritura del aggregate con la que el `INSERT` del
+outbox tenga que ser atómico. El evento y su fila en `event_publication` sí se siguen produciendo
+allí; lo que dejó de ilustrar es el punto de esta deuda. `fichas` sí lo hace.
+
 ```
-[CrearUsuarioInteractorImpl.ejecutar] — @Transactional(transactionManager = "usuariosTransactionManager")
+[CambiarAsesorFichaInteractorImpl.ejecutar] — @Transactional(transactionManager = "fichasTransactionManager")
         │
-        ├── delega en CrearUsuarioUseCaseImpl.ejecutar (sin @Transactional propia)
+        ├── delega en CambiarAsesorFichaUseCaseImpl.ejecutar (sin @Transactional propia)
         │     ├── BEGIN TRANSACTION (abierta por el Interactor)
-        │     │     ├── INSERT usuarios (aggregate, BD del contexto `usuarios`)
+        │     │     ├── UPDATE ficha_perfil (aggregate, BD del contexto `fichas`)
         │     │     └── INSERT event_publication (outbox — misma TX, misma BD)
         │     └── COMMIT
         │
@@ -66,7 +72,7 @@ Se integró **Spring Modulith 2.0.0** con su Event Publication Registry (Outbox 
 | `ModulithAmqpExternalizationConfig` | `shared/amqp` | Routing: `DomainEvent` → exchange `arquisoft.events` con routing key del `temaEvento` |
 | `ContextAwareEventPublicationRepository` | `src/main/java/com/arquisoft/config/outbox/` | Auto-detecta al arranque qué `DataSource` de contexto tiene la tabla `event_publication` y enruta el `INSERT` a la transacción activa de ese contexto |
 | `FailedEventRetryConfig` | `src/main/config` | Reintenta eventos `FAILED` periódicamente sin reinicio |
-| `event_publication` (tabla) | PostgreSQL, **por contexto** | **No hay una BD centralizada.** Cada contexto que publica eventos (hoy: `usuarios`, `fichas`) tiene su propia tabla `event_publication` en su propia BD — ver migraciones `V1.1__crear_event_publication.sql` (`usuarios`) y `V1.9__crear_event_publication.sql` (`fichas`) |
+| `event_publication` (tabla) | PostgreSQL, **por contexto** | **No hay una BD centralizada.** Cada contexto que publica eventos (hoy: `usuarios`, `fichas`) tiene su propia tabla `event_publication` en su propia BD — ver `V20260619224326__crear_event_publication.sql` (`usuarios`) y `V20260724005915__crear_event_publication.sql` (`fichas`) |
 
 ### Tabla `event_publication` (schema v2)
 
