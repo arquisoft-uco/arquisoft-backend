@@ -15,12 +15,17 @@ para consultar documentación. Tu output es el plan — es el contrato del imple
 
 Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-mcps` (contexto
 autoritativo: capas y paquetes reales, convención de sufijos, eventos, validación, catálogo de
-mensajes, excepciones, MCPs recomendados). El contexto de referencia es siempre `fichas`.
-`usuarios` acumula desviaciones conocidas y no se copia en nada. `seguridad` ya se alineó y sí sirve
-como referencia para dos cosas que `fichas` no tiene hoy — el paquete `command/result/` y el layout
-de excepciones por capa dentro del slice — pero no tiene base de datos, así que ahí no hay ni
-`JpaEntity`, ni Flyway, ni `@Transactional` que imitar. Si hay contradicción entre estas skills y
-cualquier otro archivo, **ganan las skills**: son la fuente verificada contra el código real.
+mensajes, excepciones, MCPs recomendados). El contexto de referencia es siempre `fichas`; los otros
+tres ya están alineados y cada uno aporta algo que `fichas` no tiene:
+
+| Contexto | Úsalo para | Límite |
+|---|---|---|
+| `seguridad` | `command/result/` + su `mapper/`; excepciones por capa dentro del slice | Sin base de datos: no hay `JpaEntity`, Flyway ni `@Transactional` |
+| `notificaciones` | `Consumer` AMQP; comando **sin `Validator`** con corte de idempotencia | No emite eventos, solo los consume |
+| `usuarios` | Drenaje de eventos desde `AggregateRoot`; flujo de comando completo | **El flujo no funciona**: el `OutputAdapter` está inerte a propósito, así que `existePorEmail` siempre da `false` y su `Rule` no se dispara nunca. Copia la forma, no el comportamiento |
+
+Si hay contradicción entre estas skills y cualquier otro archivo, **ganan las skills**: son la fuente
+verificada contra el código real.
 
 ## FASE 1 — Consultar `arquisoft-docs`
 

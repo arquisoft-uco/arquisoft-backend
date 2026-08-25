@@ -59,6 +59,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Existe un paquete `query/` para una feature sin lectura real alcanzada por un `primaryport` — su única "consulta" es un `existsById`/`existePor` que alimenta un `Validator`/`Rule` de comando (debe vivir en el `OutputPort` de `command/`, vía `Finder`) | ❌ |
 | Componente en `primaryadapter/`/`secondaryadapter/` directamente, sin subcarpeta por tipo (`web/`, `repository/`, `amqp/`, etc.) | ❌ |
 | `Controller` fuera de `primaryadapter/web/`; `Consumer` AMQP fuera de `primaryadapter/amqp/`; `OutputAdapter`/`JpaEntity` fuera de `secondaryadapter/` | ❌ |
+| `CommandOutputAdapter` que no persiste (solo loguea, devuelve `false`/vacío fijo) sin que el plan lo declare. El único inerte legítimo es `usuarios/.../UsuarioCommandOutputAdapter`, intencional y ya documentado — no es precedente para código nuevo | ❌ |
 
 **Prueba del algodón:** "si mañana cambio Keycloak/RabbitMQ/PostgreSQL por otra tecnología, ¿este
 archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio filtrada (bloqueante).

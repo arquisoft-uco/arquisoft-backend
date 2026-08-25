@@ -13,17 +13,26 @@ excepciones, Checkstyle y testing, ver la skill `arquisoft-estandares`.
 real de `fichas` — el único contexto de negocio completo del proyecto y el patrón a copiar. Ábrelo
 con `Read` cuando necesites el detalle exacto.
 
-Sobre los otros dos contextos con código, porque la respuesta cambió y conviene no arrastrar la vieja:
+Los otros tres contextos con código ya se alinearon. Cada uno sirve de referencia para algo distinto,
+y cada uno tiene un límite que hay que conocer antes de copiar:
 
-- **`usuarios` es el que acumula desviaciones conocidas** — `@Slf4j` en vez de `AppLogger`,
-  `UsuarioCommandController` agregando endpoints, `UsuarioCommandOutputAdapter` que no persiste nada,
-  `UsuarioOutputPort` tipado en `UsuarioDomain` en vez de `Entity`, y `CrearUsuarioRequestDTO` con
-  anotaciones Jakarta. **No lo uses como modelo de nada.**
-- **`seguridad` ya se alineó** y sí sirve de referencia para dos cosas que `fichas` no tiene hoy:
-  el paquete `command/result/` (+ su `mapper/`) y el layout de excepciones por capa dentro del slice.
-  Sus controllers están partidos uno por acción, sus DTO son `record` desnudos con `RequestMapper`, y
-  usa `AppLogger`. Lo único que no tiene es base de datos: se apoya en Keycloak + Redis, así que no
-  busques ahí `JpaEntity`, `Flyway` ni `@Transactional`.
+- **`seguridad`** — referencia del paquete `command/result/` (+ su `mapper/`) y del layout de
+  excepciones por capa dentro del slice. Controllers partidos uno por acción, DTO de request `record`
+  desnudos con `RequestMapper`, `AppLogger`. *Límite:* no tiene base de datos (Keycloak + Redis), así
+  que ahí no hay `JpaEntity`, `Flyway` ni `@Transactional`; y sus cuatro `*ResponseDTO` son clases
+  Lombok en vez de `record` — ese detalle no se copia.
+- **`notificaciones`** — referencia del `Consumer` AMQP y, sobre todo, del comando **sin `Validator`**:
+  su única consulta es un corte de idempotencia resuelto con `Finder` + `if/return`, no con una `Rule`.
+- **`usuarios`** — referencia del **drenaje de eventos desde `AggregateRoot`**, que es la única forma
+  que `fichas` no usa (ver más abajo), y de un flujo de comando completo y correcto:
+  `CrearUsuarioController` → `CrearUsuarioInteractor` (`@Transactional`) → `UseCase` → `Finder` →
+  `Validator` puro → `Rule` → `OutputPort` que habla `Entity`. *Límite, y es grande:* **el flujo no
+  funciona**. `UsuarioCommandOutputAdapter` está inerte a propósito — solo loguea, no escribe, y por
+  eso no existen `UsuarioJpaEntity`/`UsuarioJpaMapper`/`UsuarioCommandRepository`. Consecuencia
+  concreta: `existePorEmail` siempre devuelve `false`, así que `UsuarioEmailUnicoRule` no se dispara
+  nunca. Copia su **forma**, no su comportamiento, y no lo cites como prueba de que un endpoint
+  funciona. Le queda además una desviación real: `CrearUsuarioRequestDTO` con anotaciones Jakarta y
+  `toCommand()` propio, y un `CrearUsuarioCommand` sin fábrica `crear(...)` — nada valida el formato.
 
 ## Dirección de dependencias (no negociable)
 
@@ -233,7 +242,11 @@ persistir — `eventPublisher.publish(new AsesorFichaCambiadoEvent(...))`. El ag
 **Forma con `AggregateRoot` (hoy solo `usuarios`):** el agregado extiende `AggregateRoot`,
 `crear(...)` llama `publicarEvento(...)`, y el `UseCase` drena tras persistir con
 `aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)` — un solo método, no
-existe `limpiarEventosSinPublicar()`. `obtenerEventosSinPublicar()` es `protected`.
+existe `limpiarEventosSinPublicar()`. `obtenerEventosSinPublicar()` es `protected`. Ver
+`usuarios/domain/usuario/UsuarioDomain.java` + `CrearUsuarioUseCaseImpl.java`: es el único ejemplo
+completo de esta forma en el repo, y su flujo de comando (`Controller` → `Interactor` →
+`UseCase` → `Finder` → `Validator` → `Rule` → `OutputPort` en `Entity`) sí es correcto — lo que no
+funciona ahí es la persistencia, que está inerte a propósito.
 
 **Coherencia dura, sea cual sea la forma:** si el plan dice "Eventos: ninguno" → no hay clases en
 `event/`, el `UseCase` no inyecta `EventPublisher`, y el agregado no extiende `AggregateRoot`.

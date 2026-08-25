@@ -93,6 +93,11 @@ se retiró porque dejaba dos puertas de validación para la misma regla y dos fo
 **desviación conocida**, no una alternativa a elegir. Si trabajas en `usuarios`, escribe DTO desnudo +
 `RequestMapper`; no copies el que está ahí.
 
+Ojo con la mitad que más duele de esa desviación: `CrearUsuarioCommand` es un `record` **sin fábrica
+`crear(...)`**, y el DTO lo construye con `new`. O sea que ahí no se valida ningún formato — las
+anotaciones Jakarta del DTO son lo único que queda, y son justo lo que la convención retiró. Un
+`Command` sin `crear(...)` es bloqueante en código nuevo, aunque el contexto ya tenga uno así.
+
 El DTO de request no lleva lógica, con una excepción que sí vale copiar: sobrescribir `toString()`
 para enmascarar un secreto. `IniciarSesionRequestDTO` lo hace porque el `toString()` que el
 compilador genera para un `record` imprime todos sus componentes y volcaría la contraseña en claro.
@@ -237,8 +242,8 @@ El gate real es `check` (tests + `checkstyleMain`/`checkstyleTest` + cobertura),
 
 Constructor injection con `@RequiredArgsConstructor` — nunca `@Autowired`, nunca `@Service` (todo
 use case y adaptador es `@Component`). Se inyectan interfaces, nunca implementaciones. Logging vía
-el puerto `AppLogger` (`shared:logger`) inyectado por constructor — no `@Slf4j` (desviación conocida
-solo en `usuarios`; `seguridad` ya migró — no replicarla). `warn` para 4xx, `error` para 5xx.
+el puerto `AppLogger` (`shared:logger`) inyectado por constructor — no `@Slf4j`, del que ya no queda
+ni uno en los cuatro contextos con código. `warn` para 4xx, `error` para 5xx.
 
 **Nunca loguear desde un método `@Bean` ni desde un `@PostConstruct`:** `Mensajes.instalar(...)`
 ocurre dentro de un `@Bean`, así que cualquier bean construido antes resuelve la **clave cruda** y,

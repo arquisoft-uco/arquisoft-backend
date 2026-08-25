@@ -137,6 +137,14 @@ El `QueryOutputAdapter` es pura delegación: `PageableMapper.toPageable(criteria
 y `PaginationMapper.toResult(page)` (`shared:jpa/util/`); no construye `PageRequest`/`Sort` ni
 captura excepciones de Spring Data para remapearlas a 4xx.
 
+**Un `OutputAdapter` que escribas siempre persiste.** Existe un adaptador deliberadamente inerte en
+el repo — `usuarios/.../UsuarioCommandOutputAdapter`, que solo loguea y no toca la base — y está
+documentado como estado intencional de un contexto de ejemplo, no como patrón. Dos consecuencias
+prácticas: no lo copies a una feature nueva, y si el plan cae **dentro de `usuarios`**, ahí no hay
+`UsuarioJpaEntity`, `UsuarioJpaMapper` ni `UsuarioCommandRepository` — construirlos es parte del
+trabajo, no un descubrimiento que resuelvas improvisando. Repórtalo como ambigüedad si el plan da la
+persistencia por existente.
+
 **Manejo de errores:** por defecto `GlobalAppExceptionHandler` (`shared:web`, paquete
 `com.arquisoft.shared.web.handler`) resuelve el HTTP por jerarquía de la excepción — no crees
 `{Contexto}GlobalExceptionHandler` propio salvo que el plan lo declare explícitamente (colisión de
@@ -201,8 +209,8 @@ espera respuesta: "¿Sigues con @tester (recomendado) o vas directo a @validator
     `logger.info(Mensajes.obtener(clave), args)` para logs (`{}`). **Nunca
     `Mensajes.obtener(clave).formatted(...)`.** Si falta cualquiera de las tres piezas,
     `CatalogoCargaTest` rompe el build.
-- **Logging:** inyecta el puerto `AppLogger` (`shared:logger`) por constructor — no `@Slf4j` (queda
-  como desviación conocida solo en `usuarios`; `seguridad` ya migró). Nunca loguees
+- **Logging:** inyecta el puerto `AppLogger` (`shared:logger`) por constructor — no `@Slf4j`, del que
+  ya no queda ni uno en los cuatro contextos con código. Nunca loguees
   desde un método `@Bean` ni desde un `@PostConstruct`: el catálogo aún no está instalado y saldría
   la clave cruda sin argumentos.
 - **DTOs:** una sola convención, sin variantes por contexto — el `RequestDTO` es un `record` **sin
