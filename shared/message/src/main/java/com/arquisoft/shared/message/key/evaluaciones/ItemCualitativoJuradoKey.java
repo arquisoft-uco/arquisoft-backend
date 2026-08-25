@@ -6,7 +6,7 @@ public enum ItemCualitativoJuradoKey implements ClaveMensaje {
 
     ERROR_NOMBRE_DUPLICADO("evaluaciones.dominio.itemcualitativojurado.error.nombre-duplicado", 1),
     ERROR_PERSISTENCIA("evaluaciones.infraestructura.itemcualitativojurado.error.persistencia", 0),
-    LOG_REGISTRADO("evaluaciones.aplicacion.itemcualitativojurado.log.registrado", 0);
+    LOG_REGISTRADO("evaluaciones.aplicacion.itemcualitativojurado.log.registrado", 1);
 
     private final String clave;
     private final int parametros;
