@@ -1,4 +1,4 @@
-package com.arquisoft.shared.web.exception;
+package com.arquisoft.shared.web.handler;
 
 import com.arquisoft.shared.message.key.app.HttpKey;
 import com.arquisoft.shared.message.Mensajes;

@@ -139,6 +139,7 @@ The validators are split by the **type they validate**, mirroring `shared:util`:
 
 {context}/infrastructure/
 └── {feature}/
+    ├── exception/                # Infrastructure exceptions of THIS feature (extend InfrastructureException)
     ├── command/
     │   ├── primaryadapter/
     │   │   ├── web/
@@ -179,8 +180,7 @@ The validators are split by the **type they validate**, mirroring `shared:util`:
                     └── {Feature}QueryMapper.java  # JpaQueryEntity → ReadModel
 config/              # Spring configuration shared within context ({Context}DataSourceConfig, queue configs)
 security/            # {Context}Authorities
-web/                 # {Context}Routes
-exception/           # Infrastructure exceptions (extend InfrastructureException)
+handler/             # {Context}GlobalExceptionHandler (@RestControllerAdvice) — only seguridad has one
 filter/              # HTTP filters (if applicable to context)
 db/migration/        # Flyway migrations
 ```

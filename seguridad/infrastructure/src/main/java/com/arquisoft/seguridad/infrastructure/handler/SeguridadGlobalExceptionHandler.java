@@ -1,4 +1,4 @@
-package com.arquisoft.seguridad.infrastructure.exception;
+package com.arquisoft.seguridad.infrastructure.handler;
 
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;

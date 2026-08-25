@@ -7,7 +7,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interact
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
-import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;

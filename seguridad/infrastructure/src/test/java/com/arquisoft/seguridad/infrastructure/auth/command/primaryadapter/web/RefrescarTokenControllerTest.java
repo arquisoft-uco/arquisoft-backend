@@ -7,7 +7,7 @@ import com.arquisoft.seguridad.application.auth.command.result.RefrescoTokenResu
 import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
 import com.arquisoft.seguridad.infrastructure.filter.LimitadorSolicitudesFilter;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
-import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;

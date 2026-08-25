@@ -5,7 +5,7 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCr
 import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilInteractor;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
-import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;

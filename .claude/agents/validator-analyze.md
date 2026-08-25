@@ -118,7 +118,7 @@ excepción o mapear a `Entity`.
 
 | Check | Sev |
 |---|:---:|
-| Cada excepción extiende la base correcta: `DomainException`/`DomainValidationException` (422, `domain/{feature}/exception/`) · `ApplicationException` (400, `application/{feature}/exception/`) · excepción de propiedad/no-propietario que en este proyecto también es `DomainException`→422, no un caso 403 aparte · `InfrastructureException` (503, `infrastructure/exception/`) | ❌ |
+| Cada excepción extiende la base correcta: `DomainException`/`DomainValidationException` (422, `domain/{feature}/exception/`) · `ApplicationException` (400, `application/{feature}/exception/`) · excepción de propiedad/no-propietario que en este proyecto también es `DomainException`→422, no un caso 403 aparte · `InfrastructureException` (503, `infrastructure/{feature}/exception/`) | ❌ |
 | Excepción extiende `RuntimeException` directamente | ❌ |
 | `ApplicationException` ubicada en `domain/` (rompe dirección de dependencias) | ❌ |
 | `errorCode` presente, constructor `super(mensaje, errorCode)` en ese orden (invertido compila mal — bug silencioso) | ❌ |

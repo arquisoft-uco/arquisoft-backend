@@ -7,7 +7,7 @@ import com.arquisoft.seguridad.application.auth.command.primaryport.model.Valida
 import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
 import com.arquisoft.seguridad.infrastructure.filter.LimitadorSolicitudesFilter;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
-import com.arquisoft.shared.web.exception.GlobalAppExceptionHandler;
+import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
