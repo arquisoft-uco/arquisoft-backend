@@ -349,6 +349,20 @@ dominio (`desde`/`esValido`/`getId()`, nunca `valueOf` fuera del enum). Su ubica
 `arquisoft-arquitectura` / `docs/ARQUITECTURA_Y_ESTRUCTURA.md#decisión-abierta-dónde-vive-un-enum-de-catálogo`).
 No asumas una convención "settled" que no está confirmada.
 
+**Sus constantes salen de `mer/data/{NN}_data_{contexto}.sql`, no de tu criterio.** Es paso
+obligatorio del Protocolo de Consulta (`gh-docs-reader`, paso 10c) y el plan debe **listar las filas
+que trae**: `id` (la constante Java), `nombre` (la etiqueta de `getNombre()`) y `descripcion`. Ni
+una constante de más — un estado que el Event Storming nombra pero el `data/` no tiene es una
+discrepancia que se pregunta, no un hueco que se rellena.
+
+**Ancho de una tabla de catálogo en la migración:** cópialo de `{NN}_tablas_{contexto}.sql` de esa
+tabla concreta. El estándar de ADR-012 v1.1 (`id`/`nombre` `VARCHAR(60)`, `descripcion`
+`VARCHAR(300)`, y las FK que la referencian con el mismo ancho, nunca `UUID`) rige para tablas
+**nuevas**. Las tres de `fichas` — `estado_ficha` (50/30/200), `tipo_item` (50/20/500),
+`estado_evaluacion` (50/100/255) — son excepciones que el MER documenta porque recogió lo que el
+backend ya tenía. **Nunca planifiques un `ALTER TABLE` para "alinearlas" al estándar:** es un
+breaking-change sobre un catálogo vivo con FKs que lo apuntan, a cambio de nada.
+
 ### Diseño de rutas REST (sección 8)
 
 - **El path identifica, el body transporta valores.** Un id identifica el recurso → path. Es el
@@ -441,6 +455,9 @@ getters/setters ni métodos `private`.
 - [ ] Textos nuevos: clave en `{Feature}Key` + registro en `ClavesCatalogo` + línea en `catalogo/{contexto}.properties`, con la aridad correcta
 - [ ] Migración Flyway en `db/migration/{contexto}/`, versión `V{yyyyMMddHHmmss}` tomada al crear el
       archivo, sin prefijo de base/schema y sin FK hacia otra base de contexto
+- [ ] Enum de catálogo: constantes copiadas fila por fila de `mer/data/{NN}_data_{contexto}.sql` y
+      listadas en el plan; ancho de la tabla tomado de su DDL (60/60/300 solo si es nueva), sin
+      `ALTER TABLE` sobre las tres excepciones de `fichas`
 - [ ] Tests con patrón AAA, cobertura ≥75% verificada con `check` (`*Domain` no está excluido de JaCoCo)
 - [ ] Sin `@Bean TaskExecutor` manual (Virtual Threads ya gestionados por Spring Boot)
 - [ ] Commit sugerido: `feat({contexto}): {descripción corta en español}`

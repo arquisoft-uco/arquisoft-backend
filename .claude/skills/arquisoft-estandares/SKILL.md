@@ -160,6 +160,16 @@ valor llega por el `crear(...)` de un agregado, expone además `esValido(String)
 `ValidationResult` en vez de abortar al primer error. Ambos delegan en `UtilEnum.desde(...)`.
 Los mappers persisten `getId()`, nunca un `.name()` desnudo.
 
+**Sus constantes no se inventan ni se deducen del Event Storming: se copian de
+`mer/data/{NN}_data_{contexto}.sql` en `arquisoft-docs`** (ver la skill `gh-docs-reader`). Ese
+archivo es la fuente de verdad y define fila por fila las tres cosas que necesitas: `id` es la
+constante Java (`Enum.name()`, UPPER_SNAKE_CASE, ADR-012), `nombre` es la etiqueta que devuelve
+`getNombre()` — por eso se queda en Java y no va al catálogo Redis, su fuente de verdad es esa
+fila— y `descripcion` es solo documentación del MER. El conjunto de filas **es** el conjunto de
+constantes; la única que existe sin fila es el centinela `VACIO`, artefacto del código que nunca se
+persiste. Agregar un estado que el modelo enriquecido menciona pero el `data/` no tiene ya pasó una
+vez y hubo que revertirlo.
+
 **Dónde vive un enum de catálogo es una decisión abierta del proyecto** — hoy coexisten
 `domain/{catalogo}/` (cuando tiene tabla propia: `EstadoFicha`, `TipoItem`, `EstadoEvaluacion`) y
 `domain/{feature}/model/` (cuando no la tiene). Un enum nuevo sigue lo que ya use su contexto; no

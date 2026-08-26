@@ -243,6 +243,11 @@ excepción o mapear a `Entity`.
 |---|:---:|
 | `valueOf(...)` llamado fuera del propio enum | ❌ |
 | El enum no expone `desde(String)`/`getId()` | ❌ |
+| Las constantes del enum no coinciden **exactamente** con las filas que el plan copió de `mer/data/{NN}_data_{contexto}.sql` — sobra una, falta una, o el `id` no es UPPER_SNAKE_CASE. El centinela `VACIO` es la única excepción legítima: es del código, no del MER | ❌ |
+| `getNombre()` devuelve algo distinto a la columna `nombre` de esa fila del `data/` | ❌ |
+| La migración del catálogo no inserta las filas del `data/`, o inserta valores que no están ahí | ❌ |
+| `ALTER TABLE` que ensancha `estado_ficha`/`tipo_item`/`estado_evaluacion` al estándar 60/60/300 — son excepciones documentadas en ADR-012 v1.1; migrarlas es un breaking-change sobre un catálogo vivo | ❌ |
+| Tabla de catálogo **nueva** que no usa `id`/`nombre` `VARCHAR(60)` + `descripcion` `VARCHAR(300)`, o cuya FK la referencia como `UUID` en vez del mismo `VARCHAR` | ❌ |
 | Nuevo enum en una ubicación distinta a la que ya usa el resto del contexto, sin justificarlo | ⚠️ |
 
 ### Nivel 2.11 — Construcción de la entidad
