@@ -2,6 +2,7 @@ dependencies {
     implementation project(':seguridad:domain')
     implementation project(':seguridad:application')
     implementation project(':shared:domain')
+    implementation project(':shared:application')
     implementation project(':shared:web')
     implementation project(':shared:logger')
 

@@ -14,10 +14,19 @@ mensaje al usuario** con el reporte completo — no escribes ningún archivo (es
 Invoca `arquisoft-arquitectura` y `arquisoft-estandares`. Son la fuente verificada contra el
 código real — si el plan las contradice, repórtalo como observación.
 
+**Antes de marcar un solo ❌, comprueba que el plan no esté caduco.** El Nivel 1 compara el código
+contra el árbol del plan, así que un plan anterior a las convenciones actuales produce un RECHAZADO
+entero de código correcto: pedirá `domain/{feature}/aggregate/{Entidad}Aggregate.java` donde hoy va
+`domain/{feature}/{Entidad}Domain.java`, `DomainValidator` donde va la familia `Validator*`, una
+migración `V1.x` donde va un timestamp. Los indicadores están en "Los planes de `.workspace/` NO son
+referencia de convención" (`arquisoft-arquitectura`). Si el plan es de esos, **no ejecutes los
+checks**: reporta que el plan está desactualizado y que la validación no es concluyente hasta
+regenerarlo. Un RECHAZADO por convención retirada es peor que no validar.
+
 ## FASE 1 — Cargar plan y código
 
-Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa). Extrae: contexto, si usa
-`AggregateRoot`, eventos declarados (sección 4), integraciones externas (sección 5), árbol de
+Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa). Extrae: contexto, eventos
+declarados (sección 4), integraciones externas (sección 5), árbol de
 archivos (sección 6), criterios de aceptación, endpoints (sección 8), eventos RabbitMQ (sección
 10), migración Flyway (sección 11), estado de la fila `Tests` en la Trazabilidad. Lee cada archivo
 `.java`/`.sql` que el árbol del plan lista.
@@ -51,6 +60,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Check | Sev |
 |---|:---:|
 | `domain/` sin imports de Spring/Hibernate/JPA/Lombok/Jackson/Swagger/Security/Keycloak | ❌ |
+| `{contexto}/domain/build.gradle` declara `shared:application` — el dominio solo ve `shared:domain`. Si el código bajo `domain/` importa `UseCase`, `Interactor`, `Finder` o `EventPublisher`, el tipo está en la capa equivocada (no compila tal cual) | ❌ |
 | `application/` no importa `@RestController` ni JPA directo | ❌ |
 | Bounded contexts no se importan entre sí | ❌ |
 | Sin `@Bean TaskExecutor` manual (ADR-008 — Virtual Threads ya activos) | ❌ |
@@ -64,7 +74,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 **Prueba del algodón:** "si mañana cambio Keycloak/RabbitMQ/PostgreSQL por otra tecnología, ¿este
 archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio filtrada (bloqueante).
 
-### Nivel 2.2 — AggregateRoot y eventos (condicional a lo que declare el plan)
+### Nivel 2.2 — Eventos de dominio (condicional a lo que declare el plan)
 
 > Determina primero qué dice la sección 4 del plan. Marcar checks de "con eventos" en una HU "sin
 > eventos" (o viceversa) es un falso positivo — no lo reportes.
@@ -73,26 +83,24 @@ archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio fil
 `reconstruir(...)` · el dominio no inyecta `EventPublisher` · no existe un `{Entidad}EventPublisher`
 local (la publicación está centralizada en `shared:amqp`).
 
-**Si el plan declara eventos**, hay dos formas válidas y el plan decide cuál — no exijas la otra:
+**Si el plan declara eventos**, hay una sola forma: el `UseCase` inyecta `EventPublisher`
+(`com.arquisoft.shared.publisher`, la **interfaz** — inyectar `SpringModulithEventPublisher` o
+`RabbitMQEventPublisher` es ❌) y tras persistir hace
+`eventPublisher.publish(new {Entidad}{Accion}Event(...))`. El agregado es una clase plana: si
+acumula eventos en memoria, extiende una clase base para emitirlos, o expone un método de drenaje
+que el use case invoque, es ❌ bloqueante — ese tipo base no existe y el código no compila. Ver
+`fichas/application/.../fichaperfil/command/usecase/impl/CambiarAsesorFichaUseCaseImpl.java`.
 
-- **Publicación directa desde el `UseCase` (forma por defecto en `fichas`):** el `UseCase` inyecta
-  `EventPublisher` (la interfaz, nunca una implementación concreta) y tras persistir hace
-  `eventPublisher.publish(new {Entidad}{Accion}Event(...))`. El agregado **no** extiende
-  `AggregateRoot` — el evento nace de la acción, no del agregado. Ver
-  `fichas/application/.../fichaperfil/command/usecase/impl/CambiarAsesorFichaUseCaseImpl.java`.
-- **Drenaje desde `AggregateRoot` (hoy solo `usuarios`):** la entidad extiende `AggregateRoot`,
-  `crear(...)` llama `publicarEvento(...)`, y el `UseCase` drena con
-  `aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)` — un solo método; no
-  existe `limpiarEventosSinPublicar()`.
-
-En ambas: eventos en `domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
+Además: eventos en `domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
 (`{contexto}.{entidad}.{accion}`, minúsculas+snake_case) pasado a `super(EVENT_TOPIC, EVENT_TYPE)`,
 ningún `@Override` de `getTemaEvento()` (es `final`), y el evento carga todo lo que su consumidor
 necesita (nombre, email…) para que no tenga que reconsultar al productor.
 
-**Si el plan dice "Eventos: ninguno":** la entidad **no** extiende `AggregateRoot` (extenderlo "por
-consistencia" es bloqueante — arrastra maquinaria muerta) · no hay archivos en `event/` · el
-`UseCase` no inyecta `EventPublisher`.
+**Si el plan dice "Eventos: ninguno", el exceso también es ❌ bloqueante**, no una mejora: cualquier
+archivo bajo `event/`, cualquier `EventPublisher` inyectado, cualquier fila nueva en
+`ClavesCatalogo` para un evento. El plan declaró esa ausencia — normalmente porque el usuario
+respondió que no hay consumidor — y publicar un evento que nadie consume crea un contrato que otro
+contexto puede empezar a consumir después. Repórtalo citando la sección 4 del plan.
 
 ### Nivel 2.3 — Entidad de dominio
 
@@ -180,7 +188,7 @@ excepción o mapear a `Entity`.
 | `Validator` inyecta un `OutputPort`/`Finder`, recibe algo por `@RequiredArgsConstructor`, o contiene un `if` (debe ser puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`) | ❌ |
 | `Rule` declarada como bean (`@Component`) o con dependencias de constructor | ❌ |
 | `Finder` lanza por "no encontrado" en vez de devolver `Boolean`/`Long`/`Optional` | ❌ |
-| `Finder` que no extiende `Finder<T, R>` de `shared:rules`, o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
+| `Finder` que no extiende `Finder<T, R>` de `shared:application` (`com.arquisoft.shared.finder`), o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
 | `Validator` **vacío** o que no orquesta ninguna `Rule`, creado solo porque la plantilla lo listaba. Un comando sin restricciones de conjunto no lleva `Validator`: ver `notificaciones/.../EnviarNotificacionUseCaseImpl` | ❌ |
 | Clase con sufijo `Validator` que en realidad inyecta un `OutputPort` y devuelve un `boolean` — eso es un `Finder`, no un `Validator`; renómbralo y muévelo a `command/finder/` | ❌ |
 | `{Entidad}OutputPort` declara un método sobre **otro** aggregate (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |
@@ -235,6 +243,11 @@ excepción o mapear a `Entity`.
 |---|:---:|
 | `valueOf(...)` llamado fuera del propio enum | ❌ |
 | El enum no expone `desde(String)`/`getId()` | ❌ |
+| Las constantes del enum no coinciden **exactamente** con las filas que el plan copió de `mer/data/{NN}_data_{contexto}.sql` — sobra una, falta una, o el `id` no es UPPER_SNAKE_CASE. El centinela `VACIO` es la única excepción legítima: es del código, no del MER | ❌ |
+| `getNombre()` devuelve algo distinto a la columna `nombre` de esa fila del `data/` | ❌ |
+| La migración del catálogo no inserta las filas del `data/`, o inserta valores que no están ahí | ❌ |
+| `ALTER TABLE` que ensancha `estado_ficha`/`tipo_item`/`estado_evaluacion` al estándar 60/60/300 — son excepciones documentadas en ADR-012 v1.1; migrarlas es un breaking-change sobre un catálogo vivo | ❌ |
+| Tabla de catálogo **nueva** que no usa `id`/`nombre` `VARCHAR(60)` + `descripcion` `VARCHAR(300)`, o cuya FK la referencia como `UUID` en vez del mismo `VARCHAR` | ❌ |
 | Nuevo enum en una ubicación distinta a la que ya usa el resto del contexto, sin justificarlo | ⚠️ |
 
 ### Nivel 2.11 — Construcción de la entidad
@@ -287,12 +300,10 @@ delegación pura (`verify(...)` sin más) · 6. Test propio de una excepción co
 inválido es bloqueante — indica que la excepción no extiende la base correcta y cae en el fallback
 de `GlobalAppExceptionHandler`; la corrección es la clase base de la excepción, no un handler local.
 
-**Coherencia tipo de UC:** si la Metadata declara **Consulta**, cualquier test de eventos
-(`publicarEvento`/`extraerEventosSinPublicar`/`verify(eventPublisher)`) es bloqueante por sobra. Si
-declara **Escritura** con eventos, su ausencia es bloqueante por falta — pero el test correcto
-depende de la forma que use el plan: `verify(eventPublisher).publish(any())` para publicación
-directa desde el `UseCase`, o el ciclo `publicarEvento`/`extraerEventosSinPublicar` para la forma
-con `AggregateRoot`. Si el plan no declara el campo, repórtalo como ⚠️ menor.
+**Coherencia tipo de UC:** si la Metadata declara **Consulta**, cualquier `verify(eventPublisher)`
+es bloqueante por sobra. Si declara **Escritura** con eventos, su ausencia es bloqueante por falta:
+el test correcto es `verify(eventPublisher).publish(any())` en el test del `UseCase`. Si el plan no
+declara el campo, repórtalo como ⚠️ menor.
 
 **Slice de infraestructura (`fichas`):** un `@WebMvcTest` sin `@Import` de
 `GlobalAppExceptionHandler` (toda excepción sale 500) o de `AppLoggerConfig` (falta el bean
@@ -300,8 +311,8 @@ con `AggregateRoot`. Si el plan no declara el campo, repórtalo como ⚠️ meno
 que en `RegistrarFichaPerfilControllerTest`. `@MockBean` en vez de `@MockitoBean` es bloqueante, y
 `@WithMockUser` también (prefija `ROLE_` y no casa con `hasAuthority`).
 
-**Cobertura:** el umbral del 75% lo verifica `check`. Los excluidos de JaCoCo son `*Aggregate`,
-`*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` y `config/**` — **`*Domain` no está
+**Cobertura:** el umbral del 75% lo verifica `check`. Los excluidos de JaCoCo son `*DTO`,
+`*Command`, `*ReadModel`, `*Application`, `*Entity` y `config/**` — **`*Domain` no está
 excluido**, así que un agregado sin tests hunde el porcentaje del módulo. No reportes como
 "excluido" algo que no está en esa lista.
 
@@ -323,7 +334,7 @@ Cualquier error de compilación es siempre bloqueante — incluye el mensaje exa
 # Reporte de Validación — {HU|HT}-{ID}
 
 ## Metadata
-- **Bounded Context:** {contexto} · **Usa AggregateRoot:** {Sí/No}
+- **Bounded Context:** {contexto}
 - **Fecha:** {fecha} · **Rama propuesta:** `feature/{HU|HT}-{ID}-{descripcion}`
 
 ## Score

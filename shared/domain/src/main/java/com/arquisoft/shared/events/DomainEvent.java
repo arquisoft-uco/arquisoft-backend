@@ -6,7 +6,12 @@ import java.util.regex.Pattern;
 
 public abstract class DomainEvent {
 
+    private static final String FORMATO_TEMA = "{contexto}.{entidad}.{accion}";
+    private static final String EJEMPLO_TEMA = "usuarios.usuario.creado";
     private static final Pattern PATRON_TEMA = Pattern.compile("^[a-z][a-z_]*\\.[a-z][a-z_]*\\.[a-z][a-z_]*$");
+    private static final String ERROR_TEMA_INVALIDO =
+            "El tema del evento '%s' no cumple el formato requerido '" + FORMATO_TEMA
+            + "' (ej. '" + EJEMPLO_TEMA + "')";
 
     private final String idEvento;
     private final Instant ocurridoEn;
@@ -23,9 +28,7 @@ public abstract class DomainEvent {
 
     private static void validarTema(String tema) {
         if (tema == null || !PATRON_TEMA.matcher(tema).matches()) {
-            throw new IllegalArgumentException(
-                "El tema del evento '" + tema + "' no cumple el formato requerido '{contexto}.{entidad}.{accion}' "
-                + "(ej. 'seguridad.usuario.creado')");
+            throw new IllegalArgumentException(ERROR_TEMA_INVALIDO.formatted(tema));
         }
     }
 

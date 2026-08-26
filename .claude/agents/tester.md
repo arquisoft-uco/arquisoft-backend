@@ -70,12 +70,8 @@ Pattern — `ValidationResult` acumula y `lanzarSiTieneErrores()` lanza **una so
 `reconstruir(...)` sin re-validar. Cada `Rule` (`domain/{feature}/rules/impl/`) se testea aislada
 con su record de entrada: **no necesita Mockito**, es una función pura.
 
-**Solo si el plan declara la forma de drenaje** (la entidad extiende `AggregateRoot`): ciclo
-`publicarEvento(...)` en `crear` → `extraerEventosSinPublicar()` retorna la lista y la limpia en una
-sola operación (no existe `limpiarEventosSinPublicar()`); `reconstruir(...)` no emite nada.
-`obtenerEventosSinPublicar()` es `protected` — solo accesible desde un test en el **mismo paquete**
-que la entidad. En la forma por defecto de `fichas` (publicación directa desde el `UseCase`) el
-evento se verifica en application, no aquí. Si el plan dice "Eventos: ninguno", nada de esto aplica
+El agregado no emite eventos: los publica el `UseCase`, así que el `verify(eventPublisher)` se
+testea en application, nunca en domain. Si el plan dice "Eventos: ninguno", nada de esto aplica
 — generarlo sería sobre-testeo.
 
 **Application — `Validator`/`Finder`/`UseCase`:** en el test del `UseCase`, mockea sus colaboradores
@@ -92,10 +88,11 @@ para cortar temprano sin lanzar — la idempotencia de un consumidor AMQP —, e
 `verify(envioOutputPort, never()).enviar(any())`, no una excepción. Ver
 `notificaciones/.../EnviarNotificacionUseCaseTest.noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado`.
 
-**Solo si el plan declara
-eventos:** `verify(eventPublisher, times(N)).publish(any())` — nunca inspecciones
-`obtenerEventosSinPublicar()` desde application (es `protected`). Si dice "Eventos: ninguno", no
-mockees `EventPublisher`.
+**Solo si el plan declara eventos:** `verify(eventPublisher, times(N)).publish(any())` sobre el mock
+de `EventPublisher` que inyecta el use case — es el único punto de observación, porque el agregado
+no guarda eventos que se le puedan preguntar después. **Si el plan dice "Eventos: ninguno", no
+mockees `EventPublisher`**: el use case no lo inyecta, así que un `@Mock` de más rompe el test con
+`UnnecessaryStubbingException` y, peor, sugiere que el flujo publica algo.
 
 Si el comando devuelve un `{Concepto}Result`, el test del `UseCase` asserta sus campos — con eso
 queda cubierto el `{Concepto}ResultMapper`, que **sí cuenta para JaCoCo** (`*Result` y
@@ -132,8 +129,8 @@ ordenable".
 ## Flujo de trabajo
 
 1. **Cargar plan y código.** Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa) y cada
-   archivo de producción implementado. Extrae: contexto, tipo de use case, si usa `AggregateRoot`,
-   eventos declarados, árbol de archivos.
+   archivo de producción implementado. Extrae: contexto, tipo de use case, eventos declarados,
+   árbol de archivos.
 2. **Estimar y confirmar.** Presenta la distribución de tests por capa con la estimación total y
    los anti-patrones que vas a evitar. Espera "sí"/"ajustar" antes de generar. Si supera 80, avisa
    explícitamente del riesgo de sobre-testeo.
@@ -148,7 +145,7 @@ ordenable".
    ```
    `check` es el gate real (incluye `checkstyleMain`/`checkstyleTest` + `jacocoTestCoverageVerification`
    con mínimo 75%). JaCoCo no se aplica a `shared:*`, y dentro de un contexto excluye
-   `*Aggregate`, `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity` y
+   `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity` y
    `JpaQueryEntity`) y `config/**`. **`*Domain` NO está excluido** — el agregado cuenta para el
    umbral, así que sus tests de `crear`/`reconstruir` son los que sostienen el porcentaje.
    Reportar verde habiendo corrido solo `test` es un error — un import sin usar o cobertura <75%

@@ -17,12 +17,18 @@ Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-
 fuente verificada contra el código real — si contradicen algo del plan, **detente y reporta al
 usuario**, no lo resuelvas por tu cuenta.
 
+Con una excepción, porque detenerse ahí no ayudaría a nadie: si el plan es **anterior a las
+convenciones actuales** (ver "Los planes de `.workspace/` NO son referencia de convención" en
+`arquisoft-arquitectura` — rutas con `aggregate/`, `{Entidad}Aggregate`, `DomainValidator`,
+migraciones `V1.x`), no es una contradicción a resolver: el plan entero está caduco. Repórtalo como
+tal en una sola intervención, di qué secciones hay que rehacer, y **no lo implementes tal cual**.
+
 ## FASE 1 — Cargar el plan
 
 1. Localiza `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz del repo). Si el
    usuario no indicó el ID, pregúntalo.
-2. Léelo completo. Confirma con el usuario: tipo/ID/contexto, si usa `AggregateRoot` (sección 4),
-   y la lista de archivos a crear/modificar.
+2. Léelo completo. Confirma con el usuario: tipo/ID/contexto y la lista de archivos a
+   crear/modificar.
 3. Pregunta: "¿Confirmas que este plan está aprobado y podemos iniciar?" Espera confirmación.
 
 ## FASE 2 — Preparar el entorno
@@ -82,18 +88,22 @@ omites).
   propio `UseCase`. Convertirlo en `Rule` haría que lanzara, y la excepción mandaría el mensaje a la
   DLQ con rollback de la fila por lo que era una reentrega normal del broker. La regla para decidir:
   si el resultado ausente/presente **es un error de negocio** → `Rule`; si solo decide seguir o no →
-  `Finder` + `if/return`. Las interfaces de `shared:rules` son `DomainRule<T>.validar(T)` (void,
-  lanza) y `Finder<T, R>.obtener(T)` (devuelve, nunca lanza).
+  `Finder` + `if/return`. Los métodos son fijos: `DomainRule<T>.validar(T)` (void, lanza) y
+  `Finder<T, R>.obtener(T)` (devuelve, nunca lanza). Y no viven juntas: `DomainRule` en
+  `com.arquisoft.shared.rules` (`shared:domain`), `Finder` en `com.arquisoft.shared.finder`
+  (`shared:application`).
 - Todo el I/O del comando vive en el `UseCase`: los `Finder`s traen el estado, se desenvuelve el
   `Optional` ahí (centinela `VACIO` para agregados, valor + `boolean` para escalares), se valida, se
   mapea `Domain → Entity` y se persiste.
 - La existencia de un aggregate de **otra feature** se consulta con el `Finder` de esa feature sobre
   su `OutputPort` de `command/` — nunca creando un `query/` para eso.
-- Si el plan declara eventos, el `UseCase` inyecta `EventPublisher` (`com.arquisoft.shared.events`)
-  y usa la forma que el plan indique: publicación directa
-  `eventPublisher.publish(new {Entidad}{Accion}Event(...))` (default en `fichas`) o drenaje
-  `aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)` (no existe
-  `limpiarEventosSinPublicar()`). Si dice "Eventos: ninguno", no inyectes `EventPublisher`.
+- Si el plan declara eventos, el `UseCase` inyecta la **interfaz** `EventPublisher`
+  (`com.arquisoft.shared.publisher`, en `shared:application` — nunca una de sus dos
+  implementaciones) y publica directamente tras persistir:
+  `eventPublisher.publish(new {Entidad}{Accion}Event(...))`. Es la única forma: el agregado es una
+  clase plana, no acumula eventos ni los drena. **Si el plan dice "Eventos: ninguno", no inyectes
+  `EventPublisher` y no crees nada en `event/`** — ni "por si acaso", ni porque la entidad parezca
+  pedirlo. Ausencia declarada es una decisión del plan, no un olvido que te toque completar.
 - `application/{feature}/exception/` (→ `ApplicationException`, 400) es solo para fallos de
   **orquestación** de la capa. "No encontrado", "duplicado" y "no eres el dueño" son restricciones
   de conjunto: van en una `Rule` de dominio con su `DomainException` (422).
@@ -191,13 +201,18 @@ espera respuesta: "¿Sigues con @tester (recomendado) o vas directo a @validator
   nunca `build`/`rebuild`; `reconstruir` no valida ni genera nada. Si el agregado puede llegar
   ausente al use case, declara `public static final X VACIO` con los valores cero
   (`UtilUUID.obtenerUUIDPorDefecto()`, `UtilTexto.VACIO`, …) y `esVacio()` comparando identidad.
-  Extiende `AggregateRoot` **solo si el plan declara la forma de drenaje** — en la forma por defecto
-  de `fichas` (publicación directa desde el `UseCase`) es una `final class` plana.
+  El agregado es siempre una `final class` plana: no extiende nada para emitir eventos.
 - **IDs:** siempre `UUID`, generado en el setter (`UtilUUID`), nunca `UUID.randomUUID()` directo en
   dominio.
 - **Enums de catálogo:** `desde(String)`/`esValido(String)`/`getId()`, nunca `valueOf` fuera del
   enum. Su ubicación (`domain/{catalogo}/` vs `domain/{feature}/model/`) sigue lo que ya use el
   contexto tocado — es una decisión abierta del proyecto, no asumas una convención fija de PK.
+  **Las constantes son las que el plan copió de `mer/data/{NN}_data_{contexto}.sql`: escribe esas y
+  solo esas.** `id` es la constante Java (UPPER_SNAKE_CASE) y `nombre` el texto de `getNombre()`,
+  literal de esa fila. Si el plan no las lista, es ambigüedad — repórtala, no las deduzcas. La
+  migración inserta exactamente ese mismo conjunto, y el ancho de la tabla se copia del DDL del MER
+  (el estándar 60/60/300 de ADR-012 v1.1 aplica solo a tablas nuevas; `estado_ficha`, `tipo_item` y
+  `estado_evaluacion` son excepciones documentadas que **no** se migran).
 - **Mensajes:** cero strings literales en producción, y **dos destinos distintos** (no existe
   ninguna clase `{Contexto}Messages`):
   - Constantes Java en `shared:message`: `{Contexto}Codes` (códigos), `{Contexto}Fields` (campos de

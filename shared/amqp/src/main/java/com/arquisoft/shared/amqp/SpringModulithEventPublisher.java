@@ -1,12 +1,14 @@
 package com.arquisoft.shared.amqp;
 
 import com.arquisoft.shared.events.DomainEvent;
-import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 @Component
+@Primary
 @RequiredArgsConstructor
 public class SpringModulithEventPublisher implements EventPublisher {
 

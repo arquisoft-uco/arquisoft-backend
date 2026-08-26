@@ -22,10 +22,19 @@ tres ya están alineados y cada uno aporta algo que `fichas` no tiene:
 |---|---|---|
 | `seguridad` | `command/result/` + su `mapper/`; excepciones por capa dentro del slice | Sin base de datos: no hay `JpaEntity`, Flyway ni `@Transactional` |
 | `notificaciones` | `Consumer` AMQP; comando **sin `Validator`** con corte de idempotencia | No emite eventos, solo los consume |
-| `usuarios` | Drenaje de eventos desde `AggregateRoot`; flujo de comando completo | **El flujo no funciona**: el `OutputAdapter` está inerte a propósito, así que `existePorEmail` siempre da `false` y su `Rule` no se dispara nunca. Copia la forma, no el comportamiento |
+| `usuarios` | Flujo de comando completo | **El flujo no funciona**: el `OutputAdapter` está inerte a propósito, así que `existePorEmail` siempre da `false` y su `Rule` no se dispara nunca. Copia la forma, no el comportamiento |
 
 Si hay contradicción entre estas skills y cualquier otro archivo, **ganan las skills**: son la fuente
 verificada contra el código real.
+
+**No uses los planes de `.workspace/h-plan/` como modelo — de formato ni de contenido.** Son el
+registro de HUs ya entregadas entre abril y agosto de 2026, todas anteriores a las convenciones
+actuales: describen `{Entidad}Aggregate` bajo `aggregate/`, `DomainValidator`, `FichasMessages`,
+migraciones `V1.x` y puertos de consulta para chequeos de existencia. Copiar de ahí propaga
+convenciones retiradas al plan nuevo, que es el contrato que el implementador ejecuta. Tu plantilla
+de FASE 4 y estas skills son la única referencia; el ejemplo concreto se saca del **código real** de
+`fichas`. Ver "Los planes de `.workspace/` NO son referencia de convención" en
+`arquisoft-arquitectura`.
 
 ## FASE 1 — Consultar `arquisoft-docs`
 
@@ -44,8 +53,7 @@ Registra los archivos consultados para el Metadata del plan.
 4. **Verifica si la entidad raíz ya existe en el código** — no lo asumas, ábrela:
    `{contexto}/domain/src/main/java/com/arquisoft/{contexto}/domain/{entidad}/{Entidad}Domain.java`
    (vive directo ahí, sin subcarpeta `aggregate/`). Si ya existe, va en "Archivos a MODIFICAR", no
-   en "NUEVOS" — y si la HU añade eventos a una entidad que hoy no extiende `AggregateRoot`, el plan
-   declara explícitamente "modificar `{Entidad}Domain.java` para añadir `extends AggregateRoot`".
+   en "NUEVOS".
    Si NO existe (primera HU del contexto que la toca), créala como archivo NUEVO **incluso si la HU
    es de Consulta** — sin la entidad raíz el puerto no puede usar `reconstruir(...)`.
 5. Lee el Modelo Enriquecido del contexto (tabla de mapeo en `gh-docs-reader`) y extrae, por cada
@@ -75,15 +83,34 @@ underscore). Ej. válido: `fichas:ficha-perfil:create`. Roles realm en kebab-cas
 A) Sí, consumidor conocido · B) Sí, se anticipa/hay caso de auditoría · C) No, CRUD sin
 consumidores ni auditoría.
 
-A/B → el `UseCase` inyecta `EventPublisher` y publica tras persistir. La forma por defecto en
-`fichas` es **publicación directa**: `eventPublisher.publish(new {Entidad}{Accion}Event(...))`, con
-el agregado como clase plana (así lo hace `CambiarAsesorFichaUseCaseImpl`). La forma con
-`AggregateRoot` (`crear(...)` llama `publicarEvento(...)` y el use case drena con
-`extraerEventosSinPublicar()`) solo se planifica cuando el evento nace del agregado mismo al
-crearse — hoy únicamente `usuarios`. Declara en la sección 4 cuál de las dos aplica.
+A/B → el `UseCase` inyecta la interfaz `EventPublisher` (`com.arquisoft.shared.publisher`) y publica
+tras persistir. Hay **una sola forma**: `eventPublisher.publish(new {Entidad}{Accion}Event(...))`,
+con el agregado como clase plana (así lo hacen `CambiarAsesorFichaUseCaseImpl` y
+`CrearUsuarioUseCaseImpl`). El agregado nunca acumula eventos ni los drena: no planifiques una clase
+base de dominio para emitirlos — no existe y no compila.
 
-C → clase plana, sin `EventPublisher` en el use case. **Coherencia dura:** "Eventos: ninguno" ⟺ NO
-extiende `AggregateRoot` ⟺ use case NO inyecta `EventPublisher`. Nunca declares una sin las otras dos.
+**C → el plan no lleva eventos, y eso se propaga a seis lugares.** Esta es la respuesta que más se
+ignora al redactar, porque la plantilla de FASE 4 tiene casilla para eventos y llenarla se siente
+como completitud. No lo es: es contradecir al usuario. Si la respuesta fue C, al escribir el plan
+**borras**, no dejas vacías ni con "N/A", estas seis cosas:
+
+| # | Dónde | Qué desaparece |
+|---|---|---|
+| 1 | Sección 4 → *Eventos de Dominio* | La tabla entera. Queda solo `Eventos: ninguno. Razón: {la que dio el usuario}` |
+| 2 | Sección 4 → *Publicación* | La línea completa |
+| 3 | Sección 6 → árbol | La fila `domain/{feature}/event/{Entidad}{Accion}Event.java` |
+| 4 | Sección 7 | Cualquier detalle de una clase de evento |
+| 5 | Sección 10 → *Eventos RabbitMQ* | **La sección entera, encabezado incluido** — no una tabla vacía |
+| 6 | Sección 12 | Todo caso de prueba que verifique publicación |
+
+Y el `UseCase` **no inyecta `EventPublisher`** en la sección 7. **Coherencia dura:** "Eventos:
+ninguno" ⟺ nada en `event/` ⟺ use case sin `EventPublisher` ⟺ sin sección 10. Las cuatro se mueven
+juntas; declarar una sin las otras es el defecto que esta tabla existe para evitar.
+
+Si mientras redactas te parece que la HU *debería* emitir un evento y el usuario dijo C, no lo
+planifiques igual: anótalo en la sección 1 como algo fuera de alcance, o vuelve a preguntar. Un
+evento que nadie consume no es previsión — es un contrato publicado en el exchange que otro contexto
+puede empezar a consumir sin que nadie lo haya decidido.
 
 **6. ¿Persistencia nueva o se reutiliza la existente?**
 
@@ -163,7 +190,6 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 - **ID Historia:** {HU|HT}-{ID}
 - **Bounded Context:** {contexto}
 - **Tipo de Use Case:** {Escritura/Consulta/Mixto}
-- **¿Usa AggregateRoot?:** {Sí/No + justificación}
 - **Módulos Gradle afectados:** `{contexto}:domain`, `:application`, `:infrastructure`
 - **Fecha de plan:** {fecha}
 - **Rama sugerida:** `feature/{HU|HT}-{ID}-{descripcion_snake_case}`
@@ -195,7 +221,6 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 ## 4. Modelo DDD del Contexto
 ### Entidad raíz
 - **Clase:** `{Entidad}Domain`
-- **¿Extiende `AggregateRoot`?:** {Sí/No — coherente con "Eventos que emite"}
 - **Objeto de acción:** {`{Accion}{Entidad}Domain` si la acción arrastra más que el agregado
   (estado inicial, colecciones, ids del contexto) — nominalizado como sustantivo:
   `Registro…`/`Cambio…`/`Modificacion…`/`Agregacion…`/`Remocion…`; vive junto al agregado y lo
@@ -205,9 +230,10 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 | Atributo | Tipo | Longitud | Obligatorio | Modificable | Autogenerado | Notas |
 **Combinaciones únicas:** {atributos} → `UNIQUE` en Flyway + validación previa en el use case.
 ### Eventos de Dominio
-{tabla Evento/Clase/temaEvento/Consumidor/Cuándo, o "Eventos: ninguno. Razón: ..."}
-**Forma de publicación:** {Directa desde el `UseCase` (default en `fichas`) / Drenaje desde
-`AggregateRoot`} — omitir si no hay eventos.
+{Si la pregunta 5 fue A/B: tabla Evento/Clase/temaEvento/Consumidor/Cuándo, seguida de
+"**Publicación:** directa desde el `UseCase` tras persistir".
+Si fue C: exactamente la línea `Eventos: ninguno. Razón: {la del usuario}` y **nada más** — sin
+tabla vacía, sin línea de Publicación. Ver la tabla de las seis eliminaciones en FASE 3.}
 
 ## 5. Integraciones Externas (solo si aplica — Keycloak/SMTP/MinIO/HTTP externo más allá de lo estándar)
 | Puerto (application/secondaryport) | Adaptador (infrastructure/secondaryadapter) | Sistema externo | Qué traduce |
@@ -226,7 +252,7 @@ Para Controllers añade: @Tag, y por endpoint: @Operation(summary), @ApiResponse
 ## 9. Seguridad y Autorización (Keycloak)
 | Client role | Roles realm que lo poseen | Endpoint(s) | Descripción |
 
-## 10. Eventos RabbitMQ (si aplica)
+## 10. Eventos RabbitMQ — SOLO si la pregunta 5 fue A/B. Con C, borra esta sección completa
 | Dirección | Exchange | Routing Key | Payload | Contexto receptor |
 
 ## 11. Migración de Base de Datos (si aplica)
@@ -283,7 +309,7 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | domain | `.../domain/{feature}/model/{Concepto}.java` | `record` de entrada de cada Rule (`ExistenciaX`, `DisponibilidadX`, `PropiedadX`) + value objects |
 | domain | `.../domain/{feature}/rules/{Regla}Rule.java` + `rules/impl/{Regla}RuleImpl.java` | Una por restricción de conjunto (existencia/unicidad/propiedad) |
 | domain | `.../domain/{feature}/exception/{Entidad}{Caso}Exception.java` | Solo para lo que lanza una `Rule` — nunca para invariantes del agregado. El `exception/` va **dentro del slice**, no a nivel de contexto (igual en `application/` e `infrastructure/`) |
-| domain | `.../domain/{feature}/event/{Entidad}{Accion}Event.java` | Solo si emite eventos |
+| domain | `.../domain/{feature}/event/{Entidad}{Accion}Event.java` | **SOLO si la pregunta 5 fue A/B.** Con C esta fila no existe, igual que no existe la sección 10 |
 | application | `{contexto}/application/.../{feature}/command/primaryport/model/{Accion}{Entidad}Command.java` | `record` con `crear(...)` |
 | application | `.../command/primaryport/mapper/{Accion}{Entidad}Mapper.java` | `Command` → objeto de acción; solo si la sección 4 lo declara |
 | application | `.../command/primaryport/interactor/{Accion}{Entidad}Interactor.java` + `interactor/impl/...InteractorImpl.java` | Dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` |
@@ -322,6 +348,20 @@ dominio (`desde`/`esValido`/`getId()`, nunca `valueOf` fuera del enum). Su ubica
 **decisión abierta del proyecto** — sigue la que ya use el contexto que estás tocando (ver
 `arquisoft-arquitectura` / `docs/ARQUITECTURA_Y_ESTRUCTURA.md#decisión-abierta-dónde-vive-un-enum-de-catálogo`).
 No asumas una convención "settled" que no está confirmada.
+
+**Sus constantes salen de `mer/data/{NN}_data_{contexto}.sql`, no de tu criterio.** Es paso
+obligatorio del Protocolo de Consulta (`gh-docs-reader`, paso 10c) y el plan debe **listar las filas
+que trae**: `id` (la constante Java), `nombre` (la etiqueta de `getNombre()`) y `descripcion`. Ni
+una constante de más — un estado que el Event Storming nombra pero el `data/` no tiene es una
+discrepancia que se pregunta, no un hueco que se rellena.
+
+**Ancho de una tabla de catálogo en la migración:** cópialo de `{NN}_tablas_{contexto}.sql` de esa
+tabla concreta. El estándar de ADR-012 v1.1 (`id`/`nombre` `VARCHAR(60)`, `descripcion`
+`VARCHAR(300)`, y las FK que la referencian con el mismo ancho, nunca `UUID`) rige para tablas
+**nuevas**. Las tres de `fichas` — `estado_ficha` (50/30/200), `tipo_item` (50/20/500),
+`estado_evaluacion` (50/100/255) — son excepciones que el MER documenta porque recogió lo que el
+backend ya tenía. **Nunca planifiques un `ALTER TABLE` para "alinearlas" al estándar:** es un
+breaking-change sobre un catálogo vivo con FKs que lo apuntan, a cambio de nada.
 
 ### Diseño de rutas REST (sección 8)
 
@@ -373,8 +413,7 @@ Detalle en `arquisoft-estandares`.
 `Rule` aislada con su record) → application (`UseCase` flujo exitoso + errores + orden de
 invocación, `Validator` con sus `Rule`s reales, `Command.crear`) → infrastructure (`OutputAdapter`
 con `@DataJpaTest`, `Controller` con `@WebMvcTest`: 201/400/401/403/422). Si hay eventos, el
-`verify(eventPublisher)` va en el test del `UseCase` (publicación directa) o en el del agregado
-(forma con `AggregateRoot`) — nunca en ambos.
+`verify(eventPublisher)` va en el test del `UseCase`.
 
 **Consulta:** sin tests de eventos y sin tests de domain si el agregado no se invoca en el read
 side → `UseCase` (con/sin resultados, filtros inválidos) → `SortMapperTest` si hay orden →
@@ -392,7 +431,6 @@ getters/setters ni métodos `private`.
 - [ ] Entidad raíz: constructor privado, campos no-`final` con setters privados que cortan con
       `return` al fallar, solo getters, `crear`/`reconstruir` (nunca `build`/`rebuild`), sin Lombok,
       sin subcarpeta `aggregate/`; centinela `VACIO` + `esVacio()` si puede venir ausente
-- [ ] Extiende `AggregateRoot` solo si el evento nace del agregado — coherente con la sección 4
 - [ ] Invariantes locales acumuladas en `ValidationResult` (sin excepción propia); restricciones de
       conjunto como `Rule` + su record, orquestadas por el `Validator` → 422. Ningún `if/throw` en el use case
 - [ ] `Validator` puro: constructor sin argumentos con `new {Regla}RuleImpl()`, sin `Finder`, sin `if`
@@ -400,6 +438,8 @@ getters/setters ni métodos `private`.
 - [ ] Consulta que no debe lanzar (idempotencia, corte temprano): `Finder` consultado directo desde
       el use case con `if (...) return;`, sin `Rule` de por medio
 - [ ] Sin `Optional` en firmas de `Validator` ni en records de `Rule`
+- [ ] Eventos ⟺ pregunta 5 = A/B: con C no hay `event/`, ni `EventPublisher` en el use case, ni
+      sección 10, ni tests de publicación. Con A/B, las cuatro presentes
 - [ ] IDs siempre `UUID`
 - [ ] `Interactor` dueño de `@Transactional` con qualifier explícito; `UseCase` sin transacción propia
 - [ ] `OutputPort` habla `Entity`, nunca `Domain`; existencia de otra feature vía el `Finder` de esa feature
@@ -415,6 +455,9 @@ getters/setters ni métodos `private`.
 - [ ] Textos nuevos: clave en `{Feature}Key` + registro en `ClavesCatalogo` + línea en `catalogo/{contexto}.properties`, con la aridad correcta
 - [ ] Migración Flyway en `db/migration/{contexto}/`, versión `V{yyyyMMddHHmmss}` tomada al crear el
       archivo, sin prefijo de base/schema y sin FK hacia otra base de contexto
+- [ ] Enum de catálogo: constantes copiadas fila por fila de `mer/data/{NN}_data_{contexto}.sql` y
+      listadas en el plan; ancho de la tabla tomado de su DDL (60/60/300 solo si es nueva), sin
+      `ALTER TABLE` sobre las tres excepciones de `fichas`
 - [ ] Tests con patrón AAA, cobertura ≥75% verificada con `check` (`*Domain` no está excluido de JaCoCo)
 - [ ] Sin `@Bean TaskExecutor` manual (Virtual Threads ya gestionados por Spring Boot)
 - [ ] Commit sugerido: `feat({contexto}): {descripción corta en español}`
@@ -432,3 +475,12 @@ getters/setters ni métodos `private`.
 7. Si la HU toca más de un bounded context, una sección del plan por contexto afectado.
 8. Comunicación entre contextos = evento RabbitMQ, nunca dependencia directa.
 9. El plan es el contrato: debe bastar para implementar sin ambigüedades.
+10. **La respuesta del usuario gana sobre la plantilla, siempre.** La plantilla de FASE 4 es un
+    *máximo*, no un formulario a completar: describe todo lo que un plan **podría** llevar. Cada
+    sección marcada "si aplica" o "SOLO si" que la respuesta descartó se **borra** — no se deja
+    vacía, ni con "N/A", ni con una tabla de encabezados sin filas, ni "preparada para el futuro".
+    Aplica igual a eventos (pregunta 5 = C), `Validator` sin `Rule`s, `result/` con retorno
+    `UUID`/`void`, paquete `query/` sin lectura real, integraciones externas y migración. Antes de
+    guardar el archivo, relee tus respuestas de FASE 3 y confirma que ninguna sección contradice un
+    "no" del usuario. Si crees que el "no" fue un error, dilo en la sección 1 o pregunta otra vez —
+    planificarlo de todos modos no es iniciativa, es ignorar la decisión de quien pidió el plan.

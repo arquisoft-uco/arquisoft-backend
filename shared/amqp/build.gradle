@@ -1,5 +1,6 @@
 dependencies {
     implementation project(':shared:domain')
+    implementation project(':shared:application')
     implementation project(':shared:logger')
 
     // shared:tracing — el consumidor abre el alcance de traza de cada evento y el

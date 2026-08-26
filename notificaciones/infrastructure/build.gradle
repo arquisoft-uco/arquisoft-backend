@@ -2,6 +2,7 @@ dependencies {
     implementation project(':notificaciones:domain')
     implementation project(':notificaciones:application')
     implementation project(':shared:domain')
+    implementation project(':shared:application')
     implementation project(':shared:jpa')
     implementation project(':shared:amqp')
     implementation project(':shared:logger')

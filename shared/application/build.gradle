@@ -1,0 +1,14 @@
+// java-library habilita 'api': EventPublisher expone DomainEvent en su firma, asi que
+// quien dependa de este modulo necesita ver shared:domain para poder llamarlo.
+apply plugin: 'java-library'
+
+dependencies {
+    // shared:domain — DomainEvent viaja en la firma de EventPublisher. Va con 'api' y no
+    // con 'implementation' por eso mismo, y de paso arrastra la cadena que shared:domain
+    // ya expone (message, exception, validation, util) hacia la capa de aplicacion.
+    api project(':shared:domain')
+
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+}

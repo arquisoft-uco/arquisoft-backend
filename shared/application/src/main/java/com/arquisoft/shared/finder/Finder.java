@@ -1,4 +1,4 @@
-package com.arquisoft.shared.rules;
+package com.arquisoft.shared.finder;
 
 public interface Finder<T, R> {
 
