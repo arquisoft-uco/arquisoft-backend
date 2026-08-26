@@ -14,14 +14,14 @@
 En `CrearUsuarioUseCaseImpl`, la persistencia del aggregate y la publicación del evento eran dos operaciones **no atómicas**:
 
 ```java
-usuarioOutputPort.save(usuario);
-usuario.extraerEventosSinPublicar().forEach(eventPublisher::publish);
+usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));   // (1) escribe en PostgreSQL
+eventPublisher.publish(new UsuarioCreadoEvent(...));          // (2) publica en RabbitMQ
 ```
 
-> Código histórico: `AggregateRoot` y su ciclo `publicarEvento`/`extraerEventosSinPublicar` se
-> eliminaron de `shared:domain`. Hoy el `UseCase` construye y publica el evento directamente. El
-> problema de atomicidad que describe esta sección es independiente de esa forma y sigue siendo
-> real — lo que lo resuelve es el outbox, no la manera de emitir el evento.
+> El problema es la falta de atomicidad entre (1) y (2), y es **independiente de cómo se emita el
+> evento**: lo resuelve el outbox, no la forma de publicación. La forma sí cambió desde que se
+> escribió este documento — hoy el `UseCase` construye y publica el evento directamente, que es la
+> única que existe — y el fragmento de arriba ya está actualizado a ella.
 
 Si el paso (1) se completaba y el paso (2) fallaba (broker caído, timeout, etc.), el sistema quedaba inconsistente:
 

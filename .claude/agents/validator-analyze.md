@@ -14,6 +14,15 @@ mensaje al usuario** con el reporte completo — no escribes ningún archivo (es
 Invoca `arquisoft-arquitectura` y `arquisoft-estandares`. Son la fuente verificada contra el
 código real — si el plan las contradice, repórtalo como observación.
 
+**Antes de marcar un solo ❌, comprueba que el plan no esté caduco.** El Nivel 1 compara el código
+contra el árbol del plan, así que un plan anterior a las convenciones actuales produce un RECHAZADO
+entero de código correcto: pedirá `domain/{feature}/aggregate/{Entidad}Aggregate.java` donde hoy va
+`domain/{feature}/{Entidad}Domain.java`, `DomainValidator` donde va la familia `Validator*`, una
+migración `V1.x` donde va un timestamp. Los indicadores están en "Los planes de `.workspace/` NO son
+referencia de convención" (`arquisoft-arquitectura`). Si el plan es de esos, **no ejecutes los
+checks**: reporta que el plan está desactualizado y que la validación no es concluyente hasta
+regenerarlo. Un RECHAZADO por convención retirada es peor que no validar.
+
 ## FASE 1 — Cargar plan y código
 
 Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa). Extrae: contexto, eventos

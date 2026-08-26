@@ -33,6 +33,31 @@ y cada uno tiene un límite que hay que conocer antes de copiar:
   funciona. Le queda además una desviación real: `CrearUsuarioRequestDTO` con anotaciones Jakarta y
   `toCommand()` propio, y un `CrearUsuarioCommand` sin fábrica `crear(...)` — nada valida el formato.
 
+## Los planes y reportes de `.workspace/` NO son referencia de convención
+
+`.workspace/h-plan/PLAN-*.md` y `.workspace/validator/validator-*.md` son el **registro de trabajo
+ya entregado** entre abril y agosto de 2026. Están versionados y se conservan como historia, pero
+**todos** son anteriores a los refactors que fijaron las convenciones actuales, y describen un
+código que ya no existe:
+
+| Lo que dicen esos archivos | Lo que hay hoy |
+|---|---|
+| `{Entidad}Aggregate`, carpeta `domain/{feature}/aggregate/` | `{Entidad}Domain`, directo bajo `domain/{feature}/` |
+| Factories `build(...)` / `rebuild(...)` | `crear(...)` / `reconstruir(...)` |
+| Un agregado que acumula eventos y un use case que los drena | El agregado es plano; el `UseCase` publica por `EventPublisher` |
+| `DomainValidator.notNull(...)` | Familia `Validator*` de `shared:validation` (`ValidatorObjeto.noNulo`, …) |
+| `FichasMessages.*` | Catálogo Redis (`{Feature}Key`) + `FichasApiMessages` solo para Swagger |
+| Migraciones `V1.0`, `V1.9` | Timestamp `V{yyyyMMddHHmmss}` |
+| Un `{Entidad}QueryOutputPort` para chequeos de existencia | Va en el `OutputPort` de `command/`, vía `Finder` |
+| DTO con `@NotBlank` y `toCommand()` propio | `record` desnudo + `RequestMapper` → `Command.crear(...)` |
+| `UUID.randomUUID()` / puertos que hablan `Domain` | `UtilUUID` / puertos que hablan `Entity` |
+
+**Regla:** donde un archivo de `.workspace/` y esta skill discrepen, **gana la skill, siempre** —
+no es un empate a resolver ni una desviación que reportar. Nunca abras un plan viejo como ejemplo de
+formato ni de contenido: si necesitas ver cómo se hace algo, abre el **código real** de `fichas`,
+que es lo que estas skills citan. Y si te piden retomar una de esas HU, di explícitamente que el
+plan está desactualizado y qué partes hay que rehacer antes de tocar nada.
+
 ## Dirección de dependencias (no negociable)
 
 `domain ← application ← infrastructure`. Los 9 bounded contexts (`seguridad`, `usuarios`, `fichas`,

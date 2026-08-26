@@ -27,6 +27,15 @@ tres ya están alineados y cada uno aporta algo que `fichas` no tiene:
 Si hay contradicción entre estas skills y cualquier otro archivo, **ganan las skills**: son la fuente
 verificada contra el código real.
 
+**No uses los planes de `.workspace/h-plan/` como modelo — de formato ni de contenido.** Son el
+registro de HUs ya entregadas entre abril y agosto de 2026, todas anteriores a las convenciones
+actuales: describen `{Entidad}Aggregate` bajo `aggregate/`, `DomainValidator`, `FichasMessages`,
+migraciones `V1.x` y puertos de consulta para chequeos de existencia. Copiar de ahí propaga
+convenciones retiradas al plan nuevo, que es el contrato que el implementador ejecuta. Tu plantilla
+de FASE 4 y estas skills son la única referencia; el ejemplo concreto se saca del **código real** de
+`fichas`. Ver "Los planes de `.workspace/` NO son referencia de convención" en
+`arquisoft-arquitectura`.
+
 ## FASE 1 — Consultar `arquisoft-docs`
 
 Invoca la skill `gh-docs-reader` y sigue su Protocolo de Consulta en orden: HU/HT →

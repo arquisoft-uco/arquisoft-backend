@@ -605,13 +605,16 @@ dependencies {
 
 ### ¿Cómo se emite un evento?
 
-No hay una clase base que acumule eventos en memoria. El use case, tras persistir, construye el
-evento y lo publica directo: `eventPublisher.publish(new XxxEvent(...))`. Es la única forma que
-existe hoy en el proyecto — la hubo una alternativa (`AggregateRoot`, con `publicarEvento(...)` en
-el aggregate y `extraerEventosSinPublicar()` drenado por el use case) pero se retiró: su único
-consumidor era `usuarios/UsuarioDomain`, y mantener dos formas válidas para la misma cosa no
-aportaba nada — ver *Known deviations* en `CLAUDE.md`, esta fue una de las que se resolvió por
-eliminación en vez de por migración.
+No hay una clase base que acumule eventos en memoria, y el agregado no participa en la publicación:
+no la hereda de nadie, no guarda eventos y no expone ningún método para emitirlos ni drenarlos. El
+use case, tras persistir, construye el evento y lo publica directo:
+`eventPublisher.publish(new XxxEvent(...))`. Es la única forma que existe en el proyecto.
+
+Hubo una alternativa —el agregado acumulaba y el use case drenaba— con un solo consumidor real, y se
+retiró: mantener dos formas válidas para la misma cosa no aportaba nada. Se resolvió por eliminación
+y no por migración, quitando la de un solo uso en vez de la que ya usaba el contexto de referencia.
+Además el grafo de módulos hoy lo impide: `{contexto}/domain` solo declara `shared:domain`, y el
+puerto `EventPublisher` vive en `shared:application`, así que el dominio ni siquiera lo ve.
 
 ```java
 // UseCaseImpl — construye el evento con lo que ya tiene y publica, sin pasar por el aggregate

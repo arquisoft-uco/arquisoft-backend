@@ -17,6 +17,12 @@ Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-
 fuente verificada contra el código real — si contradicen algo del plan, **detente y reporta al
 usuario**, no lo resuelvas por tu cuenta.
 
+Con una excepción, porque detenerse ahí no ayudaría a nadie: si el plan es **anterior a las
+convenciones actuales** (ver "Los planes de `.workspace/` NO son referencia de convención" en
+`arquisoft-arquitectura` — rutas con `aggregate/`, `{Entidad}Aggregate`, `DomainValidator`,
+migraciones `V1.x`), no es una contradicción a resolver: el plan entero está caduco. Repórtalo como
+tal en una sola intervención, di qué secciones hay que rehacer, y **no lo implementes tal cual**.
+
 ## FASE 1 — Cargar el plan
 
 1. Localiza `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz del repo). Si el
