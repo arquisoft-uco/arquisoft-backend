@@ -179,7 +179,13 @@ arquisoft-docs/
 │   ├── 06_tablas_mapas_ruta.sql                     # Tablas: MapaRuta, PlanEstimado, PlanReal, Tarea
 │   ├── 07_tablas_proyectos_grado.sql                # Tablas: ProyectoGrado, AsesorProyecto, Estudiante...
 │   ├── 08_tablas_entregables.sql                    # Tablas: EntregableProyectoGrado, ArtefactoEntregable
-│   └── 09_tablas_evaluaciones.sql                   # Tablas: Evaluacion, EvaluacionAsesor, EvaluacionJurado...
+│   ├── 09_tablas_evaluaciones.sql                   # Tablas: Evaluacion, EvaluacionAsesor, EvaluacionJurado...
+│   ├── 10_tablas_biblioteca.sql                     # Tablas: Documentacion, EstadoDocumentacion
+│   ├── 11_tablas_solicitudes.sql                    # Tablas: Solicitud, TipoSolicitud, EstadoRespuesta
+│   └── data/                                        # INSERTs de referencia — LOS VALORES de cada catalogo
+│       ├── 02_data_usuarios.sql                     #   Un archivo por contexto, numerado igual que su DDL.
+│       ├── 03_data_fichas_perfil.sql                #   Fuente de verdad de las constantes de cada enum
+│       └── ...                                      #   (no hay 05_: repositorio_artefactos no tiene catalogos)
 │
 └── templates/
     └── ARQUITECTURA_Y_ESTRUCTURA.md
@@ -241,6 +247,11 @@ gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/modelo_entidad_relacion.
 
 # Schemas y dependencias entre contextos (LEER antes de planificar Flyway con FKs cruzadas)
 gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/01_base_datos_y_esquemas.sql" \
+  -H "Accept: application/vnd.github.raw+json"
+
+# Data de referencia del contexto (OBLIGATORIO si la HU toca un enum de catalogo)
+# Sustituye {NN}_{contexto} por el mismo numero y nombre que su archivo de tablas.
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/data/03_data_fichas_perfil.sql" \
   -H "Accept: application/vnd.github.raw+json"
 
 # SQL del MER por contexto (DDL exacto para Flyway)
@@ -343,20 +354,24 @@ gh api "repos/arquisoft-uco/arquisoft-docs/git/trees/main?recursive=1" \
 
 Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
 
-| Contexto Backend | Event Storming | Modelo Anemico | Modelo Enriquecido | SQL del MER |
-|------------------|---------------|----------------|-------------------|-------------|
-| `usuarios` y `seguridad` | `Usuario - Event Storming.md` | `05_delimitar_contextos_usuarios.md` | `05_usuarios_modelo_enriquecido.md` | `02_tablas_usuarios.sql` |
-| `fichas` | `Ficha Perfil - Event Storming.md` | `06_delimitar_contextos_fichas_trabajos_grado.md` | `06_fichas_trabajos_grado_modelo_enriquecido.md` | `03_tablas_fichas_perfil.sql` |
-| `artefactos` | `Artefactos - Event Storming.md` | `07_delimitar_contextos_artefactos.md` | `07_artefactos_modelo_enriquecido.md` | `04_tablas_artefactos.sql` |
-| `repositorio_artefactos` | `Repositorio Artefactos - Event Storming.md` | `08_delimitar_contextos_repositorio_artefactos.md` | `08_repositorio_artefactos_modelo_enriquecido.md` | `05_tablas_repositorio_artefactos.sql` |
-| `proyectos` | `Proyecto Grado - Event Storming.md` | `10_delimitar_contextos_proyectos_grado.md` | `10_proyectos_grado_modelo_enriquecido.md` | `07_tablas_proyectos_grado.sql` |
-| `entregables` | `Entregables Proyectos de Grado - Event Storming.md` | `11_delimitar_contextos_entregables_proyectos_grado.md` | `11_entregables_proyectos_grado_modelo_enriquecido.md` | `08_tablas_entregables.sql` |
-| `evaluaciones` | `Evaluaciones Definitivas - Event Storming.md` | `12_delimitar_contextos_evaluaciones_definitivas.md` | `12_evaluaciones_definitivas_modelo_enriquecido.md` | `09_tablas_evaluaciones.sql` |
-| (mapas_ruta)* | `Mapa Ruta - Event Storming.md` | `09_delimitar_contextos_mapas_ruta.md` | `09_mapas_ruta_modelo_enriquecido.md` | `06_tablas_mapas_ruta.sql` |
-| (biblioteca)* | `Biblioteca - Event Storming.md` | `14_delimitar_contextos_biblioteca.md` | `14_biblioteca_modelo_enriquecido.md` | *(sin SQL dedicado — ver modelo_entidad_relacion.md §9)* |
-| (solicitudes)* | `Solicitudes - Event Storming.md` | `15_delimitar_contextos_solicitudes.md` | `15_solicitudes_modelo_enriquecido.md` | *(sin SQL dedicado — ver modelo_entidad_relacion.md §10)* |
+| Contexto Backend | Event Storming | Modelo Anemico | Modelo Enriquecido | SQL del MER | Data de referencia |
+|------------------|---------------|----------------|-------------------|-------------|--------------------|
+| `usuarios` y `seguridad` | `Usuario - Event Storming.md` | `05_delimitar_contextos_usuarios.md` | `05_usuarios_modelo_enriquecido.md` | `02_tablas_usuarios.sql` | `data/02_data_usuarios.sql` |
+| `fichas` | `Ficha Perfil - Event Storming.md` | `06_delimitar_contextos_fichas_trabajos_grado.md` | `06_fichas_trabajos_grado_modelo_enriquecido.md` | `03_tablas_fichas_perfil.sql` | `data/03_data_fichas_perfil.sql` |
+| `artefactos` | `Artefactos - Event Storming.md` | `07_delimitar_contextos_artefactos.md` | `07_artefactos_modelo_enriquecido.md` | `04_tablas_artefactos.sql` | `data/04_data_artefactos.sql` |
+| `repositorio_artefactos` | `Repositorio Artefactos - Event Storming.md` | `08_delimitar_contextos_repositorio_artefactos.md` | `08_repositorio_artefactos_modelo_enriquecido.md` | `05_tablas_repositorio_artefactos.sql` | *(ninguna — no tiene catalogos)* |
+| `proyectos` | `Proyecto Grado - Event Storming.md` | `10_delimitar_contextos_proyectos_grado.md` | `10_proyectos_grado_modelo_enriquecido.md` | `07_tablas_proyectos_grado.sql` | `data/07_data_proyectos_grado.sql` |
+| `entregables` | `Entregables Proyectos de Grado - Event Storming.md` | `11_delimitar_contextos_entregables_proyectos_grado.md` | `11_entregables_proyectos_grado_modelo_enriquecido.md` | `08_tablas_entregables.sql` | `data/08_data_entregables.sql` |
+| `evaluaciones` | `Evaluaciones Definitivas - Event Storming.md` | `12_delimitar_contextos_evaluaciones_definitivas.md` | `12_evaluaciones_definitivas_modelo_enriquecido.md` | `09_tablas_evaluaciones.sql` | `data/09_data_evaluaciones.sql` |
+| (mapas_ruta)* | `Mapa Ruta - Event Storming.md` | `09_delimitar_contextos_mapas_ruta.md` | `09_mapas_ruta_modelo_enriquecido.md` | `06_tablas_mapas_ruta.sql` | `data/06_data_mapas_ruta.sql` |
+| (biblioteca)* | `Biblioteca - Event Storming.md` | `14_delimitar_contextos_biblioteca.md` | `14_biblioteca_modelo_enriquecido.md` | `10_tablas_biblioteca.sql` | `data/10_data_biblioteca.sql` |
+| (solicitudes)* | `Solicitudes - Event Storming.md` | `15_delimitar_contextos_solicitudes.md` | `15_solicitudes_modelo_enriquecido.md` | `11_tablas_solicitudes.sql` | `data/11_data_solicitudes.sql` |
 
-*Contextos documentados en arquisoft-docs que aun no tienen bounded context en el backend.
+*Contextos documentados en arquisoft-docs que aun no tienen bounded context en el backend. `biblioteca`
+y `solicitudes` ya tienen DDL y data propios en el MER, pero **eso no crea el contexto**: los 9
+bounded contexts del backend son los de `CLAUDE.md`, y ninguno de esos tres esta entre ellos.
+Modelarlos requiere antes su modulo Gradle, su `{Contexto}DataSourceConfig` y su base en
+`init-db.sql` — no lo asumas planificando.
 
 **Rutas base para los archivos del mapeo:**
 - Event Storming: `artefactos/estrategicos/event-storming/{nombre archivo}`
@@ -368,7 +383,46 @@ Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
 - `modelo_entidad_relacion.md` → vision completa de todas las tablas, tipos de dato, PKs, FKs, indices y restricciones
 - `01_base_datos_y_esquemas.sql` → orden de creacion de schemas y **grafo de dependencias entre contextos**. Leelo para saber de que otro contexto viene un dato y por tanto que evento AMQP hay que consumir — **no** para escribir una FK cruzada, que en el backend es imposible (ver abajo)
 - `{NN}_tablas_{contexto}.sql` → DDL exacto listo para Flyway; columnas, constraints y nombres de tabla tal como van a la BD
+- `data/{NN}_data_{contexto}.sql` → **los valores** de cada tabla de catalogo. Ver abajo
 - El agente planificador DEBE consultar el SQL del MER del contexto correspondiente para definir las migraciones Flyway en el plan
+
+### `mer/data/` — la fuente de verdad de los enums de catalogo
+
+Un archivo por contexto con los `INSERT` de sus tablas de estado/tipo. **Si la HU toca un enum de
+catalogo, este archivo es de lectura obligatoria** y manda sobre cualquier otra fuente: el Event
+Storming nombra estados en prosa, el modelo enriquecido a veces lista alguno de mas, y un plan viejo
+de `.workspace/` puede traer constantes que ya no existen. Ya paso: se implemento un `EN_REVISION`
+que el MER no tiene y hubo que quitarlo despues.
+
+Cada fila define las tres cosas que necesitas, y ninguna se inventa:
+
+| Columna | Es | En el codigo |
+|---|---|---|
+| `id` | `Enum.name()` en UPPER_SNAKE_CASE (ADR-012) | La constante del enum; lo que devuelve `getId()` y lo que se persiste |
+| `nombre` | Etiqueta legible ("Aprobada Con Observaciones") | `getNombre()` — se queda en Java, su fuente de verdad es esta fila, **no** el catalogo Redis |
+| `descripcion` | Texto explicativo | Solo documentacion; el backend no lo modela |
+
+El conjunto de filas **es** el conjunto de constantes: ni una de mas ni una de menos. La unica
+constante que existe en Java sin fila propia es el centinela `VACIO`, que es un artefacto del
+codigo (Notification Pattern) y nunca se persiste.
+
+### Ancho de las tablas de catalogo (ADR-012 v1.1, enmienda 2026-08-25)
+
+El estandar para una tabla de catalogo **nueva** es `id VARCHAR(60)`, `nombre VARCHAR(60)`,
+`descripcion VARCHAR(300)`, y las FK que la referencian llevan el mismo ancho — nunca `UUID`.
+
+**Las tres tablas de catalogo de `fichas` son excepciones documentadas y NO se migran:**
+
+| Tabla | id | nombre | descripcion |
+|---|---|---|---|
+| `estado_ficha` | `VARCHAR(50)` | `VARCHAR(30)` | `VARCHAR(200)` |
+| `tipo_item` | `VARCHAR(50)` | `VARCHAR(20)` | `VARCHAR(500)` |
+| `estado_evaluacion` | `VARCHAR(50)` | `VARCHAR(100)` | `VARCHAR(255)` |
+
+El MER recogio los anchos que el backend ya tenia y los declaro excepcion, no al reves. Leer "el
+estandar es 60" y planificar un `ALTER TABLE` para alinear `fichas` es un error: seria un
+breaking-change sobre un catalogo vivo, con FKs que lo referencian, a cambio de nada. Copia el ancho
+del archivo `{NN}_tablas_{contexto}.sql` de la tabla concreta; el estandar solo aplica a lo nuevo.
 
 **Dependencias entre schemas (extraidas de `01_base_datos_y_esquemas.sql`):**
 
@@ -436,12 +490,25 @@ Sigue este orden en la FASE 0. Distingue entre **HU** (Historias de Usuario) y *
            -H "Accept: application/vnd.github.raw+json"
     Extraer: nombres de tabla, columnas, tipos de dato, constraints, indices unicos.
     Usar estos datos para definir las migraciones Flyway en la seccion correspondiente del plan.
+    Copiar el ancho de cada catalogo TAL CUAL viene aqui: el estandar de ADR-012 v1.1 (60/60/300)
+    aplica a tablas nuevas, y las tres de `fichas` son excepciones que no se migran.
+    c) Si la HU toca un estado o un tipo, leer ademas la data de referencia (OBLIGATORIO).
+       Es el conjunto exacto de constantes del enum: ni una de mas ni una de menos.
+       Comando:
+         gh api "repos/arquisoft-uco/arquisoft-docs/contents/mer/data/{NN}_data_{contexto}.sql" \
+           -H "Accept: application/vnd.github.raw+json"
+       Extraer por fila: `id` (= `Enum.name()`), `nombre` (etiqueta de `getNombre()`), `descripcion`.
+       Listarlas en el plan. Si el Event Storming o el modelo enriquecido nombran un estado que
+       no tiene fila aqui, gana este archivo — y anotalo como discrepancia para preguntar.
 11. Si aplica: leer ADR relacionado                    → Decisiones arquitectonicas previas
     ADRs clave del stack actual:
     - ADR-008: Spring Boot 4.0.5 + Gradle 9 + Virtual Threads automaticos
     - ADR-009: PostgreSQL 18 (EOL 2030, compatible con Flyway/JPA sin cambios)
     - ADR-010: RabbitMQ 4.2.5 (AMQP 0-9-1 compatible, Khepri store)
     - ADR-011: springdoc-openapi 2.8.17 + plugin 1.9.0 (Swagger UI, @Tag/@Operation obligatorios)
+    - ADR-012 (v1.1): PK semantica en tablas de catalogo — el `VARCHAR` es `Enum.name()`, nunca un
+      UUID ni la etiqueta en espaniol; renombrar una constante es breaking-change. La enmienda
+      2026-08-25 fija el ancho estandar 60/60/300 y documenta las excepciones de `fichas`
 12. Si aplica: leer flujo de arquitectura              → Flujo del proceso de negocio
 13. Si aplica: listar docs/stories/ y leer HTs relacionadas → Contexto tecnico complementario
 14. Registrar en Metadata del plan: archivos consultados

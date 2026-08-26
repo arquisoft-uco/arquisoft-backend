@@ -207,6 +207,12 @@ espera respuesta: "¿Sigues con @tester (recomendado) o vas directo a @validator
 - **Enums de catálogo:** `desde(String)`/`esValido(String)`/`getId()`, nunca `valueOf` fuera del
   enum. Su ubicación (`domain/{catalogo}/` vs `domain/{feature}/model/`) sigue lo que ya use el
   contexto tocado — es una decisión abierta del proyecto, no asumas una convención fija de PK.
+  **Las constantes son las que el plan copió de `mer/data/{NN}_data_{contexto}.sql`: escribe esas y
+  solo esas.** `id` es la constante Java (UPPER_SNAKE_CASE) y `nombre` el texto de `getNombre()`,
+  literal de esa fila. Si el plan no las lista, es ambigüedad — repórtala, no las deduzcas. La
+  migración inserta exactamente ese mismo conjunto, y el ancho de la tabla se copia del DDL del MER
+  (el estándar 60/60/300 de ADR-012 v1.1 aplica solo a tablas nuevas; `estado_ficha`, `tipo_item` y
+  `estado_evaluacion` son excepciones documentadas que **no** se migran).
 - **Mensajes:** cero strings literales en producción, y **dos destinos distintos** (no existe
   ninguna clase `{Contexto}Messages`):
   - Constantes Java en `shared:message`: `{Contexto}Codes` (códigos), `{Contexto}Fields` (campos de
