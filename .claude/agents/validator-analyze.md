@@ -306,8 +306,8 @@ declara el campo, repórtalo como ⚠️ menor.
 que en `RegistrarFichaPerfilControllerTest`. `@MockBean` en vez de `@MockitoBean` es bloqueante, y
 `@WithMockUser` también (prefija `ROLE_` y no casa con `hasAuthority`).
 
-**Cobertura:** el umbral del 75% lo verifica `check`. Los excluidos de JaCoCo son `*Aggregate`,
-`*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` y `config/**` — **`*Domain` no está
+**Cobertura:** el umbral del 75% lo verifica `check`. Los excluidos de JaCoCo son `*DTO`,
+`*Command`, `*ReadModel`, `*Application`, `*Entity` y `config/**` — **`*Domain` no está
 excluido**, así que un agregado sin tests hunde el porcentaje del módulo. No reportes como
 "excluido" algo que no está en esa lista.
 

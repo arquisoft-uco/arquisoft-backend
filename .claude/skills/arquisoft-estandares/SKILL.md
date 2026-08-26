@@ -236,7 +236,7 @@ JUnit 6 + Mockito + AssertJ, patrón AAA con marcadores `// Arrange / // Act / /
   de más rompe el test. Al comparar contra un código o campo, importa la constante de
   `FichasCodes`/`FichasFields`; no dupliques el literal.
 - **Cobertura mínima 75%**, verificada por `check` (`jacocoTestCoverageVerification`). Excluidos:
-  `*Aggregate`, `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity`/
+  `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity`/
   `JpaQueryEntity`) y `config/**`. Ojo: **`*Domain` NO está excluido** — el agregado cuenta para el
   umbral. Los módulos `shared:*` no aplican jacoco.
 

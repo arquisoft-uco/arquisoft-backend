@@ -145,7 +145,7 @@ ordenable".
    ```
    `check` es el gate real (incluye `checkstyleMain`/`checkstyleTest` + `jacocoTestCoverageVerification`
    con mínimo 75%). JaCoCo no se aplica a `shared:*`, y dentro de un contexto excluye
-   `*Aggregate`, `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity` y
+   `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity` y
    `JpaQueryEntity`) y `config/**`. **`*Domain` NO está excluido** — el agregado cuenta para el
    umbral, así que sus tests de `crear`/`reconstruir` son los que sostienen el porcentaje.
    Reportar verde habiendo corrido solo `test` es un error — un import sin usar o cobertura <75%
