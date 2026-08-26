@@ -23,8 +23,7 @@ y cada uno tiene un límite que hay que conocer antes de copiar:
   Lombok en vez de `record` — ese detalle no se copia.
 - **`notificaciones`** — referencia del `Consumer` AMQP y, sobre todo, del comando **sin `Validator`**:
   su única consulta es un corte de idempotencia resuelto con `Finder` + `if/return`, no con una `Rule`.
-- **`usuarios`** — referencia del **drenaje de eventos desde `AggregateRoot`**, que es la única forma
-  que `fichas` no usa (ver más abajo), y de un flujo de comando completo y correcto:
+- **`usuarios`** — referencia de un flujo de comando completo y correcto:
   `CrearUsuarioController` → `CrearUsuarioInteractor` (`@Transactional`) → `UseCase` → `Finder` →
   `Validator` puro → `Rule` → `OutputPort` que habla `Entity`. *Límite, y es grande:* **el flujo no
   funciona**. `UsuarioCommandOutputAdapter` está inerte a propósito — solo loguea, no escribe, y por
@@ -33,6 +32,31 @@ y cada uno tiene un límite que hay que conocer antes de copiar:
   nunca. Copia su **forma**, no su comportamiento, y no lo cites como prueba de que un endpoint
   funciona. Le queda además una desviación real: `CrearUsuarioRequestDTO` con anotaciones Jakarta y
   `toCommand()` propio, y un `CrearUsuarioCommand` sin fábrica `crear(...)` — nada valida el formato.
+
+## Los planes y reportes de `.workspace/` NO son referencia de convención
+
+`.workspace/h-plan/PLAN-*.md` y `.workspace/validator/validator-*.md` son el **registro de trabajo
+ya entregado** entre abril y agosto de 2026. Están versionados y se conservan como historia, pero
+**todos** son anteriores a los refactors que fijaron las convenciones actuales, y describen un
+código que ya no existe:
+
+| Lo que dicen esos archivos | Lo que hay hoy |
+|---|---|
+| `{Entidad}Aggregate`, carpeta `domain/{feature}/aggregate/` | `{Entidad}Domain`, directo bajo `domain/{feature}/` |
+| Factories `build(...)` / `rebuild(...)` | `crear(...)` / `reconstruir(...)` |
+| Un agregado que acumula eventos y un use case que los drena | El agregado es plano; el `UseCase` publica por `EventPublisher` |
+| `DomainValidator.notNull(...)` | Familia `Validator*` de `shared:validation` (`ValidatorObjeto.noNulo`, …) |
+| `FichasMessages.*` | Catálogo Redis (`{Feature}Key`) + `FichasApiMessages` solo para Swagger |
+| Migraciones `V1.0`, `V1.9` | Timestamp `V{yyyyMMddHHmmss}` |
+| Un `{Entidad}QueryOutputPort` para chequeos de existencia | Va en el `OutputPort` de `command/`, vía `Finder` |
+| DTO con `@NotBlank` y `toCommand()` propio | `record` desnudo + `RequestMapper` → `Command.crear(...)` |
+| `UUID.randomUUID()` / puertos que hablan `Domain` | `UtilUUID` / puertos que hablan `Entity` |
+
+**Regla:** donde un archivo de `.workspace/` y esta skill discrepen, **gana la skill, siempre** —
+no es un empate a resolver ni una desviación que reportar. Nunca abras un plan viejo como ejemplo de
+formato ni de contenido: si necesitas ver cómo se hace algo, abre el **código real** de `fichas`,
+que es lo que estas skills citan. Y si te piden retomar una de esas HU, di explícitamente que el
+plan está desactualizado y qué partes hay que rehacer antes de tocar nada.
 
 ## Dirección de dependencias (no negociable)
 
@@ -232,32 +256,68 @@ Ejemplo real: `RegistrarFichaPerfilUseCaseImpl` confirma que el asesor existe co
 `estudiante`, `representantecomite` y `evaluacionfichaperfil` no tienen paquete `query/` por lo
 mismo.
 
-## Eventos de dominio — dos formas, según quién los origina
 
-**Forma por defecto en `fichas` (objeto de acción):** el `UseCase` publica directamente tras
-persistir — `eventPublisher.publish(new AsesorFichaCambiadoEvent(...))`. El agregado no extiende
-`AggregateRoot` porque el evento no nace de él sino de la acción. Ver
-`CambiarAsesorFichaUseCaseImpl.java`.
+## `shared:domain` vs `shared:application` — la frontera la sostiene el compilador
 
-**Forma con `AggregateRoot` (hoy solo `usuarios`):** el agregado extiende `AggregateRoot`,
-`crear(...)` llama `publicarEvento(...)`, y el `UseCase` drena tras persistir con
-`aggregate.extraerEventosSinPublicar().forEach(eventPublisher::publish)` — un solo método, no
-existe `limpiarEventosSinPublicar()`. `obtenerEventosSinPublicar()` es `protected`. Ver
-`usuarios/domain/usuario/UsuarioDomain.java` + `CrearUsuarioUseCaseImpl.java`: es el único ejemplo
-completo de esta forma en el repo, y su flujo de comando (`Controller` → `Interactor` →
-`UseCase` → `Finder` → `Validator` → `Rule` → `OutputPort` en `Entity`) sí es correcto — lo que no
-funciona ahí es la persistencia, que está inerte a propósito.
+`shared:domain` solo tiene `DomainEvent` (`com.arquisoft.shared.events`) y `DomainRule`
+(`com.arquisoft.shared.rules`). Todo lo demás vive en `shared:application`: `UseCase`/`VoidUseCase`
+(`com.arquisoft.shared.usecase`), `Interactor`/`VoidInteractor` (`com.arquisoft.shared.interactor`),
+`Finder` (`com.arquisoft.shared.finder`) y el puerto `EventPublisher`
+(`com.arquisoft.shared.publisher`).
 
-**Coherencia dura, sea cual sea la forma:** si el plan dice "Eventos: ninguno" → no hay clases en
-`event/`, el `UseCase` no inyecta `EventPublisher`, y el agregado no extiende `AggregateRoot`.
-Extenderlo "por consistencia" arrastra maquinaria muerta. `FichaPerfilDomain` hoy es
-`public final class` sin `AggregateRoot` — ese es el caso normal.
+Antes eran un solo módulo llamado `domain`, así que `{contexto}/domain` recibía `UseCase` e
+`Interactor` en su classpath y un agregado podía implementarlos sin que nada fallara. Hoy no
+compila. Es la misma clase de garantía que da tener cero Spring en el classpath del dominio: "el
+dominio no orquesta" pasó de convención a hecho.
+
+Qué declara cada capa:
+
+| Módulo | Declara | Por qué |
+|---|---|---|
+| `{contexto}/domain` | `shared:domain` | Trae por `api` la cadena `message`/`exception`/`validation`/`util` |
+| `{contexto}/application` | `shared:application` | Trae `shared:domain` por `api` — no hace falta declararlo también |
+| `{contexto}/infrastructure` | ambos | El controller inyecta el `Interactor` (`shared:application`) y el consumer AMQP toca `DomainEvent` (`shared:domain`) |
+
+**Un `{contexto}/domain/build.gradle` nunca declara `shared:application`.** Si compilando el dominio
+falta `UseCase`, `Interactor`, `Finder` o `EventPublisher`, la corrección **no** es agregar la
+dependencia: es mover ese tipo a la capa de aplicación, que es donde pertenece. Agregarla devuelve
+exactamente el agujero que el split cerró.
+
+## Eventos de dominio — una sola forma
+
+El `UseCase` inyecta el puerto `EventPublisher` (`com.arquisoft.shared.publisher`, en
+`shared:application`) y publica directamente tras persistir —
+`eventPublisher.publish(new AsesorFichaCambiadoEvent(...))`. Ver `CambiarAsesorFichaUseCaseImpl.java`
+(fichas) y `CrearUsuarioUseCaseImpl.java` (usuarios), que siguen la misma forma.
+
+**El agregado es una clase plana y no participa en la publicación**: no extiende ninguna clase base
+para esto, no acumula eventos en memoria y no expone ningún método para emitirlos o drenarlos. Un
+agregado que declare algo así no compila — el tipo base que lo permitía no existe en el repo, y el
+`{contexto}/domain` ni siquiera tiene `EventPublisher` en su classpath (`shared:domain` no lo trae).
+Si un plan, un ejemplo o tu memoria proponen que la entidad acumule y el use case drene, es material
+viejo: la forma es una sola y es la de arriba.
+
+**Coherencia dura:** si el plan dice "Eventos: ninguno" → no hay clases en `event/` y el `UseCase`
+no inyecta `EventPublisher`. `DomainEvent` sí sigue vigente: es la clase base de cada evento
+(`AsesorFichaCambiadoEvent`, `UsuarioCreadoEvent`), aporta `idEvento`/`ocurridoEn`/`tipoEvento` y
+valida que `EVENT_TOPIC` tenga el formato `{contexto}.{entidad}.{accion}` — que es además la
+routing key de RabbitMQ.
 
 `reconstruir(...)` nunca publica eventos y el `CommandOutputAdapter` siempre lee con
 `reconstruir(...)`, nunca con `crear(...)`. Un evento carga todo lo que su consumidor necesita
 (`AsesorFichaCambiadoEvent` lleva nombre y email del asesor) para que el consumidor no tenga que
-volver a consultar al productor. La publicación está centralizada en `shared:amqp` — nunca se crea
-un `{Entidad}EventPublisher` local.
+volver a consultar al productor.
+
+La publicación está centralizada en `shared:amqp` y **nunca se crea un `{Entidad}EventPublisher`
+local**. Hay dos implementaciones del puerto y no son intercambiables: `SpringModulithEventPublisher`
+(`@Component @Primary`) pasa por el outbox — inserta en `event_publication` dentro de la misma
+transacción del `Interactor` — y `RabbitMQEventPublisher` publica directo al broker, declarado
+respaldo con `@ConditionalOnMissingBean`. El `@Primary` es lo que hace determinista cuál gana: esa
+condición, sobre un `@Component` escaneado, no la garantiza Spring fuera de una autoconfiguración, y
+si ganara el directo los eventos irían al broker **saltándose el outbox**, sin fila en
+`event_publication` y sin atomicidad. Consecuencia práctica: una implementación nueva de
+`EventPublisher` no es una extensión inocente — rompe esa garantía. El use case inyecta siempre la
+**interfaz**, nunca una de las dos clases.
 
 ## Aislamiento de persistencia: una base de datos por contexto
 

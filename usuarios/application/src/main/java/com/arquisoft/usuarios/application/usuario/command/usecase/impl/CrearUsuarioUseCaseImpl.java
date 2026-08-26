@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
-import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
@@ -11,6 +11,7 @@ import com.arquisoft.usuarios.application.usuario.command.secondaryport.mapper.U
 import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUseCase;
 import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuarioValidator;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
+import com.arquisoft.usuarios.domain.usuario.event.UsuarioCreadoEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +37,8 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
         usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));
 
-        usuario.extraerEventosSinPublicar().forEach(eventPublisher::publish);
+        eventPublisher.publish(new UsuarioCreadoEvent(
+                usuario.getId(), usuario.getEmail(), usuario.getRol().getCodigo()));
 
         logger.info(
                 Mensajes.obtener(UsuarioKey.LOG_CREADO),

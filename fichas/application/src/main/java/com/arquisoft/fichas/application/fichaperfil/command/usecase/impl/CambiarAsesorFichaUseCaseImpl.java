@@ -12,7 +12,7 @@ import com.arquisoft.fichas.domain.fichaperfil.CambioAsesorFichaDomain;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
-import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estadoevaluacionficha.command.finder;
 
 import com.arquisoft.fichas.domain.estadoevaluacionficha.EstadoEvaluacionFichaDomain;
-import com.arquisoft.shared.rules.Finder;
+import com.arquisoft.shared.finder.Finder;
 
 import java.util.Optional;
 import java.util.UUID;

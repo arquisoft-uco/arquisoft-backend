@@ -1,6 +1,6 @@
 dependencies {
     implementation project(':usuarios:domain')
-    implementation project(':shared:domain')   // EventPublisher (puerto de salida de eventos)
+    implementation project(':shared:application')   // EventPublisher (puerto de salida de eventos)
     implementation project(':shared:logger')   // AppLogger — el puerto de log, en lugar de @Slf4j
 
     // Transactional — solo necesitamos @Transactional, no todo el starter

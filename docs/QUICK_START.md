@@ -63,7 +63,7 @@ shared/                          ← Componentes reutilizables (12 sub-módulos)
 ├── util/                        ← UtilText, UtilUUID, UtilCollection, UtilDate, UtilNumber, UtilObject
 ├── exception/                   ← BaseException/BaseError y las 5 excepciones base (DomainException, ...)
 ├── validation/                  ← DomainValidator, ValidationResult (Notification Pattern)
-├── domain/                      ← DomainEvent, AggregateRoot
+├── domain/                      ← DomainEvent
 ├── logger/                      ← AppLogger
 ├── redis/                       ← RedisClient
 ├── amqp/                        ← EventPublisher (RabbitMQ)
@@ -134,13 +134,12 @@ evaluaciones/                    ← CONTEXTO: Evaluaciones (scaffolding)
 // fichas/domain/src/main/java/com/arquisoft/fichas/domain/ficha/FichaDomain.java
 package com.arquisoft.fichas.domain.ficha;
 
-import com.arquisoft.shared.events.AggregateRoot;
 import com.arquisoft.shared.validation.DomainValidator;
 import com.arquisoft.shared.validation.ValidationResult;
 
 import java.util.UUID;
 
-public final class FichaDomain extends AggregateRoot {
+public final class FichaDomain {
     private UUID id;
     private String titulo;
     private String areaConocimiento;

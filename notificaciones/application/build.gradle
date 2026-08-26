@@ -1,6 +1,6 @@
 dependencies {
     implementation project(':notificaciones:domain')
-    implementation project(':shared:domain')
+    implementation project(':shared:application')
     implementation project(':shared:logger')
 
     // shared:notification — puerto NotificationSender. La aplicacion conoce el puerto y su

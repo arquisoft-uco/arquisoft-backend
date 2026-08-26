@@ -1,7 +1,7 @@
 package com.arquisoft.shared.amqp;
 
 import com.arquisoft.shared.events.DomainEvent;
-import com.arquisoft.shared.events.EventPublisher;
+import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import lombok.extern.slf4j.Slf4j;
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @ConditionalOnMissingBean(EventPublisher.class)
-public class RabbitMQEventPublisher implements EventPublisher { // EventPublisher de shared:domain
+public class RabbitMQEventPublisher implements EventPublisher {
 
     private static final int MAX_ATTEMPTS = 3;
     private static final long INITIAL_BACKOFF_MS = 500L;

@@ -1,6 +1,5 @@
 package com.arquisoft.usuarios.domain.usuario;
 
-import com.arquisoft.shared.events.AggregateRoot;
 import com.arquisoft.shared.message.constant.UsuariosCodes;
 import com.arquisoft.shared.message.constant.UsuariosFields;
 import com.arquisoft.shared.util.UtilTexto;
@@ -8,12 +7,11 @@ import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
-import com.arquisoft.usuarios.domain.usuario.event.UsuarioCreadoEvent;
 import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 
 import java.util.UUID;
 
-public final class UsuarioDomain extends AggregateRoot {
+public final class UsuarioDomain {
 
     private UUID id;
     private String email;
@@ -31,8 +29,6 @@ public final class UsuarioDomain extends AggregateRoot {
 
         result.lanzarSiTieneErrores();
 
-        usuario.publicarEvento(
-                new UsuarioCreadoEvent(usuario.id, usuario.email, usuario.rol.getCodigo()));
         return usuario;
     }
 

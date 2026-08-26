@@ -16,7 +16,7 @@
 4. [Desviaciones conocidas respecto a la convención](#desviaciones-conocidas-respecto-a-la-convención)
 5. [Módulo Seguridad](#módulo-seguridad)
 6. [Módulo Shared](#módulo-shared)
-7. [AggregateRoot y Eventos de Dominio](#aggregateroot-y-eventos-de-dominio)
+7. [Eventos de Dominio](#eventos-de-dominio)
 8. [Virtual Threads (ADR-008)](#virtual-threads-adr-008)
 9. [Ejemplos Prácticos](#ejemplos-prácticos)
 10. [Configuración y Build](#configuración-y-build)
@@ -136,7 +136,8 @@ arquisoft-backend/
 │   ├── util/                             # UtilTexto, UtilUUID, UtilColeccion, UtilFecha, UtilNumero, UtilObjeto, UtilEnum
 │   ├── exception/                        # BaseException/BaseError y las 5 excepciones base (módulo hoja, sin dependencias)
 │   ├── validation/                       # ValidatorObjeto/Texto/Longitud/Numero/UUID/Coleccion + ValidationResult (Notification Pattern)
-│   ├── domain/                           # DomainEvent, AggregateRoot, EventPublisher (com.arquisoft.shared.events), DomainRule/Finder (com.arquisoft.shared.rules)
+│   ├── domain/                           # DomainEvent (com.arquisoft.shared.events), DomainRule (com.arquisoft.shared.rules) — lo unico que la capa de dominio puede ver
+│   ├── application/                      # UseCase/Interactor/Finder + EventPublisher (puerto) — contratos de la capa de aplicacion
 │   ├── logger/                           # AppLogger + Slf4jAppLogger (bean prototype de AppLoggerConfig)
 │   ├── redis/                            # RedisClient
 │   ├── amqp/                             # SpringModulithEventPublisher, RabbitMQEventPublisher, AbstractEventConsumer, RabbitMQConfig
@@ -249,7 +250,7 @@ persistencia (ver *Aislamiento CQRS* más abajo).
     │   │   └── impl/{Accion}{Entidad}UseCaseImpl.java          # @Component, orquesta, sin transacción
     │   ├── validator/{Accion}{Entidad}Validator.java           # Interfaz
     │   │   └── impl/{Accion}{Entidad}ValidatorImpl.java        # @Component, solo inyecta Rules
-    │   ├── finder/{Concepto}Finder.java                        # Extiende shared.rules.Finder<T,R>
+    │   ├── finder/{Concepto}Finder.java                        # Extiende shared.finder.Finder<T,R>
     │   │   └── impl/{Concepto}FinderImpl.java                  # @Component, delega en el OutputPort
     │   ├── secondaryport/{Entidad}OutputPort.java              # Puerto de salida (escritura)
     │   │   ├── entity/{Entidad}Entity.java                     # record plano: sin JPA, sin Lombok
@@ -560,7 +561,8 @@ El módulo `shared` contiene **13 sub-módulos** reutilizables por cualquier con
 | `util` | UtilTexto, UtilUUID, UtilColeccion, UtilFecha, UtilNumero, UtilObjeto | Helpers estáticos sin estado |
 | `exception` | BaseException/BaseError + 5 excepciones base | Jerarquía de excepciones del proyecto; sin dependencias propias (hoja del grafo) |
 | `validation` | DomainValidator, ValidationResult, DomainValidationException, ApplicationValidationException | Notification Pattern: acumula errores en vez de lanzar en el primero |
-| `domain` | DomainEvent, AggregateRoot | Clases base para entidades con eventos |
+| `domain` | DomainEvent, DomainRule | Lo unico que la capa de dominio puede ver |
+| `application` | UseCase, VoidUseCase, Interactor, VoidInteractor, Finder, EventPublisher | Contratos de la capa de aplicacion. Separado de `domain` para que el compilador impida que un agregado implemente un `UseCase` o inyecte un puerto |
 | `logger` | AppLogger (interface) | Logging desacoplado de SLF4J |
 | `redis` | RedisClient (interface) | Operaciones de cache |
 | `amqp` | EventPublisher (interface) | Publicar eventos a RabbitMQ |
@@ -582,7 +584,7 @@ criterio de consulta no arrastre Spring Data JPA como dependencia transitiva.
 ```gradle
 // fichas/domain/build.gradle
 dependencies {
-    implementation project(':shared:domain')  // Para usar DomainEvent, AggregateRoot
+    implementation project(':shared:domain')  // Para usar DomainEvent
 }
 
 // fichas/infrastructure/build.gradle
@@ -599,73 +601,57 @@ dependencies {
 
 ---
 
-## AggregateRoot y Eventos de Dominio
+## Eventos de Dominio
 
-### ¿Qué es AggregateRoot?
+### ¿Cómo se emite un evento?
 
-`AggregateRoot` (en `shared/domain`) es la clase base para entidades de dominio que necesitan **emitir eventos de negocio**. Gestiona una lista interna de eventos no publicados que el use case drena después de persistir.
+No hay una clase base que acumule eventos en memoria, y el agregado no participa en la publicación:
+no la hereda de nadie, no guarda eventos y no expone ningún método para emitirlos ni drenarlos. El
+use case, tras persistir, construye el evento y lo publica directo:
+`eventPublisher.publish(new XxxEvent(...))`. Es la única forma que existe en el proyecto.
+
+Hubo una alternativa —el agregado acumulaba y el use case drenaba— con un solo consumidor real, y se
+retiró: mantener dos formas válidas para la misma cosa no aportaba nada. Se resolvió por eliminación
+y no por migración, quitando la de un solo uso en vez de la que ya usaba el contexto de referencia.
+Además el grafo de módulos hoy lo impide: `{contexto}/domain` solo declara `shared:domain`, y el
+puerto `EventPublisher` vive en `shared:application`, así que el dominio ni siquiera lo ve.
 
 ```java
-// shared/domain — clase existente
-public abstract class AggregateRoot {
-    private final List<DomainEvent> eventosSinPublicar = new ArrayList<>();
-
-    public void publicarEvento(DomainEvent evento) {
-        eventosSinPublicar.add(evento);        // acumula el evento en memoria
-    }
-
-    public List<DomainEvent> extraerEventosSinPublicar() {
-        List<DomainEvent> extraidos = new ArrayList<>(eventosSinPublicar);
-        eventosSinPublicar.clear();
-        return extraidos;                      // drena Y limpia en una sola operación
-    }
-
-    protected List<DomainEvent> obtenerEventosSinPublicar() {
-        return new ArrayList<>(eventosSinPublicar);
-    }
-}
+// UseCaseImpl — construye el evento con lo que ya tiene y publica, sin pasar por el aggregate
+eventPublisher.publish(new AsesorFichaCambiadoEvent(fichaPerfil, ficha.getTituloProyecto(),
+        asesorFicha.getId(), asesorFicha.getNombre(), asesorFicha.getEmail()));
 ```
 
-### ¿Cuándo extender AggregateRoot?
+### ¿Qué contextos emiten eventos?
 
-| Contexto | ¿Usa AggregateRoot? | Razón |
+| Contexto | ¿Emite eventos? | Cómo |
 |---|---|---|
-| `usuarios` | ✅ Sí | `UsuarioDomain` emite `UsuarioCreadoEvent`, drenado y publicado en `CrearUsuarioUseCaseImpl` |
-| `fichas` | ✅ Sí | Los aggregate roots (`FichaPerfilDomain`, ...) extienden `AggregateRoot`; en la práctica hoy publican eventos directo desde el use case (`eventPublisher.publish(new XxxEvent(...))`) en vez de pasar por `publicarEvento`/`extraerEventosSinPublicar` — ambas formas son válidas, la de `usuarios` es la que ejercita el drenado |
+| `fichas` | ✅ Sí | El use case publica directo tras persistir (`CambiarAsesorFichaUseCaseImpl` → `AsesorFichaCambiadoEvent`) |
+| `usuarios` | ✅ Sí | Mismo patrón (`CrearUsuarioUseCaseImpl` → `UsuarioCreadoEvent`) |
 | `seguridad` | ❌ No | Contexto transversal, delega a Keycloak, sin estado propio |
 | `notificaciones` | ❌ No | Reacciona a eventos de otros contextos, no los emite |
-| `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones` | — | Scaffolding: sin código de dominio todavía, se espera que sigan el mismo patrón que `fichas`/`usuarios` al implementarse |
+| `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones` | — | Scaffolding: sin código de dominio todavía, se espera que sigan el mismo patrón al implementarse |
 
 ### Estructura de carpetas en domain (con eventos)
 
 ```
 {contexto}/domain/src/main/java/com/arquisoft/{contexto}/domain/
 └── {feature}/
-    ├── {Entidad}Domain.java        ← extends AggregateRoot; vive directo aquí, sin subcarpeta
+    ├── {Entidad}Domain.java        ← vive directo aquí, sin subcarpeta
+    ├── event/                       ← eventos de dominio de ESTA feature
+    │   └── {Entidad}CreadoEvent.java
     ├── secondaryport/               ← OutputPort interfaces
     └── exception/
-event/                                ← eventos de dominio compartidos entre features del contexto
-└── {Entidad}CreadoEvent.java
 ```
-
-### Ejemplo completo: aggregate con AggregateRoot (caso real, `usuarios`)
-
-Un aggregate que sí extiende `AggregateRoot` y emite un evento en `crear(...)`, con su evento y el
-use case que drena y publica tras persistir — código real, no reproducido aquí:
-
-| Pieza | Archivo real |
-|---|---|
-| Aggregate root con `extends AggregateRoot` + `publicarEvento(...)` en `crear(...)` | `usuarios/domain/src/main/java/com/arquisoft/usuarios/domain/usuario/UsuarioDomain.java` |
-| Evento de dominio (`EVENT_TOPIC`, campos propios, sin `aggregateId` genérico) | `usuarios/domain/.../usuario/event/UsuarioCreadoEvent.java` |
-| Use case: crea, valida, persiste, drena y publica (`extraerEventosSinPublicar().forEach(eventPublisher::publish)`) | `usuarios/application/.../usuario/command/usecase/impl/CrearUsuarioUseCaseImpl.java` |
 
 ### Regla importante
 
-- `crear(...)` → para **crear** una entidad nueva: valida invariantes, genera UUID y registra eventos — **no** `build(...)`.
-- `reconstruir(...)` → para **reconstruir** desde BD: dato ya confiable, sin UUID nuevo, sin eventos, sin re-validar — **no** `rebuild(...)`.
-- El dominio **nunca** inyecta `EventPublisher` — solo acumula eventos en memoria vía `publicarEvento(...)`.
-
----
+- `crear(...)` → para **crear** una entidad nueva: valida invariantes, genera UUID — **no** `build(...)`.
+- `reconstruir(...)` → para **reconstruir** desde BD: dato ya confiable, sin UUID nuevo, sin
+  re-validar — **no** `rebuild(...)`.
+- El dominio **nunca** inyecta `EventPublisher` — el aggregate no sabe que se va a publicar nada;
+  quien construye y publica el evento es el use case, que ya tiene todo lo que necesita porque
+  acaba de crear o consultar el aggregate.
 
 ## Virtual Threads (ADR-008)
 
@@ -816,7 +802,7 @@ keycloakVersion=25.0.3
 ```gradle
 // {contexto}/domain/build.gradle
 dependencies {
-    implementation project(':shared:domain')    // Solo si necesita DomainEvent/AggregateRoot
+    implementation project(':shared:domain')    // Solo si necesita DomainEvent
 }
 
 // {contexto}/application/build.gradle

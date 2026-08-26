@@ -181,7 +181,6 @@ subprojects { subproject ->
         }
 
         def jacocoExcludes = [
-            '**/*Aggregate.class',
             '**/*DTO.class',
             '**/*Command.class',
             '**/*ReadModel.class',

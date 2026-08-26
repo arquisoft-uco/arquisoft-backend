@@ -115,10 +115,9 @@ queda inconsistente sin que nadie se entere.
 ```java
 // {Accion}UseCaseImpl — sin @Transactional propia; corre dentro de la
 // transacción abierta por el Interactor
-XxxDomain xxx = XxxDomain.crear(...);        // 1. crea + acumula el evento en memoria
-xxxOutputPort.save(xxx);                     // 2. persiste el aggregate
-xxx.extraerEventosSinPublicar()
-   .forEach(eventPublisher::publish);        // 3. drena y publica
+XxxDomain xxx = XxxDomain.crear(...);        // 1. crea el aggregate
+xxxOutputPort.guardar(XxxMapper.toEntity(xxx));  // 2. persiste
+eventPublisher.publish(new XxxEvent(...));   // 3. construye y publica el evento
 ```
 
 `eventPublisher` es `SpringModulithEventPublisher` (`shared:amqp`), que delega en
@@ -290,8 +289,12 @@ comodín (`#`).
 - **Nivel aplicación (publicación):** `RabbitMQEventPublisher` reintenta hasta 3 veces con
   backoff exponencial (500ms, 1s, 2s) ante `AmqpException` transitorias; un error no
   transitorio (p. ej. fallo de serialización) no se reintenta, se loguea y se propaga. En la
-  práctica, la ruta activa hoy es `SpringModulithEventPublisher` (ver Outbox arriba);
-  `RabbitMQEventPublisher` es la implementación de respaldo (`@ConditionalOnMissingBean`).
+  práctica esa ruta no se ejerce: `SpringModulithEventPublisher` está anotado `@Primary`, así que
+  es siempre el que resuelve la inyección de `EventPublisher`. `RabbitMQEventPublisher` se declara
+  como respaldo con `@ConditionalOnMissingBean`, pero esa condición sobre un `@Component` escaneado
+  solo la garantiza Spring Boot dentro de una autoconfiguración — de ahí el `@Primary`, que hace
+  determinista cuál gana. Si ganara el directo, los eventos irían al broker **saltándose el
+  outbox**: sin fila en `event_publication` y sin atomicidad con la transacción del aggregate.
 - **Nivel consumidor:** `AbstractEventConsumer` — `nack` sin *requeue* ante excepción envía el
   mensaje al DLX (`arquisoft.dlx`) en vez de reintroducirlo en la cola original, evitando
   bucles de re-entrega ante errores de negocio no recuperables.
