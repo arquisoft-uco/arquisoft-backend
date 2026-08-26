@@ -82,17 +82,22 @@ omites).
   propio `UseCase`. Convertirlo en `Rule` haría que lanzara, y la excepción mandaría el mensaje a la
   DLQ con rollback de la fila por lo que era una reentrega normal del broker. La regla para decidir:
   si el resultado ausente/presente **es un error de negocio** → `Rule`; si solo decide seguir o no →
-  `Finder` + `if/return`. Las interfaces de `shared:rules` son `DomainRule<T>.validar(T)` (void,
-  lanza) y `Finder<T, R>.obtener(T)` (devuelve, nunca lanza).
+  `Finder` + `if/return`. Los métodos son fijos: `DomainRule<T>.validar(T)` (void, lanza) y
+  `Finder<T, R>.obtener(T)` (devuelve, nunca lanza). Y no viven juntas: `DomainRule` en
+  `com.arquisoft.shared.rules` (`shared:domain`), `Finder` en `com.arquisoft.shared.finder`
+  (`shared:application`).
 - Todo el I/O del comando vive en el `UseCase`: los `Finder`s traen el estado, se desenvuelve el
   `Optional` ahí (centinela `VACIO` para agregados, valor + `boolean` para escalares), se valida, se
   mapea `Domain → Entity` y se persiste.
 - La existencia de un aggregate de **otra feature** se consulta con el `Finder` de esa feature sobre
   su `OutputPort` de `command/` — nunca creando un `query/` para eso.
-- Si el plan declara eventos, el `UseCase` inyecta `EventPublisher` (`com.arquisoft.shared.events`)
-  y publica directamente tras persistir: `eventPublisher.publish(new {Entidad}{Accion}Event(...))`.
-  Es la única forma — `AggregateRoot` ya no existe en `shared:domain`. Si dice "Eventos: ninguno",
-  no inyectes `EventPublisher`.
+- Si el plan declara eventos, el `UseCase` inyecta la **interfaz** `EventPublisher`
+  (`com.arquisoft.shared.publisher`, en `shared:application` — nunca una de sus dos
+  implementaciones) y publica directamente tras persistir:
+  `eventPublisher.publish(new {Entidad}{Accion}Event(...))`. Es la única forma: el agregado es una
+  clase plana, no acumula eventos ni los drena. **Si el plan dice "Eventos: ninguno", no inyectes
+  `EventPublisher` y no crees nada en `event/`** — ni "por si acaso", ni porque la entidad parezca
+  pedirlo. Ausencia declarada es una decisión del plan, no un olvido que te toque completar.
 - `application/{feature}/exception/` (→ `ApplicationException`, 400) es solo para fallos de
   **orquestación** de la capa. "No encontrado", "duplicado" y "no eres el dueño" son restricciones
   de conjunto: van en una `Rule` de dominio con su `DomainException` (422).

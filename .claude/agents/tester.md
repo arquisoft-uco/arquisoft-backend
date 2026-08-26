@@ -88,10 +88,11 @@ para cortar temprano sin lanzar — la idempotencia de un consumidor AMQP —, e
 `verify(envioOutputPort, never()).enviar(any())`, no una excepción. Ver
 `notificaciones/.../EnviarNotificacionUseCaseTest.noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado`.
 
-**Solo si el plan declara
-eventos:** `verify(eventPublisher, times(N)).publish(any())` — nunca inspecciones
-`obtenerEventosSinPublicar()` desde application (es `protected`). Si dice "Eventos: ninguno", no
-mockees `EventPublisher`.
+**Solo si el plan declara eventos:** `verify(eventPublisher, times(N)).publish(any())` sobre el mock
+de `EventPublisher` que inyecta el use case — es el único punto de observación, porque el agregado
+no guarda eventos que se le puedan preguntar después. **Si el plan dice "Eventos: ninguno", no
+mockees `EventPublisher`**: el use case no lo inyecta, así que un `@Mock` de más rompe el test con
+`UnnecessaryStubbingException` y, peor, sugiere que el flujo publica algo.
 
 Si el comando devuelve un `{Concepto}Result`, el test del `UseCase` asserta sus campos — con eso
 queda cubierto el `{Concepto}ResultMapper`, que **sí cuenta para JaCoCo** (`*Result` y

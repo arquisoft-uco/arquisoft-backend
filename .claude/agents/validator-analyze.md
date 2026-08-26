@@ -51,6 +51,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Check | Sev |
 |---|:---:|
 | `domain/` sin imports de Spring/Hibernate/JPA/Lombok/Jackson/Swagger/Security/Keycloak | ❌ |
+| `{contexto}/domain/build.gradle` declara `shared:application` — el dominio solo ve `shared:domain`. Si el código bajo `domain/` importa `UseCase`, `Interactor`, `Finder` o `EventPublisher`, el tipo está en la capa equivocada (no compila tal cual) | ❌ |
 | `application/` no importa `@RestController` ni JPA directo | ❌ |
 | Bounded contexts no se importan entre sí | ❌ |
 | Sin `@Bean TaskExecutor` manual (ADR-008 — Virtual Threads ya activos) | ❌ |
@@ -73,20 +74,24 @@ archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio fil
 `reconstruir(...)` · el dominio no inyecta `EventPublisher` · no existe un `{Entidad}EventPublisher`
 local (la publicación está centralizada en `shared:amqp`).
 
-**Si el plan declara eventos**, hay una sola forma: el `UseCase` inyecta `EventPublisher` (la
-interfaz, nunca una implementación concreta) y tras persistir hace
-`eventPublisher.publish(new {Entidad}{Accion}Event(...))`. El agregado es una clase plana que no
-acumula eventos — `AggregateRoot` fue eliminado de `shared:domain`, así que `extends AggregateRoot`,
-`publicarEvento` o `extraerEventosSinPublicar` en el código bajo revisión no compilan y son
-bloqueantes. Ver `fichas/application/.../fichaperfil/command/usecase/impl/CambiarAsesorFichaUseCaseImpl.java`.
+**Si el plan declara eventos**, hay una sola forma: el `UseCase` inyecta `EventPublisher`
+(`com.arquisoft.shared.publisher`, la **interfaz** — inyectar `SpringModulithEventPublisher` o
+`RabbitMQEventPublisher` es ❌) y tras persistir hace
+`eventPublisher.publish(new {Entidad}{Accion}Event(...))`. El agregado es una clase plana: si
+acumula eventos en memoria, extiende una clase base para emitirlos, o expone un método de drenaje
+que el use case invoque, es ❌ bloqueante — ese tipo base no existe y el código no compila. Ver
+`fichas/application/.../fichaperfil/command/usecase/impl/CambiarAsesorFichaUseCaseImpl.java`.
 
 Además: eventos en `domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
 (`{contexto}.{entidad}.{accion}`, minúsculas+snake_case) pasado a `super(EVENT_TOPIC, EVENT_TYPE)`,
 ningún `@Override` de `getTemaEvento()` (es `final`), y el evento carga todo lo que su consumidor
 necesita (nombre, email…) para que no tenga que reconsultar al productor.
 
-**Si el plan dice "Eventos: ninguno":** no hay archivos en `event/` · el `UseCase` no inyecta
-`EventPublisher`.
+**Si el plan dice "Eventos: ninguno", el exceso también es ❌ bloqueante**, no una mejora: cualquier
+archivo bajo `event/`, cualquier `EventPublisher` inyectado, cualquier fila nueva en
+`ClavesCatalogo` para un evento. El plan declaró esa ausencia — normalmente porque el usuario
+respondió que no hay consumidor — y publicar un evento que nadie consume crea un contrato que otro
+contexto puede empezar a consumir después. Repórtalo citando la sección 4 del plan.
 
 ### Nivel 2.3 — Entidad de dominio
 
@@ -174,7 +179,7 @@ excepción o mapear a `Entity`.
 | `Validator` inyecta un `OutputPort`/`Finder`, recibe algo por `@RequiredArgsConstructor`, o contiene un `if` (debe ser puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`) | ❌ |
 | `Rule` declarada como bean (`@Component`) o con dependencias de constructor | ❌ |
 | `Finder` lanza por "no encontrado" en vez de devolver `Boolean`/`Long`/`Optional` | ❌ |
-| `Finder` que no extiende `Finder<T, R>` de `shared:rules`, o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
+| `Finder` que no extiende `Finder<T, R>` de `shared:application` (`com.arquisoft.shared.finder`), o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
 | `Validator` **vacío** o que no orquesta ninguna `Rule`, creado solo porque la plantilla lo listaba. Un comando sin restricciones de conjunto no lleva `Validator`: ver `notificaciones/.../EnviarNotificacionUseCaseImpl` | ❌ |
 | Clase con sufijo `Validator` que en realidad inyecta un `OutputPort` y devuelve un `boolean` — eso es un `Finder`, no un `Validator`; renómbralo y muévelo a `command/finder/` | ❌ |
 | `{Entidad}OutputPort` declara un método sobre **otro** aggregate (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |

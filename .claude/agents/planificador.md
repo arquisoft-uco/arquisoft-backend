@@ -74,13 +74,34 @@ underscore). Ej. válido: `fichas:ficha-perfil:create`. Roles realm en kebab-cas
 A) Sí, consumidor conocido · B) Sí, se anticipa/hay caso de auditoría · C) No, CRUD sin
 consumidores ni auditoría.
 
-A/B → el `UseCase` inyecta `EventPublisher` y publica tras persistir. Hay **una sola forma**:
-`eventPublisher.publish(new {Entidad}{Accion}Event(...))`, con el agregado como clase plana (así lo
-hacen `CambiarAsesorFichaUseCaseImpl` y `CrearUsuarioUseCaseImpl`). `AggregateRoot` fue eliminado de
-`shared:domain` — no planifiques `extends AggregateRoot` ni drenaje: no compila.
+A/B → el `UseCase` inyecta la interfaz `EventPublisher` (`com.arquisoft.shared.publisher`) y publica
+tras persistir. Hay **una sola forma**: `eventPublisher.publish(new {Entidad}{Accion}Event(...))`,
+con el agregado como clase plana (así lo hacen `CambiarAsesorFichaUseCaseImpl` y
+`CrearUsuarioUseCaseImpl`). El agregado nunca acumula eventos ni los drena: no planifiques una clase
+base de dominio para emitirlos — no existe y no compila.
 
-C → clase plana, sin `EventPublisher` en el use case. **Coherencia dura:** "Eventos: ninguno" ⟺ no
-hay clases en `event/` ⟺ use case NO inyecta `EventPublisher`. Nunca declares una sin la otra.
+**C → el plan no lleva eventos, y eso se propaga a seis lugares.** Esta es la respuesta que más se
+ignora al redactar, porque la plantilla de FASE 4 tiene casilla para eventos y llenarla se siente
+como completitud. No lo es: es contradecir al usuario. Si la respuesta fue C, al escribir el plan
+**borras**, no dejas vacías ni con "N/A", estas seis cosas:
+
+| # | Dónde | Qué desaparece |
+|---|---|---|
+| 1 | Sección 4 → *Eventos de Dominio* | La tabla entera. Queda solo `Eventos: ninguno. Razón: {la que dio el usuario}` |
+| 2 | Sección 4 → *Publicación* | La línea completa |
+| 3 | Sección 6 → árbol | La fila `domain/{feature}/event/{Entidad}{Accion}Event.java` |
+| 4 | Sección 7 | Cualquier detalle de una clase de evento |
+| 5 | Sección 10 → *Eventos RabbitMQ* | **La sección entera, encabezado incluido** — no una tabla vacía |
+| 6 | Sección 12 | Todo caso de prueba que verifique publicación |
+
+Y el `UseCase` **no inyecta `EventPublisher`** en la sección 7. **Coherencia dura:** "Eventos:
+ninguno" ⟺ nada en `event/` ⟺ use case sin `EventPublisher` ⟺ sin sección 10. Las cuatro se mueven
+juntas; declarar una sin las otras es el defecto que esta tabla existe para evitar.
+
+Si mientras redactas te parece que la HU *debería* emitir un evento y el usuario dijo C, no lo
+planifiques igual: anótalo en la sección 1 como algo fuera de alcance, o vuelve a preguntar. Un
+evento que nadie consume no es previsión — es un contrato publicado en el exchange que otro contexto
+puede empezar a consumir sin que nadie lo haya decidido.
 
 **6. ¿Persistencia nueva o se reutiliza la existente?**
 
@@ -200,8 +221,10 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 | Atributo | Tipo | Longitud | Obligatorio | Modificable | Autogenerado | Notas |
 **Combinaciones únicas:** {atributos} → `UNIQUE` en Flyway + validación previa en el use case.
 ### Eventos de Dominio
-{tabla Evento/Clase/temaEvento/Consumidor/Cuándo, o "Eventos: ninguno. Razón: ..."}
-**Publicación:** directa desde el `UseCase` tras persistir — omitir si no hay eventos.
+{Si la pregunta 5 fue A/B: tabla Evento/Clase/temaEvento/Consumidor/Cuándo, seguida de
+"**Publicación:** directa desde el `UseCase` tras persistir".
+Si fue C: exactamente la línea `Eventos: ninguno. Razón: {la del usuario}` y **nada más** — sin
+tabla vacía, sin línea de Publicación. Ver la tabla de las seis eliminaciones en FASE 3.}
 
 ## 5. Integraciones Externas (solo si aplica — Keycloak/SMTP/MinIO/HTTP externo más allá de lo estándar)
 | Puerto (application/secondaryport) | Adaptador (infrastructure/secondaryadapter) | Sistema externo | Qué traduce |
@@ -220,7 +243,7 @@ Para Controllers añade: @Tag, y por endpoint: @Operation(summary), @ApiResponse
 ## 9. Seguridad y Autorización (Keycloak)
 | Client role | Roles realm que lo poseen | Endpoint(s) | Descripción |
 
-## 10. Eventos RabbitMQ (si aplica)
+## 10. Eventos RabbitMQ — SOLO si la pregunta 5 fue A/B. Con C, borra esta sección completa
 | Dirección | Exchange | Routing Key | Payload | Contexto receptor |
 
 ## 11. Migración de Base de Datos (si aplica)
@@ -277,7 +300,7 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | domain | `.../domain/{feature}/model/{Concepto}.java` | `record` de entrada de cada Rule (`ExistenciaX`, `DisponibilidadX`, `PropiedadX`) + value objects |
 | domain | `.../domain/{feature}/rules/{Regla}Rule.java` + `rules/impl/{Regla}RuleImpl.java` | Una por restricción de conjunto (existencia/unicidad/propiedad) |
 | domain | `.../domain/{feature}/exception/{Entidad}{Caso}Exception.java` | Solo para lo que lanza una `Rule` — nunca para invariantes del agregado. El `exception/` va **dentro del slice**, no a nivel de contexto (igual en `application/` e `infrastructure/`) |
-| domain | `.../domain/{feature}/event/{Entidad}{Accion}Event.java` | Solo si emite eventos |
+| domain | `.../domain/{feature}/event/{Entidad}{Accion}Event.java` | **SOLO si la pregunta 5 fue A/B.** Con C esta fila no existe, igual que no existe la sección 10 |
 | application | `{contexto}/application/.../{feature}/command/primaryport/model/{Accion}{Entidad}Command.java` | `record` con `crear(...)` |
 | application | `.../command/primaryport/mapper/{Accion}{Entidad}Mapper.java` | `Command` → objeto de acción; solo si la sección 4 lo declara |
 | application | `.../command/primaryport/interactor/{Accion}{Entidad}Interactor.java` + `interactor/impl/...InteractorImpl.java` | Dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` |
@@ -392,6 +415,8 @@ getters/setters ni métodos `private`.
 - [ ] Consulta que no debe lanzar (idempotencia, corte temprano): `Finder` consultado directo desde
       el use case con `if (...) return;`, sin `Rule` de por medio
 - [ ] Sin `Optional` en firmas de `Validator` ni en records de `Rule`
+- [ ] Eventos ⟺ pregunta 5 = A/B: con C no hay `event/`, ni `EventPublisher` en el use case, ni
+      sección 10, ni tests de publicación. Con A/B, las cuatro presentes
 - [ ] IDs siempre `UUID`
 - [ ] `Interactor` dueño de `@Transactional` con qualifier explícito; `UseCase` sin transacción propia
 - [ ] `OutputPort` habla `Entity`, nunca `Domain`; existencia de otra feature vía el `Finder` de esa feature
@@ -424,3 +449,12 @@ getters/setters ni métodos `private`.
 7. Si la HU toca más de un bounded context, una sección del plan por contexto afectado.
 8. Comunicación entre contextos = evento RabbitMQ, nunca dependencia directa.
 9. El plan es el contrato: debe bastar para implementar sin ambigüedades.
+10. **La respuesta del usuario gana sobre la plantilla, siempre.** La plantilla de FASE 4 es un
+    *máximo*, no un formulario a completar: describe todo lo que un plan **podría** llevar. Cada
+    sección marcada "si aplica" o "SOLO si" que la respuesta descartó se **borra** — no se deja
+    vacía, ni con "N/A", ni con una tabla de encabezados sin filas, ni "preparada para el futuro".
+    Aplica igual a eventos (pregunta 5 = C), `Validator` sin `Rule`s, `result/` con retorno
+    `UUID`/`void`, paquete `query/` sin lectura real, integraciones externas y migración. Antes de
+    guardar el archivo, relee tus respuestas de FASE 3 y confirma que ninguna sección contradice un
+    "no" del usuario. Si crees que el "no" fue un error, dilo en la sección 1 o pregunta otra vez —
+    planificarlo de todos modos no es iniciativa, es ignorar la decisión de quien pidió el plan.

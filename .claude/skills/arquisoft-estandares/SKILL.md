@@ -42,8 +42,12 @@ en secuencia y cada una lanza en su violación, así que una regla dependiente *
 anterior ya lanzó** — guardarla con un `if` es código muerto. Si la ausencia debe cambiar la
 conclusión, esa decisión va **dentro de la Rule**.
 
-Ambas interfaces viven en `shared:rules` y sus métodos son fijos: `DomainRule<T>.validar(T)` (void,
-lanza) y `Finder<T, R>.obtener(T)` (devuelve, nunca lanza por "no encontrado").
+Los métodos de ambas interfaces son fijos: `DomainRule<T>.validar(T)` (void, lanza) y
+`Finder<T, R>.obtener(T)` (devuelve, nunca lanza por "no encontrado"). **No viven en el mismo
+módulo, y esa es justo la distinción de arriba hecha grafo:** `DomainRule` está en `shared:domain`
+(`com.arquisoft.shared.rules`), porque la decide el dominio; `Finder` está en `shared:application`
+(`com.arquisoft.shared.finder`), porque consulta y eso es orquestación. Compartían el paquete
+`rules` y se separaron por eso mismo.
 
 **Un comando sin restricciones de conjunto no lleva `Validator`.** No es opcional por pereza: un
 `Validator` que no orquesta ninguna `Rule` es una capa vacía. `notificaciones` es el caso real —

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @ConditionalOnMissingBean(EventPublisher.class)
-public class RabbitMQEventPublisher implements EventPublisher { // EventPublisher de shared:domain
+public class RabbitMQEventPublisher implements EventPublisher {
 
     private static final int MAX_ATTEMPTS = 3;
     private static final long INITIAL_BACKOFF_MS = 500L;

@@ -242,24 +242,35 @@ mismo.
 
 Antes eran un solo módulo llamado `domain`, así que `{contexto}/domain` recibía `UseCase` e
 `Interactor` en su classpath y un agregado podía implementarlos sin que nada fallara. Hoy no
-compila. **Un `{contexto}/domain/build.gradle` nunca declara `shared:application`** — si parece
-necesitarlo, el tipo que se está buscando pertenece a la capa de aplicación. `{contexto}/application`
-e `{contexto}/infrastructure` sí lo declaran: el controller inyecta el `Interactor`, cuyo
-`ejecutar(...)` se declara en la interfaz compartida.
+compila. Es la misma clase de garantía que da tener cero Spring en el classpath del dominio: "el
+dominio no orquesta" pasó de convención a hecho.
+
+Qué declara cada capa:
+
+| Módulo | Declara | Por qué |
+|---|---|---|
+| `{contexto}/domain` | `shared:domain` | Trae por `api` la cadena `message`/`exception`/`validation`/`util` |
+| `{contexto}/application` | `shared:application` | Trae `shared:domain` por `api` — no hace falta declararlo también |
+| `{contexto}/infrastructure` | ambos | El controller inyecta el `Interactor` (`shared:application`) y el consumer AMQP toca `DomainEvent` (`shared:domain`) |
+
+**Un `{contexto}/domain/build.gradle` nunca declara `shared:application`.** Si compilando el dominio
+falta `UseCase`, `Interactor`, `Finder` o `EventPublisher`, la corrección **no** es agregar la
+dependencia: es mover ese tipo a la capa de aplicación, que es donde pertenece. Agregarla devuelve
+exactamente el agujero que el split cerró.
 
 ## Eventos de dominio — una sola forma
 
-El `UseCase` publica directamente tras persistir —
-`eventPublisher.publish(new AsesorFichaCambiadoEvent(...))`. El agregado no acumula eventos: no
-extiende nada para esto, no tiene `publicarEvento(...)` ni `extraerEventosSinPublicar()`. Ver
-`CambiarAsesorFichaUseCaseImpl.java` (fichas) y `CrearUsuarioUseCaseImpl.java` (usuarios), que hoy
-siguen la misma forma.
+El `UseCase` inyecta el puerto `EventPublisher` (`com.arquisoft.shared.publisher`, en
+`shared:application`) y publica directamente tras persistir —
+`eventPublisher.publish(new AsesorFichaCambiadoEvent(...))`. Ver `CambiarAsesorFichaUseCaseImpl.java`
+(fichas) y `CrearUsuarioUseCaseImpl.java` (usuarios), que siguen la misma forma.
 
-**`AggregateRoot` ya no existe.** Era la otra forma —el agregado acumulaba eventos en memoria y el
-`UseCase` los drenaba— y se eliminó de `shared:domain`: su único consumidor era `UsuarioDomain`, y
-mantener dos formas válidas para lo mismo no aportaba nada. Si un plan, un ejemplo o tu memoria
-mencionan `extends AggregateRoot`, `publicarEvento` o `extraerEventosSinPublicar`, es material
-viejo: la clase no está en el repo y ese código no compila.
+**El agregado es una clase plana y no participa en la publicación**: no extiende ninguna clase base
+para esto, no acumula eventos en memoria y no expone ningún método para emitirlos o drenarlos. Un
+agregado que declare algo así no compila — el tipo base que lo permitía no existe en el repo, y el
+`{contexto}/domain` ni siquiera tiene `EventPublisher` en su classpath (`shared:domain` no lo trae).
+Si un plan, un ejemplo o tu memoria proponen que la entidad acumule y el use case drene, es material
+viejo: la forma es una sola y es la de arriba.
 
 **Coherencia dura:** si el plan dice "Eventos: ninguno" → no hay clases en `event/` y el `UseCase`
 no inyecta `EventPublisher`. `DomainEvent` sí sigue vigente: es la clase base de cada evento
@@ -270,8 +281,18 @@ routing key de RabbitMQ.
 `reconstruir(...)` nunca publica eventos y el `CommandOutputAdapter` siempre lee con
 `reconstruir(...)`, nunca con `crear(...)`. Un evento carga todo lo que su consumidor necesita
 (`AsesorFichaCambiadoEvent` lleva nombre y email del asesor) para que el consumidor no tenga que
-volver a consultar al productor. La publicación está centralizada en `shared:amqp` — nunca se crea
-un `{Entidad}EventPublisher` local.
+volver a consultar al productor.
+
+La publicación está centralizada en `shared:amqp` y **nunca se crea un `{Entidad}EventPublisher`
+local**. Hay dos implementaciones del puerto y no son intercambiables: `SpringModulithEventPublisher`
+(`@Component @Primary`) pasa por el outbox — inserta en `event_publication` dentro de la misma
+transacción del `Interactor` — y `RabbitMQEventPublisher` publica directo al broker, declarado
+respaldo con `@ConditionalOnMissingBean`. El `@Primary` es lo que hace determinista cuál gana: esa
+condición, sobre un `@Component` escaneado, no la garantiza Spring fuera de una autoconfiguración, y
+si ganara el directo los eventos irían al broker **saltándose el outbox**, sin fila en
+`event_publication` y sin atomicidad. Consecuencia práctica: una implementación nueva de
+`EventPublisher` no es una extensión inocente — rompe esa garantía. El use case inyecta siempre la
+**interfaz**, nunca una de las dos clases.
 
 ## Aislamiento de persistencia: una base de datos por contexto
 
