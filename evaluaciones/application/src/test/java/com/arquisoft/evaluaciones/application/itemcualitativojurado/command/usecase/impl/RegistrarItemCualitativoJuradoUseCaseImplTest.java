@@ -6,7 +6,6 @@ import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.seco
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.validator.RegistrarItemCualitativoJuradoValidator;
 import com.arquisoft.evaluaciones.domain.itemcualitativojurado.ItemCualitativoJuradoDomain;
 import com.arquisoft.evaluaciones.domain.itemcualitativojurado.exception.NombreItemCualitativoJuradoDuplicadoException;
-import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,13 +83,14 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
     void debeDetenerFlujo_cuandoPersistenciaFalla() {
         // Arrange
         ItemCualitativoJuradoDomain item = itemValido();
+        var errorPersistencia = new RuntimeException("Error de persistencia");
         when(finder.obtener(item.getNombre())).thenReturn(false);
-        doThrow(new InfrastructureException("Error de persistencia", "ERROR_DB"))
+        doThrow(errorPersistencia)
                 .when(outputPort).registrar(entidadDe(item));
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(item))
-                .isInstanceOf(InfrastructureException.class);
+                .isSameAs(errorPersistencia);
         verify(logger, never()).info(anyString(), any());
     }
 

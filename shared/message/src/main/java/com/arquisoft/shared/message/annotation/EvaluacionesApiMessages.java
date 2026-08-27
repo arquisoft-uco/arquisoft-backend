@@ -10,7 +10,6 @@ public final class EvaluacionesApiMessages {
 
         public static final String RESP_401 = "No autenticado";
         public static final String RESP_403 = "Sin permisos para realizar la operación";
-        public static final String RESP_503 = "Servicio de persistencia no disponible";
     }
 
     public static final class ItemCualitativoJurado {

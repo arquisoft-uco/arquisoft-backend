@@ -6,5 +6,5 @@ public interface ItemCualitativoJuradoOutputPort {
 
     void registrar(ItemCualitativoJuradoEntity entity);
 
-    Boolean existePorNombreIgnorandoMayusculas(String nombre);
+    boolean existePorNombreIgnorandoMayusculas(String nombre);
 }

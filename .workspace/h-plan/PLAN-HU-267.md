@@ -143,7 +143,7 @@ No hay integración con Keycloak Admin API, SMTP, MinIO ni HTTP externo. Los com
 | infrastructure | `evaluaciones/infrastructure/src/main/java/com/arquisoft/evaluaciones/infrastructure/itemcualitativojurado/command/secondaryadapter/entity/ItemCualitativoJuradoJpaEntity.java` | Entidad JPA de `item_cualitativo_jurado` |
 | infrastructure | `evaluaciones/infrastructure/src/main/java/com/arquisoft/evaluaciones/infrastructure/itemcualitativojurado/command/secondaryadapter/mapper/ItemCualitativoJuradoJpaMapper.java` | Entity ↔ JpaEntity |
 | infrastructure | `evaluaciones/infrastructure/src/main/java/com/arquisoft/evaluaciones/infrastructure/itemcualitativojurado/command/secondaryadapter/repository/ItemCualitativoJuradoCommandRepository.java` | `JpaRepository` y `existsByNombreIgnoreCase` |
-| infrastructure | `evaluaciones/infrastructure/src/main/java/com/arquisoft/evaluaciones/infrastructure/itemcualitativojurado/command/secondaryadapter/repository/ItemCualitativoJuradoCommandOutputAdapter.java` | Implementa OutputPort y traduce fallos de persistencia |
+| infrastructure | `evaluaciones/infrastructure/src/main/java/com/arquisoft/evaluaciones/infrastructure/itemcualitativojurado/command/secondaryadapter/repository/ItemCualitativoJuradoCommandOutputAdapter.java` | Implementa OutputPort mediante delegación directa y log técnico de escritura |
 | infrastructure | `evaluaciones/infrastructure/src/main/java/com/arquisoft/evaluaciones/infrastructure/security/EvaluacionesAuthorities.java` | Client roles y expresiones `hasAuthority` |
 | migration | `evaluaciones/infrastructure/src/main/resources/db/migration/evaluaciones/V1.0__crear_item_cualitativo_jurado.sql` | Tabla e índice único case-insensitive |
 | shared:message | `shared/message/src/main/java/com/arquisoft/shared/message/constant/EvaluacionesCodes.java` | Códigos contractuales de validación/error |
@@ -158,7 +158,7 @@ No hay integración con Keycloak Admin API, SMTP, MinIO ni HTTP externo. Los com
 | Ruta | Cambio |
 |---|---|
 | `evaluaciones/domain/build.gradle` | Añadir `implementation project(':shared:domain')` |
-| `evaluaciones/application/build.gradle` | Mantener domain y añadir `shared:domain` y `shared:logger` |
+| `evaluaciones/application/build.gradle` | Mantener domain y añadir `shared:application` y `shared:logger` |
 | `evaluaciones/infrastructure/build.gradle` | Reemplazar JDBC mínimo por dependencias JPA, Flyway, PostgreSQL, seguridad, OAuth2, validation, OpenAPI, `shared:jpa`, `shared:web`, `shared:logger` y dependencias de test equivalentes al patrón de `fichas` |
 | `evaluaciones/infrastructure/src/main/java/com/arquisoft/evaluaciones/infrastructure/config/EvaluacionesDataSourceConfig.java` | Completar `@EnableJpaRepositories`, EntityManagerFactory, `evaluacionesTransactionManager` y `evaluacionesFlyway` con location `classpath:db/migration/evaluaciones` |
 | `shared/message/src/main/java/com/arquisoft/shared/message/ContextosCatalogo.java` | Añadir `EVALUACIONES` y registrarlo en `TODOS` |
@@ -188,16 +188,16 @@ No se crea paquete `query/`: `existsByNombreIgnoreCase` solo alimenta una Rule d
 - El UseCase recibe `ItemCualitativoJuradoDomain`, consulta `NombreItemCualitativoJuradoExisteFinder.obtener(nombre)`, invoca el Validator, convierte a `ItemCualitativoJuradoEntity`, persiste, registra el log y retorna el UUID. No lleva `@Transactional`.
 - El Validator posee un único constructor sin argumentos que instancia `NombreItemCualitativoJuradoUnicoRuleImpl`; no inyecta Finder ni OutputPort y no contiene `if`.
 - El Finder es `@Component`, inyecta únicamente `ItemCualitativoJuradoOutputPort` y devuelve `Boolean`, nunca lanza por ausencia.
-- El OutputPort define `void registrar(ItemCualitativoJuradoEntity entity)` y `Boolean existePorNombreIgnorandoMayusculas(String nombre)`.
+- El OutputPort define `void registrar(ItemCualitativoJuradoEntity entity)` y `boolean existePorNombreIgnorandoMayusculas(String nombre)`.
 
 ### Infraestructura
 
 - El Controller usa `@RequestMapping("${rutas.evaluaciones.items-cualitativos-jurado.base:/evaluaciones/items-cualitativos-jurado}")`, `@PostMapping`, `@PreAuthorize(EvaluacionesAuthorities.Expresiones.HAS_ITEM_CUALITATIVO_JURADO_CREATE)` y delega en el Interactor.
 - La respuesta se construye como `ResponseEntity.status(HttpStatus.CREATED).body(new RegistrarItemCualitativoJuradoResponseDTO(id))`.
-- OpenAPI: `@Tag` en clase; `@Operation` con resumen inferior a diez palabras y `ApiSecurity.BEARER_AUTH`; respuestas 201, 400, 401, 403, 422 y 503 usando `ApiCodes`, `EvaluacionesApiMessages` y `ErrorResponseDTO`.
+- OpenAPI: `@Tag` en clase; `@Operation` con resumen inferior a diez palabras y `ApiSecurity.BEARER_AUTH`; respuestas 201, 400, 401, 403 y 422 usando `ApiCodes`, `EvaluacionesApiMessages` y `ErrorResponseDTO`.
 - `ItemCualitativoJuradoJpaEntity` usa `@Entity`, `@Table(name = "item_cualitativo_jurado")`, UUID y columnas `nombre`/`descripcion` con longitudes 100/300 y `nullable = false`.
 - El repositorio declara `boolean existsByNombreIgnoreCase(String nombre)`.
-- El adapter usa el JpaMapper, guarda mediante el repositorio y traduce una violación concurrente del índice de nombre a la misma excepción de dominio; fallos genuinos de BD se traducen a `InfrastructureException` (503), sin lógica de negocio adicional.
+- El adapter usa el JpaMapper, delega en el repositorio con `save`, registra el log técnico de escritura y deja que los fallos de Spring Data conserven su causa raíz para el manejo global.
 - `EvaluacionesDataSourceConfig` sigue el patrón real de `FichasDataSourceConfig`, con nombres de beans `evaluacionesDataSource`, `evaluacionesEntityManagerFactory`, `evaluacionesTransactionManager` y `evaluacionesFlyway`.
 
 ### Catálogo de mensajes
@@ -216,7 +216,7 @@ No se crea paquete `query/`: `existsByNombreIgnoreCase` solo alimenta una Rule d
 
 | Método | Ruta sin `/api` | Request | Response | HTTP | Client role | Swagger |
 |---|---|---|---|---|---|---|
-| POST | `/evaluaciones/items-cualitativos-jurado` | `{ "nombre": String, "descripcion": String }` | `{ "id": UUID }` | 201 | `evaluaciones:item-cualitativo-jurado:create` | 201/400/401/403/422/503 + bearerAuth |
+| POST | `/evaluaciones/items-cualitativos-jurado` | `{ "nombre": String, "descripcion": String }` | `{ "id": UUID }` | 201 | `evaluaciones:item-cualitativo-jurado:create` | 201/400/401/403/422 + bearerAuth |
 
 El endpoint es nuevo. El prefijo `/api` proviene del context path global y no se escribe en las anotaciones.
 
@@ -324,7 +324,7 @@ Todos los tests siguen AAA, JUnit 6, Mockito, AssertJ, `@MockitoBean` en slices 
 | Etapa | Agente | Estado | Fecha | Notas |
 |---|---|---|---|---|
 | Desarrollo | @implementador | ✅ Completado | 2026-08-23 | Capas domain/application/infrastructure aprobadas; `:evaluaciones:build -x test` y `build -x test` exitosos. |
-| Tests | @tester | ✅ Completado | 2026-08-23 | Cobertura: 92,60% — CUMPLE el 75% (domain 100%, application 89,47%, infrastructure 81,48%). |
-| Validación | @validator-analyze | ⏳ Pendiente | | |
-| Reporte | @validator-report | ⏳ Pendiente | | |
-| Commit | @commit | ⏳ Pendiente | | |
+| Tests | @tester | ✅ Completado | 2026-08-27 | 23 tests en verde. Cobertura: domain 100%, application 88,64%, infrastructure 85,07%; cumple el 75%. |
+| Validación | @validator-analyze | ✅ Aprobado | 2026-08-27 | Score 100/100; 0 bloqueantes y 0 menores. Build, Checkstyle y cobertura en verde. |
+| Reporte | @validator-report | ✅ Completado | 2026-08-27 | Reporte aprobado persistido en `.workspace/validator/validator-HU-267.md`. |
+| Commit | @commit | ⏳ Pendiente | | Listo para solicitar confirmación del Gate 1 conforme a `commit.md`. |

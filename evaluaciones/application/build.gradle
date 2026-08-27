@@ -1,6 +1,6 @@
 dependencies {
     implementation project(':evaluaciones:domain')
-    implementation project(':shared:domain')
+    implementation project(':shared:application')
     implementation project(':shared:logger')
 
     implementation 'org.springframework:spring-tx'

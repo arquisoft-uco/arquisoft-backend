@@ -2,15 +2,11 @@ package com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.
 
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.secondaryport.ItemCualitativoJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.secondaryport.entity.ItemCualitativoJuradoEntity;
-import com.arquisoft.evaluaciones.domain.itemcualitativojurado.exception.NombreItemCualitativoJuradoDuplicadoException;
 import com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.secondaryadapter.mapper.ItemCualitativoJuradoJpaMapper;
-import com.arquisoft.shared.exception.InfrastructureException;
+import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
-import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -19,31 +15,16 @@ public class ItemCualitativoJuradoCommandOutputAdapter
         implements ItemCualitativoJuradoOutputPort {
 
     private final ItemCualitativoJuradoCommandRepository repository;
+    private final AppLogger logger;
 
     @Override
     public void registrar(ItemCualitativoJuradoEntity entity) {
-        try {
-            repository.saveAndFlush(ItemCualitativoJuradoJpaMapper.toJpaEntity(entity));
-        } catch (DataIntegrityViolationException exception) {
-            throw new NombreItemCualitativoJuradoDuplicadoException(entity.nombre());
-        } catch (DataAccessException exception) {
-            throw errorPersistencia(exception);
-        }
+        repository.save(ItemCualitativoJuradoJpaMapper.toJpaEntity(entity));
+        logger.debug(Mensajes.obtener(ItemCualitativoJuradoKey.LOG_GUARDADA), entity.id());
     }
 
     @Override
-    public Boolean existePorNombreIgnorandoMayusculas(String nombre) {
-        try {
-            return repository.existsByNombreIgnoreCase(nombre);
-        } catch (DataAccessException exception) {
-            throw errorPersistencia(exception);
-        }
-    }
-
-    private InfrastructureException errorPersistencia(DataAccessException exception) {
-        return new InfrastructureException(
-                Mensajes.obtener(ItemCualitativoJuradoKey.ERROR_PERSISTENCIA),
-                EvaluacionesCodes.ItemCualitativoJurado.PERSISTENCIA_ERROR,
-                exception);
+    public boolean existePorNombreIgnorandoMayusculas(String nombre) {
+        return repository.existsByNombreIgnoreCase(nombre);
     }
 }

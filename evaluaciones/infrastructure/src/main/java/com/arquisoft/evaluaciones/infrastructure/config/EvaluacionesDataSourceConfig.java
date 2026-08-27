@@ -65,9 +65,7 @@ public class EvaluacionesDataSourceConfig {
             @Qualifier("evaluacionesFlyway") Flyway evaluacionesFlyway) {
         var entityManager = new LocalContainerEntityManagerFactoryBean();
         entityManager.setDataSource(dataSource);
-        entityManager.setPackagesToScan(
-                "com.arquisoft.evaluaciones.application",
-                "com.arquisoft.evaluaciones.infrastructure");
+        entityManager.setPackagesToScan("com.arquisoft.evaluaciones.infrastructure");
         entityManager.setPersistenceUnitName("evaluaciones");
         entityManager.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
         entityManager.setJpaPropertyMap(PropiedadesJpa.porDefecto());
@@ -86,7 +84,7 @@ public class EvaluacionesDataSourceConfig {
         return Flyway.configure()
                 .dataSource(dataSource)
                 .locations("classpath:db/migration/evaluaciones")
-                .baselineOnMigrate(true)
+                .baselineOnMigrate(false)
                 .load();
     }
 }

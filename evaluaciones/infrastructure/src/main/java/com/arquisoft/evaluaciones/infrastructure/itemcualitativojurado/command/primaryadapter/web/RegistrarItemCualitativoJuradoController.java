@@ -62,10 +62,6 @@ public class RegistrarItemCualitativoJuradoController {
             @ApiResponse(
                     responseCode = ApiCodes.UNPROCESSABLE,
                     description = EvaluacionesApiMessages.ItemCualitativoJurado.REGISTRAR_RESP_422,
-                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
-            @ApiResponse(
-                    responseCode = ApiCodes.SERVICE_UNAVAILABLE,
-                    description = EvaluacionesApiMessages.Comun.RESP_503,
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<RegistrarItemCualitativoJuradoResponseDTO> registrar(

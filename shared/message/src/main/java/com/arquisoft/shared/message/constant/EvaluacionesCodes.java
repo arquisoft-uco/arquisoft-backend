@@ -17,7 +17,5 @@ public final class EvaluacionesCodes {
                 "ITEM_CUALITATIVO_JURADO_DESCRIPCION_DEMASIADO_LARGA";
         public static final String NOMBRE_DUPLICADO =
                 "ITEM_CUALITATIVO_JURADO_NOMBRE_DUPLICADO";
-        public static final String PERSISTENCIA_ERROR =
-                "ITEM_CUALITATIVO_JURADO_PERSISTENCIA_ERROR";
     }
 }
