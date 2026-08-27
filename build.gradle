@@ -74,6 +74,10 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-amqp"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
 
+    // Registry de Micrometer que materializa /actuator/prometheus. Sin el, el endpoint
+    // no se registra y responde 404 aunque figure en management.endpoints.web.exposure.
+    runtimeOnly "io.micrometer:micrometer-registry-prometheus"
+
     // Logging estructurado (ADR-005): JSON encoder que emite el MDC como campos de primer nivel
     implementation project(':shared:logger')
 
