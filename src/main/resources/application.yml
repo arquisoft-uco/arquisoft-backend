@@ -371,6 +371,17 @@ management:
   endpoint:
     health:
       show-details: always
+  # Health check de correo DESACTIVADO a proposito (2026-08-27).
+  # notificacion.proveedor=log no envia correos, pero spring.mail sigue
+  # autoconfigurando JavaMailSender y su MailHealthIndicator, que intenta
+  # conectarse a Mailpit (localhost:1025) — un contenedor que solo existe en el
+  # docker-compose local. En el servidor eso deja /actuator/health en DOWN y hace
+  # fallar el health check del despliegue.
+  # Reactivar (borrar este bloque) cuando se defina el SMTP real: la config de
+  # spring.mail se conserva intacta mas arriba.
+  health:
+    mail:
+      enabled: false
   metrics:
     export:
       prometheus:

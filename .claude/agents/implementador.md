@@ -104,6 +104,17 @@ omites).
   clase plana, no acumula eventos ni los drena. **Si el plan dice "Eventos: ninguno", no inyectes
   `EventPublisher` y no crees nada en `event/`** — ni "por si acaso", ni porque la entidad parezca
   pedirlo. Ausencia declarada es una decisión del plan, no un olvido que te toque completar.
+- **Si el evento va hacia `notificaciones`** (típico de una HU de transición de estado), la clase de
+  evento es la mitad del trabajo: implementa también las cinco piezas del lado consumidor que el
+  plan lista — `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig`, `{Evento}Payload`
+  (`record` propio del adaptador, nunca la clase del productor), `{Evento}Consumer` extendiendo
+  `AbstractEventConsumer`, la constante nueva en `TipoNotificacion` (columna `VARCHAR`: sin
+  migración) y las claves `PlantillaKey.ASUNTO_*`/`CUERPO_*`. Copia
+  `AsesorFichaCambiadoConsumer` como referencia: el texto del correo se arma **en el consumidor**,
+  con `Mensajes.formatear(...)`, no en el use case de `notificaciones`.
+  Las dos claves de plantilla van a la vez en el enum `PlantillaKey` (con su aridad) y en
+  `catalogo/notificaciones.properties`; `CatalogoCargaTest` rompe el build si falta cualquiera de
+  las dos o si la cantidad de `%s` no coincide con la aridad declarada.
 - `application/{feature}/exception/` (→ `ApplicationException`, 400) es solo para fallos de
   **orquestación** de la capa. "No encontrado", "duplicado" y "no eres el dueño" son restricciones
   de conjunto: van en una `Rule` de dominio con su `DomainException` (422).
@@ -146,6 +157,41 @@ sin FK hacia la base de otro contexto — eso se modela como tabla réplica loca
 El `QueryOutputAdapter` es pura delegación: `PageableMapper.toPageable(criteria, {Entidad}SortMapper::traducir)`
 y `PaginationMapper.toResult(page)` (`shared:jpa/util/`); no construye `PageRequest`/`Sort` ni
 captura excepciones de Spring Data para remapearlas a 4xx.
+
+**El `CommandOutputAdapter` no lleva un solo `try/catch`.** `FichaPerfilCommandOutputAdapter` es la
+referencia: `Entity ↔ JpaEntity` y delegar, nada más. Cuando la ejecución llega ahí, el orden de
+validación ya garantizó formato, existencia, unicidad e invariantes — no queda ningún error de
+negocio que el adaptador pueda descubrir, así que no tiene nada que traducir. Cinco cosas que no
+debes generar:
+
+- **Nunca lances una `DomainException` desde un adaptador.** Nada de
+  `catch (DataIntegrityViolationException)` → `throw {X}DuplicadoException(...)`: esa excepción vive
+  en `domain/{feature}/exception/` e infrastructure no ve el dominio en absoluto. Y la unicidad ya
+  la cubre `{X}UnicoRule` con su `Finder` sobre `existePor...`; la garantía real es el `UNIQUE` de
+  la migración Flyway.
+- **No captures `DataAccessException` para envolverla en `InfrastructureException`**, ni generes un
+  helper `errorPersistencia(...)`. `GlobalAppExceptionHandler` no mapea Spring Data: cae en su
+  catch-all → 500 con log de error, que es el resultado correcto para BD caída o bug de mapeo.
+  (Sí puedes lanzar una `InfrastructureException` propia de
+  `infrastructure/{feature}/exception/` para lo que solo el adaptador diagnostica: proveedor externo
+  caído, objeto ausente en MinIO. Lo prohibido es envolver Spring Data.)
+- **`save`, no `saveAndFlush`.** Solo existía para adelantar el error al `catch`; sin `catch` no
+  tiene razón de ser, y ante una violación de constraint deja la transacción en *rollback-only* y el
+  `EntityManager` indefinido, con el `UnexpectedRollbackException` estallando en el commit, lejos
+  del origen.
+- **`boolean` primitivo en los métodos de existencia**, tanto en el puerto como en el adaptador. Los
+  16 del repo lo son; el `Boolean` envuelto mete un `null` que nadie comprueba y un unboxing
+  silencioso dentro de la `Rule`.
+- **Los métodos de escritura logean**, los de lectura no:
+  `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), entity.id())` con el `AppLogger`
+  inyectado por constructor.
+
+
+**`{Contexto}DataSourceConfig`: un solo paquete escaneado.**
+`em.setPackagesToScan("com.arquisoft.{contexto}.infrastructure")`, nunca la lista de dos con
+`"...application"`. Todas las `@Entity` están en infrastructure; lo que queda en `application` es el
+`record` plano del `secondaryport`, sin una sola anotación JPA. Si tocas un config, comprueba que no
+arrastre la forma vieja.
 
 **Un `OutputAdapter` que escribas siempre persiste.** Existe un adaptador deliberadamente inerte en
 el repo — `usuarios/.../UsuarioCommandOutputAdapter`, que solo loguea y no toca la base — y está

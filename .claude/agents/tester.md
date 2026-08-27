@@ -94,6 +94,13 @@ no guarda eventos que se le puedan preguntar después. **Si el plan dice "Evento
 mockees `EventPublisher`**: el use case no lo inyecta, así que un `@Mock` de más rompe el test con
 `UnnecessaryStubbingException` y, peor, sugiere que el flujo publica algo.
 
+Cuando el evento va hacia `notificaciones`, captúralo con `ArgumentCaptor` en vez de `any()` y
+asegura que **carga los datos del destinatario** (nombre, correo) y el dato legible del asunto: un
+evento sin ellos compila y se publica, pero deja al consumidor sin con qué armar el correo. El
+consumidor se prueba aparte, como el adaptador que es — deserializa el payload y verifica la llamada
+al `Interactor` con el `TipoNotificacion` y los textos esperados (`AsesorFichaCambiadoConsumer` es
+la referencia).
+
 Si el comando devuelve un `{Concepto}Result`, el test del `UseCase` asserta sus campos — con eso
 queda cubierto el `{Concepto}ResultMapper`, que **sí cuenta para JaCoCo** (`*Result` y
 `*ResultMapper` no están en la lista de exclusiones, a diferencia de `*Command` y `*ReadModel`). No
