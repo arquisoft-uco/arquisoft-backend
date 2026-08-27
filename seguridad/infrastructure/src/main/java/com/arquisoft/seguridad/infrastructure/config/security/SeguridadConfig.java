@@ -40,6 +40,9 @@ public class SeguridadConfig {
     // (actuator, springdoc), que las resuelven literalmente. No van al catálogo.
     private static final String PLANTILLA_ISSUER = "%s/realms/%s";
     private static final String RUTA_ACTUATOR_HEALTH = "/actuator/health/**";
+    // Alloy raspa este endpoint por la red interna. Traefik no enruta /api/actuator
+    // (ver labels en .github/workflows/deploy.yml), asi que no queda expuesto a internet.
+    private static final String RUTA_ACTUATOR_PROMETHEUS = "/actuator/prometheus";
     private static final String RUTA_SWAGGER_UI = "/swagger-ui/**";
     private static final String RUTA_API_DOCS = "/v3/api-docs/**";
     private static final String RUTA_SWAGGER_RESOURCES = "/swagger-resources/**";
@@ -97,7 +100,7 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.POST, rutasAutenticacion.login()).permitAll()
                         .requestMatchers(HttpMethod.POST, rutasAutenticacion.refresh()).permitAll()
                         .requestMatchers(HttpMethod.POST, rutasAutenticacion.validate()).permitAll()
-                        .requestMatchers(RUTA_ACTUATOR_HEALTH).permitAll()
+                        .requestMatchers(RUTA_ACTUATOR_HEALTH, RUTA_ACTUATOR_PROMETHEUS).permitAll()
                         .requestMatchers(RUTA_SWAGGER_UI, RUTA_API_DOCS, RUTA_SWAGGER_RESOURCES).permitAll()
                         .anyRequest().authenticated()
                 )

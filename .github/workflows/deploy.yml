@@ -103,6 +103,14 @@ jobs:
           script: |
             set -euo pipefail
 
+            # Config de Docker aislada y efímera para esta corrida: cualquier
+            # credencial de GHCR vive solo aquí y muere con el trap. Evita que un
+            # `docker login` deje un token en ~/.docker/config.json del usuario —
+            # cuando ese token vence, Docker lo sigue enviando y el registry
+            # responde `denied` en vez de caer al pull anónimo.
+            export DOCKER_CONFIG="$(mktemp -d)"
+            trap 'rm -rf "$DOCKER_CONFIG"' EXIT
+
             APP_DIR="$HOME/arquisoft"
             CONTAINER="arquisoft-backend"
             APP_PORT="8080"
@@ -153,7 +161,7 @@ jobs:
               --add-host=host.docker.internal:host-gateway \
               --label "traefik.enable=true" \
               --label "traefik.docker.network=${NETWORK}" \
-              --label "traefik.http.routers.arquisoft-backend.rule=Host(\`${APP_DOMAIN}\`)" \
+              --label "traefik.http.routers.arquisoft-backend.rule=Host(\`${APP_DOMAIN}\`) && !PathPrefix(\`/api/actuator\`)" \
               --label "traefik.http.routers.arquisoft-backend.entrypoints=websecure" \
               --label "traefik.http.routers.arquisoft-backend.tls=true" \
               --label "traefik.http.routers.arquisoft-backend.tls.certresolver=letsencrypt" \
@@ -177,7 +185,7 @@ jobs:
 
             # 6) Limpieza de imágenes colgadas
             docker image prune -f >/dev/null 2>&1 || true
-            if [ -n "${GHCR_TOKEN:-}" ]; then docker logout ghcr.io >/dev/null 2>&1 || true; fi
+            # Sin logout: el trap borra el DOCKER_CONFIG efímero de esta corrida.
         env:
           IMAGE: ${{ steps.image.outputs.ref }}
           ENV_B64: ${{ steps.env.outputs.b64 }}
