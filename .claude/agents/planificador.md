@@ -112,6 +112,36 @@ planifiques igual: anótalo en la sección 1 como algo fuera de alcance, o vuelv
 evento que nadie consume no es previsión — es un contrato publicado en el exchange que otro contexto
 puede empezar a consumir sin que nadie lo haya decidido.
 
+**Antes de aceptar C, comprueba si la HU es una transición de estado.** Si el caso de uso *crea* un
+estado o lo *cambia* — un campo de catálogo (`EstadoFicha`, `EstadoEvaluacion`, …), una asignación
+de responsable, una aprobación o un rechazo — entonces **sí hay consumidor conocido: `notificaciones`**,
+y la respuesta por defecto es **A**, no C. Quien queda afectado por el cambio de estado espera
+enterarse; ese es justamente el trabajo que `notificaciones` existe para hacer. C sigue siendo una
+respuesta válida, pero solo si el usuario dice explícitamente que ese cambio de estado no notifica a
+nadie — y entonces la razón se escribe en `Eventos: ninguno. Razón: …`. Lo que no es aceptable es
+llegar a C por omisión, sin haber preguntado, en una HU cuyo título ya dice "cambiar", "asignar",
+"aprobar", "rechazar" o "actualizar el estado de".
+
+**5b. Si la respuesta fue A por notificación: el evento no es el entregable, es la mitad.** Un evento
+publicado en el exchange sin nadie enganchado a esa routing key no envía ningún correo. El plan debe
+listar las **seis** piezas, repartidas en dos contextos, y la sección 6 debe mostrarlas en el árbol:
+
+| # | Módulo | Archivo |
+|---|---|---|
+| 1 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java` — `EVENT_TOPIC = "{contexto}.{entidad}.{accion}"` |
+| 2 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` — cola `notificaciones.{routingKey}`, con DLX |
+| 3 | `notificaciones/.../command/primaryadapter/amqp/` | `{Evento}Payload.java` — `record` propio del adaptador, **nunca** la clase de evento del productor |
+| 4 | `notificaciones/.../command/primaryadapter/amqp/` | `{Evento}Consumer.java` extiende `AbstractEventConsumer` — aquí, y no en el use case, se elige el texto |
+| 5 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
+| 6 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto |
+
+El evento **carga todo lo que el correo necesita** — nombre y correo del destinatario, más el dato
+legible del asunto (`asesorNombre`, `asesorEmail`, `tituloProyecto` en `AsesorFichaCambiadoEvent`) —
+aunque eso duplique datos que el productor ya tiene. Un evento delgado obligaría a `notificaciones`
+a llamar de vuelta al contexto productor, que es exactamente el acoplamiento que los eventos
+eliminan. La dirección es de un solo sentido: el contexto productor **nunca** depende de
+`notificaciones` ni sabe que existe, y `notificaciones` no emite eventos, solo los consume.
+
 **6. ¿Persistencia nueva o se reutiliza la existente?**
 
 **7. ¿Casos de error relevantes a manejar explícitamente?**
@@ -254,6 +284,10 @@ Para Controllers añade: @Tag, y por endpoint: @Operation(summary), @ApiResponse
 
 ## 10. Eventos RabbitMQ — SOLO si la pregunta 5 fue A/B. Con C, borra esta sección completa
 | Dirección | Exchange | Routing Key | Payload | Contexto receptor |
+
+Si el receptor es `notificaciones` (HU de transición de estado), la sección lista además las seis
+piezas de la pregunta 5b — cola + binding, `Payload`, `Consumer`, constante de `TipoNotificacion` y
+las dos claves de `PlantillaKey` con su texto de catálogo.
 
 ## 11. Migración de Base de Datos (si aplica)
 - **Ubicación — subcarpeta propia del contexto, obligatoria:**
@@ -440,6 +474,10 @@ getters/setters ni métodos `private`.
 - [ ] Sin `Optional` en firmas de `Validator` ni en records de `Rule`
 - [ ] Eventos ⟺ pregunta 5 = A/B: con C no hay `event/`, ni `EventPublisher` en el use case, ni
       sección 10, ni tests de publicación. Con A/B, las cuatro presentes
+- [ ] Si la HU crea o cambia un estado, la pregunta 5 se resolvió como A con `notificaciones` de
+      consumidor — o el plan escribe la razón explícita por la que ese cambio no notifica a nadie
+- [ ] Evento hacia `notificaciones` ⟹ las seis piezas de la pregunta 5b en el árbol de la sección 6,
+      y el evento carga nombre + correo del destinatario (nada de que el consumidor pregunte de vuelta)
 - [ ] IDs siempre `UUID`
 - [ ] `Interactor` dueño de `@Transactional` con qualifier explícito; `UseCase` sin transacción propia
 - [ ] `OutputPort` habla `Entity`, nunca `Domain`; existencia de otra feature vía el `Finder` de esa feature
