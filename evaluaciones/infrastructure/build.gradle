@@ -1,7 +1,32 @@
 dependencies {
     implementation project(':evaluaciones:domain')
     implementation project(':evaluaciones:application')
-    implementation "org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}"
+    implementation project(':shared:domain')
+    implementation project(':shared:application')
+    implementation project(':shared:exception')
+    implementation project(':shared:logger')
+    implementation project(':shared:web')
+    implementation project(':shared:jpa')
+
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
+    runtimeOnly "org.postgresql:postgresql"
+
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-test-autoconfigure"
+    testImplementation "org.springframework.boot:spring-boot-data-jpa-test"
+    testImplementation "org.springframework.boot:spring-boot-webmvc-test"
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation "com.h2database:h2"
+    testImplementation project(':shared:tracing')
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
 

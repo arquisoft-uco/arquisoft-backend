@@ -1,1 +1,6 @@
-// Configuración automática desde build.gradle raíz
+dependencies {
+    implementation project(':shared:domain')
+
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

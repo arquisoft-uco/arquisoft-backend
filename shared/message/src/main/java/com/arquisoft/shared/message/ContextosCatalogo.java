@@ -29,6 +29,10 @@ public final class ContextosCatalogo {
     /** Contexto notificaciones. */
     public static final String NOTIFICACIONES = "notificaciones";
 
+    /** Contexto evaluaciones. */
+    public static final String EVALUACIONES = "evaluaciones";
+
     /** Todos los contextos, en el orden en que se cargan. */
-    public static final List<String> TODOS = List.of(APP, FICHAS, SEGURIDAD, USUARIOS, NOTIFICACIONES);
+    public static final List<String> TODOS =
+            List.of(APP, FICHAS, SEGURIDAD, USUARIOS, NOTIFICACIONES, EVALUACIONES);
 }
