@@ -75,6 +75,8 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | `saveAndFlush(...)` en un `CommandOutputAdapter` (en el *arrange* de un `@DataJpaTest` sí es legítimo). Sin `catch` no aporta nada, y ante una violación de constraint deja la transacción en rollback-only → `UnexpectedRollbackException` en el commit, lejos del origen | ❌ |
 | `Boolean` envuelto en un método de existencia del `OutputPort` o del `OutputAdapter` — los 16 del repo son `boolean` primitivo; el envuelto mete un `null` sin comprobar y un unboxing silencioso en la `Rule` | ❌ |
 | Método de **escritura** del `CommandOutputAdapter` sin `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), id)`, o método de **lectura** que sí logea | ⚠️ |
+| `implementation project(':{contexto}:domain')` en el `build.gradle` de infrastructure. La dirección la impone el grafo de módulos; el dominio solo va en `testImplementation`. Añadirlo reabre la barrera y `verificarCapasHexagonales` falla | ❌ |
+| Import de `com.arquisoft.{contexto}.domain.*` en `infrastructure/src/main`. Un enum de dominio que un adaptador necesita nombrar viaja como `String` y se convierte en `Command.crear(...)`; un agregado significa que el puerto debe hablar `Entity` | ❌ |
 | `{Contexto}DataSourceConfig` con `setPackagesToScan` sobre dos paquetes, incluyendo `"com.arquisoft.{contexto}.application"`. Las `@Entity` están todas en infrastructure; la forma vigente es una sola cadena, `"com.arquisoft.{contexto}.infrastructure"` | ❌ |
 
 **Prueba del algodón:** "si mañana cambio Keycloak/RabbitMQ/PostgreSQL por otra tecnología, ¿este
@@ -302,6 +304,21 @@ excepción o mapear a `Entity`.
 | `Mensajes.obtener(clave).formatted(args)` — salta el formateo del catálogo, sin respaldo ni diagnóstico de aridad | ❌ |
 | Clave nueva sin su enum `{Feature}Key` (con `clave()` y `parametros()`), sin registrar en `ClavesCatalogo`, o sin su línea en `catalogo/{contexto}.properties` | ❌ |
 | `parametros()` que no coincide con los marcadores del patrón — `%s` para mensajes de cliente, `{}` para logs (un log con `{}` **no** es aridad 0) | ❌ |
+| `UseCaseImpl.ejecutar` de un flujo de escritura sin `logger.info(...LOG_{GERUNDIO}...)` como primera línea, o sin `logger.debug(...LOG_VERIFICACION_*...)` antes de `validator.validar(...)` | ⚠️ |
+| Más de dos `INFO` por petición en un flujo — típicamente un cierre en el interactor **y** otro en el use case. El `INFO` del interactor solo existe en un flujo anidado (`RegistrarFichaPerfil`); en uno simple el interactor no logea | ⚠️ |
+| `AppLogger` inyectado en un `{Accion}{Entidad}ValidatorImpl` o en una `Rule` — son puros, constructor sin argumentos, cero dependencias | ❌ |
+| Log en `Command.crear(...)`, en un mapper, en un DTO o en un helper `Validator*`/`Util*`: el campo inválido ya viaja en `fieldErrors[]` | ❌ |
+| `try/catch` en el flujo puesto únicamente para loguear un error que `GlobalAppExceptionHandler` ya reporta | ❌ |
+| Secreto, token o contraseña como argumento de un log | ❌ |
+| Clave con prefijo `LOG_`/segmento `.log.` cuyo valor **no** es un log — texto del cuerpo de una respuesta HTTP, asunto o cuerpo de correo. Usa `MENSAJE_`/`.mensaje.`, `ASUNTO_`, `CUERPO_` | ⚠️ |
+| `INFO` en un flujo de **lectura** — use case, interactor o `QueryOutputAdapter`. La línea `AUDIT` de `TrazabilidadFilter` ya lo registra a nivel `info`; una consulta solo lleva dos `debug` en el use case | ⚠️ |
+| `QueryOutputAdapter` o interactor de query que logea. El primero es delegación pura y duplicaría el cierre; el segundo solo abre la transacción `readOnly` | ⚠️ |
+| Log de entrada de una consulta que serializa la `Criteria` completa o el árbol de filtros en vez de `pagina`/`tamanio`/`tieneFiltros()`/`tieneOrden()` | ⚠️ |
+| Correo electrónico como argumento de un log sin `UtilTexto.enmascararCorreo(...)`. Es dato personal y los logs llegan a Loki | ❌ |
+| Contraseña, token, refresh token o `Authorization` como argumento de un log. De un token se registra el JTI, nunca el valor | ❌ |
+| `{Evento}Consumer` sin `INFO` de recepción tras `deserialize`, o que lo emite **fuera** del `withCorrelation(...)` — fuera del `AlcanceTraza` la línea sale sin `correlacionId` | ⚠️ |
+| Use case disparado por un consumidor que añade su propio `INFO` de entrada: serían tres `INFO` por mensaje. El de recepción del consumidor ya es la entrada del flujo | ⚠️ |
+| `{Evento}Consumer` que reimplementa los logs de envelope, ack o DLQ que `AbstractEventConsumer` ya emite | ⚠️ |
 | `Validator*.*(...)`/`result.addError(...)` con literales en `campo`/`código` en vez de `{Contexto}Fields.*`/`{Contexto}Codes.*` | ❌ |
 | Referencia a `DomainValidator` (clase retirada — hoy es la familia `Validator*` de `shared:validation`) | ❌ |
 | Límite numérico de negocio (`if (x.length() > 100)`) sin constante en `{Contexto}Limits` | ❌ |

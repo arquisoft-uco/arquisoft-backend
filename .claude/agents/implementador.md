@@ -274,6 +274,54 @@ espera respuesta: "¿Sigues con @tester (recomendado) o vas directo a @validator
   ya no queda ni uno en los cuatro contextos con código. Nunca loguees
   desde un método `@Bean` ni desde un `@PostConstruct`: el catálogo aún no está instalado y saldría
   la clave cruda sin argumentos.
+- **Estructura de logs de un flujo de escritura:** cada flujo de comando emite **dos `INFO` por
+  petición** y nada más; el resto es `debug`. Ver la sección completa en `arquisoft-estandares`.
+  Resumen operativo:
+  1. `logger.info(...LOG_{GERUNDIO}...)` como **primera línea** de `UseCaseImpl.ejecutar`, con los
+     identificadores de negocio de la entrada. Sin esto, un flujo que aborta en validación no deja
+     rastro de que se intentó.
+  2. `logger.debug(...LOG_VERIFICACION_{ACCION}...)` **justo antes** de `validator.validar(...)`, con
+     exactamente lo que devolvieron los finders (colecciones como `.size()`, agregados como
+     `!x.esVacio()`). Es lo que permite reconstruir por qué una `Rule` lanzó.
+  3. El `logger.info(...LOG_{PARTICIPIO}...)` de cierre tras la escritura — normalmente ya existe.
+  4. `logger.debug(...LOG_GUARDADO...)` en cada método de **escritura** del adapter.
+  Si el use case invoca **otros use cases** (flujo anidado, hoy solo `RegistrarFichaPerfil`): el
+  `InteractorImpl` inyecta `AppLogger` y emite el `INFO` de cierre `LOG_{ACCION}_COMPLETADO`, el use
+  case raíz baja su log de "escrito" a `debug`, los anidados bajan su cierre a `debug`, y se agrega un
+  `debug` de validación superada. **En un flujo simple el interactor no loguea.**
+  **Nunca** un log en un `Validator`, en una `Rule`, en `Command.crear(...)`, en un mapper, en un DTO,
+  en un método de lectura de un adapter, ni un `try/catch` puesto solo para loguear. Nunca secretos.
+- **Estructura de logs de un flujo de lectura:** una consulta **no emite ningún `INFO`** y no logea
+  ni en el interactor ni en el `QueryOutputAdapter`. `TrazabilidadFilter` ya emite la línea `AUDIT` a
+  nivel `info` por cada petición, así que un `INFO` propio la duplicaría y las lecturas son el
+  tráfico de mayor volumen. Solo dos `debug` en el use case: al entrar, con `pagina`, `tamanio`,
+  `tieneFiltros()` y `tieneOrden()` — lo que la auditoría no puede mostrar y lo que explica un
+  resultado vacío inesperado; y al salir, con el volumen devuelto (`getTotalElements()`/`.size()`).
+  Nunca serialices la `Criteria` completa. Si la consulta no tiene criterio (un catálogo completo,
+  `ConsultarEstadosFicha`), omite el de entrada y deja solo el de cierre.
+- **Estructura de logs de un flujo de evento:** un consumidor no pasa por `TrazabilidadFilter`, así
+  que **no hay línea `AUDIT`** y el `INFO` de entrada va en el `{Evento}Consumer` (tras `deserialize`,
+  con `idEvento` + identificadores de negocio), no en el use case. El use case que el consumidor
+  dispara **no añade su propio `INFO` de entrada** — siguen siendo dos `INFO` por mensaje, recepción y
+  cierre. `AbstractEventConsumer` ya aporta los `debug` de envelope recibido/confirmado y el `error`
+  del nack a la DLQ, y `SpringModulithEventPublisher` el `debug` de encolado en el outbox: un
+  consumidor nuevo no escribe nada de eso. Todo log del consumidor va **dentro** del
+  `withCorrelation(...)`; fuera del `AlcanceTraza` el MDC ya se restauró y la línea sale sin
+  `correlacionId`.
+- **Datos sensibles:** ningún secreto en un log — contraseñas, tokens, refresh tokens, `Authorization`.
+  De un token se registra el JTI, nunca el valor. Los correos van siempre por
+  `UtilTexto.enmascararCorreo(...)` (`shared:util`) → `j***@uco.edu.co`: son dato personal y los logs
+  llegan a Loki. Tampoco documentos, teléfonos ni la `Criteria` completa de una consulta. Identificador
+  opaco (`UUID`, `idEvento`, `JTI`) sí.
+- **Nunca añadas `:{contexto}:domain` a `implementation` de infrastructure.** La dirección
+  `domain ← application ← infrastructure` la impone el grafo de módulos: infrastructure solo declara
+  el dominio en `testImplementation`, así que un import del dominio desde código de producción **no
+  compila**, y la tarea `verificarCapasHexagonales` (colgada de `check`) lo vuelve a comprobar sobre
+  el classpath resuelto. Si algo no compila por esto, **el arreglo no es tocar el `build.gradle`**:
+  un enum de dominio que un adaptador necesita nombrar viaja como `String` y se convierte en
+  `Command.crear(...)` con su `desde(...)`/`desdeCodigo(...)` — así se resolvió `RolUsuarioDTO` en
+  `usuarios`; un agregado que un adaptador quiere construir significa que el puerto debe hablar
+  `Entity`.
 - **DTOs:** una sola convención, sin variantes por contexto — el `RequestDTO` es un `record` **sin
   ninguna anotación** y un `{Accion}{Entidad}RequestMapper` externo (`final`, constructor privado,
   `static toCommand`) llama a `Command.crear(...)`. Lo cumplen `fichas` y `seguridad`. El

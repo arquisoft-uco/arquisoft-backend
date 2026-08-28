@@ -264,6 +264,117 @@ ocurre dentro de un `@Bean`, así que cualquier bean construido antes resuelve l
 como esa clave no lleva `{}`, SLF4J descarta también los argumentos. Un log de arranque que reporte
 configuración efectiva va en un `@EventListener(ApplicationReadyEvent.class)`.
 
+
+### Estructura de logs de un flujo de escritura
+
+Un flujo de comando emite **exactamente dos `INFO` por petición** — entrada y cierre. Todo lo demás
+es `DEBUG`. Los 4xx/5xx **no se loguean dentro del flujo**: `GlobalAppExceptionHandler` ya emite
+`warn`/`error` con la URI y `TrazabilidadFilter` ya audita cada petición con usuario, duración y
+status. Referencias en el repo: `AgregarItemFichaPerfil` (simple) y `RegistrarFichaPerfil` (anidado).
+
+| Punto | Nivel | Dónde | Clave |
+|---|---|---|---|
+| Entrada de la operación | `info` | primera línea de `UseCaseImpl.ejecutar` | `LOG_{GERUNDIO}` — `LOG_REGISTRANDO`, `LOG_AGREGANDO`, `LOG_ASIGNANDO`, `LOG_CAMBIANDO_ASESOR` |
+| Resultado de los finders | `debug` | inmediatamente **antes** de `validator.validar(...)` | `LOG_VERIFICACION_{ACCION}` |
+| Cierre de la operación | `info` | después de la escritura | `LOG_{PARTICIPIO}` — `LOG_REGISTRADA`, `LOG_AGREGADO` |
+| Cada método de **escritura** del adapter | `debug` | tras el `save`/`delete`/`actualizar` | `LOG_GUARDADO`/`LOG_GUARDADA`/`LOG_ELIMINADO` (namespace `infraestructura`) |
+
+El `INFO` de entrada existe porque sin él un flujo rechazado por validación no deja rastro de que se
+intentó: solo queda el `warn` del handler, que nombra la excepción y no la operación. El `DEBUG`
+previo al validator lleva **exactamente lo que devolvieron los finders** — los booleanos, conteos y
+tamaños sobre los que las `Rule`s van a decidir (colecciones como `.size()`, agregados como
+`!x.esVacio()`) — porque cuando una `Rule` lanza, su mensaje dice qué falló pero no qué se consultó.
+
+**Flujo anidado** (un `UseCase` que inyecta e invoca otros `UseCase`; hoy solo `RegistrarFichaPerfil`):
+el `InteractorImpl` inyecta `AppLogger` y emite el `INFO` de cierre (`LOG_{ACCION}_COMPLETADO`) tras
+llamar al use case; el use case raíz conserva solo su `INFO` de entrada y baja a `debug` su log de
+"escrito"; los use cases anidados bajan su cierre a `debug` por ser pasos internos; y se agrega un
+`debug` de validación superada tras el validator. **En un flujo simple el interactor no loguea nada**
+— sería una tercera línea diciendo lo mismo que el cierre del use case. Ese `INFO` del interactor no
+prueba el commit: `@Transactional` commitea al retornar, en el proxy, después de la última línea del
+método; lo que prueba es que el flujo completo terminó sin excepción.
+
+**Dónde no va un log, y por qué:**
+
+| Sitio | Razón |
+|---|---|
+| `{Accion}{Entidad}ValidatorImpl` y las `Rule` | Son puros: constructor sin argumentos, cero dependencias inyectadas. Un `AppLogger` reabre la DI que la convención eliminó, y el validator no decide nada que el `debug` previo no diga ya |
+| `Command.crear(...)`, helpers `Validator*`/`Util*`, mappers, DTOs | Un campo inválido ya viaja en `fieldErrors[]` del 422. Loguearlo produce una línea por campo y no añade nada |
+| Métodos de **lectura** de un adapter | Solo los de escritura logean |
+| `try/catch` puesto únicamente para loguear | La excepción de negocio la maneja el handler; la de infraestructura debe subir como 500 |
+| Secretos, tokens, contraseñas | Y en general PII que el log de cierre no lleve ya |
+
+**Una clave que no es un log no lleva prefijo `LOG_` ni segmento `.log.`.** El texto del cuerpo de
+una respuesta HTTP usa `MENSAJE_`/`.mensaje.` (`TokenKey.MENSAJE_VALIDO`, que estuvo mal nombrado
+como `LOG_VALIDO` y acopló el texto de una respuesta a lo que parecía un log). El cuarto segmento de
+toda clave debe estar en `SEGMENTOS_ACEPTADOS` de `CatalogoCargaTest`.
+
+
+### Estructura de logs de un flujo de lectura
+
+Un flujo de consulta **no emite ningún `INFO`** y no toca ni el interactor ni el adapter. Esa es la
+diferencia con escritura, y no es una omisión: `TrazabilidadFilter` ya emite una línea `AUDIT` a
+nivel `info` por cada petición 2xx (`warn` en 4xx, `error` en 5xx) con método, URI, usuario, duración
+y status, así que el registro operativo de "esta consulta ocurrió" ya existe. Un `INFO` propio lo
+duplicaría, y las lecturas son el tráfico de mayor volumen del sistema.
+
+| Punto | Nivel | Dónde | Contenido |
+|---|---|---|---|
+| Entrada de la consulta | `debug` | primera línea de `UseCaseImpl.ejecutar` | lo que el `AUDIT` **no** puede mostrar: `pagina`, `tamanio`, `tieneFiltros()`, `tieneOrden()` |
+| Cierre de la consulta | `debug` | tras el `QueryOutputPort` | el volumen devuelto — `getTotalElements()` o `.size()` |
+| `QueryOutputAdapter` | — | — | nada: es delegación pura a `PageableMapper`/`PaginationMapper` y duplicaría el cierre |
+| `InteractorImpl` de query | — | — | nada: solo abre la transacción `readOnly` |
+
+Lo valioso de una consulta no es que ocurrió, es **qué se pidió y cuánto volvió**: un resultado vacío
+inesperado se explica con el árbol de filtros y el ordenamiento, que es exactamente lo que la línea
+de auditoría no lleva. Por eso el log de entrada registra `tieneFiltros()`/`tieneOrden()` y no la
+`Criteria` completa — el árbol serializado sería ilegible y podría arrastrar valores del cliente.
+
+Cuando la consulta **no tiene criterio** (un catálogo completo, como `ConsultarEstadosFicha`), el log
+de entrada no llevaría ningún dato: se omite y queda solo el `debug` de cierre con el total.
+
+
+### Estructura de logs de un flujo de evento
+
+Un flujo disparado por un mensaje **no pasa por `TrazabilidadFilter`**: no hay petición HTTP y por
+tanto **no hay línea `AUDIT`**. El consumidor es lo único que puede dejar constancia de que el evento
+llegó, y por eso aquí el `INFO` de entrada sí va en el adaptador y no en el use case.
+
+| Punto | Nivel | Dónde |
+|---|---|---|
+| Encolado en el outbox | `debug` | `SpringModulithEventPublisher` (transversal, ya hecho) |
+| Envelope recibido / confirmado | `debug` | `AbstractEventConsumer` (transversal, ya hecho) — cola y `deliveryTag` |
+| **Evento recibido** | `info` | el `{Evento}Consumer`, tras `deserialize` — `idEvento` + identificadores de negocio |
+| Cierre de la operación | `info` | el `UseCase` que el consumidor dispara |
+| Nack a la DLQ | `error` | `AbstractEventConsumer` (transversal, ya hecho) |
+
+**Dos `INFO` por mensaje**, igual que por petición. El `INFO` de entrada pertenece a quien es el punto
+de entrada del flujo: en un comando HTTP es el use case, en un evento es el consumidor. Por eso **un
+use case disparado por un consumidor no añade su propio `INFO` de entrada** — el del consumidor ya lo
+es. Un `{Evento}Consumer` nuevo hereda los tres logs transversales de `AbstractEventConsumer` sin
+escribir nada: solo aporta su `INFO` de recepción.
+
+Todo log del consumidor va **dentro** del `withCorrelation(...)`, es decir dentro del `AlcanceTraza`.
+Fuera de él el MDC ya se restauró y la línea sale sin `correlacionId` ni `transaccionId` — que es
+justo lo que permite seguir el evento hasta el productor.
+
+### Datos sensibles en logs
+
+**Ningún secreto llega nunca a un log:** contraseñas, tokens de acceso, refresh tokens, el header
+`Authorization`, claves de API. De un token se registra el **JTI** — identificador opaco — nunca el
+valor. Por eso los logs de autenticación de `seguridad` son deliberadamente de aridad 0
+(`LOG_AUTENTICAR_DEBUG`, `LOG_REFRESH_DEBUG`): no hay nada que puedan decir sin exponer algo.
+
+**Los correos se enmascaran con `UtilTexto.enmascararCorreo(...)`** (`shared:util`), que deja
+`j***@uco.edu.co`: conserva el dominio y la inicial para correlacionar, sin exponer la dirección. Un
+correo es dato personal y los logs se envían a Loki. Aplica a todo argumento de log que sea un
+correo, venga de un agregado, de un `Command`, de un payload de evento o de una `Entity`.
+
+También quedan fuera de un log: documentos de identidad, teléfonos, direcciones, y la `Criteria` o el
+árbol de filtros completos de una consulta (arrastran valores enviados por el cliente). Identificador
+opaco sí — `UUID`, `idEvento`, `JTI`, `deliveryTag` — porque no dice nada por sí mismo. Ante la duda:
+si el valor identifica a una persona fuera del sistema, se enmascara o no se registra.
+
 ## Estilo Java
 
 `var` cuando el lado derecho ya nombra el tipo o evita repetir un genérico largo; **no** con

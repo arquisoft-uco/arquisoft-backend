@@ -31,7 +31,40 @@ y cada uno tiene un límite que hay que conocer antes de copiar:
   concreta: `existePorEmail` siempre devuelve `false`, así que `UsuarioEmailUnicoRule` no se dispara
   nunca. Copia su **forma**, no su comportamiento, y no lo cites como prueba de que un endpoint
   funciona. Le queda además una desviación real: `CrearUsuarioRequestDTO` con anotaciones Jakarta y
-  `toCommand()` propio, y un `CrearUsuarioCommand` sin fábrica `crear(...)` — nada valida el formato.
+  `toCommand()` propio, en vez de un record desnudo con `CrearUsuarioRequestMapper`. Su
+  `CrearUsuarioCommand` ya tiene fábrica `crear(...)`, y el `RolUsuarioDTO` anidado dejó de importar
+  `UsuarioRole`: lleva su propio código y la conversión ocurre en `crear(...)` vía `desdeCodigo(...)`,
+  que es lo que permite a infrastructure no ver el dominio.
+
+
+### La dirección de dependencias la verifica el build
+
+`domain ← application ← infrastructure` no es una convención que se recuerde: es el grafo de módulos.
+`{contexto}/infrastructure` **no declara `:{contexto}:domain` en `implementation`** — solo en
+`testImplementation`, porque los slices arman agregados en el *arrange* — así que un import del
+dominio desde código de producción de infrastructure **no compila**. Esa es la barrera real, y es la
+razón por la que los puertos hablan `Entity` y nunca `Domain`.
+
+Como esa barrera se reabre en silencio con una línea en un `build.gradle`, la tarea
+`verificarCapasHexagonales` del build raíz la vuelve a comprobar y **cuelga de `check`**. Inspecciona
+el `compileClasspath` *resuelto*, así que también detecta una fuga transitiva (un `shared:*` que
+reexporte con `api`). Reglas que aplica a todo contexto de negocio:
+
+| Capa | No puede alcanzar |
+|---|---|
+| `domain` | `application` e `infrastructure` de su contexto, y `shared:application` |
+| `application` | `infrastructure` de su contexto |
+| `infrastructure` | `domain` de su contexto (en `main`; en `test` sí) |
+
+Si `verificarCapasHexagonales` falla, **el arreglo nunca es añadir la dependencia al `build.gradle`**:
+es que el tipo al que se está llegando está en la capa equivocada. Un enum de dominio que un adaptador
+necesita nombrar viaja como `String` y se convierte en el `Command.crear(...)` con su `desde(...)`;
+un agregado que un adaptador quiere construir es señal de que el puerto debería hablar `Entity`.
+
+`notificaciones` está **excluido a propósito** de la lista de contextos verificados:
+`AsesorFichaCambiadoConsumer` nombra `TipoNotificacion` porque `EnviarNotificacionCommand` declara ese
+enum de dominio en su firma. Corregirlo es cambiar el `Command` (que pase a `String` + `crear(...)`),
+no el consumidor. Al hacerlo, reincorpora `'notificaciones'` a `contextosHexagonales`.
 
 ## Los planes y reportes de `.workspace/` NO son referencia de convención
 
@@ -244,7 +277,7 @@ Su único trabajo es `Entity ↔ JpaEntity` y delegar en el repositorio.
 | `catch (DataAccessException)` → `errorPersistencia(...)` envolviendo en `InfrastructureException` | Sobra. `GlobalAppExceptionHandler` no mapea Spring Data, así que cae en su catch-all → 500 con log de error, que es exactamente el resultado correcto para "BD caída" o "bug de mapeo". El `try/catch` añade ruido por método y esconde la causa raíz tras un mensaje genérico |
 | `saveAndFlush(...)` en el adaptador | `flush` no cierra la transacción (el commit sigue siendo del interactor), pero al saltar una violación de constraint deja la transacción en *rollback-only* y el `EntityManager` en estado indefinido: capturar ahí y continuar produce un `UnexpectedRollbackException` en el commit, lejos del origen. Solo existía para adelantar el error al `catch`; eliminado el `catch`, pierde su razón de ser. Usa `save`. (En el *arrange* de un `@DataJpaTest` sí es legítimo, para forzar el insert) |
 | `Boolean existePorX(...)` | El repo es uniforme en `boolean` primitivo, puerto y adaptador (`existePorId`, `existePorTituloProyecto`, `existeTituloEnOtraFicha`). El envuelto introduce un `null` posible que nadie comprueba y un unboxing silencioso dentro de la `Rule` |
-| Método de escritura sin log | Los de escritura registran `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), id)` con el `AppLogger` inyectado por constructor. Los de lectura **no** logean |
+| Método de escritura sin log | Los de escritura registran `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), id)` con el `AppLogger` inyectado por constructor. Los de lectura **no** logean. Es un eslabón de la estructura de logs del flujo de escritura — la estructura completa (dos `INFO` por petición, `debug` de finders antes del validator, caso anidado) está en `arquisoft-estandares` |
 
 **Matiz que no es excepción a lo anterior:** un adaptador sí puede lanzar una `InfrastructureException`
 **propia**, desde `infrastructure/{feature}/exception/`, para fallos que solo él diagnostica —

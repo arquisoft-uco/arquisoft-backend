@@ -5,6 +5,7 @@ import com.arquisoft.fichas.domain.itemfichaperfil.ItemFichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.entity.ItemFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.tipoitem.command.secondaryadapter.entity.TipoItemJpaEntity;
 import jakarta.persistence.EntityManager;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 @DataJpaTest
 @TestPropertySource(properties = {
@@ -33,7 +35,7 @@ class ItemFichaPerfilCommandOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new ItemFichaPerfilCommandOutputAdapter(repository);
+        adapter = new ItemFichaPerfilCommandOutputAdapter(repository, mock(AppLogger.class));
 
         // Seed: insertar tipo_item en H2 para que la referencia por id funcione
         entityManager.createNativeQuery(

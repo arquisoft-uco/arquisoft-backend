@@ -31,14 +31,22 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
     public UUID ejecutar(RegistroFichaPerfilDomain registro) {
         var ficha = registro.getFicha();
 
+        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_REGISTRANDO),
+                ficha.getTituloProyecto(), ficha.getAsesorFicha());
+
         var asesorExiste = asesorFichaExisteFinder.obtener(ficha.getAsesorFicha());
         var tituloYaExiste = tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto());
 
+        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VERIFICACION_PREVIA),
+                ficha.getAsesorFicha(), asesorExiste, tituloYaExiste);
+
         registrarFichaPerfilValidator.validar(ficha, asesorExiste, tituloYaExiste);
+
+        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VALIDACION_SUPERADA), ficha.getId());
 
         fichaPerfilOutputPort.registrarFicha(FichaPerfilMapper.toEntity(ficha));
 
-        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
+        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
 
         asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro);
 

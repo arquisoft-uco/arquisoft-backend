@@ -33,7 +33,7 @@ public class AsignarEstadoInicialFichaPerfilUseCaseImpl implements AsignarEstado
 
         estadoFichaPerfilOutputPort.registrarEstadoInicial(EstadoFichaPerfilMapper.toEntity(estadoInicial));
 
-        logger.info(Mensajes.obtener(EstadoFichaPerfilKey.LOG_CREADO),
+        logger.debug(Mensajes.obtener(EstadoFichaPerfilKey.LOG_CREADO),
                 estadoInicial.getId(),
                 estadoInicial.getFichaPerfil(),
                 estadoInicial.getEstadoFicha().getNombre());

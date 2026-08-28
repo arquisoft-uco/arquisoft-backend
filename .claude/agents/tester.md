@@ -35,9 +35,31 @@ que la lógica está en la capa equivocada — **detente y reporta**, no escriba
 | 5 | Delegación pura sin lógica (use case que solo llama al repositorio) | Ya cubierto por el test del flujo principal |
 | 6 | Excepción simple (`super(msg, code)` y nada más) | Su `errorCode` se verifica implícitamente desde el test que la lanza |
 | 7 | equals/hashCode/toString de Lombok | Ya generados y correctos |
+| 8 | Test que asserta el **texto** de un log | El texto vive en el catálogo; asertarlo acopla el test a la redacción y duplica lo que ya cubre `CatalogoCargaTest` |
 
 **Regla de consolidación:** 3+ tests con el mismo Act y distinto Assert → un solo test con
 múltiples asserts.
+
+## Logs: cómo afectan a los tests
+
+Todo flujo de escritura emite un `INFO` **de entrada** al comenzar el use case, además del `INFO` de
+cierre tras escribir (ver `arquisoft-estandares`). Tres consecuencias:
+
+- **Nunca** asertar `verify(logger, never()).info(anyString(), any())` para probar que un flujo
+  aborta: con el `INFO` de entrada eso es siempre falso. Estrecha la aserción a los argumentos del
+  log de cierre — `verify(logger, never()).info(anyString(), eq(item.getId()))`. Este error ya rompió
+  dos tests en `evaluaciones`.
+- Un `CommandOutputAdapter` que logea inyecta `AppLogger`, así que el test que lo instancia a mano
+  pasa `mock(AppLogger.class)` al constructor. Patrón a copiar: `FichaPerfilCommandOutputAdapterTest`.
+- Los tests de `UseCaseImpl` e `InteractorImpl` declaran `@Mock AppLogger logger`. En un flujo
+  anidado el interactor también lo lleva; en uno simple, solo si el interactor logea (no lo hace).
+- Un `UseCaseImpl` de **lectura** también inyecta `AppLogger` (dos `debug`, ningún `INFO`), así que
+  su test necesita el `@Mock` igual. Su interactor y su `QueryOutputAdapter` no logean, así que esos
+  tests no cambian.
+- Un `{Evento}Consumer` se prueba con el `INFO` de recepción ya presente; `AbstractEventConsumer`
+  aporta los `debug` de envelope y el `error` del nack, y no se asertan. Si el test verifica un log
+  que lleva un correo, el valor esperado es el **enmascarado** (`j***@uco.edu.co`), no el original.
+
 
 ## Presupuesto orientativo
 

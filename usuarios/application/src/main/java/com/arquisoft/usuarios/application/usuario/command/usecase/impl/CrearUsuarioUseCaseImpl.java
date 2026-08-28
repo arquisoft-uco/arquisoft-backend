@@ -12,6 +12,7 @@ import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUs
 import com.arquisoft.usuarios.application.usuario.command.validator.CrearUsuarioValidator;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.event.UsuarioCreadoEvent;
+import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -29,10 +30,13 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
     @Override
     public UUID ejecutar(CrearUsuarioCommand entrada) {
+        logger.info(Mensajes.obtener(UsuarioKey.LOG_CREANDO), entrada.rol());
+
         var usuario = UsuarioDomain.crear(entrada.email(), entrada.rol());
 
         boolean emailYaExiste = emailUsuarioExisteFinder.obtener(usuario.getEmail());
 
+        logger.debug(Mensajes.obtener(UsuarioKey.LOG_VERIFICACION_CREAR), emailYaExiste);
         crearUsuarioValidator.validar(usuario, emailYaExiste);
 
         usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));
@@ -43,7 +47,7 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
         logger.info(
                 Mensajes.obtener(UsuarioKey.LOG_CREADO),
                 usuario.getId(),
-                usuario.getEmail(),
+                UtilTexto.enmascararCorreo(usuario.getEmail()),
                 usuario.getRol().getCodigo());
         return usuario.getId();
     }

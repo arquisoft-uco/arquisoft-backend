@@ -8,6 +8,7 @@ import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import com.arquisoft.shared.util.UtilTexto;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -40,7 +41,7 @@ public class UsuarioCreadoConsumer extends AbstractEventConsumer {
             UsuarioCreadoPayload payload = deserialize(message, UsuarioCreadoPayload.class);
 
             logger.info(Mensajes.obtener(UsuarioEspejoKey.LOG_USUARIO_CREADO_RECIBIDO),
-                    payload.usuarioId(), payload.email(), payload.rol());
+                    payload.usuarioId(), UtilTexto.enmascararCorreo(payload.email()), payload.rol());
 
             registrarUsuarioUseCase.ejecutar(new RegistrarUsuarioCommand(
                     UUID.fromString(payload.usuarioId()),

@@ -13,6 +13,7 @@ import com.arquisoft.shared.notification.EnvioNotificacionOutputPort;
 import com.arquisoft.shared.notification.exception.EnvioNotificacionFallidoException;
 import com.arquisoft.shared.notification.model.DestinatarioNotificacion;
 import com.arquisoft.shared.notification.model.MensajeNotificacion;
+import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -50,14 +51,14 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
             logger.info(
                     Mensajes.obtener(NotificacionKey.LOG_ENVIADA),
                     entrada.idEvento(),
-                    entrada.destinatarioEmail());
+                    UtilTexto.enmascararCorreo(entrada.destinatarioEmail()));
         } catch (EnvioNotificacionFallidoException e) {
             notificacion.marcarFallida(e.getMessage());
             logger.error(
                     Mensajes.obtener(NotificacionKey.LOG_FALLIDA),
                     e,
                     entrada.idEvento(),
-                    entrada.destinatarioEmail());
+                    UtilTexto.enmascararCorreo(entrada.destinatarioEmail()));
         }
 
         notificacionOutputPort.guardar(NotificacionMapper.toEntity(notificacion));

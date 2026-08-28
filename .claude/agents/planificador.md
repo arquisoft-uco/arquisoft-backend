@@ -431,7 +431,31 @@ Nada de esto va como literal embebido, y son **dos mundos distintos** (no existe
   (`Mensajes.formatear`), `{}` para logs (`Mensajes.obtener` + SLF4J). Lista las tres cosas en la
   sección 6 — si falta cualquiera, `CatalogoCargaTest` rompe el build.
 
+
+**Logs del flujo (obligatorio en toda HU de escritura).** Un flujo de comando emite dos `INFO` por
+petición — entrada del use case y cierre — más un `debug` con el resultado de los finders antes del
+validator y un `debug` por cada método de escritura del adapter. Enumera en la sección 6, como
+entregables, **cada punto de log con su nivel, la clave nueva con su aridad y la línea del
+catálogo**. Si el plan no los lista, la implementación no los va a incluir. Estructura completa y
+casos (flujo anidado, dónde nunca va un log) en `arquisoft-estandares`.
+
+Una HU de **lectura** sigue otra estructura: sin ningún `INFO` — la línea `AUDIT` ya lo cubre —
+y solo dos `debug` en el use case, entrada con el criterio y cierre con el volumen. Enuméralos
+igual, con su clave y su línea de catálogo.
+
+Una HU con **evento** añade el `INFO` de recepción en el `{Evento}Consumer` (el consumidor es el punto
+de entrada: no hay línea `AUDIT` porque no hay petición HTTP) y **no** un `INFO` de entrada en el use
+case que dispara. Los logs de envelope, ack y DLQ ya los pone `AbstractEventConsumer`: no los planifiques.
+
+En cualquiera de los tres casos, **ningún log lleva secretos**, y todo correo pasa por
+`UtilTexto.enmascararCorreo(...)`. Si la HU registra un correo en un log, dilo explícitamente en el plan.
+
 Si la HU no introduce ninguno, decláralo explícitamente: "Sin cambios al catálogo de mensajes."
+
+Un plan **nunca** propone añadir `:{contexto}:domain` a `implementation` de infrastructure. Si un
+adaptador necesita nombrar un tipo del dominio, el plan debe decir cómo se evita: enum como `String`
+convertido en `Command.crear(...)`, o puerto que hable `Entity`. La tarea `verificarCapasHexagonales`
+cuelga de `check`, así que una HU que lo intente no pasa el build.
 Detalle en `arquisoft-estandares`.
 
 ### Presupuesto de tests (sección 12)

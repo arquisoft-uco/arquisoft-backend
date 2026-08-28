@@ -292,3 +292,80 @@ subprojects { subproject ->
         }
     }
 }
+
+// ---------------------------------------------------------------------------------------------
+// Verificación de la dirección de dependencias hexagonal, por contexto acotado.
+//
+// La barrera real es el grafo de módulos: si infrastructure no declara :{ctx}:domain, un import del
+// dominio no compila. Esta tarea existe porque esa barrera se reabre en silencio con una línea en un
+// build.gradle, y el fallo se descubriría meses después. Verifica el classpath de compilación
+// *resuelto*, así que también detecta una fuga transitiva (un shared que reexporte con `api`).
+//
+// Reglas, para todo contexto de negocio:
+//   domain         -> no ve application ni infrastructure de su contexto, ni shared:application
+//   application    -> no ve infrastructure de su contexto
+//   infrastructure -> no ve domain de su contexto en `main` (sí en `test`: los slices arman
+//                     agregados en el arrange)
+// ---------------------------------------------------------------------------------------------
+def contextosHexagonales = [
+        'seguridad', 'fichas', 'usuarios', 'evaluaciones',
+        'proyectos', 'artefactos', 'repositorio_artefactos', 'entregables'
+]
+
+// notificaciones queda fuera a propósito: su AsesorFichaCambiadoConsumer nombra TipoNotificacion
+// para construir el EnviarNotificacionCommand, que declara el enum de dominio en su firma. Corregirlo
+// es cambiar el Command, no el consumidor. Reincorporar el contexto a la lista cuando se ajuste.
+
+def prohibicionesPorCapa = [
+        domain        : ['application', 'infrastructure'],
+        application   : ['infrastructure'],
+        infrastructure: ['domain']
+]
+
+def proyectosDeDependencia = { Configuration configuracion ->
+    configuracion.incoming.resolutionResult.allComponents
+            .findAll { it.id instanceof ProjectComponentIdentifier }
+            .collect { ((ProjectComponentIdentifier) it.id).projectPath }
+}
+
+def tareaVerificacion = tasks.register('verificarCapasHexagonales') {
+    group = 'verification'
+    description = 'Falla si un contexto viola la dirección domain <- application <- infrastructure.'
+
+    doLast {
+        def violaciones = []
+
+        contextosHexagonales.each { contexto ->
+            prohibicionesPorCapa.each { capa, capasProhibidas ->
+                def modulo = findProject(":${contexto}:${capa}")
+                if (modulo == null) {
+                    return
+                }
+                def compileClasspath = modulo.configurations.findByName('compileClasspath')
+                if (compileClasspath == null) {
+                    return
+                }
+                def alcanzables = proyectosDeDependencia(compileClasspath)
+
+                capasProhibidas.each { capaProhibida ->
+                    def prohibido = ":${contexto}:${capaProhibida}".toString()
+                    if (alcanzables.contains(prohibido)) {
+                        violaciones << ":${contexto}:${capa} alcanza ${prohibido}"
+                    }
+                }
+
+                if (capa == 'domain' && alcanzables.contains(':shared:application')) {
+                    violaciones << ":${contexto}:domain alcanza :shared:application " +
+                            '(UseCase/Interactor/EventPublisher no pertenecen al dominio)'
+                }
+            }
+        }
+
+        if (!violaciones.isEmpty()) {
+            throw new GradleException(
+                    "Dirección de dependencias hexagonal violada:\n  - " + violaciones.join('\n  - '))
+        }
+    }
+}
+
+tasks.named('check') { dependsOn tareaVerificacion }

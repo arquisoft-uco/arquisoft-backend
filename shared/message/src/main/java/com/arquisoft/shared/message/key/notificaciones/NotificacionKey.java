@@ -10,7 +10,8 @@ public enum NotificacionKey implements ClaveMensaje {
     ERROR_ESTADO_NO_ENCONTRADO("notificaciones.dominio.notificacion.error.estado-no-encontrado", 1),
     LOG_EVENTO_DUPLICADO("notificaciones.aplicacion.notificacion.log.evento-duplicado", 1),
     LOG_ENVIADA("notificaciones.aplicacion.notificacion.log.enviada", 2),
-    LOG_FALLIDA("notificaciones.aplicacion.notificacion.log.fallida", 2);
+    LOG_FALLIDA("notificaciones.aplicacion.notificacion.log.fallida", 2),
+    LOG_GUARDADA("notificaciones.infraestructura.notificacion.log.guardada", 2);
 
     private final String clave;
     private final int parametros;
