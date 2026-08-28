@@ -2,11 +2,15 @@ package com.arquisoft.shared.util;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 public final class UtilFecha {
 
     public static final Instant VACIO = Instant.EPOCH;
+
+    public static final LocalDateTime FECHA_HORA_VACIA = LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC);
 
     private static final String PATRON_FECHA = "\\d{4}-\\d{2}-\\d{2}";
 
@@ -18,6 +22,10 @@ public final class UtilFecha {
 
     public static Instant generarInstanteActual() {
         return Instant.now();
+    }
+
+    public static LocalDateTime generarFechaHoraActual() {
+        return LocalDateTime.now();
     }
 
     public static boolean fechaValida(final String fecha) {

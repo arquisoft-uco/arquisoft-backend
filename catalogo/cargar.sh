@@ -24,7 +24,7 @@ set -eu
 # Los contextos, en el mismo orden que ContextosCatalogo.TODOS. La lista es explícita y no un glob
 # sobre *.properties: el contenido de Redis es lo que el fail-fast del arranque exige, así que tiene
 # que estar declarado, no deducido de lo que haya en el directorio.
-CONTEXTOS="app fichas seguridad usuarios notificaciones evaluaciones"
+CONTEXTOS="app fichas seguridad usuarios notificaciones evaluaciones solicitudes"
 
 # El script vive junto a los datos que carga, así que por defecto lee su propio directorio: la carga
 # funciona igual desde la raíz del repositorio, desde catalogo/ o desde el contenedor, sin que el

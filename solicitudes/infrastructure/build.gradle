@@ -1,0 +1,43 @@
+dependencies {
+    implementation project(':solicitudes:domain')
+    implementation project(':solicitudes:application')
+    implementation project(':shared:domain')
+    implementation project(':shared:application')
+    implementation project(':shared:query')
+    implementation project(':shared:amqp')
+    implementation project(':shared:logger')
+
+    // shared:tracing — el consumidor AMQP recibe el GestorTraza por constructor.
+    // shared:amqp lo declara con 'implementation', asi que no llega transitivamente.
+    implementation project(':shared:tracing')
+    implementation project(':shared:web')
+    implementation project(':shared:minio')
+    implementation project(':shared:jpa')
+
+    // Spring Security (para @PreAuthorize y @EnableMethodSecurity)
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+    implementation "org.springframework.boot:spring-boot-starter-validation"
+
+    // AMQP — spring-amqp no es transitivo en compilación desde shared:amqp (Gradle 'implementation').
+    // Se declara aquí para acceder a @RabbitListener, Message, Channel, QueueBuilder, etc.
+    implementation "org.springframework.boot:spring-boot-starter-amqp"
+
+    // Database
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
+    runtimeOnly "org.postgresql:postgresql"
+
+    // OpenAPI / Swagger (ADR-011)
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
+
+    // Testing
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-test-autoconfigure"
+    testImplementation "org.springframework.boot:spring-boot-data-jpa-test"
+    testImplementation "org.springframework.boot:spring-boot-webmvc-test"
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation "com.h2database:h2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

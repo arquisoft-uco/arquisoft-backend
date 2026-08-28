@@ -26,7 +26,7 @@
 
 set -eu
 
-CONTEXTOS="app fichas seguridad usuarios notificaciones"
+CONTEXTOS="app fichas seguridad usuarios notificaciones solicitudes"
 
 CATALOGO_DIR="${CATALOGO_DIR:-$(dirname "$0")}"
 DRY_RUN="${DRY_RUN:-0}"

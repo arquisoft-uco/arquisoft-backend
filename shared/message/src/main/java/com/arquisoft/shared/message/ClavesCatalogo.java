@@ -25,6 +25,9 @@ import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
+import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
+import com.arquisoft.shared.message.key.solicitudes.TipoSolicitudKey;
+import com.arquisoft.shared.message.key.solicitudes.UsuarioReplicaKey;
 import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import com.arquisoft.shared.message.key.seguridad.CredencialesKey;
@@ -88,6 +91,9 @@ public final class ClavesCatalogo {
             MinioGuiaKey.class,
             RepresentanteComiteKey.class,
             UsuarioEspejoKey.class,
+            SolicitudKey.class,
+            TipoSolicitudKey.class,
+            UsuarioReplicaKey.class,
             ConsumidorKey.class,
             NotificacionKey.class,
             PlantillaKey.class,
