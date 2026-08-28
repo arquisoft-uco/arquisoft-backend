@@ -13,6 +13,7 @@ rutas:
       estados-ficha: /estados-ficha
       items: /{fichaPerfilId}/items
       item-por-id: /items/{itemId}
+      item-revisiones: /items/{itemId}/revisiones
       estudiantes: /{fichaPerfilId}/estudiantes
       estudiante-por-id: /{fichaPerfilId}/estudiantes/{estudianteId}
       evaluaciones: /{fichaId}/evaluaciones

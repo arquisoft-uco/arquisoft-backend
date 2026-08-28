@@ -96,6 +96,25 @@ public final class FichasApiMessages {
         public static final String REMOVER_RESP_422 = "El ítem tiene revisiones y no puede eliminarse";
     }
 
+    public static final class RevisionItem {
+
+        private RevisionItem() {}
+
+        public static final String TAG_NAME = "Revisiones de Ítem";
+        public static final String TAG_DESCRIPTION = "Gestión de revisiones sobre ítems de fichas de perfil";
+
+        public static final String AGREGAR_SUMMARY = "Agregar revisión a un ítem";
+        public static final String AGREGAR_DESCRIPTION =
+                "Permite al asesor asignado a la ficha registrar una revisión sobre un ítem de esa "
+                        + "ficha, con un estado del catálogo EstadoRevision.";
+        public static final String AGREGAR_RESP_201 = "Revisión agregada exitosamente — retorna el UUID asignado";
+        public static final String AGREGAR_RESP_400 = "Datos inválidos";
+        public static final String AGREGAR_RESP_403 = "Sin permiso para agregar revisiones";
+        public static final String AGREGAR_RESP_422 =
+                "Ítem no encontrado, ficha no asesorada por el usuario autenticado, revisión ya "
+                        + "existente o estado de revisión inválido";
+    }
+
     public static final class EstudianteFichaPerfil {
 
         private EstudianteFichaPerfil() {}

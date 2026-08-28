@@ -33,4 +33,11 @@ public final class FichasLimits {
 
         public static final int ESTADO_MAX = 50;
     }
+
+    public static final class RevisionItem {
+
+        private RevisionItem() {}
+
+        public static final int ESTADO_MAX = 50;
+    }
 }
