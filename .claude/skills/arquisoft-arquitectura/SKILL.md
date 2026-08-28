@@ -229,6 +229,43 @@ Dónde ocurre cada conversión:
 - **Finder**: `Entity → Domain` al volver.
 - **OutputAdapter**: `Entity ↔ JpaEntity` (`{Entidad}JpaMapper`), pegado a cada llamada del repo.
 
+## El `CommandOutputAdapter` es pura delegación
+
+`FichaPerfilCommandOutputAdapter` es la referencia y no tiene un solo `try/catch`. Ningún adaptador
+del proyecto captura excepciones de Spring Data (`grep -rl DataAccessException --include=*.java` →
+cero resultados en producción). La razón es de orden, no de estilo: cuando la ejecución llega al
+adaptador, el orden de validación **ya** garantizó formato, existencia, unicidad e invariantes. No
+queda ningún error de negocio que el adaptador pueda descubrir, así que no tiene nada que traducir.
+Su único trabajo es `Entity ↔ JpaEntity` y delegar en el repositorio.
+
+| Anti-patrón | Por qué está prohibido |
+|---|---|
+| `catch (DataIntegrityViolationException)` → `throw {X}DuplicadoException(...)` | Esa excepción vive en `domain/{feature}/exception/` e **infrastructure no ve el dominio en absoluto** — es la razón de que los puertos hablen `Entity` y no `Domain`. Además duplica la regla: la unicidad ya la declara `{X}UnicoRule` alimentada por su `Finder` sobre `existePor...`, en el paso 2 del orden de validación. La garantía real de integridad es el `UNIQUE` de la migración Flyway, no el `catch` |
+| `catch (DataAccessException)` → `errorPersistencia(...)` envolviendo en `InfrastructureException` | Sobra. `GlobalAppExceptionHandler` no mapea Spring Data, así que cae en su catch-all → 500 con log de error, que es exactamente el resultado correcto para "BD caída" o "bug de mapeo". El `try/catch` añade ruido por método y esconde la causa raíz tras un mensaje genérico |
+| `saveAndFlush(...)` en el adaptador | `flush` no cierra la transacción (el commit sigue siendo del interactor), pero al saltar una violación de constraint deja la transacción en *rollback-only* y el `EntityManager` en estado indefinido: capturar ahí y continuar produce un `UnexpectedRollbackException` en el commit, lejos del origen. Solo existía para adelantar el error al `catch`; eliminado el `catch`, pierde su razón de ser. Usa `save`. (En el *arrange* de un `@DataJpaTest` sí es legítimo, para forzar el insert) |
+| `Boolean existePorX(...)` | El repo es uniforme en `boolean` primitivo, puerto y adaptador (`existePorId`, `existePorTituloProyecto`, `existeTituloEnOtraFicha`). El envuelto introduce un `null` posible que nadie comprueba y un unboxing silencioso dentro de la `Rule` |
+| Método de escritura sin log | Los de escritura registran `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), id)` con el `AppLogger` inyectado por constructor. Los de lectura **no** logean |
+
+**Matiz que no es excepción a lo anterior:** un adaptador sí puede lanzar una `InfrastructureException`
+**propia**, desde `infrastructure/{feature}/exception/`, para fallos que solo él diagnostica —
+proveedor externo caído (`ProveedorIdentidadNoDisponibleException`), objeto ausente en MinIO. Lo
+prohibido es envolver Spring Data y, sobre todo, lanzar excepciones de dominio.
+
+Forma canónica:
+
+```java
+@Override
+public void registrar({Feature}Entity entity) {
+    repository.save({Feature}JpaMapper.toJpaEntity(entity));
+    logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), entity.id());
+}
+
+@Override
+public boolean existePorNombreIgnorandoMayusculas(String nombre) {
+    return repository.existsByNombreIgnoreCase(nombre);
+}
+```
+
 ## Aislamiento CQRS (regla dura)
 
 `query/secondaryadapter` **nunca** importa nada de `command/secondaryadapter`, ni siquiera el
@@ -319,6 +356,31 @@ si ganara el directo los eventos irían al broker **saltándose el outbox**, sin
 `EventPublisher` no es una extensión inocente — rompe esa garantía. El use case inyecta siempre la
 **interfaz**, nunca una de las dos clases.
 
+
+### Transición de estado ⇒ notificación
+
+Un caso de uso que **crea o cambia un estado** — un campo de catálogo (`EstadoFicha`,
+`EstadoEvaluacion`, …), una asignación de responsable, una aprobación o un rechazo — tiene consumidor
+conocido: `notificaciones`. Emite el evento salvo que la HU diga explícitamente lo contrario. Ese es
+el trabajo que el contexto `notificaciones` existe para hacer, y `AsesorFichaCambiadoEvent` →
+`AsesorFichaCambiadoConsumer` es el camino completo que se copia.
+
+El evento publicado no envía ningún correo por sí solo: sin nadie enganchado a esa routing key se
+queda en el exchange. Son **seis** piezas en dos contextos:
+
+| # | Módulo | Archivo |
+|---|---|---|
+| 1 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java`, `EVENT_TOPIC = "{contexto}.{entidad}.{accion}"` |
+| 2 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` — cola `notificaciones.{routingKey}` con DLX |
+| 3 | `notificaciones/.../command/primaryadapter/amqp/` | `{Evento}Payload.java`, `record` propio del adaptador — **nunca** la clase de evento del productor |
+| 4 | `notificaciones/.../command/primaryadapter/amqp/` | `{Evento}Consumer.java` extiende `AbstractEventConsumer` — aquí se elige el texto, no en el use case |
+| 5 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
+| 6 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto |
+
+El evento carga **nombre y correo del destinatario** más el dato legible del asunto, aunque duplique
+lo que el productor ya tiene: un evento delgado obliga a `notificaciones` a llamar de vuelta, que es
+el acoplamiento que los eventos eliminan. La dirección es de un solo sentido — el contexto productor
+nunca depende de `notificaciones`, y `notificaciones` solo consume, nunca emite.
 ## Aislamiento de persistencia: una base de datos por contexto
 
 No son schemas dentro de una base común: `init-db.sql` crea una **base por bounded context**
@@ -332,6 +394,14 @@ Consecuencias que se notan al escribir código:
   `.locations("classpath:db/migration/{contexto}")` y las migraciones viven en esa subcarpeta: una
   migración suelta en `db/migration/` la recogerían todos los contextos y cada uno la aplicaría en
   su propia base.
+- **`setPackagesToScan` recibe un solo paquete:
+  `em.setPackagesToScan("com.arquisoft.{contexto}.infrastructure")`.** Nunca dos, y en particular
+  nunca `"com.arquisoft.{contexto}.application"`. Las `@Entity` viven todas en infrastructure desde
+  que los puertos hablan `Entity`: en `application` está el `record` plano del `secondaryport`, que
+  no lleva una sola anotación JPA. Los cuatro configs del repo (`fichas`, `notificaciones`,
+  `usuarios` y el andamio de los contextos vacíos) ya son de una línea; si copias uno viejo con la
+  lista de dos paquetes, estás escaneando un paquete sin entidades y sugiriendo que `application`
+  sabe de JPA, que es justo lo que la migración de `Entity`/`JpaEntity` eliminó.
 - **`baselineOnMigrate` está en `false`** en los tres contextos con implementación. Flyway ya no
   acepta en silencio una base con objetos preexistentes ni una versión fuera de orden — falla el
   arranque, que es justo lo que se quiere para no corromper el historial.

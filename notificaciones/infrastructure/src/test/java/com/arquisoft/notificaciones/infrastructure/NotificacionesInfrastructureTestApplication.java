@@ -10,6 +10,6 @@ import org.springframework.boot.persistence.autoconfigure.EntityScan;
  * no arranca. Vive solo en {@code src/test} — no forma parte del artefacto.
  */
 @SpringBootApplication
-@EntityScan({"com.arquisoft.notificaciones.application", "com.arquisoft.notificaciones.infrastructure"})
+@EntityScan("com.arquisoft.notificaciones.infrastructure")
 public class NotificacionesInfrastructureTestApplication {
 }

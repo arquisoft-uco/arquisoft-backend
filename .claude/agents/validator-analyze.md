@@ -70,6 +70,12 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Componente en `primaryadapter/`/`secondaryadapter/` directamente, sin subcarpeta por tipo (`web/`, `repository/`, `amqp/`, etc.) | ❌ |
 | `Controller` fuera de `primaryadapter/web/`; `Consumer` AMQP fuera de `primaryadapter/amqp/`; `OutputAdapter`/`JpaEntity` fuera de `secondaryadapter/` | ❌ |
 | `CommandOutputAdapter` que no persiste (solo loguea, devuelve `false`/vacío fijo) sin que el plan lo declare. El único inerte legítimo es `usuarios/.../UsuarioCommandOutputAdapter`, intencional y ya documentado — no es precedente para código nuevo | ❌ |
+| `CommandOutputAdapter` que lanza una `DomainException` — típicamente `catch (DataIntegrityViolationException)` → `throw {X}DuplicadoException(...)`. Infrastructure no ve `domain/` (por eso los puertos hablan `Entity`), y la unicidad ya la cubre `{X}UnicoRule` + `Finder` + el `UNIQUE` de la migración | ❌ |
+| `catch (DataAccessException)` o helper `errorPersistencia(...)` envolviendo Spring Data en `InfrastructureException`. El catch-all de `GlobalAppExceptionHandler` ya da el 500 correcto; envolver esconde la causa raíz. Distinto y **permitido**: una `InfrastructureException` propia de `infrastructure/{feature}/exception/` para lo que solo el adaptador diagnostica (proveedor externo caído, objeto ausente en MinIO) | ❌ |
+| `saveAndFlush(...)` en un `CommandOutputAdapter` (en el *arrange* de un `@DataJpaTest` sí es legítimo). Sin `catch` no aporta nada, y ante una violación de constraint deja la transacción en rollback-only → `UnexpectedRollbackException` en el commit, lejos del origen | ❌ |
+| `Boolean` envuelto en un método de existencia del `OutputPort` o del `OutputAdapter` — los 16 del repo son `boolean` primitivo; el envuelto mete un `null` sin comprobar y un unboxing silencioso en la `Rule` | ❌ |
+| Método de **escritura** del `CommandOutputAdapter` sin `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), id)`, o método de **lectura** que sí logea | ⚠️ |
+| `{Contexto}DataSourceConfig` con `setPackagesToScan` sobre dos paquetes, incluyendo `"com.arquisoft.{contexto}.application"`. Las `@Entity` están todas en infrastructure; la forma vigente es una sola cadena, `"com.arquisoft.{contexto}.infrastructure"` | ❌ |
 
 **Prueba del algodón:** "si mañana cambio Keycloak/RabbitMQ/PostgreSQL por otra tecnología, ¿este
 archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio filtrada (bloqueante).
@@ -101,6 +107,28 @@ archivo bajo `event/`, cualquier `EventPublisher` inyectado, cualquier fila nuev
 `ClavesCatalogo` para un evento. El plan declaró esa ausencia — normalmente porque el usuario
 respondió que no hay consumidor — y publicar un evento que nadie consume crea un contrato que otro
 contexto puede empezar a consumir después. Repórtalo citando la sección 4 del plan.
+
+**Si el plan declara evento hacia `notificaciones`**, el evento solo cuenta como implementado si
+existe el camino completo. Falta cualquiera de estas cinco ⇒ ❌ bloqueante, porque el correo nunca
+sale y el fallo es silencioso (el mensaje se queda en el exchange, sin cola enganchada):
+
+| Pieza | Dónde |
+|---|---|
+| `Queue` + `Binding` con la routing key igual al `EVENT_TOPIC` del productor | `notificaciones/infrastructure/config/Notificaciones{Contexto}QueueConfig` |
+| `{Evento}Payload` — `record` local del adaptador, nunca la clase del productor | `notificaciones/.../primaryadapter/amqp/` |
+| `{Evento}Consumer` extiende `AbstractEventConsumer`, arma el texto con `Mensajes.formatear` | `notificaciones/.../primaryadapter/amqp/` |
+| Constante nueva en `TipoNotificacion` (sin migración: la columna es `VARCHAR`) | `notificaciones/domain/notificacion/model/` |
+| `PlantillaKey.ASUNTO_*`/`CUERPO_*` **y** su texto en `catalogo/notificaciones.properties` | `shared:message` + `catalogo/` |
+
+Verifica además que la routing key del binding sea **carácter por carácter** el `EVENT_TOPIC` del
+evento productor: una discrepancia compila, arranca y no entrega nada.
+
+**Transición de estado sin evento declarado ⇒ ⚠️, no ❌.** Si el caso de uso cambia un campo de
+estado (catálogo, asignación de responsable, aprobación/rechazo) y el plan dice "Eventos: ninguno",
+revisa si la sección 4 escribió la razón. Con razón explícita es una decisión del usuario y se
+respeta. Sin razón, repórtalo como advertencia: probablemente nadie preguntó si ese cambio debía
+notificar. Nunca lo conviertas en bloqueante ni exijas implementar el evento — eso es del plan, no
+de la validación.
 
 ### Nivel 2.3 — Entidad de dominio
 
