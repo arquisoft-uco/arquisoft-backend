@@ -13,7 +13,7 @@ excepciones, Checkstyle y testing, ver la skill `arquisoft-estandares`.
 real de `fichas` — el único contexto de negocio completo del proyecto y el patrón a copiar. Ábrelo
 con `Read` cuando necesites el detalle exacto.
 
-Los otros tres contextos con código ya se alinearon. Cada uno sirve de referencia para algo distinto,
+Los otros cuatro contextos con código ya se alinearon. Cada uno sirve de referencia para algo distinto,
 y cada uno tiene un límite que hay que conocer antes de copiar:
 
 - **`seguridad`** — referencia del paquete `command/result/` (+ su `mapper/`) y del layout de
@@ -35,6 +35,12 @@ y cada uno tiene un límite que hay que conocer antes de copiar:
   `CrearUsuarioCommand` ya tiene fábrica `crear(...)`, y el `RolUsuarioDTO` anidado dejó de importar
   `UsuarioRole`: lleva su propio código y la conversión ocurre en `crear(...)` vía `desdeCodigo(...)`,
   que es lo que permite a infrastructure no ver el dominio.
+- **`evaluaciones`** — el slice más reciente del repo (`itemcualitativojurado`, agosto 2026) y por eso
+  el más limpio como molde de un **contexto que arranca**: `Controller` → `RequestMapper` →
+  `Command.crear(...)` → `Interactor` (`@Transactional`) → `UseCase` → `Finder` → `Validator` →
+  `Rule` → `OutputPort` que habla `Entity` → `JpaMapper` → `CommandRepository`, con su migración
+  timestamp y su `EvaluacionesAuthorities`. *Límite:* es un solo comando de escritura — no tiene
+  lado `query/`, ni eventos, ni consumidores; para eso sigue siendo `fichas` la referencia.
 
 
 ### La dirección de dependencias la verifica el build
@@ -61,10 +67,11 @@ es que el tipo al que se está llegando está en la capa equivocada. Un enum de 
 necesita nombrar viaja como `String` y se convierte en el `Command.crear(...)` con su `desde(...)`;
 un agregado que un adaptador quiere construir es señal de que el puerto debería hablar `Entity`.
 
-`notificaciones` está **excluido a propósito** de la lista de contextos verificados:
-`AsesorFichaCambiadoConsumer` nombra `TipoNotificacion` porque `EnviarNotificacionCommand` declara ese
-enum de dominio en su firma. Corregirlo es cambiar el `Command` (que pase a `String` + `crear(...)`),
-no el consumidor. Al hacerlo, reincorpora `'notificaciones'` a `contextosHexagonales`.
+Los **nueve** contextos están en `contextosHexagonales`, `notificaciones` incluido. Su consumidor no
+nombra el enum de dominio: `AsesorFichaCambiadoConsumer` usa `TipoNotificacionEvento` (espejo propio
+de infraestructura) y pasa `getCodigo()`, y `EnviarNotificacionCommand.crear(...)` lo resuelve con
+`TipoNotificacion.desde(...)`. Ese es el patrón cuando un adaptador necesita nombrar un valor de
+catálogo: un espejo en su capa + `String` cruzando la frontera, nunca el enum del dominio.
 
 ## Los planes y reportes de `.workspace/` NO son referencia de convención
 
@@ -94,8 +101,8 @@ plan está desactualizado y qué partes hay que rehacer antes de tocar nada.
 ## Dirección de dependencias (no negociable)
 
 `domain ← application ← infrastructure`. Los 9 bounded contexts (`seguridad`, `usuarios`, `fichas`,
-`notificaciones` con implementación real; `proyectos`, `artefactos`, `repositorio_artefactos`,
-`entregables`, `evaluaciones` en scaffolding) **nunca** se importan entre sí — solo se comunican vía
+`notificaciones` y `evaluaciones` con código; `proyectos`, `artefactos`, `repositorio_artefactos` y
+`entregables` solo con su `{Contexto}DataSourceConfig`) **nunca** se importan entre sí — solo se comunican vía
 eventos de dominio en RabbitMQ (`shared:amqp`).
 
 Dentro de un contexto sí hay tráfico entre features (`fichaperfil` consulta `asesorficha`), pero
@@ -116,6 +123,29 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 | `{feature}/rules/` (+`impl/`) | Regla pura: sin Spring, sin Lombok, **sin dependencias de constructor** | `rules/FichaPerfilTituloUnicoRule.java` + `rules/impl/FichaPerfilTituloUnicoRuleImpl.java` |
 | `{feature}/event/` | Eventos de dominio (extienden `DomainEvent`) | `event/AsesorFichaCambiadoEvent.java` |
 | `{feature}/exception/` | Excepciones de dominio (→ 422) | `exception/FichaTituloDuplicadoException.java` |
+
+#### El objeto de acción lleva solo lo que la acción necesita
+
+No es el agregado cargado ni una copia suya: es lo mínimo con lo que la acción se puede decidir y
+ejecutar. La forma dominante — 8 de los 10 que existen — es **ids planos y escalares**:
+`CambioAsesorFichaDomain` son dos `UUID` (ficha y nuevo asesor), `ModificacionFichaPerfilDomain` son
+`UUID` + título + `UUID` del estudiante. No cargues `FichaPerfilDomain` entero para cambiar su
+asesor; lo que hace falta para eso son dos identificadores.
+
+Solo cuando la acción crea de verdad varios objetos a la vez el objeto de acción **contiene otros
+`Domain`**, y entonces el orden de construcción es de menor a mayor jerarquía — el compuesto se arma
+al final, porque los de abajo necesitan el id del de arriba... que ya existe porque se creó primero.
+`RegistrarFichaPerfilMapper` es el único caso hoy y se lee entero:
+
+1. `FichaPerfilDomain.crear(...)` — el agregado, que genera su propio id.
+2. `AsignarEstadoInicialFichaPerfilMapper.toDomain(ficha.getId())` y
+   `AsignarEstudiantesFichaPerfilMapper.toDomain(ficha.getId(), ...)` — cada pieza la construye el
+   mapper **de su propia feature**, no el de `fichaperfil`.
+3. `RegistroFichaPerfilDomain.crear(ficha, estadoInicial, estudiantes)` — compone y valida que las
+   tres estén presentes, nada más.
+
+Ese `crear(...)` del compuesto no reimplementa las validaciones de sus partes: cada `Domain` ya validó
+lo suyo al construirse, así que el de arriba solo comprueba `noNulo` de cada componente.
 
 ### application — lado command
 

@@ -45,7 +45,7 @@ Hexagonal Architecture (Ports & Adapters) with **9 bounded contexts** and **14 s
 
 ### Bounded Contexts
 
-Only `seguridad`, `usuarios`, `fichas` and `notificaciones` have real implementation today; `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables` and `evaluaciones` are scaffolding — each has only a `{Contexto}DataSourceConfig` in `infrastructure/config/`, no domain/application code yet.
+Only `seguridad`, `usuarios`, `fichas`, `notificaciones` and `evaluaciones` have implementation today; `proyectos`, `artefactos`, `repositorio_artefactos` and `entregables` are scaffolding — each has only a `{Contexto}DataSourceConfig` in `infrastructure/config/`, no domain/application code yet. `evaluaciones` is the newest and thinnest of the five: one write slice (`itemcualitativojurado`, August 2026) built end to end under the current conventions, which makes it the cleanest template for a context that is just starting — but it has no `query/` side, no events and no consumers, so `fichas` remains the reference for those.
 
 | Context | Database |
 |---------|----------|
@@ -161,8 +161,9 @@ The validators are split by the **type they validate**, mirroring `shared:util`:
     │   │   │   └── mapper/                     # Optional — see "DTOs" below for when this exists
     │   │   │       └── {Action}{Entity}RequestMapper.java
     │   │   └── amqp/                            # Optional — AMQP consumers (input adapters)
-    │   │       ├── {Evento}Consumer.java        # extends AbstractEventConsumer
-    │   │       └── {Evento}Payload.java         # record owned by THIS adapter, never the producer's event class
+    │   │       └── {contextoProductor}/          # One sub-package per producing context
+    │   │           ├── {Evento}Consumer.java     # extends AbstractEventConsumer
+    │   │           └── {Evento}Payload.java      # record owned by THIS adapter, never the producer's event class
     │   └── secondaryadapter/
     │       ├── entity/                            # JPA @Entity — the real persistence shape, Lombok
     │       │   └── {Feature}JpaEntity.java
@@ -258,7 +259,7 @@ Either way the rule that consumes existence gets its own `Existencia{Concepto}(�
 
 **Do not catch Spring Data exceptions in an adapter to re-map them as 4xx.** Invalid sort and filter fields are already rejected up front, before any SQL runs: `QueryCriteria.BaseBuilder` validates `ordenamiento` against `camposOrdenables()` and `raiz` against `camposFiltrables()` (throwing `FiltroException` → 400), and `QueryJpaSpecification` rejects unknown filter fields. So a `PropertyReferenceException` or `InvalidDataAccessApiUsageException` reaching the adapter can only mean the feature's own `SortMapper`/`Specification` points at a column the entity does not have — a mapping defect. Translating that to a 400 tells the client their field was wrong when it was not, and hides the bug; let it surface as a 500. What guards the mapping instead is a test: `{Feature}SortMapperTest` asserts that `Campo.esValidoParaOrdenar(clave)` and `{Feature}SortMapper.traducir(clave) != null` agree for every field, so the two declarations of "what is sortable" cannot drift apart.
 
-**Input adapters:** REST controllers in `infrastructure/{feature}/command/primaryadapter/web/` (or `query/.../web/`), suffix `Controller` (e.g., `RegistrarFichaPerfilController`) — there is no Spanish exception for this suffix anymore. AMQP consumers in `infrastructure/{feature}/command/primaryadapter/amqp/`, suffix `Consumer` (e.g., `UsuarioCreadoConsumer`) — matching the `AbstractEventConsumer` base class they extend; `Controller` is reserved for HTTP entry points.
+**Input adapters:** REST controllers in `infrastructure/{feature}/command/primaryadapter/web/` (or `query/.../web/`), suffix `Controller` (e.g., `RegistrarFichaPerfilController`) — there is no Spanish exception for this suffix anymore. AMQP consumers go one sub-package deeper, in `infrastructure/{feature}/command/primaryadapter/amqp/{contextoProductor}/` — split by **who produces**, not by entity, so `AsesorFichaCambiadoConsumer` and its `AsesorFichaCambiadoPayload` sit in `.../amqp/fichas/`. Suffix `Consumer` (e.g., `UsuarioCreadoConsumer`), matching the `AbstractEventConsumer` base class they extend; `Controller` is reserved for HTTP entry points. What stays directly in `amqp/` is what is shared across producers: `notificaciones` keeps its `AbstractNotificacionConsumer` (which extends `AbstractEventConsumer` and owns the `AppLogger`) and the `TipoNotificacionEvento` mirror enum there.
 
 **Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/{feature}/command/secondaryadapter/repository/` (or an appropriately named sub-package for non-JPA integrations, e.g. `secondaryadapter/keycloak/`, `secondaryadapter/redis/`, `secondaryadapter/jwt/` in `seguridad`), suffix `OutputAdapter` (e.g., `FichaPerfilCommandOutputAdapter`, `KeycloakAuthOutputAdapter`). Implement the corresponding `OutputPort` interface.
 

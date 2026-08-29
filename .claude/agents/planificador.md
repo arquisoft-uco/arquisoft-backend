@@ -263,6 +263,16 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
   agregado. **Si no hay bundle: sin objeto de acción**, y el mapper devuelve el agregado directo
   (`toDomain(command)` → `{Entidad}Domain.crear(...)`) — nunca un wrapper que solo reexpone el
   agregado.
+  Declara sus **atributos**, y por defecto son `UUID` y escalares, no objetos de dominio:
+  `CambioAsesorFichaDomain` es `(UUID fichaPerfil, UUID nuevoAsesorFicha)` y con eso basta para
+  decidir y ejecutar. Planificar que cargue el agregado entero para cambiarle un campo es
+  sobreingeniería — bloquéalo en tu propia revisión.
+- **Objeto de acción compuesto:** solo cuando la acción crea varios objetos a la vez, el objeto de
+  acción contiene otros `Domain` (hoy únicamente `RegistroFichaPerfilDomain`: ficha + estado inicial
+  + estudiantes). Si planificas uno, escribe el **orden de construcción de menor a mayor jerarquía**:
+  primero el agregado (genera su id), luego cada pieza con el mapper **de su propia feature** usando
+  ese id, y el compuesto al final. El `crear(...)` del compuesto solo valida `noNulo` de cada parte;
+  las validaciones de cada pieza ya ocurrieron en su propio `crear(...)`.
 ### Atributos por objeto de dominio (uno por objeto, solo lo documentado en el MER)
 | Atributo | Tipo | Longitud | Obligatorio | Modificable | Autogenerado | Notas |
 **Combinaciones únicas:** {atributos} → `UNIQUE` en Flyway + validación previa en el use case.

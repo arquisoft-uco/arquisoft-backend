@@ -65,6 +65,14 @@ root, directo en `domain/{feature}/`, sin subcarpeta `aggregate/`) → objeto de
 catálogo si aplican → `model/` con el `record` de entrada de cada Rule → `{Concepto}Rule`/`rules/impl/`
 → `exception/` **solo** para lo que lanza una Rule.
 
+**El objeto de acción lleva los atributos que el plan liste y nada más** — por defecto `UUID` y
+escalares (`CambioAsesorFichaDomain` son dos `UUID`), no el agregado cargado. Solo si el plan declara
+un objeto de acción **compuesto** contiene otros `Domain`, y entonces su `{Accion}{Entidad}Mapper`
+los arma de menor a mayor jerarquía: primero `{Entidad}Domain.crear(...)`, luego cada pieza con el
+mapper de **su propia feature** pasándole `entidad.getId()`, y el compuesto al final
+(`RegistrarFichaPerfilMapper` es el patrón exacto). El `crear(...)` del compuesto solo valida
+`noNulo` de cada componente: no repite las validaciones que cada pieza ya hizo.
+
 **Las invariantes del agregado no tienen clase de excepción propia** — se acumulan con
 `ValidationResult.addError(...)` + `lanzarSiTieneErrores()` (Notification Pattern), y cada setter
 privado corta con `return` cuando su validación falla. Si el plan lista una
