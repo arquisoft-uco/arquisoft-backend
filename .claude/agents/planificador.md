@@ -215,41 +215,14 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 
 ### Formato del plan
 
+**El título, la Metadata y las secciones 1 a 3 salen de `.claude/templates/PLAN.md`.** Léela y
+copia ese bloque tal cual, sustituyendo los `{marcadores}` — no lo reescribas de memoria ni lo
+reordenes: `@validator-analyze` lee esa cabecera para extraer contexto, tipo de use case y reglas.
+
+De la sección 4 en adelante el plan es condicional y su forma la decides tú con las respuestas de
+la FASE 3, así que **eso sí vive aquí**:
+
 ```markdown
-# PLAN: {Título}
-
-## Metadata
-- **ID Historia:** {HU|HT}-{ID}
-- **Bounded Context:** {contexto}
-- **Tipo de Use Case:** {Escritura/Consulta/Mixto}
-- **Módulos Gradle afectados:** `{contexto}:domain`, `:application`, `:infrastructure`
-- **Fecha de plan:** {fecha}
-- **Rama sugerida:** `feature/{HU|HT}-{ID}-{descripcion_snake_case}`
-- **Fuentes consultadas:** {archivos de arquisoft-docs}
-- **Observaciones del usuario:** {o "Ninguna"}
-
-## 1. Resumen Funcional
-{2-4 oraciones: qué hace, qué NO cubre}
-
-## 2. Criterios de Aceptación
-| # | Criterio | Resultado esperado |
-
-## 3. Reglas de Negocio
-> Invariante LOCAL (formato, longitud, obligatoriedad de la propia instancia) → dentro del
-> `{Entidad}Domain`, acumulado en `ValidationResult` → 422 con `fieldErrors[]`, sin clase de
-> excepción propia. Restricción de CONJUNTO (unicidad, existencia, propiedad) → `{Concepto}Rule`
-> de dominio con su record de entrada, orquestada por el `{Accion}{Entidad}Validator` sobre lo que
-> los `Finder`s ya trajeron → 422 con su propia `DomainException`. **Nunca `if/throw` en el use
-> case, y no hay caso 403 para "no eres el dueño".** Ver skill `arquisoft-estandares`.
->
-> Antes de declarar una `Rule`, pregúntate si el caso debe **lanzar**. Si la consulta solo decide si
-> vale la pena seguir y su resultado no es un error de negocio — el corte de idempotencia de un
-> consumidor AMQP es el caso típico — entonces **no hay `Rule`**: es un `Finder` que el use case
-> consulta directo con `if (...) return;`. Declararlo como `Rule` haría que lanzara, mandando el
-> mensaje a la DLQ por una reentrega normal del broker. Y si la HU no tiene ninguna restricción de
-> conjunto, tampoco hay `Validator`: no planifiques una capa vacía.
-| # | Regla | Dónde se valida (Domain / Rule) | Finder que trae el dato | Excepción → HTTP |
-
 ## 4. Modelo DDD del Contexto
 ### Entidad raíz
 - **Clase:** `{Entidad}Domain`

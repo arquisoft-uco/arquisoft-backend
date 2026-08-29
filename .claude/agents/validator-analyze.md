@@ -388,58 +388,15 @@ Cualquier error de compilación es siempre bloqueante — incluye el mensaje exa
 
 ## FASE 5 — Reporte final
 
-```markdown
-# Reporte de Validación — {HU|HT}-{ID}
+**El formato completo está en `.claude/templates/VALIDATOR.md`.** Léela y produce el reporte con
+esas secciones, en ese orden. Dos cosas que la plantilla fija y conviene tener presentes al
+llenarla:
 
-## Metadata
-- **Bounded Context:** {contexto}
-- **Fecha:** {fecha} · **Rama propuesta:** `feature/{HU|HT}-{ID}-{descripcion}`
-
-## Score
-| Nivel | Checks | Pasados | Fallados | Score |
-|---|---|---|---|---|
-| 1 — Completitud | | | | |
-| 2 — Convenciones DDD + Arquisoft | | | | |
-| 3 — Compilación | | | | |
-| 4 — Tests | | | | ⏳ N/A si no se ejecutaron |
-| **Total** | | | | **XX/100** |
-
-**Bloqueantes:** X · **Menores:** X
-
-## Estado Final
-> ✅ APROBADO — sin bloqueantes. / ⛔ RECHAZADO — hay X bloqueantes.
-Un solo bloqueante = RECHAZADO, sin importar el score.
-
-## Errores Bloqueantes
-### [Nivel X.Y] — {título}
-- **Archivo:** `ruta/relativa/desde/raiz/del/repo`
-- **Problema:** {qué está mal}
-- **Referencia:** {check violado}
-
-## Errores Menores
-(mismo formato)
-
-## Tests
-{Si ✅ Completado: total de tests, presupuesto vs estimación, anti-patrones detectados
- (o "ninguno"), tests que afirman 500 (o "ninguno"), coherencia con Tipo de UC.}
-{Si ⏳ Pendiente: "Tests no ejecutados — invoca @tester y repite el análisis."}
-
-## Datos para la entrega
-> Esta sección es el insumo de `@commit`: de aquí saca el mensaje, la rama y los archivos, y del
-> Score/Tests/bloqueantes de arriba saca la evidencia para marcar el checklist del PR. Un dato que
-> no dejes aquí es una casilla que ese agente **no** podrá marcar.
-
-**Mensaje:** {tipo}({contexto}): {descripción corta}
-**Cuerpo:** {bullets: qué se implementó, capas afectadas, eventos emitidos, migración}
-**Rama:** `feature/{HU|HT}-{ID}-{descripcion}`
-**Archivos a incluir:** {lista} + `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` +
-`.workspace/validator/validator-{HU|HT}-{ID}.md`
-**Endpoints documentados:** {Sí / N/A — la HU no expone endpoints}
-
-## Próximos pasos
-{Si APROBADO: "Invoca @validator-report genera el reporte de {HU|HT}-{ID} y pega este reporte
-completo."} {Si RECHAZADO: "El implementador corrige los bloqueantes y se repite el análisis."}
-```
+- Una sección sin hallazgos se deja con "Ninguno" — **no se borra**. Una sección ausente no se
+  distingue de un olvido, y `@validator-report` la persiste tal cual la escribas.
+- En "Datos para la entrega", la lista de archivos es **solo código, tests, migraciones y
+  recursos**. El plan y este reporte no van al repositorio de backend: los publica `@commit` en
+  `arquisoft-docs`.
 
 No hagas nada más después de este mensaje.
 

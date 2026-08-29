@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Agente de entrega. Invocar manualmente después de que @validator-report haya persistido un reporte APROBADO en .workspace/validator/. Ejecuta la cadena completa de entrega — commit, push y Pull Request hacia develop con la plantilla de .github — con dos confirmaciones explícitas del usuario. No escribe código, no valida.
+description: Agente de entrega. Invocar manualmente después de que @validator-report haya persistido un reporte APROBADO en .workspace/validator/. Ejecuta la cadena completa de entrega — commit, push, Pull Request hacia develop con la plantilla de .github, y publicacion del plan y el reporte de validacion en arquisoft-docs — con dos confirmaciones explícitas del usuario. No escribe código, no valida.
 model: sonnet
 ---
 
@@ -26,7 +26,7 @@ barra inicial (`.workspace/...`), ya que `git` opera sobre rutas relativas al re
 | Gate | Qué autoriza | Por qué es propio |
 |---|---|---|
 | **1 — Commit** | `git add` + `git commit` | Local y reversible (`git reset`) |
-| **2 — Push + PR** | `git push` + `gh pr create` | Sale del equipo y queda público: revertirlo deja rastro |
+| **2 — Push + PR** | `git push`, `gh pr create` y la publicación del plan y el reporte en `arquisoft-docs` | Sale del equipo y queda público: revertirlo deja rastro, y las tres cosas son el mismo acto de publicar |
 
 ---
 
@@ -52,10 +52,11 @@ documentados"), no lo inventes: cuenta como falta de evidencia en la FASE 7.
 
 ## FASE 3 — Construir la lista de archivos
 
-Lista final = archivos de código del reporte + los dos artefactos auditables, siempre incluidos:
-`.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` y `.workspace/validator/validator-{HU|HT}-{ID}.md`.
+Lista final = **solo los archivos de código** del reporte: fuentes, tests, migraciones y recursos.
 
-Verifica que `.workspace/` no esté en `.gitignore` — si lo está, detente y avisa.
+**El plan y el reporte de validación NO entran en el commit.** No son código y su sitio es
+`arquisoft-docs`, junto a las historias que documentan; la FASE 9 los publica ahí. Meterlos aquí
+los duplicaría en dos repositorios, y la copia del backend sería la que nadie vuelve a mirar.
 
 ## FASE 4 — Verificar la rama
 
@@ -78,7 +79,7 @@ confirmar. Si dice "no", termina sin ejecutar nada.
 
 ```
 git status -s
-git add {archivos de código} .workspace/h-plan/PLAN-{HU|HT}-{ID}.md .workspace/validator/validator-{HU|HT}-{ID}.md
+git add {archivos de código}
 git status -s
 git commit -m "{tipo}({contexto}): {descripción corta}" -m "{cuerpo del mensaje}"
 ```
@@ -121,7 +122,9 @@ una mentira al reviewer, y el reviewer es quien aprueba el merge.
 
 Muestra al usuario la rama y su destino (`develop`), el hash y título del commit, el título del PR,
 la ruta del cuerpo (`.workspace/pr/PR-{HU|HT}-{ID}.md`) y el cuerpo completo renderizado. Pregunta:
-"¿Confirmas hacer push y abrir el PR hacia `develop`? (sí / no / ajustar PR)".
+"¿Confirmas hacer push y abrir el PR hacia `develop`? (sí / no / ajustar PR)". Nombra también
+las dos rutas de `arquisoft-docs` donde se van a publicar el plan y el reporte (FASE 10): salen del
+repositorio igual que el push, así que esta es la pregunta que también las autoriza.
 
 Si dice "no", termina — el commit ya está hecho localmente y se lo dices explícitamente. Si pide
 ajustar, edita el archivo y vuelve a confirmar.
@@ -140,7 +143,7 @@ Guarda la URL que devuelve `gh pr create`.
 Si `gh` no está autenticado (`gh auth status` falla) o el push es rechazado, **detente y reporta** —
 no reintentes con `--force` ni cambies de rama base por tu cuenta.
 
-## FASE 10 — Trazabilidad y cierre
+## FASE 10 — Trazabilidad, publicación en `arquisoft-docs` y cierre
 
 Actualiza los artefactos con lo que acaba de ocurrir:
 
@@ -148,17 +151,40 @@ Actualiza los artefactos con lo que acaba de ocurrir:
 2. `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` → fila `Commit` (hash y fecha) y fila `PR` (URL) de la
    Trazabilidad. No toques otras filas.
 
-Luego commitea **esas ediciones**, que de otro modo quedarían sueltas en el working tree, y súbelas
-al PR ya abierto:
+**Publica esos dos en `arquisoft-uco/arquisoft-docs`**, que es donde viven junto a las historias que
+documentan. No hace falta clonarlo: se escribe con la Contents API, un archivo por llamada. El
+`sha` solo va cuando el archivo **ya existe** — al crearlo, omítelo; al actualizarlo, es obligatorio
+y sin él la API responde 422.
+
+```bash
+publicar() {   # $1 = archivo local, $2 = ruta destino en arquisoft-docs
+  sha=$(gh api "repos/arquisoft-uco/arquisoft-docs/contents/$2" --jq .sha 2>/dev/null)
+  gh api "repos/arquisoft-uco/arquisoft-docs/contents/$2" --method PUT \
+    -f message="docs({HU|HT}-{ID}): plan y validación de {descripción corta}" \
+    -f branch=main \
+    -f content="$(base64 -w0 "$1")" \
+    ${sha:+-f sha="$sha"} --jq '.content.path'
+}
+
+publicar .workspace/h-plan/PLAN-{HU|HT}-{ID}.md      docs/backend/planes/PLAN-{HU|HT}-{ID}.md
+publicar .workspace/validator/validator-{HU|HT}-{ID}.md  docs/backend/validaciones/VALIDATOR-{HU|HT}-{ID}.md
+```
+
+Si alguna de las dos llamadas falla, **detente y repórtalo**: el commit y el PR del backend ya están
+hechos y son válidos: lo único pendiente es la publicación, y el usuario puede repetirla o hacerla a
+mano. No reintentes contra otra rama ni cambies la ruta destino por tu cuenta.
+
+Del lado del backend queda solo el cuerpo del PR, que sí es un artefacto de este repositorio:
 
 ```
-git add .workspace/h-plan/PLAN-{HU|HT}-{ID}.md .workspace/validator/validator-{HU|HT}-{ID}.md .workspace/pr/PR-{HU|HT}-{ID}.md
+git add .workspace/pr/PR-{HU|HT}-{ID}.md
 git commit -m "docs(trazabilidad): registrar commit y PR de {HU|HT}-{ID}"
 git push
 ```
 
 Este segundo commit está cubierto por el Gate 2: es el registro del acto que el usuario ya autorizó,
-sobre la misma rama y el mismo PR.
+sobre la misma rama y el mismo PR. El plan y el reporte quedan modificados en el working tree y **no
+se commitean aquí** — su versión publicada es la de `arquisoft-docs`.
 
 **Mensaje final:**
 
@@ -166,6 +192,7 @@ sobre la misma rama y el mismo PR.
 ✅ Entrega completada — {HU|HT}-{ID}
 Commit:  {hash} · Rama: {rama}
 PR:      {url}  →  develop
+Docs:    plan y validación publicados en arquisoft-docs/docs/backend/
 Siguiente paso: 1 aprobación requerida antes de mergear (CONTRIBUTING.md)
 ```
 
@@ -180,3 +207,6 @@ No ejecutes nada más después de este mensaje — ni `git status` ni `gh pr vie
 5. Casilla marcada = evidencia en el reporte. Sin evidencia, se queda sin marcar y se explica.
 6. Nunca `--force`, nunca `--admin`, nunca mergeas el PR: eso lo hace un humano tras la revisión.
 7. Si el usuario pidió solo el commit, paras en la FASE 6 y dices qué quedó pendiente.
+8. El plan y el reporte de validación **nunca entran en un commit del backend**: se publican en
+   `arquisoft-docs` (FASE 10). Si aparecen staged en el `git status`, sácalos con
+   `git restore --staged`.

@@ -27,6 +27,9 @@ no analizas código, solo escribes en disco lo que ya viene decidido.
 3. **Persiste el reporte** en `.workspace/validator/validator-{HU|HT}-{ID}.md` con el contenido
    recibido tal cual (si trae un prefijo conversacional tipo "📋 Análisis de validación
    completado — ...", elimina esa línea inicial y deja el resto desde "# Reporte de Validación — ...").
+   El formato canónico es `.claude/templates/VALIDATOR.md`: no reescribas el contenido para que
+   encaje, pero si falta una sección entera de esa plantilla, dilo en el mensaje final en vez de
+   inventarla.
 4. **Actualiza la Trazabilidad del plan**: la fila `Validación` (y `Reporte`, si el plan la separa)
    con fecha actual, score y estado. No toques otras filas.
 5. **Mensaje final** al usuario:
