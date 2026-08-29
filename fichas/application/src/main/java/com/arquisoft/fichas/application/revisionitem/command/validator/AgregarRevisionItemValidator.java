@@ -7,5 +7,5 @@ import java.util.UUID;
 public interface AgregarRevisionItemValidator {
 
     void validar(AgregacionRevisionItemDomain entrada, boolean itemExiste, UUID fichaPerfil, boolean esPropietario,
-                 boolean revisionYaExiste);
+                 long cantidadRevisiones);
 }
