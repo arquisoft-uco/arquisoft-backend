@@ -1,5 +1,6 @@
 dependencies {
-    implementation project(':notificaciones:domain')
+    // domain solo en tests: la barrera de capas prohibe que infrastructure vea el dominio.
+    testImplementation project(':notificaciones:domain')
     implementation project(':notificaciones:application')
     implementation project(':shared:domain')
     implementation project(':shared:application')
@@ -10,11 +11,13 @@ dependencies {
     // shared:tracing — el consumidor AMQP recibe el GestorTraza por constructor.
     // shared:amqp lo declara con 'implementation', asi que no llega transitivamente.
     implementation project(':shared:tracing')
-    implementation project(':shared:notification')
 
     // AMQP — spring-amqp no es transitivo en compilacion desde shared:amqp (Gradle 'implementation').
     // Se declara aqui para acceder a @RabbitListener, Message, Channel, QueueBuilder, etc.
     implementation "org.springframework.boot:spring-boot-starter-amqp"
+
+    // JavaMailSender + MimeMessageHelper — unica dependencia de transporte del contexto.
+    implementation "org.springframework.boot:spring-boot-starter-mail"
 
     // Database
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"

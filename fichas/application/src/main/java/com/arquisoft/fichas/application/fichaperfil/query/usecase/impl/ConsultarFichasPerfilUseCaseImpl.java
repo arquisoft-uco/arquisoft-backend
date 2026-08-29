@@ -20,11 +20,13 @@ public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilUs
 
     @Override
     public PaginatedResult<FichaPerfilReadModel> ejecutar(FichaPerfilCriteria entrada) {
-        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_CONSULTANDO), entrada.getPagina(), entrada.getTamanio());
+        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_CONSULTANDO),
+                entrada.getPagina(), entrada.getTamanio(),
+                entrada.tieneFiltros(), entrada.tieneOrden());
 
         var resultado = fichaPerfilQueryOutputPort.consultarTodas(entrada);
 
-        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_CONSULTA_COMPLETADA),
+        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_CONSULTA_COMPLETADA),
                 resultado.getTotalElements(), entrada.getPagina(), entrada.getTamanio());
         return resultado;
     }

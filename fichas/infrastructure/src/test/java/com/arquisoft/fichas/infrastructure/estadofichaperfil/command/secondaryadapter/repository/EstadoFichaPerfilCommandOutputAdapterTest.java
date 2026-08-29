@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.mapper.EstadoFichaPerfilMapper;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.estadoficha.command.secondaryadapter.entity.EstadoFichaJpaEntity;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 @DataJpaTest
 class EstadoFichaPerfilCommandOutputAdapterTest {
@@ -28,7 +30,8 @@ class EstadoFichaPerfilCommandOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new EstadoFichaPerfilCommandOutputAdapter(estadoFichaPerfilRepository);
+        adapter = new EstadoFichaPerfilCommandOutputAdapter(
+                estadoFichaPerfilRepository, mock(AppLogger.class));
 
         entityManager.persist(EstadoFichaJpaEntity.builder()
                 .id("EN_CONSTRUCCION")

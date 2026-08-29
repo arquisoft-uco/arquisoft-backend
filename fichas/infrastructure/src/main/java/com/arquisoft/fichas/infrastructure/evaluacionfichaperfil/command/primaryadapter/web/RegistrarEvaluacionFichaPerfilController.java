@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.arquisoft.shared.util.UtilUUID;
+
 import java.util.UUID;
 
 @RestController
@@ -55,7 +57,7 @@ public class RegistrarEvaluacionFichaPerfilController {
             @PathVariable UUID fichaId,
             @AuthenticationPrincipal Jwt jwt) {
 
-        var representanteComiteId = UUID.fromString(jwt.getSubject());
+        var representanteComiteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
 
         var command = RegistrarEvaluacionFichaPerfilCommand.crear(
                 fichaId,

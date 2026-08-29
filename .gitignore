@@ -55,3 +55,7 @@ logs/
 
 ### MCP local (config de IDE por maquina, no del repo) ###
 .mcp.json
+
+### Artefactos de los subagentes (planes, validaciones, cuerpos de PR) ###
+# Su sitio es arquisoft-uco/arquisoft-docs -> docs/hus/, donde los publica 4c-commit.
+.workspace/

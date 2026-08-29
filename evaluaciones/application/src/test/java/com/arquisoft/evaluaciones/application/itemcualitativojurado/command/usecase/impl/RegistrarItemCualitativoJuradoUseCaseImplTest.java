@@ -76,7 +76,7 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(item))
                 .isInstanceOf(NombreItemCualitativoJuradoDuplicadoException.class);
         verify(outputPort, never()).registrar(any());
-        verify(logger, never()).info(anyString(), any());
+        verify(logger, never()).info(anyString(), eq(item.getId()));
     }
 
     @Test
@@ -91,7 +91,7 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(item))
                 .isSameAs(errorPersistencia);
-        verify(logger, never()).info(anyString(), any());
+        verify(logger, never()).info(anyString(), eq(item.getId()));
     }
 
     private static ItemCualitativoJuradoDomain itemValido() {

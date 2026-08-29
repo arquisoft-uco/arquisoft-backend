@@ -13,7 +13,7 @@ excepciones, Checkstyle y testing, ver la skill `arquisoft-estandares`.
 real de `fichas` — el único contexto de negocio completo del proyecto y el patrón a copiar. Ábrelo
 con `Read` cuando necesites el detalle exacto.
 
-Los otros tres contextos con código ya se alinearon. Cada uno sirve de referencia para algo distinto,
+Los otros cuatro contextos con código ya se alinearon. Cada uno sirve de referencia para algo distinto,
 y cada uno tiene un límite que hay que conocer antes de copiar:
 
 - **`seguridad`** — referencia del paquete `command/result/` (+ su `mapper/`) y del layout de
@@ -31,7 +31,47 @@ y cada uno tiene un límite que hay que conocer antes de copiar:
   concreta: `existePorEmail` siempre devuelve `false`, así que `UsuarioEmailUnicoRule` no se dispara
   nunca. Copia su **forma**, no su comportamiento, y no lo cites como prueba de que un endpoint
   funciona. Le queda además una desviación real: `CrearUsuarioRequestDTO` con anotaciones Jakarta y
-  `toCommand()` propio, y un `CrearUsuarioCommand` sin fábrica `crear(...)` — nada valida el formato.
+  `toCommand()` propio, en vez de un record desnudo con `CrearUsuarioRequestMapper`. Su
+  `CrearUsuarioCommand` ya tiene fábrica `crear(...)`, y el `RolUsuarioDTO` anidado dejó de importar
+  `UsuarioRole`: lleva su propio código y la conversión ocurre en `crear(...)` vía `desdeCodigo(...)`,
+  que es lo que permite a infrastructure no ver el dominio.
+- **`evaluaciones`** — el slice más reciente del repo (`itemcualitativojurado`, agosto 2026) y por eso
+  el más limpio como molde de un **contexto que arranca**: `Controller` → `RequestMapper` →
+  `Command.crear(...)` → `Interactor` (`@Transactional`) → `UseCase` → `Finder` → `Validator` →
+  `Rule` → `OutputPort` que habla `Entity` → `JpaMapper` → `CommandRepository`, con su migración
+  timestamp y su `EvaluacionesAuthorities`. *Límite:* es un solo comando de escritura — no tiene
+  lado `query/`, ni eventos, ni consumidores; para eso sigue siendo `fichas` la referencia.
+
+
+### La dirección de dependencias la verifica el build
+
+`domain ← application ← infrastructure` no es una convención que se recuerde: es el grafo de módulos.
+`{contexto}/infrastructure` **no declara `:{contexto}:domain` en `implementation`** — solo en
+`testImplementation`, porque los slices arman agregados en el *arrange* — así que un import del
+dominio desde código de producción de infrastructure **no compila**. Esa es la barrera real, y es la
+razón por la que los puertos hablan `Entity` y nunca `Domain`.
+
+Como esa barrera se reabre en silencio con una línea en un `build.gradle`, la tarea
+`verificarCapasHexagonales` del build raíz la vuelve a comprobar y **cuelga de `check`**. Inspecciona
+el `compileClasspath` *resuelto*, así que también detecta una fuga transitiva (un `shared:*` que
+reexporte con `api`). Reglas que aplica a todo contexto de negocio:
+
+| Capa | No puede alcanzar |
+|---|---|
+| `domain` | `application` e `infrastructure` de su contexto, y `shared:application` |
+| `application` | `infrastructure` de su contexto |
+| `infrastructure` | `domain` de su contexto (en `main`; en `test` sí) |
+
+Si `verificarCapasHexagonales` falla, **el arreglo nunca es añadir la dependencia al `build.gradle`**:
+es que el tipo al que se está llegando está en la capa equivocada. Un enum de dominio que un adaptador
+necesita nombrar viaja como `String` y se convierte en el `Command.crear(...)` con su `desde(...)`;
+un agregado que un adaptador quiere construir es señal de que el puerto debería hablar `Entity`.
+
+Los **nueve** contextos están en `contextosHexagonales`, `notificaciones` incluido. Su consumidor no
+nombra el enum de dominio: `AsesorFichaCambiadoConsumer` usa `TipoNotificacionEvento` (espejo propio
+de infraestructura) y pasa `getCodigo()`, y `EnviarNotificacionCommand.crear(...)` lo resuelve con
+`TipoNotificacion.desde(...)`. Ese es el patrón cuando un adaptador necesita nombrar un valor de
+catálogo: un espejo en su capa + `String` cruzando la frontera, nunca el enum del dominio.
 
 ## Los planes y reportes de `.workspace/` NO son referencia de convención
 
@@ -61,8 +101,8 @@ plan está desactualizado y qué partes hay que rehacer antes de tocar nada.
 ## Dirección de dependencias (no negociable)
 
 `domain ← application ← infrastructure`. Los 9 bounded contexts (`seguridad`, `usuarios`, `fichas`,
-`notificaciones` con implementación real; `proyectos`, `artefactos`, `repositorio_artefactos`,
-`entregables`, `evaluaciones` en scaffolding) **nunca** se importan entre sí — solo se comunican vía
+`notificaciones` y `evaluaciones` con código; `proyectos`, `artefactos`, `repositorio_artefactos` y
+`entregables` solo con su `{Contexto}DataSourceConfig`) **nunca** se importan entre sí — solo se comunican vía
 eventos de dominio en RabbitMQ (`shared:amqp`).
 
 Dentro de un contexto sí hay tráfico entre features (`fichaperfil` consulta `asesorficha`), pero
@@ -83,6 +123,29 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 | `{feature}/rules/` (+`impl/`) | Regla pura: sin Spring, sin Lombok, **sin dependencias de constructor** | `rules/FichaPerfilTituloUnicoRule.java` + `rules/impl/FichaPerfilTituloUnicoRuleImpl.java` |
 | `{feature}/event/` | Eventos de dominio (extienden `DomainEvent`) | `event/AsesorFichaCambiadoEvent.java` |
 | `{feature}/exception/` | Excepciones de dominio (→ 422) | `exception/FichaTituloDuplicadoException.java` |
+
+#### El objeto de acción lleva solo lo que la acción necesita
+
+No es el agregado cargado ni una copia suya: es lo mínimo con lo que la acción se puede decidir y
+ejecutar. La forma dominante — 8 de los 10 que existen — es **ids planos y escalares**:
+`CambioAsesorFichaDomain` son dos `UUID` (ficha y nuevo asesor), `ModificacionFichaPerfilDomain` son
+`UUID` + título + `UUID` del estudiante. No cargues `FichaPerfilDomain` entero para cambiar su
+asesor; lo que hace falta para eso son dos identificadores.
+
+Solo cuando la acción crea de verdad varios objetos a la vez el objeto de acción **contiene otros
+`Domain`**, y entonces el orden de construcción es de menor a mayor jerarquía — el compuesto se arma
+al final, porque los de abajo necesitan el id del de arriba... que ya existe porque se creó primero.
+`RegistrarFichaPerfilMapper` es el único caso hoy y se lee entero:
+
+1. `FichaPerfilDomain.crear(...)` — el agregado, que genera su propio id.
+2. `AsignarEstadoInicialFichaPerfilMapper.toDomain(ficha.getId())` y
+   `AsignarEstudiantesFichaPerfilMapper.toDomain(ficha.getId(), ...)` — cada pieza la construye el
+   mapper **de su propia feature**, no el de `fichaperfil`.
+3. `RegistroFichaPerfilDomain.crear(ficha, estadoInicial, estudiantes)` — compone y valida que las
+   tres estén presentes, nada más.
+
+Ese `crear(...)` del compuesto no reimplementa las validaciones de sus partes: cada `Domain` ya validó
+lo suyo al construirse, así que el de arriba solo comprueba `noNulo` de cada componente.
 
 ### application — lado command
 
@@ -218,6 +281,47 @@ lanza `KeycloakAuthOutputAdapter`) baja a `seguridad/infrastructure/auth/excepti
 distinta capa que su padre parte una jerarquía en dos módulos; los imports redundantes que reporta
 Checkstyle al moverla son el síntoma de que estaba mal ubicada.
 
+### Un fallo que el negocio registra no es una excepción: es un valor
+
+Antes de escribir una excepción para un fallo de un puerto, pregunta **qué hace quien llama con
+ella**. Si la captura para seguir adelante —porque el fallo es un estado que hay que persistir, no un
+error del flujo— entonces no debía ser excepción. El puerto devuelve una sellada con los desenlaces
+y desaparecen a la vez el `try/catch` de application y la excepción:
+
+```java
+public sealed interface ResultadoEntrega {
+    record Entregada() implements ResultadoEntrega {}
+    record Rechazada(String motivo) implements ResultadoEntrega {}
+}
+```
+
+El adaptador traduce lo que sabe diagnosticar y **registra ahí la traza técnica**, que es donde tiene
+la causa en la mano; una avería inesperada (mal configurado, fallo no previsto) **sí** se propaga y
+acaba en la DLQ o en un 503. Es el mismo criterio que ya usan los `Finder`: "no encontrado" devuelve
+`Optional`, decidir qué significa la ausencia es de quien llama. Referencia:
+`EnvioNotificacionOutputPort` + `SmtpEnvioNotificacionOutputAdapter`.
+
+Si aun así application tiene que **nombrar** una excepción que lanza un adaptador, esa excepción vive
+junto al puerto (`command/secondaryport/exception/`) y no en `infrastructure/{feature}/exception/`:
+es parte del contrato del puerto, y ponerla en infrastructure invertiría la dirección de capas.
+
+## Un módulo `shared:` con un solo consumidor no es compartido
+
+`shared:notification` existía con el puerto de envío, sus dos adaptadores (`Smtp`, `Log`) y su
+configuración, y lo consumía **solo** `notificaciones`. Dos consecuencias, y la segunda es la grave:
+
+1. Un "shared" de un solo cliente es un contexto mal ubicado.
+2. `notificaciones/application` declaraba ese módulo, y ese módulo traía `JavaMailSender` y
+   `MimeMessageHelper` — **infraestructura ejecutable en el classpath de la capa de aplicación**.
+   `verificarCapasHexagonales` no lo detecta: razona por nombre de módulo, y ahí no dice
+   "infrastructure".
+
+Se disolvió dentro del contexto: el puerto y sus modelos a `application/…/secondaryport/`, los
+adaptadores y la config a `infrastructure/…/secondaryadapter/{smtp,logging}` y `config/`.
+
+**Antes de crear un `shared:*` nuevo, exige dos consumidores reales.** Y si un contexto ya sólo puede
+alcanzarse por eventos —como `notificaciones`— no va a haber un segundo: la arquitectura lo prohíbe.
+
 ## Puertos: hablan `Entity`, nunca `Domain`
 
 `domain/` no declara puertos ni hace I/O. El `OutputPort` recibe y devuelve el `record` plano
@@ -243,8 +347,8 @@ Su único trabajo es `Entity ↔ JpaEntity` y delegar en el repositorio.
 | `catch (DataIntegrityViolationException)` → `throw {X}DuplicadoException(...)` | Esa excepción vive en `domain/{feature}/exception/` e **infrastructure no ve el dominio en absoluto** — es la razón de que los puertos hablen `Entity` y no `Domain`. Además duplica la regla: la unicidad ya la declara `{X}UnicoRule` alimentada por su `Finder` sobre `existePor...`, en el paso 2 del orden de validación. La garantía real de integridad es el `UNIQUE` de la migración Flyway, no el `catch` |
 | `catch (DataAccessException)` → `errorPersistencia(...)` envolviendo en `InfrastructureException` | Sobra. `GlobalAppExceptionHandler` no mapea Spring Data, así que cae en su catch-all → 500 con log de error, que es exactamente el resultado correcto para "BD caída" o "bug de mapeo". El `try/catch` añade ruido por método y esconde la causa raíz tras un mensaje genérico |
 | `saveAndFlush(...)` en el adaptador | `flush` no cierra la transacción (el commit sigue siendo del interactor), pero al saltar una violación de constraint deja la transacción en *rollback-only* y el `EntityManager` en estado indefinido: capturar ahí y continuar produce un `UnexpectedRollbackException` en el commit, lejos del origen. Solo existía para adelantar el error al `catch`; eliminado el `catch`, pierde su razón de ser. Usa `save`. (En el *arrange* de un `@DataJpaTest` sí es legítimo, para forzar el insert) |
-| `Boolean existePorX(...)` | El repo es uniforme en `boolean` primitivo, puerto y adaptador (`existePorId`, `existePorTituloProyecto`, `existeTituloEnOtraFicha`). El envuelto introduce un `null` posible que nadie comprueba y un unboxing silencioso dentro de la `Rule` |
-| Método de escritura sin log | Los de escritura registran `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), id)` con el `AppLogger` inyectado por constructor. Los de lectura **no** logean |
+| `Boolean existePorX(...)` | El repo es uniforme en `boolean` primitivo, puerto y adaptador (`existePorId`, `existePorTituloProyecto`, `existeTituloEnOtraFicha`). El envuelto introduce un `null` posible que nadie comprueba y un unboxing silencioso dentro de la `Rule`. Esto aplica al **puerto**, no al `Finder`: `Finder<T, Boolean>` lleva el envuelto por obligación del genérico y es correcto |
+| Método de escritura sin log | Los de escritura registran `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), id)` con el `AppLogger` inyectado por constructor. Los de lectura **no** logean. Es un eslabón de la estructura de logs del flujo de escritura — la estructura completa (dos `INFO` por petición, `debug` de finders antes del validator, caso anidado) está en `arquisoft-estandares` |
 
 **Matiz que no es excepción a lo anterior:** un adaptador sí puede lanzar una `InfrastructureException`
 **propia**, desde `infrastructure/{feature}/exception/`, para fallos que solo él diagnostica —
@@ -370,17 +474,76 @@ queda en el exchange. Son **seis** piezas en dos contextos:
 
 | # | Módulo | Archivo |
 |---|---|---|
-| 1 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java`, `EVENT_TOPIC = "{contexto}.{entidad}.{accion}"` |
-| 2 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` — cola `notificaciones.{routingKey}` con DLX |
-| 3 | `notificaciones/.../command/primaryadapter/amqp/` | `{Evento}Payload.java`, `record` propio del adaptador — **nunca** la clase de evento del productor |
-| 4 | `notificaciones/.../command/primaryadapter/amqp/` | `{Evento}Consumer.java` extiende `AbstractEventConsumer` — aquí se elige el texto, no en el use case |
-| 5 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
-| 6 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto |
+| 1 | `shared:message/constant/` | constante nueva en `EventTopics.{Contexto}` con la routing key |
+| 2 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java`, `EVENT_TOPIC = EventTopics.{Contexto}.{X}` |
+| 3 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` |
+| 4 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Payload.java`, `record` propio del adaptador — **nunca** la clase de evento del productor |
+| 5 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Consumer.java` extiende `AbstractNotificacionConsumer` — aquí se elige el texto, no en el use case |
+| 6 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
+| 7 | `notificaciones/.../primaryadapter/amqp/` | la misma constante en `TipoNotificacionEvento` — `TipoNotificacionEventoTest` falla si falta |
+| 8 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto |
 
 El evento carga **nombre y correo del destinatario** más el dato legible del asunto, aunque duplique
 lo que el productor ya tiene: un evento delgado obliga a `notificaciones` a llamar de vuelta, que es
 el acoplamiento que los eventos eliminan. La dirección es de un solo sentido — el contexto productor
 nunca depende de `notificaciones`, y `notificaciones` solo consume, nunca emite.
+
+
+### La routing key se declara una vez, en `EventTopics`
+
+La leen dos módulos que no se ven entre sí: el evento del productor y el `Binding` del consumidor.
+Si cada lado la escribe por su cuenta y una cambia, **el binding deja de recibir sin que nada falle**
+— no hay excepción, simplemente no llegan mensajes. Por eso vive en `shared:message/constant/EventTopics`,
+agrupada por contexto productor, que es el único módulo que ambos lados ya alcanzan:
+
+```java
+public static final String EVENT_TOPIC = EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;   // productor
+public static final String ASESOR_CAMBIADO_ROUTING_KEY = EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;
+```
+
+**El nombre de la cola se deriva, no se escribe.** La convención es `{contextoConsumidor}.{routingKey}`
+y se compone con constantes, así que el compilador la resuelve y sigue sirviendo en `@RabbitListener`,
+que exige una expresión constante (JLS §9.7.1):
+
+```java
+public static final String ASESOR_CAMBIADO_QUEUE =
+        NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;
+```
+
+Ningún `*QueueConfig` escribe literales propios. El prefijo del contexto vive en `{Contexto}Queues`
+(`infrastructure/config/`), compartido por todos los `*QueueConfig` de ese contexto; los nombres de
+argumento y el sufijo de dead letter viven en `RabbitMQConfig` (`shared:amqp`), porque son del
+protocolo: `ARG_DEAD_LETTER_EXCHANGE`, `ARG_DEAD_LETTER_ROUTING_KEY`, `SUFIJO_DEAD_LETTER`,
+`SEPARADOR_COLA`.
+
+**Nada de esto va al catálogo de Redis.** RabbitMQ compara la routing key carácter a carácter, y
+`Mensajes.obtener(...)` es una llamada a método: en `@RabbitListener` ni siquiera compila.
+
+
+### Consumidores: un subpaquete por contexto productor
+
+`primaryadapter/amqp/` se subdivide por **quién produce**, no por entidad:
+
+```
+primaryadapter/amqp/
+├── AbstractNotificacionConsumer.java     # base común
+├── TipoNotificacionEvento.java           # espejo del enum de dominio
+├── fichas/{Evento}Consumer.java + {Evento}Payload.java
+└── evaluaciones/…
+```
+
+Es el eje que agrupa lo que varía junto: todo lo que se consume de un productor comparte su espacio
+de routing keys. Bajar a entidad (`amqp/fichas/fichaperfil/`) da paquetes de dos archivos y rompe la
+regla de que un paquete se llama por el sufijo de lo que contiene.
+
+Los `*QueueConfig` **se quedan en `config/`**: ya hay uno por contexto productor y cada uno agrupa
+todas sus colas, así que el paquete no se satura.
+
+**Lo que todos los consumidores hacen igual sube a la base.** `AbstractNotificacionConsumer extends
+AbstractEventConsumer` posee el `AppLogger` (`protected final`) y el `registrar(EnvioNotificacionResult)`
+con el `switch` exhaustivo del desenlace. La subclase solo pone su `@RabbitListener`, su log de
+entrada y su plantilla. Ventaja real: cuando aparezca un desenlace nuevo, el compilador falla en un
+sitio y no en seis.
 ## Aislamiento de persistencia: una base de datos por contexto
 
 No son schemas dentro de una base común: `init-db.sql` crea una **base por bounded context**

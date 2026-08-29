@@ -3,6 +3,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.primaryport.interac
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.model.RegistrarFichaPerfilCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
 import com.arquisoft.fichas.domain.fichaperfil.RegistroFichaPerfilDomain;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -23,6 +24,9 @@ class RegistrarFichaPerfilInteractorImplTest {
 
     @Mock
     private RegistrarFichaPerfilUseCase registrarFichaPerfilUseCase;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private RegistrarFichaPerfilInteractorImpl registrarFichaPerfilInteractor;

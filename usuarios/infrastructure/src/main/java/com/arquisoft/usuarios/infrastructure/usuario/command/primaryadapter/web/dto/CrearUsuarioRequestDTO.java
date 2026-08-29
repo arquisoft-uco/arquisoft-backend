@@ -1,6 +1,5 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web.dto;
 
-import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.model.CrearUsuarioCommand;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -16,24 +15,27 @@ public record CrearUsuarioRequestDTO(
         RolUsuarioDTO rol) {
 
     public CrearUsuarioCommand toCommand() {
-        return new CrearUsuarioCommand(email, rol.toDomain());
+        return CrearUsuarioCommand.crear(email, rol.getCodigo());
     }
 
     public enum RolUsuarioDTO {
-        ESTUDIANTE, ASESOR, ASESOR_FICHA, COORDINADOR,
-        JURADO, BIBLIOTECARIO, REPRESENTANTE_COMITE_CURRICULUM, ADMINISTRADOR;
+        ESTUDIANTE("estudiante"),
+        ASESOR("asesor"),
+        ASESOR_FICHA("asesor-ficha"),
+        COORDINADOR("coordinador"),
+        JURADO("jurado"),
+        BIBLIOTECARIO("bibliotecario"),
+        REPRESENTANTE_COMITE_CURRICULUM("representante-comite"),
+        ADMINISTRADOR("administrador");
 
-        public UsuarioRole toDomain() {
-            return switch (this) {
-                case ESTUDIANTE -> UsuarioRole.ESTUDIANTE;
-                case ASESOR -> UsuarioRole.ASESOR;
-                case ASESOR_FICHA -> UsuarioRole.ASESOR_FICHA;
-                case COORDINADOR -> UsuarioRole.COORDINADOR;
-                case JURADO -> UsuarioRole.JURADO;
-                case BIBLIOTECARIO -> UsuarioRole.BIBLIOTECARIO;
-                case REPRESENTANTE_COMITE_CURRICULUM -> UsuarioRole.REPRESENTANTE_COMITE_CURRICULUM;
-                case ADMINISTRADOR -> UsuarioRole.ADMINISTRADOR;
-            };
+        private final String codigo;
+
+        RolUsuarioDTO(String codigo) {
+            this.codigo = codigo;
+        }
+
+        public String getCodigo() {
+            return codigo;
         }
     }
 }

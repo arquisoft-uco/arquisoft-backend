@@ -1,12 +1,13 @@
 package com.arquisoft.fichas.domain.fichaperfil.event;
 
+import com.arquisoft.shared.message.constant.EventTopics;
 import com.arquisoft.shared.events.DomainEvent;
 
 import java.util.UUID;
 
 public class AsesorFichaCambiadoEvent extends DomainEvent {
 
-    public static final String EVENT_TOPIC = "fichas.ficha_perfil.asesor_cambiado";
+    public static final String EVENT_TOPIC = EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;
     public static final String EVENT_TYPE = "AsesorFichaCambiadoEvent";
 
     private final UUID fichaPerfilId;

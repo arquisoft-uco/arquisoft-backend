@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.second
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.mapper.EstudianteFichaPerfilMapper;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,7 +30,7 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new EstudianteFichaPerfilCommandOutputAdapter(repository);
+        adapter = new EstudianteFichaPerfilCommandOutputAdapter(repository, mock(AppLogger.class));
     }
 
     @Test

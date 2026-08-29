@@ -22,8 +22,13 @@ public class ValidarTokenUseCaseImpl implements ValidarTokenUseCase {
     public ValidacionTokenResult ejecutar(TokenDomain entrada) {
         logger.debug(Mensajes.obtener(TokenKey.LOG_VALIDAR_DEBUG));
 
-        return validacionTokenOutputPort.extraerIdentidad(entrada.getValor())
+        var resultado = validacionTokenOutputPort.extraerIdentidad(entrada.getValor())
                 .map(ValidacionTokenResultMapper::toResult)
                 .orElseGet(ValidacionTokenResultMapper::toResultInvalido);
+
+        logger.debug(Mensajes.obtener(TokenKey.LOG_VALIDAR_RESULTADO),
+                resultado instanceof ValidacionTokenResult.Valida);
+
+        return resultado;
     }
 }

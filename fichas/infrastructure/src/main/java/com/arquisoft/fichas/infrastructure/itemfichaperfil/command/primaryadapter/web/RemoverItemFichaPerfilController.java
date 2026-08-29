@@ -21,6 +21,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.arquisoft.shared.util.UtilUUID;
+
 import java.util.UUID;
 
 @RestController
@@ -54,7 +56,7 @@ public class RemoverItemFichaPerfilController {
     public ResponseEntity<Void> remover(
             @PathVariable UUID itemId,
             @AuthenticationPrincipal Jwt jwt) {
-        var estudianteId = UUID.fromString(jwt.getSubject());
+        var estudianteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
         var command = RemoverItemFichaPerfilCommand.crear(itemId, estudianteId);
         removerItemFichaPerfilInteractor.ejecutar(command);
         return ResponseEntity.noContent().build();
