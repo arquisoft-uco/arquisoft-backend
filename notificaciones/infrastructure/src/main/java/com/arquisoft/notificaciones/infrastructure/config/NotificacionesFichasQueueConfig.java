@@ -1,6 +1,7 @@
 package com.arquisoft.notificaciones.infrastructure.config;
 
 import com.arquisoft.shared.amqp.RabbitMQConfig;
+import com.arquisoft.shared.message.constant.EventTopics;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -10,27 +11,22 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Colas que notificaciones consume del contexto fichas.
- *
- * <p>Convencion de nombres: la cola es {@code {contextoConsumidor}.{routingKey}} y la routing key
- * es el {@code eventTopic} del evento del productor.
- */
 @Configuration
 public class NotificacionesFichasQueueConfig {
 
-    public static final String ASESOR_CAMBIADO_QUEUE =
-            "notificaciones.fichas.ficha_perfil.asesor_cambiado";
-
     public static final String ASESOR_CAMBIADO_ROUTING_KEY =
-            "fichas.ficha_perfil.asesor_cambiado";
+            EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;
+
+    public static final String ASESOR_CAMBIADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;
 
     @Bean
     public Queue notificacionesAsesorCambiadoQueue() {
         return QueueBuilder
                 .durable(ASESOR_CAMBIADO_QUEUE)
-                .withArgument("x-dead-letter-exchange", RabbitMQConfig.DLX_NAME)
-                .withArgument("x-dead-letter-routing-key", ASESOR_CAMBIADO_QUEUE + ".dead")
+                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_EXCHANGE, RabbitMQConfig.DLX_NAME)
+                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_ROUTING_KEY,
+                        ASESOR_CAMBIADO_QUEUE + RabbitMQConfig.SUFIJO_DEAD_LETTER)
                 .build();
     }
 

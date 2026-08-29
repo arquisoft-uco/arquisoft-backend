@@ -32,10 +32,16 @@ public class AgregarItemFichaPerfilUseCaseImpl implements AgregarItemFichaPerfil
     public UUID ejecutar(AgregacionItemFichaPerfilDomain entrada) {
         var item = entrada.getItem();
 
+        logger.info(Mensajes.obtener(ItemFichaPerfilKey.LOG_AGREGANDO),
+                item.getFichaPerfilId(), item.getTipoItem());
+
         boolean fichaExiste = fichaPerfilExisteFinder.obtener(item.getFichaPerfilId());
         boolean esPropietario = vinculoEstudianteFichaExisteFinder.obtener(
                 new VinculoEstudianteFicha(item.getFichaPerfilId(), entrada.getEstudiante()));
         boolean tipoYaExiste = tipoItemEnFichaExisteFinder.obtener(item);
+
+        logger.debug(Mensajes.obtener(ItemFichaPerfilKey.LOG_VERIFICACION_AGREGAR),
+                fichaExiste, esPropietario, tipoYaExiste);
 
         agregarItemFichaPerfilValidator.validar(
                 item, entrada.getEstudiante(), fichaExiste, esPropietario, tipoYaExiste);

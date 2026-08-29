@@ -5,6 +5,7 @@ import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.mapper.NotificacionMapper;
 import com.arquisoft.notificaciones.infrastructure.notificacion.command.secondaryadapter.entity.NotificacionJpaEntity;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.test.context.TestPropertySource;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 @DataJpaTest
 @TestPropertySource(properties = {
@@ -32,7 +34,7 @@ class NotificacionCommandOutputAdapterTest {
 
     @BeforeEach
     void setUp() {
-        adapter = new NotificacionCommandOutputAdapter(repository);
+        adapter = new NotificacionCommandOutputAdapter(repository, mock(AppLogger.class));
     }
 
     private NotificacionDomain notificacionCon(String idEvento) {

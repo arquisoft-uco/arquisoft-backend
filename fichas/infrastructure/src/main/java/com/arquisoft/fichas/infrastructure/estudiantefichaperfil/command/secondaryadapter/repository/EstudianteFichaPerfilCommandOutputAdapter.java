@@ -3,6 +3,9 @@ package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.second
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.mapper.EstudianteFichaPerfilJpaMapper;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -13,10 +16,13 @@ import java.util.UUID;
 public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFichaPerfilOutputPort {
 
     private final EstudianteFichaPerfilCommandRepository repository;
+    private final AppLogger logger;
 
     @Override
     public void vincularEstudiante(EstudianteFichaPerfilEntity relacion) {
         repository.save(EstudianteFichaPerfilJpaMapper.toJpaEntity(relacion));
+        logger.debug(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_VINCULO_GUARDADO),
+                relacion.fichaPerfilId(), relacion.estudianteId());
     }
 
     @Override
@@ -32,5 +38,7 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     @Override
     public void desvincularEstudiante(UUID fichaPerfilId, UUID estudianteId) {
         repository.deleteByFichaPerfilIdAndEstudianteId(fichaPerfilId, estudianteId);
+        logger.debug(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_VINCULO_ELIMINADO),
+                fichaPerfilId, estudianteId);
     }
 }

@@ -354,6 +354,16 @@ AgregacionEstadoEvaluacionFichaDomain
 Es lo que construye el `{Accion}{Entidad}Mapper` de `command/primaryport/mapper/` y lo que recibe el
 `UseCase`. Sigue siendo un sustantivo, así que no rompe la regla del agregado.
 
+El `{Accion}{Entidad}Mapper` en sí es **obligatorio en todo caso de uso de escritura** (`final`,
+constructor privado, `static toDomain(command)`), y el `{Accion}{Entidad}InteractorImpl` siempre lo
+invoca antes de delegar, de modo que un `Command` nunca se convierte en dominio dentro del interactor
+ni del use case. Lo que varía es su retorno: el objeto de acción cuando la acción arrastra un
+*bundle*, o el agregado raíz directo (`toDomain(command)` → `{Entidad}Domain.crear(...)`) cuando el
+`Command` mapea 1-a-1. El **objeto de acción sigue siendo condicional** — un wrapper que solo
+reexpone el agregado es una indirección sin valor — pero el mapper no. Los comandos que hoy llaman
+`{Entidad}Domain.crear(...)` directo desde el use case (`usuarios/CrearUsuario` entre ellos) son
+anteriores a esta regla y son desviación conocida a migrar, no patrón a copiar.
+
 `domain/` **nunca** declara puertos ni entidades de persistencia y no hace I/O de ningún tipo: solo
 depende de `shared:domain`, `shared:validation` y `shared:util`. Un puerto bajo `domain/` no
 compilaría — invertiría la dirección `domain ← application ← infrastructure`.
@@ -486,6 +496,7 @@ copie creyendo que son la regla, y para que se resuelvan cuando se toque esa par
 | `EstadoEvaluacionCommandRepository` | `fichas/infrastructure/estadoevaluacion/command/secondaryadapter/repository/` | Código muerto: no hay `OutputPort` ni `OutputAdapter` que lo consuma | Pendiente de eliminar |
 | `UsuarioCommandOutputAdapter` no persiste | `usuarios/infrastructure/usuario/command/secondaryadapter/repository/` | **Deliberado.** `usuarios` es un contexto de ejemplo: el adaptador solo deja el log y no escribe, para no generar registros si se invoca el flujo. Falta a propósito el `UsuarioJpaEntity` + `UsuarioJpaMapper` + `UsuarioCommandRepository`. `UsuarioEmailUnicoRule` no se dispara nunca mientras siga así | No es un pendiente — se ajustará cuando el contexto se desarrolle |
 | `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub con `// TODO: persistir en tabla espejo`. Por eso no tiene `Interactor`, ni `@Transactional`, ni `Validator`, y el `UsuarioCreadoConsumer` inyecta el `UseCase` directo — cuando persista de verdad debe pasar por un `Interactor` | Pendiente de implementar |
+| Comandos sin `{Accion}{Entidad}Mapper` en `primaryport/mapper/` | `usuarios/CrearUsuario` y cualquier otro comando que llame `{Entidad}Domain.crear(...)` directo desde el use case | El `{Accion}{Entidad}Mapper` (`static toDomain`) es obligatorio en toda escritura y lo invoca el `Interactor`; devuelve el objeto de acción si hay *bundle*, el agregado directo si no | Pendiente de migrar (regla hacia adelante) |
 
 ### Decisión abierta: dónde vive un enum de catálogo
 

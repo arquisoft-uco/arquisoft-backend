@@ -28,6 +28,14 @@ public class RabbitMQConfig {
 
     public static final String RABBIT_OBJECT_MAPPER = "rabbitObjectMapper";
 
+    public static final String ARG_DEAD_LETTER_EXCHANGE = "x-dead-letter-exchange";
+
+    public static final String ARG_DEAD_LETTER_ROUTING_KEY = "x-dead-letter-routing-key";
+
+    public static final String SUFIJO_DEAD_LETTER = ".dead";
+
+    public static final String SEPARADOR_COLA = ".";
+
     @Bean
     public TopicExchange arquisoftEventsExchange() {
         return ExchangeBuilder.topicExchange(EXCHANGE_NAME)
