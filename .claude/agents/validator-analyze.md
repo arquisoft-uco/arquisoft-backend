@@ -222,6 +222,7 @@ excepción o mapear a `Entity`.
 | `UseCase` implementa el `Interactor` (dos beans para el mismo puerto → ambigüedad de inyección) | ❌ |
 | `@Service` en vez de `@Component` | ❌ |
 | `Validator` inyecta un `OutputPort`/`Finder`, recibe algo por `@RequiredArgsConstructor`, o contiene un `if` (debe ser puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`) | ❌ |
+| `var` para recibir el resultado de un `{X}ExisteFinder` en el `UseCase` — deja vivo el `Boolean` del genérico hasta el `validar(..., boolean existe)` y el unboxing pasa en silencio. Va `boolean` explícito. El `Finder<T, Boolean>` del contrato **no** es el error: un genérico no admite primitivos | ⚠️ |
 | `Rule` declarada como bean (`@Component`) o con dependencias de constructor | ❌ |
 | `Finder` lanza por "no encontrado" en vez de devolver `Boolean`/`Long`/`Optional` | ❌ |
 | `Finder` que no extiende `Finder<T, R>` de `shared:application` (`com.arquisoft.shared.finder`), o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |

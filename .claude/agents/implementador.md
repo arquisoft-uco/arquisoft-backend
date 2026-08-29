@@ -104,6 +104,9 @@ omites).
 - Todo el I/O del comando vive en el `UseCase`: los `Finder`s traen el estado, se desenvuelve el
   `Optional` ahí (centinela `VACIO` para agregados, valor + `boolean` para escalares), se valida, se
   mapea `Domain → Entity` y se persiste.
+  El resultado de un `{X}ExisteFinder` se declara **`boolean` explícito, nunca `var`**: el contrato
+  es `Finder<T, Boolean>` porque un genérico no admite primitivos, y con `var` ese envuelto llega
+  hasta el `validar(..., boolean existe)` desempaquetándose en silencio.
 - La existencia de un aggregate de **otra feature** se consulta con el `Finder` de esa feature sobre
   su `OutputPort` de `command/` — nunca creando un `query/` para eso.
 - Si el plan declara eventos, el `UseCase` inyecta la **interfaz** `EventPublisher`

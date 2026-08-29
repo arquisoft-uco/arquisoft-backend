@@ -34,8 +34,8 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
         logger.info(Mensajes.obtener(FichaPerfilKey.LOG_REGISTRANDO),
                 ficha.getTituloProyecto(), ficha.getAsesorFicha());
 
-        var asesorExiste = asesorFichaExisteFinder.obtener(ficha.getAsesorFicha());
-        var tituloYaExiste = tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto());
+        boolean asesorExiste = asesorFichaExisteFinder.obtener(ficha.getAsesorFicha());
+        boolean tituloYaExiste = tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto());
 
         logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VERIFICACION_PREVIA),
                 ficha.getAsesorFicha(), asesorExiste, tituloYaExiste);

@@ -78,6 +78,14 @@ un `Finder` y nada más: el `UseCase` lo desenvuelve. Un agregado ausente viaja 
 viaja como el valor más un `boolean` explícito (`boolean asesorExiste`) dentro de su record
 `Existencia{Concepto}`.
 
+**El resultado de un `{X}ExisteFinder` se declara `boolean`, nunca `var`.** El contrato del finder
+tiene que ser `Finder<T, Boolean>` — un genérico de Java no admite primitivos, así que el envuelto
+ahí no es un error y no hay que "arreglarlo". Lo que no puede pasar es que ese `Boolean` siga vivo
+dentro del use case: con `var` se propaga hasta el `validar(..., boolean existe)`, donde el unboxing
+ocurre en silencio y un `null` sería un NPE sin línea propia. Declararlo `boolean` mueve ese
+desempaquetado a un punto visible y único. Es la excepción explícita a la preferencia por `var` de
+"Estilo Java".
+
 ## Identificadores y DTOs
 
 Los IDs en el body HTTP llegan como `String`, nunca `UUID` tipado. Su formato **nunca** se valida
