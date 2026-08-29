@@ -253,11 +253,16 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 ## 4. Modelo DDD del Contexto
 ### Entidad raíz
 - **Clase:** `{Entidad}Domain`
-- **Objeto de acción:** {`{Accion}{Entidad}Domain` si la acción arrastra más que el agregado
-  (estado inicial, colecciones, ids del contexto) — nominalizado como sustantivo:
-  `Registro…`/`Cambio…`/`Modificacion…`/`Agregacion…`/`Remocion…`; vive junto al agregado y lo
-  construye el `{Accion}{Entidad}Mapper` de `command/primaryport/mapper/`. Si no aplica, "Ninguno —
-  el `Command` mapea directo al agregado"}
+- **Mapper `Command` → dominio (OBLIGATORIO en escrituras):** `{Accion}{Entidad}Mapper` en
+  `command/primaryport/mapper/` (`final`, constructor privado, `static toDomain(command)`), invocado
+  por el `{Accion}{Entidad}InteractorImpl` antes de delegar. Nunca "Ninguno" en una HU de escritura.
+- **Objeto de acción:** `{Accion}{Entidad}Domain` **solo si** la acción arrastra más que el agregado
+  — estado inicial, colecciones, ids del contexto, **materialización de acompañantes o resolución de
+  FKs desde identificadores externos** (get-or-create de filas de rol/referencia). Nominalizado como
+  sustantivo: `Registro…`/`Cambio…`/`Modificacion…`/`Agregacion…`/`Remocion…`/`Envio…`; vive junto al
+  agregado. **Si no hay bundle: sin objeto de acción**, y el mapper devuelve el agregado directo
+  (`toDomain(command)` → `{Entidad}Domain.crear(...)`) — nunca un wrapper que solo reexpone el
+  agregado.
 ### Atributos por objeto de dominio (uno por objeto, solo lo documentado en el MER)
 | Atributo | Tipo | Longitud | Obligatorio | Modificable | Autogenerado | Notas |
 **Combinaciones únicas:** {atributos} → `UNIQUE` en Flyway + validación previa en el use case.
@@ -347,7 +352,7 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | domain | `.../domain/{feature}/exception/{Entidad}{Caso}Exception.java` | Solo para lo que lanza una `Rule` — nunca para invariantes del agregado. El `exception/` va **dentro del slice**, no a nivel de contexto (igual en `application/` e `infrastructure/`) |
 | domain | `.../domain/{feature}/event/{Entidad}{Accion}Event.java` | **SOLO si la pregunta 5 fue A/B.** Con C esta fila no existe, igual que no existe la sección 10 |
 | application | `{contexto}/application/.../{feature}/command/primaryport/model/{Accion}{Entidad}Command.java` | `record` con `crear(...)` |
-| application | `.../command/primaryport/mapper/{Accion}{Entidad}Mapper.java` | `Command` → objeto de acción; solo si la sección 4 lo declara |
+| application | `.../command/primaryport/mapper/{Accion}{Entidad}Mapper.java` | `Command` → dominio (`static toDomain`): objeto de acción si la sección 4 lo declara, si no el agregado directo. **Siempre presente en escrituras**; lo invoca el `Interactor` |
 | application | `.../command/primaryport/interactor/{Accion}{Entidad}Interactor.java` + `interactor/impl/...InteractorImpl.java` | Dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` |
 | application | `.../command/usecase/{Accion}{Entidad}UseCase.java` + `usecase/impl/...UseCaseImpl.java` | Colaborador interno — NO bajo `primaryport/` |
 | application | `.../command/validator/{Accion}{Entidad}Validator.java` + `validator/impl/...ValidatorImpl.java` | Puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`. **Solo si la sección 3 declaró al menos una `Rule`** — sin restricciones de conjunto estas dos filas no existen (ver `notificaciones`) |
@@ -491,6 +496,9 @@ getters/setters ni métodos `private`.
 - [ ] Entidad raíz: constructor privado, campos no-`final` con setters privados que cortan con
       `return` al fallar, solo getters, `crear`/`reconstruir` (nunca `build`/`rebuild`), sin Lombok,
       sin subcarpeta `aggregate/`; centinela `VACIO` + `esVacio()` si puede venir ausente
+- [ ] Escritura: `{Accion}{Entidad}Mapper` en `command/primaryport/mapper/` (`static toDomain`)
+      presente e invocado por el `Interactor` — devuelve el objeto de acción si hay bundle, el
+      agregado directo si no; nunca "Ninguno"
 - [ ] Invariantes locales acumuladas en `ValidationResult` (sin excepción propia); restricciones de
       conjunto como `Rule` + su record, orquestadas por el `Validator` → 422. Ningún `if/throw` en el use case
 - [ ] `Validator` puro: constructor sin argumentos con `new {Regla}RuleImpl()`, sin `Finder`, sin `if`

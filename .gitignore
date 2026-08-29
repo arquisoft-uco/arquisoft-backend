@@ -52,3 +52,6 @@ logs/
 
 .claude/settings.local.json
 /commit
+
+### MCP local (config de IDE por maquina, no del repo) ###
+.mcp.json
