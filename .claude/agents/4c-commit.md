@@ -55,8 +55,8 @@ documentados"), no lo inventes: cuenta como falta de evidencia en la FASE 7.
 Lista final = **solo los archivos de código** del reporte: fuentes, tests, migraciones y recursos.
 
 **El plan y el reporte de validación NO entran en el commit.** No son código y su sitio es
-`arquisoft-docs`, junto a las historias que documentan; la FASE 9 los publica ahí. Meterlos aquí
-los duplicaría en dos repositorios, y la copia del backend sería la que nadie vuelve a mirar.
+`arquisoft-docs`, junto a las historias que documentan; la FASE 10 los publica ahí. De hecho no
+podrías incluirlos aunque quisieras: `.workspace/` está entero en `.gitignore`.
 
 ## FASE 4 — Verificar la rama
 
@@ -200,17 +200,14 @@ Si alguna de las dos llamadas falla, **detente y repórtalo**: el commit y el PR
 hechos y son válidos: lo único pendiente es la publicación, y el usuario puede repetirla o hacerla a
 mano. No reintentes contra otra rama ni cambies la ruta destino por tu cuenta.
 
-Del lado del backend queda solo el cuerpo del PR, que sí es un artefacto de este repositorio:
+**Del lado del backend no queda nada por commitear.** `.workspace/` está en `.gitignore` entero, así
+que ni el plan, ni el reporte, ni el cuerpo del PR entran en un commit — y no hace falta que entren:
+el plan y el reporte viven publicados en `arquisoft-docs`, y el cuerpo del PR ya está en el PR, que
+es donde alguien lo va a leer. El archivo local es el borrador con el que se creó.
 
-```
-git add .workspace/pr/PR-{HU|HT}-{ID}.md
-git commit -m "docs(trazabilidad): registrar commit y PR de {HU|HT}-{ID}"
-git push
-```
-
-Este segundo commit está cubierto por el Gate 2: es el registro del acto que el usuario ya autorizó,
-sobre la misma rama y el mismo PR. El plan y el reporte quedan modificados en el working tree y **no
-se commitean aquí** — su versión publicada es la de `arquisoft-docs`.
+No intentes forzarlo con `git add -f`: un `.workspace/` versionado es justo lo que se retiró
+(2026-08-29), porque duplicaba en dos repositorios unos archivos cuya copia del backend nadie
+volvía a mirar.
 
 **Mensaje final:**
 
