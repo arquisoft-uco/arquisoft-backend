@@ -145,6 +145,10 @@ git push -u origin {rama}
 gh pr create --base develop --head {rama} --title "{tipo}({contexto}): {descripción corta}" --body-file .workspace/pr/PR-{HU|HT}-{ID}.md
 ```
 
+`--body-file` lee del disco, no del índice, así que apuntar a `.workspace/pr/` es correcto aunque
+ese directorio esté en `.gitignore`: el archivo existe, simplemente no se versiona. No lo muevas
+fuera de `.workspace/` para "arreglar" esa aparente contradicción.
+
 Guarda la URL que devuelve `gh pr create`.
 
 Si `gh` no está autenticado (`gh auth status` falla) o el push es rechazado, **detente y reporta** —
@@ -186,7 +190,6 @@ publicar .workspace/validator/validator-{HU|HT}-{ID}.md \
          docs/hus/validaciones/VALIDATOR-{HU|HT}-{ID}.md \
          "docs(hus): publicar VALIDATOR-{HU|HT}-{ID}.md"
 ```
-
 
 Dos detalles de esa función que no son cosméticos, ambos verificados contra el repo real:
 
