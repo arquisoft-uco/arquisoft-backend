@@ -1,7 +1,9 @@
 package com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.RevisionItemEntity;
+import com.arquisoft.fichas.infrastructure.estadorevision.command.secondaryadapter.entity.EstadoRevisionJpaEntity;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.entity.RevisionItemJpaEntity;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -13,6 +15,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -22,6 +26,9 @@ class RevisionItemCommandOutputAdapterTest {
 
     @Mock
     private RevisionItemCommandRepository repository;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private RevisionItemCommandOutputAdapter adapter;
@@ -44,6 +51,21 @@ class RevisionItemCommandOutputAdapterTest {
         assertThat(jpaEntity.getItemId()).isEqualTo(revision.item());
         assertThat(jpaEntity.getEstadoRevision().getId()).isEqualTo(revision.estadoRevision());
         assertThat(jpaEntity.getFechaCreacion()).isEqualTo(revision.fechaCreacion());
+    }
+
+    @Test
+    void debeActualizarEstado_cuandoSeInvoca() {
+        // Arrange
+        UUID itemId = UUID.randomUUID();
+
+        // Act
+        adapter.actualizarEstado(itemId, "VISUALIZADA");
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(EstadoRevisionJpaEntity.class);
+        verify(repository, times(1)).actualizarEstadoRevision(eq(itemId), captor.capture());
+        assertThat(captor.getValue().getId()).isEqualTo("VISUALIZADA");
+        verify(logger, times(1)).debug(anyString(), eq(itemId));
     }
 
     @Test
