@@ -199,7 +199,8 @@ debes generar:
   del origen.
 - **`boolean` primitivo en los métodos de existencia**, tanto en el puerto como en el adaptador. Los
   16 del repo lo son; el `Boolean` envuelto mete un `null` que nadie comprueba y un unboxing
-  silencioso dentro de la `Rule`.
+  silencioso dentro de la `Rule`. La regla es del puerto: el `Finder<T, Boolean>` lleva el
+  envuelto por obligación del genérico y no se toca.
 - **Los métodos de escritura logean**, los de lectura no:
   `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), entity.id())` con el `AppLogger`
   inyectado por constructor.
