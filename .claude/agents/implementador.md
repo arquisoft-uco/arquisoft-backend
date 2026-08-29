@@ -71,7 +71,8 @@ privado corta con `return` cuando su validación falla. Si el plan lista una
 `{Entidad}{Regla}Exception` para una invariante local, es bug del plan — reporta ambigüedad.
 
 **application:** `Command` (`record` + `crear(...)`) → `{Accion}{Entidad}Mapper` en
-`primaryport/mapper/` si hay objeto de acción → `{Entidad}OutputPort` + `entity/{Entidad}Entity`
+`primaryport/mapper/` (`static toDomain`, **obligatorio en escrituras**, lo invoca el `Interactor`;
+construye el objeto de acción si el plan lo declara, si no el agregado directo) → `{Entidad}OutputPort` + `entity/{Entidad}Entity`
 (record plano) + `secondaryport/mapper/{Entidad}Mapper` → `Finder`(s) → `Validator` → `UseCase` →
 `Interactor` (dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` —
 qualifier siempre explícito, `usuariosTransactionManager` es `@Primary` y enlaza en silencio si lo

@@ -78,7 +78,7 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 | Paquete | Qué vive ahí | Ejemplo real |
 |---|---|---|
 | `{feature}/` (directo, sin subcarpeta) | Aggregate root, sufijo `Domain`, Notification Pattern (`VACIO`, `esVacio()`, setters privados) | `FichaPerfilDomain.java` |
-| `{feature}/` — **objeto de acción** | Nominalización del verbo cuando la acción arrastra más que el agregado; vive al lado del agregado, sin subpaquete | `RegistroFichaPerfilDomain.java`, `CambioAsesorFichaDomain.java`, `ModificacionFichaPerfilDomain.java` |
+| `{feature}/` — **objeto de acción** | Nominalización del verbo cuando la acción arrastra más que el agregado; vive al lado del agregado, sin subpaquete. Condicional (el `{Accion}{Entidad}Mapper` existe siempre; esto solo cuando hay *bundle*) | `RegistroFichaPerfilDomain.java`, `CambioAsesorFichaDomain.java`, `ModificacionFichaPerfilDomain.java` |
 | `{feature}/model/` | Value objects y el record de entrada de cada `Rule` | `ExistenciaAsesorFicha.java`, `DisponibilidadTituloFicha.java` |
 | `{feature}/rules/` (+`impl/`) | Regla pura: sin Spring, sin Lombok, **sin dependencias de constructor** | `rules/FichaPerfilTituloUnicoRule.java` + `rules/impl/FichaPerfilTituloUnicoRuleImpl.java` |
 | `{feature}/event/` | Eventos de dominio (extienden `DomainEvent`) | `event/AsesorFichaCambiadoEvent.java` |
@@ -90,7 +90,7 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 |---|---|---|
 | `command/primaryport/interactor/` (+`impl/`) | Contrato primario, dueño de `@Transactional` | `RegistrarFichaPerfilInteractor.java` + `impl/RegistrarFichaPerfilInteractorImpl.java` |
 | `command/primaryport/model/` | `Command` — `record` con factoría `crear(...)` que valida formato | `RegistrarFichaPerfilCommand.java` |
-| `command/primaryport/mapper/` | `Command` → objeto de acción de dominio (existe cuando la acción no mapea al agregado) | `RegistrarFichaPerfilMapper.java` |
+| `command/primaryport/mapper/` | `Command` → dominio (`final`, constructor privado, `static toDomain`): construye el objeto de acción, o el agregado directo (`toDomain(command)` → `{Entidad}Domain.crear(...)`) si el `Command` mapea 1-a-1. **Obligatorio en toda escritura**; lo invoca el `Interactor` antes de delegar. (`usuarios/CrearUsuario` llama `crear(...)` directo desde el use case — desviación previa, no se copia) | `RegistrarFichaPerfilMapper.java` |
 | `command/usecase/` (+`impl/`) | Colaborador interno — **NO** bajo `primaryport/`, sin transacción | `usecase/RegistrarFichaPerfilUseCase.java` + `usecase/impl/...UseCaseImpl.java` |
 | `command/validator/` (+`impl/`) | Puro: construye sus `Rule`s con `new` en un constructor sin argumentos; sin `OutputPort`, sin `Finder`, **sin un solo `if`** | `validator/impl/RegistrarFichaPerfilValidatorImpl.java` |
 | `command/finder/` (+`impl/`) | Uno por consulta; siempre devuelve valor (`Boolean`/`Long`/`Optional`), nunca lanza por "no encontrado" | `finder/impl/TituloFichaPerfilExisteFinderImpl.java` |
