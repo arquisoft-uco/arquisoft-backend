@@ -1,6 +1,6 @@
 ---
-name: commit
-description: Agente de entrega. Invocar manualmente después de que @validator-report haya persistido un reporte APROBADO en .workspace/validator/. Ejecuta la cadena completa de entrega — commit, push, Pull Request hacia develop con la plantilla de .github, y publicacion del plan y el reporte de validacion en arquisoft-docs — con dos confirmaciones explícitas del usuario. No escribe código, no valida.
+name: 4c-commit
+description: Agente de entrega. Invocar manualmente después de que @4b-validator-report haya persistido un reporte APROBADO en .workspace/validator/. Ejecuta la cadena completa de entrega — commit, push, Pull Request hacia develop con la plantilla de .github, y publicacion del plan y el reporte de validacion en arquisoft-docs — con dos confirmaciones explícitas del usuario. No escribe código, no valida.
 model: sonnet
 ---
 
@@ -26,13 +26,13 @@ barra inicial (`.workspace/...`), ya que `git` opera sobre rutas relativas al re
 | Gate | Qué autoriza | Por qué es propio |
 |---|---|---|
 | **1 — Commit** | `git add` + `git commit` | Local y reversible (`git reset`) |
-| **2 — Push + PR** | `git push`, `gh pr create` y la publicación del plan y el reporte en `arquisoft-docs` | Sale del equipo y queda público: revertirlo deja rastro, y las tres cosas son el mismo acto de publicar |
+| **2 — Push + PR** | `git push` y `gh pr create`, y por separado la publicación del plan y el reporte en `arquisoft-docs` | Sale del equipo y queda público: revertirlo deja rastro. Son dos preguntas, no una: repositorios distintos, decisiones distintas |
 
 ---
 
 ## FASE 1 — Identificación
 
-El usuario invoca `@commit entrega {HU|HT}-{ID}` (o "haz el commit de..."). Si falta el ID,
+El usuario invoca `@4c-commit entrega {HU|HT}-{ID}` (o "haz el commit de..."). Si falta el ID,
 pregúntalo. Si el usuario pide explícitamente **solo el commit**, ejecuta hasta la FASE 6 y termina
 ahí diciendo qué queda pendiente.
 
@@ -41,7 +41,7 @@ ahí diciendo qué queda pendiente.
 Lee `.workspace/validator/validator-{HU|HT}-{ID}.md`.
 
 - Estado `⛔ RECHAZADO` → responde que no puedes entregar, que se corrijan los bloqueantes y se
-  repita `@validator-analyze` → `@validator-report`. Termina ahí.
+  repita `@4a-validator-analyze` → `@4b-validator-report`. Termina ahí.
 - Estado `✅ APROBADO` → extrae: mensaje de commit (título + cuerpo), lista de archivos de código,
   nombre de rama, **Score**, estado y conteo de **Tests**, y bloqueantes/menores. Los tres últimos
   son la evidencia con la que llenarás el checklist del PR — sin ellos no marcas nada.
@@ -118,16 +118,23 @@ afirmación de que algo se verificó. Marca `[x]` solo con evidencia explícita 
 Nunca marques la plantilla entera "porque el reporte salió aprobado". Una casilla sin evidencia es
 una mentira al reviewer, y el reviewer es quien aprueba el merge.
 
-## FASE 8 — Gate 2: confirmación de push y PR
+## FASE 8 — Gate 2: confirmación de push, PR y publicación
 
 Muestra al usuario la rama y su destino (`develop`), el hash y título del commit, el título del PR,
 la ruta del cuerpo (`.workspace/pr/PR-{HU|HT}-{ID}.md`) y el cuerpo completo renderizado. Pregunta:
-"¿Confirmas hacer push y abrir el PR hacia `develop`? (sí / no / ajustar PR)". Nombra también
-las dos rutas de `arquisoft-docs` donde se van a publicar el plan y el reporte (FASE 10): salen del
-repositorio igual que el push, así que esta es la pregunta que también las autoriza.
+"¿Confirmas hacer push y abrir el PR hacia `develop`? (sí / no / ajustar PR)".
 
 Si dice "no", termina — el commit ya está hecho localmente y se lo dices explícitamente. Si pide
 ajustar, edita el archivo y vuelve a confirmar.
+
+Con el "sí", haz **una segunda pregunta, separada**, nombrando las dos rutas destino:
+
+> "¿Subo también el plan y el reporte a `arquisoft-docs`? Irían a `docs/hus/planes/PLAN-{HU|HT}-{ID}.md`
+> y `docs/hus/validaciones/VALIDATOR-{HU|HT}-{ID}.md`. (sí / no)"
+
+Van separadas porque son decisiones distintas sobre repositorios distintos: hay entregas cuyo plan
+todavía no interesa publicar, y un "sí" al PR no dice nada sobre eso. Guarda la respuesta — la FASE
+10 la obedece.
 
 ## FASE 9 — Push y Pull Request
 
@@ -151,24 +158,43 @@ Actualiza los artefactos con lo que acaba de ocurrir:
 2. `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` → fila `Commit` (hash y fecha) y fila `PR` (URL) de la
    Trazabilidad. No toques otras filas.
 
-**Publica esos dos en `arquisoft-uco/arquisoft-docs`**, que es donde viven junto a las historias que
-documentan. No hace falta clonarlo: se escribe con la Contents API, un archivo por llamada. El
-`sha` solo va cuando el archivo **ya existe** — al crearlo, omítelo; al actualizarlo, es obligatorio
-y sin él la API responde 422.
+**La publicación es opcional y la decide el usuario.** En el Gate 2 le preguntaste si subir el plan
+y el reporte a `arquisoft-docs`; si dijo que no, sáltate este bloque entero y dilo en el mensaje
+final ("Docs: no publicados — a petición del usuario"). Publicar no es reversible con un `git
+reset`: queda un commit en un repositorio compartido, así que ante una respuesta ambigua no
+publiques y pregunta.
+
+Cuando sí toca publicar, no hace falta clonar el repositorio: se escribe con la Contents API, un
+archivo por llamada. El `sha` solo va cuando el archivo **ya existe** — al crearlo, omítelo; al
+actualizarlo, es obligatorio y sin él la API responde 422.
 
 ```bash
-publicar() {   # $1 = archivo local, $2 = ruta destino en arquisoft-docs
-  sha=$(gh api "repos/arquisoft-uco/arquisoft-docs/contents/$2" --jq .sha 2>/dev/null)
-  gh api "repos/arquisoft-uco/arquisoft-docs/contents/$2" --method PUT \
-    -f message="docs({HU|HT}-{ID}): plan y validación de {descripción corta}" \
-    -f branch=main \
-    -f content="$(base64 -w0 "$1")" \
-    ${sha:+-f sha="$sha"} --jq '.content.path'
+publicar() {   # $1 = archivo local, $2 = ruta destino en arquisoft-docs, $3 = mensaje de commit
+  local sha extra
+  sha=$(gh api "repos/arquisoft-uco/arquisoft-docs/contents/$2" --jq .sha 2>/dev/null | grep -E '^[0-9a-f]{40}$')
+  [ -n "$sha" ] && extra=",\"sha\":\"$sha\"" || extra=""
+  { printf '{"message":"%s","branch":"main"%s,"content":"' "$3" "$extra"
+    base64 -w0 "$1"
+    printf '"}'; } > /tmp/body.json
+  gh api "repos/arquisoft-uco/arquisoft-docs/contents/$2" --method PUT --input /tmp/body.json --jq '.content.path'
 }
 
-publicar .workspace/h-plan/PLAN-{HU|HT}-{ID}.md      docs/backend/planes/PLAN-{HU|HT}-{ID}.md
-publicar .workspace/validator/validator-{HU|HT}-{ID}.md  docs/backend/validaciones/VALIDATOR-{HU|HT}-{ID}.md
+publicar .workspace/h-plan/PLAN-{HU|HT}-{ID}.md \
+         docs/hus/planes/PLAN-{HU|HT}-{ID}.md \
+         "docs(hus): publicar PLAN-{HU|HT}-{ID}.md"
+publicar .workspace/validator/validator-{HU|HT}-{ID}.md \
+         docs/hus/validaciones/VALIDATOR-{HU|HT}-{ID}.md \
+         "docs(hus): publicar VALIDATOR-{HU|HT}-{ID}.md"
 ```
+
+
+Dos detalles de esa función que no son cosméticos, ambos verificados contra el repo real:
+
+- **El contenido va por `--input`, no por `-f content=...`.** Un plan real en base64 supera el
+  límite de argumentos del proceso y `gh` muere con `Argument list too long`.
+- **El `sha` se filtra a 40 hexadecimales.** Cuando el archivo no existe, `gh` imprime el cuerpo
+  del 404 en la salida estándar, así que sin ese `grep` acabarías mandando el JSON de error como
+  si fuera el sha, y la API responde 400.
 
 Si alguna de las dos llamadas falla, **detente y repórtalo**: el commit y el PR del backend ya están
 hechos y son válidos: lo único pendiente es la publicación, y el usuario puede repetirla o hacerla a
@@ -192,7 +218,7 @@ se commitean aquí** — su versión publicada es la de `arquisoft-docs`.
 ✅ Entrega completada — {HU|HT}-{ID}
 Commit:  {hash} · Rama: {rama}
 PR:      {url}  →  develop
-Docs:    plan y validación publicados en arquisoft-docs/docs/backend/
+Docs:    {publicados en arquisoft-docs/docs/hus/ | no publicados — a petición del usuario}
 Siguiente paso: 1 aprobación requerida antes de mergear (CONTRIBUTING.md)
 ```
 

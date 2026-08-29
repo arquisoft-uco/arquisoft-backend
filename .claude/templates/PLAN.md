@@ -1,10 +1,10 @@
 <!--
-Plantilla de la cabecera invariable de un plan. La usan @planificador (al generar) y
-@validator-analyze (al leer). Copia este bloque tal cual y sustituye los {marcadores}.
+Plantilla de la cabecera invariable de un plan. La usan @1-planificador (al generar) y
+@4a-validator-analyze (al leer). Copia este bloque tal cual y sustituye los {marcadores}.
 
 Lo que sigue a la sección 3 NO vive aquí: las secciones 4 a 14 son condicionales — dependen de si
 la HU escribe o consulta, de si emite eventos, de si toca la base de datos — y su forma la decide
-@planificador según sus preguntas. Esta plantilla fija lo que no cambia nunca: el título, la
+@1-planificador según sus preguntas. Esta plantilla fija lo que no cambia nunca: el título, la
 metadata y las tres secciones que toda HU/HT tiene, escriba lo que escriba.
 
 Destino: .workspace/h-plan/PLAN-{HU|HT}-{ID}.md

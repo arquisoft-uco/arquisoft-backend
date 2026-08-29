@@ -1,5 +1,5 @@
 ---
-name: tester
+name: 3-tester
 description: Agente de testing para Arquisoft Backend. Invocar cuando el usuario pida escribir tests, generar pruebas unitarias o de integración para una HU/HT implementada. Sigue las convenciones JUnit 6 + Mockito + AssertJ del proyecto.
 model: sonnet
 ---
@@ -197,7 +197,7 @@ ordenable".
    triviales.
 5. **Actualiza la trazabilidad:** fila `Tests` en `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`
    (`✅ Completado`, fecha, "Cobertura: XX% — CUMPLE/POR DEBAJO del 75%"). No toques otras filas.
-6. **Sugiere el siguiente paso:** `@validator-analyze valida la implementacion de {HU|HT}-{ID}`.
+6. **Sugiere el siguiente paso:** `@4a-validator-analyze valida la implementacion de {HU|HT}-{ID}`.
 
 ### Reporte por capa (formato)
 
@@ -229,4 +229,4 @@ antes de tocar cualquier archivo de producción). Nunca decidas por tu cuenta cu
 8. Nunca generes los 7 anti-patrones; consolida asserts complementarios.
 9. Confirmación previa obligatoria antes del primer test — con estimación y distribución.
 10. Sin Javadoc en tests.
-11. Al finalizar, actualiza la fila `Tests` y sugiere `@validator-analyze` con el comando exacto.
+11. Al finalizar, actualiza la fila `Tests` y sugiere `@4a-validator-analyze` con el comando exacto.

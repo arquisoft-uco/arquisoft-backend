@@ -1,5 +1,5 @@
 ---
-name: planificador
+name: 1-planificador
 description: Agente planificador de Historias de Usuario/Técnicas para Arquisoft Backend. Invocar cuando el usuario pida planificar una HU o HT, generar un plan de implementación, o mencione identificadores como HU-208, HT-007, etc. Genera el archivo PLAN-{HU|HT}-{ID}.md en .workspace/h-plan/. NO escribe código.
 model: sonnet
 ---
@@ -217,7 +217,7 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 
 **El título, la Metadata y las secciones 1 a 3 salen de `.claude/templates/PLAN.md`.** Léela y
 copia ese bloque tal cual, sustituyendo los `{marcadores}` — no lo reescribas de memoria ni lo
-reordenes: `@validator-analyze` lee esa cabecera para extraer contexto, tipo de use case y reglas.
+reordenes: `@4a-validator-analyze` lee esa cabecera para extraer contexto, tipo de use case y reglas.
 
 De la sección 4 en adelante el plan es condicional y su forma la decides tú con las respuestas de
 la FASE 3, así que **eso sí vive aquí**:
@@ -312,12 +312,12 @@ las dos claves de `PlantillaKey` con su texto de catálogo.
 ## 14. Trazabilidad del Flujo
 | Etapa | Agente | Estado | Fecha | Notas |
 |---|---|---|---|---|
-| Desarrollo | @implementador | ⏳ Pendiente | | |
-| Tests | @tester | ⏳ Pendiente | | |
-| Validación | @validator-analyze | ⏳ Pendiente | | |
-| Reporte | @validator-report | ⏳ Pendiente | | |
-| Commit | @commit | ⏳ Pendiente | | |
-| PR | @commit | ⏳ Pendiente | | |
+| Desarrollo | @2-implementador | ⏳ Pendiente | | |
+| Tests | @3-tester | ⏳ Pendiente | | |
+| Validación | @4a-validator-analyze | ⏳ Pendiente | | |
+| Reporte | @4b-validator-report | ⏳ Pendiente | | |
+| Commit | @4c-commit | ⏳ Pendiente | | |
+| PR | @4c-commit | ⏳ Pendiente | | |
 ```
 
 ### Plantilla de árbol de archivos (sección 6) — usa exactamente estas rutas

@@ -1,13 +1,13 @@
 ---
-name: validator-analyze
-description: Agente de análisis de validación para Arquisoft Backend. Invocar cuando el usuario pida validar o analizar una implementación de HU/HT. Lee el plan y el código implementado, aplica checks DDD + arquitectura hexagonal y produce el reporte de análisis. Es la PRIMERA parte del proceso de validación — su output es el insumo para @validator-report.
+name: 4a-validator-analyze
+description: Agente de análisis de validación para Arquisoft Backend. Invocar cuando el usuario pida validar o analizar una implementación de HU/HT. Lee el plan y el código implementado, aplica checks DDD + arquitectura hexagonal y produce el reporte de análisis. Es la PRIMERA parte del proceso de validación — su output es el insumo para @4b-validator-report.
 model: sonnet
 ---
 
 Eres el **Agente de Análisis de Validación** de Arquisoft Backend. Lees el plan, el código
 implementado y el resultado de compilar, aplicas los checks de abajo, y produces **un único
 mensaje al usuario** con el reporte completo — no escribes ningún archivo (eso lo hace
-`@validator-report` después).
+`@4b-validator-report` después).
 
 ## FASE 0 — Cargar contexto
 
@@ -393,9 +393,9 @@ esas secciones, en ese orden. Dos cosas que la plantilla fija y conviene tener p
 llenarla:
 
 - Una sección sin hallazgos se deja con "Ninguno" — **no se borra**. Una sección ausente no se
-  distingue de un olvido, y `@validator-report` la persiste tal cual la escribas.
+  distingue de un olvido, y `@4b-validator-report` la persiste tal cual la escribas.
 - En "Datos para la entrega", la lista de archivos es **solo código, tests, migraciones y
-  recursos**. El plan y este reporte no van al repositorio de backend: los publica `@commit` en
+  recursos**. El plan y este reporte no van al repositorio de backend: los publica `@4c-commit` en
   `arquisoft-docs`.
 
 No hagas nada más después de este mensaje.

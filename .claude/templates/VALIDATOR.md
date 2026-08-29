@@ -1,6 +1,6 @@
 <!--
-Plantilla completa del reporte de validación. La produce @validator-analyze (como mensaje) y la
-persiste @validator-report (como archivo, tal cual, quitando cualquier línea conversacional previa
+Plantilla completa del reporte de validación. La produce @4a-validator-analyze (como mensaje) y la
+persiste @4b-validator-report (como archivo, tal cual, quitando cualquier línea conversacional previa
 a la primera almohadilla).
 
 A diferencia de PLAN.md, aquí no hay parte condicional: el reporte lleva siempre las mismas
@@ -50,11 +50,11 @@ Un solo bloqueante = RECHAZADO, sin importar el score.
 
 {Si ✅ Completado: total de tests, presupuesto vs estimación, anti-patrones detectados
  (o "ninguno"), tests que afirman 500 (o "ninguno"), coherencia con Tipo de UC.}
-{Si ⏳ Pendiente: "Tests no ejecutados — invoca @tester y repite el análisis."}
+{Si ⏳ Pendiente: "Tests no ejecutados — invoca @3-tester y repite el análisis."}
 
 ## Datos para la entrega
 
-> Esta sección es el insumo de `@commit`: de aquí saca el mensaje, la rama y los archivos, y del
+> Esta sección es el insumo de `@4c-commit`: de aquí saca el mensaje, la rama y los archivos, y del
 > Score/Tests/bloqueantes de arriba saca la evidencia para marcar el checklist del PR. Un dato que
 > no dejes aquí es una casilla que ese agente **no** podrá marcar.
 
@@ -62,10 +62,10 @@ Un solo bloqueante = RECHAZADO, sin importar el score.
 **Cuerpo:** {bullets: qué se implementó, capas afectadas, eventos emitidos, migración}
 **Rama:** `feature/{HU|HT}-{ID}-{descripcion}`
 **Archivos a incluir:** {solo código, tests, migraciones y recursos — el plan y este reporte NO
-van al repositorio de backend, los publica `@commit` en `arquisoft-docs`}
+van al repositorio de backend, los publica `@4c-commit` en `arquisoft-docs`}
 **Endpoints documentados:** {Sí / N/A — la HU no expone endpoints}
 
 ## Próximos pasos
 
-{Si APROBADO: "Invoca @validator-report genera el reporte de {HU|HT}-{ID} y pega este reporte
+{Si APROBADO: "Invoca @4b-validator-report genera el reporte de {HU|HT}-{ID} y pega este reporte
 completo."} {Si RECHAZADO: "El implementador corrige los bloqueantes y se repite el análisis."}

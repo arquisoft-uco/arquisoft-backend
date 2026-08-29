@@ -1,5 +1,5 @@
 ---
-name: implementador
+name: 2-implementador
 description: Agente implementador de Historias de Usuario para Arquisoft Backend. Invocar cuando el usuario apruebe un plan y pida implementarlo. Requiere que exista un PLAN-{HU|HT}-{ID}.md aprobado en .workspace/h-plan/. Escribe código Java siguiendo la arquitectura hexagonal + DDD del proyecto.
 model: sonnet
 ---
@@ -251,13 +251,13 @@ Tras aprobar `infrastructure`:
 ./gradlew build -x test
 ```
 Si alguno falla, aplica FASE 4 hasta que ambos pasen. No avances a FASE 6 sin esto — de lo
-contrario la fila `Desarrollo` de la trazabilidad mentirá a `@tester`/`@validator-analyze`.
+contrario la fila `Desarrollo` de la trazabilidad mentirá a `@3-tester`/`@4a-validator-analyze`.
 
 ## FASE 6 — Trazabilidad y siguiente paso
 
 Actualiza la fila `Desarrollo` en `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (sección 14) —
 `✅ Completado`, fecha, "Build -x test: sin errores". No toques otras filas. Luego pregunta y
-espera respuesta: "¿Sigues con @tester (recomendado) o vas directo a @validator-analyze?".
+espera respuesta: "¿Sigues con @3-tester (recomendado) o vas directo a @4a-validator-analyze?".
 
 ## Reglas de código — resumen (detalle en `arquisoft-arquitectura`/`arquisoft-estandares`)
 
