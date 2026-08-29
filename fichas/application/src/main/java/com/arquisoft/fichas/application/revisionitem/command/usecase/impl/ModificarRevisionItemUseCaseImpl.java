@@ -32,7 +32,7 @@ public class ModificarRevisionItemUseCaseImpl implements ModificarRevisionItemUs
 
     @Override
     public void ejecutar(ModificacionRevisionItemDomain entrada) {
-        boolean revisionExiste = revisionesDelItemFinder.obtener(entrada.getItem()) > 0;
+        long cantidadRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());
 
         var fichaPerfilDelItem = fichaPerfilDelItemFinder.obtener(entrada.getItem());
         UUID fichaPerfil = fichaPerfilDelItem.orElse(UtilUUID.obtenerUUIDPorDefecto());
@@ -42,7 +42,7 @@ public class ModificarRevisionItemUseCaseImpl implements ModificarRevisionItemUs
                 .map(ficha -> ficha.getAsesorFicha().equals(entrada.getAsesorFicha()))
                 .orElse(false);
 
-        modificarRevisionItemValidator.validar(entrada, revisionExiste, fichaPerfil, esPropietario);
+        modificarRevisionItemValidator.validar(entrada, cantidadRevisiones, fichaPerfil, esPropietario);
 
         revisionItemOutputPort.actualizarEstado(entrada.getItem(), entrada.getEstadoRevision().getId());
 

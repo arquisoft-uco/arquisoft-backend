@@ -1,5 +1,13 @@
 # Reporte de Validación — HU-196
 
+Este archivo contiene dos rondas de validación: la validación original completa de la implementación
+de HU-196, y una re-validación enfocada posterior sobre un refactor puntual aplicado sobre esa misma
+rama. Ambas rondas concluyeron **✅ APROBADO**.
+
+---
+
+# Ronda 1 — Validación Original (2026-08-28)
+
 ## Metadata
 - **Bounded Context:** `fichas`
 - **Fecha:** 2026-08-28 · **Rama propuesta:** `feature/HU-196-modificar_revision_item` (ya existe, commit `ebc78a61`)
@@ -55,3 +63,74 @@ Ninguno.
 **Rama:** `feature/HU-196-modificar_revision_item`
 **Archivos a incluir:** los 38 archivos nuevos/modificados listados en `git diff --stat a0afbe8c..ebc78a61` (domain/application/infrastructure/shared:message/catalogo de HU-196) + `.workspace/h-plan/PLAN-HU-196.md` + `.workspace/validator/validator-HU-196.md`
 **Endpoints documentados:** Sí (`@Tag`/`@Operation`/`@ApiResponses`/`@SecurityRequirement` completos en `ModificarRevisionItemController`)
+
+---
+
+# Ronda 2 — Re-Validación del Refactor (2026-08-29)
+
+## Metadata
+- **Bounded Context:** fichas
+- **Fecha:** 2026-08-29 · **Rama:** `feature/HU-196-modificar_revision_item`
+- **Plan validado:** `.workspace/h-plan/PLAN-HU-196.md` (vigente)
+- **Alcance de esta validación:** re-validación enfocada sobre un refactor puntual aplicado tras la validación previa (99/100, APROBADO — Ronda 1 arriba). Cubre exactamente los 8 archivos modificados por el diff.
+
+## Qué cambió
+
+`boolean revisionExiste` → `long cantidadRevisiones` en toda la cadena `Finder → Validator → Rule`, moviendo la decisión "¿cuántas revisiones cuentan como existencia?" del `UseCaseImpl` a `RevisionItemExisteRuleImpl.validar` (`if (existencia.cantidadRevisiones() <= 0) throw ...`). El `ModificarRevisionItemUseCaseImpl` ya no calcula el `> 0`; solo pasa el `long` crudo del finder.
+
+## Score (checks aplicables al diff)
+
+| Check | Resultado |
+|---|---|
+| `Rule` pura, sin dependencias de constructor, no bean (`RevisionItemExisteRuleImpl`) | ✅ |
+| `Validator` sin un solo `if`, constructor sin argumentos con `new` de sus 2 Rules | ✅ |
+| `UseCaseImpl` no decide — pasa el dato crudo del finder, sin `> 0` propio | ✅ |
+| Orden de validación (existencia → propiedad) preservado y testeado explícitamente | ✅ |
+| `long` explícito en el `UseCaseImpl` (no `var`) al recibir el resultado del finder | ✅ |
+| Tests del `Rule`: sin Mockito (pura), naming `debeHacerAlgo_cuandoCondicion`, AAA | ✅ |
+| Tests del `Validator`: sin mocks (orquesta Rules reales), incluye test de orden con doble fallo | ✅ |
+| Tests del `UseCase`: `InOrder`, `ArgumentCaptor`, casos de excepción — coherentes con el nuevo tipo `long` | ✅ |
+| Sin referencias huérfanas al `boolean` antiguo en el resto del módulo | ✅ |
+| Compilación + tests + Checkstyle + Jacoco (`:fichas:domain:build :fichas:application:build :fichas:infrastructure:build`) | ✅ BUILD SUCCESSFUL |
+
+**Bloqueantes:** 0 · **Menores:** 1 (heredado de la validación anterior, no introducido por este refactor)
+
+## Estado Final
+
+> ✅ **APROBADO** — sin bloqueantes.
+
+## Errores Menores
+
+### [Nivel 2.13] — Tests duplicados con el mismo Act sin consolidar (pre-existente)
+- **Archivo:** `fichas/application/src/test/java/com/arquisoft/fichas/application/revisionitem/command/usecase/impl/ModificarRevisionItemUseCaseImplTest.java`
+- **Problema:** `debeActualizarElEstado_cuandoDatosValidos()` y `debeActualizarElEstado_cuandoEsElMismoValorYaVigente()` tienen Arrange y Act idénticos; el segundo solo agrega `verify(eventPublisher)`. Podrían consolidarse.
+- **Nota:** confirmado por `git diff` que ya existía antes del refactor (no fue introducido ni señalado en la validación original). No afecta el veredicto.
+
+## Consistencia `ExistenciaRevisionItem` vs. `DisponibilidadRevisionItem`
+
+Ambos records son estructuralmente idénticos (`UUID item, long cantidadRevisiones`) y viven en `domain/revisionitem/model/`, pero alimentan Rules semánticamente distintas (`RevisionItemExisteRule` vs `RevisionItemNoDuplicadaRule`). No es una inconsistencia a corregir — es el patrón ya establecido en el proyecto de nombrar el record de entrada por lo que la Rule decide, no por su forma. El refactor deja a `ModificarRevisionItemValidatorImpl` alineado con el patrón que ya usaba `AgregarRevisionItemValidatorImpl` (HU-195) en el mismo contexto — antes del cambio, Modificar era el único de los dos flujos desviado.
+
+## Tests
+
+Los 3 archivos de test tocados (`RevisionItemExisteRuleImplTest`, `ModificarRevisionItemValidatorTest`, `ModificarRevisionItemUseCaseImplTest`) actualizados coherentemente con el cambio `boolean`→`long`. No hay anti-patrones nuevos. No toca capa web ni contratos HTTP.
+
+## Datos para la entrega
+
+**Mensaje:** `refactor(fichas): mueve la decisión de existencia de revisión del use case al Rule de dominio`
+**Cuerpo:**
+- `ExistenciaRevisionItem` pasa de `boolean existe` a `long cantidadRevisiones`, siguiendo el mismo patrón de `DisponibilidadRevisionItem`.
+- `RevisionItemExisteRuleImpl` ahora decide `cantidadRevisiones <= 0` en vez de recibir un booleano ya calculado.
+- `ModificarRevisionItemValidator`/`Impl` y `ModificarRevisionItemUseCaseImpl` actualizados para pasar el `long` crudo del finder, sin ningún `if` en el use case.
+- Tests actualizados a la nueva firma.
+- Sin cambios de eventos, endpoints ni migración.
+
+**Rama:** `feature/HU-196-modificar_revision_item`
+**Archivos de este refactor:**
+- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/revisionitem/model/ExistenciaRevisionItem.java`
+- `fichas/domain/src/main/java/com/arquisoft/fichas/domain/revisionitem/rules/impl/RevisionItemExisteRuleImpl.java`
+- `fichas/domain/src/test/java/com/arquisoft/fichas/domain/revisionitem/rules/impl/RevisionItemExisteRuleImplTest.java`
+- `fichas/application/src/main/java/com/arquisoft/fichas/application/revisionitem/command/validator/ModificarRevisionItemValidator.java`
+- `fichas/application/src/main/java/com/arquisoft/fichas/application/revisionitem/command/validator/impl/ModificarRevisionItemValidatorImpl.java`
+- `fichas/application/src/main/java/com/arquisoft/fichas/application/revisionitem/command/usecase/impl/ModificarRevisionItemUseCaseImpl.java`
+- `fichas/application/src/test/java/com/arquisoft/fichas/application/revisionitem/command/validator/ModificarRevisionItemValidatorTest.java`
+- `fichas/application/src/test/java/com/arquisoft/fichas/application/revisionitem/command/usecase/impl/ModificarRevisionItemUseCaseImplTest.java`

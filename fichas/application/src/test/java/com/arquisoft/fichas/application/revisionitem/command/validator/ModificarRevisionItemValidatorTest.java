@@ -23,7 +23,7 @@ class ModificarRevisionItemValidatorTest {
         var entrada = modificacionValida();
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(entrada, true, fichaPerfil, true))
+        assertThatCode(() -> validator.validar(entrada, 1L, fichaPerfil, true))
                 .doesNotThrowAnyException();
     }
 
@@ -33,7 +33,7 @@ class ModificarRevisionItemValidatorTest {
         var entrada = modificacionValida();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, false, fichaPerfil, true))
+        assertThatThrownBy(() -> validator.validar(entrada, 0L, fichaPerfil, true))
                 .isInstanceOf(RevisionItemNoEncontradaException.class);
     }
 
@@ -43,7 +43,7 @@ class ModificarRevisionItemValidatorTest {
         var entrada = modificacionValida();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, true, fichaPerfil, false))
+        assertThatThrownBy(() -> validator.validar(entrada, 1L, fichaPerfil, false))
                 .isInstanceOf(FichaNoPerteneceAsesorException.class);
     }
 
@@ -53,7 +53,7 @@ class ModificarRevisionItemValidatorTest {
         var entrada = modificacionValida();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, false, fichaPerfil, false))
+        assertThatThrownBy(() -> validator.validar(entrada, 0L, fichaPerfil, false))
                 .isInstanceOf(RevisionItemNoEncontradaException.class);
     }
 

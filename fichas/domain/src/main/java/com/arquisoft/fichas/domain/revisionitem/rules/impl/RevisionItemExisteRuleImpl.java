@@ -8,7 +8,7 @@ public class RevisionItemExisteRuleImpl implements RevisionItemExisteRule {
 
     @Override
     public void validar(ExistenciaRevisionItem existencia) {
-        if (!existencia.existe()) {
+        if (existencia.cantidadRevisiones() <= 0) {
             throw new RevisionItemNoEncontradaException(existencia.item());
         }
     }

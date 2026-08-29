@@ -69,7 +69,7 @@ class ModificarRevisionItemUseCaseImplTest {
     void debeActualizarElEstado_cuandoDatosValidos() {
         // Arrange
         var entrada = modificacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), ficha, 1L);
+        stubConsultas(entrada, Optional.of(fichaPerfilId), ficha, 1L);
 
         // Act
         modificarRevisionItemUseCase.ejecutar(entrada);
@@ -82,7 +82,7 @@ class ModificarRevisionItemUseCaseImplTest {
     void debeActualizarElEstado_cuandoEsElMismoValorYaVigente() {
         // Arrange — no-op válido: no hay rama especial, el flujo es idéntico al caso exitoso
         var entrada = modificacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), ficha, 1L);
+        stubConsultas(entrada, Optional.of(fichaPerfilId), ficha, 1L);
 
         // Act
         modificarRevisionItemUseCase.ejecutar(entrada);
@@ -96,7 +96,7 @@ class ModificarRevisionItemUseCaseImplTest {
     void debeConsultarYValidarAntesDePersistir_cuandoSeEjecuta() {
         // Arrange
         var entrada = modificacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), ficha, 1L);
+        stubConsultas(entrada, Optional.of(fichaPerfilId), ficha, 1L);
 
         // Act
         modificarRevisionItemUseCase.ejecutar(entrada);
@@ -107,7 +107,7 @@ class ModificarRevisionItemUseCaseImplTest {
         inOrder.verify(revisionesDelItemFinder).obtener(entrada.getItem());
         inOrder.verify(fichaPerfilDelItemFinder).obtener(entrada.getItem());
         inOrder.verify(fichaPerfilFinder).obtener(fichaPerfilId);
-        inOrder.verify(modificarRevisionItemValidator).validar(entrada, true, fichaPerfilId, true);
+        inOrder.verify(modificarRevisionItemValidator).validar(entrada, 1L, fichaPerfilId, true);
         inOrder.verify(revisionItemOutputPort).actualizarEstado(entrada.getItem(), entrada.getEstadoRevision().getId());
     }
 
@@ -115,7 +115,7 @@ class ModificarRevisionItemUseCaseImplTest {
     void debePublicarElEventoConLosDatosDeLaModificacion_cuandoSeActualizaElEstado() {
         // Arrange
         var entrada = modificacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), ficha, 1L);
+        stubConsultas(entrada, Optional.of(fichaPerfilId), ficha, 1L);
 
         // Act
         modificarRevisionItemUseCase.ejecutar(entrada);
@@ -131,14 +131,14 @@ class ModificarRevisionItemUseCaseImplTest {
     void debeCalcularEsPropietarioFalso_cuandoLaFichaPerfilDelItemNoExiste() {
         // Arrange — el flatMap degrada a esPropietario=false sin consultar el fichaPerfilFinder
         var entrada = modificacionValida();
-        stubConsultas(entrada, true, Optional.empty(), null, 1L);
+        stubConsultas(entrada, Optional.empty(), null, 1L);
 
         // Act
         modificarRevisionItemUseCase.ejecutar(entrada);
 
         // Assert
         verify(modificarRevisionItemValidator)
-                .validar(entrada, true, UtilUUID.obtenerUUIDPorDefecto(), false);
+                .validar(entrada, 1L, UtilUUID.obtenerUUIDPorDefecto(), false);
         verify(fichaPerfilFinder, never()).obtener(any());
     }
 
@@ -146,9 +146,9 @@ class ModificarRevisionItemUseCaseImplTest {
     void debeLanzarExcepcion_cuandoLaRevisionNoExiste() {
         // Arrange
         var entrada = modificacionValida();
-        stubConsultas(entrada, false, Optional.of(fichaPerfilId), ficha, 0L);
+        stubConsultas(entrada, Optional.of(fichaPerfilId), ficha, 0L);
         doThrow(new RevisionItemNoEncontradaException(entrada.getItem()))
-                .when(modificarRevisionItemValidator).validar(entrada, false, fichaPerfilId, true);
+                .when(modificarRevisionItemValidator).validar(entrada, 0L, fichaPerfilId, true);
 
         // Act & Assert
         assertThatThrownBy(() -> modificarRevisionItemUseCase.ejecutar(entrada))
@@ -164,9 +164,9 @@ class ModificarRevisionItemUseCaseImplTest {
         var entrada = modificacionValida();
         UUID otroAsesor = UUID.randomUUID();
         var fichaDeOtroAsesor = FichaPerfilDomain.crear("Otro título", otroAsesor);
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), fichaDeOtroAsesor, 1L);
+        stubConsultas(entrada, Optional.of(fichaPerfilId), fichaDeOtroAsesor, 1L);
         doThrow(new FichaNoPerteneceAsesorException(fichaPerfilId, asesorFicha))
-                .when(modificarRevisionItemValidator).validar(entrada, true, fichaPerfilId, false);
+                .when(modificarRevisionItemValidator).validar(entrada, 1L, fichaPerfilId, false);
 
         // Act & Assert
         assertThatThrownBy(() -> modificarRevisionItemUseCase.ejecutar(entrada))
@@ -180,7 +180,7 @@ class ModificarRevisionItemUseCaseImplTest {
     void debeLanzarExcepcion_cuandoElRepositorioFalla() {
         // Arrange
         var entrada = modificacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), ficha, 1L);
+        stubConsultas(entrada, Optional.of(fichaPerfilId), ficha, 1L);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
                 .when(revisionItemOutputPort)
                 .actualizarEstado(entrada.getItem(), entrada.getEstadoRevision().getId());
@@ -192,7 +192,7 @@ class ModificarRevisionItemUseCaseImplTest {
         verify(eventPublisher, never()).publish(any());
     }
 
-    private void stubConsultas(ModificacionRevisionItemDomain entrada, boolean revisionExiste,
+    private void stubConsultas(ModificacionRevisionItemDomain entrada,
                                 Optional<UUID> fichaPerfilDelItem, FichaPerfilDomain fichaEncontrada, long revisiones) {
         when(revisionesDelItemFinder.obtener(entrada.getItem())).thenReturn(revisiones);
         when(fichaPerfilDelItemFinder.obtener(entrada.getItem())).thenReturn(fichaPerfilDelItem);

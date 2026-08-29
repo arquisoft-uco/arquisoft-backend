@@ -16,7 +16,7 @@ class RevisionItemExisteRuleImplTest {
     @Test
     void debePasar_cuandoLaRevisionExiste() {
         // Arrange
-        var existencia = new ExistenciaRevisionItem(UUID.randomUUID(), true);
+        var existencia = new ExistenciaRevisionItem(UUID.randomUUID(), 1L);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(existencia)).doesNotThrowAnyException();
@@ -26,7 +26,7 @@ class RevisionItemExisteRuleImplTest {
     void debeLanzarExcepcion_cuandoLaRevisionNoExiste() {
         // Arrange
         UUID item = UUID.randomUUID();
-        var existencia = new ExistenciaRevisionItem(item, false);
+        var existencia = new ExistenciaRevisionItem(item, 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(existencia))

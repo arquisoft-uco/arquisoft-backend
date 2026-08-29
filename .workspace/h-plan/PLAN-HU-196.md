@@ -444,7 +444,7 @@ esperados.
 |---|---|---|---|---|
 | Desarrollo | @implementador | ✅ Completado | 2026-08-28 | Capas domain/application/infrastructure implementadas + tests (dominio, application, infrastructure incl. `@DataJpaTest`/`@WebMvcTest`). `./gradlew build`: sin errores (checkstyle + jacoco + tests de todo el repo) |
 | Tests | @tester | ✅ Completado | 2026-08-28 | Revisión de los 13 archivos de tests ya escritos por @implementador (domain/application/infrastructure) contra el plan — cobertura de caminos de negocio completa, sin gaps (feliz, no-op, no-encontrada, no-propietario, estado no en catálogo, orden de validación, evento con `ArgumentCaptor`, `@WebMvcTest` con la authority exacta, `@DataJpaTest` con H2 real). No se agregó ningún test nuevo. `./gradlew :fichas:domain:test :fichas:application:test :fichas:infrastructure:test` y `:fichas:domain:check :fichas:application:check :fichas:infrastructure:check` — verdes. Cobertura: domain 79.95%, application 81.76%, infrastructure 76.44% — CUMPLE el 75% (clases nuevas de HU-196: 100% línea) |
-| Validación | @validator-analyze | ✅ Completado | 2026-08-28 | Score 99/100 · 0 bloqueantes · 1 menor (log ausente en `registrarRevision`, atenuado — ver reporte) |
+| Validación | @validator-analyze | ✅ Completado | 2026-08-28 (re-validado 2026-08-29) | Ronda 1: Score 99/100 · 0 bloqueantes · 1 menor (log ausente en `registrarRevision`, atenuado). Ronda 2 (refactor `boolean`→`long` en `ExistenciaRevisionItem`): re-confirmado ✅ APROBADO, 0 bloqueantes, mismo menor heredado — ver reporte |
 | Reporte | @validator-report | ✅ Completado | 2026-08-28 | Persistido en `.workspace/validator/validator-HU-196.md` |
 | Commit | @commit | ⏳ Pendiente | | |
 | PR | @commit | ⏳ Pendiente | | |
