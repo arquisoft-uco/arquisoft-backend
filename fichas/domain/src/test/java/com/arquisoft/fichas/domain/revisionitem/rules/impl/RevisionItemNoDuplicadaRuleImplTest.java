@@ -16,7 +16,7 @@ class RevisionItemNoDuplicadaRuleImplTest {
     @Test
     void debePasar_cuandoNoExisteUnaRevisionActiva() {
         // Arrange
-        var disponibilidad = new DisponibilidadRevisionItem(UUID.randomUUID(), false);
+        var disponibilidad = new DisponibilidadRevisionItem(UUID.randomUUID(), 0L);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(disponibilidad)).doesNotThrowAnyException();
@@ -26,7 +26,7 @@ class RevisionItemNoDuplicadaRuleImplTest {
     void debeLanzarExcepcion_cuandoYaExisteUnaRevisionActiva() {
         // Arrange
         UUID item = UUID.randomUUID();
-        var disponibilidad = new DisponibilidadRevisionItem(item, true);
+        var disponibilidad = new DisponibilidadRevisionItem(item, 1L);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(disponibilidad))

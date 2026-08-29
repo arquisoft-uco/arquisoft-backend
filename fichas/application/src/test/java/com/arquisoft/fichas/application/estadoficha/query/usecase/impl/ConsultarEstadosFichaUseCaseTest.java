@@ -2,6 +2,7 @@ package com.arquisoft.fichas.application.estadoficha.query.usecase.impl;
 
 import com.arquisoft.fichas.application.estadoficha.query.secondaryport.EstadoFichaQueryOutputPort;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +21,9 @@ class ConsultarEstadosFichaUseCaseTest {
 
     @Mock
     private EstadoFichaQueryOutputPort queryOutputPort;
+
+    @Mock
+    private AppLogger logger;
 
     @InjectMocks
     private ConsultarEstadosFichaUseCaseImpl useCase;

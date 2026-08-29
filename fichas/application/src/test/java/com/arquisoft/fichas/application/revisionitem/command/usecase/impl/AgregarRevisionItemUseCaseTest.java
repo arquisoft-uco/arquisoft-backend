@@ -103,7 +103,7 @@ class AgregarRevisionItemUseCaseTest {
         inOrder.verify(fichaPerfilDelItemFinder).obtener(entrada.getItem());
         inOrder.verify(fichaPerfilFinder).obtener(fichaPerfilId);
         inOrder.verify(revisionesDelItemFinder).obtener(entrada.getItem());
-        inOrder.verify(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, true, false);
+        inOrder.verify(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, true, 0L);
         inOrder.verify(revisionItemOutputPort).registrarRevision(entidadDe(entrada.getRevisionItem()));
     }
 
@@ -139,7 +139,7 @@ class AgregarRevisionItemUseCaseTest {
         agregarRevisionItemUseCase.ejecutar(entrada);
 
         // Assert
-        verify(agregarRevisionItemValidator).validar(entrada, true, UtilUUID.obtenerUUIDPorDefecto(), false, false);
+        verify(agregarRevisionItemValidator).validar(entrada, true, UtilUUID.obtenerUUIDPorDefecto(), false, 0L);
         verify(fichaPerfilFinder, never()).obtener(any());
     }
 
@@ -149,7 +149,7 @@ class AgregarRevisionItemUseCaseTest {
         var entrada = agregacionValida();
         stubConsultas(entrada, false, Optional.of(fichaPerfilId), ficha, 0L);
         doThrow(new ItemFichaPerfilNoEncontradoException(entrada.getItem()))
-                .when(agregarRevisionItemValidator).validar(entrada, false, fichaPerfilId, true, false);
+                .when(agregarRevisionItemValidator).validar(entrada, false, fichaPerfilId, true, 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarRevisionItemUseCase.ejecutar(entrada))
@@ -167,7 +167,7 @@ class AgregarRevisionItemUseCaseTest {
         var fichaDeOtroAsesor = FichaPerfilDomain.crear("Otro título", otroAsesor);
         stubConsultas(entrada, true, Optional.of(fichaPerfilId), fichaDeOtroAsesor, 0L);
         doThrow(new FichaNoPerteneceAsesorException(fichaPerfilId, asesorFicha))
-                .when(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, false, false);
+                .when(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, false, 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarRevisionItemUseCase.ejecutar(entrada))
@@ -183,7 +183,7 @@ class AgregarRevisionItemUseCaseTest {
         var entrada = agregacionValida();
         stubConsultas(entrada, true, Optional.of(fichaPerfilId), ficha, 1L);
         doThrow(new RevisionItemYaExisteException(entrada.getItem()))
-                .when(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, true, true);
+                .when(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, true, 1L);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarRevisionItemUseCase.ejecutar(entrada))

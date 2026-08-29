@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.arquisoft.shared.util.UtilUUID;
+
 import java.util.UUID;
 
 @RestController
@@ -55,7 +57,7 @@ public class ModificarFichaPerfilController {
             @RequestBody ModificarFichaPerfilRequestDTO request,
             @AuthenticationPrincipal Jwt jwt) {
 
-        var estudianteId = UUID.fromString(jwt.getSubject());
+        var estudianteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
         modificarFichaPerfilInteractor.ejecutar(ModificarFichaPerfilRequestMapper.toCommand(request, id, estudianteId));
 
         return ResponseEntity.noContent().build();

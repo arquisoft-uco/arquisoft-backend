@@ -45,9 +45,9 @@ public class AgregarRevisionItemUseCaseImpl implements AgregarRevisionItemUseCas
                 .map(ficha -> ficha.getAsesorFicha().equals(entrada.getAsesorFicha()))
                 .orElse(false);
 
-        boolean revisionYaExiste = revisionesDelItemFinder.obtener(entrada.getItem()) > 0;
+        long cantidadRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());
 
-        agregarRevisionItemValidator.validar(entrada, itemExiste, fichaPerfil, esPropietario, revisionYaExiste);
+        agregarRevisionItemValidator.validar(entrada, itemExiste, fichaPerfil, esPropietario, cantidadRevisiones);
 
         var revisionItem = entrada.getRevisionItem();
         revisionItemOutputPort.registrarRevision(RevisionItemMapper.toEntity(revisionItem));

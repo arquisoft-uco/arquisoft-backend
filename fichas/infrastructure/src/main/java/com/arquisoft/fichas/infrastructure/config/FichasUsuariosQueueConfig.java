@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.config;
 
 import com.arquisoft.shared.amqp.RabbitMQConfig;
+import com.arquisoft.shared.message.constant.EventTopics;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -13,16 +14,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FichasUsuariosQueueConfig {
 
-    public static final String USUARIO_CREADO_QUEUE = "fichas.usuarios.usuario.creado";
+    public static final String USUARIO_CREADO_ROUTING_KEY = EventTopics.Usuarios.USUARIO_CREADO;
 
-    public static final String USUARIO_CREADO_ROUTING_KEY = "usuarios.usuario.creado";
+    public static final String USUARIO_CREADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.USUARIO_CREADO;
 
     @Bean
     public Queue fichasUsuarioCreadoQueue() {
         return QueueBuilder
                 .durable(USUARIO_CREADO_QUEUE)
-                .withArgument("x-dead-letter-exchange", RabbitMQConfig.DLX_NAME)
-                .withArgument("x-dead-letter-routing-key", USUARIO_CREADO_QUEUE + ".dead")
+                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_EXCHANGE, RabbitMQConfig.DLX_NAME)
+                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_ROUTING_KEY,
+                        USUARIO_CREADO_QUEUE + RabbitMQConfig.SUFIJO_DEAD_LETTER)
                 .build();
     }
 

@@ -5,6 +5,7 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
+import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -20,12 +21,12 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
     @Override
     public void guardar(UsuarioEntity usuario) {
         logger.debug(Mensajes.obtener(UsuarioKey.LOG_MOCK_NO_PERSISTIDO),
-                usuario.id(), usuario.email());
+                usuario.id(), UtilTexto.enmascararCorreo(usuario.email()));
     }
 
     @Override
     public boolean existePorEmail(String email) {
-        logger.debug(Mensajes.obtener(UsuarioKey.LOG_MOCK_VERIFICACION_OMITIDA), email);
+        logger.debug(Mensajes.obtener(UsuarioKey.LOG_MOCK_VERIFICACION_OMITIDA), UtilTexto.enmascararCorreo(email));
         return false;
     }
 }

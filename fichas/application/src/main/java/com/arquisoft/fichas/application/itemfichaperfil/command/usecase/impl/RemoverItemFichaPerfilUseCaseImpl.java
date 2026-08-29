@@ -30,6 +30,9 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
 
     @Override
     public void ejecutar(RemocionItemFichaPerfilDomain entrada) {
+        logger.info(Mensajes.obtener(ItemFichaPerfilKey.LOG_REMOVIENDO),
+                entrada.getItem(), entrada.getEstudiante());
+
         var fichaEncontrada = fichaPerfilDelItemFinder.obtener(entrada.getItem());
 
         boolean itemExiste = fichaEncontrada.isPresent();
@@ -41,6 +44,9 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
                 .orElse(false);
 
         long totalRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());
+
+        logger.debug(Mensajes.obtener(ItemFichaPerfilKey.LOG_VERIFICACION_REMOVER),
+                itemExiste, esPropietario, totalRevisiones);
 
         removerItemFichaPerfilValidator.validar(entrada.getItem(), entrada.getEstudiante(),
                 fichaDelItem, itemExiste, esPropietario, totalRevisiones);

@@ -25,7 +25,7 @@ class AgregarRevisionItemValidatorTest {
         var entrada = agregacionValida();
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(entrada, true, fichaPerfil, true, false))
+        assertThatCode(() -> validator.validar(entrada, true, fichaPerfil, true, 0L))
                 .doesNotThrowAnyException();
     }
 
@@ -35,7 +35,7 @@ class AgregarRevisionItemValidatorTest {
         var entrada = agregacionValida();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, false, fichaPerfil, true, false))
+        assertThatThrownBy(() -> validator.validar(entrada, false, fichaPerfil, true, 0L))
                 .isInstanceOf(ItemFichaPerfilNoEncontradoException.class);
     }
 
@@ -45,7 +45,7 @@ class AgregarRevisionItemValidatorTest {
         var entrada = agregacionValida();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, true, fichaPerfil, false, false))
+        assertThatThrownBy(() -> validator.validar(entrada, true, fichaPerfil, false, 0L))
                 .isInstanceOf(FichaNoPerteneceAsesorException.class);
     }
 
@@ -55,7 +55,7 @@ class AgregarRevisionItemValidatorTest {
         var entrada = agregacionValida();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, true, fichaPerfil, true, true))
+        assertThatThrownBy(() -> validator.validar(entrada, true, fichaPerfil, true, 1L))
                 .isInstanceOf(RevisionItemYaExisteException.class);
     }
 
@@ -65,7 +65,7 @@ class AgregarRevisionItemValidatorTest {
         var entrada = agregacionValida();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, false, fichaPerfil, false, false))
+        assertThatThrownBy(() -> validator.validar(entrada, false, fichaPerfil, false, 0L))
                 .isInstanceOf(ItemFichaPerfilNoEncontradoException.class);
     }
 
@@ -75,7 +75,7 @@ class AgregarRevisionItemValidatorTest {
         var entrada = agregacionValida();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(entrada, true, fichaPerfil, false, true))
+        assertThatThrownBy(() -> validator.validar(entrada, true, fichaPerfil, false, 1L))
                 .isInstanceOf(FichaNoPerteneceAsesorException.class);
     }
 

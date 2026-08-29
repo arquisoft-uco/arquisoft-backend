@@ -1,12 +1,13 @@
 package com.arquisoft.usuarios.domain.usuario.event;
 
+import com.arquisoft.shared.message.constant.EventTopics;
 import com.arquisoft.shared.events.DomainEvent;
 
 import java.util.UUID;
 
 public class UsuarioCreadoEvent extends DomainEvent {
 
-    public static final String EVENT_TOPIC = "usuarios.usuario.creado";
+    public static final String EVENT_TOPIC = EventTopics.Usuarios.USUARIO_CREADO;
     public static final String EVENT_TYPE = "UsuarioCreadoEvent";
 
     private final UUID usuarioId;

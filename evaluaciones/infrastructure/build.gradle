@@ -1,5 +1,7 @@
 dependencies {
-    implementation project(':evaluaciones:domain')
+    // La direccion domain <- application <- infrastructure la verifica :verificarCapasHexagonales
+    // del build raiz. Solo los tests ven el dominio (arrange de agregados en slices).
+    testImplementation project(':evaluaciones:domain')
     implementation project(':evaluaciones:application')
     implementation project(':shared:domain')
     implementation project(':shared:application')
