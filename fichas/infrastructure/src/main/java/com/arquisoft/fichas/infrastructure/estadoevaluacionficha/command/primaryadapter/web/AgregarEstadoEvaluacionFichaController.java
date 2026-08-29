@@ -26,7 +26,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
+import com.arquisoft.shared.util.UtilUUID;
+
 
 @RestController
 @RequestMapping("${rutas.fichas.estado-evaluacion-ficha.base:/fichas-perfil/estado-evaluacion-ficha}")
@@ -60,7 +61,7 @@ public class AgregarEstadoEvaluacionFichaController {
             @RequestBody AgregarEstadoEvaluacionFichaRequestDTO request,
             @AuthenticationPrincipal Jwt jwt) {
 
-        var representanteComiteId = UUID.fromString(jwt.getSubject());
+        var representanteComiteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
         var id = agregarEstadoEvaluacionFichaInteractor.ejecutar(AgregarEstadoEvaluacionFichaRequestMapper.toCommand(request, representanteComiteId));
 
         return ResponseEntity.status(HttpStatus.CREATED).body(new AgregarEstadoEvaluacionFichaResponseDTO(id));

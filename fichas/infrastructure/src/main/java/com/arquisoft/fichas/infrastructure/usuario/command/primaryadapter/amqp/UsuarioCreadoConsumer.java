@@ -16,8 +16,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
+import com.arquisoft.shared.util.UtilUUID;
+
 import java.io.IOException;
-import java.util.UUID;
 
 @Component
 public class UsuarioCreadoConsumer extends AbstractEventConsumer {
@@ -44,7 +45,7 @@ public class UsuarioCreadoConsumer extends AbstractEventConsumer {
                     payload.usuarioId(), UtilTexto.enmascararCorreo(payload.email()), payload.rol());
 
             registrarUsuarioUseCase.ejecutar(new RegistrarUsuarioCommand(
-                    UUID.fromString(payload.usuarioId()),
+                    UtilUUID.generarUUIDDesdeTexto(payload.usuarioId()),
                     payload.email(),
                     payload.rol()));
         });

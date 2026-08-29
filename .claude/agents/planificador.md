@@ -124,16 +124,18 @@ llegar a C por omisión, sin haber preguntado, en una HU cuyo título ya dice "c
 
 **5b. Si la respuesta fue A por notificación: el evento no es el entregable, es la mitad.** Un evento
 publicado en el exchange sin nadie enganchado a esa routing key no envía ningún correo. El plan debe
-listar las **seis** piezas, repartidas en dos contextos, y la sección 6 debe mostrarlas en el árbol:
+listar las **ocho** piezas, repartidas en dos contextos, y la sección 6 debe mostrarlas en el árbol:
 
 | # | Módulo | Archivo |
 |---|---|---|
-| 1 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java` — `EVENT_TOPIC = "{contexto}.{entidad}.{accion}"` |
-| 2 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` — cola `notificaciones.{routingKey}`, con DLX |
-| 3 | `notificaciones/.../command/primaryadapter/amqp/` | `{Evento}Payload.java` — `record` propio del adaptador, **nunca** la clase de evento del productor |
-| 4 | `notificaciones/.../command/primaryadapter/amqp/` | `{Evento}Consumer.java` extiende `AbstractEventConsumer` — aquí, y no en el use case, se elige el texto |
-| 5 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
-| 6 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto |
+| 1 | `shared:message/constant/` | constante nueva en `EventTopics.{Contexto}` — la routing key, declarada **una sola vez** |
+| 2 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java` — `EVENT_TOPIC = EventTopics.{Contexto}.{X}` |
+| 3 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` — nombre de cola `{Contexto}Queues.PREFIJO + topic`, argumentos desde `RabbitMQConfig` |
+| 4 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Payload.java` — `record` propio del adaptador, **nunca** la clase de evento del productor |
+| 5 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Consumer.java` extiende `AbstractNotificacionConsumer` — aquí, y no en el use case, se elige el texto |
+| 6 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
+| 7 | `notificaciones/.../primaryadapter/amqp/` | la misma constante en `TipoNotificacionEvento` (espejo de infraestructura) |
+| 8 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto |
 
 El evento **carga todo lo que el correo necesita** — nombre y correo del destinatario, más el dato
 legible del asunto (`asesorNombre`, `asesorEmail`, `tituloProyecto` en `AsesorFichaCambiadoEvent`) —
@@ -285,7 +287,7 @@ Para Controllers añade: @Tag, y por endpoint: @Operation(summary), @ApiResponse
 ## 10. Eventos RabbitMQ — SOLO si la pregunta 5 fue A/B. Con C, borra esta sección completa
 | Dirección | Exchange | Routing Key | Payload | Contexto receptor |
 
-Si el receptor es `notificaciones` (HU de transición de estado), la sección lista además las seis
+Si el receptor es `notificaciones` (HU de transición de estado), la sección lista además las ocho
 piezas de la pregunta 5b — cola + binding, `Payload`, `Consumer`, constante de `TipoNotificacion` y
 las dos claves de `PlantillaKey` con su texto de catálogo.
 
@@ -500,7 +502,7 @@ getters/setters ni métodos `private`.
       sección 10, ni tests de publicación. Con A/B, las cuatro presentes
 - [ ] Si la HU crea o cambia un estado, la pregunta 5 se resolvió como A con `notificaciones` de
       consumidor — o el plan escribe la razón explícita por la que ese cambio no notifica a nadie
-- [ ] Evento hacia `notificaciones` ⟹ las seis piezas de la pregunta 5b en el árbol de la sección 6,
+- [ ] Evento hacia `notificaciones` ⟹ las ocho piezas de la pregunta 5b en el árbol de la sección 6,
       y el evento carga nombre + correo del destinatario (nada de que el consumidor pregunte de vuelta)
 - [ ] IDs siempre `UUID`
 - [ ] `Interactor` dueño de `@Transactional` con qualifier explícito; `UseCase` sin transacción propia

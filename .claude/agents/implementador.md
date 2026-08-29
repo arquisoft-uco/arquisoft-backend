@@ -105,11 +105,17 @@ omites).
   `EventPublisher` y no crees nada en `event/`** — ni "por si acaso", ni porque la entidad parezca
   pedirlo. Ausencia declarada es una decisión del plan, no un olvido que te toque completar.
 - **Si el evento va hacia `notificaciones`** (típico de una HU de transición de estado), la clase de
-  evento es la mitad del trabajo: implementa también las cinco piezas del lado consumidor que el
-  plan lista — `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig`, `{Evento}Payload`
-  (`record` propio del adaptador, nunca la clase del productor), `{Evento}Consumer` extendiendo
-  `AbstractEventConsumer`, la constante nueva en `TipoNotificacion` (columna `VARCHAR`: sin
-  migración) y las claves `PlantillaKey.ASUNTO_*`/`CUERPO_*`. Copia
+  evento es la mitad del trabajo: implementa también las piezas del lado consumidor que el plan
+  lista — la routing key **una sola vez** en `EventTopics.{Contexto}` (la referencian tanto el
+  `EVENT_TOPIC` del evento como el `Binding`; escribirla dos veces hace que el binding deje de
+  recibir en silencio si una cambia), `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig`
+  (nombre de cola `{Contexto}Queues.PREFIJO + topic`, argumentos desde `RabbitMQConfig`, cero
+  literales propios), `{Evento}Payload` y `{Evento}Consumer` en
+  `primaryadapter/amqp/{contextoProductor}/` — un subpaquete por productor —, el consumidor
+  extendiendo `AbstractNotificacionConsumer` (que ya aporta el `AppLogger` y el
+  `registrar(EnvioNotificacionResult)`), la constante nueva **en los dos enums**
+  (`TipoNotificacion` de dominio y `TipoNotificacionEvento` de infraestructura; la columna es
+  `VARCHAR`, sin migración) y las claves `PlantillaKey.ASUNTO_*`/`CUERPO_*`. Copia
   `AsesorFichaCambiadoConsumer` como referencia: el texto del correo se arma **en el consumidor**,
   con `Mensajes.formatear(...)`, no en el use case de `notificaciones`.
   Las dos claves de plantilla van a la vez en el enum `PlantillaKey` (con su aridad) y en

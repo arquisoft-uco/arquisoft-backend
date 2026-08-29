@@ -57,7 +57,8 @@ cierre tras escribir (ver `arquisoft-estandares`). Tres consecuencias:
   su test necesita el `@Mock` igual. Su interactor y su `QueryOutputAdapter` no logean, así que esos
   tests no cambian.
 - Un `{Evento}Consumer` se prueba con el `INFO` de recepción ya presente; `AbstractEventConsumer`
-  aporta los `debug` de envelope y el `error` del nack, y no se asertan. Si el test verifica un log
+  aporta los `debug` de envelope y el `error` del nack, y no se asertan. En `notificaciones` el log
+  de cierre lo pone `AbstractNotificacionConsumer.registrar(...)` y tampoco se asserta. Si el test verifica un log
   que lleva un correo, el valor esperado es el **enmascarado** (`j***@uco.edu.co`), no el original.
 
 
@@ -109,6 +110,19 @@ para cortar temprano sin lanzar — la idempotencia de un consumidor AMQP —, e
 "duplicado" asserta **ausencia de efectos**: `verify(outputPort, never()).guardar(any())` y
 `verify(envioOutputPort, never()).enviar(any())`, no una excepción. Ver
 `notificaciones/.../EnviarNotificacionUseCaseTest.noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado`.
+
+**Cuando el use case devuelve una interfaz sellada**, cada test cubre una variante y lo asserta con
+`assertThat(resultado).isInstanceOf(X.Variante.class)` —o `isInstanceOfSatisfying` si además hay que
+mirar dentro—, no con un `instanceof` en un `if`. Y si un `Consumer` hace `switch` sobre ese
+resultado, su test **tiene que stubear el interactor**: devolver `null` por defecto hace que el
+`switch` reviente con `NullPointerException` y el fallo no se parece en nada a su causa. Usa
+`lenient().when(...)` en el `@BeforeEach` cuando algún test del archivo sustituya ese stub por un
+`doThrow`.
+
+**Dos tablas que se espejan piden un test de deriva, no dos tests paralelos.** Un enum de
+infraestructura que copia uno de dominio (`TipoNotificacionEvento` ↔ `TipoNotificacion`) se prueba
+recorriendo `values()` y comparando **los conjuntos completos**, para que agregar una constante de un
+solo lado rompa el build. Ver `TipoNotificacionEventoTest`.
 
 **Solo si el plan declara eventos:** `verify(eventPublisher, times(N)).publish(any())` sobre el mock
 de `EventPublisher` que inyecta el use case — es el único punto de observación, porque el agregado

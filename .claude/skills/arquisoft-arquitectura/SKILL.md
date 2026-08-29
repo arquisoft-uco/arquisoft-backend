@@ -251,6 +251,47 @@ lanza `KeycloakAuthOutputAdapter`) baja a `seguridad/infrastructure/auth/excepti
 distinta capa que su padre parte una jerarquía en dos módulos; los imports redundantes que reporta
 Checkstyle al moverla son el síntoma de que estaba mal ubicada.
 
+### Un fallo que el negocio registra no es una excepción: es un valor
+
+Antes de escribir una excepción para un fallo de un puerto, pregunta **qué hace quien llama con
+ella**. Si la captura para seguir adelante —porque el fallo es un estado que hay que persistir, no un
+error del flujo— entonces no debía ser excepción. El puerto devuelve una sellada con los desenlaces
+y desaparecen a la vez el `try/catch` de application y la excepción:
+
+```java
+public sealed interface ResultadoEntrega {
+    record Entregada() implements ResultadoEntrega {}
+    record Rechazada(String motivo) implements ResultadoEntrega {}
+}
+```
+
+El adaptador traduce lo que sabe diagnosticar y **registra ahí la traza técnica**, que es donde tiene
+la causa en la mano; una avería inesperada (mal configurado, fallo no previsto) **sí** se propaga y
+acaba en la DLQ o en un 503. Es el mismo criterio que ya usan los `Finder`: "no encontrado" devuelve
+`Optional`, decidir qué significa la ausencia es de quien llama. Referencia:
+`EnvioNotificacionOutputPort` + `SmtpEnvioNotificacionOutputAdapter`.
+
+Si aun así application tiene que **nombrar** una excepción que lanza un adaptador, esa excepción vive
+junto al puerto (`command/secondaryport/exception/`) y no en `infrastructure/{feature}/exception/`:
+es parte del contrato del puerto, y ponerla en infrastructure invertiría la dirección de capas.
+
+## Un módulo `shared:` con un solo consumidor no es compartido
+
+`shared:notification` existía con el puerto de envío, sus dos adaptadores (`Smtp`, `Log`) y su
+configuración, y lo consumía **solo** `notificaciones`. Dos consecuencias, y la segunda es la grave:
+
+1. Un "shared" de un solo cliente es un contexto mal ubicado.
+2. `notificaciones/application` declaraba ese módulo, y ese módulo traía `JavaMailSender` y
+   `MimeMessageHelper` — **infraestructura ejecutable en el classpath de la capa de aplicación**.
+   `verificarCapasHexagonales` no lo detecta: razona por nombre de módulo, y ahí no dice
+   "infrastructure".
+
+Se disolvió dentro del contexto: el puerto y sus modelos a `application/…/secondaryport/`, los
+adaptadores y la config a `infrastructure/…/secondaryadapter/{smtp,logging}` y `config/`.
+
+**Antes de crear un `shared:*` nuevo, exige dos consumidores reales.** Y si un contexto ya sólo puede
+alcanzarse por eventos —como `notificaciones`— no va a haber un segundo: la arquitectura lo prohíbe.
+
 ## Puertos: hablan `Entity`, nunca `Domain`
 
 `domain/` no declara puertos ni hace I/O. El `OutputPort` recibe y devuelve el `record` plano
@@ -403,17 +444,76 @@ queda en el exchange. Son **seis** piezas en dos contextos:
 
 | # | Módulo | Archivo |
 |---|---|---|
-| 1 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java`, `EVENT_TOPIC = "{contexto}.{entidad}.{accion}"` |
-| 2 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` — cola `notificaciones.{routingKey}` con DLX |
-| 3 | `notificaciones/.../command/primaryadapter/amqp/` | `{Evento}Payload.java`, `record` propio del adaptador — **nunca** la clase de evento del productor |
-| 4 | `notificaciones/.../command/primaryadapter/amqp/` | `{Evento}Consumer.java` extiende `AbstractEventConsumer` — aquí se elige el texto, no en el use case |
-| 5 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
-| 6 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto |
+| 1 | `shared:message/constant/` | constante nueva en `EventTopics.{Contexto}` con la routing key |
+| 2 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java`, `EVENT_TOPIC = EventTopics.{Contexto}.{X}` |
+| 3 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` |
+| 4 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Payload.java`, `record` propio del adaptador — **nunca** la clase de evento del productor |
+| 5 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Consumer.java` extiende `AbstractNotificacionConsumer` — aquí se elige el texto, no en el use case |
+| 6 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
+| 7 | `notificaciones/.../primaryadapter/amqp/` | la misma constante en `TipoNotificacionEvento` — `TipoNotificacionEventoTest` falla si falta |
+| 8 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto |
 
 El evento carga **nombre y correo del destinatario** más el dato legible del asunto, aunque duplique
 lo que el productor ya tiene: un evento delgado obliga a `notificaciones` a llamar de vuelta, que es
 el acoplamiento que los eventos eliminan. La dirección es de un solo sentido — el contexto productor
 nunca depende de `notificaciones`, y `notificaciones` solo consume, nunca emite.
+
+
+### La routing key se declara una vez, en `EventTopics`
+
+La leen dos módulos que no se ven entre sí: el evento del productor y el `Binding` del consumidor.
+Si cada lado la escribe por su cuenta y una cambia, **el binding deja de recibir sin que nada falle**
+— no hay excepción, simplemente no llegan mensajes. Por eso vive en `shared:message/constant/EventTopics`,
+agrupada por contexto productor, que es el único módulo que ambos lados ya alcanzan:
+
+```java
+public static final String EVENT_TOPIC = EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;   // productor
+public static final String ASESOR_CAMBIADO_ROUTING_KEY = EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;
+```
+
+**El nombre de la cola se deriva, no se escribe.** La convención es `{contextoConsumidor}.{routingKey}`
+y se compone con constantes, así que el compilador la resuelve y sigue sirviendo en `@RabbitListener`,
+que exige una expresión constante (JLS §9.7.1):
+
+```java
+public static final String ASESOR_CAMBIADO_QUEUE =
+        NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;
+```
+
+Ningún `*QueueConfig` escribe literales propios. El prefijo del contexto vive en `{Contexto}Queues`
+(`infrastructure/config/`), compartido por todos los `*QueueConfig` de ese contexto; los nombres de
+argumento y el sufijo de dead letter viven en `RabbitMQConfig` (`shared:amqp`), porque son del
+protocolo: `ARG_DEAD_LETTER_EXCHANGE`, `ARG_DEAD_LETTER_ROUTING_KEY`, `SUFIJO_DEAD_LETTER`,
+`SEPARADOR_COLA`.
+
+**Nada de esto va al catálogo de Redis.** RabbitMQ compara la routing key carácter a carácter, y
+`Mensajes.obtener(...)` es una llamada a método: en `@RabbitListener` ni siquiera compila.
+
+
+### Consumidores: un subpaquete por contexto productor
+
+`primaryadapter/amqp/` se subdivide por **quién produce**, no por entidad:
+
+```
+primaryadapter/amqp/
+├── AbstractNotificacionConsumer.java     # base común
+├── TipoNotificacionEvento.java           # espejo del enum de dominio
+├── fichas/{Evento}Consumer.java + {Evento}Payload.java
+└── evaluaciones/…
+```
+
+Es el eje que agrupa lo que varía junto: todo lo que se consume de un productor comparte su espacio
+de routing keys. Bajar a entidad (`amqp/fichas/fichaperfil/`) da paquetes de dos archivos y rompe la
+regla de que un paquete se llama por el sufijo de lo que contiene.
+
+Los `*QueueConfig` **se quedan en `config/`**: ya hay uno por contexto productor y cada uno agrupa
+todas sus colas, así que el paquete no se satura.
+
+**Lo que todos los consumidores hacen igual sube a la base.** `AbstractNotificacionConsumer extends
+AbstractEventConsumer` posee el `AppLogger` (`protected final`) y el `registrar(EnvioNotificacionResult)`
+con el `switch` exhaustivo del desenlace. La subclase solo pone su `@RabbitListener`, su log de
+entrada y su plantilla. Ventaja real: cuando aparezca un desenlace nuevo, el compilador falla en un
+sitio y no en seis.
 ## Aislamiento de persistencia: una base de datos por contexto
 
 No son schemas dentro de una base común: `init-db.sql` crea una **base por bounded context**

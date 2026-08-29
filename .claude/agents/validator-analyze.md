@@ -78,6 +78,9 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | `implementation project(':{contexto}:domain')` en el `build.gradle` de infrastructure. La dirección la impone el grafo de módulos; el dominio solo va en `testImplementation`. Añadirlo reabre la barrera y `verificarCapasHexagonales` falla | ❌ |
 | Import de `com.arquisoft.{contexto}.domain.*` en `infrastructure/src/main`. Un enum de dominio que un adaptador necesita nombrar viaja como `String` y se convierte en `Command.crear(...)`; un agregado significa que el puerto debe hablar `Entity` | ❌ |
 | `{Contexto}DataSourceConfig` con `setPackagesToScan` sobre dos paquetes, incluyendo `"com.arquisoft.{contexto}.application"`. Las `@Entity` están todas en infrastructure; la forma vigente es una sola cadena, `"com.arquisoft.{contexto}.infrastructure"` | ❌ |
+| Un `shared:*` **nuevo** con un solo consumidor. Un "compartido" de un cliente es un contexto mal ubicado; exige dos consumidores reales antes de crearlo | ❌ |
+| `{contexto}/application/build.gradle` declara un `shared:*` que contiene adaptadores ejecutables (drivers, clientes HTTP, `JavaMailSender`). `verificarCapasHexagonales` **no** lo detecta —razona por nombre de módulo— así que hay que mirarlo a mano: abre el módulo y comprueba que solo tenga puerto y modelos | ❌ |
+| `try/catch` en un `UseCase` alrededor de un `OutputPort` cuyo fallo el propio caso de uso registra como estado. Ese desenlace debía ser una sellada devuelta por el puerto (`ResultadoEntrega`), no una excepción; la traza técnica la logea el adaptador, que tiene la causa | ⚠️ |
 
 **Prueba del algodón:** "si mañana cambio Keycloak/RabbitMQ/PostgreSQL por otra tecnología, ¿este
 archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio filtrada (bloqueante).
@@ -258,9 +261,15 @@ excepción o mapear a `Entity`.
 
 | Check | Sev |
 |---|:---:|
-| `Consumer` en `command/primaryadapter/amqp/`, extiende `AbstractEventConsumer` (`shared:amqp`) — sin ACK/NACK manual | ❌ |
+| `Consumer` en `command/primaryadapter/amqp/{contextoProductor}/` — un subpaquete por productor, no todo plano | ⚠️ |
+| Extiende `AbstractEventConsumer`, o `AbstractNotificacionConsumer` si es de `notificaciones` — sin ACK/NACK manual | ❌ |
 | Payload es un `record` **local** del consumidor — nunca importa la clase del evento del publicador | ❌ |
 | Cola con DLX configurado | ❌ |
+| La routing key aparece escrita **dos veces** (en el `EVENT_TOPIC` del productor y en el `Binding`) en vez de salir de `EventTopics.{Contexto}` — si divergen, el binding deja de recibir sin error | ❌ |
+| Nombre de cola escrito a mano en vez de `{Contexto}Queues.PREFIJO + topic`; `"x-dead-letter-*"` o `".dead"` literales en vez de las constantes de `RabbitMQConfig` | ⚠️ |
+| Consumidor de `notificaciones` que reimplementa el `switch` sobre `EnvioNotificacionResult` en vez de usar `registrar(...)` de la base | ⚠️ |
+| Constante nueva en `TipoNotificacion` sin su espejo en `TipoNotificacionEvento` (o al revés) — `TipoNotificacionEventoTest` lo detecta | ❌ |
+| `{Evento}Payload` que llega al `Interactor` sin pasar por `Command.crear(...)`: "el productor ya validó" no es garantía, Jackson no valida nada | ❌ |
 
 ### Nivel 2.10 — Enums de catálogo
 

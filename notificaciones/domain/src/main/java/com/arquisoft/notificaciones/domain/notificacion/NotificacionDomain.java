@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.constant.NotificacionesCodes;
 import com.arquisoft.shared.message.constant.NotificacionesFields;
 import com.arquisoft.shared.message.constant.NotificacionesLimits;
 import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -92,7 +93,7 @@ public final class NotificacionDomain {
     }
 
     private void validarTransicionPermitida() {
-        if (this.estado != null && this.estado.esTerminal()) {
+        if (!UtilObjeto.esNulo(this.estado) && this.estado.esTerminal()) {
             var result = new ValidationResult();
             result.agregarError(
                     NotificacionesFields.Notificacion.ESTADO,

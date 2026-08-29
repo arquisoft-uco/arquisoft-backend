@@ -308,13 +308,9 @@ subprojects { subproject ->
 //                     agregados en el arrange)
 // ---------------------------------------------------------------------------------------------
 def contextosHexagonales = [
-        'seguridad', 'fichas', 'usuarios', 'evaluaciones',
+        'seguridad', 'fichas', 'usuarios', 'notificaciones', 'evaluaciones',
         'proyectos', 'artefactos', 'repositorio_artefactos', 'entregables'
 ]
-
-// notificaciones queda fuera a propósito: su AsesorFichaCambiadoConsumer nombra TipoNotificacion
-// para construir el EnviarNotificacionCommand, que declara el enum de dominio en su firma. Corregirlo
-// es cambiar el Command, no el consumidor. Reincorporar el contexto a la lista cuando se ajuste.
 
 def prohibicionesPorCapa = [
         domain        : ['application', 'infrastructure'],

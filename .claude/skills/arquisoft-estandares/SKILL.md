@@ -58,13 +58,15 @@ módulo, y esa es justo la distinción de arriba hecha grafo:** `DomainRule` est
 | Situación | Forma correcta |
 |---|---|
 | La existencia (o su ausencia) es un error de negocio | `Finder` → `Validator` → `Rule` → `DomainException` 422 |
-| La existencia solo decide si vale la pena seguir, y no es un error | `Finder` consultado directo desde el `UseCase`, con `if (...) return;` |
+| La existencia solo decide si vale la pena seguir, y no es un error | `Finder` consultado directo desde el `UseCase`, que devuelve la variante correspondiente de su sellada |
 
 El segundo caso es el corte de idempotencia de `notificaciones`: si
-`notificacionProcesadaFinder.obtener(idEvento)` da `true`, el use case loguea y retorna. Modelarlo
-como `Rule` sería un bug — lanzaría, el mensaje se iría a la DLQ y se haría rollback de la fila,
-cuando RabbitMQ solo estaba reentregando algo ya procesado. Un duplicado ahí no es un error, es el
-comportamiento normal de un broker con ACK manual.
+`notificacionProcesadaFinder.obtener(idEvento)` da `true`, el use case devuelve
+`EnvioNotificacionResult.Duplicada`. Modelarlo como `Rule` sería un bug — lanzaría, el mensaje se
+iría a la DLQ y se haría rollback de la fila, cuando RabbitMQ solo estaba reentregando algo ya
+procesado. Un duplicado ahí no es un error, es el comportamiento normal de un broker con ACK manual.
+La guarda es de flujo ("ya está hecho, no hay trabajo"), de la misma familia que un
+`Optional.isPresent()`, no el `if/throw` de invariante que la convención prohíbe.
 
 Señal de que algo mal nombrado es en realidad un `Finder`: la clase termina en `Validator`, inyecta
 un `OutputPort` y devuelve un `boolean` que el use case consume con un `if`. Eso no valida nada —
@@ -97,10 +99,17 @@ se retiró porque dejaba dos puertas de validación para la misma regla y dos fo
 **desviación conocida**, no una alternativa a elegir. Si trabajas en `usuarios`, escribe DTO desnudo +
 `RequestMapper`; no copies el que está ahí.
 
-Ojo con la mitad que más duele de esa desviación: `CrearUsuarioCommand` es un `record` **sin fábrica
-`crear(...)`**, y el DTO lo construye con `new`. O sea que ahí no se valida ningún formato — las
-anotaciones Jakarta del DTO son lo único que queda, y son justo lo que la convención retiró. Un
-`Command` sin `crear(...)` es bloqueante en código nuevo, aunque el contexto ya tenga uno así.
+**Todo `Command` tiene su fábrica `crear(...)`, sin excepción.** Un `record` que se construya con
+`new` desde el adaptador no valida nada y es bloqueante en revisión.
+
+**También cuando la entrada llega por AMQP y no por HTTP.** "El productor ya lo validó" es una
+suposición sobre otro desplegable, no un hecho sobre este arreglo de bytes: el `{Evento}Payload` lo
+arma Jackson sin una sola comprobación, un campo ausente es `null`, y el mensaje pudo reposar en la
+cola, reencolarse desde la DLQ o inyectarse a mano por la consola. Lo que cambia respecto a HTTP no
+es si se valida, sino **qué hace el fallo**: no hay cliente a quien devolverle un 422, así que la
+`DomainValidationException` sube al `AbstractEventConsumer`, que hace `basicNack(requeue=false)` y
+aparta el mensaje malformado en la DLQ — que es exactamente lo que se quiere. Ver
+`EnviarNotificacionCommand.crear(...)`.
 
 El DTO de request no lleva lógica, con una excepción que sí vale copiar: sobrescribir `toString()`
 para enmascarar un secreto. `IniciarSesionRequestDTO` lo hace porque el `toString()` que el
@@ -174,6 +183,19 @@ vez y hubo que revertirlo.
 `domain/{catalogo}/` (cuando tiene tabla propia: `EstadoFicha`, `TipoItem`, `EstadoEvaluacion`) y
 `domain/{feature}/model/` (cuando no la tiene). Un enum nuevo sigue lo que ya use su contexto; no
 declares "settled" una convención que no lo está.
+
+### Cuando infrastructure necesita nombrar un enum de dominio
+
+No puede importarlo — la barrera de capas lo prohíbe. Se espeja: un enum propio en infraestructura
+que carga el código como texto, y el `Command.crear(...)` lo resuelve contra el catálogo del dominio.
+Es lo que hacen `RolUsuarioDTO` (usuarios, porque además es el contrato JSON) y `TipoNotificacionEvento`
+(notificaciones, `primaryadapter/amqp/`).
+
+**Una tabla espejo, no una constante por clase.** Con un solo consumidor una `private static final
+String` basta; con seis son seis literales sueltos y seis pruebas de deriva. El enum da un sitio
+único donde ver qué valores existen y **una** prueba que cubre las dos direcciones: que cada código
+resuelva con `desde(...)`, y que ambos enums declaren el mismo conjunto de constantes — así, si el
+dominio gana un valor y nadie lo espeja, el build falla. Ver `TipoNotificacionEventoTest`.
 
 ## Excepciones (4 bases, en `com.arquisoft.shared.exception`)
 
@@ -387,7 +409,31 @@ nunca para el agregado. Imports explícitos, nunca wildcard. **Sin Lombok en `do
 ninguno — el nombre del agregado, la regla y el caso de uso son la documentación. En
 infraestructura, un comentario se justifica solo si registra algo que el código no puede mostrar
 (una restricción externa, por qué se descartó la alternativa obvia); si cabe, va al mensaje de
-commit o a `CLAUDE.md`.
+commit o a `CLAUDE.md`. **Esto incluye el código que escribes tú**: no adornes con Javadoc una clase
+nueva "para que se entienda" — si hace falta explicarla, el razonamiento va a esta skill o al commit.
+
+### Los `Util` de `shared:util`
+
+`UtilTexto` (`aplicarTrim`, `esVacioONulo`, `correoValido`, `enmascararCorreo`), `UtilUUID`
+(`generarUUIDDesdeTexto`, `uuidValido`, `generarNuevoUUID`, `obtenerUUIDPorDefecto`), `UtilColeccion`
+(`esVaciaONula`, `aplicarPorDefecto`, `primerDuplicado`), `UtilObjeto` (`esNulo`, `aplicarPorDefecto`),
+`UtilFecha`, `UtilNumero`, `UtilEnum`.
+
+Dos que se olvidan y sí importan:
+
+- **`UtilUUID.generarUUIDDesdeTexto` en vez de `UUID.fromString`**, siempre que el texto venga de
+  fuera (subject de un JWT, campo de un payload AMQP): valida el patrón y devuelve `null`, mientras
+  que `UUID.fromString` lanza `IllegalArgumentException` y sale como 500.
+- **`UtilColeccion.aplicarPorDefecto(x)`** en el constructor compacto de un `record` que recibe una
+  colección; hace el `null → List.of()` más la copia inmutable.
+
+Distingue `ValidatorObjeto.noNulo` de `UtilObjeto.esNulo`: el primero **acumula un error** en el
+`ValidationResult` porque el valor era obligatorio; el segundo es una guarda de flujo sobre un estado
+interno que legítimamente puede no estar asignado.
+
+**No fuerces un `Util` donde no ahorra nada.** `x != null ? x.metodo() : otro` no mejora con
+`UtilObjeto.esNulo`, y varios módulos `shared:` (`jpa`, `redis`, `amqp`, `web`) **no declaran
+`shared:util`**: meterlo ahí añade una arista al grafo de módulos a cambio de nada.
 
 ## Git y commits
 
