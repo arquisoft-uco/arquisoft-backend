@@ -1,0 +1,9 @@
+# ==================== RUTAS DE CONTROLADORES — CONTEXTO EVALUACIONES ====================
+# Un placeholder por segmento de path. OpenApiConfig lee la misma clave via @Value
+# para no duplicar el literal entre el controlador REST y la agrupacion de Swagger.
+# Vive en este modulo (no en el application.yml raiz) para que, si este contexto se
+# extrae a microservicio, se lleve su propia configuracion de rutas consigo.
+rutas:
+  evaluaciones:
+    items-cualitativos-jurado:
+      base: /evaluaciones/items-cualitativos-jurado

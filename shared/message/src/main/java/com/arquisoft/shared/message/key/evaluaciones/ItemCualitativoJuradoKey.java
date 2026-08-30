@@ -8,7 +8,8 @@ public enum ItemCualitativoJuradoKey implements ClaveMensaje {
     LOG_REGISTRANDO("evaluaciones.aplicacion.itemcualitativojurado.log.registrando", 1),
     LOG_VERIFICACION_REGISTRAR("evaluaciones.aplicacion.itemcualitativojurado.log.verificacion-registrar", 1),
     LOG_REGISTRADO("evaluaciones.aplicacion.itemcualitativojurado.log.registrado", 1),
-    LOG_GUARDADA("evaluaciones.infraestructura.itemcualitativojurado.log.guardada", 1);
+    LOG_GUARDADA("evaluaciones.infraestructura.itemcualitativojurado.log.guardada", 1),
+    LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.itemcualitativojurado.log.consulta-completada", 1);
 
     private final String clave;
     private final int parametros;

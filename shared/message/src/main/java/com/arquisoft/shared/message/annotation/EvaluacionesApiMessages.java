@@ -25,5 +25,8 @@ public final class EvaluacionesApiMessages {
         public static final String REGISTRAR_RESP_201 = "Ítem cualitativo registrado";
         public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
         public static final String REGISTRAR_RESP_422 = "El nombre del ítem ya existe";
+        public static final String CONSULTAR_SUMMARY = "Consultar ítems cualitativos";
+        public static final String CONSULTAR_DESCRIPTION = "Consulta todos los ítems cualitativos disponibles para el jurado, ordenados por nombre";
+        public static final String CONSULTAR_RESP_200 = "Listado de ítems cualitativos del jurado";
     }
 }
