@@ -31,5 +31,8 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_204 = "Descripción actualizada";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "El ítem cualitativo no existe";
+        public static final String CONSULTAR_SUMMARY = "Consultar ítems cualitativos";
+        public static final String CONSULTAR_DESCRIPTION = "Consulta todos los ítems cualitativos disponibles para el jurado, ordenados por nombre";
+        public static final String CONSULTAR_RESP_200 = "Listado de ítems cualitativos del jurado";
     }
 }
