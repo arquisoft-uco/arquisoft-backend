@@ -25,9 +25,15 @@ public class ModificarFichaPerfilUseCaseImpl implements ModificarFichaPerfilUseC
 
     @Override
     public void ejecutar(ModificacionFichaPerfilDomain entrada) {
+        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_MODIFICANDO),
+                entrada.getFichaPerfil(), entrada.getEstudiante());
+
         boolean esPropietario = vinculoEstudianteFichaExisteFinder.obtener(
                 new VinculoEstudianteFicha(entrada.getFichaPerfil(), entrada.getEstudiante()));
         boolean tituloYaExiste = tituloEnOtraFichaExisteFinder.obtener(entrada);
+
+        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VERIFICACION_MODIFICAR),
+                esPropietario, tituloYaExiste);
 
         modificarFichaPerfilValidator.validar(entrada, esPropietario, tituloYaExiste);
 

@@ -37,10 +37,15 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
         UUID fichaPerfil = cambio.getFichaPerfil();
         UUID nuevoAsesorFicha = cambio.getNuevoAsesorFicha();
 
+        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_CAMBIANDO_ASESOR), fichaPerfil, nuevoAsesorFicha);
+
         var ficha = fichaPerfilFinder.obtener(fichaPerfil).orElse(FichaPerfilDomain.VACIO);
         var asesorFicha = asesorFichaFinder.obtener(nuevoAsesorFicha).orElse(AsesorFichaDomain.VACIO);
         var estadoActual = estadoActualFichaPerfilFinder.obtener(fichaPerfil)
                 .orElse(EstadoFichaPerfilDomain.VACIO);
+
+        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VERIFICACION_CAMBIO_ASESOR),
+                !ficha.esVacio(), !asesorFicha.esVacio(), estadoActual.getEstadoFicha());
 
         cambiarAsesorFichaValidator.validar(cambio, ficha, asesorFicha, estadoActual);
 

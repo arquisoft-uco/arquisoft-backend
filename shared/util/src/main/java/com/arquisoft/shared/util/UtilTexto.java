@@ -7,6 +7,9 @@ public final class UtilTexto {
     private static final String PATRON_CORREO =
             "^[_A-Za-z0-9\\-\\+]+(\\.[_A-Za-z0-9\\-]+)*@[A-Za-z0-9\\-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
+    private static final String ARROBA = "@";
+    private static final String OCULTO = "***";
+
     private UtilTexto() {}
 
     public static String aplicarTrim(final String texto) {
@@ -25,5 +28,13 @@ public final class UtilTexto {
 
     public static boolean correoValido(final String correo) {
         return coincidePatron(correo, PATRON_CORREO);
+    }
+    public static String enmascararCorreo(final String correo) {
+        String seguro = aplicarTrim(correo);
+        int arroba = seguro.indexOf(ARROBA);
+        if (arroba < 1) {
+            return seguro.isEmpty() ? VACIO : OCULTO;
+        }
+        return seguro.charAt(0) + OCULTO + seguro.substring(arroba);
     }
 }

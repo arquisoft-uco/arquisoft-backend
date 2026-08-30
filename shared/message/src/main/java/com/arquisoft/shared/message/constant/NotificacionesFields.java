@@ -16,5 +16,7 @@ public final class NotificacionesFields {
         public static final String DESTINATARIO = "destinatario";
         public static final String ASUNTO = "asunto";
         public static final String ESTADO = "estado";
+        public static final String DESTINATARIO_NOMBRE = "destinatarioNombre";
+        public static final String CUERPO = "cuerpo";
     }
 }

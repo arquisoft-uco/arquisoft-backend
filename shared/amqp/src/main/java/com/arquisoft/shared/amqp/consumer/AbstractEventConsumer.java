@@ -38,6 +38,8 @@ public abstract class AbstractEventConsumer {
 
         try (var alcance = gestorTraza.abrir(solicitud)) {
             gestorTraza.registrarUsuario(header(message, TrazaHeaders.AMQP_USER_ID));
+            log.debug(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_RECIBIDO),
+                    message.getMessageProperties().getConsumerQueue(), deliveryTag);
             try {
                 handler.handle();
             } catch (Exception ex) {
@@ -46,6 +48,9 @@ public abstract class AbstractEventConsumer {
                 channel.basicNack(deliveryTag, false, false);
                 return;
             }
+
+            log.debug(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_PROCESADO),
+                    message.getMessageProperties().getConsumerQueue(), deliveryTag);
         }
         // Solo se alcanza si handler.handle() no lanzó excepción.
         channel.basicAck(deliveryTag, false);

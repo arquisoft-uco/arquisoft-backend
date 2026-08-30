@@ -19,5 +19,7 @@ public final class NotificacionesCodes {
         public static final String TRANSICION_INVALIDA = "NOTIFICACION_TRANSICION_INVALIDA";
         public static final String TIPO_NO_ENCONTRADO = "NOTIFICACION_TIPO_NO_ENCONTRADO";
         public static final String ESTADO_NO_ENCONTRADO = "NOTIFICACION_ESTADO_NO_ENCONTRADO";
+        public static final String DESTINATARIO_NOMBRE_REQUERIDO = "NOTIFICACION_DESTINATARIO_NOMBRE_REQUERIDO";
+        public static final String CUERPO_REQUERIDO = "NOTIFICACION_CUERPO_REQUERIDO";
     }
 }

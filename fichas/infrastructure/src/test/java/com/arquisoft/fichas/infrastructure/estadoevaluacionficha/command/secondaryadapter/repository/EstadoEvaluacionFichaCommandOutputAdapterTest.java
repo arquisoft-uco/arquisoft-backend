@@ -9,6 +9,7 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryp
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.entity.EstadoEvaluacionFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.mapper.EstadoEvaluacionFichaJpaMapper;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.entity.EvaluacionFichaPerfilJpaEntity;
+import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +41,8 @@ class EstadoEvaluacionFichaCommandOutputAdapterTest {
     void setUp() {
         adapter = new EstadoEvaluacionFichaCommandOutputAdapter(
                 estadoEvaluacionFichaRepository,
-                estadoEvaluacionRepository);
+                estadoEvaluacionRepository,
+                mock(AppLogger.class));
     }
 
     @Test

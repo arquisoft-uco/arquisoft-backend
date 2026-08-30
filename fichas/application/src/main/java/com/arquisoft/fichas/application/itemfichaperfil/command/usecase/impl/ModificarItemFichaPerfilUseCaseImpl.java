@@ -31,6 +31,9 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
 
     @Override
     public void ejecutar(ModificacionItemFichaPerfilDomain entrada) {
+        logger.info(Mensajes.obtener(ItemFichaPerfilKey.LOG_MODIFICANDO),
+                entrada.getItem(), entrada.getEstudiante());
+
         var fichaEncontrada = fichaPerfilDelItemFinder.obtener(entrada.getItem());
 
         boolean itemExiste = fichaEncontrada.isPresent();
@@ -43,6 +46,9 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
 
         var estadoActual = fichaEncontrada.flatMap(estadoActualFichaPerfilFinder::obtener)
                 .orElse(EstadoFichaPerfilDomain.VACIO);
+
+        logger.debug(Mensajes.obtener(ItemFichaPerfilKey.LOG_VERIFICACION_MODIFICAR),
+                itemExiste, esPropietario, fichaDelItem);
 
         modificarItemFichaPerfilValidator.validar(entrada.getItem(), entrada.getEstudiante(),
                 fichaDelItem, itemExiste, esPropietario, estadoActual);

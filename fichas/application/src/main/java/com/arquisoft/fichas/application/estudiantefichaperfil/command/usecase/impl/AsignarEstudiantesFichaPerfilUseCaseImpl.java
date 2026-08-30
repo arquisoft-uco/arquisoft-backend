@@ -32,10 +32,16 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
 
     @Override
     public void ejecutar(AgregacionEstudiantesFichaPerfilDomain entrada) {
+        logger.info(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_ASIGNANDO),
+                entrada.getFichaPerfil(), entrada.getCantidad());
+
         boolean fichaExiste = fichaPerfilExisteFinder.obtener(entrada.getFichaPerfil());
         List<UUID> estudiantesExistentes = estudiantesExistentesFinder.obtener(entrada.getEstudiantes());
         List<UUID> yaVinculados = estudiantesYaVinculadosFinder.obtener(entrada.getRelaciones());
         long vinculadosActuales = estudiantesVinculadosContadorFinder.obtener(entrada.getFichaPerfil());
+
+        logger.debug(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_VERIFICACION_ASIGNAR),
+                fichaExiste, estudiantesExistentes.size(), yaVinculados.size(), vinculadosActuales);
 
         asignarEstudiantesFichaPerfilValidator.validar(
                 entrada, fichaExiste, estudiantesExistentes, yaVinculados, vinculadosActuales);

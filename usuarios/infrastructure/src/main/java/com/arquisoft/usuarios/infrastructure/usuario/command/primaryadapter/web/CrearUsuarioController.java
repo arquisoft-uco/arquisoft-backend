@@ -60,7 +60,7 @@ public class CrearUsuarioController {
         UUID id = crearUsuarioInteractor.ejecutar(request.toCommand());
 
         var response = new CrearUsuarioResponseDTO(
-                id, request.email(), request.rol().toDomain().getCodigo());
+                id, request.email(), request.rol().getCodigo());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
