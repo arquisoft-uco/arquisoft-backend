@@ -41,6 +41,14 @@ class TipoSolicitudTest {
     }
 
     @Test
+    void debeReconocerNovedadParaElAsesor_delCatalogo() {
+        assertThat(TipoSolicitud.desde("NOVEDAD_PARA_EL_ASESOR"))
+                .isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR);
+        assertThat(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()).isEqualTo("NOVEDAD_PARA_EL_ASESOR");
+        assertThat(TipoSolicitud.esValido("NOVEDAD_PARA_EL_ASESOR")).isTrue();
+    }
+
+    @Test
     void debeExponerElNombreLegibleDelCatalogo() {
         assertThat(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getNombre())
                 .isEqualTo("Novedad para el Coordinador");
