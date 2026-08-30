@@ -448,6 +448,42 @@ convertido en `Command.crear(...)`, o puerto que hable `Entity`. La tarea `verif
 cuelga de `check`, así que una HU que lo intente no pasa el build.
 Detalle en `arquisoft-estandares`.
 
+
+### Efectos externos y reintento (secciones 5, 10 y 11)
+
+Si el caso de uso llama a un tercero que puede rechazar (SMTP, proveedor externo, API), el plan
+responde **tres** preguntas antes de escribir el árbol de archivos:
+
+1. **¿El rechazo es excepción o valor?** Si el caso de uso lo captura para seguir —porque es un estado
+   a persistir, no un error del flujo— es un `sealed interface` de resultado, no una excepción
+   (`ResultadoEntrega.Entregada`/`Rechazada`). Un `try/catch` en `application` es señal de que se
+   modeló mal.
+2. **¿Hay que reintentar?** Si sí, el reintento sale de la base con un `@Scheduled`, nunca del
+   consumidor AMQP. Y entonces la sección 11 tiene que persistir **lo que se envió**, no solo el
+   resultado: sin el mensaje guardado no hay nada con qué reconstruir el reintento. Añade también
+   `intentos` y `fecha_ultimo_intento`.
+3. **¿Cambia eso el objeto de acción?** Los campos que pasan a persistirse son estado del agregado, y
+   un `{Accion}{Entidad}Domain` que solo lo envolvía deja de justificarse (ver `arquisoft-estandares`).
+
+### Evento nuevo ⇒ cola, DLQ y binding (sección 10)
+
+Un evento nuevo no son solo las ocho piezas de la transición de estado. La cola del consumidor
+declara además **su cola `.dead` y el `Binding` contra `arquisoft.dlx`**, vía `ColaDeadLetter`. Sin
+ese binding el descarte es silencioso y el mensaje se pierde sin rastro. El payload declara
+`idEvento` y `ocurridoEn`.
+
+### Replicación entre contextos (secciones 4 y 10)
+
+Cuando la HU dice "esta entidad debe existir también en X", **no es un registro replicado: es un dueño
+más una tabla espejo**. Antes de diseñar nada, aplica el test de `arquisoft-arquitectura`: ¿puede el
+contexto destino rechazar por regla de negocio? Si no puede, es replicación eventual y **no hace falta
+saga** — no propongas una.
+
+Si la HU incluye modificación o baja de una entidad espejada, el plan tiene que cubrir las cuatro
+piezas ya decididas (detalladas en `arquisoft-arquitectura` → *Replicación entre contextos*):
+`ocurrido_en` persistido y descarte de eventos viejos, baja lógica en vez de `DELETE`, lápida para el
+borrado que llega antes que el alta, y nada de borrado en cascada entre contextos.
+
 ### Presupuesto de tests (sección 12)
 
 | Tamaño de HU | Tests esperados |

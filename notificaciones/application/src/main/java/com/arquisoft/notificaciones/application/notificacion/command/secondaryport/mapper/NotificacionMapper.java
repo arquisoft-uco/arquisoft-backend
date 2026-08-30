@@ -16,10 +16,14 @@ public final class NotificacionMapper {
                 aggregate.getTipo().getId(),
                 aggregate.getDestinatario(),
                 aggregate.getAsunto(),
+                aggregate.getDestinatarioNombre(),
+                aggregate.getCuerpo(),
                 aggregate.getEstado().getId(),
                 aggregate.getDetalleError(),
                 aggregate.getFechaCreacion(),
-                aggregate.getFechaEnvio());
+                aggregate.getFechaEnvio(),
+                aggregate.getIntentos(),
+                aggregate.getFechaUltimoIntento());
     }
 
     public static NotificacionDomain toDomain(NotificacionEntity entity) {
@@ -30,8 +34,12 @@ public final class NotificacionMapper {
                         TipoNotificacion.desde(entity.tipo()),
                         entity.destinatario(),
                         entity.asunto(),
+                        entity.destinatarioNombre(),
+                        entity.cuerpo(),
                         entity.fechaCreacion(),
-                        entity.fechaEnvio()),
+                        entity.fechaEnvio(),
+                        entity.intentos(),
+                        entity.fechaUltimoIntento()),
                 EstadoNotificacion.desde(entity.estado()),
                 entity.detalleError());
     }

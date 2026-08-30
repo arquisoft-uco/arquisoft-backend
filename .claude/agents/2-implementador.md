@@ -267,6 +267,18 @@ espera respuesta: "¿Sigues con @3-tester (recomendado) o vas directo a @4a-vali
   ausente al use case, declara `public static final X VACIO` con los valores cero
   (`UtilUUID.obtenerUUIDPorDefecto()`, `UtilTexto.VACIO`, …) y `esVacio()` comparando identidad.
   El agregado es siempre una `final class` plana: no extiende nada para emitir eventos.
+- **Cola AMQP nueva:** además del `Queue` + `Binding` de entrada, declara la cola `.dead` y su
+  `Binding` contra `arquisoftDeadLetterExchange`, siempre vía `ColaDeadLetter.declarar(...)`/
+  `enlazar(...)`. Ningún `*QueueConfig` escribe literales: routing key en `EventTopics`, prefijo en
+  `{Contexto}Queues`, argumentos y sufijos en `RabbitMQConfig`. El `{Evento}Payload` declara
+  `idEvento` y `ocurridoEn`.
+- **Fallo de un puerto que el negocio registra:** es un `sealed interface` de resultado, no una
+  excepción. Cero `try/catch` en `application`. Si además hay que reintentarlo, el reintento va en un
+  `@Scheduled` que abre `gestorTraza.abrir(SolicitudTraza.paraProgramado())` — nunca dentro del
+  consumidor AMQP — y la migración persiste **el mensaje enviado**, no solo el resultado.
+- **Enum de dominio nombrado desde infraestructura:** enum espejo en el paquete del adapter que lo
+  usa (`{Enum}Evento` en `primaryadapter/amqp/`, `{Enum}Persistencia` en `secondaryadapter/repository/`),
+  con **todas** las constantes del dominio y su test de deriva. Nunca un literal suelto.
 - **IDs:** siempre `UUID`, generado en el setter (`UtilUUID`), nunca `UUID.randomUUID()` directo en
   dominio.
 - **Enums de catálogo:** `desde(String)`/`esValido(String)`/`getId()`, nunca `valueOf` fuera del

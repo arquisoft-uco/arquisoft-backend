@@ -203,7 +203,78 @@ Es lo que hacen `RolUsuarioDTO` (usuarios, porque además es el contrato JSON) y
 String` basta; con seis son seis literales sueltos y seis pruebas de deriva. El enum da un sitio
 único donde ver qué valores existen y **una** prueba que cubre las dos direcciones: que cada código
 resuelva con `desde(...)`, y que ambos enums declaren el mismo conjunto de constantes — así, si el
-dominio gana un valor y nadie lo espeja, el build falla. Ver `TipoNotificacionEventoTest`.
+dominio gana un valor y nadie lo espeja, el build falla.
+
+Hay dos espejos hoy y el nombre lleva **para qué lado** se espeja, no solo qué:
+
+| Espejo | Dónde vive | Para qué |
+|---|---|---|
+| `TipoNotificacionEvento` | `primaryadapter/amqp/` | el código que el consumidor pone en el `Command` |
+| `EstadoNotificacionPersistencia` | `secondaryadapter/repository/` | el valor de la columna en una consulta del adapter |
+
+Cada uno vive **en el paquete del adaptador que lo usa**, no en un `config/` común: es un detalle de
+ese adaptador, no del contexto. Y declara **todas** las constantes del enum de dominio, no solo la
+que se usa hoy — con una sola, la prueba no detectaría que el dominio ganó un valor que la
+infraestructura ignora, que es precisamente la deriva que se quiere cazar. Ver
+`TipoNotificacionEventoTest` y `EstadoNotificacionPersistenciaTest`.
+
+
+## El objeto de acción desaparece cuando sus campos pasan a ser estado
+
+`{Accion}{Entidad}Domain` existe para el paquete de cosas que la acción arrastra y **el agregado no
+posee**. En cuanto uno de esos campos hay que persistirlo, deja de ser transporte y pasa a ser estado
+del agregado — y el objeto de acción se queda envolviéndolo sin aportar nada, que es la indirección
+que la convención prohíbe.
+
+Pasó en este repo: al persistir `cuerpo` y `destinatario_nombre` para poder reintentar el envío,
+`EnvioNotificacionDomain` se quedó sin contenido propio y se borró. `EnviarNotificacionMapper.toDomain(command)`
+devuelve ahora `NotificacionDomain` directo. **El `{Accion}{Entidad}Mapper` no es lo que se elimina —
+ese es obligatorio siempre**; lo que desaparece es el objeto de acción.
+
+Al planificar: si la HU dice "hay que poder reintentar/auditar/reconstruir X", pregúntate qué campos
+deja eso del lado persistido antes de decidir si el objeto de acción se justifica.
+
+## Migraciones que añaden columnas a una tabla con filas
+
+Una columna `NOT NULL` nueva necesita `DEFAULT` o Flyway falla contra la tabla poblada. El `DEFAULT`
+no es un descuido: es lo que declara qué significa esa columna para las filas anteriores, y eso va en
+el comentario de la migración.
+
+```sql
+ALTER TABLE notificacion
+    ADD COLUMN cuerpo   TEXT    NOT NULL DEFAULT '',
+    ADD COLUMN intentos INTEGER NOT NULL DEFAULT 0;
+```
+
+Recordatorio de `CLAUDE.md`: versión **timestamp** (`V{yyyyMMddHHmmss}__…`), en
+`db/migration/{contexto}/`, y nunca se retrocede un timestamp para colar una migración antes de otra
+ya aplicada.
+
+## Payload de evento: campos fijos y prueba de contrato
+
+Todo `{Evento}Payload` declara al menos `idEvento` (clave de idempotencia) y **`ocurridoEn`**
+(`Instant`, instante del hecho en el origen), más lo suyo. Los dos viajan siempre en el JSON porque
+`DomainEvent` los asigna; omitirlos del record los tira en silencio. `ocurridoEn` es lo que permite
+descartar eventos viejos cuando llegan desordenados — ver la sección de espejos en
+`arquisoft-arquitectura`.
+
+Su prueba **instancia la configuración de producción**, no un mapper armado a mano:
+
+```java
+private final JsonMapper mapper = new RabbitMQConfig().rabbitObjectMapper();
+```
+
+El productor serializa con ese mismo bean (`RabbitTemplate` usa `JacksonJsonMessageConverter(rabbitObjectMapper)`),
+así que es lo único que prueba el contrato de verdad: un doble configurado a mano puede pasar el test
+y fallar en el broker. Dos casos, y el segundo importa tanto como el primero:
+
+1. Serializar una subclase real de `DomainEvent` y deserializarla en el payload — comprueba que los
+   tipos sobreviven el viaje (un `Instant` incluye la precisión de nanosegundos).
+2. Un JSON **sin** el campo nuevo deserializa con `null`, no revienta. Es lo que permite desplegar
+   productor y consumidor en cualquier orden, y deja fijado que `FAIL_ON_UNKNOWN_PROPERTIES` en
+   `false` no es casualidad.
+
+Ver `UsuarioCreadoPayloadTest` y `AsesorFichaCambiadoPayloadTest`.
 
 ## Excepciones (4 bases, en `com.arquisoft.shared.exception`)
 

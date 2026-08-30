@@ -9,7 +9,7 @@ import com.arquisoft.notificaciones.application.notificacion.command.secondarypo
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.MensajeNotificacion;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.ResultadoEntrega;
 import com.arquisoft.notificaciones.application.notificacion.command.result.EnvioNotificacionResult;
-import com.arquisoft.notificaciones.domain.notificacion.EnvioNotificacionDomain;
+import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;
@@ -46,7 +46,7 @@ class EnviarNotificacionUseCaseTest {
     @InjectMocks
     private EnviarNotificacionUseCaseImpl enviarNotificacionUseCase;
 
-    private EnvioNotificacionDomain envio() {
+    private NotificacionDomain envio() {
         return EnviarNotificacionMapper.toDomain(EnviarNotificacionCommand.crear(
                 ID_EVENTO,
                 TipoNotificacion.ASESOR_FICHA_CAMBIADO.getId(),

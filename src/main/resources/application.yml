@@ -159,6 +159,13 @@ notificacion:
   proveedor: ${NOTIFICACION_PROVEEDOR:log}
   remitente-email: ${NOTIFICACION_REMITENTE_EMAIL:no-reply@arquisoft.local}
   remitente-nombre: ${NOTIFICACION_REMITENTE_NOMBRE:Arquisoft}
+  # Un envio rechazado se guarda como FALLIDA y lo reintenta un job programado, no el consumidor:
+  # con prefetch=1 reintentar dentro del listener bloquearia la cola, y reencolar el evento no
+  # sirve porque la idempotencia por event_id lo daria por duplicado sin reenviarlo.
+  reintento:
+    max-intentos: ${NOTIFICACION_REINTENTO_MAX_INTENTOS:5}
+    limite-por-ciclo: ${NOTIFICACION_REINTENTO_LIMITE:50}
+    intervalo: ${NOTIFICACION_REINTENTO_INTERVALO:PT5M}
 
 # ==================== SMTP ====================
 # Valores por defecto apuntando a Mailpit (docker-compose): captura los correos en local

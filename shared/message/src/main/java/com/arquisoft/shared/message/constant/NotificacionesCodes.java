@@ -17,9 +17,12 @@ public final class NotificacionesCodes {
         public static final String DESTINATARIO_INVALIDO = "NOTIFICACION_DESTINATARIO_INVALIDO";
         public static final String ASUNTO_REQUERIDO = "NOTIFICACION_ASUNTO_REQUERIDO";
         public static final String TRANSICION_INVALIDA = "NOTIFICACION_TRANSICION_INVALIDA";
+        public static final String REINTENTO_NO_PERMITIDO = "NOTIFICACION_REINTENTO_NO_PERMITIDO";
         public static final String TIPO_NO_ENCONTRADO = "NOTIFICACION_TIPO_NO_ENCONTRADO";
         public static final String ESTADO_NO_ENCONTRADO = "NOTIFICACION_ESTADO_NO_ENCONTRADO";
         public static final String DESTINATARIO_NOMBRE_REQUERIDO = "NOTIFICACION_DESTINATARIO_NOMBRE_REQUERIDO";
         public static final String CUERPO_REQUERIDO = "NOTIFICACION_CUERPO_REQUERIDO";
+        public static final String MAX_INTENTOS_INVALIDO = "NOTIFICACION_MAX_INTENTOS_INVALIDO";
+        public static final String LIMITE_INVALIDO = "NOTIFICACION_LIMITE_INVALIDO";
     }
 }

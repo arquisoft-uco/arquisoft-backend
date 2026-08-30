@@ -9,8 +9,12 @@ public record NotificacionEntity(
         String tipo,
         String destinatario,
         String asunto,
+        String destinatarioNombre,
+        String cuerpo,
         String estado,
         String detalleError,
         Instant fechaCreacion,
-        Instant fechaEnvio) {
+        Instant fechaEnvio,
+        int intentos,
+        Instant fechaUltimoIntento) {
 }

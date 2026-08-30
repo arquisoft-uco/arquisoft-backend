@@ -544,6 +544,118 @@ AbstractEventConsumer` posee el `AppLogger` (`protected final`) y el `registrar(
 con el `switch` exhaustivo del desenlace. La subclase solo pone su `@RabbitListener`, su log de
 entrada y su plantilla. Ventaja real: cuando aparezca un desenlace nuevo, el compilador falla en un
 sitio y no en seis.
+
+### La cola `.dead` se declara siempre, con su `Binding`
+
+Marcar `x-dead-letter-exchange` en la cola de origen **no basta**. Un exchange sin ninguna cola
+enlazada descarta lo que le llega, así que un mensaje que falla se evapora sin dejar rastro
+recuperable: queda el `logger.error` y nada más. Toda cola de evento declara además su cola de
+descarte y el `Binding` correspondiente:
+
+```java
+@Bean
+public Queue notificacionesAsesorCambiadoDeadQueue() {
+    return ColaDeadLetter.declarar(ASESOR_CAMBIADO_QUEUE);
+}
+
+@Bean
+public Binding notificacionesAsesorCambiadoDeadBinding(
+        Queue notificacionesAsesorCambiadoDeadQueue,
+        @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+    return ColaDeadLetter.enlazar(notificacionesAsesorCambiadoDeadQueue, arquisoftDeadLetterExchange);
+}
+```
+
+`ColaDeadLetter` (`shared:amqp`) es quien compone el nombre, y los dos lados que lo necesitan —el
+argumento `x-dead-letter-routing-key` de la cola de origen y el `Binding`— llaman a
+`ColaDeadLetter.nombre(cola)`. Es el mismo riesgo que `EventTopics` resuelve para la routing key: dos
+sitios escribiendo la misma cadena, y si divergen **el descarte vuelve a ser silencioso**. Las colas
+llevan `x-message-ttl` (`RabbitMQConfig.TTL_COLA_DEAD_LETTER`, 14 días) para no crecer sin techo.
+
+### El `nack` distingue fallo transitorio de mensaje envenenado
+
+`AbstractEventConsumer.rechazar(...)` clasifica la excepción antes de rechazar, y no hay decisión que
+tomar en el consumidor concreto:
+
+| Fallo | Qué hace |
+|---|---|
+| Transitorio, primera entrega | `basicNack(requeue=true)` — un reintento |
+| Transitorio, ya reentregado | → DLQ |
+| Envenenado | → DLQ, sin reintentar |
+
+Transitorio es `InfrastructureException` o `DataAccessException` **en cualquier punto de la cadena de
+causas** (llegan casi siempre envueltas). Todo lo demás —payload que no deserializa, `Command.crear`
+que rechaza, `DomainException`— es envenenado: fallará igual en el siguiente intento y reencolarlo
+solo bloquea la cola. El límite de un reintento sale de `isRedelivered()`, que ya trae el mensaje: no
+hace falta contador propio ni republicar.
+
+**El reintento es inmediato, sin backoff.** Sirve para un pico de contención; una base caída dos
+minutos agota el intento y acaba en el DLQ —pero ahí *queda*, que es la diferencia. Un backoff real
+es el patrón de cola de reintento con TTL, y eso es topología nueva: no se añade sin evidencia.
+
+### Un efecto externo que puede fallar se reintenta desde la base, no desde la cola
+
+Cuando el caso de uso llama a un tercero que puede rechazar (SMTP, un proveedor externo), el reintento
+**no** puede vivir en el consumidor, por dos razones que se refuerzan: con `prefetch: 1` bloquearía el
+listener mientras el proveedor está caído, y reencolar el evento no reenvía nada porque la
+idempotencia por `idEvento` lo daría por `Duplicada`. El fallo se guarda como estado y lo reintenta un
+`@Scheduled`, que abre su propio `AlcanceTraza` con `SolicitudTraza.paraProgramado()`.
+
+**Consecuencia de diseño que se olvida siempre: para reintentar hay que persistir lo que se envió.**
+Guardar solo el resultado deja la fila `FALLIDA` sin nada con qué reconstruir el mensaje. `notificacion`
+guarda `destinatario_nombre` y `cuerpo` —el texto ya renderizado— además de `intentos` y
+`fecha_ultimo_intento` para acotar los ciclos. Re-renderizar la plantilla no es alternativa: sus
+parámetros no quedan en ninguna columna.
+
+Referencia completa: `ReintentarNotificacionesFallidasUseCaseImpl` + `ReintentoNotificacionesConfig`.
+
+### Replicación entre contextos: dueño único, espejo y lápida
+
+Una entidad que "existe en varios contextos" tiene **un dueño** y los demás guardan una **tabla
+espejo** con lo poco que necesitan (`fichas/application/usuario/RegistrarUsuarioUseCase` alimentado
+por `UsuarioCreadoConsumer`). No es un registro replicado en N sitios que pueda fallar a medias: es un
+hecho del dueño que los demás replican.
+
+El test que decide el diseño es **¿puede el contexto destino rechazar por regla de negocio?**
+
+| Puede rechazar | Herramienta |
+|---|---|
+| No — solo necesita enterarse | Replicación eventual: outbox + reintento + idempotencia |
+| Sí — tiene reglas propias que vetan | Saga con compensación |
+
+Todos los flujos entre contextos que existen hoy caen en la primera fila.
+
+**Lo que exige el espejo cuando llegue su HU** (decisión ya tomada, no volver a discutirla):
+
+1. **`ocurridoEn` en el payload y en la tabla espejo.** Ya viaja en el JSON (`DomainEvent` lo asigna) y
+   los payloads lo declaran. El espejo guarda el `ocurrido_en` del último evento aplicado y **descarta
+   todo evento más viejo**: última escritura gana por tiempo del hecho, no por orden de llegada.
+2. **La baja es lógica, nunca `DELETE`.** Un estado (`ANULADO`) con su fecha. Sin fila borrada no hay
+   nada que resucitar, y en un sistema académico saber que alguien fue dado de baja importa más que
+   ahorrar la fila.
+3. **Lápida.** Un borrado que llega para una entidad que el espejo nunca recibió **inserta el registro
+   ya marcado como anulado**. Si no, el `UsuarioCreado` atrasado entra después y revive a un usuario
+   eliminado — la resurrección. Corolario: borrar algo que no está es un **no-op exitoso**, nunca una
+   excepción (una excepción manda al DLQ un borrado que en realidad ya se cumplió).
+4. **Nada de borrado en cascada entre contextos.** Al borrar, `fichas` sí puede vetar (una ficha con
+   evaluaciones deja un histórico huérfano): eso es una regla del dueño, no un `DELETE` propagado.
+
+**El orden no está garantizado, y no por el DLQ.** `application.yml` declara `concurrency: 5` sobre
+cada cola: RabbitMQ mantiene FIFO hacia *un* consumidor, pero con cinco compitiendo, dos eventos de la
+misma entidad pueden procesarse a la vez. Por eso la solución es la versión por `ocurridoEn` y no
+confiar en el orden de la cola.
+
+### Saga: solo cuando el destino puede rechazar
+
+Una saga parte la operación en transacciones locales, cada una con su **compensación** — no se rebobina,
+se emite un hecho nuevo que contrarresta al anterior (no se "des-cobra": se reembolsa). Solo hace falta
+cuando un paso posterior puede **rechazar por negocio**; si el fallo es técnico, se reintenta, y
+compensar sería borrar al usuario del dueño porque a Postgres le dio hipo en otro contexto.
+
+No hay ninguna saga en el repo hoy y la palabra no aparece en ningún ADR. Antes de proponer una,
+aplicar el test de arriba. Lo que **nunca** es opción es 2PC/`XA` entre las nueve bases: bloquea
+recursos entre contextos y reintroduce el acoplamiento que los eventos eliminan.
+
 ## Aislamiento de persistencia: una base de datos por contexto
 
 No son schemas dentro de una base común: `init-db.sql` crea una **base por bounded context**

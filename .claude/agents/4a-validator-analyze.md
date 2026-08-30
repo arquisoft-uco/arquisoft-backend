@@ -374,6 +374,42 @@ que en `RegistrarFichaPerfilControllerTest`. `@MockBean` en vez de `@MockitoBean
 excluido**, así que un agregado sin tests hunde el porcentaje del módulo. No reportes como
 "excluido" algo que no está en esa lista.
 
+
+**Cola de evento sin DLQ declarada (bloqueante).** Un `*QueueConfig` que declara `Queue` + `Binding`
+de entrada pero **no** la cola `.dead` y su `Binding` contra `arquisoftDeadLetterExchange` deja los
+mensajes fallidos descartándose en silencio. Verifica además que ambos lados compongan el nombre con
+`ColaDeadLetter.nombre(...)`/`declarar(...)` y no concatenando el sufijo a mano: si el argumento
+`x-dead-letter-routing-key` y el binding divergen, el descarte vuelve a ser mudo. Literales de cola,
+routing key o argumentos AMQP escritos a mano en un `*QueueConfig` son bloqueantes — van en
+`EventTopics`, `{Contexto}Queues` y `RabbitMQConfig`.
+
+**Payload sin `ocurridoEn` (bloqueante).** Todo `{Evento}Payload` declara `idEvento` y `ocurridoEn`.
+Ambos viajan siempre en el JSON porque `DomainEvent` los asigna; omitirlos del `record` los descarta
+en silencio y deja al consumidor sin forma de ordenar eventos que lleguen desordenados. Su
+`{Evento}PayloadTest` debe usar `new RabbitMQConfig().rabbitObjectMapper()` — un `ObjectMapper`
+construido a mano en el test es ⚠️ menor pero se reporta: puede pasar y fallar en el broker.
+
+**`try/catch` en `application` alrededor de un puerto (bloqueante).** Si el caso de uso captura para
+seguir, el fallo era un valor y no una excepción: `sealed interface` de resultado. Revisa también que
+no se haya añadido una excepción nueva para algo que el caso de uso persiste como estado.
+
+**Reintento dentro del consumidor AMQP (bloqueante).** Un `EnvioOutputPort` reintentado en bucle
+dentro del `handle()` bloquea el listener con `prefetch: 1`, y reencolar el evento no reenvía nada
+porque la idempotencia por `idEvento` lo da por duplicado. El reintento sale de la base con un
+`@Scheduled` que abre su propio `AlcanceTraza`. Si hay reintento, comprueba que la migración persista
+**el mensaje enviado** y no solo el resultado: sin eso el job no tiene con qué reconstruirlo.
+
+**Espejo de enum incompleto (bloqueante).** Un enum espejo en infraestructura
+(`{Enum}Evento`/`{Enum}Persistencia`) que declara solo la constante usada hoy no detecta la deriva que
+justifica su existencia: tiene que declarar **todas** las del enum de dominio y tener su test de las
+dos direcciones. Un literal suelto de estado o tipo en un adapter, en vez del espejo, también es
+bloqueante.
+
+**Borrado en cascada o `DELETE` sobre una tabla espejo (bloqueante).** La baja de una entidad
+replicada es lógica (estado `ANULADO` con fecha) y el borrado que llega antes que el alta inserta la
+lápida. Un consumidor de borrado que lanza excepción cuando la fila no existe es bloqueante: manda al
+DLQ un borrado que ya estaba cumplido. Ver `arquisoft-arquitectura` → *Replicación entre contextos*.
+
 ## FASE 3 — Estado de tests (mental)
 
 Lee la fila `Tests` de la Trazabilidad del plan: `✅ Completado` → tests ejecutados; `⏳ Pendiente`

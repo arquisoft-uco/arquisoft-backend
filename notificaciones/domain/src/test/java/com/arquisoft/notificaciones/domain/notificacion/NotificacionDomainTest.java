@@ -18,10 +18,13 @@ class NotificacionDomainTest {
     private static final String ID_EVENTO = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
     private static final String DESTINATARIO = "ana.gomez@soyuco.edu.co";
     private static final String ASUNTO = "Se te asignó la ficha";
+    private static final String NOMBRE = "Ana Gomez";
+    private static final String CUERPO = "Hola Ana, ahora eres la asesora.";
 
     private NotificacionDomain notificacionValida() {
         return NotificacionDomain.crear(
-                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO);
+                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO,
+                NOMBRE, CUERPO);
     }
 
     @Test
@@ -44,7 +47,8 @@ class NotificacionDomainTest {
     void debeLanzarDomainValidationException_cuandoElEventIdEstaEnBlanco() {
         // Act
         Throwable excepcion = catchThrowable(() -> NotificacionDomain.crear(
-                "  ", TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO));
+                "  ", TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO,
+                NOMBRE, CUERPO));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -60,7 +64,7 @@ class NotificacionDomainTest {
     void debeLanzarDomainValidationException_cuandoElTipoEsNulo() {
         // Act
         Throwable excepcion = catchThrowable(() ->
-                NotificacionDomain.crear(ID_EVENTO, null, DESTINATARIO, ASUNTO));
+                NotificacionDomain.crear(ID_EVENTO, null, DESTINATARIO, ASUNTO, NOMBRE, CUERPO));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -73,7 +77,8 @@ class NotificacionDomainTest {
     void debeLanzarDomainValidationException_cuandoElDestinatarioNoEsUnCorreo() {
         // Act
         Throwable excepcion = catchThrowable(() -> NotificacionDomain.crear(
-                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, "no-es-un-correo", ASUNTO));
+                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, "no-es-un-correo", ASUNTO,
+                NOMBRE, CUERPO));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -86,7 +91,8 @@ class NotificacionDomainTest {
     void debeLanzarDomainValidationException_cuandoElAsuntoEstaEnBlanco() {
         // Act
         Throwable excepcion = catchThrowable(() -> NotificacionDomain.crear(
-                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, "  "));
+                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, "  ",
+                NOMBRE, CUERPO));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -99,11 +105,11 @@ class NotificacionDomainTest {
     void debeAcumularVariosErrores_cuandoFallanVariosCampos() {
         // Act — la validación de integridad acumula, no corta en el primer error
         Throwable excepcion = catchThrowable(() ->
-                NotificacionDomain.crear(null, null, null, null));
+                NotificacionDomain.crear(null, null, null, null, null, null));
 
         // Assert
         assertThat(((DomainValidationException) excepcion).getValidationResult().getErrores())
-                .hasSize(4);
+                .hasSize(6);
     }
 
     @Test
@@ -161,7 +167,7 @@ class NotificacionDomainTest {
         NotificacionDomain notificacion = NotificacionDomain.reconstruir(
                 new NotificacionDomain.DatosNotificacion(
                         id, ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO,
-                        DESTINATARIO, ASUNTO, creacion, envio),
+                        DESTINATARIO, ASUNTO, NOMBRE, CUERPO, creacion, envio, 0, null),
                 EstadoNotificacion.ENVIADA,
                 null);
 

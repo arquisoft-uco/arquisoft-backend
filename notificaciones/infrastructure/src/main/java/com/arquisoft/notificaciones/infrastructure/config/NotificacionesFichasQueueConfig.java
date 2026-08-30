@@ -1,9 +1,11 @@
 package com.arquisoft.notificaciones.infrastructure.config;
 
+import com.arquisoft.shared.amqp.ColaDeadLetter;
 import com.arquisoft.shared.amqp.RabbitMQConfig;
 import com.arquisoft.shared.message.constant.EventTopics;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
@@ -26,8 +28,21 @@ public class NotificacionesFichasQueueConfig {
                 .durable(ASESOR_CAMBIADO_QUEUE)
                 .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_EXCHANGE, RabbitMQConfig.DLX_NAME)
                 .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_ROUTING_KEY,
-                        ASESOR_CAMBIADO_QUEUE + RabbitMQConfig.SUFIJO_DEAD_LETTER)
+                        ColaDeadLetter.nombre(ASESOR_CAMBIADO_QUEUE))
                 .build();
+    }
+
+    @Bean
+    public Queue notificacionesAsesorCambiadoDeadQueue() {
+        return ColaDeadLetter.declarar(ASESOR_CAMBIADO_QUEUE);
+    }
+
+    @Bean
+    public Binding notificacionesAsesorCambiadoDeadBinding(
+            Queue notificacionesAsesorCambiadoDeadQueue,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaDeadLetter.enlazar(
+                notificacionesAsesorCambiadoDeadQueue, arquisoftDeadLetterExchange);
     }
 
     @Bean

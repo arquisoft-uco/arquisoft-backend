@@ -26,15 +26,20 @@ public final class NotificacionDomain {
     private TipoNotificacion tipo;
     private String destinatario;
     private String asunto;
+    private String destinatarioNombre;
+    private String cuerpo;
     private EstadoNotificacion estado;
     private String detalleError;
     private Instant fechaCreacion;
     private Instant fechaEnvio;
+    private int intentos;
+    private Instant fechaUltimoIntento;
 
     private NotificacionDomain() {}
 
     public static NotificacionDomain crear(
-            String idEvento, TipoNotificacion tipo, String destinatario, String asunto) {
+            String idEvento, TipoNotificacion tipo, String destinatario, String asunto,
+            String destinatarioNombre, String cuerpo) {
 
         var notificacion = new NotificacionDomain();
         var result = new ValidationResult();
@@ -44,6 +49,8 @@ public final class NotificacionDomain {
         notificacion.setTipo(tipo, result);
         notificacion.setDestinatario(destinatario, result);
         notificacion.setAsunto(asunto, result);
+        notificacion.setDestinatarioNombre(destinatarioNombre, result);
+        notificacion.setCuerpo(cuerpo, result);
 
         result.lanzarSiTieneErrores();
 
@@ -61,8 +68,12 @@ public final class NotificacionDomain {
         notificacion.tipo = datos.tipo();
         notificacion.destinatario = datos.destinatario();
         notificacion.asunto = datos.asunto();
+        notificacion.destinatarioNombre = datos.destinatarioNombre();
+        notificacion.cuerpo = datos.cuerpo();
         notificacion.fechaCreacion = datos.fechaCreacion();
         notificacion.fechaEnvio = datos.fechaEnvio();
+        notificacion.intentos = datos.intentos();
+        notificacion.fechaUltimoIntento = datos.fechaUltimoIntento();
         notificacion.estado = estado;
         notificacion.detalleError = detalleError;
         return notificacion;
@@ -74,8 +85,12 @@ public final class NotificacionDomain {
             TipoNotificacion tipo,
             String destinatario,
             String asunto,
+            String destinatarioNombre,
+            String cuerpo,
             Instant fechaCreacion,
-            Instant fechaEnvio) {
+            Instant fechaEnvio,
+            int intentos,
+            Instant fechaUltimoIntento) {
     }
 
     public void marcarEnviada() {
@@ -90,6 +105,23 @@ public final class NotificacionDomain {
         this.estado = EstadoNotificacion.FALLIDA;
         this.detalleError = motivo;
         this.fechaEnvio = UtilFecha.generarInstanteActual();
+    }
+
+    public void prepararReintento() {
+        if (this.estado != EstadoNotificacion.FALLIDA) {
+            var result = new ValidationResult();
+            result.agregarError(
+                    NotificacionesFields.Notificacion.ESTADO,
+                    NotificacionesCodes.Notificacion.REINTENTO_NO_PERMITIDO,
+                    Mensajes.formatear(
+                            NotificacionKey.ERROR_REINTENTO_NO_PERMITIDO, this.estado)
+            );
+            result.lanzarSiTieneErrores();
+        }
+        this.estado = EstadoNotificacion.PENDIENTE;
+        this.detalleError = null;
+        this.intentos = this.intentos + 1;
+        this.fechaUltimoIntento = UtilFecha.generarInstanteActual();
     }
 
     private void validarTransicionPermitida() {
@@ -168,8 +200,48 @@ public final class NotificacionDomain {
         this.asunto = UtilTexto.aplicarTrim(asunto);
     }
 
+    private void setDestinatarioNombre(String destinatarioNombre, ValidationResult result) {
+        if (!ValidatorTexto.noEnBlanco(destinatarioNombre,
+                NotificacionesFields.Notificacion.DESTINATARIO_NOMBRE,
+                NotificacionesCodes.Notificacion.DESTINATARIO_NOMBRE_REQUERIDO, result)) {
+            return;
+        }
+        if (!ValidatorLongitud.longitudMaxima(destinatarioNombre,
+                NotificacionesLimits.Notificacion.DESTINATARIO_NOMBRE_MAX,
+                NotificacionesFields.Notificacion.DESTINATARIO_NOMBRE,
+                NotificacionesCodes.Notificacion.DESTINATARIO_NOMBRE_REQUERIDO, result)) {
+            return;
+        }
+        this.destinatarioNombre = UtilTexto.aplicarTrim(destinatarioNombre);
+    }
+
+    private void setCuerpo(String cuerpo, ValidationResult result) {
+        if (!ValidatorTexto.noEnBlanco(cuerpo,
+                NotificacionesFields.Notificacion.CUERPO,
+                NotificacionesCodes.Notificacion.CUERPO_REQUERIDO, result)) {
+            return;
+        }
+        this.cuerpo = UtilTexto.aplicarTrim(cuerpo);
+    }
+
     public UUID getId() {
         return id;
+    }
+
+    public String getDestinatarioNombre() {
+        return destinatarioNombre;
+    }
+
+    public String getCuerpo() {
+        return cuerpo;
+    }
+
+    public int getIntentos() {
+        return intentos;
+    }
+
+    public Instant getFechaUltimoIntento() {
+        return fechaUltimoIntento;
     }
 
     public String getIdEvento() {

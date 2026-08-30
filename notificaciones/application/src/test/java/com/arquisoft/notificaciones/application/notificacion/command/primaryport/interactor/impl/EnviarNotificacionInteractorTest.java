@@ -2,7 +2,7 @@ package com.arquisoft.notificaciones.application.notificacion.command.primarypor
 
 import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.usecase.EnviarNotificacionUseCase;
-import com.arquisoft.notificaciones.domain.notificacion.EnvioNotificacionDomain;
+import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -38,16 +38,16 @@ class EnviarNotificacionInteractorTest {
         enviarNotificacionInteractor.ejecutar(command);
 
         // Assert — el interactor delimita la transaccion, mapea a dominio y delega
-        ArgumentCaptor<EnvioNotificacionDomain> captor =
-                ArgumentCaptor.forClass(EnvioNotificacionDomain.class);
+        ArgumentCaptor<NotificacionDomain> captor =
+                ArgumentCaptor.forClass(NotificacionDomain.class);
         verify(enviarNotificacionUseCase).ejecutar(captor.capture());
 
-        EnvioNotificacionDomain envio = captor.getValue();
+        NotificacionDomain envio = captor.getValue();
         assertThat(envio.getIdEvento()).isEqualTo("8f14e45f-ceea-467a-9575-1a1b2c3d4e5f");
-        assertThat(envio.getDestinatarioEmail()).isEqualTo("ana.gomez@soyuco.edu.co");
+        assertThat(envio.getDestinatario()).isEqualTo("ana.gomez@soyuco.edu.co");
         assertThat(envio.getDestinatarioNombre()).isEqualTo("Ana Gomez");
         assertThat(envio.getCuerpo()).isEqualTo("Cuerpo");
-        assertThat(envio.getNotificacion().getTipo())
+        assertThat(envio.getTipo())
                 .isEqualTo(TipoNotificacion.ASESOR_FICHA_CAMBIADO);
     }
 }

@@ -169,6 +169,36 @@ justo lo que se busca. Al comparar contra un código o un campo, importa la cons
 `Criteria` y las claves de `traducir(...)` no divergen — son dos declaraciones de "qué es
 ordenable".
 
+
+**Consumidor AMQP — las tres ramas del `nack`.** `AbstractEventConsumer` clasifica el fallo, así que
+un consumidor nuevo hereda tres comportamientos y los tres se prueban sobre él (no sobre la clase
+abstracta, que no tiene *source set* de tests):
+
+| Caso | Arrange | Assert |
+|---|---|---|
+| Éxito | payload válido | `verify(channel).basicAck(tag, false)` |
+| Transitorio, 1ª entrega | `doThrow(new QueryTimeoutException(...))`, `props.setRedelivered(false)` | `basicNack(tag, false, true)` |
+| Transitorio reentregado | igual con `setRedelivered(true)` | `basicNack(tag, false, false)` |
+| Envenenado | `doThrow(new IllegalArgumentException(...))` | `basicNack(tag, false, false)` |
+
+Ojo con el mock del interactor: si el consumidor hace `switch` sobre el resultado, Mockito devuelve
+`null` por defecto y el `switch` lanza `NullPointerException` **antes** de que el test llegue a su
+aserción. Hay que stubearlo en el `@BeforeEach`, con `lenient()` si algún test lo reemplaza por un
+`doThrow`.
+
+**`{Evento}PayloadTest`** — obligatorio con cada payload nuevo. Usa `new RabbitMQConfig().rabbitObjectMapper()`,
+nunca un `ObjectMapper` propio, y cubre el viaje completo del evento y la lectura tolerante del campo
+ausente. La forma exacta está en la skill `arquisoft-estandares`.
+
+**`{Enum}{Evento|Persistencia}Test`** — con cada enum espejo de infraestructura. Dos aserciones: cada
+código resuelve con `desde(...)`, y ambos enums declaran el **mismo conjunto** de constantes. No es un
+`@DataJpaTest`: comparar dos enums no necesita H2 ni contexto de Spring, así que va en su propio
+archivo y no dentro del test del adapter.
+
+**Reintento desde base de datos** (caso de uso `@Scheduled`): tres casos — reenvío correcto (estado
+`ENVIADA`, `intentos` incrementado, `detalle_error` a `null`), agotamiento al alcanzar el máximo, y
+lista vacía (`verify(..., never())` sobre el puerto de envío y el de guardado).
+
 ## Flujo de trabajo
 
 1. **Cargar plan y código.** Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa) y cada

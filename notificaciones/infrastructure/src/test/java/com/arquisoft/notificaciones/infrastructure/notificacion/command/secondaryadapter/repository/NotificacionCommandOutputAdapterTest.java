@@ -26,6 +26,8 @@ class NotificacionCommandOutputAdapterTest {
 
     private static final String DESTINATARIO = "ana.gomez@soyuco.edu.co";
     private static final String ASUNTO = "Se te asignó la ficha";
+    private static final String NOMBRE = "Ana Gomez";
+    private static final String CUERPO = "Hola Ana, ahora eres la asesora.";
 
     @Autowired
     private NotificacionCommandRepository repository;
@@ -39,7 +41,8 @@ class NotificacionCommandOutputAdapterTest {
 
     private NotificacionDomain notificacionCon(String idEvento) {
         return NotificacionDomain.crear(
-                idEvento, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO);
+                idEvento, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO,
+                NOMBRE, CUERPO);
     }
 
     @Test
@@ -92,5 +95,25 @@ class NotificacionCommandOutputAdapterTest {
     void debeReportarFalse_cuandoElEventoNoTieneNotificacion() {
         // Act & Assert
         assertThat(adapter.existePorIdEvento(UUID.randomUUID().toString())).isFalse();
+    }
+
+    @Test
+    void debeDevolverSoloLasFallidasBajoElMaximoDeIntentos_cuandoSeBuscanReintentables() {
+        // Arrange
+        var fallida = notificacionCon(UUID.randomUUID().toString());
+        fallida.marcarFallida("SMTP caido");
+        adapter.guardar(NotificacionMapper.toEntity(fallida));
+
+        var enviada = notificacionCon(UUID.randomUUID().toString());
+        enviada.marcarEnviada();
+        adapter.guardar(NotificacionMapper.toEntity(enviada));
+
+        // Act
+        var reintentables = adapter.buscarFallidasReintentables(5, 50);
+
+        // Assert
+        assertThat(reintentables).hasSize(1);
+        assertThat(reintentables.getFirst().idEvento()).isEqualTo(fallida.getIdEvento());
+        assertThat(reintentables.getFirst().cuerpo()).isEqualTo(CUERPO);
     }
 }

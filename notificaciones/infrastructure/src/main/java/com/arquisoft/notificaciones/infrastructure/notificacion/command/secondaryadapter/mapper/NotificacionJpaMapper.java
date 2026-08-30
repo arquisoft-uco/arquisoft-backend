@@ -14,10 +14,14 @@ public final class NotificacionJpaMapper {
                 jpaEntity.getTipo(),
                 jpaEntity.getDestinatario(),
                 jpaEntity.getAsunto(),
+                jpaEntity.getDestinatarioNombre(),
+                jpaEntity.getCuerpo(),
                 jpaEntity.getEstado(),
                 jpaEntity.getDetalleError(),
                 jpaEntity.getFechaCreacion(),
-                jpaEntity.getFechaEnvio());
+                jpaEntity.getFechaEnvio(),
+                jpaEntity.getIntentos(),
+                jpaEntity.getFechaUltimoIntento());
     }
 
     public static NotificacionJpaEntity toJpaEntity(NotificacionEntity entity) {
@@ -27,10 +31,14 @@ public final class NotificacionJpaMapper {
                 .tipo(entity.tipo())
                 .destinatario(entity.destinatario())
                 .asunto(entity.asunto())
+                .destinatarioNombre(entity.destinatarioNombre())
+                .cuerpo(entity.cuerpo())
                 .estado(entity.estado())
                 .detalleError(entity.detalleError())
                 .fechaCreacion(entity.fechaCreacion())
                 .fechaEnvio(entity.fechaEnvio())
+                .intentos(entity.intentos())
+                .fechaUltimoIntento(entity.fechaUltimoIntento())
                 .build();
     }
 }

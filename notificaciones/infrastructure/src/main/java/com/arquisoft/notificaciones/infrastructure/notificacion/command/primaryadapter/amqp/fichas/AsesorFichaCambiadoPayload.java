@@ -1,5 +1,7 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.fichas;
 
+import java.time.Instant;
+
 /**
  * Lectura tolerante del evento {@code fichas.ficha_perfil.asesor_cambiado}.
  *
@@ -7,7 +9,9 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.primary
  * {@code notificaciones} no depende del contexto productor, y un campo nuevo en el origen no
  * rompe este consumidor —el {@code ObjectMapper} de RabbitMQ ignora las propiedades desconocidas.
  *
- * @param idEvento        identificador del evento — clave de idempotencia
+ * @param idEvento       identificador del evento — clave de idempotencia
+ * @param ocurridoEn     instante del hecho en el origen — ordena los eventos cuando llegan
+ *                       desordenados (reintentos, varios consumidores en la misma cola)
  * @param fichaPerfilId  ficha afectada
  * @param tituloProyecto titulo de la ficha, para el texto del correo
  * @param asesorNombre   nombre del nuevo asesor
@@ -15,6 +19,7 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.primary
  */
 public record AsesorFichaCambiadoPayload(
         String idEvento,
+        Instant ocurridoEn,
         String fichaPerfilId,
         String tituloProyecto,
         String asesorNombre,
