@@ -6,6 +6,8 @@ public final class EvaluacionesAuthorities {
 
     public static final String ITEM_CUALITATIVO_JURADO_CREATE =
             "evaluaciones:item-cualitativo-jurado:create";
+    public static final String ITEM_CUALITATIVO_JURADO_UPDATE =
+            "evaluaciones:item-cualitativo-jurado:update";
 
     public static final class Expresiones {
 
@@ -16,5 +18,7 @@ public final class EvaluacionesAuthorities {
 
         public static final String HAS_ITEM_CUALITATIVO_JURADO_CREATE =
                 HAS_AUTHORITY_INICIO + ITEM_CUALITATIVO_JURADO_CREATE + HAS_AUTHORITY_FIN;
+        public static final String HAS_ITEM_CUALITATIVO_JURADO_UPDATE =
+                HAS_AUTHORITY_INICIO + ITEM_CUALITATIVO_JURADO_UPDATE + HAS_AUTHORITY_FIN;
     }
 }

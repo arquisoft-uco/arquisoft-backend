@@ -20,6 +20,7 @@ spring:
       - "classpath:rutas-seguridad.yml"
       - "classpath:rutas-usuarios.yml"
       - "classpath:rutas-fichas.yml"
+      - "classpath:rutas-evaluaciones.yml"
   banner:
     location: classpath:banner.txt
   application:
