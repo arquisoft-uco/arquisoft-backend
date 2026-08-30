@@ -6,7 +6,6 @@ import java.util.Set;
 import com.arquisoft.shared.message.key.app.AlmacenamientoKey;
 import com.arquisoft.shared.message.key.app.ConsultaKey;
 import com.arquisoft.shared.message.key.app.HttpKey;
-import com.arquisoft.shared.message.key.app.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.message.key.app.PaginacionKey;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
@@ -23,6 +22,7 @@ import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
 import com.arquisoft.shared.message.key.fichas.UsuarioEspejoKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
+import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
@@ -76,7 +76,6 @@ public final class ClavesCatalogo {
             ConsultaKey.class,
             HttpKey.class,
             MensajeriaKey.class,
-            EnvioNotificacionKey.class,
             PaginacionKey.class,
             ValidadorKey.class,
             EstadoEvaluacionFichaKey.class,
@@ -95,6 +94,7 @@ public final class ClavesCatalogo {
             TipoSolicitudKey.class,
             UsuarioReplicaKey.class,
             ConsumidorKey.class,
+            EnvioNotificacionKey.class,
             NotificacionKey.class,
             PlantillaKey.class,
             AutenticacionKey.class,

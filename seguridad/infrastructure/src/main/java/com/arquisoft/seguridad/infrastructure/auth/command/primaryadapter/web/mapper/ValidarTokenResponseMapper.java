@@ -15,11 +15,11 @@ public final class ValidarTokenResponseMapper {
                     .valido(true)
                     .identidadId(valida.identidadId())
                     .correo(valida.correo())
-                    .mensaje(Mensajes.obtener(TokenKey.LOG_VALIDO))
+                    .mensaje(Mensajes.obtener(TokenKey.MENSAJE_VALIDO))
                     .build();
             case ValidacionTokenResult.Invalida invalida -> ValidarTokenResponseDTO.builder()
                     .valido(false)
-                    .mensaje(Mensajes.obtener(TokenKey.LOG_INVALIDO))
+                    .mensaje(Mensajes.obtener(TokenKey.MENSAJE_INVALIDO))
                     .build();
         };
     }

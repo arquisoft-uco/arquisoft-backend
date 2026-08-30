@@ -33,10 +33,15 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
         UUID fichaPerfil = entrada.getFichaPerfil();
         UUID estudiante = entrada.getEstudiante();
 
+        logger.info(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_REMOVIENDO), fichaPerfil, estudiante);
+
         boolean fichaExiste = fichaPerfilExisteFinder.obtener(fichaPerfil);
         List<UUID> estudiantesExistentes = estudiantesExistentesFinder.obtener(List.of(estudiante));
         boolean vinculoExiste = vinculoEstudianteFichaExisteFinder.obtener(
                 new VinculoEstudianteFicha(fichaPerfil, estudiante));
+
+        logger.debug(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_VERIFICACION_REMOVER),
+                fichaExiste, !estudiantesExistentes.isEmpty(), vinculoExiste);
 
         removerEstudianteFichaPerfilValidator.validar(
                 entrada, fichaExiste, estudiantesExistentes, vinculoExiste);

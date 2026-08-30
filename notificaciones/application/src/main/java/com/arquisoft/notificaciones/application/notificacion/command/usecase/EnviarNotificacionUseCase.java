@@ -1,8 +1,9 @@
 package com.arquisoft.notificaciones.application.notificacion.command.usecase;
 
-import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.EnviarNotificacionCommand;
+import com.arquisoft.notificaciones.application.notificacion.command.result.EnvioNotificacionResult;
+import com.arquisoft.notificaciones.domain.notificacion.EnvioNotificacionDomain;
 
 public interface EnviarNotificacionUseCase {
 
-    void ejecutar(EnviarNotificacionCommand entrada);
+    EnvioNotificacionResult ejecutar(EnvioNotificacionDomain entrada);
 }

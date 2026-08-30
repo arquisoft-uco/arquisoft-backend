@@ -6,7 +6,10 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum EvaluacionFichaPerfilKey implements ClaveMensaje {
 
     ERROR_DUPLICADA("fichas.dominio.evaluacionfichaperfil.error.duplicada", 2),
-    LOG_REGISTRADA("fichas.aplicacion.evaluacionfichaperfil.log.registrada", 3);
+    LOG_REGISTRANDO("fichas.aplicacion.evaluacionfichaperfil.log.registrando", 2),
+    LOG_VERIFICACION_REGISTRAR("fichas.aplicacion.evaluacionfichaperfil.log.verificacion-registrar", 3),
+    LOG_REGISTRADA("fichas.aplicacion.evaluacionfichaperfil.log.registrada", 3),
+    LOG_GUARDADA("fichas.infraestructura.evaluacionfichaperfil.log.guardada", 2);
 
     private final String clave;
     private final int parametros;

@@ -1,15 +1,18 @@
 package com.arquisoft.notificaciones.application.notificacion.command.usecase.impl;
 
-import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.EnviarNotificacionCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.finder.NotificacionProcesadaFinder;
+import com.arquisoft.notificaciones.application.notificacion.command.primaryport.mapper.EnviarNotificacionMapper;
+import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.EnviarNotificacionCommand;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.EnvioNotificacionOutputPort;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.NotificacionOutputPort;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.MensajeNotificacion;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.ResultadoEntrega;
+import com.arquisoft.notificaciones.application.notificacion.command.result.EnvioNotificacionResult;
+import com.arquisoft.notificaciones.domain.notificacion.EnvioNotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.notification.EnvioNotificacionOutputPort;
-import com.arquisoft.shared.notification.exception.EnvioNotificacionFallidoException;
-import com.arquisoft.shared.notification.model.MensajeNotificacion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,7 +22,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -41,27 +43,28 @@ class EnviarNotificacionUseCaseTest {
     @Mock
     private AppLogger logger;
 
-    // Catalogo real, no mock: los textos acaban en el log y en la notificacion persistida.
     @InjectMocks
     private EnviarNotificacionUseCaseImpl enviarNotificacionUseCase;
 
-    private EnviarNotificacionCommand comando() {
-        return new EnviarNotificacionCommand(
+    private EnvioNotificacionDomain envio() {
+        return EnviarNotificacionMapper.toDomain(EnviarNotificacionCommand.crear(
                 ID_EVENTO,
-                TipoNotificacion.ASESOR_FICHA_CAMBIADO,
+                TipoNotificacion.ASESOR_FICHA_CAMBIADO.getId(),
                 "Ana Gomez",
                 "ana.gomez@soyuco.edu.co",
                 "Se te asignó la ficha",
-                "Hola Ana, ahora eres la asesora.");
+                "Hola Ana, ahora eres la asesora."));
     }
 
     @Test
     void debeEnviarYPersistirComoEnviada_cuandoElEventoEsNuevo() {
         // Arrange
         when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(false);
+        when(envioNotificacionOutputPort.enviar(any(MensajeNotificacion.class)))
+                .thenReturn(new ResultadoEntrega.Entregada());
 
         // Act
-        enviarNotificacionUseCase.ejecutar(comando());
+        var resultado = enviarNotificacionUseCase.ejecutar(envio());
 
         // Assert
         verify(envioNotificacionOutputPort).enviar(any(MensajeNotificacion.class));
@@ -71,15 +74,18 @@ class EnviarNotificacionUseCaseTest {
         verify(notificacionOutputPort).guardar(captor.capture());
         assertThat(captor.getValue().estado()).isEqualTo(EstadoNotificacion.ENVIADA.getId());
         assertThat(captor.getValue().idEvento()).isEqualTo(ID_EVENTO);
+        assertThat(resultado).isInstanceOf(EnvioNotificacionResult.Enviada.class);
     }
 
     @Test
     void debeConstruirElMensajeConDestinatarioAsuntoYCuerpo_cuandoEnvia() {
         // Arrange
         when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(false);
+        when(envioNotificacionOutputPort.enviar(any(MensajeNotificacion.class)))
+                .thenReturn(new ResultadoEntrega.Entregada());
 
         // Act
-        enviarNotificacionUseCase.ejecutar(comando());
+        enviarNotificacionUseCase.ejecutar(envio());
 
         // Assert
         ArgumentCaptor<MensajeNotificacion> captor =
@@ -102,23 +108,23 @@ class EnviarNotificacionUseCaseTest {
         when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(true);
 
         // Act
-        enviarNotificacionUseCase.ejecutar(comando());
+        var resultado = enviarNotificacionUseCase.ejecutar(envio());
 
         // Assert
         verify(envioNotificacionOutputPort, never()).enviar(any());
         verify(notificacionOutputPort, never()).guardar(any());
+        assertThat(resultado).isInstanceOf(EnvioNotificacionResult.Duplicada.class);
     }
 
     @Test
     void debePersistirComoFallidaConElMotivo_cuandoLaEntregaFalla() {
         // Arrange
         when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(false);
-        doThrow(new EnvioNotificacionFallidoException(
-                "No se pudo entregar la notificación", "NOTIFICACION_ENVIO_FALLIDO", new RuntimeException()))
-                .when(envioNotificacionOutputPort).enviar(any(MensajeNotificacion.class));
+        when(envioNotificacionOutputPort.enviar(any(MensajeNotificacion.class)))
+                .thenReturn(new ResultadoEntrega.Rechazada("No se pudo entregar la notificación"));
 
         // Act — no relanza: el fallo se persiste para poder reintentarlo despues
-        enviarNotificacionUseCase.ejecutar(comando());
+        var resultado = enviarNotificacionUseCase.ejecutar(envio());
 
         // Assert
         ArgumentCaptor<NotificacionEntity> captor =
@@ -126,5 +132,6 @@ class EnviarNotificacionUseCaseTest {
         verify(notificacionOutputPort).guardar(captor.capture());
         assertThat(captor.getValue().estado()).isEqualTo(EstadoNotificacion.FALLIDA.getId());
         assertThat(captor.getValue().detalleError()).contains("No se pudo entregar");
+        assertThat(resultado).isInstanceOf(EnvioNotificacionResult.Fallida.class);
     }
 }

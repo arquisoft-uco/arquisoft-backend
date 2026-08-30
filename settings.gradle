@@ -16,7 +16,6 @@ include 'shared:minio'
 include 'shared:jpa'
 include 'shared:query'
 include 'shared:message'
-include 'shared:notification'
 
 // ==================== CONTEXTOS DE NEGOCIO ====================
 
