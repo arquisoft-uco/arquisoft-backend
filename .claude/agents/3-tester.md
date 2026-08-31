@@ -32,7 +32,7 @@ que la lógica está en la capa equivocada — **detente y reporta**, no escriba
 | 2 | Un test por cada campo obligatorio del `Command.crear(...)` | El Notification Pattern acumula: un solo test con varios campos inválidos asserta todos los `fieldErrors[]` de una vez |
 | 3 | Métodos `private`/helpers internos | Se validan indirectamente desde el método público que los usa |
 | 4 | Tests duplicados con el mismo "Act" y distintos asserts | Consolida en un solo test con varios asserts |
-| 5 | Delegación pura sin lógica (use case que solo llama al repositorio) | Ya cubierto por el test del flujo principal |
+| 5 | Delegación pura sin lógica (use case que solo llama al repositorio) | Ya cubierto por el test del flujo principal. **Excepción: el `InteractorImpl`.** Aunque solo delegue, no está excluido de JaCoCo y sin test propio queda en 0% — se diluye en el agregado del módulo y el gate del 75% lo deja pasar. Un test de delegación (`verify` + `isSameAs` del resultado) basta |
 | 6 | Excepción simple (`super(msg, code)` y nada más) | Su `errorCode` se verifica implícitamente desde el test que la lanza |
 | 7 | equals/hashCode/toString de Lombok | Ya generados y correctos |
 | 8 | Test que asserta el **texto** de un log | El texto vive en el catálogo; asertarlo acopla el test a la redacción y duplica lo que ya cubre `CatalogoCargaTest` |
@@ -60,6 +60,11 @@ cierre tras escribir (ver `arquisoft-estandares`). Tres consecuencias:
   aporta los `debug` de envelope y el `error` del nack, y no se asertan. En `notificaciones` el log
   de cierre lo pone `AbstractNotificacionConsumer.registrar(...)` y tampoco se asserta. Si el test verifica un log
   que lleva un correo, el valor esperado es el **enmascarado** (`j***@uco.edu.co`), no el original.
+- **No captures los argumentos de un log con un solo `ArgumentCaptor`.** `AppLogger.info(String, Object...)`
+  es varargs: `verify(logger).info(any(), captor.capture())` solo casa con las llamadas de
+  **exactamente un** argumento, así que una de dos argumentos se reporta como `ArgumentsAreDifferent`
+  aunque los valores sean los correctos. Usa un `eq(...)` por argumento —
+  `verify(logger).warn(any(String.class), eq(idEvento), eq("a***@uco.edu.co"))`.
 
 
 ## Presupuesto orientativo
@@ -221,6 +226,16 @@ lista vacía (`verify(..., never())` sobre el puerto de envío y el de guardado)
    `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity` y
    `JpaQueryEntity`) y `config/**`. **`*Domain` NO está excluido** — el agregado cuenta para el
    umbral, así que sus tests de `crear`/`reconstruir` son los que sostienen el porcentaje.
+   **Un `UP-TO-DATE` no es un verde.** Gradle omite la tarea si nada cambio desde la ultima
+   ejecucion, asi que un `BUILD SUCCESSFUL` con todas las tareas `UP-TO-DATE` no prueba que un
+   solo test haya corrido. Cuando la salida no muestre `> Task :{contexto}:{capa}:test` como
+   ejecutada, repite con `--rerun-tasks` antes de reportar.
+
+   **La cobertura del modulo esconde clases en cero.** El umbral del 75% es un agregado: una clase
+   sin un solo test se diluye entre las demas y el gate pasa igual. Antes de reportar, revisa el
+   XML de JaCoCo por clase (`build/reports/jacoco/test/jacocoTestReport.xml`, contador
+   `INSTRUCTION` de cada `<class>`) y justifica toda clase productiva por debajo del 80%.
+
    Reportar verde habiendo corrido solo `test` es un error — un import sin usar o cobertura <75%
    rompen el build igual. Si falla: agrega tests significativos sobre las ramas no cubiertas (mira
    el reporte HTML de JaCoCo) o limpia checkstyle — nunca bajes el umbral ni infles con tests

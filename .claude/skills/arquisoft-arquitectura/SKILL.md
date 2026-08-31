@@ -228,6 +228,30 @@ que cubre el mapper.
 Simetría que conviene tener presente: en `command/`, `primaryport/model/` es la entrada y `result/`
 la salida; en `query/`, `criteria/` es la entrada y `readmodel/` la salida.
 
+
+## Cuándo un grupo de campos se vuelve un value object
+
+Un agregado con muchos atributos no se parte por número, sino por cohesión. Extrae un `record` a
+`domain/{feature}/model/` cuando varios campos **viajan siempre juntos y no cambian tras crearse**:
+`Destinatario(nombre, email)` y `Contenido(asunto, cuerpo, pie)` en `notificaciones` redujeron
+`NotificacionDomain` de 14 campos a 11 y de siete setters privados a dos.
+
+**No extraigas el grupo de ciclo de vida.** `estado`/`detalleError`/`fechaEnvio`/`intentos` parecen
+otro value object y no lo son: las transiciones (`marcarEnviada`, `marcarFallida`,
+`prepararReintento`) los mutan. Un value object es inmutable, así que encerrarlos obligaría a
+reconstruirlo en cada transición y a que el agregado pidiera permiso para cambiar su propio estado.
+
+Forma del value object, y el detalle que se rompe fácil:
+
+- `crear(campos..., ValidationResult result)` — **recibe el `ValidationResult` del agregado**, no
+  lanza por su cuenta. Si cada VO lanzara, un payload con nombre y correo inválidos devolvería solo
+  el primer error y el `fieldErrors[]` del Notification Pattern dejaría de acumular. Cada campo
+  inválido devuelve `UtilTexto.VACIO` y sigue.
+- `reconstruir(campos...)` — normaliza (`aplicarTrim`) pero **no valida**: lo que ya está en la base
+  entra tal cual; rechazarlo al leer solo impediría corregirlo.
+- `VACIO` como centinela + `esVacio()`, igual que un agregado.
+- La factoría `crear(...)` del agregado **sigue recibiendo los campos sueltos**, no los VO ya
+  construidos: si recibiera los VO, la validación se habría ejecutado antes, fuera del agregado.
 ## El `ReadModel` nunca sale por HTTP
 
 El `Controller` de lectura mapea `ReadModel` → `{Entidad}ResponseDTO` con

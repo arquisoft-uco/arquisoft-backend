@@ -505,6 +505,18 @@ Dos que se olvidan y sí importan:
   que `UUID.fromString` lanza `IllegalArgumentException` y sale como 500.
 - **`UtilColeccion.aplicarPorDefecto(x)`** en el constructor compacto de un `record` que recibe una
   colección; hace el `null → List.of()` más la copia inmutable.
+- **Recorta ANTES de validar, y valida el valor recortado.** El setter/factoría normaliza primero
+  (`var recortado = UtilTexto.aplicarTrim(x);`) y pasa `recortado` a todos los `Validator*` y al
+  campo. `AutenticacionDomain.setCorreo` y `UsuarioDomain.setEmail` son la referencia. Validar el
+  texto crudo y recortar solo al asignar rompe dos cosas: `ValidatorTexto.correoValido` **no aplica
+  trim** (delega en `coincidePatron`, que compara literal), así que `" a@b.com "` se rechaza por
+  formato; y `ValidatorLongitud.longitudMaxima` mide los espacios, así que un valor que cabe una vez
+  recortado se rechaza por longitud. Este fallo estuvo vivo en `Destinatario`/`Contenido` de
+  `notificaciones`.
+
+  Y no "arregles" esto metiendo el trim dentro de `UtilTexto.correoValido`: si el agregado olvida
+  recortar, la validación pasaría y persistiría el valor con espacios. Que el predicado sea estricto
+  es lo que obliga a normalizar donde toca.
 
 Distingue `ValidatorObjeto.noNulo` de `UtilObjeto.esNulo`: el primero **acumula un error** en el
 `ValidationResult` porque el valor era obligatorio; el segundo es una guarda de flujo sobre un estado
