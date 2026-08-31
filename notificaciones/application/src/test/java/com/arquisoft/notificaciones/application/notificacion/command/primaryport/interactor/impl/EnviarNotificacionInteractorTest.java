@@ -45,9 +45,9 @@ class EnviarNotificacionInteractorTest {
 
         NotificacionDomain envio = captor.getValue();
         assertThat(envio.getIdEvento()).isEqualTo("8f14e45f-ceea-467a-9575-1a1b2c3d4e5f");
-        assertThat(envio.getDestinatario()).isEqualTo("ana.gomez@soyuco.edu.co");
-        assertThat(envio.getDestinatarioNombre()).isEqualTo("Ana Gomez");
-        assertThat(envio.getCuerpo()).isEqualTo("Cuerpo");
+        assertThat(envio.getDestinatario().email()).isEqualTo("ana.gomez@soyuco.edu.co");
+        assertThat(envio.getDestinatario().nombre()).isEqualTo("Ana Gomez");
+        assertThat(envio.getContenido().cuerpo()).isEqualTo("Cuerpo");
         assertThat(envio.getTipo())
                 .isEqualTo(TipoNotificacion.ASESOR_FICHA_CAMBIADO);
     }

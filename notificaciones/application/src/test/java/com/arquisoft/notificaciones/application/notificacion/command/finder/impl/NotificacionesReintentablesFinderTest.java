@@ -55,7 +55,7 @@ class NotificacionesReintentablesFinderTest {
         assertThat(resultado).hasSize(1);
         assertThat(resultado.getFirst().getEstado()).isEqualTo(EstadoNotificacion.FALLIDA);
         assertThat(resultado.getFirst().getIntentos()).isEqualTo(2);
-        assertThat(resultado.getFirst().getCuerpo()).isEqualTo("Hola Ana, ahora eres la asesora.");
+        assertThat(resultado.getFirst().getContenido().cuerpo()).isEqualTo("Hola Ana, ahora eres la asesora.");
     }
 
     @Test

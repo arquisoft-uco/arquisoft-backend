@@ -1,19 +1,21 @@
 package com.arquisoft.notificaciones.domain.notificacion;
 
-import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
+import com.arquisoft.notificaciones.domain.notificacion.model.Contenido;
+import com.arquisoft.notificaciones.domain.notificacion.model.Destinatario;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.NotificacionesCodes;
 import com.arquisoft.shared.message.constant.NotificacionesFields;
 import com.arquisoft.shared.message.constant.NotificacionesLimits;
+import com.arquisoft.shared.message.key.app.ValidadorKey;
+import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
-import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.time.Instant;
@@ -24,11 +26,8 @@ public final class NotificacionDomain {
     private UUID id;
     private String idEvento;
     private TipoNotificacion tipo;
-    private String destinatario;
-    private String asunto;
-    private String destinatarioNombre;
-    private String cuerpo;
-    private String pie;
+    private Destinatario destinatario;
+    private Contenido contenido;
     private EstadoNotificacion estado;
     private String detalleError;
     private Instant fechaCreacion;
@@ -48,11 +47,8 @@ public final class NotificacionDomain {
         notificacion.setId();
         notificacion.setIdEvento(idEvento, result);
         notificacion.setTipo(tipo, result);
-        notificacion.setDestinatario(destinatario, result);
-        notificacion.setAsunto(asunto, result);
-        notificacion.setDestinatarioNombre(destinatarioNombre, result);
-        notificacion.setCuerpo(cuerpo, result);
-        notificacion.setPie(pie);
+        notificacion.destinatario = Destinatario.crear(destinatarioNombre, destinatario, result);
+        notificacion.contenido = Contenido.crear(asunto, cuerpo, pie, result);
 
         result.lanzarSiTieneErrores();
 
@@ -72,11 +68,10 @@ public final class NotificacionDomain {
                 datos.id(), UtilUUID.obtenerUUIDPorDefecto());
         notificacion.idEvento = UtilTexto.aplicarTrim(datos.idEvento());
         notificacion.tipo = UtilObjeto.aplicarPorDefecto(datos.tipo(), TipoNotificacion.VACIO);
-        notificacion.destinatario = UtilTexto.aplicarTrim(datos.destinatario());
-        notificacion.asunto = UtilTexto.aplicarTrim(datos.asunto());
-        notificacion.destinatarioNombre = UtilTexto.aplicarTrim(datos.destinatarioNombre());
-        notificacion.cuerpo = UtilTexto.aplicarTrim(datos.cuerpo());
-        notificacion.pie = UtilTexto.aplicarTrim(datos.pie());
+        notificacion.destinatario = Destinatario.reconstruir(
+                datos.destinatarioNombre(), datos.destinatario());
+        notificacion.contenido = Contenido.reconstruir(
+                datos.asunto(), datos.cuerpo(), datos.pie());
         notificacion.fechaCreacion = UtilObjeto.aplicarPorDefecto(
                 datos.fechaCreacion(), UtilFecha.VACIO);
         notificacion.fechaEnvio = UtilObjeto.aplicarPorDefecto(
@@ -180,91 +175,8 @@ public final class NotificacionDomain {
         this.tipo = tipoSeguro;
     }
 
-    private void setDestinatario(String destinatario, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(destinatario,
-                NotificacionesFields.Notificacion.DESTINATARIO,
-                NotificacionesCodes.Notificacion.DESTINATARIO_REQUERIDO, result)) {
-            return;
-        }
-        if (!ValidatorTexto.correoValido(destinatario,
-                NotificacionesFields.Notificacion.DESTINATARIO,
-                NotificacionesCodes.Notificacion.DESTINATARIO_INVALIDO, result)) {
-            return;
-        }
-        if (!ValidatorLongitud.longitudMaxima(destinatario,
-                NotificacionesLimits.Notificacion.DESTINATARIO_MAX,
-                NotificacionesFields.Notificacion.DESTINATARIO,
-                NotificacionesCodes.Notificacion.DESTINATARIO_INVALIDO, result)) {
-            return;
-        }
-        this.destinatario = UtilTexto.aplicarTrim(destinatario);
-    }
-
-    private void setAsunto(String asunto, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(asunto,
-                NotificacionesFields.Notificacion.ASUNTO,
-                NotificacionesCodes.Notificacion.ASUNTO_REQUERIDO, result)) {
-            return;
-        }
-        if (!ValidatorLongitud.longitudMaxima(asunto,
-                NotificacionesLimits.Notificacion.ASUNTO_MAX,
-                NotificacionesFields.Notificacion.ASUNTO,
-                NotificacionesCodes.Notificacion.ASUNTO_REQUERIDO, result)) {
-            return;
-        }
-        this.asunto = UtilTexto.aplicarTrim(asunto);
-    }
-
-    private void setDestinatarioNombre(String destinatarioNombre, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(destinatarioNombre,
-                NotificacionesFields.Notificacion.DESTINATARIO_NOMBRE,
-                NotificacionesCodes.Notificacion.DESTINATARIO_NOMBRE_REQUERIDO, result)) {
-            return;
-        }
-        if (!ValidatorLongitud.longitudMaxima(destinatarioNombre,
-                NotificacionesLimits.Notificacion.DESTINATARIO_NOMBRE_MAX,
-                NotificacionesFields.Notificacion.DESTINATARIO_NOMBRE,
-                NotificacionesCodes.Notificacion.DESTINATARIO_NOMBRE_REQUERIDO, result)) {
-            return;
-        }
-        this.destinatarioNombre = UtilTexto.aplicarTrim(destinatarioNombre);
-    }
-
-    private void setPie(String pie) {
-        this.pie = UtilTexto.aplicarTrim(pie);
-    }
-
-    private void setCuerpo(String cuerpo, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(cuerpo,
-                NotificacionesFields.Notificacion.CUERPO,
-                NotificacionesCodes.Notificacion.CUERPO_REQUERIDO, result)) {
-            return;
-        }
-        this.cuerpo = UtilTexto.aplicarTrim(cuerpo);
-    }
-
     public UUID getId() {
         return id;
-    }
-
-    public String getDestinatarioNombre() {
-        return destinatarioNombre;
-    }
-
-    public String getCuerpo() {
-        return cuerpo;
-    }
-
-    public String getPie() {
-        return pie;
-    }
-
-    public int getIntentos() {
-        return intentos;
-    }
-
-    public Instant getFechaUltimoIntento() {
-        return fechaUltimoIntento;
     }
 
     public String getIdEvento() {
@@ -275,12 +187,12 @@ public final class NotificacionDomain {
         return tipo;
     }
 
-    public String getDestinatario() {
+    public Destinatario getDestinatario() {
         return destinatario;
     }
 
-    public String getAsunto() {
-        return asunto;
+    public Contenido getContenido() {
+        return contenido;
     }
 
     public EstadoNotificacion getEstado() {
@@ -297,5 +209,13 @@ public final class NotificacionDomain {
 
     public Instant getFechaEnvio() {
         return fechaEnvio;
+    }
+
+    public int getIntentos() {
+        return intentos;
+    }
+
+    public Instant getFechaUltimoIntento() {
+        return fechaUltimoIntento;
     }
 }

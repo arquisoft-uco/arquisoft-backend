@@ -39,8 +39,8 @@ class NotificacionDomainTest {
         assertThat(notificacion.getId()).isNotNull();
         assertThat(notificacion.getIdEvento()).isEqualTo(ID_EVENTO);
         assertThat(notificacion.getTipo()).isEqualTo(TipoNotificacion.ASESOR_FICHA_CAMBIADO);
-        assertThat(notificacion.getDestinatario()).isEqualTo(DESTINATARIO);
-        assertThat(notificacion.getAsunto()).isEqualTo(ASUNTO);
+        assertThat(notificacion.getDestinatario().email()).isEqualTo(DESTINATARIO);
+        assertThat(notificacion.getContenido().asunto()).isEqualTo(ASUNTO);
         assertThat(notificacion.getEstado()).isEqualTo(EstadoNotificacion.PENDIENTE);
         assertThat(notificacion.getFechaCreacion()).isNotNull();
         assertThat(notificacion.getFechaEnvio()).isEqualTo(UtilFecha.VACIO);

@@ -13,13 +13,13 @@ public final class EnvioNotificacionResultMapper {
 
     public static EnvioNotificacionResult toResultEnviada(NotificacionDomain notificacion) {
         return new EnvioNotificacionResult.Enviada(
-                notificacion.getIdEvento(), notificacion.getDestinatario());
+                notificacion.getIdEvento(), notificacion.getDestinatario().email());
     }
 
     public static EnvioNotificacionResult toResultFallida(NotificacionDomain notificacion) {
         return new EnvioNotificacionResult.Fallida(
                 notificacion.getIdEvento(),
-                notificacion.getDestinatario(),
+                notificacion.getDestinatario().email(),
                 notificacion.getDetalleError());
     }
 }

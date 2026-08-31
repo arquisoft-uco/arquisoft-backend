@@ -11,9 +11,10 @@ public final class MensajeNotificacionMapper {
     public static MensajeNotificacion toMensaje(NotificacionDomain notificacion) {
         return MensajeNotificacion.textoPlano(
                 new DestinatarioNotificacion(
-                        notificacion.getDestinatarioNombre(), notificacion.getDestinatario()),
-                notificacion.getAsunto(),
-                notificacion.getCuerpo(),
-                notificacion.getPie());
+                        notificacion.getDestinatario().nombre(),
+                        notificacion.getDestinatario().email()),
+                notificacion.getContenido().asunto(),
+                notificacion.getContenido().cuerpo(),
+                notificacion.getContenido().pie());
     }
 }
