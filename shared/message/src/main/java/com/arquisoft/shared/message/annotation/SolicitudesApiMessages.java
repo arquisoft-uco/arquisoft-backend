@@ -46,5 +46,16 @@ public final class SolicitudesApiMessages {
         public static final String ENVIAR_NOVEDAD_ASESOR_RESP_400 = "Datos inválidos";
         public static final String ENVIAR_NOVEDAD_ASESOR_RESP_422 =
                 "Remitente o destinatario no encontrado, o solicitud duplicada";
+
+        public static final String ENVIAR_CAMBIO_ASESOR_SUMMARY =
+                "Enviar solicitud para cambio de asesor";
+        public static final String ENVIAR_CAMBIO_ASESOR_DESCRIPTION =
+                "Permite a un estudiante enviar una solicitud para justificar un cambio de asesor, "
+                        + "dirigida a un coordinador.";
+        public static final String ENVIAR_CAMBIO_ASESOR_RESP_201 =
+                "Solicitud enviada — retorna el UUID asignado";
+        public static final String ENVIAR_CAMBIO_ASESOR_RESP_400 = "Datos inválidos";
+        public static final String ENVIAR_CAMBIO_ASESOR_RESP_422 =
+                "Remitente o destinatario no encontrado, o solicitud duplicada";
     }
 }

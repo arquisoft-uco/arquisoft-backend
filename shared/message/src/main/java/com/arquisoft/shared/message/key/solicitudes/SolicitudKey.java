@@ -12,6 +12,10 @@ public enum SolicitudKey implements ClaveMensaje {
     LOG_ENVIANDO_ASESOR("solicitudes.aplicacion.solicitud.log.enviando-asesor", 2),
     LOG_VERIFICACION_ENVIO_ASESOR("solicitudes.aplicacion.solicitud.log.verificacion-envio-asesor", 2),
     LOG_ENVIADA_ASESOR("solicitudes.aplicacion.solicitud.log.enviada-asesor", 1),
+    LOG_ENVIANDO_CAMBIO_ASESOR("solicitudes.aplicacion.solicitud.log.enviando-cambio-asesor", 2),
+    LOG_VERIFICACION_ENVIO_CAMBIO_ASESOR(
+            "solicitudes.aplicacion.solicitud.log.verificacion-envio-cambio-asesor", 2),
+    LOG_ENVIADA_CAMBIO_ASESOR("solicitudes.aplicacion.solicitud.log.enviada-cambio-asesor", 1),
     LOG_GUARDADA("solicitudes.infraestructura.solicitud.log.guardada", 1);
 
     private final String clave;
