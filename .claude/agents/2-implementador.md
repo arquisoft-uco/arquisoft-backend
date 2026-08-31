@@ -120,9 +120,12 @@ omites).
   evento es la mitad del trabajo: implementa también las piezas del lado consumidor que el plan
   lista — la routing key **una sola vez** en `EventTopics.{Contexto}` (la referencian tanto el
   `EVENT_TOPIC` del evento como el `Binding`; escribirla dos veces hace que el binding deje de
-  recibir en silencio si una cambia), `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig`
-  (nombre de cola `{Contexto}Queues.PREFIJO + topic`, argumentos desde `RabbitMQConfig`, cero
-  literales propios), `{Evento}Payload` y `{Evento}Consumer` en
+  recibir en silencio si una cambia), un `@Bean Declarables` con `ColaEvento.declarar(...)` en
+  `Notificaciones{Contexto}QueueConfig` — declara la cola, su `.dead` y los dos bindings de una vez,
+  y sustituye a los cuatro beans que esto costaba antes; la constante del nombre
+  (`{Contexto}Queues.PREFIJO + topic`) se queda porque `@RabbitListener` la lee como valor de
+  anotación, sin literales propios ni constante `*_ROUTING_KEY` aparte —, `{Evento}Payload` y
+  `{Evento}Consumer` en
   `primaryadapter/amqp/{contextoProductor}/` — un subpaquete por productor —, el consumidor
   extendiendo `AbstractNotificacionConsumer` (que ya aporta el `AppLogger` y el
   `registrar(EnvioNotificacionResult)`), la constante nueva **en los dos enums**
@@ -267,11 +270,14 @@ espera respuesta: "¿Sigues con @3-tester (recomendado) o vas directo a @4a-vali
   ausente al use case, declara `public static final X VACIO` con los valores cero
   (`UtilUUID.obtenerUUIDPorDefecto()`, `UtilTexto.VACIO`, …) y `esVacio()` comparando identidad.
   El agregado es siempre una `final class` plana: no extiende nada para emitir eventos.
-- **Cola AMQP nueva:** además del `Queue` + `Binding` de entrada, declara la cola `.dead` y su
-  `Binding` contra `arquisoftDeadLetterExchange`, siempre vía `ColaDeadLetter.declarar(...)`/
-  `enlazar(...)`. Ningún `*QueueConfig` escribe literales: routing key en `EventTopics`, prefijo en
-  `{Contexto}Queues`, argumentos y sufijos en `RabbitMQConfig`. El `{Evento}Payload` declara
-  `idEvento` y `ocurridoEn`.
+- **Cola AMQP nueva:** un solo `@Bean Declarables` con `ColaEvento.declarar(cola, routingKey,
+  eventsExchange, dlx)` — declara de una vez la cola, su `.dead` y los dos bindings. No escribas los
+  cuatro beans a mano ni llames a `ColaDeadLetter` desde el `*QueueConfig`: el descarte se vuelve
+  mudo si el `x-dead-letter-routing-key` y el binding contra el DLX divergen, y `ColaEvento` es lo
+  que impide que puedan hacerlo. Ningún `*QueueConfig` escribe literales: routing key en
+  `EventTopics`, prefijo en `{Contexto}Queues`, argumentos y sufijos en `RabbitMQConfig`. La
+  constante del nombre de cola se queda (`@RabbitListener` la exige constante); una
+  `*_ROUTING_KEY` aparte, no. El `{Evento}Payload` declara `idEvento` y `ocurridoEn`.
 - **Fallo de un puerto que el negocio registra:** es un `sealed interface` de resultado, no una
   excepción. Cero `try/catch` en `application`. Si además hay que reintentarlo, el reintento va en un
   `@Scheduled` que abre `gestorTraza.abrir(SolicitudTraza.paraProgramado())` — nunca dentro del

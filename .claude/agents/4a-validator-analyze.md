@@ -119,7 +119,7 @@ sale y el fallo es silencioso (el mensaje se queda en el exchange, sin cola enga
 
 | Pieza | Dónde |
 |---|---|
-| `Queue` + `Binding` con la routing key igual al `EVENT_TOPIC` del productor | `notificaciones/infrastructure/config/Notificaciones{Contexto}QueueConfig` |
+| `@Bean Declarables` con `ColaEvento.declarar(...)`, routing key igual al `EVENT_TOPIC` del productor | `notificaciones/infrastructure/config/Notificaciones{Contexto}QueueConfig` |
 | `{Evento}Payload` — `record` local del adaptador, nunca la clase del productor | `notificaciones/.../primaryadapter/amqp/` |
 | `{Evento}Consumer` extiende `AbstractEventConsumer`, arma el texto con `Mensajes.formatear` | `notificaciones/.../primaryadapter/amqp/` |
 | Constante nueva en `TipoNotificacion` (sin migración: la columna es `VARCHAR`) | `notificaciones/domain/notificacion/model/` |
@@ -375,13 +375,16 @@ excluido**, así que un agregado sin tests hunde el porcentaje del módulo. No r
 "excluido" algo que no está en esa lista.
 
 
-**Cola de evento sin DLQ declarada (bloqueante).** Un `*QueueConfig` que declara `Queue` + `Binding`
-de entrada pero **no** la cola `.dead` y su `Binding` contra `arquisoftDeadLetterExchange` deja los
-mensajes fallidos descartándose en silencio. Verifica además que ambos lados compongan el nombre con
-`ColaDeadLetter.nombre(...)`/`declarar(...)` y no concatenando el sufijo a mano: si el argumento
-`x-dead-letter-routing-key` y el binding divergen, el descarte vuelve a ser mudo. Literales de cola,
-routing key o argumentos AMQP escritos a mano en un `*QueueConfig` son bloqueantes — van en
-`EventTopics`, `{Contexto}Queues` y `RabbitMQConfig`.
+**Cola de evento mal declarada (bloqueante).** Toda cola de evento se declara con un `@Bean
+Declarables` que devuelve `ColaEvento.declarar(...)`: la cola, su `.dead` y los dos bindings salen
+juntos. Un `*QueueConfig` que escriba los cuatro beans a mano —o que declare la cola de entrada sin
+su `.dead` y el `Binding` contra `arquisoftDeadLetterExchange`— deja los mensajes fallidos
+descartándose en silencio si el `x-dead-letter-routing-key` y el binding divergen, que es
+exactamente lo que `ColaEvento` existe para impedir. Literales de cola, routing key o argumentos
+AMQP escritos a mano son bloqueantes — van en `EventTopics`, `{Contexto}Queues` y `RabbitMQConfig`.
+La constante del nombre de cola sí se queda (`@RabbitListener` la exige constante); una
+`*_ROUTING_KEY` aparte ya no tiene lector y sobra.
+
 
 **Payload sin `ocurridoEn` (bloqueante).** Todo `{Evento}Payload` declara `idEvento` y `ocurridoEn`.
 Ambos viajan siempre en el JSON porque `DomainEvent` los asigna; omitirlos del `record` los descarta

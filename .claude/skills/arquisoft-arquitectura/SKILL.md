@@ -346,6 +346,30 @@ adaptadores y la config a `infrastructure/…/secondaryadapter/{smtp,logging}` y
 **Antes de crear un `shared:*` nuevo, exige dos consumidores reales.** Y si un contexto ya sólo puede
 alcanzarse por eventos —como `notificaciones`— no va a haber un segundo: la arquitectura lo prohíbe.
 
+
+### Un record repetido no siempre es duplicación: se comparte por significado, no por forma
+
+`ContactoAsesor(nombre, email)` en `domain/asesorficha/model/` y `ContactoEstudiante(nombre, email)`
+en `domain/estudiantefichaperfil/model/` son idénticos carácter por carácter, y aun así **no deben
+fundirse en un `Contacto` de `shared:domain`**. La regla anterior aplica igual dentro de un módulo
+que ya existe: hoy cada uno tiene un solo consumidor, su propio evento.
+
+El motivo de fondo es más fuerte que el conteo. Coincidir en la forma —dos strings— no los hace el
+mismo concepto, y DRY habla del conocimiento, no de la estructura: dos records que cambian por
+razones distintas no son una duplicación. El precio del error es además asimétrico. Repetir cuesta
+tres líneas; compartir mal crea **un punto de acoplamiento dentro del payload de un evento**, así que
+añadirle un `telefono` o convertir `email` en un value object validado cambia a la vez el contrato de
+todos los contextos que lo consumen — justo lo que la mensajería existe para evitar.
+
+Reconsidéralo solo si tres features acaban con el mismo record **y cambian juntos por la misma
+razón**. Eso ya es un concepto compartido, no una forma repetida.
+
+Lo que sí es un error es que el mismo concepto viaje con **dos formas distintas** según el evento:
+`FichaPerfilRegistradaEvent` llevaba al asesor en campos planos (`asesorNombre`, `asesorEmail`)
+mientras `EstudiantesFichaPerfilAsignadosEvent` llevaba cada estudiante como record. Un destinatario
+se modela igual en todos los eventos del contexto; si no, el siguiente evento copia el que quedaba
+más a mano.
+
 ## Puertos: hablan `Entity`, nunca `Domain`
 
 `domain/` no declara puertos ni hace I/O. El `OutputPort` recibe y devuelve el `record` plano
@@ -500,7 +524,7 @@ queda en el exchange. Son **seis** piezas en dos contextos:
 |---|---|---|
 | 1 | `shared:message/constant/` | constante nueva en `EventTopics.{Contexto}` con la routing key |
 | 2 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java`, `EVENT_TOPIC = EventTopics.{Contexto}.{X}` |
-| 3 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` |
+| 3 | `notificaciones/infrastructure/config/` | un `@Bean Declarables` con `ColaEvento.declarar(...)` en `Notificaciones{Contexto}QueueConfig` |
 | 4 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Payload.java`, `record` propio del adaptador — **nunca** la clase de evento del productor |
 | 5 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Consumer.java` extiende `AbstractNotificacionConsumer` — aquí se elige el texto, no en el use case |
 | 6 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
@@ -569,32 +593,48 @@ con el `switch` exhaustivo del desenlace. La subclase solo pone su `@RabbitListe
 entrada y su plantilla. Ventaja real: cuando aparezca un desenlace nuevo, el compilador falla en un
 sitio y no en seis.
 
-### La cola `.dead` se declara siempre, con su `Binding`
+### Una cola de evento se declara con `ColaEvento`, no bean a bean
 
-Marcar `x-dead-letter-exchange` en la cola de origen **no basta**. Un exchange sin ninguna cola
-enlazada descarta lo que le llega, así que un mensaje que falla se evapora sin dejar rastro
-recuperable: queda el `logger.error` y nada más. Toda cola de evento declara además su cola de
-descarte y el `Binding` correspondiente:
+Consumir un evento necesita siempre las mismas cuatro declaraciones: la cola, su cola de descarte,
+el `Binding` de esa cola contra el DLX y el `Binding` de la cola contra el exchange de eventos. No
+son opcionales — marcar `x-dead-letter-exchange` en la cola de origen **no basta**: un exchange sin
+cola enlazada descarta lo que le llega, así que un mensaje que falla se evapora sin dejar rastro
+recuperable.
+
+Escritas a mano son unas cuarenta líneas por evento, idénticas salvo el topic. `ColaEvento.declarar`
+(`shared:amqp`) las devuelve como un solo `Declarables` — el contenedor de Spring AMQP que
+`RabbitAdmin` recorre declarando todo lo que hay dentro — así que **un evento nuevo cuesta un método,
+no cuatro beans**:
 
 ```java
-@Bean
-public Queue notificacionesAsesorCambiadoDeadQueue() {
-    return ColaDeadLetter.declarar(ASESOR_CAMBIADO_QUEUE);
-}
+public static final String FICHA_REGISTRADA_QUEUE =
+        NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_REGISTRADA;
 
 @Bean
-public Binding notificacionesAsesorCambiadoDeadBinding(
-        Queue notificacionesAsesorCambiadoDeadQueue,
+public Declarables notificacionesFichaRegistradaDeclarables(
+        @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
         @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
-    return ColaDeadLetter.enlazar(notificacionesAsesorCambiadoDeadQueue, arquisoftDeadLetterExchange);
+    return ColaEvento.declarar(
+            FICHA_REGISTRADA_QUEUE,
+            EventTopics.Fichas.FICHA_PERFIL_REGISTRADA,
+            arquisoftEventsExchange,
+            arquisoftDeadLetterExchange);
 }
 ```
 
-`ColaDeadLetter` (`shared:amqp`) es quien compone el nombre, y los dos lados que lo necesitan —el
-argumento `x-dead-letter-routing-key` de la cola de origen y el `Binding`— llaman a
-`ColaDeadLetter.nombre(cola)`. Es el mismo riesgo que `EventTopics` resuelve para la routing key: dos
-sitios escribiendo la misma cadena, y si divergen **el descarte vuelve a ser silencioso**. Las colas
-llevan `x-message-ttl` (`RabbitMQConfig.TTL_COLA_DEAD_LETTER`, 14 días) para no crecer sin techo.
+Eso es todo lo que hay que añadir al `*QueueConfig` para una cola nueva. **La constante del nombre se
+queda** aunque `ColaEvento` sepa componerlo: `@RabbitListener(queues = ...)` la lee como valor de
+anotación y necesita una expresión constante (JLS §9.7.1), que una llamada a método no es. No
+declares una constante `*_ROUTING_KEY` aparte — el topic ya vive en `EventTopics` y el bean lo pasa
+como argumento.
+
+El motivo de centralizarlo no es el número de líneas. El argumento `x-dead-letter-routing-key` de la
+cola de origen y la routing key del `Binding` contra el DLX **tienen que ser la misma cadena**, y si
+divergen el descarte vuelve a ser silencioso; es el mismo riesgo que `EventTopics` resuelve para la
+routing key del evento. Copiar el bloque por evento era copiar también esa oportunidad de
+equivocarse. `ColaEventoTest` fija que los cuatro elementos salgan enlazados entre sí. Las colas de
+descarte llevan `x-message-ttl` (`RabbitMQConfig.TTL_COLA_DEAD_LETTER`, 14 días) para no crecer sin
+techo.
 
 ### El `nack` distingue fallo transitorio de mensaje envenenado
 

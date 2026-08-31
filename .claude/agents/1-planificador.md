@@ -130,7 +130,7 @@ listar las **ocho** piezas, repartidas en dos contextos, y la sección 6 debe mo
 |---|---|---|
 | 1 | `shared:message/constant/` | constante nueva en `EventTopics.{Contexto}` — la routing key, declarada **una sola vez** |
 | 2 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java` — `EVENT_TOPIC = EventTopics.{Contexto}.{X}` |
-| 3 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` — nombre de cola `{Contexto}Queues.PREFIJO + topic`, argumentos desde `RabbitMQConfig` |
+| 3 | `notificaciones/infrastructure/config/` | un `@Bean Declarables` con `ColaEvento.declarar(...)` en `Notificaciones{Contexto}QueueConfig` — declara la cola, su `.dead` y los dos bindings de una vez; la constante del nombre (`{Contexto}Queues.PREFIJO + topic`) se queda porque `@RabbitListener` la exige constante |
 | 4 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Payload.java` — `record` propio del adaptador, **nunca** la clase de evento del productor |
 | 5 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Consumer.java` extiende `AbstractNotificacionConsumer` — aquí, y no en el use case, se elige el texto |
 | 6 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
@@ -468,9 +468,10 @@ responde **tres** preguntas antes de escribir el árbol de archivos:
 ### Evento nuevo ⇒ cola, DLQ y binding (sección 10)
 
 Un evento nuevo no son solo las ocho piezas de la transición de estado. La cola del consumidor
-declara además **su cola `.dead` y el `Binding` contra `arquisoft.dlx`**, vía `ColaDeadLetter`. Sin
-ese binding el descarte es silencioso y el mensaje se pierde sin rastro. El payload declara
-`idEvento` y `ocurridoEn`.
+necesita además **su cola `.dead` y el `Binding` contra `arquisoft.dlx`**: sin ese binding el
+descarte es silencioso y el mensaje se pierde sin rastro. Las cuatro declaraciones salen de una sola
+llamada a `ColaEvento.declarar(...)` devuelta como `Declarables` — planifica **un `@Bean`**, no cuatro
+(ver `arquisoft-arquitectura`). El payload declara `idEvento` y `ocurridoEn`.
 
 ### Replicación entre contextos (secciones 4 y 10)
 
