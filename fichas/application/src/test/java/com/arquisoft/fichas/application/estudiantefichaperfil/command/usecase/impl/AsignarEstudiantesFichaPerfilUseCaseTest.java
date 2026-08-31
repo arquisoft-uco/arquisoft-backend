@@ -117,7 +117,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         inOrder.verify(estudiantesYaVinculadosFinder).obtener(relaciones.getRelaciones());
         inOrder.verify(estudiantesVinculadosContadorFinder).obtener(fichaPerfil);
         inOrder.verify(asignarEstudiantesFichaPerfilValidator)
-                .validar(relaciones, true, List.of(estudiante), List.of(), 0L);
+                .validar(relaciones, ficha, List.of(estudiante), List.of(), 0L);
         inOrder.verify(estudianteFichaPerfilOutputPort)
                 .vincularEstudiante(entidadDe(relaciones.getRelaciones().getFirst()));
     }
@@ -164,7 +164,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         stubConsultas(FichaPerfilDomain.VACIO, List.of(estudiante), List.of(), 0L);
         doThrow(new FichaPerfilNoEncontradaException(fichaPerfil))
                 .when(asignarEstudiantesFichaPerfilValidator)
-                .validar(relaciones, false, List.of(estudiante), List.of(), 0L);
+                .validar(relaciones, FichaPerfilDomain.VACIO, List.of(estudiante), List.of(), 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
@@ -181,7 +181,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         stubConsultas(ficha, List.of(), List.of(), 0L);
         doThrow(new EstudianteNoEncontradoException(estudiante))
                 .when(asignarEstudiantesFichaPerfilValidator)
-                .validar(relaciones, true, List.of(), List.of(), 0L);
+                .validar(relaciones, ficha, List.of(), List.of(), 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))
@@ -198,7 +198,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         stubConsultas(ficha, List.of(estudiante), List.of(), 5L);
         doThrow(new CupoEstudiantesExcedidoException(3))
                 .when(asignarEstudiantesFichaPerfilValidator)
-                .validar(relaciones, true, List.of(estudiante), List.of(), 5L);
+                .validar(relaciones, ficha, List.of(estudiante), List.of(), 5L);
 
         // Act & Assert
         assertThatThrownBy(() -> asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones))

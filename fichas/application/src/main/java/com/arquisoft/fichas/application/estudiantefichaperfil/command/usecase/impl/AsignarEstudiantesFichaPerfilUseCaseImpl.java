@@ -52,7 +52,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
                 !ficha.esVacio(), estudiantesExistentes.size(), yaVinculados.size(), vinculadosActuales);
 
         asignarEstudiantesFichaPerfilValidator.validar(
-                entrada, !ficha.esVacio(), estudiantesExistentes, yaVinculados, vinculadosActuales);
+                entrada, ficha, estudiantesExistentes, yaVinculados, vinculadosActuales);
 
         entrada.getRelaciones().stream()
                 .map(EstudianteFichaPerfilMapper::toEntity)
