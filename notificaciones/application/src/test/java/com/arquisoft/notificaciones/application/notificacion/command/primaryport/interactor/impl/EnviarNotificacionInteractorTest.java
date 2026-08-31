@@ -37,7 +37,7 @@ class EnviarNotificacionInteractorTest {
         // Act
         enviarNotificacionInteractor.ejecutar(command);
 
-        // Assert — el interactor delimita la transaccion, mapea a dominio y delega
+        // Assert
         ArgumentCaptor<NotificacionDomain> captor =
                 ArgumentCaptor.forClass(NotificacionDomain.class);
         verify(enviarNotificacionUseCase).ejecutar(captor.capture());

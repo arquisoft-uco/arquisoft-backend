@@ -46,7 +46,7 @@ public record EnviarNotificacionCommand(
 
         return new EnviarNotificacionCommand(
                 UtilTexto.aplicarTrim(idEvento),
-                tipoPresente ? TipoNotificacion.desde(tipo) : null,
+                tipoPresente ? TipoNotificacion.desde(tipo) : TipoNotificacion.VACIO,
                 UtilTexto.aplicarTrim(destinatarioNombre),
                 UtilTexto.aplicarTrim(destinatarioEmail),
                 UtilTexto.aplicarTrim(asunto),

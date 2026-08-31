@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
+import com.arquisoft.shared.util.UtilFecha;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -115,5 +116,35 @@ class NotificacionCommandOutputAdapterTest {
         assertThat(reintentables).hasSize(1);
         assertThat(reintentables.getFirst().idEvento()).isEqualTo(fallida.getIdEvento());
         assertThat(reintentables.getFirst().cuerpo()).isEqualTo(CUERPO);
+    }
+
+    @Test
+    void debeDejarNulasLasColumnasOpcionales_cuandoLaNotificacionSiguePendiente() {
+        // Arrange
+        NotificacionDomain notificacion = notificacionCon(UUID.randomUUID().toString());
+
+        // Act
+        adapter.guardar(NotificacionMapper.toEntity(notificacion));
+
+        // Assert
+        NotificacionJpaEntity guardada = repository.findById(notificacion.getId()).orElseThrow();
+        assertThat(guardada.getDetalleError()).isNull();
+        assertThat(guardada.getFechaEnvio()).isNull();
+        assertThat(guardada.getFechaUltimoIntento()).isNull();
+    }
+
+    @Test
+    void debeDevolverElCentinela_cuandoSeLeeUnaColumnaNula() {
+        // Arrange
+        NotificacionDomain notificacion = notificacionCon(UUID.randomUUID().toString());
+        notificacion.marcarFallida("servidor SMTP no disponible");
+        adapter.guardar(NotificacionMapper.toEntity(notificacion));
+
+        // Act
+        var leida = adapter.buscarFallidasReintentables(5, 50).getFirst();
+
+        // Assert
+        assertThat(leida.fechaUltimoIntento()).isEqualTo(UtilFecha.VACIO);
+        assertThat(leida.detalleError()).isEqualTo("servidor SMTP no disponible");
     }
 }

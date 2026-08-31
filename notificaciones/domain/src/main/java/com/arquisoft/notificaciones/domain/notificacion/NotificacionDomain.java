@@ -13,7 +13,7 @@ import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
-import com.arquisoft.shared.validation.ValidatorObjeto;
+import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.time.Instant;
@@ -55,7 +55,10 @@ public final class NotificacionDomain {
         result.lanzarSiTieneErrores();
 
         notificacion.estado = EstadoNotificacion.PENDIENTE;
+        notificacion.detalleError = UtilTexto.VACIO;
         notificacion.fechaCreacion = UtilFecha.generarInstanteActual();
+        notificacion.fechaEnvio = UtilFecha.VACIO;
+        notificacion.fechaUltimoIntento = UtilFecha.VACIO;
         return notificacion;
     }
 
@@ -63,19 +66,23 @@ public final class NotificacionDomain {
             DatosNotificacion datos, EstadoNotificacion estado, String detalleError) {
 
         var notificacion = new NotificacionDomain();
-        notificacion.id = datos.id();
-        notificacion.idEvento = datos.idEvento();
-        notificacion.tipo = datos.tipo();
-        notificacion.destinatario = datos.destinatario();
-        notificacion.asunto = datos.asunto();
-        notificacion.destinatarioNombre = datos.destinatarioNombre();
-        notificacion.cuerpo = datos.cuerpo();
-        notificacion.fechaCreacion = datos.fechaCreacion();
-        notificacion.fechaEnvio = datos.fechaEnvio();
+        notificacion.id = UtilObjeto.aplicarPorDefecto(
+                datos.id(), UtilUUID.obtenerUUIDPorDefecto());
+        notificacion.idEvento = UtilTexto.aplicarTrim(datos.idEvento());
+        notificacion.tipo = UtilObjeto.aplicarPorDefecto(datos.tipo(), TipoNotificacion.VACIO);
+        notificacion.destinatario = UtilTexto.aplicarTrim(datos.destinatario());
+        notificacion.asunto = UtilTexto.aplicarTrim(datos.asunto());
+        notificacion.destinatarioNombre = UtilTexto.aplicarTrim(datos.destinatarioNombre());
+        notificacion.cuerpo = UtilTexto.aplicarTrim(datos.cuerpo());
+        notificacion.fechaCreacion = UtilObjeto.aplicarPorDefecto(
+                datos.fechaCreacion(), UtilFecha.VACIO);
+        notificacion.fechaEnvio = UtilObjeto.aplicarPorDefecto(
+                datos.fechaEnvio(), UtilFecha.VACIO);
         notificacion.intentos = datos.intentos();
-        notificacion.fechaUltimoIntento = datos.fechaUltimoIntento();
-        notificacion.estado = estado;
-        notificacion.detalleError = detalleError;
+        notificacion.fechaUltimoIntento = UtilObjeto.aplicarPorDefecto(
+                datos.fechaUltimoIntento(), UtilFecha.VACIO);
+        notificacion.estado = UtilObjeto.aplicarPorDefecto(estado, EstadoNotificacion.VACIO);
+        notificacion.detalleError = UtilTexto.aplicarTrim(detalleError);
         return notificacion;
     }
 
@@ -96,14 +103,14 @@ public final class NotificacionDomain {
     public void marcarEnviada() {
         validarTransicionPermitida();
         this.estado = EstadoNotificacion.ENVIADA;
-        this.detalleError = null;
+        this.detalleError = UtilTexto.VACIO;
         this.fechaEnvio = UtilFecha.generarInstanteActual();
     }
 
     public void marcarFallida(String motivo) {
         validarTransicionPermitida();
         this.estado = EstadoNotificacion.FALLIDA;
-        this.detalleError = motivo;
+        this.detalleError = UtilTexto.aplicarTrim(motivo);
         this.fechaEnvio = UtilFecha.generarInstanteActual();
     }
 
@@ -119,13 +126,13 @@ public final class NotificacionDomain {
             result.lanzarSiTieneErrores();
         }
         this.estado = EstadoNotificacion.PENDIENTE;
-        this.detalleError = null;
+        this.detalleError = UtilTexto.VACIO;
         this.intentos = this.intentos + 1;
         this.fechaUltimoIntento = UtilFecha.generarInstanteActual();
     }
 
     private void validarTransicionPermitida() {
-        if (!UtilObjeto.esNulo(this.estado) && this.estado.esTerminal()) {
+        if (this.estado.esTerminal()) {
             var result = new ValidationResult();
             result.agregarError(
                     NotificacionesFields.Notificacion.ESTADO,
@@ -157,12 +164,16 @@ public final class NotificacionDomain {
     }
 
     private void setTipo(TipoNotificacion tipo, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(tipo,
-                NotificacionesFields.Notificacion.TIPO,
-                NotificacionesCodes.Notificacion.TIPO_REQUERIDO, result)) {
+        var tipoSeguro = UtilObjeto.aplicarPorDefecto(tipo, TipoNotificacion.VACIO);
+        if (tipoSeguro.esVacio()) {
+            result.agregarError(
+                    NotificacionesFields.Notificacion.TIPO,
+                    NotificacionesCodes.Notificacion.TIPO_REQUERIDO,
+                    Mensajes.formatear(
+                            ValidadorKey.NO_NULO, NotificacionesFields.Notificacion.TIPO));
             return;
         }
-        this.tipo = tipo;
+        this.tipo = tipoSeguro;
     }
 
     private void setDestinatario(String destinatario, ValidationResult result) {

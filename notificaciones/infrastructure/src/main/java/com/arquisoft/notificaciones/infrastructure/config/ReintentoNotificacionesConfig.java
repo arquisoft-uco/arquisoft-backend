@@ -9,9 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
 
-// El reintento no puede vivir dentro del consumidor: con prefetch=1 un SMTP caido dejaria el
-// listener bloqueado, y la reentrega por la cola tampoco sirve porque la idempotencia por
-// event_id devolveria Duplicada sin reenviar nada. Por eso sale de la base de datos.
 @Configuration
 @RequiredArgsConstructor
 public class ReintentoNotificacionesConfig {

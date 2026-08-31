@@ -11,9 +11,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AsesorFichaCambiadoPayloadTest {
 
-    // El productor serializa el evento con el mismo mapper que el consumidor usa para leerlo, asi
-    // que instanciar la configuracion real es lo unico que prueba el contrato de verdad: un doble
-    // configurado a mano podria pasar el test y fallar en el broker.
     private final tools.jackson.databind.json.JsonMapper mapper =
             new RabbitMQConfig().rabbitObjectMapper();
 
@@ -73,7 +70,7 @@ class AsesorFichaCambiadoPayloadTest {
 
     @Test
     void debeDejarOcurridoEnNulo_cuandoElProductorAunNoLoEnvia() {
-        // Arrange — lectura tolerante: un productor viejo no rompe al consumidor
+        // Arrange
         String json = """
                 {"idEvento":"evt-1","fichaPerfilId":"11111111-1111-1111-1111-111111111111",
                  "tituloProyecto":"Sistema","asesorNombre":"Ana Gomez",

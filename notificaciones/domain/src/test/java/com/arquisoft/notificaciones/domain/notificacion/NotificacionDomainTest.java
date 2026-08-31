@@ -1,5 +1,7 @@
 package com.arquisoft.notificaciones.domain.notificacion;
 
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.validation.DomainValidationException;
@@ -40,7 +42,7 @@ class NotificacionDomainTest {
         assertThat(notificacion.getAsunto()).isEqualTo(ASUNTO);
         assertThat(notificacion.getEstado()).isEqualTo(EstadoNotificacion.PENDIENTE);
         assertThat(notificacion.getFechaCreacion()).isNotNull();
-        assertThat(notificacion.getFechaEnvio()).isNull();
+        assertThat(notificacion.getFechaEnvio()).isEqualTo(UtilFecha.VACIO);
     }
 
     @Test
@@ -103,7 +105,7 @@ class NotificacionDomainTest {
 
     @Test
     void debeAcumularVariosErrores_cuandoFallanVariosCampos() {
-        // Act — la validación de integridad acumula, no corta en el primer error
+        // Act
         Throwable excepcion = catchThrowable(() ->
                 NotificacionDomain.crear(null, null, null, null, null, null));
 
@@ -123,7 +125,7 @@ class NotificacionDomainTest {
         // Assert
         assertThat(notificacion.getEstado()).isEqualTo(EstadoNotificacion.ENVIADA);
         assertThat(notificacion.getFechaEnvio()).isNotNull();
-        assertThat(notificacion.getDetalleError()).isNull();
+        assertThat(notificacion.getDetalleError()).isEqualTo(UtilTexto.VACIO);
     }
 
     @Test
@@ -149,7 +151,7 @@ class NotificacionDomainTest {
         // Act
         Throwable excepcion = catchThrowable(() -> notificacion.marcarFallida("otro motivo"));
 
-        // Assert — una notificación ya resuelta no vuelve a cambiar de estado
+        // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
         assertThat(((DomainValidationException) excepcion).getValidationResult().getErrores())
                 .anySatisfy(error -> assertThat(error.codigoError())

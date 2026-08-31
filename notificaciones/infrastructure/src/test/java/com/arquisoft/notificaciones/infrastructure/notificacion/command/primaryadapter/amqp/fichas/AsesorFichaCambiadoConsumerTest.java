@@ -47,7 +47,6 @@ class AsesorFichaCambiadoConsumerTest {
                 Mockito.mock(AppLogger.class),
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
 
-        // El consumidor hace switch exhaustivo sobre el resultado para elegir el log de cierre.
         lenient().when(enviarNotificacionInteractor.ejecutar(any()))
                 .thenReturn(new EnvioNotificacionResult.Enviada("evt", "ana.gomez@soyuco.edu.co"));
     }
@@ -96,7 +95,7 @@ class AsesorFichaCambiadoConsumerTest {
         // Act
         adapter.onAsesorFichaCambiado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
 
-        // Assert — los textos salen del bundle, no de literales en el adapter
+        // Assert
         ArgumentCaptor<EnviarNotificacionCommand> captor =
                 ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
         verify(enviarNotificacionInteractor).ejecutar(captor.capture());
@@ -118,7 +117,7 @@ class AsesorFichaCambiadoConsumerTest {
 
     @Test
     void debeEnviarNackSinReencolar_cuandoElInteractorFalla() throws Exception {
-        // Arrange — requeue=false manda el mensaje a la DLX en lugar de reintentarlo en bucle
+        // Arrange
         doThrow(new RuntimeException("fallo al notificar"))
                 .when(enviarNotificacionInteractor).ejecutar(any());
 

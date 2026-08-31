@@ -104,7 +104,7 @@ class EnviarNotificacionUseCaseTest {
 
     @Test
     void noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado() {
-        // Arrange — es la reentrega normal del broker, no un error
+        // Arrange
         when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(true);
 
         // Act
@@ -123,7 +123,7 @@ class EnviarNotificacionUseCaseTest {
         when(envioNotificacionOutputPort.enviar(any(MensajeNotificacion.class)))
                 .thenReturn(new ResultadoEntrega.Rechazada("No se pudo entregar la notificación"));
 
-        // Act — no relanza: el fallo se persiste para poder reintentarlo despues
+        // Act
         var resultado = enviarNotificacionUseCase.ejecutar(envio());
 
         // Assert

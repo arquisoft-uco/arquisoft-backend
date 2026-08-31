@@ -27,7 +27,7 @@ class MensajeNotificacionTest {
 
     @Test
     void debeCopiarLaListaDeDestinatarios_cuandoSeConstruyeElMensaje() {
-        // Arrange — una lista mutable que el llamador podria modificar despues
+        // Arrange
         List<DestinatarioNotificacion> origen = new ArrayList<>();
         origen.add(new DestinatarioNotificacion("Ana", "ana@soyuco.edu.co"));
 
@@ -35,7 +35,7 @@ class MensajeNotificacionTest {
         MensajeNotificacion mensaje = new MensajeNotificacion(origen, "Asunto", "Cuerpo", false);
         origen.add(new DestinatarioNotificacion("Luis", "luis@soyuco.edu.co"));
 
-        // Assert — el mensaje conserva la foto del momento de construccion
+        // Assert
         assertThat(mensaje.destinatarios()).hasSize(1);
         assertThatThrownBy(() -> mensaje.destinatarios().add(
                 new DestinatarioNotificacion("Otro", "otro@soyuco.edu.co")))

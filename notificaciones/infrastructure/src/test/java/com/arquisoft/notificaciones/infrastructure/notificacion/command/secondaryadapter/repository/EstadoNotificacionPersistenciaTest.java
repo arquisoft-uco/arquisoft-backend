@@ -13,7 +13,7 @@ class EstadoNotificacionPersistenciaTest {
 
     @Test
     void debeResolverContraElCatalogoDeDominio_cuandoSeRecorreCadaCodigo() {
-        // Assert — el codigo que viaja a la consulta tiene que ser el que el dominio persiste
+        // Assert
         for (EstadoNotificacionPersistencia estado : EstadoNotificacionPersistencia.values()) {
             assertThat(EstadoNotificacion.desde(estado.getCodigo()).getId())
                     .isEqualTo(EstadoNotificacion.valueOf(estado.name()).getId());
@@ -27,10 +27,11 @@ class EstadoNotificacionPersistenciaTest {
                 .map(Enum::name)
                 .collect(Collectors.toSet());
         Set<String> enDominio = Arrays.stream(EstadoNotificacion.values())
+                .filter(estado -> !estado.esVacio())
                 .map(Enum::name)
                 .collect(Collectors.toSet());
 
-        // Assert — si el dominio gana un estado, esta tabla tiene que ganarlo tambien
+        // Assert
         assertThat(enInfraestructura).isEqualTo(enDominio);
     }
 }

@@ -86,7 +86,7 @@ class ReintentarNotificacionesFallidasUseCaseTest {
 
         assertThat(captor.getValue().estado()).isEqualTo(EstadoNotificacion.ENVIADA.getId());
         assertThat(captor.getValue().intentos()).isEqualTo(2);
-        assertThat(captor.getValue().detalleError()).isNull();
+        assertThat(captor.getValue().detalleError()).isEmpty();
         assertThat(resultado.reenviadas()).isEqualTo(1);
         assertThat(resultado.fallidas()).isZero();
         assertThat(resultado.agotadas()).isZero();

@@ -34,7 +34,7 @@ class LogEnvioNotificacionOutputAdapterTest {
         // Act
         sender.enviar(mensaje);
 
-        // Assert — la unica salida de esta estrategia es el log; no hay transporte que verificar
+        // Assert
         verify(logger).info(any(String.class), any(), any());
     }
 

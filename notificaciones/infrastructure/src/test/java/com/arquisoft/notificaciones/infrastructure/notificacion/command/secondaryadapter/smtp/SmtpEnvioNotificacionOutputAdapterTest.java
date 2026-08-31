@@ -91,7 +91,7 @@ class SmtpEnvioNotificacionOutputAdapterTest {
 
     @Test
     void debeDevolverRechazadaSinPropagar_cuandoElProveedorRechazaElEnvio() {
-        // Arrange — el rechazo es el estado FALLIDA de la notificacion, no un error del flujo
+        // Arrange
         when(mailSender.createMimeMessage()).thenReturn(mimeMessageVacio());
         doThrow(new MailSendException("servidor SMTP no disponible"))
                 .when(mailSender).send(any(MimeMessage.class));
@@ -113,7 +113,7 @@ class SmtpEnvioNotificacionOutputAdapterTest {
         // Act
         sender.enviar(mensajeDePrueba());
 
-        // Assert — la traza del proveedor se registra aqui, que es donde se conoce
+        // Assert
         verify(logger).error(any(String.class), any(Throwable.class), any(), any());
     }
 
