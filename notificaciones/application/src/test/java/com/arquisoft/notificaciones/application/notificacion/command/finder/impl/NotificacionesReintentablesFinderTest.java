@@ -38,6 +38,7 @@ class NotificacionesReintentablesFinderTest {
                 "Se te asignó la ficha",
                 "Ana Gomez",
                 "Hola Ana, ahora eres la asesora.",
+                "Correo automatico, no respondas.",
                 EstadoNotificacion.FALLIDA.getId(),
                 "SMTP rechazó el envío",
                 Instant.now(),

@@ -56,7 +56,8 @@ public class AsesorFichaCambiadoConsumer extends AbstractNotificacionConsumer {
                     plantilla(
                             PlantillaKey.CUERPO_ASESOR_CAMBIADO,
                             payload.asesorNombre(),
-                            payload.tituloProyecto()))));
+                            payload.tituloProyecto()),
+                    plantilla(PlantillaKey.PIE_GENERICO))));
         });
     }
 }

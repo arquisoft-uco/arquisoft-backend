@@ -110,6 +110,7 @@ class AsesorFichaCambiadoConsumerTest {
         assertThat(captor.getValue().cuerpo())
                 .contains("Ana Gomez")
                 .contains("Sistema de gestión");
+        assertThat(captor.getValue().pie()).isNotEmpty();
     }
 
     @Test

@@ -28,6 +28,7 @@ public final class NotificacionDomain {
     private String asunto;
     private String destinatarioNombre;
     private String cuerpo;
+    private String pie;
     private EstadoNotificacion estado;
     private String detalleError;
     private Instant fechaCreacion;
@@ -39,7 +40,7 @@ public final class NotificacionDomain {
 
     public static NotificacionDomain crear(
             String idEvento, TipoNotificacion tipo, String destinatario, String asunto,
-            String destinatarioNombre, String cuerpo) {
+            String destinatarioNombre, String cuerpo, String pie) {
 
         var notificacion = new NotificacionDomain();
         var result = new ValidationResult();
@@ -51,6 +52,7 @@ public final class NotificacionDomain {
         notificacion.setAsunto(asunto, result);
         notificacion.setDestinatarioNombre(destinatarioNombre, result);
         notificacion.setCuerpo(cuerpo, result);
+        notificacion.setPie(pie);
 
         result.lanzarSiTieneErrores();
 
@@ -74,6 +76,7 @@ public final class NotificacionDomain {
         notificacion.asunto = UtilTexto.aplicarTrim(datos.asunto());
         notificacion.destinatarioNombre = UtilTexto.aplicarTrim(datos.destinatarioNombre());
         notificacion.cuerpo = UtilTexto.aplicarTrim(datos.cuerpo());
+        notificacion.pie = UtilTexto.aplicarTrim(datos.pie());
         notificacion.fechaCreacion = UtilObjeto.aplicarPorDefecto(
                 datos.fechaCreacion(), UtilFecha.VACIO);
         notificacion.fechaEnvio = UtilObjeto.aplicarPorDefecto(
@@ -94,6 +97,7 @@ public final class NotificacionDomain {
             String asunto,
             String destinatarioNombre,
             String cuerpo,
+            String pie,
             Instant fechaCreacion,
             Instant fechaEnvio,
             int intentos,
@@ -226,6 +230,10 @@ public final class NotificacionDomain {
         this.destinatarioNombre = UtilTexto.aplicarTrim(destinatarioNombre);
     }
 
+    private void setPie(String pie) {
+        this.pie = UtilTexto.aplicarTrim(pie);
+    }
+
     private void setCuerpo(String cuerpo, ValidationResult result) {
         if (!ValidatorTexto.noEnBlanco(cuerpo,
                 NotificacionesFields.Notificacion.CUERPO,
@@ -245,6 +253,10 @@ public final class NotificacionDomain {
 
     public String getCuerpo() {
         return cuerpo;
+    }
+
+    public String getPie() {
+        return pie;
     }
 
     public int getIntentos() {

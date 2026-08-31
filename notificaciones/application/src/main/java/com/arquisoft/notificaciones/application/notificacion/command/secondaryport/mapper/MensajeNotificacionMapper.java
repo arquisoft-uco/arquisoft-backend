@@ -13,6 +13,7 @@ public final class MensajeNotificacionMapper {
                 new DestinatarioNotificacion(
                         notificacion.getDestinatarioNombre(), notificacion.getDestinatario()),
                 notificacion.getAsunto(),
-                notificacion.getCuerpo());
+                notificacion.getCuerpo(),
+                notificacion.getPie());
     }
 }

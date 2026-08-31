@@ -53,7 +53,8 @@ class EnviarNotificacionUseCaseTest {
                 "Ana Gomez",
                 "ana.gomez@soyuco.edu.co",
                 "Se te asignó la ficha",
-                "Hola Ana, ahora eres la asesora."));
+                "Hola Ana, ahora eres la asesora.",
+                "Correo automatico, no respondas."));
     }
 
     @Test

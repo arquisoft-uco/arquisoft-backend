@@ -32,7 +32,8 @@ class EnviarNotificacionInteractorTest {
                 "Ana Gomez",
                 "ana.gomez@soyuco.edu.co",
                 "Asunto",
-                "Cuerpo");
+                "Cuerpo",
+                "Pie");
 
         // Act
         enviarNotificacionInteractor.ejecutar(command);

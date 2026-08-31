@@ -21,6 +21,7 @@ public final class NotificacionJpaMapper {
                 jpaEntity.getAsunto(),
                 jpaEntity.getDestinatarioNombre(),
                 jpaEntity.getCuerpo(),
+                jpaEntity.getPie(),
                 jpaEntity.getEstado(),
                 UtilTexto.aplicarTrim(jpaEntity.getDetalleError()),
                 jpaEntity.getFechaCreacion(),
@@ -38,6 +39,7 @@ public final class NotificacionJpaMapper {
                 .asunto(entity.asunto())
                 .destinatarioNombre(entity.destinatarioNombre())
                 .cuerpo(entity.cuerpo())
+                .pie(entity.pie())
                 .estado(entity.estado())
                 .detalleError(aColumna(entity.detalleError()))
                 .fechaCreacion(entity.fechaCreacion())

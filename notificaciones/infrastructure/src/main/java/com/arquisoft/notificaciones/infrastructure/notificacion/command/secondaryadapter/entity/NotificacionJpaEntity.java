@@ -42,6 +42,9 @@ public class NotificacionJpaEntity {
     @Column(name = "cuerpo", nullable = false)
     private String cuerpo;
 
+    @Column(name = "pie", nullable = false)
+    private String pie;
+
     @Column(name = "estado", nullable = false, length = 20)
     private String estado;
 

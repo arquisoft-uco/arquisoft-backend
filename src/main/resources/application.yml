@@ -159,6 +159,8 @@ notificacion:
   proveedor: ${NOTIFICACION_PROVEEDOR:log}
   remitente-email: ${NOTIFICACION_REMITENTE_EMAIL:no-reply@arquisoft.local}
   remitente-nombre: ${NOTIFICACION_REMITENTE_NOMBRE:Arquisoft}
+  # Admite classpath: y file:, asi que en despliegue se puede apuntar a un HTML fuera del jar.
+  plantilla: ${NOTIFICACION_PLANTILLA:classpath:plantillas/correo-base.html}
   # Un envio rechazado se guarda como FALLIDA y lo reintenta un job programado, no el consumidor:
   # con prefetch=1 reintentar dentro del listener bloquearia la cola, y reencolar el evento no
   # sirve porque la idempotencia por event_id lo daria por duplicado sin reenviarlo.

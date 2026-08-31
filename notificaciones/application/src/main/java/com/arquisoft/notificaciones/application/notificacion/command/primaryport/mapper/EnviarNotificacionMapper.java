@@ -14,6 +14,7 @@ public final class EnviarNotificacionMapper {
                 command.destinatarioEmail(),
                 command.asunto(),
                 command.destinatarioNombre(),
-                command.cuerpo());
+                command.cuerpo(),
+                command.pie());
     }
 }

@@ -59,6 +59,7 @@ class ReintentarNotificacionesFallidasUseCaseTest {
                         "Se te asignó la ficha",
                         "Ana Gomez",
                         "Hola Ana, ahora eres la asesora.",
+                        "Correo automatico, no respondas.",
                         Instant.now().minusSeconds(600),
                         Instant.now().minusSeconds(300),
                         intentos,

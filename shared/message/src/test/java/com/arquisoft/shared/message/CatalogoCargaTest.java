@@ -44,7 +44,8 @@ class CatalogoCargaTest {
     // deciden el texto de respaldo; los otros son segmentos propios de un grupo de claves cuyo
     // respaldo genérico es el de error, y están aquí para que la lista sea exhaustiva y cerrada.
     private static final Set<String> SEGMENTOS_ACEPTADOS =
-            Set.of("error", "validacion", "log", "api", "tipo", "valor", "asunto", "cuerpo", "mensaje");
+            Set.of("error", "validacion", "log", "api", "tipo", "valor",
+                    "asunto", "cuerpo", "pie", "mensaje");
 
     private static final Path FUENTES_CLAVES = Path.of("src/main/java/com/arquisoft/shared/message/key");
     private static final String PAQUETE_CLAVES = "com.arquisoft.shared.message.key";

@@ -6,7 +6,8 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum PlantillaKey implements ClaveMensaje {
 
     ASUNTO_ASESOR_CAMBIADO("notificaciones.aplicacion.plantilla.asunto.asesor-cambiado", 1),
-    CUERPO_ASESOR_CAMBIADO("notificaciones.aplicacion.plantilla.cuerpo.asesor-cambiado", 2);
+    CUERPO_ASESOR_CAMBIADO("notificaciones.aplicacion.plantilla.cuerpo.asesor-cambiado", 2),
+    PIE_GENERICO("notificaciones.aplicacion.plantilla.pie.generico", 0);
 
     private final String clave;
     private final int parametros;

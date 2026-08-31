@@ -16,13 +16,13 @@ class MensajeNotificacionTest {
         DestinatarioNotificacion destinatario = new DestinatarioNotificacion("Ana", "ana@soyuco.edu.co");
 
         // Act
-        MensajeNotificacion mensaje = MensajeNotificacion.textoPlano(destinatario, "Asunto", "Cuerpo");
+        MensajeNotificacion mensaje = MensajeNotificacion.textoPlano(destinatario, "Asunto", "Cuerpo", "Pie");
 
         // Assert
         assertThat(mensaje.destinatarios()).containsExactly(destinatario);
         assertThat(mensaje.asunto()).isEqualTo("Asunto");
         assertThat(mensaje.cuerpo()).isEqualTo("Cuerpo");
-        assertThat(mensaje.esHtml()).isFalse();
+        assertThat(mensaje.pie()).isEqualTo("Pie");
     }
 
     @Test
@@ -32,7 +32,7 @@ class MensajeNotificacionTest {
         origen.add(new DestinatarioNotificacion("Ana", "ana@soyuco.edu.co"));
 
         // Act
-        MensajeNotificacion mensaje = new MensajeNotificacion(origen, "Asunto", "Cuerpo", false);
+        MensajeNotificacion mensaje = new MensajeNotificacion(origen, "Asunto", "Cuerpo", "Pie");
         origen.add(new DestinatarioNotificacion("Luis", "luis@soyuco.edu.co"));
 
         // Assert
@@ -45,7 +45,7 @@ class MensajeNotificacionTest {
     @Test
     void debeNormalizarANulaListaVacia_cuandoLosDestinatariosSonNull() {
         // Act
-        MensajeNotificacion mensaje = new MensajeNotificacion(null, "Asunto", "Cuerpo", false);
+        MensajeNotificacion mensaje = new MensajeNotificacion(null, "Asunto", "Cuerpo", "Pie");
 
         // Assert
         assertThat(mensaje.destinatarios()).isEmpty();

@@ -11,6 +11,7 @@ public record NotificacionEntity(
         String asunto,
         String destinatarioNombre,
         String cuerpo,
+        String pie,
         String estado,
         String detalleError,
         Instant fechaCreacion,

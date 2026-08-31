@@ -25,5 +25,6 @@ public final class NotificacionesCodes {
         public static final String MAX_INTENTOS_INVALIDO = "NOTIFICACION_MAX_INTENTOS_INVALIDO";
         public static final String LIMITE_INVALIDO = "NOTIFICACION_LIMITE_INVALIDO";
         public static final String PLANTILLA_NO_DISPONIBLE = "NOTIFICACION_PLANTILLA_NO_DISPONIBLE";
+        public static final String PLANTILLA_CORREO_NO_DISPONIBLE = "NOTIFICACION_PLANTILLA_CORREO_NO_DISPONIBLE";
     }
 }

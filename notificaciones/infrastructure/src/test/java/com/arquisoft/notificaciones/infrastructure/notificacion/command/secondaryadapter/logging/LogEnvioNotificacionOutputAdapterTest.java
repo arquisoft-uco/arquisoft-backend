@@ -29,7 +29,8 @@ class LogEnvioNotificacionOutputAdapterTest {
         MensajeNotificacion mensaje = MensajeNotificacion.textoPlano(
                 new DestinatarioNotificacion("Ana Gomez", "ana.gomez@soyuco.edu.co"),
                 "Asunto de prueba",
-                "Cuerpo de prueba");
+                "Cuerpo de prueba",
+                "Pie de prueba");
 
         // Act
         sender.enviar(mensaje);
@@ -47,7 +48,7 @@ class LogEnvioNotificacionOutputAdapterTest {
                         new DestinatarioNotificacion("Luis", "luis@soyuco.edu.co")),
                 "Asunto",
                 "Cuerpo",
-                false);
+                "Pie");
 
         // Act
         sender.enviar(mensaje);

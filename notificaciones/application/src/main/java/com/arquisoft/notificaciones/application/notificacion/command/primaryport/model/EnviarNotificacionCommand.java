@@ -13,14 +13,16 @@ public record EnviarNotificacionCommand(
         String destinatarioNombre,
         String destinatarioEmail,
         String asunto,
-        String cuerpo) {
+        String cuerpo,
+        String pie) {
 
     public static EnviarNotificacionCommand crear(String idEvento,
                                                   String tipo,
                                                   String destinatarioNombre,
                                                   String destinatarioEmail,
                                                   String asunto,
-                                                  String cuerpo) {
+                                                  String cuerpo,
+                                                  String pie) {
         var result = new ValidationResult();
 
         ValidatorTexto.noEnBlanco(idEvento,
@@ -50,6 +52,7 @@ public record EnviarNotificacionCommand(
                 UtilTexto.aplicarTrim(destinatarioNombre),
                 UtilTexto.aplicarTrim(destinatarioEmail),
                 UtilTexto.aplicarTrim(asunto),
-                UtilTexto.aplicarTrim(cuerpo));
+                UtilTexto.aplicarTrim(cuerpo),
+                UtilTexto.aplicarTrim(pie));
     }
 }

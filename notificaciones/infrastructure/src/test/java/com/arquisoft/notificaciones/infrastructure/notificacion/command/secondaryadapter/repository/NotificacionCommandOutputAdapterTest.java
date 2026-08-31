@@ -29,6 +29,7 @@ class NotificacionCommandOutputAdapterTest {
     private static final String ASUNTO = "Se te asignó la ficha";
     private static final String NOMBRE = "Ana Gomez";
     private static final String CUERPO = "Hola Ana, ahora eres la asesora.";
+    private static final String PIE = "Correo automatico, no respondas.";
 
     @Autowired
     private NotificacionCommandRepository repository;
@@ -43,7 +44,7 @@ class NotificacionCommandOutputAdapterTest {
     private NotificacionDomain notificacionCon(String idEvento) {
         return NotificacionDomain.crear(
                 idEvento, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO,
-                NOMBRE, CUERPO);
+                NOMBRE, CUERPO, PIE);
     }
 
     @Test

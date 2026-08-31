@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -43,7 +44,11 @@ class SmtpEnvioNotificacionOutputAdapterTest {
         properties.setRemitenteEmail("no-reply@arquisoft.local");
         properties.setRemitenteNombre("Arquisoft");
 
-        sender = new SmtpEnvioNotificacionOutputAdapter(mailSender, properties, logger);
+        sender = new SmtpEnvioNotificacionOutputAdapter(
+                mailSender, properties,
+                new PlantillaCorreoRender(
+                        new FicheroFuentePlantillaCorreo(new DefaultResourceLoader(), properties)),
+                logger);
     }
 
     private MimeMessage mimeMessageVacio() {
@@ -54,7 +59,8 @@ class SmtpEnvioNotificacionOutputAdapterTest {
         return MensajeNotificacion.textoPlano(
                 new DestinatarioNotificacion("Ana Gomez", "ana.gomez@soyuco.edu.co"),
                 "Se te asignó la ficha",
-                "Hola Ana, ahora eres la asesora de la ficha.");
+                "Hola Ana, ahora eres la asesora de la ficha.",
+                "Correo automatico, no respondas.");
     }
 
     @Test
@@ -127,5 +133,36 @@ class SmtpEnvioNotificacionOutputAdapterTest {
 
         // Assert
         verify(logger).info(any(String.class), any(), any());
+    }
+
+    @Test
+    void debeEnviarTextoPlanoYHtml_cuandoLaEntregaEsExitosa() throws Exception {
+        // Arrange
+        MimeMessage mimeMessage = mimeMessageVacio();
+        when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+
+        // Act
+        sender.enviar(mensajeDePrueba());
+
+        // Assert
+        mimeMessage.saveChanges();
+        assertThat(parteConTipo(mimeMessage, "text/plain"))
+                .isEqualTo("Hola Ana, ahora eres la asesora de la ficha.");
+        assertThat(parteConTipo(mimeMessage, "text/html"))
+                .contains("Se te asignó la ficha")
+                .contains("Correo automatico, no respondas.");
+    }
+
+    private static String parteConTipo(jakarta.mail.Part parte, String tipo) throws Exception {
+        if (parte.getContent() instanceof jakarta.mail.Multipart multipart) {
+            for (int i = 0; i < multipart.getCount(); i++) {
+                String encontrado = parteConTipo(multipart.getBodyPart(i), tipo);
+                if (encontrado != null) {
+                    return encontrado;
+                }
+            }
+            return null;
+        }
+        return parte.isMimeType(tipo) ? parte.getContent().toString() : null;
     }
 }
