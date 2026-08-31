@@ -8,6 +8,8 @@ import java.util.Optional;
 public enum TipoNotificacion {
 
     ASESOR_FICHA_CAMBIADO,
+    FICHA_PERFIL_REGISTRADA_ASESOR,
+    FICHA_PERFIL_REGISTRADA_ESTUDIANTE,
 
     VACIO;
 

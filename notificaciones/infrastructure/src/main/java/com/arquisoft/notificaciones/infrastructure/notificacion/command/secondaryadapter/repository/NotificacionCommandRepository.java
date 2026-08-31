@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public interface NotificacionCommandRepository extends JpaRepository<NotificacionJpaEntity, UUID> {
 
-    boolean existsByIdEvento(String idEvento);
+    boolean existsByIdEventoAndDestinatario(String idEvento, String destinatario);
 
     List<NotificacionJpaEntity> findByEstadoAndIntentosLessThanOrderByFechaCreacionAsc(
             String estado, int maxIntentos, Limit limite);

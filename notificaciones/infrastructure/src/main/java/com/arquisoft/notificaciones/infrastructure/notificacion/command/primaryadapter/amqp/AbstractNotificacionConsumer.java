@@ -36,7 +36,8 @@ public abstract class AbstractNotificacionConsumer extends AbstractEventConsumer
                     UtilTexto.enmascararCorreo(enviada.destinatario()));
             case EnvioNotificacionResult.Duplicada duplicada -> logger.info(
                     Mensajes.obtener(ConsumidorKey.LOG_NOTIFICACION_DUPLICADA),
-                    duplicada.idEvento());
+                    duplicada.idEvento(),
+                    UtilTexto.enmascararCorreo(duplicada.destinatario()));
             case EnvioNotificacionResult.Fallida fallida -> logger.warn(
                     Mensajes.obtener(ConsumidorKey.LOG_NOTIFICACION_FALLIDA),
                     fallida.idEvento(),

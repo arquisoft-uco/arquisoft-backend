@@ -7,8 +7,9 @@ public final class EnvioNotificacionResultMapper {
 
     private EnvioNotificacionResultMapper() {}
 
-    public static EnvioNotificacionResult toResultDuplicada(String idEvento) {
-        return new EnvioNotificacionResult.Duplicada(idEvento);
+    public static EnvioNotificacionResult toResultDuplicada(NotificacionDomain notificacion) {
+        return new EnvioNotificacionResult.Duplicada(
+                notificacion.getIdEvento(), notificacion.getDestinatario().email());
     }
 
     public static EnvioNotificacionResult toResultEnviada(NotificacionDomain notificacion) {

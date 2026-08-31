@@ -54,4 +54,43 @@ public class NotificacionesFichasQueueConfig {
                 .to(arquisoftEventsExchange)
                 .with(ASESOR_CAMBIADO_ROUTING_KEY);
     }
+
+    public static final String FICHA_REGISTRADA_ROUTING_KEY =
+            EventTopics.Fichas.FICHA_PERFIL_REGISTRADA;
+
+    public static final String FICHA_REGISTRADA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_REGISTRADA;
+
+    @Bean
+    public Queue notificacionesFichaRegistradaQueue() {
+        return QueueBuilder
+                .durable(FICHA_REGISTRADA_QUEUE)
+                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_EXCHANGE, RabbitMQConfig.DLX_NAME)
+                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_ROUTING_KEY,
+                        ColaDeadLetter.nombre(FICHA_REGISTRADA_QUEUE))
+                .build();
+    }
+
+    @Bean
+    public Queue notificacionesFichaRegistradaDeadQueue() {
+        return ColaDeadLetter.declarar(FICHA_REGISTRADA_QUEUE);
+    }
+
+    @Bean
+    public Binding notificacionesFichaRegistradaDeadBinding(
+            Queue notificacionesFichaRegistradaDeadQueue,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaDeadLetter.enlazar(
+                notificacionesFichaRegistradaDeadQueue, arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Binding notificacionesFichaRegistradaBinding(
+            Queue notificacionesFichaRegistradaQueue,
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange) {
+        return BindingBuilder
+                .bind(notificacionesFichaRegistradaQueue)
+                .to(arquisoftEventsExchange)
+                .with(FICHA_REGISTRADA_ROUTING_KEY);
+    }
 }

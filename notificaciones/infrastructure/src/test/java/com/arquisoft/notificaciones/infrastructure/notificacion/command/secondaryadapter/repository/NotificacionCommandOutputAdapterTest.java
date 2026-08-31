@@ -84,19 +84,30 @@ class NotificacionCommandOutputAdapterTest {
     }
 
     @Test
-    void debeReportarTrue_cuandoElEventoYaTieneNotificacion() {
+    void debeReportarTrue_cuandoElEventoYaTieneNotificacionParaEseDestinatario() {
         // Arrange
         String idEvento = UUID.randomUUID().toString();
         adapter.guardar(NotificacionMapper.toEntity(notificacionCon(idEvento)));
 
         // Act & Assert
-        assertThat(adapter.existePorIdEvento(idEvento)).isTrue();
+        assertThat(adapter.existePorIdEventoYDestinatario(idEvento, DESTINATARIO)).isTrue();
+    }
+
+    @Test
+    void debeReportarFalse_cuandoElMismoEventoNoHaLlegadoAEseDestinatario() {
+        // Arrange
+        String idEvento = UUID.randomUUID().toString();
+        adapter.guardar(NotificacionMapper.toEntity(notificacionCon(idEvento)));
+
+        // Act & Assert
+        assertThat(adapter.existePorIdEventoYDestinatario(idEvento, "otro@soyuco.edu.co")).isFalse();
     }
 
     @Test
     void debeReportarFalse_cuandoElEventoNoTieneNotificacion() {
         // Act & Assert
-        assertThat(adapter.existePorIdEvento(UUID.randomUUID().toString())).isFalse();
+        assertThat(adapter.existePorIdEventoYDestinatario(
+                UUID.randomUUID().toString(), DESTINATARIO)).isFalse();
     }
 
     @Test

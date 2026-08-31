@@ -27,12 +27,12 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
 
     @Override
     public EnvioNotificacionResult ejecutar(NotificacionDomain entrada) {
-        boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada.getIdEvento());
+        boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada);
         logger.debug(Mensajes.obtener(NotificacionKey.LOG_VERIFICACION_PREVIA),
                 entrada.getIdEvento(), yaProcesada);
 
         if (yaProcesada) {
-            return EnvioNotificacionResultMapper.toResultDuplicada(entrada.getIdEvento());
+            return EnvioNotificacionResultMapper.toResultDuplicada(entrada);
         }
 
         var resultado = registrarEntrega(entrada,

@@ -60,7 +60,7 @@ class EnviarNotificacionUseCaseTest {
     @Test
     void debeEnviarYPersistirComoEnviada_cuandoElEventoEsNuevo() {
         // Arrange
-        when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(false);
+        when(notificacionProcesadaFinder.obtener(any(NotificacionDomain.class))).thenReturn(false);
         when(envioNotificacionOutputPort.enviar(any(MensajeNotificacion.class)))
                 .thenReturn(new ResultadoEntrega.Entregada());
 
@@ -81,7 +81,7 @@ class EnviarNotificacionUseCaseTest {
     @Test
     void debeConstruirElMensajeConDestinatarioAsuntoYCuerpo_cuandoEnvia() {
         // Arrange
-        when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(false);
+        when(notificacionProcesadaFinder.obtener(any(NotificacionDomain.class))).thenReturn(false);
         when(envioNotificacionOutputPort.enviar(any(MensajeNotificacion.class)))
                 .thenReturn(new ResultadoEntrega.Entregada());
 
@@ -106,7 +106,7 @@ class EnviarNotificacionUseCaseTest {
     @Test
     void noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado() {
         // Arrange
-        when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(true);
+        when(notificacionProcesadaFinder.obtener(any(NotificacionDomain.class))).thenReturn(true);
 
         // Act
         var resultado = enviarNotificacionUseCase.ejecutar(envio());
@@ -120,7 +120,7 @@ class EnviarNotificacionUseCaseTest {
     @Test
     void debePersistirComoFallidaConElMotivo_cuandoLaEntregaFalla() {
         // Arrange
-        when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(false);
+        when(notificacionProcesadaFinder.obtener(any(NotificacionDomain.class))).thenReturn(false);
         when(envioNotificacionOutputPort.enviar(any(MensajeNotificacion.class)))
                 .thenReturn(new ResultadoEntrega.Rechazada("No se pudo entregar la notificación"));
 

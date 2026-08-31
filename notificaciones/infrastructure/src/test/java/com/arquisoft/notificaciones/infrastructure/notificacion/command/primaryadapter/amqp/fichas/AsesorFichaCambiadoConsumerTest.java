@@ -173,18 +173,18 @@ class AsesorFichaCambiadoConsumerTest {
     }
 
     @Test
-    void debeRegistrarSinDestinatario_cuandoElEventoYaFueProcesado() throws Exception {
+    void debeEnmascararElCorreo_cuandoElEventoYaFueProcesado() throws Exception {
         // Arrange
         String idEvento = UUID.randomUUID().toString();
         Mockito.reset(enviarNotificacionInteractor);
         Mockito.when(enviarNotificacionInteractor.ejecutar(any()))
-                .thenReturn(new EnvioNotificacionResult.Duplicada(idEvento));
+                .thenReturn(new EnvioNotificacionResult.Duplicada(idEvento, "ana.gomez@soyuco.edu.co"));
 
         // Act
         adapter.onAsesorFichaCambiado(mensajeCon(idEvento, 3L), channel);
 
         // Assert
-        verify(logger).info(any(String.class), eq(idEvento));
+        verify(logger).info(any(String.class), eq(idEvento), eq("a***@soyuco.edu.co"));
         verify(channel).basicAck(3L, false);
     }
 

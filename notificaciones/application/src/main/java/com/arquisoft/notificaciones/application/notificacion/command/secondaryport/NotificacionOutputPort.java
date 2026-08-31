@@ -8,7 +8,7 @@ public interface NotificacionOutputPort {
 
     void guardar(NotificacionEntity notificacion);
 
-    boolean existePorIdEvento(String idEvento);
+    boolean existePorIdEventoYDestinatario(String idEvento, String destinatario);
 
     List<NotificacionEntity> buscarFallidasReintentables(int maxIntentos, int limite);
 }
