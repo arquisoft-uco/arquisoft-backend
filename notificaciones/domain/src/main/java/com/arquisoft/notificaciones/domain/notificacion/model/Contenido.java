@@ -33,26 +33,28 @@ public record Contenido(String asunto, String cuerpo, String pie) {
     }
 
     private static String asuntoValidado(String asunto, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(asunto,
+        var recortado = UtilTexto.aplicarTrim(asunto);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 NotificacionesFields.Notificacion.ASUNTO,
                 NotificacionesCodes.Notificacion.ASUNTO_REQUERIDO, result)) {
             return UtilTexto.VACIO;
         }
-        if (!ValidatorLongitud.longitudMaxima(asunto,
+        if (!ValidatorLongitud.longitudMaxima(recortado,
                 NotificacionesLimits.Notificacion.ASUNTO_MAX,
                 NotificacionesFields.Notificacion.ASUNTO,
                 NotificacionesCodes.Notificacion.ASUNTO_REQUERIDO, result)) {
             return UtilTexto.VACIO;
         }
-        return UtilTexto.aplicarTrim(asunto);
+        return recortado;
     }
 
     private static String cuerpoValidado(String cuerpo, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(cuerpo,
+        var recortado = UtilTexto.aplicarTrim(cuerpo);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 NotificacionesFields.Notificacion.CUERPO,
                 NotificacionesCodes.Notificacion.CUERPO_REQUERIDO, result)) {
             return UtilTexto.VACIO;
         }
-        return UtilTexto.aplicarTrim(cuerpo);
+        return recortado;
     }
 }

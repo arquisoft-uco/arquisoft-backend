@@ -26,37 +26,39 @@ public record Destinatario(String nombre, String email) {
     }
 
     private static String nombreValidado(String nombre, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(nombre,
+        var recortado = UtilTexto.aplicarTrim(nombre);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 NotificacionesFields.Notificacion.DESTINATARIO_NOMBRE,
                 NotificacionesCodes.Notificacion.DESTINATARIO_NOMBRE_REQUERIDO, result)) {
             return UtilTexto.VACIO;
         }
-        if (!ValidatorLongitud.longitudMaxima(nombre,
+        if (!ValidatorLongitud.longitudMaxima(recortado,
                 NotificacionesLimits.Notificacion.DESTINATARIO_NOMBRE_MAX,
                 NotificacionesFields.Notificacion.DESTINATARIO_NOMBRE,
                 NotificacionesCodes.Notificacion.DESTINATARIO_NOMBRE_REQUERIDO, result)) {
             return UtilTexto.VACIO;
         }
-        return UtilTexto.aplicarTrim(nombre);
+        return recortado;
     }
 
     private static String emailValidado(String email, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(email,
+        var recortado = UtilTexto.aplicarTrim(email);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 NotificacionesFields.Notificacion.DESTINATARIO,
                 NotificacionesCodes.Notificacion.DESTINATARIO_REQUERIDO, result)) {
             return UtilTexto.VACIO;
         }
-        if (!ValidatorTexto.correoValido(email,
+        if (!ValidatorTexto.correoValido(recortado,
                 NotificacionesFields.Notificacion.DESTINATARIO,
                 NotificacionesCodes.Notificacion.DESTINATARIO_INVALIDO, result)) {
             return UtilTexto.VACIO;
         }
-        if (!ValidatorLongitud.longitudMaxima(email,
+        if (!ValidatorLongitud.longitudMaxima(recortado,
                 NotificacionesLimits.Notificacion.DESTINATARIO_MAX,
                 NotificacionesFields.Notificacion.DESTINATARIO,
                 NotificacionesCodes.Notificacion.DESTINATARIO_INVALIDO, result)) {
             return UtilTexto.VACIO;
         }
-        return UtilTexto.aplicarTrim(email);
+        return recortado;
     }
 }

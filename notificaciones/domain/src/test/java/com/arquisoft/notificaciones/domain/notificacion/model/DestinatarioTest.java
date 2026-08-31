@@ -16,7 +16,7 @@ class DestinatarioTest {
 
         // Act
         Destinatario destinatario =
-                Destinatario.crear("  Ana Gomez  ", "ana.gomez@soyuco.edu.co", result);
+                Destinatario.crear("  Ana Gomez  ", "  ana.gomez@soyuco.edu.co  ", result);
 
         // Assert
         assertThat(result.getErrores()).isEmpty();
@@ -69,5 +69,20 @@ class DestinatarioTest {
     void debeSerVacioElCentinela_cuandoSeConsultaVacio() {
         // Assert
         assertThat(Destinatario.VACIO.esVacio()).isTrue();
+    }
+
+    @Test
+    void debeMedirLaLongitudSobreElValorRecortado_cuandoLosEspaciosDesbordanElLimite() {
+        // Arrange
+        var result = new ValidationResult();
+        String emailAlLimite = "a".repeat(36) + "@soyuco.edu.co";
+
+        // Act
+        Destinatario destinatario =
+                Destinatario.crear("Ana Gomez", "   " + emailAlLimite + "   ", result);
+
+        // Assert
+        assertThat(result.getErrores()).isEmpty();
+        assertThat(destinatario.email()).isEqualTo(emailAlLimite);
     }
 }

@@ -148,18 +148,19 @@ public final class NotificacionDomain {
     }
 
     private void setIdEvento(String idEvento, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(idEvento,
+        var recortado = UtilTexto.aplicarTrim(idEvento);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 NotificacionesFields.Notificacion.ID_EVENTO,
                 NotificacionesCodes.Notificacion.ID_EVENTO_REQUERIDO, result)) {
             return;
         }
-        if (!ValidatorLongitud.longitudMaxima(idEvento,
+        if (!ValidatorLongitud.longitudMaxima(recortado,
                 NotificacionesLimits.Notificacion.ID_EVENTO_MAX,
                 NotificacionesFields.Notificacion.ID_EVENTO,
                 NotificacionesCodes.Notificacion.ID_EVENTO_REQUERIDO, result)) {
             return;
         }
-        this.idEvento = UtilTexto.aplicarTrim(idEvento);
+        this.idEvento = recortado;
     }
 
     private void setTipo(TipoNotificacion tipo, ValidationResult result) {
