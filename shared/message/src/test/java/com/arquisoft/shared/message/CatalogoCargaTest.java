@@ -52,6 +52,10 @@ class CatalogoCargaTest {
     private static final String SUFIJO_FUENTE = "Key.java";
     private static final String RUTA_CATALOGO = "/catalogo/%s.properties";
 
+    // Cualquier barra invertida que no sea la de \n. Es lo unico en lo que printf '%b' (cargar.sh)
+    // y Properties.load (los tests) coinciden; el resto de escapes divergen o solo existen en uno.
+    private static final Pattern ESCAPE_NO_SOPORTADO = Pattern.compile("\\\\(?!n)");
+
     private final CatalogoMensajesPrueba catalogo = CatalogoMensajesPrueba.porDefecto();
 
     @Test
@@ -198,6 +202,26 @@ class CatalogoCargaTest {
         assertThat(patron).contains("{}");
     }
 
+    @Test
+    @DisplayName("El catálogo solo usa el escape \\n")
+    void debeUsarSoloElEscapeDeSaltoDeLinea_cuandoSeLeeElTextoCrudo() {
+        List<String> invalidos = new ArrayList<>();
+
+        for (String contexto : ContextosCatalogo.TODOS) {
+            String ruta = RUTA_CATALOGO.formatted(contexto);
+            ESCAPE_NO_SOPORTADO.matcher(leerCrudo(ruta)).results()
+                    .forEach(coincidencia -> invalidos.add(ruta + " -> " + coincidencia.group()));
+        }
+
+        assertThat(invalidos)
+                .as("cargar.sh escribe el valor con printf '%%b', que interpreta los escapes de la "
+                        + "shell, mientras que los tests leen el mismo archivo con Properties.load, "
+                        + "que interpreta los de Java: los dos coinciden en \\n y divergen en el "
+                        + "resto. Un texto multilínea se escribe con \\n; para cualquier otro "
+                        + "carácter, ponlo literal en el .properties")
+                .isEmpty();
+    }
+
     // -------------------------------------------------------------------------
 
     private static String segmentoDeTipo(String clave) {
@@ -205,6 +229,16 @@ class CatalogoCargaTest {
         return segmentos.length > SEGMENTO_TIPO ? segmentos[SEGMENTO_TIPO] : "";
     }
 
+
+    private static String leerCrudo(String ruta) {
+        try (InputStream entrada = CatalogoCargaTest.class.getResourceAsStream(ruta)) {
+            assertThat(entrada).as("no está en el classpath de test: %s", ruta).isNotNull();
+
+            return new String(entrada.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException(ruta, e);
+        }
+    }
     private static Properties leer(String ruta) {
         try (InputStream entrada = CatalogoCargaTest.class.getResourceAsStream(ruta)) {
             assertThat(entrada).as("no está en el classpath de test: %s", ruta).isNotNull();

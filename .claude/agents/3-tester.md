@@ -236,6 +236,13 @@ lista vacía (`verify(..., never())` sobre el puerto de envío y el de guardado)
    XML de JaCoCo por clase (`build/reports/jacoco/test/jacocoTestReport.xml`, contador
    `INSTRUCTION` de cada `<class>`) y justifica toda clase productiva por debajo del 80%.
 
+   **Un test sobre el catalogo no prueba lo que produccion envia.** Los tests leen
+   `catalogo/*.properties` con `Properties.load`, que interpreta los escapes de Java; en produccion
+   lo lee `catalogo/cargar.sh`, que es shell. Un assert sobre el texto renderizado pasa con el
+   salto de linea real mientras el correo sale con la barra invertida literal. La compuerta de esa
+   clase de desvio es `CatalogoCargaTest`, no un assert del contexto: si el texto necesita algo mas
+   que `\n`, ponlo literal en el `.properties`.
+
    Reportar verde habiendo corrido solo `test` es un error — un import sin usar o cobertura <75%
    rompen el build igual. Si falla: agrega tests significativos sobre las ramas no cubiertas (mira
    el reporte HTML de JaCoCo) o limpia checkstyle — nunca bajes el umbral ni infles con tests

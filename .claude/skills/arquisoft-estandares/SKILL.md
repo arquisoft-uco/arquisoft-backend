@@ -165,6 +165,20 @@ formateo del catálogo y pierde respaldo y diagnóstico. `AridadClave` diagnosti
 `CatalogoCargaTest` rompe el build ante una clave sin texto, un texto sin clave, un enum ausente de
 `ClavesCatalogo` o una aridad que contradice los marcadores.
 
+**Texto multilínea: el único escape que el catálogo admite es `\n`.** Un `.properties` normalmente
+lo lee `Properties.load`, que interpreta los escapes de Java — pero en producción lo lee
+`catalogo/cargar.sh`, que es shell y no interpreta nada por su cuenta. El script escribe el valor
+con `printf '%b'` precisamente para que ese `\n` llegue a Redis como salto de línea real; con `%s`
+el usuario recibiría la barra invertida literal en el correo. Los dos lectores coinciden **solo**
+en `\n`, así que `CatalogoCargaTest` rompe el build ante cualquier otra barra invertida. Para todo
+lo demás, pon el carácter literal en el `.properties`.
+
+Del lado del render, `correo-base.html` lleva `white-space: pre-line` en la celda del cuerpo: el
+salto viaja en el texto, no como `<br>`, y así la misma cadena sirve para la parte HTML y para la
+alternativa en texto plano de `MimeMessageHelper.setText(plano, html)`. **No conviertas el salto a
+`<br>` en el render**: rompería la parte de texto plano, que es la que ven los clientes que no
+pintan HTML.
+
 **No son catálogo:** códigos de error, nombres de cola/exchange/bean/header, marcadores de log
 greppables, etiquetas de display de un enum de catálogo (`EstadoFicha.getNombre()`, cuya fuente es
 el MER), literales de test y textos de Swagger.
