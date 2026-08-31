@@ -8,7 +8,8 @@ public enum ConsumidorKey implements ClaveMensaje {
     LOG_ASESOR_CAMBIADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.asesor-cambiado-recibido", 2),
     LOG_NOTIFICACION_ENVIADA("notificaciones.infraestructura.consumidor.log.notificacion-enviada", 2),
     LOG_NOTIFICACION_DUPLICADA("notificaciones.infraestructura.consumidor.log.notificacion-duplicada", 1),
-    LOG_NOTIFICACION_FALLIDA("notificaciones.infraestructura.consumidor.log.notificacion-fallida", 2);
+    LOG_NOTIFICACION_FALLIDA("notificaciones.infraestructura.consumidor.log.notificacion-fallida", 2),
+    ERROR_PLANTILLA_NO_DISPONIBLE("notificaciones.infraestructura.consumidor.error.plantilla-no-disponible", 1);
 
     private final String clave;
     private final int parametros;

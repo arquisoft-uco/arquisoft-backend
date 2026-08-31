@@ -66,7 +66,7 @@ public abstract class AbstractEventConsumer {
 
         boolean transitorio = esTransitorio(ex);
 
-        if (transitorio && !message.getMessageProperties().isRedelivered()) {
+        if (transitorio && !Boolean.TRUE.equals(message.getMessageProperties().isRedelivered())) {
             log.warn(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_REENCOLADO),
                     deliveryTag, ex.getMessage(), ex);
             channel.basicNack(deliveryTag, false, true);

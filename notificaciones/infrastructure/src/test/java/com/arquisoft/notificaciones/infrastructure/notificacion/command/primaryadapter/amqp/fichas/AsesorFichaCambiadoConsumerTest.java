@@ -5,6 +5,11 @@ import com.arquisoft.notificaciones.application.notificacion.command.primaryport
 import com.arquisoft.notificaciones.application.notificacion.command.result.EnvioNotificacionResult;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
+import com.arquisoft.shared.message.prueba.CatalogoMensajesPrueba;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
 import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.MdcContextoDiagnosticoOutputAdapter;
 import com.rabbitmq.client.Channel;
@@ -26,6 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -126,5 +132,38 @@ class AsesorFichaCambiadoConsumerTest {
 
         // Assert
         verify(channel).basicNack(2L, false, false);
+    }
+
+    @Test
+    void debeReencolarSinNotificar_cuandoLaPlantillaNoTieneTexto() throws Exception {
+        // Arrange
+        var sinPlantillas = new CatalogoMensajes() {
+            @Override
+            public String obtener(ClaveMensaje clave) {
+                return CatalogoMensajesPrueba.porDefecto().obtener(clave);
+            }
+
+            @Override
+            public String formatear(ClaveMensaje clave, Object... args) {
+                return CatalogoMensajesPrueba.porDefecto().formatear(clave, args);
+            }
+
+            @Override
+            public boolean contiene(ClaveMensaje clave) {
+                return !(clave instanceof PlantillaKey);
+            }
+        };
+        Mensajes.instalar(sinPlantillas);
+
+        try {
+            // Act
+            adapter.onAsesorFichaCambiado(mensajeCon(UUID.randomUUID().toString(), 3L), channel);
+
+            // Assert
+            verify(enviarNotificacionInteractor, never()).ejecutar(any());
+            verify(channel).basicNack(3L, false, true);
+        } finally {
+            Mensajes.instalar(CatalogoMensajesPrueba.porDefecto());
+        }
     }
 }
