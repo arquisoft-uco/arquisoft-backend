@@ -1,13 +1,9 @@
 package com.arquisoft.notificaciones.infrastructure.config;
 
-import com.arquisoft.shared.amqp.ColaDeadLetter;
-import com.arquisoft.shared.amqp.RabbitMQConfig;
+import com.arquisoft.shared.amqp.ColaEvento;
 import com.arquisoft.shared.message.constant.EventTopics;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
+import org.springframework.amqp.core.Declarables;
 import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -16,120 +12,47 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class NotificacionesFichasQueueConfig {
 
-    public static final String ASESOR_CAMBIADO_ROUTING_KEY =
-            EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;
-
+    // El nombre de la cola tiene que seguir siendo una expresion constante: @RabbitListener lo lee
+    // como valor de anotacion (JLS 9.7.1), asi que no puede salir de una llamada a metodo.
     public static final String ASESOR_CAMBIADO_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO;
 
-    @Bean
-    public Queue notificacionesAsesorCambiadoQueue() {
-        return QueueBuilder
-                .durable(ASESOR_CAMBIADO_QUEUE)
-                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_EXCHANGE, RabbitMQConfig.DLX_NAME)
-                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_ROUTING_KEY,
-                        ColaDeadLetter.nombre(ASESOR_CAMBIADO_QUEUE))
-                .build();
-    }
-
-    @Bean
-    public Queue notificacionesAsesorCambiadoDeadQueue() {
-        return ColaDeadLetter.declarar(ASESOR_CAMBIADO_QUEUE);
-    }
-
-    @Bean
-    public Binding notificacionesAsesorCambiadoDeadBinding(
-            Queue notificacionesAsesorCambiadoDeadQueue,
-            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
-        return ColaDeadLetter.enlazar(
-                notificacionesAsesorCambiadoDeadQueue, arquisoftDeadLetterExchange);
-    }
-
-    @Bean
-    public Binding notificacionesAsesorCambiadoBinding(
-            Queue notificacionesAsesorCambiadoQueue,
-            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange) {
-        return BindingBuilder
-                .bind(notificacionesAsesorCambiadoQueue)
-                .to(arquisoftEventsExchange)
-                .with(ASESOR_CAMBIADO_ROUTING_KEY);
-    }
-
-    public static final String FICHA_REGISTRADA_ROUTING_KEY =
-            EventTopics.Fichas.FICHA_PERFIL_REGISTRADA;
-
     public static final String FICHA_REGISTRADA_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_REGISTRADA;
-
-    @Bean
-    public Queue notificacionesFichaRegistradaQueue() {
-        return QueueBuilder
-                .durable(FICHA_REGISTRADA_QUEUE)
-                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_EXCHANGE, RabbitMQConfig.DLX_NAME)
-                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_ROUTING_KEY,
-                        ColaDeadLetter.nombre(FICHA_REGISTRADA_QUEUE))
-                .build();
-    }
-
-    @Bean
-    public Queue notificacionesFichaRegistradaDeadQueue() {
-        return ColaDeadLetter.declarar(FICHA_REGISTRADA_QUEUE);
-    }
-
-    @Bean
-    public Binding notificacionesFichaRegistradaDeadBinding(
-            Queue notificacionesFichaRegistradaDeadQueue,
-            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
-        return ColaDeadLetter.enlazar(
-                notificacionesFichaRegistradaDeadQueue, arquisoftDeadLetterExchange);
-    }
-
-    @Bean
-    public Binding notificacionesFichaRegistradaBinding(
-            Queue notificacionesFichaRegistradaQueue,
-            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange) {
-        return BindingBuilder
-                .bind(notificacionesFichaRegistradaQueue)
-                .to(arquisoftEventsExchange)
-                .with(FICHA_REGISTRADA_ROUTING_KEY);
-    }
-
-    public static final String ESTUDIANTES_ASIGNADOS_ROUTING_KEY =
-            EventTopics.Fichas.ESTUDIANTES_FICHA_PERFIL_ASIGNADOS;
 
     public static final String ESTUDIANTES_ASIGNADOS_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Fichas.ESTUDIANTES_FICHA_PERFIL_ASIGNADOS;
 
     @Bean
-    public Queue notificacionesEstudiantesAsignadosQueue() {
-        return QueueBuilder
-                .durable(ESTUDIANTES_ASIGNADOS_QUEUE)
-                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_EXCHANGE, RabbitMQConfig.DLX_NAME)
-                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_ROUTING_KEY,
-                        ColaDeadLetter.nombre(ESTUDIANTES_ASIGNADOS_QUEUE))
-                .build();
-    }
-
-    @Bean
-    public Queue notificacionesEstudiantesAsignadosDeadQueue() {
-        return ColaDeadLetter.declarar(ESTUDIANTES_ASIGNADOS_QUEUE);
-    }
-
-    @Bean
-    public Binding notificacionesEstudiantesAsignadosDeadBinding(
-            Queue notificacionesEstudiantesAsignadosDeadQueue,
+    public Declarables notificacionesAsesorCambiadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
             @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
-        return ColaDeadLetter.enlazar(
-                notificacionesEstudiantesAsignadosDeadQueue, arquisoftDeadLetterExchange);
+        return ColaEvento.declarar(
+                ASESOR_CAMBIADO_QUEUE,
+                EventTopics.Fichas.FICHA_PERFIL_ASESOR_CAMBIADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
     }
 
     @Bean
-    public Binding notificacionesEstudiantesAsignadosBinding(
-            Queue notificacionesEstudiantesAsignadosQueue,
-            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange) {
-        return BindingBuilder
-                .bind(notificacionesEstudiantesAsignadosQueue)
-                .to(arquisoftEventsExchange)
-                .with(ESTUDIANTES_ASIGNADOS_ROUTING_KEY);
+    public Declarables notificacionesFichaRegistradaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                FICHA_REGISTRADA_QUEUE,
+                EventTopics.Fichas.FICHA_PERFIL_REGISTRADA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesEstudiantesAsignadosDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTES_ASIGNADOS_QUEUE,
+                EventTopics.Fichas.ESTUDIANTES_FICHA_PERFIL_ASIGNADOS,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
     }
 }
