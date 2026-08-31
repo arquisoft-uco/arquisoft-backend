@@ -93,4 +93,43 @@ public class NotificacionesFichasQueueConfig {
                 .to(arquisoftEventsExchange)
                 .with(FICHA_REGISTRADA_ROUTING_KEY);
     }
+
+    public static final String ESTUDIANTES_ASIGNADOS_ROUTING_KEY =
+            EventTopics.Fichas.ESTUDIANTES_FICHA_PERFIL_ASIGNADOS;
+
+    public static final String ESTUDIANTES_ASIGNADOS_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Fichas.ESTUDIANTES_FICHA_PERFIL_ASIGNADOS;
+
+    @Bean
+    public Queue notificacionesEstudiantesAsignadosQueue() {
+        return QueueBuilder
+                .durable(ESTUDIANTES_ASIGNADOS_QUEUE)
+                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_EXCHANGE, RabbitMQConfig.DLX_NAME)
+                .withArgument(RabbitMQConfig.ARG_DEAD_LETTER_ROUTING_KEY,
+                        ColaDeadLetter.nombre(ESTUDIANTES_ASIGNADOS_QUEUE))
+                .build();
+    }
+
+    @Bean
+    public Queue notificacionesEstudiantesAsignadosDeadQueue() {
+        return ColaDeadLetter.declarar(ESTUDIANTES_ASIGNADOS_QUEUE);
+    }
+
+    @Bean
+    public Binding notificacionesEstudiantesAsignadosDeadBinding(
+            Queue notificacionesEstudiantesAsignadosDeadQueue,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaDeadLetter.enlazar(
+                notificacionesEstudiantesAsignadosDeadQueue, arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Binding notificacionesEstudiantesAsignadosBinding(
+            Queue notificacionesEstudiantesAsignadosQueue,
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange) {
+        return BindingBuilder
+                .bind(notificacionesEstudiantesAsignadosQueue)
+                .to(arquisoftEventsExchange)
+                .with(ESTUDIANTES_ASIGNADOS_ROUTING_KEY);
+    }
 }

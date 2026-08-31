@@ -19,7 +19,6 @@ import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.core.MessageProperties;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,20 +49,19 @@ class FichaPerfilRegistradaConsumerTest {
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
 
         lenient().when(enviarNotificacionInteractor.ejecutar(any()))
-                .thenReturn(new EnvioNotificacionResult.Enviada("evt", "ana.gomez@soyuco.edu.co"));
+                .thenReturn(new EnvioNotificacionResult.Enviada("evt", "carlos.ruiz@soyuco.edu.co"));
     }
 
-    private Message mensajeCon(String idEvento, String estudiantesJson, long deliveryTag) {
+    private Message mensajeCon(String idEvento, long deliveryTag) {
         String payloadJson = """
                 {
                     "idEvento": "%s",
                     "fichaPerfilId": "%s",
                     "tituloProyecto": "Sistema de gestión",
                     "asesorNombre": "Carlos Ruiz",
-                    "asesorEmail": "carlos.ruiz@soyuco.edu.co",
-                    "estudiantes": %s
+                    "asesorEmail": "carlos.ruiz@soyuco.edu.co"
                 }
-                """.formatted(idEvento, UUID.randomUUID(), estudiantesJson);
+                """.formatted(idEvento, UUID.randomUUID());
 
         MessageProperties props = new MessageProperties();
         props.setDeliveryTag(deliveryTag);
@@ -72,112 +70,34 @@ class FichaPerfilRegistradaConsumerTest {
         return MessageBuilder.withBody(payloadJson.getBytes()).andProperties(props).build();
     }
 
-    private static final String DOS_ESTUDIANTES = """
-            [
-                {"nombre": "Ana Gomez", "email": "ana.gomez@soyuco.edu.co"},
-                {"nombre": "Luis Diaz", "email": "luis.diaz@soyuco.edu.co"}
-            ]""";
-
-    private List<EnviarNotificacionCommand> comandosEmitidos(int esperados) {
-        ArgumentCaptor<EnviarNotificacionCommand> captor =
-                ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
-        verify(enviarNotificacionInteractor, org.mockito.Mockito.times(esperados))
-                .ejecutar(captor.capture());
-        return captor.getAllValues();
-    }
-
     @Test
-    void debeNotificarAlAsesorYACadaEstudiante_cuandoElPayloadTraeVarios() throws Exception {
+    void debeNotificarSoloAlAsesor_cuandoLaFichaQuedaRegistrada() throws Exception {
         // Arrange
         String idEvento = UUID.randomUUID().toString();
 
         // Act
-        adapter.onFichaPerfilRegistrada(mensajeCon(idEvento, DOS_ESTUDIANTES, 1L), channel);
+        adapter.onFichaPerfilRegistrada(mensajeCon(idEvento, 1L), channel);
 
         // Assert
-        assertThat(comandosEmitidos(3))
-                .extracting(EnviarNotificacionCommand::destinatarioEmail)
-                .containsExactly(
-                        "carlos.ruiz@soyuco.edu.co",
-                        "ana.gomez@soyuco.edu.co",
-                        "luis.diaz@soyuco.edu.co");
+        ArgumentCaptor<EnviarNotificacionCommand> captor =
+                ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
+        verify(enviarNotificacionInteractor).ejecutar(captor.capture());
+
+        EnviarNotificacionCommand command = captor.getValue();
+        assertThat(command.idEvento()).isEqualTo(idEvento);
+        assertThat(command.tipo()).isEqualTo(TipoNotificacion.FICHA_PERFIL_REGISTRADA_ASESOR);
+        assertThat(command.destinatarioNombre()).isEqualTo("Carlos Ruiz");
+        assertThat(command.destinatarioEmail()).isEqualTo("carlos.ruiz@soyuco.edu.co");
+        assertThat(command.cuerpo()).contains("Carlos Ruiz", "Sistema de gestión");
         verify(channel).basicAck(1L, false);
     }
 
     @Test
-    void debeCompartirElIdDelEvento_cuandoUnMismoEventoProduceVariosCorreos() throws Exception {
-        // Arrange
-        String idEvento = UUID.randomUUID().toString();
-
+    void debeConfirmarElMensaje_cuandoLaNotificacionSeRegistra() throws Exception {
         // Act
-        adapter.onFichaPerfilRegistrada(mensajeCon(idEvento, DOS_ESTUDIANTES, 1L), channel);
+        adapter.onFichaPerfilRegistrada(mensajeCon(UUID.randomUUID().toString(), 7L), channel);
 
         // Assert
-        assertThat(comandosEmitidos(3))
-                .extracting(EnviarNotificacionCommand::idEvento)
-                .containsOnly(idEvento);
-    }
-
-    @Test
-    void debeDistinguirElTipoPorDestinatario_cuandoSeAbreElAbanico() throws Exception {
-        // Arrange
-        String idEvento = UUID.randomUUID().toString();
-
-        // Act
-        adapter.onFichaPerfilRegistrada(mensajeCon(idEvento, DOS_ESTUDIANTES, 1L), channel);
-
-        // Assert
-        assertThat(comandosEmitidos(3))
-                .extracting(EnviarNotificacionCommand::tipo)
-                .containsExactly(
-                        TipoNotificacion.FICHA_PERFIL_REGISTRADA_ASESOR,
-                        TipoNotificacion.FICHA_PERFIL_REGISTRADA_ESTUDIANTE,
-                        TipoNotificacion.FICHA_PERFIL_REGISTRADA_ESTUDIANTE);
-    }
-
-    @Test
-    void debePersonalizarElCuerpoConElNombreDeCadaDestinatario_cuandoSeAbreElAbanico()
-            throws Exception {
-        // Arrange
-        String idEvento = UUID.randomUUID().toString();
-
-        // Act
-        adapter.onFichaPerfilRegistrada(mensajeCon(idEvento, DOS_ESTUDIANTES, 1L), channel);
-
-        // Assert
-        List<EnviarNotificacionCommand> comandos = comandosEmitidos(3);
-        assertThat(comandos.get(0).cuerpo()).contains("Carlos Ruiz", "Sistema de gestión");
-        assertThat(comandos.get(1).cuerpo()).contains("Ana Gomez", "Sistema de gestión");
-        assertThat(comandos.get(2).cuerpo()).contains("Luis Diaz", "Sistema de gestión");
-    }
-
-    @Test
-    void debeNotificarSoloAlAsesor_cuandoElEventoNoTraeEstudiantes() throws Exception {
-        // Arrange
-        String idEvento = UUID.randomUUID().toString();
-
-        // Act
-        adapter.onFichaPerfilRegistrada(mensajeCon(idEvento, "[]", 2L), channel);
-
-        // Assert
-        assertThat(comandosEmitidos(1))
-                .extracting(EnviarNotificacionCommand::destinatarioEmail)
-                .containsExactly("carlos.ruiz@soyuco.edu.co");
-        verify(channel).basicAck(2L, false);
-    }
-
-    @Test
-    void debeNotificarSoloAlAsesor_cuandoElCampoDeEstudiantesLlegaNulo() throws Exception {
-        // Arrange
-        String idEvento = UUID.randomUUID().toString();
-
-        // Act
-        adapter.onFichaPerfilRegistrada(mensajeCon(idEvento, "null", 3L), channel);
-
-        // Assert
-        assertThat(comandosEmitidos(1))
-                .extracting(EnviarNotificacionCommand::destinatarioEmail)
-                .containsExactly("carlos.ruiz@soyuco.edu.co");
-        verify(channel).basicAck(3L, false);
+        verify(channel).basicAck(7L, false);
     }
 }

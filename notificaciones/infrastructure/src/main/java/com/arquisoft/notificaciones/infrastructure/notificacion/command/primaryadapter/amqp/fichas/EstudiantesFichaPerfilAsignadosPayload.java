@@ -1,12 +1,15 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.fichas;
 
 import java.time.Instant;
+import java.util.List;
 
-public record FichaPerfilRegistradaPayload(
+public record EstudiantesFichaPerfilAsignadosPayload(
         String idEvento,
         Instant ocurridoEn,
         String fichaPerfilId,
         String tituloProyecto,
-        String asesorNombre,
-        String asesorEmail) {
+        List<ContactoPayload> estudiantes) {
+
+    public record ContactoPayload(String nombre, String email) {
+    }
 }

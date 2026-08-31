@@ -13,6 +13,9 @@ public final class EventTopics {
 
         public static final String FICHA_PERFIL_REGISTRADA =
                 "fichas.ficha_perfil.registrada";
+
+        public static final String ESTUDIANTES_FICHA_PERFIL_ASIGNADOS =
+                "fichas.estudiante_ficha_perfil.asignados";
     }
 
     public static final class Usuarios {

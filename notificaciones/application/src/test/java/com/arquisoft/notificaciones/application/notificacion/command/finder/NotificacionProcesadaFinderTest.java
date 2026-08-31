@@ -27,7 +27,7 @@ class NotificacionProcesadaFinderTest {
 
     private static NotificacionDomain notificacion() {
         return NotificacionDomain.crear(
-                ID_EVENTO, TipoNotificacion.FICHA_PERFIL_REGISTRADA_ESTUDIANTE, DESTINATARIO,
+                ID_EVENTO, TipoNotificacion.ESTUDIANTES_FICHA_PERFIL_ASIGNADOS, DESTINATARIO,
                 "Asunto", "Ana Gomez", "Cuerpo", "Pie");
     }
 

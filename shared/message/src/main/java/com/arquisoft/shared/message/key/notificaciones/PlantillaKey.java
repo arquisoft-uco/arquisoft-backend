@@ -11,10 +11,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.ficha-registrada-asesor", 1),
     CUERPO_FICHA_REGISTRADA_ASESOR(
             "notificaciones.aplicacion.plantilla.cuerpo.ficha-registrada-asesor", 2),
-    ASUNTO_FICHA_REGISTRADA_ESTUDIANTE(
-            "notificaciones.aplicacion.plantilla.asunto.ficha-registrada-estudiante", 1),
-    CUERPO_FICHA_REGISTRADA_ESTUDIANTE(
-            "notificaciones.aplicacion.plantilla.cuerpo.ficha-registrada-estudiante", 2),
+    ASUNTO_ESTUDIANTES_ASIGNADOS(
+            "notificaciones.aplicacion.plantilla.asunto.estudiantes-asignados", 1),
+    CUERPO_ESTUDIANTES_ASIGNADOS(
+            "notificaciones.aplicacion.plantilla.cuerpo.estudiantes-asignados", 2),
     PIE_GENERICO("notificaciones.aplicacion.plantilla.pie.generico", 0);
 
     private final String clave;

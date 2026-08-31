@@ -4,14 +4,11 @@ import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
-import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
 import com.arquisoft.fichas.domain.fichaperfil.RegistroFichaPerfilDomain;
-import com.arquisoft.fichas.domain.fichaperfil.event.DestinatarioEvento;
 import com.arquisoft.fichas.domain.fichaperfil.event.FichaPerfilRegistradaEvent;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.mapper.FichaPerfilMapper;
@@ -20,7 +17,6 @@ import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -29,7 +25,6 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
     private final AsesorFichaFinder asesorFichaFinder;
-    private final EstudiantesFinder estudiantesFinder;
     private final TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
     private final RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
     private final AsignarEstadoInicialFichaPerfilUseCase asignarEstadoInicialFichaPerfilUseCase;
@@ -65,19 +60,8 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
                 ficha.getTituloProyecto(),
                 asesorFicha.getId(),
                 asesorFicha.getNombre(),
-                asesorFicha.getEmail(),
-                destinatarios(registro.getEstudiantes().getEstudiantes())));
+                asesorFicha.getEmail()));
 
         return ficha.getId();
-    }
-
-    private List<DestinatarioEvento> destinatarios(List<UUID> estudiantes) {
-        return estudiantesFinder.obtener(estudiantes).stream()
-                .map(this::aDestinatario)
-                .toList();
-    }
-
-    private DestinatarioEvento aDestinatario(EstudianteDomain estudiante) {
-        return new DestinatarioEvento(estudiante.getNombre(), estudiante.getEmail());
     }
 }

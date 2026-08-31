@@ -3,7 +3,6 @@ package com.arquisoft.fichas.domain.fichaperfil.event;
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.message.constant.EventTopics;
 
-import java.util.List;
 import java.util.UUID;
 
 public class FichaPerfilRegistradaEvent extends DomainEvent {
@@ -16,22 +15,19 @@ public class FichaPerfilRegistradaEvent extends DomainEvent {
     private final UUID asesorFichaId;
     private final String asesorNombre;
     private final String asesorEmail;
-    private final List<DestinatarioEvento> estudiantes;
 
     public FichaPerfilRegistradaEvent(
             UUID fichaPerfilId,
             String tituloProyecto,
             UUID asesorFichaId,
             String asesorNombre,
-            String asesorEmail,
-            List<DestinatarioEvento> estudiantes) {
+            String asesorEmail) {
         super(EVENT_TOPIC, EVENT_TYPE);
         this.fichaPerfilId = fichaPerfilId;
         this.tituloProyecto = tituloProyecto;
         this.asesorFichaId = asesorFichaId;
         this.asesorNombre = asesorNombre;
         this.asesorEmail = asesorEmail;
-        this.estudiantes = List.copyOf(estudiantes);
     }
 
     public UUID getFichaPerfilId() {
@@ -52,9 +48,5 @@ public class FichaPerfilRegistradaEvent extends DomainEvent {
 
     public String getAsesorEmail() {
         return asesorEmail;
-    }
-
-    public List<DestinatarioEvento> getEstudiantes() {
-        return estudiantes;
     }
 }

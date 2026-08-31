@@ -2,18 +2,15 @@ package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.AgregacionEstudiantesFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.RegistroFichaPerfilDomain;
-import com.arquisoft.fichas.domain.fichaperfil.event.DestinatarioEvento;
 import com.arquisoft.fichas.domain.fichaperfil.event.FichaPerfilRegistradaEvent;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaTituloDuplicadoException;
@@ -39,7 +36,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -54,17 +50,12 @@ import static org.mockito.Mockito.when;
 class RegistrarFichaPerfilUseCaseTest {
 
     private static final UUID ESTUDIANTE = UUID.randomUUID();
-    private static final String ESTUDIANTE_NOMBRE = "Ana Gomez";
-    private static final String ESTUDIANTE_EMAIL = "ana.gomez@soyuco.edu.co";
 
     @Mock
     private FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Mock
     private AsesorFichaFinder asesorFichaFinder;
-
-    @Mock
-    private EstudiantesFinder estudiantesFinder;
 
     @Mock
     private TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
@@ -137,7 +128,7 @@ class RegistrarFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debePublicarElEventoConAsesorYEstudiantes_cuandoElRegistroTermina() {
+    void debePublicarElEventoConLosDatosDelAsesor_cuandoElRegistroTermina() {
         // Arrange
         RegistroFichaPerfilDomain registro = registroValido();
         FichaPerfilDomain ficha = registro.getFicha();
@@ -158,8 +149,6 @@ class RegistrarFichaPerfilUseCaseTest {
         assertThat(evento.getAsesorFichaId()).isEqualTo(asesor.getId());
         assertThat(evento.getAsesorNombre()).isEqualTo(asesor.getNombre());
         assertThat(evento.getAsesorEmail()).isEqualTo(asesor.getEmail());
-        assertThat(evento.getEstudiantes())
-                .containsExactly(new DestinatarioEvento(ESTUDIANTE_NOMBRE, ESTUDIANTE_EMAIL));
     }
 
     @Test
@@ -233,9 +222,6 @@ class RegistrarFichaPerfilUseCaseTest {
         when(asesorFichaFinder.obtener(ficha.getAsesorFicha())).thenReturn(presencia(asesorFicha));
         when(tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto()))
                 .thenReturn(tituloYaExiste);
-        lenient().when(estudiantesFinder.obtener(List.of(ESTUDIANTE)))
-                .thenReturn(List.of(EstudianteDomain.reconstruir(
-                        ESTUDIANTE, "1099", ESTUDIANTE_NOMBRE, ESTUDIANTE_EMAIL)));
     }
 
     private static Optional<AsesorFichaDomain> presencia(AsesorFichaDomain asesorFicha) {
