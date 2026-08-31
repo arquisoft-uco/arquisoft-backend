@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -43,6 +44,9 @@ class AsesorFichaCambiadoConsumerTest {
     @Mock
     private Channel channel;
 
+    @Mock
+    private AppLogger logger;
+
     private AsesorFichaCambiadoConsumer adapter;
 
     @BeforeEach
@@ -50,7 +54,7 @@ class AsesorFichaCambiadoConsumerTest {
         adapter = new AsesorFichaCambiadoConsumer(
                 enviarNotificacionInteractor,
                 new ObjectMapper(),
-                Mockito.mock(AppLogger.class),
+                logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
 
         lenient().when(enviarNotificacionInteractor.ejecutar(any()))
@@ -166,5 +170,37 @@ class AsesorFichaCambiadoConsumerTest {
         } finally {
             Mensajes.instalar(CatalogoMensajesPrueba.porDefecto());
         }
+    }
+
+    @Test
+    void debeRegistrarSinDestinatario_cuandoElEventoYaFueProcesado() throws Exception {
+        // Arrange
+        String idEvento = UUID.randomUUID().toString();
+        Mockito.reset(enviarNotificacionInteractor);
+        Mockito.when(enviarNotificacionInteractor.ejecutar(any()))
+                .thenReturn(new EnvioNotificacionResult.Duplicada(idEvento));
+
+        // Act
+        adapter.onAsesorFichaCambiado(mensajeCon(idEvento, 3L), channel);
+
+        // Assert
+        verify(logger).info(any(String.class), eq(idEvento));
+        verify(channel).basicAck(3L, false);
+    }
+
+    @Test
+    void debeEnmascararElCorreo_cuandoElEnvioFalla() throws Exception {
+        // Arrange
+        String idEvento = UUID.randomUUID().toString();
+        Mockito.reset(enviarNotificacionInteractor);
+        Mockito.when(enviarNotificacionInteractor.ejecutar(any()))
+                .thenReturn(new EnvioNotificacionResult.Fallida(
+                        idEvento, "ana.gomez@soyuco.edu.co", "smtp caido"));
+
+        // Act
+        adapter.onAsesorFichaCambiado(mensajeCon(idEvento, 4L), channel);
+
+        // Assert
+        verify(logger).warn(any(String.class), eq(idEvento), eq("a***@soyuco.edu.co"));
     }
 }
