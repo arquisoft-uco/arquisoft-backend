@@ -8,6 +8,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPe
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
+import com.arquisoft.fichas.domain.asesorficha.model.ContactoAsesor;
 import com.arquisoft.fichas.domain.fichaperfil.RegistroFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.FichaPerfilRegistradaEvent;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
@@ -59,8 +60,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
                 ficha.getId(),
                 ficha.getTituloProyecto(),
                 asesorFicha.getId(),
-                asesorFicha.getNombre(),
-                asesorFicha.getEmail()));
+                new ContactoAsesor(asesorFicha.getNombre(), asesorFicha.getEmail())));
 
         return ficha.getId();
     }

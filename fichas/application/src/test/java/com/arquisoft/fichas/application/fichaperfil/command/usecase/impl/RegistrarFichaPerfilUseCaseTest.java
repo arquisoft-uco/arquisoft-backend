@@ -6,6 +6,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPe
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
+import com.arquisoft.fichas.domain.asesorficha.model.ContactoAsesor;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.AgregacionEstudiantesFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
@@ -147,8 +148,8 @@ class RegistrarFichaPerfilUseCaseTest {
         assertThat(evento.getFichaPerfilId()).isEqualTo(ficha.getId());
         assertThat(evento.getTituloProyecto()).isEqualTo(ficha.getTituloProyecto());
         assertThat(evento.getAsesorFichaId()).isEqualTo(asesor.getId());
-        assertThat(evento.getAsesorNombre()).isEqualTo(asesor.getNombre());
-        assertThat(evento.getAsesorEmail()).isEqualTo(asesor.getEmail());
+        assertThat(evento.getAsesor())
+                .isEqualTo(new ContactoAsesor(asesor.getNombre(), asesor.getEmail()));
     }
 
     @Test

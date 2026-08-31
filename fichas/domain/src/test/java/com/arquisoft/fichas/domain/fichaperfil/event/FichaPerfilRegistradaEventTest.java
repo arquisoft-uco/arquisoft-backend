@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.domain.fichaperfil.event;
 
+import com.arquisoft.fichas.domain.asesorficha.model.ContactoAsesor;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -8,10 +9,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class FichaPerfilRegistradaEventTest {
 
+    private static final ContactoAsesor CARLOS =
+            new ContactoAsesor("Carlos Ruiz", "carlos.ruiz@soyuco.edu.co");
+
     private static FichaPerfilRegistradaEvent evento() {
         return new FichaPerfilRegistradaEvent(
-                UUID.randomUUID(), "Sistema de gestión", UUID.randomUUID(),
-                "Carlos Ruiz", "carlos.ruiz@soyuco.edu.co");
+                UUID.randomUUID(), "Sistema de gestión", UUID.randomUUID(), CARLOS);
     }
 
     @Test
@@ -22,15 +25,13 @@ class FichaPerfilRegistradaEventTest {
 
         // Act
         FichaPerfilRegistradaEvent evento = new FichaPerfilRegistradaEvent(
-                fichaId, "Sistema de gestión", asesorId,
-                "Carlos Ruiz", "carlos.ruiz@soyuco.edu.co");
+                fichaId, "Sistema de gestión", asesorId, CARLOS);
 
         // Assert
         assertThat(evento.getFichaPerfilId()).isEqualTo(fichaId);
         assertThat(evento.getTituloProyecto()).isEqualTo("Sistema de gestión");
         assertThat(evento.getAsesorFichaId()).isEqualTo(asesorId);
-        assertThat(evento.getAsesorNombre()).isEqualTo("Carlos Ruiz");
-        assertThat(evento.getAsesorEmail()).isEqualTo("carlos.ruiz@soyuco.edu.co");
+        assertThat(evento.getAsesor()).isEqualTo(CARLOS);
     }
 
     @Test

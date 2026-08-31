@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.domain.fichaperfil.event;
 
+import com.arquisoft.fichas.domain.asesorficha.model.ContactoAsesor;
 import com.arquisoft.shared.events.DomainEvent;
 import com.arquisoft.shared.message.constant.EventTopics;
 
@@ -13,21 +14,18 @@ public class FichaPerfilRegistradaEvent extends DomainEvent {
     private final UUID fichaPerfilId;
     private final String tituloProyecto;
     private final UUID asesorFichaId;
-    private final String asesorNombre;
-    private final String asesorEmail;
+    private final ContactoAsesor asesor;
 
     public FichaPerfilRegistradaEvent(
             UUID fichaPerfilId,
             String tituloProyecto,
             UUID asesorFichaId,
-            String asesorNombre,
-            String asesorEmail) {
+            ContactoAsesor asesor) {
         super(EVENT_TOPIC, EVENT_TYPE);
         this.fichaPerfilId = fichaPerfilId;
         this.tituloProyecto = tituloProyecto;
         this.asesorFichaId = asesorFichaId;
-        this.asesorNombre = asesorNombre;
-        this.asesorEmail = asesorEmail;
+        this.asesor = asesor;
     }
 
     public UUID getFichaPerfilId() {
@@ -42,11 +40,7 @@ public class FichaPerfilRegistradaEvent extends DomainEvent {
         return asesorFichaId;
     }
 
-    public String getAsesorNombre() {
-        return asesorNombre;
-    }
-
-    public String getAsesorEmail() {
-        return asesorEmail;
+    public ContactoAsesor getAsesor() {
+        return asesor;
     }
 }

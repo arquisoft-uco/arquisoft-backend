@@ -46,11 +46,11 @@ public class FichaPerfilRegistradaConsumer extends AbstractNotificacionConsumer 
             registrar(enviarNotificacionInteractor.ejecutar(EnviarNotificacionCommand.crear(
                     payload.idEvento(),
                     TipoNotificacionEvento.FICHA_PERFIL_REGISTRADA_ASESOR.getCodigo(),
-                    payload.asesorNombre(),
-                    payload.asesorEmail(),
+                    payload.asesor().nombre(),
+                    payload.asesor().email(),
                     plantilla(PlantillaKey.ASUNTO_FICHA_REGISTRADA_ASESOR, payload.tituloProyecto()),
                     plantilla(PlantillaKey.CUERPO_FICHA_REGISTRADA_ASESOR,
-                            payload.asesorNombre(), payload.tituloProyecto()),
+                            payload.asesor().nombre(), payload.tituloProyecto()),
                     plantilla(PlantillaKey.PIE_GENERICO))));
         });
     }

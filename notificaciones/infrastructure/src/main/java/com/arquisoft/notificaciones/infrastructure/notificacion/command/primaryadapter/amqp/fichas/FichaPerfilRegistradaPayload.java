@@ -7,6 +7,8 @@ public record FichaPerfilRegistradaPayload(
         Instant ocurridoEn,
         String fichaPerfilId,
         String tituloProyecto,
-        String asesorNombre,
-        String asesorEmail) {
+        ContactoPayload asesor) {
+
+    public record ContactoPayload(String nombre, String email) {
+    }
 }

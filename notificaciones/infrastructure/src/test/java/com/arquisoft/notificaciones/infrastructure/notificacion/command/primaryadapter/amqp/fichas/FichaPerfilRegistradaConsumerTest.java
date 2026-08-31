@@ -58,8 +58,7 @@ class FichaPerfilRegistradaConsumerTest {
                     "idEvento": "%s",
                     "fichaPerfilId": "%s",
                     "tituloProyecto": "Sistema de gestión",
-                    "asesorNombre": "Carlos Ruiz",
-                    "asesorEmail": "carlos.ruiz@soyuco.edu.co"
+                    "asesor": {"nombre": "Carlos Ruiz", "email": "carlos.ruiz@soyuco.edu.co"}
                 }
                 """.formatted(idEvento, UUID.randomUUID());
 
