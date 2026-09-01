@@ -75,7 +75,7 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
                     // rechazar dejaria la API inutilizable. La entrada de la lista negra caduca con
                     // el propio token (5-15 min), asi que la ventana es la vida restante de este.
                     logger.error(Mensajes.obtener(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE),
-                            e.getMessage(), e);
+                            e, e.getMessage());
                 }
             }
         }

@@ -102,13 +102,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
             return createUnlimitedBucket();
         }
         try {
-            return proxyManager.getProxy(
-                    CLAVE_LIMITE_GLOBAL + ip,
-                    () -> BucketConfiguration.builder()
-                            .addLimit(limit -> limit
-                                    .capacity(properties.requestsPerMinute())
-                                    .refillIntervally(properties.requestsPerMinute(), VENTANA_RECARGA))
-                            .build());
+            return proxyManager.getProxy(CLAVE_LIMITE_GLOBAL + ip, this::configuracionGlobal);
         } catch (Exception e) {
             logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_REDIS_ERROR),
                     ip, e.getMessage());
@@ -122,18 +116,32 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
             return createUnlimitedBucket();
         }
         try {
-            return proxyManager.getProxy(
-                    CLAVE_LIMITE_LOGIN + ip,
-                    () -> BucketConfiguration.builder()
-                            .addLimit(limit -> limit
-                                    .capacity(properties.loginRequestsPerMinute())
-                                    .refillGreedy(properties.loginRequestsPerMinute(), VENTANA_RECARGA))
-                            .build());
+            return proxyManager.getProxy(CLAVE_LIMITE_LOGIN + ip, this::configuracionLogin);
         } catch (Exception e) {
             logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_LOGIN_REDIS_ERROR),
                     ip, e.getMessage());
             return createUnlimitedBucket();
         }
+    }
+
+    // Ambas cuotas se recargan igual, y no es indiferente cual: con recarga por lotes el
+    // X-Rate-Limit-Retry-After-Seconds que ve el cliente es el tiempo hasta que se repone la
+    // ventana entera —hasta 60 s— aunque solo necesite un token. Con recarga continua la
+    // cabecera dice lo que su nombre promete: cuanto falta para poder reintentar una vez.
+    BucketConfiguration configuracionGlobal() {
+        return porMinuto(properties.requestsPerMinute());
+    }
+
+    BucketConfiguration configuracionLogin() {
+        return porMinuto(properties.loginRequestsPerMinute());
+    }
+
+    private static BucketConfiguration porMinuto(int solicitudes) {
+        return BucketConfiguration.builder()
+                .addLimit(limite -> limite
+                        .capacity(solicitudes)
+                        .refillGreedy(solicitudes, VENTANA_RECARGA))
+                .build();
     }
 
     @Override

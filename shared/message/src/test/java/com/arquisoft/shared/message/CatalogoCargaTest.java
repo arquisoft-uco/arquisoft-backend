@@ -48,6 +48,9 @@ class CatalogoCargaTest {
                     "asunto", "cuerpo", "pie", "mensaje");
 
     private static final Path FUENTES_CLAVES = Path.of("src/main/java/com/arquisoft/shared/message/key");
+    private static final Path RAIZ_PROYECTO = Path.of("../..");
+    private static final Set<String> DIRECTORIOS_IGNORADOS = Set.of("build", ".git", ".gradle", "worktrees");
+    private static final String EXTENSION_FUENTE = ".java";
     private static final String PAQUETE_CLAVES = "com.arquisoft.shared.message.key";
     private static final String SUFIJO_FUENTE = "Key.java";
     private static final String RUTA_CATALOGO = "/catalogo/%s.properties";
@@ -224,6 +227,33 @@ class CatalogoCargaTest {
 
     // -------------------------------------------------------------------------
 
+    @Test
+    @DisplayName("ninguna clave declarada queda sin usar — toda clave la referencia algún .java")
+    void debeReferenciarseEnElCodigo_cuandoSeRecorrenLasClavesDeclaradas() {
+        Set<String> referencias = referenciasEnElCodigo();
+
+        List<String> sinUso = clavesDeclaradas().stream()
+                .filter(clave -> !referencias.contains(nombreDeConstante(clave)))
+                .map(ClaveMensaje::clave)
+                .toList();
+
+        assertThat(sinUso)
+                .as("una clave que nadie invoca sigue exigiendo su texto al fail-fast de arranque y "
+                        + "se carga en Redis en cada despliegue, así que el catálogo no delata que "
+                        + "sobra. Peor: cuando el comportamiento cambia —un filtro que pasa de "
+                        + "fail-closed a fail-open y deja de emitir su 503— la clave del mensaje "
+                        + "retirado queda viva y aparenta seguir describiendo lo que hace el código")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("el escaneo del código encuentra referencias — si fallara, el test anterior pasaría en vacío")
+    void debeEncontrarReferenciasEnElCodigo_cuandoSeEscaneaElProyecto() {
+        assertThat(referenciasEnElCodigo())
+                .as("sin referencias descubiertas la prueba de claves sin uso sería tautológica")
+                .isNotEmpty();
+    }
+
     private static String segmentoDeTipo(String clave) {
         String[] segmentos = clave.split(SEPARADOR);
         return segmentos.length > SEGMENTO_TIPO ? segmentos[SEGMENTO_TIPO] : "";
@@ -249,6 +279,42 @@ class CatalogoCargaTest {
         } catch (IOException e) {
             throw new IllegalStateException(ruta, e);
         }
+    }
+
+    private static String nombreDeConstante(ClaveMensaje clave) {
+        return ((Enum<?>) clave).getDeclaringClass().getSimpleName() + "." + ((Enum<?>) clave).name();
+    }
+
+    private static Set<String> referenciasEnElCodigo() {
+        var referencias = new LinkedHashSet<String>();
+        Pattern uso = Pattern.compile("\\b([A-Za-z0-9_]+Key)\\.([A-Z][A-Z0-9_]*)\\b");
+
+        try (Stream<Path> archivos = Files.walk(RAIZ_PROYECTO)) {
+            archivos.filter(CatalogoCargaTest::esFuenteDelProyecto).forEach(ruta -> {
+                try {
+                    uso.matcher(Files.readString(ruta, StandardCharsets.UTF_8)).results()
+                            .forEach(c -> referencias.add(c.group(1) + "." + c.group(2)));
+                } catch (IOException e) {
+                    throw new IllegalStateException(ruta.toString(), e);
+                }
+            });
+        } catch (IOException e) {
+            throw new IllegalStateException(RAIZ_PROYECTO.toString(), e);
+        }
+
+        return referencias;
+    }
+
+    private static boolean esFuenteDelProyecto(Path ruta) {
+        if (!Files.isRegularFile(ruta) || !ruta.getFileName().toString().endsWith(EXTENSION_FUENTE)) {
+            return false;
+        }
+        for (Path segmento : ruta) {
+            if (DIRECTORIOS_IGNORADOS.contains(segmento.toString())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private List<ClaveMensaje> clavesDeclaradas() {
