@@ -9,6 +9,7 @@ import com.arquisoft.shared.util.UtilObjeto;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.BucketConfiguration;
+import io.github.bucket4j.ConsumptionProbe;
 import io.github.bucket4j.distributed.ExpirationAfterWriteStrategy;
 import io.github.bucket4j.redis.lettuce.Bucket4jLettuce;
 import io.github.bucket4j.redis.lettuce.cas.LettuceBasedProxyManager;
@@ -27,6 +28,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 @Component
 @RequiredArgsConstructor
@@ -50,6 +53,8 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
     private static final Duration RECARGA_INERTE = Duration.ofDays(1);
     private static final long RECARGA_MINIMA = 1L;
 
+    private static final long TOKENS_POR_SOLICITUD = 1L;
+
     private final AppLogger logger;
 
     private final LimiteSolicitudesProperties properties;
@@ -57,6 +62,10 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
 
     private LettuceBasedProxyManager<String> proxyManager;
     private StatefulRedisConnection<String, byte[]> bucketConnection;
+
+    private final BucketsLocales bucketsLocales;
+
+    private final AtomicBoolean degradado = new AtomicBoolean(false);
 
     @PostConstruct
     public void init() {
@@ -95,33 +104,49 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         logger.debug(Mensajes.obtener(LimiteSolicitudesKey.LOG_INIT_OK));
     }
 
+    // Degradar a cuota local, y no dejar pasar sin limite, es lo que evita que una caida de Redis
+    // abra una ventana de fuerza bruta contra /login. El limite pasa a ser por instancia, asi que
+    // con N replicas un atacante obtiene N veces la cuota: sigue siendo un limite, y es el precio
+    // de no tener estado compartido justo cuando el estado compartido es lo que ha fallado.
+    //
+    // El flag es lo que evita el segundo fallo, menos visible: sin el, cada peticion de la caida
+    // sigue intentando Redis y paga su timeout, agotando hilos y conexiones del pool.
     @Override
-    public Bucket resolveBucket(String ip) {
-
+    public ConsumptionProbe consumir(String ip, boolean esLogin) {
         if (!properties.enabled()) {
-            return createUnlimitedBucket();
+            return consumirSinLimite();
         }
+
+        Supplier<BucketConfiguration> configuracion =
+                esLogin ? this::configuracionLogin : this::configuracionGlobal;
+        String clave = (esLogin ? CLAVE_LIMITE_LOGIN : CLAVE_LIMITE_GLOBAL) + ip;
+
+        if (degradado.get()) {
+            return consumirLocal(clave, configuracion);
+        }
+
         try {
-            return proxyManager.getProxy(CLAVE_LIMITE_GLOBAL + ip, this::configuracionGlobal);
-        } catch (Exception e) {
-            logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_REDIS_ERROR),
-                    ip, e.getMessage());
-            return createUnlimitedBucket();
+            return consumirEnRedis(clave, configuracion);
+        } catch (RuntimeException e) {
+            if (degradado.compareAndSet(false, true)) {
+                logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_DEGRADADO), e, e.getMessage());
+            }
+            return consumirLocal(clave, configuracion);
         }
     }
 
-    @Override
-    public Bucket resolveLoginBucket(String ip) {
-        if (!properties.enabled()) {
-            return createUnlimitedBucket();
-        }
-        try {
-            return proxyManager.getProxy(CLAVE_LIMITE_LOGIN + ip, this::configuracionLogin);
-        } catch (Exception e) {
-            logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_LOGIN_REDIS_ERROR),
-                    ip, e.getMessage());
-            return createUnlimitedBucket();
-        }
+    ConsumptionProbe consumirEnRedis(String clave, Supplier<BucketConfiguration> configuracion) {
+        return proxyManager.getProxy(clave, configuracion)
+                .tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
+    }
+
+    private ConsumptionProbe consumirLocal(String clave, Supplier<BucketConfiguration> configuracion) {
+        return bucketsLocales.obtener(clave, configuracion)
+                .tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
+    }
+
+    private ConsumptionProbe consumirSinLimite() {
+        return bucketSinLimite().tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
     }
 
     // Ambas cuotas se recargan igual, y no es indiferente cual: con recarga por lotes el
@@ -149,6 +174,30 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         return properties.enabled();
     }
 
+    public boolean estaDegradado() {
+        return degradado.get();
+    }
+
+    // Las cuotas locales se descartan al volver a Redis: conservarlas solo mantendria el consumo de
+    // una ventana ya cerrada, y a partir de aqui la cuota que manda es la distribuida.
+    public void marcarSano() {
+        degradado.set(false);
+        bucketsLocales.limpiar();
+    }
+
+    public int ipsConCuotaLocal() {
+        return bucketsLocales.tamanio();
+    }
+
+    public boolean hayConexion() {
+        try {
+            bucketConnection.sync().ping();
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     @Override
     public void destroy() {
         if (!UtilObjeto.esNulo(bucketConnection)) {
@@ -156,15 +205,9 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         }
     }
 
-    // getProxy es perezoso: el comando sale al consumir, fuera de los try/catch de arriba.
-    @Override
-    public Bucket bucketSinLimite() {
-        return createUnlimitedBucket();
-    }
-
     // El bucket nace lleno, asi que con esta capacidad no se agota nunca y la recarga es
     // irrelevante: Bucket4j rechaza tasas mayores a 1 token/ns, y Long.MAX_VALUE por dia lo es.
-    private Bucket createUnlimitedBucket() {
+    private Bucket bucketSinLimite() {
         return Bucket.builder()
                 .addLimit(Bandwidth.builder()
                         .capacity(Long.MAX_VALUE)

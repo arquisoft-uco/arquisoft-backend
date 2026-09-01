@@ -9,7 +9,6 @@ import com.arquisoft.seguridad.infrastructure.config.ratelimit.BucketResolver;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.filter.RutasTecnicas;
 import tools.jackson.databind.ObjectMapper;
-import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
@@ -54,8 +53,6 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
     // origen ilegible en un unico bucket en vez de crear uno por cada valor manipulado.
     private static final String IP_NO_RECONOCIDA = "INVALID";
 
-    private static final long TOKENS_POR_SOLICITUD = 1L;
-
     private final BucketResolver bucketResolver;
     private final ObjectMapper objectMapper;
 
@@ -80,13 +77,14 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
         }
 
         String clientIp = getClientIp(request);
-        
-        boolean isLoginEndpoint = RUTA_LOGIN.equals(request.getRequestURI());
-        Bucket bucket = isLoginEndpoint ? 
-                bucketResolver.resolveLoginBucket(clientIp) : 
-                bucketResolver.resolveBucket(clientIp);
 
-        ConsumptionProbe probe = intentarConsumir(bucket, clientIp);
+        boolean isLoginEndpoint = RUTA_LOGIN.equals(request.getRequestURI());
+
+        // Sin try/catch: el resolver es quien consume, y por tanto quien ve el fallo de Redis y
+        // degrada a la cuota local. Aqui una excepcion escapando seguiria siendo grave —Tomcat
+        // despacharia a /error y la respuesta perderia su ruta y su traceId— pero ya no puede
+        // originarse en el limite, solo en un defecto del propio resolver.
+        ConsumptionProbe probe = bucketResolver.consumir(clientIp, isLoginEndpoint);
 
         if (probe.isConsumed()) {
             response.addHeader(CABECERA_CUOTA_RESTANTE, String.valueOf(probe.getRemainingTokens()));
@@ -111,18 +109,6 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
             objectMapper.writeValue(response.getWriter(), body);
 
             logger.warn(Mensajes.obtener(LimiteSolicitudesKey.LOG_LIMITE_EXCEDIDO), clientIp, request.getRequestURI());
-        }
-    }
-
-    // Fail open: rechazar aqui convertiria una caida de Redis en la denegacion total que el
-    // limitador existe para evitar. Si la excepcion escapara, ademas, Tomcat despacharia a /error
-    // y la respuesta perderia su ruta real y el traceId.
-    private ConsumptionProbe intentarConsumir(Bucket bucket, String clientIp) {
-        try {
-            return bucket.tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
-        } catch (RuntimeException e) {
-            logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_REDIS_ERROR), clientIp, e.getMessage());
-            return bucketResolver.bucketSinLimite().tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
         }
     }
 

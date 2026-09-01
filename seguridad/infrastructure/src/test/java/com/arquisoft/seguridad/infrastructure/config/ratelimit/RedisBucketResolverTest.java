@@ -17,7 +17,13 @@ import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -26,7 +32,12 @@ class RedisBucketResolverTest {
 
     private static final int CUOTA_GLOBAL = 60;
     private static final int CUOTA_LOGIN = 3;
+    private static final int MAX_IPS = 3;
     private static final long UN_MINUTO_NANOS = Duration.ofMinutes(1).toNanos();
+
+    private static final String IP = "192.168.1.10";
+    private static final boolean LOGIN = true;
+    private static final boolean GLOBAL = false;
 
     @Mock
     private AppLogger logger;
@@ -37,8 +48,136 @@ class RedisBucketResolverTest {
     private RedisBucketResolver resolver(boolean habilitado) {
         return new RedisBucketResolver(
                 logger,
-                new LimiteSolicitudesProperties(habilitado, CUOTA_GLOBAL, CUOTA_LOGIN),
-                lettuceConnectionFactory);
+                new LimiteSolicitudesProperties(habilitado, CUOTA_GLOBAL, CUOTA_LOGIN, MAX_IPS),
+                lettuceConnectionFactory,
+                new BucketsLocales(MAX_IPS));
+    }
+
+    // Redis caido: el consumo distribuido revienta y el resolver tiene que degradar, no rendirse.
+    // Se espia el unico punto que habla con Redis porque getProxy es perezoso y no falla al pedirlo.
+    private RedisBucketResolver resolverConRedisCaido() {
+        var resolver = spy(resolver(true));
+        doThrow(new IllegalStateException("Currently not connected. Commands are rejected."))
+                .when(resolver).consumirEnRedis(anyString(), any());
+        return resolver;
+    }
+
+    @Test
+    @DisplayName("mantiene la cuota cuando Redis se cae, en vez de dejar pasar sin limite")
+    void debeMantenerLaCuota_cuandoRedisSeCae() {
+        // Arrange
+        var resolver = resolverConRedisCaido();
+
+        // Act
+        for (int i = 0; i < CUOTA_LOGIN; i++) {
+            assertThat(resolver.consumir(IP, LOGIN).isConsumed()).isTrue();
+        }
+
+        // Assert
+        assertThat(resolver.consumir(IP, LOGIN).isConsumed())
+                .as("sin cuota local una caida de Redis abre una ventana de fuerza bruta contra "
+                        + "/login: exactamente lo que el limitador existe para cerrar")
+                .isFalse();
+    }
+
+    @Test
+    @DisplayName("la cuota local es por IP, no compartida entre todas")
+    void debeAislarLaCuotaPorIp_cuandoEstaDegradado() {
+        // Arrange
+        var resolver = resolverConRedisCaido();
+
+        // Act
+        for (int i = 0; i < CUOTA_LOGIN; i++) {
+            resolver.consumir(IP, LOGIN);
+        }
+
+        // Assert
+        assertThat(resolver.consumir("10.0.0.1", LOGIN).isConsumed())
+                .as("una cuota compartida convertiria a cualquier cliente en el limitador de todos "
+                        + "los demas durante la caida")
+                .isTrue();
+    }
+
+    @Test
+    @DisplayName("la cuota de login y la global no se consumen entre si")
+    void debeSepararLasCuotas_cuandoEstaDegradado() {
+        // Arrange
+        var resolver = resolverConRedisCaido();
+
+        // Act
+        for (int i = 0; i < CUOTA_LOGIN; i++) {
+            resolver.consumir(IP, LOGIN);
+        }
+
+        // Assert
+        assertThat(resolver.consumir(IP, GLOBAL).isConsumed()).isTrue();
+    }
+
+    @Test
+    @DisplayName("deja de consultar a Redis mientras está degradado")
+    void debeNoConsultarRedis_cuandoYaEstaDegradado() {
+        // Arrange
+        var resolver = resolverConRedisCaido();
+        resolver.consumir(IP, GLOBAL);
+
+        // Act
+        resolver.consumir(IP, GLOBAL);
+        resolver.consumir(IP, GLOBAL);
+
+        // Assert
+        verify(resolver).consumirEnRedis(anyString(), any());
+        assertThat(resolver.estaDegradado())
+                .as("sin el flag, cada peticion de la caida sigue pagando el timeout de Redis y "
+                        + "agota los hilos y el pool de conexiones")
+                .isTrue();
+    }
+
+    @Test
+    @DisplayName("registra la degradación una sola vez, no en cada petición")
+    void debeRegistrarLaDegradacionUnaVez_cuandoRedisSeCae() {
+        // Arrange
+        var resolver = resolverConRedisCaido();
+
+        // Act
+        resolver.consumir(IP, GLOBAL);
+        resolver.consumir(IP, GLOBAL);
+        resolver.consumir(IP, GLOBAL);
+
+        // Assert
+        verify(logger).error(anyString(), any(Throwable.class), any());
+    }
+
+    @Test
+    @DisplayName("la caché local no crece por encima de su tope")
+    void debeAcotarLaCacheLocal_cuandoSeVenMasIpsQueElTope() {
+        // Arrange
+        var resolver = resolverConRedisCaido();
+
+        // Act
+        for (int i = 0; i < MAX_IPS * 10; i++) {
+            resolver.consumir("10.0.0." + i, GLOBAL);
+        }
+
+        // Assert
+        assertThat(resolver.ipsConCuotaLocal())
+                .as("sin tope, una caida de Redis se convierte en un vector de agotamiento de "
+                        + "memoria — la denegacion de servicio la provocaria el propio limitador")
+                .isEqualTo(MAX_IPS);
+    }
+
+    @Test
+    @DisplayName("vuelve a la cuota distribuida y descarta las locales al marcarse sano")
+    void debeDescartarLasCuotasLocales_cuandoVuelveASerSano() {
+        // Arrange
+        var resolver = resolverConRedisCaido();
+        resolver.consumir(IP, GLOBAL);
+
+        // Act
+        resolver.marcarSano();
+
+        // Assert
+        assertThat(resolver.estaDegradado()).isFalse();
+        assertThat(resolver.ipsConCuotaLocal()).isZero();
     }
 
     @Test
@@ -96,30 +235,29 @@ class RedisBucketResolverTest {
     @DisplayName("no toca Redis cuando el limitador está deshabilitado")
     void debeNoTocarRedis_cuandoElLimitadorEstaDeshabilitado() {
         // Arrange
-        var resolver = resolver(false);
+        var resolver = spy(resolver(false));
 
         // Act
-        var global = resolver.resolveBucket("192.168.1.10");
-        var login = resolver.resolveLoginBucket("192.168.1.10");
+        var global = resolver.consumir(IP, GLOBAL);
+        var login = resolver.consumir(IP, LOGIN);
 
         // Assert
-        assertThat(global.tryConsume(1)).isTrue();
-        assertThat(login.tryConsume(1)).isTrue();
+        assertThat(global.isConsumed()).isTrue();
+        assertThat(login.isConsumed()).isTrue();
+        verify(resolver, never()).consumirEnRedis(anyString(), any());
         verifyNoInteractions(lettuceConnectionFactory);
     }
 
     @Test
-    @DisplayName("el bucket sin límite no se agota")
-    void debeNoAgotarse_cuandoSeConsumeElBucketSinLimite() {
+    @DisplayName("deshabilitado no se agota por muchas peticiones que reciba")
+    void debeNoAgotarse_cuandoElLimitadorEstaDeshabilitado() {
         // Arrange
-        var bucket = resolver(true).bucketSinLimite();
+        var resolver = resolver(false);
 
         // Act & Assert
-        assertThat(bucket.tryConsume(Integer.MAX_VALUE))
-                .as("es el bucket del fail open: si se agotara, una caída de Redis acabaría "
-                        + "denegando exactamente lo que el fail open existe para dejar pasar")
-                .isTrue();
-        assertThat(bucket.tryConsume(1)).isTrue();
+        for (int i = 0; i < CUOTA_GLOBAL * 10; i++) {
+            assertThat(resolver.consumir(IP, GLOBAL).isConsumed()).isTrue();
+        }
     }
 
     @Test
