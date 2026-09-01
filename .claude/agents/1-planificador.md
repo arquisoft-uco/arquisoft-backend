@@ -122,6 +122,25 @@ nadie — y entonces la razón se escribe en `Eventos: ninguno. Razón: …`. Lo
 llegar a C por omisión, sin haber preguntado, en una HU cuyo título ya dice "cambiar", "asignar",
 "aprobar", "rechazar" o "actualizar el estado de".
 
+
+**La excepción, y hay que saber reconocerla: un estado que es paso interno no notifica.** Antes de
+dar A por hecho, pregunta **quién queda afectado y qué se le está contando**. Si el estado creado es
+un paso interno de un proceso —no hay desenlace que comunicar y nadie fuera de quien lo ejecuta
+espera enterarse— la respuesta es C, y la razón se escribe igual en `Eventos: ninguno. Razón: …`.
+
+`RegistrarEvaluacionFichaPerfil` es el caso de referencia: crea `EN_EVALUACION` para la evaluación de
+**un** representante del comité, o sea "alguien abrió su evaluación y aún no decidió nada". No es
+desenlace, se repetiría una vez por representante sobre la misma ficha, y le filtraría al estudiante
+la mecánica interna del comité. Lo que sí le incumbe es el cambio de `EstadoFicha`, que ocurre una
+vez y vive en otro agregado.
+
+**Dos señales de que estás ante la excepción:** (1) el mismo hecho puede ocurrir N veces en paralelo
+para el mismo sujeto — entonces no es el hecho notificable sino un paso hacia otro, normalmente en
+otro agregado; (2) te descubres proponiendo un umbral ("cuando haya tres, entonces sí") para
+convertir esos N pasos en uno. Ahí **para el plan y pregunta**: un umbral inventado desde el código
+fosiliza en migraciones y contratos de evento una decisión de negocio que nadie tomó, y casi siempre
+significa que el disparo real —alguien que activa la revisión— no está modelado todavía.
+
 **5b. Si la respuesta fue A por notificación: el evento no es el entregable, es la mitad.** Un evento
 publicado en el exchange sin nadie enganchado a esa routing key no envía ningún correo. El plan debe
 listar las **ocho** piezas, repartidas en dos contextos, y la sección 6 debe mostrarlas en el árbol:

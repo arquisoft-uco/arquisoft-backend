@@ -135,6 +135,16 @@ respeta. Sin razón, repórtalo como advertencia: probablemente nadie preguntó 
 notificar. Nunca lo conviertas en bloqueante ni exijas implementar el evento — eso es del plan, no
 de la validación.
 
+
+Hay además una familia de casos donde el evento ausente **no es ni siquiera una advertencia**: el
+estado creado es un paso interno del proceso, sin desenlace que comunicar y sin audiencia fuera de
+quien lo ejecuta. `RegistrarEvaluacionFichaPerfil` es el ejemplo — crea `EN_EVALUACION` para la
+evaluación de un solo representante del comité; notificarlo daría N correos por ficha sobre un
+no-suceso y filtraría la mecánica interna del comité. Reconócelos por la señal: **si el mismo hecho
+puede ocurrir N veces en paralelo para el mismo sujeto, el hecho notificable es otro y vive en otro
+agregado** (aquí, el cambio de `EstadoFicha`). La razón puede estar en el mensaje del commit y no en
+un plan cuando el cambio no vino de una HU; búscala ahí antes de reportar.
+
 ### Nivel 2.3 — Entidad de dominio
 
 | Check | Sev |

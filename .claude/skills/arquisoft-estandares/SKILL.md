@@ -61,12 +61,22 @@ módulo, y esa es justo la distinción de arriba hecha grafo:** `DomainRule` est
 | La existencia solo decide si vale la pena seguir, y no es un error | `Finder` consultado directo desde el `UseCase`, que devuelve la variante correspondiente de su sellada |
 
 El segundo caso es el corte de idempotencia de `notificaciones`: si
-`notificacionProcesadaFinder.obtener(idEvento)` da `true`, el use case devuelve
+`notificacionProcesadaFinder.obtener(notificacion)` da `true`, el use case devuelve
 `EnvioNotificacionResult.Duplicada`. Modelarlo como `Rule` sería un bug — lanzaría, el mensaje se
 iría a la DLQ y se haría rollback de la fila, cuando RabbitMQ solo estaba reentregando algo ya
 procesado. Un duplicado ahí no es un error, es el comportamiento normal de un broker con ACK manual.
 La guarda es de flujo ("ya está hecho, no hay trabajo"), de la misma familia que un
 `Optional.isPresent()`, no el `if/throw` de invariante que la convención prohíbe.
+
+**La clave de idempotencia es el par `(idEvento, destinatario)`, no el `idEvento` solo.** La
+restricción en base es `uq_notificacion_event_id_destinatario`, y el puerto pregunta
+`existePorIdEventoYDestinatario(...)`. El motivo: un evento puede abanicar a varios destinatarios —
+`EstudiantesFichaPerfilAsignadosEvent` produce un correo por estudiante, todos con el mismo
+`idEvento`—, y con la clave sobre el evento solo saldría el primero y el resto se descartaría **en
+silencio**, porque el consumidor trata el duplicado como caso esperado y confirma el mensaje igual.
+Un consumidor que abanica sin esto no falla: envía de menos. Por la misma razón `Duplicada` lleva el
+destinatario además del `idEvento`: con la clave compuesta, el evento solo ya no identifica qué se
+descartó.
 
 Señal de que algo mal nombrado es en realidad un `Finder`: la clase termina en `Validator`, inyecta
 un `OutputPort` y devuelve un `boolean` que el use case consume con un `if`. Eso no valida nada —

@@ -509,6 +509,33 @@ si ganara el directo los eventos irían al broker **saltándose el outbox**, sin
 **interfaz**, nunca una de las dos clases.
 
 
+
+### El evento se emite donde ocurre el hecho, y es uno por hecho — no por destinatario
+
+Dos preguntas distintas, y confundirlas produce dos errores diferentes.
+
+**Cuántos eventos: uno por hecho de negocio.** El evento nombra algo que ocurrió, no a quién hay que
+avisar. Partirlo por destinatario —uno "para el asesor" y otro "para los estudiantes" del mismo
+suceso— pone el reparto de correos en el productor, que es exactamente el acoplamiento que los
+eventos quitan: el día que haya que avisar también al comité cambiaría el contexto productor. El
+evento lleva **todos** los destinatarios que ese hecho afecta y `notificaciones` abanica.
+
+**Dónde se emite: en el caso de uso dueño del hecho, aunque otro lo orqueste.**
+`FichaPerfilRegistradaEvent` sale de `RegistrarFichaPerfil` y
+`EstudiantesFichaPerfilAsignadosEvent` de `AsignarEstudiantesFichaPerfil`, aunque el segundo se
+ejecute encadenado por el primero. Ponerlos juntos en el registro parecía más simple y dejaba un
+hueco real: `AsignarEstudiantesFichaPerfil` tiene controller e interactor propios, así que añadir
+estudiantes a una ficha ya existente no habría avisado a nadie — el mismo hecho notificando por un
+camino y no por el otro.
+
+**La prueba para decidir:** ¿este caso de uso se puede invocar por sí solo? Si sí, el hecho es suyo y
+el evento se emite ahí. Si el hecho solo existe como parte de otro, va con el otro. Y antes de
+partir un evento en dos, comprueba que sean de verdad **dos hechos** —"se registró la ficha" y "se
+vincularon estudiantes" lo son— y no un hecho con dos audiencias.
+
+Consecuencia obligatoria de que un evento abanique: la idempotencia de `notificaciones` es por
+`(idEvento, destinatario)` (ver `arquisoft-estandares`).
+
 ### Transición de estado ⇒ notificación
 
 Un caso de uso que **crea o cambia un estado** — un campo de catálogo (`EstadoFicha`,
@@ -516,6 +543,34 @@ Un caso de uso que **crea o cambia un estado** — un campo de catálogo (`Estad
 conocido: `notificaciones`. Emite el evento salvo que la HU diga explícitamente lo contrario. Ese es
 el trabajo que el contexto `notificaciones` existe para hacer, y `AsesorFichaCambiadoEvent` →
 `AsesorFichaCambiadoConsumer` es el camino completo que se copia.
+
+
+**La excepción: un estado que es paso interno no notifica.** La regla anterior es el caso por
+defecto, no una ley. Antes de emitir, pregúntate **quién queda afectado y qué le estás contando**. Si
+el estado creado es un paso interno de un proceso —nadie fuera del equipo que lo ejecuta espera
+enterarse, y no hay desenlace que comunicar— el evento sobra, y omitirlo es una decisión, no un
+olvido.
+
+`RegistrarEvaluacionFichaPerfil` es el caso a reconocer. Crea el estado `EN_EVALUACION` de la
+evaluación de **un** representante del comité: alguien abrió su evaluación y todavía no ha decidido
+nada. Tres cosas lo descalifican como notificación:
+
+- **No es un desenlace.** `EN_EVALUACION` es literalmente "aún no hay veredicto".
+- **Se repetiría.** Varios representantes evalúan la misma ficha, cada uno con su propia
+  `EvaluacionFichaPerfil`, así que serían N correos casi idénticos sobre el mismo no-suceso.
+- **Filtra proceso interno.** Le contaría al estudiante cuántos representantes van y cuándo empezó
+  cada uno, que es mecánica del comité y no información suya.
+
+El hecho que sí incumbe al estudiante es el cambio de **`EstadoFicha`** —la máquina de estados de la
+ficha, no la de cada evaluación—, que ocurre una sola vez y vive en otro agregado. Ese es el caso de
+uso que emitirá, cuando exista.
+
+**La señal para distinguirlos:** si el mismo hecho puede ocurrir N veces en paralelo para el mismo
+sujeto, no es el hecho que se notifica — es un paso hacia otro que sí lo es, y ese otro suele vivir
+en un agregado distinto. Y si te encuentras inventando un umbral ("cuando haya tres evaluaciones,
+entonces…") para convertir N pasos en un hecho, para y comprueba que el disparo real esté modelado:
+un umbral inventado desde el código fosiliza en migraciones y contratos de evento una decisión de
+negocio que nadie tomó.
 
 El evento publicado no envía ningún correo por sí solo: sin nadie enganchado a esa routing key se
 queda en el exchange. Son **seis** piezas en dos contextos:
