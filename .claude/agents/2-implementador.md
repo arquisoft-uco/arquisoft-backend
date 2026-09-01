@@ -86,6 +86,14 @@ construye el objeto de acción si el plan lo declara, si no el agregado directo)
 qualifier siempre explícito, `usuariosTransactionManager` es `@Primary` y enlaza en silencio si lo
 omites).
 
+- La firma del `UseCase` de escritura es **`UseCase<{Algo}Domain, R>`**, nunca el `Command`: ese
+  tipo pertenece al interactor y muere ahí. Vale igual cuando el comando no crea agregado — un job
+  por lotes nominaliza en un objeto de acción (`ReintentoNotificacionesDomain`). El `Criteria` del
+  lado query sí viaja directo al caso de uso.
+- **Un `UseCase` puede encadenar a otro, pero todos los pasos cuelgan del orquestador**, no de un
+  hermano: `RegistrarFichaPerfil` llama a `AsignarEstadoInicial` **y** a `AsignarEstudiantes`. Cada
+  llamado recibe lo más estrecho que lee (`registro.getEstadoInicial()`, `registro.getEstudiantes()`);
+  si te pide el objeto de acción completo para pasárselo a un tercero, ese paso es del que llama.
 - El `Validator` es **puro**: `@Component` con un **constructor sin argumentos** que hace
   `this.xRule = new XRuleImpl();`. Nada de `@RequiredArgsConstructor`, nada de `Finder`/`OutputPort`,
   ni un solo `if` — solo arma el record de cada Rule y las invoca en orden.

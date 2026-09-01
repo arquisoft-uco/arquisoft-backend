@@ -4,6 +4,7 @@ import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
@@ -29,6 +30,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
     private final TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
     private final RegistrarFichaPerfilValidator registrarFichaPerfilValidator;
     private final AsignarEstadoInicialFichaPerfilUseCase asignarEstadoInicialFichaPerfilUseCase;
+    private final AsignarEstudiantesFichaPerfilUseCase asignarEstudiantesFichaPerfilUseCase;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
@@ -54,7 +56,9 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
 
         logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
 
-        asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro);
+        asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro.getEstadoInicial());
+
+        asignarEstudiantesFichaPerfilUseCase.ejecutar(registro.getEstudiantes());
 
         eventPublisher.publish(new FichaPerfilRegistradaEvent(
                 ficha.getId(),

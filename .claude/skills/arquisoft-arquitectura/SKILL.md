@@ -185,6 +185,60 @@ lo suyo al construirse, así que el de arriba solo comprueba `noNulo` de cada co
 | `handler/` | El `@RestControllerAdvice` del contexto, si lo tiene — **nunca en `exception/`** | `seguridad/infrastructure/handler/SeguridadGlobalExceptionHandler.java` (solo `seguridad` tiene uno; `fichas` no) |
 | `src/main/resources/db/migration/{contexto}/` | Migraciones Flyway del contexto — subcarpeta propia obligatoria | `db/migration/fichas/V20260504181427__crear_tablas_fichas_perfil.sql` |
 
+## Quién orquesta a quién: el que llama compone, el llamado es un solo paso
+
+Un caso de uso de escritura **puede** invocar a otro. `RegistrarFichaPerfil` encadena
+`AsignarEstadoInicialFichaPerfil` y después `AsignarEstudiantesFichaPerfil`;
+`RegistrarEvaluacionFichaPerfil` encadena `AsignarEstadoInicialEvaluacion`. Lo que no puede es
+encadenar un paso **colgado de un hermano**: todos los pasos de la transacción de negocio cuelgan
+del mismo orquestador.
+
+```java
+// MAL — el estado inicial arrastra un paso que no le incumbe
+public void ejecutar(RegistroFichaPerfilDomain registro) {   // recibe el bundle entero…
+    var estadoInicial = registro.getEstadoInicial();
+    // … valida y persiste el estado …
+    asignarEstudiantesFichaPerfilUseCase.ejecutar(registro.getEstudiantes());  // ← paso ajeno
+}
+
+// BIEN — cada llamado recibe exactamente su parte
+public void ejecutar(EstadoFichaPerfilDomain estadoInicial) { ... }   // AsignarEstadoInicial
+
+// RegistrarFichaPerfilUseCaseImpl
+fichaPerfilOutputPort.registrarFicha(FichaPerfilMapper.toEntity(ficha));
+asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro.getEstadoInicial());
+asignarEstudiantesFichaPerfilUseCase.ejecutar(registro.getEstudiantes());
+eventPublisher.publish(new FichaPerfilRegistradaEvent(...));
+```
+
+**La señal es la firma.** Un caso de uso encadenado recibe **el objeto de dominio más estrecho que
+realmente lee**. Si pide el objeto de acción completo y solo usa una parte, lo pide para
+alimentar un paso siguiente: ese paso pertenece al que llama. El objeto de acción existe
+justamente para que el orquestador alcance cada pieza (`registro.getEstadoInicial()`,
+`registro.getEstudiantes()`) y entregue a cada llamado la suya.
+
+Enterrar un paso dentro de un hermano tiene dos costos concretos: el orden real de la transacción
+deja de leerse en el orquestador, y el test del paso intermedio termina verificando un
+encadenamiento que no es asunto suyo.
+
+## El `UseCase` de escritura nunca recibe un `Command`
+
+`UseCase<{Algo}Domain, R>`, siempre. El `Command` es el tipo del **primary port**: pertenece al
+interactor y muere ahí, convertido por el `{Accion}{Entidad}Mapper`.
+
+Esto vale **también cuando el comando no crea ningún agregado**.
+`ReintentarNotificacionesFallidas` es un job por lotes cuya entrada son dos números, y aun así
+nominaliza en `ReintentoNotificacionesDomain` (`domain/notificacion/`). Que no haya agregado no
+autoriza a pasar el `Command`; solo decide si el objeto de dominio es el agregado o un objeto de
+acción.
+
+La validación duplicada entre `Command` y dominio **no es redundancia**: responden a llamadores
+distintos — petición malformada → 400 (`ApplicationValidationException`), estado de dominio
+imposible → 422 (`DomainValidationException`).
+
+La excepción vive en el lado de lectura: el interactor de query pasa su `Criteria` directo al caso
+de uso, y solo declara `{Consulta}{Entidad}Query` cuando hay entrada más allá del criteria.
+
 ## Cuando un comando devuelve un objeto: `command/result/`
 
 Un comando normalmente devuelve `UUID` (el id de lo creado) o `void`, y entonces no necesita tipo

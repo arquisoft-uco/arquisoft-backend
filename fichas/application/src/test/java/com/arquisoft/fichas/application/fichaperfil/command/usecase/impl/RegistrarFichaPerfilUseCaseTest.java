@@ -2,6 +2,7 @@ package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.entity.FichaPerfilEntity;
@@ -42,11 +43,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * La asignación de estudiantes ya no se dispara aquí: la encadena
- * AsignarEstadoInicialFichaPerfilUseCase al terminar (ver
- * AsignarEstadoInicialFichaPerfilUseCaseTest).
- */
 @ExtendWith(MockitoExtension.class)
 class RegistrarFichaPerfilUseCaseTest {
 
@@ -66,6 +62,9 @@ class RegistrarFichaPerfilUseCaseTest {
 
     @Mock
     private AsignarEstadoInicialFichaPerfilUseCase asignarEstadoInicialFichaPerfilUseCase;
+
+    @Mock
+    private AsignarEstudiantesFichaPerfilUseCase asignarEstudiantesFichaPerfilUseCase;
 
     @Mock
     private EventPublisher eventPublisher;
@@ -112,7 +111,7 @@ class RegistrarFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debeEncadenarElEstadoInicialConElMismoRegistro_despuesDePersistirLaFicha() {
+    void debeEncadenarElEstadoInicialYLosEstudiantes_despuesDePersistirLaFicha() {
         // Arrange
         RegistroFichaPerfilDomain registro = registroValido();
         stubConsultas(registro.getFicha(), asesor(), false);
@@ -121,11 +120,14 @@ class RegistrarFichaPerfilUseCaseTest {
         registrarFichaPerfilUseCase.ejecutar(registro);
 
         // Assert
-        verify(asignarEstadoInicialFichaPerfilUseCase).ejecutar(registro);
+        verify(asignarEstadoInicialFichaPerfilUseCase).ejecutar(registro.getEstadoInicial());
+        verify(asignarEstudiantesFichaPerfilUseCase).ejecutar(registro.getEstudiantes());
 
-        InOrder inOrder = inOrder(fichaPerfilOutputPort, asignarEstadoInicialFichaPerfilUseCase);
+        InOrder inOrder = inOrder(fichaPerfilOutputPort, asignarEstadoInicialFichaPerfilUseCase,
+                asignarEstudiantesFichaPerfilUseCase);
         inOrder.verify(fichaPerfilOutputPort).registrarFicha(any());
         inOrder.verify(asignarEstadoInicialFichaPerfilUseCase).ejecutar(any());
+        inOrder.verify(asignarEstudiantesFichaPerfilUseCase).ejecutar(any());
     }
 
     @Test

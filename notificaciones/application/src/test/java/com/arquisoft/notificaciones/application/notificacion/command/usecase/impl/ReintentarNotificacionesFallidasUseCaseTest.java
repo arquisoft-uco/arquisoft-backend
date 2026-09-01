@@ -2,7 +2,7 @@ package com.arquisoft.notificaciones.application.notificacion.command.usecase.im
 
 import com.arquisoft.notificaciones.application.notificacion.command.finder.NotificacionesReintentablesFinder;
 import com.arquisoft.notificaciones.application.notificacion.command.finder.model.CriterioReintento;
-import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.ReintentarNotificacionesFallidasCommand;
+import com.arquisoft.notificaciones.domain.notificacion.ReintentoNotificacionesDomain;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.EnvioNotificacionOutputPort;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.NotificacionOutputPort;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
@@ -78,7 +78,7 @@ class ReintentarNotificacionesFallidasUseCaseTest {
 
         // Act
         var resultado = reintentarUseCase.ejecutar(
-                ReintentarNotificacionesFallidasCommand.crear(5, 50));
+                ReintentoNotificacionesDomain.crear(5, 50));
 
         // Assert
         ArgumentCaptor<NotificacionEntity> captor =
@@ -103,7 +103,7 @@ class ReintentarNotificacionesFallidasUseCaseTest {
 
         // Act
         var resultado = reintentarUseCase.ejecutar(
-                ReintentarNotificacionesFallidasCommand.crear(5, 50));
+                ReintentoNotificacionesDomain.crear(5, 50));
 
         // Assert
         ArgumentCaptor<NotificacionEntity> captor =
@@ -125,7 +125,7 @@ class ReintentarNotificacionesFallidasUseCaseTest {
 
         // Act
         var resultado = reintentarUseCase.ejecutar(
-                ReintentarNotificacionesFallidasCommand.crear(5, 50));
+                ReintentoNotificacionesDomain.crear(5, 50));
 
         // Assert
         verify(envioNotificacionOutputPort, never()).enviar(any(MensajeNotificacion.class));

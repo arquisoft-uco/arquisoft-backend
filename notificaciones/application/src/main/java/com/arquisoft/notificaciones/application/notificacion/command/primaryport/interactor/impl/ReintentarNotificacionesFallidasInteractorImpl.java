@@ -1,6 +1,7 @@
 package com.arquisoft.notificaciones.application.notificacion.command.primaryport.interactor.impl;
 
 import com.arquisoft.notificaciones.application.notificacion.command.primaryport.interactor.ReintentarNotificacionesFallidasInteractor;
+import com.arquisoft.notificaciones.application.notificacion.command.primaryport.mapper.ReintentarNotificacionesFallidasMapper;
 import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.ReintentarNotificacionesFallidasCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.result.ReintentoNotificacionesResult;
 import com.arquisoft.notificaciones.application.notificacion.command.usecase.ReintentarNotificacionesFallidasUseCase;
@@ -19,6 +20,7 @@ public class ReintentarNotificacionesFallidasInteractorImpl
     @Transactional(transactionManager = "notificacionesTransactionManager")
     public ReintentoNotificacionesResult ejecutar(
             ReintentarNotificacionesFallidasCommand entrada) {
-        return reintentarNotificacionesFallidasUseCase.ejecutar(entrada);
+        return reintentarNotificacionesFallidasUseCase.ejecutar(
+                ReintentarNotificacionesFallidasMapper.toDomain(entrada));
     }
 }

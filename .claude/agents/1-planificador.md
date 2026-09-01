@@ -356,7 +356,7 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | application | `{contexto}/application/.../{feature}/command/primaryport/model/{Accion}{Entidad}Command.java` | `record` con `crear(...)` |
 | application | `.../command/primaryport/mapper/{Accion}{Entidad}Mapper.java` | `Command` → dominio (`static toDomain`): objeto de acción si la sección 4 lo declara, si no el agregado directo. **Siempre presente en escrituras**; lo invoca el `Interactor` |
 | application | `.../command/primaryport/interactor/{Accion}{Entidad}Interactor.java` + `interactor/impl/...InteractorImpl.java` | Dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` |
-| application | `.../command/usecase/{Accion}{Entidad}UseCase.java` + `usecase/impl/...UseCaseImpl.java` | Colaborador interno — NO bajo `primaryport/` |
+| application | `.../command/usecase/{Accion}{Entidad}UseCase.java` + `usecase/impl/...UseCaseImpl.java` | Colaborador interno — NO bajo `primaryport/`. Firma `UseCase<{Algo}Domain, R>`: **nunca recibe el `Command`**, ni siquiera si la acción no crea agregado (un job por lotes nominaliza igual) |
 | application | `.../command/validator/{Accion}{Entidad}Validator.java` + `validator/impl/...ValidatorImpl.java` | Puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`. **Solo si la sección 3 declaró al menos una `Rule`** — sin restricciones de conjunto estas dos filas no existen (ver `notificaciones`) |
 | application | `.../command/finder/{Concepto}Finder.java` + `finder/impl/...FinderImpl.java` | Extiende `Finder<T, R>` (método `obtener`). Uno por consulta que la `Rule` necesita — incluidas las de OTRA feature, en el paquete de esa feature. También el corte de idempotencia, que va sin `Rule` |
 | application | `.../command/secondaryport/{Entidad}OutputPort.java` + `secondaryport/entity/{Entidad}Entity.java` + `secondaryport/mapper/{Entidad}Mapper.java` | Habla `Entity` (record plano), nunca `Domain` |
@@ -553,6 +553,7 @@ getters/setters ni métodos `private`.
       y el evento carga nombre + correo del destinatario (nada de que el consumidor pregunte de vuelta)
 - [ ] IDs siempre `UUID`
 - [ ] `Interactor` dueño de `@Transactional` con qualifier explícito; `UseCase` sin transacción propia
+- [ ] Si el plan descompone en varios `UseCase`, **todos los pasos cuelgan del orquestador**, no de un hermano: `RegistrarFichaPerfil` → `AsignarEstadoInicial` **y** → `AsignarEstudiantes`, no `RegistrarFichaPerfil` → `AsignarEstadoInicial` → `AsignarEstudiantes`. Cada paso recibe el objeto de dominio más estrecho que lee
 - [ ] `OutputPort` habla `Entity`, nunca `Domain`; existencia de otra feature vía el `Finder` de esa feature
 - [ ] Excepciones nuevas extienden la base correcta (`DomainException`/`DomainValidationException`→422, `ApplicationException`→400, `InfrastructureException`→503) y viven en el `exception/` **del slice del feature en la capa de esa base** — nunca en un `exception/` a nivel de contexto, y una subclase nunca en distinta capa que su padre
 - [ ] Sin handler de contexto salvo colisión de nombres; si el plan lo declara, va en `infrastructure/handler/`, nunca en `exception/`

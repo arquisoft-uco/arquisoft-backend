@@ -2,7 +2,6 @@ package com.arquisoft.notificaciones.application.notificacion.command.usecase.im
 
 import com.arquisoft.notificaciones.application.notificacion.command.finder.NotificacionesReintentablesFinder;
 import com.arquisoft.notificaciones.application.notificacion.command.finder.model.CriterioReintento;
-import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.ReintentarNotificacionesFallidasCommand;
 import com.arquisoft.notificaciones.application.notificacion.command.result.ReintentoNotificacionesResult;
 import com.arquisoft.notificaciones.application.notificacion.command.result.mapper.ReintentoNotificacionesResultMapper;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.EnvioNotificacionOutputPort;
@@ -12,6 +11,7 @@ import com.arquisoft.notificaciones.application.notificacion.command.secondarypo
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.ResultadoEntrega;
 import com.arquisoft.notificaciones.application.notificacion.command.usecase.ReintentarNotificacionesFallidasUseCase;
 import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
+import com.arquisoft.notificaciones.domain.notificacion.ReintentoNotificacionesDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
@@ -32,11 +32,9 @@ public class ReintentarNotificacionesFallidasUseCaseImpl
     private final AppLogger logger;
 
     @Override
-    public ReintentoNotificacionesResult ejecutar(
-            ReintentarNotificacionesFallidasCommand entrada) {
-
+    public ReintentoNotificacionesResult ejecutar(ReintentoNotificacionesDomain reintento) {
         List<NotificacionDomain> pendientes = notificacionesReintentablesFinder.obtener(
-                new CriterioReintento(entrada.maxIntentos(), entrada.limite()));
+                new CriterioReintento(reintento.getMaxIntentos(), reintento.getLimite()));
 
         logger.info(Mensajes.obtener(NotificacionKey.LOG_REINTENTO_INICIADO), pendientes.size());
 
@@ -50,7 +48,7 @@ public class ReintentarNotificacionesFallidasUseCaseImpl
             }
         }
 
-        int agotadas = contarAgotadas(pendientes, entrada.maxIntentos());
+        int agotadas = contarAgotadas(pendientes, reintento.getMaxIntentos());
         logger.info(Mensajes.obtener(NotificacionKey.LOG_REINTENTO_RESULTADO),
                 reenviadas, fallidas, agotadas);
 
