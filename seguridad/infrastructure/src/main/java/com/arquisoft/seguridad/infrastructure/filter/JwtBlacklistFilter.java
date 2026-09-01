@@ -71,14 +71,11 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
                         return;
                     }
                 } catch (Exception e) {
-                    // logger.error: error de servidor — Redis no disponible
+                    // Fail open acotado: sin Redis no se puede saber si el token fue revocado, y
+                    // rechazar dejaria la API inutilizable. La entrada de la lista negra caduca con
+                    // el propio token (5-15 min), asi que la ventana es la vida restante de este.
                     logger.error(Mensajes.obtener(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE),
-                            e.getMessage(), e);
-                    writeErrorResponse(response, request,
-                            HttpStatus.SERVICE_UNAVAILABLE,
-                            Mensajes.obtener(TokenInvalidadoKey.ERROR_HTTP_503),
-                            Mensajes.obtener(TokenInvalidadoKey.ERROR_HTTP_503_DETALLE));
-                    return;
+                            e, e.getMessage());
                 }
             }
         }

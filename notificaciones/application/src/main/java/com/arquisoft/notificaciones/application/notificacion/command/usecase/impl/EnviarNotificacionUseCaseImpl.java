@@ -5,12 +5,10 @@ import com.arquisoft.notificaciones.application.notificacion.command.result.Envi
 import com.arquisoft.notificaciones.application.notificacion.command.result.mapper.EnvioNotificacionResultMapper;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.EnvioNotificacionOutputPort;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.NotificacionOutputPort;
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.mapper.MensajeNotificacionMapper;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.mapper.NotificacionMapper;
-import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.DestinatarioNotificacion;
-import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.MensajeNotificacion;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.ResultadoEntrega;
 import com.arquisoft.notificaciones.application.notificacion.command.usecase.EnviarNotificacionUseCase;
-import com.arquisoft.notificaciones.domain.notificacion.EnvioNotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
@@ -28,28 +26,20 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
     private final AppLogger logger;
 
     @Override
-    public EnvioNotificacionResult ejecutar(EnvioNotificacionDomain entrada) {
-        boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada.getIdEvento());
+    public EnvioNotificacionResult ejecutar(NotificacionDomain entrada) {
+        boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada);
         logger.debug(Mensajes.obtener(NotificacionKey.LOG_VERIFICACION_PREVIA),
                 entrada.getIdEvento(), yaProcesada);
 
         if (yaProcesada) {
-            return EnvioNotificacionResultMapper.toResultDuplicada(entrada.getIdEvento());
+            return EnvioNotificacionResultMapper.toResultDuplicada(entrada);
         }
 
-        var notificacion = entrada.getNotificacion();
-        var resultado = registrarEntrega(notificacion, entregar(entrada));
+        var resultado = registrarEntrega(entrada,
+                envioNotificacionOutputPort.enviar(MensajeNotificacionMapper.toMensaje(entrada)));
 
-        notificacionOutputPort.guardar(NotificacionMapper.toEntity(notificacion));
+        notificacionOutputPort.guardar(NotificacionMapper.toEntity(entrada));
         return resultado;
-    }
-
-    private ResultadoEntrega entregar(EnvioNotificacionDomain entrada) {
-        return envioNotificacionOutputPort.enviar(MensajeNotificacion.textoPlano(
-                new DestinatarioNotificacion(
-                        entrada.getDestinatarioNombre(), entrada.getDestinatarioEmail()),
-                entrada.getAsunto(),
-                entrada.getCuerpo()));
     }
 
     private EnvioNotificacionResult registrarEntrega(

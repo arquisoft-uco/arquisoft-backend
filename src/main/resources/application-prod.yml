@@ -171,7 +171,7 @@ security:
     enabled: ${RATE_LIMIT_ENABLED:true}
     requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:60}
     login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:3}
-    # RATE_LIMIT_MAX_TRACKED_IPS eliminado — propiedad removida al migrar a RedisBucketResolver
+    max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:10000}
 
 # ==================== LOGGING ====================
 # logback-spring.xml gestiona TODOS los appenders (ASYNC_STDOUT + ASYNC_FILE_PROD).

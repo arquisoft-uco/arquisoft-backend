@@ -122,6 +122,25 @@ nadie — y entonces la razón se escribe en `Eventos: ninguno. Razón: …`. Lo
 llegar a C por omisión, sin haber preguntado, en una HU cuyo título ya dice "cambiar", "asignar",
 "aprobar", "rechazar" o "actualizar el estado de".
 
+
+**La excepción, y hay que saber reconocerla: un estado que es paso interno no notifica.** Antes de
+dar A por hecho, pregunta **quién queda afectado y qué se le está contando**. Si el estado creado es
+un paso interno de un proceso —no hay desenlace que comunicar y nadie fuera de quien lo ejecuta
+espera enterarse— la respuesta es C, y la razón se escribe igual en `Eventos: ninguno. Razón: …`.
+
+`RegistrarEvaluacionFichaPerfil` es el caso de referencia: crea `EN_EVALUACION` para la evaluación de
+**un** representante del comité, o sea "alguien abrió su evaluación y aún no decidió nada". No es
+desenlace, se repetiría una vez por representante sobre la misma ficha, y le filtraría al estudiante
+la mecánica interna del comité. Lo que sí le incumbe es el cambio de `EstadoFicha`, que ocurre una
+vez y vive en otro agregado.
+
+**Dos señales de que estás ante la excepción:** (1) el mismo hecho puede ocurrir N veces en paralelo
+para el mismo sujeto — entonces no es el hecho notificable sino un paso hacia otro, normalmente en
+otro agregado; (2) te descubres proponiendo un umbral ("cuando haya tres, entonces sí") para
+convertir esos N pasos en uno. Ahí **para el plan y pregunta**: un umbral inventado desde el código
+fosiliza en migraciones y contratos de evento una decisión de negocio que nadie tomó, y casi siempre
+significa que el disparo real —alguien que activa la revisión— no está modelado todavía.
+
 **5b. Si la respuesta fue A por notificación: el evento no es el entregable, es la mitad.** Un evento
 publicado en el exchange sin nadie enganchado a esa routing key no envía ningún correo. El plan debe
 listar las **ocho** piezas, repartidas en dos contextos, y la sección 6 debe mostrarlas en el árbol:
@@ -130,7 +149,7 @@ listar las **ocho** piezas, repartidas en dos contextos, y la sección 6 debe mo
 |---|---|---|
 | 1 | `shared:message/constant/` | constante nueva en `EventTopics.{Contexto}` — la routing key, declarada **una sola vez** |
 | 2 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java` — `EVENT_TOPIC = EventTopics.{Contexto}.{X}` |
-| 3 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` — nombre de cola `{Contexto}Queues.PREFIJO + topic`, argumentos desde `RabbitMQConfig` |
+| 3 | `notificaciones/infrastructure/config/` | un `@Bean Declarables` con `ColaEvento.declarar(...)` en `Notificaciones{Contexto}QueueConfig` — declara la cola, su `.dead` y los dos bindings de una vez; la constante del nombre (`{Contexto}Queues.PREFIJO + topic`) se queda porque `@RabbitListener` la exige constante |
 | 4 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Payload.java` — `record` propio del adaptador, **nunca** la clase de evento del productor |
 | 5 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Consumer.java` extiende `AbstractNotificacionConsumer` — aquí, y no en el use case, se elige el texto |
 | 6 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
@@ -337,7 +356,7 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | application | `{contexto}/application/.../{feature}/command/primaryport/model/{Accion}{Entidad}Command.java` | `record` con `crear(...)` |
 | application | `.../command/primaryport/mapper/{Accion}{Entidad}Mapper.java` | `Command` → dominio (`static toDomain`): objeto de acción si la sección 4 lo declara, si no el agregado directo. **Siempre presente en escrituras**; lo invoca el `Interactor` |
 | application | `.../command/primaryport/interactor/{Accion}{Entidad}Interactor.java` + `interactor/impl/...InteractorImpl.java` | Dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` |
-| application | `.../command/usecase/{Accion}{Entidad}UseCase.java` + `usecase/impl/...UseCaseImpl.java` | Colaborador interno — NO bajo `primaryport/` |
+| application | `.../command/usecase/{Accion}{Entidad}UseCase.java` + `usecase/impl/...UseCaseImpl.java` | Colaborador interno — NO bajo `primaryport/`. Firma `UseCase<{Algo}Domain, R>`: **nunca recibe el `Command`**, ni siquiera si la acción no crea agregado (un job por lotes nominaliza igual) |
 | application | `.../command/validator/{Accion}{Entidad}Validator.java` + `validator/impl/...ValidatorImpl.java` | Puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`. **Solo si la sección 3 declaró al menos una `Rule`** — sin restricciones de conjunto estas dos filas no existen (ver `notificaciones`) |
 | application | `.../command/finder/{Concepto}Finder.java` + `finder/impl/...FinderImpl.java` | Extiende `Finder<T, R>` (método `obtener`). Uno por consulta que la `Rule` necesita — incluidas las de OTRA feature, en el paquete de esa feature. También el corte de idempotencia, que va sin `Rule` |
 | application | `.../command/secondaryport/{Entidad}OutputPort.java` + `secondaryport/entity/{Entidad}Entity.java` + `secondaryport/mapper/{Entidad}Mapper.java` | Habla `Entity` (record plano), nunca `Domain` |
@@ -448,6 +467,43 @@ convertido en `Command.crear(...)`, o puerto que hable `Entity`. La tarea `verif
 cuelga de `check`, así que una HU que lo intente no pasa el build.
 Detalle en `arquisoft-estandares`.
 
+
+### Efectos externos y reintento (secciones 5, 10 y 11)
+
+Si el caso de uso llama a un tercero que puede rechazar (SMTP, proveedor externo, API), el plan
+responde **tres** preguntas antes de escribir el árbol de archivos:
+
+1. **¿El rechazo es excepción o valor?** Si el caso de uso lo captura para seguir —porque es un estado
+   a persistir, no un error del flujo— es un `sealed interface` de resultado, no una excepción
+   (`ResultadoEntrega.Entregada`/`Rechazada`). Un `try/catch` en `application` es señal de que se
+   modeló mal.
+2. **¿Hay que reintentar?** Si sí, el reintento sale de la base con un `@Scheduled`, nunca del
+   consumidor AMQP. Y entonces la sección 11 tiene que persistir **lo que se envió**, no solo el
+   resultado: sin el mensaje guardado no hay nada con qué reconstruir el reintento. Añade también
+   `intentos` y `fecha_ultimo_intento`.
+3. **¿Cambia eso el objeto de acción?** Los campos que pasan a persistirse son estado del agregado, y
+   un `{Accion}{Entidad}Domain` que solo lo envolvía deja de justificarse (ver `arquisoft-estandares`).
+
+### Evento nuevo ⇒ cola, DLQ y binding (sección 10)
+
+Un evento nuevo no son solo las ocho piezas de la transición de estado. La cola del consumidor
+necesita además **su cola `.dead` y el `Binding` contra `arquisoft.dlx`**: sin ese binding el
+descarte es silencioso y el mensaje se pierde sin rastro. Las cuatro declaraciones salen de una sola
+llamada a `ColaEvento.declarar(...)` devuelta como `Declarables` — planifica **un `@Bean`**, no cuatro
+(ver `arquisoft-arquitectura`). El payload declara `idEvento` y `ocurridoEn`.
+
+### Replicación entre contextos (secciones 4 y 10)
+
+Cuando la HU dice "esta entidad debe existir también en X", **no es un registro replicado: es un dueño
+más una tabla espejo**. Antes de diseñar nada, aplica el test de `arquisoft-arquitectura`: ¿puede el
+contexto destino rechazar por regla de negocio? Si no puede, es replicación eventual y **no hace falta
+saga** — no propongas una.
+
+Si la HU incluye modificación o baja de una entidad espejada, el plan tiene que cubrir las cuatro
+piezas ya decididas (detalladas en `arquisoft-arquitectura` → *Replicación entre contextos*):
+`ocurrido_en` persistido y descarte de eventos viejos, baja lógica en vez de `DELETE`, lápida para el
+borrado que llega antes que el alta, y nada de borrado en cascada entre contextos.
+
 ### Presupuesto de tests (sección 12)
 
 | Tamaño de HU | Tests esperados |
@@ -465,9 +521,10 @@ con `@DataJpaTest`, `Controller` con `@WebMvcTest`: 201/400/401/403/422). Si hay
 
 **Consulta:** sin tests de eventos y sin tests de domain si el agregado no se invoca en el read
 side → `UseCase` (con/sin resultados, filtros inválidos) → `SortMapperTest` si hay orden →
-`QueryOutputAdapter`: si el `@Subselect` resuelve un join real, `@DataJpaTest` sembrando las tablas
-de comando con `TestEntityManager` (como `FichaPerfilQueryOutputAdapterTest`); si es una lectura
-plana de catálogo, basta Mockito sobre el `QueryRepository` (como `EstadoFichaQueryOutputAdapterTest`)
+`QueryOutputAdapter`: **siempre `@DataJpaTest`** sembrando las tablas de comando con
+`TestEntityManager` (`FichaPerfilQueryOutputAdapterTest`, `EstadoFichaQueryOutputAdapterTest`) —
+también cuando la lectura es un catálogo plano: con Mockito sobre el `QueryRepository` el
+`@Subselect` no se ejecuta y un alias que no case con su `@Column` no falla hasta producción
 → `Controller` (200/400/401/403, verificando el `ResponseDTO`, no el `ReadModel`).
 
 **Mixta:** suma de ambos, justifica en el plan por qué no se separó en dos use cases. Consolida
@@ -497,6 +554,7 @@ getters/setters ni métodos `private`.
       y el evento carga nombre + correo del destinatario (nada de que el consumidor pregunte de vuelta)
 - [ ] IDs siempre `UUID`
 - [ ] `Interactor` dueño de `@Transactional` con qualifier explícito; `UseCase` sin transacción propia
+- [ ] Si el plan descompone en varios `UseCase`, **todos los pasos cuelgan del orquestador**, no de un hermano: `RegistrarFichaPerfil` → `AsignarEstadoInicial` **y** → `AsignarEstudiantes`, no `RegistrarFichaPerfil` → `AsignarEstadoInicial` → `AsignarEstudiantes`. Cada paso recibe el objeto de dominio más estrecho que lee
 - [ ] `OutputPort` habla `Entity`, nunca `Domain`; existencia de otra feature vía el `Finder` de esa feature
 - [ ] Excepciones nuevas extienden la base correcta (`DomainException`/`DomainValidationException`→422, `ApplicationException`→400, `InfrastructureException`→503) y viven en el `exception/` **del slice del feature en la capa de esa base** — nunca en un `exception/` a nivel de contexto, y una subclase nunca en distinta capa que su padre
 - [ ] Sin handler de contexto salvo colisión de nombres; si el plan lo declara, va en `infrastructure/handler/`, nunca en `exception/`

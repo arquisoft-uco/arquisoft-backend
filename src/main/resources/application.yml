@@ -159,6 +159,15 @@ notificacion:
   proveedor: ${NOTIFICACION_PROVEEDOR:log}
   remitente-email: ${NOTIFICACION_REMITENTE_EMAIL:no-reply@arquisoft.local}
   remitente-nombre: ${NOTIFICACION_REMITENTE_NOMBRE:Arquisoft}
+  # Admite classpath: y file:, asi que en despliegue se puede apuntar a un HTML fuera del jar.
+  plantilla: ${NOTIFICACION_PLANTILLA:classpath:plantillas/correo-base.html}
+  # Un envio rechazado se guarda como FALLIDA y lo reintenta un job programado, no el consumidor:
+  # con prefetch=1 reintentar dentro del listener bloquearia la cola, y reencolar el evento no
+  # sirve porque la idempotencia por event_id lo daria por duplicado sin reenviarlo.
+  reintento:
+    max-intentos: ${NOTIFICACION_REINTENTO_MAX_INTENTOS:5}
+    limite-por-ciclo: ${NOTIFICACION_REINTENTO_LIMITE:50}
+    intervalo: ${NOTIFICACION_REINTENTO_INTERVALO:PT5M}
 
 # ==================== SMTP ====================
 # Valores por defecto apuntando a Mailpit (docker-compose): captura los correos en local
@@ -310,6 +319,11 @@ arquisoft:
   catalogo:
     reintento-intervalo: PT30S
 
+  # Limitador de peticiones. Mismo patrón que el catálogo: cuando Redis cae, el limitador degrada
+  # a cuota local por instancia y este monitor es quien lo devuelve a la cuota distribuida.
+  limite-solicitudes:
+    reintento-intervalo: PT30S
+
 # ==================== SERVER ====================
 # ==================== CORS Y RATE LIMITING (BASE) ====================
 # En la RAIZ, no bajo 'arquisoft:'. Quien las lee espera exactamente estos prefijos:
@@ -329,6 +343,10 @@ security:
     enabled: ${RATE_LIMIT_ENABLED:true}
     requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:100}
     login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:5}
+    # Tope de la cuota local que sustituye a Redis mientras esta caido. Vuelve la propiedad
+    # que se dio de baja al migrar a RedisBucketResolver: con una cache en memoria por IP,
+    # sin tope una caida de Redis se convierte en un vector de agotamiento de memoria.
+    max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:10000}
 
 server:
   port: 8080

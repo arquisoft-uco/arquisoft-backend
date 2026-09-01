@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
@@ -8,7 +9,6 @@ import com.arquisoft.seguridad.infrastructure.config.ratelimit.BucketResolver;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.shared.web.filter.RutasTecnicas;
 import tools.jackson.databind.ObjectMapper;
-import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
@@ -36,6 +36,8 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
     // el proyecto registra a traves del puerto AppLogger, no del logger del framework.
     private final AppLogger logger;
 
+    private final GestorTraza gestorTraza;
+
     private static final Pattern IP_PATTERN = Pattern.compile("^[\\d.:a-fA-F]{3,45}$");
 
     // Ruta de login: lleva su propia cuota, mucho mas estricta que la global, para frenar
@@ -50,8 +52,6 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
     // Centinela para una IP que no encaja en IP_PATTERN: agrupa todas las peticiones con
     // origen ilegible en un unico bucket en vez de crear uno por cada valor manipulado.
     private static final String IP_NO_RECONOCIDA = "INVALID";
-
-    private static final long TOKENS_POR_SOLICITUD = 1L;
 
     private final BucketResolver bucketResolver;
     private final ObjectMapper objectMapper;
@@ -77,13 +77,14 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
         }
 
         String clientIp = getClientIp(request);
-        
-        boolean isLoginEndpoint = RUTA_LOGIN.equals(request.getRequestURI());
-        Bucket bucket = isLoginEndpoint ? 
-                bucketResolver.resolveLoginBucket(clientIp) : 
-                bucketResolver.resolveBucket(clientIp);
 
-        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
+        boolean isLoginEndpoint = RUTA_LOGIN.equals(request.getRequestURI());
+
+        // Sin try/catch: el resolver es quien consume, y por tanto quien ve el fallo de Redis y
+        // degrada a la cuota local. Aqui una excepcion escapando seguiria siendo grave —Tomcat
+        // despacharia a /error y la respuesta perderia su ruta y su traceId— pero ya no puede
+        // originarse en el limite, solo en un defecto del propio resolver.
+        ConsumptionProbe probe = bucketResolver.consumir(clientIp, isLoginEndpoint);
 
         if (probe.isConsumed()) {
             response.addHeader(CABECERA_CUOTA_RESTANTE, String.valueOf(probe.getRemainingTokens()));
@@ -102,6 +103,8 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
                     .message(Mensajes.formatear(LimiteSolicitudesKey.ERROR_LIMITE_EXCEDIDO, waitForRefill))
                     .status(HttpStatus.TOO_MANY_REQUESTS.value())
                     .path(request.getRequestURI())
+                    .traceId(gestorTraza.correlacionActual())
+                    .transaccionId(gestorTraza.transaccionActual())
                     .build();
             objectMapper.writeValue(response.getWriter(), body);
 
