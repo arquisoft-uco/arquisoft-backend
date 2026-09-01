@@ -1,8 +1,10 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.seguridad.infrastructure.config.ratelimit.BucketResolver;
 import tools.jackson.databind.ObjectMapper;
+import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import jakarta.servlet.FilterChain;
@@ -11,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -38,6 +42,9 @@ class RateLimitingFilterTest {
 
     @Mock
     private AppLogger logger;
+
+    @Mock
+    private GestorTraza gestorTraza;
 
     @InjectMocks
     private LimitadorSolicitudesFilter filter;
@@ -131,6 +138,65 @@ class RateLimitingFilterTest {
         // Assert
         verify(filterChain).doFilter(request, response);
         verify(response).addHeader("X-Rate-Limit-Remaining", "3");
+    }
+
+    @Test
+    void debeDejarPasar_cuandoElBucketFallaContraRedis() throws Exception {
+        // Arrange
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        FilterChain filterChain = mock(FilterChain.class);
+        Bucket bucket = mock(Bucket.class);
+
+        when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
+        when(bucketResolver.resolveBucket(anyString())).thenReturn(bucket);
+        when(bucket.tryConsumeAndReturnRemaining(1))
+                .thenThrow(new IllegalStateException("Currently not connected. Commands are rejected."));
+        when(bucketResolver.bucketSinLimite()).thenReturn(bucketSinLimite());
+
+        when(request.getRequestURI()).thenReturn("/api/fichas-perfil");
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getRemoteAddr()).thenReturn("192.168.1.10");
+
+        // Act
+        filter.doFilterInternal(request, response, filterChain);
+
+        // Assert
+        verify(filterChain).doFilter(request, response);
+        verify(response, never()).setStatus(429);
+    }
+
+    @Test
+    void debeDejarPasarElLogin_cuandoElBucketFallaContraRedis() throws Exception {
+        // Arrange
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        FilterChain filterChain = mock(FilterChain.class);
+        Bucket bucket = mock(Bucket.class);
+
+        when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
+        when(bucketResolver.resolveLoginBucket(anyString())).thenReturn(bucket);
+        when(bucket.tryConsumeAndReturnRemaining(1))
+                .thenThrow(new IllegalStateException("Currently not connected. Commands are rejected."));
+        when(bucketResolver.bucketSinLimite()).thenReturn(bucketSinLimite());
+
+        when(request.getRequestURI()).thenReturn("/api/auth/login");
+        when(request.getMethod()).thenReturn("POST");
+        when(request.getRemoteAddr()).thenReturn("192.168.1.10");
+
+        // Act & Assert
+        assertThatCode(() -> filter.doFilterInternal(request, response, filterChain))
+                .as("si escapa, Tomcat despacha a /error y la respuesta pierde la ruta y el traceId")
+                .doesNotThrowAnyException();
+        verify(filterChain).doFilter(request, response);
+    }
+
+    private Bucket bucketSinLimite() {
+        var limite = Bandwidth.builder()
+                .capacity(Long.MAX_VALUE)
+                .refillIntervally(1, Duration.ofDays(1))
+                .build();
+        return Bucket.builder().addLimit(limite).build();
     }
 
     @Test

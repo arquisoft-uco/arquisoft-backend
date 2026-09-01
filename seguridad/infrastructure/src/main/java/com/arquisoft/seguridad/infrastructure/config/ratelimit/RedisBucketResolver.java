@@ -47,10 +47,8 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
 
     private static final Duration VENTANA_RECARGA = Duration.ofMinutes(1);
 
-    // Bucket agotado: capacidad 1 ya consumida y recarga a un dia, de modo que toda
-    // solicitud siguiente se rechace mientras Redis siga caido (fail closed).
-    private static final long CAPACIDAD_BUCKET_AGOTADO = 1L;
     private static final Duration RECARGA_INERTE = Duration.ofDays(1);
+    private static final long RECARGA_MINIMA = 1L;
 
     private final AppLogger logger;
 
@@ -114,7 +112,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         } catch (Exception e) {
             logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_REDIS_ERROR),
                     ip, e.getMessage());
-            return createExhaustedBucket();
+            return createUnlimitedBucket();
         }
     }
 
@@ -134,7 +132,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         } catch (Exception e) {
             logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_LOGIN_REDIS_ERROR),
                     ip, e.getMessage());
-            return createExhaustedBucket();
+            return createUnlimitedBucket();
         }
     }
 
@@ -150,21 +148,19 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         }
     }
 
-    private Bucket createExhaustedBucket() {
-        var limit = Bandwidth.builder()
-                .capacity(CAPACIDAD_BUCKET_AGOTADO)
-                .refillIntervally(CAPACIDAD_BUCKET_AGOTADO, RECARGA_INERTE)
-                .build();
-        var bucket = Bucket.builder().addLimit(limit).build();
-        bucket.tryConsume(1);
-        return bucket;
+    // getProxy es perezoso: el comando sale al consumir, fuera de los try/catch de arriba.
+    @Override
+    public Bucket bucketSinLimite() {
+        return createUnlimitedBucket();
     }
 
+    // El bucket nace lleno, asi que con esta capacidad no se agota nunca y la recarga es
+    // irrelevante: Bucket4j rechaza tasas mayores a 1 token/ns, y Long.MAX_VALUE por dia lo es.
     private Bucket createUnlimitedBucket() {
         return Bucket.builder()
                 .addLimit(Bandwidth.builder()
                         .capacity(Long.MAX_VALUE)
-                        .refillIntervally(Long.MAX_VALUE, RECARGA_INERTE)
+                        .refillIntervally(RECARGA_MINIMA, RECARGA_INERTE)
                         .build())
                 .build();
     }

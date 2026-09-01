@@ -1,6 +1,7 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
@@ -35,6 +36,8 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
     // Oculta deliberadamente el campo heredado GenericFilterBean.logger (Commons Logging):
     // el proyecto registra a traves del puerto AppLogger, no del logger del framework.
     private final AppLogger logger;
+
+    private final GestorTraza gestorTraza;
 
     private static final Pattern IP_PATTERN = Pattern.compile("^[\\d.:a-fA-F]{3,45}$");
 
@@ -83,7 +86,7 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
                 bucketResolver.resolveLoginBucket(clientIp) : 
                 bucketResolver.resolveBucket(clientIp);
 
-        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
+        ConsumptionProbe probe = intentarConsumir(bucket, clientIp);
 
         if (probe.isConsumed()) {
             response.addHeader(CABECERA_CUOTA_RESTANTE, String.valueOf(probe.getRemainingTokens()));
@@ -102,10 +105,24 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
                     .message(Mensajes.formatear(LimiteSolicitudesKey.ERROR_LIMITE_EXCEDIDO, waitForRefill))
                     .status(HttpStatus.TOO_MANY_REQUESTS.value())
                     .path(request.getRequestURI())
+                    .traceId(gestorTraza.correlacionActual())
+                    .transaccionId(gestorTraza.transaccionActual())
                     .build();
             objectMapper.writeValue(response.getWriter(), body);
 
             logger.warn(Mensajes.obtener(LimiteSolicitudesKey.LOG_LIMITE_EXCEDIDO), clientIp, request.getRequestURI());
+        }
+    }
+
+    // Fail open: rechazar aqui convertiria una caida de Redis en la denegacion total que el
+    // limitador existe para evitar. Si la excepcion escapara, ademas, Tomcat despacharia a /error
+    // y la respuesta perderia su ruta real y el traceId.
+    private ConsumptionProbe intentarConsumir(Bucket bucket, String clientIp) {
+        try {
+            return bucket.tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
+        } catch (RuntimeException e) {
+            logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_BUCKET_REDIS_ERROR), clientIp, e.getMessage());
+            return bucketResolver.bucketSinLimite().tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
         }
     }
 
