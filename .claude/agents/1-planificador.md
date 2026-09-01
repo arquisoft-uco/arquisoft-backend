@@ -521,9 +521,10 @@ con `@DataJpaTest`, `Controller` con `@WebMvcTest`: 201/400/401/403/422). Si hay
 
 **Consulta:** sin tests de eventos y sin tests de domain si el agregado no se invoca en el read
 side → `UseCase` (con/sin resultados, filtros inválidos) → `SortMapperTest` si hay orden →
-`QueryOutputAdapter`: si el `@Subselect` resuelve un join real, `@DataJpaTest` sembrando las tablas
-de comando con `TestEntityManager` (como `FichaPerfilQueryOutputAdapterTest`); si es una lectura
-plana de catálogo, basta Mockito sobre el `QueryRepository` (como `EstadoFichaQueryOutputAdapterTest`)
+`QueryOutputAdapter`: **siempre `@DataJpaTest`** sembrando las tablas de comando con
+`TestEntityManager` (`FichaPerfilQueryOutputAdapterTest`, `EstadoFichaQueryOutputAdapterTest`) —
+también cuando la lectura es un catálogo plano: con Mockito sobre el `QueryRepository` el
+`@Subselect` no se ejecuta y un alias que no case con su `@Column` no falla hasta producción
 → `Controller` (200/400/401/403, verificando el `ResponseDTO`, no el `ReadModel`).
 
 **Mixta:** suma de ambos, justifica en el plan por qué no se separó en dos use cases. Consolida

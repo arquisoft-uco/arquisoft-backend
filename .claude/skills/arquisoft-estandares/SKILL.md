@@ -355,8 +355,11 @@ JUnit 6 + Mockito + AssertJ, patrón AAA con marcadores `// Arrange / // Act / /
 - **Repositorio:** `@DataJpaTest` (`org.springframework.boot.data.jpa.test.autoconfigure`) + H2, con
   `TestEntityManager` (`org.springframework.boot.jpa.test.autoconfigure` en Boot 4) para sembrar.
   **`@SpringBootTest` no se usa en ningún test de este repo.** Un `@DataJpaTest` del lado query sí
-  siembra con los `JpaEntity` de comando — el aislamiento CQRS rige `src/main`, no los tests. Si el
-  adapter de lectura es delegación plana sobre un catálogo, un test con Mockito basta.
+  siembra con los `JpaEntity` de comando — el aislamiento CQRS rige `src/main`, no los tests. Una
+  entidad con `@Subselect` se prueba **siempre** así, nunca con mocks del `QueryRepository`, aunque
+  el adapter sea delegación plana sobre un catálogo: el mock no ejecuta la consulta, que es lo único
+  que hay que verificar ahí — el `SELECT` y los `@Column` son una sola declaración partida en dos y
+  nada más comprueba que sus alias casen.
 - **Controller:** `@WebMvcTest` (`org.springframework.boot.webmvc.test.autoconfigure`). En `fichas`
   el slice necesita `@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class,
   TrazabilidadConfig.class, {Test}.TestSecurityConfig.class})` — sin `GlobalAppExceptionHandler`

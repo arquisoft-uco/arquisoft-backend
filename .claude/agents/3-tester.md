@@ -149,7 +149,9 @@ le escribas un test propio al mapper salvo que tenga lógica que el flujo del us
 
 **Infrastructure — `OutputAdapter`/`Controller`:** `@DataJpaTest` con H2, sembrando con
 `TestEntityManager` (nunca con un `QueryRepository`, que no tiene `save`); confirma que el adapter
-usa `reconstruir(...)`, nunca `crear(...)`, al leer de BD.
+usa `reconstruir(...)`, nunca `crear(...)`, al leer de BD. Un `QueryOutputAdapter` sobre una entidad
+con `@Subselect` va con `@DataJpaTest` aunque solo delegue: mockear el `QueryRepository` deja la
+vista sin ejecutar y no detecta un alias que no case con su `@Column`.
 
 `@WebMvcTest` en `fichas` necesita `@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class,
 TrazabilidadConfig.class, {Test}.TestSecurityConfig.class})` — sin `GlobalAppExceptionHandler` toda
