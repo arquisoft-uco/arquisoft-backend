@@ -1,5 +1,7 @@
 package com.arquisoft.notificaciones.domain.notificacion;
 
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.validation.DomainValidationException;
@@ -18,10 +20,14 @@ class NotificacionDomainTest {
     private static final String ID_EVENTO = "8f14e45f-ceea-467a-9575-1a1b2c3d4e5f";
     private static final String DESTINATARIO = "ana.gomez@soyuco.edu.co";
     private static final String ASUNTO = "Se te asignó la ficha";
+    private static final String NOMBRE = "Ana Gomez";
+    private static final String CUERPO = "Hola Ana, ahora eres la asesora.";
+    private static final String PIE = "Correo automatico, no respondas.";
 
     private NotificacionDomain notificacionValida() {
         return NotificacionDomain.crear(
-                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO);
+                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO,
+                NOMBRE, CUERPO, PIE);
     }
 
     @Test
@@ -33,18 +39,19 @@ class NotificacionDomainTest {
         assertThat(notificacion.getId()).isNotNull();
         assertThat(notificacion.getIdEvento()).isEqualTo(ID_EVENTO);
         assertThat(notificacion.getTipo()).isEqualTo(TipoNotificacion.ASESOR_FICHA_CAMBIADO);
-        assertThat(notificacion.getDestinatario()).isEqualTo(DESTINATARIO);
-        assertThat(notificacion.getAsunto()).isEqualTo(ASUNTO);
+        assertThat(notificacion.getDestinatario().email()).isEqualTo(DESTINATARIO);
+        assertThat(notificacion.getContenido().asunto()).isEqualTo(ASUNTO);
         assertThat(notificacion.getEstado()).isEqualTo(EstadoNotificacion.PENDIENTE);
         assertThat(notificacion.getFechaCreacion()).isNotNull();
-        assertThat(notificacion.getFechaEnvio()).isNull();
+        assertThat(notificacion.getFechaEnvio()).isEqualTo(UtilFecha.VACIO);
     }
 
     @Test
     void debeLanzarDomainValidationException_cuandoElEventIdEstaEnBlanco() {
         // Act
         Throwable excepcion = catchThrowable(() -> NotificacionDomain.crear(
-                "  ", TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO));
+                "  ", TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO,
+                NOMBRE, CUERPO, PIE));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -60,7 +67,7 @@ class NotificacionDomainTest {
     void debeLanzarDomainValidationException_cuandoElTipoEsNulo() {
         // Act
         Throwable excepcion = catchThrowable(() ->
-                NotificacionDomain.crear(ID_EVENTO, null, DESTINATARIO, ASUNTO));
+                NotificacionDomain.crear(ID_EVENTO, null, DESTINATARIO, ASUNTO, NOMBRE, CUERPO, PIE));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -73,7 +80,8 @@ class NotificacionDomainTest {
     void debeLanzarDomainValidationException_cuandoElDestinatarioNoEsUnCorreo() {
         // Act
         Throwable excepcion = catchThrowable(() -> NotificacionDomain.crear(
-                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, "no-es-un-correo", ASUNTO));
+                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, "no-es-un-correo", ASUNTO,
+                NOMBRE, CUERPO, PIE));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -86,7 +94,8 @@ class NotificacionDomainTest {
     void debeLanzarDomainValidationException_cuandoElAsuntoEstaEnBlanco() {
         // Act
         Throwable excepcion = catchThrowable(() -> NotificacionDomain.crear(
-                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, "  "));
+                ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, "  ",
+                NOMBRE, CUERPO, PIE));
 
         // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
@@ -97,13 +106,13 @@ class NotificacionDomainTest {
 
     @Test
     void debeAcumularVariosErrores_cuandoFallanVariosCampos() {
-        // Act — la validación de integridad acumula, no corta en el primer error
+        // Act
         Throwable excepcion = catchThrowable(() ->
-                NotificacionDomain.crear(null, null, null, null));
+                NotificacionDomain.crear(null, null, null, null, null, null, null));
 
         // Assert
         assertThat(((DomainValidationException) excepcion).getValidationResult().getErrores())
-                .hasSize(4);
+                .hasSize(6);
     }
 
     @Test
@@ -117,7 +126,7 @@ class NotificacionDomainTest {
         // Assert
         assertThat(notificacion.getEstado()).isEqualTo(EstadoNotificacion.ENVIADA);
         assertThat(notificacion.getFechaEnvio()).isNotNull();
-        assertThat(notificacion.getDetalleError()).isNull();
+        assertThat(notificacion.getDetalleError()).isEqualTo(UtilTexto.VACIO);
     }
 
     @Test
@@ -143,7 +152,7 @@ class NotificacionDomainTest {
         // Act
         Throwable excepcion = catchThrowable(() -> notificacion.marcarFallida("otro motivo"));
 
-        // Assert — una notificación ya resuelta no vuelve a cambiar de estado
+        // Assert
         assertThat(excepcion).isInstanceOf(DomainValidationException.class);
         assertThat(((DomainValidationException) excepcion).getValidationResult().getErrores())
                 .anySatisfy(error -> assertThat(error.codigoError())
@@ -161,7 +170,7 @@ class NotificacionDomainTest {
         NotificacionDomain notificacion = NotificacionDomain.reconstruir(
                 new NotificacionDomain.DatosNotificacion(
                         id, ID_EVENTO, TipoNotificacion.ASESOR_FICHA_CAMBIADO,
-                        DESTINATARIO, ASUNTO, creacion, envio),
+                        DESTINATARIO, ASUNTO, NOMBRE, CUERPO, PIE, creacion, envio, 0, null),
                 EstadoNotificacion.ENVIADA,
                 null);
 

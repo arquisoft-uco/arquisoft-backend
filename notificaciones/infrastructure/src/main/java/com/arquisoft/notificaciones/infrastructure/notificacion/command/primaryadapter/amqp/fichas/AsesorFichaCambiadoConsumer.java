@@ -50,13 +50,14 @@ public class AsesorFichaCambiadoConsumer extends AbstractNotificacionConsumer {
                     TipoNotificacionEvento.ASESOR_FICHA_CAMBIADO.getCodigo(),
                     payload.asesorNombre(),
                     payload.asesorEmail(),
-                    Mensajes.formatear(
+                    plantilla(
                             PlantillaKey.ASUNTO_ASESOR_CAMBIADO,
                             payload.tituloProyecto()),
-                    Mensajes.formatear(
+                    plantilla(
                             PlantillaKey.CUERPO_ASESOR_CAMBIADO,
                             payload.asesorNombre(),
-                            payload.tituloProyecto()))));
+                            payload.tituloProyecto()),
+                    plantilla(PlantillaKey.PIE_GENERICO))));
         });
     }
 }

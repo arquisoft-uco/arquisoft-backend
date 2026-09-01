@@ -5,6 +5,11 @@ import com.arquisoft.notificaciones.application.notificacion.command.primaryport
 import com.arquisoft.notificaciones.application.notificacion.command.result.EnvioNotificacionResult;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.CatalogoMensajes;
+import com.arquisoft.shared.message.ClaveMensaje;
+import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
+import com.arquisoft.shared.message.prueba.CatalogoMensajesPrueba;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
 import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.MdcContextoDiagnosticoOutputAdapter;
 import com.rabbitmq.client.Channel;
@@ -24,8 +29,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,6 +44,9 @@ class AsesorFichaCambiadoConsumerTest {
     @Mock
     private Channel channel;
 
+    @Mock
+    private AppLogger logger;
+
     private AsesorFichaCambiadoConsumer adapter;
 
     @BeforeEach
@@ -44,10 +54,9 @@ class AsesorFichaCambiadoConsumerTest {
         adapter = new AsesorFichaCambiadoConsumer(
                 enviarNotificacionInteractor,
                 new ObjectMapper(),
-                Mockito.mock(AppLogger.class),
+                logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
 
-        // El consumidor hace switch exhaustivo sobre el resultado para elegir el log de cierre.
         lenient().when(enviarNotificacionInteractor.ejecutar(any()))
                 .thenReturn(new EnvioNotificacionResult.Enviada("evt", "ana.gomez@soyuco.edu.co"));
     }
@@ -96,7 +105,7 @@ class AsesorFichaCambiadoConsumerTest {
         // Act
         adapter.onAsesorFichaCambiado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
 
-        // Assert — los textos salen del bundle, no de literales en el adapter
+        // Assert
         ArgumentCaptor<EnviarNotificacionCommand> captor =
                 ArgumentCaptor.forClass(EnviarNotificacionCommand.class);
         verify(enviarNotificacionInteractor).ejecutar(captor.capture());
@@ -105,6 +114,7 @@ class AsesorFichaCambiadoConsumerTest {
         assertThat(captor.getValue().cuerpo())
                 .contains("Ana Gomez")
                 .contains("Sistema de gestión");
+        assertThat(captor.getValue().pie()).isNotEmpty();
     }
 
     @Test
@@ -118,7 +128,7 @@ class AsesorFichaCambiadoConsumerTest {
 
     @Test
     void debeEnviarNackSinReencolar_cuandoElInteractorFalla() throws Exception {
-        // Arrange — requeue=false manda el mensaje a la DLX en lugar de reintentarlo en bucle
+        // Arrange
         doThrow(new RuntimeException("fallo al notificar"))
                 .when(enviarNotificacionInteractor).ejecutar(any());
 
@@ -127,5 +137,70 @@ class AsesorFichaCambiadoConsumerTest {
 
         // Assert
         verify(channel).basicNack(2L, false, false);
+    }
+
+    @Test
+    void debeReencolarSinNotificar_cuandoLaPlantillaNoTieneTexto() throws Exception {
+        // Arrange
+        var sinPlantillas = new CatalogoMensajes() {
+            @Override
+            public String obtener(ClaveMensaje clave) {
+                return CatalogoMensajesPrueba.porDefecto().obtener(clave);
+            }
+
+            @Override
+            public String formatear(ClaveMensaje clave, Object... args) {
+                return CatalogoMensajesPrueba.porDefecto().formatear(clave, args);
+            }
+
+            @Override
+            public boolean contiene(ClaveMensaje clave) {
+                return !(clave instanceof PlantillaKey);
+            }
+        };
+        Mensajes.instalar(sinPlantillas);
+
+        try {
+            // Act
+            adapter.onAsesorFichaCambiado(mensajeCon(UUID.randomUUID().toString(), 3L), channel);
+
+            // Assert
+            verify(enviarNotificacionInteractor, never()).ejecutar(any());
+            verify(channel).basicNack(3L, false, true);
+        } finally {
+            Mensajes.instalar(CatalogoMensajesPrueba.porDefecto());
+        }
+    }
+
+    @Test
+    void debeEnmascararElCorreo_cuandoElEventoYaFueProcesado() throws Exception {
+        // Arrange
+        String idEvento = UUID.randomUUID().toString();
+        Mockito.reset(enviarNotificacionInteractor);
+        Mockito.when(enviarNotificacionInteractor.ejecutar(any()))
+                .thenReturn(new EnvioNotificacionResult.Duplicada(idEvento, "ana.gomez@soyuco.edu.co"));
+
+        // Act
+        adapter.onAsesorFichaCambiado(mensajeCon(idEvento, 3L), channel);
+
+        // Assert
+        verify(logger).info(any(String.class), eq(idEvento), eq("a***@soyuco.edu.co"));
+        verify(channel).basicAck(3L, false);
+    }
+
+    @Test
+    void debeEnmascararElCorreo_cuandoElEnvioFalla() throws Exception {
+        // Arrange
+        String idEvento = UUID.randomUUID().toString();
+        Mockito.reset(enviarNotificacionInteractor);
+        Mockito.when(enviarNotificacionInteractor.ejecutar(any()))
+                .thenReturn(new EnvioNotificacionResult.Fallida(
+                        idEvento, "ana.gomez@soyuco.edu.co", "smtp caido"));
+
+        // Act
+        adapter.onAsesorFichaCambiado(mensajeCon(idEvento, 4L), channel);
+
+        // Assert
+        verify(logger).warn(any(String.class), eq(idEvento), eq("a***@soyuco.edu.co"));
     }
 }

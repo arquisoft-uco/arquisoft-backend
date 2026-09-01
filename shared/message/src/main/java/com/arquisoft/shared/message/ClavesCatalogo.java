@@ -30,8 +30,6 @@ import com.arquisoft.shared.message.key.solicitudes.TipoSolicitudKey;
 import com.arquisoft.shared.message.key.solicitudes.UsuarioReplicaKey;
 import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
-import com.arquisoft.shared.message.key.seguridad.CredencialesKey;
-import com.arquisoft.shared.message.key.seguridad.IdentidadKey;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
 import com.arquisoft.shared.message.key.seguridad.RolKey;
@@ -99,8 +97,6 @@ public final class ClavesCatalogo {
             PlantillaKey.class,
             AutenticacionKey.class,
             ConfiguracionKey.class,
-            CredencialesKey.class,
-            IdentidadKey.class,
             IniciarSesionKey.class,
             LimiteSolicitudesKey.class,
             RolKey.class,

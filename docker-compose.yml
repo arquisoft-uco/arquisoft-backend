@@ -85,16 +85,21 @@ services:
   # Bajo perfil 'mantenimiento' a propósito — 'docker compose up' NO debe borrar nada por su
   # cuenta. Se invoca a mano:  docker compose --profile mantenimiento up catalogo-podador
   # Para ver qué borraría sin borrarlo, añadir DRY_RUN=1 al environment.
+  #
+  # Los datos de conexión son sobreescribibles: por defecto apunta al servicio 'redis' de este
+  # compose, pero contra un Redis que ya esté arriba fuera de él hay que pasar REDIS_HOST
+  # (host.docker.internal desde el contenedor) o el script podaría la instancia equivocada.
   catalogo-podador:
     image: redis:7-alpine
     container_name: arquisoft-catalogo-podador
     restart: "no"
     profiles: ["mantenimiento"]
     environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: default123
+      REDIS_HOST: "${REDIS_HOST:-redis}"
+      REDIS_PORT: "${REDIS_PORT:-6379}"
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-default123}"
       DRY_RUN: "${DRY_RUN:-0}"
+      PODA_TOTAL: "${PODA_TOTAL:-0}"
     volumes:
       - ./catalogo:/catalogo:ro
     command: ["sh", "/catalogo/podar.sh"]

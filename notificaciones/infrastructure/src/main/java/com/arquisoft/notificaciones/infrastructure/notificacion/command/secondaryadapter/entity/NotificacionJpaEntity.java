@@ -36,6 +36,15 @@ public class NotificacionJpaEntity {
     @Column(name = "asunto", nullable = false, length = 200)
     private String asunto;
 
+    @Column(name = "destinatario_nombre", nullable = false, length = 100)
+    private String destinatarioNombre;
+
+    @Column(name = "cuerpo", nullable = false)
+    private String cuerpo;
+
+    @Column(name = "pie", nullable = false)
+    private String pie;
+
     @Column(name = "estado", nullable = false, length = 20)
     private String estado;
 
@@ -47,4 +56,10 @@ public class NotificacionJpaEntity {
 
     @Column(name = "fecha_envio")
     private Instant fechaEnvio;
+
+    @Column(name = "intentos", nullable = false)
+    private int intentos;
+
+    @Column(name = "fecha_ultimo_intento")
+    private Instant fechaUltimoIntento;
 }

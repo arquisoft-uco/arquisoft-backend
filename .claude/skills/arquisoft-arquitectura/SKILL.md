@@ -185,6 +185,60 @@ lo suyo al construirse, así que el de arriba solo comprueba `noNulo` de cada co
 | `handler/` | El `@RestControllerAdvice` del contexto, si lo tiene — **nunca en `exception/`** | `seguridad/infrastructure/handler/SeguridadGlobalExceptionHandler.java` (solo `seguridad` tiene uno; `fichas` no) |
 | `src/main/resources/db/migration/{contexto}/` | Migraciones Flyway del contexto — subcarpeta propia obligatoria | `db/migration/fichas/V20260504181427__crear_tablas_fichas_perfil.sql` |
 
+## Quién orquesta a quién: el que llama compone, el llamado es un solo paso
+
+Un caso de uso de escritura **puede** invocar a otro. `RegistrarFichaPerfil` encadena
+`AsignarEstadoInicialFichaPerfil` y después `AsignarEstudiantesFichaPerfil`;
+`RegistrarEvaluacionFichaPerfil` encadena `AsignarEstadoInicialEvaluacion`. Lo que no puede es
+encadenar un paso **colgado de un hermano**: todos los pasos de la transacción de negocio cuelgan
+del mismo orquestador.
+
+```java
+// MAL — el estado inicial arrastra un paso que no le incumbe
+public void ejecutar(RegistroFichaPerfilDomain registro) {   // recibe el bundle entero…
+    var estadoInicial = registro.getEstadoInicial();
+    // … valida y persiste el estado …
+    asignarEstudiantesFichaPerfilUseCase.ejecutar(registro.getEstudiantes());  // ← paso ajeno
+}
+
+// BIEN — cada llamado recibe exactamente su parte
+public void ejecutar(EstadoFichaPerfilDomain estadoInicial) { ... }   // AsignarEstadoInicial
+
+// RegistrarFichaPerfilUseCaseImpl
+fichaPerfilOutputPort.registrarFicha(FichaPerfilMapper.toEntity(ficha));
+asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro.getEstadoInicial());
+asignarEstudiantesFichaPerfilUseCase.ejecutar(registro.getEstudiantes());
+eventPublisher.publish(new FichaPerfilRegistradaEvent(...));
+```
+
+**La señal es la firma.** Un caso de uso encadenado recibe **el objeto de dominio más estrecho que
+realmente lee**. Si pide el objeto de acción completo y solo usa una parte, lo pide para
+alimentar un paso siguiente: ese paso pertenece al que llama. El objeto de acción existe
+justamente para que el orquestador alcance cada pieza (`registro.getEstadoInicial()`,
+`registro.getEstudiantes()`) y entregue a cada llamado la suya.
+
+Enterrar un paso dentro de un hermano tiene dos costos concretos: el orden real de la transacción
+deja de leerse en el orquestador, y el test del paso intermedio termina verificando un
+encadenamiento que no es asunto suyo.
+
+## El `UseCase` de escritura nunca recibe un `Command`
+
+`UseCase<{Algo}Domain, R>`, siempre. El `Command` es el tipo del **primary port**: pertenece al
+interactor y muere ahí, convertido por el `{Accion}{Entidad}Mapper`.
+
+Esto vale **también cuando el comando no crea ningún agregado**.
+`ReintentarNotificacionesFallidas` es un job por lotes cuya entrada son dos números, y aun así
+nominaliza en `ReintentoNotificacionesDomain` (`domain/notificacion/`). Que no haya agregado no
+autoriza a pasar el `Command`; solo decide si el objeto de dominio es el agregado o un objeto de
+acción.
+
+La validación duplicada entre `Command` y dominio **no es redundancia**: responden a llamadores
+distintos — petición malformada → 400 (`ApplicationValidationException`), estado de dominio
+imposible → 422 (`DomainValidationException`).
+
+La excepción vive en el lado de lectura: el interactor de query pasa su `Criteria` directo al caso
+de uso, y solo declara `{Consulta}{Entidad}Query` cuando hay entrada más allá del criteria.
+
 ## Cuando un comando devuelve un objeto: `command/result/`
 
 Un comando normalmente devuelve `UUID` (el id de lo creado) o `void`, y entonces no necesita tipo
@@ -228,6 +282,30 @@ que cubre el mapper.
 Simetría que conviene tener presente: en `command/`, `primaryport/model/` es la entrada y `result/`
 la salida; en `query/`, `criteria/` es la entrada y `readmodel/` la salida.
 
+
+## Cuándo un grupo de campos se vuelve un value object
+
+Un agregado con muchos atributos no se parte por número, sino por cohesión. Extrae un `record` a
+`domain/{feature}/model/` cuando varios campos **viajan siempre juntos y no cambian tras crearse**:
+`Destinatario(nombre, email)` y `Contenido(asunto, cuerpo, pie)` en `notificaciones` redujeron
+`NotificacionDomain` de 14 campos a 11 y de siete setters privados a dos.
+
+**No extraigas el grupo de ciclo de vida.** `estado`/`detalleError`/`fechaEnvio`/`intentos` parecen
+otro value object y no lo son: las transiciones (`marcarEnviada`, `marcarFallida`,
+`prepararReintento`) los mutan. Un value object es inmutable, así que encerrarlos obligaría a
+reconstruirlo en cada transición y a que el agregado pidiera permiso para cambiar su propio estado.
+
+Forma del value object, y el detalle que se rompe fácil:
+
+- `crear(campos..., ValidationResult result)` — **recibe el `ValidationResult` del agregado**, no
+  lanza por su cuenta. Si cada VO lanzara, un payload con nombre y correo inválidos devolvería solo
+  el primer error y el `fieldErrors[]` del Notification Pattern dejaría de acumular. Cada campo
+  inválido devuelve `UtilTexto.VACIO` y sigue.
+- `reconstruir(campos...)` — normaliza (`aplicarTrim`) pero **no valida**: lo que ya está en la base
+  entra tal cual; rechazarlo al leer solo impediría corregirlo.
+- `VACIO` como centinela + `esVacio()`, igual que un agregado.
+- La factoría `crear(...)` del agregado **sigue recibiendo los campos sueltos**, no los VO ya
+  construidos: si recibiera los VO, la validación se habría ejecutado antes, fuera del agregado.
 ## El `ReadModel` nunca sale por HTTP
 
 El `Controller` de lectura mapea `ReadModel` → `{Entidad}ResponseDTO` con
@@ -321,6 +399,30 @@ adaptadores y la config a `infrastructure/…/secondaryadapter/{smtp,logging}` y
 
 **Antes de crear un `shared:*` nuevo, exige dos consumidores reales.** Y si un contexto ya sólo puede
 alcanzarse por eventos —como `notificaciones`— no va a haber un segundo: la arquitectura lo prohíbe.
+
+
+### Un record repetido no siempre es duplicación: se comparte por significado, no por forma
+
+`ContactoAsesor(nombre, email)` en `domain/asesorficha/model/` y `ContactoEstudiante(nombre, email)`
+en `domain/estudiantefichaperfil/model/` son idénticos carácter por carácter, y aun así **no deben
+fundirse en un `Contacto` de `shared:domain`**. La regla anterior aplica igual dentro de un módulo
+que ya existe: hoy cada uno tiene un solo consumidor, su propio evento.
+
+El motivo de fondo es más fuerte que el conteo. Coincidir en la forma —dos strings— no los hace el
+mismo concepto, y DRY habla del conocimiento, no de la estructura: dos records que cambian por
+razones distintas no son una duplicación. El precio del error es además asimétrico. Repetir cuesta
+tres líneas; compartir mal crea **un punto de acoplamiento dentro del payload de un evento**, así que
+añadirle un `telefono` o convertir `email` en un value object validado cambia a la vez el contrato de
+todos los contextos que lo consumen — justo lo que la mensajería existe para evitar.
+
+Reconsidéralo solo si tres features acaban con el mismo record **y cambian juntos por la misma
+razón**. Eso ya es un concepto compartido, no una forma repetida.
+
+Lo que sí es un error es que el mismo concepto viaje con **dos formas distintas** según el evento:
+`FichaPerfilRegistradaEvent` llevaba al asesor en campos planos (`asesorNombre`, `asesorEmail`)
+mientras `EstudiantesFichaPerfilAsignadosEvent` llevaba cada estudiante como record. Un destinatario
+se modela igual en todos los eventos del contexto; si no, el siguiente evento copia el que quedaba
+más a mano.
 
 ## Puertos: hablan `Entity`, nunca `Domain`
 
@@ -461,6 +563,33 @@ si ganara el directo los eventos irían al broker **saltándose el outbox**, sin
 **interfaz**, nunca una de las dos clases.
 
 
+
+### El evento se emite donde ocurre el hecho, y es uno por hecho — no por destinatario
+
+Dos preguntas distintas, y confundirlas produce dos errores diferentes.
+
+**Cuántos eventos: uno por hecho de negocio.** El evento nombra algo que ocurrió, no a quién hay que
+avisar. Partirlo por destinatario —uno "para el asesor" y otro "para los estudiantes" del mismo
+suceso— pone el reparto de correos en el productor, que es exactamente el acoplamiento que los
+eventos quitan: el día que haya que avisar también al comité cambiaría el contexto productor. El
+evento lleva **todos** los destinatarios que ese hecho afecta y `notificaciones` abanica.
+
+**Dónde se emite: en el caso de uso dueño del hecho, aunque otro lo orqueste.**
+`FichaPerfilRegistradaEvent` sale de `RegistrarFichaPerfil` y
+`EstudiantesFichaPerfilAsignadosEvent` de `AsignarEstudiantesFichaPerfil`, aunque el segundo se
+ejecute encadenado por el primero. Ponerlos juntos en el registro parecía más simple y dejaba un
+hueco real: `AsignarEstudiantesFichaPerfil` tiene controller e interactor propios, así que añadir
+estudiantes a una ficha ya existente no habría avisado a nadie — el mismo hecho notificando por un
+camino y no por el otro.
+
+**La prueba para decidir:** ¿este caso de uso se puede invocar por sí solo? Si sí, el hecho es suyo y
+el evento se emite ahí. Si el hecho solo existe como parte de otro, va con el otro. Y antes de
+partir un evento en dos, comprueba que sean de verdad **dos hechos** —"se registró la ficha" y "se
+vincularon estudiantes" lo son— y no un hecho con dos audiencias.
+
+Consecuencia obligatoria de que un evento abanique: la idempotencia de `notificaciones` es por
+`(idEvento, destinatario)` (ver `arquisoft-estandares`).
+
 ### Transición de estado ⇒ notificación
 
 Un caso de uso que **crea o cambia un estado** — un campo de catálogo (`EstadoFicha`,
@@ -469,6 +598,34 @@ conocido: `notificaciones`. Emite el evento salvo que la HU diga explícitamente
 el trabajo que el contexto `notificaciones` existe para hacer, y `AsesorFichaCambiadoEvent` →
 `AsesorFichaCambiadoConsumer` es el camino completo que se copia.
 
+
+**La excepción: un estado que es paso interno no notifica.** La regla anterior es el caso por
+defecto, no una ley. Antes de emitir, pregúntate **quién queda afectado y qué le estás contando**. Si
+el estado creado es un paso interno de un proceso —nadie fuera del equipo que lo ejecuta espera
+enterarse, y no hay desenlace que comunicar— el evento sobra, y omitirlo es una decisión, no un
+olvido.
+
+`RegistrarEvaluacionFichaPerfil` es el caso a reconocer. Crea el estado `EN_EVALUACION` de la
+evaluación de **un** representante del comité: alguien abrió su evaluación y todavía no ha decidido
+nada. Tres cosas lo descalifican como notificación:
+
+- **No es un desenlace.** `EN_EVALUACION` es literalmente "aún no hay veredicto".
+- **Se repetiría.** Varios representantes evalúan la misma ficha, cada uno con su propia
+  `EvaluacionFichaPerfil`, así que serían N correos casi idénticos sobre el mismo no-suceso.
+- **Filtra proceso interno.** Le contaría al estudiante cuántos representantes van y cuándo empezó
+  cada uno, que es mecánica del comité y no información suya.
+
+El hecho que sí incumbe al estudiante es el cambio de **`EstadoFicha`** —la máquina de estados de la
+ficha, no la de cada evaluación—, que ocurre una sola vez y vive en otro agregado. Ese es el caso de
+uso que emitirá, cuando exista.
+
+**La señal para distinguirlos:** si el mismo hecho puede ocurrir N veces en paralelo para el mismo
+sujeto, no es el hecho que se notifica — es un paso hacia otro que sí lo es, y ese otro suele vivir
+en un agregado distinto. Y si te encuentras inventando un umbral ("cuando haya tres evaluaciones,
+entonces…") para convertir N pasos en un hecho, para y comprueba que el disparo real esté modelado:
+un umbral inventado desde el código fosiliza en migraciones y contratos de evento una decisión de
+negocio que nadie tomó.
+
 El evento publicado no envía ningún correo por sí solo: sin nadie enganchado a esa routing key se
 queda en el exchange. Son **seis** piezas en dos contextos:
 
@@ -476,7 +633,7 @@ queda en el exchange. Son **seis** piezas en dos contextos:
 |---|---|---|
 | 1 | `shared:message/constant/` | constante nueva en `EventTopics.{Contexto}` con la routing key |
 | 2 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java`, `EVENT_TOPIC = EventTopics.{Contexto}.{X}` |
-| 3 | `notificaciones/infrastructure/config/` | `Queue` + `Binding` en `Notificaciones{Contexto}QueueConfig` |
+| 3 | `notificaciones/infrastructure/config/` | un `@Bean Declarables` con `ColaEvento.declarar(...)` en `Notificaciones{Contexto}QueueConfig` |
 | 4 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Payload.java`, `record` propio del adaptador — **nunca** la clase de evento del productor |
 | 5 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Consumer.java` extiende `AbstractNotificacionConsumer` — aquí se elige el texto, no en el use case |
 | 6 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
@@ -544,6 +701,134 @@ AbstractEventConsumer` posee el `AppLogger` (`protected final`) y el `registrar(
 con el `switch` exhaustivo del desenlace. La subclase solo pone su `@RabbitListener`, su log de
 entrada y su plantilla. Ventaja real: cuando aparezca un desenlace nuevo, el compilador falla en un
 sitio y no en seis.
+
+### Una cola de evento se declara con `ColaEvento`, no bean a bean
+
+Consumir un evento necesita siempre las mismas cuatro declaraciones: la cola, su cola de descarte,
+el `Binding` de esa cola contra el DLX y el `Binding` de la cola contra el exchange de eventos. No
+son opcionales — marcar `x-dead-letter-exchange` en la cola de origen **no basta**: un exchange sin
+cola enlazada descarta lo que le llega, así que un mensaje que falla se evapora sin dejar rastro
+recuperable.
+
+Escritas a mano son unas cuarenta líneas por evento, idénticas salvo el topic. `ColaEvento.declarar`
+(`shared:amqp`) las devuelve como un solo `Declarables` — el contenedor de Spring AMQP que
+`RabbitAdmin` recorre declarando todo lo que hay dentro — así que **un evento nuevo cuesta un método,
+no cuatro beans**:
+
+```java
+public static final String FICHA_REGISTRADA_QUEUE =
+        NotificacionesQueues.PREFIJO + EventTopics.Fichas.FICHA_PERFIL_REGISTRADA;
+
+@Bean
+public Declarables notificacionesFichaRegistradaDeclarables(
+        @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+        @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+    return ColaEvento.declarar(
+            FICHA_REGISTRADA_QUEUE,
+            EventTopics.Fichas.FICHA_PERFIL_REGISTRADA,
+            arquisoftEventsExchange,
+            arquisoftDeadLetterExchange);
+}
+```
+
+Eso es todo lo que hay que añadir al `*QueueConfig` para una cola nueva. **La constante del nombre se
+queda** aunque `ColaEvento` sepa componerlo: `@RabbitListener(queues = ...)` la lee como valor de
+anotación y necesita una expresión constante (JLS §9.7.1), que una llamada a método no es. No
+declares una constante `*_ROUTING_KEY` aparte — el topic ya vive en `EventTopics` y el bean lo pasa
+como argumento.
+
+El motivo de centralizarlo no es el número de líneas. El argumento `x-dead-letter-routing-key` de la
+cola de origen y la routing key del `Binding` contra el DLX **tienen que ser la misma cadena**, y si
+divergen el descarte vuelve a ser silencioso; es el mismo riesgo que `EventTopics` resuelve para la
+routing key del evento. Copiar el bloque por evento era copiar también esa oportunidad de
+equivocarse. `ColaEventoTest` fija que los cuatro elementos salgan enlazados entre sí. Las colas de
+descarte llevan `x-message-ttl` (`RabbitMQConfig.TTL_COLA_DEAD_LETTER`, 14 días) para no crecer sin
+techo.
+
+### El `nack` distingue fallo transitorio de mensaje envenenado
+
+`AbstractEventConsumer.rechazar(...)` clasifica la excepción antes de rechazar, y no hay decisión que
+tomar en el consumidor concreto:
+
+| Fallo | Qué hace |
+|---|---|
+| Transitorio, primera entrega | `basicNack(requeue=true)` — un reintento |
+| Transitorio, ya reentregado | → DLQ |
+| Envenenado | → DLQ, sin reintentar |
+
+Transitorio es `InfrastructureException` o `DataAccessException` **en cualquier punto de la cadena de
+causas** (llegan casi siempre envueltas). Todo lo demás —payload que no deserializa, `Command.crear`
+que rechaza, `DomainException`— es envenenado: fallará igual en el siguiente intento y reencolarlo
+solo bloquea la cola. El límite de un reintento sale de `isRedelivered()`, que ya trae el mensaje: no
+hace falta contador propio ni republicar.
+
+**El reintento es inmediato, sin backoff.** Sirve para un pico de contención; una base caída dos
+minutos agota el intento y acaba en el DLQ —pero ahí *queda*, que es la diferencia. Un backoff real
+es el patrón de cola de reintento con TTL, y eso es topología nueva: no se añade sin evidencia.
+
+### Un efecto externo que puede fallar se reintenta desde la base, no desde la cola
+
+Cuando el caso de uso llama a un tercero que puede rechazar (SMTP, un proveedor externo), el reintento
+**no** puede vivir en el consumidor, por dos razones que se refuerzan: con `prefetch: 1` bloquearía el
+listener mientras el proveedor está caído, y reencolar el evento no reenvía nada porque la
+idempotencia por `idEvento` lo daría por `Duplicada`. El fallo se guarda como estado y lo reintenta un
+`@Scheduled`, que abre su propio `AlcanceTraza` con `SolicitudTraza.paraProgramado()`.
+
+**Consecuencia de diseño que se olvida siempre: para reintentar hay que persistir lo que se envió.**
+Guardar solo el resultado deja la fila `FALLIDA` sin nada con qué reconstruir el mensaje. `notificacion`
+guarda `destinatario_nombre` y `cuerpo` —el texto ya renderizado— además de `intentos` y
+`fecha_ultimo_intento` para acotar los ciclos. Re-renderizar la plantilla no es alternativa: sus
+parámetros no quedan en ninguna columna.
+
+Referencia completa: `ReintentarNotificacionesFallidasUseCaseImpl` + `ReintentoNotificacionesConfig`.
+
+### Replicación entre contextos: dueño único, espejo y lápida
+
+Una entidad que "existe en varios contextos" tiene **un dueño** y los demás guardan una **tabla
+espejo** con lo poco que necesitan (`fichas/application/usuario/RegistrarUsuarioUseCase` alimentado
+por `UsuarioCreadoConsumer`). No es un registro replicado en N sitios que pueda fallar a medias: es un
+hecho del dueño que los demás replican.
+
+El test que decide el diseño es **¿puede el contexto destino rechazar por regla de negocio?**
+
+| Puede rechazar | Herramienta |
+|---|---|
+| No — solo necesita enterarse | Replicación eventual: outbox + reintento + idempotencia |
+| Sí — tiene reglas propias que vetan | Saga con compensación |
+
+Todos los flujos entre contextos que existen hoy caen en la primera fila.
+
+**Lo que exige el espejo cuando llegue su HU** (decisión ya tomada, no volver a discutirla):
+
+1. **`ocurridoEn` en el payload y en la tabla espejo.** Ya viaja en el JSON (`DomainEvent` lo asigna) y
+   los payloads lo declaran. El espejo guarda el `ocurrido_en` del último evento aplicado y **descarta
+   todo evento más viejo**: última escritura gana por tiempo del hecho, no por orden de llegada.
+2. **La baja es lógica, nunca `DELETE`.** Un estado (`ANULADO`) con su fecha. Sin fila borrada no hay
+   nada que resucitar, y en un sistema académico saber que alguien fue dado de baja importa más que
+   ahorrar la fila.
+3. **Lápida.** Un borrado que llega para una entidad que el espejo nunca recibió **inserta el registro
+   ya marcado como anulado**. Si no, el `UsuarioCreado` atrasado entra después y revive a un usuario
+   eliminado — la resurrección. Corolario: borrar algo que no está es un **no-op exitoso**, nunca una
+   excepción (una excepción manda al DLQ un borrado que en realidad ya se cumplió).
+4. **Nada de borrado en cascada entre contextos.** Al borrar, `fichas` sí puede vetar (una ficha con
+   evaluaciones deja un histórico huérfano): eso es una regla del dueño, no un `DELETE` propagado.
+
+**El orden no está garantizado, y no por el DLQ.** `application.yml` declara `concurrency: 5` sobre
+cada cola: RabbitMQ mantiene FIFO hacia *un* consumidor, pero con cinco compitiendo, dos eventos de la
+misma entidad pueden procesarse a la vez. Por eso la solución es la versión por `ocurridoEn` y no
+confiar en el orden de la cola.
+
+### Saga: solo cuando el destino puede rechazar
+
+Una saga parte la operación en transacciones locales, cada una con su **compensación** — no se rebobina,
+se emite un hecho nuevo que contrarresta al anterior (no se "des-cobra": se reembolsa). Solo hace falta
+cuando un paso posterior puede **rechazar por negocio**; si el fallo es técnico, se reintenta, y
+compensar sería borrar al usuario del dueño porque a Postgres le dio hipo en otro contexto.
+
+No hay ninguna saga en el repo hoy y la palabra no aparece en ningún ADR. Antes de proponer una,
+aplicar el test de arriba. Lo que **nunca** es opción es 2PC/`XA` entre las nueve bases: bloquea
+recursos entre contextos y reintroduce el acoplamiento que los eventos eliminan.
+
 ## Aislamiento de persistencia: una base de datos por contexto
 
 No son schemas dentro de una base común: `init-db.sql` crea una **base por bounded context**

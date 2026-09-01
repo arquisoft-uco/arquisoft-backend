@@ -18,5 +18,7 @@ public final class NotificacionesFields {
         public static final String ESTADO = "estado";
         public static final String DESTINATARIO_NOMBRE = "destinatarioNombre";
         public static final String CUERPO = "cuerpo";
+        public static final String MAX_INTENTOS = "maxIntentos";
+        public static final String LIMITE = "limite";
     }
 }
