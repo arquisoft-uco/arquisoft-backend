@@ -1,0 +1,2 @@
+ALTER TABLE notificacion
+    ADD COLUMN pie TEXT NOT NULL DEFAULT '';

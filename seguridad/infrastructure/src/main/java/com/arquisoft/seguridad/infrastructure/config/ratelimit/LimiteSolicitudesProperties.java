@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 public record LimiteSolicitudesProperties(
         boolean enabled,
         @Min(value = 1, message = "requests-per-minute debe ser >= 1") int requestsPerMinute,
-        @Min(value = 1, message = "login-requests-per-minute debe ser >= 1") int loginRequestsPerMinute
+        @Min(value = 1, message = "login-requests-per-minute debe ser >= 1") int loginRequestsPerMinute,
+        @Min(value = 1, message = "max-tracked-ips debe ser >= 1") int maxTrackedIps
 ) {
 }

@@ -1,6 +1,7 @@
 package com.arquisoft.usuarios.application.usuario.command.primaryport.interactor.impl;
 
 import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor.CrearUsuarioInteractor;
+import com.arquisoft.usuarios.application.usuario.command.primaryport.mapper.CrearUsuarioMapper;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.model.CrearUsuarioCommand;
 import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUseCase;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,6 @@ public class CrearUsuarioInteractorImpl implements CrearUsuarioInteractor {
     @Override
     @Transactional(transactionManager = "usuariosTransactionManager")
     public UUID ejecutar(CrearUsuarioCommand command) {
-        return crearUsuarioUseCase.ejecutar(command);
+        return crearUsuarioUseCase.ejecutar(CrearUsuarioMapper.toDomain(command));
     }
 }

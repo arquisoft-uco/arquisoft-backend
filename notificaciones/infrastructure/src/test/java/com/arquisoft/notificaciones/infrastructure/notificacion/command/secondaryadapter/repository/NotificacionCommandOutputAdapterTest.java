@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
+import com.arquisoft.shared.util.UtilFecha;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,6 +27,9 @@ class NotificacionCommandOutputAdapterTest {
 
     private static final String DESTINATARIO = "ana.gomez@soyuco.edu.co";
     private static final String ASUNTO = "Se te asignó la ficha";
+    private static final String NOMBRE = "Ana Gomez";
+    private static final String CUERPO = "Hola Ana, ahora eres la asesora.";
+    private static final String PIE = "Correo automatico, no respondas.";
 
     @Autowired
     private NotificacionCommandRepository repository;
@@ -39,7 +43,8 @@ class NotificacionCommandOutputAdapterTest {
 
     private NotificacionDomain notificacionCon(String idEvento) {
         return NotificacionDomain.crear(
-                idEvento, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO);
+                idEvento, TipoNotificacion.ASESOR_FICHA_CAMBIADO, DESTINATARIO, ASUNTO,
+                NOMBRE, CUERPO, PIE);
     }
 
     @Test
@@ -79,18 +84,79 @@ class NotificacionCommandOutputAdapterTest {
     }
 
     @Test
-    void debeReportarTrue_cuandoElEventoYaTieneNotificacion() {
+    void debeReportarTrue_cuandoElEventoYaTieneNotificacionParaEseDestinatario() {
         // Arrange
         String idEvento = UUID.randomUUID().toString();
         adapter.guardar(NotificacionMapper.toEntity(notificacionCon(idEvento)));
 
         // Act & Assert
-        assertThat(adapter.existePorIdEvento(idEvento)).isTrue();
+        assertThat(adapter.existePorIdEventoYDestinatario(idEvento, DESTINATARIO)).isTrue();
+    }
+
+    @Test
+    void debeReportarFalse_cuandoElMismoEventoNoHaLlegadoAEseDestinatario() {
+        // Arrange
+        String idEvento = UUID.randomUUID().toString();
+        adapter.guardar(NotificacionMapper.toEntity(notificacionCon(idEvento)));
+
+        // Act & Assert
+        assertThat(adapter.existePorIdEventoYDestinatario(idEvento, "otro@soyuco.edu.co")).isFalse();
     }
 
     @Test
     void debeReportarFalse_cuandoElEventoNoTieneNotificacion() {
         // Act & Assert
-        assertThat(adapter.existePorIdEvento(UUID.randomUUID().toString())).isFalse();
+        assertThat(adapter.existePorIdEventoYDestinatario(
+                UUID.randomUUID().toString(), DESTINATARIO)).isFalse();
+    }
+
+    @Test
+    void debeDevolverSoloLasFallidasBajoElMaximoDeIntentos_cuandoSeBuscanReintentables() {
+        // Arrange
+        var fallida = notificacionCon(UUID.randomUUID().toString());
+        fallida.marcarFallida("SMTP caido");
+        adapter.guardar(NotificacionMapper.toEntity(fallida));
+
+        var enviada = notificacionCon(UUID.randomUUID().toString());
+        enviada.marcarEnviada();
+        adapter.guardar(NotificacionMapper.toEntity(enviada));
+
+        // Act
+        var reintentables = adapter.buscarFallidasReintentables(5, 50);
+
+        // Assert
+        assertThat(reintentables).hasSize(1);
+        assertThat(reintentables.getFirst().idEvento()).isEqualTo(fallida.getIdEvento());
+        assertThat(reintentables.getFirst().cuerpo()).isEqualTo(CUERPO);
+    }
+
+    @Test
+    void debeDejarNulasLasColumnasOpcionales_cuandoLaNotificacionSiguePendiente() {
+        // Arrange
+        NotificacionDomain notificacion = notificacionCon(UUID.randomUUID().toString());
+
+        // Act
+        adapter.guardar(NotificacionMapper.toEntity(notificacion));
+
+        // Assert
+        NotificacionJpaEntity guardada = repository.findById(notificacion.getId()).orElseThrow();
+        assertThat(guardada.getDetalleError()).isNull();
+        assertThat(guardada.getFechaEnvio()).isNull();
+        assertThat(guardada.getFechaUltimoIntento()).isNull();
+    }
+
+    @Test
+    void debeDevolverElCentinela_cuandoSeLeeUnaColumnaNula() {
+        // Arrange
+        NotificacionDomain notificacion = notificacionCon(UUID.randomUUID().toString());
+        notificacion.marcarFallida("servidor SMTP no disponible");
+        adapter.guardar(NotificacionMapper.toEntity(notificacion));
+
+        // Act
+        var leida = adapter.buscarFallidasReintentables(5, 50).getFirst();
+
+        // Assert
+        assertThat(leida.fechaUltimoIntento()).isEqualTo(UtilFecha.VACIO);
+        assertThat(leida.detalleError()).isEqualTo("servidor SMTP no disponible");
     }
 }
