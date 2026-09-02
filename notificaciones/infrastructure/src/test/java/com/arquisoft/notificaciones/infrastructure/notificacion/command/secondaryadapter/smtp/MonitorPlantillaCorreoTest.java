@@ -109,4 +109,17 @@ class MonitorPlantillaCorreoTest {
         // Assert
         verify(alcance).close();
     }
+
+    // Si abrir() o close() del alcance de traza lanzan, la excepcion no puede escapar de refrescar():
+    // Spring no reprograma una @Scheduled que lanza y la plantilla quedaria congelada hasta el
+    // proximo despliegue — justo el fallo que este monitor existe para evitar.
+    @Test
+    void debeNoPropagar_cuandoFallaLaAperturaDelAlcanceDeTraza() {
+        // Arrange
+        when(gestorTraza.abrir(any())).thenThrow(new IllegalStateException("mdc corrupto"));
+
+        // Act & Assert
+        assertThatCode(() -> monitor.refrescar()).doesNotThrowAnyException();
+        verify(logger).warn(anyString(), any(Object[].class));
+    }
 }

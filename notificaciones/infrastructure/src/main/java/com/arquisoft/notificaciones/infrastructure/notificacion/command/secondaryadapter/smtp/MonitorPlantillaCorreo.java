@@ -28,6 +28,13 @@ public class MonitorPlantillaCorreo {
     public void refrescar() {
         try (var alcance = gestorTraza.abrir(SolicitudTraza.paraProgramado())) {
             registrarIntento();
+        } catch (RuntimeException e) {
+            // Red de seguridad: registrarIntento ya captura el fallo de recarga con la traza
+            // abierta. Esto solo salta si abrir() o close() del alcance fallan, y aun asi la tarea
+            // no debe morir — Spring no reprograma una @Scheduled que lanza y la plantilla
+            // quedaria congelada en la version del arranque hasta el proximo despliegue.
+            logger.warn(Mensajes.obtener(EnvioNotificacionKey.LOG_PLANTILLA_NO_ACTUALIZADA),
+                    properties.getPlantilla(), e.getMessage());
         }
     }
 

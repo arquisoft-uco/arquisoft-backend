@@ -100,4 +100,36 @@ class PlantillaCorreoRenderTest {
                 .isInstanceOf(PlantillaCorreoNoDisponibleException.class)
                 .hasMessageContaining("{{cuerpo}}");
     }
+
+    // El titulo del proyecto lo escribe un usuario; nada le impide llamarlo "{{cuerpo}}". escapar()
+    // no toca las llaves, asi que con replace() encadenado ese literal insertado en el titulo lo
+    // pisaba la sustitucion del cuerpo.
+    @Test
+    void debeSustituirCadaMarcadorUnaSolaVez_cuandoUnValorContieneOtroMarcador() {
+        // Act
+        String html = render.envolver(
+                mensajeCon("Ficha {{cuerpo}} y {{pie}}", "TEXTO_CUERPO", "TEXTO_PIE"));
+
+        // Assert
+        assertThat(html).contains("Ficha {{cuerpo}} y {{pie}}");
+        assertThat(apariciones(html, "TEXTO_CUERPO")).isEqualTo(1);
+        assertThat(apariciones(html, "TEXTO_PIE")).isEqualTo(1);
+    }
+
+    // $ y \ son metacaracteres en la cadena de reemplazo de Matcher#appendReplacement; el valor
+    // tiene que salir literal, como salia con String#replace.
+    @Test
+    void debeConservarLosSignosDeReemplazoDeRegex_cuandoUnValorLosTrae() {
+        // Act
+        String html = render.envolver(
+                mensajeCon("Presupuesto $1000 y $2000", "Ruta C:\\datos $x", "Pie"));
+
+        // Assert
+        assertThat(html).contains("Presupuesto $1000 y $2000");
+        assertThat(html).contains("Ruta C:\\datos $x");
+    }
+
+    private static int apariciones(String texto, String fragmento) {
+        return texto.split(java.util.regex.Pattern.quote(fragmento), -1).length - 1;
+    }
 }

@@ -3,6 +3,8 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.seconda
 import com.arquisoft.notificaciones.infrastructure.notificacion.exception.PlantillaCorreoNoDisponibleException;
 
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public final class HuecosPlantillaCorreo {
 
@@ -11,6 +13,11 @@ public final class HuecosPlantillaCorreo {
     public static final String PIE = "{{pie}}";
 
     private static final List<String> TODOS = List.of(TITULO, CUERPO, PIE);
+
+    // Alternacion de los tres marcadores literales, para sustituirlos en una sola pasada sin volver
+    // a inspeccionar el texto ya insertado. Se deriva de TODOS para no repetir la lista.
+    static final Pattern MARCADORES = Pattern.compile(
+            TODOS.stream().map(Pattern::quote).collect(Collectors.joining("|")));
 
     private HuecosPlantillaCorreo() {}
 
