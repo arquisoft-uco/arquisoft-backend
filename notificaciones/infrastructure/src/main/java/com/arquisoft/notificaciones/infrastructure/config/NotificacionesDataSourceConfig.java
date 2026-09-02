@@ -18,12 +18,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 
-/**
- * DataSource, EntityManagerFactory y Flyway propios del contexto notificaciones.
- *
- * <p>Ningun bean se marca {@code @Primary}: ese lugar lo ocupa {@code usuariosTransactionManager}
- * y duplicarlo rompe el arranque.
- */
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(

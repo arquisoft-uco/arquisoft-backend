@@ -13,6 +13,7 @@ import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantesNoVinc
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl.EstudiantesNoVinculadosRuleImpl;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantesSinDuplicadosRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl.EstudiantesSinDuplicadosRuleImpl;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.model.ExistenciaFichaPerfil;
 import com.arquisoft.fichas.domain.fichaperfil.rules.FichaPerfilExisteRule;
 import com.arquisoft.fichas.domain.fichaperfil.rules.impl.FichaPerfilExisteRuleImpl;
@@ -39,12 +40,13 @@ public class AsignarEstudiantesFichaPerfilValidatorImpl implements AsignarEstudi
     }
 
     @Override
-    public void validar(AgregacionEstudiantesFichaPerfilDomain entrada, boolean fichaExiste,
+    public void validar(AgregacionEstudiantesFichaPerfilDomain entrada, FichaPerfilDomain ficha,
                         List<UUID> estudiantesExistentes, List<UUID> yaVinculados, long vinculadosActuales) {
 
         estudiantesSinDuplicadosRule.validar(entrada.getEstudiantes());
 
-        fichaPerfilExisteRule.validar(new ExistenciaFichaPerfil(entrada.getFichaPerfil(), fichaExiste));
+        fichaPerfilExisteRule.validar(
+                new ExistenciaFichaPerfil(entrada.getFichaPerfil(), !ficha.esVacio()));
         estudiantesExistenRule.validar(
                 new ExistenciaEstudiantes(entrada.getEstudiantes(), estudiantesExistentes));
         estudiantesNoVinculadosRule.validar(new VinculosEstudiantesFicha(yaVinculados));

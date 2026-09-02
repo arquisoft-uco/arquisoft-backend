@@ -119,7 +119,7 @@ sale y el fallo es silencioso (el mensaje se queda en el exchange, sin cola enga
 
 | Pieza | Dónde |
 |---|---|
-| `Queue` + `Binding` con la routing key igual al `EVENT_TOPIC` del productor | `notificaciones/infrastructure/config/Notificaciones{Contexto}QueueConfig` |
+| `@Bean Declarables` con `ColaEvento.declarar(...)`, routing key igual al `EVENT_TOPIC` del productor | `notificaciones/infrastructure/config/Notificaciones{Contexto}QueueConfig` |
 | `{Evento}Payload` — `record` local del adaptador, nunca la clase del productor | `notificaciones/.../primaryadapter/amqp/` |
 | `{Evento}Consumer` extiende `AbstractEventConsumer`, arma el texto con `Mensajes.formatear` | `notificaciones/.../primaryadapter/amqp/` |
 | Constante nueva en `TipoNotificacion` (sin migración: la columna es `VARCHAR`) | `notificaciones/domain/notificacion/model/` |
@@ -134,6 +134,16 @@ revisa si la sección 4 escribió la razón. Con razón explícita es una decisi
 respeta. Sin razón, repórtalo como advertencia: probablemente nadie preguntó si ese cambio debía
 notificar. Nunca lo conviertas en bloqueante ni exijas implementar el evento — eso es del plan, no
 de la validación.
+
+
+Hay además una familia de casos donde el evento ausente **no es ni siquiera una advertencia**: el
+estado creado es un paso interno del proceso, sin desenlace que comunicar y sin audiencia fuera de
+quien lo ejecuta. `RegistrarEvaluacionFichaPerfil` es el ejemplo — crea `EN_EVALUACION` para la
+evaluación de un solo representante del comité; notificarlo daría N correos por ficha sobre un
+no-suceso y filtraría la mecánica interna del comité. Reconócelos por la señal: **si el mismo hecho
+puede ocurrir N veces en paralelo para el mismo sujeto, el hecho notificable es otro y vive en otro
+agregado** (aquí, el cambio de `EstadoFicha`). La razón puede estar en el mensaje del commit y no en
+un plan cuando el cambio no vino de una HU; búscala ahí antes de reportar.
 
 ### Nivel 2.3 — Entidad de dominio
 
@@ -219,6 +229,9 @@ excepción o mapear a `Entity`.
 | Check | Sev |
 |---|:---:|
 | `Interactor` dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` — qualifier explícito siempre (`usuariosTransactionManager` es `@Primary` y enlaza en silencio si se omite) | ❌ |
+| `UseCase` de escritura cuya firma recibe el `Command` en vez de un objeto de dominio (`UseCase<{Algo}Domain, R>`). Vale también sin agregado: un job por lotes nominaliza igual (`ReintentoNotificacionesDomain`). El `Criteria` del lado query **sí** viaja directo | ❌ |
+| Un `UseCase` encadenado invoca a un tercero que no es parte del hecho que él representa — todos los pasos cuelgan del orquestador, no de un hermano (`RegistrarFichaPerfil` llama a `AsignarEstadoInicial` **y** a `AsignarEstudiantes`) | ❌ |
+| Un `UseCase` encadenado recibe el objeto de acción completo y solo lee una parte — señal de que lo pide para alimentar un paso siguiente que le corresponde al que llama. Debe recibir lo más estrecho que lee (`EstadoFichaPerfilDomain`, no `RegistroFichaPerfilDomain`) | ⚠️ |
 | `UseCase` implementa el `Interactor` (dos beans para el mismo puerto → ambigüedad de inyección) | ❌ |
 | `@Service` en vez de `@Component` | ❌ |
 | `Validator` inyecta un `OutputPort`/`Finder`, recibe algo por `@RequiredArgsConstructor`, o contiene un `if` (debe ser puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`) | ❌ |
@@ -373,6 +386,45 @@ que en `RegistrarFichaPerfilControllerTest`. `@MockBean` en vez de `@MockitoBean
 `*Command`, `*ReadModel`, `*Application`, `*Entity` y `config/**` — **`*Domain` no está
 excluido**, así que un agregado sin tests hunde el porcentaje del módulo. No reportes como
 "excluido" algo que no está en esa lista.
+
+
+**Cola de evento mal declarada (bloqueante).** Toda cola de evento se declara con un `@Bean
+Declarables` que devuelve `ColaEvento.declarar(...)`: la cola, su `.dead` y los dos bindings salen
+juntos. Un `*QueueConfig` que escriba los cuatro beans a mano —o que declare la cola de entrada sin
+su `.dead` y el `Binding` contra `arquisoftDeadLetterExchange`— deja los mensajes fallidos
+descartándose en silencio si el `x-dead-letter-routing-key` y el binding divergen, que es
+exactamente lo que `ColaEvento` existe para impedir. Literales de cola, routing key o argumentos
+AMQP escritos a mano son bloqueantes — van en `EventTopics`, `{Contexto}Queues` y `RabbitMQConfig`.
+La constante del nombre de cola sí se queda (`@RabbitListener` la exige constante); una
+`*_ROUTING_KEY` aparte ya no tiene lector y sobra.
+
+
+**Payload sin `ocurridoEn` (bloqueante).** Todo `{Evento}Payload` declara `idEvento` y `ocurridoEn`.
+Ambos viajan siempre en el JSON porque `DomainEvent` los asigna; omitirlos del `record` los descarta
+en silencio y deja al consumidor sin forma de ordenar eventos que lleguen desordenados. Su
+`{Evento}PayloadTest` debe usar `new RabbitMQConfig().rabbitObjectMapper()` — un `ObjectMapper`
+construido a mano en el test es ⚠️ menor pero se reporta: puede pasar y fallar en el broker.
+
+**`try/catch` en `application` alrededor de un puerto (bloqueante).** Si el caso de uso captura para
+seguir, el fallo era un valor y no una excepción: `sealed interface` de resultado. Revisa también que
+no se haya añadido una excepción nueva para algo que el caso de uso persiste como estado.
+
+**Reintento dentro del consumidor AMQP (bloqueante).** Un `EnvioOutputPort` reintentado en bucle
+dentro del `handle()` bloquea el listener con `prefetch: 1`, y reencolar el evento no reenvía nada
+porque la idempotencia por `idEvento` lo da por duplicado. El reintento sale de la base con un
+`@Scheduled` que abre su propio `AlcanceTraza`. Si hay reintento, comprueba que la migración persista
+**el mensaje enviado** y no solo el resultado: sin eso el job no tiene con qué reconstruirlo.
+
+**Espejo de enum incompleto (bloqueante).** Un enum espejo en infraestructura
+(`{Enum}Evento`/`{Enum}Persistencia`) que declara solo la constante usada hoy no detecta la deriva que
+justifica su existencia: tiene que declarar **todas** las del enum de dominio y tener su test de las
+dos direcciones. Un literal suelto de estado o tipo en un adapter, en vez del espejo, también es
+bloqueante.
+
+**Borrado en cascada o `DELETE` sobre una tabla espejo (bloqueante).** La baja de una entidad
+replicada es lógica (estado `ANULADO` con fecha) y el borrado que llega antes que el alta inserta la
+lápida. Un consumidor de borrado que lanza excepción cuando la fila no existe es bloqueante: manda al
+DLQ un borrado que ya estaba cumplido. Ver `arquisoft-arquitectura` → *Replicación entre contextos*.
 
 ## FASE 3 — Estado de tests (mental)
 

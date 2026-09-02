@@ -12,4 +12,6 @@ public class NotificacionProperties {
     private String remitenteEmail = "no-reply@arquisoft.local";
 
     private String remitenteNombre = "Arquisoft";
+
+    private String plantilla = "classpath:plantillas/correo-base.html";
 }

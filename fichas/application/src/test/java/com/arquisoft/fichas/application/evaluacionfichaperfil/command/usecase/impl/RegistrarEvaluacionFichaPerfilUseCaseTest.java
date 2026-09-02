@@ -4,7 +4,7 @@ import com.arquisoft.fichas.application.evaluacionfichaperfil.command.finder.Eva
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.validator.RegistrarEvaluacionFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.representantecomite.command.finder.RepresentanteComiteExisteFinder;
-import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryport.EstadoEvaluacionFichaOutputPort;
+import com.arquisoft.fichas.application.estadoevaluacionficha.command.usecase.AsignarEstadoInicialEvaluacionUseCase;
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.EvaluacionFichaPerfilDomain;
 import com.arquisoft.fichas.domain.evaluacionfichaperfil.exception.EvaluacionFichaPerfilDuplicadaException;
@@ -40,7 +40,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
     private EvaluacionFichaPerfilOutputPort evaluacionFichaPerfilOutputPort;
 
     @Mock
-    private EstadoEvaluacionFichaOutputPort estadoEvaluacionFichaOutputPort;
+    private AsignarEstadoInicialEvaluacionUseCase asignarEstadoInicialEvaluacionUseCase;
 
     @Mock
     private FichaPerfilExisteFinder fichaPerfilExisteFinder;
@@ -74,7 +74,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         // Assert
         assertThat(resultado).isEqualTo(evaluacion.getId());
         verify(evaluacionFichaPerfilOutputPort, times(1)).registrarEvaluacion(entidadDe(evaluacion));
-        verify(estadoEvaluacionFichaOutputPort, times(1)).registrarEstadoInicial(any());
+        verify(asignarEstadoInicialEvaluacionUseCase, times(1)).ejecutar(evaluacion);
     }
 
     @Test
@@ -154,7 +154,7 @@ class RegistrarEvaluacionFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> registrarEvaluacionFichaPerfilUseCase.ejecutar(evaluacion))
                 .isInstanceOf(InfrastructureException.class);
 
-        verify(estadoEvaluacionFichaOutputPort, never()).registrarEstadoInicial(any());
+        verify(asignarEstadoInicialEvaluacionUseCase, never()).ejecutar(any());
     }
 
     private void stubConsultas(EvaluacionFichaPerfilDomain evaluacion, boolean fichaExiste,

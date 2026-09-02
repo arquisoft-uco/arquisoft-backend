@@ -44,12 +44,20 @@ class CatalogoCargaTest {
     // deciden el texto de respaldo; los otros son segmentos propios de un grupo de claves cuyo
     // respaldo genérico es el de error, y están aquí para que la lista sea exhaustiva y cerrada.
     private static final Set<String> SEGMENTOS_ACEPTADOS =
-            Set.of("error", "validacion", "log", "api", "tipo", "valor", "asunto", "cuerpo", "mensaje");
+            Set.of("error", "validacion", "log", "api", "tipo", "valor",
+                    "asunto", "cuerpo", "pie", "mensaje");
 
     private static final Path FUENTES_CLAVES = Path.of("src/main/java/com/arquisoft/shared/message/key");
+    private static final Path RAIZ_PROYECTO = Path.of("../..");
+    private static final Set<String> DIRECTORIOS_IGNORADOS = Set.of("build", ".git", ".gradle", "worktrees");
+    private static final String EXTENSION_FUENTE = ".java";
     private static final String PAQUETE_CLAVES = "com.arquisoft.shared.message.key";
     private static final String SUFIJO_FUENTE = "Key.java";
     private static final String RUTA_CATALOGO = "/catalogo/%s.properties";
+
+    // Cualquier barra invertida que no sea la de \n. Es lo unico en lo que printf '%b' (cargar.sh)
+    // y Properties.load (los tests) coinciden; el resto de escapes divergen o solo existen en uno.
+    private static final Pattern ESCAPE_NO_SOPORTADO = Pattern.compile("\\\\(?!n)");
 
     private final CatalogoMensajesPrueba catalogo = CatalogoMensajesPrueba.porDefecto();
 
@@ -197,13 +205,70 @@ class CatalogoCargaTest {
         assertThat(patron).contains("{}");
     }
 
+    @Test
+    @DisplayName("El catálogo solo usa el escape \\n")
+    void debeUsarSoloElEscapeDeSaltoDeLinea_cuandoSeLeeElTextoCrudo() {
+        List<String> invalidos = new ArrayList<>();
+
+        for (String contexto : ContextosCatalogo.TODOS) {
+            String ruta = RUTA_CATALOGO.formatted(contexto);
+            ESCAPE_NO_SOPORTADO.matcher(leerCrudo(ruta)).results()
+                    .forEach(coincidencia -> invalidos.add(ruta + " -> " + coincidencia.group()));
+        }
+
+        assertThat(invalidos)
+                .as("cargar.sh escribe el valor con printf '%%b', que interpreta los escapes de la "
+                        + "shell, mientras que los tests leen el mismo archivo con Properties.load, "
+                        + "que interpreta los de Java: los dos coinciden en \\n y divergen en el "
+                        + "resto. Un texto multilínea se escribe con \\n; para cualquier otro "
+                        + "carácter, ponlo literal en el .properties")
+                .isEmpty();
+    }
+
     // -------------------------------------------------------------------------
+
+    @Test
+    @DisplayName("ninguna clave declarada queda sin usar — toda clave la referencia algún .java")
+    void debeReferenciarseEnElCodigo_cuandoSeRecorrenLasClavesDeclaradas() {
+        Set<String> referencias = referenciasEnElCodigo();
+
+        List<String> sinUso = clavesDeclaradas().stream()
+                .filter(clave -> !referencias.contains(nombreDeConstante(clave)))
+                .map(ClaveMensaje::clave)
+                .toList();
+
+        assertThat(sinUso)
+                .as("una clave que nadie invoca sigue exigiendo su texto al fail-fast de arranque y "
+                        + "se carga en Redis en cada despliegue, así que el catálogo no delata que "
+                        + "sobra. Peor: cuando el comportamiento cambia —un filtro que pasa de "
+                        + "fail-closed a fail-open y deja de emitir su 503— la clave del mensaje "
+                        + "retirado queda viva y aparenta seguir describiendo lo que hace el código")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("el escaneo del código encuentra referencias — si fallara, el test anterior pasaría en vacío")
+    void debeEncontrarReferenciasEnElCodigo_cuandoSeEscaneaElProyecto() {
+        assertThat(referenciasEnElCodigo())
+                .as("sin referencias descubiertas la prueba de claves sin uso sería tautológica")
+                .isNotEmpty();
+    }
 
     private static String segmentoDeTipo(String clave) {
         String[] segmentos = clave.split(SEPARADOR);
         return segmentos.length > SEGMENTO_TIPO ? segmentos[SEGMENTO_TIPO] : "";
     }
 
+
+    private static String leerCrudo(String ruta) {
+        try (InputStream entrada = CatalogoCargaTest.class.getResourceAsStream(ruta)) {
+            assertThat(entrada).as("no está en el classpath de test: %s", ruta).isNotNull();
+
+            return new String(entrada.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException(ruta, e);
+        }
+    }
     private static Properties leer(String ruta) {
         try (InputStream entrada = CatalogoCargaTest.class.getResourceAsStream(ruta)) {
             assertThat(entrada).as("no está en el classpath de test: %s", ruta).isNotNull();
@@ -214,6 +279,42 @@ class CatalogoCargaTest {
         } catch (IOException e) {
             throw new IllegalStateException(ruta, e);
         }
+    }
+
+    private static String nombreDeConstante(ClaveMensaje clave) {
+        return ((Enum<?>) clave).getDeclaringClass().getSimpleName() + "." + ((Enum<?>) clave).name();
+    }
+
+    private static Set<String> referenciasEnElCodigo() {
+        var referencias = new LinkedHashSet<String>();
+        Pattern uso = Pattern.compile("\\b([A-Za-z0-9_]+Key)\\.([A-Z][A-Z0-9_]*)\\b");
+
+        try (Stream<Path> archivos = Files.walk(RAIZ_PROYECTO)) {
+            archivos.filter(CatalogoCargaTest::esFuenteDelProyecto).forEach(ruta -> {
+                try {
+                    uso.matcher(Files.readString(ruta, StandardCharsets.UTF_8)).results()
+                            .forEach(c -> referencias.add(c.group(1) + "." + c.group(2)));
+                } catch (IOException e) {
+                    throw new IllegalStateException(ruta.toString(), e);
+                }
+            });
+        } catch (IOException e) {
+            throw new IllegalStateException(RAIZ_PROYECTO.toString(), e);
+        }
+
+        return referencias;
+    }
+
+    private static boolean esFuenteDelProyecto(Path ruta) {
+        if (!Files.isRegularFile(ruta) || !ruta.getFileName().toString().endsWith(EXTENSION_FUENTE)) {
+            return false;
+        }
+        for (Path segmento : ruta) {
+            if (DIRECTORIOS_IGNORADOS.contains(segmento.toString())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private List<ClaveMensaje> clavesDeclaradas() {

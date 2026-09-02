@@ -7,7 +7,10 @@ import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -24,7 +27,18 @@ public class NotificacionCommandOutputAdapter implements NotificacionOutputPort 
     }
 
     @Override
-    public boolean existePorIdEvento(String idEvento) {
-        return repository.existsByIdEvento(idEvento);
+    public boolean existePorIdEventoYDestinatario(String idEvento, String destinatario) {
+        return repository.existsByIdEventoAndDestinatario(idEvento, destinatario);
+    }
+
+    @Override
+    public List<NotificacionEntity> buscarFallidasReintentables(int maxIntentos, int limite) {
+        return repository
+                .findByEstadoAndIntentosLessThanOrderByFechaCreacionAsc(
+                        EstadoNotificacionPersistencia.FALLIDA.getCodigo(),
+                        maxIntentos, Limit.of(limite))
+                .stream()
+                .map(NotificacionJpaMapper::toEntity)
+                .toList();
     }
 }

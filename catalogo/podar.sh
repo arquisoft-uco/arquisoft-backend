@@ -20,16 +20,23 @@
 #   REDIS_PASSWORD  opcional
 #   CATALOGO_DIR    opcional, directorio de los .properties (por defecto, el del propio script)
 #   DRY_RUN         opcional, '1' para listar lo que se borraría sin borrar nada
+#   PODA_TOTAL      opcional, '1' para borrar TODAS las claves del catálogo, no solo las sobrantes
 #
 # Uso:  REDIS_HOST=... REDIS_PORT=6379 REDIS_PASSWORD=... sh catalogo/podar.sh
 #       DRY_RUN=1 ... sh catalogo/podar.sh
+#       PODA_TOTAL=1 ... sh catalogo/podar.sh
+#
+# PODA_TOTAL=1 no es mantenimiento: deja el catálogo vacío y, con el fail-fast del arranque, la
+# aplicación ya no vuelve a levantar hasta ejecutar cargar.sh. Existe para el ensayo manual de
+# degradación — ver qué sirve una instancia ya arrancada cuando Redis se queda sin claves.
 
 set -eu
 
-CONTEXTOS="app fichas seguridad usuarios notificaciones"
+CONTEXTOS="app fichas seguridad usuarios notificaciones evaluaciones"
 
 CATALOGO_DIR="${CATALOGO_DIR:-$(dirname "$0")}"
 DRY_RUN="${DRY_RUN:-0}"
+PODA_TOTAL="${PODA_TOTAL:-0}"
 
 BORRADO_POR_LOTE=100
 
@@ -116,20 +123,30 @@ total_en_redis="$(wc -l < "$en_redis" | tr -d ' ')"
 # --- 3. La diferencia -------------------------------------------------------------------------
 sort -u "$esperadas" -o "$esperadas"
 sort -u "$en_redis" -o "$en_redis"
-comm -13 "$esperadas" "$en_redis" > "$sobrantes"
+if [ "$PODA_TOTAL" = "1" ]; then
+    cp "$en_redis" "$sobrantes"
+else
+    comm -13 "$esperadas" "$en_redis" > "$sobrantes"
+fi
 
 total_sobrantes="$(wc -l < "$sobrantes" | tr -d ' ')"
+
+if [ "$PODA_TOTAL" = "1" ]; then
+    echo "PODA TOTAL: se borran TODAS las claves del catálogo, no solo las sobrantes."
+    echo "            Tras esto la aplicación no arranca hasta volver a ejecutar cargar.sh."
+    echo ""
+fi
 
 echo "Podando el catálogo de mensajes en $REDIS_HOST:$REDIS_PORT"
 echo "Directorio: $CATALOGO_DIR"
 echo ""
 echo "  declaradas en los .properties : $total_esperadas"
 echo "  presentes en Redis            : $total_en_redis"
-echo "  sobrantes                     : $total_sobrantes"
+echo "  a borrar                      : $total_sobrantes"
 echo ""
 
 if [ "$total_sobrantes" -eq 0 ]; then
-    echo "OK: Redis no tiene ninguna clave de catálogo que sobre."
+    echo "OK: no hay ninguna clave de catálogo que borrar."
     exit 0
 fi
 

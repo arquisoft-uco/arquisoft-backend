@@ -11,8 +11,9 @@ public enum LimiteSolicitudesKey implements ClaveMensaje {
     LOG_LIMITE_EXCEDIDO("seguridad.infraestructura.ratelimit.log.limite-excedido", 2),
     LOG_INIT_OK("seguridad.infraestructura.ratelimit.log.init-ok", 0),
     LOG_CLIENTE_STANDALONE_ERROR("seguridad.infraestructura.ratelimit.log.cliente-standalone-error", 1),
-    LOG_BUCKET_REDIS_ERROR("seguridad.infraestructura.ratelimit.log.bucket-redis-error", 2),
-    LOG_BUCKET_LOGIN_REDIS_ERROR("seguridad.infraestructura.ratelimit.log.bucket-login-redis-error", 2);
+    LOG_DEGRADADO("seguridad.infraestructura.ratelimit.log.degradado", 1),
+    LOG_SIGUE_DEGRADADO("seguridad.infraestructura.ratelimit.log.sigue-degradado", 0),
+    LOG_RECUPERADO("seguridad.infraestructura.ratelimit.log.recuperado", 1);
 
     private final String clave;
     private final int parametros;
