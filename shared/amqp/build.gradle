@@ -24,6 +24,9 @@ dependencies {
     // spring-retry está disponible transitivamente via spring-boot-starter-amqp (spring-rabbit → spring-retry).
     // Se usa RetryTemplate directamente — sin @Retryable ni AOP para evitar dependencias innecesarias.
 
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 }

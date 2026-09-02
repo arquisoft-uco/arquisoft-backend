@@ -61,12 +61,22 @@ módulo, y esa es justo la distinción de arriba hecha grafo:** `DomainRule` est
 | La existencia solo decide si vale la pena seguir, y no es un error | `Finder` consultado directo desde el `UseCase`, que devuelve la variante correspondiente de su sellada |
 
 El segundo caso es el corte de idempotencia de `notificaciones`: si
-`notificacionProcesadaFinder.obtener(idEvento)` da `true`, el use case devuelve
+`notificacionProcesadaFinder.obtener(notificacion)` da `true`, el use case devuelve
 `EnvioNotificacionResult.Duplicada`. Modelarlo como `Rule` sería un bug — lanzaría, el mensaje se
 iría a la DLQ y se haría rollback de la fila, cuando RabbitMQ solo estaba reentregando algo ya
 procesado. Un duplicado ahí no es un error, es el comportamiento normal de un broker con ACK manual.
 La guarda es de flujo ("ya está hecho, no hay trabajo"), de la misma familia que un
 `Optional.isPresent()`, no el `if/throw` de invariante que la convención prohíbe.
+
+**La clave de idempotencia es el par `(idEvento, destinatario)`, no el `idEvento` solo.** La
+restricción en base es `uq_notificacion_event_id_destinatario`, y el puerto pregunta
+`existePorIdEventoYDestinatario(...)`. El motivo: un evento puede abanicar a varios destinatarios —
+`EstudiantesFichaPerfilAsignadosEvent` produce un correo por estudiante, todos con el mismo
+`idEvento`—, y con la clave sobre el evento solo saldría el primero y el resto se descartaría **en
+silencio**, porque el consumidor trata el duplicado como caso esperado y confirma el mensaje igual.
+Un consumidor que abanica sin esto no falla: envía de menos. Por la misma razón `Duplicada` lleva el
+destinatario además del `idEvento`: con la clave compuesta, el evento solo ya no identifica qué se
+descartó.
 
 Señal de que algo mal nombrado es en realidad un `Finder`: la clase termina en `Validator`, inyecta
 un `OutputPort` y devuelve un `boolean` que el use case consume con un `if`. Eso no valida nada —
@@ -165,6 +175,20 @@ formateo del catálogo y pierde respaldo y diagnóstico. `AridadClave` diagnosti
 `CatalogoCargaTest` rompe el build ante una clave sin texto, un texto sin clave, un enum ausente de
 `ClavesCatalogo` o una aridad que contradice los marcadores.
 
+**Texto multilínea: el único escape que el catálogo admite es `\n`.** Un `.properties` normalmente
+lo lee `Properties.load`, que interpreta los escapes de Java — pero en producción lo lee
+`catalogo/cargar.sh`, que es shell y no interpreta nada por su cuenta. El script escribe el valor
+con `printf '%b'` precisamente para que ese `\n` llegue a Redis como salto de línea real; con `%s`
+el usuario recibiría la barra invertida literal en el correo. Los dos lectores coinciden **solo**
+en `\n`, así que `CatalogoCargaTest` rompe el build ante cualquier otra barra invertida. Para todo
+lo demás, pon el carácter literal en el `.properties`.
+
+Del lado del render, `correo-base.html` lleva `white-space: pre-line` en la celda del cuerpo: el
+salto viaja en el texto, no como `<br>`, y así la misma cadena sirve para la parte HTML y para la
+alternativa en texto plano de `MimeMessageHelper.setText(plano, html)`. **No conviertas el salto a
+`<br>` en el render**: rompería la parte de texto plano, que es la que ven los clientes que no
+pintan HTML.
+
 **No son catálogo:** códigos de error, nombres de cola/exchange/bean/header, marcadores de log
 greppables, etiquetas de display de un enum de catálogo (`EstadoFicha.getNombre()`, cuya fuente es
 el MER), literales de test y textos de Swagger.
@@ -203,7 +227,78 @@ Es lo que hacen `RolUsuarioDTO` (usuarios, porque además es el contrato JSON) y
 String` basta; con seis son seis literales sueltos y seis pruebas de deriva. El enum da un sitio
 único donde ver qué valores existen y **una** prueba que cubre las dos direcciones: que cada código
 resuelva con `desde(...)`, y que ambos enums declaren el mismo conjunto de constantes — así, si el
-dominio gana un valor y nadie lo espeja, el build falla. Ver `TipoNotificacionEventoTest`.
+dominio gana un valor y nadie lo espeja, el build falla.
+
+Hay dos espejos hoy y el nombre lleva **para qué lado** se espeja, no solo qué:
+
+| Espejo | Dónde vive | Para qué |
+|---|---|---|
+| `TipoNotificacionEvento` | `primaryadapter/amqp/` | el código que el consumidor pone en el `Command` |
+| `EstadoNotificacionPersistencia` | `secondaryadapter/repository/` | el valor de la columna en una consulta del adapter |
+
+Cada uno vive **en el paquete del adaptador que lo usa**, no en un `config/` común: es un detalle de
+ese adaptador, no del contexto. Y declara **todas** las constantes del enum de dominio, no solo la
+que se usa hoy — con una sola, la prueba no detectaría que el dominio ganó un valor que la
+infraestructura ignora, que es precisamente la deriva que se quiere cazar. Ver
+`TipoNotificacionEventoTest` y `EstadoNotificacionPersistenciaTest`.
+
+
+## El objeto de acción desaparece cuando sus campos pasan a ser estado
+
+`{Accion}{Entidad}Domain` existe para el paquete de cosas que la acción arrastra y **el agregado no
+posee**. En cuanto uno de esos campos hay que persistirlo, deja de ser transporte y pasa a ser estado
+del agregado — y el objeto de acción se queda envolviéndolo sin aportar nada, que es la indirección
+que la convención prohíbe.
+
+Pasó en este repo: al persistir `cuerpo` y `destinatario_nombre` para poder reintentar el envío,
+`EnvioNotificacionDomain` se quedó sin contenido propio y se borró. `EnviarNotificacionMapper.toDomain(command)`
+devuelve ahora `NotificacionDomain` directo. **El `{Accion}{Entidad}Mapper` no es lo que se elimina —
+ese es obligatorio siempre**; lo que desaparece es el objeto de acción.
+
+Al planificar: si la HU dice "hay que poder reintentar/auditar/reconstruir X", pregúntate qué campos
+deja eso del lado persistido antes de decidir si el objeto de acción se justifica.
+
+## Migraciones que añaden columnas a una tabla con filas
+
+Una columna `NOT NULL` nueva necesita `DEFAULT` o Flyway falla contra la tabla poblada. El `DEFAULT`
+no es un descuido: es lo que declara qué significa esa columna para las filas anteriores, y eso va en
+el comentario de la migración.
+
+```sql
+ALTER TABLE notificacion
+    ADD COLUMN cuerpo   TEXT    NOT NULL DEFAULT '',
+    ADD COLUMN intentos INTEGER NOT NULL DEFAULT 0;
+```
+
+Recordatorio de `CLAUDE.md`: versión **timestamp** (`V{yyyyMMddHHmmss}__…`), en
+`db/migration/{contexto}/`, y nunca se retrocede un timestamp para colar una migración antes de otra
+ya aplicada.
+
+## Payload de evento: campos fijos y prueba de contrato
+
+Todo `{Evento}Payload` declara al menos `idEvento` (clave de idempotencia) y **`ocurridoEn`**
+(`Instant`, instante del hecho en el origen), más lo suyo. Los dos viajan siempre en el JSON porque
+`DomainEvent` los asigna; omitirlos del record los tira en silencio. `ocurridoEn` es lo que permite
+descartar eventos viejos cuando llegan desordenados — ver la sección de espejos en
+`arquisoft-arquitectura`.
+
+Su prueba **instancia la configuración de producción**, no un mapper armado a mano:
+
+```java
+private final JsonMapper mapper = new RabbitMQConfig().rabbitObjectMapper();
+```
+
+El productor serializa con ese mismo bean (`RabbitTemplate` usa `JacksonJsonMessageConverter(rabbitObjectMapper)`),
+así que es lo único que prueba el contrato de verdad: un doble configurado a mano puede pasar el test
+y fallar en el broker. Dos casos, y el segundo importa tanto como el primero:
+
+1. Serializar una subclase real de `DomainEvent` y deserializarla en el payload — comprueba que los
+   tipos sobreviven el viaje (un `Instant` incluye la precisión de nanosegundos).
+2. Un JSON **sin** el campo nuevo deserializa con `null`, no revienta. Es lo que permite desplegar
+   productor y consumidor en cualquier orden, y deja fijado que `FAIL_ON_UNKNOWN_PROPERTIES` en
+   `false` no es casualidad.
+
+Ver `UsuarioCreadoPayloadTest` y `AsesorFichaCambiadoPayloadTest`.
 
 ## Excepciones (4 bases, en `com.arquisoft.shared.exception`)
 
@@ -260,8 +355,11 @@ JUnit 6 + Mockito + AssertJ, patrón AAA con marcadores `// Arrange / // Act / /
 - **Repositorio:** `@DataJpaTest` (`org.springframework.boot.data.jpa.test.autoconfigure`) + H2, con
   `TestEntityManager` (`org.springframework.boot.jpa.test.autoconfigure` en Boot 4) para sembrar.
   **`@SpringBootTest` no se usa en ningún test de este repo.** Un `@DataJpaTest` del lado query sí
-  siembra con los `JpaEntity` de comando — el aislamiento CQRS rige `src/main`, no los tests. Si el
-  adapter de lectura es delegación plana sobre un catálogo, un test con Mockito basta.
+  siembra con los `JpaEntity` de comando — el aislamiento CQRS rige `src/main`, no los tests. Una
+  entidad con `@Subselect` se prueba **siempre** así, nunca con mocks del `QueryRepository`, aunque
+  el adapter sea delegación plana sobre un catálogo: el mock no ejecuta la consulta, que es lo único
+  que hay que verificar ahí — el `SELECT` y los `@Column` son una sola declaración partida en dos y
+  nada más comprueba que sus alias casen.
 - **Controller:** `@WebMvcTest` (`org.springframework.boot.webmvc.test.autoconfigure`). En `fichas`
   el slice necesita `@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class,
   TrazabilidadConfig.class, {Test}.TestSecurityConfig.class})` — sin `GlobalAppExceptionHandler`
@@ -434,6 +532,18 @@ Dos que se olvidan y sí importan:
   que `UUID.fromString` lanza `IllegalArgumentException` y sale como 500.
 - **`UtilColeccion.aplicarPorDefecto(x)`** en el constructor compacto de un `record` que recibe una
   colección; hace el `null → List.of()` más la copia inmutable.
+- **Recorta ANTES de validar, y valida el valor recortado.** El setter/factoría normaliza primero
+  (`var recortado = UtilTexto.aplicarTrim(x);`) y pasa `recortado` a todos los `Validator*` y al
+  campo. `AutenticacionDomain.setCorreo` y `UsuarioDomain.setEmail` son la referencia. Validar el
+  texto crudo y recortar solo al asignar rompe dos cosas: `ValidatorTexto.correoValido` **no aplica
+  trim** (delega en `coincidePatron`, que compara literal), así que `" a@b.com "` se rechaza por
+  formato; y `ValidatorLongitud.longitudMaxima` mide los espacios, así que un valor que cabe una vez
+  recortado se rechaza por longitud. Este fallo estuvo vivo en `Destinatario`/`Contenido` de
+  `notificaciones`.
+
+  Y no "arregles" esto metiendo el trim dentro de `UtilTexto.correoValido`: si el agregado olvida
+  recortar, la validación pasaría y persistiría el valor con espacios. Que el predicado sea estricto
+  es lo que obliga a normalizar donde toca.
 
 Distingue `ValidatorObjeto.noNulo` de `UtilObjeto.esNulo`: el primero **acumula un error** en el
 `ValidationResult` porque el valor era obligatorio; el segundo es una guarda de flujo sobre un estado

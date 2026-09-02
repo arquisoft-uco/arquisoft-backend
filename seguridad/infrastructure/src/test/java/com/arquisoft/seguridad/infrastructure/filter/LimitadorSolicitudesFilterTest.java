@@ -1,9 +1,9 @@
 package com.arquisoft.seguridad.infrastructure.filter;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.seguridad.infrastructure.config.ratelimit.BucketResolver;
 import tools.jackson.databind.ObjectMapper;
-import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,14 +21,16 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RateLimitingFilterTest {
+class LimitadorSolicitudesFilterTest {
 
     @Mock
     private BucketResolver bucketResolver;
@@ -38,6 +40,9 @@ class RateLimitingFilterTest {
 
     @Mock
     private AppLogger logger;
+
+    @Mock
+    private GestorTraza gestorTraza;
 
     @InjectMocks
     private LimitadorSolicitudesFilter filter;
@@ -56,7 +61,7 @@ class RateLimitingFilterTest {
 
         // Assert
         verify(filterChain).doFilter(request, response);
-        verify(bucketResolver, never()).resolveBucket(anyString());
+        verify(bucketResolver, never()).consumir(anyString(), anyBoolean());
     }
 
     @Test
@@ -74,7 +79,7 @@ class RateLimitingFilterTest {
 
         // Assert
         verify(filterChain).doFilter(request, response);
-        verify(bucketResolver, never()).resolveBucket(anyString());
+        verify(bucketResolver, never()).consumir(anyString(), anyBoolean());
     }
 
     @Test
@@ -83,15 +88,13 @@ class RateLimitingFilterTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
-        Bucket bucket = mock(Bucket.class);
         ConsumptionProbe probe = mock(ConsumptionProbe.class);
 
         when(probe.isConsumed()).thenReturn(true);
         when(probe.getRemainingTokens()).thenReturn(50L);
 
         when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
-        when(bucketResolver.resolveBucket(anyString())).thenReturn(bucket);
-        when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
+        when(bucketResolver.consumir(anyString(), eq(false))).thenReturn(probe);
 
         when(request.getRequestURI()).thenReturn("/api/fichas-perfil");
         when(request.getMethod()).thenReturn("GET");
@@ -111,15 +114,13 @@ class RateLimitingFilterTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
-        Bucket bucket = mock(Bucket.class);
         ConsumptionProbe probe = mock(ConsumptionProbe.class);
 
         when(probe.isConsumed()).thenReturn(true);
         when(probe.getRemainingTokens()).thenReturn(3L);
 
         when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
-        when(bucketResolver.resolveLoginBucket(anyString())).thenReturn(bucket);
-        when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
+        when(bucketResolver.consumir(anyString(), eq(true))).thenReturn(probe);
 
         when(request.getRequestURI()).thenReturn("/api/auth/login");
         when(request.getMethod()).thenReturn("POST");
@@ -139,15 +140,13 @@ class RateLimitingFilterTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
-        Bucket bucket = mock(Bucket.class);
         ConsumptionProbe probe = mock(ConsumptionProbe.class);
 
         when(probe.isConsumed()).thenReturn(false);
         when(probe.getNanosToWaitForRefill()).thenReturn(60_000_000_000L);
 
         when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
-        when(bucketResolver.resolveBucket(anyString())).thenReturn(bucket);
-        when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
+        when(bucketResolver.consumir(anyString(), eq(false))).thenReturn(probe);
 
         when(request.getRequestURI()).thenReturn("/api/fichas-perfil");
         when(request.getMethod()).thenReturn("POST");
@@ -173,15 +172,13 @@ class RateLimitingFilterTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
-        Bucket bucket = mock(Bucket.class);
         ConsumptionProbe probe = mock(ConsumptionProbe.class);
 
         when(probe.isConsumed()).thenReturn(false);
         when(probe.getNanosToWaitForRefill()).thenReturn(30_000_000_000L);
 
         when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
-        when(bucketResolver.resolveLoginBucket(anyString())).thenReturn(bucket);
-        when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
+        when(bucketResolver.consumir(anyString(), eq(true))).thenReturn(probe);
 
         when(request.getRequestURI()).thenReturn("/api/auth/login");
         when(request.getMethod()).thenReturn("POST");
@@ -205,15 +202,13 @@ class RateLimitingFilterTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
-        Bucket bucket = mock(Bucket.class);
         ConsumptionProbe probe = mock(ConsumptionProbe.class);
 
         when(probe.isConsumed()).thenReturn(true);
         when(probe.getRemainingTokens()).thenReturn(10L);
 
         when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
-        when(bucketResolver.resolveBucket("192.168.1.100")).thenReturn(bucket);
-        when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
+        when(bucketResolver.consumir("192.168.1.100", false)).thenReturn(probe);
 
         when(request.getRequestURI()).thenReturn("/api/proyectos");
         when(request.getMethod()).thenReturn("GET");
@@ -223,7 +218,7 @@ class RateLimitingFilterTest {
         filter.doFilterInternal(request, response, filterChain);
 
         // Assert
-        verify(bucketResolver).resolveBucket("192.168.1.100");
+        verify(bucketResolver).consumir("192.168.1.100", false);
         verify(filterChain).doFilter(request, response);
     }
 
@@ -233,15 +228,13 @@ class RateLimitingFilterTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         FilterChain filterChain = mock(FilterChain.class);
-        Bucket bucket = mock(Bucket.class);
         ConsumptionProbe probe = mock(ConsumptionProbe.class);
 
         when(probe.isConsumed()).thenReturn(true);
         when(probe.getRemainingTokens()).thenReturn(10L);
 
         when(bucketResolver.estaLimiteSolicitudesHabilitado()).thenReturn(true);
-        when(bucketResolver.resolveBucket("INVALID")).thenReturn(bucket);
-        when(bucket.tryConsumeAndReturnRemaining(1)).thenReturn(probe);
+        when(bucketResolver.consumir("INVALID", false)).thenReturn(probe);
 
         when(request.getRequestURI()).thenReturn("/api/proyectos");
         when(request.getMethod()).thenReturn("GET");
@@ -251,7 +244,7 @@ class RateLimitingFilterTest {
         filter.doFilterInternal(request, response, filterChain);
 
         // Assert
-        verify(bucketResolver).resolveBucket("INVALID");
+        verify(bucketResolver).consumir("INVALID", false);
         verify(filterChain).doFilter(request, response);
     }
 }
