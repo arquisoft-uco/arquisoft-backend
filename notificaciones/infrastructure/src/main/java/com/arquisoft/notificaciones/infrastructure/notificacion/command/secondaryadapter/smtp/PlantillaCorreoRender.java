@@ -4,6 +4,7 @@ import com.arquisoft.notificaciones.application.notificacion.command.secondarypo
 import com.arquisoft.shared.util.UtilTexto;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -11,6 +12,7 @@ import java.util.regex.Matcher;
 
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "notificacion.proveedor", havingValue = "smtp")
 public class PlantillaCorreoRender {
 
     private final FuentePlantillaCorreo fuente;

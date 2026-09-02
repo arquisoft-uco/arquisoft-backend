@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "notificacion.proveedor", havingValue = "smtp")
 @ConditionalOnProperty(
         name = "notificacion.plantilla-refresco.habilitado",
         havingValue = "true",

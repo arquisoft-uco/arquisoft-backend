@@ -156,7 +156,7 @@ spring:
 # Agregar un proveedor con API REST es añadir una clase con @ConditionalOnProperty y su valor;
 # ni el dominio ni la aplicación se enteran.
 notificacion:
-  proveedor: ${NOTIFICACION_PROVEEDOR:log}
+  proveedor: ${NOTIFICACION_PROVEEDOR:smtp}
   remitente-email: ${NOTIFICACION_REMITENTE_EMAIL:no-reply@arquisoft.local}
   remitente-nombre: ${NOTIFICACION_REMITENTE_NOMBRE:Arquisoft}
   # Clave de Redis, cargada por plantillas/cargar.sh. Espacio propio: el podador del catalogo

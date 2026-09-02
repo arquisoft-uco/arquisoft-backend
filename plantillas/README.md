@@ -108,8 +108,10 @@ está `podar.sh`.
 Verifica con `EXISTS` que lo escrito está presente y sale con error si no, para que el fallo aparezca
 en la carga y no en el arranque.
 
-> **La carga es obligatoria antes de desplegar.** Sin la plantilla en Redis la aplicación no levanta:
-> el bean que la lee se construye al arrancar y aborta el contexto si la clave falta o está vacía.
+> **La carga es obligatoria antes de desplegar con `notificacion.proveedor=smtp`.** Sin la plantilla
+> en Redis la aplicación no levanta: el bean que la lee se construye al arrancar y aborta el contexto
+> si la clave falta o está vacía. En modo `log` los beans de plantilla ni se crean —nadie maqueta
+> HTML— así que ahí no hace falta cargarla.
 
 ## Podar lo que sobra
 
@@ -207,6 +209,10 @@ la plantilla que ya funcionaba.
 
 Al arrancar, en cambio, no hay «anterior» a la que caer: una plantilla ausente, vacía o sin sus
 huecos **aborta el contexto**. Es el mismo fail-fast del catálogo.
+
+Todo esto solo aplica con `notificacion.proveedor=smtp`, que es el unico proveedor que maqueta HTML:
+los tres beans (`RedisFuentePlantillaCorreo`, `PlantillaCorreoRender`, `MonitorPlantillaCorreo`) estan
+condicionados a el. En modo `log` no existen, y la plantilla no es dependencia de arranque.
 
 ### Qué sigue congelado y qué no
 

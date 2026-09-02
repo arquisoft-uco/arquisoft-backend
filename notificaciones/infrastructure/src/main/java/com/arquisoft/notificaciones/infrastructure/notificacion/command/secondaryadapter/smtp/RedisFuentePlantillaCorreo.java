@@ -3,12 +3,16 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.seconda
 import com.arquisoft.notificaciones.infrastructure.config.NotificacionProperties;
 import com.arquisoft.notificaciones.infrastructure.notificacion.exception.PlantillaCorreoNoDisponibleException;
 import com.arquisoft.shared.util.UtilTexto;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+// Solo con proveedor=smtp: es el unico que maqueta HTML. Sin esta condicion, un entorno en modo
+// log exigiria la plantilla en Redis para arrancar y no la usaria para nada.
 @Component
+@ConditionalOnProperty(name = "notificacion.proveedor", havingValue = "smtp")
 public class RedisFuentePlantillaCorreo implements FuentePlantillaCorreo {
 
     private final StringRedisTemplate redis;
