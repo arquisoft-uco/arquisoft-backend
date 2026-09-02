@@ -47,7 +47,7 @@ y cada uno tiene un límite que hay que conocer antes de copiar:
 
 `domain ← application ← infrastructure` no es una convención que se recuerde: es el grafo de módulos.
 `{contexto}/infrastructure` **no declara `:{contexto}:domain` en `implementation`** — solo en
-`testImplementation`, porque los slices arman agregados en el *arrange* — así que un import del
+`testImplementation`, porque los slices arman domains en el *arrange* — así que un import del
 dominio desde código de producción de infrastructure **no compila**. Esa es la barrera real, y es la
 razón por la que los puertos hablan `Entity` y nunca `Domain`.
 
@@ -65,7 +65,7 @@ reexporte con `api`). Reglas que aplica a todo contexto de negocio:
 Si `verificarCapasHexagonales` falla, **el arreglo nunca es añadir la dependencia al `build.gradle`**:
 es que el tipo al que se está llegando está en la capa equivocada. Un enum de dominio que un adaptador
 necesita nombrar viaja como `String` y se convierte en el `Command.crear(...)` con su `desde(...)`;
-un agregado que un adaptador quiere construir es señal de que el puerto debería hablar `Entity`.
+un domain que un adaptador quiere construir es señal de que el puerto debería hablar `Entity`.
 
 Los **nueve** contextos están en `contextosHexagonales`, `notificaciones` incluido. Su consumidor no
 nombra el enum de dominio: `AsesorFichaCambiadoConsumer` usa `TipoNotificacionEvento` (espejo propio
@@ -84,7 +84,7 @@ código que ya no existe:
 |---|---|
 | `{Entidad}Aggregate`, carpeta `domain/{feature}/aggregate/` | `{Entidad}Domain`, directo bajo `domain/{feature}/` |
 | Factories `build(...)` / `rebuild(...)` | `crear(...)` / `reconstruir(...)` |
-| Un agregado que acumula eventos y un use case que los drena | El agregado es plano; el `UseCase` publica por `EventPublisher` |
+| Un domain que acumula eventos y un use case que los drena | El domain es plano; el `UseCase` publica por `EventPublisher` |
 | `DomainValidator.notNull(...)` | Familia `Validator*` de `shared:validation` (`ValidatorObjeto.noNulo`, …) |
 | `FichasMessages.*` | Catálogo Redis (`{Feature}Key`) + `FichasApiMessages` solo para Swagger |
 | Migraciones `V1.0`, `V1.9` | Timestamp `V{yyyyMMddHHmmss}` |
@@ -117,8 +117,8 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 
 | Paquete | Qué vive ahí | Ejemplo real |
 |---|---|---|
-| `{feature}/` (directo, sin subcarpeta) | Aggregate root, sufijo `Domain`, Notification Pattern (`VACIO`, `esVacio()`, setters privados) | `FichaPerfilDomain.java` |
-| `{feature}/` — **objeto de acción** | Nominalización del verbo cuando la acción arrastra más que el agregado; vive al lado del agregado, sin subpaquete. Condicional (el `{Accion}{Entidad}Mapper` existe siempre; esto solo cuando hay *bundle*) | `RegistroFichaPerfilDomain.java`, `CambioAsesorFichaDomain.java`, `ModificacionFichaPerfilDomain.java` |
+| `{feature}/` (directo, sin subcarpeta) | El domain (sufijo `Domain`), Notification Pattern (`VACIO`, `esVacio()`, setters privados) | `FichaPerfilDomain.java` |
+| `{feature}/` — **objeto de acción** | Nominalización del verbo cuando la acción arrastra más que el domain; vive al lado del domain, sin subpaquete. Condicional (el `{Accion}{Entidad}Mapper` existe siempre; esto solo cuando hay *bundle*) | `RegistroFichaPerfilDomain.java`, `CambioAsesorFichaDomain.java`, `ModificacionFichaPerfilDomain.java` |
 | `{feature}/model/` | Value objects y el record de entrada de cada `Rule` | `ExistenciaAsesorFicha.java`, `DisponibilidadTituloFicha.java` |
 | `{feature}/rules/` (+`impl/`) | Regla pura: sin Spring, sin Lombok, **sin dependencias de constructor** | `rules/FichaPerfilTituloUnicoRule.java` + `rules/impl/FichaPerfilTituloUnicoRuleImpl.java` |
 | `{feature}/event/` | Eventos de dominio (extienden `DomainEvent`) | `event/AsesorFichaCambiadoEvent.java` |
@@ -126,7 +126,7 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 
 #### El objeto de acción lleva solo lo que la acción necesita
 
-No es el agregado cargado ni una copia suya: es lo mínimo con lo que la acción se puede decidir y
+No es el domain cargado ni una copia suya: es lo mínimo con lo que la acción se puede decidir y
 ejecutar. La forma dominante — 8 de los 10 que existen — es **ids planos y escalares**:
 `CambioAsesorFichaDomain` son dos `UUID` (ficha y nuevo asesor), `ModificacionFichaPerfilDomain` son
 `UUID` + título + `UUID` del estudiante. No cargues `FichaPerfilDomain` entero para cambiar su
@@ -137,7 +137,7 @@ Solo cuando la acción crea de verdad varios objetos a la vez el objeto de acci�
 al final, porque los de abajo necesitan el id del de arriba... que ya existe porque se creó primero.
 `RegistrarFichaPerfilMapper` es el único caso hoy y se lee entero:
 
-1. `FichaPerfilDomain.crear(...)` — el agregado, que genera su propio id.
+1. `FichaPerfilDomain.crear(...)` — el domain, que genera su propio id.
 2. `AsignarEstadoInicialFichaPerfilMapper.toDomain(ficha.getId())` y
    `AsignarEstudiantesFichaPerfilMapper.toDomain(ficha.getId(), ...)` — cada pieza la construye el
    mapper **de su propia feature**, no el de `fichaperfil`.
@@ -153,11 +153,11 @@ lo suyo al construirse, así que el de arriba solo comprueba `noNulo` de cada co
 |---|---|---|
 | `command/primaryport/interactor/` (+`impl/`) | Contrato primario, dueño de `@Transactional` | `RegistrarFichaPerfilInteractor.java` + `impl/RegistrarFichaPerfilInteractorImpl.java` |
 | `command/primaryport/model/` | `Command` — `record` con factoría `crear(...)` que valida formato | `RegistrarFichaPerfilCommand.java` |
-| `command/primaryport/mapper/` | `Command` → dominio (`final`, constructor privado, `static toDomain`): construye el objeto de acción, o el agregado directo (`toDomain(command)` → `{Entidad}Domain.crear(...)`) si el `Command` mapea 1-a-1. **Obligatorio en toda escritura**; lo invoca el `Interactor` antes de delegar. (`usuarios/CrearUsuario` llama `crear(...)` directo desde el use case — desviación previa, no se copia) | `RegistrarFichaPerfilMapper.java` |
+| `command/primaryport/mapper/` | `Command` → dominio (`final`, constructor privado, `static toDomain`): construye el objeto de acción, o el domain directo (`toDomain(command)` → `{Entidad}Domain.crear(...)`) si el `Command` mapea 1-a-1. **Obligatorio en toda escritura**; lo invoca el `Interactor` antes de delegar. (`usuarios/CrearUsuario` llama `crear(...)` directo desde el use case — desviación previa, no se copia) | `RegistrarFichaPerfilMapper.java` |
 | `command/usecase/` (+`impl/`) | Colaborador interno — **NO** bajo `primaryport/`, sin transacción | `usecase/RegistrarFichaPerfilUseCase.java` + `usecase/impl/...UseCaseImpl.java` |
 | `command/validator/` (+`impl/`) | Puro: construye sus `Rule`s con `new` en un constructor sin argumentos; sin `OutputPort`, sin `Finder`, **sin un solo `if`** | `validator/impl/RegistrarFichaPerfilValidatorImpl.java` |
 | `command/finder/` (+`impl/`) | Uno por consulta; siempre devuelve valor (`Boolean`/`Long`/`Optional`), nunca lanza por "no encontrado" | `finder/impl/TituloFichaPerfilExisteFinderImpl.java` |
-| `command/finder/model/` | Entrada del `Finder` cuando **no** es un tipo de dominio ni un escalar — un criterio propio de la consulta. Condicional: la mayoría de finders reciben un `UUID`, un `String` o el agregado | `notificaciones/.../finder/model/CriterioReintento.java` |
+| `command/finder/model/` | Entrada del `Finder` cuando **no** es un tipo de dominio ni un escalar — un criterio propio de la consulta. Condicional: la mayoría de finders reciben un `UUID`, un `String` o el domain | `notificaciones/.../finder/model/CriterioReintento.java` |
 | `command/secondaryport/` (+`entity/`, `mapper/`) | Puerto de salida — habla `Entity`, nunca `Domain` | `FichaPerfilOutputPort.java`, `entity/FichaPerfilEntity.java`, `mapper/FichaPerfilMapper.java` |
 | `command/secondaryport/model/` | Los tipos que el puerto usa en su firma y no son la `Entity`: lo que devuelve un sistema externo y las selladas de desenlace | `notificaciones/.../secondaryport/model/{MensajeNotificacion,ResultadoEntrega}.java`, `seguridad/.../secondaryport/model/CredencialesProveedor.java` |
 | `command/result/` (+`mapper/`) | Salida del comando cuando **no** es `UUID` ni `void` — ver abajo | `notificaciones/.../command/result/EnvioNotificacionResult.java` (sellada) + `result/mapper/EnvioNotificacionResultMapper.java`; también `seguridad/auth/command/result/AutenticacionResult.java` |
@@ -228,10 +228,10 @@ encadenamiento que no es asunto suyo.
 `UseCase<{Algo}Domain, R>`, siempre. El `Command` es el tipo del **primary port**: pertenece al
 interactor y muere ahí, convertido por el `{Accion}{Entidad}Mapper`.
 
-Esto vale **también cuando el comando no crea ningún agregado**.
+Esto vale **también cuando el comando no crea ningún domain**.
 `ReintentarNotificacionesFallidas` es un job por lotes cuya entrada son dos números, y aun así
-nominaliza en `ReintentoNotificacionesDomain` (`domain/notificacion/`). Que no haya agregado no
-autoriza a pasar el `Command`; solo decide si el objeto de dominio es el agregado o un objeto de
+nominaliza en `ReintentoNotificacionesDomain` (`domain/notificacion/`). Que no haya domain no
+autoriza a pasar el `Command`; solo decide si el objeto de dominio es el `{Entidad}Domain` o un objeto de
 acción.
 
 La validación duplicada entre `Command` y dominio **no es redundancia**: responden a llamadores
@@ -266,7 +266,7 @@ La cadena completa, con `seguridad/auth` como referencia:
 
 | Paso | Quién | Qué hace |
 |---|---|---|
-| 1 | `{Concepto}ResultMapper` (`command/result/mapper/`) | `final`, constructor privado, **`static toResult(...)`**. Convierte en el `Result` lo que devolvió el puerto secundario (`CredencialesProveedor`, de `secondaryport/model/`) **o el propio agregado** — `EnvioNotificacionResultMapper` parte de `NotificacionDomain` y lee de él `idEvento` y `destinatario().email()` |
+| 1 | `{Concepto}ResultMapper` (`command/result/mapper/`) | `final`, constructor privado, **`static toResult(...)`**. Convierte en el `Result` lo que devolvió el puerto secundario (`CredencialesProveedor`, de `secondaryport/model/`) **o el propio domain** — `EnvioNotificacionResultMapper` parte de `NotificacionDomain` y lee de él `idEvento` y `destinatario().email()` |
 | 2 | `{Accion}{Entidad}UseCaseImpl` | Es quien **llama** al `ResultMapper` y retorna el `Result` |
 | 3 | `{Accion}{Entidad}Interactor` | Solo declara el tipo: `Interactor<{Accion}{Entidad}Command, {Concepto}Result>`, con su `@Transactional` |
 | 4 | `{Accion}{Entidad}ResponseMapper` (`infrastructure/.../command/primaryadapter/web/mapper/`) | `static toResponse(result)` → `{Accion}{Entidad}ResponseDTO` |
@@ -298,7 +298,7 @@ la salida; en `query/`, `criteria/` es la entrada y `readmodel/` la salida.
 
 ## Cuándo un grupo de campos se vuelve un value object
 
-Un agregado con muchos atributos no se parte por número, sino por cohesión. Extrae un `record` a
+Un domain con muchos atributos no se parte por número, sino por cohesión. Extrae un `record` a
 `domain/{feature}/model/` cuando varios campos **viajan siempre juntos y no cambian tras crearse**:
 `Destinatario(nombre, email)` y `Contenido(asunto, cuerpo, pie)` en `notificaciones` redujeron
 `NotificacionDomain` de 14 campos a 11 y de siete setters privados a dos.
@@ -306,19 +306,19 @@ Un agregado con muchos atributos no se parte por número, sino por cohesión. Ex
 **No extraigas el grupo de ciclo de vida.** `estado`/`detalleError`/`fechaEnvio`/`intentos` parecen
 otro value object y no lo son: las transiciones (`marcarEnviada`, `marcarFallida`,
 `prepararReintento`) los mutan. Un value object es inmutable, así que encerrarlos obligaría a
-reconstruirlo en cada transición y a que el agregado pidiera permiso para cambiar su propio estado.
+reconstruirlo en cada transición y a que el domain pidiera permiso para cambiar su propio estado.
 
 Forma del value object, y el detalle que se rompe fácil:
 
-- `crear(campos..., ValidationResult result)` — **recibe el `ValidationResult` del agregado**, no
+- `crear(campos..., ValidationResult result)` — **recibe el `ValidationResult` del domain**, no
   lanza por su cuenta. Si cada VO lanzara, un payload con nombre y correo inválidos devolvería solo
   el primer error y el `fieldErrors[]` del Notification Pattern dejaría de acumular. Cada campo
   inválido devuelve `UtilTexto.VACIO` y sigue.
 - `reconstruir(campos...)` — normaliza (`aplicarTrim`) pero **no valida**: lo que ya está en la base
   entra tal cual; rechazarlo al leer solo impediría corregirlo.
-- `VACIO` como centinela + `esVacio()`, igual que un agregado.
-- La factoría `crear(...)` del agregado **sigue recibiendo los campos sueltos**, no los VO ya
-  construidos: si recibiera los VO, la validación se habría ejecutado antes, fuera del agregado.
+- `VACIO` como centinela + `esVacio()`, igual que un domain.
+- La factoría `crear(...)` del domain **sigue recibiendo los campos sueltos**, no los VO ya
+  construidos: si recibiera los VO, la validación se habría ejecutado antes, fuera del domain.
 ## El `ReadModel` nunca sale por HTTP
 
 El `Controller` de lectura mapea `ReadModel` → `{Entidad}ResponseDTO` con
@@ -463,7 +463,7 @@ Su único trabajo es `Entity ↔ JpaEntity` y delegar en el repositorio.
 | `catch (DataAccessException)` → `errorPersistencia(...)` envolviendo en `InfrastructureException` | Sobra. `GlobalAppExceptionHandler` no mapea Spring Data, así que cae en su catch-all → 500 con log de error, que es exactamente el resultado correcto para "BD caída" o "bug de mapeo". El `try/catch` añade ruido por método y esconde la causa raíz tras un mensaje genérico |
 | `saveAndFlush(...)` en el adaptador | `flush` no cierra la transacción (el commit sigue siendo del interactor), pero al saltar una violación de constraint deja la transacción en *rollback-only* y el `EntityManager` en estado indefinido: capturar ahí y continuar produce un `UnexpectedRollbackException` en el commit, lejos del origen. Solo existía para adelantar el error al `catch`; eliminado el `catch`, pierde su razón de ser. Usa `save`. (En el *arrange* de un `@DataJpaTest` sí es legítimo, para forzar el insert) |
 | `Boolean existePorX(...)` | El repo es uniforme en `boolean` primitivo, puerto y adaptador (`existePorId`, `existePorTituloProyecto`, `existeTituloEnOtraFicha`). El envuelto introduce un `null` posible que nadie comprueba y un unboxing silencioso dentro de la `Rule`. Esto aplica al **puerto**, no al `Finder`: `Finder<T, Boolean>` lleva el envuelto por obligación del genérico y es correcto |
-| Método de escritura sin log | Los de escritura registran `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), id)` con el `AppLogger` inyectado por constructor. Los de lectura **no** logean. Es un eslabón de la estructura de logs del flujo de escritura — la estructura completa (dos `INFO` por petición, `debug` de finders antes del validator, caso anidado) está en `arquisoft-estandares` |
+| Método de escritura sin log | Los de escritura registran `logger.debug({Feature}Key.LOG_GUARDADA, id)` con el `AppLogger` inyectado por constructor. Los de lectura **no** logean. Es un eslabón de la estructura de logs del flujo de escritura — la estructura completa (las tres líneas del use case, el interactor que no logea, el caso anidado) está en `arquisoft-estandares` |
 
 **Matiz que no es excepción a lo anterior:** un adaptador sí puede lanzar una `InfrastructureException`
 **propia**, desde `infrastructure/{feature}/exception/`, para fallos que solo él diagnostica —
@@ -476,7 +476,7 @@ Forma canónica:
 @Override
 public void registrar({Feature}Entity entity) {
     repository.save({Feature}JpaMapper.toJpaEntity(entity));
-    logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), entity.id());
+    logger.debug({Feature}Key.LOG_GUARDADA, entity.id());
 }
 
 @Override
@@ -522,7 +522,7 @@ mismo.
 (`com.arquisoft.shared.publisher`).
 
 Antes eran un solo módulo llamado `domain`, así que `{contexto}/domain` recibía `UseCase` e
-`Interactor` en su classpath y un agregado podía implementarlos sin que nada fallara. Hoy no
+`Interactor` en su classpath y un domain podía implementarlos sin que nada fallara. Hoy no
 compila. Es la misma clase de garantía que da tener cero Spring en el classpath del dominio: "el
 dominio no orquesta" pasó de convención a hecho.
 
@@ -546,9 +546,9 @@ El `UseCase` inyecta el puerto `EventPublisher` (`com.arquisoft.shared.publisher
 `eventPublisher.publish(new AsesorFichaCambiadoEvent(...))`. Ver `CambiarAsesorFichaUseCaseImpl.java`
 (fichas) y `CrearUsuarioUseCaseImpl.java` (usuarios), que siguen la misma forma.
 
-**El agregado es una clase plana y no participa en la publicación**: no extiende ninguna clase base
+**El domain es una clase plana y no participa en la publicación**: no extiende ninguna clase base
 para esto, no acumula eventos en memoria y no expone ningún método para emitirlos o drenarlos. Un
-agregado que declare algo así no compila — el tipo base que lo permitía no existe en el repo, y el
+domain que declare algo así no compila — el tipo base que lo permitía no existe en el repo, y el
 `{contexto}/domain` ni siquiera tiene `EventPublisher` en su classpath (`shared:domain` no lo trae).
 Si un plan, un ejemplo o tu memoria proponen que la entidad acumule y el use case drene, es material
 viejo: la forma es una sola y es la de arriba.
@@ -629,12 +629,12 @@ nada. Tres cosas lo descalifican como notificación:
   cada uno, que es mecánica del comité y no información suya.
 
 El hecho que sí incumbe al estudiante es el cambio de **`EstadoFicha`** —la máquina de estados de la
-ficha, no la de cada evaluación—, que ocurre una sola vez y vive en otro agregado. Ese es el caso de
+ficha, no la de cada evaluación—, que ocurre una sola vez y vive en otro domain. Ese es el caso de
 uso que emitirá, cuando exista.
 
 **La señal para distinguirlos:** si el mismo hecho puede ocurrir N veces en paralelo para el mismo
 sujeto, no es el hecho que se notifica — es un paso hacia otro que sí lo es, y ese otro suele vivir
-en un agregado distinto. Y si te encuentras inventando un umbral ("cuando haya tres evaluaciones,
+en un domain distinto. Y si te encuentras inventando un umbral ("cuando haya tres evaluaciones,
 entonces…") para convertir N pasos en un hecho, para y comprueba que el disparo real esté modelado:
 un umbral inventado desde el código fosiliza en migraciones y contratos de evento una decisión de
 negocio que nadie tomó.
@@ -705,7 +705,7 @@ primaryadapter/amqp/
 ```
 
 Solo por productor dejó de escalar en cuanto un contexto emitió eventos sobre varios de sus
-agregados: el paquete plano `fichas/` los mezclaba y el emparejamiento de un consumidor con su
+domains: el paquete plano `fichas/` los mezclaba y el emparejamiento de un consumidor con su
 payload solo se veía leyendo los nombres de archivo. El segmento de entidad va todo en minúsculas y
 sin separadores (`asesorficha`, `fichaperfil`), como cualquier otro paquete de feature.
 

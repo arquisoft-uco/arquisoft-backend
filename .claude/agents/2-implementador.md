@@ -59,35 +59,35 @@ infrastructure):
 
 ### Orden interno por capa
 
-**domain:** eventos de dominio (solo si el plan declara eventos) → `{Entidad}Domain` (aggregate
-root, directo en `domain/{feature}/`, sin subcarpeta `aggregate/`) → objeto de acción
-`{Accion}{Entidad}Domain` si el plan lo declara (al lado del agregado, sin subpaquete) → enums de
+**domain:** eventos de dominio (solo si el plan declara eventos) → `{Entidad}Domain` (directo
+en `domain/{feature}/`, sin subcarpeta `aggregate/`) → objeto de acción
+`{Accion}{Entidad}Domain` si el plan lo declara (al lado del domain, sin subpaquete) → enums de
 catálogo si aplican → `model/` con el `record` de entrada de cada Rule → `{Concepto}Rule`/`rules/impl/`
 → `exception/` **solo** para lo que lanza una Rule.
 
 **El objeto de acción lleva los atributos que el plan liste y nada más** — por defecto `UUID` y
-escalares (`CambioAsesorFichaDomain` son dos `UUID`), no el agregado cargado. Solo si el plan declara
+escalares (`CambioAsesorFichaDomain` son dos `UUID`), no el domain cargado. Solo si el plan declara
 un objeto de acción **compuesto** contiene otros `Domain`, y entonces su `{Accion}{Entidad}Mapper`
 los arma de menor a mayor jerarquía: primero `{Entidad}Domain.crear(...)`, luego cada pieza con el
 mapper de **su propia feature** pasándole `entidad.getId()`, y el compuesto al final
 (`RegistrarFichaPerfilMapper` es el patrón exacto). El `crear(...)` del compuesto solo valida
 `noNulo` de cada componente: no repite las validaciones que cada pieza ya hizo.
 
-**Las invariantes del agregado no tienen clase de excepción propia** — se acumulan con
+**Las invariantes del domain no tienen clase de excepción propia** — se acumulan con
 `ValidationResult.addError(...)` + `lanzarSiTieneErrores()` (Notification Pattern), y cada setter
 privado corta con `return` cuando su validación falla. Si el plan lista una
 `{Entidad}{Regla}Exception` para una invariante local, es bug del plan — reporta ambigüedad.
 
 **application:** `Command` (`record` + `crear(...)`) → `{Accion}{Entidad}Mapper` en
 `primaryport/mapper/` (`static toDomain`, **obligatorio en escrituras**, lo invoca el `Interactor`;
-construye el objeto de acción si el plan lo declara, si no el agregado directo) → `{Entidad}OutputPort` + `entity/{Entidad}Entity`
+construye el objeto de acción si el plan lo declara, si no el domain directo) → `{Entidad}OutputPort` + `entity/{Entidad}Entity`
 (record plano) + `secondaryport/mapper/{Entidad}Mapper` → `Finder`(s) → `Validator` → `UseCase` →
 `Interactor` (dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` —
 qualifier siempre explícito, `usuariosTransactionManager` es `@Primary` y enlaza en silencio si lo
 omites).
 
 - La firma del `UseCase` de escritura es **`UseCase<{Algo}Domain, R>`**, nunca el `Command`: ese
-  tipo pertenece al interactor y muere ahí. Vale igual cuando el comando no crea agregado — un job
+  tipo pertenece al interactor y muere ahí. Vale igual cuando el comando no crea domain — un job
   por lotes nominaliza en un objeto de acción (`ReintentoNotificacionesDomain`). El `Criteria` del
   lado query sí viaja directo al caso de uso.
 - **Un `UseCase` puede encadenar a otro, pero todos los pasos cuelgan del orquestador**, no de un
@@ -105,7 +105,7 @@ omites).
 
   ```java
   boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada);
-  logger.debug(Mensajes.obtener(NotificacionKey.LOG_VERIFICACION_PREVIA),
+  logger.debug(NotificacionKey.LOG_VERIFICACION_PREVIA,
           entrada.getIdEvento(), yaProcesada);
 
   if (yaProcesada) {
@@ -113,7 +113,7 @@ omites).
   }
   ```
 
-  Tres detalles que no son cosméticos: el `Finder` recibe el **agregado**, no el `idEvento` suelto
+  Tres detalles que no son cosméticos: el `Finder` recibe el **domain**, no el `idEvento` suelto
   —la clave de idempotencia es el par `(idEvento, destinatario)`, así que el `idEvento` solo no
   identifica la fila—; el log es **`debug`** y va **antes** del `if`, con el booleano que se acaba de
   consultar, para que el corte quede explicado tanto si dispara como si no; y el corte **devuelve una
@@ -127,17 +127,17 @@ omites).
   `com.arquisoft.shared.rules` (`shared:domain`), `Finder` en `com.arquisoft.shared.finder`
   (`shared:application`).
 - Todo el I/O del comando vive en el `UseCase`: los `Finder`s traen el estado, se desenvuelve el
-  `Optional` ahí (centinela `VACIO` para agregados, valor + `boolean` para escalares), se valida, se
+  `Optional` ahí (centinela `VACIO` para domains, valor + `boolean` para escalares), se valida, se
   mapea `Domain → Entity` y se persiste.
   El resultado de un `{X}ExisteFinder` se declara **`boolean` explícito, nunca `var`**: el contrato
   es `Finder<T, Boolean>` porque un genérico no admite primitivos, y con `var` ese envuelto llega
   hasta el `validar(..., boolean existe)` desempaquetándose en silencio.
-- La existencia de un aggregate de **otra feature** se consulta con el `Finder` de esa feature sobre
+- La existencia de un domain de **otra feature** se consulta con el `Finder` de esa feature sobre
   su `OutputPort` de `command/` — nunca creando un `query/` para eso.
 - Si el plan declara eventos, el `UseCase` inyecta la **interfaz** `EventPublisher`
   (`com.arquisoft.shared.publisher`, en `shared:application` — nunca una de sus dos
   implementaciones) y publica directamente tras persistir:
-  `eventPublisher.publish(new {Entidad}{Accion}Event(...))`. Es la única forma: el agregado es una
+  `eventPublisher.publish(new {Entidad}{Accion}Event(...))`. Es la única forma: el domain es una
   clase plana, no acumula eventos ni los drena. **Si el plan dice "Eventos: ninguno", no inyectes
   `EventPublisher` y no crees nada en `event/`** — ni "por si acaso", ni porque la entidad parezca
   pedirlo. Ausencia declarada es una decisión del plan, no un olvido que te toque completar.
@@ -239,7 +239,7 @@ debes generar:
   silencioso dentro de la `Rule`. La regla es del puerto: el `Finder<T, Boolean>` lleva el
   envuelto por obligación del genérico y no se toca.
 - **Los métodos de escritura logean**, los de lectura no:
-  `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), entity.id())` con el `AppLogger`
+  `logger.debug({Feature}Key.LOG_GUARDADA, entity.id())` con el `AppLogger`
   inyectado por constructor.
 
 
@@ -300,10 +300,10 @@ espera respuesta: "¿Sigues con @3-tester (recomendado) o vas directo a @4a-vali
 
 - **Entidad raíz:** constructor privado, campos no-`final`, setters privados que cortan con `return`
   al fallar la validación, solo getters, sin Lombok, sin `record`. `crear(...)`/`reconstruir(...)`,
-  nunca `build`/`rebuild`; `reconstruir` no valida ni genera nada. Si el agregado puede llegar
+  nunca `build`/`rebuild`; `reconstruir` no valida ni genera nada. Si el domain puede llegar
   ausente al use case, declara `public static final X VACIO` con los valores cero
   (`UtilUUID.obtenerUUIDPorDefecto()`, `UtilTexto.VACIO`, …) y `esVacio()` comparando identidad.
-  El agregado es siempre una `final class` plana: no extiende nada para emitir eventos.
+  El domain es siempre una `final class` plana: no extiende nada para emitir eventos.
 - **Cola AMQP nueva:** un solo `@Bean Declarables` con `ColaEvento.declarar(cola, routingKey,
   eventsExchange, dlx)` — declara de una vez la cola, su `.dead` y los dos bindings. No escribas los
   cuatro beans a mano ni llames a `ColaDeadLetter` desde el `*QueueConfig`: el descarte se vuelve
@@ -330,6 +330,11 @@ espera respuesta: "¿Sigues con @3-tester (recomendado) o vas directo a @4a-vali
   migración inserta exactamente ese mismo conjunto, y el ancho de la tabla se copia del DDL del MER
   (el estándar 60/60/300 de ADR-012 v1.1 aplica solo a tablas nuevas; `estado_ficha`, `tipo_item` y
   `estado_evaluacion` son excepciones documentadas que **no** se migran).
+  **La conversión del `String` del cliente va en el `crear(...)` del domain**, en el setter privado:
+  `esValido(...)` acumula en el `ValidationResult` y `desde(...)` convierte. El DTO, el `Command` y
+  el `{Accion}{Entidad}Mapper` lo pasan crudo — ninguno llama `desde(...)`, porque lanzaría al
+  primer error. Desde una fila de BD es al revés: `desde(...)` en el mapper de `secondaryport`,
+  antes de `reconstruir(...)`. Referencia: `TipoItem` en `ItemFichaPerfilDomain`.
 - **Mensajes:** cero strings literales en producción, y **dos destinos distintos** (no existe
   ninguna clase `{Contexto}Messages`):
   - Constantes Java en `shared:message`: `{Contexto}Codes` (códigos), `{Contexto}Fields` (campos de
@@ -338,28 +343,40 @@ espera respuesta: "¿Sigues con @3-tester (recomendado) o vas directo a @4a-vali
   - Prosa de errores y logs: constante en el enum `{Feature}Key` (`shared:message/key/{contexto}/`)
     con su **aridad**, registro en `ClavesCatalogo`, y línea en `catalogo/{contexto}.properties`.
     Se resuelve con `Mensajes.formatear(clave, args)` para mensajes de cliente (`%s`) y
-    `logger.info(Mensajes.obtener(clave), args)` para logs (`{}`). **Nunca
+    `logger.info(clave, args)` para logs (`{}`). **Nunca
     `Mensajes.obtener(clave).formatted(...)`.** Si falta cualquiera de las tres piezas,
     `CatalogoCargaTest` rompe el build.
 - **Logging:** inyecta el puerto `AppLogger` (`shared:logger`) por constructor — no `@Slf4j`, del que
   ya no queda ni uno en los cuatro contextos con código. Nunca loguees
   desde un método `@Bean` ni desde un `@PostConstruct`: el catálogo aún no está instalado y saldría
   la clave cruda sin argumentos.
-- **Estructura de logs de un flujo de escritura:** cada flujo de comando emite **dos `INFO` por
-  petición** y nada más; el resto es `debug`. Ver la sección completa en `arquisoft-estandares`.
-  Resumen operativo:
-  1. `logger.info(...LOG_{GERUNDIO}...)` como **primera línea** de `UseCaseImpl.ejecutar`, con los
-     identificadores de negocio de la entrada. Sin esto, un flujo que aborta en validación no deja
-     rastro de que se intentó.
-  2. `logger.debug(...LOG_VERIFICACION_{ACCION}...)` **justo antes** de `validator.validar(...)`, con
-     exactamente lo que devolvieron los finders (colecciones como `.size()`, agregados como
-     `!x.esVacio()`). Es lo que permite reconstruir por qué una `Rule` lanzó.
-  3. El `logger.info(...LOG_{PARTICIPIO}...)` de cierre tras la escritura — normalmente ya existe.
-  4. `logger.debug(...LOG_GUARDADO...)` en cada método de **escritura** del adapter.
-  Si el use case invoca **otros use cases** (flujo anidado, hoy solo `RegistrarFichaPerfil`): el
-  `InteractorImpl` inyecta `AppLogger` y emite el `INFO` de cierre `LOG_{ACCION}_COMPLETADO`, el use
-  case raíz baja su log de "escrito" a `debug`, los anidados bajan su cierre a `debug`, y se agrega un
-  `debug` de validación superada. **En un flujo simple el interactor no loguea.**
+- **Al logger se le pasa la `ClaveMensaje`, nunca el texto ya resuelto.**
+  `logger.debug(FichaPerfilKey.LOG_VERIFICACION_PREVIA, a, b)`, **no**
+  `logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VERIFICACION_PREVIA), a, b)`. La segunda forma
+  compila, pero `Mensajes.obtener` es un `GET` a Redis en cada llamada y Java evalúa el argumento
+  antes de entrar al método: un `debug` con el nivel apagado pagaba igual el viaje de red. Las
+  sobrecargas `debug/info/warn/error(ClaveMensaje, Object...)` resuelven dentro del logger y solo si
+  el nivel está activo. `Mensajes.formatear`/`obtener` se quedan para lo que **no** es log: mensajes
+  de excepción, asunto y cuerpo de correo, textos de respuesta.
+- **Estructura de logs de un flujo de escritura:** un `UseCaseImpl` de escritura emite
+  **exactamente tres líneas**, ni una más. Ver la sección completa en `arquisoft-estandares`.
+  1. `logger.info({Feature}Key.LOG_{GERUNDIO}, ...)` como **primera línea** de
+     `UseCaseImpl.ejecutar`, con los identificadores de negocio de la entrada. Sin esto, un flujo que
+     aborta en validación no deja rastro de que se intentó.
+  2. `logger.debug({Feature}Key.LOG_VERIFICACION_{ACCION}, ...)` **justo antes** de
+     `validator.validar(...)`, con exactamente lo que devolvieron los finders (colecciones como
+     `.size()`, domains como `!x.esVacio()`). Es lo que permite reconstruir por qué una `Rule` lanzó.
+  3. `logger.info({Feature}Key.LOG_{PARTICIPIO}, ...)` como **última sentencia** de `ejecutar`,
+     después de las llamadas encadenadas y del `publish`.
+  Aparte, `logger.debug({Feature}Key.LOG_GUARDADO, id)` en cada método de **escritura** del adapter —
+  no lo dupliques en el use case.
+  **El `InteractorImpl` no loguea nunca**, ni en flujo simple ni en anidado: no inyecta `AppLogger`.
+  No existe `LOG_{ACCION}_COMPLETADO` ni un `debug` de "validación superada" (si el validator no
+  hubiera pasado, habría lanzado: esa línea solo probaba que la ejecución llegó hasta ahí).
+  En un **flujo anidado** (hoy `RegistrarFichaPerfil`) el use case raíz mantiene sus tres líneas sin
+  cambio; el anidado que tiene `Interactor` + `Controller` propios (`AsignarEstudiantesFichaPerfil`)
+  conserva las suyas, y el que solo es paso interno sin `Interactor`
+  (`AsignarEstadoInicialFichaPerfil`) lleva un único `debug`.
   **Nunca** un log en un `Validator`, en una `Rule`, en `Command.crear(...)`, en un mapper, en un DTO,
   en un método de lectura de un adapter, ni un `try/catch` puesto solo para loguear. Nunca secretos.
 - **Estructura de logs de un flujo de lectura:** una consulta **no emite ningún `INFO`** y no logea
@@ -396,7 +413,7 @@ espera respuesta: "¿Sigues con @3-tester (recomendado) o vas directo a @4a-vali
   el classpath resuelto. Si algo no compila por esto, **el arreglo no es tocar el `build.gradle`**:
   un enum de dominio que un adaptador necesita nombrar viaja como `String` y se convierte en
   `Command.crear(...)` con su `desde(...)`/`desdeCodigo(...)` — así se resolvió `RolUsuarioDTO` en
-  `usuarios`; un agregado que un adaptador quiere construir significa que el puerto debe hablar
+  `usuarios`; un domain que un adaptador quiere construir significa que el puerto debe hablar
   `Entity`.
 - **DTOs:** una sola convención, sin variantes por contexto — el `RequestDTO` es un `record` **sin
   ninguna anotación** y un `{Accion}{Entidad}RequestMapper` externo (`final`, constructor privado,
