@@ -55,6 +55,17 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
 
     private static final long TOKENS_POR_SOLICITUD = 1L;
 
+    // El limitador deshabilitado (perfil dev) responde siempre "consumido" sin tocar Redis. Un
+    // unico bucket que nace lleno con capacidad Long.MAX_VALUE no se agota nunca —Bucket4j rechaza
+    // tasas mayores a 1 token/ns y Long.MAX_VALUE por dia lo es— y LockFreeBucket admite consumo
+    // concurrente, asi que se comparte entre todas las peticiones en vez de reconstruirse en cada una.
+    private static final Bucket BUCKET_SIN_LIMITE = Bucket.builder()
+            .addLimit(Bandwidth.builder()
+                    .capacity(Long.MAX_VALUE)
+                    .refillIntervally(RECARGA_MINIMA, RECARGA_INERTE)
+                    .build())
+            .build();
+
     private final AppLogger logger;
 
     private final LimiteSolicitudesProperties properties;
@@ -114,7 +125,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
     @Override
     public ConsumptionProbe consumir(String ip, boolean esLogin) {
         if (!properties.enabled()) {
-            return consumirSinLimite();
+            return BUCKET_SIN_LIMITE.tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
         }
 
         Supplier<BucketConfiguration> configuracion =
@@ -143,10 +154,6 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
     private ConsumptionProbe consumirLocal(String clave, Supplier<BucketConfiguration> configuracion) {
         return bucketsLocales.obtener(clave, configuracion)
                 .tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
-    }
-
-    private ConsumptionProbe consumirSinLimite() {
-        return bucketSinLimite().tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
     }
 
     // Ambas cuotas se recargan igual, y no es indiferente cual: con recarga por lotes el
@@ -203,16 +210,5 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         if (!UtilObjeto.esNulo(bucketConnection)) {
             bucketConnection.close();
         }
-    }
-
-    // El bucket nace lleno, asi que con esta capacidad no se agota nunca y la recarga es
-    // irrelevante: Bucket4j rechaza tasas mayores a 1 token/ns, y Long.MAX_VALUE por dia lo es.
-    private Bucket bucketSinLimite() {
-        return Bucket.builder()
-                .addLimit(Bandwidth.builder()
-                        .capacity(Long.MAX_VALUE)
-                        .refillIntervally(RECARGA_MINIMA, RECARGA_INERTE)
-                        .build())
-                .build();
     }
 }

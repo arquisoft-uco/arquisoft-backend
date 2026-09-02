@@ -1,4 +1,4 @@
-package com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.fichas;
+package com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.fichas.asesorficha;
 
 import com.arquisoft.notificaciones.application.notificacion.command.primaryport.interactor.EnviarNotificacionInteractor;
 import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.EnviarNotificacionCommand;

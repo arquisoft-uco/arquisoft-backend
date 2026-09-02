@@ -150,11 +150,22 @@ listar las **ocho** piezas, repartidas en dos contextos, y la sección 6 debe mo
 | 1 | `shared:message/constant/` | constante nueva en `EventTopics.{Contexto}` — la routing key, declarada **una sola vez** |
 | 2 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java` — `EVENT_TOPIC = EventTopics.{Contexto}.{X}` |
 | 3 | `notificaciones/infrastructure/config/` | un `@Bean Declarables` con `ColaEvento.declarar(...)` en `Notificaciones{Contexto}QueueConfig` — declara la cola, su `.dead` y los dos bindings de una vez; la constante del nombre (`{Contexto}Queues.PREFIJO + topic`) se queda porque `@RabbitListener` la exige constante |
-| 4 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Payload.java` — `record` propio del adaptador, **nunca** la clase de evento del productor |
-| 5 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/` | `{Evento}Consumer.java` extiende `AbstractNotificacionConsumer` — aquí, y no en el use case, se elige el texto |
+| 4 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/{entidad}/` | `{Evento}Payload.java` — `record` propio del adaptador, **nunca** la clase de evento del productor |
+| 5 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/{entidad}/` | `{Evento}Consumer.java` extiende `AbstractNotificacionConsumer` — aquí, y no en el use case, se elige el texto, con el helper heredado `plantilla(clave, args)` |
 | 6 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
-| 7 | `notificaciones/.../primaryadapter/amqp/` | la misma constante en `TipoNotificacionEvento` (espejo de infraestructura) |
-| 8 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto |
+| 7 | `notificaciones/.../primaryadapter/amqp/` | la misma constante en `TipoNotificacionEvento` (espejo de infraestructura) — se queda directo en `amqp/`, es común a todos los productores |
+| 8 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto. El pie **no** se declara: es compartido y sale de `PlantillaKey.PIE_GENERICO` |
+
+El subpaquete del consumidor lleva **dos** segmentos: primero quién produce, después de qué entidad
+suya habla el evento (`amqp/fichas/asesorficha/`, `amqp/fichas/fichaperfil/`). Nombra los dos en el
+árbol de la sección 6 — solo por productor los eventos de varios agregados del mismo contexto
+acaban mezclados en un paquete plano.
+
+**El texto se resuelve con `plantilla(clave, args)`, el helper de `AbstractNotificacionConsumer`, no
+con `Mensajes.formatear` directo:** comprueba que la clave exista en el catálogo y lanza
+`PlantillaNotificacionNoDisponibleException` si falta. Sin él, una plantilla ausente en Redis no
+falla — degrada al respaldo y envía un correo con la clave cruda de asunto. Y son **tres** textos
+por correo (asunto, cuerpo y pie), no dos.
 
 El evento **carga todo lo que el correo necesita** — nombre y correo del destinatario, más el dato
 legible del asunto (`asesorNombre`, `asesorEmail`, `tituloProyecto` en `AsesorFichaCambiadoEvent`) —
@@ -196,12 +207,18 @@ cambia (nuevo parámetro/validación/campo del DTO) sin duplicar el controller.
 - **B) Void.** `201`/`204` sin body, opcionalmente header `Location`. Tampoco necesita tipo propio.
 - **C) Objeto específico.** Justifica en la sección 8 por qué rompe el default A, y **declara un
   `{Concepto}Result`** — es la única de las tres opciones que agrega archivos al árbol:
-  `application/{feature}/command/result/{Concepto}Result.java` (`record` plano) +
-  `result/mapper/{Concepto}ResultMapper.java` (`static toResult(...)`), más el
-  `{Accion}{Entidad}ResponseMapper` en infraestructura. Nunca devuelvas el `Domain`, el `Entity` ni
-  un `ReadModel` desde el lado comando: el `ReadModel` es del lado lectura y el `Result` es su
-  equivalente de escritura. Patrón de referencia: `seguridad/auth` (`AutenticacionResult`) — hoy es
-  el único contexto que lo tiene, pero la estructura es idéntica para un contexto de negocio.
+  `application/{feature}/command/result/{Concepto}Result.java` +
+  `result/mapper/{Concepto}ResultMapper.java`, más el `{Accion}{Entidad}ResponseMapper` en
+  infraestructura. Nunca devuelvas el `Domain`, el `Entity` ni un `ReadModel` desde el lado comando:
+  el `ReadModel` es del lado lectura y el `Result` es su equivalente de escritura.
+  **Decide y escribe en el plan cuál de las dos formas es:** un desenlace único es un `record` plano
+  (`AutenticacionResult`, `ReintentoNotificacionesResult(int reenviadas, int fallidas, int agotadas)`);
+  varios desenlaces excluyentes son una **`sealed interface` con un `record` por variante**
+  (`EnvioNotificacionResult` → `Enviada`/`Duplicada`/`Fallida`), y entonces el mapper lleva **una
+  fábrica por variante** (`toResultEnviada`, `toResultDuplicada`, `toResultFallida`), no un
+  `toResult` con un `if` dentro. La sellada es lo que deja al llamador hacer un `switch` exhaustivo
+  sin `default`. Referencias: `notificaciones/notificacion` (contexto de negocio, las dos formas) y
+  `seguridad/auth`.
 
 **12. ¿Actúa sobre un recurso EXISTENTE con dueño?** (solo si modifica/extiende algo ya creado por
 un actor concreto — ej. la ficha es del estudiante). El `@PreAuthorize` autoriza por **rol**, no
@@ -456,6 +473,13 @@ Una HU con **evento** añade el `INFO` de recepción en el `{Evento}Consumer` (e
 de entrada: no hay línea `AUDIT` porque no hay petición HTTP) y **no** un `INFO` de entrada en el use
 case que dispara. Los logs de envelope, ack y DLQ ya los pone `AbstractEventConsumer`: no los planifiques.
 
+**El `INFO` de cierre tampoco va en el use case.** Los dos `INFO` del mensaje los pone el adaptador:
+en `notificaciones` el cierre sale de `AbstractNotificacionConsumer.registrar(...)`, que elige nivel
+y clave según el desenlace de la sellada (`info` para `Enviada`/`Duplicada`, `warn` para `Fallida`).
+La regla: cuando el use case devuelve una sellada de desenlace, el cierre lo logea **quien la
+interpreta**, no quien la produce — así que en el plan ese use case solo lleva su `debug`, y las
+claves nuevas de cierre se planifican del lado del consumidor.
+
 En cualquiera de los tres casos, **ningún log lleva secretos**, y todo correo pasa por
 `UtilTexto.enmascararCorreo(...)`. Si la HU registra un correo en un log, dilo explícitamente en el plan.
 
@@ -544,7 +568,8 @@ getters/setters ni métodos `private`.
 - [ ] `Validator` puro: constructor sin argumentos con `new {Regla}RuleImpl()`, sin `Finder`, sin `if`
       — y **no existe** si la HU no declara ninguna `Rule`
 - [ ] Consulta que no debe lanzar (idempotencia, corte temprano): `Finder` consultado directo desde
-      el use case con `if (...) return;`, sin `Rule` de por medio
+      el use case, sin `Rule` de por medio, y el corte devuelve la variante de la sellada que
+      corresponde (`toResultDuplicada(...)`), nunca un `return;` mudo
 - [ ] Sin `Optional` en firmas de `Validator` ni en records de `Rule`
 - [ ] Eventos ⟺ pregunta 5 = A/B: con C no hay `event/`, ni `EventPublisher` en el use case, ni
       sección 10, ni tests de publicación. Con A/B, las cuatro presentes

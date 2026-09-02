@@ -156,11 +156,17 @@ spring:
 # Agregar un proveedor con API REST es añadir una clase con @ConditionalOnProperty y su valor;
 # ni el dominio ni la aplicación se enteran.
 notificacion:
-  proveedor: ${NOTIFICACION_PROVEEDOR:log}
+  proveedor: ${NOTIFICACION_PROVEEDOR:smtp}
   remitente-email: ${NOTIFICACION_REMITENTE_EMAIL:no-reply@arquisoft.local}
   remitente-nombre: ${NOTIFICACION_REMITENTE_NOMBRE:Arquisoft}
-  # Admite classpath: y file:, asi que en despliegue se puede apuntar a un HTML fuera del jar.
-  plantilla: ${NOTIFICACION_PLANTILLA:classpath:plantillas/correo-base.html}
+  # Clave de Redis, cargada por plantillas/cargar.sh. Espacio propio: el podador del catalogo
+  # escanea "<contexto>.*" y borraria la plantilla si colgara de "notificaciones.".
+  plantilla: ${NOTIFICACION_PLANTILLA:plantilla.correo-base}
+  # Relee la plantilla de Redis cada intervalo, para ajustar el maquetado sin desplegar. Solo
+  # publica la version nueva si conserva los tres huecos; si no, se queda con la anterior.
+  plantilla-refresco:
+    habilitado: ${NOTIFICACION_PLANTILLA_REFRESCO:true}
+    intervalo: ${NOTIFICACION_PLANTILLA_REFRESCO_INTERVALO:PT5M}
   # Un envio rechazado se guarda como FALLIDA y lo reintenta un job programado, no el consumidor:
   # con prefetch=1 reintentar dentro del listener bloquearia la cola, y reencolar el evento no
   # sirve porque la idempotencia por event_id lo daria por duplicado sin reenviarlo.

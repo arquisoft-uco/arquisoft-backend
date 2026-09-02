@@ -114,15 +114,20 @@ respondió que no hay consumidor — y publicar un evento que nadie consume crea
 contexto puede empezar a consumir después. Repórtalo citando la sección 4 del plan.
 
 **Si el plan declara evento hacia `notificaciones`**, el evento solo cuenta como implementado si
-existe el camino completo. Falta cualquiera de estas cinco ⇒ ❌ bloqueante, porque el correo nunca
-sale y el fallo es silencioso (el mensaje se queda en el exchange, sin cola enganchada):
+existe el camino completo. Falta cualquiera de estas **ocho** ⇒ ❌ bloqueante, porque el correo nunca
+sale y el fallo es silencioso (el mensaje se queda en el exchange, sin cola enganchada). Es la misma
+lista que la pregunta 5b del plan y la tabla de `arquisoft-arquitectura` — si los tres números no
+coinciden, es que una de las tres se quedó atrás:
 
 | Pieza | Dónde |
 |---|---|
+| Routing key declarada **una sola vez** como constante en `EventTopics.{Contexto}` | `shared:message/constant/` |
+| `{Entidad}{Accion}Event` con `EVENT_TOPIC = EventTopics.{Contexto}.{X}` | `{contexto}/domain/{feature}/event/` |
 | `@Bean Declarables` con `ColaEvento.declarar(...)`, routing key igual al `EVENT_TOPIC` del productor | `notificaciones/infrastructure/config/Notificaciones{Contexto}QueueConfig` |
-| `{Evento}Payload` — `record` local del adaptador, nunca la clase del productor | `notificaciones/.../primaryadapter/amqp/` |
-| `{Evento}Consumer` extiende `AbstractEventConsumer`, arma el texto con `Mensajes.formatear` | `notificaciones/.../primaryadapter/amqp/` |
+| `{Evento}Payload` — `record` local del adaptador, nunca la clase del productor | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/{entidad}/` |
+| `{Evento}Consumer` extiende **`AbstractNotificacionConsumer`**, arma el texto con el helper heredado `plantilla(clave, args)` — nunca `Mensajes.formatear` directo | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/{entidad}/` |
 | Constante nueva en `TipoNotificacion` (sin migración: la columna es `VARCHAR`) | `notificaciones/domain/notificacion/model/` |
+| La misma constante espejada en `TipoNotificacionEvento` — `TipoNotificacionEventoTest` falla si falta | `notificaciones/.../primaryadapter/amqp/` (directo, es común a todos los productores) |
 | `PlantillaKey.ASUNTO_*`/`CUERPO_*` **y** su texto en `catalogo/notificaciones.properties` | `shared:message` + `catalogo/` |
 
 Verifica además que la routing key del binding sea **carácter por carácter** el `EVENT_TOPIC` del
@@ -167,19 +172,28 @@ el use case: el `Finder` trae el dato, el `Validator` arma el record (`Existenci
 caso 403 propio para "no eres el dueño" — es otro 422.
 
 **No confundas esto con un corte de idempotencia.** El check de arriba es sobre `if/`**`throw`**. Un
-`Finder` consultado con `if/`**`return`**, sin lanzar nada, es otra cosa y es correcta:
+`Finder` consultado con `if/`**`return`**, sin lanzar nada, es otra cosa y es correcta. La forma
+vigente devuelve un valor, no corta mudo:
 
 ```java
-if (notificacionProcesadaFinder.obtener(entrada.idEvento())) {
-    logger.info(...);
-    return;              // reentrega normal del broker: no es un error
+boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada);
+logger.debug(Mensajes.obtener(NotificacionKey.LOG_VERIFICACION_PREVIA),
+        entrada.getIdEvento(), yaProcesada);
+
+if (yaProcesada) {
+    return EnvioNotificacionResultMapper.toResultDuplicada(entrada);
 }
 ```
 
 Una `Rule` **siempre lanza** en su violación; aquí lanzar sería el bug — mandaría el mensaje a la DLQ
 cuando RabbitMQ solo estaba reentregando algo ya procesado. Así que no existe `Rule` que modele esto,
 y el `Finder` se consulta directo desde el use case. Marca ❌ solo si ese `if` **lanza** o si el
-resultado ausente representa un error de negocio. Referencia real:
+resultado ausente representa un error de negocio. Tres cosas que sí son hallazgo, todas ⚠️: que el
+`Finder` reciba el `idEvento` suelto en vez del agregado (la clave es el par
+`(idEvento, destinatario)`, así que el evento solo no identifica la fila); que el corte haga
+`return;` mudo cuando el use case declara una sellada de retorno, dejando al consumidor sin poder
+distinguir `Duplicada` de `Enviada`; y que el log previo sea `info` en vez de `debug` o quede
+después del `if`. Referencia real:
 `notificaciones/.../EnviarNotificacionUseCaseImpl` — un comando **sin `Validator` en absoluto**,
 porque no tiene ninguna restricción de conjunto que validar.
 
@@ -217,8 +231,9 @@ excepción o mapear a `Entity`.
 | `ReadModel` anidado y su `ResponseDTO` declarados en la feature que los compone en vez de en la feature que describen (ej. `AsesorFichaReadModel` vive en `asesorficha`) | ⚠️ |
 | Lado write con retorno de UUID crudo (`ResponseEntity<UUID>`) en vez de `{Accion}{Entidad}ResponseDTO(UUID id)` | ❌ |
 | Comando que devuelve un objeto (plan, pregunta 11 = **C**) sin `{Concepto}Result` en `command/result/`: retorna el `Domain`, el `Entity`, un `ReadModel` o directamente el DTO desde `application/` | ❌ |
-| `{Concepto}Result` que no es un `record` plano, o lleva Jackson/Lombok | ❌ |
-| Falta `{Concepto}ResultMapper` en `command/result/mapper/` (`final`, constructor privado, `static toResult(...)`), o lo invoca el `Interactor` en vez del `UseCaseImpl` | ❌ |
+| `{Concepto}Result` con Jackson o Lombok, o que no es ni un `record` plano ni una `sealed interface` de `record`s. **Las dos formas son válidas**: un desenlace único es un `record` (`AutenticacionResult`), varios excluyentes son una sellada con un `record` por variante (`EnvioNotificacionResult` → `Enviada`/`Duplicada`/`Fallida`) — no marques la sellada como violación | ❌ |
+| Falta `{Concepto}ResultMapper` en `command/result/mapper/` (`final`, constructor privado, fábricas `static`), o lo invoca el `Interactor` en vez del `UseCaseImpl` | ❌ |
+| `{Concepto}ResultMapper` de una sellada con un solo `toResult(...)` que decide la variante con un `if`/ternario dentro, en vez de una fábrica por variante (`toResultEnviada`/`toResultDuplicada`/`toResultFallida`) que el use case elige con un `switch` | ⚠️ |
 | El `Controller` serializa el `{Concepto}Result` directo en vez de mapearlo con `{Accion}{Entidad}ResponseMapper` a su `ResponseDTO` | ❌ |
 | Existe `command/result/` en una HU cuyo retorno es `UUID` o `void` (paquete sin razón de ser) | ⚠️ |
 | `ErrorResponseDTO`/`PageResponseDTO`/`QueryCriteriaRequestDTO` duplicados localmente en vez de importados de `shared:web` | ❌ |
@@ -278,8 +293,11 @@ excepción o mapear a `Entity`.
 
 | Check | Sev |
 |---|:---:|
-| `Consumer` en `command/primaryadapter/amqp/{contextoProductor}/` — un subpaquete por productor, no todo plano | ⚠️ |
+| `Consumer` y su `Payload` en `command/primaryadapter/amqp/{contextoProductor}/{entidad}/` — **dos** segmentos, productor y después entidad de ese productor (`amqp/fichas/asesorficha/`, `amqp/fichas/fichaperfil/`), en minúsculas y sin separadores. Ni plano ni solo por productor. Desviación conocida: `fichas/.../usuario/command/primaryadapter/amqp/UsuarioCreadoConsumer` sigue plano y está en vías de retirarse — no es precedente, y solo se reporta si la HU validada lo toca | ❌ |
+| Directo en `amqp/`, sin subpaquete, algo que **no** es común a todos los productores. Ahí solo viven `AbstractNotificacionConsumer` y `TipoNotificacionEvento` | ❌ |
 | Extiende `AbstractEventConsumer`, o `AbstractNotificacionConsumer` si es de `notificaciones` — sin ACK/NACK manual | ❌ |
+| Consumidor de `notificaciones` que arma el texto con `Mensajes.formatear(...)` en vez del helper heredado `plantilla(clave, args)`. `formatear` degrada al respaldo ante una clave ausente en Redis y el correo sale con la clave cruda de asunto; `plantilla` lanza `PlantillaNotificacionNoDisponibleException` y el mensaje acaba en la DLQ, recuperable | ❌ |
+| Clave `PlantillaKey` de pie propia del evento en vez de reusar `PIE_GENERICO` (aridad 0, compartida). El correo lleva tres textos —asunto, cuerpo y pie—, pero solo los dos primeros son por evento | ⚠️ |
 | Payload es un `record` **local** del consumidor — nunca importa la clase del evento del publicador | ❌ |
 | Cola con DLX configurado | ❌ |
 | La routing key aparece escrita **dos veces** (en el `EVENT_TOPIC` del productor y en el `Binding`) en vez de salir de `EventTopics.{Contexto}` — si divergen, el binding deja de recibir sin error | ❌ |
@@ -344,6 +362,7 @@ excepción o mapear a `Entity`.
 | Contraseña, token, refresh token o `Authorization` como argumento de un log. De un token se registra el JTI, nunca el valor | ❌ |
 | `{Evento}Consumer` sin `INFO` de recepción tras `deserialize`, o que lo emite **fuera** del `withCorrelation(...)` — fuera del `AlcanceTraza` la línea sale sin `correlacionId` | ⚠️ |
 | Use case disparado por un consumidor que añade su propio `INFO` de entrada: serían tres `INFO` por mensaje. El de recepción del consumidor ya es la entrada del flujo | ⚠️ |
+| Use case disparado por un consumidor que emite el `INFO` de **cierre**. Los dos `INFO` del mensaje los pone el adaptador; cuando el use case devuelve una sellada de desenlace, el cierre lo logea quien la interpreta — en `notificaciones`, `AbstractNotificacionConsumer.registrar(...)` con su `switch` (`info` para `Enviada`/`Duplicada`, `warn` para `Fallida`) | ⚠️ |
 | `{Evento}Consumer` que reimplementa los logs de envelope, ack o DLQ que `AbstractEventConsumer` ya emite | ⚠️ |
 | `Validator*.*(...)`/`result.addError(...)` con literales en `campo`/`código` en vez de `{Contexto}Fields.*`/`{Contexto}Codes.*` | ❌ |
 | Referencia a `DomainValidator` (clase retirada — hoy es la familia `Validator*` de `shared:validation`) | ❌ |
@@ -358,14 +377,22 @@ display de un enum de catálogo (`getNombre()`, su fuente es el MER), y literale
 ### Nivel 2.13 — Anti-patrones de testing (solo si la fila `Tests` del plan = ✅ Completado)
 
 El conteo total de tests es **informativo**, no bloqueante — compáralo con el presupuesto
-(15-25/25-50/50-80 según tamaño) y anótalo como observación si lo supera. Los 7 anti-patrones sí
-son bloqueantes individualmente cuando se detectan:
+(15-25/25-50/50-80 según tamaño) y anótalo como observación si lo supera. Los 8 anti-patrones de
+`@3-tester` sí son bloqueantes individualmente cuando se detectan:
 
 1. Test de getter/setter de Lombok · 2. Un test por cada campo obligatorio del `Command.crear(...)`
 en vez de uno que asserte los `fieldErrors[]` acumulados · 3. Test
 de método `private` · 4. Tests duplicados con el mismo Act sin consolidar asserts · 5. Test de
 delegación pura (`verify(...)` sin más) · 6. Test propio de una excepción con solo `super(...)` ·
-7. Test de equals/hashCode/toString de Lombok.
+7. Test de equals/hashCode/toString de Lombok · 8. Test que asserta el **texto** de un log: el texto
+vive en el catálogo, así que el assert acopla el test a la redacción y duplica lo que ya cubre
+`CatalogoCargaTest` — lo que sí se verifica son los **argumentos** (`verify(logger).info(any(),
+eq(id))`).
+
+**Excepción del anti-patrón 5, y es la que más se confunde: el `InteractorImpl` sí lleva test de
+delegación.** Aunque solo delegue, no está excluido de JaCoCo, y sin test propio queda en 0% y se
+diluye en el agregado del módulo. Un `verify` + `isSameAs` del resultado basta; no lo reportes como
+anti-patrón 5.
 
 **Además:** test de controller que espera `status().isInternalServerError()`/500 para un input
 inválido es bloqueante — indica que la excepción no extiende la base correcta y cae en el fallback

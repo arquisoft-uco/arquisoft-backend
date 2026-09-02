@@ -1,4 +1,4 @@
-package com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.fichas;
+package com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.fichas.asesorficha;
 
 import com.arquisoft.notificaciones.application.notificacion.command.primaryport.interactor.EnviarNotificacionInteractor;
 import com.arquisoft.notificaciones.application.notificacion.command.primaryport.model.EnviarNotificacionCommand;
@@ -10,6 +10,7 @@ import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import com.arquisoft.shared.util.UtilTexto;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -20,11 +21,11 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 @Component
-public class FichaPerfilRegistradaConsumer extends AbstractNotificacionConsumer {
+public class AsesorFichaCambiadoConsumer extends AbstractNotificacionConsumer {
 
     private final EnviarNotificacionInteractor enviarNotificacionInteractor;
 
-    public FichaPerfilRegistradaConsumer(
+    public AsesorFichaCambiadoConsumer(
             EnviarNotificacionInteractor enviarNotificacionInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
@@ -33,24 +34,29 @@ public class FichaPerfilRegistradaConsumer extends AbstractNotificacionConsumer 
         this.enviarNotificacionInteractor = enviarNotificacionInteractor;
     }
 
-    @RabbitListener(queues = NotificacionesFichasQueueConfig.FICHA_REGISTRADA_QUEUE)
-    public void onFichaPerfilRegistrada(Message message, Channel channel) throws IOException {
+    @RabbitListener(queues = NotificacionesFichasQueueConfig.ASESOR_CAMBIADO_QUEUE)
+    public void onAsesorFichaCambiado(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
-            FichaPerfilRegistradaPayload payload =
-                    deserialize(message, FichaPerfilRegistradaPayload.class);
+            AsesorFichaCambiadoPayload payload =
+                    deserialize(message, AsesorFichaCambiadoPayload.class);
 
             logger.info(
-                    Mensajes.obtener(ConsumidorKey.LOG_FICHA_REGISTRADA_RECIBIDO),
-                    payload.fichaPerfilId());
+                    Mensajes.obtener(ConsumidorKey.LOG_ASESOR_CAMBIADO_RECIBIDO),
+                    payload.fichaPerfilId(),
+                    UtilTexto.enmascararCorreo(payload.asesorEmail()));
 
             registrar(enviarNotificacionInteractor.ejecutar(EnviarNotificacionCommand.crear(
                     payload.idEvento(),
-                    TipoNotificacionEvento.FICHA_PERFIL_REGISTRADA_ASESOR.getCodigo(),
-                    payload.asesor().nombre(),
-                    payload.asesor().email(),
-                    plantilla(PlantillaKey.ASUNTO_FICHA_REGISTRADA_ASESOR, payload.tituloProyecto()),
-                    plantilla(PlantillaKey.CUERPO_FICHA_REGISTRADA_ASESOR,
-                            payload.asesor().nombre(), payload.tituloProyecto()),
+                    TipoNotificacionEvento.ASESOR_FICHA_CAMBIADO.getCodigo(),
+                    payload.asesorNombre(),
+                    payload.asesorEmail(),
+                    plantilla(
+                            PlantillaKey.ASUNTO_ASESOR_CAMBIADO,
+                            payload.tituloProyecto()),
+                    plantilla(
+                            PlantillaKey.CUERPO_ASESOR_CAMBIADO,
+                            payload.asesorNombre(),
+                            payload.tituloProyecto()),
                     plantilla(PlantillaKey.PIE_GENERICO))));
         });
     }

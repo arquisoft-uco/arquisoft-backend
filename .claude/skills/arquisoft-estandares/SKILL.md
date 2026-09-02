@@ -189,6 +189,27 @@ alternativa en texto plano de `MimeMessageHelper.setText(plano, html)`. **No con
 `<br>` en el render**: rompería la parte de texto plano, que es la que ven los clientes que no
 pintan HTML.
 
+**Ese `correo-base.html` tampoco es un archivo del classpath: vive en Redis, como el catálogo.**
+Está en `plantillas/` (raíz del repo) y lo sube `plantillas/cargar.sh` bajo la clave
+`plantilla.correo-base`, que es lo que lleva la propiedad `notificacion.plantilla` —
+**una clave de Redis, no un `classpath:`/`file:`**. `NOTIFICACION_PLANTILLA` en los `.env` carga esa
+clave, no una ruta. El prefijo `plantilla.` no es negociable: `catalogo/podar.sh` barre `<contexto>.*`,
+así que una plantilla bajo `notificaciones.` se borraría como sobrante en la primera poda.
+
+Son **dos cosas distintas con la misma mecánica**, y conviene no mezclarlas al planificar:
+
+| Qué | Dónde | Cuándo se relee |
+|---|---|---|
+| El **texto** del correo (asunto, cuerpo, pie) | catálogo de mensajes, `PlantillaKey` + `catalogo/notificaciones.properties` | en cada envío |
+| El **cascarón HTML** que lo envuelve | su propio espacio de claves, `plantilla.correo-base` | cada `notificacion.plantilla-refresco.intervalo` (`PT5M` por defecto) |
+
+La diferencia es la frecuencia, no el mecanismo: el cascarón está en la ruta de envío, el texto no.
+Un candidato solo se publica si pasa la misma comprobación de huecos que corre al arrancar
+(`HuecosPlantillaCorreo.verificar`); si falla, se descarta y sigue la anterior, porque
+`String.replace` de un hueco ausente no falla y enviaría correos sin cuerpo en silencio. Al arrancar
+no hay versión previa a la que caer, así que una plantilla ausente o sin huecos **aborta el
+arranque**, igual que una clave de catálogo sin texto.
+
 **No son catálogo:** códigos de error, nombres de cola/exchange/bean/header, marcadores de log
 greppables, etiquetas de display de un enum de catálogo (`EstadoFicha.getNombre()`, cuya fuente es
 el MER), literales de test y textos de Swagger.
@@ -473,14 +494,25 @@ llegó, y por eso aquí el `INFO` de entrada sí va en el adaptador y no en el u
 | Encolado en el outbox | `debug` | `SpringModulithEventPublisher` (transversal, ya hecho) |
 | Envelope recibido / confirmado | `debug` | `AbstractEventConsumer` (transversal, ya hecho) — cola y `deliveryTag` |
 | **Evento recibido** | `info` | el `{Evento}Consumer`, tras `deserialize` — `idEvento` + identificadores de negocio |
-| Cierre de la operación | `info` | el `UseCase` que el consumidor dispara |
+| Cierre de la operación | `info` | el **adaptador**, no el use case — ver abajo |
 | Nack a la DLQ | `error` | `AbstractEventConsumer` (transversal, ya hecho) |
 
-**Dos `INFO` por mensaje**, igual que por petición. El `INFO` de entrada pertenece a quien es el punto
-de entrada del flujo: en un comando HTTP es el use case, en un evento es el consumidor. Por eso **un
-use case disparado por un consumidor no añade su propio `INFO` de entrada** — el del consumidor ya lo
-es. Un `{Evento}Consumer` nuevo hereda los tres logs transversales de `AbstractEventConsumer` sin
-escribir nada: solo aporta su `INFO` de recepción.
+**Dos `INFO` por mensaje**, igual que por petición, y los dos los pone el adaptador. El `INFO` de
+entrada pertenece a quien es el punto de entrada del flujo: en un comando HTTP es el use case, en un
+evento es el consumidor. Por eso **un use case disparado por un consumidor no añade su propio `INFO`
+de entrada** — el del consumidor ya lo es.
+
+El cierre sigue la misma lógica y por eso tampoco vive en el use case. En `notificaciones` lo emite
+`AbstractNotificacionConsumer.registrar(EnvioNotificacionResult)`, con un `switch` exhaustivo que
+elige nivel y clave según el desenlace: `info` para `Enviada` y `Duplicada`, **`warn` para
+`Fallida`** — un envío rechazado es un 4xx de negocio, no un error del flujo. `EnviarNotificacionUseCaseImpl`
+no emite ningún `INFO`: solo su `debug` de verificación previa. Poner un `INFO` de cierre ahí daría
+tres líneas por mensaje y perdería el desenlace, que el use case devuelve pero no interpreta.
+
+La regla general: **cuando el use case devuelve una sellada de desenlace, el log de cierre lo hace
+quien la interpreta**, que es el adaptador. Un `{Evento}Consumer` nuevo hereda de
+`AbstractEventConsumer` los tres logs transversales y de `AbstractNotificacionConsumer` el de cierre:
+solo aporta su `INFO` de recepción.
 
 Todo log del consumidor va **dentro** del `withCorrelation(...)`, es decir dentro del `AlcanceTraza`.
 Fuera de él el MDC ya se restauró y la línea sale sin `correlacionId` ni `transaccionId` — que es
