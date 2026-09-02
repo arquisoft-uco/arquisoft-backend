@@ -235,6 +235,22 @@ services:
       dockerfile: Dockerfile
     container_name: arquisoft-backend
     environment:
+      # Sin esto el contenedor arrancaba SIN perfil activo: caia en el fallback
+      # '!dev & !prod' de logback-spring.xml y en los niveles base de application.yml,
+      # ignorando el SPRING_PROFILES_ACTIVE del .env.
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # Niveles de log. Los defaults de aqui son los del perfil dev, que es el que
+      # docker-compose levanta: NO se puede dejar `${VAR:-}` porque Compose inyectaria
+      # cadena vacia y Spring haria LogLevel.valueOf("") -> fallo de arranque.
+      # Si cambias SPRING_PROFILES_ACTIVE a prod aqui, fija tambien estas siete.
+      # Presets listos para copiar en la seccion OBSERVABILIDAD del .env.example.
+      LOG_NIVEL_ROOT: ${LOG_NIVEL_ROOT:-INFO}
+      LOG_NIVEL_NEGOCIO: ${LOG_NIVEL_NEGOCIO:-DEBUG}
+      LOG_NIVEL_PLATAFORMA: ${LOG_NIVEL_PLATAFORMA:-DEBUG}
+      LOG_NIVEL_DATOS: ${LOG_NIVEL_DATOS:-DEBUG}
+      LOG_NIVEL_SEGURIDAD: ${LOG_NIVEL_SEGURIDAD:-DEBUG}
+      LOG_NIVEL_MENSAJERIA: ${LOG_NIVEL_MENSAJERIA:-DEBUG}
+      LOG_NIVEL_FRAMEWORK: ${LOG_NIVEL_FRAMEWORK:-INFO}
       DB_USUARIOS_URL: jdbc:postgresql://postgres:5432/usuarios
       DB_USUARIOS_USERNAME: arquisoft_user
       DB_USUARIOS_PASSWORD: arquisoft123
