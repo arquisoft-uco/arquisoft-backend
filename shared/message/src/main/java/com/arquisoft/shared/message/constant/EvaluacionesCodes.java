@@ -22,4 +22,18 @@ public final class EvaluacionesCodes {
         public static final String ITEM_NO_ENCONTRADO =
                 "ITEM_CUALITATIVO_JURADO_NO_ENCONTRADO";
     }
+
+    public static final class CriterioItemCualitativoJurado {
+
+        private CriterioItemCualitativoJurado() {}
+
+        public static final String NOMBRE_REQUERIDO =
+                "CRITERIO_ITEM_CUALITATIVO_JURADO_NOMBRE_REQUERIDO";
+        public static final String NOMBRE_DEMASIADO_LARGO =
+                "CRITERIO_ITEM_CUALITATIVO_JURADO_NOMBRE_DEMASIADO_LARGO";
+        public static final String DESCRIPCION_REQUERIDA =
+                "CRITERIO_ITEM_CUALITATIVO_JURADO_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_DEMASIADO_LARGA =
+                "CRITERIO_ITEM_CUALITATIVO_JURADO_DESCRIPCION_DEMASIADO_LARGA";
+    }
 }

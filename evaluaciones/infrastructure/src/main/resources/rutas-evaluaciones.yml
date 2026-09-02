@@ -8,3 +8,5 @@ rutas:
     items-cualitativos-jurado:
       base: /evaluaciones/items-cualitativos-jurado
       por-id: /{itemId}
+    criterios-item-cualitativo-jurado:
+      base: /evaluaciones/criterios-item-cualitativo-jurado
