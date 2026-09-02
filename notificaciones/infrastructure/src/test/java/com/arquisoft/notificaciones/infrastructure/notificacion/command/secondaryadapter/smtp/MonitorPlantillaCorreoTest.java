@@ -1,5 +1,6 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.command.secondaryadapter.smtp;
 
+import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.notificaciones.infrastructure.config.NotificacionProperties;
 import com.arquisoft.notificaciones.infrastructure.notificacion.exception.PlantillaCorreoNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -16,7 +17,6 @@ import org.springframework.dao.QueryTimeoutException;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,8 +58,8 @@ class MonitorPlantillaCorreoTest {
         monitor.refrescar();
 
         // Assert
-        verify(logger).info(anyString(), any(Object[].class));
-        verify(logger, never()).warn(anyString(), any(Object[].class));
+        verify(logger).info(any(ClaveMensaje.class), any(Object[].class));
+        verify(logger, never()).warn(any(ClaveMensaje.class), any(Object[].class));
     }
 
     @Test
@@ -71,8 +71,8 @@ class MonitorPlantillaCorreoTest {
         monitor.refrescar();
 
         // Assert
-        verify(logger, never()).info(anyString(), any(Object[].class));
-        verify(logger, never()).warn(anyString(), any(Object[].class));
+        verify(logger, never()).info(any(ClaveMensaje.class), any(Object[].class));
+        verify(logger, never()).warn(any(ClaveMensaje.class), any(Object[].class));
     }
 
     @Test
@@ -83,7 +83,7 @@ class MonitorPlantillaCorreoTest {
 
         // Act & Assert
         assertThatCode(() -> monitor.refrescar()).doesNotThrowAnyException();
-        verify(logger).warn(anyString(), any(Object[].class));
+        verify(logger).warn(any(ClaveMensaje.class), any(Object[].class));
     }
 
     // Spring cancela para siempre una tarea programada que lanza: si el monitor propagara, la
@@ -95,7 +95,7 @@ class MonitorPlantillaCorreoTest {
 
         // Act & Assert
         assertThatCode(() -> monitor.refrescar()).doesNotThrowAnyException();
-        verify(logger).warn(anyString(), any(Object[].class));
+        verify(logger).warn(any(ClaveMensaje.class), any(Object[].class));
     }
 
     @Test
@@ -120,6 +120,6 @@ class MonitorPlantillaCorreoTest {
 
         // Act & Assert
         assertThatCode(() -> monitor.refrescar()).doesNotThrowAnyException();
-        verify(logger).warn(anyString(), any(Object[].class));
+        verify(logger).warn(any(ClaveMensaje.class), any(Object[].class));
     }
 }

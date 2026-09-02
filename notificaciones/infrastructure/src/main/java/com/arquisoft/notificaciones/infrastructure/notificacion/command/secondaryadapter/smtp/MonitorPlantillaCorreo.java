@@ -2,7 +2,6 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.seconda
 
 import com.arquisoft.notificaciones.infrastructure.config.NotificacionProperties;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.SolicitudTraza;
@@ -34,7 +33,7 @@ public class MonitorPlantillaCorreo {
             // abierta. Esto solo salta si abrir() o close() del alcance fallan, y aun asi la tarea
             // no debe morir — Spring no reprograma una @Scheduled que lanza y la plantilla
             // quedaria congelada en la version del arranque hasta el proximo despliegue.
-            logger.warn(Mensajes.obtener(EnvioNotificacionKey.LOG_PLANTILLA_NO_ACTUALIZADA),
+            logger.warn(EnvioNotificacionKey.LOG_PLANTILLA_NO_ACTUALIZADA,
                     properties.getPlantilla(), e.getMessage());
         }
     }
@@ -47,11 +46,11 @@ public class MonitorPlantillaCorreo {
     private void registrarIntento() {
         try {
             if (fuente.recargar()) {
-                logger.info(Mensajes.obtener(EnvioNotificacionKey.LOG_PLANTILLA_ACTUALIZADA),
+                logger.info(EnvioNotificacionKey.LOG_PLANTILLA_ACTUALIZADA,
                         properties.getPlantilla());
             }
         } catch (RuntimeException e) {
-            logger.warn(Mensajes.obtener(EnvioNotificacionKey.LOG_PLANTILLA_NO_ACTUALIZADA),
+            logger.warn(EnvioNotificacionKey.LOG_PLANTILLA_NO_ACTUALIZADA,
                     properties.getPlantilla(), e.getMessage());
         }
     }

@@ -2,7 +2,6 @@ package com.arquisoft.seguridad.infrastructure.config.security;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
-import com.arquisoft.shared.message.Mensajes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,7 +30,7 @@ public class SecurityAccessDeniedHandler implements AccessDeniedHandler {
                        HttpServletResponse response,
                        AccessDeniedException accessDeniedException) {
 
-        logger.warn(Mensajes.obtener(IniciarSesionKey.LOG_ACCESS_DENIED), request.getRequestURI(), accessDeniedException.getMessage());
+        logger.warn(IniciarSesionKey.LOG_ACCESS_DENIED, request.getRequestURI(), accessDeniedException.getMessage());
         resolver.resolveException(request, response, null, accessDeniedException);
     }
 }

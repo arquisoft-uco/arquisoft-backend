@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.RemoverEstudianteFichaPerfilUseCase;
@@ -33,14 +32,14 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
         UUID fichaPerfil = entrada.getFichaPerfil();
         UUID estudiante = entrada.getEstudiante();
 
-        logger.info(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_REMOVIENDO), fichaPerfil, estudiante);
+        logger.info(EstudianteFichaPerfilKey.LOG_REMOVIENDO, fichaPerfil, estudiante);
 
         boolean fichaExiste = fichaPerfilExisteFinder.obtener(fichaPerfil);
         List<UUID> estudiantesExistentes = estudiantesExistentesFinder.obtener(List.of(estudiante));
         boolean vinculoExiste = vinculoEstudianteFichaExisteFinder.obtener(
                 new VinculoEstudianteFicha(fichaPerfil, estudiante));
 
-        logger.debug(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_VERIFICACION_REMOVER),
+        logger.debug(EstudianteFichaPerfilKey.LOG_VERIFICACION_REMOVER,
                 fichaExiste, !estudiantesExistentes.isEmpty(), vinculoExiste);
 
         removerEstudianteFichaPerfilValidator.validar(
@@ -48,6 +47,6 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
 
         estudianteFichaPerfilOutputPort.desvincularEstudiante(fichaPerfil, estudiante);
 
-        logger.info(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_REMOVIDO), fichaPerfil, estudiante);
+        logger.info(EstudianteFichaPerfilKey.LOG_REMOVIDO, fichaPerfil, estudiante);
     }
 }

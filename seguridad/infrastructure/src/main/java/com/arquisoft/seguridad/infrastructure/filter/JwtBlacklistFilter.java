@@ -62,7 +62,7 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
                 try {
                     if (tokenInvalidadoPort.estaInvalidado(jti)) {
                         // logger.warn: error de cliente — token revocado (detalle interno, no se expone al cliente)
-                        logger.warn(Mensajes.obtener(TokenInvalidadoKey.LOG_TOKEN_REVOCADO),
+                        logger.warn(TokenInvalidadoKey.LOG_TOKEN_REVOCADO,
                                 jti, request.getRequestURI());
                         writeErrorResponse(response, request,
                                 HttpStatus.UNAUTHORIZED,
@@ -74,7 +74,7 @@ public class JwtBlacklistFilter extends OncePerRequestFilter {
                     // Fail open acotado: sin Redis no se puede saber si el token fue revocado, y
                     // rechazar dejaria la API inutilizable. La entrada de la lista negra caduca con
                     // el propio token (5-15 min), asi que la ventana es la vida restante de este.
-                    logger.error(Mensajes.obtener(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE),
+                    logger.error(TokenInvalidadoKey.LOG_REDIS_NO_DISPONIBLE,
                             e, e.getMessage());
                 }
             }

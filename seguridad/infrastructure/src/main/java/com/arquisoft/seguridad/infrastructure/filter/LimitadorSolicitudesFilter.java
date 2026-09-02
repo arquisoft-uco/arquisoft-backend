@@ -108,7 +108,7 @@ public class LimitadorSolicitudesFilter extends OncePerRequestFilter {
                     .build();
             objectMapper.writeValue(response.getWriter(), body);
 
-            logger.warn(Mensajes.obtener(LimiteSolicitudesKey.LOG_LIMITE_EXCEDIDO), clientIp, request.getRequestURI());
+            logger.warn(LimiteSolicitudesKey.LOG_LIMITE_EXCEDIDO, clientIp, request.getRequestURI());
         }
     }
 

@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.usecase.RemoverItemFichaPerfilUseCase;
@@ -30,7 +29,7 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
 
     @Override
     public void ejecutar(RemocionItemFichaPerfilDomain entrada) {
-        logger.info(Mensajes.obtener(ItemFichaPerfilKey.LOG_REMOVIENDO),
+        logger.info(ItemFichaPerfilKey.LOG_REMOVIENDO,
                 entrada.getItem(), entrada.getEstudiante());
 
         var fichaEncontrada = fichaPerfilDelItemFinder.obtener(entrada.getItem());
@@ -45,7 +44,7 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
 
         long totalRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());
 
-        logger.debug(Mensajes.obtener(ItemFichaPerfilKey.LOG_VERIFICACION_REMOVER),
+        logger.debug(ItemFichaPerfilKey.LOG_VERIFICACION_REMOVER,
                 itemExiste, esPropietario, totalRevisiones);
 
         removerItemFichaPerfilValidator.validar(entrada.getItem(), entrada.getEstudiante(),
@@ -53,6 +52,6 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
 
         itemOutputPort.removerItem(entrada.getItem());
 
-        logger.info(Mensajes.obtener(ItemFichaPerfilKey.LOG_REMOVIDO), entrada.getItem());
+        logger.info(ItemFichaPerfilKey.LOG_REMOVIDO, entrada.getItem());
     }
 }
