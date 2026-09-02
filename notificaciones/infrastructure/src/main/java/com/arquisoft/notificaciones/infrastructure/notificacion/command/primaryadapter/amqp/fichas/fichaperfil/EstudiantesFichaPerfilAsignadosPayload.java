@@ -1,4 +1,4 @@
-package com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.fichas;
+package com.arquisoft.notificaciones.infrastructure.notificacion.command.primaryadapter.amqp.fichas.fichaperfil;
 
 import java.time.Instant;
 import java.util.List;

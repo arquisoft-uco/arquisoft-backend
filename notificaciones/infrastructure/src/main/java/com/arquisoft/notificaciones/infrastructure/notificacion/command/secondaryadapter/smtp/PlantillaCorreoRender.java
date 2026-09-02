@@ -1,42 +1,29 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.command.secondaryadapter.smtp;
 
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.MensajeNotificacion;
-import com.arquisoft.notificaciones.infrastructure.notificacion.exception.PlantillaCorreoNoDisponibleException;
 import com.arquisoft.shared.util.UtilTexto;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 @RequiredArgsConstructor
 public class PlantillaCorreoRender {
-
-    private static final String HUECO_TITULO = "{{titulo}}";
-    private static final String HUECO_CUERPO = "{{cuerpo}}";
-    private static final String HUECO_PIE = "{{pie}}";
-
-    private static final List<String> HUECOS =
-            List.of(HUECO_TITULO, HUECO_CUERPO, HUECO_PIE);
 
     private final FuentePlantillaCorreo fuente;
 
     @PostConstruct
     public void verificarHuecos() {
-        String plantilla = fuente.obtener();
-        for (String hueco : HUECOS) {
-            if (!plantilla.contains(hueco)) {
-                throw new PlantillaCorreoNoDisponibleException(hueco);
-            }
-        }
+        HuecosPlantillaCorreo.verificar(fuente.obtener());
     }
 
+    // Una sola lectura de la fuente: si el monitor publica otra version a mitad de render, esta
+    // llamada termina con la que empezo en vez de mezclar las dos.
     public String envolver(MensajeNotificacion mensaje) {
         return fuente.obtener()
-                .replace(HUECO_TITULO, escapar(mensaje.asunto()))
-                .replace(HUECO_CUERPO, escapar(mensaje.cuerpo()))
-                .replace(HUECO_PIE, escapar(mensaje.pie()));
+                .replace(HuecosPlantillaCorreo.TITULO, escapar(mensaje.asunto()))
+                .replace(HuecosPlantillaCorreo.CUERPO, escapar(mensaje.cuerpo()))
+                .replace(HuecosPlantillaCorreo.PIE, escapar(mensaje.pie()));
     }
 
     private static String escapar(String valor) {

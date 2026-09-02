@@ -2,29 +2,47 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.seconda
 
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.DestinatarioNotificacion;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.MensajeNotificacion;
-import com.arquisoft.notificaciones.infrastructure.config.NotificacionProperties;
 import com.arquisoft.notificaciones.infrastructure.notificacion.exception.PlantillaCorreoNoDisponibleException;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PlantillaCorreoRenderTest {
 
-    private final PlantillaCorreoRender render =
-            new PlantillaCorreoRender(fuenteCon("classpath:plantillas/correo-base.html"));
+    // La plantilla desplegada ya no esta en el classpath: vive en plantillas/ y un script la carga
+    // en Redis. El test la lee del repositorio para que siga siendo la real la que se prueba.
+    private static final Path PLANTILLA_DESPLEGADA =
+            Path.of("..", "..", "plantillas", "correo-base.html");
 
-    private static FicheroFuentePlantillaCorreo fuenteCon(String ubicacion) {
-        var properties = new NotificacionProperties();
-        properties.setPlantilla(ubicacion);
-        return new FicheroFuentePlantillaCorreo(new DefaultResourceLoader(), properties);
+    private final PlantillaCorreoRender render = new PlantillaCorreoRender(plantillaDesplegada());
+
+    static FuentePlantillaCorreo plantillaDesplegada() {
+        try {
+            String contenido = Files.readString(PLANTILLA_DESPLEGADA, StandardCharsets.UTF_8);
+            return () -> contenido;
+        } catch (IOException e) {
+            throw new UncheckedIOException(
+                    "No se encontro " + PLANTILLA_DESPLEGADA.toAbsolutePath(), e);
+        }
     }
 
     private MensajeNotificacion mensajeCon(String asunto, String cuerpo, String pie) {
         return MensajeNotificacion.textoPlano(
                 new DestinatarioNotificacion("Ana Gomez", "ana.gomez@soyuco.edu.co"),
                 asunto, cuerpo, pie);
+    }
+
+    @Test
+    void debePasarLaVerificacionDeHuecos_cuandoSeUsaLaPlantillaDesplegada() {
+        // Act & Assert
+        render.verificarHuecos();
     }
 
     @Test
@@ -81,13 +99,5 @@ class PlantillaCorreoRenderTest {
         assertThatThrownBy(() -> new PlantillaCorreoRender(sinCuerpo).verificarHuecos())
                 .isInstanceOf(PlantillaCorreoNoDisponibleException.class)
                 .hasMessageContaining("{{cuerpo}}");
-    }
-
-    @Test
-    void debeFallar_cuandoLaUbicacionConfiguradaNoExiste() {
-        // Act & Assert
-        assertThatThrownBy(() -> fuenteCon("classpath:plantillas/no-existe.html"))
-                .isInstanceOf(PlantillaCorreoNoDisponibleException.class)
-                .hasMessageContaining("no-existe.html");
     }
 }
