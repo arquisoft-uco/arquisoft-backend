@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloEnOtraFichaExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.ModificarFichaPerfilUseCase;
@@ -25,20 +24,20 @@ public class ModificarFichaPerfilUseCaseImpl implements ModificarFichaPerfilUseC
 
     @Override
     public void ejecutar(ModificacionFichaPerfilDomain entrada) {
-        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_MODIFICANDO),
+        logger.info(FichaPerfilKey.LOG_MODIFICANDO,
                 entrada.getFichaPerfil(), entrada.getEstudiante());
 
         boolean esPropietario = vinculoEstudianteFichaExisteFinder.obtener(
                 new VinculoEstudianteFicha(entrada.getFichaPerfil(), entrada.getEstudiante()));
         boolean tituloYaExiste = tituloEnOtraFichaExisteFinder.obtener(entrada);
 
-        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VERIFICACION_MODIFICAR),
+        logger.debug(FichaPerfilKey.LOG_VERIFICACION_MODIFICAR,
                 esPropietario, tituloYaExiste);
 
         modificarFichaPerfilValidator.validar(entrada, esPropietario, tituloYaExiste);
 
         fichaPerfilOutputPort.actualizarTitulo(entrada.getFichaPerfil(), entrada.getTituloProyecto());
 
-        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_MODIFICADA), entrada.getFichaPerfil());
+        logger.info(FichaPerfilKey.LOG_MODIFICADA, entrada.getFichaPerfil());
     }
 }

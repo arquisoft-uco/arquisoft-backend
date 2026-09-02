@@ -1,7 +1,6 @@
 package com.arquisoft.seguridad.application.auth.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.application.auth.command.usecase.CerrarSesionUseCase;
 import com.arquisoft.seguridad.domain.auth.SesionDomain;
 import com.arquisoft.seguridad.application.auth.command.secondaryport.TokenInvalidadoOutputPort;
@@ -19,7 +18,7 @@ public class CerrarSesionUseCaseImpl implements CerrarSesionUseCase {
     @Override
     public void ejecutar(SesionDomain entrada) {
         if (!entrada.requiereInvalidacion()) {
-            logger.info(Mensajes.obtener(SesionKey.LOG_LOGOUT_TOKEN_EXPIRADO),
+            logger.info(SesionKey.LOG_LOGOUT_TOKEN_EXPIRADO,
                     entrada.getIdentificadorToken());
             return;
         }
@@ -27,7 +26,7 @@ public class CerrarSesionUseCaseImpl implements CerrarSesionUseCase {
         tokenInvalidadoOutputPort.invalidarToken(
                 entrada.getIdentificadorToken(), entrada.getTiempoVidaRestante());
 
-        logger.info(Mensajes.obtener(SesionKey.LOG_LOGOUT_EXITOSO),
+        logger.info(SesionKey.LOG_LOGOUT_EXITOSO,
                 entrada.getIdentificadorToken(), entrada.getTiempoVidaRestante());
     }
 }

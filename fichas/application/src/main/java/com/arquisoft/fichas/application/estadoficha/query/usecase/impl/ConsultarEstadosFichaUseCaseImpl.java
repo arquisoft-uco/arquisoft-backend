@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.estadoficha.query.usecase.ConsultarEstad
 import com.arquisoft.fichas.application.estadoficha.query.secondaryport.EstadoFichaQueryOutputPort;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,7 +21,7 @@ public class ConsultarEstadosFichaUseCaseImpl implements ConsultarEstadosFichaUs
     public List<EstadoFichaReadModel> ejecutar(Void entrada) {
         var resultado = queryOutputPort.findAll();
 
-        logger.debug(Mensajes.obtener(EstadoFichaKey.LOG_CONSULTA_COMPLETADA), resultado.size());
+        logger.debug(EstadoFichaKey.LOG_CONSULTA_COMPLETADA, resultado.size());
 
         return resultado;
     }

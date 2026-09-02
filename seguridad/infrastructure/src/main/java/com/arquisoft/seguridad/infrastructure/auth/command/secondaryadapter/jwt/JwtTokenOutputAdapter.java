@@ -4,7 +4,6 @@ import com.arquisoft.seguridad.application.auth.command.secondaryport.Validacion
 import com.arquisoft.seguridad.application.auth.command.secondaryport.model.IdentidadProveedor;
 import com.arquisoft.seguridad.infrastructure.auth.command.secondaryadapter.jwt.mapper.JwtIdentidadMapper;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -25,7 +24,7 @@ public class JwtTokenOutputAdapter implements ValidacionTokenOutputPort {
         try {
             return Optional.of(JwtIdentidadMapper.toModel(jwtDecoder.decode(token)));
         } catch (JwtException e) {
-            logger.warn(Mensajes.obtener(TokenKey.LOG_VALIDACION_FALLIDA), e.getMessage());
+            logger.warn(TokenKey.LOG_VALIDACION_FALLIDA, e.getMessage());
             return Optional.empty();
         }
     }

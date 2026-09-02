@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.
 import com.arquisoft.fichas.application.estadofichaperfil.command.secondaryport.entity.EstadoFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.estadofichaperfil.command.secondaryadapter.mapper.EstadoFichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaPerfilKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,7 +21,7 @@ public class EstadoFichaPerfilCommandOutputAdapter implements EstadoFichaPerfilO
     @Override
     public void registrarEstadoInicial(EstadoFichaPerfilEntity estado) {
         repository.save(EstadoFichaPerfilJpaMapper.toJpaEntity(estado));
-        logger.debug(Mensajes.obtener(EstadoFichaPerfilKey.LOG_GUARDADO),
+        logger.debug(EstadoFichaPerfilKey.LOG_GUARDADO,
                 estado.id(), estado.fichaPerfilId());
     }
 

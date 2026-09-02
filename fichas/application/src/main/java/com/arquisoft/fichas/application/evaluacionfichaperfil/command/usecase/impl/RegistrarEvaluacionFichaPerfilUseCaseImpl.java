@@ -31,7 +31,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
 
     @Override
     public UUID ejecutar(EvaluacionFichaPerfilDomain evaluacion) {
-        logger.info(Mensajes.obtener(EvaluacionFichaPerfilKey.LOG_REGISTRANDO),
+        logger.info(EvaluacionFichaPerfilKey.LOG_REGISTRANDO,
                 evaluacion.getFichaPerfilId(), evaluacion.getRepresentanteComiteId());
 
         boolean fichaExiste = fichaPerfilExisteFinder.obtener(evaluacion.getFichaPerfilId());
@@ -39,7 +39,7 @@ public class RegistrarEvaluacionFichaPerfilUseCaseImpl implements RegistrarEvalu
                 evaluacion.getRepresentanteComiteId());
         boolean evaluacionYaExiste = evaluacionDeRepresentanteExisteFinder.obtener(evaluacion);
 
-        logger.debug(Mensajes.obtener(EvaluacionFichaPerfilKey.LOG_VERIFICACION_REGISTRAR),
+        logger.debug(EvaluacionFichaPerfilKey.LOG_VERIFICACION_REGISTRAR,
                 fichaExiste, representanteExiste, evaluacionYaExiste);
 
         registrarEvaluacionFichaPerfilValidator.validar(

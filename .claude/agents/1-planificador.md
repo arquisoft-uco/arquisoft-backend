@@ -85,8 +85,8 @@ consumidores ni auditoría.
 
 A/B → el `UseCase` inyecta la interfaz `EventPublisher` (`com.arquisoft.shared.publisher`) y publica
 tras persistir. Hay **una sola forma**: `eventPublisher.publish(new {Entidad}{Accion}Event(...))`,
-con el agregado como clase plana (así lo hacen `CambiarAsesorFichaUseCaseImpl` y
-`CrearUsuarioUseCaseImpl`). El agregado nunca acumula eventos ni los drena: no planifiques una clase
+con el domain como clase plana (así lo hacen `CambiarAsesorFichaUseCaseImpl` y
+`CrearUsuarioUseCaseImpl`). El domain nunca acumula eventos ni los drena: no planifiques una clase
 base de dominio para emitirlos — no existe y no compila.
 
 **C → el plan no lleva eventos, y eso se propaga a seis lugares.** Esta es la respuesta que más se
@@ -132,11 +132,11 @@ espera enterarse— la respuesta es C, y la razón se escribe igual en `Eventos:
 **un** representante del comité, o sea "alguien abrió su evaluación y aún no decidió nada". No es
 desenlace, se repetiría una vez por representante sobre la misma ficha, y le filtraría al estudiante
 la mecánica interna del comité. Lo que sí le incumbe es el cambio de `EstadoFicha`, que ocurre una
-vez y vive en otro agregado.
+vez y vive en otro domain.
 
 **Dos señales de que estás ante la excepción:** (1) el mismo hecho puede ocurrir N veces en paralelo
 para el mismo sujeto — entonces no es el hecho notificable sino un paso hacia otro, normalmente en
-otro agregado; (2) te descubres proponiendo un umbral ("cuando haya tres, entonces sí") para
+otro domain; (2) te descubres proponiendo un umbral ("cuando haya tres, entonces sí") para
 convertir esos N pasos en uno. Ahí **para el plan y pregunta**: un umbral inventado desde el código
 fosiliza en migraciones y contratos de evento una decisión de negocio que nadie tomó, y casi siempre
 significa que el disparo real —alguien que activa la revisión— no está modelado todavía.
@@ -158,7 +158,7 @@ listar las **ocho** piezas, repartidas en dos contextos, y la sección 6 debe mo
 
 El subpaquete del consumidor lleva **dos** segmentos: primero quién produce, después de qué entidad
 suya habla el evento (`amqp/fichas/asesorficha/`, `amqp/fichas/fichaperfil/`). Nombra los dos en el
-árbol de la sección 6 — solo por productor los eventos de varios agregados del mismo contexto
+árbol de la sección 6 — solo por productor los eventos de varios domains del mismo contexto
 acaban mezclados en un paquete plano.
 
 **El texto se resuelve con `plantilla(clave, args)`, el helper de `AbstractNotificacionConsumer`, no
@@ -181,7 +181,7 @@ eliminan. La dirección es de un solo sentido: el contexto productor **nunca** d
 **8. Si la entidad es nueva y la pregunta 5 fue A/B: ¿qué eventos emite y cuál es su
 `temaEvento`** (formato `{contexto}.{entidad}.{accion}`)?
 
-**8b. ¿Valida existencia de un aggregate de OTRA feature** (FK ajena, ej. confirmar que el
+**8b. ¿Valida existencia de un domain de OTRA feature** (FK ajena, ej. confirmar que el
 `asesorFicha` existe antes de crear la `FichaPerfil`)? Ese `existePorId` vive en el **`OutputPort`
 de `command/` de esa otra feature** (`application/{otraFeature}/command/secondaryport/`), consumido
 por un `Finder` propio de ella que el use case inyecta — nunca en el `OutputPort` de la feature que
@@ -265,21 +265,21 @@ la FASE 3, así que **eso sí vive aquí**:
 - **Mapper `Command` → dominio (OBLIGATORIO en escrituras):** `{Accion}{Entidad}Mapper` en
   `command/primaryport/mapper/` (`final`, constructor privado, `static toDomain(command)`), invocado
   por el `{Accion}{Entidad}InteractorImpl` antes de delegar. Nunca "Ninguno" en una HU de escritura.
-- **Objeto de acción:** `{Accion}{Entidad}Domain` **solo si** la acción arrastra más que el agregado
+- **Objeto de acción:** `{Accion}{Entidad}Domain` **solo si** la acción arrastra más que el domain
   — estado inicial, colecciones, ids del contexto, **materialización de acompañantes o resolución de
   FKs desde identificadores externos** (get-or-create de filas de rol/referencia). Nominalizado como
   sustantivo: `Registro…`/`Cambio…`/`Modificacion…`/`Agregacion…`/`Remocion…`/`Envio…`; vive junto al
-  agregado. **Si no hay bundle: sin objeto de acción**, y el mapper devuelve el agregado directo
+  domain. **Si no hay bundle: sin objeto de acción**, y el mapper devuelve el domain directo
   (`toDomain(command)` → `{Entidad}Domain.crear(...)`) — nunca un wrapper que solo reexpone el
-  agregado.
+  domain.
   Declara sus **atributos**, y por defecto son `UUID` y escalares, no objetos de dominio:
   `CambioAsesorFichaDomain` es `(UUID fichaPerfil, UUID nuevoAsesorFicha)` y con eso basta para
-  decidir y ejecutar. Planificar que cargue el agregado entero para cambiarle un campo es
+  decidir y ejecutar. Planificar que cargue el domain entero para cambiarle un campo es
   sobreingeniería — bloquéalo en tu propia revisión.
 - **Objeto de acción compuesto:** solo cuando la acción crea varios objetos a la vez, el objeto de
   acción contiene otros `Domain` (hoy únicamente `RegistroFichaPerfilDomain`: ficha + estado inicial
   + estudiantes). Si planificas uno, escribe el **orden de construcción de menor a mayor jerarquía**:
-  primero el agregado (genera su id), luego cada pieza con el mapper **de su propia feature** usando
+  primero el domain (genera su id), luego cada pieza con el mapper **de su propia feature** usando
   ese id, y el compuesto al final. El `crear(...)` del compuesto solo valida `noNulo` de cada parte;
   las validaciones de cada pieza ya ocurrieron en su propio `crear(...)`.
 ### Atributos por objeto de dominio (uno por objeto, solo lo documentado en el MER)
@@ -364,16 +364,16 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 
 | Capa | Ruta | Tipo |
 |---|---|---|
-| domain | `{contexto}/domain/src/main/java/com/arquisoft/{contexto}/domain/{feature}/{Entidad}Domain.java` | Aggregate root — directo, sin subcarpeta |
+| domain | `{contexto}/domain/src/main/java/com/arquisoft/{contexto}/domain/{feature}/{Entidad}Domain.java` | El domain — directo, sin subcarpeta |
 | domain | `.../domain/{feature}/{Accion}{Entidad}Domain.java` | Objeto de acción — solo si la sección 4 lo declara |
 | domain | `.../domain/{feature}/model/{Concepto}.java` | `record` de entrada de cada Rule (`ExistenciaX`, `DisponibilidadX`, `PropiedadX`) + value objects |
 | domain | `.../domain/{feature}/rules/{Regla}Rule.java` + `rules/impl/{Regla}RuleImpl.java` | Una por restricción de conjunto (existencia/unicidad/propiedad) |
-| domain | `.../domain/{feature}/exception/{Entidad}{Caso}Exception.java` | Solo para lo que lanza una `Rule` — nunca para invariantes del agregado. El `exception/` va **dentro del slice**, no a nivel de contexto (igual en `application/` e `infrastructure/`) |
+| domain | `.../domain/{feature}/exception/{Entidad}{Caso}Exception.java` | Solo para lo que lanza una `Rule` — nunca para invariantes del domain. El `exception/` va **dentro del slice**, no a nivel de contexto (igual en `application/` e `infrastructure/`) |
 | domain | `.../domain/{feature}/event/{Entidad}{Accion}Event.java` | **SOLO si la pregunta 5 fue A/B.** Con C esta fila no existe, igual que no existe la sección 10 |
 | application | `{contexto}/application/.../{feature}/command/primaryport/model/{Accion}{Entidad}Command.java` | `record` con `crear(...)` |
-| application | `.../command/primaryport/mapper/{Accion}{Entidad}Mapper.java` | `Command` → dominio (`static toDomain`): objeto de acción si la sección 4 lo declara, si no el agregado directo. **Siempre presente en escrituras**; lo invoca el `Interactor` |
+| application | `.../command/primaryport/mapper/{Accion}{Entidad}Mapper.java` | `Command` → dominio (`static toDomain`): objeto de acción si la sección 4 lo declara, si no el domain directo. **Siempre presente en escrituras**; lo invoca el `Interactor` |
 | application | `.../command/primaryport/interactor/{Accion}{Entidad}Interactor.java` + `interactor/impl/...InteractorImpl.java` | Dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` |
-| application | `.../command/usecase/{Accion}{Entidad}UseCase.java` + `usecase/impl/...UseCaseImpl.java` | Colaborador interno — NO bajo `primaryport/`. Firma `UseCase<{Algo}Domain, R>`: **nunca recibe el `Command`**, ni siquiera si la acción no crea agregado (un job por lotes nominaliza igual) |
+| application | `.../command/usecase/{Accion}{Entidad}UseCase.java` + `usecase/impl/...UseCaseImpl.java` | Colaborador interno — NO bajo `primaryport/`. Firma `UseCase<{Algo}Domain, R>`: **nunca recibe el `Command`**, ni siquiera si la acción no crea domain (un job por lotes nominaliza igual) |
 | application | `.../command/validator/{Accion}{Entidad}Validator.java` + `validator/impl/...ValidatorImpl.java` | Puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`. **Solo si la sección 3 declaró al menos una `Rule`** — sin restricciones de conjunto estas dos filas no existen (ver `notificaciones`) |
 | application | `.../command/finder/{Concepto}Finder.java` + `finder/impl/...FinderImpl.java` | Extiende `Finder<T, R>` (método `obtener`). Uno por consulta que la `Rule` necesita — incluidas las de OTRA feature, en el paquete de esa feature. También el corte de idempotencia, que va sin `Rule` |
 | application | `.../command/secondaryport/{Entidad}OutputPort.java` + `secondaryport/entity/{Entidad}Entity.java` + `secondaryport/mapper/{Entidad}Mapper.java` | Habla `Entity` (record plano), nunca `Domain` |
@@ -408,6 +408,11 @@ dominio (`desde`/`esValido`/`getId()`, nunca `valueOf` fuera del enum). Su ubica
 **decisión abierta del proyecto** — sigue la que ya use el contexto que estás tocando (ver
 `arquisoft-arquitectura` / `docs/ARQUITECTURA_Y_ESTRUCTURA.md#decisión-abierta-dónde-vive-un-enum-de-catálogo`).
 No asumas una convención "settled" que no está confirmada.
+
+La conversión del `String` que manda el cliente ocurre **dentro del `crear(...)` del domain**
+(`esValido(...)` + `desde(...)` en el setter privado); el DTO, el `Command` y el
+`{Accion}{Entidad}Mapper` lo pasan crudo. Desde una fila de BD es al revés: convierte el mapper de
+`secondaryport` antes de `reconstruir(...)`. La cadena completa está en `arquisoft-estandares`.
 
 **Sus constantes salen de `mer/data/{NN}_data_{contexto}.sql`, no de tu criterio.** Es paso
 obligatorio del Protocolo de Consulta (`gh-docs-reader`, paso 10c) y el plan debe **listar las filas
@@ -454,14 +459,17 @@ Nada de esto va como literal embebido, y son **dos mundos distintos** (no existe
   `{Feature}Key` de `shared:message/key/{contexto}/` declarando clave y **aridad**, (b) su registro
   en `ClavesCatalogo`, y (c) su línea en `catalogo/{contexto}.properties`. Clave con formato
   `{contexto}.{capa}.{objeto}.{tipo}.{descripcion}`. Marcadores: `%s` para mensajes de cliente
-  (`Mensajes.formatear`), `{}` para logs (`Mensajes.obtener` + SLF4J). Lista las tres cosas en la
+  (`Mensajes.formatear`), `{}` para logs (la clave se pasa al `AppLogger`, que la resuelve; SLF4J
+  sustituye). Lista las tres cosas en la
   sección 6 — si falta cualquiera, `CatalogoCargaTest` rompe el build.
 
 
-**Logs del flujo (obligatorio en toda HU de escritura).** Un flujo de comando emite dos `INFO` por
-petición — entrada del use case y cierre — más un `debug` con el resultado de los finders antes del
-validator y un `debug` por cada método de escritura del adapter. Enumera en la sección 6, como
-entregables, **cada punto de log con su nivel, la clave nueva con su aridad y la línea del
+**Logs del flujo (obligatorio en toda HU de escritura).** El `UseCaseImpl` emite **exactamente tres
+líneas** — `info` de entrada, `debug` con el resultado de los finders antes del validator, `info` de
+cierre como última sentencia de `ejecutar` — más un `debug` por cada método de escritura del adapter.
+**El `InteractorImpl` no logea**: no planifiques ni un `AppLogger` ahí ni una clave
+`LOG_{ACCION}_COMPLETADO`, y tampoco un `debug` de "validación superada". Enumera en la sección 6,
+como entregables, **cada punto de log con su nivel, la clave nueva con su aridad y la línea del
 catálogo**. Si el plan no los lista, la implementación no los va a incluir. Estructura completa y
 casos (flujo anidado, dónde nunca va un log) en `arquisoft-estandares`.
 
@@ -505,7 +513,7 @@ responde **tres** preguntas antes de escribir el árbol de archivos:
    consumidor AMQP. Y entonces la sección 11 tiene que persistir **lo que se envió**, no solo el
    resultado: sin el mensaje guardado no hay nada con qué reconstruir el reintento. Añade también
    `intentos` y `fecha_ultimo_intento`.
-3. **¿Cambia eso el objeto de acción?** Los campos que pasan a persistirse son estado del agregado, y
+3. **¿Cambia eso el objeto de acción?** Los campos que pasan a persistirse son estado del domain, y
    un `{Accion}{Entidad}Domain` que solo lo envolvía deja de justificarse (ver `arquisoft-estandares`).
 
 ### Evento nuevo ⇒ cola, DLQ y binding (sección 10)
@@ -543,7 +551,7 @@ invocación, `Validator` con sus `Rule`s reales, `Command.crear`) → infrastruc
 con `@DataJpaTest`, `Controller` con `@WebMvcTest`: 201/400/401/403/422). Si hay eventos, el
 `verify(eventPublisher)` va en el test del `UseCase`.
 
-**Consulta:** sin tests de eventos y sin tests de domain si el agregado no se invoca en el read
+**Consulta:** sin tests de eventos y sin tests de domain si el `{Entidad}Domain` no se invoca en el read
 side → `UseCase` (con/sin resultados, filtros inválidos) → `SortMapperTest` si hay orden →
 `QueryOutputAdapter`: **siempre `@DataJpaTest`** sembrando las tablas de comando con
 `TestEntityManager` (`FichaPerfilQueryOutputAdapterTest`, `EstadoFichaQueryOutputAdapterTest`) —
@@ -562,7 +570,7 @@ getters/setters ni métodos `private`.
       sin subcarpeta `aggregate/`; centinela `VACIO` + `esVacio()` si puede venir ausente
 - [ ] Escritura: `{Accion}{Entidad}Mapper` en `command/primaryport/mapper/` (`static toDomain`)
       presente e invocado por el `Interactor` — devuelve el objeto de acción si hay bundle, el
-      agregado directo si no; nunca "Ninguno"
+      domain directo si no; nunca "Ninguno"
 - [ ] Invariantes locales acumuladas en `ValidationResult` (sin excepción propia); restricciones de
       conjunto como `Rule` + su record, orquestadas por el `Validator` → 422. Ningún `if/throw` en el use case
 - [ ] `Validator` puro: constructor sin argumentos con `new {Regla}RuleImpl()`, sin `Finder`, sin `if`

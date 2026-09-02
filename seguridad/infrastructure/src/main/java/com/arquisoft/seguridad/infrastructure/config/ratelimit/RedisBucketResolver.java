@@ -93,7 +93,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         } else {
             // logger.error: detalle tecnico para el desarrollador — nunca llega al cliente.
             // El nombre de la clase del cliente obtenido orienta rapidamente el diagnostico.
-            logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_CLIENTE_STANDALONE_ERROR),
+            logger.error(LimiteSolicitudesKey.LOG_CLIENTE_STANDALONE_ERROR,
                     !UtilObjeto.esNulo(nativeClient) ? nativeClient.getClass().getSimpleName() : CLIENTE_AUSENTE);
             // InfrastructureException con mensaje generico: si llegara a la capa web
             // (improbable desde @PostConstruct), el cliente ve un mensaje sin detalles internos.
@@ -112,7 +112,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
     // emitirse nunca, porque ApplicationReadyEvent no ocurre si el contexto no levanta.
     @EventListener(ApplicationReadyEvent.class)
     public void registrarInicializacion() {
-        logger.debug(Mensajes.obtener(LimiteSolicitudesKey.LOG_INIT_OK));
+        logger.debug(LimiteSolicitudesKey.LOG_INIT_OK);
     }
 
     // Degradar a cuota local, y no dejar pasar sin limite, es lo que evita que una caida de Redis
@@ -140,7 +140,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
             return consumirEnRedis(clave, configuracion);
         } catch (RuntimeException e) {
             if (degradado.compareAndSet(false, true)) {
-                logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_DEGRADADO), e, e.getMessage());
+                logger.error(LimiteSolicitudesKey.LOG_DEGRADADO, e, e.getMessage());
             }
             return consumirLocal(clave, configuracion);
         }

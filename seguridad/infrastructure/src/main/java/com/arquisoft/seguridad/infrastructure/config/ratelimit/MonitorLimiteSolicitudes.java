@@ -1,7 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.ratelimit;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.tracing.domain.traza.model.SolicitudTraza;
@@ -41,15 +40,15 @@ public class MonitorLimiteSolicitudes {
             }
 
             if (!resolver.hayConexion()) {
-                logger.warn(Mensajes.obtener(LimiteSolicitudesKey.LOG_SIGUE_DEGRADADO));
+                logger.warn(LimiteSolicitudesKey.LOG_SIGUE_DEGRADADO);
                 return;
             }
 
             int locales = resolver.ipsConCuotaLocal();
             resolver.marcarSano();
-            logger.info(Mensajes.obtener(LimiteSolicitudesKey.LOG_RECUPERADO), locales);
+            logger.info(LimiteSolicitudesKey.LOG_RECUPERADO, locales);
         } catch (RuntimeException e) {
-            logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_SIGUE_DEGRADADO), e);
+            logger.error(LimiteSolicitudesKey.LOG_SIGUE_DEGRADADO, e);
         }
     }
 }

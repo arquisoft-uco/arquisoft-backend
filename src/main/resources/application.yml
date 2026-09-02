@@ -371,9 +371,27 @@ server:
 # Aquí solo se declaran niveles — el resto (file.name, pattern.*, logback.rollingpolicy.*)
 # no tiene efecto cuando existe un logback-spring.xml custom y genera confusión.
 logging:
+  # Grupos: un nombre de negocio por familia de loggers, para poder subir o bajar el nivel de
+  # toda la familia con UNA variable. Es necesario, no cosmetico: por variable de entorno el
+  # binding relajado de Spring Boot solo llega a nivel de PAQUETE, nunca de clase, asi que sin
+  # grupos no hay forma de tocar `org.hibernate.SQL` y `org.hibernate.type` a la vez desde .env.
+  group:
+    negocio: com.arquisoft.fichas, com.arquisoft.seguridad, com.arquisoft.usuarios, com.arquisoft.notificaciones, com.arquisoft.evaluaciones
+    plataforma: com.arquisoft.shared
+    datos: org.hibernate.SQL, org.hibernate.type
+    seguridad: org.springframework.security
+    mensajeria: org.springframework.amqp, com.rabbitmq, org.springframework.modulith
+    framework: org.springframework.web, org.springframework.data, org.hibernate, com.zaxxer.hikari, org.flywaydb, org.apache.tomcat, io.micrometer
+  # El default de cada variable lo pone el perfil activo (application-dev.yml /
+  # application-prod.yml). Estos son los de "sin perfil": arranque suelto y slices de test.
   level:
-    root: INFO
-    org.springframework.web: INFO
+    root: ${LOG_NIVEL_ROOT:INFO}
+    negocio: ${LOG_NIVEL_NEGOCIO:INFO}
+    plataforma: ${LOG_NIVEL_PLATAFORMA:INFO}
+    datos: ${LOG_NIVEL_DATOS:OFF}
+    seguridad: ${LOG_NIVEL_SEGURIDAD:INFO}
+    mensajeria: ${LOG_NIVEL_MENSAJERIA:INFO}
+    framework: ${LOG_NIVEL_FRAMEWORK:INFO}
   # servicioNombre y version NO van al MDC: son constantes del proceso, no contexto de la
   # peticion. El formateador logstash de Spring Boot 4 solo serializa el MDC y los
   # KeyValuePairs del evento — nunca las propiedades de contexto de Logback, asi que

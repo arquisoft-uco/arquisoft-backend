@@ -5,7 +5,6 @@ import com.arquisoft.fichas.application.estadoevaluacionficha.command.secondaryp
 import com.arquisoft.fichas.infrastructure.estadoevaluacion.command.secondaryadapter.repository.EstadoEvaluacionCommandRepository;
 import com.arquisoft.fichas.infrastructure.estadoevaluacionficha.command.secondaryadapter.mapper.EstadoEvaluacionFichaJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -24,14 +23,14 @@ public class EstadoEvaluacionFichaCommandOutputAdapter implements EstadoEvaluaci
     @Override
     public void registrarEstadoInicial(EstadoEvaluacionFichaEntity estado) {
         estadoEvaluacionFichaCommandRepository.save(EstadoEvaluacionFichaJpaMapper.toJpaEntity(estado));
-        logger.debug(Mensajes.obtener(EstadoEvaluacionFichaKey.LOG_GUARDADO),
+        logger.debug(EstadoEvaluacionFichaKey.LOG_GUARDADO,
                 estado.id(), estado.evaluacionFichaPerfil());
     }
 
     @Override
     public void agregarEstado(EstadoEvaluacionFichaEntity estado) {
         estadoEvaluacionFichaCommandRepository.save(EstadoEvaluacionFichaJpaMapper.toJpaEntity(estado));
-        logger.debug(Mensajes.obtener(EstadoEvaluacionFichaKey.LOG_GUARDADO),
+        logger.debug(EstadoEvaluacionFichaKey.LOG_GUARDADO,
                 estado.id(), estado.evaluacionFichaPerfil());
     }
 

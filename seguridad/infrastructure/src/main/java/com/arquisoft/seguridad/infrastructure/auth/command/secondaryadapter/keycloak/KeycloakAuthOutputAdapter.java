@@ -78,15 +78,15 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
         try {
             respuesta = ejecutarPeticionToken(construirTokenEndpoint(), body);
         } catch (HttpClientErrorException.Unauthorized e) {
-            logger.warn(Mensajes.obtener(IniciarSesionKey.LOG_CREDENCIALES_INVALIDAS));
+            logger.warn(IniciarSesionKey.LOG_CREDENCIALES_INVALIDAS);
             throw new CredencialesInvalidasException(Mensajes.obtener(IniciarSesionKey.ERROR_CREDENCIALES_INVALIDAS));
         } catch (HttpClientErrorException e) {
-            logger.error(Mensajes.obtener(IniciarSesionKey.LOG_ERROR_AUTENTICACION_KEYCLOAK),
+            logger.error(IniciarSesionKey.LOG_ERROR_AUTENTICACION_KEYCLOAK,
                     e.getStatusCode(), e.getMessage());
             throw new AutenticacionException(
                     Mensajes.formatear(IniciarSesionKey.ERROR_COMUNICACION_KEYCLOAK, e.getMessage()));
         } catch (HttpServerErrorException | ResourceAccessException e) {
-            logger.error(Mensajes.obtener(IniciarSesionKey.LOG_KEYCLOAK_NO_DISPONIBLE), e.getMessage());
+            logger.error(IniciarSesionKey.LOG_KEYCLOAK_NO_DISPONIBLE, e.getMessage());
             throw new ProveedorIdentidadNoDisponibleException(
                     Mensajes.obtener(IniciarSesionKey.ERROR_SERVICIO_NO_DISPONIBLE), e);
         }
@@ -109,13 +109,13 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
         try {
             respuesta = ejecutarPeticionToken(construirTokenEndpoint(), body);
         } catch (HttpClientErrorException.BadRequest e) {
-            logger.warn(Mensajes.obtener(TokenKey.LOG_REFRESH_INVALIDO));
+            logger.warn(TokenKey.LOG_REFRESH_INVALIDO);
             throw new TokenInvalidoException(Mensajes.obtener(TokenKey.ERROR_REFRESH_INVALIDO_EXPIRADO));
         } catch (HttpClientErrorException e) {
-            logger.error(Mensajes.obtener(TokenKey.LOG_ERROR_REFRESCO_KEYCLOAK), e.getStatusCode(), e.getMessage());
+            logger.error(TokenKey.LOG_ERROR_REFRESCO_KEYCLOAK, e.getStatusCode(), e.getMessage());
             throw new AutenticacionException(Mensajes.formatear(TokenKey.ERROR_REFRESCAR_DETALLE, e.getMessage()));
         } catch (HttpServerErrorException | ResourceAccessException e) {
-            logger.error(Mensajes.obtener(TokenKey.LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO), e.getMessage());
+            logger.error(TokenKey.LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO, e.getMessage());
             throw new ProveedorIdentidadNoDisponibleException(
                     Mensajes.obtener(IniciarSesionKey.ERROR_SERVICIO_NO_DISPONIBLE), e);
         }

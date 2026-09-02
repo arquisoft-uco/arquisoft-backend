@@ -29,11 +29,11 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
 
     @Override
     public UUID ejecutar(UsuarioDomain usuario) {
-        logger.info(Mensajes.obtener(UsuarioKey.LOG_CREANDO), usuario.getRol().getCodigo());
+        logger.info(UsuarioKey.LOG_CREANDO, usuario.getRol().getCodigo());
 
         boolean emailYaExiste = emailUsuarioExisteFinder.obtener(usuario.getEmail());
 
-        logger.debug(Mensajes.obtener(UsuarioKey.LOG_VERIFICACION_CREAR), emailYaExiste);
+        logger.debug(UsuarioKey.LOG_VERIFICACION_CREAR, emailYaExiste);
         crearUsuarioValidator.validar(usuario, emailYaExiste);
 
         usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));

@@ -1,7 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.repository;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
@@ -20,13 +19,13 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
 
     @Override
     public void guardar(UsuarioEntity usuario) {
-        logger.debug(Mensajes.obtener(UsuarioKey.LOG_MOCK_NO_PERSISTIDO),
+        logger.debug(UsuarioKey.LOG_MOCK_NO_PERSISTIDO,
                 usuario.id(), UtilTexto.enmascararCorreo(usuario.email()));
     }
 
     @Override
     public boolean existePorEmail(String email) {
-        logger.debug(Mensajes.obtener(UsuarioKey.LOG_MOCK_VERIFICACION_OMITIDA), UtilTexto.enmascararCorreo(email));
+        logger.debug(UsuarioKey.LOG_MOCK_VERIFICACION_OMITIDA, UtilTexto.enmascararCorreo(email));
         return false;
     }
 }

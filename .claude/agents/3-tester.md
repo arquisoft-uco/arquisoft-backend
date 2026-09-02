@@ -43,16 +43,23 @@ múltiples asserts.
 ## Logs: cómo afectan a los tests
 
 Todo flujo de escritura emite un `INFO` **de entrada** al comenzar el use case, además del `INFO` de
-cierre tras escribir (ver `arquisoft-estandares`). Tres consecuencias:
+cierre como última sentencia de `ejecutar` (ver `arquisoft-estandares`). Consecuencias:
 
-- **Nunca** asertar `verify(logger, never()).info(anyString(), any())` para probar que un flujo
-  aborta: con el `INFO` de entrada eso es siempre falso. Estrecha la aserción a los argumentos del
-  log de cierre — `verify(logger, never()).info(anyString(), eq(item.getId()))`. Este error ya rompió
-  dos tests en `evaluaciones`.
+- **El primer argumento de un log es una `ClaveMensaje`, no un `String`.** El matcher es
+  `any(ClaveMensaje.class)` (`com.arquisoft.shared.message.ClaveMensaje`); `anyString()` /
+  `any(String.class)` **no casan** y la verificación falla con `ArgumentsAreDifferent` señalando la
+  posición [0]. Esto ya rompió 10 tests al introducirse la sobrecarga. La variante de `String` sigue
+  existiendo para los pocos sitios que loguean una constante local (`shared:redis`, `shared:tracing`):
+  ahí sí se usa `anyString()`.
+- **Nunca** asertar `verify(logger, never()).info(any(ClaveMensaje.class), any())` para probar que un
+  flujo aborta: con el `INFO` de entrada eso es siempre falso. Estrecha la aserción a los argumentos
+  del log de cierre — `verify(logger, never()).info(any(ClaveMensaje.class), eq(item.getId()))`. Este
+  error ya rompió dos tests en `evaluaciones`.
 - Un `CommandOutputAdapter` que logea inyecta `AppLogger`, así que el test que lo instancia a mano
   pasa `mock(AppLogger.class)` al constructor. Patrón a copiar: `FichaPerfilCommandOutputAdapterTest`.
-- Los tests de `UseCaseImpl` e `InteractorImpl` declaran `@Mock AppLogger logger`. En un flujo
-  anidado el interactor también lo lleva; en uno simple, solo si el interactor logea (no lo hace).
+- Los tests de `UseCaseImpl` declaran `@Mock AppLogger logger`. **Los de `InteractorImpl` no**: ningún
+  interactor del repo logea ni inyecta `AppLogger`, así que un `@Mock AppLogger` ahí es un mock
+  muerto.
 - Un `UseCaseImpl` de **lectura** también inyecta `AppLogger` (dos `debug`, ningún `INFO`), así que
   su test necesita el `@Mock` igual. Su interactor y su `QueryOutputAdapter` no logean, así que esos
   tests no cambian.
@@ -60,11 +67,11 @@ cierre tras escribir (ver `arquisoft-estandares`). Tres consecuencias:
   aporta los `debug` de envelope y el `error` del nack, y no se asertan. En `notificaciones` el log
   de cierre lo pone `AbstractNotificacionConsumer.registrar(...)` y tampoco se asserta. Si el test verifica un log
   que lleva un correo, el valor esperado es el **enmascarado** (`j***@uco.edu.co`), no el original.
-- **No captures los argumentos de un log con un solo `ArgumentCaptor`.** `AppLogger.info(String, Object...)`
+- **No captures los argumentos de un log con un solo `ArgumentCaptor`.** `AppLogger.info(ClaveMensaje, Object...)`
   es varargs: `verify(logger).info(any(), captor.capture())` solo casa con las llamadas de
   **exactamente un** argumento, así que una de dos argumentos se reporta como `ArgumentsAreDifferent`
   aunque los valores sean los correctos. Usa un `eq(...)` por argumento —
-  `verify(logger).warn(any(String.class), eq(idEvento), eq("a***@uco.edu.co"))`.
+  `verify(logger).warn(any(ClaveMensaje.class), eq(idEvento), eq("a***@uco.edu.co"))`.
 
 
 ## Presupuesto orientativo
@@ -98,7 +105,7 @@ Pattern — `ValidationResult` acumula y `lanzarSiTieneErrores()` lanza **una so
 `reconstruir(...)` sin re-validar. Cada `Rule` (`domain/{feature}/rules/impl/`) se testea aislada
 con su record de entrada: **no necesita Mockito**, es una función pura.
 
-El agregado no emite eventos: los publica el `UseCase`, así que el `verify(eventPublisher)` se
+El domain no emite eventos: los publica el `UseCase`, así que el `verify(eventPublisher)` se
 testea en application, nunca en domain. Si el plan dice "Eventos: ninguno", nada de esto aplica
 — generarlo sería sobre-testeo.
 
@@ -130,7 +137,7 @@ recorriendo `values()` y comparando **los conjuntos completos**, para que agrega
 solo lado rompa el build. Ver `TipoNotificacionEventoTest`.
 
 **Solo si el plan declara eventos:** `verify(eventPublisher, times(N)).publish(any())` sobre el mock
-de `EventPublisher` que inyecta el use case — es el único punto de observación, porque el agregado
+de `EventPublisher` que inyecta el use case — es el único punto de observación, porque el domain
 no guarda eventos que se le puedan preguntar después. **Si el plan dice "Eventos: ninguno", no
 mockees `EventPublisher`**: el use case no lo inyecta, así que un `@Mock` de más rompe el test con
 `UnnecessaryStubbingException` y, peor, sugiere que el flujo publica algo.
@@ -226,7 +233,7 @@ lista vacía (`verify(..., never())` sobre el puerto de envío y el de guardado)
    `check` es el gate real (incluye `checkstyleMain`/`checkstyleTest` + `jacocoTestCoverageVerification`
    con mínimo 75%). JaCoCo no se aplica a `shared:*`, y dentro de un contexto excluye
    `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity` y
-   `JpaQueryEntity`) y `config/**`. **`*Domain` NO está excluido** — el agregado cuenta para el
+   `JpaQueryEntity`) y `config/**`. **`*Domain` NO está excluido** — el domain cuenta para el
    umbral, así que sus tests de `crear`/`reconstruir` son los que sostienen el porcentaje.
    **Un `UP-TO-DATE` no es un verde.** Gradle omite la tarea si nada cambio desde la ultima
    ejecucion, asi que un `BUILD SUCCESSFUL` con todas las tareas `UP-TO-DATE` no prueba que un

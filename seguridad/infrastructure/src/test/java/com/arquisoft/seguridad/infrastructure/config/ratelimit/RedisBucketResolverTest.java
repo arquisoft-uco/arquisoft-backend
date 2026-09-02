@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.ratelimit;
 
+import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.constant.SeguridadCodes;
@@ -144,7 +145,7 @@ class RedisBucketResolverTest {
         resolver.consumir(IP, GLOBAL);
 
         // Assert
-        verify(logger).error(anyString(), any(Throwable.class), any());
+        verify(logger).error(any(ClaveMensaje.class), any(Throwable.class), any());
     }
 
     @Test
