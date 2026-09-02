@@ -101,8 +101,25 @@ omites).
 - **Si la HU no declara ninguna `Rule`, no escribas `Validator`**: una capa que no orquesta nada es
   ruido. `notificaciones/.../EnviarNotificacionUseCaseImpl` es el caso real de un comando sin él.
 - **Una consulta que no debe lanzar no es una `Rule`.** El corte de idempotencia de un consumidor
-  AMQP es el ejemplo: `if (xFinder.obtener(entrada.idEvento())) { logger.info(...); return; }` en el
-  propio `UseCase`. Convertirlo en `Rule` haría que lanzara, y la excepción mandaría el mensaje a la
+  AMQP es el ejemplo, y la forma exacta es la de `EnviarNotificacionUseCaseImpl`:
+
+  ```java
+  boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada);
+  logger.debug(Mensajes.obtener(NotificacionKey.LOG_VERIFICACION_PREVIA),
+          entrada.getIdEvento(), yaProcesada);
+
+  if (yaProcesada) {
+      return EnvioNotificacionResultMapper.toResultDuplicada(entrada);
+  }
+  ```
+
+  Tres detalles que no son cosméticos: el `Finder` recibe el **agregado**, no el `idEvento` suelto
+  —la clave de idempotencia es el par `(idEvento, destinatario)`, así que el `idEvento` solo no
+  identifica la fila—; el log es **`debug`** y va **antes** del `if`, con el booleano que se acaba de
+  consultar, para que el corte quede explicado tanto si dispara como si no; y el corte **devuelve una
+  variante de la sellada**, nunca un `return;` mudo — el consumidor hace `switch` sobre ese resultado
+  y necesita distinguir `Duplicada` de `Enviada`.
+  Convertirlo en `Rule` haría que lanzara, y la excepción mandaría el mensaje a la
   DLQ con rollback de la fila por lo que era una reentrega normal del broker. La regla para decidir:
   si el resultado ausente/presente **es un error de negocio** → `Rule`; si solo decide seguir o no →
   `Finder` + `if/return`. Los métodos son fijos: `DomainRule<T>.validar(T)` (void, lanza) y
@@ -134,14 +151,23 @@ omites).
   (`{Contexto}Queues.PREFIJO + topic`) se queda porque `@RabbitListener` la lee como valor de
   anotación, sin literales propios ni constante `*_ROUTING_KEY` aparte —, `{Evento}Payload` y
   `{Evento}Consumer` en
-  `primaryadapter/amqp/{contextoProductor}/` — un subpaquete por productor —, el consumidor
-  extendiendo `AbstractNotificacionConsumer` (que ya aporta el `AppLogger` y el
-  `registrar(EnvioNotificacionResult)`), la constante nueva **en los dos enums**
-  (`TipoNotificacion` de dominio y `TipoNotificacionEvento` de infraestructura; la columna es
-  `VARCHAR`, sin migración) y las claves `PlantillaKey.ASUNTO_*`/`CUERPO_*`. Copia
-  `AsesorFichaCambiadoConsumer` como referencia: el texto del correo se arma **en el consumidor**,
-  con `Mensajes.formatear(...)`, no en el use case de `notificaciones`.
-  Las dos claves de plantilla van a la vez en el enum `PlantillaKey` (con su aridad) y en
+  `primaryadapter/amqp/{contextoProductor}/{entidad}/` — **dos** segmentos: quién produce y de qué
+  entidad suya habla el evento (`amqp/fichas/asesorficha/`, `amqp/fichas/fichaperfil/`) —, el
+  consumidor extendiendo `AbstractNotificacionConsumer` (que ya aporta el `AppLogger`, el
+  `registrar(EnvioNotificacionResult)` y el helper `plantilla(...)`), la constante nueva **en los dos
+  enums** (`TipoNotificacion` de dominio y `TipoNotificacionEvento` de infraestructura, este último
+  directo en `amqp/` por ser común a todos los productores; la columna es `VARCHAR`, sin migración) y
+  las claves `PlantillaKey.ASUNTO_*`/`CUERPO_*`. Copia `AsesorFichaCambiadoConsumer` como referencia.
+- **El texto del correo se arma en el consumidor, y siempre con `plantilla(clave, args)`** — el
+  helper heredado, nunca `Mensajes.formatear(...)` directo. `plantilla` comprueba
+  `Mensajes.catalogo().contiene(clave)` y lanza `PlantillaNotificacionNoDisponibleException` si
+  falta; `Mensajes.formatear` en cambio degrada al respaldo, así que una plantilla ausente en Redis
+  no rompería nada y saldría un correo con la clave cruda de asunto. Con el helper, el fallo sube al
+  `AbstractEventConsumer`, que hace `basicNack(requeue=false)` y aparta el mensaje en la DLQ.
+  Son **tres** textos por correo, no dos: `asunto`, `cuerpo` y `pie`, espejo del value object
+  `Contenido(asunto, cuerpo, pie)`. El evento nuevo declara su `ASUNTO_*` y su `CUERPO_*`; el pie es
+  compartido y sale de `PlantillaKey.PIE_GENERICO` (aridad 0), así que **no** declares clave de pie
+  propia. Cada clave nueva va a la vez en el enum `PlantillaKey` (con su aridad) y en
   `catalogo/notificaciones.properties`; `CatalogoCargaTest` rompe el build si falta cualquiera de
   las dos o si la cantidad de `%s` no coincide con la aridad declarada.
 - `application/{feature}/exception/` (→ `ApplicationException`, 400) es solo para fallos de
@@ -347,8 +373,13 @@ espera respuesta: "¿Sigues con @3-tester (recomendado) o vas directo a @4a-vali
 - **Estructura de logs de un flujo de evento:** un consumidor no pasa por `TrazabilidadFilter`, así
   que **no hay línea `AUDIT`** y el `INFO` de entrada va en el `{Evento}Consumer` (tras `deserialize`,
   con `idEvento` + identificadores de negocio), no en el use case. El use case que el consumidor
-  dispara **no añade su propio `INFO` de entrada** — siguen siendo dos `INFO` por mensaje, recepción y
-  cierre. `AbstractEventConsumer` ya aporta los `debug` de envelope recibido/confirmado y el `error`
+  dispara **no añade `INFO` de entrada ni de cierre**: siguen siendo dos `INFO` por mensaje, recepción
+  y cierre, y **los dos los pone el adaptador**. En `notificaciones` el de cierre sale de
+  `AbstractNotificacionConsumer.registrar(...)`, con su `switch` exhaustivo sobre la sellada — `info`
+  para `Enviada`/`Duplicada`, `warn` para `Fallida` —, así que el use case solo lleva su `debug` de
+  verificación previa. Regla general: cuando el use case devuelve una sellada de desenlace, el cierre
+  lo logea quien la **interpreta**, no quien la produce.
+  `AbstractEventConsumer` ya aporta los `debug` de envelope recibido/confirmado y el `error`
   del nack a la DLQ, y `SpringModulithEventPublisher` el `debug` de encolado en el outbox: un
   consumidor nuevo no escribe nada de eso. Todo log del consumidor va **dentro** del
   `withCorrelation(...)`; fuera del `AlcanceTraza` el MDC ya se restauró y la línea sale sin

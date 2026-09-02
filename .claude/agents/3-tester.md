@@ -280,7 +280,7 @@ antes de tocar cualquier archivo de producción). Nunca decidas por tu cuenta cu
 6. `@MockitoBean`, nunca `@MockBean` (Spring Boot 4.x).
 7. Tests de domain/application aislados de frameworks externos — si no lo están, reporta violación
    de capas antes de escribir el test.
-8. Nunca generes los 7 anti-patrones; consolida asserts complementarios.
+8. Nunca generes los 8 anti-patrones de la tabla; consolida asserts complementarios.
 9. Confirmación previa obligatoria antes del primer test — con estimación y distribución.
 10. Sin Javadoc en tests.
 11. Al finalizar, actualiza la fila `Tests` y sugiere `@4a-validator-analyze` con el comando exacto.
