@@ -90,6 +90,13 @@ omites).
   tipo pertenece al interactor y muere ahí. Vale igual cuando el comando no crea domain — un job
   por lotes nominaliza en un objeto de acción (`ReintentoNotificacionesDomain`). El `Criteria` del
   lado query sí viaja directo al caso de uso.
+- **Si la consulta no lleva entrada alguna** — ni `Query` ni `Criteria`, como un catálogo cerrado
+  que se devuelve entero — el interactor extiende `SupplierInteractor<O>` y el caso de uso
+  `SupplierUseCase<O>` (`shared:application`), ambos con `ejecutar()` **sin parámetros**. Nunca
+  `Interactor<Void, O>`/`UseCase<Void, O>`: el único valor de `java.lang.Void` es `null`, así que
+  ese tipo obliga al controller a escribir `ejecutar(null)` y el antipatrón queda incrustado en la
+  firma. Tampoco lo tapes con un `record` vacío ni con un centinela `VACIO` — `VACIO` representa un
+  dato que pudo estar y no está, y aquí no hay dato. `ConsultarEstadosFicha` es la referencia.
 - **Un `UseCase` puede encadenar a otro, pero todos los pasos cuelgan del orquestador**, no de un
   hermano: `RegistrarFichaPerfil` llama a `AsignarEstadoInicial` **y** a `AsignarEstudiantes`. Cada
   llamado recibe lo más estrecho que lee (`registro.getEstadoInicial()`, `registro.getEstudiantes()`);

@@ -168,6 +168,7 @@ lo suyo al construirse, así que el de arriba solo comprueba `noNulo` de cada co
 |---|---|---|
 | `query/primaryport/interactor/` (+`impl/`) | `@Transactional(readOnly = true, transactionManager = "fichasTransactionManager")` | `ConsultarFichasPerfilInteractorImpl.java` |
 | `query/primaryport/model/` | `{Consult}{Entidad}Query` — **solo** si la consulta trae entrada más allá del criteria (path variable, subject del JWT). Si no, el `Criteria` **es** el objeto de consulta | (hoy ninguno en `fichas`) |
+| *(sin entrada)* | Si no hay `Query` **ni** `Criteria` — catálogo cerrado que se devuelve entero — el interactor extiende `SupplierInteractor<O>` y el caso de uso `SupplierUseCase<O>`, con `ejecutar()` sin parámetros. **Nunca `Interactor<Void, O>`** | `ConsultarEstadosFichaInteractor.java` |
 | `query/usecase/` (+`impl/`) | Colaborador interno | `ConsultarFichasPerfilUseCaseImpl.java` |
 | `query/criteria/` | Entrada de la consulta (filtros/orden/paginación), extiende `QueryCriteria` de `shared:query` | `FichaPerfilCriteria.java` |
 | `query/readmodel/` | Proyección plana. **Nunca se serializa directo** — sin anotaciones Jackson, sin Lombok | `FichaPerfilReadModel.java` |
@@ -294,6 +295,37 @@ que cubre el mapper.
 
 Simetría que conviene tener presente: en `command/`, `primaryport/model/` es la entrada y `result/`
 la salida; en `query/`, `criteria/` es la entrada y `readmodel/` la salida.
+
+
+## Una operación sin entrada: `SupplierInteractor` / `SupplierUseCase`
+
+`shared:application` expone tres pares y son la matriz completa — no existe una cuarta combinación:
+
+| | entrada | salida |
+|---|---|---|
+| `Interactor<I,O>` / `UseCase<I,O>` | sí | sí |
+| `VoidInteractor<I>` / `VoidUseCase<I>` | sí | no |
+| `SupplierInteractor<O>` / `SupplierUseCase<O>` | no | sí |
+
+**`Void` como tipo de entrada está prohibido.** No es una elección neutra de tipado: el único valor
+habitable de `java.lang.Void` es `null`, así que `Interactor<Void, O>` obliga a todo llamador a
+escribir `ejecutar(null)` — el `null` del controller no es un descuido, es la única llamada que
+compila. `SupplierInteractor<O>`/`SupplierUseCase<O>` declaran `ejecutar()` sin parámetros y
+eliminan el null quitando el parámetro, que es el mismo movimiento que `VoidInteractor`/`VoidUseCase`
+ya hacen del lado de la salida.
+
+Aplica a la consulta que no lleva `Query` ni `Criteria` porque no hay nada que filtrar, paginar ni
+ordenar: `ConsultarEstadosFicha` es la referencia — `estado_ficha` es un catálogo cerrado y el
+endpoint lo devuelve entero.
+
+Dos salidas falsas que no debes tomar. Un `record` vacío como objeto de consulta es la
+indirección-por-nada que la propia convención rechaza en el objeto de acción: renombra el nada. Y el
+centinela `VACIO` tampoco sirve: existe para representar un dato que **pudo estar y no está** (una
+ficha que no se encontró), mientras que aquí no hay dato ausente sino dato inexistente.
+
+Del lado del test, un `SupplierInteractor` mockeado se stubea `when(interactor.ejecutar())` — sin
+`isNull()` ni ningún `ArgumentMatcher`, que es la señal en el `@WebMvcTest` de que la firma quedó
+bien.
 
 
 ## Cuándo un grupo de campos se vuelve un value object
@@ -516,8 +548,9 @@ mismo.
 ## `shared:domain` vs `shared:application` — la frontera la sostiene el compilador
 
 `shared:domain` solo tiene `DomainEvent` (`com.arquisoft.shared.events`) y `DomainRule`
-(`com.arquisoft.shared.rules`). Todo lo demás vive en `shared:application`: `UseCase`/`VoidUseCase`
-(`com.arquisoft.shared.usecase`), `Interactor`/`VoidInteractor` (`com.arquisoft.shared.interactor`),
+(`com.arquisoft.shared.rules`). Todo lo demás vive en `shared:application`:
+`UseCase`/`VoidUseCase`/`SupplierUseCase` (`com.arquisoft.shared.usecase`),
+`Interactor`/`VoidInteractor`/`SupplierInteractor` (`com.arquisoft.shared.interactor`),
 `Finder` (`com.arquisoft.shared.finder`) y el puerto `EventPublisher`
 (`com.arquisoft.shared.publisher`).
 

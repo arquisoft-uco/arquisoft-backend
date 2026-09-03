@@ -54,7 +54,7 @@ public class ConsultarEstadosFichaController {
                     content = @Content)
     })
     public ResponseEntity<List<EstadoFichaResponseDTO>> consultarEstadosFicha() {
-        List<EstadoFichaReadModel> estados = consultarEstadosFichaInteractor.ejecutar(null);
+        List<EstadoFichaReadModel> estados = consultarEstadosFichaInteractor.ejecutar();
 
         return ResponseEntity.ok(estados.stream()
                 .map(EstadoFichaResponseMapper::toResponse)

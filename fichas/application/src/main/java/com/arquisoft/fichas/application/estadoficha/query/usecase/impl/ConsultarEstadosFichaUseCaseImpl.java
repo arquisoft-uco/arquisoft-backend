@@ -18,7 +18,7 @@ public class ConsultarEstadosFichaUseCaseImpl implements ConsultarEstadosFichaUs
     private final AppLogger logger;
 
     @Override
-    public List<EstadoFichaReadModel> ejecutar(Void entrada) {
+    public List<EstadoFichaReadModel> ejecutar() {
         var resultado = queryOutputPort.findAll();
 
         logger.debug(EstadoFichaKey.LOG_CONSULTA_COMPLETADA, resultado.size());

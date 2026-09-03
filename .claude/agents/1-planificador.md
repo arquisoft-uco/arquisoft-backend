@@ -392,6 +392,7 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | application | `.../query/readmodel/{Entidad}ReadModel.java` | Proyección plana — sin Jackson, sin Lombok; nunca se serializa directo |
 | application | `.../query/criteria/{Entidad}Criteria.java` | Extiende `QueryCriteria` (`shared:query`) con la whitelist de campos filtrables/ordenables |
 | application | `.../query/primaryport/model/{Consulta}{Entidad}Query.java` | SOLO si la consulta trae entrada más allá del criteria (path variable, subject del JWT). Si no, el `Criteria` es el objeto de consulta y esta fila no existe |
+| application | *(sin entrada)* | Si la consulta no lleva `Query` **ni** `Criteria` — un catálogo cerrado que se devuelve entero —, el interactor extiende `SupplierInteractor<O>` y el caso de uso `SupplierUseCase<O>`, ambos con `ejecutar()` sin parámetros. **Nunca `Interactor<Void, O>`** |
 | application | `.../query/primaryport/interactor/Consultar{Entidad}Interactor.java` + `interactor/impl/...` | `@Transactional(readOnly = true, transactionManager = "{contexto}TransactionManager")` — qualifier obligatorio (`usuariosTransactionManager` es `@Primary`) |
 | application | `.../query/usecase/Consultar{Entidad}UseCase.java` + `usecase/impl/...` | Colaborador interno |
 | application | `.../query/secondaryport/{Entidad}QueryOutputPort.java` | Vive en application, nunca en domain; retorna `PaginatedResult<ReadModel>`, nunca `Page`/`Pageable` |
@@ -401,6 +402,13 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 > No crees un paquete `query/` si la única lectura es un `existsById`/`existePor` que solo alimenta
 > un `Validator`/`Rule` de comando — ese va en el `OutputPort` de `command/`, consumido por un
 > `Finder`. Ver "Cuándo NO existe un paquete `query/`" en `arquisoft-arquitectura`.
+
+> **Entrada de la consulta — decídela explícitamente en el plan**, igual que la pregunta 11 decide
+> la salida del comando. Tres formas y ninguna otra: **A)** `Criteria` (listado filtrable/paginado)
+> · **B)** `{Consulta}{Entidad}Query` (hay entrada más allá del criteria) · **C)** sin entrada
+> (catálogo cerrado) → `SupplierInteractor`/`SupplierUseCase`. Si el plan elige **C**, dilo en la
+> fila correspondiente; `Void` como parámetro de entrada está prohibido, porque obliga al
+> controller a escribir `ejecutar(null)`.
 
 **Enums de catálogo:** si el atributo es un estado/tipo de conjunto cerrado, planéalo como enum de
 dominio (`desde`/`esValido`/`getId()`, nunca `valueOf` fuera del enum). Su ubicación
