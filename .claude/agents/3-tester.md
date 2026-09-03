@@ -60,6 +60,11 @@ cierre como última sentencia de `ejecutar` (ver `arquisoft-estandares`). Consec
 - Los tests de `UseCaseImpl` declaran `@Mock AppLogger logger`. **Los de `InteractorImpl` no**: ningún
   interactor del repo logea ni inyecta `AppLogger`, así que un `@Mock AppLogger` ahí es un mock
   muerto.
+- Un `Interactor`/`UseCase` **sin entrada** (`SupplierInteractor<O>`/`SupplierUseCase<O>`) se stubea
+  y se verifica sin matcher alguno: `when(interactor.ejecutar())` y `verify(interactor).ejecutar()`.
+  Si te ves escribiendo `ejecutar(isNull())` o `ejecutar(any())`, la firma bajo prueba todavía es
+  `Interactor<Void, O>` y eso es un hallazgo para el implementador, no algo que el test deba
+  acomodar. Referencia: `ConsultarEstadosFichaControllerTest`.
 - Un `UseCaseImpl` de **lectura** también inyecta `AppLogger` (dos `debug`, ningún `INFO`), así que
   su test necesita el `@Mock` igual. Su interactor y su `QueryOutputAdapter` no logean, así que esos
   tests no cambian.
