@@ -45,6 +45,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Endpoints con ruta/método HTTP del plan, sin prefijo `/api` (ya es global vía `context-path`) | ❌ |
 | PATCH/PUT/DELETE con el `id` en `@PathVariable`, nunca en el body | ❌ |
 | Client role de un endpoint anidado usa la **entidad afectada**, no el primer segmento de la ruta (ej. `fichas:estudiante-ficha-perfil:delete`, no `fichas:ficha-perfil:delete`, en `DELETE /fichas-perfil/{id}/estudiantes/{eid}`) | ❌ |
+| Client role nuevo y exclusivo del endpoint — no reutiliza el de otro `Controller` ya existente; dos endpoints sobre el mismo recurso se diferencian con un calificador en el segmento de recurso (detalle en Nivel 2.7) | ❌ |
 | `Controller` con `@Tag`/`@Operation`/`@ApiResponses`, y `@SecurityRequirement` si no es público (ADR-011) | ❌ |
 | Migración dentro de la subcarpeta del contexto, `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` — suelta en `db/migration/` la recogería el Flyway de otro contexto y la aplicaría en su base | ❌ |
 | Migración nombrada `V{yyyyMMddHHmmss}__{descripcion_snake_case}.sql` (14 dígitos). Cualquier numeración secuencial (`V1.0`, `V2__`) es convención retirada | ❌ |
@@ -273,6 +274,7 @@ excepción o mapear a `Entity`.
 | El client role está declarado en `{contexto}/infrastructure/security/{Contexto}Authorities` (crudo + su expresión SpEL) | ❌ |
 | Client role en kebab-case (`{contexto}:{recurso}:{accion}`, todo minúscula, guiones — nunca camelCase/MAYÚSCULAS/underscore) | ❌ |
 | Coincide con el declarado en sección 9 del plan | ❌ |
+| El client role del endpoint es **nuevo y exclusivo**: la misma cadena no está ya asociada a otro endpoint/`Controller` en `{Contexto}Authorities`. Reutilizar el client role de otro endpoint (ej. un endpoint nuevo sobre `/fichas-perfil` que cuelga de `fichas:ficha-perfil:view`, ya usado por `/coordinador`, en vez de un `fichas:ficha-perfil-asesor:view` propio) rompe la granularidad — cada salida a la web debe poder concederse/revocarse por separado en Keycloak | ❌ |
 | Uso de `hasRole(...)` o roles realm directos (`'COORDINADOR'`, `'ROLE_COORDINADOR'`) | ❌ |
 | Varios `hasAuthority` con OR/AND en un mismo endpoint | ❌ |
 | Ruta escrita como literal en vez de placeholder de propiedad (`@RequestMapping("${rutas.{contexto}.{recurso}.base:/{recurso}}")`) | ❌ |

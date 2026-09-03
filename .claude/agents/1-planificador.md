@@ -77,6 +77,16 @@ underscore). Ej. válido: `fichas:ficha-perfil:create`. Roles realm en kebab-cas
 `asesor`, `asesor-ficha`, `jurado`, `bibliotecario`, `representante-comite`, `estudiante`,
 `administrador`. Documenta en sección 9 del plan.
 
+**Un client role por endpoint, propio y distinto — nunca se reutiliza el de otro endpoint.** La
+granularidad de los client roles vive a nivel de salida a la web: cada `Controller`/endpoint tiene
+el suyo, para poder concederlo o revocarlo en Keycloak sin tocar a los demás. Antes de nombrar el
+client role, `grep` el `{Contexto}Authorities` del contexto y confirma que la cadena que vas a usar
+**no está ya declarada** para otro endpoint. Si el endpoint nuevo actúa sobre la misma entidad que
+uno existente pero con distinto actor, alcance o matiz de acción (ej. "mis fichas como asesor" vs.
+"todas las fichas como coordinador"), **diferencia el segmento de recurso con un calificador** —
+`fichas:ficha-perfil-asesor:view` frente a `fichas:ficha-perfil:view`, no el mismo `view` para los
+dos. Reutilizar un client role existente para un endpoint nuevo es un hallazgo, no un atajo.
+
 **4. ¿Hay reglas de negocio implícitas no explícitas en la HU?**
 
 **5. ¿Emite eventos de dominio?** (solo si 2=Escritura/Mixta — consultas nunca emiten)
@@ -308,6 +318,10 @@ Para Controllers añade: @Tag, y por endpoint: @Operation(summary), @ApiResponse
 ## 9. Seguridad y Autorización (Keycloak)
 | Client role | Roles realm que lo poseen | Endpoint(s) | Descripción |
 
+Cada fila es un client role **nuevo y exclusivo** de su endpoint. Si la HU añade un endpoint sobre
+un recurso que ya tiene otro endpoint, añade un párrafo que diga explícitamente qué client role
+existente **no** se reutiliza y con qué calificador se diferencia el nuevo.
+
 ## 10. Eventos RabbitMQ — SOLO si la pregunta 5 fue A/B. Con C, borra esta sección completa
 | Dirección | Exchange | Routing Key | Payload | Contexto receptor |
 
@@ -453,6 +467,13 @@ breaking-change sobre un catálogo vivo con FKs que lo apuntan, a cambio de nada
 - **Client role de un recurso anidado = la entidad afectada, no el primer segmento de la ruta**
   (ej. `POST /fichas-perfil/{id}/estudiantes` → `fichas:estudiante-ficha-perfil:create`, no
   `fichas:ficha-perfil:create`).
+- **Un client role distinto por endpoint — nunca el de otro que ya existe.** Dos endpoints sobre el
+  mismo recurso (`/fichas-perfil/coordinador` y `/fichas-perfil/asesor`, mismo `@Tag`) llevan client
+  roles independientes: `fichas:ficha-perfil:view` para uno y `fichas:ficha-perfil-asesor:view` para
+  el otro, diferenciando el segmento de recurso con un calificador. Antes de asignarlo, `grep` el
+  `{Contexto}Authorities` y verifica que la cadena no esté ya tomada por otro endpoint. En la
+  sección 9 del plan deja constancia explícita de que el client role es nuevo y exclusivo de este
+  endpoint.
 
 ### Catálogo de mensajes (sección 6/7)
 
@@ -605,7 +626,7 @@ getters/setters ni métodos `private`.
 - [ ] Escritura que devuelve objeto (pregunta 11 = C): `{Concepto}Result` + `{Concepto}ResultMapper`
       en `command/result/`, y `Result` → `ResponseDTO` vía `{Accion}{Entidad}ResponseMapper`
 - [ ] Controller documentado con `@Tag`/`@Operation`/`@ApiResponses`/`@SecurityRequirement` (ADR-011), un controller por acción, ruta como placeholder de propiedad
-- [ ] `@PreAuthorize({Contexto}Authorities.Expresiones.HAS_*)` — constante, no literal; un solo client role por endpoint
+- [ ] `@PreAuthorize({Contexto}Authorities.Expresiones.HAS_*)` — constante, no literal; un solo client role por endpoint, **propio y distinto** del de cualquier otro endpoint (verificado con `grep` sobre `{Contexto}Authorities`)
 - [ ] Textos nuevos: clave en `{Feature}Key` + registro en `ClavesCatalogo` + línea en `catalogo/{contexto}.properties`, con la aridad correcta
 - [ ] Migración Flyway en `db/migration/{contexto}/`, versión `V{yyyyMMddHHmmss}` tomada al crear el
       archivo, sin prefijo de base/schema y sin FK hacia otra base de contexto

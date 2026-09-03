@@ -951,4 +951,10 @@ Consecuencias que se notan al escribir código:
 - `@PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_CREATE)` — nunca la cadena literal
   `"hasAuthority('...')"`. `FichasAuthorities` (`infrastructure/security/`) declara el client role
   crudo (para los tests) y su expresión SpEL.
+- **Un client role por endpoint, propio y distinto.** La granularidad de los client roles vive a
+  nivel de salida a la web: cada `Controller`/endpoint tiene el suyo y **nunca se reutiliza el de
+  otro**, para poder concederlo o revocarlo por separado en Keycloak. Dos endpoints sobre el mismo
+  recurso (`/fichas-perfil/coordinador`, `/fichas-perfil/asesor` — mismo `@Tag`) llevan roles
+  independientes, diferenciando el segmento de recurso con un calificador:
+  `fichas:ficha-perfil:view` para uno, `fichas:ficha-perfil-asesor:view` para el otro.
 - Nunca el prefijo `/api` en la ruta: ya es el `context-path` global.
