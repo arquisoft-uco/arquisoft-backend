@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.application.itemfichaperfil.query.primaryport.interactor.impl;
 
-import com.arquisoft.fichas.application.itemfichaperfil.query.criteria.ItemFichaPerfilAsesorCriteria;
-import com.arquisoft.fichas.application.itemfichaperfil.query.primaryport.model.ConsultarItemsFichaPerfilAsesorQuery;
+import com.arquisoft.fichas.application.itemfichaperfil.query.criteria.ItemFichaPerfilEstudianteCriteria;
+import com.arquisoft.fichas.application.itemfichaperfil.query.primaryport.model.ConsultarItemsFichaPerfilEstudianteQuery;
 import com.arquisoft.fichas.application.itemfichaperfil.query.readmodel.ItemFichaPerfilReadModel;
-import com.arquisoft.fichas.application.itemfichaperfil.query.usecase.ConsultarItemsFichaPerfilAsesorUseCase;
+import com.arquisoft.fichas.application.itemfichaperfil.query.usecase.ConsultarItemsFichaPerfilEstudianteUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,25 +21,25 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarItemsFichaPerfilAsesorInteractorImplTest {
+class ConsultarItemsFichaPerfilEstudianteInteractorImplTest {
 
     @Mock
-    private ConsultarItemsFichaPerfilAsesorUseCase consultarItemsFichaPerfilAsesorUseCase;
+    private ConsultarItemsFichaPerfilEstudianteUseCase consultarItemsFichaPerfilEstudianteUseCase;
 
     @Captor
-    private ArgumentCaptor<ItemFichaPerfilAsesorCriteria> criteriaCaptor;
+    private ArgumentCaptor<ItemFichaPerfilEstudianteCriteria> criteriaCaptor;
 
     @InjectMocks
-    private ConsultarItemsFichaPerfilAsesorInteractorImpl interactor;
+    private ConsultarItemsFichaPerfilEstudianteInteractorImpl interactor;
 
     @Test
     void debeConvertirQueryACriteriaYDelegarEnUseCase() {
         // Arrange
         var fichaPerfil = UUID.randomUUID();
-        var asesorFicha = UUID.randomUUID();
-        var query = ConsultarItemsFichaPerfilAsesorQuery.crear(fichaPerfil, asesorFicha);
+        var estudiante = UUID.randomUUID();
+        var query = ConsultarItemsFichaPerfilEstudianteQuery.crear(fichaPerfil, estudiante);
         List<ItemFichaPerfilReadModel> esperado = List.of();
-        when(consultarItemsFichaPerfilAsesorUseCase.ejecutar(any(ItemFichaPerfilAsesorCriteria.class)))
+        when(consultarItemsFichaPerfilEstudianteUseCase.ejecutar(any(ItemFichaPerfilEstudianteCriteria.class)))
                 .thenReturn(esperado);
 
         // Act
@@ -47,8 +47,8 @@ class ConsultarItemsFichaPerfilAsesorInteractorImplTest {
 
         // Assert
         assertThat(resultado).isSameAs(esperado);
-        verify(consultarItemsFichaPerfilAsesorUseCase).ejecutar(criteriaCaptor.capture());
+        verify(consultarItemsFichaPerfilEstudianteUseCase).ejecutar(criteriaCaptor.capture());
         assertThat(criteriaCaptor.getValue().fichaPerfil()).isEqualTo(fichaPerfil);
-        assertThat(criteriaCaptor.getValue().asesorFicha()).isEqualTo(asesorFicha);
+        assertThat(criteriaCaptor.getValue().estudiante()).isEqualTo(estudiante);
     }
 }
