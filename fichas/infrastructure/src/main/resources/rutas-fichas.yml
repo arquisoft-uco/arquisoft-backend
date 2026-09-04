@@ -12,6 +12,7 @@ rutas:
       coordinador: /coordinador
       asesor: /asesor
       estados-ficha: /estados-ficha
+      tipos-item: /tipos-item
       items: /{fichaPerfilId}/items
       item-por-id: /items/{itemId}
       estudiantes: /{fichaPerfilId}/estudiantes
