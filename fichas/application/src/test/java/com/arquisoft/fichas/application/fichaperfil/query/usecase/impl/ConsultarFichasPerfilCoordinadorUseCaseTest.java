@@ -20,7 +20,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarFichasPerfilUseCaseTest {
+class ConsultarFichasPerfilCoordinadorUseCaseTest {
 
     @Mock
     private FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
@@ -28,7 +28,7 @@ class ConsultarFichasPerfilUseCaseTest {
     @Mock
     private AppLogger logger;
     @InjectMocks
-    private ConsultarFichasPerfilUseCaseImpl consultarFichasPerfilUseCase;
+    private ConsultarFichasPerfilCoordinadorUseCaseImpl consultarFichasPerfilUseCase;
 
     @Test
     void debeRetornarFichasPaginadas_cuandoExistenFichas() {

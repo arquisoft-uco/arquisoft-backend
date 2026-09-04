@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.fichaperfil.query.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
-import com.arquisoft.fichas.application.fichaperfil.query.usecase.ConsultarFichasPerfilUseCase;
+import com.arquisoft.fichas.application.fichaperfil.query.usecase.ConsultarFichasPerfilCoordinadorUseCase;
 import com.arquisoft.fichas.application.fichaperfil.query.secondaryport.FichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class ConsultarFichasPerfilUseCaseImpl implements ConsultarFichasPerfilUseCase {
+public class ConsultarFichasPerfilCoordinadorUseCaseImpl implements ConsultarFichasPerfilCoordinadorUseCase {
 
     private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
     private final AppLogger logger;

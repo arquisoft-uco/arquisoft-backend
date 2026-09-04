@@ -5,5 +5,5 @@ import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilR
 import com.arquisoft.shared.usecase.UseCase;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 
-public interface ConsultarFichasPerfilUseCase
+public interface ConsultarFichasPerfilCoordinadorUseCase
         extends UseCase<FichaPerfilCriteria, PaginatedResult<FichaPerfilReadModel>> {}

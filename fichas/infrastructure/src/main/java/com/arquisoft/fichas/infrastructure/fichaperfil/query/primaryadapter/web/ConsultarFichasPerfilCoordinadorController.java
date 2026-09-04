@@ -1,9 +1,9 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web;
 
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
-import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilInteractor;
+import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilCoordinadorInteractor;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.dto.FichaPerfilResponseDTO;
-import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.ConsultarFichasPerfilRequestMapper;
+import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.ConsultarFichasPerfilCoordinadorRequestMapper;
 import com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web.mapper.FichaPerfilResponseMapper;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
@@ -31,12 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
 @RequiredArgsConstructor
 @Tag(name = FichasApiMessages.FichaPerfil.TAG_NAME, description = FichasApiMessages.FichaPerfil.TAG_DESCRIPTION)
-public class ConsultarFichasPerfilController {
+public class ConsultarFichasPerfilCoordinadorController {
 
-    private final ConsultarFichasPerfilInteractor consultarFichasPerfilInteractor;
+    private final ConsultarFichasPerfilCoordinadorInteractor consultarFichasPerfilCoordinadorInteractor;
 
     @PostMapping("${rutas.fichas.fichas-perfil.coordinador:/coordinador}")
-    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_VIEW)
+    @PreAuthorize(FichasAuthorities.Expresiones.HAS_FICHA_PERFIL_COORDINADOR_VIEW)
     @Operation(
             summary = FichasApiMessages.FichaPerfil.CONSULTAR_SUMMARY,
             description = FichasApiMessages.FichaPerfil.CONSULTAR_DESCRIPTION,
@@ -58,8 +58,8 @@ public class ConsultarFichasPerfilController {
     public ResponseEntity<PageResponseDTO<FichaPerfilResponseDTO>> consultarFichasCoordinador(
             @RequestBody(required = false) QueryCriteriaRequestDTO request) {
 
-        var resultado = consultarFichasPerfilInteractor.ejecutar(
-                ConsultarFichasPerfilRequestMapper.toCriteria(request));
+        var resultado = consultarFichasPerfilCoordinadorInteractor.ejecutar(
+                ConsultarFichasPerfilCoordinadorRequestMapper.toQuery(request));
 
         return ResponseEntity.ok(PageResponseDTO.from(
                 resultado.map(FichaPerfilResponseMapper::toResponse)));
