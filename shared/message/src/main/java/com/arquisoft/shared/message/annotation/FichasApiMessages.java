@@ -105,6 +105,14 @@ public final class FichasApiMessages {
         public static final String REMOVER_RESP_400 = "El ítem no existe";
         public static final String REMOVER_RESP_403 = "Sin permiso o no es propietario de la ficha";
         public static final String REMOVER_RESP_422 = "El ítem tiene revisiones y no puede eliminarse";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar ítems de una ficha de perfil que asesora";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Permite a un asesor ficha consultar todos los ítems de contenido de una ficha de perfil que él asesora. "
+                        + "Si la ficha no existe o no la asesora el solicitante, devuelve una lista vacía.";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Lista de ítems de la ficha de perfil (vacía si no aplica)";
+        public static final String CONSULTAR_ASESOR_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_ASESOR_RESP_403 = "Sin el permiso para consultar ítems como asesor ficha";
     }
 
     public static final class EstudianteFichaPerfil {

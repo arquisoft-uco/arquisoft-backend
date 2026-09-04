@@ -13,6 +13,7 @@ public final class FichasAuthorities {
     public static final String ITEM_FICHA_PERFIL_CREATE = "fichas:item-ficha-perfil:create";
     public static final String ITEM_FICHA_PERFIL_UPDATE = "fichas:item-ficha-perfil:update";
     public static final String ITEM_FICHA_PERFIL_DELETE = "fichas:item-ficha-perfil:delete";
+    public static final String ITEM_FICHA_PERFIL_ASESOR_VIEW = "fichas:item-ficha-perfil-asesor:view";
 
     public static final String ESTUDIANTE_FICHA_PERFIL_CREATE = "fichas:estudiante-ficha-perfil:create";
     public static final String ESTUDIANTE_FICHA_PERFIL_DELETE = "fichas:estudiante-ficha-perfil:delete";
@@ -46,6 +47,8 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + ITEM_FICHA_PERFIL_UPDATE + HAS_AUTHORITY_FIN;
         public static final String HAS_ITEM_FICHA_PERFIL_DELETE =
                 HAS_AUTHORITY_INICIO + ITEM_FICHA_PERFIL_DELETE + HAS_AUTHORITY_FIN;
+        public static final String HAS_ITEM_FICHA_PERFIL_ASESOR_VIEW =
+                HAS_AUTHORITY_INICIO + ITEM_FICHA_PERFIL_ASESOR_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTUDIANTE_FICHA_PERFIL_CREATE =
                 HAS_AUTHORITY_INICIO + ESTUDIANTE_FICHA_PERFIL_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTUDIANTE_FICHA_PERFIL_DELETE =
