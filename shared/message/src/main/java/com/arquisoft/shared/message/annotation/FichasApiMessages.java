@@ -194,6 +194,20 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
     }
 
+    public static final class TipoItem {
+
+        private TipoItem() {}
+
+        public static final String TAG_NAME = "Tipos de Ítem";
+        public static final String TAG_DESCRIPTION = "Catálogo de tipos de ítem asignables a los ítems de una ficha de perfil";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar todos los tipos ítem disponibles";
+        public static final String CONSULTAR_DESCRIPTION = "Retorna todos los tipos de ítem del catálogo sin filtros ni paginación";
+        public static final String CONSULTAR_RESP_200 = "Lista de tipos de ítem retornada exitosamente";
+        public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
+        public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
+    }
+
     public static final class MinioGuia {
 
         private MinioGuia() {}
