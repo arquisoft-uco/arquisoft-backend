@@ -8,4 +8,6 @@ import java.util.UUID;
 public interface ItemFichaPerfilQueryOutputPort {
 
     List<ItemFichaPerfilReadModel> consultarPorFichaYAsesor(UUID fichaPerfil, UUID asesorFicha);
+
+    List<ItemFichaPerfilReadModel> consultarPorFichaYEstudiante(UUID fichaPerfil, UUID estudiante);
 }

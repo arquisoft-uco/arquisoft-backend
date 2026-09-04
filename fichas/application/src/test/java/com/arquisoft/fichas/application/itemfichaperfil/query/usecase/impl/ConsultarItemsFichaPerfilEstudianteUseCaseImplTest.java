@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.query.usecase.impl;
 
-import com.arquisoft.fichas.application.itemfichaperfil.query.criteria.ItemFichaPerfilAsesorCriteria;
+import com.arquisoft.fichas.application.itemfichaperfil.query.criteria.ItemFichaPerfilEstudianteCriteria;
 import com.arquisoft.fichas.application.itemfichaperfil.query.readmodel.ItemFichaPerfilReadModel;
 import com.arquisoft.fichas.application.itemfichaperfil.query.secondaryport.ItemFichaPerfilQueryOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarItemsFichaPerfilAsesorUseCaseImplTest {
+class ConsultarItemsFichaPerfilEstudianteUseCaseImplTest {
 
     @Mock
     private ItemFichaPerfilQueryOutputPort itemFichaPerfilQueryOutputPort;
@@ -32,17 +32,17 @@ class ConsultarItemsFichaPerfilAsesorUseCaseImplTest {
     private AppLogger logger;
 
     @InjectMocks
-    private ConsultarItemsFichaPerfilAsesorUseCaseImpl useCase;
+    private ConsultarItemsFichaPerfilEstudianteUseCaseImpl useCase;
 
     @Test
     void debeDelegarEnPuertoConLosUuidDelCriteria_yRetornarSuResultado() {
         // Arrange
         var fichaPerfil = UUID.randomUUID();
-        var asesorFicha = UUID.randomUUID();
-        var criteria = new ItemFichaPerfilAsesorCriteria(fichaPerfil, asesorFicha);
+        var estudiante = UUID.randomUUID();
+        var criteria = new ItemFichaPerfilEstudianteCriteria(fichaPerfil, estudiante);
         var esperado = List.of(new ItemFichaPerfilReadModel(
                 UUID.randomUUID(), fichaPerfil, "OBJETIVO_GENERAL", "Objetivo General", "Contenido"));
-        when(itemFichaPerfilQueryOutputPort.consultarPorFichaYAsesor(fichaPerfil, asesorFicha))
+        when(itemFichaPerfilQueryOutputPort.consultarPorFichaYEstudiante(fichaPerfil, estudiante))
                 .thenReturn(esperado);
 
         // Act
@@ -50,14 +50,14 @@ class ConsultarItemsFichaPerfilAsesorUseCaseImplTest {
 
         // Assert
         assertThat(resultado).isSameAs(esperado);
-        verify(itemFichaPerfilQueryOutputPort).consultarPorFichaYAsesor(fichaPerfil, asesorFicha);
+        verify(itemFichaPerfilQueryOutputPort).consultarPorFichaYEstudiante(fichaPerfil, estudiante);
     }
 
     @Test
     void debeDevolverListaVacia_cuandoPuertoNoDevuelveNada() {
         // Arrange
-        var criteria = new ItemFichaPerfilAsesorCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(itemFichaPerfilQueryOutputPort.consultarPorFichaYAsesor(any(), any()))
+        var criteria = new ItemFichaPerfilEstudianteCriteria(UUID.randomUUID(), UUID.randomUUID());
+        when(itemFichaPerfilQueryOutputPort.consultarPorFichaYEstudiante(any(), any()))
                 .thenReturn(List.of());
 
         // Act
@@ -70,16 +70,16 @@ class ConsultarItemsFichaPerfilAsesorUseCaseImplTest {
     @Test
     void debeRegistrarDebugEntradaYCierre_sinInfo() {
         // Arrange
-        var criteria = new ItemFichaPerfilAsesorCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(itemFichaPerfilQueryOutputPort.consultarPorFichaYAsesor(any(), any()))
+        var criteria = new ItemFichaPerfilEstudianteCriteria(UUID.randomUUID(), UUID.randomUUID());
+        when(itemFichaPerfilQueryOutputPort.consultarPorFichaYEstudiante(any(), any()))
                 .thenReturn(List.of());
 
         // Act
         useCase.ejecutar(criteria);
 
         // Assert
-        verify(logger).debug(eq(ItemFichaPerfilKey.LOG_CONSULTANDO_ASESOR), eq(criteria.fichaPerfil()));
-        verify(logger).debug(eq(ItemFichaPerfilKey.LOG_CONSULTA_ASESOR_COMPLETADA), eq(0));
+        verify(logger).debug(eq(ItemFichaPerfilKey.LOG_CONSULTANDO_ESTUDIANTE), eq(criteria.fichaPerfil()));
+        verify(logger).debug(eq(ItemFichaPerfilKey.LOG_CONSULTA_ESTUDIANTE_COMPLETADA), eq(0));
         verify(logger, never()).info(any(ClaveMensaje.class), any());
     }
 }

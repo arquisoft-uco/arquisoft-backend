@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.query.primaryport.mapper;
 
-import com.arquisoft.fichas.application.itemfichaperfil.query.criteria.ItemFichaPerfilCriteria;
+import com.arquisoft.fichas.application.itemfichaperfil.query.criteria.ItemFichaPerfilAsesorCriteria;
 import com.arquisoft.fichas.application.itemfichaperfil.query.primaryport.model.ConsultarItemsFichaPerfilAsesorQuery;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +18,7 @@ class ConsultarItemsFichaPerfilAsesorMapperTest {
         var query = ConsultarItemsFichaPerfilAsesorQuery.crear(fichaPerfil, asesorFicha);
 
         // Act
-        ItemFichaPerfilCriteria criteria = ConsultarItemsFichaPerfilAsesorMapper.toCriteria(query);
+        ItemFichaPerfilAsesorCriteria criteria = ConsultarItemsFichaPerfilAsesorMapper.toCriteria(query);
 
         // Assert
         assertThat(criteria.fichaPerfil()).isEqualTo(fichaPerfil);
