@@ -328,6 +328,12 @@ espera respuesta: "¿Sigues con @3-tester (recomendado) o vas directo a @4a-vali
   con **todas** las constantes del dominio y su test de deriva. Nunca un literal suelto.
 - **IDs:** siempre `UUID`, generado en el setter (`UtilUUID`), nunca `UUID.randomUUID()` directo en
   dominio.
+- **Comprobación de nulidad:** `UtilObjeto.esNulo(x)` / `UtilObjeto.noEsNulo(x)` (`shared:util`),
+  nunca `== null` / `!= null` crudo, y **nunca** un método `tieneX()` declarado en un `record`
+  (`Command`, `Query`) solo para envolver ese `== null`: eso reintroduce por copia, una vez por
+  `record`, lo que el `Util` ya resuelve en un sitio. Excepción única: los módulos `shared:` que no
+  declaran `shared:util` (`jpa`, `redis`, `amqp`, `web`) — ahí el `== null` crudo se queda, y tampoco
+  agregues la dependencia para evitarlo.
 - **Enums de catálogo:** `desde(String)`/`esValido(String)`/`getId()`, nunca `valueOf` fuera del
   enum. Su ubicación (`domain/{catalogo}/` vs `domain/{feature}/model/`) sigue lo que ya use el
   contexto tocado — es una decisión abierta del proyecto, no asumas una convención fija de PK.

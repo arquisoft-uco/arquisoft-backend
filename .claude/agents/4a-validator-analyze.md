@@ -245,7 +245,9 @@ excepción o mapear a `Entity`.
 | Check | Sev |
 |---|:---:|
 | `Interactor` dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` — qualifier explícito siempre (`usuariosTransactionManager` es `@Primary` y enlaza en silencio si se omite) | ❌ |
-| `UseCase` de escritura cuya firma recibe el `Command` en vez de un objeto de dominio (`UseCase<{Algo}Domain, R>`). Vale también sin domain: un job por lotes nominaliza igual (`ReintentoNotificacionesDomain`). El `Criteria` del lado query **sí** viaja directo | ❌ |
+| `UseCase` de escritura cuya firma recibe el `Command` en vez de un objeto de dominio (`UseCase<{Algo}Domain, R>`). Vale también sin domain: un job por lotes nominaliza igual (`ReintentoNotificacionesDomain`). Del lado query, el `UseCase` recibe el `{Entidad}Criteria`, pero el **`Interactor`** recibe un objeto `Query` (ver check de abajo) | ❌ |
+| El `Interactor` de una consulta recibe el `{Entidad}Criteria` directo en vez de un objeto `Query`. Sin dato validado extra: `ConsultaCriteriaQuery` genérico (`shared:query`). Con dato validado extra (path variable, subject del JWT, filtro forzado): un `{Consulta}{Entidad}Query` propio que **compone** `ConsultaCriteriaQuery` (nunca re-declara `pagina`/`tamanio`/`ordenamiento`/`raiz`). En ambos casos un `query/primaryport/mapper/Consultar{Entidad}[{Rol}]Mapper.toCriteria(query)` hace la conversión — ahí corre la validación `camposFiltrables()`/`camposOrdenables()`, no en el `RequestMapper` web ni en el `InteractorImpl` | ❌ |
+| El `Consultar{Entidad}RequestMapper` (web) devuelve `{Entidad}Criteria` en vez del `Query` (método `toQuery`, no `toCriteria`) | ❌ |
 | Un `UseCase` encadenado invoca a un tercero que no es parte del hecho que él representa — todos los pasos cuelgan del orquestador, no de un hermano (`RegistrarFichaPerfil` llama a `AsignarEstadoInicial` **y** a `AsignarEstudiantes`) | ❌ |
 | Un `UseCase` encadenado recibe el objeto de acción completo y solo lee una parte — señal de que lo pide para alimentar un paso siguiente que le corresponde al que llama. Debe recibir lo más estrecho que lee (`EstadoFichaPerfilDomain`, no `RegistroFichaPerfilDomain`) | ⚠️ |
 | `Void` como parámetro de **entrada** de un `Interactor`/`UseCase` (`Interactor<Void, O>`, `UseCase<Void, O>`) — su único valor habitable es `null`, así que obliga al llamador a escribir `ejecutar(null)`. Una operación sin entrada extiende `SupplierInteractor<O>`/`SupplierUseCase<O>` (`shared:application`), con `ejecutar()` sin parámetros. Verifica también el lado del adaptador: un `ejecutar(null)` en un `Controller` o `Consumer` es el síntoma | ❌ |
@@ -274,7 +276,7 @@ excepción o mapear a `Entity`.
 | El client role está declarado en `{contexto}/infrastructure/security/{Contexto}Authorities` (crudo + su expresión SpEL) | ❌ |
 | Client role en kebab-case (`{contexto}:{recurso}:{accion}`, todo minúscula, guiones — nunca camelCase/MAYÚSCULAS/underscore) | ❌ |
 | Coincide con el declarado en sección 9 del plan | ❌ |
-| El client role del endpoint es **nuevo y exclusivo**: la misma cadena no está ya asociada a otro endpoint/`Controller` en `{Contexto}Authorities`. Reutilizar el client role de otro endpoint (ej. un endpoint nuevo sobre `/fichas-perfil` que cuelga de `fichas:ficha-perfil:view`, ya usado por `/coordinador`, en vez de un `fichas:ficha-perfil-asesor:view` propio) rompe la granularidad — cada salida a la web debe poder concederse/revocarse por separado en Keycloak | ❌ |
+| El client role del endpoint es **nuevo y exclusivo**: la misma cadena no está ya asociada a otro endpoint/`Controller` en `{Contexto}Authorities`. Reutilizar el client role de otro endpoint (ej. un endpoint nuevo sobre `/fichas-perfil` que cuelga de `fichas:ficha-perfil-coordinador:view`, ya usado por `/coordinador`, en vez de un `fichas:ficha-perfil-asesor:view` propio) rompe la granularidad — cada salida a la web debe poder concederse/revocarse por separado en Keycloak | ❌ |
 | Uso de `hasRole(...)` o roles realm directos (`'COORDINADOR'`, `'ROLE_COORDINADOR'`) | ❌ |
 | Varios `hasAuthority` con OR/AND en un mismo endpoint | ❌ |
 | Ruta escrita como literal en vez de placeholder de propiedad (`@RequestMapping("${rutas.{contexto}.{recurso}.base:/{recurso}}")`) | ❌ |
@@ -292,6 +294,8 @@ excepción o mapear a `Entity`.
 | El `QueryOutputAdapter` construye `PageRequest`/`Sort` a mano en vez de delegar en `PageableMapper.toPageable(criteria, {Entidad}SortMapper::traducir)` + `PaginationMapper.toResult(page)` (`shared:jpa/util/`) | ❌ |
 | El adapter captura `PropertyReferenceException`/`InvalidDataAccessApiUsageException` para remapearlas a 400 (los campos ya se validaron contra la whitelist; eso solo puede ser un defecto de mapeo — debe salir 500) | ❌ |
 | Falta `{Entidad}SortMapperTest` que confirme que la whitelist del `Criteria` y las claves de `traducir(...)` no divergen | ⚠️ |
+| Un `{Consulta}{Entidad}Mapper` (o cualquier clase de `application`/`domain` que declare `shared:util`) ramifica sobre un campo opcional con `== null`/`!= null` crudo en vez de `UtilObjeto.esNulo`/`noEsNulo` | ❌ |
+| Un `Command`/`Query` declara un método `tieneX()` propio solo para envolver el `== null` de uno de sus campos, en vez de que el consumidor use `UtilObjeto.noEsNulo(...)` (los `tieneFiltros()`/`tieneOrden()` de `QueryCriteria` y `tieneErrores()` de `ValidationResult` sí son legítimos: son contrato de `shared:*`, no de un record de una feature) | ❌ |
 
 ### Nivel 2.9 — Consumo de eventos AMQP (si la HU consume eventos)
 

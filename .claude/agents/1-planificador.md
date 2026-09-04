@@ -84,8 +84,9 @@ client role, `grep` el `{Contexto}Authorities` del contexto y confirma que la ca
 **no está ya declarada** para otro endpoint. Si el endpoint nuevo actúa sobre la misma entidad que
 uno existente pero con distinto actor, alcance o matiz de acción (ej. "mis fichas como asesor" vs.
 "todas las fichas como coordinador"), **diferencia el segmento de recurso con un calificador** —
-`fichas:ficha-perfil-asesor:view` frente a `fichas:ficha-perfil:view`, no el mismo `view` para los
-dos. Reutilizar un client role existente para un endpoint nuevo es un hallazgo, no un atajo.
+`fichas:ficha-perfil-asesor:view` frente a `fichas:ficha-perfil-coordinador:view`, no el mismo
+`fichas:ficha-perfil:view` para los dos. Reutilizar un client role existente para un endpoint nuevo
+es un hallazgo, no un atajo.
 
 **4. ¿Hay reglas de negocio implícitas no explícitas en la HU?**
 
@@ -405,12 +406,14 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 |---|---|---|
 | application | `.../query/readmodel/{Entidad}ReadModel.java` | Proyección plana — sin Jackson, sin Lombok; nunca se serializa directo |
 | application | `.../query/criteria/{Entidad}Criteria.java` | Extiende `QueryCriteria` (`shared:query`) con la whitelist de campos filtrables/ordenables |
-| application | `.../query/primaryport/model/{Consulta}{Entidad}Query.java` | SOLO si la consulta trae entrada más allá del criteria (path variable, subject del JWT). Si no, el `Criteria` es el objeto de consulta y esta fila no existe |
+| application | *(entrada del interactor)* | El interactor de consulta **siempre** recibe un objeto `Query`, nunca el `{Entidad}Criteria` directo. Sin entrada validada extra ese objeto es el genérico `ConsultaCriteriaQuery` (`shared:query`, campos `pagina`/`tamanio`/`ordenamiento`/`raiz`) — no se declara tipo propio. |
+| application | `.../query/primaryport/model/{Consulta}{Entidad}Query.java` | SOLO si la consulta trae entrada validada más allá del criteria (path variable, subject del JWT, filtro forzado). Es un `record` con `crear(...)` que valida ese dato y **compone** `ConsultaCriteriaQuery` (`UUID x, ConsultaCriteriaQuery criterio`) — nunca repite `pagina`/`tamanio`/`ordenamiento`/`raiz`. |
+| application | `.../query/primaryport/mapper/Consultar{Entidad}[{Rol}]Mapper.java` | `final`, ctor privado, `static toCriteria(query) → {Entidad}Criteria`. Aquí corre la validación `camposFiltrables()`/`camposOrdenables()` (dentro del `{Entidad}Criteria.Builder`), en la capa de aplicación y no en el mapper web. Simétrico al `{Accion}{Entidad}Mapper` del lado comando. |
 | application | *(sin entrada)* | Si la consulta no lleva `Query` **ni** `Criteria` — un catálogo cerrado que se devuelve entero —, el interactor extiende `SupplierInteractor<O>` y el caso de uso `SupplierUseCase<O>`, ambos con `ejecutar()` sin parámetros. **Nunca `Interactor<Void, O>`** |
-| application | `.../query/primaryport/interactor/Consultar{Entidad}Interactor.java` + `interactor/impl/...` | `@Transactional(readOnly = true, transactionManager = "{contexto}TransactionManager")` — qualifier obligatorio (`usuariosTransactionManager` es `@Primary`) |
-| application | `.../query/usecase/Consultar{Entidad}UseCase.java` + `usecase/impl/...` | Colaborador interno |
+| application | `.../query/primaryport/interactor/Consultar{Entidad}Interactor.java` + `interactor/impl/...` | `@Transactional(readOnly = true, transactionManager = "{contexto}TransactionManager")` — qualifier obligatorio (`usuariosTransactionManager` es `@Primary`). El `impl` invoca `Consultar{Entidad}[{Rol}]Mapper.toCriteria(entrada)` y delega en el `UseCase` — sin lógica propia. |
+| application | `.../query/usecase/Consultar{Entidad}UseCase.java` + `usecase/impl/...` | Colaborador interno — su firma es `UseCase<{Entidad}Criteria, PaginatedResult<ReadModel>>` (recibe el `Criteria`, no el `Query`) |
 | application | `.../query/secondaryport/{Entidad}QueryOutputPort.java` | Vive en application, nunca en domain; retorna `PaginatedResult<ReadModel>`, nunca `Page`/`Pageable` |
-| infrastructure | `.../query/primaryadapter/web/Consultar{Entidad}Controller.java` + `dto/{Entidad}ResponseDTO.java` + `mapper/{Entidad}ResponseMapper.java` + `mapper/Consultar{Entidad}RequestMapper.java` | El controller mapea `ReadModel` → `ResponseDTO`; paginado con `PageResponseDTO.from(resultado.map({Entidad}ResponseMapper::toResponse))` |
+| infrastructure | `.../query/primaryadapter/web/Consultar{Entidad}Controller.java` + `dto/{Entidad}ResponseDTO.java` + `mapper/{Entidad}ResponseMapper.java` + `mapper/Consultar{Entidad}RequestMapper.java` | El `RequestMapper` produce el **`Query`** (`toQuery(dto[, datoDelJwt])` → `ConsultaCriteriaQuery` genérico o `{Consulta}{Entidad}Query` propio), nunca el `{Entidad}Criteria`. El controller mapea `ReadModel` → `ResponseDTO`; paginado con `PageResponseDTO.from(resultado.map({Entidad}ResponseMapper::toResponse))` |
 | infrastructure | `.../query/secondaryadapter/repository/{Entidad}JpaQueryEntity.java` (`@Subselect`/`@Immutable`/`@Synchronize`, plana) + `{Entidad}JpaSpecification.java` + `{Entidad}SortMapper.java` + `{Entidad}QueryOutputAdapter.java` + `{Entidad}QueryRepository.java` (extiende `QueryRepository`, NO `JpaRepository`) + `mapper/{Entidad}QueryMapper.java` | Aislado de `command/secondaryadapter` — ni siquiera importa su `JpaEntity` |
 
 > No crees un paquete `query/` si la única lectura es un `existsById`/`existePor` que solo alimenta
@@ -418,11 +421,14 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 > `Finder`. Ver "Cuándo NO existe un paquete `query/`" en `arquisoft-arquitectura`.
 
 > **Entrada de la consulta — decídela explícitamente en el plan**, igual que la pregunta 11 decide
-> la salida del comando. Tres formas y ninguna otra: **A)** `Criteria` (listado filtrable/paginado)
-> · **B)** `{Consulta}{Entidad}Query` (hay entrada más allá del criteria) · **C)** sin entrada
-> (catálogo cerrado) → `SupplierInteractor`/`SupplierUseCase`. Si el plan elige **C**, dilo en la
-> fila correspondiente; `Void` como parámetro de entrada está prohibido, porque obliga al
-> controller a escribir `ejecutar(null)`.
+> la salida del comando. Tres formas y ninguna otra: **A)** `ConsultaCriteriaQuery` genérico
+> (`shared:query`) + `primaryport/mapper.toCriteria(query)` — listado filtrable/paginado sin dato
+> extra · **B)** un `{Consulta}{Entidad}Query` propio que **compone** `ConsultaCriteriaQuery` — hay
+> entrada validada más allá del criteria (path variable, subject del JWT, filtro forzado) · **C)**
+> sin entrada (catálogo cerrado) → `SupplierInteractor`/`SupplierUseCase`. En **A** y **B** el
+> interactor recibe el `Query` y el `primaryport/mapper` lo convierte al `{Entidad}Criteria`; el
+> `UseCase` siempre recibe el `Criteria`. `Void` como parámetro de entrada está prohibido, porque
+> obliga al controller a escribir `ejecutar(null)`.
 
 **Enums de catálogo:** si el atributo es un estado/tipo de conjunto cerrado, planéalo como enum de
 dominio (`desde`/`esValido`/`getId()`, nunca `valueOf` fuera del enum). Su ubicación
@@ -469,8 +475,9 @@ breaking-change sobre un catálogo vivo con FKs que lo apuntan, a cambio de nada
   `fichas:ficha-perfil:create`).
 - **Un client role distinto por endpoint — nunca el de otro que ya existe.** Dos endpoints sobre el
   mismo recurso (`/fichas-perfil/coordinador` y `/fichas-perfil/asesor`, mismo `@Tag`) llevan client
-  roles independientes: `fichas:ficha-perfil:view` para uno y `fichas:ficha-perfil-asesor:view` para
-  el otro, diferenciando el segmento de recurso con un calificador. Antes de asignarlo, `grep` el
+  roles independientes: `fichas:ficha-perfil-coordinador:view` para uno y
+  `fichas:ficha-perfil-asesor:view` para el otro, diferenciando el segmento de recurso con un
+  calificador. Antes de asignarlo, `grep` el
   `{Contexto}Authorities` y verifica que la cadena no esté ya tomada por otro endpoint. En la
   sección 9 del plan deja constancia explícita de que el client role es nuevo y exclusivo de este
   endpoint.
@@ -608,6 +615,10 @@ getters/setters ni métodos `private`.
       el use case, sin `Rule` de por medio, y el corte devuelve la variante de la sellada que
       corresponde (`toResultDuplicada(...)`), nunca un `return;` mudo
 - [ ] Sin `Optional` en firmas de `Validator` ni en records de `Rule`
+- [ ] Comprobaciones de nulidad con `UtilObjeto.esNulo`/`noEsNulo` (`shared:util`), nunca `== null`
+      crudo; y ningún `tieneX()` declarado en un `Command`/`Query` para envolver ese chequeo — si el
+      plan describe un mapper que ramifica sobre un campo opcional (`NodoFiltro raiz`, típicamente),
+      escribe la comprobación ya en esa forma
 - [ ] Eventos ⟺ pregunta 5 = A/B: con C no hay `event/`, ni `EventPublisher` en el use case, ni
       sección 10, ni tests de publicación. Con A/B, las cuatro presentes
 - [ ] Si la HU crea o cambia un estado, la pregunta 5 se resolvió como A con `notificaciones` de

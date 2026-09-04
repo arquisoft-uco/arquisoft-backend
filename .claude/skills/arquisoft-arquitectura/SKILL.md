@@ -166,10 +166,12 @@ lo suyo al construirse, así que el de arriba solo comprueba `noNulo` de cada co
 
 | Paquete | Qué vive ahí | Ejemplo real |
 |---|---|---|
-| `query/primaryport/interactor/` (+`impl/`) | `@Transactional(readOnly = true, transactionManager = "fichasTransactionManager")` | `ConsultarFichasPerfilInteractorImpl.java` |
-| `query/primaryport/model/` | `{Consult}{Entidad}Query` — **solo** si la consulta trae entrada más allá del criteria (path variable, subject del JWT). Si no, el `Criteria` **es** el objeto de consulta | (hoy ninguno en `fichas`) |
+| `query/primaryport/interactor/` (+`impl/`) | `@Transactional(readOnly = true, transactionManager = "fichasTransactionManager")`. Recibe **siempre** un `Query` (nunca el `Criteria` directo); el `impl` llama al `primaryport/mapper.toCriteria(entrada)` y delega | `ConsultarFichasPerfilCoordinadorInteractorImpl.java` |
+| *(entrada del interactor)* | Sin dato validado extra: el genérico `ConsultaCriteriaQuery` (`shared:query`) — no se declara tipo propio | `ConsultaCriteriaQuery` |
+| `query/primaryport/model/` | `{Consult}{Entidad}Query` — **solo** si la consulta trae entrada validada más allá del criteria (path variable, subject del JWT, filtro forzado). Es un `record` con `crear(...)` que valida ese dato y **compone** `ConsultaCriteriaQuery` (`UUID x, ConsultaCriteriaQuery criterio`), nunca re-declara `pagina`/`tamanio`/`ordenamiento`/`raiz` | `ConsultarFichasPerfilAsesoradasQuery.java` |
+| `query/primaryport/mapper/` | `Consultar{Entidad}[{Rol}]Mapper` — `final`, ctor privado, `static toCriteria(query) → {Entidad}Criteria`. Aquí corre la validación `camposFiltrables()`/`camposOrdenables()`. Simétrico al `command/primaryport/mapper/` | `ConsultarFichasPerfilCoordinadorMapper.java`, `ConsultarFichasPerfilAsesoradasMapper.java` |
 | *(sin entrada)* | Si no hay `Query` **ni** `Criteria` — catálogo cerrado que se devuelve entero — el interactor extiende `SupplierInteractor<O>` y el caso de uso `SupplierUseCase<O>`, con `ejecutar()` sin parámetros. **Nunca `Interactor<Void, O>`** | `ConsultarEstadosFichaInteractor.java` |
-| `query/usecase/` (+`impl/`) | Colaborador interno | `ConsultarFichasPerfilUseCaseImpl.java` |
+| `query/usecase/` (+`impl/`) | Colaborador interno — recibe el `{Entidad}Criteria`, no el `Query` | `ConsultarFichasPerfilCoordinadorUseCaseImpl.java` |
 | `query/criteria/` | Entrada de la consulta (filtros/orden/paginación), extiende `QueryCriteria` de `shared:query` | `FichaPerfilCriteria.java` |
 | `query/readmodel/` | Proyección plana. **Nunca se serializa directo** — sin anotaciones Jackson, sin Lombok | `FichaPerfilReadModel.java` |
 | `query/secondaryport/` | Puerto de lectura, retorna `PaginatedResult<ReadModel>` | `FichaPerfilQueryOutputPort.java` |
@@ -181,7 +183,7 @@ lo suyo al construirse, así que el de arriba solo comprueba `noNulo` de cada co
 | `command/primaryadapter/web/` (+`dto/`, `mapper/`) | Un `Controller` por acción — nunca varios endpoints en uno | `RegistrarFichaPerfilController.java`, `dto/RegistrarFichaPerfilRequestDTO.java`, `dto/RegistrarFichaPerfilResponseDTO.java`, `mapper/RegistrarFichaPerfilRequestMapper.java` |
 | `command/primaryadapter/amqp/{productor}/{entidad}/` | `Consumer` AMQP (extiende `AbstractEventConsumer`, o `AbstractNotificacionConsumer` en `notificaciones`) + su payload `record` **local**, agrupados por contexto productor y después por entidad de ese productor | `notificaciones/.../amqp/fichas/asesorficha/AsesorFichaCambiadoConsumer.java` |
 | `command/secondaryadapter/entity/` (+`mapper/`, `repository/`) | JPA real + `OutputAdapter` + repo Spring Data | `entity/FichaPerfilJpaEntity.java`, `mapper/FichaPerfilJpaMapper.java`, `repository/FichaPerfilCommandOutputAdapter.java`, `repository/FichaPerfilCommandRepository.java` |
-| `query/primaryadapter/web/` (+`dto/`, `mapper/`) | `Controller` de lectura + **`{Entidad}ResponseDTO` + `{Entidad}ResponseMapper`** + `RequestMapper` que arma el `Criteria` | `ConsultarFichasPerfilController.java`, `dto/FichaPerfilResponseDTO.java`, `mapper/FichaPerfilResponseMapper.java`, `mapper/ConsultarFichasPerfilRequestMapper.java` |
+| `query/primaryadapter/web/` (+`dto/`, `mapper/`) | `Controller` de lectura + **`{Entidad}ResponseDTO` + `{Entidad}ResponseMapper`** + `Consultar{Entidad}[{Rol}]RequestMapper` con `toQuery(dto[, datoDelJwt])` que arma el **`Query`** (`ConsultaCriteriaQuery` o `{Consult}{Entidad}Query`), nunca el `Criteria` | `ConsultarFichasPerfilCoordinadorController.java`, `dto/FichaPerfilResponseDTO.java`, `mapper/FichaPerfilResponseMapper.java`, `mapper/ConsultarFichasPerfilCoordinadorRequestMapper.java` |
 | `query/secondaryadapter/repository/` (+`mapper/`) | `@Subselect`/`@Immutable`/`@Synchronize`, plana; specification, sort, adapter, repo | `FichaPerfilJpaQueryEntity.java`, `FichaPerfilJpaSpecification.java`, `FichaPerfilSortMapper.java`, `FichaPerfilQueryOutputAdapter.java`, `FichaPerfilQueryRepository.java`, `mapper/FichaPerfilQueryMapper.java` |
 | `{feature}/exception/` | Excepciones de infraestructura del feature (→ 503) — **dentro del slice, no a nivel de contexto** | `seguridad/infrastructure/auth/exception/ProveedorIdentidadNoDisponibleException.java` |
 | `security/`, `config/`, `filter/` | Transversales del contexto | `security/FichasAuthorities.java`, `config/FichasDataSourceConfig.java` |
@@ -358,7 +360,7 @@ El `Controller` de lectura mapea `ReadModel` → `{Entidad}ResponseDTO` con
 serialización (`@JsonInclude`, nombres) vive en el DTO, no en el `ReadModel` — así el contrato JSON
 no puede filtrarse al tipo de retorno del puerto secundario. Paginado:
 `PageResponseDTO.from(resultado.map({Entidad}ResponseMapper::toResponse))`. Ver
-`ConsultarFichasPerfilController.java`.
+`ConsultarFichasPerfilCoordinadorController.java`.
 
 Un `ReadModel` anidado pertenece a la feature que describe, no a la que lo compone:
 `asesorficha` posee `query/readmodel/AsesorFichaReadModel` y su `ResponseDTO` sin tener `UseCase`,
@@ -956,5 +958,5 @@ Consecuencias que se notan al escribir código:
   otro**, para poder concederlo o revocarlo por separado en Keycloak. Dos endpoints sobre el mismo
   recurso (`/fichas-perfil/coordinador`, `/fichas-perfil/asesor` — mismo `@Tag`) llevan roles
   independientes, diferenciando el segmento de recurso con un calificador:
-  `fichas:ficha-perfil:view` para uno, `fichas:ficha-perfil-asesor:view` para el otro.
+  `fichas:ficha-perfil-coordinador:view` para uno, `fichas:ficha-perfil-asesor:view` para el otro.
 - Nunca el prefijo `/api` en la ruta: ya es el `context-path` global.
