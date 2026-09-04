@@ -17,6 +17,7 @@ public final class FichasAuthorities {
 
     public static final String ESTUDIANTE_FICHA_PERFIL_CREATE = "fichas:estudiante-ficha-perfil:create";
     public static final String ESTUDIANTE_FICHA_PERFIL_DELETE = "fichas:estudiante-ficha-perfil:delete";
+    public static final String ESTUDIANTE_FICHA_PERFIL_COORDINADOR_VIEW = "fichas:estudiante-ficha-perfil-coordinador:view";
 
     public static final String EVALUACION_FICHA_PERFIL_CREATE = "fichas:evaluacion-ficha-perfil:create";
 
@@ -53,6 +54,8 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + ESTUDIANTE_FICHA_PERFIL_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTUDIANTE_FICHA_PERFIL_DELETE =
                 HAS_AUTHORITY_INICIO + ESTUDIANTE_FICHA_PERFIL_DELETE + HAS_AUTHORITY_FIN;
+        public static final String HAS_ESTUDIANTE_FICHA_PERFIL_COORDINADOR_VIEW =
+                HAS_AUTHORITY_INICIO + ESTUDIANTE_FICHA_PERFIL_COORDINADOR_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_EVALUACION_FICHA_PERFIL_CREATE =
                 HAS_AUTHORITY_INICIO + EVALUACION_FICHA_PERFIL_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_EVALUACION_FICHA_CREATE =
