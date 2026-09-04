@@ -115,6 +115,22 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin el permiso para consultar ítems como asesor ficha";
     }
 
+    public static final class ConsultaEstudianteFichaPerfil {
+
+        private ConsultaEstudianteFichaPerfil() {}
+
+        public static final String TAG_NAME = "Consulta de Estudiantes de Ficha de Perfil";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de solo lectura de los estudiantes vinculados a una ficha de perfil";
+        public static final String CONSULTAR_SUMMARY = "Consultar estudiantes vinculados a una ficha de perfil";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Permite al coordinador consultar los estudiantes vinculados a una ficha de perfil concreta, "
+                        + "ordenados por nombre. Si la ficha no existe o no tiene estudiantes, devuelve una lista vacía.";
+        public static final String CONSULTAR_RESP_200 = "Lista de estudiantes vinculados (vacía si no aplica)";
+        public static final String CONSULTAR_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_RESP_403 = "Sin el permiso para consultar estudiantes como coordinador";
+    }
+
     public static final class EstudianteFichaPerfil {
 
         private EstudianteFichaPerfil() {}
