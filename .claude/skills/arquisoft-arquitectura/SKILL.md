@@ -175,6 +175,7 @@ lo suyo al construirse, así que el de arriba solo comprueba `noNulo` de cada co
 | *(sin entrada)* | Si no hay `Query` **ni** `Criteria` — catálogo cerrado que se devuelve entero — el interactor extiende `SupplierInteractor<O>` y el caso de uso `SupplierUseCase<O>`, con `ejecutar()` sin parámetros. **Nunca `Interactor<Void, O>`** | `ConsultarEstadosFichaInteractor.java` |
 | `query/usecase/` (+`impl/`) | Colaborador interno — recibe el `{Entidad}Criteria`, no el `Query` | `ConsultarFichasPerfilCoordinadorUseCaseImpl.java` |
 | `query/criteria/` | Entrada de la consulta (filtros/orden/paginación), extiende `QueryCriteria` de `shared:query` | `FichaPerfilCriteria.java` |
+| `query/criteria/` — **misma entidad, varios actores** | Cuando la misma entidad tiene más de un slice de consulta por actor distinto (mismo patrón `[{Rol}]` del mapper de la fila de arriba), el `Criteria` de cada slice **no comparte nombre**: se nombra `{Entidad}{Actor}Criteria`, donde `{Actor}` es **por quién se filtra** — el campo que ese `record` usa como filtro de pertenencia (`asesorFicha`, `estudiante`), no un rol genérico. Nunca un solo `{Entidad}Criteria` reutilizado entre actores con un campo forzado a `null` para el que no aplica — eso es basura de tipo. Los `record`s conviven uno al lado del otro en el mismo paquete; ninguno extiende `QueryCriteria` si no pagina ni filtra por campo dinámico (par de `UUID` fijo basta) | `ItemFichaPerfilAsesorCriteria(UUID fichaPerfil, UUID asesorFicha)` y `ItemFichaPerfilEstudianteCriteria(UUID fichaPerfil, UUID estudiante)`, ambos en `fichas/application/.../itemfichaperfil/query/criteria/` |
 | `query/readmodel/` | Proyección plana. **Nunca se serializa directo** — sin anotaciones Jackson, sin Lombok | `FichaPerfilReadModel.java` |
 | `query/secondaryport/` | Puerto de lectura, retorna `PaginatedResult<ReadModel>` | `FichaPerfilQueryOutputPort.java` |
 
@@ -379,6 +380,19 @@ CommandOutputAdapter · QueryOutputAdapter · SortMapper · JpaSpecification`.
 Español para el concepto de negocio, inglés para el sufijo técnico. No hay sufijos en español —
 `Controller`, no `Controlador`. El paquete de la feature va todo en minúsculas y sin separadores:
 `fichaperfil`, nunca `fichaPerfil`.
+
+**Esto también rige los métodos, no solo el nombre de la clase.** El nombre del tipo lleva el sufijo
+en inglés (`OutputPort`, `OutputAdapter`), pero sus métodos van en español:
+`FichaPerfilOutputPort.registrarFicha`/`buscarPorId`/`existePorId`, nunca `save`/`findById`/`existsById`.
+Esto aplica a `OutputPort`, `QueryOutputPort`, `CommandOutputAdapter` y `QueryOutputAdapter` por igual
+— el adaptador implementa el puerto, así que sus métodos heredan el mismo nombre en español. **La
+única excepción son los repos Spring Data** (`{Entidad}CommandRepository`/`{Entidad}QueryRepository`,
+los que extienden `JpaRepository`/`QueryRepository`): esos sí van en inglés (`save`, `findById`,
+`existsByTituloProyecto`) porque Spring Data deriva la query del nombre del método — traducirlos
+rompe la derivación. La frontera exacta es la llamada al repo dentro del `OutputAdapter`: el método
+del `OutputAdapter` que la envuelve está en español; la llamada al `Repository` que hace por dentro
+puede seguir en inglés. Ver `FichaPerfilOutputPort.java` / `FichaPerfilCommandOutputAdapter.java`
+como referencia.
 
 **Cada paquete se llama como el sufijo de las clases que contiene** — `filter/` → `*Filter`,
 `mapper/` → `*Mapper`, `interactor/` → `*Interactor`, `exception/` → `*Exception`. De ahí sale la

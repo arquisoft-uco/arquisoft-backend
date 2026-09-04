@@ -357,6 +357,7 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 |---|---|---|
 | application | `.../query/readmodel/{Entidad}ReadModel.java` | Proyección plana — sin Jackson, sin Lombok; nunca se serializa directo |
 | application | `.../query/criteria/{Entidad}Criteria.java` | Extiende `QueryCriteria` (`shared:query`) con la whitelist de campos filtrables/ordenables |
+| application | `.../query/criteria/{Entidad}{Actor}Criteria.java` | SOLO si la misma entidad ya tiene, o esta HU agrega, más de un slice de consulta por actor distinto (mismo `[{Rol}]` del mapper de la fila de abajo). `{Actor}` es **por quién se filtra** — el campo de pertenencia del `record` (`Asesor` si filtra por `asesorFicha`, `Estudiante` si filtra por `estudiante`), nunca un rol genérico ni el nombre sin calificar reutilizado entre actores. Un `record` por actor, uno al lado del otro en el mismo paquete; ninguno fuerza un campo del otro actor en `null`. Si solo hay un actor para esta entidad, usa la fila de arriba sin calificar |
 | application | *(entrada del interactor)* | El interactor de consulta **siempre** recibe un objeto `Query`, nunca el `{Entidad}Criteria` directo. Sin entrada validada extra ese objeto es el genérico `ConsultaCriteriaQuery` (`shared:query`, campos `pagina`/`tamanio`/`ordenamiento`/`raiz`) — no se declara tipo propio. |
 | application | `.../query/primaryport/model/{Consulta}{Entidad}Query.java` | SOLO si la consulta trae entrada validada más allá del criteria (path variable, subject del JWT, filtro forzado). Es un `record` con `crear(...)` que valida ese dato y **compone** `ConsultaCriteriaQuery` (`UUID x, ConsultaCriteriaQuery criterio`) — nunca repite `pagina`/`tamanio`/`ordenamiento`/`raiz`. |
 | application | `.../query/primaryport/mapper/Consultar{Entidad}[{Rol}]Mapper.java` | `final`, ctor privado, `static toCriteria(query) → {Entidad}Criteria`. Aquí corre la validación `camposFiltrables()`/`camposOrdenables()` (dentro del `{Entidad}Criteria.Builder`), en la capa de aplicación y no en el mapper web. Simétrico al `{Accion}{Entidad}Mapper` del lado comando. |
@@ -380,6 +381,17 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 > interactor recibe el `Query` y el `primaryport/mapper` lo convierte al `{Entidad}Criteria`; el
 > `UseCase` siempre recibe el `Criteria`. `Void` como parámetro de entrada está prohibido, porque
 > obliga al controller a escribir `ejecutar(null)`.
+
+> **Misma entidad consultada por más de un actor ⇒ un `Criteria` por actor, nombrado
+> `{Entidad}{Actor}Criteria`.** Si el plan agrega un segundo slice de consulta sobre una entidad que
+> ya tiene uno (p. ej. Asesor Ficha ya consulta `ItemFichaPerfil` y ahora Estudiante también),
+> **nunca reutilices el `{Entidad}Criteria` del primer actor forzando el campo nuevo o dejando el
+> viejo en `null`.** Declara un `record` nuevo con el sufijo del actor por quien se filtra
+> (`ItemFichaPerfilAsesorCriteria`, `ItemFichaPerfilEstudianteCriteria`), y si el primer actor tenía
+> el nombre sin calificar (`ItemFichaPerfilCriteria`), **renómbralo también** para simetría — anota
+> ese rename como fila MODIFICAR/RENOMBRAR en la sección 6, con los archivos productivos y de test
+> que lo referencian. El nombre sin calificar queda libre para un futuro `Criteria` que sí extienda
+> `QueryCriteria` con filtros dinámicos reales.
 
 **Enums de catálogo:** si el atributo es un estado/tipo de conjunto cerrado, planéalo como enum de
 dominio (`desde`/`esValido`/`getId()`, nunca `valueOf` fuera del enum). Su ubicación
