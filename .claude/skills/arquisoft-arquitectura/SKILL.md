@@ -5,9 +5,11 @@ description: Arquitectura hexagonal + DDD + CQRS real de Arquisoft Backend — c
 
 # Skill: arquisoft-arquitectura
 
-Fuente de verdad concisa para agentes. Detalle extendido en `docs/ARQUITECTURA_Y_ESTRUCTURA.md` y
-`CLAUDE.md` (rutas relativas a la raíz del repo). Para nomenclatura, validación, mensajes,
-excepciones, Checkstyle y testing, ver la skill `arquisoft-estandares`.
+**Esta skill es la fuente de verdad de arquitectura para agentes.** `CLAUDE.md` es un índice
+operativo (comandos, entorno local, stack, seguridad, tracing) y remite aquí; si discrepan, gana esta
+skill. El detalle largo de lectura humana está en `docs/ARQUITECTURA_Y_ESTRUCTURA.md`. Para
+nomenclatura, validación, mensajes, excepciones, Checkstyle y testing, ver la skill
+`arquisoft-estandares`.
 
 **Regla de esta skill:** ningún ejemplo se pega como bloque de código. Cada fila apunta al archivo
 real de `fichas` — el único contexto de negocio completo del proyecto y el patrón a copiar. Ábrelo
@@ -934,7 +936,7 @@ Consecuencias que se notan al escribir código:
   `usuarios` y el andamio de los contextos vacíos) ya son de una línea; si copias uno viejo con la
   lista de dos paquetes, estás escaneando un paquete sin entidades y sugiriendo que `application`
   sabe de JPA, que es justo lo que la migración de `Entity`/`JpaEntity` eliminó.
-- **`baselineOnMigrate` está en `false`** en los tres contextos con implementación. Flyway ya no
+- **`baselineOnMigrate` está en `false`** en los cuatro contextos que tienen `DataSource` (`fichas`, `notificaciones`, `usuarios`, `evaluaciones`). Flyway ya no
   acepta en silencio una base con objetos preexistentes ni una versión fuera de orden — falla el
   arranque, que es justo lo que se quiere para no corromper el historial.
 - **La versión es un timestamp `VyyyyMMddHHmmss`** tomado al crear el archivo

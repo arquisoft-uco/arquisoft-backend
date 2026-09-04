@@ -13,29 +13,22 @@ para consultar documentación. Tu output es el plan — es el contrato del imple
 
 ## FASE 0 — Cargar contexto del proyecto (siempre primero)
 
-Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-mcps` (contexto
-autoritativo: capas y paquetes reales, convención de sufijos, eventos, validación, catálogo de
-mensajes, excepciones, MCPs recomendados). El contexto de referencia es siempre `fichas`; los otros
-tres ya están alineados y cada uno aporta algo que `fichas` no tiene:
-
-| Contexto | Úsalo para | Límite |
-|---|---|---|
-| `seguridad` | `command/result/` + su `mapper/`; excepciones por capa dentro del slice | Sin base de datos: no hay `JpaEntity`, Flyway ni `@Transactional` |
-| `notificaciones` | `Consumer` AMQP; comando **sin `Validator`** con corte de idempotencia | No emite eventos, solo los consume |
-| `usuarios` | Flujo de comando completo | **El flujo no funciona**: el `OutputAdapter` está inerte a propósito, así que `existePorEmail` siempre da `false` y su `Rule` no se dispara nunca. Copia la forma, no el comportamiento |
-
-Si hay contradicción entre estas skills y cualquier otro archivo, **ganan las skills**: son la fuente
+Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-mcps`. Son el
+contexto autoritativo (capas y paquetes reales, sufijos, eventos, validación, catálogo de mensajes,
+excepciones, MCPs). **Si contradicen cualquier otro archivo, ganan las skills**: son la fuente
 verificada contra el código real.
 
-**No uses los planes de `.workspace/h-plan/` como modelo — de formato ni de contenido.** Son el
-registro de HUs ya entregadas entre abril y agosto de 2026, todas anteriores a las convenciones
-actuales: describen `{Entidad}Aggregate` bajo `aggregate/`, `DomainValidator`, `FichasMessages`,
-migraciones `V1.x` y puertos de consulta para chequeos de existencia. Copiar de ahí propaga
-convenciones retiradas al plan nuevo, que es el contrato que el implementador ejecuta. Tu plantilla
-de FASE 4 y estas skills son la única referencia; el ejemplo concreto se saca del **código real** de
-`fichas`. Ver "Los planes de `.workspace/` NO son referencia de convención" en
-`arquisoft-arquitectura`.
+El contexto de referencia es siempre `fichas`, el único completo. Los otros cuatro con código
+(`seguridad`, `notificaciones`, `usuarios`, `evaluaciones`) aportan cada uno algo distinto y tienen
+un **límite** que hay que conocer antes de copiarlos: la tabla con esos límites abre la skill
+`arquisoft-arquitectura` — léela ahí, no la reconstruyas de memoria.
 
+**No uses los planes de `.workspace/h-plan/` como modelo — de formato ni de contenido.** Son el
+registro de HUs entregadas entre abril y agosto de 2026, todas anteriores a las convenciones
+actuales, y copiar de ahí propaga convenciones retiradas al plan nuevo, que es el contrato que el
+implementador ejecuta. Tu plantilla de FASE 4 y estas skills son la única referencia; el ejemplo
+concreto sale del **código real** de `fichas`. Los indicadores de un plan caduco están en
+`arquisoft-arquitectura` → *Los planes de `.workspace/` NO son referencia de convención*.
 ## FASE 1 — Consultar `arquisoft-docs`
 
 Invoca la skill `gh-docs-reader` y sigue su Protocolo de Consulta en orden: HU/HT →
@@ -94,16 +87,27 @@ es un hallazgo, no un atajo.
 A) Sí, consumidor conocido · B) Sí, se anticipa/hay caso de auditoría · C) No, CRUD sin
 consumidores ni auditoría.
 
-A/B → el `UseCase` inyecta la interfaz `EventPublisher` (`com.arquisoft.shared.publisher`) y publica
-tras persistir. Hay **una sola forma**: `eventPublisher.publish(new {Entidad}{Accion}Event(...))`,
-con el domain como clase plana (así lo hacen `CambiarAsesorFichaUseCaseImpl` y
-`CrearUsuarioUseCaseImpl`). El domain nunca acumula eventos ni los drena: no planifiques una clase
-base de dominio para emitirlos — no existe y no compila.
+A/B → el `UseCase` inyecta la interfaz `EventPublisher` y publica tras persistir. Hay **una sola
+forma**; el domain es plano y nunca acumula eventos (ver `arquisoft-arquitectura` → *Eventos de
+dominio*).
+
+**Antes de aceptar C, comprueba si la HU es una transición de estado.** Si el caso de uso crea o
+cambia un estado —campo de catálogo, asignación de responsable, aprobación, rechazo— hay consumidor
+conocido (`notificaciones`) y la respuesta por defecto es **A**. C sigue siendo válida, pero solo si
+el usuario dice explícitamente que ese cambio no notifica a nadie, y entonces la razón se escribe.
+Lo inaceptable es llegar a C por omisión en una HU cuyo título dice "cambiar", "asignar", "aprobar",
+"rechazar" o "actualizar el estado de".
+
+**La excepción es el estado que es paso interno** (`RegistrarEvaluacionFichaPerfil` es el caso de
+referencia). Dos señales: el mismo hecho puede ocurrir N veces en paralelo para el mismo sujeto, o
+te descubres proponiendo un umbral para convertir esos N pasos en uno. Ahí **para el plan y
+pregunta** — un umbral inventado desde el código fosiliza una decisión de negocio que nadie tomó.
+El criterio completo está en `arquisoft-arquitectura` → *Transición de estado ⇒ notificación*.
 
 **C → el plan no lleva eventos, y eso se propaga a seis lugares.** Esta es la respuesta que más se
 ignora al redactar, porque la plantilla de FASE 4 tiene casilla para eventos y llenarla se siente
 como completitud. No lo es: es contradecir al usuario. Si la respuesta fue C, al escribir el plan
-**borras**, no dejas vacías ni con "N/A", estas seis cosas:
+**borras** —no dejas vacías ni con "N/A"— estas seis cosas:
 
 | # | Dónde | Qué desaparece |
 |---|---|---|
@@ -116,74 +120,21 @@ como completitud. No lo es: es contradecir al usuario. Si la respuesta fue C, al
 
 Y el `UseCase` **no inyecta `EventPublisher`** en la sección 7. **Coherencia dura:** "Eventos:
 ninguno" ⟺ nada en `event/` ⟺ use case sin `EventPublisher` ⟺ sin sección 10. Las cuatro se mueven
-juntas; declarar una sin las otras es el defecto que esta tabla existe para evitar.
-
-Si mientras redactas te parece que la HU *debería* emitir un evento y el usuario dijo C, no lo
-planifiques igual: anótalo en la sección 1 como algo fuera de alcance, o vuelve a preguntar. Un
-evento que nadie consume no es previsión — es un contrato publicado en el exchange que otro contexto
-puede empezar a consumir sin que nadie lo haya decidido.
-
-**Antes de aceptar C, comprueba si la HU es una transición de estado.** Si el caso de uso *crea* un
-estado o lo *cambia* — un campo de catálogo (`EstadoFicha`, `EstadoEvaluacion`, …), una asignación
-de responsable, una aprobación o un rechazo — entonces **sí hay consumidor conocido: `notificaciones`**,
-y la respuesta por defecto es **A**, no C. Quien queda afectado por el cambio de estado espera
-enterarse; ese es justamente el trabajo que `notificaciones` existe para hacer. C sigue siendo una
-respuesta válida, pero solo si el usuario dice explícitamente que ese cambio de estado no notifica a
-nadie — y entonces la razón se escribe en `Eventos: ninguno. Razón: …`. Lo que no es aceptable es
-llegar a C por omisión, sin haber preguntado, en una HU cuyo título ya dice "cambiar", "asignar",
-"aprobar", "rechazar" o "actualizar el estado de".
-
-
-**La excepción, y hay que saber reconocerla: un estado que es paso interno no notifica.** Antes de
-dar A por hecho, pregunta **quién queda afectado y qué se le está contando**. Si el estado creado es
-un paso interno de un proceso —no hay desenlace que comunicar y nadie fuera de quien lo ejecuta
-espera enterarse— la respuesta es C, y la razón se escribe igual en `Eventos: ninguno. Razón: …`.
-
-`RegistrarEvaluacionFichaPerfil` es el caso de referencia: crea `EN_EVALUACION` para la evaluación de
-**un** representante del comité, o sea "alguien abrió su evaluación y aún no decidió nada". No es
-desenlace, se repetiría una vez por representante sobre la misma ficha, y le filtraría al estudiante
-la mecánica interna del comité. Lo que sí le incumbe es el cambio de `EstadoFicha`, que ocurre una
-vez y vive en otro domain.
-
-**Dos señales de que estás ante la excepción:** (1) el mismo hecho puede ocurrir N veces en paralelo
-para el mismo sujeto — entonces no es el hecho notificable sino un paso hacia otro, normalmente en
-otro domain; (2) te descubres proponiendo un umbral ("cuando haya tres, entonces sí") para
-convertir esos N pasos en uno. Ahí **para el plan y pregunta**: un umbral inventado desde el código
-fosiliza en migraciones y contratos de evento una decisión de negocio que nadie tomó, y casi siempre
-significa que el disparo real —alguien que activa la revisión— no está modelado todavía.
+juntas. Si mientras redactas te parece que la HU *debería* emitir un evento y el usuario dijo C, no
+lo planifiques igual: anótalo en la sección 1 como fuera de alcance, o vuelve a preguntar.
 
 **5b. Si la respuesta fue A por notificación: el evento no es el entregable, es la mitad.** Un evento
-publicado en el exchange sin nadie enganchado a esa routing key no envía ningún correo. El plan debe
-listar las **ocho** piezas, repartidas en dos contextos, y la sección 6 debe mostrarlas en el árbol:
+publicado sin nadie enganchado a esa routing key no envía ningún correo. El plan debe listar las
+**ocho piezas** repartidas en dos contextos —la tabla exacta está en `arquisoft-arquitectura` →
+*Transición de estado ⇒ notificación*— y la sección 6 debe mostrarlas en el árbol. Tres detalles que
+el plan tiene que dejar escritos porque son los que se olvidan: el subpaquete del consumidor lleva
+**dos** segmentos (`amqp/{productor}/{entidad}/`); el texto se resuelve con el helper heredado
+`plantilla(clave, args)`, nunca `Mensajes.formatear` directo; y son **tres** textos por correo
+(asunto, cuerpo y pie), con el pie compartido desde `PlantillaKey.PIE_GENERICO`.
 
-| # | Módulo | Archivo |
-|---|---|---|
-| 1 | `shared:message/constant/` | constante nueva en `EventTopics.{Contexto}` — la routing key, declarada **una sola vez** |
-| 2 | `{contexto}/domain` | `{feature}/event/{Entidad}{Accion}Event.java` — `EVENT_TOPIC = EventTopics.{Contexto}.{X}` |
-| 3 | `notificaciones/infrastructure/config/` | un `@Bean Declarables` con `ColaEvento.declarar(...)` en `Notificaciones{Contexto}QueueConfig` — declara la cola, su `.dead` y los dos bindings de una vez; la constante del nombre (`{Contexto}Queues.PREFIJO + topic`) se queda porque `@RabbitListener` la exige constante |
-| 4 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/{entidad}/` | `{Evento}Payload.java` — `record` propio del adaptador, **nunca** la clase de evento del productor |
-| 5 | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/{entidad}/` | `{Evento}Consumer.java` extiende `AbstractNotificacionConsumer` — aquí, y no en el use case, se elige el texto, con el helper heredado `plantilla(clave, args)` |
-| 6 | `notificaciones/domain/notificacion/model/` | constante nueva en `TipoNotificacion` (columna `VARCHAR`: **sin migración**) |
-| 7 | `notificaciones/.../primaryadapter/amqp/` | la misma constante en `TipoNotificacionEvento` (espejo de infraestructura) — se queda directo en `amqp/`, es común a todos los productores |
-| 8 | `shared:message` + `catalogo/notificaciones.properties` | `PlantillaKey.ASUNTO_*` / `CUERPO_*` con su aridad, más el texto. El pie **no** se declara: es compartido y sale de `PlantillaKey.PIE_GENERICO` |
-
-El subpaquete del consumidor lleva **dos** segmentos: primero quién produce, después de qué entidad
-suya habla el evento (`amqp/fichas/asesorficha/`, `amqp/fichas/fichaperfil/`). Nombra los dos en el
-árbol de la sección 6 — solo por productor los eventos de varios domains del mismo contexto
-acaban mezclados en un paquete plano.
-
-**El texto se resuelve con `plantilla(clave, args)`, el helper de `AbstractNotificacionConsumer`, no
-con `Mensajes.formatear` directo:** comprueba que la clave exista en el catálogo y lanza
-`PlantillaNotificacionNoDisponibleException` si falta. Sin él, una plantilla ausente en Redis no
-falla — degrada al respaldo y envía un correo con la clave cruda de asunto. Y son **tres** textos
-por correo (asunto, cuerpo y pie), no dos.
-
-El evento **carga todo lo que el correo necesita** — nombre y correo del destinatario, más el dato
-legible del asunto (`asesorNombre`, `asesorEmail`, `tituloProyecto` en `AsesorFichaCambiadoEvent`) —
-aunque eso duplique datos que el productor ya tiene. Un evento delgado obligaría a `notificaciones`
-a llamar de vuelta al contexto productor, que es exactamente el acoplamiento que los eventos
-eliminan. La dirección es de un solo sentido: el contexto productor **nunca** depende de
-`notificaciones` ni sabe que existe, y `notificaciones` no emite eventos, solo los consume.
+El evento **carga todo lo que el correo necesita** —nombre y correo del destinatario, más el dato
+legible del asunto— aunque duplique datos que el productor ya tiene. La dirección es de un solo
+sentido: el contexto productor nunca depende de `notificaciones`.
 
 **6. ¿Persistencia nueva o se reutiliza la existente?**
 
@@ -343,7 +294,7 @@ las dos claves de `PlantillaKey` con su texto de catálogo.
   misma HU aporta dos migraciones, la segunda lleva el timestamp un segundo después, para fijar el
   orden (ver `V20260724005914` / `V20260724005915` en `fichas`).
 - **Nunca fabriques un timestamp anterior al de una migración ya aplicada.** `baselineOnMigrate`
-  está en **`false`** en los tres contextos: Flyway ya no acepta en silencio una base con objetos
+  está en **`false`** en los cuatro contextos con `DataSource`: Flyway ya no acepta en silencio una base con objetos
   preexistentes ni una migración que aparece fuera de orden — falla el arranque. Por eso el
   timestamp se toma del reloj al crear el archivo, y una migración ya aplicada **jamás** se renombra
   ni se edita: se agrega una nueva.
@@ -482,95 +433,51 @@ breaking-change sobre un catálogo vivo con FKs que lo apuntan, a cambio de nada
   sección 9 del plan deja constancia explícita de que el client role es nuevo y exclusivo de este
   endpoint.
 
-### Catálogo de mensajes (sección 6/7)
+### Catálogo de mensajes y logs (secciones 6/7)
 
-Nada de esto va como literal embebido, y son **dos mundos distintos** (no existe ninguna clase
-`{Contexto}Messages`):
+Nada va como literal embebido, y son **dos mundos** (no existe ninguna clase `{Contexto}Messages`):
+constantes Java en `shared:message` (`{Contexto}Codes`/`Fields`/`Limits`, `annotation/{Contexto}ApiMessages`;
+client roles en `{Contexto}Authorities`) y catálogo en Redis para la prosa de errores y logs. Cada
+texto nuevo necesita **tres piezas** y el plan las lista: (a) constante en el enum `{Feature}Key` con
+su **aridad**, (b) registro en `ClavesCatalogo`, (c) línea en `catalogo/{contexto}.properties`. Si
+falta cualquiera, `CatalogoCargaTest` rompe el build. Detalle en `arquisoft-estandares`.
 
-- **Constantes Java** (`shared:message`): códigos de error → `{Contexto}Codes`; nombres de campo de
-  `fieldErrors[]` → `{Contexto}Fields`; límites de longitud/cantidad → `{Contexto}Limits`; textos de
-  Swagger → `annotation/{Contexto}ApiMessages`. Los client roles van en
-  `{contexto}/infrastructure/security/{Contexto}Authorities`.
-- **Catálogo en Redis:** cada texto de error o de log necesita (a) una constante en el enum
-  `{Feature}Key` de `shared:message/key/{contexto}/` declarando clave y **aridad**, (b) su registro
-  en `ClavesCatalogo`, y (c) su línea en `catalogo/{contexto}.properties`. Clave con formato
-  `{contexto}.{capa}.{objeto}.{tipo}.{descripcion}`. Marcadores: `%s` para mensajes de cliente
-  (`Mensajes.formatear`), `{}` para logs (la clave se pasa al `AppLogger`, que la resuelve; SLF4J
-  sustituye). Lista las tres cosas en la
-  sección 6 — si falta cualquiera, `CatalogoCargaTest` rompe el build.
+**Enumera cada punto de log como entregable de la sección 6** — nivel, clave nueva con su aridad y
+línea de catálogo. Si el plan no los lista, la implementación no los incluye. La estructura por tipo
+de flujo (escritura: tres líneas, con el `InteractorImpl` sin logear; lectura: dos `debug` y ningún
+`INFO`; evento: el `INFO` de recepción en el `{Evento}Consumer` y el cierre en quien interpreta la
+sellada) está completa en `arquisoft-estandares` — no la reproduzcas, aplícala.
 
-
-**Logs del flujo (obligatorio en toda HU de escritura).** El `UseCaseImpl` emite **exactamente tres
-líneas** — `info` de entrada, `debug` con el resultado de los finders antes del validator, `info` de
-cierre como última sentencia de `ejecutar` — más un `debug` por cada método de escritura del adapter.
-**El `InteractorImpl` no logea**: no planifiques ni un `AppLogger` ahí ni una clave
-`LOG_{ACCION}_COMPLETADO`, y tampoco un `debug` de "validación superada". Enumera en la sección 6,
-como entregables, **cada punto de log con su nivel, la clave nueva con su aridad y la línea del
-catálogo**. Si el plan no los lista, la implementación no los va a incluir. Estructura completa y
-casos (flujo anidado, dónde nunca va un log) en `arquisoft-estandares`.
-
-Una HU de **lectura** sigue otra estructura: sin ningún `INFO` — la línea `AUDIT` ya lo cubre —
-y solo dos `debug` en el use case, entrada con el criterio y cierre con el volumen. Enuméralos
-igual, con su clave y su línea de catálogo.
-
-Una HU con **evento** añade el `INFO` de recepción en el `{Evento}Consumer` (el consumidor es el punto
-de entrada: no hay línea `AUDIT` porque no hay petición HTTP) y **no** un `INFO` de entrada en el use
-case que dispara. Los logs de envelope, ack y DLQ ya los pone `AbstractEventConsumer`: no los planifiques.
-
-**El `INFO` de cierre tampoco va en el use case.** Los dos `INFO` del mensaje los pone el adaptador:
-en `notificaciones` el cierre sale de `AbstractNotificacionConsumer.registrar(...)`, que elige nivel
-y clave según el desenlace de la sellada (`info` para `Enviada`/`Duplicada`, `warn` para `Fallida`).
-La regla: cuando el use case devuelve una sellada de desenlace, el cierre lo logea **quien la
-interpreta**, no quien la produce — así que en el plan ese use case solo lleva su `debug`, y las
-claves nuevas de cierre se planifican del lado del consumidor.
-
-En cualquiera de los tres casos, **ningún log lleva secretos**, y todo correo pasa por
-`UtilTexto.enmascararCorreo(...)`. Si la HU registra un correo en un log, dilo explícitamente en el plan.
-
-Si la HU no introduce ninguno, decláralo explícitamente: "Sin cambios al catálogo de mensajes."
+Ningún log lleva secretos, y todo correo pasa por `UtilTexto.enmascararCorreo(...)`. Si la HU
+registra un correo, dilo explícitamente. Si no introduce ningún texto: "Sin cambios al catálogo de
+mensajes."
 
 Un plan **nunca** propone añadir `:{contexto}:domain` a `implementation` de infrastructure. Si un
 adaptador necesita nombrar un tipo del dominio, el plan debe decir cómo se evita: enum como `String`
-convertido en `Command.crear(...)`, o puerto que hable `Entity`. La tarea `verificarCapasHexagonales`
-cuelga de `check`, así que una HU que lo intente no pasa el build.
-Detalle en `arquisoft-estandares`.
+convertido en `Command.crear(...)`, o puerto que hable `Entity`.
 
+### Efectos externos, eventos y replicación (secciones 5, 10 y 11)
 
-### Efectos externos y reintento (secciones 5, 10 y 11)
+Tres preguntas que el plan responde **antes** de escribir el árbol, con el criterio completo en las
+skills:
 
-Si el caso de uso llama a un tercero que puede rechazar (SMTP, proveedor externo, API), el plan
-responde **tres** preguntas antes de escribir el árbol de archivos:
+1. **¿El rechazo de un tercero es excepción o valor?** Si el use case lo captura para seguir, es una
+   `sealed interface` de resultado, no una excepción. Un `try/catch` en `application` es señal de
+   que se modeló mal.
+2. **¿Hay que reintentar?** El reintento sale de la base con un `@Scheduled`, nunca del consumidor
+   AMQP, y entonces la sección 11 persiste **lo que se envió** —no solo el resultado— más `intentos`
+   y `fecha_ultimo_intento`. Los campos que pasan a persistirse son estado del domain, así que un
+   objeto de acción que solo los envolvía deja de justificarse.
+3. **¿La HU dice "esta entidad debe existir también en X"?** Entonces no es un registro replicado:
+   es un dueño más una tabla espejo. Aplica el test de `arquisoft-arquitectura` (¿puede el destino
+   rechazar por regla de negocio?) — si no puede, es replicación eventual y **no propongas una saga**.
+   Si hay modificación o baja, cubre las cuatro piezas ya decididas: `ocurrido_en` persistido con
+   descarte de eventos viejos, baja lógica en vez de `DELETE`, lápida, y nada de cascada entre
+   contextos.
 
-1. **¿El rechazo es excepción o valor?** Si el caso de uso lo captura para seguir —porque es un estado
-   a persistir, no un error del flujo— es un `sealed interface` de resultado, no una excepción
-   (`ResultadoEntrega.Entregada`/`Rechazada`). Un `try/catch` en `application` es señal de que se
-   modeló mal.
-2. **¿Hay que reintentar?** Si sí, el reintento sale de la base con un `@Scheduled`, nunca del
-   consumidor AMQP. Y entonces la sección 11 tiene que persistir **lo que se envió**, no solo el
-   resultado: sin el mensaje guardado no hay nada con qué reconstruir el reintento. Añade también
-   `intentos` y `fecha_ultimo_intento`.
-3. **¿Cambia eso el objeto de acción?** Los campos que pasan a persistirse son estado del domain, y
-   un `{Accion}{Entidad}Domain` que solo lo envolvía deja de justificarse (ver `arquisoft-estandares`).
-
-### Evento nuevo ⇒ cola, DLQ y binding (sección 10)
-
-Un evento nuevo no son solo las ocho piezas de la transición de estado. La cola del consumidor
-necesita además **su cola `.dead` y el `Binding` contra `arquisoft.dlx`**: sin ese binding el
-descarte es silencioso y el mensaje se pierde sin rastro. Las cuatro declaraciones salen de una sola
-llamada a `ColaEvento.declarar(...)` devuelta como `Declarables` — planifica **un `@Bean`**, no cuatro
-(ver `arquisoft-arquitectura`). El payload declara `idEvento` y `ocurridoEn`.
-
-### Replicación entre contextos (secciones 4 y 10)
-
-Cuando la HU dice "esta entidad debe existir también en X", **no es un registro replicado: es un dueño
-más una tabla espejo**. Antes de diseñar nada, aplica el test de `arquisoft-arquitectura`: ¿puede el
-contexto destino rechazar por regla de negocio? Si no puede, es replicación eventual y **no hace falta
-saga** — no propongas una.
-
-Si la HU incluye modificación o baja de una entidad espejada, el plan tiene que cubrir las cuatro
-piezas ya decididas (detalladas en `arquisoft-arquitectura` → *Replicación entre contextos*):
-`ocurrido_en` persistido y descarte de eventos viejos, baja lógica en vez de `DELETE`, lápida para el
-borrado que llega antes que el alta, y nada de borrado en cascada entre contextos.
+**Un evento nuevo cuesta un `@Bean`, no cuatro.** Las cuatro declaraciones —cola, `.dead` y los dos
+bindings— salen de una sola llamada a `ColaEvento.declarar(...)` devuelta como `Declarables`; sin el
+binding contra el DLX el descarte es silencioso. El payload declara `idEvento` y `ocurridoEn`.
 
 ### Presupuesto de tests (sección 12)
 

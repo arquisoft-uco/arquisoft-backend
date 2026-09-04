@@ -6,8 +6,9 @@ description: Estándares de código de Arquisoft Backend — Notification Patter
 # Skill: arquisoft-estandares
 
 Complementa a `arquisoft-arquitectura` (esa cubre capas y paquetes; esta cubre reglas de código
-transversales). Detalle profundo en `CLAUDE.md` (raíz del repo). Cada regla referencia un archivo
-real de `fichas` en vez de un snippet — ábrelo con `Read` si necesitas el código exacto.
+transversales). **Las dos juntas son la fuente de verdad**: `CLAUDE.md` es un índice operativo que
+remite aquí, y si discrepan gana la skill. Cada regla referencia un archivo real de `fichas` en vez
+de un snippet — ábrelo con `Read` si necesitas el código exacto.
 
 ## Notification Pattern y orden de validación
 
@@ -444,7 +445,7 @@ El gate real es `check` (tests + `checkstyleMain`/`checkstyleTest` + cobertura),
 Constructor injection con `@RequiredArgsConstructor` — nunca `@Autowired`, nunca `@Service` (todo
 use case y adaptador es `@Component`). Se inyectan interfaces, nunca implementaciones. Logging vía
 el puerto `AppLogger` (`shared:logger`) inyectado por constructor — no `@Slf4j`, del que ya no queda
-ni uno en los cuatro contextos con código. `warn` para 4xx, `error` para 5xx.
+ni uno en los cinco contextos con código. `warn` para 4xx, `error` para 5xx.
 
 **Nunca loguear desde un método `@Bean` ni desde un `@PostConstruct`:** `Mensajes.instalar(...)`
 ocurre dentro de un `@Bean`, así que cualquier bean construido antes resuelve la **clave cruda** y,
