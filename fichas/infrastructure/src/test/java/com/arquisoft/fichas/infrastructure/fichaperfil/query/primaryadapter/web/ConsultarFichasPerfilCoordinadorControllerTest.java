@@ -1,9 +1,10 @@
 package com.arquisoft.fichas.infrastructure.fichaperfil.query.primaryadapter.web;
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
-import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
-import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilInteractor;
+import com.arquisoft.fichas.application.fichaperfil.query.primaryport.interactor.ConsultarFichasPerfilCoordinadorInteractor;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
+import com.arquisoft.shared.query.ConsultaCriteriaQuery;
+import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
@@ -30,10 +31,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(ConsultarFichasPerfilController.class)
+@WebMvcTest(ConsultarFichasPerfilCoordinadorController.class)
 @Import({GlobalAppExceptionHandler.class, TrazabilidadConfig.class,
-        ConsultarFichasPerfilControllerTest.TestSecurityConfig.class})
-class ConsultarFichasPerfilControllerTest {
+        ConsultarFichasPerfilCoordinadorControllerTest.TestSecurityConfig.class})
+class ConsultarFichasPerfilCoordinadorControllerTest {
 
     @TestConfiguration
     @EnableWebSecurity
@@ -55,25 +56,30 @@ class ConsultarFichasPerfilControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ConsultarFichasPerfilInteractor consultarFichasPerfilInteractor;
+    private ConsultarFichasPerfilCoordinadorInteractor consultarFichasPerfilCoordinadorInteractor;
 
     @Test
     void debe200_cuandoBodyVacio() throws Exception {
-        when(consultarFichasPerfilInteractor.ejecutar(any(FichaPerfilCriteria.class)))
+        when(consultarFichasPerfilCoordinadorInteractor.ejecutar(any(ConsultaCriteriaQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(), 0, 10, 0L));
 
         mockMvc.perform(post("/fichas-perfil/coordinador")
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
                 .andExpect(jsonPath("$.totalElements").value(0));
     }
 
     @Test
-    void debe400_cuandoElCampoDeFiltroNoEstaPermitido() throws Exception {
-        // Arrange
+    void debe400_cuandoLaConsultaTraeUnCriterioInvalido() throws Exception {
+        // Arrange — la validación de campos filtrables/ordenables vive ahora en el mapper
+        // primaryport que corre dentro del interactor; el slice la observa como FiltroException.
+        when(consultarFichasPerfilCoordinadorInteractor.ejecutar(any(ConsultaCriteriaQuery.class)))
+                .thenThrow(new FiltroException("campo de filtro no permitido: campoInventado",
+                        "fichas.consulta.campo-filtro-no-permitido"));
+
         String body = """
                 {
                   "filtros": {
@@ -90,53 +96,13 @@ class ConsultarFichasPerfilControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void debe400_cuandoElPredicadoNoTraeOperador() throws Exception {
-        // Arrange
-        String body = """
-                {
-                  "filtros": {
-                    "tipo": "PREDICADO",
-                    "campo": "tituloProyecto",
-                    "valor": "x"
-                  }
-                }
-                """;
-
-        // Act & Assert
-        mockMvc.perform(post("/fichas-perfil/coordinador")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void debe400_cuandoElCampoDeOrdenamientoNoEstaPermitido() throws Exception {
-        // Arrange
-        String body = """
-                {
-                  "ordenamiento": ["campoInventado:ASC"]
-                }
-                """;
-
-        // Act & Assert
-        mockMvc.perform(post("/fichas-perfil/coordinador")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body)
-                        .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void debe200_cuandoConsultaConFiltroPredicado() throws Exception {
-        when(consultarFichasPerfilInteractor.ejecutar(any(FichaPerfilCriteria.class)))
+        when(consultarFichasPerfilCoordinadorInteractor.ejecutar(any(ConsultaCriteriaQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(), 0, 10, 0L));
 
         String body = """
@@ -156,13 +122,13 @@ class ConsultarFichasPerfilControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
                 .andExpect(status().isOk());
     }
 
     @Test
     void debe200_cuandoConsultaConGrupoOR() throws Exception {
-        when(consultarFichasPerfilInteractor.ejecutar(any(FichaPerfilCriteria.class)))
+        when(consultarFichasPerfilCoordinadorInteractor.ejecutar(any(ConsultaCriteriaQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(), 0, 5, 0L));
 
         String body = """
@@ -185,7 +151,7 @@ class ConsultarFichasPerfilControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body)
                         .with(SecurityMockMvcRequestPostProcessors.user("coordinador")
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_VIEW))))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.FICHA_PERFIL_COORDINADOR_VIEW))))
                 .andExpect(status().isOk());
     }
 

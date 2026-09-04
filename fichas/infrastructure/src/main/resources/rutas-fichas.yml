@@ -10,6 +10,7 @@ rutas:
       por-id: /{id}
       asesor-ficha: /{id}/asesor-ficha
       coordinador: /coordinador
+      asesor: /asesor
       estados-ficha: /estados-ficha
       items: /{fichaPerfilId}/items
       item-por-id: /items/{itemId}

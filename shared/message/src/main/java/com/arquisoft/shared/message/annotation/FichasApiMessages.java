@@ -63,6 +63,17 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_RESP_400 = "Filtro, operador, campo o valor inválido";
         public static final String CONSULTAR_RESP_403 = "Sin permisos — se requiere rol coordinador";
+
+        public static final String CONSULTAR_ASESORADAS_SUMMARY = "Consultar fichas de perfil que asesora";
+        public static final String CONSULTAR_ASESORADAS_DESCRIPTION =
+                "Retorna el listado paginado de fichas de perfil asignadas al Asesor Ficha autenticado. "
+                        + "Soporta filtros dinámicos con agrupación booleana (AND/OR anidados), ordenamiento "
+                        + "multi-campo y paginación, siempre acotado a las fichas que el asesor autenticado "
+                        + "asesora. El body es opcional: sin body devuelve todas sus fichas paginadas. "
+                        + "Acceso exclusivo para el rol asesor de ficha.";
+        public static final String CONSULTAR_ASESORADAS_RESP_200 = "Listado obtenido exitosamente";
+        public static final String CONSULTAR_ASESORADAS_RESP_400 = "Filtro, operador, campo o valor inválido";
+        public static final String CONSULTAR_ASESORADAS_RESP_403 = "Sin permisos — se requiere rol asesor de ficha";
     }
 
     public static final class ItemFichaPerfil {

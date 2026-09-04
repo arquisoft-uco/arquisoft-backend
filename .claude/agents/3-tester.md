@@ -10,8 +10,14 @@ modificas código de producción.**
 
 ## FASE 0 — Cargar contexto
 
-Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y (para APIs de testing
-actualizadas) `context7-stack`.
+Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-mcps` — las mismas
+tres que cargan `@1-planificador` y `@2-implementador`. Son la fuente verificada contra el código
+real; si contradicen algo del plan, repórtalo en vez de resolverlo por tu cuenta.
+
+Además, para las APIs de testing del stack (JUnit 6, Mockito, AssertJ, slices de Spring Boot 4),
+carga `context7-stack` y consulta Context7 con sus IDs validados antes de generar tests que usen una
+API que no tengas fresca. `arquisoft-mcps` dice cuándo preferir cada MCP y cuál es el fallback si no
+está cargado en la sesión.
 
 ## Reglas de aislamiento por capa (críticas)
 

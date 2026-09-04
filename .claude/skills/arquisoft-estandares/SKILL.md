@@ -6,8 +6,9 @@ description: Estándares de código de Arquisoft Backend — Notification Patter
 # Skill: arquisoft-estandares
 
 Complementa a `arquisoft-arquitectura` (esa cubre capas y paquetes; esta cubre reglas de código
-transversales). Detalle profundo en `CLAUDE.md` (raíz del repo). Cada regla referencia un archivo
-real de `fichas` en vez de un snippet — ábrelo con `Read` si necesitas el código exacto.
+transversales). **Las dos juntas son la fuente de verdad**: `CLAUDE.md` es un índice operativo que
+remite aquí, y si discrepan gana la skill. Cada regla referencia un archivo real de `fichas` en vez
+de un snippet — ábrelo con `Read` si necesitas el código exacto.
 
 ## Notification Pattern y orden de validación
 
@@ -444,7 +445,7 @@ El gate real es `check` (tests + `checkstyleMain`/`checkstyleTest` + cobertura),
 Constructor injection con `@RequiredArgsConstructor` — nunca `@Autowired`, nunca `@Service` (todo
 use case y adaptador es `@Component`). Se inyectan interfaces, nunca implementaciones. Logging vía
 el puerto `AppLogger` (`shared:logger`) inyectado por constructor — no `@Slf4j`, del que ya no queda
-ni uno en los cuatro contextos con código. `warn` para 4xx, `error` para 5xx.
+ni uno en los cinco contextos con código. `warn` para 4xx, `error` para 5xx.
 
 **Nunca loguear desde un método `@Bean` ni desde un `@PostConstruct`:** `Mensajes.instalar(...)`
 ocurre dentro de un `@Bean`, así que cualquier bean construido antes resuelve la **clave cruda** y,
@@ -605,8 +606,8 @@ nueva "para que se entienda" — si hace falta explicarla, el razonamiento va a 
 
 `UtilTexto` (`aplicarTrim`, `esVacioONulo`, `correoValido`, `enmascararCorreo`), `UtilUUID`
 (`generarUUIDDesdeTexto`, `uuidValido`, `generarNuevoUUID`, `obtenerUUIDPorDefecto`), `UtilColeccion`
-(`esVaciaONula`, `aplicarPorDefecto`, `primerDuplicado`), `UtilObjeto` (`esNulo`, `aplicarPorDefecto`),
-`UtilFecha`, `UtilNumero`, `UtilEnum`.
+(`esVaciaONula`, `aplicarPorDefecto`, `primerDuplicado`), `UtilObjeto` (`esNulo`, `noEsNulo`,
+`aplicarPorDefecto`), `UtilFecha`, `UtilNumero`, `UtilEnum`.
 
 Dos que se olvidan y sí importan:
 
@@ -632,9 +633,24 @@ Distingue `ValidatorObjeto.noNulo` de `UtilObjeto.esNulo`: el primero **acumula 
 `ValidationResult` porque el valor era obligatorio; el segundo es una guarda de flujo sobre un estado
 interno que legítimamente puede no estar asignado.
 
-**No fuerces un `Util` donde no ahorra nada.** `x != null ? x.metodo() : otro` no mejora con
-`UtilObjeto.esNulo`, y varios módulos `shared:` (`jpa`, `redis`, `amqp`, `web`) **no declaran
-`shared:util`**: meterlo ahí añade una arista al grafo de módulos a cambio de nada.
+**Toda comprobación de nulidad se escribe con el `Util`, nunca con `== null` / `!= null` crudo:**
+`UtilObjeto.esNulo(x)` y su par simétrico `UtilObjeto.noEsNulo(x)`. Es el idioma del proyecto —
+`esNulo` aparece en 30+ sitios de todos los contextos. `noEsNulo` se agregó (2026-09-03, HU-207)
+porque la forma negada se venía escribiendo como `!UtilObjeto.esNulo(...)` en ~10 sitios y se lee
+peor, sobre todo dentro de un ternario; los call sites viejos con `!esNulo` siguen siendo correctos
+y **no** hay que migrarlos en masa, pero el código nuevo usa `noEsNulo`.
+
+Corolario que ya costó una corrección en revisión: **no declares un método `tieneX()` en un `record`
+(`Command`, `Query`) solo para envolver un `== null` de uno de sus campos.** Es reintroducir por
+copia, una vez por cada `record`, lo que el `Util` resuelve en un solo sitio. `QueryCriteria.tieneFiltros()`/
+`tieneOrden()` y `ValidationResult.tieneErrores()` sí existen, pero son clases con estado propio de
+`shared:*` donde el booleano es parte del contrato que consume medio proyecto — no el caso de un
+`{Consult}{Entidad}Query` cuyo único consumidor es su propio `{Consulta}{Entidad}Mapper`.
+
+**Donde el `Util` no llega:** varios módulos `shared:` (`jpa`, `redis`, `amqp`, `web`) **no declaran
+`shared:util`**, y meterlo ahí añade una arista al grafo de módulos a cambio de nada — en ellos el
+`== null` crudo se queda. Igual pasa con el código que ya lo tiene dentro de la clase dueña del campo
+(`QueryCriteria`): no lo refactorices de paso.
 
 ## Git y commits
 

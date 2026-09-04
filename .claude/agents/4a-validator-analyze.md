@@ -45,6 +45,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Endpoints con ruta/método HTTP del plan, sin prefijo `/api` (ya es global vía `context-path`) | ❌ |
 | PATCH/PUT/DELETE con el `id` en `@PathVariable`, nunca en el body | ❌ |
 | Client role de un endpoint anidado usa la **entidad afectada**, no el primer segmento de la ruta (ej. `fichas:estudiante-ficha-perfil:delete`, no `fichas:ficha-perfil:delete`, en `DELETE /fichas-perfil/{id}/estudiantes/{eid}`) | ❌ |
+| Client role nuevo y exclusivo del endpoint — no reutiliza el de otro `Controller` ya existente; dos endpoints sobre el mismo recurso se diferencian con un calificador en el segmento de recurso (detalle en Nivel 2.7) | ❌ |
 | `Controller` con `@Tag`/`@Operation`/`@ApiResponses`, y `@SecurityRequirement` si no es público (ADR-011) | ❌ |
 | Migración dentro de la subcarpeta del contexto, `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` — suelta en `db/migration/` la recogería el Flyway de otro contexto y la aplicaría en su base | ❌ |
 | Migración nombrada `V{yyyyMMddHHmmss}__{descripcion_snake_case}.sql` (14 dígitos). Cualquier numeración secuencial (`V1.0`, `V2__`) es convención retirada | ❌ |
@@ -90,65 +91,38 @@ archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio fil
 > Determina primero qué dice la sección 4 del plan. Marcar checks de "con eventos" en una HU "sin
 > eventos" (o viceversa) es un falso positivo — no lo reportes.
 
-**Siempre:** `reconstruir(...)` nunca publica eventos · `CommandOutputAdapter` usa
+**Siempre:** `reconstruir(...)` nunca publica eventos · el `CommandOutputAdapter` usa
 `reconstruir(...)` · el dominio no inyecta `EventPublisher` · no existe un `{Entidad}EventPublisher`
-local (la publicación está centralizada en `shared:amqp`).
+local.
 
-**Si el plan declara eventos**, hay una sola forma: el `UseCase` inyecta `EventPublisher`
-(`com.arquisoft.shared.publisher`, la **interfaz** — inyectar `SpringModulithEventPublisher` o
-`RabbitMQEventPublisher` es ❌) y tras persistir hace
-`eventPublisher.publish(new {Entidad}{Accion}Event(...))`. El domain es una clase plana: si
-acumula eventos en memoria, extiende una clase base para emitirlos, o expone un método de drenaje
-que el use case invoque, es ❌ bloqueante — ese tipo base no existe y el código no compila. Ver
-`fichas/application/.../fichaperfil/command/usecase/impl/CambiarAsesorFichaUseCaseImpl.java`.
-
-Además: eventos en `domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
-(`{contexto}.{entidad}.{accion}`, minúsculas+snake_case) pasado a `super(EVENT_TOPIC, EVENT_TYPE)`,
-ningún `@Override` de `getTemaEvento()` (es `final`), y el evento carga todo lo que su consumidor
-necesita (nombre, email…) para que no tenga que reconsultar al productor.
+**Si el plan declara eventos** (❌ cada incumplimiento): el `UseCase` inyecta la **interfaz**
+`EventPublisher` —inyectar `SpringModulithEventPublisher` o `RabbitMQEventPublisher` es ❌— y publica
+tras persistir. El domain es una clase plana: si acumula eventos, extiende una base para emitirlos o
+expone un método de drenaje, es ❌ (ese tipo base no existe y no compila). Los eventos van en
+`domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
+(`{contexto}.{entidad}.{accion}`) pasado a `super(...)`, no sobrescriben `getTemaEvento()` (es
+`final`), y cargan todo lo que el consumidor necesita.
 
 **Si el plan dice "Eventos: ninguno", el exceso también es ❌ bloqueante**, no una mejora: cualquier
-archivo bajo `event/`, cualquier `EventPublisher` inyectado, cualquier fila nueva en
-`ClavesCatalogo` para un evento. El plan declaró esa ausencia — normalmente porque el usuario
-respondió que no hay consumidor — y publicar un evento que nadie consume crea un contrato que otro
-contexto puede empezar a consumir después. Repórtalo citando la sección 4 del plan.
+archivo bajo `event/`, cualquier `EventPublisher` inyectado, cualquier clave nueva para un evento.
+El plan declaró esa ausencia y publicar un evento que nadie consume crea un contrato que otro
+contexto puede empezar a consumir. Repórtalo citando la sección 4.
 
 **Si el plan declara evento hacia `notificaciones`**, el evento solo cuenta como implementado si
-existe el camino completo. Falta cualquiera de estas **ocho** ⇒ ❌ bloqueante, porque el correo nunca
-sale y el fallo es silencioso (el mensaje se queda en el exchange, sin cola enganchada). Es la misma
-lista que la pregunta 5b del plan y la tabla de `arquisoft-arquitectura` — si los tres números no
-coinciden, es que una de las tres se quedó atrás:
+existe el camino completo: faltando cualquiera de las **ocho piezas** el correo nunca sale y el fallo
+es silencioso. La lista canónica está en `arquisoft-arquitectura` → *Transición de estado ⇒
+notificación*; recórrela pieza por pieza. Verifica además que la routing key del binding sea
+**carácter por carácter** el `EVENT_TOPIC` del productor: una discrepancia compila, arranca y no
+entrega nada.
 
-| Pieza | Dónde |
-|---|---|
-| Routing key declarada **una sola vez** como constante en `EventTopics.{Contexto}` | `shared:message/constant/` |
-| `{Entidad}{Accion}Event` con `EVENT_TOPIC = EventTopics.{Contexto}.{X}` | `{contexto}/domain/{feature}/event/` |
-| `@Bean Declarables` con `ColaEvento.declarar(...)`, routing key igual al `EVENT_TOPIC` del productor | `notificaciones/infrastructure/config/Notificaciones{Contexto}QueueConfig` |
-| `{Evento}Payload` — `record` local del adaptador, nunca la clase del productor | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/{entidad}/` |
-| `{Evento}Consumer` extiende **`AbstractNotificacionConsumer`**, arma el texto con el helper heredado `plantilla(clave, args)` — nunca `Mensajes.formatear` directo | `notificaciones/.../primaryadapter/amqp/{contextoProductor}/{entidad}/` |
-| Constante nueva en `TipoNotificacion` (sin migración: la columna es `VARCHAR`) | `notificaciones/domain/notificacion/model/` |
-| La misma constante espejada en `TipoNotificacionEvento` — `TipoNotificacionEventoTest` falla si falta | `notificaciones/.../primaryadapter/amqp/` (directo, es común a todos los productores) |
-| `PlantillaKey.ASUNTO_*`/`CUERPO_*` **y** su texto en `catalogo/notificaciones.properties` | `shared:message` + `catalogo/` |
+**Transición de estado sin evento declarado ⇒ ⚠️, no ❌.** Si el plan escribió la razón, es decisión
+del usuario y se respeta. Sin razón, es advertencia: probablemente nadie preguntó. Nunca lo
+conviertas en bloqueante — eso es del plan, no de la validación.
 
-Verifica además que la routing key del binding sea **carácter por carácter** el `EVENT_TOPIC` del
-evento productor: una discrepancia compila, arranca y no entrega nada.
-
-**Transición de estado sin evento declarado ⇒ ⚠️, no ❌.** Si el caso de uso cambia un campo de
-estado (catálogo, asignación de responsable, aprobación/rechazo) y el plan dice "Eventos: ninguno",
-revisa si la sección 4 escribió la razón. Con razón explícita es una decisión del usuario y se
-respeta. Sin razón, repórtalo como advertencia: probablemente nadie preguntó si ese cambio debía
-notificar. Nunca lo conviertas en bloqueante ni exijas implementar el evento — eso es del plan, no
-de la validación.
-
-
-Hay además una familia de casos donde el evento ausente **no es ni siquiera una advertencia**: el
-estado creado es un paso interno del proceso, sin desenlace que comunicar y sin audiencia fuera de
-quien lo ejecuta. `RegistrarEvaluacionFichaPerfil` es el ejemplo — crea `EN_EVALUACION` para la
-evaluación de un solo representante del comité; notificarlo daría N correos por ficha sobre un
-no-suceso y filtraría la mecánica interna del comité. Reconócelos por la señal: **si el mismo hecho
-puede ocurrir N veces en paralelo para el mismo sujeto, el hecho notificable es otro y vive en otro
-domain** (aquí, el cambio de `EstadoFicha`). La razón puede estar en el mensaje del commit y no en
-un plan cuando el cambio no vino de una HU; búscala ahí antes de reportar.
+Y hay una familia donde el evento ausente **no es ni siquiera advertencia**: el estado creado es un
+paso interno, sin desenlace que comunicar. La señal es que el mismo hecho puede ocurrir N veces en
+paralelo para el mismo sujeto (`RegistrarEvaluacionFichaPerfil`). La razón puede estar en el mensaje
+del commit y no en un plan cuando el cambio no vino de una HU: búscala ahí antes de reportar.
 
 ### Nivel 2.3 — Entidad de dominio
 
@@ -166,36 +140,18 @@ un plan cuando el cambio no vino de una HU; búscala ahí antes de reportar.
 | `if/throw` en el `UseCase` sobre una restricción de conjunto (existencia, unicidad, propiedad) en vez de una `Rule` de dominio orquestada por el `Validator` | ❌ |
 
 **Restricciones de conjunto → `Rule` de dominio → 422, no 400/403.** Existencia, unicidad y
-propiedad no son invariantes locales del domain, pero **tampoco** se resuelven con `if/throw` en
-el use case: el `Finder` trae el dato, el `Validator` arma el record (`ExistenciaAsesorFicha`,
-`DisponibilidadTituloFicha`, `PropiedadFicha`) y la `Rule` lanza su `DomainException`. No existe un
-caso 403 propio para "no eres el dueño" — es otro 422.
+propiedad no son invariantes locales, pero **tampoco** se resuelven con `if/throw` en el use case:
+el `Finder` trae el dato, el `Validator` arma el record y la `Rule` lanza su `DomainException`. No
+existe un caso 403 propio para "no eres el dueño" — es otro 422.
 
 **No confundas esto con un corte de idempotencia.** El check de arriba es sobre `if/`**`throw`**. Un
-`Finder` consultado con `if/`**`return`**, sin lanzar nada, es otra cosa y es correcta. La forma
-vigente devuelve un valor, no corta mudo:
-
-```java
-boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada);
-logger.debug(NotificacionKey.LOG_VERIFICACION_PREVIA,
-        entrada.getIdEvento(), yaProcesada);
-
-if (yaProcesada) {
-    return EnvioNotificacionResultMapper.toResultDuplicada(entrada);
-}
-```
-
-Una `Rule` **siempre lanza** en su violación; aquí lanzar sería el bug — mandaría el mensaje a la DLQ
-cuando RabbitMQ solo estaba reentregando algo ya procesado. Así que no existe `Rule` que modele esto,
-y el `Finder` se consulta directo desde el use case. Marca ❌ solo si ese `if` **lanza** o si el
-resultado ausente representa un error de negocio. Tres cosas que sí son hallazgo, todas ⚠️: que el
-`Finder` reciba el `idEvento` suelto en vez del domain (la clave es el par
-`(idEvento, destinatario)`, así que el evento solo no identifica la fila); que el corte haga
-`return;` mudo cuando el use case declara una sellada de retorno, dejando al consumidor sin poder
-distinguir `Duplicada` de `Enviada`; y que el log previo sea `info` en vez de `debug` o quede
-después del `if`. Referencia real:
-`notificaciones/.../EnviarNotificacionUseCaseImpl` — un comando **sin `Validator` en absoluto**,
-porque no tiene ninguna restricción de conjunto que validar.
+`Finder` consultado con `if/`**`return`**, sin lanzar, es correcto: la forma vigente devuelve la
+variante de la sellada que corresponde (`EnviarNotificacionUseCaseImpl` es la referencia — un comando
+**sin `Validator` en absoluto**). Marca ❌ solo si ese `if` **lanza** o si la ausencia representa un
+error de negocio. Tres cosas sí son hallazgo, las tres ⚠️: que el `Finder` reciba el `idEvento`
+suelto en vez del domain (la clave es el par `(idEvento, destinatario)`); que el corte haga `return;`
+mudo cuando el use case declara una sellada; y que el log previo sea `info` en vez de `debug` o quede
+después del `if`.
 
 **No son violación:** getters usados solo para retornar/loguear el id, construir el mensaje de una
 excepción o mapear a `Entity`.
@@ -244,7 +200,9 @@ excepción o mapear a `Entity`.
 | Check | Sev |
 |---|:---:|
 | `Interactor` dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` — qualifier explícito siempre (`usuariosTransactionManager` es `@Primary` y enlaza en silencio si se omite) | ❌ |
-| `UseCase` de escritura cuya firma recibe el `Command` en vez de un objeto de dominio (`UseCase<{Algo}Domain, R>`). Vale también sin domain: un job por lotes nominaliza igual (`ReintentoNotificacionesDomain`). El `Criteria` del lado query **sí** viaja directo | ❌ |
+| `UseCase` de escritura cuya firma recibe el `Command` en vez de un objeto de dominio (`UseCase<{Algo}Domain, R>`). Vale también sin domain: un job por lotes nominaliza igual (`ReintentoNotificacionesDomain`). Del lado query, el `UseCase` recibe el `{Entidad}Criteria`, pero el **`Interactor`** recibe un objeto `Query` (ver check de abajo) | ❌ |
+| El `Interactor` de una consulta recibe el `{Entidad}Criteria` directo en vez de un objeto `Query`. Sin dato validado extra: `ConsultaCriteriaQuery` genérico (`shared:query`). Con dato validado extra (path variable, subject del JWT, filtro forzado): un `{Consulta}{Entidad}Query` propio que **compone** `ConsultaCriteriaQuery` (nunca re-declara `pagina`/`tamanio`/`ordenamiento`/`raiz`). En ambos casos un `query/primaryport/mapper/Consultar{Entidad}[{Rol}]Mapper.toCriteria(query)` hace la conversión — ahí corre la validación `camposFiltrables()`/`camposOrdenables()`, no en el `RequestMapper` web ni en el `InteractorImpl` | ❌ |
+| El `Consultar{Entidad}RequestMapper` (web) devuelve `{Entidad}Criteria` en vez del `Query` (método `toQuery`, no `toCriteria`) | ❌ |
 | Un `UseCase` encadenado invoca a un tercero que no es parte del hecho que él representa — todos los pasos cuelgan del orquestador, no de un hermano (`RegistrarFichaPerfil` llama a `AsignarEstadoInicial` **y** a `AsignarEstudiantes`) | ❌ |
 | Un `UseCase` encadenado recibe el objeto de acción completo y solo lee una parte — señal de que lo pide para alimentar un paso siguiente que le corresponde al que llama. Debe recibir lo más estrecho que lee (`EstadoFichaPerfilDomain`, no `RegistroFichaPerfilDomain`) | ⚠️ |
 | `Void` como parámetro de **entrada** de un `Interactor`/`UseCase` (`Interactor<Void, O>`, `UseCase<Void, O>`) — su único valor habitable es `null`, así que obliga al llamador a escribir `ejecutar(null)`. Una operación sin entrada extiende `SupplierInteractor<O>`/`SupplierUseCase<O>` (`shared:application`), con `ejecutar()` sin parámetros. Verifica también el lado del adaptador: un `ejecutar(null)` en un `Controller` o `Consumer` es el síntoma | ❌ |
@@ -273,6 +231,7 @@ excepción o mapear a `Entity`.
 | El client role está declarado en `{contexto}/infrastructure/security/{Contexto}Authorities` (crudo + su expresión SpEL) | ❌ |
 | Client role en kebab-case (`{contexto}:{recurso}:{accion}`, todo minúscula, guiones — nunca camelCase/MAYÚSCULAS/underscore) | ❌ |
 | Coincide con el declarado en sección 9 del plan | ❌ |
+| El client role del endpoint es **nuevo y exclusivo**: la misma cadena no está ya asociada a otro endpoint/`Controller` en `{Contexto}Authorities`. Reutilizar el client role de otro endpoint (ej. un endpoint nuevo sobre `/fichas-perfil` que cuelga de `fichas:ficha-perfil-coordinador:view`, ya usado por `/coordinador`, en vez de un `fichas:ficha-perfil-asesor:view` propio) rompe la granularidad — cada salida a la web debe poder concederse/revocarse por separado en Keycloak | ❌ |
 | Uso de `hasRole(...)` o roles realm directos (`'COORDINADOR'`, `'ROLE_COORDINADOR'`) | ❌ |
 | Varios `hasAuthority` con OR/AND en un mismo endpoint | ❌ |
 | Ruta escrita como literal en vez de placeholder de propiedad (`@RequestMapping("${rutas.{contexto}.{recurso}.base:/{recurso}}")`) | ❌ |
@@ -290,6 +249,8 @@ excepción o mapear a `Entity`.
 | El `QueryOutputAdapter` construye `PageRequest`/`Sort` a mano en vez de delegar en `PageableMapper.toPageable(criteria, {Entidad}SortMapper::traducir)` + `PaginationMapper.toResult(page)` (`shared:jpa/util/`) | ❌ |
 | El adapter captura `PropertyReferenceException`/`InvalidDataAccessApiUsageException` para remapearlas a 400 (los campos ya se validaron contra la whitelist; eso solo puede ser un defecto de mapeo — debe salir 500) | ❌ |
 | Falta `{Entidad}SortMapperTest` que confirme que la whitelist del `Criteria` y las claves de `traducir(...)` no divergen | ⚠️ |
+| Un `{Consulta}{Entidad}Mapper` (o cualquier clase de `application`/`domain` que declare `shared:util`) ramifica sobre un campo opcional con `== null`/`!= null` crudo en vez de `UtilObjeto.esNulo`/`noEsNulo` | ❌ |
+| Un `Command`/`Query` declara un método `tieneX()` propio solo para envolver el `== null` de uno de sus campos, en vez de que el consumidor use `UtilObjeto.noEsNulo(...)` (los `tieneFiltros()`/`tieneOrden()` de `QueryCriteria` y `tieneErrores()` de `ValidationResult` sí son legítimos: son contrato de `shared:*`, no de un record de una feature) | ❌ |
 
 ### Nivel 2.9 — Consumo de eventos AMQP (si la HU consume eventos)
 
@@ -424,43 +385,30 @@ excluido**, así que un domain sin tests hunde el porcentaje del módulo. No rep
 "excluido" algo que no está en esa lista.
 
 
-**Cola de evento mal declarada (bloqueante).** Toda cola de evento se declara con un `@Bean
-Declarables` que devuelve `ColaEvento.declarar(...)`: la cola, su `.dead` y los dos bindings salen
-juntos. Un `*QueueConfig` que escriba los cuatro beans a mano —o que declare la cola de entrada sin
-su `.dead` y el `Binding` contra `arquisoftDeadLetterExchange`— deja los mensajes fallidos
-descartándose en silencio si el `x-dead-letter-routing-key` y el binding divergen, que es
-exactamente lo que `ColaEvento` existe para impedir. Literales de cola, routing key o argumentos
-AMQP escritos a mano son bloqueantes — van en `EventTopics`, `{Contexto}Queues` y `RabbitMQConfig`.
-La constante del nombre de cola sí se queda (`@RabbitListener` la exige constante); una
-`*_ROUTING_KEY` aparte ya no tiene lector y sobra.
+**Seis bloqueantes más, todos con su criterio completo en las skills:**
 
-
-**Payload sin `ocurridoEn` (bloqueante).** Todo `{Evento}Payload` declara `idEvento` y `ocurridoEn`.
-Ambos viajan siempre en el JSON porque `DomainEvent` los asigna; omitirlos del `record` los descarta
-en silencio y deja al consumidor sin forma de ordenar eventos que lleguen desordenados. Su
-`{Evento}PayloadTest` debe usar `new RabbitMQConfig().rabbitObjectMapper()` — un `ObjectMapper`
-construido a mano en el test es ⚠️ menor pero se reporta: puede pasar y fallar en el broker.
-
-**`try/catch` en `application` alrededor de un puerto (bloqueante).** Si el caso de uso captura para
-seguir, el fallo era un valor y no una excepción: `sealed interface` de resultado. Revisa también que
-no se haya añadido una excepción nueva para algo que el caso de uso persiste como estado.
-
-**Reintento dentro del consumidor AMQP (bloqueante).** Un `EnvioOutputPort` reintentado en bucle
-dentro del `handle()` bloquea el listener con `prefetch: 1`, y reencolar el evento no reenvía nada
-porque la idempotencia por `idEvento` lo da por duplicado. El reintento sale de la base con un
-`@Scheduled` que abre su propio `AlcanceTraza`. Si hay reintento, comprueba que la migración persista
-**el mensaje enviado** y no solo el resultado: sin eso el job no tiene con qué reconstruirlo.
-
-**Espejo de enum incompleto (bloqueante).** Un enum espejo en infraestructura
-(`{Enum}Evento`/`{Enum}Persistencia`) que declara solo la constante usada hoy no detecta la deriva que
-justifica su existencia: tiene que declarar **todas** las del enum de dominio y tener su test de las
-dos direcciones. Un literal suelto de estado o tipo en un adapter, en vez del espejo, también es
-bloqueante.
-
-**Borrado en cascada o `DELETE` sobre una tabla espejo (bloqueante).** La baja de una entidad
-replicada es lógica (estado `ANULADO` con fecha) y el borrado que llega antes que el alta inserta la
-lápida. Un consumidor de borrado que lanza excepción cuando la fila no existe es bloqueante: manda al
-DLQ un borrado que ya estaba cumplido. Ver `arquisoft-arquitectura` → *Replicación entre contextos*.
+- **Cola de evento mal declarada.** Toda cola sale de un `@Bean Declarables` con
+  `ColaEvento.declarar(...)` — cola, `.dead` y los dos bindings juntos. Cuatro beans a mano, o la
+  cola de entrada sin su `.dead` y su binding contra `arquisoftDeadLetterExchange`, dejan los
+  mensajes fallidos descartándose en silencio. Literales de cola, routing key o argumentos AMQP
+  escritos a mano: van en `EventTopics`, `{Contexto}Queues` y `RabbitMQConfig`. La constante del
+  nombre de cola sí se queda (`@RabbitListener` la exige constante); una `*_ROUTING_KEY` aparte sobra.
+- **Payload sin `ocurridoEn`.** Todo `{Evento}Payload` declara `idEvento` y `ocurridoEn`; omitirlos
+  del `record` los descarta en silencio. Su test debe usar `new RabbitMQConfig().rabbitObjectMapper()`
+  — un `ObjectMapper` a mano es ⚠️ menor pero se reporta: puede pasar y fallar en el broker.
+- **`try/catch` en `application` alrededor de un puerto.** Si el use case captura para seguir, el
+  fallo era un valor: `sealed interface` de resultado. Revisa también que no se haya añadido una
+  excepción nueva para algo que el caso de uso persiste como estado.
+- **Reintento dentro del consumidor AMQP.** Bloquea el listener con `prefetch: 1` y reencolar no
+  reenvía nada (la idempotencia lo da por duplicado). El reintento sale de la base con un
+  `@Scheduled` que abre su propio `AlcanceTraza`, y la migración debe persistir **el mensaje
+  enviado**, no solo el resultado.
+- **Espejo de enum incompleto.** Un `{Enum}Evento`/`{Enum}Persistencia` que declara solo la
+  constante usada hoy no detecta la deriva que justifica su existencia: declara **todas** las del
+  dominio y tiene su test en las dos direcciones. Un literal suelto en un adapter también es ❌.
+- **Borrado en cascada o `DELETE` sobre una tabla espejo.** La baja es lógica (`ANULADO` con fecha) y
+  el borrado que llega antes que el alta inserta la lápida. Un consumidor de borrado que lanza
+  cuando la fila no existe manda al DLQ un borrado ya cumplido.
 
 ## FASE 3 — Estado de tests (mental)
 

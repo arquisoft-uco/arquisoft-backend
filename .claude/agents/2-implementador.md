@@ -197,86 +197,36 @@ omites).
 (extiende `AbstractEventConsumer`, payload `record` local) → `{Contexto}Authorities` (client role
 nuevo + su expresión) → migración Flyway (reglas abajo).
 
-**Migraciones Flyway — tres reglas duras, las tres por la misma razón:** cada contexto tiene su
-**propia base de datos** con su propio `flyway_schema_history`, y `baselineOnMigrate` está en
-**`false`**, así que Flyway ya no perdona nada en silencio.
+**Migración Flyway:** el archivo va en
+`{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` — nunca suelto en
+`db/migration/` — con versión `V{yyyyMMddHHmmss}` tomada del reloj **al crear el archivo**
+(`date +V%Y%m%d%H%M%S`); dos migraciones de la misma HU van separadas un segundo. Nunca un timestamp
+anterior a una ya aplicada, y nunca renombres ni edites una ya aplicada: con `baselineOnMigrate=false`
+eso rompe el arranque. Sin prefijo de base ni de schema, y sin FK hacia la base de otro contexto.
 
-1. **Subcarpeta del contexto, siempre:** el archivo va en
-   `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/`, nunca suelto en
-   `db/migration/`. El `{Contexto}DataSourceConfig` apunta a
-   `.locations("classpath:db/migration/{contexto}")`; una migración fuera de su subcarpeta la
-   recogería el Flyway de otro contexto y la aplicaría en la base equivocada.
-2. **Versión = timestamp `VyyyyMMddHHmmss`**, tomado del reloj **en el momento de crear el archivo**
-   (`date +V%Y%m%d%H%M%S`): `V20260724005914__crear_revision_item.sql`. No existe numeración
-   secuencial. Dos migraciones de la misma HU: la segunda va un segundo después.
-3. **Nunca un timestamp anterior a una migración ya aplicada, y nunca renombres ni edites una ya
-   aplicada.** Con `baselineOnMigrate=false` eso rompe el arranque en vez de pasar inadvertido. Si
-   hay que corregir algo, se agrega una migración nueva.
+**Adaptadores — lo que no debes generar,** aunque el resto de las reglas está en las skills:
 
-Sin prefijo de base ni de schema en `CREATE TABLE` (la conexión ya apunta a la base del contexto), y
-sin FK hacia la base de otro contexto — eso se modela como tabla réplica local poblada por eventos.
-
-El `QueryOutputAdapter` es pura delegación: `PageableMapper.toPageable(criteria, {Entidad}SortMapper::traducir)`
-y `PaginationMapper.toResult(page)` (`shared:jpa/util/`); no construye `PageRequest`/`Sort` ni
-captura excepciones de Spring Data para remapearlas a 4xx.
-
-**El `CommandOutputAdapter` no lleva un solo `try/catch`.** `FichaPerfilCommandOutputAdapter` es la
-referencia: `Entity ↔ JpaEntity` y delegar, nada más. Cuando la ejecución llega ahí, el orden de
-validación ya garantizó formato, existencia, unicidad e invariantes — no queda ningún error de
-negocio que el adaptador pueda descubrir, así que no tiene nada que traducir. Cinco cosas que no
-debes generar:
-
-- **Nunca lances una `DomainException` desde un adaptador.** Nada de
-  `catch (DataIntegrityViolationException)` → `throw {X}DuplicadoException(...)`: esa excepción vive
-  en `domain/{feature}/exception/` e infrastructure no ve el dominio en absoluto. Y la unicidad ya
-  la cubre `{X}UnicoRule` con su `Finder` sobre `existePor...`; la garantía real es el `UNIQUE` de
-  la migración Flyway.
-- **No captures `DataAccessException` para envolverla en `InfrastructureException`**, ni generes un
-  helper `errorPersistencia(...)`. `GlobalAppExceptionHandler` no mapea Spring Data: cae en su
-  catch-all → 500 con log de error, que es el resultado correcto para BD caída o bug de mapeo.
-  (Sí puedes lanzar una `InfrastructureException` propia de
-  `infrastructure/{feature}/exception/` para lo que solo el adaptador diagnostica: proveedor externo
-  caído, objeto ausente en MinIO. Lo prohibido es envolver Spring Data.)
-- **`save`, no `saveAndFlush`.** Solo existía para adelantar el error al `catch`; sin `catch` no
-  tiene razón de ser, y ante una violación de constraint deja la transacción en *rollback-only* y el
-  `EntityManager` indefinido, con el `UnexpectedRollbackException` estallando en el commit, lejos
-  del origen.
-- **`boolean` primitivo en los métodos de existencia**, tanto en el puerto como en el adaptador. Los
-  16 del repo lo son; el `Boolean` envuelto mete un `null` que nadie comprueba y un unboxing
-  silencioso dentro de la `Rule`. La regla es del puerto: el `Finder<T, Boolean>` lleva el
-  envuelto por obligación del genérico y no se toca.
-- **Los métodos de escritura logean**, los de lectura no:
-  `logger.debug({Feature}Key.LOG_GUARDADA, entity.id())` con el `AppLogger`
-  inyectado por constructor.
-
-
-**`{Contexto}DataSourceConfig`: un solo paquete escaneado.**
-`em.setPackagesToScan("com.arquisoft.{contexto}.infrastructure")`, nunca la lista de dos con
-`"...application"`. Todas las `@Entity` están en infrastructure; lo que queda en `application` es el
-`record` plano del `secondaryport`, sin una sola anotación JPA. Si tocas un config, comprueba que no
-arrastre la forma vieja.
-
-**Un `OutputAdapter` que escribas siempre persiste.** Existe un adaptador deliberadamente inerte en
-el repo — `usuarios/.../UsuarioCommandOutputAdapter`, que solo loguea y no toca la base — y está
-documentado como estado intencional de un contexto de ejemplo, no como patrón. Dos consecuencias
-prácticas: no lo copies a una feature nueva, y si el plan cae **dentro de `usuarios`**, ahí no hay
-`UsuarioJpaEntity`, `UsuarioJpaMapper` ni `UsuarioCommandRepository` — construirlos es parte del
-trabajo, no un descubrimiento que resuelvas improvisando. Repórtalo como ambigüedad si el plan da la
-persistencia por existente.
-
-**Manejo de errores:** por defecto `GlobalAppExceptionHandler` (`shared:web`, paquete
-`com.arquisoft.shared.web.handler`) resuelve el HTTP por jerarquía de la excepción — no crees
-`{Contexto}GlobalExceptionHandler` propio salvo que el plan lo declare explícitamente (colisión de
-nombres con el framework, o HTTP fuera del default). Si el plan sí lo declara, va en
-`infrastructure/handler/`, **nunca** en `infrastructure/exception/`: cada paquete se llama como el
-sufijo de las clases que aloja, y `exception/` significa "aquí viven los `*Exception`". Referencia:
-`seguridad/infrastructure/handler/SeguridadGlobalExceptionHandler`.
-
-**Ubicación de cada excepción nueva:** dentro del slice vertical del feature, en la capa de su clase
-base — `domain/{feature}/exception/` (422), `application/{feature}/exception/` (400),
-`infrastructure/{feature}/exception/` (503). No crees un `exception/` a nivel de contexto. Y si la
-excepción nueva **extiende** a otra del feature, ambas van en la misma capa: una subclase
-`ApplicationException` colgando en `infrastructure/` parte la jerarquía en dos módulos.
+- El `CommandOutputAdapter` no lleva **un solo `try/catch`**: `Entity ↔ JpaEntity` y delegar. Nunca
+  una `DomainException` desde un adaptador, nunca `catch (DataAccessException)` envolviendo Spring
+  Data, `save` y no `saveAndFlush`, `boolean` primitivo en existencia, `logger.debug` solo en los
+  métodos de escritura. (Sí es legítima una `InfrastructureException` **propia** de
+  `infrastructure/{feature}/exception/` para lo que solo el adaptador diagnostica.)
+- El `QueryOutputAdapter` es pura delegación:
+  `PageableMapper.toPageable(criteria, {Entidad}SortMapper::traducir)` +
+  `PaginationMapper.toResult(page)` (`shared:jpa/util/`). No construyas `PageRequest`/`Sort` a mano
+  ni captures excepciones de Spring Data para remapearlas a 4xx.
+- `{Contexto}DataSourceConfig` escanea **un solo paquete**:
+  `em.setPackagesToScan("com.arquisoft.{contexto}.infrastructure")`. Si tocas un config, comprueba
+  que no arrastre la lista de dos con `"...application"`.
+- **Un `OutputAdapter` que escribas siempre persiste.** El inerte de
+  `usuarios/.../UsuarioCommandOutputAdapter` es estado intencional de un contexto de ejemplo, no
+  patrón: no lo copies, y si el plan cae dentro de `usuarios`, ahí faltan `UsuarioJpaEntity`,
+  `UsuarioJpaMapper` y `UsuarioCommandRepository` — construirlos es parte del trabajo. Si el plan da
+  la persistencia por existente, es ambigüedad.
+- **No crees `{Contexto}GlobalExceptionHandler`** salvo que el plan lo declare (colisión de nombres o
+  HTTP fuera del default). Si lo declara, va en `infrastructure/handler/`, nunca en `exception/`.
+- Cada excepción nueva va **dentro del slice del feature, en la capa de su clase base**, y una
+  subclase nunca en distinta capa que su padre.
 
 ## FASE 4 — Protocolo de auto-corrección de compilación
 
@@ -303,155 +253,46 @@ Actualiza la fila `Desarrollo` en `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (secc
 `✅ Completado`, fecha, "Build -x test: sin errores". No toques otras filas. Luego pregunta y
 espera respuesta: "¿Sigues con @3-tester (recomendado) o vas directo a @4a-validator-analyze?".
 
-## Reglas de código — resumen (detalle en `arquisoft-arquitectura`/`arquisoft-estandares`)
+## Reglas de código
 
-- **Entidad raíz:** constructor privado, campos no-`final`, setters privados que cortan con `return`
-  al fallar la validación, solo getters, sin Lombok, sin `record`. `crear(...)`/`reconstruir(...)`,
-  nunca `build`/`rebuild`; `reconstruir` no valida ni genera nada. Si el domain puede llegar
-  ausente al use case, declara `public static final X VACIO` con los valores cero
-  (`UtilUUID.obtenerUUIDPorDefecto()`, `UtilTexto.VACIO`, …) y `esVacio()` comparando identidad.
-  El domain es siempre una `final class` plana: no extiende nada para emitir eventos.
-- **Cola AMQP nueva:** un solo `@Bean Declarables` con `ColaEvento.declarar(cola, routingKey,
-  eventsExchange, dlx)` — declara de una vez la cola, su `.dead` y los dos bindings. No escribas los
-  cuatro beans a mano ni llames a `ColaDeadLetter` desde el `*QueueConfig`: el descarte se vuelve
-  mudo si el `x-dead-letter-routing-key` y el binding contra el DLX divergen, y `ColaEvento` es lo
-  que impide que puedan hacerlo. Ningún `*QueueConfig` escribe literales: routing key en
-  `EventTopics`, prefijo en `{Contexto}Queues`, argumentos y sufijos en `RabbitMQConfig`. La
-  constante del nombre de cola se queda (`@RabbitListener` la exige constante); una
-  `*_ROUTING_KEY` aparte, no. El `{Evento}Payload` declara `idEvento` y `ocurridoEn`.
-- **Fallo de un puerto que el negocio registra:** es un `sealed interface` de resultado, no una
-  excepción. Cero `try/catch` en `application`. Si además hay que reintentarlo, el reintento va en un
-  `@Scheduled` que abre `gestorTraza.abrir(SolicitudTraza.paraProgramado())` — nunca dentro del
-  consumidor AMQP — y la migración persiste **el mensaje enviado**, no solo el resultado.
-- **Enum de dominio nombrado desde infraestructura:** enum espejo en el paquete del adapter que lo
-  usa (`{Enum}Evento` en `primaryadapter/amqp/`, `{Enum}Persistencia` en `secondaryadapter/repository/`),
-  con **todas** las constantes del dominio y su test de deriva. Nunca un literal suelto.
-- **IDs:** siempre `UUID`, generado en el setter (`UtilUUID`), nunca `UUID.randomUUID()` directo en
-  dominio.
-- **Enums de catálogo:** `desde(String)`/`esValido(String)`/`getId()`, nunca `valueOf` fuera del
-  enum. Su ubicación (`domain/{catalogo}/` vs `domain/{feature}/model/`) sigue lo que ya use el
-  contexto tocado — es una decisión abierta del proyecto, no asumas una convención fija de PK.
-  **Las constantes son las que el plan copió de `mer/data/{NN}_data_{contexto}.sql`: escribe esas y
-  solo esas.** `id` es la constante Java (UPPER_SNAKE_CASE) y `nombre` el texto de `getNombre()`,
-  literal de esa fila. Si el plan no las lista, es ambigüedad — repórtala, no las deduzcas. La
-  migración inserta exactamente ese mismo conjunto, y el ancho de la tabla se copia del DDL del MER
-  (el estándar 60/60/300 de ADR-012 v1.1 aplica solo a tablas nuevas; `estado_ficha`, `tipo_item` y
-  `estado_evaluacion` son excepciones documentadas que **no** se migran).
-  **La conversión del `String` del cliente va en el `crear(...)` del domain**, en el setter privado:
-  `esValido(...)` acumula en el `ValidationResult` y `desde(...)` convierte. El DTO, el `Command` y
-  el `{Accion}{Entidad}Mapper` lo pasan crudo — ninguno llama `desde(...)`, porque lanzaría al
-  primer error. Desde una fila de BD es al revés: `desde(...)` en el mapper de `secondaryport`,
-  antes de `reconstruir(...)`. Referencia: `TipoItem` en `ItemFichaPerfilDomain`.
-- **Mensajes:** cero strings literales en producción, y **dos destinos distintos** (no existe
-  ninguna clase `{Contexto}Messages`):
-  - Constantes Java en `shared:message`: `{Contexto}Codes` (códigos), `{Contexto}Fields` (campos de
-    `fieldErrors[]`), `{Contexto}Limits` (límites), `annotation/{Contexto}ApiMessages` + `ApiCodes` +
-    `ApiSecurity` (Swagger).
-  - Prosa de errores y logs: constante en el enum `{Feature}Key` (`shared:message/key/{contexto}/`)
-    con su **aridad**, registro en `ClavesCatalogo`, y línea en `catalogo/{contexto}.properties`.
-    Se resuelve con `Mensajes.formatear(clave, args)` para mensajes de cliente (`%s`) y
-    `logger.info(clave, args)` para logs (`{}`). **Nunca
-    `Mensajes.obtener(clave).formatted(...)`.** Si falta cualquiera de las tres piezas,
-    `CatalogoCargaTest` rompe el build.
-- **Logging:** inyecta el puerto `AppLogger` (`shared:logger`) por constructor — no `@Slf4j`, del que
-  ya no queda ni uno en los cuatro contextos con código. Nunca loguees
-  desde un método `@Bean` ni desde un `@PostConstruct`: el catálogo aún no está instalado y saldría
-  la clave cruda sin argumentos.
-- **Al logger se le pasa la `ClaveMensaje`, nunca el texto ya resuelto.**
-  `logger.debug(FichaPerfilKey.LOG_VERIFICACION_PREVIA, a, b)`, **no**
-  `logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VERIFICACION_PREVIA), a, b)`. La segunda forma
-  compila, pero `Mensajes.obtener` es un `GET` a Redis en cada llamada y Java evalúa el argumento
-  antes de entrar al método: un `debug` con el nivel apagado pagaba igual el viaje de red. Las
-  sobrecargas `debug/info/warn/error(ClaveMensaje, Object...)` resuelven dentro del logger y solo si
-  el nivel está activo. `Mensajes.formatear`/`obtener` se quedan para lo que **no** es log: mensajes
-  de excepción, asunto y cuerpo de correo, textos de respuesta.
-- **Estructura de logs de un flujo de escritura:** un `UseCaseImpl` de escritura emite
-  **exactamente tres líneas**, ni una más. Ver la sección completa en `arquisoft-estandares`.
-  1. `logger.info({Feature}Key.LOG_{GERUNDIO}, ...)` como **primera línea** de
-     `UseCaseImpl.ejecutar`, con los identificadores de negocio de la entrada. Sin esto, un flujo que
-     aborta en validación no deja rastro de que se intentó.
-  2. `logger.debug({Feature}Key.LOG_VERIFICACION_{ACCION}, ...)` **justo antes** de
-     `validator.validar(...)`, con exactamente lo que devolvieron los finders (colecciones como
-     `.size()`, domains como `!x.esVacio()`). Es lo que permite reconstruir por qué una `Rule` lanzó.
-  3. `logger.info({Feature}Key.LOG_{PARTICIPIO}, ...)` como **última sentencia** de `ejecutar`,
-     después de las llamadas encadenadas y del `publish`.
-  Aparte, `logger.debug({Feature}Key.LOG_GUARDADO, id)` en cada método de **escritura** del adapter —
-  no lo dupliques en el use case.
-  **El `InteractorImpl` no loguea nunca**, ni en flujo simple ni en anidado: no inyecta `AppLogger`.
-  No existe `LOG_{ACCION}_COMPLETADO` ni un `debug` de "validación superada" (si el validator no
-  hubiera pasado, habría lanzado: esa línea solo probaba que la ejecución llegó hasta ahí).
-  En un **flujo anidado** (hoy `RegistrarFichaPerfil`) el use case raíz mantiene sus tres líneas sin
-  cambio; el anidado que tiene `Interactor` + `Controller` propios (`AsignarEstudiantesFichaPerfil`)
-  conserva las suyas, y el que solo es paso interno sin `Interactor`
-  (`AsignarEstadoInicialFichaPerfil`) lleva un único `debug`.
-  **Nunca** un log en un `Validator`, en una `Rule`, en `Command.crear(...)`, en un mapper, en un DTO,
-  en un método de lectura de un adapter, ni un `try/catch` puesto solo para loguear. Nunca secretos.
-- **Estructura de logs de un flujo de lectura:** una consulta **no emite ningún `INFO`** y no logea
-  ni en el interactor ni en el `QueryOutputAdapter`. `TrazabilidadFilter` ya emite la línea `AUDIT` a
-  nivel `info` por cada petición, así que un `INFO` propio la duplicaría y las lecturas son el
-  tráfico de mayor volumen. Solo dos `debug` en el use case: al entrar, con `pagina`, `tamanio`,
-  `tieneFiltros()` y `tieneOrden()` — lo que la auditoría no puede mostrar y lo que explica un
-  resultado vacío inesperado; y al salir, con el volumen devuelto (`getTotalElements()`/`.size()`).
-  Nunca serialices la `Criteria` completa. Si la consulta no tiene criterio (un catálogo completo,
-  `ConsultarEstadosFicha`), omite el de entrada y deja solo el de cierre.
-- **Estructura de logs de un flujo de evento:** un consumidor no pasa por `TrazabilidadFilter`, así
-  que **no hay línea `AUDIT`** y el `INFO` de entrada va en el `{Evento}Consumer` (tras `deserialize`,
-  con `idEvento` + identificadores de negocio), no en el use case. El use case que el consumidor
-  dispara **no añade `INFO` de entrada ni de cierre**: siguen siendo dos `INFO` por mensaje, recepción
-  y cierre, y **los dos los pone el adaptador**. En `notificaciones` el de cierre sale de
-  `AbstractNotificacionConsumer.registrar(...)`, con su `switch` exhaustivo sobre la sellada — `info`
-  para `Enviada`/`Duplicada`, `warn` para `Fallida` —, así que el use case solo lleva su `debug` de
-  verificación previa. Regla general: cuando el use case devuelve una sellada de desenlace, el cierre
-  lo logea quien la **interpreta**, no quien la produce.
-  `AbstractEventConsumer` ya aporta los `debug` de envelope recibido/confirmado y el `error`
-  del nack a la DLQ, y `SpringModulithEventPublisher` el `debug` de encolado en el outbox: un
-  consumidor nuevo no escribe nada de eso. Todo log del consumidor va **dentro** del
-  `withCorrelation(...)`; fuera del `AlcanceTraza` el MDC ya se restauró y la línea sale sin
-  `correlacionId`.
-- **Datos sensibles:** ningún secreto en un log — contraseñas, tokens, refresh tokens, `Authorization`.
-  De un token se registra el JTI, nunca el valor. Los correos van siempre por
-  `UtilTexto.enmascararCorreo(...)` (`shared:util`) → `j***@uco.edu.co`: son dato personal y los logs
-  llegan a Loki. Tampoco documentos, teléfonos ni la `Criteria` completa de una consulta. Identificador
-  opaco (`UUID`, `idEvento`, `JTI`) sí.
-- **Nunca añadas `:{contexto}:domain` a `implementation` de infrastructure.** La dirección
-  `domain ← application ← infrastructure` la impone el grafo de módulos: infrastructure solo declara
-  el dominio en `testImplementation`, así que un import del dominio desde código de producción **no
-  compila**, y la tarea `verificarCapasHexagonales` (colgada de `check`) lo vuelve a comprobar sobre
-  el classpath resuelto. Si algo no compila por esto, **el arreglo no es tocar el `build.gradle`**:
-  un enum de dominio que un adaptador necesita nombrar viaja como `String` y se convierte en
-  `Command.crear(...)` con su `desde(...)`/`desdeCodigo(...)` — así se resolvió `RolUsuarioDTO` en
-  `usuarios`; un domain que un adaptador quiere construir significa que el puerto debe hablar
-  `Entity`.
-- **DTOs:** una sola convención, sin variantes por contexto — el `RequestDTO` es un `record` **sin
-  ninguna anotación** y un `{Accion}{Entidad}RequestMapper` externo (`final`, constructor privado,
-  `static toCommand`) llama a `Command.crear(...)`. Lo cumplen `fichas` y `seguridad`. El
-  `CrearUsuarioRequestDTO` de `usuarios`, con Jakarta y `toCommand()` propio, es desviación conocida:
-  no lo copies ni siquiera trabajando en `usuarios`. La única lógica admisible en un `RequestDTO` es
-  sobrescribir `toString()` para enmascarar un secreto (`IniciarSesionRequestDTO` con la contraseña).
-- **Inyección:** `@RequiredArgsConstructor`, nunca `@Autowired`; interfaces, nunca implementaciones.
-  Use cases siempre `@Component`, nunca `@Service`.
-- **Controllers:** `@Tag`/`@Operation`/`@ApiResponses`/`@SecurityRequirement` (ADR-011) con textos
-  de `{Contexto}ApiMessages`, códigos de `ApiCodes` y `ApiSecurity.BEARER_AUTH`. La ruta es un
-  placeholder de propiedad con default —`@RequestMapping("${rutas.{contexto}.{recurso}.base:/{recurso}}")`—
-  nunca un literal y nunca con prefijo `/api`. La autorización es
-  `@PreAuthorize({Contexto}Authorities.Expresiones.HAS_*)` con el client role de la sección 9 del
-  plan; si no existe todavía, añádelo a `{Contexto}Authorities` (constante cruda + expresión) antes
-  de usarlo. Ver `RegistrarFichaPerfilController.java`.
-- **Lectura:** el `Controller` nunca serializa el `ReadModel` — lo mapea a `{Entidad}ResponseDTO`
-  con `{Entidad}ResponseMapper.toResponse`, y en paginado envuelve con
-  `PageResponseDTO.from(resultado.map({Entidad}ResponseMapper::toResponse))`.
-- **Escritura que devuelve objeto:** misma regla — el `Controller` no serializa el `{Concepto}Result`,
-  lo mapea con `{Accion}{Entidad}ResponseMapper.toResponse(result)` a su `ResponseDTO`. Ese
-  `ResponseDTO` es un **`record`**, como en `fichas`. Los cuatro de `seguridad`
-  (`IniciarSesionResponseDTO` y hermanos) son clases Lombok `@Data`/`@Builder`: copia de ahí la
-  *cadena* `Result → ResponseMapper → ResponseDTO`, no la forma del DTO.
-- **Virtual Threads:** ya activos globalmente — nunca crear `@Bean TaskExecutor` manual salvo
-  instrucción explícita del plan.
-- **Java 21 balanceado:** records para Command/ReadModel/RequestDTO/payloads de evento; `var`
-  cuando el tipo es evidente; nada de esto en la entidad de dominio.
-- **Sin Javadoc descriptivo.** Un comentario de una línea solo si aclara un "por qué" no obvio.
-  Excepción: clases base de `shared:*` que documentan un contrato interno.
-- **Imports explícitos**, nunca wildcard.
+**Las convenciones NO se repiten aquí.** Están completas, con su porqué y su archivo de referencia
+real, en `arquisoft-arquitectura` y `arquisoft-estandares` — las dos skills que cargaste en la FASE 0.
+Ábrelas cuando dudes; no reconstruyas la regla de memoria.
+
+Lo que sí vive aquí es el **puñado de decisiones que se toman al teclear**, porque son las que más se
+equivocan generando código y no se ven leyendo una regla:
+
+- **El plan manda sobre la plantilla mental.** Si el plan dice "Eventos: ninguno", no inyectes
+  `EventPublisher` ni crees nada en `event/` — ni "por si acaso". Si no declara `Validator`, no lo
+  escribas. Una ausencia declarada es una decisión, no un hueco que te toque llenar.
+- **Qualifier explícito siempre:** `@Transactional(transactionManager = "{contexto}TransactionManager")`.
+  `usuariosTransactionManager` es `@Primary` y enlaza en silencio si lo omites.
+- **`boolean` explícito, nunca `var`,** para recibir el resultado de un `{X}ExisteFinder`: con `var`
+  el `Boolean` del genérico llega vivo hasta `validar(..., boolean existe)` y el unboxing pasa
+  callado.
+- **Al `AppLogger` se le pasa la `ClaveMensaje`, nunca el texto resuelto.**
+  `logger.debug(FichaPerfilKey.LOG_X, a, b)`, no `logger.debug(Mensajes.obtener(...), a, b)`: la
+  segunda compila, pero es un `GET` a Redis en cada llamada que Java evalúa aunque el nivel esté
+  apagado.
+- **El `InteractorImpl` no logea nunca** y no inyecta `AppLogger`. El `UseCaseImpl` de escritura
+  emite exactamente tres líneas; el de lectura, dos `debug` y ningún `INFO`; el disparado por un
+  consumidor, solo su `debug`. La estructura completa está en `arquisoft-estandares`.
+- **Todo correo que entre a un log pasa por `UtilTexto.enmascararCorreo(...)`.** Ningún secreto,
+  token ni contraseña llega a un log jamás.
+- **Comprobación de nulidad con `UtilObjeto.esNulo`/`noEsNulo`,** nunca `== null` crudo, y sin
+  declarar un `tieneX()` en un `record` para envolverlo. Excepción: los `shared:` que no declaran
+  `shared:util` (`jpa`, `redis`, `amqp`, `web`) — ahí el `== null` se queda y **no** agregues la
+  dependencia.
+- **Nunca añadas `:{contexto}:domain` a `implementation` de infrastructure.** Si algo no compila por
+  esto, el arreglo no es el `build.gradle`: un enum de dominio viaja como `String` y se convierte en
+  `Command.crear(...)`; un domain que el adaptador quiere construir significa que el puerto debe
+  hablar `Entity`. `verificarCapasHexagonales` cuelga de `check`.
+- **Las constantes de un enum de catálogo son las que el plan copió de
+  `mer/data/{NN}_data_{contexto}.sql`: esas y solo esas.** Si el plan no las lista, es ambigüedad —
+  repórtala, no las deduzcas.
+- **Virtual Threads ya están activos:** nunca un `@Bean TaskExecutor` manual.
+- **Sin Javadoc y sin comentarios que repitan el código.** El "por qué" va al mensaje de commit.
+  Imports explícitos, nunca wildcard.
 
 ## Protocolo de Ambigüedad
 
