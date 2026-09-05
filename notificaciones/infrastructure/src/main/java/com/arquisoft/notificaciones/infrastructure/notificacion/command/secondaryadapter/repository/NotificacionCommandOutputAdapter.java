@@ -4,7 +4,6 @@ import com.arquisoft.notificaciones.application.notificacion.command.secondarypo
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
 import com.arquisoft.notificaciones.infrastructure.notificacion.command.secondaryadapter.mapper.NotificacionJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Limit;
@@ -22,7 +21,7 @@ public class NotificacionCommandOutputAdapter implements NotificacionOutputPort 
     @Override
     public void guardar(NotificacionEntity notificacion) {
         repository.save(NotificacionJpaMapper.toJpaEntity(notificacion));
-        logger.debug(Mensajes.obtener(NotificacionKey.LOG_GUARDADA),
+        logger.debug(NotificacionKey.LOG_GUARDADA,
                 notificacion.idEvento(), notificacion.estado());
     }
 

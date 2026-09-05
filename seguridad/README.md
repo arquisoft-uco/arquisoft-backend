@@ -121,7 +121,7 @@ La creación de usuarios (`POST /usuarios`) vive en el contexto `usuarios`, no e
 
 ### JWT / Keycloak
 - Tokens validados en `SeguridadConfig` contra el **issuer** de Keycloak (`{KEYCLOAK_URL}/realms/{KEYCLOAK_REALM}`), que autodescubre el JWKS vía OIDC. Se valida **firma + expiración (nbf/exp) + `iss` + `aud`** (RFC 9700 / OAuth 2.1). Un token con issuer o audience incorrectos se rechaza con **401 `invalid_token`**.
-- Autorización basada en permisos finos del claim `resource_access.{KEYCLOAK_CLIENT_ID}.roles` (formato `contexto:recurso:accion`, ej. `usuarios:usuario:create`, `fichas:ficha-perfil:view`), extraídos por `KeycloakRolExtractor` y mapeados 1:1 a `GrantedAuthority` sin prefijo `ROLE_` en `KeycloakJwtConverterConfig`. Los roles de `realm_access.roles` ya no se usan para autorización — cada contexto protege sus endpoints con `@PreAuthorize("hasAuthority('...')")` sobre estos permisos finos.
+- Autorización basada en permisos finos del claim `resource_access.{KEYCLOAK_CLIENT_ID}.roles` (formato `contexto:recurso:accion`, ej. `usuarios:usuario:create`, `fichas:ficha-perfil-coordinador:view`), extraídos por `KeycloakRolExtractor` y mapeados 1:1 a `GrantedAuthority` sin prefijo `ROLE_` en `KeycloakJwtConverterConfig`. Los roles de `realm_access.roles` ya no se usan para autorización — cada contexto protege sus endpoints con `@PreAuthorize("hasAuthority('...')")` sobre estos permisos finos.
 - Sesión stateless — ningún estado HTTP del lado del servidor.
 
 #### Contrato de claims del access token
@@ -138,7 +138,7 @@ La SPA `react-app` autentica con **Authorization Code + PKCE** (public client) y
 
 #### Configuración requerida en el realm `arquisoft` (Keycloak)
 
-1. **Client roles** en `arquisoft-api`: los permisos finos (`fichas:ficha-perfil:view`, `usuarios:usuario:create`, …).
+1. **Client roles** en `arquisoft-api`: los permisos finos (`fichas:ficha-perfil-coordinador:view`, `usuarios:usuario:create`, …).
 2. **Realm roles compuestos** de negocio (`estudiante`, `asesor`, `coordinador`, …) que **agrupan** (composite) los client roles anteriores de `arquisoft-api`.
 3. En el public client `react-app`:
    - **Full Scope Allowed = ON** (o un **Client Roles mapper** apuntando a `arquisoft-api`) para que los client roles concedidos aparezcan en `resource_access.arquisoft-api.roles`. Con esto, el `audience resolve mapper` por defecto añade `arquisoft-api` al claim `aud` automáticamente (no se requiere un Audience mapper explícito).

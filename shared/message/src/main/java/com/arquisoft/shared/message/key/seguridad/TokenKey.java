@@ -7,7 +7,6 @@ public enum TokenKey implements ClaveMensaje {
 
     ERROR_REFRESCAR("seguridad.dominio.token.error.refrescar", 0),
     ERROR_REFRESH_INVALIDO_EXPIRADO("seguridad.dominio.token.error.refresh-invalido-expirado", 0),
-    ERROR_REFRESCAR_DETALLE("seguridad.dominio.token.error.refrescar-detalle", 1),
     LOG_VALIDAR_DEBUG("seguridad.aplicacion.token.log.validar-debug", 0),
     LOG_VALIDAR_RESULTADO("seguridad.aplicacion.token.log.validar-resultado", 1),
     MENSAJE_VALIDO("seguridad.aplicacion.token.mensaje.valido", 0),

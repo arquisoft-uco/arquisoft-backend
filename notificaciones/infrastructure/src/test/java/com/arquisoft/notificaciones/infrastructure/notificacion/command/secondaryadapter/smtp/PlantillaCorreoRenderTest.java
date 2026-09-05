@@ -2,29 +2,47 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.seconda
 
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.DestinatarioNotificacion;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.MensajeNotificacion;
-import com.arquisoft.notificaciones.infrastructure.config.NotificacionProperties;
 import com.arquisoft.notificaciones.infrastructure.notificacion.exception.PlantillaCorreoNoDisponibleException;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PlantillaCorreoRenderTest {
 
-    private final PlantillaCorreoRender render =
-            new PlantillaCorreoRender(fuenteCon("classpath:plantillas/correo-base.html"));
+    // La plantilla desplegada ya no esta en el classpath: vive en plantillas/ y un script la carga
+    // en Redis. El test la lee del repositorio para que siga siendo la real la que se prueba.
+    private static final Path PLANTILLA_DESPLEGADA =
+            Path.of("..", "..", "plantillas", "correo-base.html");
 
-    private static FicheroFuentePlantillaCorreo fuenteCon(String ubicacion) {
-        var properties = new NotificacionProperties();
-        properties.setPlantilla(ubicacion);
-        return new FicheroFuentePlantillaCorreo(new DefaultResourceLoader(), properties);
+    private final PlantillaCorreoRender render = new PlantillaCorreoRender(plantillaDesplegada());
+
+    static FuentePlantillaCorreo plantillaDesplegada() {
+        try {
+            String contenido = Files.readString(PLANTILLA_DESPLEGADA, StandardCharsets.UTF_8);
+            return () -> contenido;
+        } catch (IOException e) {
+            throw new UncheckedIOException(
+                    "No se encontro " + PLANTILLA_DESPLEGADA.toAbsolutePath(), e);
+        }
     }
 
     private MensajeNotificacion mensajeCon(String asunto, String cuerpo, String pie) {
         return MensajeNotificacion.textoPlano(
                 new DestinatarioNotificacion("Ana Gomez", "ana.gomez@soyuco.edu.co"),
                 asunto, cuerpo, pie);
+    }
+
+    @Test
+    void debePasarLaVerificacionDeHuecos_cuandoSeUsaLaPlantillaDesplegada() {
+        // Act & Assert
+        render.verificarHuecos();
     }
 
     @Test
@@ -83,11 +101,35 @@ class PlantillaCorreoRenderTest {
                 .hasMessageContaining("{{cuerpo}}");
     }
 
+    // El titulo del proyecto lo escribe un usuario; nada le impide llamarlo "{{cuerpo}}". escapar()
+    // no toca las llaves, asi que con replace() encadenado ese literal insertado en el titulo lo
+    // pisaba la sustitucion del cuerpo.
     @Test
-    void debeFallar_cuandoLaUbicacionConfiguradaNoExiste() {
-        // Act & Assert
-        assertThatThrownBy(() -> fuenteCon("classpath:plantillas/no-existe.html"))
-                .isInstanceOf(PlantillaCorreoNoDisponibleException.class)
-                .hasMessageContaining("no-existe.html");
+    void debeSustituirCadaMarcadorUnaSolaVez_cuandoUnValorContieneOtroMarcador() {
+        // Act
+        String html = render.envolver(
+                mensajeCon("Ficha {{cuerpo}} y {{pie}}", "TEXTO_CUERPO", "TEXTO_PIE"));
+
+        // Assert
+        assertThat(html).contains("Ficha {{cuerpo}} y {{pie}}");
+        assertThat(apariciones(html, "TEXTO_CUERPO")).isEqualTo(1);
+        assertThat(apariciones(html, "TEXTO_PIE")).isEqualTo(1);
+    }
+
+    // $ y \ son metacaracteres en la cadena de reemplazo de Matcher#appendReplacement; el valor
+    // tiene que salir literal, como salia con String#replace.
+    @Test
+    void debeConservarLosSignosDeReemplazoDeRegex_cuandoUnValorLosTrae() {
+        // Act
+        String html = render.envolver(
+                mensajeCon("Presupuesto $1000 y $2000", "Ruta C:\\datos $x", "Pie"));
+
+        // Assert
+        assertThat(html).contains("Presupuesto $1000 y $2000");
+        assertThat(html).contains("Ruta C:\\datos $x");
+    }
+
+    private static int apariciones(String texto, String fragmento) {
+        return texto.split(java.util.regex.Pattern.quote(fragmento), -1).length - 1;
     }
 }

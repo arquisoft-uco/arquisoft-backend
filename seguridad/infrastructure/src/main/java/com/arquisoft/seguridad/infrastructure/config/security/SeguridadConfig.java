@@ -2,7 +2,6 @@ package com.arquisoft.seguridad.infrastructure.config.security;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.seguridad.infrastructure.filter.IdentidadTrazaFilter;
 import com.arquisoft.seguridad.infrastructure.filter.JwtBlacklistFilter;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -129,7 +128,7 @@ public class SeguridadConfig {
     // aun puede no estar instalado y el log saldria como clave cruda, sin sus argumentos.
     @EventListener(ApplicationReadyEvent.class)
     public void registrarConfiguracionAplicada() {
-        logger.info(Mensajes.obtener(IniciarSesionKey.LOG_JWT_DECODER_CONFIG),
+        logger.info(IniciarSesionKey.LOG_JWT_DECODER_CONFIG,
                 PLANTILLA_ISSUER.formatted(keycloakServerUrl, realm), expectedAudience);
     }
 }

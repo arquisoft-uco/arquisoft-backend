@@ -13,5 +13,6 @@ public class NotificacionProperties {
 
     private String remitenteNombre = "Arquisoft";
 
-    private String plantilla = "classpath:plantillas/correo-base.html";
+    // Clave de Redis, no una ruta del classpath: la cargan los scripts de plantillas/.
+    private String plantilla = "plantilla.correo-base";
 }

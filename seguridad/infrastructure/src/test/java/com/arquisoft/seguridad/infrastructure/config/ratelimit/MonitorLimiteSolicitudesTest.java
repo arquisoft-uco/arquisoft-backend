@@ -1,5 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.ratelimit;
 
+import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.tracing.application.traza.primaryport.AlcanceTraza;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -13,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -95,6 +95,6 @@ class MonitorLimiteSolicitudesTest {
                         + "propagara, el limitador se quedaría con cuota por instancia —y el límite "
                         + "efectivo multiplicado por el número de réplicas— hasta el próximo despliegue")
                 .doesNotThrowAnyException();
-        verify(logger).error(anyString(), any(Throwable.class));
+        verify(logger).error(any(ClaveMensaje.class), any(Throwable.class));
     }
 }

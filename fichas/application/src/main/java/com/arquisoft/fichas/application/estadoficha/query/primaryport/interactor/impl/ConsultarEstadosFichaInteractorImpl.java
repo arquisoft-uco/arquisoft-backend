@@ -17,7 +17,7 @@ public class ConsultarEstadosFichaInteractorImpl implements ConsultarEstadosFich
 
     @Override
     @Transactional(readOnly = true, transactionManager = "fichasTransactionManager")
-    public List<EstadoFichaReadModel> ejecutar(Void entrada) {
-        return consultarEstadosFichaUseCase.ejecutar(entrada);
+    public List<EstadoFichaReadModel> ejecutar() {
+        return consultarEstadosFichaUseCase.ejecutar();
     }
 }

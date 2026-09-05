@@ -1,7 +1,6 @@
 package com.arquisoft.seguridad.infrastructure.config.cors;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,12 +87,12 @@ public class CorsConfig {
 
     // El log NO va dentro del @Bean: el catalogo de mensajes se instala en un bean propio
     // (CatalogoMensajesRedisConfig) que puede construirse despues que este, y entonces
-    // Mensajes.obtener devuelve la clave cruda en vez del texto — y SLF4J, al no encontrar
+    // la clave se resolveria cruda en vez del texto — y SLF4J, al no encontrar
     // ningun {} en esa clave, descarta ademas los argumentos. En ApplicationReadyEvent el
     // catalogo ya esta instalado siempre.
     @EventListener(ApplicationReadyEvent.class)
     public void registrarConfiguracionAplicada() {
-        logger.info(Mensajes.obtener(ConfiguracionKey.LOG_CORS_CONFIGURADO),
+        logger.info(ConfiguracionKey.LOG_CORS_CONFIGURADO,
                 Arrays.asList(allowedOrigins.split(SEPARADOR_LISTA)),
                 Arrays.asList(allowedMethods.split(SEPARADOR_LISTA)),
                 maxAge);

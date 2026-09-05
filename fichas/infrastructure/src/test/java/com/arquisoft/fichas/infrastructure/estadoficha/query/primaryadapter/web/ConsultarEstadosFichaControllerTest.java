@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -65,7 +64,7 @@ class ConsultarEstadosFichaControllerTest {
                 new EstadoFichaReadModel("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo"),
                 new EstadoFichaReadModel("APROBADA", "Aprobada", "Ficha aprobada")
         );
-        when(consultarEstadosFichaInteractor.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaInteractor.ejecutar()).thenReturn(estados);
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -84,7 +83,7 @@ class ConsultarEstadosFichaControllerTest {
     @Test
     void debe200ConListaVacia_cuandoNoHayEstados() throws Exception {
         // Arrange
-        when(consultarEstadosFichaInteractor.ejecutar(isNull())).thenReturn(List.of());
+        when(consultarEstadosFichaInteractor.ejecutar()).thenReturn(List.of());
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -102,7 +101,7 @@ class ConsultarEstadosFichaControllerTest {
                 new EstadoFichaReadModel("DISPONIBLE_PARA_EVALUACION", "Disponible para Evaluacion", "Lista para evaluar"),
                 new EstadoFichaReadModel("APROBADA_CON_OBSERVACIONES", "Aprobada con Observaciones", "Aprobada condicionalmente")
         );
-        when(consultarEstadosFichaInteractor.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaInteractor.ejecutar()).thenReturn(estados);
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -137,7 +136,7 @@ class ConsultarEstadosFichaControllerTest {
         List<EstadoFichaReadModel> estados = List.of(
                 new EstadoFichaReadModel("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo")
         );
-        when(consultarEstadosFichaInteractor.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaInteractor.ejecutar()).thenReturn(estados);
 
         // Act
         mockMvc.perform(get("/fichas-perfil/estados-ficha")
@@ -146,7 +145,7 @@ class ConsultarEstadosFichaControllerTest {
                 .andExpect(status().isOk());
 
         // Assert
-        verify(consultarEstadosFichaInteractor, times(1)).ejecutar(isNull());
+        verify(consultarEstadosFichaInteractor, times(1)).ejecutar();
     }
 
     @Test
@@ -155,7 +154,7 @@ class ConsultarEstadosFichaControllerTest {
         List<EstadoFichaReadModel> estados = List.of(
                 new EstadoFichaReadModel("APROBADA", "Aprobada", "Ficha aprobada")
         );
-        when(consultarEstadosFichaInteractor.ejecutar(isNull())).thenReturn(estados);
+        when(consultarEstadosFichaInteractor.ejecutar()).thenReturn(estados);
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/estados-ficha")

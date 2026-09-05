@@ -27,10 +27,16 @@ security:
 # ==================== LOGGING ====================
 # logback-spring.xml controla appenders y formato (texto ANSI en dev).
 # Aqui solo se ajustan niveles por paquete sobre el root INFO definido en el XML.
+# Los grupos se declaran una sola vez en application.yml. Aqui solo van los niveles por
+# defecto del perfil; cualquiera se sobreescribe desde .env sin tocar este archivo.
 logging:
   level:
-    com.arquisoft: DEBUG
-    org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
-    # Spring Modulith: ciclo de vida de eventos (registro, publicación, completado, retry)
-    org.springframework.modulith: DEBUG
+    root: ${LOG_NIVEL_ROOT:INFO}
+    negocio: ${LOG_NIVEL_NEGOCIO:DEBUG}
+    plataforma: ${LOG_NIVEL_PLATAFORMA:DEBUG}
+    # SQL de Hibernate + parametros ligados
+    datos: ${LOG_NIVEL_DATOS:DEBUG}
+    seguridad: ${LOG_NIVEL_SEGURIDAD:DEBUG}
+    # Incluye Spring Modulith: ciclo de vida de eventos (registro, publicación, completado, retry)
+    mensajeria: ${LOG_NIVEL_MENSAJERIA:DEBUG}
+    framework: ${LOG_NIVEL_FRAMEWORK:INFO}

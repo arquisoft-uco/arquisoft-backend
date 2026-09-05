@@ -11,7 +11,6 @@ import com.arquisoft.notificaciones.application.notificacion.command.secondarypo
 import com.arquisoft.notificaciones.application.notificacion.command.usecase.EnviarNotificacionUseCase;
 import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -28,7 +27,7 @@ public class EnviarNotificacionUseCaseImpl implements EnviarNotificacionUseCase 
     @Override
     public EnvioNotificacionResult ejecutar(NotificacionDomain entrada) {
         boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada);
-        logger.debug(Mensajes.obtener(NotificacionKey.LOG_VERIFICACION_PREVIA),
+        logger.debug(NotificacionKey.LOG_VERIFICACION_PREVIA,
                 entrada.getIdEvento(), yaProcesada);
 
         if (yaProcesada) {

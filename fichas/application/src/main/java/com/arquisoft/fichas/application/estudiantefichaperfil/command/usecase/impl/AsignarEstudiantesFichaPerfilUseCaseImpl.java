@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesVinculadosContadorFinder;
@@ -40,7 +39,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
 
     @Override
     public void ejecutar(AgregacionEstudiantesFichaPerfilDomain entrada) {
-        logger.info(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_ASIGNANDO),
+        logger.info(EstudianteFichaPerfilKey.LOG_ASIGNANDO,
                 entrada.getFichaPerfil(), entrada.getCantidad());
 
         var ficha = fichaPerfilFinder.obtener(entrada.getFichaPerfil()).orElse(FichaPerfilDomain.VACIO);
@@ -48,7 +47,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
         List<UUID> yaVinculados = estudiantesYaVinculadosFinder.obtener(entrada.getRelaciones());
         long vinculadosActuales = estudiantesVinculadosContadorFinder.obtener(entrada.getFichaPerfil());
 
-        logger.debug(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_VERIFICACION_ASIGNAR),
+        logger.debug(EstudianteFichaPerfilKey.LOG_VERIFICACION_ASIGNAR,
                 !ficha.esVacio(), estudiantesExistentes.size(), yaVinculados.size(), vinculadosActuales);
 
         asignarEstudiantesFichaPerfilValidator.validar(
@@ -63,7 +62,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
                 ficha.getTituloProyecto(),
                 contactos(entrada.getEstudiantes())));
 
-        logger.info(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_ASIGNADO),
+        logger.info(EstudianteFichaPerfilKey.LOG_ASIGNADO,
                 entrada.getFichaPerfil(), entrada.getCantidad());
     }
 
