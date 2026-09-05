@@ -22,6 +22,8 @@ public enum FichaPerfilKey implements ClaveMensaje {
     LOG_ASESOR_CAMBIADO("fichas.aplicacion.fichaperfil.log.asesor-cambiado", 2),
     LOG_CONSULTANDO("fichas.aplicacion.fichaperfil.log.consultando", 4),
     LOG_CONSULTA_COMPLETADA("fichas.aplicacion.fichaperfil.log.consulta-completada", 3),
+    LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.fichaperfil.log.consultando-estudiante", 2),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.fichaperfil.log.consulta-estudiante-completada", 1),
     LOG_GUARDADA("fichas.infraestructura.fichaperfil.log.guardada", 1);
 
     private final String clave;

@@ -74,6 +74,15 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESORADAS_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_ASESORADAS_RESP_400 = "Filtro, operador, campo o valor inválido";
         public static final String CONSULTAR_ASESORADAS_RESP_403 = "Sin permisos — se requiere rol asesor de ficha";
+
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar ficha de perfil del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Retorna el detalle de una ficha de perfil a la que pertenece el estudiante autenticado: "
+                        + "título, asesor asignado, estado actual y estudiantes vinculados.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Ficha de perfil encontrada";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_404 =
+                "Ficha no encontrada, o el estudiante autenticado no está vinculado a ella";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permisos — se requiere rol estudiante";
     }
 
     public static final class ItemFichaPerfil {
