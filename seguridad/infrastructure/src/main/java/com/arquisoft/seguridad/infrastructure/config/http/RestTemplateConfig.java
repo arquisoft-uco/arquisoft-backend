@@ -2,7 +2,6 @@ package com.arquisoft.seguridad.infrastructure.config.http;
 
 import com.arquisoft.shared.logger.AppLogger;
 import lombok.RequiredArgsConstructor;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.web.client.TrazaClientHttpRequestInterceptor;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,14 +43,14 @@ public class RestTemplateConfig {
 
     private ClientHttpRequestInterceptor loggingInterceptor() {
         return (request, body, execution) -> {
-            logger.debug(Mensajes.obtener(ConfiguracionKey.LOG_HTTP_PETICION),
+            logger.debug(ConfiguracionKey.LOG_HTTP_PETICION,
                     request.getMethod(), request.getURI());
 
             long startTime = System.currentTimeMillis();
             var response = execution.execute(request, body);
             long duration = System.currentTimeMillis() - startTime;
 
-            logger.debug(Mensajes.obtener(ConfiguracionKey.LOG_HTTP_RESPUESTA),
+            logger.debug(ConfiguracionKey.LOG_HTTP_RESPUESTA,
                     request.getMethod(),
                     request.getURI(),
                     response.getStatusCode(),
@@ -65,7 +64,7 @@ public class RestTemplateConfig {
     // aun puede no estar instalado y el log saldria como clave cruda, sin sus argumentos.
     @EventListener(ApplicationReadyEvent.class)
     public void registrarConfiguracionAplicada() {
-        logger.info(Mensajes.obtener(ConfiguracionKey.LOG_REST_TEMPLATE_CONFIGURADO),
+        logger.info(ConfiguracionKey.LOG_REST_TEMPLATE_CONFIGURADO,
                 connectTimeout, readTimeout);
     }
 }

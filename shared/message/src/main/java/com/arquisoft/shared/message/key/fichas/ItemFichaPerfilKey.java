@@ -20,6 +20,10 @@ public enum ItemFichaPerfilKey implements ClaveMensaje {
     LOG_REMOVIENDO("fichas.aplicacion.itemfichaperfil.log.removiendo", 2),
     LOG_VERIFICACION_REMOVER("fichas.aplicacion.itemfichaperfil.log.verificacion-remover", 3),
     LOG_REMOVIDO("fichas.aplicacion.itemfichaperfil.log.removido", 1),
+    LOG_CONSULTANDO_ASESOR("fichas.aplicacion.itemfichaperfil.log.consultando-asesor", 1),
+    LOG_CONSULTA_ASESOR_COMPLETADA("fichas.aplicacion.itemfichaperfil.log.consulta-asesor-completada", 1),
+    LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.itemfichaperfil.log.consultando-estudiante", 1),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.itemfichaperfil.log.consulta-estudiante-completada", 1),
     LOG_GUARDADO("fichas.infraestructura.itemfichaperfil.log.guardado", 1),
     LOG_ELIMINADO("fichas.infraestructura.itemfichaperfil.log.eliminado", 1);
 

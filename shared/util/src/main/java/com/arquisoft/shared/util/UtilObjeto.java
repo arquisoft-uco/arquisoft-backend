@@ -8,6 +8,10 @@ public final class UtilObjeto {
         return object == null;
     }
 
+    public static boolean noEsNulo(final Object object) {
+        return !esNulo(object);
+    }
+
     public static <T> T aplicarPorDefecto(final T valor, final T porDefecto) {
         return esNulo(valor) ? porDefecto : valor;
     }

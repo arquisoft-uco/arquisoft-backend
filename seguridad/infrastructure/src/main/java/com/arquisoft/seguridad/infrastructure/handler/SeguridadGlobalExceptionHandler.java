@@ -30,7 +30,7 @@ public class SeguridadGlobalExceptionHandler {
             CredencialesInvalidasException ex,
             HttpServletRequest request) {
 
-        logger.warn(Mensajes.obtener(IniciarSesionKey.LOG_CREDENCIALES_INVALIDAS_HANDLER),
+        logger.warn(IniciarSesionKey.LOG_CREDENCIALES_INVALIDAS_HANDLER,
                 request.getRequestURI(), ex.getCodigoError(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -43,7 +43,7 @@ public class SeguridadGlobalExceptionHandler {
             TokenInvalidoException ex,
             HttpServletRequest request) {
 
-        logger.warn(Mensajes.obtener(TokenKey.LOG_INVALIDO_HANDLER), request.getRequestURI(), ex.getCodigoError(), ex.getMessage());
+        logger.warn(TokenKey.LOG_INVALIDO_HANDLER, request.getRequestURI(), ex.getCodigoError(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponseDTO.fromBaseException(
@@ -55,7 +55,7 @@ public class SeguridadGlobalExceptionHandler {
             AutenticacionException ex,
             HttpServletRequest request) {
 
-        logger.warn(Mensajes.obtener(IniciarSesionKey.LOG_EXCEPCION_AUTENTICACION), request.getRequestURI(), ex.getCodigoError(), ex.getMessage());
+        logger.warn(IniciarSesionKey.LOG_EXCEPCION_AUTENTICACION, request.getRequestURI(), ex.getCodigoError(), ex.getMessage());
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponseDTO.fromBaseException(

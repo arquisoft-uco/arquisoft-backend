@@ -7,7 +7,6 @@ public enum IniciarSesionKey implements ClaveMensaje {
 
     ERROR_AUTENTICAR_KEYCLOAK("seguridad.dominio.login.error.autenticar-keycloak", 0),
     ERROR_CREDENCIALES_INVALIDAS("seguridad.dominio.login.error.credenciales-invalidas", 0),
-    ERROR_COMUNICACION_KEYCLOAK("seguridad.dominio.login.error.comunicacion-keycloak", 1),
     ERROR_SERVICIO_NO_DISPONIBLE("seguridad.dominio.login.error.servicio-no-disponible", 0),
     ERROR_HTTP_401("seguridad.infraestructura.login.error.http-401", 0),
     ERROR_AUDIENCIA_INVALIDA("seguridad.infraestructura.login.error.audiencia-invalida", 1),

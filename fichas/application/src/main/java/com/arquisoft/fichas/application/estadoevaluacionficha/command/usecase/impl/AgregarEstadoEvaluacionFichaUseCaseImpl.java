@@ -32,7 +32,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
 
     @Override
     public UUID ejecutar(AgregacionEstadoEvaluacionFichaDomain entrada) {
-        logger.info(Mensajes.obtener(EstadoEvaluacionFichaKey.LOG_AGREGANDO),
+        logger.info(EstadoEvaluacionFichaKey.LOG_AGREGANDO,
                 entrada.getEvaluacionFichaPerfil(),
                 entrada.getEstadoEvaluacionFicha().getEstadoEvaluacion());
 
@@ -42,7 +42,7 @@ public class AgregarEstadoEvaluacionFichaUseCaseImpl implements AgregarEstadoEva
         var ultimoEstado = ultimoEstadoEvaluacionFichaFinder.obtener(entrada.getEvaluacionFichaPerfil())
                 .orElse(EstadoEvaluacionFichaDomain.VACIO);
 
-        logger.debug(Mensajes.obtener(EstadoEvaluacionFichaKey.LOG_VERIFICACION_AGREGAR),
+        logger.debug(EstadoEvaluacionFichaKey.LOG_VERIFICACION_AGREGAR,
                 evaluacionExiste, esPropietario, estadoYaExiste);
 
         agregarEstadoEvaluacionFichaValidator.validar(

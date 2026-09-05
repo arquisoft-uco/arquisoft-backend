@@ -49,11 +49,11 @@ public class SmtpEnvioNotificacionOutputAdapter implements EnvioNotificacionOutp
             helper.setText(mensaje.cuerpo(), plantillaCorreoRender.envolver(mensaje));
 
             mailSender.send(mimeMessage);
-            logger.info(Mensajes.obtener(EnvioNotificacionKey.LOG_ENVIADO),
+            logger.info(EnvioNotificacionKey.LOG_ENVIADO,
                     destinos, mensaje.asunto());
             return new ResultadoEntrega.Entregada();
         } catch (MailException | jakarta.mail.MessagingException | UnsupportedEncodingException e) {
-            logger.error(Mensajes.obtener(EnvioNotificacionKey.LOG_ENVIO_RECHAZADO),
+            logger.error(EnvioNotificacionKey.LOG_ENVIO_RECHAZADO,
                     e, destinos, mensaje.asunto());
             return new ResultadoEntrega.Rechazada(
                     Mensajes.formatear(EnvioNotificacionKey.ERROR_ENVIO_FALLIDO, destinos));

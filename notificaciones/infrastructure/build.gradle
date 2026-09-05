@@ -16,6 +16,9 @@ dependencies {
     // Se declara aqui para acceder a @RabbitListener, Message, Channel, QueueBuilder, etc.
     implementation "org.springframework.boot:spring-boot-starter-amqp"
 
+    // StringRedisTemplate — la plantilla de correo se lee de Redis al arrancar.
+    implementation "org.springframework.boot:spring-boot-starter-data-redis"
+
     // JavaMailSender + MimeMessageHelper — unica dependencia de transporte del contexto.
     implementation "org.springframework.boot:spring-boot-starter-mail"
 

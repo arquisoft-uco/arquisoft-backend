@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
@@ -38,23 +37,19 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
     public UUID ejecutar(RegistroFichaPerfilDomain registro) {
         var ficha = registro.getFicha();
 
-        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_REGISTRANDO),
+        logger.info(FichaPerfilKey.LOG_REGISTRANDO,
                 ficha.getTituloProyecto(), ficha.getAsesorFicha());
 
         var asesorFicha = asesorFichaFinder.obtener(ficha.getAsesorFicha())
                 .orElse(AsesorFichaDomain.VACIO);
         boolean tituloYaExiste = tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto());
 
-        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VERIFICACION_PREVIA),
+        logger.debug(FichaPerfilKey.LOG_VERIFICACION_PREVIA,
                 ficha.getAsesorFicha(), !asesorFicha.esVacio(), tituloYaExiste);
 
         registrarFichaPerfilValidator.validar(ficha, !asesorFicha.esVacio(), tituloYaExiste);
 
-        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VALIDACION_SUPERADA), ficha.getId());
-
         fichaPerfilOutputPort.registrarFicha(FichaPerfilMapper.toEntity(ficha));
-
-        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId());
 
         asignarEstadoInicialFichaPerfilUseCase.ejecutar(registro.getEstadoInicial());
 
@@ -65,6 +60,8 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
                 ficha.getTituloProyecto(),
                 asesorFicha.getId(),
                 new ContactoAsesor(asesorFicha.getNombre(), asesorFicha.getEmail())));
+
+        logger.info(FichaPerfilKey.LOG_REGISTRADA, ficha.getId());
 
         return ficha.getId();
     }

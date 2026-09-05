@@ -1,5 +1,6 @@
 package com.arquisoft.notificaciones.infrastructure.notificacion.command.secondaryadapter.smtp;
 
+import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.DestinatarioNotificacion;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.MensajeNotificacion;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.ResultadoEntrega;
@@ -13,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -46,8 +46,7 @@ class SmtpEnvioNotificacionOutputAdapterTest {
 
         sender = new SmtpEnvioNotificacionOutputAdapter(
                 mailSender, properties,
-                new PlantillaCorreoRender(
-                        new FicheroFuentePlantillaCorreo(new DefaultResourceLoader(), properties)),
+                new PlantillaCorreoRender(PlantillaCorreoRenderTest.plantillaDesplegada()),
                 logger);
     }
 
@@ -120,7 +119,7 @@ class SmtpEnvioNotificacionOutputAdapterTest {
         sender.enviar(mensajeDePrueba());
 
         // Assert
-        verify(logger).error(any(String.class), any(Throwable.class), any(), any());
+        verify(logger).error(any(ClaveMensaje.class), any(Throwable.class), any(), any());
     }
 
     @Test
@@ -132,7 +131,7 @@ class SmtpEnvioNotificacionOutputAdapterTest {
         sender.enviar(mensajeDePrueba());
 
         // Assert
-        verify(logger).info(any(String.class), any(), any());
+        verify(logger).info(any(ClaveMensaje.class), any(), any());
     }
 
     @Test

@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.seco
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.secondaryport.entity.ItemCualitativoJuradoEntity;
 import com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.secondaryadapter.mapper.ItemCualitativoJuradoJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,7 +21,7 @@ public class ItemCualitativoJuradoCommandOutputAdapter
     @Override
     public void registrar(ItemCualitativoJuradoEntity entity) {
         repository.save(ItemCualitativoJuradoJpaMapper.toJpaEntity(entity));
-        logger.debug(Mensajes.obtener(ItemCualitativoJuradoKey.LOG_GUARDADA), entity.id());
+        logger.debug(ItemCualitativoJuradoKey.LOG_GUARDADA, entity.id());
     }
 
     @Override

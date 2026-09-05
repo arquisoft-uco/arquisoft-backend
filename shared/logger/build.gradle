@@ -1,3 +1,7 @@
+// java-library expone ClaveMensaje transitivamente: aparece en la firma pública de AppLogger,
+// así que quien inyecta el logger tiene que verla sin declarar shared:message por su cuenta.
+apply plugin: 'java-library'
+
 dependencies {
     // SLF4J + Logback — transitivos de spring-boot-starter-logging.
     // Se declara explícitamente para garantizar que logback-spring.xml sea reconocido
@@ -7,4 +11,12 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-logging"
 
     implementation "org.springframework:spring-context"
+
+    // shared:message — ClaveMensaje y la fachada Mensajes. El módulo no tiene dependencias
+    // propias, así que esto no puede cerrar un ciclo.
+    api project(':shared:message')
+
+    testImplementation "org.assertj:assertj-core"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-junit-jupiter"
 }

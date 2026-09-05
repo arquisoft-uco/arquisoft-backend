@@ -14,7 +14,6 @@ import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.ReintentoNotificacionesDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,7 @@ public class ReintentarNotificacionesFallidasUseCaseImpl
         List<NotificacionDomain> pendientes = notificacionesReintentablesFinder.obtener(
                 new CriterioReintento(reintento.getMaxIntentos(), reintento.getLimite()));
 
-        logger.info(Mensajes.obtener(NotificacionKey.LOG_REINTENTO_INICIADO), pendientes.size());
+        logger.info(NotificacionKey.LOG_REINTENTO_INICIADO, pendientes.size());
 
         int reenviadas = 0;
         int fallidas = 0;
@@ -49,7 +48,7 @@ public class ReintentarNotificacionesFallidasUseCaseImpl
         }
 
         int agotadas = contarAgotadas(pendientes, reintento.getMaxIntentos());
-        logger.info(Mensajes.obtener(NotificacionKey.LOG_REINTENTO_RESULTADO),
+        logger.info(NotificacionKey.LOG_REINTENTO_RESULTADO,
                 reenviadas, fallidas, agotadas);
 
         return ReintentoNotificacionesResultMapper.toResult(reenviadas, fallidas, agotadas);
