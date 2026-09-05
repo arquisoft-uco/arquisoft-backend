@@ -149,13 +149,14 @@ public final class FichasApiMessages {
         public static final String AGREGAR_SUMMARY = "Agregar revisión a un ítem";
         public static final String AGREGAR_DESCRIPTION =
                 "Permite al asesor asignado a la ficha registrar una revisión sobre un ítem de esa "
-                        + "ficha, con un estado del catálogo EstadoRevision.";
+                        + "ficha. El estado inicial de la revisión siempre es 'NUEVA'; el resto de "
+                        + "cambios de estado los hace el estudiante en otro comando.";
         public static final String AGREGAR_RESP_201 = "Revisión agregada exitosamente — retorna el UUID asignado";
-        public static final String AGREGAR_RESP_400 = "Datos inválidos";
+        public static final String AGREGAR_RESP_400 = "Identificador de ítem inválido";
         public static final String AGREGAR_RESP_403 = "Sin permiso para agregar revisiones";
         public static final String AGREGAR_RESP_422 =
-                "Ítem no encontrado, ficha no asesorada por el usuario autenticado, revisión ya "
-                        + "existente o estado de revisión inválido";
+                "Ítem no encontrado, ficha no asesorada por el usuario autenticado o revisión ya "
+                        + "existente";
     }
 
     public static final class EstudianteFichaPerfil {

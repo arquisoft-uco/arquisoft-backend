@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -39,5 +40,10 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
         repository.deleteByFichaPerfilIdAndEstudianteId(fichaPerfilId, estudianteId);
         logger.debug(EstudianteFichaPerfilKey.LOG_VINCULO_ELIMINADO,
                 fichaPerfilId, estudianteId);
+    }
+
+    @Override
+    public List<UUID> obtenerEstudiantesDeFicha(UUID fichaPerfilId) {
+        return repository.findEstudianteIdByFichaPerfilId(fichaPerfilId);
     }
 }

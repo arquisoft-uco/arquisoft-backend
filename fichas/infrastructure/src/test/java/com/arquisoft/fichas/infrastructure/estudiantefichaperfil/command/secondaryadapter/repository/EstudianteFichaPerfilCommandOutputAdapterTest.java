@@ -96,4 +96,19 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         assertThat(resultado).isEqualTo(2L);
     }
 
+    @Test
+    void debeRetornarLosEstudiantes_cuandoObtenerEstudiantesDeFicha() {
+        // Arrange
+        UUID fichaId = UUID.randomUUID();
+        List<UUID> estudiantes = List.of(UUID.randomUUID(), UUID.randomUUID());
+
+        when(repository.findEstudianteIdByFichaPerfilId(fichaId)).thenReturn(estudiantes);
+
+        // Act
+        List<UUID> resultado = adapter.obtenerEstudiantesDeFicha(fichaId);
+
+        // Assert
+        assertThat(resultado).isEqualTo(estudiantes);
+    }
+
 }

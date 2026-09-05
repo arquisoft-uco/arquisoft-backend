@@ -80,7 +80,7 @@ class AgregarRevisionItemValidatorTest {
     }
 
     private static AgregacionRevisionItemDomain agregacionValida() {
-        var revisionItem = RevisionItemDomain.crear(UUID.randomUUID(), "NUEVA");
+        var revisionItem = RevisionItemDomain.crear(UUID.randomUUID());
         return AgregacionRevisionItemDomain.crear(revisionItem, UUID.randomUUID());
     }
 }

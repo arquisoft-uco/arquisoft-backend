@@ -67,4 +67,25 @@ class EstudianteFichaPerfilCommandRepositoryTest {
         boolean existe = repository.existsByFichaPerfilIdAndEstudianteId(fichaId, estudianteId);
         assertThat(existe).isFalse();
     }
+
+    @Test
+    void debeRetornarLosEstudiantesDeLaFicha_cuandoExistenVarios() {
+        // Arrange
+        UUID fichaId = UUID.randomUUID();
+        UUID otraFicha = UUID.randomUUID();
+        UUID estudiante1 = UUID.randomUUID();
+        UUID estudiante2 = UUID.randomUUID();
+        repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID()).fichaPerfilId(fichaId).estudianteId(estudiante1).build());
+        repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID()).fichaPerfilId(fichaId).estudianteId(estudiante2).build());
+        repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID()).fichaPerfilId(otraFicha).estudianteId(UUID.randomUUID()).build());
+
+        // Act
+        var resultado = repository.findEstudianteIdByFichaPerfilId(fichaId);
+
+        // Assert
+        assertThat(resultado).containsExactlyInAnyOrder(estudiante1, estudiante2);
+    }
 }

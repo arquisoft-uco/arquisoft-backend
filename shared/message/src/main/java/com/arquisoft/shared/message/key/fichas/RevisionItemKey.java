@@ -7,6 +7,8 @@ public enum RevisionItemKey implements ClaveMensaje {
 
     ERROR_ESTADO_NO_ENCONTRADO("fichas.dominio.revisionitem.error.estado-no-encontrado", 1),
     ERROR_YA_EXISTE("fichas.dominio.revisionitem.error.ya-existe", 1),
+    LOG_AGREGANDO("fichas.aplicacion.revisionitem.log.agregando", 2),
+    LOG_VERIFICACION_AGREGAR("fichas.aplicacion.revisionitem.log.verificacion-agregar", 3),
     LOG_AGREGADO("fichas.aplicacion.revisionitem.log.agregado", 2);
 
     private final String clave;

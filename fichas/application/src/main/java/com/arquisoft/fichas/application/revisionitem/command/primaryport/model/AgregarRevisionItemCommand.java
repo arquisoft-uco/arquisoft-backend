@@ -2,35 +2,19 @@ package com.arquisoft.fichas.application.revisionitem.command.primaryport.model;
 
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.message.constant.FichasLimits;
-import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.ValidationResult;
-import com.arquisoft.shared.validation.ValidatorLongitud;
 import com.arquisoft.shared.validation.ValidatorObjeto;
-import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.util.UUID;
 
-public record AgregarRevisionItemCommand(UUID item, String estadoRevision, UUID asesorFicha) {
+public record AgregarRevisionItemCommand(UUID item, UUID asesorFicha) {
 
-    public AgregarRevisionItemCommand {
-        estadoRevision = UtilTexto.aplicarTrim(estadoRevision);
-    }
-
-    public static AgregarRevisionItemCommand crear(UUID item, String estadoRevision, UUID asesorFicha) {
+    public static AgregarRevisionItemCommand crear(UUID item, UUID asesorFicha) {
         var result = new ValidationResult();
 
         ValidatorObjeto.noNulo(item,
                 FichasFields.RevisionItem.ITEM,
                 FichasCodes.RevisionItem.ITEM_REQUERIDO, result);
-
-        if (ValidatorTexto.noEnBlanco(estadoRevision,
-                FichasFields.RevisionItem.ESTADO_REVISION,
-                FichasCodes.RevisionItem.ESTADO_REVISION_REQUERIDO, result)) {
-            ValidatorLongitud.longitudMaxima(estadoRevision, FichasLimits.RevisionItem.ESTADO_MAX,
-                    FichasFields.RevisionItem.ESTADO_REVISION,
-                    FichasCodes.RevisionItem.ESTADO_REVISION_DEMASIADO_LARGO, result);
-        }
 
         ValidatorObjeto.noNulo(asesorFicha,
                 FichasFields.RevisionItem.ASESOR_FICHA,
@@ -38,6 +22,6 @@ public record AgregarRevisionItemCommand(UUID item, String estadoRevision, UUID 
 
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new AgregarRevisionItemCommand(item, estadoRevision, asesorFicha);
+        return new AgregarRevisionItemCommand(item, asesorFicha);
     }
 }

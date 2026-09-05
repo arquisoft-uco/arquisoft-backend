@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.application.revisionitem.command.primaryport.model;
 
+import com.arquisoft.shared.validation.ApplicationValidationException;
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
-import com.arquisoft.shared.validation.ApplicationValidationException;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -13,64 +13,66 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class AgregarRevisionItemCommandTest {
 
     @Test
-    void debeConstruir_cuandoDatosValidos() {
+    void debeCrearCommand_cuandoDatosValidos() {
         // Arrange
         UUID item = UUID.randomUUID();
         UUID asesorFicha = UUID.randomUUID();
 
         // Act
-        var command = AgregarRevisionItemCommand.crear(item, "  NUEVA  ", asesorFicha);
+        var command = AgregarRevisionItemCommand.crear(item, asesorFicha);
 
-        // Assert — el estado se recorta, item/asesorFicha llegan tal cual
+        // Assert
         assertThat(command.item()).isEqualTo(item);
-        assertThat(command.estadoRevision()).isEqualTo("NUEVA");
         assertThat(command.asesorFicha()).isEqualTo(asesorFicha);
     }
 
     @Test
-    void debeConstruir_cuandoEstadoRevisionNoPerteneceAlCatalogo() {
-        // Arrange — la pertenencia al catálogo la valida el agregado, no el Command
-        UUID item = UUID.randomUUID();
+    void debeLanzarExcepcion_cuandoItemNulo() {
+        // Arrange
         UUID asesorFicha = UUID.randomUUID();
 
-        // Act
-        var command = AgregarRevisionItemCommand.crear(item, "ESTADO_DESCONOCIDO", asesorFicha);
-
-        // Assert
-        assertThat(command.estadoRevision()).isEqualTo("ESTADO_DESCONOCIDO");
-    }
-
-    @Test
-    void debeLanzarExcepcion_cuandoEstadoRevisionExcedeLongitudMaxima() {
-        // Arrange
-        String estadoDe51Caracteres = "A".repeat(51);
-
         // Act & Assert
-        assertThatThrownBy(() -> AgregarRevisionItemCommand.crear(
-                UUID.randomUUID(), estadoDe51Caracteres, UUID.randomUUID()))
+        assertThatThrownBy(() -> AgregarRevisionItemCommand.crear(null, asesorFicha))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> {
                     var errores = ((ApplicationValidationException) ex).getValidationResult().getErrores();
-                    assertThat(errores).extracting("codigoError").containsExactly(
-                            FichasCodes.RevisionItem.ESTADO_REVISION_DEMASIADO_LARGO);
+                    assertThat(errores).extracting("codigoError")
+                            .containsExactly(FichasCodes.RevisionItem.ITEM_REQUERIDO);
+                    assertThat(errores).extracting("campo")
+                            .containsExactly(FichasFields.RevisionItem.ITEM);
                 });
     }
 
     @Test
-    void debeAcumularLosTresErrores_cuandoTodosLosCamposSonInvalidos() {
-        // Act & Assert — Notification Pattern: no aborta en el primero
-        assertThatThrownBy(() -> AgregarRevisionItemCommand.crear(null, "", null))
+    void debeLanzarExcepcion_cuandoAsesorFichaNulo() {
+        // Arrange
+        UUID item = UUID.randomUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> AgregarRevisionItemCommand.crear(item, null))
                 .isInstanceOf(ApplicationValidationException.class)
                 .satisfies(ex -> {
                     var errores = ((ApplicationValidationException) ex).getValidationResult().getErrores();
-                    assertThat(errores).hasSize(3);
+                    assertThat(errores).extracting("codigoError")
+                            .containsExactly(FichasCodes.RevisionItem.ASESOR_FICHA_REQUERIDO);
+                    assertThat(errores).extracting("campo")
+                            .containsExactly(FichasFields.RevisionItem.ASESOR_FICHA);
+                });
+    }
+
+    @Test
+    void debeAcumularLosDosErrores_cuandoTodosLosCamposSonInvalidos() {
+        // Act & Assert — Notification Pattern: no aborta en el primero
+        assertThatThrownBy(() -> AgregarRevisionItemCommand.crear(null, null))
+                .isInstanceOf(ApplicationValidationException.class)
+                .satisfies(ex -> {
+                    var errores = ((ApplicationValidationException) ex).getValidationResult().getErrores();
+                    assertThat(errores).hasSize(2);
                     assertThat(errores).extracting("codigoError").containsExactlyInAnyOrder(
                             FichasCodes.RevisionItem.ITEM_REQUERIDO,
-                            FichasCodes.RevisionItem.ESTADO_REVISION_REQUERIDO,
                             FichasCodes.RevisionItem.ASESOR_FICHA_REQUERIDO);
                     assertThat(errores).extracting("campo").containsExactlyInAnyOrder(
                             FichasFields.RevisionItem.ITEM,
-                            FichasFields.RevisionItem.ESTADO_REVISION,
                             FichasFields.RevisionItem.ASESOR_FICHA);
                 });
     }

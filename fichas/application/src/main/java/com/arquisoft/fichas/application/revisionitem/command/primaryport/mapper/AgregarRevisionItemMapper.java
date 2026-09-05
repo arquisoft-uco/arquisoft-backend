@@ -9,7 +9,7 @@ public final class AgregarRevisionItemMapper {
     private AgregarRevisionItemMapper() {}
 
     public static AgregacionRevisionItemDomain toDomain(AgregarRevisionItemCommand command) {
-        var revisionItem = RevisionItemDomain.crear(command.item(), command.estadoRevision());
+        var revisionItem = RevisionItemDomain.crear(command.item());
         return AgregacionRevisionItemDomain.crear(revisionItem, command.asesorFicha());
     }
 }

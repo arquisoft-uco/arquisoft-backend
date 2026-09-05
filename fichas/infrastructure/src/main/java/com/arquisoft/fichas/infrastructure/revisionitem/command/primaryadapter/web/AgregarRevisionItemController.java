@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.infrastructure.revisionitem.command.primaryadapter.web;
 
 import com.arquisoft.fichas.application.revisionitem.command.primaryport.interactor.AgregarRevisionItemInteractor;
-import com.arquisoft.fichas.infrastructure.revisionitem.command.primaryadapter.web.dto.AgregarRevisionItemRequestDTO;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.primaryadapter.web.dto.AgregarRevisionItemResponseDTO;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.primaryadapter.web.mapper.AgregarRevisionItemRequestMapper;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -24,7 +23,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -61,13 +59,12 @@ public class AgregarRevisionItemController {
     })
     public ResponseEntity<AgregarRevisionItemResponseDTO> agregar(
             @PathVariable UUID itemId,
-            @RequestBody AgregarRevisionItemRequestDTO dto,
             @AuthenticationPrincipal Jwt jwt) {
 
         var asesorFichaId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
 
         UUID id = agregarRevisionItemInteractor.ejecutar(
-                AgregarRevisionItemRequestMapper.toCommand(dto, itemId, asesorFichaId));
+                AgregarRevisionItemRequestMapper.toCommand(itemId, asesorFichaId));
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

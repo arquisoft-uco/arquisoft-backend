@@ -30,7 +30,7 @@ class AgregarRevisionItemInteractorImplTest {
     void debeDelegarEnElUseCase_cuandoEjecuta() {
         // Arrange
         var command = AgregarRevisionItemCommand.crear(
-                UUID.randomUUID(), "NUEVA", UUID.randomUUID());
+                UUID.randomUUID(), UUID.randomUUID());
         UUID revisionItemId = UUID.randomUUID();
         when(agregarRevisionItemUseCase.ejecutar(any(AgregacionRevisionItemDomain.class)))
                 .thenReturn(revisionItemId);
@@ -47,7 +47,7 @@ class AgregarRevisionItemInteractorImplTest {
         // Arrange
         UUID item = UUID.randomUUID();
         UUID asesorFicha = UUID.randomUUID();
-        var command = AgregarRevisionItemCommand.crear(item, "NUEVA", asesorFicha);
+        var command = AgregarRevisionItemCommand.crear(item, asesorFicha);
         when(agregarRevisionItemUseCase.ejecutar(any(AgregacionRevisionItemDomain.class)))
                 .thenReturn(UUID.randomUUID());
 
