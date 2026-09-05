@@ -13,6 +13,7 @@ rutas:
       asesor: /asesor
       estados-ficha: /estados-ficha
       tipos-item: /tipos-item
+      estados-evaluacion: /estados-evaluacion
       items: /{fichaPerfilId}/items
       items-estudiante: /{fichaPerfilId}/items/estudiante
       item-por-id: /items/{itemId}
