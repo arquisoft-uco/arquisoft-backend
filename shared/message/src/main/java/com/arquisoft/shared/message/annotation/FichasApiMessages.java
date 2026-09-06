@@ -180,6 +180,18 @@ public final class FichasApiMessages {
                 "Permite al representante del comité de currículum registrar una nueva evaluación sobre una ficha de perfil existente.";
         public static final String REGISTRAR_RESP_201 = "Evaluación creada exitosamente";
         public static final String REGISTRAR_RESP_400 = "Ficha no encontrada, representante no encontrado, evaluación duplicada o datos inválidos";
+
+        public static final String CONSULTAR_REPRESENTANTE_SUMMARY =
+                "Consultar información de evaluación de ficha de perfil generada";
+        public static final String CONSULTAR_REPRESENTANTE_DESCRIPTION =
+                "Devuelve las evaluaciones que el representante del comité de currículum autenticado ha generado "
+                        + "sobre la ficha de perfil indicada.";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_200 =
+                "Listado de evaluaciones de la ficha generadas por el representante (puede ser vacío)";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_400 =
+                "El identificador de ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
+                "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-representante:view";
     }
 
     public static final class EstadoEvaluacionFicha {
