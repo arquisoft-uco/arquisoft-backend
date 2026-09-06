@@ -303,7 +303,12 @@ las dos claves de `PlantillaKey` con su texto de catálogo.
 - **Sin FKs cruzadas hacia la base de otro contexto** — son bases distintas, la FK no es siquiera
   posible. Si necesitas datos de otro contexto, modela una **tabla réplica local** poblada por
   eventos AMQP: el patrón real de `fichas` (`asesor_ficha`, `estudiante`). El MER documenta la
-  relación lógica; el backend la resuelve con réplica + evento.
+  relación lógica; el backend la resuelve con réplica + evento. **Excepción acotada:** si el dato es
+  solo una precondición de escritura ("¿esto es así ahora?"), el contexto no lo necesita para nada
+  más, y el otro contexto ya expone la consulta → *Consulta síncrona entre contextos* (puerto en
+  `command/secondaryport/`, adaptador en `.../secondaryadapter/webclient/` que habla por
+  `shared:web-client`, la `Rule` decide). Ver `arquisoft-arquitectura` → *Consultas síncronas entre
+  contextos*. Hasta que exista `shared:web-client`, el adaptador va stub (documentado en *Desviaciones*).
 
 ## 12. Casos de Prueba Sugeridos
 {Ver "Presupuesto de tests" y bancos de casos abajo}
@@ -474,6 +479,13 @@ skills:
    Si hay modificación o baja, cubre las cuatro piezas ya decididas: `ocurrido_en` persistido con
    descarte de eventos viejos, baja lógica en vez de `DELETE`, lápida, y nada de cascada entre
    contextos.
+4. **¿El plan solo necesita un dato de otro contexto para un chequeo puntual de escritura** ("¿el
+   destinatario es el asesor asignado?", "¿el proyecto está activo?"), y el contexto **no lo usa
+   para nada más**? Entonces **no** es réplica + evento: es una *Consulta síncrona entre contextos*
+   (`arquisoft-arquitectura`). Puerto en `command/secondaryport/` que devuelve `boolean`, `Finder`,
+   adaptador en `.../secondaryadapter/webclient/` vía `shared:web-client`, la `Rule` decide. Si
+   `shared:web-client` aún no existe, el plan marca el adaptador como **stub** en "Fuera de alcance"
+   con checklist de activación, y la `Rule` no rechaza nada hasta entonces.
 
 **Un evento nuevo cuesta un `@Bean`, no cuatro.** Las cuatro declaraciones —cola, `.dead` y los dos
 bindings— salen de una sola llamada a `ColaEvento.declarar(...)` devuelta como `Declarables`; sin el
