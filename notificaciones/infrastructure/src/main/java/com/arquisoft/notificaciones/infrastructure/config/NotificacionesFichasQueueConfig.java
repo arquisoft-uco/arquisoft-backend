@@ -23,6 +23,9 @@ public class NotificacionesFichasQueueConfig {
     public static final String ESTUDIANTES_ASIGNADOS_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Fichas.ESTUDIANTES_FICHA_PERFIL_ASIGNADOS;
 
+    public static final String REVISION_ITEM_AGREGADO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Fichas.REVISION_ITEM_AGREGADO;
+
     @Bean
     public Declarables notificacionesAsesorCambiadoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
@@ -52,6 +55,17 @@ public class NotificacionesFichasQueueConfig {
         return ColaEvento.declarar(
                 ESTUDIANTES_ASIGNADOS_QUEUE,
                 EventTopics.Fichas.ESTUDIANTES_FICHA_PERFIL_ASIGNADOS,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesRevisionItemAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REVISION_ITEM_AGREGADO_QUEUE,
+                EventTopics.Fichas.REVISION_ITEM_AGREGADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

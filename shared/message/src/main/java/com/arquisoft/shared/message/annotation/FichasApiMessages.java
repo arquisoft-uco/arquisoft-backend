@@ -157,6 +157,26 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_RESP_403 = "Sin el permiso para consultar estudiantes como coordinador";
     }
 
+    public static final class RevisionItem {
+
+        private RevisionItem() {}
+
+        public static final String TAG_NAME = "Revisiones de Ítem";
+        public static final String TAG_DESCRIPTION = "Gestión de revisiones sobre ítems de fichas de perfil";
+
+        public static final String AGREGAR_SUMMARY = "Agregar revisión a un ítem";
+        public static final String AGREGAR_DESCRIPTION =
+                "Permite al asesor asignado a la ficha registrar una revisión sobre un ítem de esa "
+                        + "ficha. El estado inicial de la revisión siempre es 'NUEVA'; el resto de "
+                        + "cambios de estado los hace el estudiante en otro comando.";
+        public static final String AGREGAR_RESP_201 = "Revisión agregada exitosamente — retorna el UUID asignado";
+        public static final String AGREGAR_RESP_400 = "Identificador de ítem inválido";
+        public static final String AGREGAR_RESP_403 = "Sin permiso para agregar revisiones";
+        public static final String AGREGAR_RESP_422 =
+                "Ítem no encontrado, ficha no asesorada por el usuario autenticado o revisión ya "
+                        + "existente";
+    }
+
     public static final class EstudianteFichaPerfil {
 
         private EstudianteFichaPerfil() {}

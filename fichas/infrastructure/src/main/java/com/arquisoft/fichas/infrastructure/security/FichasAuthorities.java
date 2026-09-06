@@ -28,6 +28,8 @@ public final class FichasAuthorities {
 
     public static final String ESTADO_FICHA_VIEW = "fichas:estado-ficha:view";
 
+    public static final String REVISION_ITEM_CREATE = "fichas:revision-item:create";
+
     public static final String TIPO_ITEM_VIEW = "fichas:tipo-item:view";
 
     public static final class Expresiones {
@@ -75,5 +77,7 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + ESTADO_FICHA_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_TIPO_ITEM_VIEW =
                 HAS_AUTHORITY_INICIO + TIPO_ITEM_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_REVISION_ITEM_CREATE =
+                HAS_AUTHORITY_INICIO + REVISION_ITEM_CREATE + HAS_AUTHORITY_FIN;
     }
 }
