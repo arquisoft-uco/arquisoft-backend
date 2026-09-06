@@ -6,7 +6,6 @@ import com.arquisoft.seguridad.application.auth.command.secondaryport.Autenticac
 import com.arquisoft.seguridad.application.auth.command.usecase.RefrescarTokenUseCase;
 import com.arquisoft.seguridad.domain.auth.TokenDomain;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -20,11 +19,11 @@ public class RefrescarTokenUseCaseImpl implements RefrescarTokenUseCase {
 
     @Override
     public RefrescoTokenResult ejecutar(TokenDomain entrada) {
-        logger.debug(Mensajes.obtener(TokenKey.LOG_REFRESH_DEBUG));
+        logger.debug(TokenKey.LOG_REFRESH_DEBUG);
 
         var credenciales = autenticacionOutputPort.refrescar(entrada.getValor());
 
-        logger.info(Mensajes.obtener(TokenKey.LOG_REFRESH_EXITOSO));
+        logger.info(TokenKey.LOG_REFRESH_EXITOSO);
 
         return RefrescoTokenResultMapper.toResult(credenciales);
     }

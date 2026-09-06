@@ -2,7 +2,6 @@ package com.arquisoft.fichas.infrastructure.minio.primaryadapter.web;
 
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
 import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.minio.MinioStorageClient;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.ApiCodes;
@@ -58,7 +57,7 @@ public class MinioGuiaController {
             @Parameter(description = FichasApiMessages.MinioGuia.PARAM_KEY)
             @RequestParam String key) {
 
-        logger.debug(Mensajes.obtener(MinioGuiaKey.LOG_UPLOAD_URL), bucket, key);
+        logger.debug(MinioGuiaKey.LOG_UPLOAD_URL, bucket, key);
         var url = minioStorageClient.generateUploadPresignedUrl(bucket, key);
         return ResponseEntity.ok(Map.of(
                 CAMPO_BUCKET, bucket,
@@ -82,7 +81,7 @@ public class MinioGuiaController {
             @Parameter(description = FichasApiMessages.MinioGuia.PARAM_KEY)
             @RequestParam String key) {
 
-        logger.debug(Mensajes.obtener(MinioGuiaKey.LOG_DOWNLOAD_URL), bucket, key);
+        logger.debug(MinioGuiaKey.LOG_DOWNLOAD_URL, bucket, key);
         var url = minioStorageClient.generateDownloadPresignedUrl(bucket, key);
         return ResponseEntity.ok(Map.of(
                 CAMPO_BUCKET, bucket,
@@ -124,7 +123,7 @@ public class MinioGuiaController {
             @Parameter(description = FichasApiMessages.MinioGuia.PARAM_KEY)
             @RequestParam String key) {
 
-        logger.debug(Mensajes.obtener(MinioGuiaKey.LOG_DELETE), bucket, key);
+        logger.debug(MinioGuiaKey.LOG_DELETE, bucket, key);
         minioStorageClient.deleteObject(bucket, key);
         return ResponseEntity.noContent().build();
     }

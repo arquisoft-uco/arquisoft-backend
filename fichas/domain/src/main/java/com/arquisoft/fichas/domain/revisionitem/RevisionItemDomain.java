@@ -25,7 +25,20 @@ public final class RevisionItemDomain {
 
     private RevisionItemDomain() {}
 
-    public static RevisionItemDomain crear(UUID item, String estadoRevision) {
+    public static RevisionItemDomain crear(UUID item) {
+        var revisionItem = new RevisionItemDomain();
+        var result = new ValidationResult();
+
+        revisionItem.setId();
+        revisionItem.setItem(item, result);
+        revisionItem.setEstadoRevisionInicial();
+        revisionItem.setFechaCreacion();
+
+        result.lanzarSiTieneErrores();
+        return revisionItem;
+    }
+
+    public static RevisionItemDomain crearConEstado(UUID item, String estadoRevision) {
         var revisionItem = new RevisionItemDomain();
         var result = new ValidationResult();
 
@@ -49,6 +62,10 @@ public final class RevisionItemDomain {
             return;
         }
         this.item = item;
+    }
+
+    private void setEstadoRevisionInicial() {
+        this.estadoRevision = EstadoRevision.NUEVA;
     }
 
     private void setEstadoRevision(String estadoRevision, ValidationResult result) {

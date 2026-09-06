@@ -14,9 +14,7 @@ public enum FichaPerfilKey implements ClaveMensaje {
     ERROR_ESTADO_TERMINAL("fichas.dominio.fichaperfil.error.estado-terminal", 1),
     LOG_REGISTRANDO("fichas.aplicacion.fichaperfil.log.registrando", 2),
     LOG_VERIFICACION_PREVIA("fichas.aplicacion.fichaperfil.log.verificacion-previa", 3),
-    LOG_VALIDACION_SUPERADA("fichas.aplicacion.fichaperfil.log.validacion-superada", 1),
     LOG_REGISTRADA("fichas.aplicacion.fichaperfil.log.registrada", 1),
-    LOG_REGISTRO_COMPLETADO("fichas.aplicacion.fichaperfil.log.registro-completado", 2),
     LOG_MODIFICANDO("fichas.aplicacion.fichaperfil.log.modificando", 2),
     LOG_VERIFICACION_MODIFICAR("fichas.aplicacion.fichaperfil.log.verificacion-modificar", 2),
     LOG_MODIFICADA("fichas.aplicacion.fichaperfil.log.modificada", 1),
@@ -25,6 +23,8 @@ public enum FichaPerfilKey implements ClaveMensaje {
     LOG_ASESOR_CAMBIADO("fichas.aplicacion.fichaperfil.log.asesor-cambiado", 2),
     LOG_CONSULTANDO("fichas.aplicacion.fichaperfil.log.consultando", 4),
     LOG_CONSULTA_COMPLETADA("fichas.aplicacion.fichaperfil.log.consulta-completada", 3),
+    LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.fichaperfil.log.consultando-estudiante", 2),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.fichaperfil.log.consulta-estudiante-completada", 1),
     LOG_GUARDADA("fichas.infraestructura.fichaperfil.log.guardada", 1);
 
     private final String clave;

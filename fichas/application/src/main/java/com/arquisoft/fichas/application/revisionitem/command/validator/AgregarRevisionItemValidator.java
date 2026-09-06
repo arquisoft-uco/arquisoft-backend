@@ -6,6 +6,6 @@ import java.util.UUID;
 
 public interface AgregarRevisionItemValidator {
 
-    void validar(AgregacionRevisionItemDomain entrada, boolean itemExiste, UUID fichaPerfil, boolean esPropietario,
+    void validar(AgregacionRevisionItemDomain entrada, boolean itemExiste, UUID fichaPerfil, UUID asesorFicha,
                  long cantidadRevisiones);
 }

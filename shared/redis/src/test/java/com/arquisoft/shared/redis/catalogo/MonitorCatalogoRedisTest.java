@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class MonitorCatalogoRedisTest {
 
-    private static final int DECLARADAS = 221;
+    private static final int DECLARADAS = 257;
 
     @Mock
     private CatalogoMensajesRedis catalogo;
@@ -82,6 +82,22 @@ class MonitorCatalogoRedisTest {
         when(catalogo.hayConexion()).thenReturn(true);
         when(catalogo.recargar())
                 .thenReturn(new ResultadoCarga(DECLARADAS - 1, DECLARADAS, List.of("app.dominio.x.error.y"), List.of()));
+
+        // Act
+        monitor.reintentar();
+
+        // Assert
+        verify(catalogo, never()).marcarSano();
+    }
+
+    @Test
+    @DisplayName("sigue degradado cuando la recarga trae una aridad inconsistente")
+    void debeSeguirDegradado_cuandoLaRecargaEsInconsistente() {
+        // Arrange
+        when(catalogo.estaDegradado()).thenReturn(true);
+        when(catalogo.hayConexion()).thenReturn(true);
+        when(catalogo.recargar()).thenReturn(
+                new ResultadoCarga(DECLARADAS, DECLARADAS, List.of(), List.of("app.dominio.x.error.y")));
 
         // Act
         monitor.reintentar();

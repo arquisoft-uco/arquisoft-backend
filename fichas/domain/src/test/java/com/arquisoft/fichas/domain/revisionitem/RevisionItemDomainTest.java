@@ -14,12 +14,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class RevisionItemDomainTest {
 
     @Test
-    void debeConstruirRevisionItem_cuandoDatosValidos() {
-        // Arrange
+    void debeConstruirRevisionItemConEstadoNueva_cuandoDatosValidos() {
+        // Arrange — el asesor la crea; el resto de cambios de estado son del estudiante,
+        // así que el estado inicial no se recibe, se fija internamente en 'NUEVA'.
         UUID item = UUID.randomUUID();
 
         // Act
-        RevisionItemDomain revisionItem = RevisionItemDomain.crear(item, "NUEVA");
+        RevisionItemDomain revisionItem = RevisionItemDomain.crear(item);
 
         // Assert
         assertThat(revisionItem.getId()).isNotNull();
@@ -31,50 +32,62 @@ class RevisionItemDomainTest {
     @Test
     void debeLanzarExcepcion_cuandoItemNulo() {
         // Act & Assert
-        assertThatThrownBy(() -> RevisionItemDomain.crear(null, "NUEVA"))
+        assertThatThrownBy(() -> RevisionItemDomain.crear(null))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining(FichasFields.RevisionItem.ITEM);
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoEstadoRevisionEnBlanco() {
+    void debeConstruirRevisionItem_cuandoCrearConEstadoYDatosValidos() {
+        // Arrange
+        UUID item = UUID.randomUUID();
+
+        // Act
+        RevisionItemDomain revisionItem = RevisionItemDomain.crearConEstado(item, "EN_PROGRESO");
+
+        // Assert
+        assertThat(revisionItem.getEstadoRevision()).isEqualTo(EstadoRevision.EN_PROGRESO);
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoCrearConEstadoYEstadoRevisionEnBlanco() {
         // Arrange
         UUID item = UUID.randomUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> RevisionItemDomain.crear(item, "   "))
+        assertThatThrownBy(() -> RevisionItemDomain.crearConEstado(item, "   "))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining(FichasFields.RevisionItem.ESTADO_REVISION);
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoEstadoRevisionExcedeLongitudMaxima() {
+    void debeLanzarExcepcion_cuandoCrearConEstadoYEstadoRevisionExcedeLongitudMaxima() {
         // Arrange
         UUID item = UUID.randomUUID();
         String estadoDe51Caracteres = "A".repeat(51);
 
         // Act & Assert
-        assertThatThrownBy(() -> RevisionItemDomain.crear(item, estadoDe51Caracteres))
+        assertThatThrownBy(() -> RevisionItemDomain.crearConEstado(item, estadoDe51Caracteres))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining(FichasCodes.RevisionItem.ESTADO_REVISION_DEMASIADO_LARGO);
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoEstadoRevisionNoPerteneceAlCatalogo() {
+    void debeLanzarExcepcion_cuandoCrearConEstadoYEstadoRevisionNoPerteneceAlCatalogo() {
         // Arrange
         UUID item = UUID.randomUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> RevisionItemDomain.crear(item, "ESTADO_DESCONOCIDO"))
+        assertThatThrownBy(() -> RevisionItemDomain.crearConEstado(item, "ESTADO_DESCONOCIDO"))
                 .isInstanceOf(DomainValidationException.class)
                 .hasMessageContaining(FichasCodes.RevisionItem.ESTADO_REVISION_NO_ENCONTRADO)
                 .hasMessageContaining("ESTADO_DESCONOCIDO");
     }
 
     @Test
-    void debeAcumularAmbosErrores_cuandoItemYEstadoRevisionSonInvalidos() {
+    void debeAcumularAmbosErrores_cuandoCrearConEstadoYItemYEstadoRevisionSonInvalidos() {
         // Act & Assert — Notification Pattern: una sola excepción con los dos errores
-        assertThatThrownBy(() -> RevisionItemDomain.crear(null, ""))
+        assertThatThrownBy(() -> RevisionItemDomain.crearConEstado(null, ""))
                 .isInstanceOf(DomainValidationException.class)
                 .satisfies(ex -> {
                     var errores = ((DomainValidationException) ex).getValidationResult().getErrores();

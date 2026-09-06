@@ -17,7 +17,7 @@ class AgregacionRevisionItemDomainTest {
         // Arrange
         UUID item = UUID.randomUUID();
         UUID asesorFicha = UUID.randomUUID();
-        var revisionItem = RevisionItemDomain.crear(item, "NUEVA");
+        var revisionItem = RevisionItemDomain.crear(item);
 
         // Act
         var agregacion = AgregacionRevisionItemDomain.crear(revisionItem, asesorFicha);
@@ -39,7 +39,7 @@ class AgregacionRevisionItemDomainTest {
     @Test
     void debeLanzarExcepcion_cuandoAsesorFichaNulo() {
         // Arrange
-        var revisionItem = RevisionItemDomain.crear(UUID.randomUUID(), "NUEVA");
+        var revisionItem = RevisionItemDomain.crear(UUID.randomUUID());
 
         // Act & Assert
         assertThatThrownBy(() -> AgregacionRevisionItemDomain.crear(revisionItem, null))

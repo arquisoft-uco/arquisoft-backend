@@ -12,7 +12,7 @@ class RevisionItemMapperTest {
     @Test
     void debeMapearDominioAEntidad_cuandoSeConvierte() {
         // Arrange
-        var revisionItem = RevisionItemDomain.crear(UUID.randomUUID(), "NUEVA");
+        var revisionItem = RevisionItemDomain.crear(UUID.randomUUID());
 
         // Act
         var entity = RevisionItemMapper.toEntity(revisionItem);

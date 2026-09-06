@@ -35,6 +35,8 @@ public final class FichasCodes {
         public static final String ITEM_ID_REQUERIDO = "ITEM_ID_REQUERIDO";
         public static final String ESTUDIANTE_REQUERIDO = "ITEM_ESTUDIANTE_REQUERIDO";
         public static final String FICHA_PERFIL_ID_REQUERIDO = "ITEM_FICHA_PERFIL_ID_REQUERIDO";
+        public static final String ASESOR_FICHA_REQUERIDO = "ITEM_ASESOR_FICHA_REQUERIDO";
+        public static final String REPRESENTANTE_COMITE_REQUERIDO = "ITEM_REPRESENTANTE_COMITE_REQUERIDO";
         public static final String TIPO_ITEM_REQUERIDO = "ITEM_TIPO_ITEM_REQUERIDO";
         public static final String CONTENIDO_REQUERIDO = "ITEM_CONTENIDO_REQUERIDO";
         public static final String CONTENIDO_DEMASIADO_LARGO = "ITEM_CONTENIDO_DEMASIADO_LARGO";

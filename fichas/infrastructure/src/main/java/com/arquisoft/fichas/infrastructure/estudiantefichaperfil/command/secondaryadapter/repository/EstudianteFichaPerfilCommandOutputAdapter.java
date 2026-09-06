@@ -1,14 +1,15 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.ContactoEstudianteEntity;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.mapper.EstudianteFichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -21,7 +22,7 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     @Override
     public void vincularEstudiante(EstudianteFichaPerfilEntity relacion) {
         repository.save(EstudianteFichaPerfilJpaMapper.toJpaEntity(relacion));
-        logger.debug(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_VINCULO_GUARDADO),
+        logger.debug(EstudianteFichaPerfilKey.LOG_VINCULO_GUARDADO,
                 relacion.fichaPerfilId(), relacion.estudianteId());
     }
 
@@ -38,7 +39,12 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     @Override
     public void desvincularEstudiante(UUID fichaPerfilId, UUID estudianteId) {
         repository.deleteByFichaPerfilIdAndEstudianteId(fichaPerfilId, estudianteId);
-        logger.debug(Mensajes.obtener(EstudianteFichaPerfilKey.LOG_VINCULO_ELIMINADO),
+        logger.debug(EstudianteFichaPerfilKey.LOG_VINCULO_ELIMINADO,
                 fichaPerfilId, estudianteId);
+    }
+
+    @Override
+    public List<ContactoEstudianteEntity> obtenerContactosDeFicha(UUID fichaPerfilId) {
+        return repository.findContactosByFichaPerfilId(fichaPerfilId);
     }
 }

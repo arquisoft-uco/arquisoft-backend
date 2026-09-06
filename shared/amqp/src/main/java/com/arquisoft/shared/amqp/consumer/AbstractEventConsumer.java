@@ -1,5 +1,6 @@
 package com.arquisoft.shared.amqp.consumer;
 
+import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -8,6 +9,7 @@ import com.arquisoft.shared.tracing.infrastructure.traza.propagacion.TrazaHeader
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
+import org.springframework.dao.DataAccessException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -43,9 +45,7 @@ public abstract class AbstractEventConsumer {
             try {
                 handler.handle();
             } catch (Exception ex) {
-                log.error(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_A_DLQ),
-                        deliveryTag, ex.getMessage(), ex);
-                channel.basicNack(deliveryTag, false, false);
+                rechazar(message, channel, deliveryTag, ex);
                 return;
             }
 
@@ -54,6 +54,40 @@ public abstract class AbstractEventConsumer {
         }
         // Solo se alcanza si handler.handle() no lanzó excepción.
         channel.basicAck(deliveryTag, false);
+    }
+
+    // Un payload que no deserializa o que viola una regla de negocio fallara igual en el
+    // siguiente intento: reencolarlo solo bloquea la cola. Una caida de base de datos o del
+    // proveedor externo, en cambio, suele haberse ido para cuando el mensaje vuelve. De ahi que
+    // solo el fallo transitorio se reencole, y una sola vez — isRedelivered() acota el ciclo sin
+    // necesidad de llevar un contador propio en las cabeceras.
+    private void rechazar(Message message, Channel channel, long deliveryTag, Exception ex)
+            throws IOException {
+
+        boolean transitorio = esTransitorio(ex);
+
+        if (transitorio && !Boolean.TRUE.equals(message.getMessageProperties().isRedelivered())) {
+            log.warn(Mensajes.obtener(MensajeriaKey.LOG_EVENTO_REENCOLADO),
+                    deliveryTag, ex.getMessage(), ex);
+            channel.basicNack(deliveryTag, false, true);
+            return;
+        }
+
+        var clave = transitorio
+                ? MensajeriaKey.LOG_EVENTO_A_DLQ_TRAS_REINTENTO
+                : MensajeriaKey.LOG_EVENTO_A_DLQ;
+        log.error(Mensajes.obtener(clave), deliveryTag, ex.getMessage(), ex);
+        channel.basicNack(deliveryTag, false, false);
+    }
+
+    private static boolean esTransitorio(Throwable ex) {
+        for (var causa = ex; causa != null && causa != causa.getCause();
+                causa = causa.getCause()) {
+            if (causa instanceof InfrastructureException || causa instanceof DataAccessException) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected String header(Message message, String headerName) {

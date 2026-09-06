@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.revisionitem.command.usecase.impl;
 
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.ContactosDeFichaFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilExisteFinder;
@@ -8,10 +9,10 @@ import com.arquisoft.fichas.application.revisionitem.command.secondaryport.Revis
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.mapper.RevisionItemMapper;
 import com.arquisoft.fichas.application.revisionitem.command.usecase.AgregarRevisionItemUseCase;
 import com.arquisoft.fichas.application.revisionitem.command.validator.AgregarRevisionItemValidator;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.revisionitem.AgregacionRevisionItemDomain;
 import com.arquisoft.fichas.domain.revisionitem.event.RevisionItemAgregadoEvent;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilUUID;
@@ -28,6 +29,7 @@ public class AgregarRevisionItemUseCaseImpl implements AgregarRevisionItemUseCas
     private final FichaPerfilDelItemFinder fichaPerfilDelItemFinder;
     private final FichaPerfilFinder fichaPerfilFinder;
     private final RevisionesDelItemFinder revisionesDelItemFinder;
+    private final ContactosDeFichaFinder contactosDeFichaFinder;
     private final AgregarRevisionItemValidator agregarRevisionItemValidator;
     private final RevisionItemOutputPort revisionItemOutputPort;
     private final EventPublisher eventPublisher;
@@ -35,19 +37,23 @@ public class AgregarRevisionItemUseCaseImpl implements AgregarRevisionItemUseCas
 
     @Override
     public UUID ejecutar(AgregacionRevisionItemDomain entrada) {
+        logger.info(RevisionItemKey.LOG_AGREGANDO,
+                entrada.getItem(), entrada.getRevisionItem().getEstadoRevision().getId());
+
         boolean itemExiste = itemFichaPerfilExisteFinder.obtener(entrada.getItem());
 
-        var fichaPerfilDelItem = fichaPerfilDelItemFinder.obtener(entrada.getItem());
-        UUID fichaPerfil = fichaPerfilDelItem.orElse(UtilUUID.obtenerUUIDPorDefecto());
+        UUID fichaPerfil = fichaPerfilDelItemFinder.obtener(entrada.getItem())
+                .orElse(UtilUUID.obtenerUUIDPorDefecto());
 
-        boolean esPropietario = fichaPerfilDelItem
-                .flatMap(fichaPerfilFinder::obtener)
-                .map(ficha -> ficha.getAsesorFicha().equals(entrada.getAsesorFicha()))
-                .orElse(false);
+        var ficha = fichaPerfilFinder.obtener(fichaPerfil).orElse(FichaPerfilDomain.VACIO);
 
         long cantidadRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());
 
-        agregarRevisionItemValidator.validar(entrada, itemExiste, fichaPerfil, esPropietario, cantidadRevisiones);
+        logger.debug(RevisionItemKey.LOG_VERIFICACION_AGREGAR,
+                itemExiste, ficha.getAsesorFicha(), cantidadRevisiones);
+
+        agregarRevisionItemValidator.validar(entrada, itemExiste, fichaPerfil, ficha.getAsesorFicha(),
+                cantidadRevisiones);
 
         var revisionItem = entrada.getRevisionItem();
         revisionItemOutputPort.registrarRevision(RevisionItemMapper.toEntity(revisionItem));
@@ -55,9 +61,11 @@ public class AgregarRevisionItemUseCaseImpl implements AgregarRevisionItemUseCas
         eventPublisher.publish(new RevisionItemAgregadoEvent(
                 revisionItem.getId(), revisionItem.getItem(),
                 revisionItem.getEstadoRevision().getId(), revisionItem.getEstadoRevision().getNombre(),
-                revisionItem.getFechaCreacion()));
+                revisionItem.getFechaCreacion(),
+                ficha.getTituloProyecto(),
+                contactosDeFichaFinder.obtener(fichaPerfil)));
 
-        logger.info(Mensajes.obtener(RevisionItemKey.LOG_AGREGADO), revisionItem.getId(), revisionItem.getItem());
+        logger.info(RevisionItemKey.LOG_AGREGADO, revisionItem.getId(), revisionItem.getItem());
 
         return revisionItem.getId();
     }

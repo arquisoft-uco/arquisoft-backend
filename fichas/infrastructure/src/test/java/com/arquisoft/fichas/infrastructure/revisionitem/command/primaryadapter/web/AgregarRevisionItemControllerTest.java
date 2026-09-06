@@ -2,7 +2,6 @@ package com.arquisoft.fichas.infrastructure.revisionitem.command.primaryadapter.
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.fichas.application.revisionitem.command.primaryport.interactor.AgregarRevisionItemInteractor;
-import com.arquisoft.fichas.domain.estadorevision.exception.EstadoRevisionNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPerteneceAsesorException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemYaExisteException;
@@ -15,7 +14,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -64,15 +62,9 @@ class AgregarRevisionItemControllerTest {
     private static final UUID ITEM_ID = UUID.randomUUID();
     private static final UUID ASESOR_ID = UUID.randomUUID();
 
-    private static final String BODY_VALIDO = """
-            {
-              "estadoRevision": "NUEVA"
-            }
-            """;
-
     @Test
     void debe201_cuandoPeticionValida() throws Exception {
-        // Arrange
+        // Arrange — sin body: el estado inicial ('NUEVA') se fija en el dominio, no lo envía el cliente
         UUID revisionId = UUID.randomUUID();
         when(agregarRevisionItemInteractor.ejecutar(any())).thenReturn(revisionId);
 
@@ -80,38 +72,15 @@ class AgregarRevisionItemControllerTest {
         mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(revisionId.toString()));
     }
 
     @Test
-    void debe400_cuandoEstadoRevisionEnBlanco() throws Exception {
-        // Arrange
-        String bodyInvalido = """
-                {
-                  "estadoRevision": ""
-                }
-                """;
-
-        // Act & Assert
-        mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(bodyInvalido))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void debe401_cuandoNoAutenticado() throws Exception {
         // Act & Assert
-        mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
+        mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -121,9 +90,7 @@ class AgregarRevisionItemControllerTest {
         mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority("estudiante:perfil:read")))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
+                                .authorities(new SimpleGrantedAuthority("estudiante:perfil:read"))))
                 .andExpect(status().isForbidden());
     }
 
@@ -137,9 +104,7 @@ class AgregarRevisionItemControllerTest {
         mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.ItemFichaPerfil.ITEM_NO_ENCONTRADO));
     }
@@ -154,9 +119,7 @@ class AgregarRevisionItemControllerTest {
         mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.FichaPerfil.FICHA_NO_PERTENECE_ASESOR));
     }
@@ -171,27 +134,8 @@ class AgregarRevisionItemControllerTest {
         mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
                                 .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
+                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE))))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.errorCode").value(FichasCodes.RevisionItem.YA_EXISTE));
-    }
-
-    @Test
-    void debe422_cuandoEstadoRevisionNoEncontrado() throws Exception {
-        // Arrange
-        when(agregarRevisionItemInteractor.ejecutar(any()))
-                .thenThrow(new EstadoRevisionNoEncontradoException("ESTADO_INVALIDO"));
-
-        // Act & Assert
-        mockMvc.perform(post("/fichas-perfil/items/{itemId}/revisiones", ITEM_ID)
-                        .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(j -> j.subject(ASESOR_ID.toString()))
-                                .authorities(new SimpleGrantedAuthority(FichasAuthorities.REVISION_ITEM_CREATE)))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.errorCode").value(FichasCodes.RevisionItem.ESTADO_REVISION_NO_ENCONTRADO));
     }
 }

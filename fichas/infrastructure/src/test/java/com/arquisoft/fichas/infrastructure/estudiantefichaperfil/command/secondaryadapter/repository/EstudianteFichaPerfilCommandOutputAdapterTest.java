@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.domain.estudiantefichaperfil.EstudianteFichaPerfilDomain;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.ContactoEstudianteEntity;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.mapper.EstudianteFichaPerfilMapper;
 import com.arquisoft.shared.logger.AppLogger;
@@ -94,6 +95,22 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
 
         // Assert
         assertThat(resultado).isEqualTo(2L);
+    }
+
+    @Test
+    void debeRetornarLosContactos_cuandoObtenerContactosDeFicha() {
+        // Arrange
+        UUID fichaId = UUID.randomUUID();
+        List<ContactoEstudianteEntity> contactos = List.of(
+                new ContactoEstudianteEntity("Ana Gomez", "ana.gomez@soyuco.edu.co"));
+
+        when(repository.findContactosByFichaPerfilId(fichaId)).thenReturn(contactos);
+
+        // Act
+        List<ContactoEstudianteEntity> resultado = adapter.obtenerContactosDeFicha(fichaId);
+
+        // Assert
+        assertThat(resultado).isEqualTo(contactos);
     }
 
 }
