@@ -25,11 +25,11 @@ public class ModificarRevisionItemValidatorImpl implements ModificarRevisionItem
 
     @Override
     public void validar(ModificacionRevisionItemDomain entrada, long cantidadRevisiones, UUID fichaPerfil,
-                         boolean esPropietario) {
+                         UUID asesorFicha) {
 
         revisionItemExisteRule.validar(new ExistenciaRevisionItem(entrada.getItem(), cantidadRevisiones));
 
         asesorFichaPropietarioRule.validar(
-                new PropiedadAsesorFicha(fichaPerfil, entrada.getAsesorFicha(), esPropietario));
+                new PropiedadAsesorFicha(fichaPerfil, asesorFicha, entrada.getAsesorFicha()));
     }
 }

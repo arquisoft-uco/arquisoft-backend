@@ -6,6 +6,7 @@ import com.arquisoft.fichas.application.revisionitem.command.finder.RevisionesDe
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.RevisionItemOutputPort;
 import com.arquisoft.fichas.application.revisionitem.command.usecase.ModificarRevisionItemUseCase;
 import com.arquisoft.fichas.application.revisionitem.command.validator.ModificarRevisionItemValidator;
+import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.revisionitem.ModificacionRevisionItemDomain;
 import com.arquisoft.fichas.domain.revisionitem.event.RevisionItemModificadoEvent;
 import com.arquisoft.shared.logger.AppLogger;
@@ -34,15 +35,12 @@ public class ModificarRevisionItemUseCaseImpl implements ModificarRevisionItemUs
     public void ejecutar(ModificacionRevisionItemDomain entrada) {
         long cantidadRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());
 
-        var fichaPerfilDelItem = fichaPerfilDelItemFinder.obtener(entrada.getItem());
-        UUID fichaPerfil = fichaPerfilDelItem.orElse(UtilUUID.obtenerUUIDPorDefecto());
+        UUID fichaPerfil = fichaPerfilDelItemFinder.obtener(entrada.getItem())
+                .orElse(UtilUUID.obtenerUUIDPorDefecto());
 
-        boolean esPropietario = fichaPerfilDelItem
-                .flatMap(fichaPerfilFinder::obtener)
-                .map(ficha -> ficha.getAsesorFicha().equals(entrada.getAsesorFicha()))
-                .orElse(false);
+        var ficha = fichaPerfilFinder.obtener(fichaPerfil).orElse(FichaPerfilDomain.VACIO);
 
-        modificarRevisionItemValidator.validar(entrada, cantidadRevisiones, fichaPerfil, esPropietario);
+        modificarRevisionItemValidator.validar(entrada, cantidadRevisiones, fichaPerfil, ficha.getAsesorFicha());
 
         revisionItemOutputPort.actualizarEstado(entrada.getItem(), entrada.getEstadoRevision().getId());
 

@@ -7,5 +7,5 @@ import java.util.UUID;
 public interface ModificarRevisionItemValidator {
 
     void validar(ModificacionRevisionItemDomain entrada, long cantidadRevisiones, UUID fichaPerfil,
-                 boolean esPropietario);
+                 UUID asesorFicha);
 }

@@ -186,8 +186,6 @@ public final class FichasApiMessages {
         public static final String MODIFICAR_RESP_422 =
                 "No existe una revisión para el ítem, la ficha no está asesorada por el usuario autenticado, "
                         + "o el estado de revisión no es válido";
-                "Ítem no encontrado, ficha no asesorada por el usuario autenticado o revisión ya "
-                        + "existente";
     }
 
     public static final class EstudianteFichaPerfil {
