@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.destinatario.command.finder.DestinatarioDeUsuarioFinder;
@@ -11,6 +10,7 @@ import com.arquisoft.solicitudes.application.remitente.command.finder.RemitenteD
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.RemitenteOutputPort;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.mapper.RemitenteMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
+import com.arquisoft.solicitudes.application.solicitud.command.finder.DestinatarioAsignadoFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.mapper.SolicitudMapper;
@@ -20,8 +20,8 @@ import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudCambioAsesorDoma
 import com.arquisoft.solicitudes.domain.solicitud.SolicitudDomain;
 import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudCambioAsesorEnviadaEvent;
 import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
+import com.arquisoft.solicitudes.domain.solicitud.model.ConsultaAsignacionResponsable;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
-import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -40,6 +40,7 @@ public class EnviarSolicitudCambioAsesorUseCaseImpl
     private final RemitenteDeUsuarioFinder remitenteDeUsuarioFinder;
     private final DestinatarioDeUsuarioFinder destinatarioDeUsuarioFinder;
     private final DatosUsuarioFinder datosUsuarioFinder;
+    private final DestinatarioAsignadoFinder destinatarioAsignadoFinder;
     private final SolicitudDuplicadaFinder solicitudDuplicadaFinder;
     private final EnviarSolicitudCambioAsesorValidator validator;
     private final EventPublisher eventPublisher;
@@ -47,7 +48,7 @@ public class EnviarSolicitudCambioAsesorUseCaseImpl
 
     @Override
     public UUID ejecutar(EnvioSolicitudCambioAsesorDomain envio) {
-        logger.info(Mensajes.obtener(SolicitudKey.LOG_ENVIANDO_CAMBIO_ASESOR),
+        logger.info(SolicitudKey.LOG_ENVIANDO_CAMBIO_ASESOR,
                 envio.getRemitenteUsuario(), envio.getDestinatarioUsuario());
 
         Optional<UsuarioDomain> remitenteUsuario = datosUsuarioFinder.obtener(envio.getRemitenteUsuario());
@@ -55,9 +56,13 @@ public class EnviarSolicitudCambioAsesorUseCaseImpl
                 datosUsuarioFinder.obtener(envio.getDestinatarioUsuario());
         boolean remitenteUsuarioExiste = remitenteUsuario.isPresent();
         boolean destinatarioUsuarioExiste = destinatarioUsuario.isPresent();
-        logger.debug(Mensajes.obtener(SolicitudKey.LOG_VERIFICACION_ENVIO_CAMBIO_ASESOR),
+        logger.debug(SolicitudKey.LOG_VERIFICACION_ENVIO_CAMBIO_ASESOR,
                 remitenteUsuarioExiste, destinatarioUsuarioExiste);
         validator.validarExistenciaUsuarios(envio, remitenteUsuarioExiste, destinatarioUsuarioExiste);
+
+        boolean destinatarioAsignado = destinatarioAsignadoFinder.obtener(
+                new ConsultaAsignacionResponsable(envio.getRemitenteUsuario(), envio.getDestinatarioUsuario()));
+        validator.validarAsignacionDestinatario(envio, destinatarioAsignado);
 
         UUID remitenteId = remitenteDeUsuarioFinder.obtener(envio.getRemitenteUsuario())
                 .orElseGet(() -> {
@@ -82,16 +87,14 @@ public class EnviarSolicitudCambioAsesorUseCaseImpl
         validator.validarUnicidad(new DisponibilidadSolicitud(clave, yaExiste));
 
         solicitudOutputPort.registrar(SolicitudMapper.toEntity(solicitud));
-        logger.info(Mensajes.obtener(SolicitudKey.LOG_ENVIADA_CAMBIO_ASESOR), solicitud.getId());
 
+        UsuarioDomain remitente = remitenteUsuario.orElseThrow();
+        UsuarioDomain destinatario = destinatarioUsuario.orElseThrow();
         eventPublisher.publish(new SolicitudCambioAsesorEnviadaEvent(
-                solicitud.getId(),
-                envio.getRemitenteUsuario().toString(),
-                envio.getDestinatarioUsuario().toString(),
-                solicitud.getMensajeSolicitud(),
-                solicitud.getFechaCreacion(),
-                TipoSolicitud.CAMBIO_DE_ASESOR.getId()));
+                solicitud.getId(), remitente.getNombre(), destinatario.getNombre(),
+                destinatario.getEmail(), solicitud.getMensajeSolicitud()));
 
+        logger.info(SolicitudKey.LOG_ENVIADA_CAMBIO_ASESOR, solicitud.getId());
         return solicitud.getId();
     }
 }
