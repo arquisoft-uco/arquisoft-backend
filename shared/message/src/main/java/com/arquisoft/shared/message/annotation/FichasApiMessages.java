@@ -173,8 +173,19 @@ public final class FichasApiMessages {
         public static final String AGREGAR_RESP_400 = "Identificador de ítem inválido";
         public static final String AGREGAR_RESP_403 = "Sin permiso para agregar revisiones";
         public static final String AGREGAR_RESP_422 =
-                "Ítem no encontrado, ficha no asesorada por el usuario autenticado o revisión ya "
-                        + "existente";
+                "Ítem no encontrado, ficha no asesorada por el usuario autenticado, revisión ya "
+                        + "existente o estado de revisión inválido";
+
+        public static final String MODIFICAR_SUMMARY = "Modificar revisión de un ítem";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Permite al asesor asignado a la ficha modificar el estado de la revisión existente de un "
+                        + "ítem de esa ficha, con un estado del catálogo EstadoRevision.";
+        public static final String MODIFICAR_RESP_204 = "Revisión modificada exitosamente";
+        public static final String MODIFICAR_RESP_400 = "Datos inválidos";
+        public static final String MODIFICAR_RESP_403 = "Sin permiso para modificar revisiones";
+        public static final String MODIFICAR_RESP_422 =
+                "No existe una revisión para el ítem, la ficha no está asesorada por el usuario autenticado, "
+                        + "o el estado de revisión no es válido";
     }
 
     public static final class EstudianteFichaPerfil {
