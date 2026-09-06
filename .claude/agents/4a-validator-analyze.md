@@ -45,6 +45,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Endpoints con ruta/método HTTP del plan, sin prefijo `/api` (ya es global vía `context-path`) | ❌ |
 | PATCH/PUT/DELETE con el `id` en `@PathVariable`, nunca en el body | ❌ |
 | Client role de un endpoint anidado usa la **entidad afectada**, no el primer segmento de la ruta (ej. `fichas:estudiante-ficha-perfil:delete`, no `fichas:ficha-perfil:delete`, en `DELETE /fichas-perfil/{id}/estudiantes/{eid}`) | ❌ |
+| Client role nuevo y exclusivo del endpoint — no reutiliza el de otro `Controller` ya existente; dos endpoints sobre el mismo recurso se diferencian con un calificador en el segmento de recurso (detalle en Nivel 2.7) | ❌ |
 | `Controller` con `@Tag`/`@Operation`/`@ApiResponses`, y `@SecurityRequirement` si no es público (ADR-011) | ❌ |
 | Migración dentro de la subcarpeta del contexto, `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/` — suelta en `db/migration/` la recogería el Flyway de otro contexto y la aplicaría en su base | ❌ |
 | Migración nombrada `V{yyyyMMddHHmmss}__{descripcion_snake_case}.sql` (14 dígitos). Cualquier numeración secuencial (`V1.0`, `V2__`) es convención retirada | ❌ |
@@ -74,9 +75,9 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | `catch (DataAccessException)` o helper `errorPersistencia(...)` envolviendo Spring Data en `InfrastructureException`. El catch-all de `GlobalAppExceptionHandler` ya da el 500 correcto; envolver esconde la causa raíz. Distinto y **permitido**: una `InfrastructureException` propia de `infrastructure/{feature}/exception/` para lo que solo el adaptador diagnostica (proveedor externo caído, objeto ausente en MinIO) | ❌ |
 | `saveAndFlush(...)` en un `CommandOutputAdapter` (en el *arrange* de un `@DataJpaTest` sí es legítimo). Sin `catch` no aporta nada, y ante una violación de constraint deja la transacción en rollback-only → `UnexpectedRollbackException` en el commit, lejos del origen | ❌ |
 | `Boolean` envuelto en un método de existencia del `OutputPort` o del `OutputAdapter` — los 16 del repo son `boolean` primitivo; el envuelto mete un `null` sin comprobar y un unboxing silencioso en la `Rule`. No confundir con `Finder<T, Boolean>`: ahí el envuelto es obligado (un genérico no admite primitivos) y es correcto — lo que se declara `boolean` es el local del `UseCase` | ❌ |
-| Método de **escritura** del `CommandOutputAdapter` sin `logger.debug(Mensajes.obtener({Feature}Key.LOG_GUARDADA), id)`, o método de **lectura** que sí logea | ⚠️ |
+| Método de **escritura** del `CommandOutputAdapter` sin `logger.debug({Feature}Key.LOG_GUARDADA, id)`, o método de **lectura** que sí logea | ⚠️ |
 | `implementation project(':{contexto}:domain')` en el `build.gradle` de infrastructure. La dirección la impone el grafo de módulos; el dominio solo va en `testImplementation`. Añadirlo reabre la barrera y `verificarCapasHexagonales` falla | ❌ |
-| Import de `com.arquisoft.{contexto}.domain.*` en `infrastructure/src/main`. Un enum de dominio que un adaptador necesita nombrar viaja como `String` y se convierte en `Command.crear(...)`; un agregado significa que el puerto debe hablar `Entity` | ❌ |
+| Import de `com.arquisoft.{contexto}.domain.*` en `infrastructure/src/main`. Un enum de dominio que un adaptador necesita nombrar viaja como `String` y se convierte en `Command.crear(...)`; un domain significa que el puerto debe hablar `Entity` | ❌ |
 | `{Contexto}DataSourceConfig` con `setPackagesToScan` sobre dos paquetes, incluyendo `"com.arquisoft.{contexto}.application"`. Las `@Entity` están todas en infrastructure; la forma vigente es una sola cadena, `"com.arquisoft.{contexto}.infrastructure"` | ❌ |
 | Un `shared:*` **nuevo** con un solo consumidor. Un "compartido" de un cliente es un contexto mal ubicado; exige dos consumidores reales antes de crearlo | ❌ |
 | `{contexto}/application/build.gradle` declara un `shared:*` que contiene adaptadores ejecutables (drivers, clientes HTTP, `JavaMailSender`). `verificarCapasHexagonales` **no** lo detecta —razona por nombre de módulo— así que hay que mirarlo a mano: abre el módulo y comprueba que solo tenga puerto y modelos | ❌ |
@@ -90,50 +91,38 @@ archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio fil
 > Determina primero qué dice la sección 4 del plan. Marcar checks de "con eventos" en una HU "sin
 > eventos" (o viceversa) es un falso positivo — no lo reportes.
 
-**Siempre:** `reconstruir(...)` nunca publica eventos · `CommandOutputAdapter` usa
+**Siempre:** `reconstruir(...)` nunca publica eventos · el `CommandOutputAdapter` usa
 `reconstruir(...)` · el dominio no inyecta `EventPublisher` · no existe un `{Entidad}EventPublisher`
-local (la publicación está centralizada en `shared:amqp`).
+local.
 
-**Si el plan declara eventos**, hay una sola forma: el `UseCase` inyecta `EventPublisher`
-(`com.arquisoft.shared.publisher`, la **interfaz** — inyectar `SpringModulithEventPublisher` o
-`RabbitMQEventPublisher` es ❌) y tras persistir hace
-`eventPublisher.publish(new {Entidad}{Accion}Event(...))`. El agregado es una clase plana: si
-acumula eventos en memoria, extiende una clase base para emitirlos, o expone un método de drenaje
-que el use case invoque, es ❌ bloqueante — ese tipo base no existe y el código no compila. Ver
-`fichas/application/.../fichaperfil/command/usecase/impl/CambiarAsesorFichaUseCaseImpl.java`.
-
-Además: eventos en `domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
-(`{contexto}.{entidad}.{accion}`, minúsculas+snake_case) pasado a `super(EVENT_TOPIC, EVENT_TYPE)`,
-ningún `@Override` de `getTemaEvento()` (es `final`), y el evento carga todo lo que su consumidor
-necesita (nombre, email…) para que no tenga que reconsultar al productor.
+**Si el plan declara eventos** (❌ cada incumplimiento): el `UseCase` inyecta la **interfaz**
+`EventPublisher` —inyectar `SpringModulithEventPublisher` o `RabbitMQEventPublisher` es ❌— y publica
+tras persistir. El domain es una clase plana: si acumula eventos, extiende una base para emitirlos o
+expone un método de drenaje, es ❌ (ese tipo base no existe y no compila). Los eventos van en
+`domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
+(`{contexto}.{entidad}.{accion}`) pasado a `super(...)`, no sobrescriben `getTemaEvento()` (es
+`final`), y cargan todo lo que el consumidor necesita.
 
 **Si el plan dice "Eventos: ninguno", el exceso también es ❌ bloqueante**, no una mejora: cualquier
-archivo bajo `event/`, cualquier `EventPublisher` inyectado, cualquier fila nueva en
-`ClavesCatalogo` para un evento. El plan declaró esa ausencia — normalmente porque el usuario
-respondió que no hay consumidor — y publicar un evento que nadie consume crea un contrato que otro
-contexto puede empezar a consumir después. Repórtalo citando la sección 4 del plan.
+archivo bajo `event/`, cualquier `EventPublisher` inyectado, cualquier clave nueva para un evento.
+El plan declaró esa ausencia y publicar un evento que nadie consume crea un contrato que otro
+contexto puede empezar a consumir. Repórtalo citando la sección 4.
 
 **Si el plan declara evento hacia `notificaciones`**, el evento solo cuenta como implementado si
-existe el camino completo. Falta cualquiera de estas cinco ⇒ ❌ bloqueante, porque el correo nunca
-sale y el fallo es silencioso (el mensaje se queda en el exchange, sin cola enganchada):
+existe el camino completo: faltando cualquiera de las **ocho piezas** el correo nunca sale y el fallo
+es silencioso. La lista canónica está en `arquisoft-arquitectura` → *Transición de estado ⇒
+notificación*; recórrela pieza por pieza. Verifica además que la routing key del binding sea
+**carácter por carácter** el `EVENT_TOPIC` del productor: una discrepancia compila, arranca y no
+entrega nada.
 
-| Pieza | Dónde |
-|---|---|
-| `Queue` + `Binding` con la routing key igual al `EVENT_TOPIC` del productor | `notificaciones/infrastructure/config/Notificaciones{Contexto}QueueConfig` |
-| `{Evento}Payload` — `record` local del adaptador, nunca la clase del productor | `notificaciones/.../primaryadapter/amqp/` |
-| `{Evento}Consumer` extiende `AbstractEventConsumer`, arma el texto con `Mensajes.formatear` | `notificaciones/.../primaryadapter/amqp/` |
-| Constante nueva en `TipoNotificacion` (sin migración: la columna es `VARCHAR`) | `notificaciones/domain/notificacion/model/` |
-| `PlantillaKey.ASUNTO_*`/`CUERPO_*` **y** su texto en `catalogo/notificaciones.properties` | `shared:message` + `catalogo/` |
+**Transición de estado sin evento declarado ⇒ ⚠️, no ❌.** Si el plan escribió la razón, es decisión
+del usuario y se respeta. Sin razón, es advertencia: probablemente nadie preguntó. Nunca lo
+conviertas en bloqueante — eso es del plan, no de la validación.
 
-Verifica además que la routing key del binding sea **carácter por carácter** el `EVENT_TOPIC` del
-evento productor: una discrepancia compila, arranca y no entrega nada.
-
-**Transición de estado sin evento declarado ⇒ ⚠️, no ❌.** Si el caso de uso cambia un campo de
-estado (catálogo, asignación de responsable, aprobación/rechazo) y el plan dice "Eventos: ninguno",
-revisa si la sección 4 escribió la razón. Con razón explícita es una decisión del usuario y se
-respeta. Sin razón, repórtalo como advertencia: probablemente nadie preguntó si ese cambio debía
-notificar. Nunca lo conviertas en bloqueante ni exijas implementar el evento — eso es del plan, no
-de la validación.
+Y hay una familia donde el evento ausente **no es ni siquiera advertencia**: el estado creado es un
+paso interno, sin desenlace que comunicar. La señal es que el mismo hecho puede ocurrir N veces en
+paralelo para el mismo sujeto (`RegistrarEvaluacionFichaPerfil`). La razón puede estar en el mensaje
+del commit y no en un plan cuando el cambio no vino de una HU: búscala ahí antes de reportar.
 
 ### Nivel 2.3 — Entidad de dominio
 
@@ -144,34 +133,25 @@ de la validación.
 | Invariante local de la sección 3 del plan (formato, longitud, obligatoriedad) validada **dentro** de la entidad, acumulando en `ValidationResult` | ❌ |
 | Invariante nueva con clase de excepción propia (`{Entidad}{Regla}Exception`) en vez de `ValidationResult.addError(...)` + `lanzarSiTieneErrores()` | ❌ (excepción real: `seguridad/AuthenticationException`, por choque con Spring Security) |
 | Setter privado que no corta con `return` cuando la validación falla (asigna un valor inválido) | ❌ |
-| Agregado que puede venir ausente sin centinela `VACIO` + `esVacio()` (comparando identidad, no campos) | ⚠️ |
+| Domain que puede venir ausente sin centinela `VACIO` + `esVacio()` (comparando identidad, no campos) | ⚠️ |
 | Objeto de acción `{Accion}{Entidad}Domain` que declara un `{Otro}Domain` como campo cuando la acción no crea ese objeto — la forma por defecto son `UUID` y escalares (`CambioAsesorFichaDomain` = dos `UUID`) | ⚠️ |
-| Objeto de acción **compuesto** cuyo `{Accion}{Entidad}Mapper` no construye de menor a mayor jerarquía: agregado primero, cada pieza con el mapper de **su propia feature** recibiendo `entidad.getId()`, compuesto al final (`RegistrarFichaPerfilMapper`) | ❌ |
+| Objeto de acción **compuesto** cuyo `{Accion}{Entidad}Mapper` no construye de menor a mayor jerarquía: domain primero, cada pieza con el mapper de **su propia feature** recibiendo `entidad.getId()`, compuesto al final (`RegistrarFichaPerfilMapper`) | ❌ |
 | `crear(...)` de un objeto de acción compuesto que repite validaciones de sus piezas en vez de solo `noNulo` de cada componente | ⚠️ |
 | `if/throw` en el `UseCase` sobre una restricción de conjunto (existencia, unicidad, propiedad) en vez de una `Rule` de dominio orquestada por el `Validator` | ❌ |
 
 **Restricciones de conjunto → `Rule` de dominio → 422, no 400/403.** Existencia, unicidad y
-propiedad no son invariantes locales del agregado, pero **tampoco** se resuelven con `if/throw` en
-el use case: el `Finder` trae el dato, el `Validator` arma el record (`ExistenciaAsesorFicha`,
-`DisponibilidadTituloFicha`, `PropiedadFicha`) y la `Rule` lanza su `DomainException`. No existe un
-caso 403 propio para "no eres el dueño" — es otro 422.
+propiedad no son invariantes locales, pero **tampoco** se resuelven con `if/throw` en el use case:
+el `Finder` trae el dato, el `Validator` arma el record y la `Rule` lanza su `DomainException`. No
+existe un caso 403 propio para "no eres el dueño" — es otro 422.
 
 **No confundas esto con un corte de idempotencia.** El check de arriba es sobre `if/`**`throw`**. Un
-`Finder` consultado con `if/`**`return`**, sin lanzar nada, es otra cosa y es correcta:
-
-```java
-if (notificacionProcesadaFinder.obtener(entrada.idEvento())) {
-    logger.info(...);
-    return;              // reentrega normal del broker: no es un error
-}
-```
-
-Una `Rule` **siempre lanza** en su violación; aquí lanzar sería el bug — mandaría el mensaje a la DLQ
-cuando RabbitMQ solo estaba reentregando algo ya procesado. Así que no existe `Rule` que modele esto,
-y el `Finder` se consulta directo desde el use case. Marca ❌ solo si ese `if` **lanza** o si el
-resultado ausente representa un error de negocio. Referencia real:
-`notificaciones/.../EnviarNotificacionUseCaseImpl` — un comando **sin `Validator` en absoluto**,
-porque no tiene ninguna restricción de conjunto que validar.
+`Finder` consultado con `if/`**`return`**, sin lanzar, es correcto: la forma vigente devuelve la
+variante de la sellada que corresponde (`EnviarNotificacionUseCaseImpl` es la referencia — un comando
+**sin `Validator` en absoluto**). Marca ❌ solo si ese `if` **lanza** o si la ausencia representa un
+error de negocio. Tres cosas sí son hallazgo, las tres ⚠️: que el `Finder` reciba el `idEvento`
+suelto en vez del domain (la clave es el par `(idEvento, destinatario)`); que el corte haga `return;`
+mudo cuando el use case declara una sellada; y que el log previo sea `info` en vez de `debug` o quede
+después del `if`.
 
 **No son violación:** getters usados solo para retornar/loguear el id, construir el mensaje de una
 excepción o mapear a `Entity`.
@@ -195,7 +175,7 @@ excepción o mapear a `Entity`.
 | Check | Sev |
 |---|:---:|
 | `Command` es `record` en `command/primaryport/model/`; `ReadModel` es `record` en `query/readmodel/` | ❌ |
-| Campos en español idénticos al agregado (sin traducir a inglés) y con nombre **objetual**: `asesorFicha`, no `asesorFichaId`; `estudiantes`, no `estudiantesIds` | ❌ |
+| Campos en español idénticos al domain (sin traducir a inglés) y con nombre **objetual**: `asesorFicha`, no `asesorFichaId`; `estudiantes`, no `estudiantesIds` | ❌ |
 | Identificador en el body tipado `UUID` en vez de `String` | ❌ |
 | Identificador en el body validado con anotación Jakarta en vez de `ValidatorUUID.uuidValido(...)` dentro de `Command.crear(...)` | ❌ |
 | `RequestDTO` con **cualquier** anotación (Jakarta, Lombok, Jackson) en vez de ser un `record` desnudo + `{Accion}{Entidad}RequestMapper` (`final`, constructor privado, `static toCommand`) que llama a `Command.crear(...)`. Convención única, sin variante por tamaño de contexto — `usuarios/CrearUsuarioRequestDTO` es desviación conocida, no precedente | ❌ |
@@ -207,8 +187,9 @@ excepción o mapear a `Entity`.
 | `ReadModel` anidado y su `ResponseDTO` declarados en la feature que los compone en vez de en la feature que describen (ej. `AsesorFichaReadModel` vive en `asesorficha`) | ⚠️ |
 | Lado write con retorno de UUID crudo (`ResponseEntity<UUID>`) en vez de `{Accion}{Entidad}ResponseDTO(UUID id)` | ❌ |
 | Comando que devuelve un objeto (plan, pregunta 11 = **C**) sin `{Concepto}Result` en `command/result/`: retorna el `Domain`, el `Entity`, un `ReadModel` o directamente el DTO desde `application/` | ❌ |
-| `{Concepto}Result` que no es un `record` plano, o lleva Jackson/Lombok | ❌ |
-| Falta `{Concepto}ResultMapper` en `command/result/mapper/` (`final`, constructor privado, `static toResult(...)`), o lo invoca el `Interactor` en vez del `UseCaseImpl` | ❌ |
+| `{Concepto}Result` con Jackson o Lombok, o que no es ni un `record` plano ni una `sealed interface` de `record`s. **Las dos formas son válidas**: un desenlace único es un `record` (`AutenticacionResult`), varios excluyentes son una sellada con un `record` por variante (`EnvioNotificacionResult` → `Enviada`/`Duplicada`/`Fallida`) — no marques la sellada como violación | ❌ |
+| Falta `{Concepto}ResultMapper` en `command/result/mapper/` (`final`, constructor privado, fábricas `static`), o lo invoca el `Interactor` en vez del `UseCaseImpl` | ❌ |
+| `{Concepto}ResultMapper` de una sellada con un solo `toResult(...)` que decide la variante con un `if`/ternario dentro, en vez de una fábrica por variante (`toResultEnviada`/`toResultDuplicada`/`toResultFallida`) que el use case elige con un `switch` | ⚠️ |
 | El `Controller` serializa el `{Concepto}Result` directo en vez de mapearlo con `{Accion}{Entidad}ResponseMapper` a su `ResponseDTO` | ❌ |
 | Existe `command/result/` en una HU cuyo retorno es `UUID` o `void` (paquete sin razón de ser) | ⚠️ |
 | `ErrorResponseDTO`/`PageResponseDTO`/`QueryCriteriaRequestDTO` duplicados localmente en vez de importados de `shared:web` | ❌ |
@@ -219,6 +200,13 @@ excepción o mapear a `Entity`.
 | Check | Sev |
 |---|:---:|
 | `Interactor` dueño de `@Transactional(transactionManager = "{contexto}TransactionManager")` — qualifier explícito siempre (`usuariosTransactionManager` es `@Primary` y enlaza en silencio si se omite) | ❌ |
+| `UseCase` de escritura cuya firma recibe el `Command` en vez de un objeto de dominio (`UseCase<{Algo}Domain, R>`). Vale también sin domain: un job por lotes nominaliza igual (`ReintentoNotificacionesDomain`). Del lado query, el `UseCase` recibe el `{Entidad}Criteria`, pero el **`Interactor`** recibe un objeto `Query` (ver check de abajo) | ❌ |
+| El `Interactor` de una consulta recibe el `{Entidad}Criteria` directo en vez de un objeto `Query`. Sin dato validado extra: `ConsultaCriteriaQuery` genérico (`shared:query`). Con dato validado extra (path variable, subject del JWT, filtro forzado): un `{Consulta}{Entidad}Query` propio que **compone** `ConsultaCriteriaQuery` (nunca re-declara `pagina`/`tamanio`/`ordenamiento`/`raiz`). En ambos casos un `query/primaryport/mapper/Consultar{Entidad}[{Rol}]Mapper.toCriteria(query)` hace la conversión — ahí corre la validación `camposFiltrables()`/`camposOrdenables()`, no en el `RequestMapper` web ni en el `InteractorImpl` | ❌ |
+| El `Consultar{Entidad}RequestMapper` (web) devuelve `{Entidad}Criteria` en vez del `Query` (método `toQuery`, no `toCriteria`) | ❌ |
+| Un `UseCase` encadenado invoca a un tercero que no es parte del hecho que él representa — todos los pasos cuelgan del orquestador, no de un hermano (`RegistrarFichaPerfil` llama a `AsignarEstadoInicial` **y** a `AsignarEstudiantes`) | ❌ |
+| Un `UseCase` encadenado recibe el objeto de acción completo y solo lee una parte — señal de que lo pide para alimentar un paso siguiente que le corresponde al que llama. Debe recibir lo más estrecho que lee (`EstadoFichaPerfilDomain`, no `RegistroFichaPerfilDomain`) | ⚠️ |
+| `Void` como parámetro de **entrada** de un `Interactor`/`UseCase` (`Interactor<Void, O>`, `UseCase<Void, O>`) — su único valor habitable es `null`, así que obliga al llamador a escribir `ejecutar(null)`. Una operación sin entrada extiende `SupplierInteractor<O>`/`SupplierUseCase<O>` (`shared:application`), con `ejecutar()` sin parámetros. Verifica también el lado del adaptador: un `ejecutar(null)` en un `Controller` o `Consumer` es el síntoma | ❌ |
+| Se declaró un `record` vacío o un centinela `VACIO` solo para rellenar la entrada de una consulta que no la tiene (en vez de `SupplierUseCase`) — `VACIO` representa un dato que pudo estar y no está; aquí no hay dato | ❌ |
 | `UseCase` implementa el `Interactor` (dos beans para el mismo puerto → ambigüedad de inyección) | ❌ |
 | `@Service` en vez de `@Component` | ❌ |
 | `Validator` inyecta un `OutputPort`/`Finder`, recibe algo por `@RequiredArgsConstructor`, o contiene un `if` (debe ser puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`) | ❌ |
@@ -228,10 +216,10 @@ excepción o mapear a `Entity`.
 | `Finder` que no extiende `Finder<T, R>` de `shared:application` (`com.arquisoft.shared.finder`), o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
 | `Validator` **vacío** o que no orquesta ninguna `Rule`, creado solo porque la plantilla lo listaba. Un comando sin restricciones de conjunto no lleva `Validator`: ver `notificaciones/.../EnviarNotificacionUseCaseImpl` | ❌ |
 | Clase con sufijo `Validator` que en realidad inyecta un `OutputPort` y devuelve un `boolean` — eso es un `Finder`, no un `Validator`; renómbralo y muévelo a `command/finder/` | ❌ |
-| `{Entidad}OutputPort` declara un método sobre **otro** aggregate (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |
+| `{Entidad}OutputPort` declara un método sobre **otro** domain (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |
 | Un command use case lee estado de otra feature importando su `domain/` o su adaptador, en vez de pasar por el `Finder` + `OutputPort` de `command/` de esa feature | ❌ |
 | Se creó un `{Otra}QueryOutputPort` cuya única razón de existir es una verificación de existencia para un `Validator`/`Rule` de comando (eso va en el `OutputPort` de `command/`; ver `AsesorFichaExisteFinder` → `AsesorFichaOutputPort.existePorId`) | ❌ |
-| `Optional` como parámetro de un `Validator` o campo de un record de `Rule` (se desenvuelve en el `UseCase`: centinela `VACIO` para agregados, valor + `boolean` para escalares) | ❌ |
+| `Optional` como parámetro de un `Validator` o campo de un record de `Rule` (se desenvuelve en el `UseCase`: centinela `VACIO` para domains, valor + `boolean` para escalares) | ❌ |
 | `@RequiredArgsConstructor`, no `@Autowired` en campos; se inyectan interfaces | ❌ |
 
 ### Nivel 2.7 — Autorización (Keycloak)
@@ -243,6 +231,7 @@ excepción o mapear a `Entity`.
 | El client role está declarado en `{contexto}/infrastructure/security/{Contexto}Authorities` (crudo + su expresión SpEL) | ❌ |
 | Client role en kebab-case (`{contexto}:{recurso}:{accion}`, todo minúscula, guiones — nunca camelCase/MAYÚSCULAS/underscore) | ❌ |
 | Coincide con el declarado en sección 9 del plan | ❌ |
+| El client role del endpoint es **nuevo y exclusivo**: la misma cadena no está ya asociada a otro endpoint/`Controller` en `{Contexto}Authorities`. Reutilizar el client role de otro endpoint (ej. un endpoint nuevo sobre `/fichas-perfil` que cuelga de `fichas:ficha-perfil-coordinador:view`, ya usado por `/coordinador`, en vez de un `fichas:ficha-perfil-asesor:view` propio) rompe la granularidad — cada salida a la web debe poder concederse/revocarse por separado en Keycloak | ❌ |
 | Uso de `hasRole(...)` o roles realm directos (`'COORDINADOR'`, `'ROLE_COORDINADOR'`) | ❌ |
 | Varios `hasAuthority` con OR/AND en un mismo endpoint | ❌ |
 | Ruta escrita como literal en vez de placeholder de propiedad (`@RequestMapping("${rutas.{contexto}.{recurso}.base:/{recurso}}")`) | ❌ |
@@ -260,13 +249,18 @@ excepción o mapear a `Entity`.
 | El `QueryOutputAdapter` construye `PageRequest`/`Sort` a mano en vez de delegar en `PageableMapper.toPageable(criteria, {Entidad}SortMapper::traducir)` + `PaginationMapper.toResult(page)` (`shared:jpa/util/`) | ❌ |
 | El adapter captura `PropertyReferenceException`/`InvalidDataAccessApiUsageException` para remapearlas a 400 (los campos ya se validaron contra la whitelist; eso solo puede ser un defecto de mapeo — debe salir 500) | ❌ |
 | Falta `{Entidad}SortMapperTest` que confirme que la whitelist del `Criteria` y las claves de `traducir(...)` no divergen | ⚠️ |
+| Un `{Consulta}{Entidad}Mapper` (o cualquier clase de `application`/`domain` que declare `shared:util`) ramifica sobre un campo opcional con `== null`/`!= null` crudo en vez de `UtilObjeto.esNulo`/`noEsNulo` | ❌ |
+| Un `Command`/`Query` declara un método `tieneX()` propio solo para envolver el `== null` de uno de sus campos, en vez de que el consumidor use `UtilObjeto.noEsNulo(...)` (los `tieneFiltros()`/`tieneOrden()` de `QueryCriteria` y `tieneErrores()` de `ValidationResult` sí son legítimos: son contrato de `shared:*`, no de un record de una feature) | ❌ |
 
 ### Nivel 2.9 — Consumo de eventos AMQP (si la HU consume eventos)
 
 | Check | Sev |
 |---|:---:|
-| `Consumer` en `command/primaryadapter/amqp/{contextoProductor}/` — un subpaquete por productor, no todo plano | ⚠️ |
+| `Consumer` y su `Payload` en `command/primaryadapter/amqp/{contextoProductor}/{entidad}/` — **dos** segmentos, productor y después entidad de ese productor (`amqp/fichas/asesorficha/`, `amqp/fichas/fichaperfil/`), en minúsculas y sin separadores. Ni plano ni solo por productor. Desviación conocida: `fichas/.../usuario/command/primaryadapter/amqp/UsuarioCreadoConsumer` sigue plano y está en vías de retirarse — no es precedente, y solo se reporta si la HU validada lo toca | ❌ |
+| Directo en `amqp/`, sin subpaquete, algo que **no** es común a todos los productores. Ahí solo viven `AbstractNotificacionConsumer` y `TipoNotificacionEvento` | ❌ |
 | Extiende `AbstractEventConsumer`, o `AbstractNotificacionConsumer` si es de `notificaciones` — sin ACK/NACK manual | ❌ |
+| Consumidor de `notificaciones` que arma el texto con `Mensajes.formatear(...)` en vez del helper heredado `plantilla(clave, args)`. `formatear` degrada al respaldo ante una clave ausente en Redis y el correo sale con la clave cruda de asunto; `plantilla` lanza `PlantillaNotificacionNoDisponibleException` y el mensaje acaba en la DLQ, recuperable | ❌ |
+| Clave `PlantillaKey` de pie propia del evento en vez de reusar `PIE_GENERICO` (aridad 0, compartida). El correo lleva tres textos —asunto, cuerpo y pie—, pero solo los dos primeros son por evento | ⚠️ |
 | Payload es un `record` **local** del consumidor — nunca importa la clase del evento del publicador | ❌ |
 | Cola con DLX configurado | ❌ |
 | La routing key aparece escrita **dos veces** (en el `EVENT_TOPIC` del productor y en el `Binding`) en vez de salir de `EventTopics.{Contexto}` — si divergen, el binding deja de recibir sin error | ❌ |
@@ -286,6 +280,9 @@ excepción o mapear a `Entity`.
 |---|:---:|
 | `valueOf(...)` llamado fuera del propio enum | ❌ |
 | El enum no expone `desde(String)`/`getId()` | ❌ |
+| El `Command` o el `{Accion}{Entidad}Mapper` resuelve el `String` del cliente con `desde(...)` en vez de pasarlo crudo al `crear(...)` del domain — lanza al primer error y rompe la acumulación del `ValidationResult` | ❌ |
+| El `crear(...)` del domain recibe el enum **ya tipado** cuando el valor viene del cliente: debe recibir `String` y resolverlo en el setter privado con `esValido(...)` (acumula) + `desde(...)` (convierte) | ❌ |
+| El mapper de `secondaryport` pasa el `String` de la BD a `reconstruir(...)` en vez de convertirlo antes con `desde(...)` (`EstadoFichaPerfilMapper.toDomain`) | ❌ |
 | Las constantes del enum no coinciden **exactamente** con las filas que el plan copió de `mer/data/{NN}_data_{contexto}.sql` — sobra una, falta una, o el `id` no es UPPER_SNAKE_CASE. El centinela `VACIO` es la única excepción legítima: es del código, no del MER | ❌ |
 | `getNombre()` devuelve algo distinto a la columna `nombre` de esa fila del `data/` | ❌ |
 | La migración del catálogo no inserta las filas del `data/`, o inserta valores que no están ahí | ❌ |
@@ -312,13 +309,17 @@ excepción o mapear a `Entity`.
 
 | Check | Sev |
 |---|:---:|
-| `logger.*("texto literal", ...)` en vez de `Mensajes.obtener({Feature}Key.LOG_*)` | ❌ |
+| `logger.*("texto literal", ...)` en vez de la clave `{Feature}Key.LOG_*` | ❌ |
+| `logger.*(Mensajes.obtener({Feature}Key.LOG_*), args)` en vez de pasar la clave directa (`logger.*({Feature}Key.LOG_*, args)`). `Mensajes.obtener` es un `GET` a Redis por llamada y Java lo evalúa antes de entrar al método, así que un `debug` con el nivel apagado paga igual el viaje de red | ❌ |
 | `super("mensaje literal", "CODIGO")` en una excepción del contexto, en vez de `Mensajes.formatear({Feature}Key.ERROR_*, args)` | ❌ |
 | `Mensajes.obtener(clave).formatted(args)` — salta el formateo del catálogo, sin respaldo ni diagnóstico de aridad | ❌ |
 | Clave nueva sin su enum `{Feature}Key` (con `clave()` y `parametros()`), sin registrar en `ClavesCatalogo`, o sin su línea en `catalogo/{contexto}.properties` | ❌ |
 | `parametros()` que no coincide con los marcadores del patrón — `%s` para mensajes de cliente, `{}` para logs (un log con `{}` **no** es aridad 0) | ❌ |
-| `UseCaseImpl.ejecutar` de un flujo de escritura sin `logger.info(...LOG_{GERUNDIO}...)` como primera línea, o sin `logger.debug(...LOG_VERIFICACION_*...)` antes de `validator.validar(...)` | ⚠️ |
-| Más de dos `INFO` por petición en un flujo — típicamente un cierre en el interactor **y** otro en el use case. El `INFO` del interactor solo existe en un flujo anidado (`RegistrarFichaPerfil`); en uno simple el interactor no logea | ⚠️ |
+| `UseCaseImpl.ejecutar` de un flujo de escritura sin `logger.info({Feature}Key.LOG_{GERUNDIO}, ...)` como primera línea, o sin `logger.debug({Feature}Key.LOG_VERIFICACION_*, ...)` antes de `validator.validar(...)` | ⚠️ |
+| `UseCaseImpl` de escritura con **más de tres** líneas de log (info entrada + debug verificación + info cierre). Las de más suelen ser un `debug` de "validación superada" — si el validator no hubiera pasado habría lanzado, así que solo prueba que la ejecución llegó ahí — o un `debug` de persistencia que duplica el `LOG_GUARDADA` del adapter | ⚠️ |
+| `INFO` de cierre que no es la **última sentencia** de `ejecutar`: va después de las llamadas encadenadas y del `publish`, no justo tras la escritura | ⚠️ |
+| `InteractorImpl` que inyecta `AppLogger` o logea. **Ninguno de los 26 del repo lo hace**, ni en flujo simple ni en anidado; no existe `LOG_{ACCION}_COMPLETADO` | ❌ |
+| Use case anidado **sin `Interactor` propio** (paso interno, como `AsignarEstadoInicialFichaPerfil`) que emite `INFO` en vez de un único `debug`. El que sí tiene `Interactor` + `Controller` (`AsignarEstudiantesFichaPerfil`) conserva sus tres líneas | ⚠️ |
 | `AppLogger` inyectado en un `{Accion}{Entidad}ValidatorImpl` o en una `Rule` — son puros, constructor sin argumentos, cero dependencias | ❌ |
 | Log en `Command.crear(...)`, en un mapper, en un DTO o en un helper `Validator*`/`Util*`: el campo inválido ya viaja en `fieldErrors[]` | ❌ |
 | `try/catch` en el flujo puesto únicamente para loguear un error que `GlobalAppExceptionHandler` ya reporta | ❌ |
@@ -331,6 +332,7 @@ excepción o mapear a `Entity`.
 | Contraseña, token, refresh token o `Authorization` como argumento de un log. De un token se registra el JTI, nunca el valor | ❌ |
 | `{Evento}Consumer` sin `INFO` de recepción tras `deserialize`, o que lo emite **fuera** del `withCorrelation(...)` — fuera del `AlcanceTraza` la línea sale sin `correlacionId` | ⚠️ |
 | Use case disparado por un consumidor que añade su propio `INFO` de entrada: serían tres `INFO` por mensaje. El de recepción del consumidor ya es la entrada del flujo | ⚠️ |
+| Use case disparado por un consumidor que emite el `INFO` de **cierre**. Los dos `INFO` del mensaje los pone el adaptador; cuando el use case devuelve una sellada de desenlace, el cierre lo logea quien la interpreta — en `notificaciones`, `AbstractNotificacionConsumer.registrar(...)` con su `switch` (`info` para `Enviada`/`Duplicada`, `warn` para `Fallida`) | ⚠️ |
 | `{Evento}Consumer` que reimplementa los logs de envelope, ack o DLQ que `AbstractEventConsumer` ya emite | ⚠️ |
 | `Validator*.*(...)`/`result.addError(...)` con literales en `campo`/`código` en vez de `{Contexto}Fields.*`/`{Contexto}Codes.*` | ❌ |
 | Referencia a `DomainValidator` (clase retirada — hoy es la familia `Validator*` de `shared:validation`) | ❌ |
@@ -345,14 +347,22 @@ display de un enum de catálogo (`getNombre()`, su fuente es el MER), y literale
 ### Nivel 2.13 — Anti-patrones de testing (solo si la fila `Tests` del plan = ✅ Completado)
 
 El conteo total de tests es **informativo**, no bloqueante — compáralo con el presupuesto
-(15-25/25-50/50-80 según tamaño) y anótalo como observación si lo supera. Los 7 anti-patrones sí
-son bloqueantes individualmente cuando se detectan:
+(15-25/25-50/50-80 según tamaño) y anótalo como observación si lo supera. Los 8 anti-patrones de
+`@3-tester` sí son bloqueantes individualmente cuando se detectan:
 
 1. Test de getter/setter de Lombok · 2. Un test por cada campo obligatorio del `Command.crear(...)`
 en vez de uno que asserte los `fieldErrors[]` acumulados · 3. Test
 de método `private` · 4. Tests duplicados con el mismo Act sin consolidar asserts · 5. Test de
 delegación pura (`verify(...)` sin más) · 6. Test propio de una excepción con solo `super(...)` ·
-7. Test de equals/hashCode/toString de Lombok.
+7. Test de equals/hashCode/toString de Lombok · 8. Test que asserta el **texto** de un log: el texto
+vive en el catálogo, así que el assert acopla el test a la redacción y duplica lo que ya cubre
+`CatalogoCargaTest` — lo que sí se verifica son los **argumentos** (`verify(logger).info(any(),
+eq(id))`).
+
+**Excepción del anti-patrón 5, y es la que más se confunde: el `InteractorImpl` sí lleva test de
+delegación.** Aunque solo delegue, no está excluido de JaCoCo, y sin test propio queda en 0% y se
+diluye en el agregado del módulo. Un `verify` + `isSameAs` del resultado basta; no lo reportes como
+anti-patrón 5.
 
 **Además:** test de controller que espera `status().isInternalServerError()`/500 para un input
 inválido es bloqueante — indica que la excepción no extiende la base correcta y cae en el fallback
@@ -371,8 +381,34 @@ que en `RegistrarFichaPerfilControllerTest`. `@MockBean` en vez de `@MockitoBean
 
 **Cobertura:** el umbral del 75% lo verifica `check`. Los excluidos de JaCoCo son `*DTO`,
 `*Command`, `*ReadModel`, `*Application`, `*Entity` y `config/**` — **`*Domain` no está
-excluido**, así que un agregado sin tests hunde el porcentaje del módulo. No reportes como
+excluido**, así que un domain sin tests hunde el porcentaje del módulo. No reportes como
 "excluido" algo que no está en esa lista.
+
+
+**Seis bloqueantes más, todos con su criterio completo en las skills:**
+
+- **Cola de evento mal declarada.** Toda cola sale de un `@Bean Declarables` con
+  `ColaEvento.declarar(...)` — cola, `.dead` y los dos bindings juntos. Cuatro beans a mano, o la
+  cola de entrada sin su `.dead` y su binding contra `arquisoftDeadLetterExchange`, dejan los
+  mensajes fallidos descartándose en silencio. Literales de cola, routing key o argumentos AMQP
+  escritos a mano: van en `EventTopics`, `{Contexto}Queues` y `RabbitMQConfig`. La constante del
+  nombre de cola sí se queda (`@RabbitListener` la exige constante); una `*_ROUTING_KEY` aparte sobra.
+- **Payload sin `ocurridoEn`.** Todo `{Evento}Payload` declara `idEvento` y `ocurridoEn`; omitirlos
+  del `record` los descarta en silencio. Su test debe usar `new RabbitMQConfig().rabbitObjectMapper()`
+  — un `ObjectMapper` a mano es ⚠️ menor pero se reporta: puede pasar y fallar en el broker.
+- **`try/catch` en `application` alrededor de un puerto.** Si el use case captura para seguir, el
+  fallo era un valor: `sealed interface` de resultado. Revisa también que no se haya añadido una
+  excepción nueva para algo que el caso de uso persiste como estado.
+- **Reintento dentro del consumidor AMQP.** Bloquea el listener con `prefetch: 1` y reencolar no
+  reenvía nada (la idempotencia lo da por duplicado). El reintento sale de la base con un
+  `@Scheduled` que abre su propio `AlcanceTraza`, y la migración debe persistir **el mensaje
+  enviado**, no solo el resultado.
+- **Espejo de enum incompleto.** Un `{Enum}Evento`/`{Enum}Persistencia` que declara solo la
+  constante usada hoy no detecta la deriva que justifica su existencia: declara **todas** las del
+  dominio y tiene su test en las dos direcciones. Un literal suelto en un adapter también es ❌.
+- **Borrado en cascada o `DELETE` sobre una tabla espejo.** La baja es lógica (`ANULADO` con fecha) y
+  el borrado que llega antes que el alta inserta la lápida. Un consumidor de borrado que lanza
+  cuando la fila no existe manda al DLQ un borrado ya cumplido.
 
 ## FASE 3 — Estado de tests (mental)
 

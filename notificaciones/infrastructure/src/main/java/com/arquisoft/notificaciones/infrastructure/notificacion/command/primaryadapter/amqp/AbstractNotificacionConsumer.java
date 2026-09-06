@@ -3,6 +3,8 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.primary
 import com.arquisoft.notificaciones.application.notificacion.command.result.EnvioNotificacionResult;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.notificaciones.infrastructure.notificacion.exception.PlantillaNotificacionNoDisponibleException;
+import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -19,6 +21,13 @@ public abstract class AbstractNotificacionConsumer extends AbstractEventConsumer
         this.logger = logger;
     }
 
+    protected String plantilla(ClaveMensaje clave, Object... args) {
+        if (!Mensajes.catalogo().contiene(clave)) {
+            throw new PlantillaNotificacionNoDisponibleException(clave);
+        }
+        return Mensajes.formatear(clave, args);
+    }
+
     protected void registrar(EnvioNotificacionResult resultado) {
         switch (resultado) {
             case EnvioNotificacionResult.Enviada enviada -> logger.info(
@@ -27,7 +36,8 @@ public abstract class AbstractNotificacionConsumer extends AbstractEventConsumer
                     UtilTexto.enmascararCorreo(enviada.destinatario()));
             case EnvioNotificacionResult.Duplicada duplicada -> logger.info(
                     Mensajes.obtener(ConsumidorKey.LOG_NOTIFICACION_DUPLICADA),
-                    duplicada.idEvento());
+                    duplicada.idEvento(),
+                    UtilTexto.enmascararCorreo(duplicada.destinatario()));
             case EnvioNotificacionResult.Fallida fallida -> logger.warn(
                     Mensajes.obtener(ConsumidorKey.LOG_NOTIFICACION_FALLIDA),
                     fallida.idEvento(),

@@ -29,6 +29,7 @@ public class SmtpEnvioNotificacionOutputAdapter implements EnvioNotificacionOutp
 
     private final JavaMailSender mailSender;
     private final NotificacionProperties properties;
+    private final PlantillaCorreoRender plantillaCorreoRender;
     private final AppLogger logger;
 
     @Override
@@ -40,19 +41,19 @@ public class SmtpEnvioNotificacionOutputAdapter implements EnvioNotificacionOutp
 
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
-            var helper = new MimeMessageHelper(mimeMessage, false, CODIFICACION);
+            var helper = new MimeMessageHelper(mimeMessage, true, CODIFICACION);
 
             helper.setFrom(properties.getRemitenteEmail(), properties.getRemitenteNombre());
             helper.setTo(direcciones(mensaje));
             helper.setSubject(mensaje.asunto());
-            helper.setText(mensaje.cuerpo(), mensaje.esHtml());
+            helper.setText(mensaje.cuerpo(), plantillaCorreoRender.envolver(mensaje));
 
             mailSender.send(mimeMessage);
-            logger.info(Mensajes.obtener(EnvioNotificacionKey.LOG_ENVIADO),
+            logger.info(EnvioNotificacionKey.LOG_ENVIADO,
                     destinos, mensaje.asunto());
             return new ResultadoEntrega.Entregada();
         } catch (MailException | jakarta.mail.MessagingException | UnsupportedEncodingException e) {
-            logger.error(Mensajes.obtener(EnvioNotificacionKey.LOG_ENVIO_RECHAZADO),
+            logger.error(EnvioNotificacionKey.LOG_ENVIO_RECHAZADO,
                     e, destinos, mensaje.asunto());
             return new ResultadoEntrega.Rechazada(
                     Mensajes.formatear(EnvioNotificacionKey.ERROR_ENVIO_FALLIDO, destinos));

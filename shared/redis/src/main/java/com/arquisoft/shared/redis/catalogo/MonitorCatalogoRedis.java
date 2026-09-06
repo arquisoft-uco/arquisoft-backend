@@ -20,6 +20,9 @@ public class MonitorCatalogoRedis {
             "Catálogo de mensajes recuperado: Redis responde de nuevo. Claves recargadas: {}";
     private static final String LOG_RECARGA_INCOMPLETA =
             "Redis responde pero el catálogo sigue incompleto, se mantiene el estado degradado. Faltan {} de {} claves";
+    private static final String LOG_RECARGA_INCONSISTENTE =
+            "Redis responde pero {} clave(s) del catálogo no casan con su aridad declarada, "
+                    + "se mantiene el estado degradado: {}";
     private static final String LOG_SIGUE_CAIDO =
             "El catálogo de mensajes sigue degradado: Redis no responde al reintento";
 
@@ -54,6 +57,14 @@ public class MonitorCatalogoRedis {
             ResultadoCarga resultado = catalogo.recargar();
             if (!resultado.esCompleto()) {
                 logger.error(LOG_RECARGA_INCOMPLETA, resultado.faltantes().size(), resultado.declaradas());
+                return;
+            }
+
+            // El arranque aborta ante un desajuste de aridad; volver aquí de la caída no es motivo
+            // para aceptarlo. Con la aridad mal, formatear cae al respaldo y el cliente recibe el
+            // texto genérico: es el mismo catálogo roto, servido como si estuviera sano.
+            if (!resultado.esConsistente()) {
+                logger.error(LOG_RECARGA_INCONSISTENTE, resultado.desajustes().size(), resultado.desajustes());
                 return;
             }
 

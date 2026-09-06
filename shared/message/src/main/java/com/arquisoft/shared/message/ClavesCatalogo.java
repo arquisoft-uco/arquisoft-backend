@@ -19,6 +19,7 @@ import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
+import com.arquisoft.shared.message.key.fichas.TipoItemKey;
 import com.arquisoft.shared.message.key.fichas.UsuarioEspejoKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
@@ -27,8 +28,6 @@ import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
 import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
-import com.arquisoft.shared.message.key.seguridad.CredencialesKey;
-import com.arquisoft.shared.message.key.seguridad.IdentidadKey;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
 import com.arquisoft.shared.message.key.seguridad.RolKey;
@@ -85,6 +84,7 @@ public final class ClavesCatalogo {
             FichaPerfilKey.class,
             ItemFichaPerfilKey.class,
             MinioGuiaKey.class,
+            TipoItemKey.class,
             RepresentanteComiteKey.class,
             UsuarioEspejoKey.class,
             ConsumidorKey.class,
@@ -93,8 +93,6 @@ public final class ClavesCatalogo {
             PlantillaKey.class,
             AutenticacionKey.class,
             ConfiguracionKey.class,
-            CredencialesKey.class,
-            IdentidadKey.class,
             IniciarSesionKey.class,
             LimiteSolicitudesKey.class,
             RolKey.class,

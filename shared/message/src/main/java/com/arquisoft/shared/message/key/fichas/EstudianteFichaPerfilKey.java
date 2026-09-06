@@ -14,6 +14,8 @@ public enum EstudianteFichaPerfilKey implements ClaveMensaje {
     LOG_REMOVIENDO("fichas.aplicacion.estudiantefichaperfil.log.removiendo", 2),
     LOG_VERIFICACION_REMOVER("fichas.aplicacion.estudiantefichaperfil.log.verificacion-remover", 3),
     LOG_REMOVIDO("fichas.aplicacion.estudiantefichaperfil.log.removido", 2),
+    LOG_CONSULTANDO("fichas.aplicacion.estudiantefichaperfil.log.consultando", 1),
+    LOG_CONSULTA_COMPLETADA("fichas.aplicacion.estudiantefichaperfil.log.consulta-completada", 1),
     LOG_VINCULO_GUARDADO("fichas.infraestructura.estudiantefichaperfil.log.vinculo-guardado", 2),
     LOG_VINCULO_ELIMINADO("fichas.infraestructura.estudiantefichaperfil.log.vinculo-eliminado", 2);
 

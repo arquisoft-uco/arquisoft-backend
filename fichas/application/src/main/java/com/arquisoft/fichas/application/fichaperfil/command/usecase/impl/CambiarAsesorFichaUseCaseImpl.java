@@ -14,7 +14,6 @@ import com.arquisoft.fichas.domain.fichaperfil.event.AsesorFichaCambiadoEvent;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -37,14 +36,14 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
         UUID fichaPerfil = cambio.getFichaPerfil();
         UUID nuevoAsesorFicha = cambio.getNuevoAsesorFicha();
 
-        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_CAMBIANDO_ASESOR), fichaPerfil, nuevoAsesorFicha);
+        logger.info(FichaPerfilKey.LOG_CAMBIANDO_ASESOR, fichaPerfil, nuevoAsesorFicha);
 
         var ficha = fichaPerfilFinder.obtener(fichaPerfil).orElse(FichaPerfilDomain.VACIO);
         var asesorFicha = asesorFichaFinder.obtener(nuevoAsesorFicha).orElse(AsesorFichaDomain.VACIO);
         var estadoActual = estadoActualFichaPerfilFinder.obtener(fichaPerfil)
                 .orElse(EstadoFichaPerfilDomain.VACIO);
 
-        logger.debug(Mensajes.obtener(FichaPerfilKey.LOG_VERIFICACION_CAMBIO_ASESOR),
+        logger.debug(FichaPerfilKey.LOG_VERIFICACION_CAMBIO_ASESOR,
                 !ficha.esVacio(), !asesorFicha.esVacio(), estadoActual.getEstadoFicha());
 
         cambiarAsesorFichaValidator.validar(cambio, ficha, asesorFicha, estadoActual);
@@ -54,6 +53,6 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
         eventPublisher.publish(new AsesorFichaCambiadoEvent(fichaPerfil, ficha.getTituloProyecto(),
                 asesorFicha.getId(), asesorFicha.getNombre(), asesorFicha.getEmail()));
 
-        logger.info(Mensajes.obtener(FichaPerfilKey.LOG_ASESOR_CAMBIADO), fichaPerfil, nuevoAsesorFicha);
+        logger.info(FichaPerfilKey.LOG_ASESOR_CAMBIADO, fichaPerfil, nuevoAsesorFicha);
     }
 }

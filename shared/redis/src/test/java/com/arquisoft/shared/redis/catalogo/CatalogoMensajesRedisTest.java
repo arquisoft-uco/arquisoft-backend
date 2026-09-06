@@ -19,6 +19,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -348,6 +349,60 @@ class CatalogoMensajesRedisTest {
 
         // Assert
         verify(logger, atLeastOnce()).error(anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("no vuelve a consultar Redis mientras está degradado")
+    void debeNoConsultarRedis_cuandoYaEstaDegradado() {
+        // Arrange
+        when(plantilla.opsForValue()).thenReturn(operaciones);
+        when(operaciones.get(CLAVE_ERROR.clave()))
+                .thenReturn(TEXTO_PLANO)
+                .thenThrow(new QueryTimeoutException("Redis caído"));
+        catalogo.obtener(CLAVE_ERROR);
+        catalogo.obtener(CLAVE_ERROR);
+        clearInvocations(operaciones);
+
+        // Act
+        String texto = catalogo.obtener(CLAVE_ERROR);
+
+        // Assert
+        assertThat(texto).isEqualTo(TEXTO_PLANO);
+        verify(operaciones, never()).get(anyString());
+    }
+
+    @Test
+    @DisplayName("devuelve el respaldo sin consultar Redis cuando está degradado y la clave no está en caché")
+    void debeDevolverElRespaldoSinConsultarRedis_cuandoEstaDegradadoYNoEstaEnCache() {
+        // Arrange
+        redisLanza();
+        catalogo.obtener(CLAVE_ERROR);
+        clearInvocations(operaciones);
+
+        // Act
+        String texto = catalogo.obtener(CLAVE_LOG);
+
+        // Assert
+        assertThat(texto).isEqualTo(respaldo.obtener(CLAVE_LOG));
+        verify(operaciones, never()).get(anyString());
+    }
+
+    @Test
+    @DisplayName("vuelve a consultar Redis después de marcarSano")
+    void debeVolverAConsultarRedis_cuandoSeMarcaSano() {
+        // Arrange
+        when(plantilla.opsForValue()).thenReturn(operaciones);
+        when(operaciones.get(CLAVE_ERROR.clave()))
+                .thenThrow(new QueryTimeoutException("Redis caído"))
+                .thenReturn(TEXTO_PLANO);
+        catalogo.obtener(CLAVE_ERROR);
+        catalogo.marcarSano();
+
+        // Act
+        String texto = catalogo.obtener(CLAVE_ERROR);
+
+        // Assert
+        assertThat(texto).isEqualTo(TEXTO_PLANO);
     }
 
     // -------------------------------------------------------------------------

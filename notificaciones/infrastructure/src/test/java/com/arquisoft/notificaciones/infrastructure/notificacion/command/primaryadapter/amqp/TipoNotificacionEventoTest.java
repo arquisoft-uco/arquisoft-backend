@@ -13,7 +13,7 @@ class TipoNotificacionEventoTest {
 
     @Test
     void debeResolverContraElCatalogoDeDominio_cuandoSeRecorreCadaCodigo() {
-        // Assert — el codigo que el consumidor envia tiene que ser resoluble por el Command
+        // Assert
         for (TipoNotificacionEvento tipo : TipoNotificacionEvento.values()) {
             assertThat(TipoNotificacion.desde(tipo.getCodigo()))
                     .isEqualTo(TipoNotificacion.valueOf(tipo.name()));
@@ -27,10 +27,11 @@ class TipoNotificacionEventoTest {
                 .map(Enum::name)
                 .collect(Collectors.toSet());
         Set<String> enDominio = Arrays.stream(TipoNotificacion.values())
+                .filter(tipo -> !tipo.esVacio())
                 .map(Enum::name)
                 .collect(Collectors.toSet());
 
-        // Assert — si el dominio gana un tipo, esta tabla tiene que ganarlo tambien
+        // Assert
         assertThat(enInfraestructura).isEqualTo(enDominio);
     }
 }

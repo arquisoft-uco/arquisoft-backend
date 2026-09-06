@@ -19,5 +19,6 @@ public final class NotificacionesLimits {
         public static final int TIPO_MAX = 60;
         public static final int DESTINATARIO_MAX = 50;
         public static final int ASUNTO_MAX = 200;
+        public static final int DESTINATARIO_NOMBRE_MAX = 100;
     }
 }
