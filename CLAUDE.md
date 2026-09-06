@@ -64,9 +64,12 @@ Guía completa: [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md).
 ## Architecture
 
 Arquitectura hexagonal (Ports & Adapters) con **9 bounded contexts** y **14 módulos compartidos**.
-Los contextos se comunican **exclusivamente** por eventos de dominio en RabbitMQ — nunca se importan
-entre sí. Dirección de dependencias: `domain ← application ← infrastructure`, impuesta por el grafo
-de módulos de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
+Los contextos se comunican por eventos de dominio en RabbitMQ y **nunca se importan entre sí**, con
+una única excepción acotada: una **consulta síncrona de solo lectura** a otro contexto, hecha por
+HTTP (nunca un import), para un dato que un comando debe verificar *al momento de escribir* y no
+puede obtener de un evento ni de una réplica local — ver *Consultas síncronas entre contextos*.
+Dirección de dependencias: `domain ← application ← infrastructure`, impuesta por el grafo de módulos
+de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 
 ### Bounded Contexts
 
@@ -125,7 +128,30 @@ Lo que hay que saber de cada uno para no romper el grafo:
 | `shared:message` | Códigos, campos, límites, textos Swagger, `EventTopics`, enums `{Feature}Key`, fachada `Mensajes` | — |
 
 **Un `shared:*` con un solo consumidor no es compartido.** Exige dos consumidores reales antes de
-crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto.
+crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
+prevista es `shared:web-client` (transporte, no dominio: cliente HTTP configurable con URL, payload y
+tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Aún
+no existe (lo trae una HT aparte); hasta entonces esos adaptadores son stubs — ver *Desviaciones*.
+
+### Consultas síncronas entre contextos
+
+El default para "el contexto A necesita algo del contexto B" sigue siendo un evento: B publica, A
+replica local, A lee su tabla. Se recurre a una consulta HTTP síncrona **solo** si se cumplen las
+tres: (1) el dato es una **precondición de una escritura** en A y debe ser correcto al instante de
+escribir, no eventualmente — una réplica desactualizada dejaría pasar un comando inválido; (2) A no
+necesita el dato para nada más, así que mantener una réplica (más su backfill y su consumer) es puro
+lastre; (3) B ya expone una consulta que responde. Primer caso: el asesor/coordinador asignado al
+estudiante, verificado cuando `solicitudes` crea una solicitud de novedad / cambio de asesor.
+
+Forma, espejando cualquier otro puerto secundario:
+- Puerto en `application/{feature}/command/secondaryport/{Concepto}OutputPort` (o su propio paquete
+  fino si no mapea a un agregado, p. ej. `application/asignacionproyecto/command/secondaryport/`),
+  devuelve un `boolean`/valor plano — **la `Rule` sigue decidiendo**, el puerto solo responde.
+- Un `Finder` de comando lo consume, igual que un chequeo contra réplica.
+- Adaptador en `infrastructure/{feature}/command/secondaryadapter/webclient/{Concepto}OutputAdapter`,
+  `@Component`, habla por `shared:web-client` — nunca `RestClient`/`WebClient` inline, nunca un
+  cliente generado que importe B. Reenvía el bearer del llamante, y un fallo de transporte sale como
+  `InfrastructureException` (503): un peer caído falla la petición, no salta el chequeo.
 
 ### Layer Structure per Context
 
@@ -463,6 +489,7 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 | `UsuarioCreadoConsumer` en `amqp/` plano | `fichas/…/usuario/…/amqp/` | Le faltan los dos segmentos `{productor}/{entidad}/`. En vías de retirarse |
 | Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/auth/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |
 | Enums de catálogo en dos ubicaciones | `domain/{catalogo}/` vs `domain/{feature}/model/` | **Decisión abierta del proyecto, no la "arregles".** Un enum nuevo sigue lo que ya use su contexto |
+| `AsignacionProyectoOutputAdapter` stub | `solicitudes/…/asignacionproyecto/…/webclient/` | **Deliberado, HU-081.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` — ninguno existe aún. El puerto + `DestinatarioAsignadoRule` + `DestinatarioAsignadoFinder` están cableados y activos; el adaptador devuelve `true` y loguea `warn`. Consecuencia: la regla no rechaza nada todavía. Activar = reemplazar el cuerpo del adaptador; checklist en `PLAN-HU-081.md` §3.1 |
 
 ## Reference Documentation
 

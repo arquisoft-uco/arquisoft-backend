@@ -72,3 +72,9 @@ include 'notificaciones'
 include 'notificaciones:domain'
 include 'notificaciones:application'
 include 'notificaciones:infrastructure'
+
+// Contexto 10: Solicitudes (solicitudes de novedad, cambio de asesor, ampliación de plazo, etc.)
+include 'solicitudes'
+include 'solicitudes:domain'
+include 'solicitudes:application'
+include 'solicitudes:infrastructure'

@@ -275,6 +275,9 @@ services:
       DB_NOTIFICACIONES_URL: jdbc:postgresql://postgres:5432/notificaciones
       DB_NOTIFICACIONES_USERNAME: arquisoft_user
       DB_NOTIFICACIONES_PASSWORD: arquisoft123
+      DB_SOLICITUDES_URL: jdbc:postgresql://postgres:5432/solicitudes
+      DB_SOLICITUDES_USERNAME: arquisoft_user
+      DB_SOLICITUDES_PASSWORD: arquisoft123
       # 'log' no intenta conectar a ningún servidor SMTP — Mailpit es opcional.
       # Para probar la entrega real: levantar el servicio 'mailpit' y poner esta var en 'smtp'.
       NOTIFICACION_PROVEEDOR: ${NOTIFICACION_PROVEEDOR:-log}

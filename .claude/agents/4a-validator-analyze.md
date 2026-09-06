@@ -63,7 +63,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | `domain/` sin imports de Spring/Hibernate/JPA/Lombok/Jackson/Swagger/Security/Keycloak | ❌ |
 | `{contexto}/domain/build.gradle` declara `shared:application` — el dominio solo ve `shared:domain`. Si el código bajo `domain/` importa `UseCase`, `Interactor`, `Finder` o `EventPublisher`, el tipo está en la capa equivocada (no compila tal cual) | ❌ |
 | `application/` no importa `@RestController` ni JPA directo | ❌ |
-| Bounded contexts no se importan entre sí | ❌ |
+| Bounded contexts no se importan entre sí (`import com.arquisoft.{otroContexto}.*`). La única forma legítima de que A consulte a B es una *Consulta síncrona entre contextos* por HTTP vía `shared:web-client` — nunca un import, ni siquiera transitivo | ❌ |
 | Sin `@Bean TaskExecutor` manual (ADR-008 — Virtual Threads ya activos) | ❌ |
 | `query/secondaryadapter` importa algo de `command/secondaryadapter` (incluido el `JpaEntity`) | ❌ (rompe aislamiento CQRS) — solo aplica a `src/main`; un `@DataJpaTest` del lado query **sí** siembra con los `JpaEntity` de comando vía `TestEntityManager`, y eso es correcto |
 | `{Entidad}QueryRepository` extiende `JpaRepository` en vez de `QueryRepository`/`SpecificationQueryRepository` (hereda `save`/`delete` en el lado de lectura) | ❌ |
@@ -82,6 +82,16 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Un `shared:*` **nuevo** con un solo consumidor. Un "compartido" de un cliente es un contexto mal ubicado; exige dos consumidores reales antes de crearlo | ❌ |
 | `{contexto}/application/build.gradle` declara un `shared:*` que contiene adaptadores ejecutables (drivers, clientes HTTP, `JavaMailSender`). `verificarCapasHexagonales` **no** lo detecta —razona por nombre de módulo— así que hay que mirarlo a mano: abre el módulo y comprueba que solo tenga puerto y modelos | ❌ |
 | `try/catch` en un `UseCase` alrededor de un `OutputPort` cuyo fallo el propio caso de uso registra como estado. Ese desenlace debía ser una sellada devuelta por el puerto (`ResultadoEntrega`), no una excepción; la traza técnica la logea el adaptador, que tiene la causa | ⚠️ |
+
+**Consultas síncronas entre contextos** (solo si el plan/código consulta a otro contexto en caliente — ver `arquisoft-arquitectura` → *Consultas síncronas entre contextos*):
+
+| Check | Sev |
+|---|:---:|
+| El adaptador usa `RestClient`/`WebClient`/`RestTemplate`/`HttpClient` inline, o un cliente generado que importa el contexto destino, en vez de hablar por `shared:web-client` | ❌ |
+| El puerto de la consulta síncrona vive en `query/secondaryport/` (o hay un paquete `query/` nuevo para esto) en vez de `command/secondaryport/` — es un chequeo de escritura, lo consume un `Finder` de comando, no un `primaryport` de lectura | ❌ |
+| El adaptador `webclient/` traga el fallo de transporte o lo mapea a 4xx en vez de dejar salir una `InfrastructureException` (503) — un peer caído tiene que fallar la petición, no aprobar el chequeo | ❌ |
+| Se eligió consulta síncrona cuando el contexto necesita el dato **para algo más** que un chequeo puntual de escritura (lo persiste, lo consulta, lo muestra) — ahí va réplica local + eventos, no HTTP | ⚠️ |
+| El adaptador es un **stub** (devuelve el valor permisivo fijo) sin que el plan lo declare en "Fuera de alcance" con checklist de activación y sin fila en `CLAUDE.md` → *Desviaciones conocidas*. Con `shared:web-client` aún inexistente, el stub es legítimo **solo** si está documentado así | ❌ |
 
 **Prueba del algodón:** "si mañana cambio Keycloak/RabbitMQ/PostgreSQL por otra tecnología, ¿este
 archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio filtrada (bloqueante).

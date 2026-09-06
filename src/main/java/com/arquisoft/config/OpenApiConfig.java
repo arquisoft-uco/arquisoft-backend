@@ -60,6 +60,9 @@ public class OpenApiConfig {
     @Value("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
     private String fichasPerfilBasePath;
 
+    @Value("${rutas.solicitudes.solicitud.base:/solicitudes}")
+    private String solicitudesBasePath;
+
     @Bean
     public GroupedOpenApi allApi() {
         return GroupedOpenApi.builder()
@@ -138,6 +141,15 @@ public class OpenApiConfig {
             .group("08-evaluaciones")
             .displayName("Evaluaciones")
             .pathsToMatch("/evaluaciones/**")
+            .build();
+    }
+
+    @Bean
+    public GroupedOpenApi solicitudesApi() {
+        return GroupedOpenApi.builder()
+            .group("09-solicitudes")
+            .displayName("Solicitudes")
+            .pathsToMatch(solicitudesBasePath + "/**")
             .build();
     }
 }

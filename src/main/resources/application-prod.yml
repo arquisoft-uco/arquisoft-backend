@@ -140,6 +140,17 @@ datasource:
       connection-timeout: 30000
       pool-name: HikariPool-Evaluaciones-Prod
 
+  solicitudes:
+    url: ${DB_SOLICITUDES_URL}
+    username: ${DB_SOLICITUDES_USERNAME}
+    password: ${DB_SOLICITUDES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      pool-name: HikariPool-Solicitudes-Prod
+
   arquisoft-events:
     url: ${DB_ARQUISOFT_EVENTS_URL}
     username: ${DB_ARQUISOFT_EVENTS_USERNAME}

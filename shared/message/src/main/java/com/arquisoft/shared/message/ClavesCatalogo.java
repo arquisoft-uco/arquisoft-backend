@@ -28,6 +28,9 @@ import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
+import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
+import com.arquisoft.shared.message.key.solicitudes.TipoSolicitudKey;
+import com.arquisoft.shared.message.key.solicitudes.UsuarioReplicaKey;
 import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
@@ -91,6 +94,9 @@ public final class ClavesCatalogo {
             RepresentanteComiteKey.class,
             RevisionItemKey.class,
             UsuarioEspejoKey.class,
+            SolicitudKey.class,
+            TipoSolicitudKey.class,
+            UsuarioReplicaKey.class,
             ConsumidorKey.class,
             EnvioNotificacionKey.class,
             NotificacionKey.class,
