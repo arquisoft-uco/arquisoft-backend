@@ -9,7 +9,7 @@ import com.arquisoft.notificaciones.application.notificacion.command.secondarypo
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.MensajeNotificacion;
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.model.ResultadoEntrega;
 import com.arquisoft.notificaciones.application.notificacion.command.result.EnvioNotificacionResult;
-import com.arquisoft.notificaciones.domain.notificacion.EnvioNotificacionDomain;
+import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
 import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
 import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
 import com.arquisoft.shared.logger.AppLogger;
@@ -46,20 +46,21 @@ class EnviarNotificacionUseCaseTest {
     @InjectMocks
     private EnviarNotificacionUseCaseImpl enviarNotificacionUseCase;
 
-    private EnvioNotificacionDomain envio() {
+    private NotificacionDomain envio() {
         return EnviarNotificacionMapper.toDomain(EnviarNotificacionCommand.crear(
                 ID_EVENTO,
                 TipoNotificacion.ASESOR_FICHA_CAMBIADO.getId(),
                 "Ana Gomez",
                 "ana.gomez@soyuco.edu.co",
                 "Se te asignó la ficha",
-                "Hola Ana, ahora eres la asesora."));
+                "Hola Ana, ahora eres la asesora.",
+                "Correo automatico, no respondas."));
     }
 
     @Test
     void debeEnviarYPersistirComoEnviada_cuandoElEventoEsNuevo() {
         // Arrange
-        when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(false);
+        when(notificacionProcesadaFinder.obtener(any(NotificacionDomain.class))).thenReturn(false);
         when(envioNotificacionOutputPort.enviar(any(MensajeNotificacion.class)))
                 .thenReturn(new ResultadoEntrega.Entregada());
 
@@ -80,7 +81,7 @@ class EnviarNotificacionUseCaseTest {
     @Test
     void debeConstruirElMensajeConDestinatarioAsuntoYCuerpo_cuandoEnvia() {
         // Arrange
-        when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(false);
+        when(notificacionProcesadaFinder.obtener(any(NotificacionDomain.class))).thenReturn(false);
         when(envioNotificacionOutputPort.enviar(any(MensajeNotificacion.class)))
                 .thenReturn(new ResultadoEntrega.Entregada());
 
@@ -104,8 +105,8 @@ class EnviarNotificacionUseCaseTest {
 
     @Test
     void noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado() {
-        // Arrange — es la reentrega normal del broker, no un error
-        when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(true);
+        // Arrange
+        when(notificacionProcesadaFinder.obtener(any(NotificacionDomain.class))).thenReturn(true);
 
         // Act
         var resultado = enviarNotificacionUseCase.ejecutar(envio());
@@ -119,11 +120,11 @@ class EnviarNotificacionUseCaseTest {
     @Test
     void debePersistirComoFallidaConElMotivo_cuandoLaEntregaFalla() {
         // Arrange
-        when(notificacionProcesadaFinder.obtener(ID_EVENTO)).thenReturn(false);
+        when(notificacionProcesadaFinder.obtener(any(NotificacionDomain.class))).thenReturn(false);
         when(envioNotificacionOutputPort.enviar(any(MensajeNotificacion.class)))
                 .thenReturn(new ResultadoEntrega.Rechazada("No se pudo entregar la notificación"));
 
-        // Act — no relanza: el fallo se persiste para poder reintentarlo despues
+        // Act
         var resultado = enviarNotificacionUseCase.ejecutar(envio());
 
         // Assert

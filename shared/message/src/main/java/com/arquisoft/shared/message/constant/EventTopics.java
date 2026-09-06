@@ -10,6 +10,15 @@ public final class EventTopics {
 
         public static final String FICHA_PERFIL_ASESOR_CAMBIADO =
                 "fichas.ficha_perfil.asesor_cambiado";
+
+        public static final String FICHA_PERFIL_REGISTRADA =
+                "fichas.ficha_perfil.registrada";
+
+        public static final String ESTUDIANTES_FICHA_PERFIL_ASIGNADOS =
+                "fichas.estudiante_ficha_perfil.asignados";
+
+        public static final String REVISION_ITEM_AGREGADO =
+                "fichas.revision_item.agregado";
     }
 
     public static final class Usuarios {
@@ -17,5 +26,13 @@ public final class EventTopics {
         private Usuarios() {}
 
         public static final String USUARIO_CREADO = "usuarios.usuario.creado";
+    }
+
+    public static final class Solicitudes {
+
+        private Solicitudes() {}
+
+        public static final String NOVEDAD_COORDINADOR_ENVIADA =
+                "solicitudes.solicitud.novedad_coordinador_enviada";
     }
 }

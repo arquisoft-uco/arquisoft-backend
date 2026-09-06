@@ -23,6 +23,7 @@ public final class FichasCodes {
         public static final String ASESOR_NO_ENCONTRADO = "ASESOR_NO_ENCONTRADO";
         public static final String FICHA_NO_ENCONTRADA = "FICHA_NO_ENCONTRADA";
         public static final String FICHA_NO_PROPIETARIO = "FICHA_NO_PROPIETARIO";
+        public static final String FICHA_NO_PERTENECE_ASESOR = "FICHA_NO_PERTENECE_ASESOR";
         public static final String MISMO_ASESOR = "MISMO_ASESOR";
         public static final String ESTADO_TERMINAL = "ESTADO_TERMINAL";
     }
@@ -34,6 +35,8 @@ public final class FichasCodes {
         public static final String ITEM_ID_REQUERIDO = "ITEM_ID_REQUERIDO";
         public static final String ESTUDIANTE_REQUERIDO = "ITEM_ESTUDIANTE_REQUERIDO";
         public static final String FICHA_PERFIL_ID_REQUERIDO = "ITEM_FICHA_PERFIL_ID_REQUERIDO";
+        public static final String ASESOR_FICHA_REQUERIDO = "ITEM_ASESOR_FICHA_REQUERIDO";
+        public static final String REPRESENTANTE_COMITE_REQUERIDO = "ITEM_REPRESENTANTE_COMITE_REQUERIDO";
         public static final String TIPO_ITEM_REQUERIDO = "ITEM_TIPO_ITEM_REQUERIDO";
         public static final String CONTENIDO_REQUERIDO = "ITEM_CONTENIDO_REQUERIDO";
         public static final String CONTENIDO_DEMASIADO_LARGO = "ITEM_CONTENIDO_DEMASIADO_LARGO";
@@ -44,6 +47,19 @@ public final class FichasCodes {
         public static final String ESTADO_FICHA_REQUERIDO = "ITEM_ESTADO_FICHA_REQUERIDO";
         public static final String ESTADO_FICHA_NO_MODIFICABLE = "ESTADO_FICHA_NO_MODIFICABLE";
         public static final String ITEM_CON_REVISIONES = "ITEM_CON_REVISIONES";
+    }
+
+    public static final class RevisionItem {
+
+        private RevisionItem() {}
+
+        public static final String ITEM_REQUERIDO = "REVISION_ITEM_ITEM_REQUERIDO";
+        public static final String ASESOR_FICHA_REQUERIDO = "REVISION_ITEM_ASESOR_FICHA_REQUERIDO";
+        public static final String ESTADO_REVISION_REQUERIDO = "REVISION_ITEM_ESTADO_REVISION_REQUERIDO";
+        public static final String ESTADO_REVISION_DEMASIADO_LARGO = "REVISION_ITEM_ESTADO_REVISION_DEMASIADO_LARGO";
+        public static final String ESTADO_REVISION_NO_ENCONTRADO = "REVISION_ITEM_ESTADO_REVISION_NO_ENCONTRADO";
+        public static final String YA_EXISTE = "REVISION_ITEM_YA_EXISTE";
+        public static final String REVISION_ITEM_REQUERIDO = "REVISION_ITEM_REVISION_ITEM_REQUERIDO";
     }
 
     public static final class Estudiante {

@@ -10,8 +10,14 @@ modificas código de producción.**
 
 ## FASE 0 — Cargar contexto
 
-Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y (para APIs de testing
-actualizadas) `context7-stack`.
+Invoca las skills `arquisoft-arquitectura`, `arquisoft-estandares` y `arquisoft-mcps` — las mismas
+tres que cargan `@1-planificador` y `@2-implementador`. Son la fuente verificada contra el código
+real; si contradicen algo del plan, repórtalo en vez de resolverlo por tu cuenta.
+
+Además, para las APIs de testing del stack (JUnit 6, Mockito, AssertJ, slices de Spring Boot 4),
+carga `context7-stack` y consulta Context7 con sus IDs validados antes de generar tests que usen una
+API que no tengas fresca. `arquisoft-mcps` dice cuándo preferir cada MCP y cuál es el fallback si no
+está cargado en la sesión.
 
 ## Reglas de aislamiento por capa (críticas)
 
@@ -32,7 +38,7 @@ que la lógica está en la capa equivocada — **detente y reporta**, no escriba
 | 2 | Un test por cada campo obligatorio del `Command.crear(...)` | El Notification Pattern acumula: un solo test con varios campos inválidos asserta todos los `fieldErrors[]` de una vez |
 | 3 | Métodos `private`/helpers internos | Se validan indirectamente desde el método público que los usa |
 | 4 | Tests duplicados con el mismo "Act" y distintos asserts | Consolida en un solo test con varios asserts |
-| 5 | Delegación pura sin lógica (use case que solo llama al repositorio) | Ya cubierto por el test del flujo principal |
+| 5 | Delegación pura sin lógica (use case que solo llama al repositorio) | Ya cubierto por el test del flujo principal. **Excepción: el `InteractorImpl`.** Aunque solo delegue, no está excluido de JaCoCo y sin test propio queda en 0% — se diluye en el agregado del módulo y el gate del 75% lo deja pasar. Un test de delegación (`verify` + `isSameAs` del resultado) basta |
 | 6 | Excepción simple (`super(msg, code)` y nada más) | Su `errorCode` se verifica implícitamente desde el test que la lanza |
 | 7 | equals/hashCode/toString de Lombok | Ya generados y correctos |
 | 8 | Test que asserta el **texto** de un log | El texto vive en el catálogo; asertarlo acopla el test a la redacción y duplica lo que ya cubre `CatalogoCargaTest` |
@@ -43,16 +49,28 @@ múltiples asserts.
 ## Logs: cómo afectan a los tests
 
 Todo flujo de escritura emite un `INFO` **de entrada** al comenzar el use case, además del `INFO` de
-cierre tras escribir (ver `arquisoft-estandares`). Tres consecuencias:
+cierre como última sentencia de `ejecutar` (ver `arquisoft-estandares`). Consecuencias:
 
-- **Nunca** asertar `verify(logger, never()).info(anyString(), any())` para probar que un flujo
-  aborta: con el `INFO` de entrada eso es siempre falso. Estrecha la aserción a los argumentos del
-  log de cierre — `verify(logger, never()).info(anyString(), eq(item.getId()))`. Este error ya rompió
-  dos tests en `evaluaciones`.
+- **El primer argumento de un log es una `ClaveMensaje`, no un `String`.** El matcher es
+  `any(ClaveMensaje.class)` (`com.arquisoft.shared.message.ClaveMensaje`); `anyString()` /
+  `any(String.class)` **no casan** y la verificación falla con `ArgumentsAreDifferent` señalando la
+  posición [0]. Esto ya rompió 10 tests al introducirse la sobrecarga. La variante de `String` sigue
+  existiendo para los pocos sitios que loguean una constante local (`shared:redis`, `shared:tracing`):
+  ahí sí se usa `anyString()`.
+- **Nunca** asertar `verify(logger, never()).info(any(ClaveMensaje.class), any())` para probar que un
+  flujo aborta: con el `INFO` de entrada eso es siempre falso. Estrecha la aserción a los argumentos
+  del log de cierre — `verify(logger, never()).info(any(ClaveMensaje.class), eq(item.getId()))`. Este
+  error ya rompió dos tests en `evaluaciones`.
 - Un `CommandOutputAdapter` que logea inyecta `AppLogger`, así que el test que lo instancia a mano
   pasa `mock(AppLogger.class)` al constructor. Patrón a copiar: `FichaPerfilCommandOutputAdapterTest`.
-- Los tests de `UseCaseImpl` e `InteractorImpl` declaran `@Mock AppLogger logger`. En un flujo
-  anidado el interactor también lo lleva; en uno simple, solo si el interactor logea (no lo hace).
+- Los tests de `UseCaseImpl` declaran `@Mock AppLogger logger`. **Los de `InteractorImpl` no**: ningún
+  interactor del repo logea ni inyecta `AppLogger`, así que un `@Mock AppLogger` ahí es un mock
+  muerto.
+- Un `Interactor`/`UseCase` **sin entrada** (`SupplierInteractor<O>`/`SupplierUseCase<O>`) se stubea
+  y se verifica sin matcher alguno: `when(interactor.ejecutar())` y `verify(interactor).ejecutar()`.
+  Si te ves escribiendo `ejecutar(isNull())` o `ejecutar(any())`, la firma bajo prueba todavía es
+  `Interactor<Void, O>` y eso es un hallazgo para el implementador, no algo que el test deba
+  acomodar. Referencia: `ConsultarEstadosFichaControllerTest`.
 - Un `UseCaseImpl` de **lectura** también inyecta `AppLogger` (dos `debug`, ningún `INFO`), así que
   su test necesita el `@Mock` igual. Su interactor y su `QueryOutputAdapter` no logean, así que esos
   tests no cambian.
@@ -60,6 +78,11 @@ cierre tras escribir (ver `arquisoft-estandares`). Tres consecuencias:
   aporta los `debug` de envelope y el `error` del nack, y no se asertan. En `notificaciones` el log
   de cierre lo pone `AbstractNotificacionConsumer.registrar(...)` y tampoco se asserta. Si el test verifica un log
   que lleva un correo, el valor esperado es el **enmascarado** (`j***@uco.edu.co`), no el original.
+- **No captures los argumentos de un log con un solo `ArgumentCaptor`.** `AppLogger.info(ClaveMensaje, Object...)`
+  es varargs: `verify(logger).info(any(), captor.capture())` solo casa con las llamadas de
+  **exactamente un** argumento, así que una de dos argumentos se reporta como `ArgumentsAreDifferent`
+  aunque los valores sean los correctos. Usa un `eq(...)` por argumento —
+  `verify(logger).warn(any(ClaveMensaje.class), eq(idEvento), eq("a***@uco.edu.co"))`.
 
 
 ## Presupuesto orientativo
@@ -93,7 +116,7 @@ Pattern — `ValidationResult` acumula y `lanzarSiTieneErrores()` lanza **una so
 `reconstruir(...)` sin re-validar. Cada `Rule` (`domain/{feature}/rules/impl/`) se testea aislada
 con su record de entrada: **no necesita Mockito**, es una función pura.
 
-El agregado no emite eventos: los publica el `UseCase`, así que el `verify(eventPublisher)` se
+El domain no emite eventos: los publica el `UseCase`, así que el `verify(eventPublisher)` se
 testea en application, nunca en domain. Si el plan dice "Eventos: ninguno", nada de esto aplica
 — generarlo sería sobre-testeo.
 
@@ -125,7 +148,7 @@ recorriendo `values()` y comparando **los conjuntos completos**, para que agrega
 solo lado rompa el build. Ver `TipoNotificacionEventoTest`.
 
 **Solo si el plan declara eventos:** `verify(eventPublisher, times(N)).publish(any())` sobre el mock
-de `EventPublisher` que inyecta el use case — es el único punto de observación, porque el agregado
+de `EventPublisher` que inyecta el use case — es el único punto de observación, porque el domain
 no guarda eventos que se le puedan preguntar después. **Si el plan dice "Eventos: ninguno", no
 mockees `EventPublisher`**: el use case no lo inyecta, así que un `@Mock` de más rompe el test con
 `UnnecessaryStubbingException` y, peor, sugiere que el flujo publica algo.
@@ -144,7 +167,9 @@ le escribas un test propio al mapper salvo que tenga lógica que el flujo del us
 
 **Infrastructure — `OutputAdapter`/`Controller`:** `@DataJpaTest` con H2, sembrando con
 `TestEntityManager` (nunca con un `QueryRepository`, que no tiene `save`); confirma que el adapter
-usa `reconstruir(...)`, nunca `crear(...)`, al leer de BD.
+usa `reconstruir(...)`, nunca `crear(...)`, al leer de BD. Un `QueryOutputAdapter` sobre una entidad
+con `@Subselect` va con `@DataJpaTest` aunque solo delegue: mockear el `QueryRepository` deja la
+vista sin ejecutar y no detecta un alias que no case con su `@Column`.
 
 `@WebMvcTest` en `fichas` necesita `@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class,
 TrazabilidadConfig.class, {Test}.TestSecurityConfig.class})` — sin `GlobalAppExceptionHandler` toda
@@ -169,6 +194,36 @@ justo lo que se busca. Al comparar contra un código o un campo, importa la cons
 `Criteria` y las claves de `traducir(...)` no divergen — son dos declaraciones de "qué es
 ordenable".
 
+
+**Consumidor AMQP — las tres ramas del `nack`.** `AbstractEventConsumer` clasifica el fallo, así que
+un consumidor nuevo hereda tres comportamientos y los tres se prueban sobre él (no sobre la clase
+abstracta, que no tiene *source set* de tests):
+
+| Caso | Arrange | Assert |
+|---|---|---|
+| Éxito | payload válido | `verify(channel).basicAck(tag, false)` |
+| Transitorio, 1ª entrega | `doThrow(new QueryTimeoutException(...))`, `props.setRedelivered(false)` | `basicNack(tag, false, true)` |
+| Transitorio reentregado | igual con `setRedelivered(true)` | `basicNack(tag, false, false)` |
+| Envenenado | `doThrow(new IllegalArgumentException(...))` | `basicNack(tag, false, false)` |
+
+Ojo con el mock del interactor: si el consumidor hace `switch` sobre el resultado, Mockito devuelve
+`null` por defecto y el `switch` lanza `NullPointerException` **antes** de que el test llegue a su
+aserción. Hay que stubearlo en el `@BeforeEach`, con `lenient()` si algún test lo reemplaza por un
+`doThrow`.
+
+**`{Evento}PayloadTest`** — obligatorio con cada payload nuevo. Usa `new RabbitMQConfig().rabbitObjectMapper()`,
+nunca un `ObjectMapper` propio, y cubre el viaje completo del evento y la lectura tolerante del campo
+ausente. La forma exacta está en la skill `arquisoft-estandares`.
+
+**`{Enum}{Evento|Persistencia}Test`** — con cada enum espejo de infraestructura. Dos aserciones: cada
+código resuelve con `desde(...)`, y ambos enums declaran el **mismo conjunto** de constantes. No es un
+`@DataJpaTest`: comparar dos enums no necesita H2 ni contexto de Spring, así que va en su propio
+archivo y no dentro del test del adapter.
+
+**Reintento desde base de datos** (caso de uso `@Scheduled`): tres casos — reenvío correcto (estado
+`ENVIADA`, `intentos` incrementado, `detalle_error` a `null`), agotamiento al alcanzar el máximo, y
+lista vacía (`verify(..., never())` sobre el puerto de envío y el de guardado).
+
 ## Flujo de trabajo
 
 1. **Cargar plan y código.** Lee `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa) y cada
@@ -189,8 +244,25 @@ ordenable".
    `check` es el gate real (incluye `checkstyleMain`/`checkstyleTest` + `jacocoTestCoverageVerification`
    con mínimo 75%). JaCoCo no se aplica a `shared:*`, y dentro de un contexto excluye
    `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity` y
-   `JpaQueryEntity`) y `config/**`. **`*Domain` NO está excluido** — el agregado cuenta para el
+   `JpaQueryEntity`) y `config/**`. **`*Domain` NO está excluido** — el domain cuenta para el
    umbral, así que sus tests de `crear`/`reconstruir` son los que sostienen el porcentaje.
+   **Un `UP-TO-DATE` no es un verde.** Gradle omite la tarea si nada cambio desde la ultima
+   ejecucion, asi que un `BUILD SUCCESSFUL` con todas las tareas `UP-TO-DATE` no prueba que un
+   solo test haya corrido. Cuando la salida no muestre `> Task :{contexto}:{capa}:test` como
+   ejecutada, repite con `--rerun-tasks` antes de reportar.
+
+   **La cobertura del modulo esconde clases en cero.** El umbral del 75% es un agregado: una clase
+   sin un solo test se diluye entre las demas y el gate pasa igual. Antes de reportar, revisa el
+   XML de JaCoCo por clase (`build/reports/jacoco/test/jacocoTestReport.xml`, contador
+   `INSTRUCTION` de cada `<class>`) y justifica toda clase productiva por debajo del 80%.
+
+   **Un test sobre el catalogo no prueba lo que produccion envia.** Los tests leen
+   `catalogo/*.properties` con `Properties.load`, que interpreta los escapes de Java; en produccion
+   lo lee `catalogo/cargar.sh`, que es shell. Un assert sobre el texto renderizado pasa con el
+   salto de linea real mientras el correo sale con la barra invertida literal. La compuerta de esa
+   clase de desvio es `CatalogoCargaTest`, no un assert del contexto: si el texto necesita algo mas
+   que `\n`, ponlo literal en el `.properties`.
+
    Reportar verde habiendo corrido solo `test` es un error — un import sin usar o cobertura <75%
    rompen el build igual. Si falla: agrega tests significativos sobre las ramas no cubiertas (mira
    el reporte HTML de JaCoCo) o limpia checkstyle — nunca bajes el umbral ni infles con tests
@@ -226,7 +298,7 @@ antes de tocar cualquier archivo de producción). Nunca decidas por tu cuenta cu
 6. `@MockitoBean`, nunca `@MockBean` (Spring Boot 4.x).
 7. Tests de domain/application aislados de frameworks externos — si no lo están, reporta violación
    de capas antes de escribir el test.
-8. Nunca generes los 7 anti-patrones; consolida asserts complementarios.
+8. Nunca generes los 8 anti-patrones de la tabla; consolida asserts complementarios.
 9. Confirmación previa obligatoria antes del primer test — con estimación y distribución.
 10. Sin Javadoc en tests.
 11. Al finalizar, actualiza la fila `Tests` y sugiere `@4a-validator-analyze` con el comando exacto.

@@ -1,108 +1,77 @@
 package com.arquisoft.fichas.infrastructure.estadoficha.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
+import com.arquisoft.fichas.infrastructure.estadoficha.command.secondaryadapter.entity.EstadoFichaJpaEntity;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@DataJpaTest
 class EstadoFichaQueryOutputAdapterTest {
 
-    @Mock
+    @Autowired
+    private TestEntityManager entityManager;
+
+    @Autowired
     private EstadoFichaQueryRepository repository;
 
-    @InjectMocks
     private EstadoFichaQueryOutputAdapter adapter;
 
-    @Test
-    void debeRetornarListaDeReadModels_cuandoFindAllEsInvocado() {
-        // Arrange
-        EstadoFichaJpaQueryEntity entity1 = EstadoFichaJpaQueryEntity.builder()
-                .id("EN_CONSTRUCCION")
-                .nombre("En Construccion")
-                .descripcion("Ficha en desarrollo")
-                .build();
-
-        EstadoFichaJpaQueryEntity entity2 = EstadoFichaJpaQueryEntity.builder()
-                .id("APROBADA")
-                .nombre("Aprobada")
-                .descripcion("Ficha aprobada por el comite")
-                .build();
-
-        EstadoFichaJpaQueryEntity entity3 = EstadoFichaJpaQueryEntity.builder()
-                .id("NO_APROBADA")
-                .nombre("No Aprobada")
-                .descripcion("Ficha rechazada")
-                .build();
-
-        List<EstadoFichaJpaQueryEntity> entities = List.of(entity1, entity2, entity3);
-        when(repository.findAll()).thenReturn(entities);
-
-        // Act
-        List<EstadoFichaReadModel> resultado = adapter.findAll();
-
-        // Assert
-        assertThat(resultado).isNotNull();
-        assertThat(resultado).hasSize(3);
-
-        assertThat(resultado.get(0).id()).isEqualTo("EN_CONSTRUCCION");
-        assertThat(resultado.get(0).nombre()).isEqualTo("En Construccion");
-        assertThat(resultado.get(0).descripcion()).isEqualTo("Ficha en desarrollo");
-
-        assertThat(resultado.get(1).id()).isEqualTo("APROBADA");
-        assertThat(resultado.get(1).nombre()).isEqualTo("Aprobada");
-        assertThat(resultado.get(1).descripcion()).isEqualTo("Ficha aprobada por el comite");
-
-        assertThat(resultado.get(2).id()).isEqualTo("NO_APROBADA");
-        assertThat(resultado.get(2).nombre()).isEqualTo("No Aprobada");
-        assertThat(resultado.get(2).descripcion()).isEqualTo("Ficha rechazada");
-
-        verify(repository, times(1)).findAll();
+    @BeforeEach
+    void setUp() {
+        adapter = new EstadoFichaQueryOutputAdapter(repository);
     }
 
     @Test
-    void debeRetornarListaVacia_cuandoRepositorioRetornaVacio() {
+    void debeRetornarLosEstadosDelCatalogo_cuandoExistenEnBD() {
         // Arrange
-        when(repository.findAll()).thenReturn(List.of());
+        persistirEstado("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo");
+        persistirEstado("APROBADA", "Aprobada", "Ficha aprobada por el comite");
+        entityManager.flush();
 
         // Act
         List<EstadoFichaReadModel> resultado = adapter.findAll();
 
         // Assert
-        assertThat(resultado).isNotNull();
-        assertThat(resultado).isEmpty();
-        verify(repository, times(1)).findAll();
+        assertThat(resultado)
+                .extracting(EstadoFichaReadModel::id)
+                .containsExactlyInAnyOrder("EN_CONSTRUCCION", "APROBADA");
     }
 
     @Test
-    void debeMaperarCorrectamente_cuandoConvierteEntityAReadModel() {
+    void debeProyectarTodasLasColumnas_cuandoLeeUnEstado() {
         // Arrange
-        EstadoFichaJpaQueryEntity entity = EstadoFichaJpaQueryEntity.builder()
-                .id("DISPONIBLE_PARA_EVALUACION")
-                .nombre("Disponible para Evaluacion")
-                .descripcion("Ficha lista para ser evaluada")
-                .build();
-
-        when(repository.findAll()).thenReturn(List.of(entity));
+        persistirEstado("NO_APROBADA", "No Aprobada", "Ficha rechazada");
+        entityManager.flush();
 
         // Act
         List<EstadoFichaReadModel> resultado = adapter.findAll();
 
         // Assert
-        assertThat(resultado).hasSize(1);
-        EstadoFichaReadModel readModel = resultado.get(0);
+        assertThat(resultado).singleElement().satisfies(estado -> {
+            assertThat(estado.id()).isEqualTo("NO_APROBADA");
+            assertThat(estado.nombre()).isEqualTo("No Aprobada");
+            assertThat(estado.descripcion()).isEqualTo("Ficha rechazada");
+        });
+    }
 
-        assertThat(readModel.id()).isEqualTo(entity.getId());
-        assertThat(readModel.nombre()).isEqualTo(entity.getNombre());
-        assertThat(readModel.descripcion()).isEqualTo(entity.getDescripcion());
+    @Test
+    void debeRetornarVacio_cuandoNoHayEstadosEnBD() {
+        // Act & Assert
+        assertThat(adapter.findAll()).isEmpty();
+    }
+
+    private void persistirEstado(String id, String nombre, String descripcion) {
+        entityManager.persist(EstadoFichaJpaEntity.builder()
+                .id(id)
+                .nombre(nombre)
+                .descripcion(descripcion)
+                .build());
     }
 }

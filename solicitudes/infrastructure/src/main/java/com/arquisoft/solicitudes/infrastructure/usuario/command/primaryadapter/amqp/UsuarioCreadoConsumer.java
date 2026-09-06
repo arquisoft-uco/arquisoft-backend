@@ -2,7 +2,6 @@ package com.arquisoft.solicitudes.infrastructure.usuario.command.primaryadapter.
 
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.solicitudes.UsuarioReplicaKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilTexto;
@@ -43,12 +42,11 @@ public class UsuarioCreadoConsumer extends AbstractEventConsumer {
             UsuarioCreadoPayload payload = deserialize(message, UsuarioCreadoPayload.class);
 
             if (UtilTexto.esVacioONulo(payload.identificador()) || UtilTexto.esVacioONulo(payload.nombre())) {
-                logger.info(Mensajes.obtener(UsuarioReplicaKey.LOG_USUARIO_CREADO_IGNORADO_SIN_DATOS),
-                        payload.usuarioId());
+                logger.info(UsuarioReplicaKey.LOG_USUARIO_CREADO_IGNORADO_SIN_DATOS, payload.usuarioId());
                 return;
             }
 
-            logger.info(Mensajes.obtener(UsuarioReplicaKey.LOG_USUARIO_CREADO_RECIBIDO),
+            logger.info(UsuarioReplicaKey.LOG_USUARIO_CREADO_RECIBIDO,
                     payload.usuarioId(), payload.identificador(), payload.nombre(), payload.email());
 
             registrarUsuarioInteractor.ejecutar(new RegistrarUsuarioCommand(

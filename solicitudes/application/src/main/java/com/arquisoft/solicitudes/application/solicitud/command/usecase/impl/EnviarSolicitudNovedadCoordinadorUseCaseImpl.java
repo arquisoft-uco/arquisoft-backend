@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.destinatario.command.finder.DestinatarioDeUsuarioFinder;
@@ -10,8 +9,9 @@ import com.arquisoft.solicitudes.application.destinatario.command.secondaryport.
 import com.arquisoft.solicitudes.application.remitente.command.finder.RemitenteDeUsuarioFinder;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.RemitenteOutputPort;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.mapper.RemitenteMapper;
+import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
+import com.arquisoft.solicitudes.application.solicitud.command.finder.DestinatarioAsignadoFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
-import com.arquisoft.solicitudes.application.solicitud.command.finder.UsuarioExisteFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.mapper.SolicitudMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudNovedadCoordinadorUseCase;
@@ -20,11 +20,13 @@ import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudNovedadCoordinad
 import com.arquisoft.solicitudes.domain.solicitud.SolicitudDomain;
 import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudNovedadCoordinadorEnviadaEvent;
 import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
+import com.arquisoft.solicitudes.domain.solicitud.model.ConsultaAsignacionResponsable;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
-import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
+import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -37,7 +39,8 @@ public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
     private final DestinatarioOutputPort destinatarioOutputPort;
     private final RemitenteDeUsuarioFinder remitenteDeUsuarioFinder;
     private final DestinatarioDeUsuarioFinder destinatarioDeUsuarioFinder;
-    private final UsuarioExisteFinder usuarioExisteFinder;
+    private final DatosUsuarioFinder datosUsuarioFinder;
+    private final DestinatarioAsignadoFinder destinatarioAsignadoFinder;
     private final SolicitudDuplicadaFinder solicitudDuplicadaFinder;
     private final EnviarSolicitudNovedadCoordinadorValidator validator;
     private final EventPublisher eventPublisher;
@@ -45,9 +48,15 @@ public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
 
     @Override
     public UUID ejecutar(EnvioSolicitudNovedadCoordinadorDomain envio) {
-        boolean remitenteUsuarioExiste = usuarioExisteFinder.obtener(envio.getRemitenteUsuario());
-        boolean destinatarioUsuarioExiste = usuarioExisteFinder.obtener(envio.getDestinatarioUsuario());
-        validator.validarExistenciaUsuarios(envio, remitenteUsuarioExiste, destinatarioUsuarioExiste);
+        Optional<UsuarioDomain> remitenteUsuario = datosUsuarioFinder.obtener(envio.getRemitenteUsuario());
+        Optional<UsuarioDomain> destinatarioUsuario =
+                datosUsuarioFinder.obtener(envio.getDestinatarioUsuario());
+        validator.validarExistenciaUsuarios(
+                envio, remitenteUsuario.isPresent(), destinatarioUsuario.isPresent());
+
+        boolean destinatarioAsignado = destinatarioAsignadoFinder.obtener(new ConsultaAsignacionResponsable(
+                envio.getRemitenteUsuario(), envio.getDestinatarioUsuario()));
+        validator.validarAsignacionDestinatario(envio, destinatarioAsignado);
 
         UUID remitenteId = remitenteDeUsuarioFinder.obtener(envio.getRemitenteUsuario())
                 .orElseGet(() -> {
@@ -72,16 +81,15 @@ public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
         validator.validarUnicidad(new DisponibilidadSolicitud(clave, yaExiste));
 
         solicitudOutputPort.registrar(SolicitudMapper.toEntity(solicitud));
-        logger.info(Mensajes.obtener(SolicitudKey.LOG_ENVIADA), solicitud.getId());
 
+        UsuarioDomain remitente = remitenteUsuario.orElseThrow();
+        UsuarioDomain destinatario = destinatarioUsuario.orElseThrow();
         eventPublisher.publish(new SolicitudNovedadCoordinadorEnviadaEvent(
-                solicitud.getId(),
-                envio.getRemitenteUsuario().toString(),
-                envio.getDestinatarioUsuario().toString(),
-                solicitud.getMensajeSolicitud(),
-                solicitud.getFechaCreacion(),
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
+                solicitud.getId(), remitente.getNombre(),
+                destinatario.getNombre(), destinatario.getEmail(),
+                solicitud.getMensajeSolicitud()));
 
+        logger.info(SolicitudKey.LOG_ENVIADA, solicitud.getId());
         return solicitud.getId();
     }
 }

@@ -2,7 +2,6 @@ package com.arquisoft.seguridad.infrastructure.config.keycloak;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.RolKey;
-import com.arquisoft.shared.message.Mensajes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +31,7 @@ public class KeycloakJwtConverterConfig {
     private Collection<GrantedAuthority> construirAuthorities(Jwt jwt) {
         List<String> rolesRecurso = rolExtractor.extraerRolesRecurso(jwt);
 
-        logger.debug(Mensajes.obtener(RolKey.LOG_ROLES_RECURSO), rolesRecurso);
+        logger.debug(RolKey.LOG_ROLES_RECURSO, rolesRecurso);
 
         return rolesRecurso.stream()
                 .map(SimpleGrantedAuthority::new)

@@ -61,4 +61,39 @@ class ItemCualitativoJuradoCommandRepositoryTest {
         // Assert
         assertThat(existe).isTrue();
     }
+
+    @Test
+    void debeActualizarSoloDescripcion_cuandoItemExiste() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        repository.saveAndFlush(ItemCualitativoJuradoJpaEntity.builder()
+                .id(id)
+                .nombre("Claridad")
+                .descripcion("Descripción original")
+                .build());
+        entityManager.clear();
+
+        // Act
+        int filasActualizadas = repository.actualizarDescripcion(id, "Descripción nueva");
+        entityManager.clear();
+
+        // Assert
+        assertThat(filasActualizadas).isEqualTo(1);
+        assertThat(repository.findById(id)).hasValueSatisfying(persistida -> {
+            assertThat(persistida.getNombre()).isEqualTo("Claridad");
+            assertThat(persistida.getDescripcion()).isEqualTo("Descripción nueva");
+        });
+    }
+
+    @Test
+    void debeRetornarCeroFilas_cuandoIdNoExiste() {
+        // Arrange
+        UUID idInexistente = UUID.randomUUID();
+
+        // Act
+        int filasActualizadas = repository.actualizarDescripcion(idInexistente, "Descripción nueva");
+
+        // Assert
+        assertThat(filasActualizadas).isZero();
+    }
 }

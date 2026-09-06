@@ -10,6 +10,7 @@ import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interact
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.impl.AgregarItemFichaPerfilInteractorImpl;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.impl.ModificarItemFichaPerfilInteractorImpl;
 import com.arquisoft.fichas.application.itemfichaperfil.command.primaryport.interactor.impl.RemoverItemFichaPerfilInteractorImpl;
+import com.arquisoft.fichas.application.revisionitem.command.primaryport.interactor.impl.AgregarRevisionItemInteractorImpl;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -34,7 +35,8 @@ class InteractoresFichasTest {
             AsignarEstudiantesFichaPerfilInteractorImpl.class,
             RemoverEstudianteFichaPerfilInteractorImpl.class,
             RegistrarEvaluacionFichaPerfilInteractorImpl.class,
-            AgregarEstadoEvaluacionFichaInteractorImpl.class
+            AgregarEstadoEvaluacionFichaInteractorImpl.class,
+            AgregarRevisionItemInteractorImpl.class
     })
     void debeDeclararTransaccion_cuandoEsInteractorDeComando(Class<?> interactor) {
         // Arrange

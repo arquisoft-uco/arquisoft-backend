@@ -11,6 +11,7 @@ import com.arquisoft.shared.message.key.app.PaginacionKey;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
+import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
@@ -19,8 +20,10 @@ import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
+import com.arquisoft.shared.message.key.fichas.TipoItemKey;
 import com.arquisoft.shared.message.key.fichas.UsuarioEspejoKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
+import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
@@ -30,8 +33,6 @@ import com.arquisoft.shared.message.key.solicitudes.TipoSolicitudKey;
 import com.arquisoft.shared.message.key.solicitudes.UsuarioReplicaKey;
 import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
-import com.arquisoft.shared.message.key.seguridad.CredencialesKey;
-import com.arquisoft.shared.message.key.seguridad.IdentidadKey;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
 import com.arquisoft.shared.message.key.seguridad.LimiteSolicitudesKey;
 import com.arquisoft.shared.message.key.seguridad.RolKey;
@@ -79,6 +80,7 @@ public final class ClavesCatalogo {
             PaginacionKey.class,
             ValidadorKey.class,
             EstadoEvaluacionFichaKey.class,
+            EstadoEvaluacionKey.class,
             EstadoFichaKey.class,
             EstadoFichaPerfilKey.class,
             EstudianteFichaPerfilKey.class,
@@ -88,7 +90,9 @@ public final class ClavesCatalogo {
             FichaPerfilKey.class,
             ItemFichaPerfilKey.class,
             MinioGuiaKey.class,
+            TipoItemKey.class,
             RepresentanteComiteKey.class,
+            RevisionItemKey.class,
             UsuarioEspejoKey.class,
             SolicitudKey.class,
             TipoSolicitudKey.class,
@@ -99,8 +103,6 @@ public final class ClavesCatalogo {
             PlantillaKey.class,
             AutenticacionKey.class,
             ConfiguracionKey.class,
-            CredencialesKey.class,
-            IdentidadKey.class,
             IniciarSesionKey.class,
             LimiteSolicitudesKey.class,
             RolKey.class,

@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.infrastructure.usuario.command.primaryadapter.amqp;
 
 import com.arquisoft.shared.message.key.fichas.UsuarioEspejoKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.usuario.command.primaryport.model.RegistrarUsuarioCommand;
 import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
@@ -41,7 +40,7 @@ public class UsuarioCreadoConsumer extends AbstractEventConsumer {
         withCorrelation(message, channel, () -> {
             UsuarioCreadoPayload payload = deserialize(message, UsuarioCreadoPayload.class);
 
-            logger.info(Mensajes.obtener(UsuarioEspejoKey.LOG_USUARIO_CREADO_RECIBIDO),
+            logger.info(UsuarioEspejoKey.LOG_USUARIO_CREADO_RECIBIDO,
                     payload.usuarioId(), UtilTexto.enmascararCorreo(payload.email()), payload.rol());
 
             registrarUsuarioUseCase.ejecutar(new RegistrarUsuarioCommand(

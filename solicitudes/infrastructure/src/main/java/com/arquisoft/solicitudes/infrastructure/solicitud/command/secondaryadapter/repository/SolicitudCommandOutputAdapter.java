@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.infrastructure.solicitud.command.secondaryadapter.repository;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.entity.SolicitudEntity;
@@ -22,7 +21,7 @@ public class SolicitudCommandOutputAdapter implements SolicitudOutputPort {
     @Override
     public void registrar(SolicitudEntity solicitud) {
         solicitudCommandRepository.save(SolicitudJpaMapper.toJpaEntity(solicitud));
-        logger.debug(Mensajes.obtener(SolicitudKey.LOG_GUARDADA), solicitud.id());
+        logger.debug(SolicitudKey.LOG_GUARDADA, solicitud.id());
     }
 
     @Override

@@ -76,4 +76,21 @@ class UsuarioCommandOutputAdapterTest {
         assertThat(adapter.existePorId(id)).isTrue();
         assertThat(adapter.existePorId(UUID.randomUUID())).isFalse();
     }
+
+    @Test
+    void debeDevolverLaReplica_cuandoBuscaPorId() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        entityManager.persist(UsuarioJpaEntity.builder()
+                .id(id).identificador("COORD-1").nombre("Pedro").email("pedro@uco.edu.co").build());
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.buscarPorId(id))
+                .hasValueSatisfying(u -> {
+                    assertThat(u.nombre()).isEqualTo("Pedro");
+                    assertThat(u.email()).isEqualTo("pedro@uco.edu.co");
+                });
+        assertThat(adapter.buscarPorId(UUID.randomUUID())).isEmpty();
+    }
 }

@@ -2,7 +2,6 @@ package com.arquisoft.seguridad.infrastructure.config.security;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
-import com.arquisoft.shared.message.Mensajes;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -31,7 +30,7 @@ public class SecurityAuthenticationEntryPoint implements AuthenticationEntryPoin
                          HttpServletResponse response,
                          AuthenticationException authException) {
 
-        logger.warn(Mensajes.obtener(IniciarSesionKey.LOG_UNAUTHORIZED), request.getRequestURI(), authException.getMessage());
+        logger.warn(IniciarSesionKey.LOG_UNAUTHORIZED, request.getRequestURI(), authException.getMessage());
         resolver.resolveException(request, response, null, authException);
     }
 }

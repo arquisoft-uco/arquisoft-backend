@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryp
 import com.arquisoft.fichas.application.evaluacionfichaperfil.command.secondaryport.entity.EvaluacionFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.mapper.EvaluacionFichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,7 +21,7 @@ public class EvaluacionFichaPerfilCommandOutputAdapter
     @Override
     public void registrarEvaluacion(EvaluacionFichaPerfilEntity evaluacion) {
         repository.save(EvaluacionFichaPerfilJpaMapper.toJpaEntity(evaluacion));
-        logger.debug(Mensajes.obtener(EvaluacionFichaPerfilKey.LOG_GUARDADA),
+        logger.debug(EvaluacionFichaPerfilKey.LOG_GUARDADA,
                 evaluacion.id(), evaluacion.fichaPerfilId());
     }
 

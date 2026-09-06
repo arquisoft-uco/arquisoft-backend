@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.usuario.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.solicitudes.UsuarioReplicaKey;
 import com.arquisoft.solicitudes.application.usuario.command.primaryport.model.RegistrarUsuarioCommand;
 import com.arquisoft.solicitudes.application.usuario.command.secondaryport.UsuarioOutputPort;
@@ -30,6 +29,6 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
             usuarioOutputPort.registrar(entity);
         }
 
-        logger.debug(Mensajes.obtener(UsuarioReplicaKey.LOG_REPLICA_GUARDADA), usuario.getId());
+        logger.debug(UsuarioReplicaKey.LOG_REPLICA_GUARDADA, usuario.getId());
     }
 }

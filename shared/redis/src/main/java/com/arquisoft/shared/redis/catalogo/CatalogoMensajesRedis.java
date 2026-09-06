@@ -190,6 +190,12 @@ public class CatalogoMensajesRedis implements CatalogoMensajes {
     private String resolver(ClaveMensaje clave) {
         String nombre = clave.clave();
 
+        // Con Redis caído, cada consulta bloquea el hilo y su conexión del pool hasta agotarlo.
+        // Quien devuelve al estado sano es MonitorCatalogoRedis, que sí sondea la conexión.
+        if (degradado.get()) {
+            return enCache(nombre);
+        }
+
         try {
             String texto = plantilla.opsForValue().get(nombre);
             if (texto != null) {
@@ -202,10 +208,14 @@ public class CatalogoMensajesRedis implements CatalogoMensajes {
             }
         }
 
-        String enCache = cache.get(nombre);
-        if (enCache == null) {
+        return enCache(nombre);
+    }
+
+    private String enCache(String nombre) {
+        String texto = cache.get(nombre);
+        if (texto == null) {
             logger.error(LOG_SIN_TEXTO, nombre);
         }
-        return enCache;
+        return texto;
     }
 }

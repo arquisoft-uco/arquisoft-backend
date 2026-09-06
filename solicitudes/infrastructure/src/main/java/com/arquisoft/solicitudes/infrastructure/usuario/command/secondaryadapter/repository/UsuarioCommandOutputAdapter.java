@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.infrastructure.usuario.command.secondaryadapter.repository;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.solicitudes.UsuarioReplicaKey;
 import com.arquisoft.solicitudes.application.usuario.command.secondaryport.UsuarioOutputPort;
 import com.arquisoft.solicitudes.application.usuario.command.secondaryport.entity.UsuarioEntity;
@@ -9,6 +8,7 @@ import com.arquisoft.solicitudes.infrastructure.usuario.command.secondaryadapter
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -24,14 +24,19 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
     }
 
     @Override
+    public Optional<UsuarioEntity> buscarPorId(UUID id) {
+        return usuarioCommandRepository.findById(id).map(UsuarioJpaMapper::toEntity);
+    }
+
+    @Override
     public void registrar(UsuarioEntity usuario) {
         usuarioCommandRepository.save(UsuarioJpaMapper.toJpaEntity(usuario));
-        logger.debug(Mensajes.obtener(UsuarioReplicaKey.LOG_REPLICA_GUARDADA), usuario.id());
+        logger.debug(UsuarioReplicaKey.LOG_REPLICA_GUARDADA, usuario.id());
     }
 
     @Override
     public void actualizar(UsuarioEntity usuario) {
         usuarioCommandRepository.save(UsuarioJpaMapper.toJpaEntity(usuario));
-        logger.debug(Mensajes.obtener(UsuarioReplicaKey.LOG_REPLICA_GUARDADA), usuario.id());
+        logger.debug(UsuarioReplicaKey.LOG_REPLICA_GUARDADA, usuario.id());
     }
 }

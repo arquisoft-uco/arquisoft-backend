@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -22,6 +23,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,11 +86,14 @@ class KeycloakAuthOutputAdapterTest {
     }
 
     @Test
-    void debeLanzarCredencialesInvalidasException_cuandoKeycloakRetorna401() {
-        // Arrange
+    void debeLanzarCredencialesInvalidasException_cuandoKeycloakRespondeInvalidGrant() {
+        // Arrange — Keycloak (OAuth2 RFC 6749 §5.2) responde 400 invalid_grant tanto para
+        // usuario como para contraseña incorrectos: el mismo error para ambos casos.
+        var cuerpoKeycloak = "{\"error\":\"invalid_grant\",\"error_description\":\"Invalid user credentials\"}"
+                .getBytes(StandardCharsets.UTF_8);
         when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq((Class<Map<String, Object>>) (Class<?>) Map.class)))
-                .thenThrow(HttpClientErrorException.Unauthorized.create(
-                        HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null));
+                .thenThrow(HttpClientErrorException.create(
+                        HttpStatus.BAD_REQUEST, "Bad Request", HttpHeaders.EMPTY, cuerpoKeycloak, StandardCharsets.UTF_8));
 
         // Act + Assert
         assertThatThrownBy(() -> adapter.autenticar("estudiante@uco.edu.co", "wrong-password"))
@@ -97,15 +102,43 @@ class KeycloakAuthOutputAdapterTest {
     }
 
     @Test
-    void debeLanzarAuthenticationException_cuandoKeycloakRetornaOtroError4xx() {
-        // Arrange
+    void debeNoFiltrarUrlNiCuerpoDeKeycloak_cuandoCredencialInvalida() {
+        // Arrange — el texto que arma RestTemplate incluye la URL interna del IdP y el cuerpo OIDC crudo
+        var cuerpoKeycloak = "{\"error\":\"invalid_grant\",\"error_description\":\"Invalid user credentials\"}"
+                .getBytes(StandardCharsets.UTF_8);
         when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq((Class<Map<String, Object>>) (Class<?>) Map.class)))
-                .thenThrow(new HttpClientErrorException(HttpStatus.BAD_REQUEST, "Bad request"));
+                .thenThrow(HttpClientErrorException.create(
+                        HttpStatus.BAD_REQUEST,
+                        "Bad Request on POST \"https://auth.arquisoft.top/realms/arquisoft/protocol/openid-connect/token\"",
+                        HttpHeaders.EMPTY, cuerpoKeycloak, StandardCharsets.UTF_8));
 
-        // Act + Assert
+        // Act + Assert — al cliente solo le llega el texto genérico
+        assertThatThrownBy(() -> adapter.autenticar("estudiante@uco.edu.co", "wrong-password"))
+                .isInstanceOf(CredencialesInvalidasException.class)
+                .hasMessageContaining("Credenciales inválidas")
+                .hasMessageNotContaining("arquisoft.top")
+                .hasMessageNotContaining("openid-connect")
+                .hasMessageNotContaining("invalid_grant");
+    }
+
+    @Test
+    void debeLanzarAutenticacionExceptionGenerica_cuandoKeycloakRetorna4xxSinInvalidGrant() {
+        // Arrange — un 4xx que NO es invalid_grant (p.ej. el client del backend mal configurado)
+        var cuerpoKeycloak = "{\"error\":\"invalid_client\",\"error_description\":\"Invalid client credentials\"}"
+                .getBytes(StandardCharsets.UTF_8);
+        when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq((Class<Map<String, Object>>) (Class<?>) Map.class)))
+                .thenThrow(HttpClientErrorException.create(
+                        HttpStatus.BAD_REQUEST,
+                        "Bad Request on POST \"https://auth.arquisoft.top/realms/arquisoft/protocol/openid-connect/token\"",
+                        HttpHeaders.EMPTY, cuerpoKeycloak, StandardCharsets.UTF_8));
+
+        // Act + Assert — mensaje genérico, sin la URL ni el cuerpo de Keycloak
         assertThatThrownBy(() -> adapter.autenticar("estudiante@uco.edu.co", "password"))
                 .isInstanceOf(AutenticacionException.class)
-                .hasMessageContaining("Error al comunicarse con Keycloak");
+                .isNotInstanceOf(CredencialesInvalidasException.class)
+                .hasMessageContaining("No fue posible completar la autenticación")
+                .hasMessageNotContaining("arquisoft.top")
+                .hasMessageNotContaining("invalid_client");
     }
 
     @Test

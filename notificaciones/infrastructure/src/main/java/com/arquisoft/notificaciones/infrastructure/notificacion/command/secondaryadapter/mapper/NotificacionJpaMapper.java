@@ -2,6 +2,11 @@ package com.arquisoft.notificaciones.infrastructure.notificacion.command.seconda
 
 import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
 import com.arquisoft.notificaciones.infrastructure.notificacion.command.secondaryadapter.entity.NotificacionJpaEntity;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilTexto;
+
+import java.time.Instant;
 
 public final class NotificacionJpaMapper {
 
@@ -14,10 +19,15 @@ public final class NotificacionJpaMapper {
                 jpaEntity.getTipo(),
                 jpaEntity.getDestinatario(),
                 jpaEntity.getAsunto(),
+                jpaEntity.getDestinatarioNombre(),
+                jpaEntity.getCuerpo(),
+                jpaEntity.getPie(),
                 jpaEntity.getEstado(),
-                jpaEntity.getDetalleError(),
+                UtilTexto.aplicarTrim(jpaEntity.getDetalleError()),
                 jpaEntity.getFechaCreacion(),
-                jpaEntity.getFechaEnvio());
+                UtilObjeto.aplicarPorDefecto(jpaEntity.getFechaEnvio(), UtilFecha.VACIO),
+                jpaEntity.getIntentos(),
+                UtilObjeto.aplicarPorDefecto(jpaEntity.getFechaUltimoIntento(), UtilFecha.VACIO));
     }
 
     public static NotificacionJpaEntity toJpaEntity(NotificacionEntity entity) {
@@ -27,10 +37,23 @@ public final class NotificacionJpaMapper {
                 .tipo(entity.tipo())
                 .destinatario(entity.destinatario())
                 .asunto(entity.asunto())
+                .destinatarioNombre(entity.destinatarioNombre())
+                .cuerpo(entity.cuerpo())
+                .pie(entity.pie())
                 .estado(entity.estado())
-                .detalleError(entity.detalleError())
+                .detalleError(aColumna(entity.detalleError()))
                 .fechaCreacion(entity.fechaCreacion())
-                .fechaEnvio(entity.fechaEnvio())
+                .fechaEnvio(aColumna(entity.fechaEnvio()))
+                .intentos(entity.intentos())
+                .fechaUltimoIntento(aColumna(entity.fechaUltimoIntento()))
                 .build();
+    }
+
+    private static String aColumna(String texto) {
+        return UtilTexto.esVacioONulo(texto) ? null : texto;
+    }
+
+    private static Instant aColumna(Instant instante) {
+        return UtilObjeto.esNulo(instante) || UtilFecha.VACIO.equals(instante) ? null : instante;
     }
 }

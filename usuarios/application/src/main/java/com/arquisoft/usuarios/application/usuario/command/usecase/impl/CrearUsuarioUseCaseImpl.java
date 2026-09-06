@@ -5,7 +5,6 @@ import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailUsuarioExisteFinder;
-import com.arquisoft.usuarios.application.usuario.command.primaryport.model.CrearUsuarioCommand;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.mapper.UsuarioMapper;
 import com.arquisoft.usuarios.application.usuario.command.usecase.CrearUsuarioUseCase;
@@ -29,14 +28,12 @@ public class CrearUsuarioUseCaseImpl implements CrearUsuarioUseCase {
     private final AppLogger logger;
 
     @Override
-    public UUID ejecutar(CrearUsuarioCommand entrada) {
-        logger.info(Mensajes.obtener(UsuarioKey.LOG_CREANDO), entrada.rol());
-
-        var usuario = UsuarioDomain.crear(entrada.email(), entrada.rol());
+    public UUID ejecutar(UsuarioDomain usuario) {
+        logger.info(UsuarioKey.LOG_CREANDO, usuario.getRol().getCodigo());
 
         boolean emailYaExiste = emailUsuarioExisteFinder.obtener(usuario.getEmail());
 
-        logger.debug(Mensajes.obtener(UsuarioKey.LOG_VERIFICACION_CREAR), emailYaExiste);
+        logger.debug(UsuarioKey.LOG_VERIFICACION_CREAR, emailYaExiste);
         crearUsuarioValidator.validar(usuario, emailYaExiste);
 
         usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));
