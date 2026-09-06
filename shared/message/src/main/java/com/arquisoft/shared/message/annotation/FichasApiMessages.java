@@ -74,6 +74,15 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESORADAS_RESP_200 = "Listado obtenido exitosamente";
         public static final String CONSULTAR_ASESORADAS_RESP_400 = "Filtro, operador, campo o valor inválido";
         public static final String CONSULTAR_ASESORADAS_RESP_403 = "Sin permisos — se requiere rol asesor de ficha";
+
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar ficha de perfil del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Retorna el detalle de una ficha de perfil a la que pertenece el estudiante autenticado: "
+                        + "título, asesor asignado, estado actual y estudiantes vinculados.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Ficha de perfil encontrada";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_404 =
+                "Ficha no encontrada, o el estudiante autenticado no está vinculado a ella";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permisos — se requiere rol estudiante";
     }
 
     public static final class ItemFichaPerfil {
@@ -121,6 +130,15 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ESTUDIANTE_RESP_200 = "Lista de ítems de la ficha de perfil (vacía si no aplica)";
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin el permiso para consultar ítems como estudiante";
+
+        public static final String CONSULTAR_REPRESENTANTE_SUMMARY = "Consultar ítems de la ficha de perfil a aprobar";
+        public static final String CONSULTAR_REPRESENTANTE_DESCRIPTION =
+                "Permite a un representante del comité de currículum consultar todos los ítems de contenido de "
+                        + "una ficha de perfil que debe aprobar. Solo devuelve ítems si el representante tiene una "
+                        + "evaluación registrada para esa ficha; en caso contrario devuelve una lista vacía.";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_200 = "Lista de ítems de la ficha de perfil (vacía si no aplica)";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_403 = "Sin el permiso para consultar ítems como representante del comité";
     }
 
     public static final class ConsultaEstudianteFichaPerfil {
@@ -137,6 +155,26 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_RESP_200 = "Lista de estudiantes vinculados (vacía si no aplica)";
         public static final String CONSULTAR_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_RESP_403 = "Sin el permiso para consultar estudiantes como coordinador";
+    }
+
+    public static final class RevisionItem {
+
+        private RevisionItem() {}
+
+        public static final String TAG_NAME = "Revisiones de Ítem";
+        public static final String TAG_DESCRIPTION = "Gestión de revisiones sobre ítems de fichas de perfil";
+
+        public static final String AGREGAR_SUMMARY = "Agregar revisión a un ítem";
+        public static final String AGREGAR_DESCRIPTION =
+                "Permite al asesor asignado a la ficha registrar una revisión sobre un ítem de esa "
+                        + "ficha. El estado inicial de la revisión siempre es 'NUEVA'; el resto de "
+                        + "cambios de estado los hace el estudiante en otro comando.";
+        public static final String AGREGAR_RESP_201 = "Revisión agregada exitosamente — retorna el UUID asignado";
+        public static final String AGREGAR_RESP_400 = "Identificador de ítem inválido";
+        public static final String AGREGAR_RESP_403 = "Sin permiso para agregar revisiones";
+        public static final String AGREGAR_RESP_422 =
+                "Ítem no encontrado, ficha no asesorada por el usuario autenticado o revisión ya "
+                        + "existente";
     }
 
     public static final class EstudianteFichaPerfil {
@@ -171,6 +209,18 @@ public final class FichasApiMessages {
                 "Permite al representante del comité de currículum registrar una nueva evaluación sobre una ficha de perfil existente.";
         public static final String REGISTRAR_RESP_201 = "Evaluación creada exitosamente";
         public static final String REGISTRAR_RESP_400 = "Ficha no encontrada, representante no encontrado, evaluación duplicada o datos inválidos";
+
+        public static final String CONSULTAR_REPRESENTANTE_SUMMARY =
+                "Consultar información de evaluación de ficha de perfil generada";
+        public static final String CONSULTAR_REPRESENTANTE_DESCRIPTION =
+                "Devuelve las evaluaciones que el representante del comité de currículum autenticado ha generado "
+                        + "sobre la ficha de perfil indicada.";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_200 =
+                "Listado de evaluaciones de la ficha generadas por el representante (puede ser vacío)";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_400 =
+                "El identificador de ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_REPRESENTANTE_RESP_403 =
+                "El usuario no tiene el permiso fichas:evaluacion-ficha-perfil-representante:view";
     }
 
     public static final class EstadoEvaluacionFicha {
@@ -212,6 +262,20 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_SUMMARY = "Consultar todos los tipos ítem disponibles";
         public static final String CONSULTAR_DESCRIPTION = "Retorna todos los tipos de ítem del catálogo sin filtros ni paginación";
         public static final String CONSULTAR_RESP_200 = "Lista de tipos de ítem retornada exitosamente";
+        public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
+        public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
+    }
+
+    public static final class EstadoEvaluacion {
+
+        private EstadoEvaluacion() {}
+
+        public static final String TAG_NAME = "Estados de Evaluación";
+        public static final String TAG_DESCRIPTION = "Catálogo de estados disponibles para las evaluaciones de ficha de perfil";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar todos los estados de evaluación disponibles";
+        public static final String CONSULTAR_DESCRIPTION = "Retorna todos los estados de evaluación del catálogo sin filtros ni paginación";
+        public static final String CONSULTAR_RESP_200 = "Lista de estados de evaluación retornada exitosamente";
         public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
         public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
     }

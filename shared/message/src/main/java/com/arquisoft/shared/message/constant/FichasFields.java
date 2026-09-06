@@ -34,8 +34,19 @@ public final class FichasFields {
         public static final String TIPO_ITEM = "tipoItem";
         public static final String CONTENIDO = "contenido";
         public static final String ESTUDIANTE = "estudiante";
+        public static final String REPRESENTANTE_COMITE = "representanteComite";
         public static final String ESTADO_FICHA = "estadoFicha";
         public static final String REVISIONES = "revisiones";
+    }
+
+    public static final class RevisionItem {
+
+        private RevisionItem() {}
+
+        public static final String ITEM = "item";
+        public static final String ESTADO_REVISION = "estadoRevision";
+        public static final String REVISION_ITEM = "revisionItem";
+        public static final String ASESOR_FICHA = "asesorFicha";
     }
 
     public static final class EstudianteFichaPerfil {

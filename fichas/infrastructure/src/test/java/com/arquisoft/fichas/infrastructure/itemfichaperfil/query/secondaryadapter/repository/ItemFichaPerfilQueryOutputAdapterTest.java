@@ -4,8 +4,10 @@ import com.arquisoft.fichas.application.itemfichaperfil.query.readmodel.ItemFich
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
 import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.evaluacionfichaperfil.command.secondaryadapter.entity.EvaluacionFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.entity.ItemFichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.representantecomite.command.secondaryadapter.entity.RepresentanteComiteJpaEntity;
 import com.arquisoft.fichas.infrastructure.tipoitem.command.secondaryadapter.entity.TipoItemJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,11 +33,14 @@ class ItemFichaPerfilQueryOutputAdapterTest {
     @Autowired
     private ItemFichaPerfilEstudianteQueryRepository estudianteRepository;
 
+    @Autowired
+    private ItemFichaPerfilRepresentanteQueryRepository representanteRepository;
+
     private ItemFichaPerfilQueryOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new ItemFichaPerfilQueryOutputAdapter(repository, estudianteRepository);
+        adapter = new ItemFichaPerfilQueryOutputAdapter(repository, estudianteRepository, representanteRepository);
 
         persistirTipoItem("OBJETIVO_GENERAL", "Objetivo General");
         persistirTipoItem("ANTECEDENTES", "Antecedentes");
@@ -174,6 +180,101 @@ class ItemFichaPerfilQueryOutputAdapterTest {
             assertThat(item.fichaPerfilId()).isEqualTo(fichaPedida);
             assertThat(item.contenido()).isEqualTo("Contenido de la ficha pedida");
         });
+    }
+
+    @Test
+    void debeDevolverItemsDeLaFicha_cuandoElRepresentanteTieneEvaluacionRegistrada() {
+        // Arrange
+        UUID representante = persistirRepresentante("REP-001", "Sofia Cano", "sofia.cano@uco.edu.co");
+        UUID asesor = persistirAsesor("DOC-200", "Ana Ruiz", "ana.ruiz200@uco.edu.co");
+        UUID ficha = persistirFicha("Proyecto I", asesor);
+        persistirEvaluacion(ficha, representante);
+        persistirItem(ficha, "OBJETIVO_GENERAL", "Contenido objetivo");
+        persistirItem(ficha, "ANTECEDENTES", "Contenido antecedentes");
+        entityManager.flush();
+
+        // Act
+        List<ItemFichaPerfilReadModel> resultado = adapter.consultarPorFichaYRepresentante(ficha, representante);
+
+        // Assert
+        assertThat(resultado)
+                .extracting(ItemFichaPerfilReadModel::tipoItemNombre)
+                .containsExactly("Antecedentes", "Objetivo General");
+        assertThat(resultado).allSatisfy(item -> {
+            assertThat(item.fichaPerfilId()).isEqualTo(ficha);
+            assertThat(item.id()).isNotNull();
+        });
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoElRepresentanteNoTieneEvaluacionParaLaFicha() {
+        // Arrange
+        UUID representanteConEvaluacion = persistirRepresentante("REP-010", "Sofia Cano", "sofia10@uco.edu.co");
+        UUID otroRepresentante = persistirRepresentante("REP-011", "Iván Mora", "ivan11@uco.edu.co");
+        UUID asesor = persistirAsesor("DOC-210", "Ana Ruiz", "ana210@uco.edu.co");
+        UUID ficha = persistirFicha("Proyecto J", asesor);
+        persistirEvaluacion(ficha, representanteConEvaluacion);
+        persistirItem(ficha, "OBJETIVO_GENERAL", "Contenido");
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.consultarPorFichaYRepresentante(ficha, otroRepresentante)).isEmpty();
+    }
+
+    @Test
+    void debeDevolverVacio_cuandoLaFichaEvaluadaNoTieneItems() {
+        // Arrange
+        UUID representante = persistirRepresentante("REP-020", "Sofia Cano", "sofia20@uco.edu.co");
+        UUID asesor = persistirAsesor("DOC-220", "Ana Ruiz", "ana220@uco.edu.co");
+        UUID ficha = persistirFicha("Proyecto K", asesor);
+        persistirEvaluacion(ficha, representante);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.consultarPorFichaYRepresentante(ficha, representante)).isEmpty();
+    }
+
+    @Test
+    void debeTraerSoloItemsDeLaFichaPedida_cuandoElRepresentanteEvaluaVariasFichas() {
+        // Arrange
+        UUID representante = persistirRepresentante("REP-030", "Sofia Cano", "sofia30@uco.edu.co");
+        UUID asesor = persistirAsesor("DOC-230", "Ana Ruiz", "ana230@uco.edu.co");
+        UUID fichaPedida = persistirFicha("Proyecto L", asesor);
+        UUID otraFicha = persistirFicha("Proyecto M", asesor);
+        persistirEvaluacion(fichaPedida, representante);
+        persistirEvaluacion(otraFicha, representante);
+        persistirItem(fichaPedida, "OBJETIVO_GENERAL", "Contenido de la ficha pedida");
+        persistirItem(otraFicha, "ANTECEDENTES", "Contenido de otra ficha");
+        entityManager.flush();
+
+        // Act
+        List<ItemFichaPerfilReadModel> resultado = adapter.consultarPorFichaYRepresentante(fichaPedida, representante);
+
+        // Assert
+        assertThat(resultado).singleElement().satisfies(item -> {
+            assertThat(item.fichaPerfilId()).isEqualTo(fichaPedida);
+            assertThat(item.contenido()).isEqualTo("Contenido de la ficha pedida");
+        });
+    }
+
+    private UUID persistirRepresentante(String identificador, String nombre, String email) {
+        RepresentanteComiteJpaEntity representante = RepresentanteComiteJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .identificador(identificador)
+                .nombre(nombre)
+                .email(email)
+                .build();
+        entityManager.persist(representante);
+        return representante.getId();
+    }
+
+    private void persistirEvaluacion(UUID fichaId, UUID representanteId) {
+        entityManager.persist(EvaluacionFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaId)
+                .representanteComiteId(representanteId)
+                .fechaCreacion(Instant.now())
+                .build());
     }
 
     private UUID persistirEstudiante(String identificador, String nombre, String email) {

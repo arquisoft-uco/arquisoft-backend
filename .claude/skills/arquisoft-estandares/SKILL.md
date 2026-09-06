@@ -43,6 +43,19 @@ en secuencia y cada una lanza en su violación, así que una regla dependiente *
 anterior ya lanzó** — guardarla con un `if` es código muerto. Si la ausencia debe cambiar la
 conclusión, esa decisión va **dentro de la Rule**.
 
+Tres reglas que se derivan de esto:
+
+- **Un `Finder` = una sola llamada a un `OutputPort`.** No encadena `Finder`s, no compara ni deriva
+  (`a.equals(b)`, `count > 0`), no hace lookups en varios pasos. Si hay que combinar fuentes lo hace
+  el `UseCase`; si hay que decidir sobre lo consultado, es una `Rule`.
+- **El `UseCase` le pasa al `Validator` el dato crudo que devolvió el `Finder`** — el agregado, los
+  `UUID`, el conteo, el `boolean` de un `{X}ExisteFinder` — **nunca un veredicto ya calculado**
+  (`boolean esPropietario = ficha.getAsesorFicha().equals(solicitante)`). Toda comparación de
+  identidad/pertenencia vive en la `Rule`, sobre su record de entrada.
+- **Mínimo de consultas.** Si un método del `OutputPort` puede traer lo que se necesita, no se usan
+  dos `Finder`s donde el primero alimenta al segundo (lista de `UUID` → luego un fetch por cada
+  elemento). Una proyección con `JOIN` en el `OutputPort` y un `Finder` que la devuelve entera.
+
 Los métodos de ambas interfaces son fijos: `DomainRule<T>.validar(T)` (void, lanza) y
 `Finder<T, R>.obtener(T)` (devuelve, nunca lanza por "no encontrado"). **No viven en el mismo
 módulo, y esa es justo la distinción de arriba hecha grafo:** `DomainRule` está en `shared:domain`

@@ -11,6 +11,7 @@ import com.arquisoft.shared.message.key.app.PaginacionKey;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
+import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
@@ -22,6 +23,7 @@ import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
 import com.arquisoft.shared.message.key.fichas.TipoItemKey;
 import com.arquisoft.shared.message.key.fichas.UsuarioEspejoKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
+import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
@@ -78,6 +80,7 @@ public final class ClavesCatalogo {
             PaginacionKey.class,
             ValidadorKey.class,
             EstadoEvaluacionFichaKey.class,
+            EstadoEvaluacionKey.class,
             EstadoFichaKey.class,
             EstadoFichaPerfilKey.class,
             EstudianteFichaPerfilKey.class,
@@ -89,6 +92,7 @@ public final class ClavesCatalogo {
             MinioGuiaKey.class,
             TipoItemKey.class,
             RepresentanteComiteKey.class,
+            RevisionItemKey.class,
             UsuarioEspejoKey.class,
             SolicitudKey.class,
             TipoSolicitudKey.class,
