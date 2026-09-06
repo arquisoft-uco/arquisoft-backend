@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
+import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
+import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.repository.EstudianteCommandRepository;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,9 @@ class EstudianteFichaPerfilCommandRepositoryTest {
 
     @Autowired
     private EstudianteFichaPerfilCommandRepository repository;
+
+    @Autowired
+    private EstudianteCommandRepository estudianteRepository;
 
     @Test
     void debeRetornarFalse_cuandoRelacionNoExiste() {
@@ -69,23 +74,37 @@ class EstudianteFichaPerfilCommandRepositoryTest {
     }
 
     @Test
-    void debeRetornarLosEstudiantesDeLaFicha_cuandoExistenVarios() {
+    void debeRetornarLosContactosDeLaFicha_cuandoExistenVarios() {
         // Arrange
         UUID fichaId = UUID.randomUUID();
         UUID otraFicha = UUID.randomUUID();
         UUID estudiante1 = UUID.randomUUID();
         UUID estudiante2 = UUID.randomUUID();
+        UUID estudianteDeOtraFicha = UUID.randomUUID();
+        estudianteRepository.saveAndFlush(EstudianteJpaEntity.builder()
+                .id(estudiante1).identificador("1000000001").nombre("Ana Gomez")
+                .email("ana.gomez@soyuco.edu.co").build());
+        estudianteRepository.saveAndFlush(EstudianteJpaEntity.builder()
+                .id(estudiante2).identificador("1000000002").nombre("Luis Ruiz")
+                .email("luis.ruiz@soyuco.edu.co").build());
+        estudianteRepository.saveAndFlush(EstudianteJpaEntity.builder()
+                .id(estudianteDeOtraFicha).identificador("1000000003").nombre("Otro Estudiante")
+                .email("otro@soyuco.edu.co").build());
         repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID()).fichaPerfilId(fichaId).estudianteId(estudiante1).build());
         repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID()).fichaPerfilId(fichaId).estudianteId(estudiante2).build());
         repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
-                .id(UUID.randomUUID()).fichaPerfilId(otraFicha).estudianteId(UUID.randomUUID()).build());
+                .id(UUID.randomUUID()).fichaPerfilId(otraFicha).estudianteId(estudianteDeOtraFicha).build());
 
         // Act
-        var resultado = repository.findEstudianteIdByFichaPerfilId(fichaId);
+        var resultado = repository.findContactosByFichaPerfilId(fichaId);
 
         // Assert
-        assertThat(resultado).containsExactlyInAnyOrder(estudiante1, estudiante2);
+        assertThat(resultado)
+                .extracting("nombre", "email")
+                .containsExactlyInAnyOrder(
+                        org.assertj.core.groups.Tuple.tuple("Ana Gomez", "ana.gomez@soyuco.edu.co"),
+                        org.assertj.core.groups.Tuple.tuple("Luis Ruiz", "luis.ruiz@soyuco.edu.co"));
     }
 }

@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport;
 
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.ContactoEstudianteEntity;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 
 import java.util.List;
@@ -15,5 +16,5 @@ public interface EstudianteFichaPerfilOutputPort {
 
     void desvincularEstudiante(UUID fichaPerfilId, UUID estudianteId);
 
-    List<UUID> obtenerEstudiantesDeFicha(UUID fichaPerfilId);
+    List<ContactoEstudianteEntity> obtenerContactosDeFicha(UUID fichaPerfilId);
 }

@@ -16,7 +16,8 @@ class AsesorFichaPropietarioRuleImplTest {
     @Test
     void debePasar_cuandoElAsesorEsPropietario() {
         // Arrange
-        var propiedad = new PropiedadAsesorFicha(UUID.randomUUID(), UUID.randomUUID(), true);
+        UUID asesor = UUID.randomUUID();
+        var propiedad = new PropiedadAsesorFicha(UUID.randomUUID(), asesor, asesor);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(propiedad)).doesNotThrowAnyException();
@@ -26,13 +27,26 @@ class AsesorFichaPropietarioRuleImplTest {
     void debeLanzarExcepcion_cuandoElAsesorNoEsPropietario() {
         // Arrange
         UUID fichaPerfil = UUID.randomUUID();
-        UUID asesorFicha = UUID.randomUUID();
-        var propiedad = new PropiedadAsesorFicha(fichaPerfil, asesorFicha, false);
+        UUID asesorEsperado = UUID.randomUUID();
+        UUID asesorSolicitante = UUID.randomUUID();
+        var propiedad = new PropiedadAsesorFicha(fichaPerfil, asesorEsperado, asesorSolicitante);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(propiedad))
                 .isInstanceOf(FichaNoPerteneceAsesorException.class)
-                .hasMessageContaining(asesorFicha.toString())
+                .hasMessageContaining(asesorSolicitante.toString())
                 .hasMessageContaining(fichaPerfil.toString());
+    }
+
+    @Test
+    void debeLanzarExcepcion_cuandoElAsesorEsperadoEsNulo() {
+        // Arrange — ficha sin asesor asociado (p.ej. FichaPerfilDomain.VACIO)
+        UUID fichaPerfil = UUID.randomUUID();
+        UUID asesorSolicitante = UUID.randomUUID();
+        var propiedad = new PropiedadAsesorFicha(fichaPerfil, null, asesorSolicitante);
+
+        // Act & Assert
+        assertThatThrownBy(() -> regla.validar(propiedad))
+                .isInstanceOf(FichaNoPerteneceAsesorException.class);
     }
 }

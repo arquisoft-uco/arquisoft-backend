@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.ContactoEstudianteEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,8 +18,13 @@ public interface EstudianteFichaPerfilCommandRepository
 
     void deleteByFichaPerfilIdAndEstudianteId(UUID fichaPerfilId, UUID estudianteId);
 
-    // Derivado por nombre (findEstudianteIdBy...) falla al convertir la proyección escalar a
-    // List<UUID> en esta versión de Spring Data; @Query explícito evita el problema.
-    @Query("SELECT e.estudianteId FROM EstudianteFichaPerfilJpaEntity e WHERE e.fichaPerfilId = :fichaPerfilId")
-    List<UUID> findEstudianteIdByFichaPerfilId(@Param("fichaPerfilId") UUID fichaPerfilId);
+    // Un solo JOIN contra la réplica local de estudiante en vez de resolver ids y luego,
+    // aparte, sus datos: evita dos viajes a la misma base para armar el contacto.
+    @Query("""
+            SELECT new com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.ContactoEstudianteEntity(e.nombre, e.email)
+            FROM EstudianteFichaPerfilJpaEntity ef
+            JOIN EstudianteJpaEntity e ON e.id = ef.estudianteId
+            WHERE ef.fichaPerfilId = :fichaPerfilId
+            """)
+    List<ContactoEstudianteEntity> findContactosByFichaPerfilId(@Param("fichaPerfilId") UUID fichaPerfilId);
 }

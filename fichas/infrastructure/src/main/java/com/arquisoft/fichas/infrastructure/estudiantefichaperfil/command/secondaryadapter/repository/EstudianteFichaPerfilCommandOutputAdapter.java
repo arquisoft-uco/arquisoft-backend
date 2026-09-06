@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.ContactoEstudianteEntity;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.entity.EstudianteFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.mapper.EstudianteFichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
@@ -43,7 +44,7 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     }
 
     @Override
-    public List<UUID> obtenerEstudiantesDeFicha(UUID fichaPerfilId) {
-        return repository.findEstudianteIdByFichaPerfilId(fichaPerfilId);
+    public List<ContactoEstudianteEntity> obtenerContactosDeFicha(UUID fichaPerfilId) {
+        return repository.findContactosByFichaPerfilId(fichaPerfilId);
     }
 }

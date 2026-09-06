@@ -1,16 +1,14 @@
 package com.arquisoft.fichas.application.revisionitem.command.usecase.impl;
 
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesDeFichaFinder;
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.ContactosDeFichaFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.ItemFichaPerfilExisteFinder;
-import com.arquisoft.fichas.application.revisionitem.command.finder.AsesorFichaPropietarioFinder;
 import com.arquisoft.fichas.application.revisionitem.command.finder.RevisionesDelItemFinder;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.RevisionItemOutputPort;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.RevisionItemEntity;
 import com.arquisoft.fichas.application.revisionitem.command.validator.AgregarRevisionItemValidator;
-import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.ContactoEstudiante;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPerteneceAsesorException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
@@ -57,16 +55,10 @@ class AgregarRevisionItemUseCaseTest {
     private FichaPerfilFinder fichaPerfilFinder;
 
     @Mock
-    private AsesorFichaPropietarioFinder asesorFichaPropietarioFinder;
-
-    @Mock
     private RevisionesDelItemFinder revisionesDelItemFinder;
 
     @Mock
-    private EstudiantesDeFichaFinder estudiantesDeFichaFinder;
-
-    @Mock
-    private EstudiantesFinder estudiantesFinder;
+    private ContactosDeFichaFinder contactosDeFichaFinder;
 
     @Mock
     private AgregarRevisionItemValidator agregarRevisionItemValidator;
@@ -84,15 +76,15 @@ class AgregarRevisionItemUseCaseTest {
     private AgregarRevisionItemUseCaseImpl agregarRevisionItemUseCase;
 
     private final UUID asesorFicha = UUID.randomUUID();
+    private final UUID otroAsesor = UUID.randomUUID();
     private final UUID fichaPerfilId = UUID.randomUUID();
-    private final UUID estudianteId = UUID.randomUUID();
 
     @Test
     void debeAgregarLaRevision_cuandoDatosValidos() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), true, 0L);
-        stubEnriquecimientoNotificacion();
+        stubConsultas(entrada, true, Optional.of(fichaPerfilId), asesorFicha, 0L);
+        stubContactosDeFicha(fichaPerfilId);
 
         // Act
         UUID resultado = agregarRevisionItemUseCase.ejecutar(entrada);
@@ -106,21 +98,21 @@ class AgregarRevisionItemUseCaseTest {
     void debeConsultarYValidarAntesDePersistir_cuandoSeEjecuta() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), true, 0L);
-        stubEnriquecimientoNotificacion();
+        stubConsultas(entrada, true, Optional.of(fichaPerfilId), asesorFicha, 0L);
+        stubContactosDeFicha(fichaPerfilId);
 
         // Act
         agregarRevisionItemUseCase.ejecutar(entrada);
 
         // Assert
         InOrder inOrder = inOrder(itemFichaPerfilExisteFinder, fichaPerfilDelItemFinder,
-                asesorFichaPropietarioFinder, revisionesDelItemFinder, agregarRevisionItemValidator,
+                fichaPerfilFinder, revisionesDelItemFinder, agregarRevisionItemValidator,
                 revisionItemOutputPort);
         inOrder.verify(itemFichaPerfilExisteFinder).obtener(entrada.getItem());
         inOrder.verify(fichaPerfilDelItemFinder).obtener(entrada.getItem());
-        inOrder.verify(asesorFichaPropietarioFinder).obtener(entrada);
+        inOrder.verify(fichaPerfilFinder).obtener(fichaPerfilId);
         inOrder.verify(revisionesDelItemFinder).obtener(entrada.getItem());
-        inOrder.verify(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, true, 0L);
+        inOrder.verify(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, asesorFicha, 0L);
         inOrder.verify(revisionItemOutputPort).registrarRevision(entidadDe(entrada.getRevisionItem()));
     }
 
@@ -128,8 +120,8 @@ class AgregarRevisionItemUseCaseTest {
     void debePublicarElEventoConLosDatosDeLaRevision_cuandoSeAgregaLaRevision() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), true, 0L);
-        stubEnriquecimientoNotificacion();
+        stubConsultas(entrada, true, Optional.of(fichaPerfilId), asesorFicha, 0L);
+        stubContactosDeFicha(fichaPerfilId);
         var revisionItem = entrada.getRevisionItem();
 
         // Act
@@ -153,31 +145,30 @@ class AgregarRevisionItemUseCaseTest {
 
     @Test
     void debeUsarUUIDPorDefecto_cuandoLaFichaPerfilDelItemNoExiste() {
-        // Arrange — la resolución de esPropietario ya no vive en el use case (ver
-        // AsesorFichaPropietarioFinderImplTest); este caso cubre solo el fallback del UUID de
-        // ficha que viaja al validator cuando el ítem no tiene ficha asociada. El validator real
-        // rechazaría esPropietario=false, así que el mock lo replica para no seguir de largo
+        // Arrange — cuando el ítem no tiene ficha asociada, el use case cae al UUID por
+        // defecto; la ficha resuelta con ese id no tiene como asesor al solicitante, así que
+        // el validator real rechazaría la operación. El mock lo replica para no seguir de largo
         // hacia el enriquecimiento de notificación (que no aplica a este caso).
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.empty(), false, 0L);
+        stubConsultas(entrada, true, Optional.empty(), otroAsesor, 0L);
         doThrow(new FichaNoPerteneceAsesorException(UtilUUID.obtenerUUIDPorDefecto(), asesorFicha))
                 .when(agregarRevisionItemValidator)
-                .validar(entrada, true, UtilUUID.obtenerUUIDPorDefecto(), false, 0L);
+                .validar(entrada, true, UtilUUID.obtenerUUIDPorDefecto(), otroAsesor, 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarRevisionItemUseCase.ejecutar(entrada))
                 .isInstanceOf(FichaNoPerteneceAsesorException.class);
 
-        verify(agregarRevisionItemValidator).validar(entrada, true, UtilUUID.obtenerUUIDPorDefecto(), false, 0L);
+        verify(agregarRevisionItemValidator).validar(entrada, true, UtilUUID.obtenerUUIDPorDefecto(), otroAsesor, 0L);
     }
 
     @Test
     void debeLanzarExcepcion_cuandoElItemNoExiste() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, false, Optional.of(fichaPerfilId), true, 0L);
+        stubConsultas(entrada, false, Optional.of(fichaPerfilId), asesorFicha, 0L);
         doThrow(new ItemFichaPerfilNoEncontradoException(entrada.getItem()))
-                .when(agregarRevisionItemValidator).validar(entrada, false, fichaPerfilId, true, 0L);
+                .when(agregarRevisionItemValidator).validar(entrada, false, fichaPerfilId, asesorFicha, 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarRevisionItemUseCase.ejecutar(entrada))
@@ -191,9 +182,9 @@ class AgregarRevisionItemUseCaseTest {
     void debeLanzarExcepcion_cuandoElAsesorNoEsPropietario() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), false, 0L);
+        stubConsultas(entrada, true, Optional.of(fichaPerfilId), otroAsesor, 0L);
         doThrow(new FichaNoPerteneceAsesorException(fichaPerfilId, asesorFicha))
-                .when(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, false, 0L);
+                .when(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, otroAsesor, 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarRevisionItemUseCase.ejecutar(entrada))
@@ -207,9 +198,9 @@ class AgregarRevisionItemUseCaseTest {
     void debeLanzarExcepcion_cuandoLaRevisionYaExiste() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), true, 1L);
+        stubConsultas(entrada, true, Optional.of(fichaPerfilId), asesorFicha, 1L);
         doThrow(new RevisionItemYaExisteException(entrada.getItem()))
-                .when(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, true, 1L);
+                .when(agregarRevisionItemValidator).validar(entrada, true, fichaPerfilId, asesorFicha, 1L);
 
         // Act & Assert
         assertThatThrownBy(() -> agregarRevisionItemUseCase.ejecutar(entrada))
@@ -223,7 +214,7 @@ class AgregarRevisionItemUseCaseTest {
     void debeLanzarExcepcion_cuandoElRepositorioFalla() {
         // Arrange
         var entrada = agregacionValida();
-        stubConsultas(entrada, true, Optional.of(fichaPerfilId), true, 0L);
+        stubConsultas(entrada, true, Optional.of(fichaPerfilId), asesorFicha, 0L);
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
                 .when(revisionItemOutputPort).registrarRevision(entidadDe(entrada.getRevisionItem()));
 
@@ -235,20 +226,18 @@ class AgregarRevisionItemUseCaseTest {
     }
 
     private void stubConsultas(AgregacionRevisionItemDomain entrada, boolean itemExiste,
-                                Optional<UUID> fichaPerfilDelItem, boolean esPropietario, long revisiones) {
+                                Optional<UUID> fichaPerfilDelItem, UUID asesorDeLaFicha, long revisiones) {
         when(itemFichaPerfilExisteFinder.obtener(entrada.getItem())).thenReturn(itemExiste);
         when(fichaPerfilDelItemFinder.obtener(entrada.getItem())).thenReturn(fichaPerfilDelItem);
-        when(asesorFichaPropietarioFinder.obtener(entrada)).thenReturn(esPropietario);
+        UUID fichaResuelta = fichaPerfilDelItem.orElse(UtilUUID.obtenerUUIDPorDefecto());
+        var ficha = FichaPerfilDomain.crear("Sistema de gestión", asesorDeLaFicha);
+        when(fichaPerfilFinder.obtener(fichaResuelta)).thenReturn(Optional.of(ficha));
         when(revisionesDelItemFinder.obtener(entrada.getItem())).thenReturn(revisiones);
     }
 
-    private void stubEnriquecimientoNotificacion() {
-        var ficha = FichaPerfilDomain.crear("Sistema de gestión", asesorFicha);
-        var estudiante = EstudianteDomain.reconstruir(
-                estudianteId, "1000000003", "Ana Gomez", "ana.gomez@soyuco.edu.co");
-        when(fichaPerfilFinder.obtener(fichaPerfilId)).thenReturn(Optional.of(ficha));
-        when(estudiantesDeFichaFinder.obtener(fichaPerfilId)).thenReturn(List.of(estudianteId));
-        when(estudiantesFinder.obtener(List.of(estudianteId))).thenReturn(List.of(estudiante));
+    private void stubContactosDeFicha(UUID fichaPerfil) {
+        when(contactosDeFichaFinder.obtener(fichaPerfil))
+                .thenReturn(List.of(new ContactoEstudiante("Ana Gomez", "ana.gomez@soyuco.edu.co")));
     }
 
     private AgregacionRevisionItemDomain agregacionValida() {

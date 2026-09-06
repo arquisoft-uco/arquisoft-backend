@@ -30,12 +30,12 @@ public class AgregarRevisionItemValidatorImpl implements AgregarRevisionItemVali
 
     @Override
     public void validar(AgregacionRevisionItemDomain entrada, boolean itemExiste, UUID fichaPerfil,
-                         boolean esPropietario, long cantidadRevisiones) {
+                         UUID asesorFicha, long cantidadRevisiones) {
 
         itemFichaPerfilExisteRule.validar(new ExistenciaItemFichaPerfil(entrada.getItem(), itemExiste));
 
         asesorFichaPropietarioRule.validar(
-                new PropiedadAsesorFicha(fichaPerfil, entrada.getAsesorFicha(), esPropietario));
+                new PropiedadAsesorFicha(fichaPerfil, asesorFicha, entrada.getAsesorFicha()));
 
         revisionItemNoDuplicadaRule.validar(
                 new DisponibilidadRevisionItem(entrada.getItem(), cantidadRevisiones));
