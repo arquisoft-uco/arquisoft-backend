@@ -7,3 +7,4 @@ rutas:
   evaluaciones:
     items-cualitativos-jurado:
       base: /evaluaciones/items-cualitativos-jurado
+      por-id: /{itemId}
