@@ -20,6 +20,7 @@ rutas:
       estudiantes: /{fichaPerfilId}/estudiantes
       estudiante-por-id: /{fichaPerfilId}/estudiantes/{estudianteId}
       evaluaciones: /{fichaId}/evaluaciones
+      ficha-estudiante: /{fichaPerfilId}/estudiante
     estado-evaluacion-ficha:
       base: ${rutas.fichas.fichas-perfil.base}/estado-evaluacion-ficha
     minio-guia:
