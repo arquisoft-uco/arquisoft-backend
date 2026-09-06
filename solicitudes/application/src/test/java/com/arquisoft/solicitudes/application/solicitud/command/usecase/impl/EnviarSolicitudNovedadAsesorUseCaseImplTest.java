@@ -6,8 +6,8 @@ import com.arquisoft.solicitudes.application.destinatario.command.finder.Destina
 import com.arquisoft.solicitudes.application.destinatario.command.secondaryport.DestinatarioOutputPort;
 import com.arquisoft.solicitudes.application.remitente.command.finder.RemitenteDeUsuarioFinder;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.RemitenteOutputPort;
+import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
-import com.arquisoft.solicitudes.application.solicitud.command.finder.UsuarioExisteFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper.EnviarSolicitudNovedadAsesorMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudNovedadAsesorCommand;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
@@ -20,6 +20,7 @@ import com.arquisoft.solicitudes.domain.solicitud.exception.RemitenteNoEncontrad
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudDuplicadaException;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
+import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +52,7 @@ class EnviarSolicitudNovedadAsesorUseCaseImplTest {
     @Mock private DestinatarioOutputPort destinatarioOutputPort;
     @Mock private RemitenteDeUsuarioFinder remitenteDeUsuarioFinder;
     @Mock private DestinatarioDeUsuarioFinder destinatarioDeUsuarioFinder;
-    @Mock private UsuarioExisteFinder usuarioExisteFinder;
+    @Mock private DatosUsuarioFinder datosUsuarioFinder;
     @Mock private SolicitudDuplicadaFinder solicitudDuplicadaFinder;
     @Mock private EnviarSolicitudNovedadAsesorValidator validator;
     @Mock private EventPublisher eventPublisher;
@@ -61,11 +62,15 @@ class EnviarSolicitudNovedadAsesorUseCaseImplTest {
 
     private EnvioSolicitudNovedadAsesorDomain envio;
 
+    private static UsuarioDomain replica(UUID id) {
+        return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co");
+    }
+
     @BeforeEach
     void setUp() {
         useCase = new EnviarSolicitudNovedadAsesorUseCaseImpl(
                 solicitudOutputPort, remitenteOutputPort, destinatarioOutputPort,
-                remitenteDeUsuarioFinder, destinatarioDeUsuarioFinder, usuarioExisteFinder,
+                remitenteDeUsuarioFinder, destinatarioDeUsuarioFinder, datosUsuarioFinder,
                 solicitudDuplicadaFinder, validator, eventPublisher, logger);
 
         var command = EnviarSolicitudNovedadAsesorCommand.crear(
@@ -78,7 +83,7 @@ class EnviarSolicitudNovedadAsesorUseCaseImplTest {
         // Arrange
         UUID remitenteFila = UUID.randomUUID();
         UUID destinatarioFila = UUID.randomUUID();
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(Optional.of(replica(UUID.randomUUID())));
         when(remitenteDeUsuarioFinder.obtener(envio.getRemitenteUsuario()))
                 .thenReturn(Optional.of(remitenteFila));
         when(destinatarioDeUsuarioFinder.obtener(envio.getDestinatarioUsuario()))
@@ -117,7 +122,7 @@ class EnviarSolicitudNovedadAsesorUseCaseImplTest {
         // Arrange
         UUID remitenteFila = UUID.randomUUID();
         UUID destinatarioFila = UUID.randomUUID();
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(Optional.of(replica(UUID.randomUUID())));
         when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(remitenteFila));
         when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(destinatarioFila));
         when(solicitudDuplicadaFinder.obtener(any())).thenReturn(false);
@@ -138,7 +143,7 @@ class EnviarSolicitudNovedadAsesorUseCaseImplTest {
     @Test
     void debePersistirElCandidato_cuandoNoExisteFilaDeRolPrevia() {
         // Arrange
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(Optional.of(replica(UUID.randomUUID())));
         when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(Optional.empty());
         when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(Optional.empty());
         when(solicitudDuplicadaFinder.obtener(any())).thenReturn(false);
@@ -163,8 +168,9 @@ class EnviarSolicitudNovedadAsesorUseCaseImplTest {
     @Test
     void debeLanzarYNoTocarLaEscritura_cuandoElRemitenteNoExiste() {
         // Arrange
-        when(usuarioExisteFinder.obtener(envio.getRemitenteUsuario())).thenReturn(false);
-        when(usuarioExisteFinder.obtener(envio.getDestinatarioUsuario())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(envio.getRemitenteUsuario())).thenReturn(Optional.empty());
+        when(datosUsuarioFinder.obtener(envio.getDestinatarioUsuario()))
+                .thenReturn(Optional.of(replica(envio.getDestinatarioUsuario())));
         doThrow(new RemitenteNoEncontradoException(envio.getRemitenteUsuario()))
                 .when(validator).validarExistenciaUsuarios(any(), eq(false), eq(true));
 
@@ -181,8 +187,9 @@ class EnviarSolicitudNovedadAsesorUseCaseImplTest {
     @Test
     void debeLanzarDestinatarioNoEncontrado_cuandoElDestinatarioNoExiste() {
         // Arrange
-        when(usuarioExisteFinder.obtener(envio.getRemitenteUsuario())).thenReturn(true);
-        when(usuarioExisteFinder.obtener(envio.getDestinatarioUsuario())).thenReturn(false);
+        when(datosUsuarioFinder.obtener(envio.getRemitenteUsuario()))
+                .thenReturn(Optional.of(replica(envio.getRemitenteUsuario())));
+        when(datosUsuarioFinder.obtener(envio.getDestinatarioUsuario())).thenReturn(Optional.empty());
         doThrow(new DestinatarioNoEncontradoException(envio.getDestinatarioUsuario()))
                 .when(validator).validarExistenciaUsuarios(any(), eq(true), eq(false));
 
@@ -197,7 +204,7 @@ class EnviarSolicitudNovedadAsesorUseCaseImplTest {
     @Test
     void debeLanzarSolicitudDuplicada_cuandoLaClaveYaExiste() {
         // Arrange
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(Optional.of(replica(UUID.randomUUID())));
         when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(UUID.randomUUID()));
         when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(UUID.randomUUID()));
         when(solicitudDuplicadaFinder.obtener(any())).thenReturn(true);
@@ -215,7 +222,7 @@ class EnviarSolicitudNovedadAsesorUseCaseImplTest {
     @Test
     void debeConsultarValidarYPersistirEnOrden_cuandoElFlujoEsValido() {
         // Arrange
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(Optional.of(replica(UUID.randomUUID())));
         when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(UUID.randomUUID()));
         when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(UUID.randomUUID()));
         when(solicitudDuplicadaFinder.obtener(any())).thenReturn(false);
@@ -224,7 +231,7 @@ class EnviarSolicitudNovedadAsesorUseCaseImplTest {
         useCase.ejecutar(envio);
 
         // Assert — existencia de usuario -> get-or-create -> unicidad -> persistir -> publicar
-        InOrder inOrder = inOrder(usuarioExisteFinder, validator, remitenteDeUsuarioFinder,
+        InOrder inOrder = inOrder(datosUsuarioFinder, validator, remitenteDeUsuarioFinder,
                 solicitudDuplicadaFinder, solicitudOutputPort, eventPublisher);
         inOrder.verify(validator).validarExistenciaUsuarios(any(), anyBoolean(), anyBoolean());
         inOrder.verify(remitenteDeUsuarioFinder).obtener(any());
