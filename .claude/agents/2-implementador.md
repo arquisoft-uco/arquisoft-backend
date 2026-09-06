@@ -139,6 +139,12 @@ omites).
   El resultado de un `{X}ExisteFinder` se declara **`boolean` explícito, nunca `var`**: el contrato
   es `Finder<T, Boolean>` porque un genérico no admite primitivos, y con `var` ese envuelto llega
   hasta el `validar(..., boolean existe)` desempaquetándose en silencio.
+  Un `Finder` es **una sola llamada a un `OutputPort`**: no encadena `Finder`s, no compara ni deriva
+  (`a.equals(b)`, `count > 0`), no hace lookups en varios pasos. Al `Validator` le llega el dato
+  crudo del `Finder` (agregado, `UUID`s, conteo) — **nunca un veredicto ya calculado** en el
+  `UseCase`; la comparación de identidad/pertenencia vive en la `Rule`. Y si un método del
+  `OutputPort` trae lo que se necesita, no se usan dos `Finder`s en cascada (lista de `UUID` → fetch
+  por elemento): una proyección con `JOIN`.
 - La existencia de un domain de **otra feature** se consulta con el `Finder` de esa feature sobre
   su `OutputPort` de `command/` — nunca creando un `query/` para eso.
 - Si el plan declara eventos, el `UseCase` inyecta la **interfaz** `EventPublisher`
