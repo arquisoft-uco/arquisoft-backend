@@ -214,6 +214,9 @@ excepción o mapear a `Entity`.
 | `Rule` declarada como bean (`@Component`) o con dependencias de constructor | ❌ |
 | `Finder` lanza por "no encontrado" en vez de devolver `Boolean`/`Long`/`Optional` | ❌ |
 | `Finder` que no extiende `Finder<T, R>` de `shared:application` (`com.arquisoft.shared.finder`), o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
+| `FinderImpl` que encadena otro `Finder`, compara/deriva (`a.equals(b)`, `count > 0`) o hace lookups en varios pasos — un `Finder` es una sola llamada a un `OutputPort`. Combinar fuentes lo hace el `UseCase`; decidir sobre lo consultado es una `Rule` | ❌ |
+| El `UseCase` calcula un veredicto (`boolean esPropietario = ficha.getAsesorFicha().equals(solicitante)`) y se lo pasa al `Validator` — al `Validator` va el dato crudo del `Finder` (el agregado, los `UUID`, el conteo); la comparación de identidad/pertenencia vive en la `Rule` | ❌ |
+| Dos `Finder`s donde el primero alimenta al segundo (lista de `UUID` → luego un fetch por elemento) pudiendo traerse todo con una proyección `JOIN` en el `OutputPort` | ⚠️ |
 | `Validator` **vacío** o que no orquesta ninguna `Rule`, creado solo porque la plantilla lo listaba. Un comando sin restricciones de conjunto no lleva `Validator`: ver `notificaciones/.../EnviarNotificacionUseCaseImpl` | ❌ |
 | Clase con sufijo `Validator` que en realidad inyecta un `OutputPort` y devuelve un `boolean` — eso es un `Finder`, no un `Validator`; renómbralo y muévelo a `command/finder/` | ❌ |
 | `{Entidad}OutputPort` declara un método sobre **otro** domain (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |

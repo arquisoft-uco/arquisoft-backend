@@ -4,6 +4,7 @@ import com.arquisoft.fichas.application.itemfichaperfil.query.readmodel.ItemFich
 import com.arquisoft.fichas.application.itemfichaperfil.query.secondaryport.ItemFichaPerfilQueryOutputPort;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.query.secondaryadapter.repository.mapper.ItemFichaPerfilEstudianteQueryMapper;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.query.secondaryadapter.repository.mapper.ItemFichaPerfilQueryMapper;
+import com.arquisoft.fichas.infrastructure.itemfichaperfil.query.secondaryadapter.repository.mapper.ItemFichaPerfilRepresentanteQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ public class ItemFichaPerfilQueryOutputAdapter implements ItemFichaPerfilQueryOu
 
     private final ItemFichaPerfilQueryRepository itemFichaPerfilQueryRepository;
     private final ItemFichaPerfilEstudianteQueryRepository itemFichaPerfilEstudianteQueryRepository;
+    private final ItemFichaPerfilRepresentanteQueryRepository itemFichaPerfilRepresentanteQueryRepository;
 
     @Override
     public List<ItemFichaPerfilReadModel> consultarPorFichaYAsesor(UUID fichaPerfil, UUID asesorFicha) {
@@ -32,6 +34,15 @@ public class ItemFichaPerfilQueryOutputAdapter implements ItemFichaPerfilQueryOu
                 .findByFichaPerfilIdAndEstudianteIdOrderByTipoItemNombreAsc(fichaPerfil, estudiante)
                 .stream()
                 .map(ItemFichaPerfilEstudianteQueryMapper::toReadModel)
+                .toList();
+    }
+
+    @Override
+    public List<ItemFichaPerfilReadModel> consultarPorFichaYRepresentante(UUID fichaPerfil, UUID representanteComite) {
+        return itemFichaPerfilRepresentanteQueryRepository
+                .findByFichaPerfilIdAndRepresentanteComiteIdOrderByTipoItemNombreAsc(fichaPerfil, representanteComite)
+                .stream()
+                .map(ItemFichaPerfilRepresentanteQueryMapper::toReadModel)
                 .toList();
     }
 }
