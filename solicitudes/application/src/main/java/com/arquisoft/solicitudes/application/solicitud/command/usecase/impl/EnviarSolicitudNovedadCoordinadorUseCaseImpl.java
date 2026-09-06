@@ -10,6 +10,7 @@ import com.arquisoft.solicitudes.application.destinatario.command.secondaryport.
 import com.arquisoft.solicitudes.application.remitente.command.finder.RemitenteDeUsuarioFinder;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.RemitenteOutputPort;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.mapper.RemitenteMapper;
+import com.arquisoft.solicitudes.application.solicitud.command.finder.DestinatarioAsignadoFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.UsuarioExisteFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
@@ -20,6 +21,7 @@ import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudNovedadCoordinad
 import com.arquisoft.solicitudes.domain.solicitud.SolicitudDomain;
 import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudNovedadCoordinadorEnviadaEvent;
 import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
+import com.arquisoft.solicitudes.domain.solicitud.model.ConsultaAsignacionResponsable;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,7 @@ public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
     private final RemitenteDeUsuarioFinder remitenteDeUsuarioFinder;
     private final DestinatarioDeUsuarioFinder destinatarioDeUsuarioFinder;
     private final UsuarioExisteFinder usuarioExisteFinder;
+    private final DestinatarioAsignadoFinder destinatarioAsignadoFinder;
     private final SolicitudDuplicadaFinder solicitudDuplicadaFinder;
     private final EnviarSolicitudNovedadCoordinadorValidator validator;
     private final EventPublisher eventPublisher;
@@ -48,6 +51,10 @@ public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
         boolean remitenteUsuarioExiste = usuarioExisteFinder.obtener(envio.getRemitenteUsuario());
         boolean destinatarioUsuarioExiste = usuarioExisteFinder.obtener(envio.getDestinatarioUsuario());
         validator.validarExistenciaUsuarios(envio, remitenteUsuarioExiste, destinatarioUsuarioExiste);
+
+        boolean destinatarioAsignado = destinatarioAsignadoFinder.obtener(new ConsultaAsignacionResponsable(
+                envio.getRemitenteUsuario(), envio.getDestinatarioUsuario()));
+        validator.validarAsignacionDestinatario(envio, destinatarioAsignado);
 
         UUID remitenteId = remitenteDeUsuarioFinder.obtener(envio.getRemitenteUsuario())
                 .orElseGet(() -> {
