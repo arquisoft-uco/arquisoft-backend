@@ -9,7 +9,9 @@ public enum EvaluacionFichaPerfilKey implements ClaveMensaje {
     LOG_REGISTRANDO("fichas.aplicacion.evaluacionfichaperfil.log.registrando", 2),
     LOG_VERIFICACION_REGISTRAR("fichas.aplicacion.evaluacionfichaperfil.log.verificacion-registrar", 3),
     LOG_REGISTRADA("fichas.aplicacion.evaluacionfichaperfil.log.registrada", 3),
-    LOG_GUARDADA("fichas.infraestructura.evaluacionfichaperfil.log.guardada", 2);
+    LOG_GUARDADA("fichas.infraestructura.evaluacionfichaperfil.log.guardada", 2),
+    LOG_CONSULTANDO_REPRESENTANTE("fichas.aplicacion.evaluacionfichaperfil.log.consultando-representante", 1),
+    LOG_CONSULTA_REPRESENTANTE_COMPLETADA("fichas.aplicacion.evaluacionfichaperfil.log.consulta-representante-completada", 1);
 
     private final String clave;
     private final int parametros;
