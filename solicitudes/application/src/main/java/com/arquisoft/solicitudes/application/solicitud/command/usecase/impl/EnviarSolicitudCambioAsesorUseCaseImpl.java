@@ -10,8 +10,8 @@ import com.arquisoft.solicitudes.application.destinatario.command.secondaryport.
 import com.arquisoft.solicitudes.application.remitente.command.finder.RemitenteDeUsuarioFinder;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.RemitenteOutputPort;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.mapper.RemitenteMapper;
+import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
-import com.arquisoft.solicitudes.application.solicitud.command.finder.UsuarioExisteFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.mapper.SolicitudMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudCambioAsesorUseCase;
@@ -22,9 +22,11 @@ import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudCambioAsesorEnv
 import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
+import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -37,7 +39,7 @@ public class EnviarSolicitudCambioAsesorUseCaseImpl
     private final DestinatarioOutputPort destinatarioOutputPort;
     private final RemitenteDeUsuarioFinder remitenteDeUsuarioFinder;
     private final DestinatarioDeUsuarioFinder destinatarioDeUsuarioFinder;
-    private final UsuarioExisteFinder usuarioExisteFinder;
+    private final DatosUsuarioFinder datosUsuarioFinder;
     private final SolicitudDuplicadaFinder solicitudDuplicadaFinder;
     private final EnviarSolicitudCambioAsesorValidator validator;
     private final EventPublisher eventPublisher;
@@ -48,8 +50,11 @@ public class EnviarSolicitudCambioAsesorUseCaseImpl
         logger.info(Mensajes.obtener(SolicitudKey.LOG_ENVIANDO_CAMBIO_ASESOR),
                 envio.getRemitenteUsuario(), envio.getDestinatarioUsuario());
 
-        boolean remitenteUsuarioExiste = usuarioExisteFinder.obtener(envio.getRemitenteUsuario());
-        boolean destinatarioUsuarioExiste = usuarioExisteFinder.obtener(envio.getDestinatarioUsuario());
+        Optional<UsuarioDomain> remitenteUsuario = datosUsuarioFinder.obtener(envio.getRemitenteUsuario());
+        Optional<UsuarioDomain> destinatarioUsuario =
+                datosUsuarioFinder.obtener(envio.getDestinatarioUsuario());
+        boolean remitenteUsuarioExiste = remitenteUsuario.isPresent();
+        boolean destinatarioUsuarioExiste = destinatarioUsuario.isPresent();
         logger.debug(Mensajes.obtener(SolicitudKey.LOG_VERIFICACION_ENVIO_CAMBIO_ASESOR),
                 remitenteUsuarioExiste, destinatarioUsuarioExiste);
         validator.validarExistenciaUsuarios(envio, remitenteUsuarioExiste, destinatarioUsuarioExiste);
