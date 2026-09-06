@@ -1,10 +1,12 @@
 package com.arquisoft.fichas.application.revisionitem.command.usecase.impl;
 
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.ContactosDeFichaFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.revisionitem.command.finder.RevisionesDelItemFinder;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.RevisionItemOutputPort;
 import com.arquisoft.fichas.application.revisionitem.command.validator.ModificarRevisionItemValidator;
+import com.arquisoft.fichas.domain.estudiantefichaperfil.model.ContactoEstudiante;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPerteneceAsesorException;
 import com.arquisoft.fichas.domain.revisionitem.ModificacionRevisionItemDomain;
@@ -22,6 +24,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -47,6 +50,9 @@ class ModificarRevisionItemUseCaseImplTest {
     private FichaPerfilFinder fichaPerfilFinder;
 
     @Mock
+    private ContactosDeFichaFinder contactosDeFichaFinder;
+
+    @Mock
     private ModificarRevisionItemValidator modificarRevisionItemValidator;
 
     @Mock
@@ -61,6 +67,9 @@ class ModificarRevisionItemUseCaseImplTest {
     @InjectMocks
     private ModificarRevisionItemUseCaseImpl modificarRevisionItemUseCase;
 
+    private static final List<ContactoEstudiante> ESTUDIANTES =
+            List.of(new ContactoEstudiante("Ana Gomez", "ana.gomez@soyuco.edu.co"));
+
     private final UUID asesorFicha = UUID.randomUUID();
     private final UUID fichaPerfilId = UUID.randomUUID();
 
@@ -69,6 +78,7 @@ class ModificarRevisionItemUseCaseImplTest {
         // Arrange
         var entrada = modificacionValida();
         stubConsultas(entrada, Optional.of(fichaPerfilId), asesorFicha, 1L);
+        stubContactosDeFicha(fichaPerfilId);
 
         // Act
         modificarRevisionItemUseCase.ejecutar(entrada);
@@ -82,6 +92,7 @@ class ModificarRevisionItemUseCaseImplTest {
         // Arrange — no-op válido: no hay rama especial, el flujo es idéntico al caso exitoso
         var entrada = modificacionValida();
         stubConsultas(entrada, Optional.of(fichaPerfilId), asesorFicha, 1L);
+        stubContactosDeFicha(fichaPerfilId);
 
         // Act
         modificarRevisionItemUseCase.ejecutar(entrada);
@@ -96,6 +107,7 @@ class ModificarRevisionItemUseCaseImplTest {
         // Arrange
         var entrada = modificacionValida();
         stubConsultas(entrada, Optional.of(fichaPerfilId), asesorFicha, 1L);
+        stubContactosDeFicha(fichaPerfilId);
 
         // Act
         modificarRevisionItemUseCase.ejecutar(entrada);
@@ -115,6 +127,7 @@ class ModificarRevisionItemUseCaseImplTest {
         // Arrange
         var entrada = modificacionValida();
         stubConsultas(entrada, Optional.of(fichaPerfilId), asesorFicha, 1L);
+        stubContactosDeFicha(fichaPerfilId);
 
         // Act
         modificarRevisionItemUseCase.ejecutar(entrada);
@@ -203,11 +216,17 @@ class ModificarRevisionItemUseCaseImplTest {
         when(fichaPerfilFinder.obtener(fichaResuelta)).thenReturn(Optional.of(ficha));
     }
 
+    private void stubContactosDeFicha(UUID fichaPerfil) {
+        when(contactosDeFichaFinder.obtener(fichaPerfil)).thenReturn(ESTUDIANTES);
+    }
+
     private static void assertThatContieneLosDatos(RevisionItemModificadoEvent evento,
                                                      ModificacionRevisionItemDomain entrada) {
         assertThat(evento.getItemId()).isEqualTo(entrada.getItem());
         assertThat(evento.getEstadoRevisionId()).isEqualTo(entrada.getEstadoRevision().getId());
         assertThat(evento.getEstadoRevisionNombre()).isEqualTo(entrada.getEstadoRevision().getNombre());
+        assertThat(evento.getTituloProyecto()).isEqualTo("Título de prueba");
+        assertThat(evento.getEstudiantes()).isEqualTo(ESTUDIANTES);
     }
 
     private ModificacionRevisionItemDomain modificacionValida() {

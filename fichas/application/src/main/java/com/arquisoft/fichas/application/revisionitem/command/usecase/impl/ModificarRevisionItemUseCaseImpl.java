@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.revisionitem.command.usecase.impl;
 
+import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.ContactosDeFichaFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
 import com.arquisoft.fichas.application.revisionitem.command.finder.RevisionesDelItemFinder;
@@ -10,7 +11,6 @@ import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.revisionitem.ModificacionRevisionItemDomain;
 import com.arquisoft.fichas.domain.revisionitem.event.RevisionItemModificadoEvent;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilUUID;
@@ -26,6 +26,7 @@ public class ModificarRevisionItemUseCaseImpl implements ModificarRevisionItemUs
     private final RevisionesDelItemFinder revisionesDelItemFinder;
     private final FichaPerfilDelItemFinder fichaPerfilDelItemFinder;
     private final FichaPerfilFinder fichaPerfilFinder;
+    private final ContactosDeFichaFinder contactosDeFichaFinder;
     private final ModificarRevisionItemValidator modificarRevisionItemValidator;
     private final RevisionItemOutputPort revisionItemOutputPort;
     private final EventPublisher eventPublisher;
@@ -33,6 +34,9 @@ public class ModificarRevisionItemUseCaseImpl implements ModificarRevisionItemUs
 
     @Override
     public void ejecutar(ModificacionRevisionItemDomain entrada) {
+        logger.info(RevisionItemKey.LOG_MODIFICANDO,
+                entrada.getItem(), entrada.getEstadoRevision().getId());
+
         long cantidadRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());
 
         UUID fichaPerfil = fichaPerfilDelItemFinder.obtener(entrada.getItem())
@@ -40,13 +44,18 @@ public class ModificarRevisionItemUseCaseImpl implements ModificarRevisionItemUs
 
         var ficha = fichaPerfilFinder.obtener(fichaPerfil).orElse(FichaPerfilDomain.VACIO);
 
+        logger.debug(RevisionItemKey.LOG_VERIFICACION_MODIFICAR,
+                cantidadRevisiones, ficha.getAsesorFicha());
+
         modificarRevisionItemValidator.validar(entrada, cantidadRevisiones, fichaPerfil, ficha.getAsesorFicha());
 
         revisionItemOutputPort.actualizarEstado(entrada.getItem(), entrada.getEstadoRevision().getId());
 
         eventPublisher.publish(new RevisionItemModificadoEvent(
-                entrada.getItem(), entrada.getEstadoRevision().getId(), entrada.getEstadoRevision().getNombre()));
+                entrada.getItem(), entrada.getEstadoRevision().getId(), entrada.getEstadoRevision().getNombre(),
+                ficha.getTituloProyecto(),
+                contactosDeFichaFinder.obtener(fichaPerfil)));
 
-        logger.info(Mensajes.obtener(RevisionItemKey.LOG_MODIFICADO), entrada.getItem());
+        logger.info(RevisionItemKey.LOG_MODIFICADO, entrada.getItem());
     }
 }

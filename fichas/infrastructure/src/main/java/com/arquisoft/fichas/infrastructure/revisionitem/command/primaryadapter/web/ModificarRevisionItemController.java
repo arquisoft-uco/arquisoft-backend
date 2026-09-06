@@ -7,6 +7,7 @@ import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.FichasApiMessages;
+import com.arquisoft.shared.util.UtilUUID;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -58,7 +59,7 @@ public class ModificarRevisionItemController {
             @RequestBody ModificarRevisionItemRequestDTO dto,
             @AuthenticationPrincipal Jwt jwt) {
 
-        var asesorFichaId = UUID.fromString(jwt.getSubject());
+        var asesorFichaId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
 
         modificarRevisionItemInteractor.ejecutar(
                 ModificarRevisionItemRequestMapper.toCommand(dto, itemId, asesorFichaId));

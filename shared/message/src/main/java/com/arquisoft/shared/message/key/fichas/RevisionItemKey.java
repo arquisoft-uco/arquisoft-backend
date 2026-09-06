@@ -11,6 +11,8 @@ public enum RevisionItemKey implements ClaveMensaje {
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.revisionitem.log.verificacion-agregar", 3),
     LOG_AGREGADO("fichas.aplicacion.revisionitem.log.agregado", 2),
     ERROR_NO_ENCONTRADA("fichas.dominio.revisionitem.error.no-encontrada", 1),
+    LOG_MODIFICANDO("fichas.aplicacion.revisionitem.log.modificando", 2),
+    LOG_VERIFICACION_MODIFICAR("fichas.aplicacion.revisionitem.log.verificacion-modificar", 2),
     LOG_MODIFICADO("fichas.aplicacion.revisionitem.log.modificado", 1);
 
     private final String clave;
