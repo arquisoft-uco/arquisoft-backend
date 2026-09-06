@@ -57,5 +57,16 @@ public final class SolicitudesApiMessages {
         public static final String ENVIAR_CAMBIO_ASESOR_RESP_400 = "Datos inválidos";
         public static final String ENVIAR_CAMBIO_ASESOR_RESP_422 =
                 "Remitente o destinatario no encontrado, o solicitud duplicada";
+
+        public static final String ENVIAR_AMPLIACION_PLAZO_SUMMARY =
+                "Enviar solicitud para ampliación de plazo";
+        public static final String ENVIAR_AMPLIACION_PLAZO_DESCRIPTION =
+                "Permite a un estudiante enviar una solicitud para justificar la ampliación del plazo "
+                        + "de entrega de su proyecto de grado, dirigida a un coordinador.";
+        public static final String ENVIAR_AMPLIACION_PLAZO_RESP_201 =
+                "Solicitud enviada — retorna el UUID asignado";
+        public static final String ENVIAR_AMPLIACION_PLAZO_RESP_400 = "Datos inválidos";
+        public static final String ENVIAR_AMPLIACION_PLAZO_RESP_422 =
+                "Remitente o destinatario no encontrado, o solicitud duplicada";
     }
 }
