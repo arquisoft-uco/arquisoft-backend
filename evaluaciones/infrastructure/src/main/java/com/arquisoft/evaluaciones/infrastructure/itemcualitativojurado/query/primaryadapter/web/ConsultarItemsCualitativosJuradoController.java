@@ -56,7 +56,7 @@ public class ConsultarItemsCualitativosJuradoController {
                     description = EvaluacionesApiMessages.Comun.RESP_403)
     })
     public ResponseEntity<List<ItemCualitativoJuradoResponseDTO>> consultarItemsCualitativosJurado() {
-        List<ItemCualitativoJuradoReadModel> items = interactor.ejecutar(null);
+        List<ItemCualitativoJuradoReadModel> items = interactor.ejecutar();
 
         return ResponseEntity.ok(items.stream()
                 .map(ItemCualitativoJuradoResponseMapper::toResponse)

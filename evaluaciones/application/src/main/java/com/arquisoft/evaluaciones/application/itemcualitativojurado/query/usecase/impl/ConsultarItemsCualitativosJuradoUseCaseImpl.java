@@ -19,7 +19,7 @@ public class ConsultarItemsCualitativosJuradoUseCaseImpl implements ConsultarIte
     private final AppLogger logger;
 
     @Override
-    public List<ItemCualitativoJuradoReadModel> ejecutar(Void entrada) {
+    public List<ItemCualitativoJuradoReadModel> ejecutar() {
         var resultado = queryOutputPort.consultarTodos();
 
         logger.debug(Mensajes.obtener(ItemCualitativoJuradoKey.LOG_CONSULTA_COMPLETADA), resultado.size());

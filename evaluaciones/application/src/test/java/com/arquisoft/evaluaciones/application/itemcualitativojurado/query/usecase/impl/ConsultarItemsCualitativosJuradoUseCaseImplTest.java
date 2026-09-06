@@ -40,7 +40,7 @@ class ConsultarItemsCualitativosJuradoUseCaseImplTest {
         when(queryOutputPort.consultarTodos()).thenReturn(esperados);
 
         // Act
-        List<ItemCualitativoJuradoReadModel> resultado = useCase.ejecutar(null);
+        List<ItemCualitativoJuradoReadModel> resultado = useCase.ejecutar();
 
         // Assert
         assertThat(resultado).containsExactlyElementsOf(esperados);
@@ -54,7 +54,7 @@ class ConsultarItemsCualitativosJuradoUseCaseImplTest {
         when(queryOutputPort.consultarTodos()).thenReturn(List.of());
 
         // Act
-        List<ItemCualitativoJuradoReadModel> resultado = useCase.ejecutar(null);
+        List<ItemCualitativoJuradoReadModel> resultado = useCase.ejecutar();
 
         // Assert
         assertThat(resultado).isEmpty();

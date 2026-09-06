@@ -23,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -77,7 +76,7 @@ class ConsultarItemsCualitativosJuradoControllerTest {
                 new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "Evalúa la claridad conceptual"),
                 new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Rigor", "Evalúa el rigor metodológico")
         );
-        when(interactor.ejecutar(isNull())).thenReturn(items);
+        when(interactor.ejecutar()).thenReturn(items);
 
         // Act & Assert
         mockMvc.perform(get(RUTA).with(jwtConPermisoView()))
@@ -94,7 +93,7 @@ class ConsultarItemsCualitativosJuradoControllerTest {
                 new ItemCualitativoJuradoReadModel(idClaridad, "Claridad", "Evalúa la claridad conceptual"),
                 new ItemCualitativoJuradoReadModel(idRigor, "Rigor", "Evalúa el rigor metodológico")
         );
-        when(interactor.ejecutar(isNull())).thenReturn(items);
+        when(interactor.ejecutar()).thenReturn(items);
 
         // Act & Assert
         mockMvc.perform(get(RUTA).with(jwtConPermisoView()))
@@ -110,7 +109,7 @@ class ConsultarItemsCualitativosJuradoControllerTest {
     @Test
     void debeRetornar200ConListaVacia_cuandoElInteractorRetornaVacio() throws Exception {
         // Arrange
-        when(interactor.ejecutar(isNull())).thenReturn(List.of());
+        when(interactor.ejecutar()).thenReturn(List.of());
 
         // Act & Assert
         mockMvc.perform(get(RUTA).with(jwtConPermisoView()))
@@ -145,14 +144,14 @@ class ConsultarItemsCualitativosJuradoControllerTest {
     @Test
     void debeDelegarUnaSolaVez_enElInteractor() throws Exception {
         // Arrange
-        when(interactor.ejecutar(isNull())).thenReturn(List.of());
+        when(interactor.ejecutar()).thenReturn(List.of());
 
         // Act
         mockMvc.perform(get(RUTA).with(jwtConPermisoView()))
                 .andExpect(status().isOk());
 
         // Assert
-        verify(interactor, times(1)).ejecutar(isNull());
+        verify(interactor, times(1)).ejecutar();
     }
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermisoView() {
