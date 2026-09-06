@@ -14,7 +14,7 @@ public class DestinatarioAsignadoFinderImpl implements DestinatarioAsignadoFinde
 
     @Override
     public Boolean obtener(ConsultaAsignacionResponsable consulta) {
-        return asignacionProyectoOutputPort.esCoordinadorAsignado(
+        return asignacionProyectoOutputPort.esResponsableAsignado(
                 consulta.estudianteUsuario(), consulta.responsableUsuario());
     }
 }
