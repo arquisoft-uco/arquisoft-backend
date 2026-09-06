@@ -6,9 +6,9 @@ import com.arquisoft.solicitudes.application.destinatario.command.finder.Destina
 import com.arquisoft.solicitudes.application.destinatario.command.secondaryport.DestinatarioOutputPort;
 import com.arquisoft.solicitudes.application.remitente.command.finder.RemitenteDeUsuarioFinder;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.RemitenteOutputPort;
+import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DestinatarioAsignadoFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
-import com.arquisoft.solicitudes.application.solicitud.command.finder.UsuarioExisteFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper.EnviarSolicitudNovedadCoordinadorMapper;
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudNovedadCoordinadorCommand;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
@@ -22,6 +22,7 @@ import com.arquisoft.solicitudes.domain.solicitud.exception.RemitenteNoEncontrad
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudDuplicadaException;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
+import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -53,7 +54,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
     @Mock private DestinatarioOutputPort destinatarioOutputPort;
     @Mock private RemitenteDeUsuarioFinder remitenteDeUsuarioFinder;
     @Mock private DestinatarioDeUsuarioFinder destinatarioDeUsuarioFinder;
-    @Mock private UsuarioExisteFinder usuarioExisteFinder;
+    @Mock private DatosUsuarioFinder datosUsuarioFinder;
     @Mock private DestinatarioAsignadoFinder destinatarioAsignadoFinder;
     @Mock private SolicitudDuplicadaFinder solicitudDuplicadaFinder;
     @Mock private EnviarSolicitudNovedadCoordinadorValidator validator;
@@ -64,11 +65,15 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
 
     private EnvioSolicitudNovedadCoordinadorDomain envio;
 
+    private static UsuarioDomain replica(UUID id) {
+        return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co");
+    }
+
     @BeforeEach
     void setUp() {
         useCase = new EnviarSolicitudNovedadCoordinadorUseCaseImpl(
                 solicitudOutputPort, remitenteOutputPort, destinatarioOutputPort,
-                remitenteDeUsuarioFinder, destinatarioDeUsuarioFinder, usuarioExisteFinder,
+                remitenteDeUsuarioFinder, destinatarioDeUsuarioFinder, datosUsuarioFinder,
                 destinatarioAsignadoFinder, solicitudDuplicadaFinder, validator, eventPublisher, logger);
 
         var command = EnviarSolicitudNovedadCoordinadorCommand.crear(
@@ -81,7 +86,14 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
         // Arrange
         UUID remitenteFila = UUID.randomUUID();
         UUID destinatarioFila = UUID.randomUUID();
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        var remitenteReplica = UsuarioDomain.reconstruir(
+                envio.getRemitenteUsuario(), "EST-1", "Ana Estudiante", "ana@uco.edu.co");
+        var destinatarioReplica = UsuarioDomain.reconstruir(
+                envio.getDestinatarioUsuario(), "COORD-1", "Pedro Coordinador", "pedro@uco.edu.co");
+        when(datosUsuarioFinder.obtener(envio.getRemitenteUsuario()))
+                .thenReturn(Optional.of(remitenteReplica));
+        when(datosUsuarioFinder.obtener(envio.getDestinatarioUsuario()))
+                .thenReturn(Optional.of(destinatarioReplica));
         when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
         when(remitenteDeUsuarioFinder.obtener(envio.getRemitenteUsuario()))
                 .thenReturn(Optional.of(remitenteFila));
@@ -110,9 +122,10 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
         SolicitudNovedadCoordinadorEnviadaEvent evento = eventoCaptor.getValue();
         assertThat(evento.getSolicitudId()).isEqualTo(resultado);
         assertThat(evento.getTemaEvento()).isEqualTo(SolicitudNovedadCoordinadorEnviadaEvent.EVENT_TOPIC);
-        assertThat(evento.getRemitenteUsuarioId()).isEqualTo(envio.getRemitenteUsuario().toString());
-        assertThat(evento.getDestinatarioUsuarioId()).isEqualTo(envio.getDestinatarioUsuario().toString());
-        assertThat(evento.getTipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId());
+        assertThat(evento.getRemitenteNombre()).isEqualTo("Ana Estudiante");
+        assertThat(evento.getDestinatarioNombre()).isEqualTo("Pedro Coordinador");
+        assertThat(evento.getDestinatarioEmail()).isEqualTo("pedro@uco.edu.co");
+        assertThat(evento.getMensajeSolicitud()).isEqualTo("novedad para el coordinador");
     }
 
     @Test
@@ -120,7 +133,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
         // Arrange
         UUID remitenteFila = UUID.randomUUID();
         UUID destinatarioFila = UUID.randomUUID();
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(Optional.of(replica(UUID.randomUUID())));
         when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
         when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(remitenteFila));
         when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(destinatarioFila));
@@ -142,7 +155,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
     @Test
     void debePersistirElCandidato_cuandoNoExisteFilaDeRolPrevia() {
         // Arrange
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(Optional.of(replica(UUID.randomUUID())));
         when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
         when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(Optional.empty());
         when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(Optional.empty());
@@ -168,8 +181,9 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
     @Test
     void debeLanzarYNoTocarLaEscritura_cuandoElRemitenteNoExiste() {
         // Arrange
-        when(usuarioExisteFinder.obtener(envio.getRemitenteUsuario())).thenReturn(false);
-        when(usuarioExisteFinder.obtener(envio.getDestinatarioUsuario())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(envio.getRemitenteUsuario())).thenReturn(Optional.empty());
+        when(datosUsuarioFinder.obtener(envio.getDestinatarioUsuario()))
+                .thenReturn(Optional.of(replica(envio.getDestinatarioUsuario())));
         doThrow(new RemitenteNoEncontradoException(envio.getRemitenteUsuario()))
                 .when(validator).validarExistenciaUsuarios(any(), eq(false), eq(true));
 
@@ -187,7 +201,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
     @Test
     void debeLanzarDestinatarioNoAsignado_cuandoElDestinatarioNoEsElResponsableDelEstudiante() {
         // Arrange
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(Optional.of(replica(UUID.randomUUID())));
         when(destinatarioAsignadoFinder.obtener(any())).thenReturn(false);
         doThrow(new DestinatarioNoAsignadoException(
                 envio.getDestinatarioUsuario(), envio.getRemitenteUsuario()))
@@ -206,8 +220,9 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
     @Test
     void debeLanzarDestinatarioNoEncontrado_cuandoElDestinatarioNoExiste() {
         // Arrange
-        when(usuarioExisteFinder.obtener(envio.getRemitenteUsuario())).thenReturn(true);
-        when(usuarioExisteFinder.obtener(envio.getDestinatarioUsuario())).thenReturn(false);
+        when(datosUsuarioFinder.obtener(envio.getRemitenteUsuario()))
+                .thenReturn(Optional.of(replica(envio.getRemitenteUsuario())));
+        when(datosUsuarioFinder.obtener(envio.getDestinatarioUsuario())).thenReturn(Optional.empty());
         doThrow(new DestinatarioNoEncontradoException(envio.getDestinatarioUsuario()))
                 .when(validator).validarExistenciaUsuarios(any(), eq(true), eq(false));
 
@@ -222,7 +237,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
     @Test
     void debeLanzarSolicitudDuplicada_cuandoLaClaveYaExiste() {
         // Arrange
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(Optional.of(replica(UUID.randomUUID())));
         when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
         when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(UUID.randomUUID()));
         when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(UUID.randomUUID()));
@@ -241,7 +256,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
     @Test
     void debeConsultarValidarYPersistirEnOrden_cuandoElFlujoEsValido() {
         // Arrange
-        when(usuarioExisteFinder.obtener(any())).thenReturn(true);
+        when(datosUsuarioFinder.obtener(any())).thenReturn(Optional.of(replica(UUID.randomUUID())));
         when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
         when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(UUID.randomUUID()));
         when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(Optional.of(UUID.randomUUID()));
@@ -251,7 +266,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
         useCase.ejecutar(envio);
 
         // Assert — existencia usuario -> asignacion -> get-or-create -> unicidad -> persistir -> publicar
-        InOrder inOrder = inOrder(usuarioExisteFinder, validator, destinatarioAsignadoFinder,
+        InOrder inOrder = inOrder(datosUsuarioFinder, validator, destinatarioAsignadoFinder,
                 remitenteDeUsuarioFinder, solicitudDuplicadaFinder, solicitudOutputPort, eventPublisher);
         inOrder.verify(validator).validarExistenciaUsuarios(any(), anyBoolean(), anyBoolean());
         inOrder.verify(destinatarioAsignadoFinder).obtener(any());

@@ -8,6 +8,7 @@ import com.arquisoft.solicitudes.infrastructure.usuario.command.secondaryadapter
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -20,6 +21,11 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
     @Override
     public boolean existePorId(UUID id) {
         return usuarioCommandRepository.existsById(id);
+    }
+
+    @Override
+    public Optional<UsuarioEntity> buscarPorId(UUID id) {
+        return usuarioCommandRepository.findById(id).map(UsuarioJpaMapper::toEntity);
     }
 
     @Override

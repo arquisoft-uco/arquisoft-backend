@@ -24,4 +24,12 @@ public final class EventTopics {
 
         public static final String USUARIO_CREADO = "usuarios.usuario.creado";
     }
+
+    public static final class Solicitudes {
+
+        private Solicitudes() {}
+
+        public static final String NOVEDAD_COORDINADOR_ENVIADA =
+                "solicitudes.solicitud.novedad_coordinador_enviada";
+    }
 }
