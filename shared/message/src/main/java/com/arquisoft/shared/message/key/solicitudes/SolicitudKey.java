@@ -7,6 +7,7 @@ public enum SolicitudKey implements ClaveMensaje {
 
     ERROR_REMITENTE_NO_ENCONTRADO("solicitudes.dominio.solicitud.error.remitente-no-encontrado", 1),
     ERROR_DESTINATARIO_NO_ENCONTRADO("solicitudes.dominio.solicitud.error.destinatario-no-encontrado", 1),
+    ERROR_DESTINATARIO_NO_ASIGNADO("solicitudes.dominio.solicitud.error.destinatario-no-asignado", 2),
     ERROR_SOLICITUD_DUPLICADA("solicitudes.dominio.solicitud.error.solicitud-duplicada", 0),
     LOG_ENVIADA("solicitudes.aplicacion.solicitud.log.enviada", 1),
     LOG_ENVIANDO_ASESOR("solicitudes.aplicacion.solicitud.log.enviando-asesor", 2),
@@ -16,7 +17,8 @@ public enum SolicitudKey implements ClaveMensaje {
     LOG_VERIFICACION_ENVIO_CAMBIO_ASESOR(
             "solicitudes.aplicacion.solicitud.log.verificacion-envio-cambio-asesor", 2),
     LOG_ENVIADA_CAMBIO_ASESOR("solicitudes.aplicacion.solicitud.log.enviada-cambio-asesor", 1),
-    LOG_GUARDADA("solicitudes.infraestructura.solicitud.log.guardada", 1);
+    LOG_GUARDADA("solicitudes.infraestructura.solicitud.log.guardada", 1),
+    LOG_ASIGNACION_NO_VERIFICADA("solicitudes.infraestructura.solicitud.log.asignacion-no-verificada", 2);
 
     private final String clave;
     private final int parametros;

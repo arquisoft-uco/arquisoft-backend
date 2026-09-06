@@ -8,14 +8,14 @@ public record MensajeNotificacion(
         List<DestinatarioNotificacion> destinatarios,
         String asunto,
         String cuerpo,
-        boolean esHtml) {
+        String pie) {
 
     public MensajeNotificacion {
         destinatarios = UtilColeccion.aplicarPorDefecto(destinatarios);
     }
 
     public static MensajeNotificacion textoPlano(
-            DestinatarioNotificacion destinatario, String asunto, String cuerpo) {
-        return new MensajeNotificacion(List.of(destinatario), asunto, cuerpo, false);
+            DestinatarioNotificacion destinatario, String asunto, String cuerpo, String pie) {
+        return new MensajeNotificacion(List.of(destinatario), asunto, cuerpo, pie);
     }
 }

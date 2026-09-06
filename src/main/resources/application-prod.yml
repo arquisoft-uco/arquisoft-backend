@@ -182,31 +182,26 @@ security:
     enabled: ${RATE_LIMIT_ENABLED:true}
     requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:60}
     login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:3}
-    # RATE_LIMIT_MAX_TRACKED_IPS eliminado — propiedad removida al migrar a RedisBucketResolver
+    max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:10000}
 
 # ==================== LOGGING ====================
 # logback-spring.xml gestiona TODOS los appenders (ASYNC_STDOUT + ASYNC_FILE_PROD).
 # NO configurar logging.file.name aquí: Spring Boot crearía un FileAppender adicional
 # en texto plano que conflictaría con el LogstashEncoder de logback-spring.xml.
+# Los grupos se declaran una sola vez en application.yml. Aqui solo van los niveles por
+# defecto del perfil; cualquiera se sobreescribe desde .env sin redesplegar la imagen.
 logging:
   level:
-    root: WARN
+    root: ${LOG_NIVEL_ROOT:WARN}
     # Código propio: INFO — captura eventos de negocio y errores de dominio en Loki
-    com.arquisoft: INFO
-    # Framework: solo WARN/ERROR — el ruido de inicialización no genera valor en Loki
-    org.springframework.security: WARN
-    org.springframework.web: WARN
-    org.springframework.amqp: WARN
-    org.springframework.data: WARN
-    com.zaxxer.hikari: WARN
-    org.flywaydb: WARN
-    org.apache.tomcat: WARN
-    com.rabbitmq: WARN
-    io.micrometer: WARN
+    negocio: ${LOG_NIVEL_NEGOCIO:INFO}
+    plataforma: ${LOG_NIVEL_PLATAFORMA:INFO}
     # Hibernate SQL: OFF en prod — demasiado verboso, sin valor en Loki, usar traceId para debug
-    org.hibernate: WARN
-    org.hibernate.SQL: OFF
-    org.hibernate.type: OFF
+    datos: ${LOG_NIVEL_DATOS:OFF}
+    # Framework: solo WARN/ERROR — el ruido de inicialización no genera valor en Loki
+    seguridad: ${LOG_NIVEL_SEGURIDAD:WARN}
+    mensajeria: ${LOG_NIVEL_MENSAJERIA:WARN}
+    framework: ${LOG_NIVEL_FRAMEWORK:WARN}
     # SpringDoc deshabilitado en prod — suprimir sus logs también
     springdoc: OFF
 

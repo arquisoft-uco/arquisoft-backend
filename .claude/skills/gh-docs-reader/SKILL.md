@@ -367,6 +367,21 @@ Usa esta tabla para saber que archivos leer segun el bounded context de la HU:
 | (biblioteca)* | `Biblioteca - Event Storming.md` | `14_delimitar_contextos_biblioteca.md` | `14_biblioteca_modelo_enriquecido.md` | `10_tablas_biblioteca.sql` | `data/10_data_biblioteca.sql` |
 | (solicitudes)* | `Solicitudes - Event Storming.md` | `15_delimitar_contextos_solicitudes.md` | `15_solicitudes_modelo_enriquecido.md` | `11_tablas_solicitudes.sql` | `data/11_data_solicitudes.sql` |
 
+**`notificaciones` no tiene fila, y no es un olvido: es el caso inverso.** Es un bounded context real
+del backend (con su modulo Gradle, su base y sus migraciones) que **no existe en arquisoft-docs** —
+no tiene Event Storming, ni modelo anemico o enriquecido, ni tablas en el MER. Es infraestructura
+transversal que nacio del backend, no del modelado de negocio. Consecuencias al planificar:
+
+- Ninguna HU se planifica "sobre `notificaciones`". Lo que llega ahi llega **siempre** como
+  consecuencia de una transicion de estado de otro contexto, y ese otro contexto **si** tiene su fila
+  arriba: el Event Storming que se consulta es el del **productor**, no el del consumidor.
+- Sus enums (`TipoNotificacion`, `EstadoNotificacion`) **no salen de `mer/data/`** porque no hay
+  archivo: son columnas `VARCHAR` sin tabla de catalogo. Es la unica excepcion a "las constantes se
+  copian fila por fila del `data/`" — aqui las fija el backend, y una constante nueva se agrega en el
+  enum de dominio y en su espejo `TipoNotificacionEvento`, sin migracion.
+- Si te descubres buscando `13_delimitar_contextos_notificaciones.md` o `data/12_data_notificaciones.sql`,
+  para: no existen, y el `gh api` va a devolver 404. El dato que buscas esta en el contexto productor.
+
 *Contextos documentados en arquisoft-docs que aun no tienen bounded context en el backend. `biblioteca`
 y `solicitudes` ya tienen DDL y data propios en el MER, pero **eso no crea el contexto**: los 9
 bounded contexts del backend son los de `CLAUDE.md`, y ninguno de esos tres esta entre ellos.

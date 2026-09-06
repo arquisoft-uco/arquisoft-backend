@@ -5,6 +5,7 @@ import com.arquisoft.solicitudes.domain.destinatario.DestinatarioDomain;
 import com.arquisoft.solicitudes.domain.remitente.RemitenteDomain;
 import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudNovedadCoordinadorDomain;
 import com.arquisoft.solicitudes.domain.solicitud.SolicitudDomain;
+import com.arquisoft.solicitudes.domain.solicitud.exception.DestinatarioNoAsignadoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.DestinatarioNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudDuplicadaException;
@@ -68,6 +69,24 @@ class EnviarSolicitudNovedadCoordinadorValidatorImplTest {
         // Act & Assert
         assertThatThrownBy(() -> validator.validarExistenciaUsuarios(envio(), false, false))
                 .isInstanceOf(RemitenteNoEncontradoException.class);
+    }
+
+    @Test
+    void debePasar_cuandoElDestinatarioEsElResponsableAsignado() {
+        // Act & Assert
+        assertThatCode(() -> validator.validarAsignacionDestinatario(envio(), true))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void debeLanzarDestinatarioNoAsignado_cuandoElDestinatarioNoEsElResponsableAsignado() {
+        // Arrange
+        var envio = envio();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validarAsignacionDestinatario(envio, false))
+                .isInstanceOf(DestinatarioNoAsignadoException.class)
+                .hasMessageContaining(envio.getDestinatarioUsuario().toString());
     }
 
     @Test

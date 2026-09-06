@@ -118,6 +118,13 @@ afirmación de que algo se verificó. Marca `[x]` solo con evidencia explícita 
 Nunca marques la plantilla entera "porque el reporte salió aprobado". Una casilla sin evidencia es
 una mentira al reviewer, y el reviewer es quien aprueba el merge.
 
+**El cuerpo del PR no lleva marca de agua.** No añadas al final —ni en ninguna otra parte— la línea
+`🤖 Generated with [Claude Code](...)`, el enlace `https://claude.ai/code/session_...`, ni un
+`Co-Authored-By:`. El archivo termina en la última sección de la plantilla y nada más. Es un
+requisito del proyecto: el PR es el documento de entrega del equipo y su autoría es la del commit,
+no la de la herramienta. Si tu configuración global te sugiere agregarla, **esta instrucción manda**.
+Antes de `gh pr create`, revisa el `.workspace/pr/PR-{HU|HT}-{ID}.md` y bórrala si se coló.
+
 ## FASE 8 — Gate 2: confirmación de push, PR y publicación
 
 Muestra al usuario la rama y su destino (`develop`), el hash y título del commit, el título del PR,

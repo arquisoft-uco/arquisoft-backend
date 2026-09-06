@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -49,6 +50,12 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
     private static final String GRANT_TYPE_PASSWORD = "password";
     private static final String GRANT_TYPE_REFRESH_TOKEN = "refresh_token";
 
+    // Keycloak (OAuth2 RFC 6749 §5.2) responde 400 con este código de error cuando el usuario
+    // o la contraseña son incorrectos — el mismo para ambos, así que el mensaje al cliente no
+    // permite distinguir cuál falló. Un 401 con "invalid_client" es otra cosa (el client_id/secret
+    // del backend está mal): eso NO es credencial de usuario y no debe reportarse como tal.
+    private static final String OAUTH_ERROR_CREDENCIAL_INVALIDA = "invalid_grant";
+
     private static final String PLANTILLA_TOKEN_ENDPOINT = "%s/realms/%s/protocol/openid-connect/token";
 
     private final RestTemplate restTemplate;
@@ -77,16 +84,17 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
         ResponseEntity<Map<String, Object>> respuesta;
         try {
             respuesta = ejecutarPeticionToken(construirTokenEndpoint(), body);
-        } catch (HttpClientErrorException.Unauthorized e) {
-            logger.warn(Mensajes.obtener(IniciarSesionKey.LOG_CREDENCIALES_INVALIDAS));
-            throw new CredencialesInvalidasException(Mensajes.obtener(IniciarSesionKey.ERROR_CREDENCIALES_INVALIDAS));
         } catch (HttpClientErrorException e) {
-            logger.error(Mensajes.obtener(IniciarSesionKey.LOG_ERROR_AUTENTICACION_KEYCLOAK),
+            if (esCredencialInvalida(e)) {
+                logger.warn(IniciarSesionKey.LOG_CREDENCIALES_INVALIDAS);
+                throw new CredencialesInvalidasException(
+                        Mensajes.obtener(IniciarSesionKey.ERROR_CREDENCIALES_INVALIDAS));
+            }
+            logger.error(IniciarSesionKey.LOG_ERROR_AUTENTICACION_KEYCLOAK,
                     e.getStatusCode(), e.getMessage());
-            throw new AutenticacionException(
-                    Mensajes.formatear(IniciarSesionKey.ERROR_COMUNICACION_KEYCLOAK, e.getMessage()));
+            throw new AutenticacionException(Mensajes.obtener(IniciarSesionKey.ERROR_AUTENTICAR_KEYCLOAK));
         } catch (HttpServerErrorException | ResourceAccessException e) {
-            logger.error(Mensajes.obtener(IniciarSesionKey.LOG_KEYCLOAK_NO_DISPONIBLE), e.getMessage());
+            logger.error(IniciarSesionKey.LOG_KEYCLOAK_NO_DISPONIBLE, e.getMessage());
             throw new ProveedorIdentidadNoDisponibleException(
                     Mensajes.obtener(IniciarSesionKey.ERROR_SERVICIO_NO_DISPONIBLE), e);
         }
@@ -109,13 +117,13 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
         try {
             respuesta = ejecutarPeticionToken(construirTokenEndpoint(), body);
         } catch (HttpClientErrorException.BadRequest e) {
-            logger.warn(Mensajes.obtener(TokenKey.LOG_REFRESH_INVALIDO));
+            logger.warn(TokenKey.LOG_REFRESH_INVALIDO);
             throw new TokenInvalidoException(Mensajes.obtener(TokenKey.ERROR_REFRESH_INVALIDO_EXPIRADO));
         } catch (HttpClientErrorException e) {
-            logger.error(Mensajes.obtener(TokenKey.LOG_ERROR_REFRESCO_KEYCLOAK), e.getStatusCode(), e.getMessage());
-            throw new AutenticacionException(Mensajes.formatear(TokenKey.ERROR_REFRESCAR_DETALLE, e.getMessage()));
+            logger.error(TokenKey.LOG_ERROR_REFRESCO_KEYCLOAK, e.getStatusCode(), e.getMessage());
+            throw new AutenticacionException(Mensajes.obtener(TokenKey.ERROR_REFRESCAR));
         } catch (HttpServerErrorException | ResourceAccessException e) {
-            logger.error(Mensajes.obtener(TokenKey.LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO), e.getMessage());
+            logger.error(TokenKey.LOG_KEYCLOAK_NO_DISPONIBLE_REFRESCO, e.getMessage());
             throw new ProveedorIdentidadNoDisponibleException(
                     Mensajes.obtener(IniciarSesionKey.ERROR_SERVICIO_NO_DISPONIBLE), e);
         }
@@ -124,6 +132,18 @@ public class KeycloakAuthOutputAdapter implements AutenticacionOutputPort {
             throw new TokenInvalidoException(Mensajes.obtener(TokenKey.ERROR_REFRESCAR));
         }
         return KeycloakCredencialesMapper.toModel(respuesta.getBody());
+    }
+
+    // Un 4xx de Keycloak solo se traduce a "credenciales inválidas" cuando el cuerpo trae
+    // "invalid_grant" (usuario o contraseña incorrectos). Cualquier otro 4xx es un problema de
+    // configuración del cliente o de la petición: se registra con detalle en el log, pero al
+    // cliente solo le llega un mensaje genérico — nunca la URL interna ni el cuerpo de Keycloak.
+    private boolean esCredencialInvalida(HttpClientErrorException e) {
+        int estado = e.getStatusCode().value();
+        boolean estadoCompatible = estado == HttpStatus.BAD_REQUEST.value()
+                || estado == HttpStatus.UNAUTHORIZED.value();
+        return estadoCompatible
+                && e.getResponseBodyAsString().contains(OAUTH_ERROR_CREDENCIAL_INVALIDA);
     }
 
     private String construirTokenEndpoint() {

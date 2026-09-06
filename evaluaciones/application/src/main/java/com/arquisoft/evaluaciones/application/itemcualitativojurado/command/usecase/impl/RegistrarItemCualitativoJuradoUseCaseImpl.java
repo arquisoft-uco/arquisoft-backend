@@ -7,7 +7,6 @@ import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.usec
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.validator.RegistrarItemCualitativoJuradoValidator;
 import com.arquisoft.evaluaciones.domain.itemcualitativojurado.ItemCualitativoJuradoDomain;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -26,14 +25,14 @@ public class RegistrarItemCualitativoJuradoUseCaseImpl
 
     @Override
     public UUID ejecutar(ItemCualitativoJuradoDomain item) {
-        logger.info(Mensajes.obtener(ItemCualitativoJuradoKey.LOG_REGISTRANDO), item.getNombre());
+        logger.info(ItemCualitativoJuradoKey.LOG_REGISTRANDO, item.getNombre());
 
         boolean nombreYaExiste = nombreItemCualitativoJuradoExisteFinder.obtener(item.getNombre());
 
-        logger.debug(Mensajes.obtener(ItemCualitativoJuradoKey.LOG_VERIFICACION_REGISTRAR), nombreYaExiste);
+        logger.debug(ItemCualitativoJuradoKey.LOG_VERIFICACION_REGISTRAR, nombreYaExiste);
         registrarItemCualitativoJuradoValidator.validar(item, nombreYaExiste);
         itemCualitativoJuradoOutputPort.registrar(ItemCualitativoJuradoMapper.toEntity(item));
-        logger.info(Mensajes.obtener(ItemCualitativoJuradoKey.LOG_REGISTRADO), item.getId());
+        logger.info(ItemCualitativoJuradoKey.LOG_REGISTRADO, item.getId());
 
         return item.getId();
     }

@@ -4,7 +4,6 @@ import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.It
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity.ItemFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.mapper.ItemFichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -22,13 +21,13 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     @Override
     public void registrarItem(ItemFichaPerfilEntity item) {
         repository.save(ItemFichaPerfilJpaMapper.toJpaEntity(item));
-        logger.debug(Mensajes.obtener(ItemFichaPerfilKey.LOG_GUARDADO), item.id());
+        logger.debug(ItemFichaPerfilKey.LOG_GUARDADO, item.id());
     }
 
     @Override
     public void actualizarContenido(UUID item, String contenido) {
         repository.actualizarContenido(item, contenido);
-        logger.debug(Mensajes.obtener(ItemFichaPerfilKey.LOG_GUARDADO), item);
+        logger.debug(ItemFichaPerfilKey.LOG_GUARDADO, item);
     }
 
     @Override
@@ -49,6 +48,6 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     @Override
     public void removerItem(UUID itemId) {
         repository.deleteById(itemId);
-        logger.debug(Mensajes.obtener(ItemFichaPerfilKey.LOG_ELIMINADO), itemId);
+        logger.debug(ItemFichaPerfilKey.LOG_ELIMINADO, itemId);
     }
 }

@@ -19,6 +19,7 @@ public final class SolicitudesCodes {
         public static final String MENSAJE_DEMASIADO_LARGO = "SOLICITUD_MENSAJE_DEMASIADO_LARGO";
         public static final String DESTINATARIO_REQUERIDO = "SOLICITUD_DESTINATARIO_REQUERIDO";
         public static final String DESTINATARIO_NO_ENCONTRADO = "DESTINATARIO_NO_ENCONTRADO";
+        public static final String DESTINATARIO_NO_ASIGNADO = "DESTINATARIO_NO_ASIGNADO";
         public static final String REMITENTE_REQUERIDO = "SOLICITUD_REMITENTE_REQUERIDO";
         public static final String REMITENTE_NO_ENCONTRADO = "REMITENTE_NO_ENCONTRADO";
         public static final String SOLICITUD_DUPLICADA = "SOLICITUD_DUPLICADA";

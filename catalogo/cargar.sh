@@ -108,6 +108,13 @@ for contexto in $CONTEXTOS; do
 
     # El valor viaja por stdin ('redis-cli -x SET clave'), nunca como argumento: los textos llevan
     # espacios, comillas y marcadores %s que cualquier otra vía acabaría rompiendo.
+    #
+    # Se escribe con '%b' y no con '%s' para que un \n del .properties llegue a Redis como salto de
+    # linea real. Un .properties lo lee normalmente Properties.load, que interpreta el escape; aqui
+    # lo lee la shell, que no lo interpreta, y con '%s' el correo mostraria los \n literales. El
+    # desvio es silencioso: los tests cargan el catalogo con Properties.load, asi que ven el salto
+    # real y pasan mientras produccion envia la barra invertida. CatalogoCargaTest limita el
+    # catalogo a este unico escape para que ambos lectores no puedan divergir en nada mas.
     while IFS= read -r linea || [ -n "$linea" ]; do
         linea="${linea%"$CR"}"
 
@@ -124,7 +131,7 @@ for contexto in $CONTEXTOS; do
             exit 1
         fi
 
-        printf '%s' "$valor" | redis -x SET "$clave" > /dev/null
+        printf '%b' "$valor" | redis -x SET "$clave" > /dev/null
         echo "$clave" >> "$claves_esperadas"
         cargadas_contexto=$((cargadas_contexto + 1))
     done < "$archivo"

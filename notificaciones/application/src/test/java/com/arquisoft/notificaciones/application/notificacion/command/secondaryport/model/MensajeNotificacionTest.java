@@ -16,26 +16,26 @@ class MensajeNotificacionTest {
         DestinatarioNotificacion destinatario = new DestinatarioNotificacion("Ana", "ana@soyuco.edu.co");
 
         // Act
-        MensajeNotificacion mensaje = MensajeNotificacion.textoPlano(destinatario, "Asunto", "Cuerpo");
+        MensajeNotificacion mensaje = MensajeNotificacion.textoPlano(destinatario, "Asunto", "Cuerpo", "Pie");
 
         // Assert
         assertThat(mensaje.destinatarios()).containsExactly(destinatario);
         assertThat(mensaje.asunto()).isEqualTo("Asunto");
         assertThat(mensaje.cuerpo()).isEqualTo("Cuerpo");
-        assertThat(mensaje.esHtml()).isFalse();
+        assertThat(mensaje.pie()).isEqualTo("Pie");
     }
 
     @Test
     void debeCopiarLaListaDeDestinatarios_cuandoSeConstruyeElMensaje() {
-        // Arrange — una lista mutable que el llamador podria modificar despues
+        // Arrange
         List<DestinatarioNotificacion> origen = new ArrayList<>();
         origen.add(new DestinatarioNotificacion("Ana", "ana@soyuco.edu.co"));
 
         // Act
-        MensajeNotificacion mensaje = new MensajeNotificacion(origen, "Asunto", "Cuerpo", false);
+        MensajeNotificacion mensaje = new MensajeNotificacion(origen, "Asunto", "Cuerpo", "Pie");
         origen.add(new DestinatarioNotificacion("Luis", "luis@soyuco.edu.co"));
 
-        // Assert — el mensaje conserva la foto del momento de construccion
+        // Assert
         assertThat(mensaje.destinatarios()).hasSize(1);
         assertThatThrownBy(() -> mensaje.destinatarios().add(
                 new DestinatarioNotificacion("Otro", "otro@soyuco.edu.co")))
@@ -45,7 +45,7 @@ class MensajeNotificacionTest {
     @Test
     void debeNormalizarANulaListaVacia_cuandoLosDestinatariosSonNull() {
         // Act
-        MensajeNotificacion mensaje = new MensajeNotificacion(null, "Asunto", "Cuerpo", false);
+        MensajeNotificacion mensaje = new MensajeNotificacion(null, "Asunto", "Cuerpo", "Pie");
 
         // Assert
         assertThat(mensaje.destinatarios()).isEmpty();

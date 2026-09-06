@@ -1,0 +1,32 @@
+package com.arquisoft.fichas.application.fichaperfil.query.usecase.impl;
+
+import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
+import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilCriteria;
+import com.arquisoft.fichas.application.fichaperfil.query.usecase.ConsultarFichasPerfilCoordinadorUseCase;
+import com.arquisoft.fichas.application.fichaperfil.query.secondaryport.FichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilReadModel;
+import com.arquisoft.shared.query.pagination.PaginatedResult;
+import com.arquisoft.shared.logger.AppLogger;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+@Component
+@RequiredArgsConstructor
+public class ConsultarFichasPerfilCoordinadorUseCaseImpl implements ConsultarFichasPerfilCoordinadorUseCase {
+
+    private final FichaPerfilQueryOutputPort fichaPerfilQueryOutputPort;
+    private final AppLogger logger;
+
+    @Override
+    public PaginatedResult<FichaPerfilReadModel> ejecutar(FichaPerfilCriteria entrada) {
+        logger.debug(FichaPerfilKey.LOG_CONSULTANDO,
+                entrada.getPagina(), entrada.getTamanio(),
+                entrada.tieneFiltros(), entrada.tieneOrden());
+
+        var resultado = fichaPerfilQueryOutputPort.consultarTodas(entrada);
+
+        logger.debug(FichaPerfilKey.LOG_CONSULTA_COMPLETADA,
+                resultado.getTotalElements(), entrada.getPagina(), entrada.getTamanio());
+        return resultado;
+    }
+}

@@ -6,9 +6,12 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum EnvioNotificacionKey implements ClaveMensaje {
 
     ERROR_ENVIO_FALLIDO("notificaciones.infraestructura.envio.error.envio-fallido", 1),
+    ERROR_PLANTILLA_CORREO("notificaciones.infraestructura.envio.error.plantilla-correo", 1),
     LOG_ENVIADO("notificaciones.infraestructura.envio.log.enviado", 2),
     LOG_ENVIO_RECHAZADO("notificaciones.infraestructura.envio.log.envio-rechazado", 2),
-    LOG_ENVIO_SIMULADO("notificaciones.infraestructura.envio.log.envio-simulado", 2);
+    LOG_ENVIO_SIMULADO("notificaciones.infraestructura.envio.log.envio-simulado", 2),
+    LOG_PLANTILLA_ACTUALIZADA("notificaciones.infraestructura.envio.log.plantilla-actualizada", 1),
+    LOG_PLANTILLA_NO_ACTUALIZADA("notificaciones.infraestructura.envio.log.plantilla-no-actualizada", 2);
 
     private final String clave;
     private final int parametros;

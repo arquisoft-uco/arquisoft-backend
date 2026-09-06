@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,18 +24,30 @@ class RevisionItemCommandRepositoryTest {
     @Autowired
     private EntityManager entityManager;
 
+    private void sembrarEstadoRevision(String id) {
+        entityManager.createNativeQuery(
+                "INSERT INTO estado_revision (id, nombre, descripcion) VALUES (?, ?, ?)")
+                .setParameter(1, id)
+                .setParameter(2, id)
+                .setParameter(3, "Estado de prueba " + id)
+                .executeUpdate();
+    }
+
     @Test
     void debeContarRevisiones_cuandoItemTieneRevisiones() {
         // Arrange
         UUID itemId = UUID.randomUUID();
+
+        sembrarEstadoRevision("NUEVA");
+        sembrarEstadoRevision("VISUALIZADA");
 
         entityManager.createNativeQuery(
                 "INSERT INTO revision_item (id, item_id, estado_revision_id, fecha_creacion) VALUES (?, ?, ?, ?)"
         )
                 .setParameter(1, UUID.randomUUID())
                 .setParameter(2, itemId)
-                .setParameter(3, "ESTADO_PRUEBA_1")
-                .setParameter(4, LocalDateTime.now())
+                .setParameter(3, "NUEVA")
+                .setParameter(4, Instant.now())
                 .executeUpdate();
 
         entityManager.createNativeQuery(
@@ -43,8 +55,8 @@ class RevisionItemCommandRepositoryTest {
         )
                 .setParameter(1, UUID.randomUUID())
                 .setParameter(2, itemId)
-                .setParameter(3, "ESTADO_PRUEBA_2")
-                .setParameter(4, LocalDateTime.now().plusMinutes(1))
+                .setParameter(3, "VISUALIZADA")
+                .setParameter(4, Instant.now().plusSeconds(60))
                 .executeUpdate();
 
         entityManager.flush();
