@@ -15,6 +15,10 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.estudiantes-asignados", 1),
     CUERPO_ESTUDIANTES_ASIGNADOS(
             "notificaciones.aplicacion.plantilla.cuerpo.estudiantes-asignados", 2),
+    ASUNTO_SOLICITUD_NOVEDAD_COORDINADOR(
+            "notificaciones.aplicacion.plantilla.asunto.solicitud-novedad-coordinador", 1),
+    CUERPO_SOLICITUD_NOVEDAD_COORDINADOR(
+            "notificaciones.aplicacion.plantilla.cuerpo.solicitud-novedad-coordinador", 3),
     PIE_GENERICO("notificaciones.aplicacion.plantilla.pie.generico", 0);
 
     private final String clave;
