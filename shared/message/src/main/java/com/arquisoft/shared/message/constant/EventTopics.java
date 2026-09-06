@@ -34,5 +34,8 @@ public final class EventTopics {
 
         public static final String NOVEDAD_COORDINADOR_ENVIADA =
                 "solicitudes.solicitud.novedad_coordinador_enviada";
+
+        public static final String NOVEDAD_ASESOR_ENVIADA =
+                "solicitudes.solicitud.novedad_asesor_enviada";
     }
 }

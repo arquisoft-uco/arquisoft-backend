@@ -8,5 +8,8 @@ public interface EnviarSolicitudNovedadAsesorValidator {
     void validarExistenciaUsuarios(
             EnvioSolicitudNovedadAsesorDomain envio, boolean remitenteExiste, boolean destinatarioExiste);
 
+    void validarAsignacionDestinatario(
+            EnvioSolicitudNovedadAsesorDomain envio, boolean destinatarioAsignado);
+
     void validarUnicidad(DisponibilidadSolicitud disponibilidad);
 }
