@@ -6,12 +6,13 @@ description: Estándares de código de Arquisoft Backend — Notification Patter
 # Skill: arquisoft-estandares
 
 Complementa a `arquisoft-arquitectura` (esa cubre capas y paquetes; esta cubre reglas de código
-transversales). Detalle profundo en `CLAUDE.md` (raíz del repo). Cada regla referencia un archivo
-real de `fichas` en vez de un snippet — ábrelo con `Read` si necesitas el código exacto.
+transversales). **Las dos juntas son la fuente de verdad**: `CLAUDE.md` es un índice operativo que
+remite aquí, y si discrepan gana la skill. Cada regla referencia un archivo real de `fichas` en vez
+de un snippet — ábrelo con `Read` si necesitas el código exacto.
 
 ## Notification Pattern y orden de validación
 
-Los invariantes de un aggregate se acumulan con `ValidationResult` (`shared:validation`):
+Los invariantes de un domain se acumulan con `ValidationResult` (`shared:validation`):
 `crear(...)` instancia el result, llama a sus setters privados pasándoselo, y cierra con
 `result.lanzarSiTieneErrores()` → una sola `DomainValidationException` (422 + `fieldErrors[]`).
 Nunca `if/throw` disperso ni una clase de excepción por invariante. Ver
@@ -83,7 +84,7 @@ un `OutputPort` y devuelve un `boolean` que el use case consume con un `if`. Eso
 consulta. Va a `command/finder/` con nombre de lo que responde (`NotificacionProcesadaFinder`).
 
 **Sin `Optional` en records de dominio ni en firmas de validator.** `Optional` es tipo de retorno de
-un `Finder` y nada más: el `UseCase` lo desenvuelve. Un agregado ausente viaja como su centinela
+un `Finder` y nada más: el `UseCase` lo desenvuelve. Un domain ausente viaja como su centinela
 `VACIO` (`.orElse(FichaPerfilDomain.VACIO)`, con `esVacio()` comparando identidad); un valor suelto
 viaja como el valor más un `boolean` explícito (`boolean asesorExiste`) dentro de su record
 `Existencia{Concepto}`.
@@ -167,7 +168,14 @@ Se resuelve **siempre** por la fachada estática `Mensajes` — no hay bean inye
 | Familia | Marcador | Cómo se resuelve |
 |---|---|---|
 | Mensaje al cliente (excepciones) | `%s` | `Mensajes.formatear(FichaPerfilKey.ERROR_TITULO_DUPLICADO, titulo)` |
-| Patrón de log | `{}` (lo sustituye SLF4J) | `logger.info(Mensajes.obtener(FichaPerfilKey.LOG_REGISTRADA), ficha.getId())` |
+| Patrón de log | `{}` (lo sustituye SLF4J) | `logger.info(FichaPerfilKey.LOG_REGISTRADA, ficha.getId())` — se pasa **la clave**, no el texto |
+
+**Un log nunca resuelve su propio texto: `AppLogger` recibe la `ClaveMensaje`.** `logger.debug(Mensajes.obtener(K), args)` compila y funciona, pero `Mensajes.obtener` es un `GET` a Redis en **cada**
+llamada (`CatalogoMensajesRedis.resolver` solo lee su caché cuando está degradado), y Java evalúa el
+argumento antes de entrar al método: con el nivel apagado se pagaba igual el viaje de red para tirar
+el resultado. Las sobrecargas `debug/info/warn/error(ClaveMensaje, Object...)` resuelven dentro del
+logger y solo si el nivel está activo. `Mensajes.formatear`/`obtener` siguen siendo la vía para todo
+lo que **no** es un log: mensajes de excepción, asunto y cuerpo de correo, textos de respuesta.
 
 `parametros()` declara el número de marcadores para **ambas** familias — un log con `{}` no es
 aridad 0. **Nunca `Mensajes.obtener(clave).formatted(args)`**: parece lo mismo, pero salta el
@@ -189,6 +197,27 @@ alternativa en texto plano de `MimeMessageHelper.setText(plano, html)`. **No con
 `<br>` en el render**: rompería la parte de texto plano, que es la que ven los clientes que no
 pintan HTML.
 
+**Ese `correo-base.html` tampoco es un archivo del classpath: vive en Redis, como el catálogo.**
+Está en `plantillas/` (raíz del repo) y lo sube `plantillas/cargar.sh` bajo la clave
+`plantilla.correo-base`, que es lo que lleva la propiedad `notificacion.plantilla` —
+**una clave de Redis, no un `classpath:`/`file:`**. `NOTIFICACION_PLANTILLA` en los `.env` carga esa
+clave, no una ruta. El prefijo `plantilla.` no es negociable: `catalogo/podar.sh` barre `<contexto>.*`,
+así que una plantilla bajo `notificaciones.` se borraría como sobrante en la primera poda.
+
+Son **dos cosas distintas con la misma mecánica**, y conviene no mezclarlas al planificar:
+
+| Qué | Dónde | Cuándo se relee |
+|---|---|---|
+| El **texto** del correo (asunto, cuerpo, pie) | catálogo de mensajes, `PlantillaKey` + `catalogo/notificaciones.properties` | en cada envío |
+| El **cascarón HTML** que lo envuelve | su propio espacio de claves, `plantilla.correo-base` | cada `notificacion.plantilla-refresco.intervalo` (`PT5M` por defecto) |
+
+La diferencia es la frecuencia, no el mecanismo: el cascarón está en la ruta de envío, el texto no.
+Un candidato solo se publica si pasa la misma comprobación de huecos que corre al arrancar
+(`HuecosPlantillaCorreo.verificar`); si falla, se descarta y sigue la anterior, porque
+`String.replace` de un hueco ausente no falla y enviaría correos sin cuerpo en silencio. Al arrancar
+no hay versión previa a la que caer, así que una plantilla ausente o sin huecos **aborta el
+arranque**, igual que una clave de catálogo sin texto.
+
 **No son catálogo:** códigos de error, nombres de cola/exchange/bean/header, marcadores de log
 greppables, etiquetas de display de un enum de catálogo (`EstadoFicha.getNombre()`, cuya fuente es
 el MER), literales de test y textos de Swagger.
@@ -197,9 +226,40 @@ el MER), literales de test y textos de Swagger.
 
 `valueOf` **nunca** se llama fuera del propio enum. Cada enum expone `desde(String)` (devuelve la
 constante o lanza su `{Enum}NoEncontradoException` → 422) y `getId()` devolviendo `name()`; si el
-valor llega por el `crear(...)` de un agregado, expone además `esValido(String)` para acumular en el
+valor llega por el `crear(...)` de un domain, expone además `esValido(String)` para acumular en el
 `ValidationResult` en vez de abortar al primer error. Ambos delegan en `UtilEnum.desde(...)`.
 Los mappers persisten `getId()`, nunca un `.name()` desnudo.
+
+**Dónde se convierte el `String` que manda el cliente.** El id viaja crudo por toda la cadena y solo
+se convierte dentro del `crear(...)` del domain. Referencia: `TipoItem` en `ItemFichaPerfilDomain`.
+
+| Capa | Qué hace con el `String` |
+|---|---|
+| `{Accion}{Entidad}RequestDTO` | lo lleva como `String`, sin anotaciones |
+| `{Accion}{Entidad}RequestMapper` | lo pasa tal cual al `Command` |
+| `{Accion}{Entidad}Command.crear(...)` | solo `ValidatorTexto.noEnBlanco` — **no** valida pertenencia al catálogo |
+| `{Accion}{Entidad}Mapper.toDomain(...)` | lo pasa tal cual al `crear(...)` del domain |
+| **`{Entidad}Domain`**, setter privado | **`esValido(...)` acumula en el `ValidationResult`; `desde(...)` convierte** |
+
+```java
+private void setTipoItem(String tipoItem, ValidationResult result) {
+    if (!ValidatorTexto.noEnBlanco(tipoItem, /* ... */ result)) return;
+    if (!TipoItem.esValido(tipoItem)) {                    // acumula, no lanza
+        result.agregarError(/* TIPO_ITEM_INVALIDO */);
+        return;
+    }
+    this.tipoItem = TipoItem.desde(tipoItem);              // conversión real
+}
+```
+
+El campo es del tipo del enum; el parámetro del setter es `String`. Validar el catálogo en el
+`Command` o en el `{Accion}{Entidad}Mapper` rompe la acumulación: `desde(...)` lanza al primer error
+y el cliente pierde el resto de los `fieldErrors[]`.
+
+**Camino inverso (fila de BD → domain):** ahí sí convierte el mapper de `secondaryport`, antes de
+`reconstruir(...)` — `EstadoFicha.desde(entity.estadoFicha())` en `EstadoFichaPerfilMapper.toDomain`.
+`reconstruir(...)` recibe el enum ya tipado y no acumula: un id inválido guardado en BD es un fallo
+de integridad del catálogo, no un error de entrada, así que `desde(...)` lanza directo.
 
 **Sus constantes no se inventan ni se deducen del Event Storming: se copian de
 `mer/data/{NN}_data_{contexto}.sql` en `arquisoft-docs`** (ver la skill `gh-docs-reader`). Ese
@@ -245,9 +305,9 @@ infraestructura ignora, que es precisamente la deriva que se quiere cazar. Ver
 
 ## El objeto de acción desaparece cuando sus campos pasan a ser estado
 
-`{Accion}{Entidad}Domain` existe para el paquete de cosas que la acción arrastra y **el agregado no
+`{Accion}{Entidad}Domain` existe para el paquete de cosas que la acción arrastra y **el domain no
 posee**. En cuanto uno de esos campos hay que persistirlo, deja de ser transporte y pasa a ser estado
-del agregado — y el objeto de acción se queda envolviéndolo sin aportar nada, que es la indirección
+del domain — y el objeto de acción se queda envolviéndolo sin aportar nada, que es la indirección
 que la convención prohíbe.
 
 Pasó en este repo: al persistir `cuerpo` y `destinatario_nombre` para poder reintentar el envío,
@@ -338,12 +398,12 @@ sin tabs · sin wildcard imports · PascalCase tipos / camelCase métodos-campos
 constantes · `_` permitido solo en nombres de test.
 
 **Cuando `reconstruir(...)` pasa de 7 parámetros**, la salida no es partir el método ni silenciar la
-regla: se agrupan los campos en un `record` **anidado dentro del propio agregado**, y los que el
+regla: se agrupan los campos en un `record` **anidado dentro del propio domain**, y los que el
 lector necesita ver sueltos se quedan sueltos. `NotificacionDomain` (9 campos) declara
 `public record DatosNotificacion(...)` con los siete de identidad y firma
 `reconstruir(DatosNotificacion datos, EstadoNotificacion estado, String detalleError)` — el estado y
 el motivo del fallo siguen visibles porque son lo que distingue una reconstrucción de otra. Es el
-único agregado del proyecto que lo necesita hoy; los de `fichas` caben sin agrupar.
+único domain del proyecto que lo necesita hoy; los de `fichas` caben sin agrupar.
 
 ## Testing
 
@@ -375,7 +435,7 @@ JUnit 6 + Mockito + AssertJ, patrón AAA con marcadores `// Arrange / // Act / /
   `FichasCodes`/`FichasFields`; no dupliques el literal.
 - **Cobertura mínima 75%**, verificada por `check` (`jacocoTestCoverageVerification`). Excluidos:
   `*DTO`, `*Command`, `*ReadModel`, `*Application`, `*Entity` (cubre `JpaEntity`/
-  `JpaQueryEntity`) y `config/**`. Ojo: **`*Domain` NO está excluido** — el agregado cuenta para el
+  `JpaQueryEntity`) y `config/**`. Ojo: **`*Domain` NO está excluido** — el domain cuenta para el
   umbral. Los módulos `shared:*` no aplican jacoco.
 
 El gate real es `check` (tests + `checkstyleMain`/`checkstyleTest` + cobertura), no `test`.
@@ -385,7 +445,7 @@ El gate real es `check` (tests + `checkstyleMain`/`checkstyleTest` + cobertura),
 Constructor injection con `@RequiredArgsConstructor` — nunca `@Autowired`, nunca `@Service` (todo
 use case y adaptador es `@Component`). Se inyectan interfaces, nunca implementaciones. Logging vía
 el puerto `AppLogger` (`shared:logger`) inyectado por constructor — no `@Slf4j`, del que ya no queda
-ni uno en los cuatro contextos con código. `warn` para 4xx, `error` para 5xx.
+ni uno en los cinco contextos con código. `warn` para 4xx, `error` para 5xx.
 
 **Nunca loguear desde un método `@Bean` ni desde un `@PostConstruct`:** `Mensajes.instalar(...)`
 ocurre dentro de un `@Bean`, así que cualquier bean construido antes resuelve la **clave cruda** y,
@@ -395,16 +455,18 @@ configuración efectiva va en un `@EventListener(ApplicationReadyEvent.class)`.
 
 ### Estructura de logs de un flujo de escritura
 
-Un flujo de comando emite **exactamente dos `INFO` por petición** — entrada y cierre. Todo lo demás
-es `DEBUG`. Los 4xx/5xx **no se loguean dentro del flujo**: `GlobalAppExceptionHandler` ya emite
-`warn`/`error` con la URI y `TrazabilidadFilter` ya audita cada petición con usuario, duración y
-status. Referencias en el repo: `AgregarItemFichaPerfil` (simple) y `RegistrarFichaPerfil` (anidado).
+Un `UseCaseImpl` de escritura emite **exactamente tres líneas: `INFO` de entrada, `DEBUG` de
+verificación, `INFO` de cierre.** Ni una más. Todo lo demás es `DEBUG` y vive en el adapter. Los
+4xx/5xx **no se loguean dentro del flujo**: `GlobalAppExceptionHandler` ya emite `warn`/`error` con
+la URI y `TrazabilidadFilter` ya audita cada petición con usuario, duración y status. Referencias en
+el repo: `AgregarItemFichaPerfil`, `ModificarFichaPerfil`, `CambiarAsesorFicha` y
+`RegistrarFichaPerfil` — los cuatro con la misma forma.
 
 | Punto | Nivel | Dónde | Clave |
 |---|---|---|---|
 | Entrada de la operación | `info` | primera línea de `UseCaseImpl.ejecutar` | `LOG_{GERUNDIO}` — `LOG_REGISTRANDO`, `LOG_AGREGANDO`, `LOG_ASIGNANDO`, `LOG_CAMBIANDO_ASESOR` |
 | Resultado de los finders | `debug` | inmediatamente **antes** de `validator.validar(...)` | `LOG_VERIFICACION_{ACCION}` |
-| Cierre de la operación | `info` | después de la escritura | `LOG_{PARTICIPIO}` — `LOG_REGISTRADA`, `LOG_AGREGADO` |
+| Cierre de la operación | `info` | **última sentencia** de `UseCaseImpl.ejecutar` | `LOG_{PARTICIPIO}` — `LOG_REGISTRADA`, `LOG_AGREGADO` |
 | Cada método de **escritura** del adapter | `debug` | tras el `save`/`delete`/`actualizar` | `LOG_GUARDADO`/`LOG_GUARDADA`/`LOG_ELIMINADO` (namespace `infraestructura`) |
 
 El `INFO` de entrada existe porque sin él un flujo rechazado por validación no deja rastro de que se
@@ -413,14 +475,25 @@ previo al validator lleva **exactamente lo que devolvieron los finders** — los
 tamaños sobre los que las `Rule`s van a decidir (colecciones como `.size()`, agregados como
 `!x.esVacio()`) — porque cuando una `Rule` lanza, su mensaje dice qué falló pero no qué se consultó.
 
-**Flujo anidado** (un `UseCase` que inyecta e invoca otros `UseCase`; hoy solo `RegistrarFichaPerfil`):
-el `InteractorImpl` inyecta `AppLogger` y emite el `INFO` de cierre (`LOG_{ACCION}_COMPLETADO`) tras
-llamar al use case; el use case raíz conserva solo su `INFO` de entrada y baja a `debug` su log de
-"escrito"; los use cases anidados bajan su cierre a `debug` por ser pasos internos; y se agrega un
-`debug` de validación superada tras el validator. **En un flujo simple el interactor no loguea nada**
-— sería una tercera línea diciendo lo mismo que el cierre del use case. Ese `INFO` del interactor no
-prueba el commit: `@Transactional` commitea al retornar, en el proxy, después de la última línea del
-método; lo que prueba es que el flujo completo terminó sin excepción.
+**El `InteractorImpl` NUNCA loguea** — ninguno de los 26 del repo lo hace, ni en flujo simple ni en
+anidado. No inyecta `AppLogger`. Un `INFO` ahí sería una tercera línea diciendo lo que ya dice el
+cierre del use case, y además no probaría el commit: `@Transactional` commitea al retornar, en el
+proxy, después de la última línea del método.
+
+**Flujo anidado** (un `UseCase` que invoca otros `UseCase`; hoy `RegistrarFichaPerfil`): el use case
+raíz mantiene sus tres líneas sin cambio alguno, con el `INFO` de cierre como **última sentencia de
+`ejecutar`**, después de las llamadas encadenadas y del `publish`. Lo que decide cuánto loguea un use
+case anidado es si se puede invocar por su cuenta:
+
+| Use case anidado | Log | Por qué |
+|---|---|---|
+| Tiene `Interactor` + `Controller` propios (`AsignarEstudiantesFichaPerfil`) | Sus tres líneas completas | Es una operación por derecho propio; encadenarlo no puede dejarla muda cuando se llama sola |
+| Solo es paso interno, sin `Interactor` (`AsignarEstadoInicialFichaPerfil`, `AsignarEstadoInicialEvaluacion`) | Un único `debug` | Nadie lo invoca de fuera; un `INFO` sería ruido dentro de la operación que lo contiene |
+
+No existe `LOG_{ACCION}_COMPLETADO` ni un `debug` de "validación superada": ese segundo era ruido
+puro — si el validator no hubiera pasado, habría lanzado, así que la línea solo probaba que la
+ejecución llegó hasta ahí. Tampoco se duplica en el use case el `debug` de persistencia; ese lo emite
+el adapter (`LOG_GUARDADA`) y es su única responsabilidad de log.
 
 **Dónde no va un log, y por qué:**
 
@@ -473,14 +546,25 @@ llegó, y por eso aquí el `INFO` de entrada sí va en el adaptador y no en el u
 | Encolado en el outbox | `debug` | `SpringModulithEventPublisher` (transversal, ya hecho) |
 | Envelope recibido / confirmado | `debug` | `AbstractEventConsumer` (transversal, ya hecho) — cola y `deliveryTag` |
 | **Evento recibido** | `info` | el `{Evento}Consumer`, tras `deserialize` — `idEvento` + identificadores de negocio |
-| Cierre de la operación | `info` | el `UseCase` que el consumidor dispara |
+| Cierre de la operación | `info` | el **adaptador**, no el use case — ver abajo |
 | Nack a la DLQ | `error` | `AbstractEventConsumer` (transversal, ya hecho) |
 
-**Dos `INFO` por mensaje**, igual que por petición. El `INFO` de entrada pertenece a quien es el punto
-de entrada del flujo: en un comando HTTP es el use case, en un evento es el consumidor. Por eso **un
-use case disparado por un consumidor no añade su propio `INFO` de entrada** — el del consumidor ya lo
-es. Un `{Evento}Consumer` nuevo hereda los tres logs transversales de `AbstractEventConsumer` sin
-escribir nada: solo aporta su `INFO` de recepción.
+**Dos `INFO` por mensaje**, igual que por petición, y los dos los pone el adaptador. El `INFO` de
+entrada pertenece a quien es el punto de entrada del flujo: en un comando HTTP es el use case, en un
+evento es el consumidor. Por eso **un use case disparado por un consumidor no añade su propio `INFO`
+de entrada** — el del consumidor ya lo es.
+
+El cierre sigue la misma lógica y por eso tampoco vive en el use case. En `notificaciones` lo emite
+`AbstractNotificacionConsumer.registrar(EnvioNotificacionResult)`, con un `switch` exhaustivo que
+elige nivel y clave según el desenlace: `info` para `Enviada` y `Duplicada`, **`warn` para
+`Fallida`** — un envío rechazado es un 4xx de negocio, no un error del flujo. `EnviarNotificacionUseCaseImpl`
+no emite ningún `INFO`: solo su `debug` de verificación previa. Poner un `INFO` de cierre ahí daría
+tres líneas por mensaje y perdería el desenlace, que el use case devuelve pero no interpreta.
+
+La regla general: **cuando el use case devuelve una sellada de desenlace, el log de cierre lo hace
+quien la interpreta**, que es el adaptador. Un `{Evento}Consumer` nuevo hereda de
+`AbstractEventConsumer` los tres logs transversales y de `AbstractNotificacionConsumer` el de cierre:
+solo aporta su `INFO` de recepción.
 
 Todo log del consumidor va **dentro** del `withCorrelation(...)`, es decir dentro del `AlcanceTraza`.
 Fuera de él el MDC ya se restauró y la línea sale sin `correlacionId` ni `transaccionId` — que es
@@ -496,7 +580,7 @@ valor. Por eso los logs de autenticación de `seguridad` son deliberadamente de 
 **Los correos se enmascaran con `UtilTexto.enmascararCorreo(...)`** (`shared:util`), que deja
 `j***@uco.edu.co`: conserva el dominio y la inicial para correlacionar, sin exponer la dirección. Un
 correo es dato personal y los logs se envían a Loki. Aplica a todo argumento de log que sea un
-correo, venga de un agregado, de un `Command`, de un payload de evento o de una `Entity`.
+correo, venga de un domain, de un `Command`, de un payload de evento o de una `Entity`.
 
 También quedan fuera de un log: documentos de identidad, teléfonos, direcciones, y la `Criteria` o el
 árbol de filtros completos de una consulta (arrastran valores enviados por el cliente). Identificador
@@ -509,10 +593,10 @@ si el valor identifica a una persona fuera del sistema, se enmascara o no se reg
 diamante (`new LinkedHashMap<>()`), ni con clases anónimas, ni cuando el tipo declarado es
 deliberadamente una interfaz. Solo para locales — campos, parámetros y retornos van explícitos.
 `record` para `Command`/`ReadModel`/`RequestDTO`/`ResponseDTO`/payloads de evento/entradas de `Rule`;
-nunca para el agregado. Imports explícitos, nunca wildcard. **Sin Lombok en `domain/`.**
+nunca para el domain. Imports explícitos, nunca wildcard. **Sin Lombok en `domain/`.**
 
 **Sin Javadoc y sin comentarios que repitan el código.** `domain/` y `application/` no llevan
-ninguno — el nombre del agregado, la regla y el caso de uso son la documentación. En
+ninguno — el nombre del domain, la regla y el caso de uso son la documentación. En
 infraestructura, un comentario se justifica solo si registra algo que el código no puede mostrar
 (una restricción externa, por qué se descartó la alternativa obvia); si cabe, va al mensaje de
 commit o a `CLAUDE.md`. **Esto incluye el código que escribes tú**: no adornes con Javadoc una clase
@@ -522,8 +606,8 @@ nueva "para que se entienda" — si hace falta explicarla, el razonamiento va a 
 
 `UtilTexto` (`aplicarTrim`, `esVacioONulo`, `correoValido`, `enmascararCorreo`), `UtilUUID`
 (`generarUUIDDesdeTexto`, `uuidValido`, `generarNuevoUUID`, `obtenerUUIDPorDefecto`), `UtilColeccion`
-(`esVaciaONula`, `aplicarPorDefecto`, `primerDuplicado`), `UtilObjeto` (`esNulo`, `aplicarPorDefecto`),
-`UtilFecha`, `UtilNumero`, `UtilEnum`.
+(`esVaciaONula`, `aplicarPorDefecto`, `primerDuplicado`), `UtilObjeto` (`esNulo`, `noEsNulo`,
+`aplicarPorDefecto`), `UtilFecha`, `UtilNumero`, `UtilEnum`.
 
 Dos que se olvidan y sí importan:
 
@@ -541,7 +625,7 @@ Dos que se olvidan y sí importan:
   recortado se rechaza por longitud. Este fallo estuvo vivo en `Destinatario`/`Contenido` de
   `notificaciones`.
 
-  Y no "arregles" esto metiendo el trim dentro de `UtilTexto.correoValido`: si el agregado olvida
+  Y no "arregles" esto metiendo el trim dentro de `UtilTexto.correoValido`: si el domain olvida
   recortar, la validación pasaría y persistiría el valor con espacios. Que el predicado sea estricto
   es lo que obliga a normalizar donde toca.
 
@@ -549,9 +633,24 @@ Distingue `ValidatorObjeto.noNulo` de `UtilObjeto.esNulo`: el primero **acumula 
 `ValidationResult` porque el valor era obligatorio; el segundo es una guarda de flujo sobre un estado
 interno que legítimamente puede no estar asignado.
 
-**No fuerces un `Util` donde no ahorra nada.** `x != null ? x.metodo() : otro` no mejora con
-`UtilObjeto.esNulo`, y varios módulos `shared:` (`jpa`, `redis`, `amqp`, `web`) **no declaran
-`shared:util`**: meterlo ahí añade una arista al grafo de módulos a cambio de nada.
+**Toda comprobación de nulidad se escribe con el `Util`, nunca con `== null` / `!= null` crudo:**
+`UtilObjeto.esNulo(x)` y su par simétrico `UtilObjeto.noEsNulo(x)`. Es el idioma del proyecto —
+`esNulo` aparece en 30+ sitios de todos los contextos. `noEsNulo` se agregó (2026-09-03, HU-207)
+porque la forma negada se venía escribiendo como `!UtilObjeto.esNulo(...)` en ~10 sitios y se lee
+peor, sobre todo dentro de un ternario; los call sites viejos con `!esNulo` siguen siendo correctos
+y **no** hay que migrarlos en masa, pero el código nuevo usa `noEsNulo`.
+
+Corolario que ya costó una corrección en revisión: **no declares un método `tieneX()` en un `record`
+(`Command`, `Query`) solo para envolver un `== null` de uno de sus campos.** Es reintroducir por
+copia, una vez por cada `record`, lo que el `Util` resuelve en un solo sitio. `QueryCriteria.tieneFiltros()`/
+`tieneOrden()` y `ValidationResult.tieneErrores()` sí existen, pero son clases con estado propio de
+`shared:*` donde el booleano es parte del contrato que consume medio proyecto — no el caso de un
+`{Consult}{Entidad}Query` cuyo único consumidor es su propio `{Consulta}{Entidad}Mapper`.
+
+**Donde el `Util` no llega:** varios módulos `shared:` (`jpa`, `redis`, `amqp`, `web`) **no declaran
+`shared:util`**, y meterlo ahí añade una arista al grafo de módulos a cambio de nada — en ellos el
+`== null` crudo se queda. Igual pasa con el código que ya lo tiene dentro de la clase dueña del campo
+(`QueryCriteria`): no lo refactorices de paso.
 
 ## Git y commits
 

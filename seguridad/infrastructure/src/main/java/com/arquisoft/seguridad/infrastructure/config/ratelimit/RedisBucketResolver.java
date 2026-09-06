@@ -55,6 +55,17 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
 
     private static final long TOKENS_POR_SOLICITUD = 1L;
 
+    // El limitador deshabilitado (perfil dev) responde siempre "consumido" sin tocar Redis. Un
+    // unico bucket que nace lleno con capacidad Long.MAX_VALUE no se agota nunca —Bucket4j rechaza
+    // tasas mayores a 1 token/ns y Long.MAX_VALUE por dia lo es— y LockFreeBucket admite consumo
+    // concurrente, asi que se comparte entre todas las peticiones en vez de reconstruirse en cada una.
+    private static final Bucket BUCKET_SIN_LIMITE = Bucket.builder()
+            .addLimit(Bandwidth.builder()
+                    .capacity(Long.MAX_VALUE)
+                    .refillIntervally(RECARGA_MINIMA, RECARGA_INERTE)
+                    .build())
+            .build();
+
     private final AppLogger logger;
 
     private final LimiteSolicitudesProperties properties;
@@ -82,7 +93,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         } else {
             // logger.error: detalle tecnico para el desarrollador — nunca llega al cliente.
             // El nombre de la clase del cliente obtenido orienta rapidamente el diagnostico.
-            logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_CLIENTE_STANDALONE_ERROR),
+            logger.error(LimiteSolicitudesKey.LOG_CLIENTE_STANDALONE_ERROR,
                     !UtilObjeto.esNulo(nativeClient) ? nativeClient.getClass().getSimpleName() : CLIENTE_AUSENTE);
             // InfrastructureException con mensaje generico: si llegara a la capa web
             // (improbable desde @PostConstruct), el cliente ve un mensaje sin detalles internos.
@@ -101,7 +112,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
     // emitirse nunca, porque ApplicationReadyEvent no ocurre si el contexto no levanta.
     @EventListener(ApplicationReadyEvent.class)
     public void registrarInicializacion() {
-        logger.debug(Mensajes.obtener(LimiteSolicitudesKey.LOG_INIT_OK));
+        logger.debug(LimiteSolicitudesKey.LOG_INIT_OK);
     }
 
     // Degradar a cuota local, y no dejar pasar sin limite, es lo que evita que una caida de Redis
@@ -114,7 +125,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
     @Override
     public ConsumptionProbe consumir(String ip, boolean esLogin) {
         if (!properties.enabled()) {
-            return consumirSinLimite();
+            return BUCKET_SIN_LIMITE.tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
         }
 
         Supplier<BucketConfiguration> configuracion =
@@ -129,7 +140,7 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
             return consumirEnRedis(clave, configuracion);
         } catch (RuntimeException e) {
             if (degradado.compareAndSet(false, true)) {
-                logger.error(Mensajes.obtener(LimiteSolicitudesKey.LOG_DEGRADADO), e, e.getMessage());
+                logger.error(LimiteSolicitudesKey.LOG_DEGRADADO, e, e.getMessage());
             }
             return consumirLocal(clave, configuracion);
         }
@@ -143,10 +154,6 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
     private ConsumptionProbe consumirLocal(String clave, Supplier<BucketConfiguration> configuracion) {
         return bucketsLocales.obtener(clave, configuracion)
                 .tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
-    }
-
-    private ConsumptionProbe consumirSinLimite() {
-        return bucketSinLimite().tryConsumeAndReturnRemaining(TOKENS_POR_SOLICITUD);
     }
 
     // Ambas cuotas se recargan igual, y no es indiferente cual: con recarga por lotes el
@@ -203,16 +210,5 @@ public class RedisBucketResolver implements BucketResolver, DisposableBean {
         if (!UtilObjeto.esNulo(bucketConnection)) {
             bucketConnection.close();
         }
-    }
-
-    // El bucket nace lleno, asi que con esta capacidad no se agota nunca y la recarga es
-    // irrelevante: Bucket4j rechaza tasas mayores a 1 token/ns, y Long.MAX_VALUE por dia lo es.
-    private Bucket bucketSinLimite() {
-        return Bucket.builder()
-                .addLimit(Bandwidth.builder()
-                        .capacity(Long.MAX_VALUE)
-                        .refillIntervally(RECARGA_MINIMA, RECARGA_INERTE)
-                        .build())
-                .build();
     }
 }

@@ -1,13 +1,13 @@
 package com.arquisoft.solicitudes.infrastructure.asignacionproyecto.command.secondaryadapter.webclient;
 
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.ClaveMensaje;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -27,6 +27,6 @@ class AsignacionProyectoOutputAdapterTest {
 
         // Assert
         assertThat(resultado).isTrue();
-        verify(logger).warn(anyString(), any(), any());
+        verify(logger).warn(any(ClaveMensaje.class), any(), any());
     }
 }

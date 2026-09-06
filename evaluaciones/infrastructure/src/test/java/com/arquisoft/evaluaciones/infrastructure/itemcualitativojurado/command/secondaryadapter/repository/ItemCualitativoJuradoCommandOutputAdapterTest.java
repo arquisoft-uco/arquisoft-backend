@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.secondaryadapter.repository;
 
+import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.secondaryport.entity.ItemCualitativoJuradoEntity;
 import com.arquisoft.evaluaciones.infrastructure.itemcualitativojurado.command.secondaryadapter.entity.ItemCualitativoJuradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
@@ -13,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -43,7 +44,7 @@ class ItemCualitativoJuradoCommandOutputAdapterTest {
         ArgumentCaptor<ItemCualitativoJuradoJpaEntity> captor =
                 ArgumentCaptor.forClass(ItemCualitativoJuradoJpaEntity.class);
         verify(repository).save(captor.capture());
-        verify(logger).debug(anyString(), eq(entity.id()));
+        verify(logger).debug(any(ClaveMensaje.class), eq(entity.id()));
         assertThat(captor.getValue().getId()).isEqualTo(entity.id());
         assertThat(captor.getValue().getNombre()).isEqualTo(entity.nombre());
         assertThat(captor.getValue().getDescripcion()).isEqualTo(entity.descripcion());

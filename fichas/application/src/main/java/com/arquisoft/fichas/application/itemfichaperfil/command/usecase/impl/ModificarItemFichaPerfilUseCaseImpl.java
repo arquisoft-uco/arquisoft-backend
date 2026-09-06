@@ -1,7 +1,6 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
@@ -31,7 +30,7 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
 
     @Override
     public void ejecutar(ModificacionItemFichaPerfilDomain entrada) {
-        logger.info(Mensajes.obtener(ItemFichaPerfilKey.LOG_MODIFICANDO),
+        logger.info(ItemFichaPerfilKey.LOG_MODIFICANDO,
                 entrada.getItem(), entrada.getEstudiante());
 
         var fichaEncontrada = fichaPerfilDelItemFinder.obtener(entrada.getItem());
@@ -47,7 +46,7 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
         var estadoActual = fichaEncontrada.flatMap(estadoActualFichaPerfilFinder::obtener)
                 .orElse(EstadoFichaPerfilDomain.VACIO);
 
-        logger.debug(Mensajes.obtener(ItemFichaPerfilKey.LOG_VERIFICACION_MODIFICAR),
+        logger.debug(ItemFichaPerfilKey.LOG_VERIFICACION_MODIFICAR,
                 itemExiste, esPropietario, fichaDelItem);
 
         modificarItemFichaPerfilValidator.validar(entrada.getItem(), entrada.getEstudiante(),
@@ -55,6 +54,6 @@ public class ModificarItemFichaPerfilUseCaseImpl implements ModificarItemFichaPe
 
         itemFichaPerfilOutputPort.actualizarContenido(entrada.getItem(), entrada.getContenido());
 
-        logger.info(Mensajes.obtener(ItemFichaPerfilKey.LOG_MODIFICADO), entrada.getItem());
+        logger.info(ItemFichaPerfilKey.LOG_MODIFICADO, entrada.getItem());
     }
 }

@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.destinatario.command.finder.DestinatarioDeUsuarioFinder;
@@ -79,7 +78,7 @@ public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
         validator.validarUnicidad(new DisponibilidadSolicitud(clave, yaExiste));
 
         solicitudOutputPort.registrar(SolicitudMapper.toEntity(solicitud));
-        logger.info(Mensajes.obtener(SolicitudKey.LOG_ENVIADA), solicitud.getId());
+        logger.info(SolicitudKey.LOG_ENVIADA, solicitud.getId());
 
         eventPublisher.publish(new SolicitudNovedadCoordinadorEnviadaEvent(
                 solicitud.getId(),

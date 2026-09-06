@@ -109,6 +109,51 @@ services:
     networks:
       - arquisoft-network
 
+
+  # ==================== PLANTILLAS DE CORREO ====================
+  # Las plantillas viven en Redis, no en el jar: cambiar el maquetado de un correo no cuesta un
+  # build. Igual que el catálogo, el backend las lee al arrancar y no levanta si faltan, así que
+  # este servicio corre antes que él.
+  plantillas-loader:
+    image: redis:7-alpine
+    container_name: arquisoft-plantillas-loader
+    restart: "no"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: default123
+    volumes:
+      - ./plantillas:/plantillas:ro
+    command: ["sh", "/plantillas/cargar.sh"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - arquisoft-network
+
+  # Poda de plantillas: borra de Redis las que ya no están declaradas en plantillas/cargar.sh.
+  # Bajo perfil 'mantenimiento', como el podador del catálogo — 'docker compose up' no borra nada.
+  #   docker compose --profile mantenimiento up plantillas-podador
+  plantillas-podador:
+    image: redis:7-alpine
+    container_name: arquisoft-plantillas-podador
+    restart: "no"
+    profiles: ["mantenimiento"]
+    environment:
+      REDIS_HOST: "${REDIS_HOST:-redis}"
+      REDIS_PORT: "${REDIS_PORT:-6379}"
+      REDIS_PASSWORD: "${REDIS_PASSWORD:-default123}"
+      DRY_RUN: "${DRY_RUN:-0}"
+      PODA_TOTAL: "${PODA_TOTAL:-0}"
+    volumes:
+      - ./plantillas:/plantillas:ro
+    command: ["sh", "/plantillas/podar.sh"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - arquisoft-network
+
   # ==================== KEYCLOAK ====================
   keycloak:
     image: quay.io/keycloak/keycloak:26.6
@@ -190,6 +235,22 @@ services:
       dockerfile: Dockerfile
     container_name: arquisoft-backend
     environment:
+      # Sin esto el contenedor arrancaba SIN perfil activo: caia en el fallback
+      # '!dev & !prod' de logback-spring.xml y en los niveles base de application.yml,
+      # ignorando el SPRING_PROFILES_ACTIVE del .env.
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # Niveles de log. Los defaults de aqui son los del perfil dev, que es el que
+      # docker-compose levanta: NO se puede dejar `${VAR:-}` porque Compose inyectaria
+      # cadena vacia y Spring haria LogLevel.valueOf("") -> fallo de arranque.
+      # Si cambias SPRING_PROFILES_ACTIVE a prod aqui, fija tambien estas siete.
+      # Presets listos para copiar en la seccion OBSERVABILIDAD del .env.example.
+      LOG_NIVEL_ROOT: ${LOG_NIVEL_ROOT:-INFO}
+      LOG_NIVEL_NEGOCIO: ${LOG_NIVEL_NEGOCIO:-DEBUG}
+      LOG_NIVEL_PLATAFORMA: ${LOG_NIVEL_PLATAFORMA:-DEBUG}
+      LOG_NIVEL_DATOS: ${LOG_NIVEL_DATOS:-DEBUG}
+      LOG_NIVEL_SEGURIDAD: ${LOG_NIVEL_SEGURIDAD:-DEBUG}
+      LOG_NIVEL_MENSAJERIA: ${LOG_NIVEL_MENSAJERIA:-DEBUG}
+      LOG_NIVEL_FRAMEWORK: ${LOG_NIVEL_FRAMEWORK:-INFO}
       DB_USUARIOS_URL: jdbc:postgresql://postgres:5432/usuarios
       DB_USUARIOS_USERNAME: arquisoft_user
       DB_USUARIOS_PASSWORD: arquisoft123
@@ -240,6 +301,8 @@ services:
       redis:
         condition: service_healthy
       catalogo-loader:
+        condition: service_completed_successfully
+      plantillas-loader:
         condition: service_completed_successfully
       keycloak:
         condition: service_healthy  # ✅ Backend espera Keycloak listo

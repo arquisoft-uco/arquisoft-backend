@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.infrastructure.remitente.command.secondaryadapter.repository;
 
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.RemitenteOutputPort;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.entity.RemitenteEntity;
@@ -28,6 +27,6 @@ public class RemitenteCommandOutputAdapter implements RemitenteOutputPort {
     @Override
     public void registrar(RemitenteEntity remitente) {
         remitenteCommandRepository.save(RemitenteJpaMapper.toJpaEntity(remitente));
-        logger.debug(Mensajes.obtener(SolicitudKey.LOG_GUARDADA), remitente.id());
+        logger.debug(SolicitudKey.LOG_GUARDADA, remitente.id());
     }
 }

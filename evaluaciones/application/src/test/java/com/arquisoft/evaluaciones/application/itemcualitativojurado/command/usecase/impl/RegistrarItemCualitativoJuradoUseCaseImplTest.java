@@ -1,5 +1,6 @@
 package com.arquisoft.evaluaciones.application.itemcualitativojurado.command.usecase.impl;
 
+import com.arquisoft.shared.message.ClaveMensaje;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.finder.NombreItemCualitativoJuradoExisteFinder;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.secondaryport.ItemCualitativoJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.secondaryport.entity.ItemCualitativoJuradoEntity;
@@ -19,7 +20,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
@@ -61,7 +61,7 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
         orden.verify(finder).obtener(item.getNombre());
         orden.verify(validator).validar(item, false);
         orden.verify(outputPort).registrar(entidadDe(item));
-        orden.verify(logger).info(anyString(), eq(item.getId()));
+        orden.verify(logger).info(any(ClaveMensaje.class), eq(item.getId()));
     }
 
     @Test
@@ -76,7 +76,7 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(item))
                 .isInstanceOf(NombreItemCualitativoJuradoDuplicadoException.class);
         verify(outputPort, never()).registrar(any());
-        verify(logger, never()).info(anyString(), eq(item.getId()));
+        verify(logger, never()).info(any(ClaveMensaje.class), eq(item.getId()));
     }
 
     @Test
@@ -91,7 +91,7 @@ class RegistrarItemCualitativoJuradoUseCaseImplTest {
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(item))
                 .isSameAs(errorPersistencia);
-        verify(logger, never()).info(anyString(), eq(item.getId()));
+        verify(logger, never()).info(any(ClaveMensaje.class), eq(item.getId()));
     }
 
     private static ItemCualitativoJuradoDomain itemValido() {

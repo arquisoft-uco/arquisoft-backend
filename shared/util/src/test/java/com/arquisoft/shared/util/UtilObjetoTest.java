@@ -13,6 +13,12 @@ class UtilObjetoTest {
     }
 
     @Test
+    void debeIndicarNoNulo_cuandoElValorNoEsNulo() {
+        assertThat(UtilObjeto.noEsNulo("x")).isTrue();
+        assertThat(UtilObjeto.noEsNulo(null)).isFalse();
+    }
+
+    @Test
     void debeDevolverElValor_cuandoNoEsNulo() {
         assertThat(UtilObjeto.aplicarPorDefecto("valor", "defecto")).isEqualTo("valor");
     }

@@ -39,7 +39,7 @@ class ConsultarEstadosFichaUseCaseTest {
         when(queryOutputPort.findAll()).thenReturn(estadosEsperados);
 
         // Act
-        List<EstadoFichaReadModel> resultado = useCase.ejecutar(null);
+        List<EstadoFichaReadModel> resultado = useCase.ejecutar();
 
         // Assert
         assertThat(resultado).isNotNull();
@@ -54,7 +54,7 @@ class ConsultarEstadosFichaUseCaseTest {
         when(queryOutputPort.findAll()).thenReturn(List.of());
 
         // Act
-        List<EstadoFichaReadModel> resultado = useCase.ejecutar(null);
+        List<EstadoFichaReadModel> resultado = useCase.ejecutar();
 
         // Assert
         assertThat(resultado).isNotNull();
