@@ -15,6 +15,7 @@ rutas:
       tipos-item: /tipos-item
       items: /{fichaPerfilId}/items
       items-estudiante: /{fichaPerfilId}/items/estudiante
+      items-representante: /{fichaPerfilId}/items/representante
       item-por-id: /items/{itemId}
       estudiantes: /{fichaPerfilId}/estudiantes
       estudiante-por-id: /{fichaPerfilId}/estudiantes/{estudianteId}
