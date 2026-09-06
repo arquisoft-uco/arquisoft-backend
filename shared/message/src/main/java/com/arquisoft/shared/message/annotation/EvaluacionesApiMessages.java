@@ -35,4 +35,18 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "El ítem cualitativo no existe";
     }
+
+    public static final class CriterioItemCualitativoJurado {
+
+        private CriterioItemCualitativoJurado() {}
+
+        public static final String TAG_NAME = "Criterios de ítems cualitativos del jurado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de los criterios usados por el jurado para calificar ítems cualitativos";
+        public static final String CONSULTAR_SUMMARY = "Consultar criterios cualitativos";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta todos los criterios disponibles para calificar ítems cualitativos del jurado, "
+                        + "ordenados por nombre";
+        public static final String CONSULTAR_RESP_200 = "Listado de criterios cualitativos del jurado";
+    }
 }
