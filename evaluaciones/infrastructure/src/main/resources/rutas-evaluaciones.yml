@@ -10,3 +10,6 @@ rutas:
       por-id: /{itemId}
     criterios-item-cualitativo-jurado:
       base: /evaluaciones/criterios-item-cualitativo-jurado
+    evaluaciones-jurado:
+      base: /evaluaciones/evaluaciones-jurado
+      cualitativas: /{evaluacionJuradoId}/cualitativas
