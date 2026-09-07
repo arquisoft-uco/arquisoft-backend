@@ -32,22 +32,47 @@ class SolicitudCommandOutputAdapterTest {
     private SolicitudCommandOutputAdapter adapter;
 
     private UUID remitenteFila;
+    private UUID remitenteUsuarioId;
     private UUID destinatarioFila;
 
     @BeforeEach
     void setUp() {
         adapter = new SolicitudCommandOutputAdapter(repository, mock(AppLogger.class));
 
+        ejecutarSql("CREATE TABLE IF NOT EXISTS respuesta ("
+                + "id UUID PRIMARY KEY, solicitud_id UUID NOT NULL, fecha_respuesta TIMESTAMP, "
+                + "contenido VARCHAR(100), estado_respuesta_id VARCHAR(60))");
+
         entityManager.persist(TipoSolicitudJpaEntity.builder()
                 .id(TIPO).nombre("Novedad para el Coordinador").descripcion("desc").build());
 
         remitenteFila = UUID.randomUUID();
+        remitenteUsuarioId = UUID.randomUUID();
         destinatarioFila = UUID.randomUUID();
         entityManager.persist(RemitenteJpaEntity.builder()
-                .id(remitenteFila).usuarioId(UUID.randomUUID()).build());
+                .id(remitenteFila).usuarioId(remitenteUsuarioId).build());
         entityManager.persist(DestinatarioJpaEntity.builder()
                 .id(destinatarioFila).usuarioId(UUID.randomUUID()).build());
         entityManager.flush();
+    }
+
+    private void ejecutarSql(String sql) {
+        entityManager.getEntityManager()
+                .unwrap(org.hibernate.Session.class)
+                .doWork(connection -> {
+                    try (var statement = connection.createStatement()) {
+                        statement.execute(sql);
+                    }
+                });
+    }
+
+    private UUID sembrarSolicitud(String mensaje) {
+        UUID solicitudId = UUID.randomUUID();
+        adapter.registrar(new SolicitudEntity(solicitudId, destinatarioFila, remitenteFila,
+                LocalDateTime.of(2026, 2, 1, 10, 30, 0), mensaje, TIPO));
+        entityManager.flush();
+        entityManager.clear();
+        return solicitudId;
     }
 
     @Test
@@ -97,5 +122,61 @@ class SolicitudCommandOutputAdapterTest {
         // Act & Assert — mismo triple, mensaje distinto
         assertThat(adapter.existePorCombinacionUnica(destinatarioFila, remitenteFila, fecha, "otro mensaje"))
                 .isFalse();
+    }
+
+    @Test
+    void debeProyectarRemitenteUsuarioYTipo_cuandoBuscaDatosDeUnaSolicitudExistente() {
+        // Arrange
+        UUID solicitudId = sembrarSolicitud("una novedad");
+
+        // Act & Assert
+        assertThat(adapter.buscarDatos(solicitudId)).hasValueSatisfying(datos -> {
+            assertThat(datos.remitenteUsuario()).isEqualTo(remitenteUsuarioId);
+            assertThat(datos.tipoSolicitud()).isEqualTo(TIPO);
+        });
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoBuscaDatosDeUnIdInexistente() {
+        // Act & Assert
+        assertThat(adapter.buscarDatos(UUID.randomUUID())).isEmpty();
+    }
+
+    @Test
+    void debeRetornarFalse_cuandoLaSolicitudNoTieneRespuestas() {
+        // Arrange
+        UUID solicitudId = sembrarSolicitud("sin respuestas");
+
+        // Act & Assert
+        assertThat(adapter.tieneRespuestas(solicitudId)).isFalse();
+    }
+
+    @Test
+    void debeRetornarTrue_cuandoLaSolicitudTieneUnaRespuesta() {
+        // Arrange
+        UUID solicitudId = sembrarSolicitud("con respuesta");
+        entityManager.getEntityManager().createNativeQuery(
+                        "INSERT INTO respuesta (id, solicitud_id, fecha_respuesta, contenido, "
+                        + "estado_respuesta_id) VALUES (:id, :sol, CURRENT_TIMESTAMP, 'r', 'EN_REVISION')")
+                .setParameter("id", UUID.randomUUID())
+                .setParameter("sol", solicitudId)
+                .executeUpdate();
+
+        // Act & Assert
+        assertThat(adapter.tieneRespuestas(solicitudId)).isTrue();
+    }
+
+    @Test
+    void debeBorrarLaFila_cuandoElimina() {
+        // Arrange
+        UUID solicitudId = sembrarSolicitud("a eliminar");
+
+        // Act
+        adapter.eliminar(solicitudId);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(SolicitudJpaEntity.class, solicitudId)).isNull();
     }
 }

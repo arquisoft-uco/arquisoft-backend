@@ -22,7 +22,15 @@ public enum SolicitudKey implements ClaveMensaje {
             "solicitudes.aplicacion.solicitud.log.verificacion-envio-ampliacion-plazo", 2),
     LOG_ENVIADA_AMPLIACION_PLAZO("solicitudes.aplicacion.solicitud.log.enviada-ampliacion-plazo", 1),
     LOG_GUARDADA("solicitudes.infraestructura.solicitud.log.guardada", 1),
-    LOG_ASIGNACION_NO_VERIFICADA("solicitudes.infraestructura.solicitud.log.asignacion-no-verificada", 2);
+    LOG_ASIGNACION_NO_VERIFICADA("solicitudes.infraestructura.solicitud.log.asignacion-no-verificada", 2),
+    ERROR_SOLICITUD_NO_ENCONTRADA("solicitudes.dominio.solicitud.error.no-encontrada", 1),
+    ERROR_SOLICITUD_NO_PROPIA("solicitudes.dominio.solicitud.error.no-propia", 1),
+    ERROR_SOLICITUD_TIPO_NO_COINCIDE("solicitudes.dominio.solicitud.error.tipo-no-coincide", 1),
+    ERROR_SOLICITUD_CON_RESPUESTAS("solicitudes.dominio.solicitud.error.con-respuestas", 1),
+    LOG_ELIMINANDO("solicitudes.aplicacion.solicitud.log.eliminando", 2),
+    LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.solicitud.log.verificacion-eliminacion", 2),
+    LOG_ELIMINADA("solicitudes.aplicacion.solicitud.log.eliminada", 1),
+    LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.solicitud.log.eliminada", 1);
 
     private final String clave;
     private final int parametros;

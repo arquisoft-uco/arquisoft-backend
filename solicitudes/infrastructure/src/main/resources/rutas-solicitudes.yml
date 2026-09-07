@@ -8,6 +8,7 @@ rutas:
     solicitud:
       base: /solicitudes
       novedad-coordinador: /novedad-coordinador
+      novedad-coordinador-por-id: /novedad-coordinador/{solicitudId}
       novedad-asesor: /novedad-asesor
       cambio-asesor: /cambio-asesor
       ampliacion-plazo: /ampliacion-plazo
