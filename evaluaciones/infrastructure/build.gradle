@@ -9,10 +9,18 @@ dependencies {
     implementation project(':shared:logger')
     implementation project(':shared:web')
     implementation project(':shared:jpa')
+    implementation project(':shared:amqp')
+
+    // shared:tracing — el consumidor AMQP recibe el GestorTraza por constructor.
+    // shared:amqp lo declara con 'implementation', asi que no llega transitivamente.
+    implementation project(':shared:tracing')
 
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
     implementation "org.springframework.boot:spring-boot-starter-validation"
+
+    // AMQP — spring-amqp no es transitivo en compilacion desde shared:amqp (Gradle 'implementation').
+    implementation "org.springframework.boot:spring-boot-starter-amqp"
 
     implementation "org.springframework.boot:spring-boot-starter-data-jpa"
     implementation "org.flywaydb:flyway-core"
