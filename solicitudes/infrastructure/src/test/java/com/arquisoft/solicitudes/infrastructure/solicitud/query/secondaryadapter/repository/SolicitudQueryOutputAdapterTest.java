@@ -50,55 +50,73 @@ class SolicitudQueryOutputAdapterTest {
         entityManager.flush();
     }
 
-    private void sembrarSolicitud(UUID destinatarioUsuario, String tipo, String remitenteNombre,
-            String remitenteIdentificador, String remitenteEmail, LocalDateTime fecha, String mensaje) {
-        var usuarioRemitente = UsuarioJpaEntity.builder()
-                .id(UUID.randomUUID())
-                .identificador(remitenteIdentificador)
-                .nombre(remitenteNombre)
-                .email(remitenteEmail)
-                .build();
-        entityManager.persist(usuarioRemitente);
-
+    private RemitenteJpaEntity sembrarRemitente(String nombre, String identificador, String email) {
+        var usuario = UsuarioJpaEntity.builder()
+                .id(UUID.randomUUID()).nombre(nombre).identificador(identificador).email(email).build();
+        entityManager.persist(usuario);
         var remitente = RemitenteJpaEntity.builder()
-                .id(UUID.randomUUID()).usuarioId(usuarioRemitente.getId()).build();
+                .id(UUID.randomUUID()).usuarioId(usuario.getId()).build();
         entityManager.persist(remitente);
+        return remitente;
+    }
 
+    private DestinatarioJpaEntity sembrarDestinatario(String nombre, String identificador, String email) {
+        var usuario = UsuarioJpaEntity.builder()
+                .id(UUID.randomUUID()).nombre(nombre).identificador(identificador).email(email).build();
+        entityManager.persist(usuario);
         var destinatario = DestinatarioJpaEntity.builder()
-                .id(UUID.randomUUID()).usuarioId(destinatarioUsuario).build();
+                .id(UUID.randomUUID()).usuarioId(usuario.getId()).build();
         entityManager.persist(destinatario);
+        return destinatario;
+    }
 
+    private void sembrarSolicitud(RemitenteJpaEntity remitente, DestinatarioJpaEntity destinatario,
+            String tipo, LocalDateTime fecha, String mensaje) {
         entityManager.persist(SolicitudJpaEntity.builder()
                 .id(UUID.randomUUID())
-                .destinatario(destinatario)
                 .remitente(remitente)
+                .destinatario(destinatario)
                 .tipoSolicitud(entityManager.find(TipoSolicitudJpaEntity.class, tipo))
                 .fechaCreacion(fecha)
                 .mensajeSolicitud(mensaje)
                 .build());
+    }
+
+    private void sincronizar() {
         entityManager.flush();
         entityManager.clear();
     }
 
-    private static SolicitudCriteria filtroDestinatario(UUID destinatarioUsuario) {
+    private static SolicitudCriteria porDestinatario(UUID destinatarioUsuarioId) {
         return SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
-                        destinatarioUsuario.toString()))
+                        destinatarioUsuarioId.toString()))
                 .build();
     }
 
+    private static SolicitudCriteria porRemitente(UUID remitenteUsuarioId) {
+        return SolicitudCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
+                        remitenteUsuarioId.toString()))
+                .build();
+    }
+
+    // --- HU-091: lado destinatario (recibidas) ---
+
     @Test
-    void debeRetornarSoloLasSolicitudesDelCoordinador_yProyectarTipoYRemitente() {
+    void debeRetornarSoloLasSolicitudesDelDestinatario_yProyectarRemitenteYDestinatario() {
         // Arrange
-        UUID coordinador = UUID.randomUUID();
-        UUID otroCoordinador = UUID.randomUUID();
-        sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Ana Estudiante", "EST-1",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 1, 10, 0), "novedad de Ana");
-        sembrarSolicitud(otroCoordinador, TIPO_NOVEDAD, "Beto Estudiante", "EST-2",
-                "beto@uco.edu.co", LocalDateTime.of(2026, 3, 2, 10, 0), "novedad de Beto");
+        var coord = sembrarDestinatario("Coordinadora Uno", "COORD-1", "coord1@uco.edu.co");
+        var otroCoord = sembrarDestinatario("Coordinadora Dos", "COORD-2", "coord2@uco.edu.co");
+        var ana = sembrarRemitente("Ana Estudiante", "EST-1", "ana@uco.edu.co");
+        var beto = sembrarRemitente("Beto Estudiante", "EST-2", "beto@uco.edu.co");
+        sembrarSolicitud(ana, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 1, 10, 0), "novedad de Ana");
+        sembrarSolicitud(beto, otroCoord, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 2, 10, 0), "novedad de Beto");
+        sincronizar();
 
         // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(filtroDestinatario(coordinador));
+        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(
+                porDestinatario(coord.getUsuarioId()));
 
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
@@ -109,22 +127,26 @@ class SolicitudQueryOutputAdapterTest {
         assertThat(leida.remitente().identificador()).isEqualTo("EST-1");
         assertThat(leida.remitente().nombre()).isEqualTo("Ana Estudiante");
         assertThat(leida.remitente().email()).isEqualTo("ana@uco.edu.co");
-        assertThat(leida.remitente().usuarioId()).isNotNull();
+        assertThat(leida.remitente().usuarioId()).isEqualTo(ana.getUsuarioId());
+        assertThat(leida.destinatario().identificador()).isEqualTo("COORD-1");
+        assertThat(leida.destinatario().nombre()).isEqualTo("Coordinadora Uno");
+        assertThat(leida.destinatario().email()).isEqualTo("coord1@uco.edu.co");
+        assertThat(leida.destinatario().usuarioId()).isEqualTo(coord.getUsuarioId());
     }
 
     @Test
-    void debeExcluirLasSolicitudesDeOtroTipo_cuandoElCriteriaFuerzaElTipo() {
+    void debeExcluirLasSolicitudesDeOtroTipo_cuandoElCriteriaFuerzaElTipoYDestinatario() {
         // Arrange
-        UUID coordinador = UUID.randomUUID();
-        sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Ana", "EST-1",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 1, 10, 0), "es novedad");
-        sembrarSolicitud(coordinador, TIPO_CAMBIO, "Ana", "EST-1",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 2, 10, 0), "es cambio");
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        sembrarSolicitud(ana, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 1, 10, 0), "es novedad");
+        sembrarSolicitud(ana, coord, TIPO_CAMBIO, LocalDateTime.of(2026, 3, 2, 10, 0), "es cambio");
+        sincronizar();
 
         SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
-                                coordinador.toString()),
+                                coord.getUsuarioId().toString()),
                         NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_NOVEDAD))))
                 .build();
 
@@ -140,16 +162,17 @@ class SolicitudQueryOutputAdapterTest {
     @Test
     void debeFiltrarPorNombreDelRemitente_cuandoElCriteriaTraeEsePredicado() {
         // Arrange
-        UUID coordinador = UUID.randomUUID();
-        sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Ana Ramirez", "EST-1",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 1, 10, 0), "de Ana");
-        sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Luis Perez", "EST-2",
-                "luis@uco.edu.co", LocalDateTime.of(2026, 3, 2, 10, 0), "de Luis");
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
+        var ana = sembrarRemitente("Ana Ramirez", "EST-1", "ana@uco.edu.co");
+        var luis = sembrarRemitente("Luis Perez", "EST-2", "luis@uco.edu.co");
+        sembrarSolicitud(ana, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 1, 10, 0), "de Ana");
+        sembrarSolicitud(luis, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 2, 10, 0), "de Luis");
+        sincronizar();
 
         SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
-                                coordinador.toString()),
+                                coord.getUsuarioId().toString()),
                         NodoFiltro.predicado("remitenteNombre", FiltroOperador.CONTIENE, "Ramirez"))))
                 .build();
 
@@ -165,15 +188,16 @@ class SolicitudQueryOutputAdapterTest {
     @Test
     void debeOrdenarPorFechaCreacionDescendente_cuandoElCriteriaLoPide() {
         // Arrange
-        UUID coordinador = UUID.randomUUID();
-        sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Ana", "EST-1",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 1, 10, 10, 0), "vieja");
-        sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Luis", "EST-2",
-                "luis@uco.edu.co", LocalDateTime.of(2026, 5, 20, 10, 0), "nueva");
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        var luis = sembrarRemitente("Luis", "EST-2", "luis@uco.edu.co");
+        sembrarSolicitud(ana, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 1, 10, 10, 0), "vieja");
+        sembrarSolicitud(luis, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 5, 20, 10, 0), "nueva");
+        sincronizar();
 
         SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
-                        coordinador.toString()))
+                        coord.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("fechaCreacion", SortDirection.DESC)))
                 .build();
 
@@ -187,41 +211,18 @@ class SolicitudQueryOutputAdapterTest {
     }
 
     @Test
-    void debeOrdenarPorNombreDelRemitenteAscendente_cuandoElCriteriaLoPide() {
-        // Arrange
-        UUID coordinador = UUID.randomUUID();
-        sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Zulma", "EST-1",
-                "zulma@uco.edu.co", LocalDateTime.of(2026, 1, 10, 10, 0), "z");
-        sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Ana", "EST-2",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 5, 20, 10, 0), "a");
-
-        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
-                .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
-                        coordinador.toString()))
-                .ordenamiento(List.of(SortOrder.of("remitenteNombre", SortDirection.ASC)))
-                .build();
-
-        // Act
-        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
-
-        // Assert
-        assertThat(resultado.getContent())
-                .extracting(r -> r.remitente().nombre())
-                .containsExactly("Ana", "Zulma");
-    }
-
-    @Test
     void debePaginar_cuandoElCriteriaPideLaSegundaPagina() {
         // Arrange
-        UUID coordinador = UUID.randomUUID();
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
         for (int i = 0; i < 3; i++) {
-            sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Rem " + i, "EST-" + i,
-                    "rem" + i + "@uco.edu.co", LocalDateTime.of(2026, 3, 1 + i, 10, 0), "m" + i);
+            var rem = sembrarRemitente("Rem " + i, "EST-" + i, "rem" + i + "@uco.edu.co");
+            sembrarSolicitud(rem, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 1 + i, 10, 0), "m" + i);
         }
+        sincronizar();
 
         SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(1).tamanio(2)
                 .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
-                        coordinador.toString()))
+                        coord.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("fechaCreacion", SortDirection.ASC)))
                 .build();
 
@@ -236,13 +237,141 @@ class SolicitudQueryOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarVacio_cuandoNoHaySolicitudesParaElCoordinador() {
+    void debeRetornarVacio_cuandoNoHaySolicitudesParaElActor() {
         // Act
         PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(
-                filtroDestinatario(UUID.randomUUID()));
+                porDestinatario(UUID.randomUUID()));
 
         // Assert
         assertThat(resultado.getContent()).isEmpty();
         assertThat(resultado.getTotalElements()).isZero();
+    }
+
+    @Test
+    void debeOrdenarPorNombreDelRemitenteAscendente_cuandoElCriteriaLoPide() {
+        // Arrange
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
+        var zulma = sembrarRemitente("Zulma", "EST-1", "zulma@uco.edu.co");
+        var alba = sembrarRemitente("Alba", "EST-2", "alba@uco.edu.co");
+        sembrarSolicitud(zulma, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 1, 10, 10, 0), "z");
+        sembrarSolicitud(alba, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 5, 20, 10, 0), "a");
+        sincronizar();
+
+        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
+                        coord.getUsuarioId().toString()))
+                .ordenamiento(List.of(SortOrder.of("remitenteNombre", SortDirection.ASC)))
+                .build();
+
+        // Act
+        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(r -> r.remitente().nombre())
+                .containsExactly("Alba", "Zulma");
+    }
+
+    // --- HU-096: lado remitente (enviadas) ---
+
+    @Test
+    void debeRetornarSoloLasSolicitudesDelRemitente_yProyectarDestinatario() {
+        // Arrange
+        var ana = sembrarRemitente("Ana Estudiante", "EST-1", "ana@uco.edu.co");
+        var beto = sembrarRemitente("Beto Estudiante", "EST-2", "beto@uco.edu.co");
+        var coord = sembrarDestinatario("Coordinadora Uno", "COORD-1", "coord1@uco.edu.co");
+        sembrarSolicitud(ana, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 1, 10, 0), "de Ana");
+        sembrarSolicitud(beto, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 2, 10, 0), "de Beto");
+        sincronizar();
+
+        // Act
+        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(porRemitente(ana.getUsuarioId()));
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(SolicitudReadModel::mensajeSolicitud)
+                .containsExactly("de Ana");
+        SolicitudReadModel leida = resultado.getContent().get(0);
+        assertThat(leida.remitente().usuarioId()).isEqualTo(ana.getUsuarioId());
+        assertThat(leida.destinatario().usuarioId()).isEqualTo(coord.getUsuarioId());
+        assertThat(leida.destinatario().identificador()).isEqualTo("COORD-1");
+        assertThat(leida.destinatario().nombre()).isEqualTo("Coordinadora Uno");
+        assertThat(leida.destinatario().email()).isEqualTo("coord1@uco.edu.co");
+    }
+
+    @Test
+    void debeExcluirLasSolicitudesDeOtroTipo_cuandoElCriteriaFuerzaTipoYRemitente() {
+        // Arrange
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
+        sembrarSolicitud(ana, coord, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 1, 10, 0), "es novedad");
+        sembrarSolicitud(ana, coord, TIPO_CAMBIO, LocalDateTime.of(2026, 3, 2, 10, 0), "es cambio");
+        sincronizar();
+
+        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                        NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
+                                ana.getUsuarioId().toString()),
+                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_NOVEDAD))))
+                .build();
+
+        // Act
+        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(SolicitudReadModel::mensajeSolicitud)
+                .containsExactly("es novedad");
+    }
+
+    @Test
+    void debeFiltrarPorNombreDelDestinatario_cuandoElCriteriaTraeEsePredicado() {
+        // Arrange
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        var coordRamirez = sembrarDestinatario("Carla Ramirez", "COORD-1", "carla@uco.edu.co");
+        var coordPerez = sembrarDestinatario("Luis Perez", "COORD-2", "luis@uco.edu.co");
+        sembrarSolicitud(ana, coordRamirez, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 1, 10, 0), "para Ramirez");
+        sembrarSolicitud(ana, coordPerez, TIPO_NOVEDAD, LocalDateTime.of(2026, 3, 2, 10, 0), "para Perez");
+        sincronizar();
+
+        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                        NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
+                                ana.getUsuarioId().toString()),
+                        NodoFiltro.predicado("destinatarioNombre", FiltroOperador.CONTIENE, "Ramirez"))))
+                .build();
+
+        // Act
+        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(r -> r.destinatario().nombre())
+                .containsExactly("Carla Ramirez");
+    }
+
+    @Test
+    void debeOrdenarPorNombreDelDestinatarioAscendente_cuandoElCriteriaLoPide() {
+        // Arrange
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        var zulma = sembrarDestinatario("Zulma", "COORD-1", "zulma@uco.edu.co");
+        var alba = sembrarDestinatario("Alba", "COORD-2", "alba@uco.edu.co");
+        sembrarSolicitud(ana, zulma, TIPO_NOVEDAD, LocalDateTime.of(2026, 1, 10, 10, 0), "z");
+        sembrarSolicitud(ana, alba, TIPO_NOVEDAD, LocalDateTime.of(2026, 5, 20, 10, 0), "a");
+        sincronizar();
+
+        SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
+                        ana.getUsuarioId().toString()))
+                .ordenamiento(List.of(SortOrder.of("destinatarioNombre", SortDirection.ASC)))
+                .build();
+
+        // Act
+        PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(r -> r.destinatario().nombre())
+                .containsExactly("Alba", "Zulma");
     }
 }

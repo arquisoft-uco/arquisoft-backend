@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.infrastructure.solicitud.query.secondaryadapter.repository.mapper;
 
+import com.arquisoft.solicitudes.application.destinatario.query.readmodel.DestinatarioReadModel;
 import com.arquisoft.solicitudes.application.remitente.query.readmodel.RemitenteReadModel;
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
 import com.arquisoft.solicitudes.infrastructure.solicitud.query.secondaryadapter.repository.SolicitudJpaQueryEntity;
@@ -19,6 +20,11 @@ public final class SolicitudQueryMapper {
                         entity.getRemitenteUsuarioId(),
                         entity.getRemitenteIdentificador(),
                         entity.getRemitenteNombre(),
-                        entity.getRemitenteEmail()));
+                        entity.getRemitenteEmail()),
+                new DestinatarioReadModel(
+                        entity.getDestinatarioUsuarioId(),
+                        entity.getDestinatarioIdentificador(),
+                        entity.getDestinatarioNombre(),
+                        entity.getDestinatarioEmail()));
     }
 }

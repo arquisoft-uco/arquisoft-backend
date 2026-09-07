@@ -26,6 +26,23 @@ class SolicitudSortMapperTest {
     }
 
     @Test
+    void debeTraducirDestinatarioNombre_cuandoCampoOrdenable() {
+        // Act
+        String ruta = SolicitudSortMapper.traducir("destinatarioNombre");
+
+        // Assert
+        assertThat(ruta).isEqualTo("destinatarioNombre");
+    }
+
+    @Test
+    void debeRetornarNull_cuandoCamposDeDestinatarioNoOrdenables() {
+        // Act & Assert
+        assertThat(SolicitudSortMapper.traducir("destinatarioIdentificador")).isNull();
+        assertThat(SolicitudSortMapper.traducir("destinatarioEmail")).isNull();
+        assertThat(SolicitudSortMapper.traducir("remitenteUsuarioId")).isNull();
+    }
+
+    @Test
     void debeRetornarNull_cuandoCampoNoExiste() {
         // Act
         String ruta = SolicitudSortMapper.traducir("campoInexistente");
