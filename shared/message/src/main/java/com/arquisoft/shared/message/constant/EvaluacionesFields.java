@@ -49,4 +49,14 @@ public final class EvaluacionesFields {
         public static final String ESTUDIANTE = "estudiante";
         public static final String OCURRIDO_EN = "ocurridoEn";
     }
+
+    public static final class ItemCuantitativoJurado {
+
+        private ItemCuantitativoJurado() {}
+
+        public static final String NOMBRE = "nombre";
+        public static final String DESCRIPCION = "descripcion";
+        public static final String CATEGORIA = "categoria";
+        public static final String VALOR = "valor";
+    }
 }

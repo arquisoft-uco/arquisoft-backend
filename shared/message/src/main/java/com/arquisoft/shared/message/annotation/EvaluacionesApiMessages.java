@@ -66,4 +66,20 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_422 =
                 "La evaluación de jurado no existe o no pertenece al estudiante autenticado";
     }
+
+    public static final class ItemCuantitativoJurado {
+
+        private ItemCuantitativoJurado() {}
+
+        public static final String TAG_NAME = "Ítems cuantitativos del jurado";
+        public static final String TAG_DESCRIPTION =
+                "Administración de los ítems cuantitativos usados por el jurado";
+        public static final String REGISTRAR_SUMMARY = "Registrar ítem cuantitativo";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra un nuevo ítem cuantitativo disponible para el jurado";
+        public static final String REGISTRAR_RESP_201 = "Ítem cuantitativo registrado";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La categoría no existe o el nombre ya está registrado en ella";
+    }
 }
