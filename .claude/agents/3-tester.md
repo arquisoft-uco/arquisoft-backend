@@ -134,6 +134,30 @@ para cortar temprano sin lanzar — la idempotencia de un consumidor AMQP —, e
 `verify(envioOutputPort, never()).enviar(any())`, no una excepción. Ver
 `notificaciones/.../EnviarNotificacionUseCaseTest.noDebeEnviarNiPersistir_cuandoElEventoYaFueProcesado`.
 
+**El test del `UseCase` es donde el presupuesto de I/O se vuelve observable, así que assértalo.**
+Cada `Finder` es un `@Mock`: el número de viajes a la BD está a la vista y no hace falta un perfilador
+para contarlo.
+
+- **Un `verify(finder, times(1)).obtener(...)` por `Finder`** en el camino feliz. Es lo que convierte
+  el presupuesto de la pregunta 8c del plan en algo que el build defiende. Son asserts **dentro del
+  test de flujo exitoso que ya escribes** — no tests nuevos, por la regla de consolidación: mismo
+  Act, otro Assert.
+- **Contra el N+1, siembra la colección con al menos 3 elementos** y verifica **una sola** llamada.
+  Con un elemento el test no distingue 1 de N y el defecto pasa verde.
+- **Una cascada condicional se prueba por su camino corto:** `verify(segundoFinder,
+  never()).obtener(any())` cuando el primero decidió que no hacía falta. Sin ese test, "es
+  condicional" es una afirmación del plan que nada sostiene — y era justo la razón por la que se
+  permitió la cascada.
+
+Y la trampa a evitar: **no cimentes una cascada con el test.** Si ves en Arrange que estás stubeando
+un `Finder` para alimentar la entrada de otro (`when(idFichaPerfilPorItemFinder.obtener(item))
+.thenReturn(idFicha); when(fichaPerfilPorIdFinder.obtener(idFicha))...`), eso es el `Finder`
+dependiente del plan mirado desde el test. Si el plan no justifica la cascada (lookup condicional ·
+features o contextos distintos · el id intermedio lo necesita una `Rule`), **repórtalo antes de
+escribir el test**, igual que una violación de capas — no lo arregles, que no tocas producción. Un
+`inOrder(finderA, finderB)` sobre una cascada que debía colapsar la deja atornillada: al corregir el
+`OutputPort` después, el test se pone rojo y parece que la mejora rompió algo.
+
 **Cuando el use case devuelve una interfaz sellada**, cada test cubre una variante y lo asserta con
 `assertThat(resultado).isInstanceOf(X.Variante.class)` —o `isInstanceOfSatisfying` si además hay que
 mirar dentro—, no con un `instanceof` en un `if`. Y si un `Consumer` hace `switch` sobre ese
@@ -306,4 +330,8 @@ antes de tocar cualquier archivo de producción). Nunca decidas por tu cuenta cu
     `var idFicha = UtilUUID.generarNuevoUUID();`). Solo se exceptúa donde `var` no compila o cambia
     la semántica (diamante sin tipar, array por llaves, lambda o referencia a método, inicializador
     `null`); los campos `@Mock`/`@InjectMocks` y las constantes de la clase van explícitos.
-12. Al finalizar, actualiza la fila `Tests` y sugiere `@4a-validator-analyze` con el comando exacto.
+12. El test del `UseCase` asserta el **presupuesto de I/O**: `times(1)` por `Finder`, colección
+    sembrada con ≥3 elementos y una sola llamada (N+1), `never()` en el camino corto de una cascada
+    condicional. Un `Finder` que en Arrange alimenta a otro sin justificación en el plan **se reporta,
+    no se testea** — y nunca se atornilla con un `inOrder`.
+13. Al finalizar, actualiza la fila `Tests` y sugiere `@4a-validator-analyze` con el comando exacto.

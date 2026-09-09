@@ -144,9 +144,40 @@ omites).
   Un `Finder` es **una sola llamada a un `OutputPort`**: no encadena `Finder`s, no compara ni deriva
   (`a.equals(b)`, `count > 0`), no hace lookups en varios pasos. Al `Validator` le llega el dato
   crudo del `Finder` (agregado, `UUID`s, conteo) — **nunca un veredicto ya calculado** en el
-  `UseCase`; la comparación de identidad/pertenencia vive en la `Rule`. Y si un método del
-  `OutputPort` trae lo que se necesita, no se usan dos `Finder`s en cascada (lista de `UUID` → fetch
-  por elemento): una proyección con `JOIN`.
+  `UseCase`; la comparación de identidad/pertenencia vive en la `Rule`.
+- **Cada `Finder` es un viaje a la base de datos: cuéntalos antes de escribir el `UseCase`.** La
+  señal a cazar es el **`Finder` dependiente** — aquel cuya entrada es la salida de otro. Casi
+  siempre significa que falta un método en el `OutputPort` que navegue la relación de una vez:
+
+  ```java
+  // ❌ dos viajes: el primero solo existe para alimentar al segundo
+  var idFichaPerfil = idFichaPerfilPorItemFinder.obtener(entrada.getItem());
+  var fichaPerfil = fichaPerfilPorIdFinder.obtener(idFichaPerfil);
+
+  // ✅ un viaje: FichaPerfilOutputPort.obtenerPorItem(UUID item), con JOIN en el adaptador
+  var fichaPerfil = fichaPerfilPorItemFinder.obtener(entrada.getItem());
+  ```
+
+  La variante N+1 es la misma enfermedad y es peor: un `Finder` devuelve una lista de `UUID` y otro
+  se llama **por elemento**. Se colapsa igual, en una proyección con `JOIN`.
+
+  Esto **no** contradice "un `Finder` es una sola llamada a un `OutputPort`": el `JOIN` vive en la
+  consulta del adaptador, no en el `Finder`. Colapsar la cascada no engorda la capa de aplicación —
+  la adelgaza.
+
+  **No es un límite de cantidad, es un límite de cascadas.** Tres `Finder`s independientes (cada uno
+  con su propia entrada, sacada del `Command` o del domain de acción) están bien y no hay nada que
+  colapsar: no se pueden fusionar consultas a agregados que no se relacionan.
+
+  Y **hay cascadas legítimas** — no las fuerces a colapsar:
+  - El segundo lookup es **condicional** (solo se ejecuta si el primero decide que hace falta). Ahí
+    la cascada *ahorra* viajes en el camino corto; fusionarla los añadiría.
+  - Los dos `OutputPort` son de **features o contextos distintos**. Entre contextos no hay `JOIN`
+    posible: son bases de datos separadas.
+  - El identificador intermedio **es en sí un dato que la `Rule` necesita**, no un peldaño.
+
+  Si el plan declara la cascada y ves que colapsa, **párate y repórtalo antes de escribirla**: el
+  método del `OutputPort` lo decide el plan, no lo inventes sobre la marcha.
 - La existencia de un domain de **otra feature** se consulta con el `Finder` de esa feature sobre
   su `OutputPort` de `command/` — nunca creando un `query/` para eso.
 - Si el plan declara eventos, el `UseCase` inyecta la **interfaz** `EventPublisher`

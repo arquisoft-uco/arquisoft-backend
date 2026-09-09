@@ -156,6 +156,29 @@ paquete `query/` existe únicamente si hay una lectura real detrás de un `prima
 exacto: `AsesorFichaExisteFinder` → `AsesorFichaOutputPort.existePorId(...)`, consumido por
 `RegistrarFichaPerfilUseCaseImpl`. Un solo puerto, N consumidores.
 
+**8c. ¿Cuántos viajes a la base de datos cuesta el comando?** Enumera en el plan **cada `Finder` con
+su método del `OutputPort`** — la lista es el presupuesto de I/O del use case, y planificarla es
+justo lo que evita descubrirla al implementar. Regla: **un `Finder` cuya entrada sea la salida de
+otro es una cascada, y una cascada se colapsa en un método del `OutputPort` que navegue la
+relación.** El caso que más aparece:
+
+| En vez de | Declara |
+|---|---|
+| `IdFichaPerfilPorItemFinder` → `FichaPerfilPorIdFinder` (2 viajes; el primero solo alimenta al segundo) | `FichaPerfilPorItemFinder` → `FichaPerfilOutputPort.obtenerPorItem(UUID item)`, con `JOIN` en el adaptador (1 viaje) |
+| Un `Finder` que devuelve `List<UUID>` + otro llamado por elemento (N+1) | Una proyección con `JOIN` que traiga todo en una consulta |
+
+El `JOIN` vive en la consulta del adaptador, así que colapsar **no** rompe "un `Finder` es una sola
+llamada a un `OutputPort`".
+
+No es un límite de cantidad: varios `Finder`s **independientes** (cada uno con su entrada propia) son
+correctos y no se fusionan. Y hay cascadas que **sí** se justifican — decláralas con su razón en una
+línea, para que el implementador no intente colapsarlas:
+
+- el segundo lookup es **condicional** y el camino corto se ahorra el viaje;
+- los dos `OutputPort` son de **features o contextos distintos** (entre contextos no hay `JOIN`: son
+  bases separadas);
+- el identificador intermedio **es un dato que la `Rule` necesita**, no un peldaño.
+
 **9. ¿Habla con un sistema externo** más allá de PostgreSQL/RabbitMQ (Keycloak, SMTP, MinIO, HTTP
 externo)? Si sí: puerto en `application/{feature}/command/secondaryport/` + adaptador en
 `infrastructure/{feature}/command/secondaryadapter/{tecnologia}/` — ninguna lógica de negocio en
@@ -220,6 +243,19 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 **El título, la Metadata y las secciones 1 a 3 salen de `.claude/templates/PLAN.md`.** Léela y
 copia ese bloque tal cual, sustituyendo los `{marcadores}` — no lo reescribas de memoria ni lo
 reordenes: `@4a-validator-analyze` lee esa cabecera para extraer contexto, tipo de use case y reglas.
+
+**El campo `Autor` de la Metadata sale de la configuración de git, no de una pregunta.** Resuélvelo
+tú antes de escribir el archivo:
+
+```bash
+git config user.name && git config user.email
+```
+
+Formato: `- **Autor:** Nombre Apellido <correo@dominio>`. Es quien está desarrollando la historia —
+el mismo que firmará los commits y aparecerá en el PR—, así que preguntarlo sería redundante y
+además abre la puerta a que el plan y el commit se atribuyan a personas distintas. Si `git config`
+no devuelve nada (repo sin identidad configurada), **entonces sí** pregunta, y dilo: es un repo mal
+configurado y el usuario querrá saberlo. Nunca lo dejes en `{Nombre}` ni inventes un valor.
 
 De la sección 4 en adelante el plan es condicional y su forma la decides tú con las respuestas de
 la FASE 3, así que **eso sí vive aquí**:
@@ -540,6 +576,7 @@ getters/setters ni métodos `private`.
 - [ ] `Interactor` dueño de `@Transactional` con qualifier explícito; `UseCase` sin transacción propia
 - [ ] Si el plan descompone en varios `UseCase`, **todos los pasos cuelgan del orquestador**, no de un hermano: `RegistrarFichaPerfil` → `AsignarEstadoInicial` **y** → `AsignarEstudiantes`, no `RegistrarFichaPerfil` → `AsignarEstadoInicial` → `AsignarEstudiantes`. Cada paso recibe el objeto de dominio más estrecho que lee
 - [ ] `OutputPort` habla `Entity`, nunca `Domain`; existencia de otra feature vía el `Finder` de esa feature
+- [ ] **Presupuesto de I/O declarado** (pregunta 8c): cada `Finder` con su método del `OutputPort`, y ningún `Finder` cuya entrada sea la salida de otro salvo cascada justificada en una línea (lookup condicional · features/contextos distintos · el id intermedio lo necesita una `Rule`). Un `{Entidad}PorIdFinder` alimentado por un `Id{Entidad}Por{Otro}Finder` se colapsa en `{Entidad}Por{Otro}Finder` + `obtenerPor{Otro}(...)` con `JOIN`
 - [ ] Excepciones nuevas extienden la base correcta (`DomainException`/`DomainValidationException`→422, `ApplicationException`→400, `InfrastructureException`→503) y viven en el `exception/` **del slice del feature en la capa de esa base** — nunca en un `exception/` a nivel de contexto, y una subclase nunca en distinta capa que su padre
 - [ ] Sin handler de contexto salvo colisión de nombres; si el plan lo declara, va en `infrastructure/handler/`, nunca en `exception/`
 - [ ] Identificadores en el body: `String`, validados en `Command.crear(...)` vía `ValidatorUUID`, nunca con anotación Jakarta
@@ -572,7 +609,9 @@ getters/setters ni métodos `private`.
 7. Si la HU toca más de un bounded context, una sección del plan por contexto afectado.
 8. Comunicación entre contextos = evento RabbitMQ, nunca dependencia directa.
 9. El plan es el contrato: debe bastar para implementar sin ambigüedades.
-10. **La respuesta del usuario gana sobre la plantilla, siempre.** La plantilla de FASE 4 es un
+10. `Autor` de la Metadata se resuelve con `git config user.name` / `user.email`, nunca preguntando
+    ni dejando el marcador `{Nombre}`.
+11. **La respuesta del usuario gana sobre la plantilla, siempre.** La plantilla de FASE 4 es un
     *máximo*, no un formulario a completar: describe todo lo que un plan **podría** llevar. Cada
     sección marcada "si aplica" o "SOLO si" que la respuesta descartó se **borra** — no se deja
     vacía, ni con "N/A", ni con una tabla de encabezados sin filas, ni "preparada para el futuro".

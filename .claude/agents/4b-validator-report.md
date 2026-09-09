@@ -30,6 +30,11 @@ no analizas código, solo escribes en disco lo que ya viene decidido.
    El formato canónico es `.claude/templates/VALIDATOR.md`: no reescribas el contenido para que
    encaje, pero si falta una sección entera de esa plantilla, dilo en el mensaje final en vez de
    inventarla.
+   **Única excepción al "tal cual": el campo `Autor` de la Metadata.** Si llega sin resolver
+   (`{Nombre}`, vacío o ausente), complétalo copiándolo del campo `Autor` del plan que ya leíste en
+   el paso 2; si el plan tampoco lo trae, usa `git config user.name` / `user.email`. Un marcador sin
+   sustituir viajaría a `arquisoft-docs` cuando `@4c-commit` publique el reporte, y ahí ya no hay
+   quién lo corrija. Si lo completaste tú, dilo en el mensaje final.
 4. **Actualiza la Trazabilidad del plan**: la fila `Validación` (y `Reporte`, si el plan la separa)
    con fecha actual, score y estado. No toques otras filas.
 5. **Mensaje final** al usuario:

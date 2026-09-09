@@ -216,7 +216,7 @@ excepción o mapear a `Entity`.
 | `Finder` que no extiende `Finder<T, R>` de `shared:application` (`com.arquisoft.shared.finder`), o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
 | `FinderImpl` que encadena otro `Finder`, compara/deriva (`a.equals(b)`, `count > 0`) o hace lookups en varios pasos — un `Finder` es una sola llamada a un `OutputPort`. Combinar fuentes lo hace el `UseCase`; decidir sobre lo consultado es una `Rule` | ❌ |
 | El `UseCase` calcula un veredicto (`boolean esPropietario = ficha.getAsesorFicha().equals(solicitante)`) y se lo pasa al `Validator` — al `Validator` va el dato crudo del `Finder` (el agregado, los `UUID`, el conteo); la comparación de identidad/pertenencia vive en la `Rule` | ❌ |
-| Dos `Finder`s donde el primero alimenta al segundo (lista de `UUID` → luego un fetch por elemento) pudiendo traerse todo con una proyección `JOIN` en el `OutputPort` | ⚠️ |
+| **`Finder` dependiente**: uno cuya entrada es la salida de otro, pudiendo colapsarse en un método del `OutputPort` que navegue la relación. Las dos formas — el peldaño (`IdFichaPerfilPorItemFinder` → `FichaPerfilPorIdFinder`, que es `FichaPerfilOutputPort.obtenerPorItem(...)` con `JOIN`) y el N+1 (lista de `UUID` → fetch por elemento). Cada `Finder` es un viaje a la BD. **No** es hallazgo si el plan justifica la cascada: lookup condicional que ahorra el viaje en el camino corto, `OutputPort` de features/contextos distintos (entre contextos no hay `JOIN`), o el id intermedio lo necesita una `Rule`. Tampoco lo es tener varios `Finder`s **independientes**: el límite es a las cascadas, no a la cantidad | ⚠️ |
 | `Validator` **vacío** o que no orquesta ninguna `Rule`, creado solo porque la plantilla lo listaba. Un comando sin restricciones de conjunto no lleva `Validator`: ver `notificaciones/.../EnviarNotificacionUseCaseImpl` | ❌ |
 | Clase con sufijo `Validator` que en realidad inyecta un `OutputPort` y devuelve un `boolean` — eso es un `Finder`, no un `Validator`; renómbralo y muévelo a `command/finder/` | ❌ |
 | `{Entidad}OutputPort` declara un método sobre **otro** domain (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |
@@ -431,6 +431,12 @@ Cualquier error de compilación es siempre bloqueante — incluye el mensaje exa
 esas secciones, en ese orden. Dos cosas que la plantilla fija y conviene tener presentes al
 llenarla:
 
+- **`Autor` se copia literal del campo `Autor` de la Metadata del plan**, que ya leíste en la FASE 1.
+  Copiarlo en vez de deducirlo es lo que garantiza que el plan y el reporte que `@4c-commit` publica
+  juntos en `arquisoft-docs` atribuyan la historia a la misma persona. Si el plan no lo trae (planes
+  anteriores a que el campo existiera), resuélvelo con `git config user.name` / `user.email` y
+  adviértelo en el mensaje que acompaña al reporte — el plan viejo se queda sin ese campo y conviene
+  que se sepa. Nunca lo dejes en `{Nombre}` ni lo preguntes.
 - Una sección sin hallazgos se deja con "Ninguno" — **no se borra**. Una sección ausente no se
   distingue de un olvido, y `@4b-validator-report` la persiste tal cual la escribas.
 - En "Datos para la entrega", la lista de archivos es **solo código, tests, migraciones y
