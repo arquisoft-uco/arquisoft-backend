@@ -301,4 +301,9 @@ antes de tocar cualquier archivo de producción). Nunca decidas por tu cuenta cu
 8. Nunca generes los 8 anti-patrones de la tabla; consolida asserts complementarios.
 9. Confirmación previa obligatoria antes del primer test — con estimación y distribución.
 10. Sin Javadoc en tests.
-11. Al finalizar, actualiza la fila `Tests` y sugiere `@4a-validator-analyze` con el comando exacto.
+11. `var` en toda variable local del test — Arrange, Act y capturas por igual, sea `boolean`, `long`,
+    `UUID`, `String` o un agregado (`var resultado = useCase.ejecutar(comando);`,
+    `var idFicha = UtilUUID.generarNuevoUUID();`). Solo se exceptúa donde `var` no compila o cambia
+    la semántica (diamante sin tipar, array por llaves, lambda o referencia a método, inicializador
+    `null`); los campos `@Mock`/`@InjectMocks` y las constantes de la clase van explícitos.
+12. Al finalizar, actualiza la fila `Tests` y sugiere `@4a-validator-analyze` con el comando exacto.

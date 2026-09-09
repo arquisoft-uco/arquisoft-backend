@@ -111,7 +111,7 @@ omites).
   AMQP es el ejemplo, y la forma exacta es la de `EnviarNotificacionUseCaseImpl`:
 
   ```java
-  boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada);
+  var yaProcesada = notificacionProcesadaFinder.obtener(entrada);
   logger.debug(NotificacionKey.LOG_VERIFICACION_PREVIA,
           entrada.getIdEvento(), yaProcesada);
 
@@ -136,9 +136,11 @@ omites).
 - Todo el I/O del comando vive en el `UseCase`: los `Finder`s traen el estado, se desenvuelve el
   `Optional` ahí (centinela `VACIO` para domains, valor + `boolean` para escalares), se valida, se
   mapea `Domain → Entity` y se persiste.
-  El resultado de un `{X}ExisteFinder` se declara **`boolean` explícito, nunca `var`**: el contrato
-  es `Finder<T, Boolean>` porque un genérico no admite primitivos, y con `var` ese envuelto llega
-  hasta el `validar(..., boolean existe)` desempaquetándose en silencio.
+  El resultado de un `{X}ExisteFinder` se recibe con **`var`, como todo local** (`var itemExiste =
+  itemExisteFinder.obtener(item);`). El contrato es `Finder<T, Boolean>` porque un genérico no admite
+  primitivos, y eso no se "arregla": lo que hace seguro el unboxing en `validar(..., boolean existe)`
+  es que el `existePor...` del `OutputPort` devuelve `boolean` primitivo y el `Finder` nunca devuelve
+  `null`.
   Un `Finder` es **una sola llamada a un `OutputPort`**: no encadena `Finder`s, no compara ni deriva
   (`a.equals(b)`, `count > 0`), no hace lookups en varios pasos. Al `Validator` le llega el dato
   crudo del `Finder` (agregado, `UUID`s, conteo) — **nunca un veredicto ya calculado** en el
@@ -273,9 +275,14 @@ equivocan generando código y no se ven leyendo una regla:
   escribas. Una ausencia declarada es una decisión, no un hueco que te toque llenar.
 - **Qualifier explícito siempre:** `@Transactional(transactionManager = "{contexto}TransactionManager")`.
   `usuariosTransactionManager` es `@Primary` y enlaza en silencio si lo omites.
-- **`boolean` explícito, nunca `var`,** para recibir el resultado de un `{X}ExisteFinder`: con `var`
-  el `Boolean` del genérico llega vivo hasta `validar(..., boolean existe)` y el unboxing pasa
-  callado.
+- **`var` en toda variable local, sin excepción por tipo.** Un `long`, un `int`, un `boolean`, un
+  `Boolean`, un `UUID`, un `String`, un `LocalDateTime` y un `Optional<X>` se declaran igual que un
+  agregado — también el resultado de un `{X}ExisteFinder`:
+  `var cantidadRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());`, nunca
+  `long cantidadRevisiones = ...`. Es regla de forma, no un juicio por línea. Solo se sale de `var`
+  donde no compila o cambia la semántica (diamante sin tipar, array por llaves, lambda o referencia a
+  método, inicializador `null`), y solo aplica a **locales**: campos, parámetros, retornos y
+  componentes de `record` van explícitos.
 - **Al `AppLogger` se le pasa la `ClaveMensaje`, nunca el texto resuelto.**
   `logger.debug(FichaPerfilKey.LOG_X, a, b)`, no `logger.debug(Mensajes.obtener(...), a, b)`: la
   segunda compila, pero es un `GET` a Redis en cada llamada que Java evalúa aunque el nivel esté

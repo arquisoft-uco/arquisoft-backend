@@ -37,9 +37,13 @@ Registra los archivos consultados para el Metadata del plan.
 
 ## FASE 2 — Localizar la historia y el contexto
 
-1. **HU** vive en `artefactos/estrategicos/propuestas-hu/historias_usuario_priorizadas.md`
-   (Actor, Objeto de Dominio, Comando). **HT** vive en `docs/stories/HT-XXX.*.story.md`. No las
-   confundas.
+1. **HU** vive en `artefactos/estrategicos/propuestas-hu/priorizacion/historias_usuario_priorizadas.md`
+   (Actor, Objeto de Dominio, Comando) — la carpeta se reestructuró el 2026-09-08 y la ruta plana
+   anterior da 404. HU278–HU280 no están ahí: solo en `propuestas-hu/backlog/fase-3-consolidacion.md`.
+   Complementa con el backlog de su fase (`propuestas-hu/backlog/fase-{1,2,3}-*.md`) para fase, flujo
+   y prioridad de ejecución — es derivado, ante discrepancia gana el priorizado, y la vieja
+   priorización por Release/Sprint está obsoleta: no la cites. Detalle en `gh-docs-reader`.
+   **HT** vive en `docs/stories/HT-XXX.*.story.md`. No las confundas.
 2. Cruza con el Event Storming del contexto (`{Contexto} - Event Storming.md`): políticas
    (`POL-XX`), eventos generados, aspectos por solucionar, comandos/eventos adyacentes.
 3. Identifica el bounded context con la tabla de mapeo de `gh-docs-reader`.
