@@ -155,6 +155,18 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_RESP_200 = "Lista de estudiantes vinculados (vacía si no aplica)";
         public static final String CONSULTAR_RESP_400 = "El identificador de la ficha de perfil no es un UUID válido";
         public static final String CONSULTAR_RESP_403 = "Sin el permiso para consultar estudiantes como coordinador";
+        public static final String CONSULTAR_COMPANEROS_SUMMARY =
+                "Consultar compañeros estudiantes vinculados a la ficha de perfil";
+        public static final String CONSULTAR_COMPANEROS_DESCRIPTION =
+                "Permite al estudiante autenticado consultar los demás estudiantes vinculados a una ficha de perfil "
+                        + "a la que él mismo pertenece, sin incluirse a sí mismo. Si no está vinculado a la ficha, "
+                        + "o la ficha no existe, devuelve una lista vacía.";
+        public static final String CONSULTAR_COMPANEROS_RESP_200 =
+                "Lista de compañeros vinculados (vacía si no aplica)";
+        public static final String CONSULTAR_COMPANEROS_RESP_400 =
+                "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_COMPANEROS_RESP_403 =
+                "Sin el permiso para consultar compañeros como estudiante";
     }
 
     public static final class EstadoFichaPerfil {
