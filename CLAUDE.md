@@ -70,9 +70,11 @@ de módulos de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `c
 
 ### Bounded Contexts
 
-Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones` y `evaluaciones`. Los otros
-cuatro (`proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje: solo su
-`{Contexto}DataSourceConfig`.
+Con código hoy: `seguridad`, `fichas`, `notificaciones` y `evaluaciones`. Los otros cinco
+(`usuarios`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje: solo
+su `{Contexto}DataSourceConfig` (más, en `usuarios`, la migración de `event_publication` y
+`rutas-usuarios.yml`). El flujo `CrearUsuario` que vivía en `usuarios` se retiró; su HU de
+"registrar usuario" está por generarse.
 
 | Context | Database |
 |---------|----------|
@@ -87,8 +89,8 @@ cuatro (`proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`) son 
 | `evaluaciones` | `evaluaciones` |
 
 **Contexto de referencia: `fichas`** — el único completo (escritura, consulta, eventos, consumidor).
-Cada uno de los otros cuatro aporta algo distinto y tiene un límite conocido; ver
-`arquisoft-arquitectura`, que los enumera con su límite exacto.
+`seguridad`, `notificaciones` y `evaluaciones` aportan cada uno algo distinto y tienen un límite
+conocido; ver `arquisoft-arquitectura`, que los enumera con su límite exacto.
 
 **Son bases de datos separadas, no schemas.** `init-db.sql` hace un `CREATE DATABASE` por contexto y
 cada `{Contexto}DataSourceConfig` apunta su propio `DataSource`, `EntityManagerFactory`,
@@ -459,9 +461,7 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 
 | Qué | Dónde | Convención que rompe |
 |---|---|---|
-| `CrearUsuarioRequestDTO` con anotaciones Jakarta + `toCommand()` | `usuarios/…/web/dto/` | Debería ser un `record` desnudo + `CrearUsuarioRequestMapper` |
 | `EstadoEvaluacionCommandRepository` | `fichas/…/estadoevaluacion/…/repository/` | Código muerto: ningún `OutputPort`/`OutputAdapter` lo consume |
-| `UsuarioCommandOutputAdapter` no persiste | `usuarios/…/repository/` | **Deliberado**, no una tarea pendiente: `usuarios` es contexto de ejemplo. Consecuencia: `existePorEmail` siempre da `false` y `UsuarioEmailUnicoRule` nunca dispara |
 | `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub: por eso no tiene `Interactor` ni `@Transactional` y el `Consumer` inyecta el `UseCase` |
 | `UsuarioCreadoConsumer` en `amqp/` plano | `fichas/…/usuario/…/amqp/` | Le faltan los dos segmentos `{productor}/{entidad}/`. En vías de retirarse |
 | Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/auth/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |

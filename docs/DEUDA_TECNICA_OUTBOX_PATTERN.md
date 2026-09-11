@@ -3,8 +3,7 @@
 > **Estado: RESUELTA** — Implementado con Spring Modulith 2.0.0 en la rama
 > `feature/spring-modulith-outbox-pattern`. Ver sección [Solución implementada](#solución-implementada).
 
-**Contexto afectado:** `usuarios`  
-**Clase afectada:** `CrearUsuarioUseCaseImpl`  
+**Contexto afectado:** `usuarios` (histórico — el flujo `CrearUsuario` y su `CrearUsuarioUseCaseImpl` se retiraron después; el patrón vive hoy en `fichas`)  
 **Prioridad:** ~~Media~~ → Resuelta
 
 ---
@@ -37,11 +36,11 @@ Se integró **Spring Modulith 2.0.0** con su Event Publication Registry (Outbox 
 
 ### Flujo actual
 
-El ejemplo usa `fichas` y no `usuarios`, que es donde nació esta deuda: el
-`UsuarioCommandOutputAdapter` quedó inerte a propósito (ver *Desviaciones conocidas* en
-`CLAUDE.md`), así que en `usuarios` ya no hay escritura del aggregate con la que el `INSERT` del
-outbox tenga que ser atómico. El evento y su fila en `event_publication` sí se siguen produciendo
-allí; lo que dejó de ilustrar es el punto de esta deuda. `fichas` sí lo hace.
+El ejemplo usa `fichas` y no `usuarios`, que es donde nació esta deuda: el flujo `CrearUsuario` se
+retiró por completo de `usuarios` (a la espera de la HU "registrar usuario"), así que allí ya no
+hay ni escritura del aggregate ni emisión de evento. La tabla `event_publication` de `usuarios`
+permanece (migración `V20260619224326`) lista para cuando el contexto vuelva a publicar. `fichas`
+es hoy el único que ejercita el patrón.
 
 ```
 [CambiarAsesorFichaInteractorImpl.ejecutar] — @Transactional(transactionManager = "fichasTransactionManager")
@@ -72,7 +71,7 @@ allí; lo que dejó de ilustrar es el punto de esta deuda. `fichas` sí lo hace.
 | `ModulithAmqpExternalizationConfig` | `shared/amqp` | Routing: `DomainEvent` → exchange `arquisoft.events` con routing key del `temaEvento` |
 | `ContextAwareEventPublicationRepository` | `src/main/java/com/arquisoft/config/outbox/` | Auto-detecta al arranque qué `DataSource` de contexto tiene la tabla `event_publication` y enruta el `INSERT` a la transacción activa de ese contexto |
 | `FailedEventRetryConfig` | `src/main/config` | Reintenta eventos `FAILED` periódicamente sin reinicio |
-| `event_publication` (tabla) | PostgreSQL, **por contexto** | **No hay una BD centralizada.** Cada contexto que publica eventos (hoy: `usuarios`, `fichas`) tiene su propia tabla `event_publication` en su propia BD — ver `V20260619224326__crear_event_publication.sql` (`usuarios`) y `V20260724005915__crear_event_publication.sql` (`fichas`) |
+| `event_publication` (tabla) | PostgreSQL, **por contexto** | **No hay una BD centralizada.** Cada contexto con `event_publication` tiene su propia tabla en su propia BD — hoy `V20260619224326__crear_event_publication.sql` (`usuarios`, sin publicador activo aún) y `V20260724005915__crear_event_publication.sql` (`fichas`, el que ejercita el patrón) |
 
 ### Tabla `event_publication` (schema v2)
 

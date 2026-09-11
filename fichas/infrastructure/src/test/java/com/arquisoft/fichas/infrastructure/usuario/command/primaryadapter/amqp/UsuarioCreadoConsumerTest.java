@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.usuario.command.primaryadapter.amqp;
 
-import com.arquisoft.fichas.application.usuario.command.primaryport.model.RegistrarUsuarioCommand;
-import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
+import com.arquisoft.fichas.application.usuario.command.primaryport.model.RegistrarUsuarioEspejoCommand;
+import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioEspejoUseCase;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
 import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.MdcContextoDiagnosticoOutputAdapter;
 import com.rabbitmq.client.Channel;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.verify;
 class UsuarioCreadoConsumerTest {
 
     @Mock
-    private RegistrarUsuarioUseCase registrarUsuarioUseCase;
+    private RegistrarUsuarioEspejoUseCase registrarUsuarioEspejoUseCase;
 
     @Mock
     private Channel channel;
@@ -38,7 +38,7 @@ class UsuarioCreadoConsumerTest {
     void setUp() {
         ObjectMapper objectMapper = new ObjectMapper();
         var gestorTraza = new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false);
-        adapter = new UsuarioCreadoConsumer(registrarUsuarioUseCase, objectMapper,
+        adapter = new UsuarioCreadoConsumer(registrarUsuarioEspejoUseCase, objectMapper,
                 org.mockito.Mockito.mock(com.arquisoft.shared.logger.AppLogger.class),
                 gestorTraza);
     }
@@ -79,10 +79,10 @@ class UsuarioCreadoConsumerTest {
         adapter.onUsuarioCreado(message, channel);
 
         // Assert
-        ArgumentCaptor<RegistrarUsuarioCommand> commandCaptor = ArgumentCaptor.forClass(RegistrarUsuarioCommand.class);
-        verify(registrarUsuarioUseCase).ejecutar(commandCaptor.capture());
+        ArgumentCaptor<RegistrarUsuarioEspejoCommand> commandCaptor = ArgumentCaptor.forClass(RegistrarUsuarioEspejoCommand.class);
+        verify(registrarUsuarioEspejoUseCase).ejecutar(commandCaptor.capture());
 
-        RegistrarUsuarioCommand command = commandCaptor.getValue();
+        RegistrarUsuarioEspejoCommand command = commandCaptor.getValue();
         assertThat(command.usuarioId()).isEqualTo(usuarioId);
         assertThat(command.email()).isEqualTo(email);
         assertThat(command.rol()).isEqualTo(rol);
@@ -116,7 +116,7 @@ class UsuarioCreadoConsumerTest {
                 .build();
 
         doThrow(new RuntimeException("Email duplicado"))
-                .when(registrarUsuarioUseCase)
+                .when(registrarUsuarioEspejoUseCase)
                 .ejecutar(org.mockito.ArgumentMatchers.any());
 
         // Act
@@ -132,7 +132,7 @@ class UsuarioCreadoConsumerTest {
         Message message = mensajeValido(3L, false);
 
         doThrow(new QueryTimeoutException("Base de datos no disponible"))
-                .when(registrarUsuarioUseCase)
+                .when(registrarUsuarioEspejoUseCase)
                 .ejecutar(org.mockito.ArgumentMatchers.any());
 
         // Act
@@ -148,7 +148,7 @@ class UsuarioCreadoConsumerTest {
         Message message = mensajeValido(4L, true);
 
         doThrow(new QueryTimeoutException("Base de datos no disponible"))
-                .when(registrarUsuarioUseCase)
+                .when(registrarUsuarioEspejoUseCase)
                 .ejecutar(org.mockito.ArgumentMatchers.any());
 
         // Act
@@ -164,7 +164,7 @@ class UsuarioCreadoConsumerTest {
         Message message = mensajeValido(5L, false);
 
         doThrow(new IllegalArgumentException("Rol desconocido"))
-                .when(registrarUsuarioUseCase)
+                .when(registrarUsuarioEspejoUseCase)
                 .ejecutar(org.mockito.ArgumentMatchers.any());
 
         // Act

@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.infrastructure.usuario.command.primaryadapter.amqp;
 
 import com.arquisoft.shared.message.key.fichas.UsuarioEspejoKey;
-import com.arquisoft.fichas.application.usuario.command.primaryport.model.RegistrarUsuarioCommand;
-import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioUseCase;
+import com.arquisoft.fichas.application.usuario.command.primaryport.model.RegistrarUsuarioEspejoCommand;
+import com.arquisoft.fichas.application.usuario.command.usecase.RegistrarUsuarioEspejoUseCase;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
@@ -22,16 +22,16 @@ import java.io.IOException;
 @Component
 public class UsuarioCreadoConsumer extends AbstractEventConsumer {
 
-    private final RegistrarUsuarioUseCase registrarUsuarioUseCase;
+    private final RegistrarUsuarioEspejoUseCase registrarUsuarioEspejoUseCase;
     private final AppLogger logger;
 
     public UsuarioCreadoConsumer(
-            RegistrarUsuarioUseCase registrarUsuarioUseCase,
+            RegistrarUsuarioEspejoUseCase registrarUsuarioEspejoUseCase,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
         super(objectMapper, gestorTraza);
-        this.registrarUsuarioUseCase = registrarUsuarioUseCase;
+        this.registrarUsuarioEspejoUseCase = registrarUsuarioEspejoUseCase;
         this.logger = logger;
     }
 
@@ -43,7 +43,7 @@ public class UsuarioCreadoConsumer extends AbstractEventConsumer {
             logger.info(UsuarioEspejoKey.LOG_USUARIO_CREADO_RECIBIDO,
                     payload.usuarioId(), UtilTexto.enmascararCorreo(payload.email()), payload.rol());
 
-            registrarUsuarioUseCase.ejecutar(new RegistrarUsuarioCommand(
+            registrarUsuarioEspejoUseCase.ejecutar(new RegistrarUsuarioEspejoCommand(
                     UtilUUID.generarUUIDDesdeTexto(payload.usuarioId()),
                     payload.email(),
                     payload.rol()));
