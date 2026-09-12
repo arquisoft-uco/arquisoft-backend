@@ -53,6 +53,48 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_ENCONTRADA";
         public static final String EVALUACION_JURADO_NO_PERTENECE =
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_PERTENECE";
+        public static final String EVALUACION_JURADO_NO_PERTENECE_JURADO =
+                "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_PERTENECE_JURADO";
+        public static final String ITEM_INVALIDO =
+                "EVALUACION_CUALITATIVA_JURADO_ITEM_INVALIDO";
+        public static final String CRITERIO_INVALIDO =
+                "EVALUACION_CUALITATIVA_JURADO_CRITERIO_INVALIDO";
+        public static final String ITEMS_NO_ENCONTRADOS =
+                "EVALUACION_CUALITATIVA_JURADO_ITEMS_NO_ENCONTRADOS";
+        public static final String CRITERIOS_NO_ENCONTRADOS =
+                "EVALUACION_CUALITATIVA_JURADO_CRITERIOS_NO_ENCONTRADOS";
+        public static final String ITEMS_YA_REGISTRADOS =
+                "EVALUACION_CUALITATIVA_JURADO_ITEMS_YA_REGISTRADOS";
+    }
+
+    public static final class RegistroEvaluacionesCualitativasJurado {
+
+        private RegistroEvaluacionesCualitativasJurado() {}
+
+        public static final String ACTOR_REQUERIDO = "REGISTRO_EVALUACIONES_CUALITATIVAS_ACTOR_REQUERIDO";
+        public static final String ACTOR_INVALIDO = "REGISTRO_EVALUACIONES_CUALITATIVAS_ACTOR_INVALIDO";
+        public static final String LOTE_REQUERIDO = "REGISTRO_EVALUACIONES_CUALITATIVAS_LOTE_REQUERIDO";
+        public static final String LOTE_VACIO = "REGISTRO_EVALUACIONES_CUALITATIVAS_LOTE_VACIO";
+        public static final String PAR_REQUERIDO = "REGISTRO_EVALUACIONES_CUALITATIVAS_PAR_REQUERIDO";
+        public static final String ITEMS_REPETIDOS = "REGISTRO_EVALUACIONES_CUALITATIVAS_ITEMS_REPETIDOS";
+        public static final String PADRES_DISTINTOS = "REGISTRO_EVALUACIONES_CUALITATIVAS_PADRES_DISTINTOS";
+    }
+
+    public static final class Evaluacion {
+
+        private Evaluacion() {}
+
+        public static final String EVALUACION_REQUERIDO = "EVALUACION_EVALUACION_REQUERIDO";
+        public static final String ESTADO_REQUERIDO = "EVALUACION_ESTADO_REQUERIDO";
+        public static final String ESTADO_FINALIZADA = "EVALUACION_ESTADO_FINALIZADA";
+        public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
+    }
+
+    public static final class ContactoUsuario {
+
+        private ContactoUsuario() {}
+
+        public static final String CONTACTOS_NO_DISPONIBLES = "CONTACTOS_EVALUACION_NO_DISPONIBLES";
     }
 
     public static final class EntregableProyectoAcceso {

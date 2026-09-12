@@ -3,6 +3,7 @@ package com.arquisoft.evaluaciones.application.proyectoestudianteacceso.command.
 import com.arquisoft.evaluaciones.application.proyectoestudianteacceso.command.secondaryport.entity.ProyectoEstudianteAccesoEntity;
 
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 public interface ProyectoEstudianteAccesoOutputPort {
@@ -10,4 +11,6 @@ public interface ProyectoEstudianteAccesoOutputPort {
     Optional<ProyectoEstudianteAccesoEntity> buscarPorProyectoYEstudiante(UUID proyecto, UUID estudiante);
 
     void guardar(ProyectoEstudianteAccesoEntity entity);
+
+    Set<UUID> obtenerEstudiantesConAccesoPorEntregable(UUID entregable);
 }

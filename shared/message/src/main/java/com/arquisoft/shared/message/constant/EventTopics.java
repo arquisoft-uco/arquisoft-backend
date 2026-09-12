@@ -28,6 +28,14 @@ public final class EventTopics {
         public static final String USUARIO_CREADO = "usuarios.usuario.creado";
     }
 
+    public static final class Evaluaciones {
+
+        private Evaluaciones() {}
+
+        public static final String EVALUACIONES_CUALITATIVAS_JURADO_REGISTRADAS =
+                "evaluaciones.evaluacion_cualitativa_jurado.registradas";
+    }
+
     public static final class Proyectos {
 
         private Proyectos() {}
