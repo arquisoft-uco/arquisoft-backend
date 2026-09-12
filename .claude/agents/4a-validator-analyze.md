@@ -53,6 +53,8 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Migración YA aplicada fue renombrada/editada en vez de agregar una nueva | ❌ |
 | `.locations(...)` del `{Contexto}DataSourceConfig` apunta a `classpath:db/migration/{contexto}`, y `baselineOnMigrate` está en `false` | ❌ si se cambió |
 | FK que referencia una tabla de la base de otro contexto en vez de una tabla réplica local poblada por eventos (patrón `asesor_ficha`/`estudiante` en `fichas`) | ❌ |
+| Clase, método o tabla del espejo con el segmento `Espejo`/`Replica`/`Mirror` en el nombre, en vez del nombre natural del concepto | ❌ |
+| Migración de tabla réplica sin el comentario de cabecera que nombra al contexto dueño (`-- Tabla réplica local de {entidad} (dueño: contexto {contexto})`) | ❌ |
 | Columnas de cada tabla ↔ atributos documentados en el plan (sin columnas inventadas) | ❌ |
 | `@Table` sin `schema` ni catálogo (la conexión ya apunta a la base del contexto); todo `@Column`/`@JoinColumn`/`@Id` con `name` explícito en snake_case, igual a la columna Flyway | ⚠️/❌ si no coincide |
 

@@ -20,4 +20,11 @@ public final class UsuariosFields {
         public static final String ESTADO = "estado";
         public static final String ROLES = "roles";
     }
+
+    public static final class Estudiante {
+
+        private Estudiante() {}
+
+        public static final String USUARIO = "usuario";
+    }
 }

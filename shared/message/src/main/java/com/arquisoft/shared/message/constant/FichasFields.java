@@ -58,6 +58,17 @@ public final class FichasFields {
         public static final String ESTUDIANTES = "estudiantes";
     }
 
+    public static final class Estudiante {
+
+        private Estudiante() {}
+
+        public static final String ID = "id";
+        public static final String IDENTIFICADOR = "identificador";
+        public static final String NOMBRE = "nombre";
+        public static final String EMAIL = "email";
+        public static final String OCURRIDO_EN = "ocurridoEn";
+    }
+
     public static final class EstadoFichaPerfil {
 
         private EstadoFichaPerfil() {}

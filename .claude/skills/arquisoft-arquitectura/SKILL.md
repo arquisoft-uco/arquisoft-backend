@@ -886,6 +886,19 @@ Todos los flujos entre contextos que existen hoy caen en la primera fila.
 
 **Lo que exige el espejo cuando llegue su HU** (decisión ya tomada, no volver a discutirla):
 
+0. **El nombre de la tabla es el natural del concepto en el contexto destino**
+   (`estudiante`, `asesor_ficha`) — sin prefijo ni sufijo que delate la replicación. Dentro de
+   `fichas` un estudiante es un estudiante; que su dueño viva en otra base es despliegue, no
+   lenguaje de negocio, y un sufijo mentiría si mañana cambia la estrategia. El calificador que sí
+   se admite es el de **rol** (`asesor_ficha` = el asesor *de una ficha*), igual que en los client
+   roles. Que la tabla no se escribe localmente se declara en el **comentario de cabecera de la
+   migración**, no en el nombre:
+   `-- Tabla réplica local de {entidad} (dueño: contexto {contexto})`
+   Lo mismo vale para **clases y métodos**: el espejo no lleva `Espejo`, `Replica` ni `Mirror` en
+   ningún nombre. Se replica un estudiante, no un "estudiante espejo" — pegar el mecanismo al
+   sustantivo inventa un concepto que el negocio no tiene. `EstudianteDomain`,
+   `AgregarEstudianteUseCase`, `EstudianteFinder`, `EstudianteOutputPort`.
+
 1. **`ocurridoEn` en el payload y en la tabla espejo.** Ya viaja en el JSON (`DomainEvent` lo asigna) y
    los payloads lo declaran. El espejo guarda el `ocurrido_en` del último evento aplicado y **descarta
    todo evento más viejo**: última escritura gana por tiempo del hecho, no por orden de llegada.

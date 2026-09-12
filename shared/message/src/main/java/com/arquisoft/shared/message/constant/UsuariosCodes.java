@@ -42,4 +42,12 @@ public final class UsuariosCodes {
 
         public static final String NO_ENCONTRADO = "ESTADO_USUARIO_NO_ENCONTRADO";
     }
+
+    public static final class Estudiante {
+
+        private Estudiante() {}
+
+        public static final String USUARIO_REQUERIDO = "ESTUDIANTE_USUARIO_REQUERIDO";
+        public static final String USUARIO_DUPLICADO = "ESTUDIANTE_USUARIO_DUPLICADO";
+    }
 }
