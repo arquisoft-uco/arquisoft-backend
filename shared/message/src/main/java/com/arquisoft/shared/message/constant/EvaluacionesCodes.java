@@ -139,5 +139,9 @@ public final class EvaluacionesCodes {
                 "ITEM_CUANTITATIVO_JURADO_CATEGORIA_NO_ENCONTRADA";
         public static final String NOMBRE_CATEGORIA_DUPLICADO =
                 "ITEM_CUANTITATIVO_JURADO_NOMBRE_CATEGORIA_DUPLICADO";
+        public static final String ITEM_ID_REQUERIDO =
+                "ITEM_CUANTITATIVO_JURADO_ID_REQUERIDO";
+        public static final String ITEM_NO_ENCONTRADO =
+                "ITEM_CUANTITATIVO_JURADO_NO_ENCONTRADO";
     }
 }

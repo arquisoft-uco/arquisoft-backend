@@ -12,4 +12,8 @@ public interface ItemCuantitativoJuradoOutputPort {
 
     boolean existePorNombreYCategoriaIgnorandoMayusculas(
             String nombre, UUID categoriaId);
+
+    boolean existePorId(UUID id);
+
+    void actualizarDescripcion(UUID id, String descripcion);
 }
