@@ -41,7 +41,7 @@ import com.arquisoft.shared.message.key.seguridad.RolKey;
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
-import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
+import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 
 
 /**
@@ -113,7 +113,7 @@ public final class ClavesCatalogo {
             SesionKey.class,
             TokenInvalidadoKey.class,
             TokenKey.class,
-            UsuarioKey.class
+            RegistrarUsuarioKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

@@ -157,6 +157,26 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_RESP_403 = "Sin el permiso para consultar estudiantes como coordinador";
     }
 
+    public static final class EstadoFichaPerfil {
+
+        private EstadoFichaPerfil() {}
+
+        public static final String TAG_NAME = "Estados Ficha Perfil";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de la trazabilidad de estados de una ficha de perfil";
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY =
+                "Consultar los estados de la ficha de perfil del estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Devuelve la lista de transiciones de estado registradas para la ficha de perfil indicada, "
+                        + "ordenada de la más reciente a la más antigua. El estudiante se toma del token.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
+                "Lista de estados de la ficha de perfil (vacía si no aplica)";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 =
+                "El identificador de la ficha de perfil no es un UUID válido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 =
+                "Sin el permiso para consultar los estados como estudiante";
+    }
+
     public static final class RevisionItem {
 
         private RevisionItem() {}

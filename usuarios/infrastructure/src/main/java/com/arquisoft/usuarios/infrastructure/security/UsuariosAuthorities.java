@@ -11,7 +11,7 @@ public final class UsuariosAuthorities {
         private Expresiones() {}
 
         private static final String HAS_AUTHORITY_INICIO = "hasAuthority('";
-        private static final String HAS_AUTHORITY_FIN    = "')";
+        private static final String HAS_AUTHORITY_FIN = "')";
 
         public static final String HAS_USUARIO_CREATE =
                 HAS_AUTHORITY_INICIO + USUARIO_CREATE + HAS_AUTHORITY_FIN;
