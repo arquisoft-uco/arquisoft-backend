@@ -64,6 +64,7 @@ public final class FichasFields {
 
         public static final String FICHA_PERFIL = "fichaPerfil";
         public static final String ESTADO_FICHA = "estadoFicha";
+        public static final String ESTUDIANTE = "estudiante";
     }
 
     public static final class EvaluacionFichaPerfil {
