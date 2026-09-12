@@ -150,6 +150,74 @@ class RegistrarUsuarioUseCaseImplTest {
     }
 
     @Test
+    void debeAgregarEstudiante_cuandoRolesContieneEstudiante() {
+        // Arrange
+        var registro = registro(List.of("estudiante"));
+        var identidadId = UUID.randomUUID();
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(identidadId);
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        InOrder orden = inOrder(usuarioOutputPort, agregarEstudianteUseCase);
+        orden.verify(usuarioOutputPort).guardar(any());
+        orden.verify(agregarEstudianteUseCase).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarEstudiante_cuandoRolesNoContieneEstudiante() {
+        // Arrange
+        var registro = registro(List.of("asesor"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarEstudianteUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarEstudiante_cuandoRolesEstaVacia() {
+        // Arrange
+        var registro = registro(List.of());
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarEstudianteUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarEstudiante_cuandoRolesContieneEstudianteYOtroRol() {
+        // Arrange
+        var registro = registro(List.of("estudiante", "asesor"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarEstudianteUseCase, times(1)).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarEstudiante_cuandoElRegistroDeUsuarioFalla() {
+        // Arrange
+        var registro = registro(List.of("estudiante"));
+        when(proveedorIdentidadOutputPort.registrar(any()))
+                .thenThrow(new InfrastructureException("no disponible", "USUARIO_IDP_NO_DISPONIBLE"));
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(registro))
+                .isInstanceOf(InfrastructureException.class);
+        verify(agregarEstudianteUseCase, never()).ejecutar(any());
+    }
+
+    @Test
     void debePropagarExcepcion_cuandoElProveedorDeIdentidadFalla() {
         // Arrange
         var registro = registro(List.of());
