@@ -11,7 +11,13 @@ public enum RespuestaKey implements ClaveMensaje {
     LOG_RESPONDIENDO("solicitudes.aplicacion.respuesta.log.respondiendo", 2),
     LOG_VERIFICACION_RESPUESTA("solicitudes.aplicacion.respuesta.log.verificacion-respuesta", 2),
     LOG_RESPONDIDA("solicitudes.aplicacion.respuesta.log.respondida", 1),
-    LOG_GUARDADA("solicitudes.infraestructura.respuesta.log.guardada", 1);
+    LOG_GUARDADA("solicitudes.infraestructura.respuesta.log.guardada", 1),
+    ERROR_RESPUESTA_NO_ENCONTRADA("solicitudes.dominio.respuesta.error.no-encontrada", 1),
+    ERROR_RESPUESTA_NO_EN_REVISION("solicitudes.dominio.respuesta.error.no-en-revision", 1),
+    LOG_ELIMINANDO("solicitudes.aplicacion.respuesta.log.eliminando", 2),
+    LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.respuesta.log.verificacion-eliminacion", 2),
+    LOG_ELIMINADA("solicitudes.aplicacion.respuesta.log.eliminada", 1),
+    LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.respuesta.log.eliminada", 1);
 
     private final String clave;
     private final int parametros;

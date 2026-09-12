@@ -76,4 +76,42 @@ class RespuestaCommandOutputAdapterTest {
         // Act & Assert
         assertThat(adapter.existePorSolicitud(UUID.randomUUID())).isFalse();
     }
+
+    @Test
+    void debeRetornarElEstado_cuandoBuscaElEstadoDeUnaRespuestaExistente() {
+        // Arrange
+        UUID solicitudId = UUID.randomUUID();
+        adapter.registrar(new RespuestaEntity(
+                UUID.randomUUID(), solicitudId, LocalDateTime.of(2026, 3, 1, 9, 0, 0), "r", ESTADO));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act & Assert
+        assertThat(adapter.buscarEstadoPorSolicitud(solicitudId)).contains(ESTADO);
+    }
+
+    @Test
+    void debeRetornarOptionalVacio_cuandoBuscaElEstadoDeUnaRespuestaInexistente() {
+        // Act & Assert
+        assertThat(adapter.buscarEstadoPorSolicitud(UUID.randomUUID())).isEmpty();
+    }
+
+    @Test
+    void debeBorrarLaFila_cuandoEliminaPorSolicitud() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        UUID solicitudId = UUID.randomUUID();
+        adapter.registrar(new RespuestaEntity(
+                id, solicitudId, LocalDateTime.of(2026, 3, 1, 9, 0, 0), "r", ESTADO));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.eliminarPorSolicitud(solicitudId);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(RespuestaJpaEntity.class, id)).isNull();
+    }
 }

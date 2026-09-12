@@ -38,6 +38,8 @@ public final class SolicitudesCodes {
         public static final String CONTENIDO_REQUERIDO = "RESPUESTA_CONTENIDO_REQUERIDO";
         public static final String CONTENIDO_DEMASIADO_LARGO = "RESPUESTA_CONTENIDO_DEMASIADO_LARGO";
         public static final String SOLICITUD_YA_RESPONDIDA = "SOLICITUD_YA_RESPONDIDA";
+        public static final String RESPUESTA_NO_ENCONTRADA = "RESPUESTA_NO_ENCONTRADA";
+        public static final String RESPUESTA_NO_EN_REVISION = "RESPUESTA_NO_EN_REVISION";
     }
 
     public static final class EstadoRespuesta {
