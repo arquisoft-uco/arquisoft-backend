@@ -195,6 +195,14 @@ public final class FichasApiMessages {
         public static final String AGREGAR_RESP_422 =
                 "Ítem no encontrado, ficha no asesorada por el usuario autenticado o revisión ya "
                         + "existente";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar revisiones de ítem elaboradas";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Permite al asesor de ficha consultar, de forma paginada y filtrable, las revisiones de "
+                        + "ítem que él mismo ha elaborado sobre los ítems de las fichas de perfil que asesora.";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de revisiones de ítem elaboradas por el asesor";
+        public static final String CONSULTAR_ASESOR_RESP_400 = "Criterio de búsqueda inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar revisiones de ítem";
     }
 
     public static final class EstudianteFichaPerfil {
