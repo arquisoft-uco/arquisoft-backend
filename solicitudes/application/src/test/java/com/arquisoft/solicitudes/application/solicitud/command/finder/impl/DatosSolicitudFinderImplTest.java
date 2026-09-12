@@ -29,14 +29,16 @@ class DatosSolicitudFinderImplTest {
         // Arrange
         UUID solicitud = UUID.randomUUID();
         UUID remitenteUsuario = UUID.randomUUID();
+        UUID destinatarioUsuario = UUID.randomUUID();
         when(solicitudOutputPort.buscarDatos(solicitud)).thenReturn(Optional.of(
-                new DatosSolicitudEntity(remitenteUsuario,
+                new DatosSolicitudEntity(remitenteUsuario, destinatarioUsuario,
                         TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
 
         // Act & Assert
         assertThat(finder.obtener(solicitud)).hasValueSatisfying(resumen -> {
             assertThat(resumen.solicitud()).isEqualTo(solicitud);
             assertThat(resumen.remitenteUsuario()).isEqualTo(remitenteUsuario);
+            assertThat(resumen.destinatarioUsuario()).isEqualTo(destinatarioUsuario);
             assertThat(resumen.tipoSolicitud())
                     .isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId());
         });

@@ -108,4 +108,25 @@ public final class SolicitudesApiMessages {
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de novedad para el coordinador enviadas";
     }
+
+    public static final class Respuesta {
+
+        private Respuesta() {}
+
+        public static final String TAG_NAME = "Respuestas";
+        public static final String TAG_DESCRIPTION = "Gestión de respuestas a las solicitudes";
+
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_SUMMARY =
+                "Responder solicitud de novedad para el coordinador";
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_DESCRIPTION =
+                "Permite a un coordinador responder una solicitud de novedad para el coordinador que "
+                        + "le fue dirigida, registrando el contenido de la respuesta.";
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_201 =
+                "Respuesta registrada — retorna el UUID asignado";
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_400 = "Datos inválidos";
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_403 =
+                "Sin permisos para responder solicitudes de novedad para el coordinador";
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
+    }
 }

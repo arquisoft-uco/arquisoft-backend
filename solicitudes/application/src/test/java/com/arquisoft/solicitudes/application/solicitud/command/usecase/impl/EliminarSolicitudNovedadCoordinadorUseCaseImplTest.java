@@ -65,7 +65,8 @@ class EliminarSolicitudNovedadCoordinadorUseCaseImplTest {
 
     private void stubSolicitudPropiaSinRespuestas() {
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.of(new ResumenSolicitud(
-                solicitud, remitenteUsuario, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
+                solicitud, remitenteUsuario, UUID.randomUUID(),
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
     }
 
@@ -116,7 +117,8 @@ class EliminarSolicitudNovedadCoordinadorUseCaseImplTest {
         // Arrange — el remitente de la solicitud difiere del actor del JWT
         UUID remitenteDeLaFila = UUID.randomUUID();
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.of(new ResumenSolicitud(
-                solicitud, remitenteDeLaFila, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
+                solicitud, remitenteDeLaFila, UUID.randomUUID(),
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
 
         // Act

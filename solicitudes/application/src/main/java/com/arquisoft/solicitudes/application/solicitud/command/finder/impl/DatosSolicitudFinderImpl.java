@@ -19,6 +19,7 @@ public class DatosSolicitudFinderImpl implements DatosSolicitudFinder {
     public Optional<ResumenSolicitud> obtener(UUID solicitud) {
         return solicitudOutputPort.buscarDatos(solicitud)
                 .map(datos -> new ResumenSolicitud(
-                        solicitud, datos.remitenteUsuario(), datos.tipoSolicitud()));
+                        solicitud, datos.remitenteUsuario(), datos.destinatarioUsuario(),
+                        datos.tipoSolicitud()));
     }
 }

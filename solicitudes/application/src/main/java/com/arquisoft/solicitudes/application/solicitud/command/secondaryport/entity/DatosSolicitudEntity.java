@@ -2,5 +2,6 @@ package com.arquisoft.solicitudes.application.solicitud.command.secondaryport.en
 
 import java.util.UUID;
 
-public record DatosSolicitudEntity(UUID remitenteUsuario, String tipoSolicitud) {
+public record DatosSolicitudEntity(
+        UUID remitenteUsuario, UUID destinatarioUsuario, String tipoSolicitud) {
 }

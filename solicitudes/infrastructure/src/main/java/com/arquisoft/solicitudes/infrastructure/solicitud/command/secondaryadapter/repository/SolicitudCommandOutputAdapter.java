@@ -39,11 +39,6 @@ public class SolicitudCommandOutputAdapter implements SolicitudOutputPort {
     }
 
     @Override
-    public boolean tieneRespuestas(UUID solicitudId) {
-        return solicitudCommandRepository.tieneRespuestas(solicitudId);
-    }
-
-    @Override
     public void eliminar(UUID solicitudId) {
         solicitudCommandRepository.deleteById(solicitudId);
         logger.debug(SolicitudKey.LOG_ELIMINADA_REGISTRO, solicitudId);
