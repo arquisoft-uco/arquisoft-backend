@@ -335,6 +335,15 @@ equivocan generando código y no se ven leyendo una regla:
   `mer/data/{NN}_data_{contexto}.sql`: esas y solo esas.** Si el plan no las lista, es ambigüedad —
   repórtala, no las deduzcas.
 - **Virtual Threads ya están activos:** nunca un `@Bean TaskExecutor` manual.
+- **El nombre simple de una clase anotada es único en TODO el repo, no por paquete.** Spring deriva
+  el nombre del bean del nombre simple, así que dos `@Configuration`/`@Component` homónimos en
+  contextos distintos abortan el arranque con `ConflictingBeanDefinitionException` — aunque cada
+  `@Bean` interno ya tenga nombre propio y `@Qualifier`. Una clase de `config/` va **prefijada por su
+  contexto** (`UsuariosRestTemplateConfig`, `SeguridadRestTemplateConfig`): así se lee a quién
+  pertenece desde el import. Una pieza de feature se diferencia por el concepto
+  (`RegistrarUsuarioEspejoUseCase` en `fichas` frente a `RegistrarUsuarioUseCase` en `usuarios`).
+  Antes de cerrar `infrastructure`:
+  `find . -name "*.java" | grep -v /test/ | sed 's|.*/||' | sort | uniq -d`.
 - **Sin Javadoc y sin comentarios que repitan el código.** El "por qué" va al mensaje de commit.
   Imports explícitos, nunca wildcard.
 

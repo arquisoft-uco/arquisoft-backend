@@ -188,15 +188,15 @@ arquisoft-backend/
 │           │   ├── security/SeguridadConfig.java    # JWT + OAuth2 Resource Server + método security
 │           │   ├── cors/CorsConfig.java             # Orígenes, headers expuestos, credenciales
 │           │   ├── ratelimit/LimiteSolicitudesConfig.java   # Bucket4j per-IP via Redis — 100/min global dev, 5/min login dev (60/3 prod)
-│           │   └── http/RestTemplateConfig.java     # SimpleClientHttpRequestFactory (SB4 compat)
+│           │   └── http/SeguridadRestTemplateConfig.java  # SimpleClientHttpRequestFactory (SB4 compat)
 │           └── filter/
 │               ├── LimitadorSolicitudesFilter.java  # OncePerRequestFilter: evalúa límite por IP
 │               └── IdentidadTrazaFilter.java # Añade el sub del JWT a la traza abierta
 │
-├── usuarios/                              # CONTEXTO: alta de usuarios (extraído de seguridad)
-│   ├── domain/                            # UsuarioDomain, secondaryport/UsuarioOutputPort
-│   ├── application/                       # CrearUsuarioCommand, command/primaryport/interactor, usecase
-│   └── infrastructure/                    # CrearUsuarioController, secondaryadapter/repository
+├── usuarios/                              # CONTEXTO: andamiaje (flujo CrearUsuario retirado; HU "registrar usuario" pendiente)
+│   ├── domain/                            # sin código
+│   ├── application/                       # sin código
+│   └── infrastructure/                    # config/UsuariosDataSourceConfig + db/migration/usuarios + rutas-usuarios.yml
 │
 ├── fichas/                                # CONTEXTO: implementación real más completa
 │   ├── domain/
@@ -360,9 +360,9 @@ invoca antes de delegar, de modo que un `Command` nunca se convierte en dominio 
 ni del use case. Lo que varía es su retorno: el objeto de acción cuando la acción arrastra un
 *bundle*, o el agregado raíz directo (`toDomain(command)` → `{Entidad}Domain.crear(...)`) cuando el
 `Command` mapea 1-a-1. El **objeto de acción sigue siendo condicional** — un wrapper que solo
-reexpone el agregado es una indirección sin valor — pero el mapper no. Los comandos que hoy llaman
-`{Entidad}Domain.crear(...)` directo desde el use case (`usuarios/CrearUsuario` entre ellos) son
-anteriores a esta regla y son desviación conocida a migrar, no patrón a copiar.
+reexpone el agregado es una indirección sin valor — pero el mapper no. Un comando que llame
+`{Entidad}Domain.crear(...)` directo desde el use case, sin pasar por el mapper, es desviación
+conocida a migrar, no patrón a copiar.
 
 `domain/` **nunca** declara puertos ni entidades de persistencia y no hace I/O de ningún tipo: solo
 depende de `shared:domain`, `shared:validation` y `shared:util`. Un puerto bajo `domain/` no
@@ -491,12 +491,9 @@ copie creyendo que son la regla, y para que se resuelvan cuando se toque esa par
 
 | Qué | Dónde | Convención | Estado |
 |---|---|---|---|
-| `CrearUsuarioRequestDTO` con anotaciones Jakarta + `toCommand()` propio | `usuarios/infrastructure/usuario/command/primaryadapter/web/dto/` | Único DTO que queda en la convención "contexto pequeño", ya retirada: debería ser un `record` desnudo + `CrearUsuarioRequestMapper` que llame a `CrearUsuarioCommand.crear(...)`. Además anida un enum `RolUsuarioDTO` que duplica `UsuarioRole`, y construye el `Command` con `new` en vez de `crear(...)`, así que nada valida el formato | Pendiente de migrar |
 | `*ResponseDTO` como clase Lombok `@Data`/`@Builder` | `seguridad/infrastructure/auth/command/primaryadapter/web/dto/` (los cuatro) | Los DTO de respuesta son `record`, como en `fichas` | Pendiente de migrar |
 | `EstadoEvaluacionCommandRepository` | `fichas/infrastructure/estadoevaluacion/command/secondaryadapter/repository/` | Código muerto: no hay `OutputPort` ni `OutputAdapter` que lo consuma | Pendiente de eliminar |
-| `UsuarioCommandOutputAdapter` no persiste | `usuarios/infrastructure/usuario/command/secondaryadapter/repository/` | **Deliberado.** `usuarios` es un contexto de ejemplo: el adaptador solo deja el log y no escribe, para no generar registros si se invoca el flujo. Falta a propósito el `UsuarioJpaEntity` + `UsuarioJpaMapper` + `UsuarioCommandRepository`. `UsuarioEmailUnicoRule` no se dispara nunca mientras siga así | No es un pendiente — se ajustará cuando el contexto se desarrolle |
 | `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub con `// TODO: persistir en tabla espejo`. Por eso no tiene `Interactor`, ni `@Transactional`, ni `Validator`, y el `UsuarioCreadoConsumer` inyecta el `UseCase` directo — cuando persista de verdad debe pasar por un `Interactor` | Pendiente de implementar |
-| Comandos sin `{Accion}{Entidad}Mapper` en `primaryport/mapper/` | `usuarios/CrearUsuario` y cualquier otro comando que llame `{Entidad}Domain.crear(...)` directo desde el use case | El `{Accion}{Entidad}Mapper` (`static toDomain`) es obligatorio en toda escritura y lo invoca el `Interactor`; devuelve el objeto de acción si hay *bundle*, el agregado directo si no | Pendiente de migrar (regla hacia adelante) |
 
 ### Decisión abierta: dónde vive un enum de catálogo
 
@@ -638,7 +635,7 @@ eventPublisher.publish(new AsesorFichaCambiadoEvent(fichaPerfil, ficha.getTitulo
 | Contexto | ¿Emite eventos? | Cómo |
 |---|---|---|
 | `fichas` | ✅ Sí | El use case publica directo tras persistir (`CambiarAsesorFichaUseCaseImpl` → `AsesorFichaCambiadoEvent`) |
-| `usuarios` | ✅ Sí | Mismo patrón (`CrearUsuarioUseCaseImpl` → `UsuarioCreadoEvent`) |
+| `usuarios` | — | Andamiaje: el flujo `CrearUsuario` (que emitía `UsuarioCreadoEvent`) se retiró; `EventTopics.Usuarios.USUARIO_CREADO` y el consumidor de `fichas` siguen a la espera de la nueva HU |
 | `seguridad` | ❌ No | Contexto transversal, delega a Keycloak, sin estado propio |
 | `notificaciones` | ❌ No | Reacciona a eventos de otros contextos, no los emite |
 | `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`, `evaluaciones` | — | Scaffolding: sin código de dominio todavía, se espera que sigan el mismo patrón al implementarse |
@@ -730,7 +727,7 @@ En este proyecto no hay ningún `TaskExecutor` declarado manualmente, por lo que
 |---|---|
 | `config/` *(raíz del proyecto)* | Configuraciones **transversales** del build/tooling: `checkstyle.xml`, reglas de análisis estático. |
 | `src/main/java/com/arquisoft/` | Punto de entrada (`ArquisoftApplication`) y configuraciones **globales de la API ensamblada**: `config/OpenApiConfig` con `@OpenAPIDefinition` y `@SecurityScheme`. Reside aquí porque es el único módulo con visibilidad de todos los contextos. |
-| `seguridad/infrastructure/config/` | Configuraciones **de runtime de Spring Security**: `SeguridadConfig`, `CorsConfig`, `LimiteSolicitudesConfig`, `RestTemplateConfig`. Solo pertenecen al contexto de seguridad. |
+| `seguridad/infrastructure/config/` | Configuraciones **de runtime de Spring Security**: `SeguridadConfig`, `CorsConfig`, `LimiteSolicitudesConfig`, `SeguridadRestTemplateConfig`. Solo pertenecen al contexto de seguridad. |
 
 ---
 

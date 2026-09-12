@@ -65,10 +65,11 @@ Cola contexto A   Cola contexto B
 
 | Evento | `temaEvento` (routing key) | Publica | Consume | Efecto |
 |---|---|---|---|---|
-| `UsuarioCreadoEvent` | `usuarios.usuario.creado` | `usuarios` | `fichas` (`UsuarioCreadoConsumer`) | `fichas` necesita saber que un usuario existe para ciertos flujos propios |
+| `UsuarioCreadoEvent` | `usuarios.usuario.creado` | _(pendiente)_ — el flujo `CrearUsuario` de `usuarios` se retiró; la routing key (`EventTopics.Usuarios.USUARIO_CREADO`) y el consumidor de `fichas` quedan a la espera de la HU "registrar usuario" | `fichas` (`UsuarioCreadoConsumer`) | `fichas` necesita saber que un usuario existe para ciertos flujos propios |
 | `AsesorFichaCambiadoEvent` | `fichas.ficha_perfil.asesor_cambiado` | `fichas` | `notificaciones` (`AsesorFichaCambiadoConsumer`) | Envía el correo de notificación al nuevo asesor |
 
-Estos son, hoy, los **únicos dos flujos de eventos reales** del sistema. No existe un exchange
+Hoy el **único flujo de eventos extremo-a-extremo** es `AsesorFichaCambiadoEvent`; el consumidor de
+`UsuarioCreadoEvent` en `fichas` sigue declarado pero sin publicador. No existe un exchange
 o cola por cada combinación teórica de contextos — solo se crea la cola que un consumidor real
 necesita, cuando existe ese consumidor.
 

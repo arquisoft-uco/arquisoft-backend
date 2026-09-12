@@ -88,7 +88,7 @@ seguridad/
         │   ├── keycloak/      KeycloakRolExtractor + KeycloakJwtConverterConfig — mapeo de resource_access.roles a authorities
         │   ├── ratelimit/     LimiteSolicitudesConfig/Properties + BucketResolver/RedisBucketResolver (Bucket4j + Redis distribuido)
         │   ├── cors/          CorsConfig
-        │   ├── http/          RestTemplateConfig para Keycloak
+        │   ├── http/          SeguridadRestTemplateConfig para Keycloak
         │   └── scheduling/    SchedulingConfig (@EnableScheduling)
         ├── exception/
         │   ├── CredencialesInvalidasException.java
