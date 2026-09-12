@@ -25,6 +25,8 @@ public final class EventTopics {
 
         private Usuarios() {}
 
-        public static final String USUARIO_CREADO = "usuarios.usuario.creado";
+        public static final String ESTUDIANTE_AGREGADO =
+                "usuarios.estudiante.agregado";
     }
+
 }

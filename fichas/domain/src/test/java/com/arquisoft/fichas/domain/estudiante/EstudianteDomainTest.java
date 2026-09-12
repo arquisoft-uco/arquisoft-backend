@@ -2,6 +2,7 @@ package com.arquisoft.fichas.domain.estudiante;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,13 +12,14 @@ class EstudianteDomainTest {
     @Test
     void debeReconstruir_cuandoDatosValidos() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        String identificador = "1234567890";
-        String nombre = "Juan Pérez";
-        String email = "juan.perez@example.com";
+        var id = UUID.randomUUID();
+        var identificador = "1234567890";
+        var nombre = "Juan Pérez";
+        var email = "juan.perez@example.com";
+        var ocurridoEn = Instant.now();
 
         // Act
-        EstudianteDomain estudiante = EstudianteDomain.reconstruir(id, identificador, nombre, email);
+        var estudiante = EstudianteDomain.reconstruir(id, identificador, nombre, email, ocurridoEn);
 
         // Assert
         assertThat(estudiante).isNotNull();
@@ -25,18 +27,20 @@ class EstudianteDomainTest {
         assertThat(estudiante.getIdentificador()).isEqualTo(identificador);
         assertThat(estudiante.getNombre()).isEqualTo(nombre);
         assertThat(estudiante.getEmail()).isEqualTo(email);
+        assertThat(estudiante.getOcurridoEn()).isEqualTo(ocurridoEn);
     }
 
     @Test
     void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
         // Arrange
-        UUID id = UUID.randomUUID();
+        var id = UUID.randomUUID();
         String identificador = null;
         String nombre = null;
         String email = null;
+        Instant ocurridoEn = null;
 
         // Act
-        EstudianteDomain estudiante = EstudianteDomain.reconstruir(id, identificador, nombre, email);
+        var estudiante = EstudianteDomain.reconstruir(id, identificador, nombre, email, ocurridoEn);
 
         // Assert
         assertThat(estudiante).isNotNull();
@@ -44,5 +48,6 @@ class EstudianteDomainTest {
         assertThat(estudiante.getIdentificador()).isNull();
         assertThat(estudiante.getNombre()).isNull();
         assertThat(estudiante.getEmail()).isNull();
+        assertThat(estudiante.getOcurridoEn()).isNull();
     }
 }

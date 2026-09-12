@@ -283,6 +283,7 @@ class ItemFichaPerfilQueryOutputAdapterTest {
                 .identificador(identificador)
                 .nombre(nombre)
                 .email(email)
+                .ocurridoEn(Instant.now())
                 .build();
         entityManager.persist(estudiante);
         return estudiante.getId();

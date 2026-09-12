@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
+import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailUsuarioExisteFinder;
@@ -52,6 +53,8 @@ class RegistrarUsuarioUseCaseImplTest {
     @Mock
     private RegistrarUsuarioValidator registrarUsuarioValidator;
     @Mock
+    private AgregarEstudianteUseCase agregarEstudianteUseCase;
+    @Mock
     private AppLogger logger;
 
     private RegistrarUsuarioUseCaseImpl useCase;
@@ -61,7 +64,7 @@ class RegistrarUsuarioUseCaseImplTest {
         useCase = new RegistrarUsuarioUseCaseImpl(
                 usuarioOutputPort, proveedorIdentidadOutputPort, identificadorUsuarioExisteFinder,
                 emailUsuarioExisteFinder, emailIdentidadExisteFinder, contactoUsuarioExisteFinder,
-                registrarUsuarioValidator, logger);
+                registrarUsuarioValidator, agregarEstudianteUseCase, logger);
         when(identificadorUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailIdentidadExisteFinder.obtener(any())).thenReturn(false);
