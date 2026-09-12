@@ -30,26 +30,26 @@ class ConsultarCriteriosItemCualitativoJuradoInteractorImplTest {
         List<CriterioItemCualitativoJuradoReadModel> esperados = List.of(
                 new CriterioItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "Evalúa la claridad conceptual")
         );
-        when(useCase.ejecutar(null)).thenReturn(esperados);
+        when(useCase.ejecutar()).thenReturn(esperados);
 
         // Act
-        List<CriterioItemCualitativoJuradoReadModel> resultado = interactor.ejecutar(null);
+        List<CriterioItemCualitativoJuradoReadModel> resultado = interactor.ejecutar();
 
         // Assert
         assertThat(resultado).containsExactlyElementsOf(esperados);
-        verify(useCase).ejecutar(null);
+        verify(useCase).ejecutar();
     }
 
     @Test
     void debePropagarListaVacia_cuandoElUseCaseNoEncuentraRegistros() {
         // Arrange
-        when(useCase.ejecutar(null)).thenReturn(List.of());
+        when(useCase.ejecutar()).thenReturn(List.of());
 
         // Act
-        List<CriterioItemCualitativoJuradoReadModel> resultado = interactor.ejecutar(null);
+        List<CriterioItemCualitativoJuradoReadModel> resultado = interactor.ejecutar();
 
         // Assert
         assertThat(resultado).isEmpty();
-        verify(useCase).ejecutar(null);
+        verify(useCase).ejecutar();
     }
 }
