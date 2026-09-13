@@ -15,13 +15,13 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EstudiantesExistentesFinderImplTest {
+class EstudiantesFichasExistentesFinderImplTest {
 
     @Mock
     private EstudianteOutputPort estudianteOutputPort;
 
     @InjectMocks
-    private EstudiantesExistentesFinderImpl finder;
+    private EstudiantesFichasExistentesFinderImpl finder;
 
     @Test
     void debeDevolverSoloLosQueExisten_cuandoAlgunoFalta() {

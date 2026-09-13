@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estudiante.command.finder;
 
-import com.arquisoft.fichas.application.estudiante.command.finder.impl.EstudiantesFinderImpl;
+import com.arquisoft.fichas.application.estudiante.command.finder.impl.EstudiantesFichasFinderImpl;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EstudiantesFinderTest {
+class EstudiantesFichasFinderTest {
 
     private static final UUID ANA = UUID.randomUUID();
     private static final UUID LUIS = UUID.randomUUID();
@@ -30,7 +30,7 @@ class EstudiantesFinderTest {
     private EstudianteOutputPort estudianteOutputPort;
 
     @InjectMocks
-    private EstudiantesFinderImpl estudiantesFinder;
+    private EstudiantesFichasFinderImpl estudiantesFichasFinder;
 
     @Test
     void debeDevolverLosEstudiantesConNombreYCorreo_cuandoElPuertoLosEncuentra() {
@@ -40,7 +40,7 @@ class EstudiantesFinderTest {
                 new EstudianteEntity(LUIS, "1002", "Luis Diaz", "luis.diaz@soyuco.edu.co", Instant.now())));
 
         // Act
-        List<EstudianteDomain> resultado = estudiantesFinder.obtener(List.of(ANA, LUIS));
+        List<EstudianteDomain> resultado = estudiantesFichasFinder.obtener(List.of(ANA, LUIS));
 
         // Assert
         assertThat(resultado)
@@ -54,7 +54,7 @@ class EstudiantesFinderTest {
     @Test
     void debeDevolverVacioSinConsultar_cuandoLaListaLlegaVacia() {
         // Act
-        List<EstudianteDomain> resultado = estudiantesFinder.obtener(List.of());
+        List<EstudianteDomain> resultado = estudiantesFichasFinder.obtener(List.of());
 
         // Assert
         assertThat(resultado).isEmpty();
@@ -64,7 +64,7 @@ class EstudiantesFinderTest {
     @Test
     void debeDevolverVacioSinConsultar_cuandoLaListaLlegaNula() {
         // Act
-        List<EstudianteDomain> resultado = estudiantesFinder.obtener(null);
+        List<EstudianteDomain> resultado = estudiantesFichasFinder.obtener(null);
 
         // Assert
         assertThat(resultado).isEmpty();
@@ -78,7 +78,7 @@ class EstudiantesFinderTest {
                 new EstudianteEntity(ANA, "1001", "Ana Gomez", "ana.gomez@soyuco.edu.co", Instant.now())));
 
         // Act
-        List<EstudianteDomain> resultado = estudiantesFinder.obtener(List.of(ANA, LUIS));
+        List<EstudianteDomain> resultado = estudiantesFichasFinder.obtener(List.of(ANA, LUIS));
 
         // Assert
         assertThat(resultado).extracting(EstudianteDomain::getId).containsExactly(ANA);

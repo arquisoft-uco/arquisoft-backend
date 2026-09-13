@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiante.command.primaryadapter.amqp.usuarios.estudiante;
 
-import com.arquisoft.fichas.application.estudiante.command.primaryport.interactor.AgregarEstudianteInteractor;
+import com.arquisoft.fichas.application.estudiante.command.primaryport.interactor.AgregarEstudianteFichasInteractor;
 import com.arquisoft.fichas.application.estudiante.command.primaryport.model.AgregarEstudianteCommand;
 import com.arquisoft.fichas.application.estudiante.command.result.AgregacionEstudianteResult;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
@@ -19,18 +19,18 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 @Component
-public class EstudianteAgregadoConsumer extends AbstractEventConsumer {
+public class EstudianteAgregadoFichasConsumer extends AbstractEventConsumer {
 
-    private final AgregarEstudianteInteractor agregarEstudianteInteractor;
+    private final AgregarEstudianteFichasInteractor agregarEstudianteFichasInteractor;
     private final AppLogger logger;
 
-    public EstudianteAgregadoConsumer(
-            AgregarEstudianteInteractor agregarEstudianteInteractor,
+    public EstudianteAgregadoFichasConsumer(
+            AgregarEstudianteFichasInteractor agregarEstudianteFichasInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
         super(objectMapper, gestorTraza);
-        this.agregarEstudianteInteractor = agregarEstudianteInteractor;
+        this.agregarEstudianteFichasInteractor = agregarEstudianteFichasInteractor;
         this.logger = logger;
     }
 
@@ -42,7 +42,7 @@ public class EstudianteAgregadoConsumer extends AbstractEventConsumer {
             logger.info(EstudianteKey.LOG_AGREGADO_RECIBIDO,
                     payload.idEvento(), payload.usuario(), UtilTexto.enmascararCorreo(payload.email()));
 
-            var resultado = agregarEstudianteInteractor.ejecutar(AgregarEstudianteCommand.crear(
+            var resultado = agregarEstudianteFichasInteractor.ejecutar(AgregarEstudianteCommand.crear(
                     payload.usuario(), payload.identificador(), payload.nombre(), payload.email(),
                     payload.ocurridoEn()));
 

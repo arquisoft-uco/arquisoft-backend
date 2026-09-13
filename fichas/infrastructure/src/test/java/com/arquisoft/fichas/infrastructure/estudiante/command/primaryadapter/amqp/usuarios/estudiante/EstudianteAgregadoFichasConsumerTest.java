@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiante.command.primaryadapter.amqp.usuarios.estudiante;
 
-import com.arquisoft.fichas.application.estudiante.command.primaryport.interactor.AgregarEstudianteInteractor;
+import com.arquisoft.fichas.application.estudiante.command.primaryport.interactor.AgregarEstudianteFichasInteractor;
 import com.arquisoft.fichas.application.estudiante.command.result.AgregacionEstudianteResult;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
@@ -25,10 +25,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EstudianteAgregadoConsumerTest {
+class EstudianteAgregadoFichasConsumerTest {
 
     @Mock
-    private AgregarEstudianteInteractor agregarEstudianteInteractor;
+    private AgregarEstudianteFichasInteractor agregarEstudianteFichasInteractor;
 
     @Mock
     private Channel channel;
@@ -36,17 +36,17 @@ class EstudianteAgregadoConsumerTest {
     @Mock
     private AppLogger logger;
 
-    private EstudianteAgregadoConsumer adapter;
+    private EstudianteAgregadoFichasConsumer adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EstudianteAgregadoConsumer(
-                agregarEstudianteInteractor,
+        adapter = new EstudianteAgregadoFichasConsumer(
+                agregarEstudianteFichasInteractor,
                 new ObjectMapper(),
                 logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
 
-        lenient().when(agregarEstudianteInteractor.ejecutar(any()))
+        lenient().when(agregarEstudianteFichasInteractor.ejecutar(any()))
                 .thenReturn(new AgregacionEstudianteResult.Agregada(UUID.randomUUID()));
     }
 
@@ -76,7 +76,7 @@ class EstudianteAgregadoConsumerTest {
         adapter.onEstudianteAgregado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
 
         // Assert
-        verify(agregarEstudianteInteractor).ejecutar(any());
+        verify(agregarEstudianteFichasInteractor).ejecutar(any());
     }
 
     @Test
@@ -92,7 +92,7 @@ class EstudianteAgregadoConsumerTest {
     void debeEnviarNackSinReencolar_cuandoElPayloadEsEnvenenado() throws Exception {
         // Arrange
         doThrow(new IllegalArgumentException("id invalido"))
-                .when(agregarEstudianteInteractor).ejecutar(any());
+                .when(agregarEstudianteFichasInteractor).ejecutar(any());
 
         // Act
         adapter.onEstudianteAgregado(mensajeCon(UUID.randomUUID().toString(), 2L), channel);
@@ -104,7 +104,7 @@ class EstudianteAgregadoConsumerTest {
     @Test
     void debeConfirmarElMensaje_cuandoElResultadoEsDescartada() throws Exception {
         // Arrange
-        when(agregarEstudianteInteractor.ejecutar(any())).thenReturn(
+        when(agregarEstudianteFichasInteractor.ejecutar(any())).thenReturn(
                 new AgregacionEstudianteResult.Descartada(UUID.randomUUID(), java.time.Instant.now()));
 
         // Act

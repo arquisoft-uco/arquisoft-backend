@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estudiante.command.finder.impl;
 
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFichasExistentesFinder;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
 import com.arquisoft.shared.util.UtilColeccion;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class EstudiantesExistentesFinderImpl implements EstudiantesExistentesFinder {
+public class EstudiantesFichasExistentesFinderImpl implements EstudiantesFichasExistentesFinder {
 
     private final EstudianteOutputPort estudianteOutputPort;
 

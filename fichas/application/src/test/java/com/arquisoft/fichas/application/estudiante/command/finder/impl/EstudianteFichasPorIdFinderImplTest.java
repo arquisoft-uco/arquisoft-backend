@@ -16,13 +16,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EstudiantePorIdFinderImplTest {
+class EstudianteFichasPorIdFinderImplTest {
 
     @Mock
     private EstudianteOutputPort estudianteOutputPort;
 
     @InjectMocks
-    private EstudiantePorIdFinderImpl finder;
+    private EstudianteFichasPorIdFinderImpl finder;
 
     @Test
     void debeDelegarEnElOutputPort_cuandoElEstudianteExiste() {

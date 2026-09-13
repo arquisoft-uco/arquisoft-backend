@@ -18,13 +18,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AgregarEstudianteInteractorImplTest {
+class AgregarEstudianteFichasInteractorImplTest {
 
     @Mock
     private AgregarEstudianteFichasUseCase agregarEstudianteFichasUseCase;
 
     @InjectMocks
-    private AgregarEstudianteInteractorImpl interactor;
+    private AgregarEstudianteFichasInteractorImpl interactor;
 
     @Test
     void debeDelegarEnElUseCase_enAgregarEstudianteInteractor() {
