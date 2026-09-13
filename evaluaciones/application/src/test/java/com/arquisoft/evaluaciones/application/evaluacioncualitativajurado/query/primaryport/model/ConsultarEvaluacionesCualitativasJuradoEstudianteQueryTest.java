@@ -14,15 +14,14 @@ import static org.assertj.core.groups.Tuple.tuple;
 class ConsultarEvaluacionesCualitativasJuradoEstudianteQueryTest {
 
     @Test
-    void debeCrearQuery_cuandoEvaluacionYSubjectSonValidos() {
+    void debeCrearQuery_cuandoEvaluacionYEstudianteSonValidos() {
         // Arrange
         UUID evaluacionJurado = UUID.randomUUID();
         UUID estudiante = UUID.randomUUID();
 
         // Act
         ConsultarEvaluacionesCualitativasJuradoEstudianteQuery query =
-                ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(
-                        evaluacionJurado, estudiante.toString());
+                ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(evaluacionJurado, estudiante);
 
         // Assert
         assertThat(query.evaluacionJurado()).isEqualTo(evaluacionJurado);
@@ -30,10 +29,9 @@ class ConsultarEvaluacionesCualitativasJuradoEstudianteQueryTest {
     }
 
     @Test
-    void debeAcumularErroresDeEntrada_cuandoEvaluacionEsNulaYSubjectNoEsUuid() {
+    void debeAcumularErroresDeEntrada_cuandoEvaluacionYEstudianteSonNulos() {
         // Act & Assert
-        assertThatThrownBy(() -> ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(
-                null, "no-es-un-uuid"))
+        assertThatThrownBy(() -> ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(null, null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
@@ -45,10 +43,10 @@ class ConsultarEvaluacionesCualitativasJuradoEstudianteQueryTest {
     }
 
     @Test
-    void debeAcumularErrorDeEntrada_cuandoSubjectEstaEnBlanco() {
+    void debeAcumularErrorDeEntrada_cuandoEstudianteEsNulo() {
         // Act & Assert
         assertThatThrownBy(() -> ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(
-                UUID.randomUUID(), "   "))
+                UUID.randomUUID(), null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())

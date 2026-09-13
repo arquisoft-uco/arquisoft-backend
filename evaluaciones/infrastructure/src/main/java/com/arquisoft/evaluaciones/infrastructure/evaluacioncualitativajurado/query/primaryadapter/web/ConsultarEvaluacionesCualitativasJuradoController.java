@@ -8,6 +8,7 @@ import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthoritie
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -70,7 +71,9 @@ public class ConsultarEvaluacionesCualitativasJuradoController {
             @PathVariable UUID evaluacionJuradoId,
             @AuthenticationPrincipal Jwt jwt) {
 
-        var query = ConsultarEvaluacionesCualitativasJuradoRequestMapper.toQuery(evaluacionJuradoId, jwt.getSubject());
+        var estudianteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+
+        var query = ConsultarEvaluacionesCualitativasJuradoRequestMapper.toQuery(evaluacionJuradoId, estudianteId);
 
         return ResponseEntity.ok(interactor.ejecutar(query).stream()
                 .map(EvaluacionCualitativaJuradoResponseMapper::toResponse)

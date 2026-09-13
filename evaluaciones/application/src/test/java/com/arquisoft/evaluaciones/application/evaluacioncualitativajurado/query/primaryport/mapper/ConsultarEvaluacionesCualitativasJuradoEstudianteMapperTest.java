@@ -16,8 +16,7 @@ class ConsultarEvaluacionesCualitativasJuradoEstudianteMapperTest {
         UUID evaluacionJurado = UUID.randomUUID();
         UUID estudiante = UUID.randomUUID();
         ConsultarEvaluacionesCualitativasJuradoEstudianteQuery query =
-                ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(
-                        evaluacionJurado, estudiante.toString());
+                ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(evaluacionJurado, estudiante);
 
         // Act
         EvaluacionCualitativaJuradoCriteria criteria =

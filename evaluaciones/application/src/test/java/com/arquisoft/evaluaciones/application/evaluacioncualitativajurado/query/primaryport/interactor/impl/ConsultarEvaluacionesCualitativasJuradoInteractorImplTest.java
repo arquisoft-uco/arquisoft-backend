@@ -33,8 +33,7 @@ class ConsultarEvaluacionesCualitativasJuradoInteractorImplTest {
         UUID evaluacionJurado = UUID.randomUUID();
         UUID estudiante = UUID.randomUUID();
         ConsultarEvaluacionesCualitativasJuradoEstudianteQuery query =
-                ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(
-                        evaluacionJurado, estudiante.toString());
+                ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(evaluacionJurado, estudiante);
         List<EvaluacionCualitativaJuradoReadModel> resultado = List.of();
         when(useCase.ejecutar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, estudiante)))
                 .thenReturn(resultado);
