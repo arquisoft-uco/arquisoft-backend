@@ -112,7 +112,7 @@ public final class ClavesCatalogo {
             RegistrarUsuarioKey.class,
             AgregarEstudianteKey.class,
             AgregarCoordinadorKey.class,
-            CoordinadorKey.class
+            CoordinadorKey.class,
             AgregarAsesorFichaKey.class
     );
 

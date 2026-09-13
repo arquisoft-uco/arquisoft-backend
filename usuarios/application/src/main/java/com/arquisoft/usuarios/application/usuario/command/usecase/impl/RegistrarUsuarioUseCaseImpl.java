@@ -66,7 +66,8 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
 
         if (registro.getRoles().contains(UsuariosRealmRoles.COORDINADOR)) {
             agregarCoordinadorUseCase.ejecutar(usuario);
-          
+        }
+
         if (registro.getRoles().contains(UsuariosRealmRoles.ASESOR_FICHA)) {
             agregarAsesorFichaUseCase.ejecutar(usuario);
         }
