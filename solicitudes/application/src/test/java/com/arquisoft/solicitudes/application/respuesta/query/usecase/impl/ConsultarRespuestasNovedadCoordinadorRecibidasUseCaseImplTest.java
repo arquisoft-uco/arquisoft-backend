@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -46,7 +47,7 @@ class ConsultarRespuestasNovedadCoordinadorRecibidasUseCaseImplTest {
         var destinatario = new DestinatarioReadModel(
                 UUID.randomUUID(), "COORD-1", "Coordinadora", "coord@uco.edu.co");
         var solicitud = new SolicitudReadModel(UUID.randomUUID(), "una novedad",
-                LocalDateTime.now(), "NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
+                Instant.now(), "NOVEDAD_PARA_EL_COORDINADOR", "Novedad para el Coordinador",
                 remitente, destinatario);
         return new RespuestaReadModel(UUID.randomUUID(), "contenido de la respuesta",
                 LocalDateTime.now(), "EN_REVISION", "En revisión", solicitud);

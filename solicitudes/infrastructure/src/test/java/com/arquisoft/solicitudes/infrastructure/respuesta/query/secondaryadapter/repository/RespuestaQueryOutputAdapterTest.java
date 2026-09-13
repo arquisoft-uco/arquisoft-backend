@@ -21,7 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -79,7 +81,7 @@ class RespuestaQueryOutputAdapterTest {
     }
 
     private SolicitudJpaEntity sembrarSolicitud(RemitenteJpaEntity remitente,
-            DestinatarioJpaEntity destinatario, String tipo, LocalDateTime fecha, String mensaje) {
+            DestinatarioJpaEntity destinatario, String tipo, Instant fecha, String mensaje) {
         var solicitud = SolicitudJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .remitente(remitente)
@@ -122,9 +124,9 @@ class RespuestaQueryOutputAdapterTest {
         var beto = sembrarRemitente("Beto Estudiante", "EST-2", "beto@uco.edu.co");
         var coord = sembrarDestinatario("Coordinadora Uno", "COORD-1", "coord1@uco.edu.co");
         var solicitudAna = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 3, 1, 10, 0), "novedad de Ana");
+                LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "novedad de Ana");
         var solicitudBeto = sembrarSolicitud(beto, coord, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 3, 2, 10, 0), "novedad de Beto");
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "novedad de Beto");
         sembrarRespuesta(solicitudAna, ESTADO_EN_REVISION,
                 LocalDateTime.of(2026, 3, 3, 8, 0), "respuesta para Ana");
         sembrarRespuesta(solicitudBeto, ESTADO_APROBADA,
@@ -158,9 +160,9 @@ class RespuestaQueryOutputAdapterTest {
         var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
         var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
         var solicitudNovedad = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 3, 1, 10, 0), "es novedad");
+                LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "es novedad");
         var solicitudCambio = sembrarSolicitud(ana, coord, TIPO_CAMBIO,
-                LocalDateTime.of(2026, 3, 2, 10, 0), "es cambio");
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "es cambio");
         sembrarRespuesta(solicitudNovedad, ESTADO_EN_REVISION,
                 LocalDateTime.of(2026, 3, 3, 8, 0), "sobre novedad");
         sembrarRespuesta(solicitudCambio, ESTADO_EN_REVISION,
@@ -189,9 +191,9 @@ class RespuestaQueryOutputAdapterTest {
         var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
         var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
         var solicitud1 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 3, 1, 10, 0), "m1");
+                LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "m1");
         var solicitud2 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 3, 2, 10, 0), "m2");
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "m2");
         sembrarRespuesta(solicitud1, ESTADO_EN_REVISION,
                 LocalDateTime.of(2026, 3, 3, 8, 0), "aprobado con observaciones");
         sembrarRespuesta(solicitud2, ESTADO_EN_REVISION,
@@ -220,9 +222,9 @@ class RespuestaQueryOutputAdapterTest {
         var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
         var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
         var solicitud1 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 3, 1, 10, 0), "m1");
+                LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "m1");
         var solicitud2 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 3, 2, 10, 0), "m2");
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "m2");
         sembrarRespuesta(solicitud1, ESTADO_EN_REVISION,
                 LocalDateTime.of(2026, 3, 3, 8, 0), "en revision todavia");
         sembrarRespuesta(solicitud2, ESTADO_APROBADA,
@@ -251,9 +253,9 @@ class RespuestaQueryOutputAdapterTest {
         var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
         var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
         var solicitud1 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 1, 10, 10, 0), "s1");
+                LocalDateTime.of(2026, 1, 10, 10, 0).toInstant(ZoneOffset.UTC), "s1");
         var solicitud2 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 5, 20, 10, 0), "s2");
+                LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "s2");
         sembrarRespuesta(solicitud1, ESTADO_EN_REVISION,
                 LocalDateTime.of(2026, 1, 15, 8, 0), "vieja");
         sembrarRespuesta(solicitud2, ESTADO_EN_REVISION,
@@ -282,9 +284,9 @@ class RespuestaQueryOutputAdapterTest {
         var zulma = sembrarDestinatario("Zulma", "COORD-1", "zulma@uco.edu.co");
         var alba = sembrarDestinatario("Alba", "COORD-2", "alba@uco.edu.co");
         var solicitudZulma = sembrarSolicitud(ana, zulma, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 1, 10, 10, 0), "para zulma");
+                LocalDateTime.of(2026, 1, 10, 10, 0).toInstant(ZoneOffset.UTC), "para zulma");
         var solicitudAlba = sembrarSolicitud(ana, alba, TIPO_NOVEDAD,
-                LocalDateTime.of(2026, 5, 20, 10, 0), "para alba");
+                LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "para alba");
         sembrarRespuesta(solicitudZulma, ESTADO_EN_REVISION,
                 LocalDateTime.of(2026, 1, 15, 8, 0), "z");
         sembrarRespuesta(solicitudAlba, ESTADO_EN_REVISION,
@@ -313,7 +315,7 @@ class RespuestaQueryOutputAdapterTest {
         var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
         for (int i = 0; i < 3; i++) {
             var solicitud = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
-                    LocalDateTime.of(2026, 3, 1 + i, 10, 0), "m" + i);
+                    LocalDateTime.of(2026, 3, 1 + i, 10, 0).toInstant(ZoneOffset.UTC), "m" + i);
             sembrarRespuesta(solicitud, ESTADO_EN_REVISION,
                     LocalDateTime.of(2026, 3, 1 + i, 8, 0), "r" + i);
         }

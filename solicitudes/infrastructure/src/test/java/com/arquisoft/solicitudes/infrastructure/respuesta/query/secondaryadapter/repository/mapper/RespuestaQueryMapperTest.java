@@ -3,6 +3,7 @@ package com.arquisoft.solicitudes.infrastructure.respuesta.query.secondaryadapte
 import com.arquisoft.solicitudes.infrastructure.respuesta.query.secondaryadapter.repository.RespuestaJpaQueryEntity;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -21,7 +22,7 @@ class RespuestaQueryMapperTest {
                 .estadoRespuestaNombre("En revisión")
                 .solicitudId(UUID.randomUUID())
                 .mensajeSolicitud("una novedad")
-                .fechaCreacion(LocalDateTime.of(2026, 3, 1, 10, 0))
+                .fechaCreacion(Instant.parse("2026-03-01T10:00:00Z"))
                 .tipoSolicitudId("NOVEDAD_PARA_EL_COORDINADOR")
                 .tipoSolicitudNombre("Novedad para el Coordinador")
                 .destinatarioUsuarioId(UUID.randomUUID())

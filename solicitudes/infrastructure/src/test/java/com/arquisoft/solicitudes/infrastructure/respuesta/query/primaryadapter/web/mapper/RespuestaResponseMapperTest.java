@@ -6,6 +6,7 @@ import com.arquisoft.solicitudes.application.respuesta.query.readmodel.Respuesta
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ class RespuestaResponseMapperTest {
         var destinatario = new DestinatarioReadModel(
                 UUID.randomUUID(), "COORD-1", "Coordinadora", "coord@uco.edu.co");
         var solicitud = new SolicitudReadModel(UUID.randomUUID(), "una novedad",
-                LocalDateTime.of(2026, 3, 1, 10, 0), "NOVEDAD_PARA_EL_COORDINADOR",
+                Instant.parse("2026-03-01T10:00:00Z"), "NOVEDAD_PARA_EL_COORDINADOR",
                 "Novedad para el Coordinador", remitente, destinatario);
         var readModel = new RespuestaReadModel(UUID.randomUUID(), "contenido de la respuesta",
                 LocalDateTime.of(2026, 3, 5, 9, 0), "EN_REVISION", "En revisión", solicitud);
