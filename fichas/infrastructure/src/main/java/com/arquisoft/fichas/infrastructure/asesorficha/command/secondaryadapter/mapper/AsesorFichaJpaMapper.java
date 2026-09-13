@@ -14,7 +14,8 @@ public final class AsesorFichaJpaMapper {
                 jpaEntity.getId(),
                 jpaEntity.getIdentificador(),
                 jpaEntity.getNombre(),
-                jpaEntity.getEmail());
+                jpaEntity.getEmail(),
+                jpaEntity.getOcurridoEn());
     }
 
     public static AsesorFichaJpaEntity toJpaEntity(AsesorFichaEntity entity) {
@@ -23,6 +24,7 @@ public final class AsesorFichaJpaMapper {
                 .identificador(entity.identificador())
                 .nombre(entity.nombre())
                 .email(entity.email())
+                .ocurridoEn(entity.ocurridoEn())
                 .build();
     }
 

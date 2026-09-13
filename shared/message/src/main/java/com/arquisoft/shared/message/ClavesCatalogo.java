@@ -16,6 +16,7 @@ import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
+import com.arquisoft.shared.message.key.fichas.AsesorFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteKey;
 import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
@@ -38,6 +39,7 @@ import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarCoordinadorKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 
@@ -85,6 +87,7 @@ public final class ClavesCatalogo {
             EstadoFichaPerfilKey.class,
             EstudianteFichaPerfilKey.class,
             EstudianteKey.class,
+            AsesorFichaKey.class,
             EvaluacionFichaPerfilKey.class,
             ItemCualitativoJuradoKey.class,
             CriterioItemCualitativoJuradoKey.class,
@@ -110,6 +113,7 @@ public final class ClavesCatalogo {
             AgregarEstudianteKey.class,
             AgregarCoordinadorKey.class,
             CoordinadorKey.class
+            AgregarAsesorFichaKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */
