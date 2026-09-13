@@ -23,4 +23,13 @@ public class EstudianteFichaPerfilQueryOutputAdapter implements EstudianteFichaP
                 .map(EstudianteFichaPerfilQueryMapper::toReadModel)
                 .toList();
     }
+
+    @Override
+    public List<EstudianteFichaPerfilReadModel> consultarCompanerosPorFichaYEstudiante(UUID fichaPerfil, UUID estudiante) {
+        return estudianteFichaPerfilQueryRepository
+                .findCompanerosByFichaPerfilIdAndEstudianteId(fichaPerfil, estudiante)
+                .stream()
+                .map(EstudianteFichaPerfilQueryMapper::toReadModel)
+                .toList();
+    }
 }

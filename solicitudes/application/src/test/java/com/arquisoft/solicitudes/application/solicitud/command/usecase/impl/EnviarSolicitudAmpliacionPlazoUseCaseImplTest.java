@@ -78,7 +78,7 @@ class EnviarSolicitudAmpliacionPlazoUseCaseImplTest {
                 destinatarioAsignadoFinder, solicitudDuplicadaFinder, validator, eventPublisher, logger);
 
         var command = EnviarSolicitudAmpliacionPlazoCommand.crear(
-                UUID.randomUUID().toString(), UUID.randomUUID().toString(), "ampliacion de plazo");
+                UUID.randomUUID(), UUID.randomUUID().toString(), "ampliacion de plazo");
         envio = EnviarSolicitudAmpliacionPlazoMapper.toDomain(command);
     }
 
@@ -186,7 +186,7 @@ class EnviarSolicitudAmpliacionPlazoUseCaseImplTest {
         when(datosUsuarioFinder.obtener(envio.getDestinatarioUsuario()))
                 .thenReturn(Optional.of(replica(envio.getDestinatarioUsuario())));
         doThrow(new RemitenteNoEncontradoException(envio.getRemitenteUsuario()))
-                .when(validator).validarExistenciaUsuarios(any(), eq(false), eq(true));
+                .when(validator).validarExistenciaUsuarios(any(), any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(envio))
@@ -225,7 +225,7 @@ class EnviarSolicitudAmpliacionPlazoUseCaseImplTest {
                 .thenReturn(Optional.of(replica(envio.getRemitenteUsuario())));
         when(datosUsuarioFinder.obtener(envio.getDestinatarioUsuario())).thenReturn(Optional.empty());
         doThrow(new DestinatarioNoEncontradoException(envio.getDestinatarioUsuario()))
-                .when(validator).validarExistenciaUsuarios(any(), eq(true), eq(false));
+                .when(validator).validarExistenciaUsuarios(any(), any(), any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(envio))
@@ -269,7 +269,7 @@ class EnviarSolicitudAmpliacionPlazoUseCaseImplTest {
         // Assert — existencia usuario -> asignacion -> get-or-create -> unicidad -> persistir -> publicar
         InOrder inOrder = inOrder(datosUsuarioFinder, validator, destinatarioAsignadoFinder,
                 remitenteDeUsuarioFinder, solicitudDuplicadaFinder, solicitudOutputPort, eventPublisher);
-        inOrder.verify(validator).validarExistenciaUsuarios(any(), anyBoolean(), anyBoolean());
+        inOrder.verify(validator).validarExistenciaUsuarios(any(), any(), any());
         inOrder.verify(destinatarioAsignadoFinder).obtener(any());
         inOrder.verify(validator).validarAsignacionDestinatario(any(), anyBoolean());
         inOrder.verify(remitenteDeUsuarioFinder).obtener(any());
