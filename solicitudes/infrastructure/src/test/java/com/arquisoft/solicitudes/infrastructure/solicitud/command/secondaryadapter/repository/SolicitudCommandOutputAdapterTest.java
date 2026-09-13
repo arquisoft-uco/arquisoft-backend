@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -54,7 +54,7 @@ class SolicitudCommandOutputAdapterTest {
     void debeInsertarLaSolicitudConSusClavesForaneas_cuandoRegistra() {
         // Arrange
         UUID solicitudId = UUID.randomUUID();
-        LocalDateTime fecha = LocalDateTime.of(2026, 2, 1, 10, 30, 0);
+        Instant fecha = Instant.parse("2026-02-01T10:30:00Z");
 
         // Act
         adapter.registrar(new SolicitudEntity(
@@ -74,7 +74,7 @@ class SolicitudCommandOutputAdapterTest {
     @Test
     void debeRetornarTrue_cuandoYaExisteLaCombinacionUnica() {
         // Arrange
-        LocalDateTime fecha = LocalDateTime.of(2026, 2, 1, 10, 30, 0);
+        Instant fecha = Instant.parse("2026-02-01T10:30:00Z");
         adapter.registrar(new SolicitudEntity(
                 UUID.randomUUID(), destinatarioFila, remitenteFila, fecha, "duplicable", TIPO));
         entityManager.flush();
@@ -88,7 +88,7 @@ class SolicitudCommandOutputAdapterTest {
     @Test
     void debeRetornarFalse_cuandoLaCombinacionNoCoincide() {
         // Arrange
-        LocalDateTime fecha = LocalDateTime.of(2026, 2, 1, 10, 30, 0);
+        Instant fecha = Instant.parse("2026-02-01T10:30:00Z");
         adapter.registrar(new SolicitudEntity(
                 UUID.randomUUID(), destinatarioFila, remitenteFila, fecha, "original", TIPO));
         entityManager.flush();

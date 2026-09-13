@@ -5,7 +5,7 @@ import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -16,7 +16,7 @@ class SolicitudUnicaRuleImplTest {
     private final SolicitudUnicaRuleImpl regla = new SolicitudUnicaRuleImpl();
 
     private static ClaveSolicitud clave() {
-        return new ClaveSolicitud(UUID.randomUUID(), UUID.randomUUID(), LocalDateTime.now(), "mensaje");
+        return new ClaveSolicitud(UUID.randomUUID(), UUID.randomUUID(), Instant.now(), "mensaje");
     }
 
     @Test

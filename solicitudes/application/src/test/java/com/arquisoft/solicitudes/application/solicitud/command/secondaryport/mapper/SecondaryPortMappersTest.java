@@ -14,7 +14,7 @@ import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,7 +27,7 @@ class SecondaryPortMappersTest {
         UUID id = UUID.randomUUID();
         UUID destinatario = UUID.randomUUID();
         UUID remitente = UUID.randomUUID();
-        LocalDateTime fecha = LocalDateTime.now();
+        Instant fecha = Instant.now();
         SolicitudDomain domain = SolicitudDomain.reconstruir(
                 id, destinatario, remitente, fecha, "mensaje", TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
 

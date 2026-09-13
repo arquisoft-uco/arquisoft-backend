@@ -26,7 +26,6 @@ import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -48,11 +47,11 @@ public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
 
     @Override
     public UUID ejecutar(EnvioSolicitudNovedadCoordinadorDomain envio) {
-        Optional<UsuarioDomain> remitenteUsuario = datosUsuarioFinder.obtener(envio.getRemitenteUsuario());
-        Optional<UsuarioDomain> destinatarioUsuario =
-                datosUsuarioFinder.obtener(envio.getDestinatarioUsuario());
-        validator.validarExistenciaUsuarios(
-                envio, remitenteUsuario.isPresent(), destinatarioUsuario.isPresent());
+        UsuarioDomain remitenteUsuario =
+                datosUsuarioFinder.obtener(envio.getRemitenteUsuario()).orElse(UsuarioDomain.VACIO);
+        UsuarioDomain destinatarioUsuario =
+                datosUsuarioFinder.obtener(envio.getDestinatarioUsuario()).orElse(UsuarioDomain.VACIO);
+        validator.validarExistenciaUsuarios(envio, remitenteUsuario, destinatarioUsuario);
 
         boolean destinatarioAsignado = destinatarioAsignadoFinder.obtener(new ConsultaAsignacionResponsable(
                 envio.getRemitenteUsuario(), envio.getDestinatarioUsuario()));
@@ -82,11 +81,9 @@ public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
 
         solicitudOutputPort.registrar(SolicitudMapper.toEntity(solicitud));
 
-        UsuarioDomain remitente = remitenteUsuario.orElseThrow();
-        UsuarioDomain destinatario = destinatarioUsuario.orElseThrow();
         eventPublisher.publish(new SolicitudNovedadCoordinadorEnviadaEvent(
-                solicitud.getId(), remitente.getNombre(),
-                destinatario.getNombre(), destinatario.getEmail(),
+                solicitud.getId(), remitenteUsuario.getNombre(),
+                destinatarioUsuario.getNombre(), destinatarioUsuario.getEmail(),
                 solicitud.getMensajeSolicitud()));
 
         logger.info(SolicitudKey.LOG_ENVIADA, solicitud.getId());
