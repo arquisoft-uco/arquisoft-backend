@@ -36,7 +36,7 @@ public class UsuarioCreadoConsumer extends AbstractEventConsumer {
         this.logger = logger;
     }
 
-    @RabbitListener(queues = SolicitudesUsuariosQueueConfig.USUARIO_CREADO_QUEUE)
+    @RabbitListener(queues = SolicitudesUsuariosQueueConfig.USUARIO_REGISTRADO_QUEUE)
     public void onUsuarioCreado(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
             UsuarioCreadoPayload payload = deserialize(message, UsuarioCreadoPayload.class);
