@@ -96,7 +96,6 @@ public final class ClavesCatalogo {
             TipoItemKey.class,
             RepresentanteComiteKey.class,
             RevisionItemKey.class,
-            UsuarioEspejoKey.class,
             RespuestaKey.class,
             SolicitudKey.class,
             TipoSolicitudKey.class,

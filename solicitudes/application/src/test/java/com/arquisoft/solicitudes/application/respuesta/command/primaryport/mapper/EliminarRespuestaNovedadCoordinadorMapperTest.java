@@ -16,7 +16,7 @@ class EliminarRespuestaNovedadCoordinadorMapperTest {
         UUID solicitud = UUID.randomUUID();
         UUID coordinador = UUID.randomUUID();
         var command = EliminarRespuestaNovedadCoordinadorCommand.crear(
-                solicitud.toString(), coordinador.toString());
+                solicitud.toString(), coordinador);
 
         // Act
         EliminacionRespuestaNovedadCoordinadorDomain dominio =

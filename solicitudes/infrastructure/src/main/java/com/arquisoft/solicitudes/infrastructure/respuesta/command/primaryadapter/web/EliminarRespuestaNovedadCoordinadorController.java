@@ -3,6 +3,7 @@ package com.arquisoft.solicitudes.infrastructure.respuesta.command.primaryadapte
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.SolicitudesApiMessages;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.EliminarRespuestaNovedadCoordinadorInteractor;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.EliminarRespuestaNovedadCoordinadorCommand;
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("${rutas.solicitudes.respuesta.base:/solicitudes}")
@@ -58,8 +61,9 @@ public class EliminarRespuestaNovedadCoordinadorController {
     public ResponseEntity<Void> eliminar(@PathVariable String solicitudId,
                                          @AuthenticationPrincipal Jwt jwt) {
 
+        UUID coordinadorUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
         eliminarRespuestaNovedadCoordinadorInteractor.ejecutar(
-                EliminarRespuestaNovedadCoordinadorCommand.crear(solicitudId, jwt.getSubject()));
+                EliminarRespuestaNovedadCoordinadorCommand.crear(solicitudId, coordinadorUsuario));
 
         return ResponseEntity.noContent().build();
     }
