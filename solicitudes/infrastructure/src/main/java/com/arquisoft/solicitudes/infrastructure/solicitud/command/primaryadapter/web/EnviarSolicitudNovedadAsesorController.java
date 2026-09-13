@@ -9,6 +9,7 @@ import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapter.web.dto.EnviarSolicitudNovedadAsesorRequestDTO;
 import com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapter.web.dto.EnviarSolicitudNovedadAsesorResponseDTO;
 import com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapter.web.mapper.EnviarSolicitudNovedadAsesorRequestMapper;
+import com.arquisoft.shared.util.UtilUUID;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -63,8 +64,10 @@ public class EnviarSolicitudNovedadAsesorController {
             @RequestBody EnviarSolicitudNovedadAsesorRequestDTO request,
             @AuthenticationPrincipal Jwt jwt) {
 
+        UUID remitenteUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+
         UUID id = enviarSolicitudNovedadAsesorInteractor.ejecutar(
-                EnviarSolicitudNovedadAsesorRequestMapper.toCommand(request, jwt.getSubject()));
+                EnviarSolicitudNovedadAsesorRequestMapper.toCommand(request, remitenteUsuario));
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new EnviarSolicitudNovedadAsesorResponseDTO(id));
