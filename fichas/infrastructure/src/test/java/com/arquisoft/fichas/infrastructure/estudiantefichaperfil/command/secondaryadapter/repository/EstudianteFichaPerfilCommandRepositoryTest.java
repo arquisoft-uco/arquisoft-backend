@@ -1,12 +1,13 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
-import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.repository.EstudianteCommandRepository;
+import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.repository.EstudianteFichasCommandRepository;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,7 +19,7 @@ class EstudianteFichaPerfilCommandRepositoryTest {
     private EstudianteFichaPerfilCommandRepository repository;
 
     @Autowired
-    private EstudianteCommandRepository estudianteRepository;
+    private EstudianteFichasCommandRepository estudianteRepository;
 
     @Test
     void debeRetornarFalse_cuandoRelacionNoExiste() {
@@ -83,13 +84,13 @@ class EstudianteFichaPerfilCommandRepositoryTest {
         UUID estudianteDeOtraFicha = UUID.randomUUID();
         estudianteRepository.saveAndFlush(EstudianteJpaEntity.builder()
                 .id(estudiante1).identificador("1000000001").nombre("Ana Gomez")
-                .email("ana.gomez@soyuco.edu.co").build());
+                .email("ana.gomez@soyuco.edu.co").ocurridoEn(Instant.now()).build());
         estudianteRepository.saveAndFlush(EstudianteJpaEntity.builder()
                 .id(estudiante2).identificador("1000000002").nombre("Luis Ruiz")
-                .email("luis.ruiz@soyuco.edu.co").build());
+                .email("luis.ruiz@soyuco.edu.co").ocurridoEn(Instant.now()).build());
         estudianteRepository.saveAndFlush(EstudianteJpaEntity.builder()
                 .id(estudianteDeOtraFicha).identificador("1000000003").nombre("Otro Estudiante")
-                .email("otro@soyuco.edu.co").build());
+                .email("otro@soyuco.edu.co").ocurridoEn(Instant.now()).build());
         repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
                 .id(UUID.randomUUID()).fichaPerfilId(fichaId).estudianteId(estudiante1).build());
         repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()

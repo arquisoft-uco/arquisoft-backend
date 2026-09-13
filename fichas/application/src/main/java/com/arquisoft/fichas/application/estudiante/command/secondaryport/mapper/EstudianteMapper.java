@@ -12,7 +12,8 @@ public final class EstudianteMapper {
             entity.id(),
             entity.identificador(),
             entity.nombre(),
-            entity.email()
+            entity.email(),
+            entity.ocurridoEn()
         );
     }
 
@@ -21,7 +22,8 @@ public final class EstudianteMapper {
             aggregate.getId(),
             aggregate.getIdentificador(),
             aggregate.getNombre(),
-            aggregate.getEmail()
+            aggregate.getEmail(),
+            aggregate.getOcurridoEn()
         );
     }
 }
