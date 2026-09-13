@@ -14,6 +14,7 @@ import com.arquisoft.solicitudes.domain.solicitud.rules.impl.DestinatarioAsignad
 import com.arquisoft.solicitudes.domain.solicitud.rules.impl.DestinatarioExisteRuleImpl;
 import com.arquisoft.solicitudes.domain.solicitud.rules.impl.RemitenteExisteRuleImpl;
 import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudUnicaRuleImpl;
+import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -34,10 +35,10 @@ public class EnviarSolicitudCambioAsesorValidatorImpl
 
     @Override
     public void validarExistenciaUsuarios(EnvioSolicitudCambioAsesorDomain envio,
-                                          boolean remitenteExiste, boolean destinatarioExiste) {
-        remitenteExisteRule.validar(new ExistenciaRemitente(envio.getRemitenteUsuario(), remitenteExiste));
+                                          UsuarioDomain remitente, UsuarioDomain destinatario) {
+        remitenteExisteRule.validar(new ExistenciaRemitente(envio.getRemitenteUsuario(), remitente));
         destinatarioExisteRule.validar(
-                new ExistenciaDestinatario(envio.getDestinatarioUsuario(), destinatarioExiste));
+                new ExistenciaDestinatario(envio.getDestinatarioUsuario(), destinatario));
     }
 
     @Override

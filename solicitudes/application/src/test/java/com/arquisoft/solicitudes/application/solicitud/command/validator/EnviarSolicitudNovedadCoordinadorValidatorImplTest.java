@@ -12,9 +12,10 @@ import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudDuplicadaEx
 import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
+import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -34,10 +35,15 @@ class EnviarSolicitudNovedadCoordinadorValidatorImplTest {
         return EnvioSolicitudNovedadCoordinadorDomain.crear(solicitud, remitente, destinatario);
     }
 
+    private static UsuarioDomain usuario(UUID id) {
+        return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co");
+    }
+
     @Test
     void debePasar_cuandoRemitenteYDestinatarioExisten() {
         // Act & Assert
-        assertThatCode(() -> validator.validarExistenciaUsuarios(envio(), true, true))
+        assertThatCode(() -> validator.validarExistenciaUsuarios(
+                envio(), usuario(UUID.randomUUID()), usuario(UUID.randomUUID())))
                 .doesNotThrowAnyException();
     }
 
@@ -47,7 +53,8 @@ class EnviarSolicitudNovedadCoordinadorValidatorImplTest {
         var envio = envio();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validarExistenciaUsuarios(envio, false, true))
+        assertThatThrownBy(() -> validator.validarExistenciaUsuarios(
+                envio, UsuarioDomain.VACIO, usuario(UUID.randomUUID())))
                 .isInstanceOf(RemitenteNoEncontradoException.class)
                 .hasMessageContaining(envio.getRemitenteUsuario().toString());
     }
@@ -58,7 +65,8 @@ class EnviarSolicitudNovedadCoordinadorValidatorImplTest {
         var envio = envio();
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validarExistenciaUsuarios(envio, true, false))
+        assertThatThrownBy(() -> validator.validarExistenciaUsuarios(
+                envio, usuario(UUID.randomUUID()), UsuarioDomain.VACIO))
                 .isInstanceOf(DestinatarioNoEncontradoException.class)
                 .hasMessageContaining(envio.getDestinatarioUsuario().toString());
     }
@@ -67,7 +75,8 @@ class EnviarSolicitudNovedadCoordinadorValidatorImplTest {
     void debeReportarPrimeroLaAusenciaDelRemitente_cuandoAmbosFaltan() {
         // Arrange — el orden es parte del contrato: remitente antes que destinatario
         // Act & Assert
-        assertThatThrownBy(() -> validator.validarExistenciaUsuarios(envio(), false, false))
+        assertThatThrownBy(() -> validator.validarExistenciaUsuarios(
+                envio(), UsuarioDomain.VACIO, UsuarioDomain.VACIO))
                 .isInstanceOf(RemitenteNoEncontradoException.class);
     }
 
@@ -92,7 +101,7 @@ class EnviarSolicitudNovedadCoordinadorValidatorImplTest {
     @Test
     void debeLanzarSolicitudDuplicada_cuandoLaClaveYaExiste() {
         // Arrange
-        var clave = new ClaveSolicitud(UUID.randomUUID(), UUID.randomUUID(), LocalDateTime.now(), "novedad");
+        var clave = new ClaveSolicitud(UUID.randomUUID(), UUID.randomUUID(), Instant.now(), "novedad");
 
         // Act & Assert
         assertThatCode(() -> validator.validarUnicidad(new DisponibilidadSolicitud(clave, false)))

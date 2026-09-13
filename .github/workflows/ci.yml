@@ -18,6 +18,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ============================================================================
+  # Versionamiento Flyway — job propio: corre en segundos y sin Java, así un error
+  # de migración se ve antes de que termine el build.
+  # ============================================================================
+  flyway:
+    name: Versionamiento Flyway
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+        with:
+          # Historial completo: el check de inmutabilidad compara contra la rama destino.
+          fetch-depth: 0
+
+      - name: Validar migraciones
+        run: |
+          BASE="${{ github.base_ref || github.event.repository.default_branch }}"
+          git fetch --no-tags origin "$BASE"
+          bash scripts/validar-migraciones.sh "origin/$BASE"
+
   build:
     name: Lint, Test & Build
     runs-on: ubuntu-latest

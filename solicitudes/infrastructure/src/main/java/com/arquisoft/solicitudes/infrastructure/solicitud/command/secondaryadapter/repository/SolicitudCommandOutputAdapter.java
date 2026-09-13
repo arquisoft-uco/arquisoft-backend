@@ -9,7 +9,7 @@ import com.arquisoft.solicitudes.infrastructure.solicitud.command.secondaryadapt
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,7 +28,7 @@ public class SolicitudCommandOutputAdapter implements SolicitudOutputPort {
 
     @Override
     public boolean existePorCombinacionUnica(
-            UUID destinatario, UUID remitente, LocalDateTime fechaCreacion, String mensajeSolicitud) {
+            UUID destinatario, UUID remitente, Instant fechaCreacion, String mensajeSolicitud) {
         return solicitudCommandRepository.existePorCombinacionUnica(
                 destinatario, remitente, fechaCreacion, mensajeSolicitud);
     }

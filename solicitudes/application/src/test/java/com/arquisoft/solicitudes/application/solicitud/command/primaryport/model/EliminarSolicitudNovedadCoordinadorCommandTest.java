@@ -20,7 +20,7 @@ class EliminarSolicitudNovedadCoordinadorCommandTest {
         // Act
         EliminarSolicitudNovedadCoordinadorCommand command =
                 EliminarSolicitudNovedadCoordinadorCommand.crear(
-                        solicitud.toString(), remitente.toString());
+                        solicitud.toString(), remitente);
 
         // Assert
         assertThat(command.solicitud()).isEqualTo(solicitud);
@@ -31,7 +31,7 @@ class EliminarSolicitudNovedadCoordinadorCommandTest {
     void debeAcumularLosErroresDeEntrada_cuandoAmbosIdentificadoresSonInvalidos() {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
-                () -> EliminarSolicitudNovedadCoordinadorCommand.crear("no-es-uuid", "tampoco"));
+                () -> EliminarSolicitudNovedadCoordinadorCommand.crear("no-es-uuid", null));
 
         // Assert
         var resultado = excepcion.getValidationResult();
@@ -43,7 +43,7 @@ class EliminarSolicitudNovedadCoordinadorCommandTest {
     void debeLanzarErrorDeEntrada_cuandoLaSolicitudEstaEnBlanco() {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
-                () -> EliminarSolicitudNovedadCoordinadorCommand.crear("  ", UUID.randomUUID().toString()));
+                () -> EliminarSolicitudNovedadCoordinadorCommand.crear("  ", UUID.randomUUID()));
 
         // Assert
         assertThat(excepcion.getValidationResult()

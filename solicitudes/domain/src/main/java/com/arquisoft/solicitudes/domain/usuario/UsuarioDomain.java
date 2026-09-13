@@ -2,6 +2,8 @@ package com.arquisoft.solicitudes.domain.usuario;
 
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
+import com.arquisoft.shared.util.UtilTexto;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
@@ -9,6 +11,9 @@ import com.arquisoft.shared.validation.ValidatorTexto;
 import java.util.UUID;
 
 public final class UsuarioDomain {
+
+    public static final UsuarioDomain VACIO = UsuarioDomain.reconstruir(
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO);
 
     private UUID id;
     private String identificador;
@@ -91,5 +96,9 @@ public final class UsuarioDomain {
 
     public String getEmail() {
         return email;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

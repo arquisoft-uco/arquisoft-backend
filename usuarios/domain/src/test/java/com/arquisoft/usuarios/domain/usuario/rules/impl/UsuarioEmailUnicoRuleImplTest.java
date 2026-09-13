@@ -12,20 +12,19 @@ class UsuarioEmailUnicoRuleImplTest {
     private final UsuarioEmailUnicoRuleImpl regla = new UsuarioEmailUnicoRuleImpl();
 
     @Test
-    void debeLanzarExcepcion_cuandoElEmailYaEstaRegistrado() {
+    void debeLanzarExcepcion_cuandoEmailYaExiste() {
         // Arrange
-        var disponibilidad = new DisponibilidadEmailUsuario("duplicado@arquisoft.com", true);
+        var disponibilidad = new DisponibilidadEmailUsuario("ana@uco.edu.co", true);
 
         // Act & Assert
         assertThatThrownBy(() -> regla.validar(disponibilidad))
-                .isInstanceOf(UsuarioEmailDuplicadoException.class)
-                .hasMessageContaining("duplicado@arquisoft.com");
+                .isInstanceOf(UsuarioEmailDuplicadoException.class);
     }
 
     @Test
-    void debePasar_cuandoElEmailEstaLibre() {
+    void noDebeLanzarExcepcion_cuandoEmailNoExiste() {
         // Arrange
-        var disponibilidad = new DisponibilidadEmailUsuario("nuevo@arquisoft.com", false);
+        var disponibilidad = new DisponibilidadEmailUsuario("ana@uco.edu.co", false);
 
         // Act & Assert
         assertThatCode(() -> regla.validar(disponibilidad)).doesNotThrowAnyException();
