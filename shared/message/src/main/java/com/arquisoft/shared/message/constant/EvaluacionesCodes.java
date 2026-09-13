@@ -55,6 +55,22 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_PERTENECE";
     }
 
+    public static final class EvaluacionCuantitativaJurado {
+
+        private EvaluacionCuantitativaJurado() {}
+
+        public static final String EVALUACION_JURADO_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_EVALUACION_JURADO_REQUERIDO";
+        public static final String ESTUDIANTE_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_REQUERIDO";
+        public static final String ITEM_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_ITEM_REQUERIDO";
+        public static final String PUNTAJE_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_REQUERIDO";
+        public static final String PUNTAJE_FUERA_DE_RANGO =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_FUERA_DE_RANGO";
+    }
+
     public static final class EntregableProyectoAcceso {
 
         private EntregableProyectoAcceso() {}
