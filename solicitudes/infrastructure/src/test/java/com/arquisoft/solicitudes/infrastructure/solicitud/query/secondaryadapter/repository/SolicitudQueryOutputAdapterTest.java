@@ -1,4 +1,4 @@
-﻿package com.arquisoft.solicitudes.infrastructure.solicitud.query.secondaryadapter.repository;
+package com.arquisoft.solicitudes.infrastructure.solicitud.query.secondaryadapter.repository;
 
 import com.arquisoft.solicitudes.application.solicitud.query.criteria.SolicitudCriteria;
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
