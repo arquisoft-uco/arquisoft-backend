@@ -8,7 +8,7 @@ public class RemitenteExisteRuleImpl implements RemitenteExisteRule {
 
     @Override
     public void validar(ExistenciaRemitente existencia) {
-        if (!existencia.existe()) {
+        if (existencia.remitente().esVacio()) {
             throw new RemitenteNoEncontradoException(existencia.usuario());
         }
     }

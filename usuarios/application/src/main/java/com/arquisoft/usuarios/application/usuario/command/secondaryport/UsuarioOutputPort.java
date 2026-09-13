@@ -6,5 +6,9 @@ public interface UsuarioOutputPort {
 
     void guardar(UsuarioEntity usuario);
 
+    boolean existePorIdentificador(String identificador);
+
     boolean existePorEmail(String email);
+
+    boolean existePorContacto(String contacto);
 }

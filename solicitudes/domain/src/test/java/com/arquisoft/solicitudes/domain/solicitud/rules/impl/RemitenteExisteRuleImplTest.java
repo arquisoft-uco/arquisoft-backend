@@ -2,6 +2,7 @@ package com.arquisoft.solicitudes.domain.solicitud.rules.impl;
 
 import com.arquisoft.solicitudes.domain.solicitud.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ExistenciaRemitente;
+import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -13,10 +14,14 @@ class RemitenteExisteRuleImplTest {
 
     private final RemitenteExisteRuleImpl regla = new RemitenteExisteRuleImpl();
 
+    private static UsuarioDomain usuario(UUID id) {
+        return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co");
+    }
+
     @Test
     void debeNoLanzar_cuandoElRemitenteExiste() {
         // Act & Assert
-        assertThatCode(() -> regla.validar(new ExistenciaRemitente(UUID.randomUUID(), true)))
+        assertThatCode(() -> regla.validar(new ExistenciaRemitente(UUID.randomUUID(), usuario(UUID.randomUUID()))))
                 .doesNotThrowAnyException();
     }
 
@@ -26,7 +31,7 @@ class RemitenteExisteRuleImplTest {
         UUID usuario = UUID.randomUUID();
 
         // Act & Assert
-        assertThatThrownBy(() -> regla.validar(new ExistenciaRemitente(usuario, false)))
+        assertThatThrownBy(() -> regla.validar(new ExistenciaRemitente(usuario, UsuarioDomain.VACIO)))
                 .isInstanceOf(RemitenteNoEncontradoException.class)
                 .hasMessageContaining(usuario.toString());
     }

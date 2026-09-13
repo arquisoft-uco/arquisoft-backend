@@ -8,6 +8,8 @@ public enum EstadoFichaPerfilKey implements ClaveMensaje {
     ERROR_NO_ENCONTRADO("fichas.dominio.estadofichaperfil.error.no-encontrado", 1),
     ERROR_ESTADO_TERMINAL("fichas.dominio.estadofichaperfil.error.estado-terminal", 1),
     LOG_CREADO("fichas.aplicacion.estadofichaperfil.log.creado", 3),
+    LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.estadofichaperfil.log.consultando-estudiante", 1),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.estadofichaperfil.log.consulta-estudiante-completada", 1),
     LOG_GUARDADO("fichas.infraestructura.estadofichaperfil.log.guardado", 2);
 
     private final String clave;
