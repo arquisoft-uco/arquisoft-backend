@@ -30,6 +30,9 @@ public final class EventTopics {
 
         public static final String ASESOR_FICHA_AGREGADO =
                 "usuarios.asesorficha.agregado";
+
+        public static final String COORDINADOR_AGREGADO =
+                "usuarios.coordinador.agregado";
     }
 
 }

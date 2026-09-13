@@ -41,4 +41,18 @@ public class FichasUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String COORDINADOR_AGREGADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.COORDINADOR_AGREGADO;
+
+    @Bean
+    public Declarables fichasCoordinadorAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                COORDINADOR_AGREGADO_QUEUE,
+                EventTopics.Usuarios.COORDINADOR_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }
