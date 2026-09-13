@@ -27,7 +27,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -98,7 +98,7 @@ class ConsultarSolicitudesNovedadCoordinadorRecibidasControllerTest {
         var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana Estudiante",
                 "ana@uco.edu.co");
         var solicitud = new SolicitudReadModel(UUID.randomUUID(), "una novedad",
-                LocalDateTime.of(2026, 3, 1, 10, 0), "NOVEDAD_PARA_EL_COORDINADOR",
+                Instant.parse("2026-03-01T10:00:00Z"), "NOVEDAD_PARA_EL_COORDINADOR",
                 "Novedad para el Coordinador", remitente);
         when(interactor.ejecutar(any(ConsultarSolicitudesNovedadCoordinadorRecibidasQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(solicitud), 0, 10, 1L));

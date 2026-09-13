@@ -1,4 +1,4 @@
-package com.arquisoft.solicitudes.infrastructure.solicitud.query.secondaryadapter.repository;
+﻿package com.arquisoft.solicitudes.infrastructure.solicitud.query.secondaryadapter.repository;
 
 import com.arquisoft.solicitudes.application.solicitud.query.criteria.SolicitudCriteria;
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
@@ -19,7 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,7 +53,7 @@ class SolicitudQueryOutputAdapterTest {
     }
 
     private void sembrarSolicitud(UUID destinatarioUsuario, String tipo, String remitenteNombre,
-            String remitenteIdentificador, String remitenteEmail, LocalDateTime fecha, String mensaje) {
+            String remitenteIdentificador, String remitenteEmail, Instant fecha, String mensaje) {
         var usuarioRemitente = UsuarioJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador(remitenteIdentificador)
@@ -93,9 +95,9 @@ class SolicitudQueryOutputAdapterTest {
         UUID coordinador = UUID.randomUUID();
         UUID otroCoordinador = UUID.randomUUID();
         sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Ana Estudiante", "EST-1",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 1, 10, 0), "novedad de Ana");
+                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "novedad de Ana");
         sembrarSolicitud(otroCoordinador, TIPO_NOVEDAD, "Beto Estudiante", "EST-2",
-                "beto@uco.edu.co", LocalDateTime.of(2026, 3, 2, 10, 0), "novedad de Beto");
+                "beto@uco.edu.co", LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "novedad de Beto");
 
         // Act
         PaginatedResult<SolicitudReadModel> resultado = adapter.consultar(filtroDestinatario(coordinador));
@@ -117,9 +119,9 @@ class SolicitudQueryOutputAdapterTest {
         // Arrange
         UUID coordinador = UUID.randomUUID();
         sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Ana", "EST-1",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 1, 10, 0), "es novedad");
+                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "es novedad");
         sembrarSolicitud(coordinador, TIPO_CAMBIO, "Ana", "EST-1",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 2, 10, 0), "es cambio");
+                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "es cambio");
 
         SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
@@ -142,9 +144,9 @@ class SolicitudQueryOutputAdapterTest {
         // Arrange
         UUID coordinador = UUID.randomUUID();
         sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Ana Ramirez", "EST-1",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 1, 10, 0), "de Ana");
+                "ana@uco.edu.co", LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "de Ana");
         sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Luis Perez", "EST-2",
-                "luis@uco.edu.co", LocalDateTime.of(2026, 3, 2, 10, 0), "de Luis");
+                "luis@uco.edu.co", LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "de Luis");
 
         SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
@@ -167,9 +169,9 @@ class SolicitudQueryOutputAdapterTest {
         // Arrange
         UUID coordinador = UUID.randomUUID();
         sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Ana", "EST-1",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 1, 10, 10, 0), "vieja");
+                "ana@uco.edu.co", LocalDateTime.of(2026, 1, 10, 10, 0).toInstant(ZoneOffset.UTC), "vieja");
         sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Luis", "EST-2",
-                "luis@uco.edu.co", LocalDateTime.of(2026, 5, 20, 10, 0), "nueva");
+                "luis@uco.edu.co", LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "nueva");
 
         SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
@@ -191,9 +193,9 @@ class SolicitudQueryOutputAdapterTest {
         // Arrange
         UUID coordinador = UUID.randomUUID();
         sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Zulma", "EST-1",
-                "zulma@uco.edu.co", LocalDateTime.of(2026, 1, 10, 10, 0), "z");
+                "zulma@uco.edu.co", LocalDateTime.of(2026, 1, 10, 10, 0).toInstant(ZoneOffset.UTC), "z");
         sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Ana", "EST-2",
-                "ana@uco.edu.co", LocalDateTime.of(2026, 5, 20, 10, 0), "a");
+                "ana@uco.edu.co", LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "a");
 
         SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
@@ -216,7 +218,7 @@ class SolicitudQueryOutputAdapterTest {
         UUID coordinador = UUID.randomUUID();
         for (int i = 0; i < 3; i++) {
             sembrarSolicitud(coordinador, TIPO_NOVEDAD, "Rem " + i, "EST-" + i,
-                    "rem" + i + "@uco.edu.co", LocalDateTime.of(2026, 3, 1 + i, 10, 0), "m" + i);
+                    "rem" + i + "@uco.edu.co", LocalDateTime.of(2026, 3, 1 + i, 10, 0).toInstant(ZoneOffset.UTC), "m" + i);
         }
 
         SolicitudCriteria criteria = SolicitudCriteria.builder().pagina(1).tamanio(2)
