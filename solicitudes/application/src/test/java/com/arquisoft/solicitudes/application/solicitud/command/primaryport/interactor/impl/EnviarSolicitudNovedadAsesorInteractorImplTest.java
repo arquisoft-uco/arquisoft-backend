@@ -33,7 +33,7 @@ class EnviarSolicitudNovedadAsesorInteractorImplTest {
         UUID destinatario = UUID.randomUUID();
         UUID esperado = UUID.randomUUID();
         var command = EnviarSolicitudNovedadAsesorCommand.crear(
-                remitente.toString(), destinatario.toString(), "novedad");
+                remitente, destinatario.toString(), "novedad");
         when(useCase.ejecutar(any(EnvioSolicitudNovedadAsesorDomain.class))).thenReturn(esperado);
 
         // Act

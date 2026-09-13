@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public interface SolicitudCommandRepository extends JpaRepository<SolicitudJpaEntity, UUID> {
@@ -16,6 +16,6 @@ public interface SolicitudCommandRepository extends JpaRepository<SolicitudJpaEn
     boolean existePorCombinacionUnica(
             @Param("destinatario") UUID destinatario,
             @Param("remitente") UUID remitente,
-            @Param("fechaCreacion") LocalDateTime fechaCreacion,
+            @Param("fechaCreacion") Instant fechaCreacion,
             @Param("mensajeSolicitud") String mensajeSolicitud);
 }

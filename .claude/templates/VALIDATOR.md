@@ -14,6 +14,7 @@ Destino: .workspace/validator/validator-{HU|HT}-{ID}.md
 
 ## Metadata
 - **Bounded Context:** {contexto}
+- **Autor:** {Nombre} <{correo}>   <!-- se copia del campo Autor del plan; si no lo trae, git config -->
 - **Fecha:** {yyyy-MM-dd} · **Rama propuesta:** `feature/{HU|HT}-{ID}-{descripcion}`
 - **Plan validado:** `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md`
 

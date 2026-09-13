@@ -1,31 +1,38 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.repository;
 
-import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.message.key.usuarios.UsuarioKey;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioOutputPort;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
-import com.arquisoft.shared.util.UtilTexto;
+import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.mapper.UsuarioJpaMapper;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-// Adaptador deliberadamente inerte: usuarios es hoy un contexto de ejemplo y no debe dejar
-// filas en la tabla si alguien invoca el flujo. La forma (puerto en Entity, nombres en
-// espanol, AppLogger) si es la definitiva — lo unico pendiente es el acceso a datos.
 @Component
 @RequiredArgsConstructor
 public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
 
+    private final UsuarioCommandRepository usuarioCommandRepository;
     private final AppLogger logger;
 
     @Override
     public void guardar(UsuarioEntity usuario) {
-        logger.debug(UsuarioKey.LOG_MOCK_NO_PERSISTIDO,
-                usuario.id(), UtilTexto.enmascararCorreo(usuario.email()));
+        usuarioCommandRepository.save(UsuarioJpaMapper.toJpaEntity(usuario));
+        logger.debug(RegistrarUsuarioKey.LOG_USUARIO_GUARDADO, usuario.id());
+    }
+
+    @Override
+    public boolean existePorIdentificador(String identificador) {
+        return usuarioCommandRepository.existsByIdentificador(identificador);
     }
 
     @Override
     public boolean existePorEmail(String email) {
-        logger.debug(UsuarioKey.LOG_MOCK_VERIFICACION_OMITIDA, UtilTexto.enmascararCorreo(email));
-        return false;
+        return usuarioCommandRepository.existsByEmailIgnoreCase(email);
+    }
+
+    @Override
+    public boolean existePorContacto(String contacto) {
+        return usuarioCommandRepository.existsByContacto(contacto);
     }
 }
