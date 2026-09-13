@@ -81,5 +81,10 @@ public final class EvaluacionesApiMessages {
         public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
         public static final String REGISTRAR_RESP_422 =
                 "La categoría no existe o el nombre ya está registrado en ella";
+        public static final String CONSULTAR_SUMMARY = "Consultar ítems cuantitativos";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta todos los ítems cuantitativos disponibles para que el jurado evalúe un "
+                        + "trabajo de grado, ordenados por categoría y luego por nombre";
+        public static final String CONSULTAR_RESP_200 = "Listado de ítems cuantitativos del jurado";
     }
 }
