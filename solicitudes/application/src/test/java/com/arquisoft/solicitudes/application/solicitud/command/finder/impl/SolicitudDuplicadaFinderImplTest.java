@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -28,7 +28,7 @@ class SolicitudDuplicadaFinderImplTest {
         // Arrange
         UUID destinatario = UUID.randomUUID();
         UUID remitente = UUID.randomUUID();
-        LocalDateTime fecha = LocalDateTime.now();
+        Instant fecha = Instant.now();
         var clave = new ClaveSolicitud(destinatario, remitente, fecha, "mensaje");
         when(solicitudOutputPort.existePorCombinacionUnica(destinatario, remitente, fecha, "mensaje"))
                 .thenReturn(true);

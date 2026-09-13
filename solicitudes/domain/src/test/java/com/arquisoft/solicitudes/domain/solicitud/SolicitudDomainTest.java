@@ -5,7 +5,7 @@ import com.arquisoft.shared.validation.DomainValidationException;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,7 +70,7 @@ class SolicitudDomainTest {
     void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
         // Arrange
         UUID id = UUID.randomUUID();
-        LocalDateTime fecha = LocalDateTime.now();
+        Instant fecha = Instant.now();
 
         // Act
         SolicitudDomain solicitud = SolicitudDomain.reconstruir(

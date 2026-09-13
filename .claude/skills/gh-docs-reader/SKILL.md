@@ -1,6 +1,6 @@
 ---
 name: gh-docs-reader
-description: Consulta archivos markdown del repositorio privado de documentacion de arquisoft-uco (arquisoft-docs) usando el GitHub CLI. Permite leer historias de usuario (HU, en propuestas-hu/), historias tecnicas (HT, en docs/stories/), event storming, modelos de dominio, funcionalidades criticas, atributos de calidad, ADRs y flujos de arquitectura sin clonar el repositorio. Usar antes de planificar cualquier Historia de Usuario.
+description: Consulta archivos markdown del repositorio privado de documentacion de arquisoft-uco (arquisoft-docs) usando el GitHub CLI. Permite leer historias de usuario (HU, en propuestas-hu/priorizacion/ mas los backlogs por fase en propuestas-hu/backlog/), historias tecnicas (HT, en docs/stories/), event storming, modelos de dominio, funcionalidades criticas, atributos de calidad, ADRs y flujos de arquitectura sin clonar el repositorio. Usar antes de planificar cualquier Historia de Usuario.
 ---
 
 # Skill: gh-docs-reader
@@ -77,8 +77,19 @@ arquisoft-docs/
 │   │   │       │   ├── 14_biblioteca_modelo_enriquecido.md
 │   │   │       │   └── 15_solicitudes_modelo_enriquecido.md
 │   │   │       └── excel/                           # Versiones Excel (no legibles)
-│   │   ├── propuestas-hu/
-│   │   │   └── historias_usuario_priorizadas.md      # HU priorizadas por release (Actor, Objeto, Comando)
+│   │   ├── propuestas-hu/                            # REESTRUCTURADA 2026-09-08 — ver seccion propia
+│   │   │   ├── backlog/                              # Backlog por fases (DERIVADO del priorizado + BPD)
+│   │   │   │   ├── README.md                         #   Particion, metodo y riesgos del reparto
+│   │   │   │   ├── fase-1-mvp.md                     #   114 HU · Equipo 1 · flujos F01-F07 (bpd_mvp/)
+│   │   │   │   ├── fase-2-entrega-completa.md        #   163 HU · Equipo 2 · F08-F10 + completar F01/F02/F05/F07
+│   │   │   │   └── fase-3-consolidacion.md           #   3 HU NUEVAS (HU278-HU280) — solo existen aqui
+│   │   │   ├── priorizacion/
+│   │   │   │   ├── historias_usuario_priorizadas.md  # FICHA de cada HU (Actor, Objeto, Comando) — fuente de verdad
+│   │   │   │   └── Historias de Usuario Por Release.xlsx   # (no legible)
+│   │   │   └── fase-2/                               # Reparto de trabajo del Equipo 2 (organizativo, no de negocio)
+│   │   │       ├── luis.md · david.md · mateo.md
+│   │   │       ├── consolidado.md
+│   │   │       └── plan-desarrollo-david.md
 │   │   ├── mapa-impacto/
 │   │   │   ├── mapa_impacto.md                      # Version actual
 │   │   │   └── versiones/                           # Historial de versiones
@@ -210,7 +221,16 @@ Ejemplos con rutas reales:
 
 ```bash
 # Historias de usuario priorizadas (fuente principal de las HU)
-gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu/historias_usuario_priorizadas.md" \
+# OJO: desde 2026-09-08 vive bajo priorizacion/ — la ruta plana anterior da 404
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu/priorizacion/historias_usuario_priorizadas.md" \
+  -H "Accept: application/vnd.github.raw+json"
+
+# Backlog de la fase a la que pertenece la HU (fase, prioridad de ejecucion, flujo, equipo)
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu/backlog/fase-1-mvp.md" \
+  -H "Accept: application/vnd.github.raw+json"
+
+# HU278-HU280: NO estan en el priorizado, solo aqui
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu/backlog/fase-3-consolidacion.md" \
   -H "Accept: application/vnd.github.raw+json"
 
 # Funcionalidades criticas
@@ -289,6 +309,14 @@ gh api "repos/arquisoft-uco/arquisoft-docs/contents/{carpeta}" --jq ".[].name"
 Ejemplos:
 
 ```bash
+# Listar la estructura de propuestas-hu (backlog/, priorizacion/, fase-2/)
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu" \
+  --jq '.[] | "\(.type)\t\(.name)"'
+
+# Listar los backlogs por fase
+gh api "repos/arquisoft-uco/arquisoft-docs/contents/artefactos/estrategicos/propuestas-hu/backlog" \
+  --jq ".[].name"
+
 # Listar todas las historias tecnicas (HT, no HU)
 gh api "repos/arquisoft-uco/arquisoft-docs/contents/docs/stories" --jq ".[].name"
 
@@ -468,17 +496,62 @@ es "desaconsejada", es imposible.
 
 ---
 
+## `propuestas-hu/` — reestructurada el 2026-09-08
+
+La carpeta dejo de ser plana. `historias_usuario_priorizadas.md` **ya no esta en la raiz de
+`propuestas-hu/`**: se movio a `priorizacion/`. Cualquier ruta memorizada de antes devuelve 404, y el
+404 no significa que la HU no exista — significa que la ruta es vieja.
+
+Tres subcarpetas con roles distintos, y no son intercambiables:
+
+| Subcarpeta | Que es | Cuando la lees |
+|---|---|---|
+| `priorizacion/` | La **ficha** de cada HU: Actor, Objeto de Dominio, Comando, Descripcion, MoSCoW, tallaje. Fuente de verdad de las 277 HU | **Siempre.** Es el paso 2 del protocolo y de aqui sale el bounded context |
+| `backlog/` | **Derivado**: reparte esas 277 en Fase 1 (114, Equipo 1) y Fase 2 (163, Equipo 2) — conjuntos disjuntos — y anade Fase 3 (HU278-HU280). Aporta fase, flujo (F01-F10), equipo y **prioridad de ejecucion** | Cuando necesites saber a que fase/flujo pertenece la HU, que la habilita, o si es HU278-HU280 |
+| `fase-2/` | Reparto nominal del trabajo del Equipo 2 (`luis.md`, `david.md`, `mateo.md`, `consolidado.md`, `plan-desarrollo-david.md`) | Solo si la pregunta es de asignacion de personas. **No es fuente de negocio** — no saques de aqui reglas ni campos |
+
+Cuatro consecuencias al planificar:
+
+- **`backlog/` es derivado, `priorizacion/` manda.** Si difieren en el titulo o el actor de una HU,
+  gana la ficha del priorizado. La excepcion son las tres HU de Fase 3.
+- **HU278, HU279 y HU280 solo existen en `backlog/fase-3-consolidacion.md`.** Son posteriores al
+  cierre del listado priorizado; buscarlas en `priorizacion/` es buscar en vano. Cierran el ciclo de
+  vida de Revision Item / Observacion Item y dependen de HU033.
+- **La priorizacion por Release/Sprint quedo obsoleta.** Las columnas `R`, `S` y `Prio` originales y
+  la vista agrupada por release **no se conservan**; el orden vigente es la *Prioridad de ejecucion*
+  de `backlog/` (menor = primero, en pasos de 10). No cites "Release N" en un plan.
+  Las prioridades de Fase 3 (1043/1047/1051) conservan el rango del listado original y **no son
+  comparables** con las de Fase 1 y Fase 2.
+- **La regla de particion es mecanica:** una HU es de Fase 1 si y solo si algun `.mmd` de
+  `docs/bpd_mvp/` la referencia; el resto es Fase 2. Util para ubicar una HU sin abrir los tres
+  backlogs.
+
+El `.xlsx` de `priorizacion/` no es legible como texto — ignoralo, todo lo que necesitas esta en el
+`.md` de al lado.
+
+---
+
 ## Protocolo de Consulta para el Planificador
 
 Sigue este orden en la FASE 0. Distingue entre **HU** (Historias de Usuario) y **HT** (Historias Tecnicas):
 
-- **HU** = funcionalidad de negocio → viven en `artefactos/estrategicos/propuestas-hu/historias_usuario_priorizadas.md`
+- **HU** = funcionalidad de negocio → su ficha vive en
+  `artefactos/estrategicos/propuestas-hu/priorizacion/historias_usuario_priorizadas.md`
+  (HU278-HU280, en `propuestas-hu/backlog/fase-3-consolidacion.md`)
 - **HT** = infraestructura tecnica → viven en `docs/stories/HT-XXX.*.story.md`
 
 ```
  1. gh auth status                                     → Verificar acceso
- 2. Leer historias_usuario_priorizadas.md              → Buscar la HU por ID (ej. HU160)
-    Extraer: Actor, Objeto de Dominio, Comando, Descripcion, Prioridad
+ 2. Leer priorizacion/historias_usuario_priorizadas.md  → Buscar la HU por ID (ej. HU160)
+    Extraer: Actor, Objeto de Dominio, Comando, Descripcion, MoSCoW, tallaje.
+    Ruta completa (cambio 2026-09-08 — la ruta plana anterior da 404):
+      artefactos/estrategicos/propuestas-hu/priorizacion/historias_usuario_priorizadas.md
+    Si la HU es HU278, HU279 o HU280 no esta aqui: leer backlog/fase-3-consolidacion.md.
+ 2b. Leer el backlog de su fase                        → Fase, flujo (F01-F10), equipo, prioridad
+    de ejecucion y que HU la habilitan. Es DERIVADO: ante discrepancia gana el paso 2.
+      backlog/fase-1-mvp.md | backlog/fase-2-entrega-completa.md | backlog/fase-3-consolidacion.md
+    Regla para saber cual abrir: la HU es de Fase 1 si y solo si un .mmd de docs/bpd_mvp/ la
+    referencia; el resto es Fase 2. No cites "Release N": esa priorizacion quedo obsoleta.
  3. Con el Objeto de Dominio, identificar el bounded context (usar tabla de mapeo abajo)
  4. Leer el Event Storming del contexto                → Buscar el Comando exacto de la HU
     Extraer del comando: Actores, Descripcion, Informacion externa / Read Models,
@@ -537,6 +610,7 @@ Sigue este orden en la FASE 0. Distingue entre **HU** (Historias de Usuario) y *
 |-------|---------------|--------|
 | `HTTP 401` | Token expirado o sin permisos | Ejecutar `gh auth refresh` o `gh auth login` |
 | `HTTP 404` | Archivo no existe en esa ruta | Listar carpeta padre con el comando de listar para encontrar la ruta real |
+| `HTTP 404` en `propuestas-hu/historias_usuario_priorizadas.md` | Ruta previa a la reestructuracion del 2026-09-08 | Reintentar con `propuestas-hu/priorizacion/historias_usuario_priorizadas.md`. **No** concluyas que la HU no existe |
 | `HTTP 403` | Sin acceso a la organizacion | Solicitar al admin de la org que otorgue acceso al token |
 | `could not find` + `404` | Ruta con caracteres especiales mal codificados | Listar la carpeta padre y usar el nombre exacto del archivo |
 | `gh: command not found` | CLI no instalado | Instalar desde https://cli.github.com/ |

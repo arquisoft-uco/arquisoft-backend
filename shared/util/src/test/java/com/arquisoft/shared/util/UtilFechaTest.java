@@ -3,32 +3,10 @@ package com.arquisoft.shared.util;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UtilFechaTest {
-
-    @Test
-    void debeGenerarLaFechaHoraActual_cuandoSeInvocaElAccesor() {
-        // Arrange
-        LocalDateTime antes = LocalDateTime.now().minusSeconds(1);
-
-        // Act
-        LocalDateTime ahora = UtilFecha.generarFechaHoraActual();
-
-        // Assert
-        assertThat(ahora).isAfter(antes);
-        assertThat(ahora).isBeforeOrEqualTo(LocalDateTime.now().plusSeconds(1));
-    }
-
-    @Test
-    void debeExponerElCentinelaDeFechaHora_cuandoSeConsultaFechaHoraVacia() {
-        // Act & Assert
-        assertThat(UtilFecha.FECHA_HORA_VACIA)
-                .isEqualTo(LocalDateTime.ofInstant(Instant.EPOCH, ZoneOffset.UTC));
-    }
 
     @Test
     void debeGenerarElInstanteActual_cuandoSeInvocaElAccesor() {
@@ -37,6 +15,12 @@ class UtilFechaTest {
 
         // Assert
         assertThat(instante).isBetween(Instant.now().minusSeconds(1), Instant.now().plusSeconds(1));
+    }
+
+    @Test
+    void debeExponerElCentinela_cuandoSeConsultaVacio() {
+        // Act & Assert
+        assertThat(UtilFecha.VACIO).isEqualTo(Instant.EPOCH);
     }
 
     @Test

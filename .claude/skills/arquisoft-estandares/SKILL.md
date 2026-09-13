@@ -102,13 +102,14 @@ un `Finder` y nada más: el `UseCase` lo desenvuelve. Un domain ausente viaja co
 viaja como el valor más un `boolean` explícito (`boolean asesorExiste`) dentro de su record
 `Existencia{Concepto}`.
 
-**El resultado de un `{X}ExisteFinder` se declara `boolean`, nunca `var`.** El contrato del finder
-tiene que ser `Finder<T, Boolean>` — un genérico de Java no admite primitivos, así que el envuelto
-ahí no es un error y no hay que "arreglarlo". Lo que no puede pasar es que ese `Boolean` siga vivo
-dentro del use case: con `var` se propaga hasta el `validar(..., boolean existe)`, donde el unboxing
-ocurre en silencio y un `null` sería un NPE sin línea propia. Declararlo `boolean` mueve ese
-desempaquetado a un punto visible y único. Es la excepción explícita a la preferencia por `var` de
-"Estilo Java".
+**El resultado de un `{X}ExisteFinder` también se recibe con `var`** (`var itemExiste =
+itemExisteFinder.obtener(item);`). El contrato tiene que ser `Finder<T, Boolean>` — un genérico de
+Java no admite primitivos, así que el envuelto ahí no es un error y no hay que "arreglarlo". Lo que
+hace seguro el unboxing en `validar(..., boolean existe)` no es la declaración local sino la regla
+del propio `Finder`: **siempre devuelve valor y nunca `null`**, porque un `existePor...` del
+`OutputPort` devuelve `boolean` primitivo. Un `{X}ExisteFinder` que pudiera devolver `null` está mal
+implementado, y declararlo `boolean` en el use case solo escondería ese defecto un método más
+adelante en vez de arreglarlo. Ver "Estilo Java".
 
 ## Identificadores y DTOs
 
@@ -602,9 +603,29 @@ si el valor identifica a una persona fuera del sistema, se enmascara o no se reg
 
 ## Estilo Java
 
-`var` cuando el lado derecho ya nombra el tipo o evita repetir un genérico largo; **no** con
-diamante (`new LinkedHashMap<>()`), ni con clases anónimas, ni cuando el tipo declarado es
-deliberadamente una interfaz. Solo para locales — campos, parámetros y retornos van explícitos.
+**`var` en toda variable local, sin excepción por tipo.** No importa que el lado derecho no nombre
+el tipo ni que el tipo sea corto: un `long`, un `int`, un `boolean`, un `Boolean`, un `UUID`, un
+`String`, un `LocalDateTime` y un `Optional<X>` se declaran igual que un agregado. La forma es
+uniforme y no se negocia caso por caso:
+
+```java
+var cantidadRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());   // ✅
+long cantidadRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());  // ❌
+var itemExiste = itemExisteFinder.obtener(item);                               // ✅
+var idFicha = UtilUUID.generarNuevoUUID();                                     // ✅
+var recortado = UtilTexto.aplicarTrim(nombre);                                 // ✅
+```
+
+Esto es una regla de **forma**, no un juicio sobre legibilidad, justamente para que no haya que
+juzgarla en cada línea: la mezcla de estilos era la desviación, no el `var`.
+
+Las únicas exclusiones son donde `var` **no compila o cambia la semántica**, no donde "se lee mejor"
+explícito: diamante sin argumento de tipo (`new LinkedHashMap<>()` — o se tipa el diamante,
+`var mapa = new LinkedHashMap<String, Integer>()`), inicializador de array por llaves, lambda o
+referencia a método sin tipo objetivo, e inicializador `null`. Y **solo locales**: campos,
+parámetros, retornos y componentes de `record` siguen yendo explícitos — el `boolean asesorExiste`
+de un `Existencia{Concepto}` es un componente de record, no un local, y no cambia.
+
 `record` para `Command`/`ReadModel`/`RequestDTO`/`ResponseDTO`/payloads de evento/entradas de `Rule`;
 nunca para el domain. Imports explícitos, nunca wildcard. **Sin Lombok en `domain/`.**
 

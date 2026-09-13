@@ -4,6 +4,7 @@ import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 import com.arquisoft.shared.validation.ValidatorUUID;
 
@@ -14,7 +15,7 @@ public record EliminarSolicitudNovedadCoordinadorCommand(
         UUID remitenteUsuario
 ) {
     public static EliminarSolicitudNovedadCoordinadorCommand crear(
-            String solicitud, String remitenteUsuario) {
+            String solicitud, UUID remitenteUsuario) {
         var result = new ValidationResult();
 
         if (ValidatorTexto.noEnBlanco(solicitud,
@@ -25,18 +26,14 @@ public record EliminarSolicitudNovedadCoordinadorCommand(
                     SolicitudesCodes.Solicitud.ID_REQUERIDO, result);
         }
 
-        if (ValidatorTexto.noEnBlanco(remitenteUsuario,
+        ValidatorObjeto.noNulo(remitenteUsuario,
                 SolicitudesFields.Solicitud.REMITENTE,
-                SolicitudesCodes.Solicitud.REMITENTE_REQUERIDO, result)) {
-            ValidatorUUID.uuidValido(remitenteUsuario,
-                    SolicitudesFields.Solicitud.REMITENTE,
-                    SolicitudesCodes.Solicitud.REMITENTE_REQUERIDO, result);
-        }
+                SolicitudesCodes.Solicitud.REMITENTE_REQUERIDO, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
         return new EliminarSolicitudNovedadCoordinadorCommand(
                 UtilUUID.generarUUIDDesdeTexto(solicitud),
-                UtilUUID.generarUUIDDesdeTexto(remitenteUsuario));
+                remitenteUsuario);
     }
 }

@@ -20,7 +20,7 @@ class EnviarSolicitudNovedadCoordinadorCommandTest {
         // Act
         EnviarSolicitudNovedadCoordinadorCommand command =
                 EnviarSolicitudNovedadCoordinadorCommand.crear(
-                        remitente.toString(), destinatario.toString(), "  Hola coordinador  ");
+                        remitente, destinatario.toString(), "  Hola coordinador  ");
 
         // Assert
         assertThat(command.remitenteUsuario()).isEqualTo(remitente);
@@ -33,7 +33,7 @@ class EnviarSolicitudNovedadCoordinadorCommandTest {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EnviarSolicitudNovedadCoordinadorCommand.crear(
-                        "no-es-uuid", "tampoco-es-uuid", "a".repeat(101)));
+                        null, "tampoco-es-uuid", "a".repeat(101)));
 
         // Assert
         var resultado = excepcion.getValidationResult();

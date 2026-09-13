@@ -20,7 +20,7 @@ class EliminarRespuestaNovedadCoordinadorCommandTest {
         // Act
         EliminarRespuestaNovedadCoordinadorCommand command =
                 EliminarRespuestaNovedadCoordinadorCommand.crear(
-                        solicitud.toString(), coordinador.toString());
+                        solicitud.toString(), coordinador);
 
         // Assert
         assertThat(command.solicitud()).isEqualTo(solicitud);
@@ -31,7 +31,7 @@ class EliminarRespuestaNovedadCoordinadorCommandTest {
     void debeLanzarErrorDeEntrada_cuandoLaSolicitudEstaEnBlanco() {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
-                () -> EliminarRespuestaNovedadCoordinadorCommand.crear("  ", UUID.randomUUID().toString()));
+                () -> EliminarRespuestaNovedadCoordinadorCommand.crear("  ", UUID.randomUUID()));
 
         // Assert
         assertThat(excepcion.getValidationResult()
@@ -43,7 +43,7 @@ class EliminarRespuestaNovedadCoordinadorCommandTest {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EliminarRespuestaNovedadCoordinadorCommand.crear(
-                        "no-es-uuid", UUID.randomUUID().toString()));
+                        "no-es-uuid", UUID.randomUUID()));
 
         // Assert
         assertThat(excepcion.getValidationResult()
@@ -51,11 +51,11 @@ class EliminarRespuestaNovedadCoordinadorCommandTest {
     }
 
     @Test
-    void debeLanzarErrorDeEntrada_cuandoElCoordinadorUsuarioNoEsUuid() {
+    void debeLanzarErrorDeEntrada_cuandoElCoordinadorUsuarioEsNulo() {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EliminarRespuestaNovedadCoordinadorCommand.crear(
-                        UUID.randomUUID().toString(), "tampoco-es-uuid"));
+                        UUID.randomUUID().toString(), null));
 
         // Assert
         assertThat(excepcion.getValidationResult()

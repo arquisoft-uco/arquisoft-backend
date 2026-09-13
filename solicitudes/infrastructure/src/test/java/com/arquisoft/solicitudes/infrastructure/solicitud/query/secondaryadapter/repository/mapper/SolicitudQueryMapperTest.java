@@ -3,7 +3,7 @@ package com.arquisoft.solicitudes.infrastructure.solicitud.query.secondaryadapte
 import com.arquisoft.solicitudes.infrastructure.solicitud.query.secondaryadapter.repository.SolicitudJpaQueryEntity;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,7 +16,7 @@ class SolicitudQueryMapperTest {
         var entity = SolicitudJpaQueryEntity.builder()
                 .id(UUID.randomUUID())
                 .mensajeSolicitud("una novedad")
-                .fechaCreacion(LocalDateTime.of(2026, 3, 1, 10, 0))
+                .fechaCreacion(Instant.parse("2026-03-01T10:00:00Z"))
                 .tipoSolicitudId("NOVEDAD_PARA_EL_COORDINADOR")
                 .tipoSolicitudNombre("Novedad para el Coordinador")
                 .destinatarioUsuarioId(UUID.randomUUID())

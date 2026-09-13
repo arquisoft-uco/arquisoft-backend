@@ -52,4 +52,12 @@ class UsuarioDomainTest {
         assertThat(usuario.getId()).isEqualTo(id);
         assertThat(usuario.getNombre()).isNull();
     }
+
+    @Test
+    void debeReportarVacio_cuandoEsElCentinela() {
+        // Act & Assert
+        assertThat(UsuarioDomain.VACIO.esVacio()).isTrue();
+        assertThat(UsuarioDomain.crear(UUID.randomUUID(), "EST-001", "Ana Estudiante", "ana@uco.edu.co")
+                .esVacio()).isFalse();
+    }
 }
