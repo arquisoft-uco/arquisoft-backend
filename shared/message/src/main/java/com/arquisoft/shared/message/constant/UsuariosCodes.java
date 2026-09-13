@@ -50,4 +50,12 @@ public final class UsuariosCodes {
         public static final String USUARIO_REQUERIDO = "ESTUDIANTE_USUARIO_REQUERIDO";
         public static final String USUARIO_DUPLICADO = "ESTUDIANTE_USUARIO_DUPLICADO";
     }
+
+    public static final class Coordinador {
+
+        private Coordinador() {}
+
+        public static final String USUARIO_REQUERIDO = "COORDINADOR_USUARIO_REQUERIDO";
+        public static final String USUARIO_DUPLICADO = "COORDINADOR_USUARIO_DUPLICADO";
+    }
 }
