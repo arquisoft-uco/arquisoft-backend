@@ -899,6 +899,23 @@ Todos los flujos entre contextos que existen hoy caen en la primera fila.
    sustantivo inventa un concepto que el negocio no tiene. `EstudianteDomain`,
    `AgregarEstudianteUseCase`, `EstudianteFinder`, `EstudianteOutputPort`.
 
+   **Excepción: el nombre de bean.** Spring nombra el bean por el nombre simple de la clase, así
+   que dos beans homónimos en contextos distintos abortan el arranque con
+   `ConflictingBeanDefinitionException`. Por eso, en la réplica, **toda clase que es bean** y ya
+   existe con ese nombre en otro contexto lleva el **nombre del contexto que la aloja** antes del sufijo
+   técnico: `{Concepto}{Contexto}{Sufijo}`. El dueño conserva el nombre natural; la interfaz se
+   renombra junto con su `Impl`.
+
+   | Es bean → calificador | No es bean → nombre natural |
+   |---|---|
+   | `EstudianteFichasPorIdFinder(Impl)`, `AgregarEstudianteFichasInteractor(Impl)`, `AgregarCoordinadorProyectosUseCase(Impl)`, `EstudianteAgregadoFichasConsumer`, `AsesorProyectosCommandOutputAdapter`, `AsesorProyectosCommandRepository`, `{Contexto}…Config` | `EstudianteDomain`, `EstudianteEntity`, `EstudianteJpaEntity`, `EstudianteMapper`, `EstudianteOutputPort`, `AgregarEstudianteCommand`, `EstudianteAgregadoPayload`, `AgregacionEstudianteResult` |
+
+   Un calificador de **contexto** no es un calificador de mecanismo: `Fichas` dice dónde vive, no
+   que sea copia, así que no choca con la prohibición de `Espejo`. Un bean que hoy es único en todo
+   el repo puede quedarse con el nombre natural (`CoordinadorPorIdFinderImpl`), pero quien añada el
+   segundo homónimo renombra el suyo. El gate `verificarNombresBeanUnicos` (cuelga de `check`) falla
+   ante cualquier nombre simple de bean repetido en `src/main`.
+
 1. **`ocurridoEn` en el payload y en la tabla espejo.** Ya viaja en el JSON (`DomainEvent` lo asigna) y
    los payloads lo declaran. El espejo guarda el `ocurrido_en` del último evento aplicado y **descarta
    todo evento más viejo**: última escritura gana por tiempo del hecho, no por orden de llegada.

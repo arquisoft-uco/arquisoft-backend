@@ -364,4 +364,36 @@ def tareaVerificacion = tasks.register('verificarCapasHexagonales') {
     }
 }
 
-tasks.named('check') { dependsOn tareaVerificacion }
+def tareaNombresBean = tasks.register('verificarNombresBeanUnicos') {
+    group = 'verification'
+    description = 'Falla si dos beans de Spring comparten nombre simple de clase en todo el repo.'
+
+    doLast {
+        def marcaBean = ~/@(Component|Configuration|RestController|Controller|RestControllerAdvice|Service|Repository)\b|interface\s+\w+\s+extends\s+\w*Repository</
+        def porNombre = [:].withDefault { [] }
+
+        subprojects.each { modulo ->
+            def fuentes = modulo.file('src/main/java')
+            if (!fuentes.exists()) {
+                return
+            }
+            fuentes.eachFileRecurse(groovy.io.FileType.FILES) { archivo ->
+                if (archivo.name.endsWith('.java') && (archivo.text =~ marcaBean).find()) {
+                    porNombre[archivo.name - '.java'] << rootProject.relativePath(archivo)
+                }
+            }
+        }
+
+        def repetidos = porNombre.findAll { it.value.size() > 1 }
+        if (!repetidos.isEmpty()) {
+            throw new GradleException(
+                    "Beans con nombre simple repetido (ConflictingBeanDefinitionException al arrancar):\n  - " +
+                            repetidos.collect { "${it.key}: ${it.value.join(', ')}" }.join('\n  - '))
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tareaVerificacion
+    dependsOn tareaNombresBean
+}

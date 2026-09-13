@@ -340,10 +340,12 @@ equivocan generando código y no se ven leyendo una regla:
   contextos distintos abortan el arranque con `ConflictingBeanDefinitionException` — aunque cada
   `@Bean` interno ya tenga nombre propio y `@Qualifier`. Una clase de `config/` va **prefijada por su
   contexto** (`UsuariosRestTemplateConfig`, `SeguridadRestTemplateConfig`): así se lee a quién
-  pertenece desde el import. Una pieza de feature se diferencia por el concepto
-  (`RegistrarUsuarioEspejoUseCase` en `fichas` frente a `RegistrarUsuarioUseCase` en `usuarios`).
-  Antes de cerrar `infrastructure`:
-  `find . -name "*.java" | grep -v /test/ | sed 's|.*/||' | sort | uniq -d`.
+  pertenece desde el import. Un bean de una réplica lleva el contexto que la aloja antes del sufijo
+  (`EstudianteFichasPorIdFinderImpl` en `fichas`, `EstudianteProyectosPorIdFinderImpl` en
+  `proyectos`); el dueño y los tipos que no son bean (`Domain`, `Entity`, `Mapper`, `Command`,
+  `Payload`) conservan el nombre natural. Nunca `Espejo`/`Replica`. Detalle en
+  `arquisoft-arquitectura` → *Replicación entre contextos*. `verificarNombresBeanUnicos` cuelga de
+  `check` y lo rompe si repites un nombre.
 - **Sin Javadoc y sin comentarios que repitan el código.** El "por qué" va al mensaje de commit.
   Imports explícitos, nunca wildcard.
 
