@@ -53,6 +53,8 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Migración YA aplicada fue renombrada/editada en vez de agregar una nueva | ❌ |
 | `.locations(...)` del `{Contexto}DataSourceConfig` apunta a `classpath:db/migration/{contexto}`, y `baselineOnMigrate` está en `false` | ❌ si se cambió |
 | FK que referencia una tabla de la base de otro contexto en vez de una tabla réplica local poblada por eventos (patrón `asesor_ficha`/`estudiante` en `fichas`) | ❌ |
+| Clase, método o tabla del espejo con el segmento `Espejo`/`Replica`/`Mirror` en el nombre, en vez del nombre natural del concepto | ❌ |
+| Migración de tabla réplica sin el comentario de cabecera que nombra al contexto dueño (`-- Tabla réplica local de {entidad} (dueño: contexto {contexto})`) | ❌ |
 | Columnas de cada tabla ↔ atributos documentados en el plan (sin columnas inventadas) | ❌ |
 | `@Table` sin `schema` ni catálogo (la conexión ya apunta a la base del contexto); todo `@Column`/`@JoinColumn`/`@Id` con `name` explícito en snake_case, igual a la columna Flyway | ⚠️/❌ si no coincide |
 
@@ -220,13 +222,13 @@ excepción o mapear a `Entity`.
 | `UseCase` implementa el `Interactor` (dos beans para el mismo puerto → ambigüedad de inyección) | ❌ |
 | `@Service` en vez de `@Component` | ❌ |
 | `Validator` inyecta un `OutputPort`/`Finder`, recibe algo por `@RequiredArgsConstructor`, o contiene un `if` (debe ser puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`) | ❌ |
-| `var` para recibir el resultado de un `{X}ExisteFinder` en el `UseCase` — deja vivo el `Boolean` del genérico hasta el `validar(..., boolean existe)` y el unboxing pasa en silencio. Va `boolean` explícito. El `Finder<T, Boolean>` del contrato **no** es el error: un genérico no admite primitivos | ⚠️ |
+| Variable **local** declarada con tipo explícito pudiendo ser `var` — `long cantidadRevisiones = revisionesDelItemFinder.obtener(...)`, `boolean itemExiste = itemExisteFinder.obtener(...)`, `UUID id = UtilUUID.generarNuevoUUID()`. Va `var` siempre, sea escalar, envuelto o agregado. Solo se exceptúa donde `var` no compila o cambia la semántica (diamante sin tipar, array por llaves, lambda/referencia a método, inicializador `null`). No aplica a campos, parámetros, retornos ni componentes de `record` | ⚠️ |
 | `Rule` declarada como bean (`@Component`) o con dependencias de constructor | ❌ |
 | `Finder` lanza por "no encontrado" en vez de devolver `Boolean`/`Long`/`Optional` | ❌ |
 | `Finder` que no extiende `Finder<T, R>` de `shared:application` (`com.arquisoft.shared.finder`), o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
 | `FinderImpl` que encadena otro `Finder`, compara/deriva (`a.equals(b)`, `count > 0`) o hace lookups en varios pasos — un `Finder` es una sola llamada a un `OutputPort`. Combinar fuentes lo hace el `UseCase`; decidir sobre lo consultado es una `Rule` | ❌ |
 | El `UseCase` calcula un veredicto (`boolean esPropietario = ficha.getAsesorFicha().equals(solicitante)`) y se lo pasa al `Validator` — al `Validator` va el dato crudo del `Finder` (el agregado, los `UUID`, el conteo); la comparación de identidad/pertenencia vive en la `Rule` | ❌ |
-| Dos `Finder`s donde el primero alimenta al segundo (lista de `UUID` → luego un fetch por elemento) pudiendo traerse todo con una proyección `JOIN` en el `OutputPort` | ⚠️ |
+| **`Finder` dependiente**: uno cuya entrada es la salida de otro, pudiendo colapsarse en un método del `OutputPort` que navegue la relación. Las dos formas — el peldaño (`IdFichaPerfilPorItemFinder` → `FichaPerfilPorIdFinder`, que es `FichaPerfilOutputPort.obtenerPorItem(...)` con `JOIN`) y el N+1 (lista de `UUID` → fetch por elemento). Cada `Finder` es un viaje a la BD. **No** es hallazgo si el plan justifica la cascada: lookup condicional que ahorra el viaje en el camino corto, `OutputPort` de features/contextos distintos (entre contextos no hay `JOIN`), o el id intermedio lo necesita una `Rule`. Tampoco lo es tener varios `Finder`s **independientes**: el límite es a las cascadas, no a la cantidad | ⚠️ |
 | `Validator` **vacío** o que no orquesta ninguna `Rule`, creado solo porque la plantilla lo listaba. Un comando sin restricciones de conjunto no lleva `Validator`: ver `notificaciones/.../EnviarNotificacionUseCaseImpl` | ❌ |
 | Clase con sufijo `Validator` que en realidad inyecta un `OutputPort` y devuelve un `boolean` — eso es un `Finder`, no un `Validator`; renómbralo y muévelo a `command/finder/` | ❌ |
 | `{Entidad}OutputPort` declara un método sobre **otro** domain (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |
@@ -441,6 +443,12 @@ Cualquier error de compilación es siempre bloqueante — incluye el mensaje exa
 esas secciones, en ese orden. Dos cosas que la plantilla fija y conviene tener presentes al
 llenarla:
 
+- **`Autor` se copia literal del campo `Autor` de la Metadata del plan**, que ya leíste en la FASE 1.
+  Copiarlo en vez de deducirlo es lo que garantiza que el plan y el reporte que `@4c-commit` publica
+  juntos en `arquisoft-docs` atribuyan la historia a la misma persona. Si el plan no lo trae (planes
+  anteriores a que el campo existiera), resuélvelo con `git config user.name` / `user.email` y
+  adviértelo en el mensaje que acompaña al reporte — el plan viejo se queda sin ese campo y conviene
+  que se sepa. Nunca lo dejes en `{Nombre}` ni lo preguntes.
 - Una sección sin hallazgos se deja con "Ninguno" — **no se borra**. Una sección ausente no se
   distingue de un olvido, y `@4b-validator-report` la persiste tal cual la escribas.
 - En "Datos para la entrega", la lista de archivos es **solo código, tests, migraciones y

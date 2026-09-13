@@ -8,7 +8,7 @@ public class DestinatarioExisteRuleImpl implements DestinatarioExisteRule {
 
     @Override
     public void validar(ExistenciaDestinatario existencia) {
-        if (!existencia.existe()) {
+        if (existencia.destinatario().esVacio()) {
             throw new DestinatarioNoEncontradoException(existencia.usuario());
         }
     }

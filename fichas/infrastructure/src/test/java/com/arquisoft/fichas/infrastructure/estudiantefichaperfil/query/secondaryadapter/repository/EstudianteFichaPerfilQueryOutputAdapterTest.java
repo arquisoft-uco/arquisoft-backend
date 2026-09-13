@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -108,12 +109,80 @@ class EstudianteFichaPerfilQueryOutputAdapterTest {
         assertThat(adapter.consultarPorFicha(UUID.randomUUID())).isEmpty();
     }
 
+    @Test
+    void debeRetornarSoloElOtroEstudiante_cuandoLaFichaTieneDosVinculados() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var solicitante = persistirEstudiante("EST-100", "Pedro Zapata", "pedro100@uco.edu.co");
+        var companero = persistirEstudiante("EST-101", "Ana Ruiz", "ana101@uco.edu.co");
+        vincular(ficha, solicitante);
+        vincular(ficha, companero);
+        entityManager.flush();
+
+        // Act
+        List<EstudianteFichaPerfilReadModel> resultado =
+                adapter.consultarCompanerosPorFichaYEstudiante(ficha, solicitante);
+
+        // Assert
+        assertThat(resultado)
+                .singleElement()
+                .satisfies(rm -> assertThat(rm.estudianteId()).isEqualTo(companero));
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElSolicitanteEsElUnicoVinculado() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var solicitante = persistirEstudiante("EST-110", "Ana Ruiz", "ana110@uco.edu.co");
+        vincular(ficha, solicitante);
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.consultarCompanerosPorFichaYEstudiante(ficha, solicitante)).isEmpty();
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoElSolicitanteNoEstaVinculadoAEsaFicha() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var otroEstudiante = persistirEstudiante("EST-120", "Ana Ruiz", "ana120@uco.edu.co");
+        vincular(ficha, otroEstudiante);
+        var solicitanteAjeno = persistirEstudiante("EST-121", "Pedro Zapata", "pedro121@uco.edu.co");
+        entityManager.flush();
+
+        // Act & Assert
+        assertThat(adapter.consultarCompanerosPorFichaYEstudiante(ficha, solicitanteAjeno)).isEmpty();
+    }
+
+    @Test
+    void debeRetornarLosOtrosDosOrdenadosPorNombre_cuandoLaFichaTieneCupoMaximo() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var solicitante = persistirEstudiante("EST-130", "Luis Paz", "luis130@uco.edu.co");
+        var zapata = persistirEstudiante("EST-131", "Pedro Zapata", "pedro131@uco.edu.co");
+        var ruiz = persistirEstudiante("EST-132", "Ana Ruiz", "ana132@uco.edu.co");
+        vincular(ficha, solicitante);
+        vincular(ficha, zapata);
+        vincular(ficha, ruiz);
+        entityManager.flush();
+
+        // Act
+        List<EstudianteFichaPerfilReadModel> resultado =
+                adapter.consultarCompanerosPorFichaYEstudiante(ficha, solicitante);
+
+        // Assert
+        assertThat(resultado)
+                .extracting(EstudianteFichaPerfilReadModel::nombre)
+                .containsExactly("Ana Ruiz", "Pedro Zapata");
+    }
+
     private UUID persistirEstudiante(String identificador, String nombre, String email) {
         var estudiante = EstudianteJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador(identificador)
                 .nombre(nombre)
                 .email(email)
+                .ocurridoEn(Instant.now())
                 .build();
         entityManager.persist(estudiante);
         return estudiante.getId();
