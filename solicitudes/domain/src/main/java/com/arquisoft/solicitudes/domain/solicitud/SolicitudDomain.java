@@ -12,7 +12,7 @@ import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public final class SolicitudDomain {
@@ -21,20 +21,20 @@ public final class SolicitudDomain {
             UtilUUID.obtenerUUIDPorDefecto(),
             UtilUUID.obtenerUUIDPorDefecto(),
             UtilUUID.obtenerUUIDPorDefecto(),
-            UtilFecha.FECHA_HORA_VACIA,
+            UtilFecha.VACIO,
             UtilTexto.VACIO,
             TipoSolicitud.VACIO);
 
     private UUID id;
     private UUID destinatario;
     private UUID remitente;
-    private LocalDateTime fechaCreacion;
+    private Instant fechaCreacion;
     private String mensajeSolicitud;
     private TipoSolicitud tipoSolicitud;
 
     private SolicitudDomain() {}
 
-    private SolicitudDomain(UUID id, UUID destinatario, UUID remitente, LocalDateTime fechaCreacion,
+    private SolicitudDomain(UUID id, UUID destinatario, UUID remitente, Instant fechaCreacion,
                             String mensajeSolicitud, TipoSolicitud tipoSolicitud) {
         this.id = id;
         this.destinatario = destinatario;
@@ -61,7 +61,7 @@ public final class SolicitudDomain {
     }
 
     public static SolicitudDomain reconstruir(UUID id, UUID destinatario, UUID remitente,
-                                              LocalDateTime fechaCreacion, String mensajeSolicitud,
+                                              Instant fechaCreacion, String mensajeSolicitud,
                                               TipoSolicitud tipoSolicitud) {
         return new SolicitudDomain(id, destinatario, remitente, fechaCreacion, mensajeSolicitud, tipoSolicitud);
     }
@@ -71,7 +71,7 @@ public final class SolicitudDomain {
     }
 
     private void setFechaCreacion() {
-        this.fechaCreacion = UtilFecha.generarFechaHoraActual();
+        this.fechaCreacion = UtilFecha.generarInstanteActual();
     }
 
     private void setDestinatario(UUID destinatario, ValidationResult result) {
@@ -128,7 +128,7 @@ public final class SolicitudDomain {
         return remitente;
     }
 
-    public LocalDateTime getFechaCreacion() {
+    public Instant getFechaCreacion() {
         return fechaCreacion;
     }
 

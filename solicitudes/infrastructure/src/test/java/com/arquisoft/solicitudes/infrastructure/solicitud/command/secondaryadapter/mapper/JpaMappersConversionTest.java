@@ -14,7 +14,7 @@ import com.arquisoft.solicitudes.infrastructure.usuario.command.secondaryadapter
 import com.arquisoft.solicitudes.infrastructure.usuario.command.secondaryadapter.mapper.UsuarioJpaMapper;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,7 +27,7 @@ class JpaMappersConversionTest {
         UUID id = UUID.randomUUID();
         UUID destinatarioId = UUID.randomUUID();
         UUID remitenteId = UUID.randomUUID();
-        LocalDateTime fecha = LocalDateTime.now();
+        Instant fecha = Instant.now();
         SolicitudJpaEntity jpa = SolicitudJpaEntity.builder()
                 .id(id)
                 .destinatario(DestinatarioJpaEntity.builder().id(destinatarioId).build())

@@ -12,4 +12,12 @@ public final class EvaluacionesFields {
         public static final String DESCRIPCION = "descripcion";
         public static final String ITEM = "itemCualitativoJurado";
     }
+
+    public static final class CriterioItemCualitativoJurado {
+
+        private CriterioItemCualitativoJurado() {}
+
+        public static final String NOMBRE = "nombre";
+        public static final String DESCRIPCION = "descripcion";
+    }
 }
