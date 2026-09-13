@@ -25,7 +25,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
-class UsuarioCreadoConsumerTest {
+class UsuarioAgregadoConsumerTest {
 
     @Mock
     private RegistrarUsuarioInteractor registrarUsuarioInteractor;
@@ -33,12 +33,12 @@ class UsuarioCreadoConsumerTest {
     @Mock
     private Channel channel;
 
-    private UsuarioCreadoConsumer consumer;
+    private UsuarioAgregadoConsumer consumer;
 
     @BeforeEach
     void setUp() {
         var gestorTraza = new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false);
-        consumer = new UsuarioCreadoConsumer(
+        consumer = new UsuarioAgregadoConsumer(
                 registrarUsuarioInteractor, new ObjectMapper(), mock(AppLogger.class), gestorTraza);
     }
 
@@ -63,7 +63,7 @@ class UsuarioCreadoConsumerTest {
                 """, UUID.randomUUID(), usuarioId);
 
         // Act
-        consumer.onUsuarioCreado(mensaje(json), channel);
+        consumer.onUsuarioAgregado(mensaje(json), channel);
 
         // Assert
         ArgumentCaptor<RegistrarUsuarioCommand> captor = ArgumentCaptor.forClass(RegistrarUsuarioCommand.class);
@@ -77,13 +77,13 @@ class UsuarioCreadoConsumerTest {
 
     @Test
     void debeIgnorarElMensaje_cuandoFaltanIdentificadorYNombre() throws Exception {
-        // Arrange — contrato viejo de 'usuarios' (P1): solo usuarioId/email/rol
+        // Arrange — payload sin identificador/nombre (evento aun no disponible en 'usuarios')
         String json = String.format("""
                 { "idEvento": "%s", "usuarioId": "%s", "email": "x@uco.edu.co", "rol": "ESTUDIANTE" }
                 """, UUID.randomUUID(), UUID.randomUUID());
 
         // Act
-        consumer.onUsuarioCreado(mensaje(json), channel);
+        consumer.onUsuarioAgregado(mensaje(json), channel);
 
         // Assert — no-op idempotente: ACK sin persistir, sin DLQ
         verifyNoInteractions(registrarUsuarioInteractor);
@@ -104,7 +104,7 @@ class UsuarioCreadoConsumerTest {
                 """, UUID.randomUUID(), UUID.randomUUID());
 
         // Act
-        consumer.onUsuarioCreado(mensaje(json), channel);
+        consumer.onUsuarioAgregado(mensaje(json), channel);
 
         // Assert
         verifyNoInteractions(registrarUsuarioInteractor);

@@ -33,8 +33,8 @@ public final class EventTopics {
         // rol (remitente/destinatario pueden ser coordinador o asesor), asi que el topic queda
         // declarado aqui contra el contrato acordado; el consumidor de `solicitudes` es inerte
         // hasta que `usuarios` publique de verdad en esta routing key.
-        public static final String USUARIO_REGISTRADO =
-                "usuarios.usuario.registrado";
+        public static final String USUARIO_AGREGADO =
+                "usuarios.usuario.agregado";
     }
 
     public static final class Solicitudes {

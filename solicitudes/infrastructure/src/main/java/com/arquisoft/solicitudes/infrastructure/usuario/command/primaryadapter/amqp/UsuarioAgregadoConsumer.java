@@ -18,15 +18,16 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.UUID;
 
-// Inerte hasta que 'usuarios' enriquezca UsuarioCreadoEvent (PLAN-HU-081 P1 / sección 4.4):
-// si el payload llega sin identificador/nombre, ACK sin persistir.
+// Inerte hasta que 'usuarios' publique UsuarioAgregadoEvent (acordado con el equipo de usuarios,
+// ver EventTopics.Usuarios.USUARIO_AGREGADO): si el payload llega sin identificador/nombre, ACK
+// sin persistir.
 @Component
-public class UsuarioCreadoConsumer extends AbstractEventConsumer {
+public class UsuarioAgregadoConsumer extends AbstractEventConsumer {
 
     private final RegistrarUsuarioInteractor registrarUsuarioInteractor;
     private final AppLogger logger;
 
-    public UsuarioCreadoConsumer(
+    public UsuarioAgregadoConsumer(
             RegistrarUsuarioInteractor registrarUsuarioInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
@@ -36,17 +37,17 @@ public class UsuarioCreadoConsumer extends AbstractEventConsumer {
         this.logger = logger;
     }
 
-    @RabbitListener(queues = SolicitudesUsuariosQueueConfig.USUARIO_REGISTRADO_QUEUE)
-    public void onUsuarioCreado(Message message, Channel channel) throws IOException {
+    @RabbitListener(queues = SolicitudesUsuariosQueueConfig.USUARIO_AGREGADO_QUEUE)
+    public void onUsuarioAgregado(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
-            UsuarioCreadoPayload payload = deserialize(message, UsuarioCreadoPayload.class);
+            UsuarioAgregadoPayload payload = deserialize(message, UsuarioAgregadoPayload.class);
 
             if (UtilTexto.esVacioONulo(payload.identificador()) || UtilTexto.esVacioONulo(payload.nombre())) {
-                logger.info(UsuarioReplicaKey.LOG_USUARIO_CREADO_IGNORADO_SIN_DATOS, payload.usuarioId());
+                logger.info(UsuarioReplicaKey.LOG_USUARIO_AGREGADO_IGNORADO_SIN_DATOS, payload.usuarioId());
                 return;
             }
 
-            logger.info(UsuarioReplicaKey.LOG_USUARIO_CREADO_RECIBIDO,
+            logger.info(UsuarioReplicaKey.LOG_USUARIO_AGREGADO_RECIBIDO,
                     payload.usuarioId(), payload.identificador(), payload.nombre(), payload.email());
 
             registrarUsuarioInteractor.ejecutar(new RegistrarUsuarioCommand(

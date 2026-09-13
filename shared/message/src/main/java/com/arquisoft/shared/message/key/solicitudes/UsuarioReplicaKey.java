@@ -2,12 +2,12 @@ package com.arquisoft.shared.message.key.solicitudes;
 
 import com.arquisoft.shared.message.ClaveMensaje;
 
-/** Réplica local del usuario en solicitudes: la alimenta el consumer de UsuarioRegistradoEvent. */
+/** Réplica local del usuario en solicitudes: la alimenta el consumer de UsuarioAgregadoEvent. */
 public enum UsuarioReplicaKey implements ClaveMensaje {
 
-    LOG_USUARIO_CREADO_RECIBIDO("solicitudes.infraestructura.usuarioreplica.log.usuario-creado-recibido", 4),
-    LOG_USUARIO_CREADO_IGNORADO_SIN_DATOS(
-            "solicitudes.infraestructura.usuarioreplica.log.usuario-creado-ignorado-sin-datos", 1),
+    LOG_USUARIO_AGREGADO_RECIBIDO("solicitudes.infraestructura.usuarioreplica.log.usuario-agregado-recibido", 4),
+    LOG_USUARIO_AGREGADO_IGNORADO_SIN_DATOS(
+            "solicitudes.infraestructura.usuarioreplica.log.usuario-agregado-ignorado-sin-datos", 1),
     LOG_REPLICA_GUARDADA("solicitudes.aplicacion.usuarioreplica.log.replica-guardada", 1);
 
     private final String clave;

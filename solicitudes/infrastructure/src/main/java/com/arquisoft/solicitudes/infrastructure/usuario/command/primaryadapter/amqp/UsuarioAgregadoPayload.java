@@ -1,6 +1,6 @@
 package com.arquisoft.solicitudes.infrastructure.usuario.command.primaryadapter.amqp;
 
-public record UsuarioCreadoPayload(
+public record UsuarioAgregadoPayload(
         String idEvento,
         String usuarioId,
         String identificador,
