@@ -28,6 +28,13 @@ public final class UsuariosFields {
         public static final String USUARIO = "usuario";
     }
 
+    public static final class Coordinador {
+
+        private Coordinador() {}
+
+        public static final String USUARIO = "usuario";
+    }
+
     public static final class AsesorFicha {
 
         private AsesorFicha() {}
