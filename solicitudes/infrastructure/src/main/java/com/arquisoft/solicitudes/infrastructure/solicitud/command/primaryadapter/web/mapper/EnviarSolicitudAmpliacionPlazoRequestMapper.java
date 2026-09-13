@@ -3,13 +3,15 @@ package com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapte
 import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudAmpliacionPlazoCommand;
 import com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapter.web.dto.EnviarSolicitudAmpliacionPlazoRequestDTO;
 
+import java.util.UUID;
+
 public final class EnviarSolicitudAmpliacionPlazoRequestMapper {
 
     private EnviarSolicitudAmpliacionPlazoRequestMapper() {}
 
     public static EnviarSolicitudAmpliacionPlazoCommand toCommand(
-            EnviarSolicitudAmpliacionPlazoRequestDTO dto, String remitenteUsuarioId) {
+            EnviarSolicitudAmpliacionPlazoRequestDTO dto, UUID remitenteUsuario) {
         return EnviarSolicitudAmpliacionPlazoCommand.crear(
-                remitenteUsuarioId, dto.destinatario(), dto.mensajeSolicitud());
+                remitenteUsuario, dto.destinatario(), dto.mensajeSolicitud());
     }
 }

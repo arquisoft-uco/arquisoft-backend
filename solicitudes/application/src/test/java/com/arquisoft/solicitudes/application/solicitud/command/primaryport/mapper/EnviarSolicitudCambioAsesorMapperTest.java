@@ -17,7 +17,7 @@ class EnviarSolicitudCambioAsesorMapperTest {
         UUID remitente = UUID.randomUUID();
         UUID destinatario = UUID.randomUUID();
         var command = EnviarSolicitudCambioAsesorCommand.crear(
-                remitente.toString(), destinatario.toString(), "  cambio de asesor  ");
+                remitente, destinatario.toString(), "  cambio de asesor  ");
 
         // Act
         EnvioSolicitudCambioAsesorDomain envio =
@@ -36,7 +36,7 @@ class EnviarSolicitudCambioAsesorMapperTest {
     void debeGenerarIdsCandidatosDistintos_paraRemitenteYDestinatario() {
         // Arrange
         var command = EnviarSolicitudCambioAsesorCommand.crear(
-                UUID.randomUUID().toString(), UUID.randomUUID().toString(), "mensaje");
+                UUID.randomUUID(), UUID.randomUUID().toString(), "mensaje");
 
         // Act
         EnvioSolicitudCambioAsesorDomain envio =

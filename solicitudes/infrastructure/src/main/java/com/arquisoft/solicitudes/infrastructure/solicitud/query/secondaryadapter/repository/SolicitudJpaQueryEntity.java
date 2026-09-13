@@ -11,7 +11,7 @@ import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Subselect;
 import org.hibernate.annotations.Synchronize;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -52,7 +52,7 @@ public class SolicitudJpaQueryEntity {
     private String mensajeSolicitud;
 
     @Column(name = "fecha_creacion")
-    private LocalDateTime fechaCreacion;
+    private Instant fechaCreacion;
 
     @Column(name = "tipo_solicitud_id")
     private String tipoSolicitudId;

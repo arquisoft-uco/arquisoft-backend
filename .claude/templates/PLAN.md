@@ -17,6 +17,7 @@ Destino: .workspace/h-plan/PLAN-{HU|HT}-{ID}.md
 - **Bounded Context:** {contexto}
 - **Tipo de Use Case:** {Escritura/Consulta/Mixto}
 - **Módulos Gradle afectados:** `{contexto}:domain`, `:application`, `:infrastructure`
+- **Autor:** {Nombre} <{correo}>   <!-- git config user.name / user.email — nunca lo preguntes -->
 - **Fecha de plan:** {yyyy-MM-dd}
 - **Rama sugerida:** `feature/{HU|HT}-{ID}-{descripcion_snake_case}`
 - **Fuentes consultadas:** {archivos de arquisoft-docs}

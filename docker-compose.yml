@@ -169,7 +169,11 @@ services:
       KC_LOG_LEVEL: INFO
     ports:
       - "8081:8080"
-    command: start-dev
+    command: start-dev --import-realm
+    volumes:
+      # Aprovisionamiento del realm, hermano de catalogo/ y plantillas/: no pertenece a ningun
+      # bounded context. Keycloak solo importa si el realm no existe todavia en KC_DB.
+      - ./keycloak:/opt/keycloak/data/import:ro
     depends_on:
       postgres:
         condition: service_healthy

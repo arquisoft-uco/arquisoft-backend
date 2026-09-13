@@ -20,7 +20,7 @@ class EnviarSolicitudAmpliacionPlazoCommandTest {
         // Act
         EnviarSolicitudAmpliacionPlazoCommand command =
                 EnviarSolicitudAmpliacionPlazoCommand.crear(
-                        remitente.toString(), destinatario.toString(), "  Solicito ampliacion de plazo  ");
+                        remitente, destinatario.toString(), "  Solicito ampliacion de plazo  ");
 
         // Assert
         assertThat(command.remitenteUsuario()).isEqualTo(remitente);
@@ -33,7 +33,7 @@ class EnviarSolicitudAmpliacionPlazoCommandTest {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EnviarSolicitudAmpliacionPlazoCommand.crear(
-                        "no-es-uuid", "tampoco-es-uuid", "a".repeat(101)));
+                        null, "tampoco-es-uuid", "a".repeat(101)));
 
         // Assert
         var resultado = excepcion.getValidationResult();
@@ -47,7 +47,7 @@ class EnviarSolicitudAmpliacionPlazoCommandTest {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EnviarSolicitudAmpliacionPlazoCommand.crear(
-                        UUID.randomUUID().toString(), UUID.randomUUID().toString(), "   "));
+                        UUID.randomUUID(), UUID.randomUUID().toString(), "   "));
 
         // Assert
         assertThat(excepcion.getValidationResult()

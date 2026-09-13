@@ -14,16 +14,16 @@ public class FichasUsuariosQueueConfig {
 
     // El nombre de la cola tiene que seguir siendo una expresion constante: @RabbitListener lo lee
     // como valor de anotacion (JLS 9.7.1), asi que no puede salir de una llamada a metodo.
-    public static final String USUARIO_CREADO_QUEUE =
-            FichasQueues.PREFIJO + EventTopics.Usuarios.USUARIO_CREADO;
+    public static final String ESTUDIANTE_AGREGADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.ESTUDIANTE_AGREGADO;
 
     @Bean
-    public Declarables fichasUsuarioCreadoDeclarables(
+    public Declarables fichasEstudianteAgregadoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
             @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
         return ColaEvento.declarar(
-                USUARIO_CREADO_QUEUE,
-                EventTopics.Usuarios.USUARIO_CREADO,
+                ESTUDIANTE_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ESTUDIANTE_AGREGADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

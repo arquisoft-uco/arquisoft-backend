@@ -9,7 +9,9 @@ public enum RevisionItemKey implements ClaveMensaje {
     ERROR_YA_EXISTE("fichas.dominio.revisionitem.error.ya-existe", 1),
     LOG_AGREGANDO("fichas.aplicacion.revisionitem.log.agregando", 2),
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.revisionitem.log.verificacion-agregar", 3),
-    LOG_AGREGADO("fichas.aplicacion.revisionitem.log.agregado", 2);
+    LOG_AGREGADO("fichas.aplicacion.revisionitem.log.agregado", 2),
+    LOG_CONSULTANDO_ELABORADAS("fichas.aplicacion.revisionitem.log.consultando-elaboradas", 2),
+    LOG_CONSULTA_ELABORADAS_COMPLETADA("fichas.aplicacion.revisionitem.log.consulta-elaboradas-completada", 1);
 
     private final String clave;
     private final int parametros;

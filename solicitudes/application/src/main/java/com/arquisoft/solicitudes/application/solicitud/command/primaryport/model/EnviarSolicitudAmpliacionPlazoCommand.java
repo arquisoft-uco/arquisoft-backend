@@ -7,6 +7,7 @@ import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 import com.arquisoft.shared.validation.ValidatorUUID;
 
@@ -22,8 +23,12 @@ public record EnviarSolicitudAmpliacionPlazoCommand(
     }
 
     public static EnviarSolicitudAmpliacionPlazoCommand crear(
-            String remitenteUsuario, String destinatarioUsuario, String mensajeSolicitud) {
+            UUID remitenteUsuario, String destinatarioUsuario, String mensajeSolicitud) {
         var result = new ValidationResult();
+
+        ValidatorObjeto.noNulo(remitenteUsuario,
+                SolicitudesFields.Solicitud.REMITENTE,
+                SolicitudesCodes.Solicitud.REMITENTE_REQUERIDO, result);
 
         if (ValidatorTexto.noEnBlanco(destinatarioUsuario,
                 SolicitudesFields.Solicitud.DESTINATARIO,
@@ -31,14 +36,6 @@ public record EnviarSolicitudAmpliacionPlazoCommand(
             ValidatorUUID.uuidValido(destinatarioUsuario,
                     SolicitudesFields.Solicitud.DESTINATARIO,
                     SolicitudesCodes.Solicitud.DESTINATARIO_REQUERIDO, result);
-        }
-
-        if (ValidatorTexto.noEnBlanco(remitenteUsuario,
-                SolicitudesFields.Solicitud.REMITENTE,
-                SolicitudesCodes.Solicitud.REMITENTE_REQUERIDO, result)) {
-            ValidatorUUID.uuidValido(remitenteUsuario,
-                    SolicitudesFields.Solicitud.REMITENTE,
-                    SolicitudesCodes.Solicitud.REMITENTE_REQUERIDO, result);
         }
 
         if (ValidatorTexto.noEnBlanco(mensajeSolicitud,
@@ -53,7 +50,7 @@ public record EnviarSolicitudAmpliacionPlazoCommand(
         result.lanzarSiTieneErroresDeEntrada();
 
         return new EnviarSolicitudAmpliacionPlazoCommand(
-                UtilUUID.generarUUIDDesdeTexto(remitenteUsuario),
+                remitenteUsuario,
                 UtilUUID.generarUUIDDesdeTexto(destinatarioUsuario),
                 mensajeSolicitud);
     }
