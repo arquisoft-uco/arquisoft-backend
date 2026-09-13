@@ -6,6 +6,7 @@ import com.arquisoft.shared.message.constant.SolicitudesLimits;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
+import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 import com.arquisoft.shared.validation.ValidatorUUID;
 
@@ -17,7 +18,7 @@ public record ResponderSolicitudNovedadCoordinadorCommand(
         UUID coordinadorUsuario
 ) {
     public static ResponderSolicitudNovedadCoordinadorCommand crear(
-            String solicitud, String contenido, String coordinadorUsuario) {
+            String solicitud, String contenido, UUID coordinadorUsuario) {
         var result = new ValidationResult();
 
         if (ValidatorTexto.noEnBlanco(solicitud,
@@ -37,19 +38,15 @@ public record ResponderSolicitudNovedadCoordinadorCommand(
                     SolicitudesCodes.Respuesta.CONTENIDO_DEMASIADO_LARGO, result);
         }
 
-        if (ValidatorTexto.noEnBlanco(coordinadorUsuario,
+        ValidatorObjeto.noNulo(coordinadorUsuario,
                 SolicitudesFields.Solicitud.DESTINATARIO,
-                SolicitudesCodes.Solicitud.DESTINATARIO_REQUERIDO, result)) {
-            ValidatorUUID.uuidValido(coordinadorUsuario,
-                    SolicitudesFields.Solicitud.DESTINATARIO,
-                    SolicitudesCodes.Solicitud.DESTINATARIO_REQUERIDO, result);
-        }
+                SolicitudesCodes.Solicitud.DESTINATARIO_REQUERIDO, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
         return new ResponderSolicitudNovedadCoordinadorCommand(
                 UtilUUID.generarUUIDDesdeTexto(solicitud),
                 contenido,
-                UtilUUID.generarUUIDDesdeTexto(coordinadorUsuario));
+                coordinadorUsuario);
     }
 }

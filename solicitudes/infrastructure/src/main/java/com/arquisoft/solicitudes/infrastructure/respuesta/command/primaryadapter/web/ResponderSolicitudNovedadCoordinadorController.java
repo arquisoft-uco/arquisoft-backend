@@ -3,6 +3,7 @@ package com.arquisoft.solicitudes.infrastructure.respuesta.command.primaryadapte
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.SolicitudesApiMessages;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.interactor.ResponderSolicitudNovedadCoordinadorInteractor;
 import com.arquisoft.solicitudes.infrastructure.respuesta.command.primaryadapter.web.dto.ResponderSolicitudNovedadCoordinadorRequestDTO;
@@ -66,9 +67,10 @@ public class ResponderSolicitudNovedadCoordinadorController {
             @RequestBody ResponderSolicitudNovedadCoordinadorRequestDTO request,
             @AuthenticationPrincipal Jwt jwt) {
 
+        UUID coordinadorUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
         UUID id = responderSolicitudNovedadCoordinadorInteractor.ejecutar(
                 ResponderSolicitudNovedadCoordinadorRequestMapper.toCommand(
-                        request, solicitudId, jwt.getSubject()));
+                        request, solicitudId, coordinadorUsuario));
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ResponderSolicitudNovedadCoordinadorResponseDTO(id));

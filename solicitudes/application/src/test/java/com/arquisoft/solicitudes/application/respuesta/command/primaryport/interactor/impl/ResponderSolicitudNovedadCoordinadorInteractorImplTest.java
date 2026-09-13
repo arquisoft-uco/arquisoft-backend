@@ -33,7 +33,7 @@ class ResponderSolicitudNovedadCoordinadorInteractorImplTest {
         UUID coordinador = UUID.randomUUID();
         UUID esperado = UUID.randomUUID();
         var command = ResponderSolicitudNovedadCoordinadorCommand.crear(
-                solicitud.toString(), "una respuesta", coordinador.toString());
+                solicitud.toString(), "una respuesta", coordinador);
         when(useCase.ejecutar(any(RespuestaNovedadCoordinadorDomain.class))).thenReturn(esperado);
 
         // Act
