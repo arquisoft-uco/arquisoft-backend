@@ -9,6 +9,7 @@ import com.arquisoft.solicitudes.infrastructure.security.SolicitudesAuthorities;
 import com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapter.web.dto.EnviarSolicitudAmpliacionPlazoRequestDTO;
 import com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapter.web.dto.EnviarSolicitudAmpliacionPlazoResponseDTO;
 import com.arquisoft.solicitudes.infrastructure.solicitud.command.primaryadapter.web.mapper.EnviarSolicitudAmpliacionPlazoRequestMapper;
+import com.arquisoft.shared.util.UtilUUID;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -63,8 +64,10 @@ public class EnviarSolicitudAmpliacionPlazoController {
             @RequestBody EnviarSolicitudAmpliacionPlazoRequestDTO request,
             @AuthenticationPrincipal Jwt jwt) {
 
+        UUID remitenteUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+
         UUID id = enviarSolicitudAmpliacionPlazoInteractor.ejecutar(
-                EnviarSolicitudAmpliacionPlazoRequestMapper.toCommand(request, jwt.getSubject()));
+                EnviarSolicitudAmpliacionPlazoRequestMapper.toCommand(request, remitenteUsuario));
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new EnviarSolicitudAmpliacionPlazoResponseDTO(id));
