@@ -33,7 +33,7 @@ class EnviarSolicitudAmpliacionPlazoInteractorImplTest {
         UUID destinatario = UUID.randomUUID();
         UUID esperado = UUID.randomUUID();
         var command = EnviarSolicitudAmpliacionPlazoCommand.crear(
-                remitente.toString(), destinatario.toString(), "ampliacion de plazo");
+                remitente, destinatario.toString(), "ampliacion de plazo");
         when(useCase.ejecutar(any(EnvioSolicitudAmpliacionPlazoDomain.class))).thenReturn(esperado);
 
         // Act

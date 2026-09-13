@@ -1,13 +1,13 @@
 package com.arquisoft.solicitudes.application.solicitud.command.secondaryport.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record SolicitudEntity(
         UUID id,
         UUID destinatario,
         UUID remitente,
-        LocalDateTime fechaCreacion,
+        Instant fechaCreacion,
         String mensajeSolicitud,
         String tipoSolicitud) {
 }

@@ -26,7 +26,7 @@ class ResponderSolicitudNovedadCoordinadorCommandTest {
         // Act
         ResponderSolicitudNovedadCoordinadorCommand command =
                 ResponderSolicitudNovedadCoordinadorCommand.crear(
-                        solicitud.toString(), "Contenido valido", coordinador.toString());
+                        solicitud.toString(), "Contenido valido", coordinador);
 
         // Assert
         assertThat(command.solicitud()).isEqualTo(solicitud);
@@ -39,7 +39,7 @@ class ResponderSolicitudNovedadCoordinadorCommandTest {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
                 () -> ResponderSolicitudNovedadCoordinadorCommand.crear(
-                        UUID.randomUUID().toString(), "   ", UUID.randomUUID().toString()));
+                        UUID.randomUUID().toString(), "   ", UUID.randomUUID()));
 
         // Assert
         assertThat(excepcion.getValidationResult()
@@ -51,7 +51,7 @@ class ResponderSolicitudNovedadCoordinadorCommandTest {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
                 () -> ResponderSolicitudNovedadCoordinadorCommand.crear(
-                        UUID.randomUUID().toString(), "x".repeat(101), UUID.randomUUID().toString()));
+                        UUID.randomUUID().toString(), "x".repeat(101), UUID.randomUUID()));
 
         // Assert
         assertThat(tieneCodigo(excepcion.getValidationResult(),
@@ -59,11 +59,11 @@ class ResponderSolicitudNovedadCoordinadorCommandTest {
     }
 
     @Test
-    void debeAcumularLosErrores_cuandoLosIdentificadoresNoSonUuid() {
+    void debeAcumularLosErrores_cuandoElIdDeSolicitudNoEsUuidYElCoordinadorEsNulo() {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
                 () -> ResponderSolicitudNovedadCoordinadorCommand.crear(
-                        "no-es-uuid", "contenido", "tampoco"));
+                        "no-es-uuid", "contenido", null));
 
         // Assert
         var resultado = excepcion.getValidationResult();

@@ -15,7 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -39,7 +39,7 @@ public class SolicitudJpaEntity {
     private RemitenteJpaEntity remitente;
 
     @Column(name = "fecha_creacion", nullable = false)
-    private LocalDateTime fechaCreacion;
+    private Instant fechaCreacion;
 
     @Column(name = "mensaje_solicitud", nullable = false, length = 100)
     private String mensajeSolicitud;

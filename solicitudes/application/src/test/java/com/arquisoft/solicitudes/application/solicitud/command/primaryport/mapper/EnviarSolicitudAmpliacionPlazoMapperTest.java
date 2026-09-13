@@ -17,7 +17,7 @@ class EnviarSolicitudAmpliacionPlazoMapperTest {
         UUID remitente = UUID.randomUUID();
         UUID destinatario = UUID.randomUUID();
         var command = EnviarSolicitudAmpliacionPlazoCommand.crear(
-                remitente.toString(), destinatario.toString(), "  ampliacion de plazo  ");
+                remitente, destinatario.toString(), "  ampliacion de plazo  ");
 
         // Act
         EnvioSolicitudAmpliacionPlazoDomain envio =
@@ -36,7 +36,7 @@ class EnviarSolicitudAmpliacionPlazoMapperTest {
     void debeGenerarIdsCandidatosDistintos_paraRemitenteYDestinatario() {
         // Arrange
         var command = EnviarSolicitudAmpliacionPlazoCommand.crear(
-                UUID.randomUUID().toString(), UUID.randomUUID().toString(), "mensaje");
+                UUID.randomUUID(), UUID.randomUUID().toString(), "mensaje");
 
         // Act
         EnvioSolicitudAmpliacionPlazoDomain envio =
