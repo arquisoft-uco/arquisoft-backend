@@ -3,7 +3,6 @@ package com.arquisoft.solicitudes.domain.respuesta;
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.message.constant.SolicitudesLimits;
-import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -20,7 +19,7 @@ public final class RespuestaDomain {
     public static final RespuestaDomain VACIO = new RespuestaDomain(
             UtilUUID.obtenerUUIDPorDefecto(),
             UtilUUID.obtenerUUIDPorDefecto(),
-            UtilFecha.FECHA_HORA_VACIA,
+            LocalDateTime.MIN,
             UtilTexto.VACIO,
             EstadoRespuesta.VACIO);
 
@@ -65,7 +64,7 @@ public final class RespuestaDomain {
     }
 
     private void setFechaRespuesta() {
-        this.fechaRespuesta = UtilFecha.generarFechaHoraActual();
+        this.fechaRespuesta = LocalDateTime.now();
     }
 
     private void setSolicitud(UUID solicitud, ValidationResult result) {
