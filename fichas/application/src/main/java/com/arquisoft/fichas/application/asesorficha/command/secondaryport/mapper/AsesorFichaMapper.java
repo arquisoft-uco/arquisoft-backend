@@ -12,6 +12,16 @@ public final class AsesorFichaMapper {
                 entity.id(),
                 entity.identificador(),
                 entity.nombre(),
-                entity.email());
+                entity.email(),
+                entity.ocurridoEn());
+    }
+
+    public static AsesorFichaEntity toEntity(AsesorFichaDomain asesorFicha) {
+        return new AsesorFichaEntity(
+                asesorFicha.getId(),
+                asesorFicha.getIdentificador(),
+                asesorFicha.getNombre(),
+                asesorFicha.getEmail(),
+                asesorFicha.getOcurridoEn());
     }
 }

@@ -32,7 +32,10 @@ public final class ContextosCatalogo {
     /** Contexto evaluaciones. */
     public static final String EVALUACIONES = "evaluaciones";
 
+    /** Contexto proyectos. */
+    public static final String PROYECTOS = "proyectos";
+
     /** Todos los contextos, en el orden en que se cargan. */
     public static final List<String> TODOS =
-            List.of(APP, FICHAS, SEGURIDAD, USUARIOS, NOTIFICACIONES, EVALUACIONES);
+            List.of(APP, FICHAS, SEGURIDAD, USUARIOS, NOTIFICACIONES, EVALUACIONES, PROYECTOS);
 }
