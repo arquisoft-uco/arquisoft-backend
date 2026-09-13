@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
+import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailIdentidadExisteFinder;
@@ -55,6 +56,8 @@ class RegistrarUsuarioUseCaseImplTest {
     @Mock
     private AgregarEstudianteUseCase agregarEstudianteUseCase;
     @Mock
+    private AgregarAsesorFichaUseCase agregarAsesorFichaUseCase;
+    @Mock
     private AppLogger logger;
 
     private RegistrarUsuarioUseCaseImpl useCase;
@@ -64,7 +67,7 @@ class RegistrarUsuarioUseCaseImplTest {
         useCase = new RegistrarUsuarioUseCaseImpl(
                 usuarioOutputPort, proveedorIdentidadOutputPort, identificadorUsuarioExisteFinder,
                 emailUsuarioExisteFinder, emailIdentidadExisteFinder, contactoUsuarioExisteFinder,
-                registrarUsuarioValidator, agregarEstudianteUseCase, logger);
+                registrarUsuarioValidator, agregarEstudianteUseCase, agregarAsesorFichaUseCase, logger);
         when(identificadorUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailIdentidadExisteFinder.obtener(any())).thenReturn(false);
@@ -228,5 +231,47 @@ class RegistrarUsuarioUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(registro))
                 .isInstanceOf(InfrastructureException.class);
         verify(usuarioOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeAgregarAsesorFicha_cuandoRolesContieneAsesorFicha() {
+        // Arrange
+        var registro = registro(List.of("asesor-ficha"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        InOrder orden = inOrder(usuarioOutputPort, agregarAsesorFichaUseCase);
+        orden.verify(usuarioOutputPort).guardar(any());
+        orden.verify(agregarAsesorFichaUseCase).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarAsesorFicha_cuandoRolesNoContieneAsesorFicha() {
+        // Arrange
+        var registro = registro(List.of("estudiante"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarAmbosRoles_cuandoElRegistroTraeEstudianteYAsesorFicha() {
+        // Arrange
+        var registro = registro(List.of("estudiante", "asesor-ficha"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarEstudianteUseCase, times(1)).ejecutar(any());
+        verify(agregarAsesorFichaUseCase, times(1)).ejecutar(any());
     }
 }

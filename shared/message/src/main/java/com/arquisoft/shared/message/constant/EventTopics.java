@@ -27,6 +27,9 @@ public final class EventTopics {
 
         public static final String ESTUDIANTE_AGREGADO =
                 "usuarios.estudiante.agregado";
+
+        public static final String ASESOR_FICHA_AGREGADO =
+                "usuarios.asesorficha.agregado";
     }
 
 }

@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,6 +49,7 @@ class FichaPerfilQueryOutputAdapterTest {
                 .identificador("DOC-001")
                 .nombre("Juan Salazar")
                 .email("juan.salazar@soyuco.edu.co")
+                .ocurridoEn(Instant.now())
                 .build();
         entityManager.persist(asesor);
 
@@ -91,6 +93,7 @@ class FichaPerfilQueryOutputAdapterTest {
                 .identificador("DOC-002")
                 .nombre("Ana Ramirez")
                 .email("ana.ramirez@soyuco.edu.co")
+                .ocurridoEn(Instant.now())
                 .build();
         entityManager.persist(asesor);
 
@@ -287,6 +290,7 @@ class FichaPerfilQueryOutputAdapterTest {
                 .identificador(identificador)
                 .nombre(nombre)
                 .email(email)
+                .ocurridoEn(Instant.now())
                 .build();
         entityManager.persist(asesor);
 

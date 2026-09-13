@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.UUID;
 
-public interface AsesorFichaCommandRepository extends JpaRepository<AsesorFichaJpaEntity, UUID> {
+public interface AsesorFichaFichasCommandRepository extends JpaRepository<AsesorFichaJpaEntity, UUID> {
 }
