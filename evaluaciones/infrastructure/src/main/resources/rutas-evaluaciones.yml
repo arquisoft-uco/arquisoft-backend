@@ -10,3 +10,5 @@ rutas:
       por-id: /{itemId}
     criterios-item-cualitativo-jurado:
       base: /evaluaciones/criterios-item-cualitativo-jurado
+    categorias-item-cuantitativo-jurado:
+      base: /evaluaciones/categorias-item-cuantitativo-jurado

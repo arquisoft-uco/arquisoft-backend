@@ -9,6 +9,7 @@ import com.arquisoft.shared.message.key.app.HttpKey;
 import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.message.key.app.PaginacionKey;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
+import com.arquisoft.shared.message.key.evaluaciones.CategoriaItemCuantitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.CriterioItemCualitativoJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
@@ -91,6 +92,7 @@ public final class ClavesCatalogo {
             EvaluacionFichaPerfilKey.class,
             ItemCualitativoJuradoKey.class,
             CriterioItemCualitativoJuradoKey.class,
+            CategoriaItemCuantitativoJuradoKey.class,
             FichaPerfilKey.class,
             ItemFichaPerfilKey.class,
             MinioGuiaKey.class,
