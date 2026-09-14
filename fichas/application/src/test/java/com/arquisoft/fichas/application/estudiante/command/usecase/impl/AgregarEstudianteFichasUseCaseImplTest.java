@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estudiante.command.usecase.impl;
 
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantePorIdFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudianteFichasPorIdFinder;
 import com.arquisoft.fichas.application.estudiante.command.result.AgregacionEstudianteResult;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.entity.EstudianteEntity;
@@ -31,7 +31,7 @@ class AgregarEstudianteFichasUseCaseImplTest {
     @Mock
     private EstudianteOutputPort estudianteOutputPort;
     @Mock
-    private EstudiantePorIdFinder estudiantePorIdFinder;
+    private EstudianteFichasPorIdFinder estudianteFichasPorIdFinder;
     @Mock
     private AppLogger logger;
 
@@ -39,7 +39,7 @@ class AgregarEstudianteFichasUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new AgregarEstudianteFichasUseCaseImpl(estudianteOutputPort, estudiantePorIdFinder, logger);
+        useCase = new AgregarEstudianteFichasUseCaseImpl(estudianteOutputPort, estudianteFichasPorIdFinder, logger);
     }
 
     private EstudianteDomain estudiante(UUID id, Instant ocurridoEn) {
@@ -51,7 +51,7 @@ class AgregarEstudianteFichasUseCaseImplTest {
         // Arrange
         var id = UUID.randomUUID();
         var estudiante = estudiante(id, Instant.now());
-        when(estudiantePorIdFinder.obtener(id)).thenReturn(Optional.empty());
+        when(estudianteFichasPorIdFinder.obtener(id)).thenReturn(Optional.empty());
 
         // Act
         var resultado = useCase.ejecutar(estudiante);
@@ -60,7 +60,7 @@ class AgregarEstudianteFichasUseCaseImplTest {
         assertThat(resultado).isInstanceOfSatisfying(AgregacionEstudianteResult.Agregada.class,
                 agregada -> assertThat(agregada.estudiante()).isEqualTo(id));
         verify(estudianteOutputPort, times(1)).guardar(any());
-        verify(estudiantePorIdFinder, times(1)).obtener(id);
+        verify(estudianteFichasPorIdFinder, times(1)).obtener(id);
     }
 
     @Test
@@ -69,7 +69,7 @@ class AgregarEstudianteFichasUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now().minus(1, ChronoUnit.HOURS);
         var estudiante = estudiante(id, Instant.now());
-        when(estudiantePorIdFinder.obtener(id)).thenReturn(
+        when(estudianteFichasPorIdFinder.obtener(id)).thenReturn(
                 Optional.of(new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
 
         // Act
@@ -88,7 +88,7 @@ class AgregarEstudianteFichasUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var estudiante = estudiante(id, vigente.minus(1, ChronoUnit.HOURS));
-        when(estudiantePorIdFinder.obtener(id)).thenReturn(
+        when(estudianteFichasPorIdFinder.obtener(id)).thenReturn(
                 Optional.of(new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
 
         // Act
@@ -109,7 +109,7 @@ class AgregarEstudianteFichasUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var estudiante = estudiante(id, vigente);
-        when(estudiantePorIdFinder.obtener(id)).thenReturn(
+        when(estudianteFichasPorIdFinder.obtener(id)).thenReturn(
                 Optional.of(new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
 
         // Act

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estudiante.command.finder.impl;
 
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantePorIdFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudianteFichasPorIdFinder;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class EstudiantePorIdFinderImpl implements EstudiantePorIdFinder {
+public class EstudianteFichasPorIdFinderImpl implements EstudianteFichasPorIdFinder {
 
     private final EstudianteOutputPort estudianteOutputPort;
 

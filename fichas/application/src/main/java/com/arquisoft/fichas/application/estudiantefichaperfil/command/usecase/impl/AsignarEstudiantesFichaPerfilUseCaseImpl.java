@@ -1,8 +1,8 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFichasExistentesFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFichasFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesVinculadosContadorFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesYaVinculadosFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
@@ -29,8 +29,8 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
 
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final FichaPerfilFinder fichaPerfilFinder;
-    private final EstudiantesExistentesFinder estudiantesExistentesFinder;
-    private final EstudiantesFinder estudiantesFinder;
+    private final EstudiantesFichasExistentesFinder estudiantesFichasExistentesFinder;
+    private final EstudiantesFichasFinder estudiantesFichasFinder;
     private final EstudiantesYaVinculadosFinder estudiantesYaVinculadosFinder;
     private final EstudiantesVinculadosContadorFinder estudiantesVinculadosContadorFinder;
     private final AsignarEstudiantesFichaPerfilValidator asignarEstudiantesFichaPerfilValidator;
@@ -43,7 +43,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
                 entrada.getFichaPerfil(), entrada.getCantidad());
 
         var ficha = fichaPerfilFinder.obtener(entrada.getFichaPerfil()).orElse(FichaPerfilDomain.VACIO);
-        List<UUID> estudiantesExistentes = estudiantesExistentesFinder.obtener(entrada.getEstudiantes());
+        List<UUID> estudiantesExistentes = estudiantesFichasExistentesFinder.obtener(entrada.getEstudiantes());
         List<UUID> yaVinculados = estudiantesYaVinculadosFinder.obtener(entrada.getRelaciones());
         long vinculadosActuales = estudiantesVinculadosContadorFinder.obtener(entrada.getFichaPerfil());
 
@@ -67,7 +67,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
     }
 
     private List<ContactoEstudiante> contactos(List<UUID> estudiantes) {
-        return estudiantesFinder.obtener(estudiantes).stream()
+        return estudiantesFichasFinder.obtener(estudiantes).stream()
                 .map(AsignarEstudiantesFichaPerfilUseCaseImpl::aContacto)
                 .toList();
     }

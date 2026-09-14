@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estudiante.command.primaryport.interactor.impl;
 
-import com.arquisoft.fichas.application.estudiante.command.primaryport.interactor.AgregarEstudianteInteractor;
+import com.arquisoft.fichas.application.estudiante.command.primaryport.interactor.AgregarEstudianteFichasInteractor;
 import com.arquisoft.fichas.application.estudiante.command.primaryport.mapper.AgregarEstudianteMapper;
 import com.arquisoft.fichas.application.estudiante.command.primaryport.model.AgregarEstudianteCommand;
 import com.arquisoft.fichas.application.estudiante.command.result.AgregacionEstudianteResult;
@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class AgregarEstudianteInteractorImpl implements AgregarEstudianteInteractor {
+public class AgregarEstudianteFichasInteractorImpl implements AgregarEstudianteFichasInteractor {
 
     private final AgregarEstudianteFichasUseCase agregarEstudianteUseCase;
 

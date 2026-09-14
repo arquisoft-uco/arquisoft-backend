@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estudiante.command.finder.impl;
 
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFichasFinder;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.mapper.EstudianteMapper;
 import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class EstudiantesFinderImpl implements EstudiantesFinder {
+public class EstudiantesFichasFinderImpl implements EstudiantesFichasFinder {
 
     private final EstudianteOutputPort estudianteOutputPort;
 

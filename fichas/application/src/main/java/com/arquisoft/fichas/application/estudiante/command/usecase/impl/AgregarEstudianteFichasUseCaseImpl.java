@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estudiante.command.usecase.impl;
 
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantePorIdFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudianteFichasPorIdFinder;
 import com.arquisoft.fichas.application.estudiante.command.result.AgregacionEstudianteResult;
 import com.arquisoft.fichas.application.estudiante.command.result.mapper.AgregacionEstudianteResultMapper;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
@@ -17,12 +17,12 @@ import org.springframework.stereotype.Component;
 public class AgregarEstudianteFichasUseCaseImpl implements AgregarEstudianteFichasUseCase {
 
     private final EstudianteOutputPort estudianteOutputPort;
-    private final EstudiantePorIdFinder estudiantePorIdFinder;
+    private final EstudianteFichasPorIdFinder estudianteFichasPorIdFinder;
     private final AppLogger logger;
 
     @Override
     public AgregacionEstudianteResult ejecutar(EstudianteDomain estudiante) {
-        var vigente = estudiantePorIdFinder.obtener(estudiante.getId());
+        var vigente = estudianteFichasPorIdFinder.obtener(estudiante.getId());
         logger.debug(EstudianteKey.LOG_VERIFICACION_AGREGAR, estudiante.getId(), vigente.isPresent());
 
         if (vigente.isPresent()) {
