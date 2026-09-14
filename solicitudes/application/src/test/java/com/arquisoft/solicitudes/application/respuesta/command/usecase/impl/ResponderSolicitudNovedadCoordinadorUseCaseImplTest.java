@@ -24,6 +24,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -74,9 +75,9 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
                 TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
         when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(Optional.of(
-                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co")));
+                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now())));
         when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(Optional.of(
-                UsuarioDomain.reconstruir(coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co")));
+                UsuarioDomain.reconstruir(coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now())));
     }
 
     @Test

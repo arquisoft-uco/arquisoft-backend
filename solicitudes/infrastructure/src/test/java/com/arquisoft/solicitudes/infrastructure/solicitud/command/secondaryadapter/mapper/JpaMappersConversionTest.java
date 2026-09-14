@@ -64,11 +64,12 @@ class JpaMappersConversionTest {
     void debeConvertirElUsuario_cuandoConvierteDesdeJpaEntity() {
         // Arrange
         UUID id = UUID.randomUUID();
+        Instant ocurridoEn = Instant.now();
         UsuarioJpaEntity jpa = UsuarioJpaEntity.builder()
-                .id(id).identificador("EST-1").nombre("Ana").email("ana@uco.edu.co").build();
+                .id(id).identificador("EST-1").nombre("Ana").email("ana@uco.edu.co").ocurridoEn(ocurridoEn).build();
 
         // Act & Assert
         assertThat(UsuarioJpaMapper.toEntity(jpa))
-                .isEqualTo(new UsuarioEntity(id, "EST-1", "Ana", "ana@uco.edu.co"));
+                .isEqualTo(new UsuarioEntity(id, "EST-1", "Ana", "ana@uco.edu.co", ocurridoEn));
     }
 }

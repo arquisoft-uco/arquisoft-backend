@@ -10,4 +10,8 @@ public interface AsesorFichaOutputPort {
     boolean existePorId(UUID id);
 
     Optional<AsesorFichaEntity> buscarContactoPorId(UUID id);
+
+    void guardar(AsesorFichaEntity asesorFicha);
+
+    Optional<AsesorFichaEntity> obtenerPorId(UUID id);
 }
