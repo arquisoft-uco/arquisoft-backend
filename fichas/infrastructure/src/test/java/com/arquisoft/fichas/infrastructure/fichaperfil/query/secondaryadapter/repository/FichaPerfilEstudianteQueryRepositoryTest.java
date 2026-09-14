@@ -44,6 +44,7 @@ class FichaPerfilEstudianteQueryRepositoryTest {
                 .identificador("A100")
                 .nombre("Asesor Uno")
                 .email("asesor@uco.edu.co")
+                .ocurridoEn(Instant.now())
                 .build();
         entityManager.persist(asesor);
 

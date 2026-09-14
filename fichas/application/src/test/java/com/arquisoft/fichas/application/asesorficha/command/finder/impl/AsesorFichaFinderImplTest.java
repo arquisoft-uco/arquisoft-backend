@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ class AsesorFichaFinderImplTest {
     void debeConvertirLaEntidadADominio_cuandoExiste() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
-        var entity = new AsesorFichaEntity(asesorId, "A001", "Ana Asesora", "ana@arquisoft.com");
+        var entity = new AsesorFichaEntity(asesorId, "A001", "Ana Asesora", "ana@arquisoft.com", Instant.now());
         when(asesorFichaOutputPort.buscarContactoPorId(asesorId)).thenReturn(Optional.of(entity));
 
         // Act

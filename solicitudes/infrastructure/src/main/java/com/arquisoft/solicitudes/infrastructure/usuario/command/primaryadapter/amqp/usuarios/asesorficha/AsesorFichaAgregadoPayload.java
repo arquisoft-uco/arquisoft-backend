@@ -1,0 +1,13 @@
+package com.arquisoft.solicitudes.infrastructure.usuario.command.primaryadapter.amqp.usuarios.asesorficha;
+
+import java.time.Instant;
+
+public record AsesorFichaAgregadoPayload(
+        String idEvento,
+        Instant ocurridoEn,
+        String usuario,
+        String identificador,
+        String nombre,
+        String email
+) {
+}
