@@ -1,6 +1,6 @@
 package com.arquisoft.proyectos.application.coordinador.command.usecase.impl;
 
-import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
+import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorProyectosPorIdFinder;
 import com.arquisoft.proyectos.application.coordinador.command.result.AgregacionCoordinadorResult;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.CoordinadorOutputPort;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.entity.CoordinadorEntity;
@@ -31,7 +31,7 @@ class AgregarCoordinadorProyectosUseCaseImplTest {
     @Mock
     private CoordinadorOutputPort coordinadorOutputPort;
     @Mock
-    private CoordinadorPorIdFinder coordinadorPorIdFinder;
+    private CoordinadorProyectosPorIdFinder coordinadorProyectosPorIdFinder;
     @Mock
     private AppLogger logger;
 
@@ -39,7 +39,7 @@ class AgregarCoordinadorProyectosUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new AgregarCoordinadorProyectosUseCaseImpl(coordinadorOutputPort, coordinadorPorIdFinder, logger);
+        useCase = new AgregarCoordinadorProyectosUseCaseImpl(coordinadorOutputPort, coordinadorProyectosPorIdFinder, logger);
     }
 
     private CoordinadorDomain coordinador(UUID id, Instant ocurridoEn) {
@@ -51,7 +51,7 @@ class AgregarCoordinadorProyectosUseCaseImplTest {
         // Arrange
         var id = UUID.randomUUID();
         var coordinador = coordinador(id, Instant.now());
-        when(coordinadorPorIdFinder.obtener(id)).thenReturn(Optional.empty());
+        when(coordinadorProyectosPorIdFinder.obtener(id)).thenReturn(Optional.empty());
 
         // Act
         var resultado = useCase.ejecutar(coordinador);
@@ -60,7 +60,7 @@ class AgregarCoordinadorProyectosUseCaseImplTest {
         assertThat(resultado).isInstanceOfSatisfying(AgregacionCoordinadorResult.Agregada.class,
                 agregada -> assertThat(agregada.coordinador()).isEqualTo(id));
         verify(coordinadorOutputPort, times(1)).guardar(any());
-        verify(coordinadorPorIdFinder, times(1)).obtener(id);
+        verify(coordinadorProyectosPorIdFinder, times(1)).obtener(id);
     }
 
     @Test
@@ -69,7 +69,7 @@ class AgregarCoordinadorProyectosUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now().minus(1, ChronoUnit.HOURS);
         var coordinador = coordinador(id, Instant.now());
-        when(coordinadorPorIdFinder.obtener(id)).thenReturn(
+        when(coordinadorProyectosPorIdFinder.obtener(id)).thenReturn(
                 Optional.of(new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
 
         // Act
@@ -88,7 +88,7 @@ class AgregarCoordinadorProyectosUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var coordinador = coordinador(id, vigente.minus(1, ChronoUnit.HOURS));
-        when(coordinadorPorIdFinder.obtener(id)).thenReturn(
+        when(coordinadorProyectosPorIdFinder.obtener(id)).thenReturn(
                 Optional.of(new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
 
         // Act
@@ -109,7 +109,7 @@ class AgregarCoordinadorProyectosUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var coordinador = coordinador(id, vigente);
-        when(coordinadorPorIdFinder.obtener(id)).thenReturn(
+        when(coordinadorProyectosPorIdFinder.obtener(id)).thenReturn(
                 Optional.of(new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
 
         // Act

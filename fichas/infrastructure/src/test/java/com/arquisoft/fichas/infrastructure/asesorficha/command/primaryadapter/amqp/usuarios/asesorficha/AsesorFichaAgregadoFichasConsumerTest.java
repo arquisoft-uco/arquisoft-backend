@@ -1,7 +1,7 @@
-package com.arquisoft.proyectos.infrastructure.coordinador.command.primaryadapter.amqp.usuarios.coordinador;
+package com.arquisoft.fichas.infrastructure.asesorficha.command.primaryadapter.amqp.usuarios.asesorficha;
 
-import com.arquisoft.proyectos.application.coordinador.command.primaryport.interactor.AgregarCoordinadorInteractor;
-import com.arquisoft.proyectos.application.coordinador.command.result.AgregacionCoordinadorResult;
+import com.arquisoft.fichas.application.asesorficha.command.primaryport.interactor.AgregarAsesorFichaFichasInteractor;
+import com.arquisoft.fichas.application.asesorficha.command.result.AgregacionAsesorFichaResult;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
 import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.MdcContextoDiagnosticoOutputAdapter;
@@ -26,10 +26,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CoordinadorAgregadoConsumerTest {
+class AsesorFichaAgregadoFichasConsumerTest {
 
     @Mock
-    private AgregarCoordinadorInteractor agregarCoordinadorInteractor;
+    private AgregarAsesorFichaFichasInteractor agregarAsesorFichaFichasInteractor;
 
     @Mock
     private Channel channel;
@@ -37,18 +37,18 @@ class CoordinadorAgregadoConsumerTest {
     @Mock
     private AppLogger logger;
 
-    private CoordinadorAgregadoConsumer adapter;
+    private AsesorFichaAgregadoFichasConsumer adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new CoordinadorAgregadoConsumer(
-                agregarCoordinadorInteractor,
+        adapter = new AsesorFichaAgregadoFichasConsumer(
+                agregarAsesorFichaFichasInteractor,
                 new ObjectMapper(),
                 logger,
                 new GestorTrazaImpl(new MdcContextoDiagnosticoOutputAdapter(), false));
 
-        lenient().when(agregarCoordinadorInteractor.ejecutar(any()))
-                .thenReturn(new AgregacionCoordinadorResult.Agregada(UUID.randomUUID()));
+        lenient().when(agregarAsesorFichaFichasInteractor.ejecutar(any()))
+                .thenReturn(new AgregacionAsesorFichaResult.Agregada(UUID.randomUUID()));
     }
 
     private Message mensajeCon(String idEvento, long deliveryTag) {
@@ -74,16 +74,16 @@ class CoordinadorAgregadoConsumerTest {
     @Test
     void debeInvocarElInteractor_cuandoLlegaElEvento() throws Exception {
         // Act
-        adapter.onCoordinadorAgregado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
+        adapter.onAsesorFichaAgregado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
 
         // Assert
-        verify(agregarCoordinadorInteractor).ejecutar(any());
+        verify(agregarAsesorFichaFichasInteractor).ejecutar(any());
     }
 
     @Test
     void debeConfirmarElMensaje_cuandoElProcesamientoTermina() throws Exception {
         // Act
-        adapter.onCoordinadorAgregado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
+        adapter.onAsesorFichaAgregado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
 
         // Assert
         verify(channel).basicAck(1L, false);
@@ -93,38 +93,25 @@ class CoordinadorAgregadoConsumerTest {
     void debeEnviarNackSinReencolar_cuandoElPayloadEsEnvenenado() throws Exception {
         // Arrange
         doThrow(new IllegalArgumentException("id invalido"))
-                .when(agregarCoordinadorInteractor).ejecutar(any());
+                .when(agregarAsesorFichaFichasInteractor).ejecutar(any());
 
         // Act
-        adapter.onCoordinadorAgregado(mensajeCon(UUID.randomUUID().toString(), 2L), channel);
+        adapter.onAsesorFichaAgregado(mensajeCon(UUID.randomUUID().toString(), 2L), channel);
 
         // Assert
         verify(channel).basicNack(2L, false, false);
     }
 
     @Test
-    void debeConfirmarElMensaje_cuandoElResultadoEsDuplicada() throws Exception {
+    void debeConfirmarElMensaje_cuandoElResultadoEsDescartada() throws Exception {
         // Arrange
-        when(agregarCoordinadorInteractor.ejecutar(any()))
-                .thenReturn(new AgregacionCoordinadorResult.Duplicada(UUID.randomUUID()));
+        when(agregarAsesorFichaFichasInteractor.ejecutar(any())).thenReturn(
+                new AgregacionAsesorFichaResult.Descartada(UUID.randomUUID(), Instant.now()));
 
         // Act
-        adapter.onCoordinadorAgregado(mensajeCon(UUID.randomUUID().toString(), 3L), channel);
+        adapter.onAsesorFichaAgregado(mensajeCon(UUID.randomUUID().toString(), 3L), channel);
 
         // Assert
         verify(channel).basicAck(3L, false);
-    }
-
-    @Test
-    void debeConfirmarElMensaje_cuandoElResultadoEsDescartada() throws Exception {
-        // Arrange
-        when(agregarCoordinadorInteractor.ejecutar(any())).thenReturn(
-                new AgregacionCoordinadorResult.Descartada(UUID.randomUUID(), Instant.now()));
-
-        // Act
-        adapter.onCoordinadorAgregado(mensajeCon(UUID.randomUUID().toString(), 4L), channel);
-
-        // Assert
-        verify(channel).basicAck(4L, false);
     }
 }

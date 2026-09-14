@@ -1,6 +1,6 @@
 package com.arquisoft.proyectos.infrastructure.coordinador.command.primaryadapter.amqp.usuarios.coordinador;
 
-import com.arquisoft.proyectos.application.coordinador.command.primaryport.interactor.AgregarCoordinadorInteractor;
+import com.arquisoft.proyectos.application.coordinador.command.primaryport.interactor.AgregarCoordinadorProyectosInteractor;
 import com.arquisoft.proyectos.application.coordinador.command.primaryport.model.AgregarCoordinadorCommand;
 import com.arquisoft.proyectos.application.coordinador.command.result.AgregacionCoordinadorResult;
 import com.arquisoft.proyectos.infrastructure.config.ProyectosUsuariosQueueConfig;
@@ -19,18 +19,18 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 @Component
-public class CoordinadorAgregadoConsumer extends AbstractEventConsumer {
+public class CoordinadorAgregadoProyectosConsumer extends AbstractEventConsumer {
 
-    private final AgregarCoordinadorInteractor agregarCoordinadorInteractor;
+    private final AgregarCoordinadorProyectosInteractor agregarCoordinadorProyectosInteractor;
     private final AppLogger logger;
 
-    public CoordinadorAgregadoConsumer(
-            AgregarCoordinadorInteractor agregarCoordinadorInteractor,
+    public CoordinadorAgregadoProyectosConsumer(
+            AgregarCoordinadorProyectosInteractor agregarCoordinadorProyectosInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
         super(objectMapper, gestorTraza);
-        this.agregarCoordinadorInteractor = agregarCoordinadorInteractor;
+        this.agregarCoordinadorProyectosInteractor = agregarCoordinadorProyectosInteractor;
         this.logger = logger;
     }
 
@@ -42,7 +42,7 @@ public class CoordinadorAgregadoConsumer extends AbstractEventConsumer {
             logger.info(CoordinadorKey.LOG_AGREGADO_RECIBIDO,
                     payload.idEvento(), payload.usuario(), UtilTexto.enmascararCorreo(payload.email()));
 
-            var resultado = agregarCoordinadorInteractor.ejecutar(AgregarCoordinadorCommand.crear(
+            var resultado = agregarCoordinadorProyectosInteractor.ejecutar(AgregarCoordinadorCommand.crear(
                     payload.usuario(), payload.identificador(), payload.nombre(), payload.email(),
                     payload.ocurridoEn()));
 

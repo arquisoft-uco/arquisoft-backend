@@ -1,6 +1,6 @@
 package com.arquisoft.proyectos.application.coordinador.command.finder.impl;
 
-import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
+import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorProyectosPorIdFinder;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.CoordinadorOutputPort;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.entity.CoordinadorEntity;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class CoordinadorPorIdFinderImpl implements CoordinadorPorIdFinder {
+public class CoordinadorProyectosPorIdFinderImpl implements CoordinadorProyectosPorIdFinder {
 
     private final CoordinadorOutputPort coordinadorOutputPort;
 

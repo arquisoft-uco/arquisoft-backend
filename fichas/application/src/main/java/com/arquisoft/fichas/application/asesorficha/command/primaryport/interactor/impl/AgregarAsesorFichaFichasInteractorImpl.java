@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.asesorficha.command.primaryport.interactor.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.primaryport.interactor.AgregarAsesorFichaInteractor;
+import com.arquisoft.fichas.application.asesorficha.command.primaryport.interactor.AgregarAsesorFichaFichasInteractor;
 import com.arquisoft.fichas.application.asesorficha.command.primaryport.mapper.AgregarAsesorFichaMapper;
 import com.arquisoft.fichas.application.asesorficha.command.primaryport.model.AgregarAsesorFichaCommand;
 import com.arquisoft.fichas.application.asesorficha.command.result.AgregacionAsesorFichaResult;
@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class AgregarAsesorFichaInteractorImpl implements AgregarAsesorFichaInteractor {
+public class AgregarAsesorFichaFichasInteractorImpl implements AgregarAsesorFichaFichasInteractor {
 
     private final AgregarAsesorFichaFichasUseCase agregarAsesorFichaFichasUseCase;
 

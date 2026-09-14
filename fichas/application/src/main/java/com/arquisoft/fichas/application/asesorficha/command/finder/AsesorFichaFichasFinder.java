@@ -6,5 +6,5 @@ import com.arquisoft.shared.finder.Finder;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface AsesorFichaFinder extends Finder<UUID, Optional<AsesorFichaDomain>> {
+public interface AsesorFichaFichasFinder extends Finder<UUID, Optional<AsesorFichaDomain>> {
 }

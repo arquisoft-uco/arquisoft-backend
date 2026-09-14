@@ -4,6 +4,6 @@ import com.arquisoft.fichas.application.asesorficha.command.primaryport.model.Ag
 import com.arquisoft.fichas.application.asesorficha.command.result.AgregacionAsesorFichaResult;
 import com.arquisoft.shared.interactor.Interactor;
 
-public interface AgregarAsesorFichaInteractor
+public interface AgregarAsesorFichaFichasInteractor
         extends Interactor<AgregarAsesorFichaCommand, AgregacionAsesorFichaResult> {
 }

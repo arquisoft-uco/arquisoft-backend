@@ -55,6 +55,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | FK que referencia una tabla de la base de otro contexto en vez de una tabla réplica local poblada por eventos (patrón `asesor_ficha`/`estudiante` en `fichas`) | ❌ |
 | Clase, método o tabla del espejo con el segmento `Espejo`/`Replica`/`Mirror` en el nombre, en vez del nombre natural del concepto | ❌ |
 | Bean (`@Component`/`@Configuration`/`@RestController`/repositorio Spring Data) con nombre simple repetido en otro contexto — `verificarNombresBeanUnicos` falla. En una réplica, el calificador de contexto antes del sufijo (`EstudianteProyectosPorIdFinderImpl`) es **la forma correcta**, aunque el plan o el precedente usen el nombre natural: no lo reportes como discrepancia de nombre con el plan. Detalle en `arquisoft-arquitectura` → *Replicación entre contextos* | ❌ |
+| Bean de una réplica (`Consumer`, `Interactor`, `UseCase`, `Finder`, `CommandOutputAdapter`, `CommandRepository`) **sin** el contexto que lo aloja, aunque hoy sea único en el repo y el gate pase (`CoordinadorAgregadoConsumer` en vez de `CoordinadorAgregadoProyectosConsumer`, `AgregarCoordinadorInteractor` en vez de `AgregarCoordinadorProyectosInteractor`). Lista con `grep -rlE "^@(Component\|Repository)"` **todos** los beans del feature réplica tocado, no solo los archivos nuevos | ❌ |
 | Migración de tabla réplica sin el comentario de cabecera que nombra al contexto dueño (`-- Tabla réplica local de {entidad} (dueño: contexto {contexto})`) | ❌ |
 | Columnas de cada tabla ↔ atributos documentados en el plan (sin columnas inventadas) | ❌ |
 | `@Table` sin `schema` ni catálogo (la conexión ya apunta a la base del contexto); todo `@Column`/`@JoinColumn`/`@Id` con `name` explícito en snake_case, igual a la columna Flyway | ⚠️/❌ si no coincide |
@@ -224,7 +225,7 @@ excepción o mapear a `Entity`.
 | Clase con sufijo `Validator` que en realidad inyecta un `OutputPort` y devuelve un `boolean` — eso es un `Finder`, no un `Validator`; renómbralo y muévelo a `command/finder/` | ❌ |
 | `{Entidad}OutputPort` declara un método sobre **otro** domain (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |
 | Un command use case lee estado de otra feature importando su `domain/` o su adaptador, en vez de pasar por el `Finder` + `OutputPort` de `command/` de esa feature | ❌ |
-| Se creó un `{Otra}QueryOutputPort` cuya única razón de existir es una verificación de existencia para un `Validator`/`Rule` de comando (eso va en el `OutputPort` de `command/`; ver `AsesorFichaExisteFinder` → `AsesorFichaOutputPort.existePorId`) | ❌ |
+| Se creó un `{Otra}QueryOutputPort` cuya única razón de existir es una verificación de existencia para un `Validator`/`Rule` de comando (eso va en el `OutputPort` de `command/`; ver `AsesorFichaFichasExisteFinder` → `AsesorFichaOutputPort.existePorId`) | ❌ |
 | `Optional` como parámetro de un `Validator` o campo de un record de `Rule` (se desenvuelve en el `UseCase`: centinela `VACIO` para domains, valor + `boolean` para escalares) | ❌ |
 | `@RequiredArgsConstructor`, no `@Autowired` en campos; se inyectan interfaces | ❌ |
 

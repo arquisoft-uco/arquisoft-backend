@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.asesorficha.command.usecase.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaPorIdFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFichasPorIdFinder;
 import com.arquisoft.fichas.application.asesorficha.command.result.AgregacionAsesorFichaResult;
 import com.arquisoft.fichas.application.asesorficha.command.result.mapper.AgregacionAsesorFichaResultMapper;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
@@ -17,12 +17,12 @@ import org.springframework.stereotype.Component;
 public class AgregarAsesorFichaFichasUseCaseImpl implements AgregarAsesorFichaFichasUseCase {
 
     private final AsesorFichaOutputPort asesorFichaOutputPort;
-    private final AsesorFichaPorIdFinder asesorFichaPorIdFinder;
+    private final AsesorFichaFichasPorIdFinder asesorFichaFichasPorIdFinder;
     private final AppLogger logger;
 
     @Override
     public AgregacionAsesorFichaResult ejecutar(AsesorFichaDomain asesorFicha) {
-        var vigente = asesorFichaPorIdFinder.obtener(asesorFicha.getId());
+        var vigente = asesorFichaFichasPorIdFinder.obtener(asesorFicha.getId());
         logger.debug(AsesorFichaKey.LOG_VERIFICACION_AGREGAR, asesorFicha.getId(), vigente.isPresent());
 
         if (vigente.isPresent()) {

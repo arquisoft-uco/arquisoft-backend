@@ -17,13 +17,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AsesorFichaFinderImplTest {
+class AsesorFichaFichasFinderImplTest {
 
     @Mock
     private AsesorFichaOutputPort asesorFichaOutputPort;
 
     @InjectMocks
-    private AsesorFichaFinderImpl finder;
+    private AsesorFichaFichasFinderImpl finder;
 
     @Test
     void debeConvertirLaEntidadADominio_cuandoExiste() {

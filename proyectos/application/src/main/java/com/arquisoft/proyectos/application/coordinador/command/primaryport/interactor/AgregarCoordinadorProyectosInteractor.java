@@ -4,6 +4,6 @@ import com.arquisoft.proyectos.application.coordinador.command.primaryport.model
 import com.arquisoft.proyectos.application.coordinador.command.result.AgregacionCoordinadorResult;
 import com.arquisoft.shared.interactor.Interactor;
 
-public interface AgregarCoordinadorInteractor
+public interface AgregarCoordinadorProyectosInteractor
         extends Interactor<AgregarCoordinadorCommand, AgregacionCoordinadorResult> {
 }

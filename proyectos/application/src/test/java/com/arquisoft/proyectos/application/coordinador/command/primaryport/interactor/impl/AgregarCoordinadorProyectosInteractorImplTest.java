@@ -18,13 +18,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AgregarCoordinadorInteractorImplTest {
+class AgregarCoordinadorProyectosInteractorImplTest {
 
     @Mock
     private AgregarCoordinadorProyectosUseCase agregarCoordinadorProyectosUseCase;
 
     @InjectMocks
-    private AgregarCoordinadorInteractorImpl interactor;
+    private AgregarCoordinadorProyectosInteractorImpl interactor;
 
     @Test
     void debeDelegarEnElUseCase_conElDomainMapeadoDelCommand() {

@@ -4,5 +4,5 @@ import com.arquisoft.shared.finder.Finder;
 
 import java.util.UUID;
 
-public interface AsesorFichaExisteFinder extends Finder<UUID, Boolean> {
+public interface AsesorFichaFichasExisteFinder extends Finder<UUID, Boolean> {
 }

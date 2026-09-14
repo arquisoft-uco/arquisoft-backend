@@ -340,10 +340,14 @@ equivocan generando código y no se ven leyendo una regla:
   contextos distintos abortan el arranque con `ConflictingBeanDefinitionException` — aunque cada
   `@Bean` interno ya tenga nombre propio y `@Qualifier`. Una clase de `config/` va **prefijada por su
   contexto** (`UsuariosRestTemplateConfig`, `SeguridadRestTemplateConfig`): así se lee a quién
-  pertenece desde el import. Un bean de una réplica lleva el contexto que la aloja antes del sufijo
-  (`EstudianteFichasPorIdFinderImpl` en `fichas`, `EstudianteProyectosPorIdFinderImpl` en
-  `proyectos`); el dueño y los tipos que no son bean (`Domain`, `Entity`, `Mapper`, `Command`,
-  `Payload`) conservan el nombre natural. Nunca `Espejo`/`Replica`. Detalle en
+  pertenece desde el import. **Todo** bean de una réplica lleva el contexto que la aloja antes del
+  sufijo, **aunque hoy no exista homónimo** (`EstudianteFichasPorIdFinderImpl` en `fichas`,
+  `AgregarCoordinadorProyectosInteractorImpl` en `proyectos`); el `Consumer` lo pone tras el evento
+  (`CoordinadorAgregadoProyectosConsumer`). No copies el nombre de un bean de réplica que ya exista
+  sin calificador: renómbralo (interfaz, `Impl`, test, campos) en el mismo cambio y repórtalo. El
+  dueño y los tipos que no son bean (`Domain`, `Entity`, `Mapper`, `Command`, `Payload`) conservan el
+  nombre natural. Nunca `Espejo`/`Replica`. Nunca edites una migración ya aplicada para actualizar un
+  nombre de clase citado en su comentario. Detalle en
   `arquisoft-arquitectura` → *Replicación entre contextos*. `verificarNombresBeanUnicos` cuelga de
   `check` y lo rompe si repites un nombre.
 - **Sin Javadoc y sin comentarios que repitan el código.** El "por qué" va al mensaje de commit.

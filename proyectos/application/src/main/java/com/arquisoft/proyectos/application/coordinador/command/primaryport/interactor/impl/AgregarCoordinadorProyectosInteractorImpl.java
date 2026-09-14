@@ -1,6 +1,6 @@
 package com.arquisoft.proyectos.application.coordinador.command.primaryport.interactor.impl;
 
-import com.arquisoft.proyectos.application.coordinador.command.primaryport.interactor.AgregarCoordinadorInteractor;
+import com.arquisoft.proyectos.application.coordinador.command.primaryport.interactor.AgregarCoordinadorProyectosInteractor;
 import com.arquisoft.proyectos.application.coordinador.command.primaryport.mapper.AgregarCoordinadorMapper;
 import com.arquisoft.proyectos.application.coordinador.command.primaryport.model.AgregarCoordinadorCommand;
 import com.arquisoft.proyectos.application.coordinador.command.result.AgregacionCoordinadorResult;
@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
-public class AgregarCoordinadorInteractorImpl implements AgregarCoordinadorInteractor {
+public class AgregarCoordinadorProyectosInteractorImpl implements AgregarCoordinadorProyectosInteractor {
 
     private final AgregarCoordinadorProyectosUseCase agregarCoordinadorProyectosUseCase;
 

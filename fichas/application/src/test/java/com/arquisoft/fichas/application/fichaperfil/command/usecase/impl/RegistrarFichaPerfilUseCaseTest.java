@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFichasFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.usecase.AsignarEstadoInicialFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.AsignarEstudiantesFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
@@ -52,7 +52,7 @@ class RegistrarFichaPerfilUseCaseTest {
     private FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Mock
-    private AsesorFichaFinder asesorFichaFinder;
+    private AsesorFichaFichasFinder asesorFichaFichasFinder;
 
     @Mock
     private TituloFichaPerfilExisteFinder tituloFichaPerfilExisteFinder;
@@ -102,9 +102,9 @@ class RegistrarFichaPerfilUseCaseTest {
         registrarFichaPerfilUseCase.ejecutar(registro);
 
         // Assert
-        InOrder inOrder = inOrder(asesorFichaFinder, tituloFichaPerfilExisteFinder,
+        InOrder inOrder = inOrder(asesorFichaFichasFinder, tituloFichaPerfilExisteFinder,
                 registrarFichaPerfilValidator, fichaPerfilOutputPort);
-        inOrder.verify(asesorFichaFinder).obtener(ficha.getAsesorFicha());
+        inOrder.verify(asesorFichaFichasFinder).obtener(ficha.getAsesorFicha());
         inOrder.verify(tituloFichaPerfilExisteFinder).obtener(ficha.getTituloProyecto());
         inOrder.verify(registrarFichaPerfilValidator).validar(ficha, true, false);
         inOrder.verify(fichaPerfilOutputPort).registrarFicha(entidadDe(ficha));
@@ -222,7 +222,7 @@ class RegistrarFichaPerfilUseCaseTest {
 
     private void stubConsultas(
             FichaPerfilDomain ficha, AsesorFichaDomain asesorFicha, boolean tituloYaExiste) {
-        when(asesorFichaFinder.obtener(ficha.getAsesorFicha())).thenReturn(presencia(asesorFicha));
+        when(asesorFichaFichasFinder.obtener(ficha.getAsesorFicha())).thenReturn(presencia(asesorFicha));
         when(tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto()))
                 .thenReturn(tituloYaExiste);
     }

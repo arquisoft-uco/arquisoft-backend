@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.asesorficha.command.finder.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFichasFinder;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.mapper.AsesorFichaMapper;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class AsesorFichaFinderImpl implements AsesorFichaFinder {
+public class AsesorFichaFichasFinderImpl implements AsesorFichaFichasFinder {
 
     private final AsesorFichaOutputPort asesorFichaOutputPort;
 

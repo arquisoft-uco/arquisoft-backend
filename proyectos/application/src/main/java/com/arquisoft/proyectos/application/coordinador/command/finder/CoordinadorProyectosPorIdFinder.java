@@ -6,5 +6,5 @@ import com.arquisoft.shared.finder.Finder;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface CoordinadorPorIdFinder extends Finder<UUID, Optional<CoordinadorEntity>> {
+public interface CoordinadorProyectosPorIdFinder extends Finder<UUID, Optional<CoordinadorEntity>> {
 }

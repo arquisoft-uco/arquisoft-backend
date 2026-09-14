@@ -1,6 +1,6 @@
 package com.arquisoft.proyectos.application.coordinador.command.usecase.impl;
 
-import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
+import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorProyectosPorIdFinder;
 import com.arquisoft.proyectos.application.coordinador.command.result.AgregacionCoordinadorResult;
 import com.arquisoft.proyectos.application.coordinador.command.result.mapper.AgregacionCoordinadorResultMapper;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.CoordinadorOutputPort;
@@ -17,12 +17,12 @@ import org.springframework.stereotype.Component;
 public class AgregarCoordinadorProyectosUseCaseImpl implements AgregarCoordinadorProyectosUseCase {
 
     private final CoordinadorOutputPort coordinadorOutputPort;
-    private final CoordinadorPorIdFinder coordinadorPorIdFinder;
+    private final CoordinadorProyectosPorIdFinder coordinadorProyectosPorIdFinder;
     private final AppLogger logger;
 
     @Override
     public AgregacionCoordinadorResult ejecutar(CoordinadorDomain coordinador) {
-        var vigente = coordinadorPorIdFinder.obtener(coordinador.getId());
+        var vigente = coordinadorProyectosPorIdFinder.obtener(coordinador.getId());
         logger.debug(CoordinadorKey.LOG_VERIFICACION_AGREGAR, coordinador.getId(), vigente.isPresent());
 
         if (vigente.isPresent()) {

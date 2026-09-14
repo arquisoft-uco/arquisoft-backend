@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.asesorficha.command.usecase.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaPorIdFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFichasPorIdFinder;
 import com.arquisoft.fichas.application.asesorficha.command.result.AgregacionAsesorFichaResult;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
@@ -31,7 +31,7 @@ class AgregarAsesorFichaFichasUseCaseImplTest {
     @Mock
     private AsesorFichaOutputPort asesorFichaOutputPort;
     @Mock
-    private AsesorFichaPorIdFinder asesorFichaPorIdFinder;
+    private AsesorFichaFichasPorIdFinder asesorFichaFichasPorIdFinder;
     @Mock
     private AppLogger logger;
 
@@ -39,7 +39,7 @@ class AgregarAsesorFichaFichasUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new AgregarAsesorFichaFichasUseCaseImpl(asesorFichaOutputPort, asesorFichaPorIdFinder, logger);
+        useCase = new AgregarAsesorFichaFichasUseCaseImpl(asesorFichaOutputPort, asesorFichaFichasPorIdFinder, logger);
     }
 
     private AsesorFichaDomain asesorFicha(UUID id, Instant ocurridoEn) {
@@ -51,7 +51,7 @@ class AgregarAsesorFichaFichasUseCaseImplTest {
         // Arrange
         var id = UUID.randomUUID();
         var asesorFicha = asesorFicha(id, Instant.now());
-        when(asesorFichaPorIdFinder.obtener(id)).thenReturn(Optional.empty());
+        when(asesorFichaFichasPorIdFinder.obtener(id)).thenReturn(Optional.empty());
 
         // Act
         var resultado = useCase.ejecutar(asesorFicha);
@@ -60,7 +60,7 @@ class AgregarAsesorFichaFichasUseCaseImplTest {
         assertThat(resultado).isInstanceOfSatisfying(AgregacionAsesorFichaResult.Agregada.class,
                 agregada -> assertThat(agregada.asesorFicha()).isEqualTo(id));
         verify(asesorFichaOutputPort, times(1)).guardar(any());
-        verify(asesorFichaPorIdFinder, times(1)).obtener(id);
+        verify(asesorFichaFichasPorIdFinder, times(1)).obtener(id);
     }
 
     @Test
@@ -69,7 +69,7 @@ class AgregarAsesorFichaFichasUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now().minus(1, ChronoUnit.HOURS);
         var asesorFicha = asesorFicha(id, Instant.now());
-        when(asesorFichaPorIdFinder.obtener(id)).thenReturn(
+        when(asesorFichaFichasPorIdFinder.obtener(id)).thenReturn(
                 Optional.of(new AsesorFichaEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
 
         // Act
@@ -88,7 +88,7 @@ class AgregarAsesorFichaFichasUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var asesorFicha = asesorFicha(id, vigente.minus(1, ChronoUnit.HOURS));
-        when(asesorFichaPorIdFinder.obtener(id)).thenReturn(
+        when(asesorFichaFichasPorIdFinder.obtener(id)).thenReturn(
                 Optional.of(new AsesorFichaEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
 
         // Act
@@ -109,7 +109,7 @@ class AgregarAsesorFichaFichasUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var asesorFicha = asesorFicha(id, vigente);
-        when(asesorFichaPorIdFinder.obtener(id)).thenReturn(
+        when(asesorFichaFichasPorIdFinder.obtener(id)).thenReturn(
                 Optional.of(new AsesorFichaEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
 
         // Act

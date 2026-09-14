@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.asesorficha.command.finder.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaExisteFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFichasExisteFinder;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class AsesorFichaExisteFinderImpl implements AsesorFichaExisteFinder {
+public class AsesorFichaFichasExisteFinderImpl implements AsesorFichaFichasExisteFinder {
 
     private final AsesorFichaOutputPort asesorFichaOutputPort;
 

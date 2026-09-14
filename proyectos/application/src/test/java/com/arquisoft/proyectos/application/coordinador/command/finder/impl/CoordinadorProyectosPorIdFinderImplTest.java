@@ -16,13 +16,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CoordinadorPorIdFinderImplTest {
+class CoordinadorProyectosPorIdFinderImplTest {
 
     @Mock
     private CoordinadorOutputPort coordinadorOutputPort;
 
     @InjectMocks
-    private CoordinadorPorIdFinderImpl finder;
+    private CoordinadorProyectosPorIdFinderImpl finder;
 
     @Test
     void debeDelegarEnElOutputPort_enCoordinadorPorIdFinder() {

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.infrastructure.asesorficha.command.primaryadapter.amqp.usuarios.asesorficha;
 
-import com.arquisoft.fichas.application.asesorficha.command.primaryport.interactor.AgregarAsesorFichaInteractor;
+import com.arquisoft.fichas.application.asesorficha.command.primaryport.interactor.AgregarAsesorFichaFichasInteractor;
 import com.arquisoft.fichas.application.asesorficha.command.primaryport.model.AgregarAsesorFichaCommand;
 import com.arquisoft.fichas.application.asesorficha.command.result.AgregacionAsesorFichaResult;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
@@ -19,18 +19,18 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 @Component
-public class AsesorFichaAgregadoConsumer extends AbstractEventConsumer {
+public class AsesorFichaAgregadoFichasConsumer extends AbstractEventConsumer {
 
-    private final AgregarAsesorFichaInteractor agregarAsesorFichaInteractor;
+    private final AgregarAsesorFichaFichasInteractor agregarAsesorFichaFichasInteractor;
     private final AppLogger logger;
 
-    public AsesorFichaAgregadoConsumer(
-            AgregarAsesorFichaInteractor agregarAsesorFichaInteractor,
+    public AsesorFichaAgregadoFichasConsumer(
+            AgregarAsesorFichaFichasInteractor agregarAsesorFichaFichasInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
         super(objectMapper, gestorTraza);
-        this.agregarAsesorFichaInteractor = agregarAsesorFichaInteractor;
+        this.agregarAsesorFichaFichasInteractor = agregarAsesorFichaFichasInteractor;
         this.logger = logger;
     }
 
@@ -42,7 +42,7 @@ public class AsesorFichaAgregadoConsumer extends AbstractEventConsumer {
             logger.info(AsesorFichaKey.LOG_AGREGADO_RECIBIDO,
                     payload.idEvento(), payload.usuario(), UtilTexto.enmascararCorreo(payload.email()));
 
-            var resultado = agregarAsesorFichaInteractor.ejecutar(AgregarAsesorFichaCommand.crear(
+            var resultado = agregarAsesorFichaFichasInteractor.ejecutar(AgregarAsesorFichaCommand.crear(
                     payload.usuario(), payload.identificador(), payload.nombre(), payload.email(),
                     payload.ocurridoEn()));
 
