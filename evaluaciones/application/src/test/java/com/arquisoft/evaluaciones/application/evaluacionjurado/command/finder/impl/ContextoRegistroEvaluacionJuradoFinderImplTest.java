@@ -1,6 +1,6 @@
 package com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.impl;
 
-import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.EvaluacionJuradoOutputPort;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.ContextoRegistroEvaluacionJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.ContextoRegistroEvaluacionJuradoEntity;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 class ContextoRegistroEvaluacionJuradoFinderImplTest {
 
     @Mock
-    private EvaluacionJuradoOutputPort outputPort;
+    private ContextoRegistroEvaluacionJuradoOutputPort outputPort;
 
     @InjectMocks
     private ContextoRegistroEvaluacionJuradoFinderImpl finder;
