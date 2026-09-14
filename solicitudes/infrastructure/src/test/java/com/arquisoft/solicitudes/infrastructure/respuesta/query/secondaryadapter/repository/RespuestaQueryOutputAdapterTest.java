@@ -62,7 +62,8 @@ class RespuestaQueryOutputAdapterTest {
 
     private RemitenteJpaEntity sembrarRemitente(String nombre, String identificador, String email) {
         var usuario = UsuarioJpaEntity.builder()
-                .id(UUID.randomUUID()).nombre(nombre).identificador(identificador).email(email).build();
+                .id(UUID.randomUUID()).nombre(nombre).identificador(identificador).email(email)
+                .ocurridoEn(Instant.now()).build();
         entityManager.persist(usuario);
         var remitente = RemitenteJpaEntity.builder()
                 .id(UUID.randomUUID()).usuarioId(usuario.getId()).build();
@@ -72,7 +73,8 @@ class RespuestaQueryOutputAdapterTest {
 
     private DestinatarioJpaEntity sembrarDestinatario(String nombre, String identificador, String email) {
         var usuario = UsuarioJpaEntity.builder()
-                .id(UUID.randomUUID()).nombre(nombre).identificador(identificador).email(email).build();
+                .id(UUID.randomUUID()).nombre(nombre).identificador(identificador).email(email)
+                .ocurridoEn(Instant.now()).build();
         entityManager.persist(usuario);
         var destinatario = DestinatarioJpaEntity.builder()
                 .id(UUID.randomUUID()).usuarioId(usuario.getId()).build();
