@@ -59,6 +59,7 @@ class SolicitudQueryOutputAdapterTest {
                 .identificador(remitenteIdentificador)
                 .nombre(remitenteNombre)
                 .email(remitenteEmail)
+                .ocurridoEn(Instant.now())
                 .build();
         entityManager.persist(usuarioRemitente);
 
