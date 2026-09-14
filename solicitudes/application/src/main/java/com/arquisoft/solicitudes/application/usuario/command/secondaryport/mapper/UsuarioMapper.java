@@ -12,7 +12,8 @@ public final class UsuarioMapper {
                 domain.getId(),
                 domain.getIdentificador(),
                 domain.getNombre(),
-                domain.getEmail());
+                domain.getEmail(),
+                domain.getOcurridoEn());
     }
 
     public static UsuarioDomain toDomain(UsuarioEntity entity) {
@@ -20,6 +21,7 @@ public final class UsuarioMapper {
                 entity.id(),
                 entity.identificador(),
                 entity.nombre(),
-                entity.email());
+                entity.email(),
+                entity.ocurridoEn());
     }
 }

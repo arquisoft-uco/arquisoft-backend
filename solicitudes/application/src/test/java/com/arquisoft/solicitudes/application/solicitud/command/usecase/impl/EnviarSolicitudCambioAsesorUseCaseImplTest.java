@@ -31,6 +31,7 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -67,7 +68,7 @@ class EnviarSolicitudCambioAsesorUseCaseImplTest {
     private EnvioSolicitudCambioAsesorDomain envio;
 
     private static UsuarioDomain replica(UUID id) {
-        return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co");
+        return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co", Instant.now());
     }
 
     @BeforeEach
@@ -88,9 +89,9 @@ class EnviarSolicitudCambioAsesorUseCaseImplTest {
         UUID remitenteFila = UUID.randomUUID();
         UUID destinatarioFila = UUID.randomUUID();
         var remitenteReplica = UsuarioDomain.reconstruir(
-                envio.getRemitenteUsuario(), "EST-1", "Ana Estudiante", "ana@uco.edu.co");
+                envio.getRemitenteUsuario(), "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now());
         var destinatarioReplica = UsuarioDomain.reconstruir(
-                envio.getDestinatarioUsuario(), "COO-1", "Pedro Coordinador", "pedro@uco.edu.co");
+                envio.getDestinatarioUsuario(), "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now());
         when(datosUsuarioFinder.obtener(envio.getRemitenteUsuario()))
                 .thenReturn(Optional.of(remitenteReplica));
         when(datosUsuarioFinder.obtener(envio.getDestinatarioUsuario()))

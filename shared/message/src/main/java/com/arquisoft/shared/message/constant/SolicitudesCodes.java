@@ -53,6 +53,7 @@ public final class SolicitudesCodes {
         public static final String IDENTIFICADOR_REQUERIDO = "USUARIO_REPLICA_IDENTIFICADOR_REQUERIDO";
         public static final String NOMBRE_REQUERIDO = "USUARIO_REPLICA_NOMBRE_REQUERIDO";
         public static final String EMAIL_REQUERIDO = "USUARIO_REPLICA_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "USUARIO_REPLICA_OCURRIDO_EN_REQUERIDO";
     }
 
     public static final class TipoSolicitud {
