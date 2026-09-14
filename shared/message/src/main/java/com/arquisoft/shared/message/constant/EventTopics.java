@@ -34,4 +34,20 @@ public final class EventTopics {
                 "usuarios.asesorficha.agregado";
     }
 
+    public static final class Proyectos {
+
+        private Proyectos() {}
+
+        public static final String ESTUDIANTE_PROYECTO_ASIGNADO = "proyectos.estudiante_proyecto.asignado";
+
+        public static final String ESTUDIANTE_PROYECTO_DESTITUIDO = "proyectos.estudiante_proyecto.destituido";
+    }
+
+    public static final class Entregables {
+
+        private Entregables() {}
+
+        public static final String ENTREGABLE_PROYECTO_GRADO_GENERADO =
+                "entregables.entregable_proyecto_grado.generado";
+    }
 }
