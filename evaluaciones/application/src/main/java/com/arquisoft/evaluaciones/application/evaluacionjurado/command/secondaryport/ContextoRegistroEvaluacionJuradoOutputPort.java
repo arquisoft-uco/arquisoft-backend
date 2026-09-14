@@ -5,7 +5,7 @@ import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondary
 import java.util.Optional;
 import java.util.UUID;
 
-public interface EvaluacionJuradoOutputPort {
+public interface ContextoRegistroEvaluacionJuradoOutputPort {
 
     Optional<ContextoRegistroEvaluacionJuradoEntity> obtenerContextoBloqueado(UUID evaluacionJurado);
 }

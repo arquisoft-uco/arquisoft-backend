@@ -9,7 +9,7 @@ import java.util.UUID;
 
 // Solo transporte SQL: la decision de a que estado transicionar ya la tomo el dominio
 // (InicioEvaluacionDomain). Participa en la misma transaccion/bloqueo que el SELECT ... FOR
-// UPDATE de EvaluacionJuradoCommandOutputAdapter.
+// UPDATE de ContextoRegistroEvaluacionJuradoCommandOutputAdapter.
 @Component
 public class EvaluacionCommandOutputAdapter implements EvaluacionOutputPort {
 

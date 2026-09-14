@@ -1,6 +1,6 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacionjurado.command.secondaryadapter.repository;
 
-import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.EvaluacionJuradoOutputPort;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.ContextoRegistroEvaluacionJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.ContextoRegistroEvaluacionJuradoEntity;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -15,7 +15,8 @@ import java.util.UUID;
 // @Lock de Spring Data sobre una unica entidad. El futuro flujo de finalizacion debe
 // adquirir el mismo bloqueo dentro de su propia transaccion.
 @Component
-public class EvaluacionJuradoCommandOutputAdapter implements EvaluacionJuradoOutputPort {
+public class ContextoRegistroEvaluacionJuradoCommandOutputAdapter
+        implements ContextoRegistroEvaluacionJuradoOutputPort {
 
     private static final String SQL_CONTEXTO = """
             SELECT ej.id AS id, e.id AS evaluacion, ej.jurado_id AS jurado,

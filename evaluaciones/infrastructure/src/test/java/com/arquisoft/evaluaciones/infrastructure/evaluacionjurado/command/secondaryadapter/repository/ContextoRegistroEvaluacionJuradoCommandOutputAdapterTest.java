@@ -21,7 +21,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EvaluacionJuradoCommandOutputAdapterTest {
+class ContextoRegistroEvaluacionJuradoCommandOutputAdapterTest {
 
     @Mock
     private EntityManager entityManager;
@@ -29,11 +29,11 @@ class EvaluacionJuradoCommandOutputAdapterTest {
     @Mock
     private Query query;
 
-    private EvaluacionJuradoCommandOutputAdapter adapter;
+    private ContextoRegistroEvaluacionJuradoCommandOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new EvaluacionJuradoCommandOutputAdapter();
+        adapter = new ContextoRegistroEvaluacionJuradoCommandOutputAdapter();
         ReflectionTestUtils.setField(adapter, "entityManager", entityManager);
     }
 
