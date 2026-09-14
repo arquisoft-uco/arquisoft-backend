@@ -27,4 +27,18 @@ public class FichasUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String ASESOR_FICHA_AGREGADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.ASESOR_FICHA_AGREGADO;
+
+    @Bean
+    public Declarables fichasAsesorFichaAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_FICHA_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ASESOR_FICHA_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }
