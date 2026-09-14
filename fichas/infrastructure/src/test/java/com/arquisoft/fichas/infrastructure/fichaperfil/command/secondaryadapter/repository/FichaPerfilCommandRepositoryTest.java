@@ -3,13 +3,14 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.mapper.FichaPerfilMapper;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
-import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.repository.AsesorFichaCommandRepository;
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.repository.AsesorFichaFichasCommandRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.mapper.FichaPerfilJpaMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,7 +22,7 @@ class FichaPerfilCommandRepositoryTest {
     private FichaPerfilCommandRepository fichaPerfilRepository;
 
     @Autowired
-    private AsesorFichaCommandRepository asesorFichaRepository;
+    private AsesorFichaFichasCommandRepository asesorFichaRepository;
 
     @Test
     void debeActualizarSoloElAsesor_cuandoLaFichaExiste() {
@@ -138,6 +139,7 @@ class FichaPerfilCommandRepositoryTest {
                 .identificador(UUID.randomUUID().toString().substring(0, 20))
                 .nombre("Ana Gomez")
                 .email("ana.gomez@soyuco.edu.co")
+                .ocurridoEn(Instant.now())
                 .build();
     }
 }

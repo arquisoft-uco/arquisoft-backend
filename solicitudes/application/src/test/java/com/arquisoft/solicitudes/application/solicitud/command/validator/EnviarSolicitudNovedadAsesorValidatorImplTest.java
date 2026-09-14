@@ -36,7 +36,7 @@ class EnviarSolicitudNovedadAsesorValidatorImplTest {
     }
 
     private static UsuarioDomain usuario(UUID id) {
-        return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co");
+        return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co", Instant.now());
     }
 
     @Test
