@@ -81,6 +81,16 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
         public static final String CONSULTAR_RESP_422 =
                 "La evaluación de jurado no existe o no pertenece al estudiante autenticado";
+        public static final String REGISTRAR_SUMMARY = "Registrar lote de evaluaciones cualitativas";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra un lote de evaluaciones cualitativas del jurado sobre una evaluación de jurado propia";
+        public static final String REGISTRAR_RESP_201 = "Lote registrado";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación no existe, no pertenece al jurado autenticado, está finalizada, "
+                        + "o algún ítem/criterio no existe o ya fue registrado";
+        public static final String REGISTRAR_RESP_503 =
+                "Los datos de contacto de los estudiantes aún no están disponibles";
     }
 
     public static final class EvaluacionCuantitativaJurado {
@@ -128,5 +138,11 @@ public final class EvaluacionesApiMessages {
                 "Consulta todos los ítems cuantitativos disponibles para que el jurado evalúe un "
                         + "trabajo de grado, ordenados por categoría y luego por nombre";
         public static final String CONSULTAR_RESP_200 = "Listado de ítems cuantitativos del jurado";
+        public static final String MODIFICAR_SUMMARY = "Modificar descripción del ítem cuantitativo";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica la descripción de un ítem cuantitativo existente del jurado";
+        public static final String MODIFICAR_RESP_204 = "Descripción actualizada";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 = "El ítem cuantitativo no existe";
     }
 }

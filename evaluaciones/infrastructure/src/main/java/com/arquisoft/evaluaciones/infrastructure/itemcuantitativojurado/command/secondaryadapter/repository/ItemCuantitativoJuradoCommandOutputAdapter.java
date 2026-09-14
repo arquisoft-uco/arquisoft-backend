@@ -40,4 +40,15 @@ public class ItemCuantitativoJuradoCommandOutputAdapter
             String nombre, UUID categoriaId) {
         return repository.existsByNombreIgnoreCaseAndCategoriaId(nombre, categoriaId);
     }
+
+    @Override
+    public boolean existePorId(UUID id) {
+        return repository.existsById(id);
+    }
+
+    @Override
+    public void actualizarDescripcion(UUID id, String descripcion) {
+        repository.actualizarDescripcion(id, descripcion);
+        logger.debug(ItemCuantitativoJuradoKey.LOG_DESCRIPCION_ACTUALIZADA, id);
+    }
 }

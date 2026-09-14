@@ -15,4 +15,8 @@ public interface ItemCuantitativoJuradoOutputPort {
             String nombre, UUID categoriaId);
 
     Optional<ItemCuantitativoJuradoEntity> obtenerPorId(UUID id);
+
+    boolean existePorId(UUID id);
+
+    void actualizarDescripcion(UUID id, String descripcion);
 }

@@ -12,6 +12,8 @@ public enum ConsumidorKey implements ClaveMensaje {
     LOG_NOTIFICACION_ENVIADA("notificaciones.infraestructura.consumidor.log.notificacion-enviada", 2),
     LOG_NOTIFICACION_DUPLICADA("notificaciones.infraestructura.consumidor.log.notificacion-duplicada", 2),
     LOG_NOTIFICACION_FALLIDA("notificaciones.infraestructura.consumidor.log.notificacion-fallida", 2),
+    LOG_EVALUACIONES_CUALITATIVAS_JURADO_RECIBIDAS(
+            "notificaciones.infraestructura.consumidor.log.evaluaciones-cualitativas-jurado-recibidas", 3),
     ERROR_PLANTILLA_NO_DISPONIBLE("notificaciones.infraestructura.consumidor.error.plantilla-no-disponible", 1);
 
     private final String clave;

@@ -18,6 +18,7 @@ rutas:
       cuantitativas: /{evaluacionJuradoId}/cuantitativas
     items-cuantitativos-jurado:
       base: /evaluaciones/items-cuantitativos-jurado
+      por-id: /{itemId}
     evaluaciones-cuantitativas-jurado:
       base: /evaluaciones/evaluaciones-cuantitativas-jurado
       puntaje: /{id}/puntaje

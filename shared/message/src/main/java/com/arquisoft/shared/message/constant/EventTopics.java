@@ -34,6 +34,14 @@ public final class EventTopics {
                 "usuarios.asesorficha.agregado";
     }
 
+    public static final class Evaluaciones {
+
+        private Evaluaciones() {}
+
+        public static final String EVALUACIONES_CUALITATIVAS_JURADO_REGISTRADAS =
+                "evaluaciones.evaluacion_cualitativa_jurado.registradas";
+    }
+
     public static final class Proyectos {
 
         private Proyectos() {}

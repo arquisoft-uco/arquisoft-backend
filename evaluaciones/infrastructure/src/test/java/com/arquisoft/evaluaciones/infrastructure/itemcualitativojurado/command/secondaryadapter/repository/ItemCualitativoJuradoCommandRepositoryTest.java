@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -95,5 +96,24 @@ class ItemCualitativoJuradoCommandRepositoryTest {
 
         // Assert
         assertThat(filasActualizadas).isZero();
+    }
+
+    @Test
+    void debeRetornarSoloLosIdsExistentes_cuandoConsultaMasivaDeIds() {
+        // Arrange
+        UUID existente = UUID.randomUUID();
+        UUID faltante = UUID.randomUUID();
+        repository.saveAndFlush(ItemCualitativoJuradoJpaEntity.builder()
+                .id(existente)
+                .nombre("Claridad")
+                .descripcion("Descripción")
+                .build());
+        entityManager.clear();
+
+        // Act
+        Set<UUID> resultado = repository.findIdsByIdIn(Set.of(existente, faltante));
+
+        // Assert
+        assertThat(resultado).containsExactly(existente);
     }
 }

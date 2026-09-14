@@ -105,4 +105,28 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
         // Act & Assert
         assertThat(adapter.obtenerPorId(id)).isEmpty();
     }
+
+    @Test
+    void debeDelegarConsultaDeExistenciaPorId() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        when(repository.existsById(id)).thenReturn(true);
+
+        // Act & Assert
+        assertThat(adapter.existePorId(id)).isTrue();
+        verify(repository).existsById(id);
+    }
+
+    @Test
+    void debeActualizarDescripcionYLoguear() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+
+        // Act
+        adapter.actualizarDescripcion(id, "Nueva descripción");
+
+        // Assert
+        verify(repository).actualizarDescripcion(id, "Nueva descripción");
+        verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
 }
