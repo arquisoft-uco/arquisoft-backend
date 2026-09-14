@@ -342,11 +342,14 @@ equivocan generando código y no se ven leyendo una regla:
   clases homónimas en contextos distintos no chocan, y una réplica usa el nombre natural en todas sus
   clases, beans incluidos (`AgregarCoordinadorInteractor`, `CoordinadorAgregadoConsumer`), sin
   calificador de contexto ni `Espejo`/`Replica`. Ninguna réplica del repo lleva ese calificador: un
-  nombre con `Fichas`/`Proyectos` como calificador es la convención retirada. Nunca referencies un bean escaneado por nombre en
-  cadena (`@Qualifier("…")`, `@DependsOn`, SpEL): se inyecta por tipo. Los métodos `@Bean` no pasan
-  por el generador y llevan el contexto en el nombre (`fichasTransactionManager`); las clases de
-  `config/` siguen **prefijadas por su contexto** (`UsuariosRestTemplateConfig`) para leer a quién
-  pertenecen desde el import. Nunca edites una migración ya aplicada para actualizar un nombre de
+  nombre con `Fichas`/`Proyectos` como calificador es la convención retirada. Nunca referencies un
+  bean escaneado por nombre en cadena (`@Qualifier("…")`, `@DependsOn`, SpEL): se inyecta por tipo.
+  Los métodos `@Bean` **no** pasan por el generador y llevan el contexto como prefijo
+  (`fichasTransactionManager`); en una réplica, el `@Bean Declarables` de su cola va en
+  `{Contexto}{Productor}QueueConfig` y se llama `{contexto}{Evento}Declarables`
+  (`proyectosEstudianteAgregadoDeclarables`), porque sin prefijo choca con la réplica del mismo evento
+  en otro contexto. Las clases de `config/` siguen **prefijadas por su contexto**
+  (`UsuariosRestTemplateConfig`) para leer a quién pertenecen desde el import. Nunca edites una migración ya aplicada para actualizar un nombre de
   clase citado en su comentario. Detalle en `arquisoft-arquitectura` → *Replicación entre contextos*.
 - **Sin Javadoc y sin comentarios que repitan el código.** El "por qué" va al mensaje de commit.
   Imports explícitos, nunca wildcard.

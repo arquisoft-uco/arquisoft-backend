@@ -56,6 +56,7 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | Clase, método o tabla del espejo con el segmento `Espejo`/`Replica`/`Mirror` en el nombre, en vez del nombre natural del concepto | ❌ |
 | `@EnableJpaRepositories` de un `{Contexto}DataSourceConfig` sin `nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class`, o `ArquisoftApplication` sin el mismo `nameGenerator` — dos beans homónimos entre contextos abortarían el arranque con `ConflictingBeanDefinitionException` | ❌ |
 | Bean escaneado (`@Component`, repositorio Spring Data…) referenciado por nombre en cadena (`@Qualifier("…")`, `@DependsOn`, SpEL `@nombre`) — con el generador su nombre es el FQN y la referencia no resuelve | ❌ |
+| Método `@Bean` sin el contexto como prefijo — sobre todo el `Declarables` de la cola de una réplica (`estudianteAgregadoDeclarables` en vez de `proyectosEstudianteAgregadoDeclarables`). El generador FQN **no** cubre métodos `@Bean`: dos homónimos en contextos distintos abortan el arranque | ❌ |
 | Bean de una réplica con calificador de contexto (`AgregarCoordinadorProyectosInteractor`) en vez del nombre natural (`AgregarCoordinadorInteractor`) — convención retirada; ningún bean del repo la usa | ❌ |
 | Migración de tabla réplica sin el comentario de cabecera que nombra al contexto dueño (`-- Tabla réplica local de {entidad} (dueño: contexto {contexto})`) | ❌ |
 | Columnas de cada tabla ↔ atributos documentados en el plan (sin columnas inventadas) | ❌ |

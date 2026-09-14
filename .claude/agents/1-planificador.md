@@ -581,6 +581,7 @@ getters/setters ni métodos `private`.
 - [ ] Sin handler de contexto salvo colisión de nombres; si el plan lo declara, va en `infrastructure/handler/`, nunca en `exception/`
 - [ ] Réplica entre contextos: **todas** las clases del árbol, beans incluidos, usan el nombre natural del concepto (`AgregarCoordinadorInteractor`, `CoordinadorAgregadoConsumer`), sin calificador de contexto — los homónimos entre contextos no chocan porque el nombre de bean es el FQN (`FullyQualifiedAnnotationBeanNameGenerator` en `ArquisoftApplication` y en cada `@EnableJpaRepositories`). Ninguna réplica del repo lleva ese calificador; si aparece, es la convención retirada (`arquisoft-arquitectura` → *Replicación entre contextos*)
 - [ ] Contexto nuevo con `{Contexto}DataSourceConfig`: su `@EnableJpaRepositories` declara `nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class`
+- [ ] Métodos `@Bean` con el contexto como prefijo (el generador FQN no los cubre): la cola de una réplica es un `@Bean Declarables` llamado `{contexto}{Evento}Declarables` en `{Contexto}{Productor}QueueConfig` (`proyectosEstudianteAgregadoDeclarables` en `ProyectosUsuariosQueueConfig`)
 - [ ] Identificadores en el body: `String`, validados en `Command.crear(...)` vía `ValidatorUUID`, nunca con anotación Jakarta
 - [ ] `RequestDTO` = `record` desnudo + `{Accion}{Entidad}RequestMapper`; `ResponseDTO` = `record`. Sin Jakarta, sin Lombok, sin `toCommand()` en el DTO
 - [ ] Lectura: `ReadModel` → `{Entidad}ResponseDTO` vía `{Entidad}ResponseMapper`, nunca serializado directo
