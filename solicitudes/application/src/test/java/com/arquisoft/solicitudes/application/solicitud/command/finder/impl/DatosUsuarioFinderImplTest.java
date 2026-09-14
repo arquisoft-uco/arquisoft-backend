@@ -8,6 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ class DatosUsuarioFinderImplTest {
         // Arrange
         UUID usuario = UUID.randomUUID();
         when(usuarioOutputPort.buscarPorId(usuario))
-                .thenReturn(Optional.of(new UsuarioEntity(usuario, "EST-1", "Ana", "ana@uco.edu.co")));
+                .thenReturn(Optional.of(new UsuarioEntity(usuario, "EST-1", "Ana", "ana@uco.edu.co", Instant.now())));
 
         // Act & Assert
         assertThat(finder.obtener(usuario))

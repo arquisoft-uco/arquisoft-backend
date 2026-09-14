@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -31,4 +32,7 @@ public class AsesorFichaJpaEntity {
 
     @Column(name = "email", nullable = false, length = 50)
     private String email;
+
+    @Column(name = "ocurrido_en", nullable = false)
+    private Instant ocurridoEn;
 }
