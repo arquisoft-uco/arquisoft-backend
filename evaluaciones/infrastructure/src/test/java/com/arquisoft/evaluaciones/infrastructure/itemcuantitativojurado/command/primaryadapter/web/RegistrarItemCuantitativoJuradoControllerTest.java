@@ -4,6 +4,7 @@ import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.pri
 import com.arquisoft.evaluaciones.domain.itemcuantitativojurado.exception.CategoriaItemCuantitativoJuradoNoEncontradaException;
 import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
+import com.arquisoft.shared.web.config.JacksonConfig;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import({
         com.arquisoft.shared.logger.AppLoggerConfig.class,
         GlobalAppExceptionHandler.class,
+        JacksonConfig.class,
         RegistrarItemCuantitativoJuradoControllerTest.TestSecurityConfig.class
 })
 class RegistrarItemCuantitativoJuradoControllerTest {
@@ -111,6 +113,26 @@ class RegistrarItemCuantitativoJuradoControllerTest {
                         .content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors.length()").value(4));
+    }
+
+    @Test
+    void debeRetornar400_cuandoValorEsDecimal() throws Exception {
+        // Arrange
+        String body = """
+                {
+                  "nombre": "Calidad técnica",
+                  "descripcion": "Evalúa la calidad técnica",
+                  "categoria": "8d943e12-ea2d-4d67-a036-d8808e640eb4",
+                  "valor": 100.5
+                }
+                """;
+
+        // Act & Assert
+        mockMvc.perform(post(RUTA)
+                        .with(jwtConPermiso())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
