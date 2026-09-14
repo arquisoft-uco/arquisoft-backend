@@ -45,5 +45,6 @@ public final class SolicitudesFields {
         public static final String IDENTIFICADOR = "identificador";
         public static final String NOMBRE = "nombre";
         public static final String EMAIL = "email";
+        public static final String OCURRIDO_EN = "ocurridoEn";
     }
 }
