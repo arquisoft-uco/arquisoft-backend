@@ -67,7 +67,8 @@ class CambiarAsesorFichaUseCaseTest {
     private final UUID nuevoAsesor = UUID.randomUUID();
     private final FichaPerfilDomain ficha = FichaPerfilDomain.crear("Título de prueba", asesorActual);
     private final AsesorFichaDomain contacto =
-            AsesorFichaDomain.reconstruir(UUID.randomUUID(), "A001", "Ana Asesora", "ana@arquisoft.com");
+            AsesorFichaDomain.reconstruir(UUID.randomUUID(), "A001", "Ana Asesora", "ana@arquisoft.com",
+                    java.time.Instant.now());
     private final EstadoFichaPerfilDomain estadoEnConstruccion =
             EstadoFichaPerfilDomain.crear(ficha.getId());
 

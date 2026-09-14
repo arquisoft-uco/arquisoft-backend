@@ -11,6 +11,7 @@ import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontrada
 import com.arquisoft.fichas.domain.fichaperfil.exception.MismoAsesorFichaException;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -25,7 +26,7 @@ class CambiarAsesorFichaValidatorTest {
     private final FichaPerfilDomain ficha = FichaPerfilDomain.crear("Titulo de prueba", asesorActual);
 
     private AsesorFichaDomain asesor(UUID id) {
-        return AsesorFichaDomain.reconstruir(id, "A001", "Ana Asesora", "ana@arquisoft.com");
+        return AsesorFichaDomain.reconstruir(id, "A001", "Ana Asesora", "ana@arquisoft.com", Instant.now());
     }
 
     private CambioAsesorFichaDomain cambio(UUID nuevo) {

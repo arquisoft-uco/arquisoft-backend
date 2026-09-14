@@ -7,11 +7,7 @@ import java.util.UUID;
 
 public interface UsuarioOutputPort {
 
-    boolean existePorId(UUID id);
-
     Optional<UsuarioEntity> buscarPorId(UUID id);
 
-    void registrar(UsuarioEntity usuario);
-
-    void actualizar(UsuarioEntity usuario);
+    void guardar(UsuarioEntity usuario);
 }
