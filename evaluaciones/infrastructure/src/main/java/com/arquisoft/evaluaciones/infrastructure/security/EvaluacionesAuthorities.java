@@ -25,6 +25,9 @@ public final class EvaluacionesAuthorities {
     public static final String EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_VIEW =
             "evaluaciones:evaluacion-cuantitativa-jurado-estudiante:view";
 
+    public static final String EVALUACION_CUANTITATIVA_JURADO_UPDATE =
+            "evaluaciones:evaluacion-cuantitativa-jurado:update";
+
     public static final class Expresiones {
 
         private Expresiones() {}
@@ -52,5 +55,8 @@ public final class EvaluacionesAuthorities {
 
         public static final String HAS_EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_VIEW =
                 HAS_AUTHORITY_INICIO + EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_EVALUACION_CUANTITATIVA_JURADO_UPDATE =
+                HAS_AUTHORITY_INICIO + EVALUACION_CUANTITATIVA_JURADO_UPDATE + HAS_AUTHORITY_FIN;
     }
 }

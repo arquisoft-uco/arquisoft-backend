@@ -82,6 +82,15 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
         public static final String CONSULTAR_RESP_422 =
                 "La evaluación de jurado no existe o no pertenece al estudiante autenticado";
+        public static final String CAMBIAR_PUNTAJE_SUMMARY = "Cambiar puntaje de evaluación cuantitativa";
+        public static final String CAMBIAR_PUNTAJE_DESCRIPTION =
+                "Permite a un jurado corregir el puntaje que asignó a una de sus evaluaciones "
+                        + "cuantitativas registradas";
+        public static final String CAMBIAR_PUNTAJE_RESP_204 = "Puntaje actualizado";
+        public static final String CAMBIAR_PUNTAJE_RESP_400 = "Datos de entrada inválidos";
+        public static final String CAMBIAR_PUNTAJE_RESP_422 =
+                "La evaluación no existe, no pertenece al jurado autenticado, su evaluación de jurado "
+                        + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
     }
 
     public static final class ItemCuantitativoJurado {

@@ -2,6 +2,7 @@ package com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.se
 
 import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.secondaryport.entity.ItemCuantitativoJuradoEntity;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ItemCuantitativoJuradoOutputPort {
@@ -12,4 +13,6 @@ public interface ItemCuantitativoJuradoOutputPort {
 
     boolean existePorNombreYCategoriaIgnorandoMayusculas(
             String nombre, UUID categoriaId);
+
+    Optional<ItemCuantitativoJuradoEntity> obtenerPorId(UUID id);
 }

@@ -59,16 +59,28 @@ public final class EvaluacionesCodes {
 
         private EvaluacionCuantitativaJurado() {}
 
+        public static final String ID_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_ID_REQUERIDO";
         public static final String EVALUACION_JURADO_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_EVALUACION_JURADO_REQUERIDO";
         public static final String ESTUDIANTE_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_REQUERIDO";
+        public static final String JURADO_REQUERIDO =
+                "EVALUACION_CUANTITATIVA_JURADO_JURADO_REQUERIDO";
         public static final String ITEM_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_ITEM_REQUERIDO";
         public static final String PUNTAJE_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_REQUERIDO";
         public static final String PUNTAJE_FUERA_DE_RANGO =
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_FUERA_DE_RANGO";
+        public static final String NO_ENCONTRADA =
+                "EVALUACION_CUANTITATIVA_JURADO_NO_ENCONTRADA";
+        public static final String NO_PERTENECE_JURADO =
+                "EVALUACION_CUANTITATIVA_JURADO_NO_PERTENECE_JURADO";
+        public static final String EVALUACION_FINALIZADA =
+                "EVALUACION_CUANTITATIVA_JURADO_EVALUACION_FINALIZADA";
+        public static final String PUNTAJE_EXCEDE_VALOR_ITEM =
+                "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_EXCEDE_VALOR_ITEM";
     }
 
     public static final class EntregableProyectoAcceso {
