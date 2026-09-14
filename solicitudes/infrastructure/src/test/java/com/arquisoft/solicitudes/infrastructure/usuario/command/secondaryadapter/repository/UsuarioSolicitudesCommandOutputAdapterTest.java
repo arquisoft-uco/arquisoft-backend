@@ -9,34 +9,36 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 @DataJpaTest
-class UsuarioCommandOutputAdapterTest {
+class UsuarioSolicitudesCommandOutputAdapterTest {
 
     @Autowired
-    private UsuarioCommandRepository repository;
+    private UsuarioSolicitudesCommandRepository repository;
 
     @Autowired
     private TestEntityManager entityManager;
 
-    private UsuarioCommandOutputAdapter adapter;
+    private UsuarioSolicitudesCommandOutputAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new UsuarioCommandOutputAdapter(repository, mock(AppLogger.class));
+        adapter = new UsuarioSolicitudesCommandOutputAdapter(repository, mock(AppLogger.class));
     }
 
     @Test
-    void debeInsertarLaReplica_cuandoRegistra() {
+    void debeInsertarLaReplica_cuandoGuardaUnUsuarioNuevo() {
         // Arrange
         UUID id = UUID.randomUUID();
+        Instant ocurridoEn = Instant.now();
 
         // Act
-        adapter.registrar(new UsuarioEntity(id, "EST-1", "Ana", "ana@uco.edu.co"));
+        adapter.guardar(new UsuarioEntity(id, "EST-1", "Ana", "ana@uco.edu.co", ocurridoEn));
         entityManager.flush();
         entityManager.clear();
 
@@ -45,16 +47,17 @@ class UsuarioCommandOutputAdapterTest {
     }
 
     @Test
-    void debeSobrescribirLosDatos_cuandoActualiza() {
+    void debeSobrescribirLosDatos_cuandoGuardaUnUsuarioExistente() {
         // Arrange
         UUID id = UUID.randomUUID();
         entityManager.persist(UsuarioJpaEntity.builder()
-                .id(id).identificador("OLD").nombre("Vieja").email("old@uco.edu.co").build());
+                .id(id).identificador("OLD").nombre("Vieja").email("old@uco.edu.co")
+                .ocurridoEn(Instant.now().minusSeconds(60)).build());
         entityManager.flush();
         entityManager.clear();
 
         // Act
-        adapter.actualizar(new UsuarioEntity(id, "NEW", "Nueva", "new@uco.edu.co"));
+        adapter.guardar(new UsuarioEntity(id, "NEW", "Nueva", "new@uco.edu.co", Instant.now()));
         entityManager.flush();
         entityManager.clear();
 
@@ -65,24 +68,13 @@ class UsuarioCommandOutputAdapterTest {
     }
 
     @Test
-    void debeReportarExistencia_cuandoSeConsultaPorId() {
-        // Arrange
-        UUID id = UUID.randomUUID();
-        entityManager.persist(UsuarioJpaEntity.builder()
-                .id(id).identificador("EST-2").nombre("Beto").email("beto@uco.edu.co").build());
-        entityManager.flush();
-
-        // Act & Assert
-        assertThat(adapter.existePorId(id)).isTrue();
-        assertThat(adapter.existePorId(UUID.randomUUID())).isFalse();
-    }
-
-    @Test
     void debeDevolverLaReplica_cuandoBuscaPorId() {
         // Arrange
         UUID id = UUID.randomUUID();
+        Instant ocurridoEn = Instant.now();
         entityManager.persist(UsuarioJpaEntity.builder()
-                .id(id).identificador("COORD-1").nombre("Pedro").email("pedro@uco.edu.co").build());
+                .id(id).identificador("COORD-1").nombre("Pedro").email("pedro@uco.edu.co")
+                .ocurridoEn(ocurridoEn).build());
         entityManager.flush();
 
         // Act & Assert
@@ -90,6 +82,7 @@ class UsuarioCommandOutputAdapterTest {
                 .hasValueSatisfying(u -> {
                     assertThat(u.nombre()).isEqualTo("Pedro");
                     assertThat(u.email()).isEqualTo("pedro@uco.edu.co");
+                    assertThat(u.ocurridoEn()).isEqualTo(ocurridoEn);
                 });
         assertThat(adapter.buscarPorId(UUID.randomUUID())).isEmpty();
     }

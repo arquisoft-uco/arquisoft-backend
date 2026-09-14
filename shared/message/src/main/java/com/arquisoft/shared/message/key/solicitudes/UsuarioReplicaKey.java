@@ -9,6 +9,10 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum UsuarioReplicaKey implements ClaveMensaje {
 
     LOG_USUARIO_AGREGADO_RECIBIDO("solicitudes.infraestructura.usuarioreplica.log.usuario-agregado-recibido", 4),
+    LOG_VERIFICACION_AGREGAR("solicitudes.aplicacion.usuarioreplica.log.verificacion-agregar", 2),
+    LOG_AGREGADO("solicitudes.infraestructura.usuarioreplica.log.agregado", 1),
+    LOG_DUPLICADO("solicitudes.infraestructura.usuarioreplica.log.duplicado", 1),
+    LOG_DESCARTADO("solicitudes.infraestructura.usuarioreplica.log.descartado", 2),
     LOG_REPLICA_GUARDADA("solicitudes.aplicacion.usuarioreplica.log.replica-guardada", 1);
 
     private final String clave;

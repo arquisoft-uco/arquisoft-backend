@@ -13,15 +13,10 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
+public class UsuarioSolicitudesCommandOutputAdapter implements UsuarioOutputPort {
 
-    private final UsuarioCommandRepository usuarioCommandRepository;
+    private final UsuarioSolicitudesCommandRepository usuarioCommandRepository;
     private final AppLogger logger;
-
-    @Override
-    public boolean existePorId(UUID id) {
-        return usuarioCommandRepository.existsById(id);
-    }
 
     @Override
     public Optional<UsuarioEntity> buscarPorId(UUID id) {
@@ -29,13 +24,7 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
     }
 
     @Override
-    public void registrar(UsuarioEntity usuario) {
-        usuarioCommandRepository.save(UsuarioJpaMapper.toJpaEntity(usuario));
-        logger.debug(UsuarioReplicaKey.LOG_REPLICA_GUARDADA, usuario.id());
-    }
-
-    @Override
-    public void actualizar(UsuarioEntity usuario) {
+    public void guardar(UsuarioEntity usuario) {
         usuarioCommandRepository.save(UsuarioJpaMapper.toJpaEntity(usuario));
         logger.debug(UsuarioReplicaKey.LOG_REPLICA_GUARDADA, usuario.id());
     }

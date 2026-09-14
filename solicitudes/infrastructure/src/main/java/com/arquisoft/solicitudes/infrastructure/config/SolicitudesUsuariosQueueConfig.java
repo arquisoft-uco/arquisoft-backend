@@ -28,16 +28,16 @@ public class SolicitudesUsuariosQueueConfig {
                 arquisoftDeadLetterExchange);
     }
 
-    public static final String ASESOR_FICHA_AGREGADO_QUEUE =
-            SolicitudesQueues.PREFIJO + EventTopics.Usuarios.ASESOR_FICHA_AGREGADO;
+    public static final String ESTUDIANTE_AGREGADO_QUEUE =
+            SolicitudesQueues.PREFIJO + EventTopics.Usuarios.ESTUDIANTE_AGREGADO;
 
     @Bean
-    public Declarables solicitudesAsesorFichaAgregadoDeclarables(
+    public Declarables solicitudesEstudianteAgregadoDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
             @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
         return ColaEvento.declarar(
-                ASESOR_FICHA_AGREGADO_QUEUE,
-                EventTopics.Usuarios.ASESOR_FICHA_AGREGADO,
+                ESTUDIANTE_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ESTUDIANTE_AGREGADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

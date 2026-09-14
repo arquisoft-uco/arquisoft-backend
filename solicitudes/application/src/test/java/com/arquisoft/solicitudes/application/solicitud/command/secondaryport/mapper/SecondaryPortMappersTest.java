@@ -69,14 +69,15 @@ class SecondaryPortMappersTest {
     void debeConvertirElUsuarioEnAmbasDirecciones() {
         // Arrange
         UUID id = UUID.randomUUID();
-        UsuarioDomain domain = UsuarioDomain.reconstruir(id, "EST-1", "Ana", "ana@uco.edu.co");
+        Instant ocurridoEn = Instant.now();
+        UsuarioDomain domain = UsuarioDomain.reconstruir(id, "EST-1", "Ana", "ana@uco.edu.co", ocurridoEn);
 
         // Act
         UsuarioEntity entity = UsuarioMapper.toEntity(domain);
         UsuarioDomain vuelta = UsuarioMapper.toDomain(entity);
 
         // Assert
-        assertThat(entity).isEqualTo(new UsuarioEntity(id, "EST-1", "Ana", "ana@uco.edu.co"));
+        assertThat(entity).isEqualTo(new UsuarioEntity(id, "EST-1", "Ana", "ana@uco.edu.co", ocurridoEn));
         assertThat(vuelta.getId()).isEqualTo(id);
         assertThat(vuelta.getIdentificador()).isEqualTo("EST-1");
         assertThat(vuelta.getEmail()).isEqualTo("ana@uco.edu.co");

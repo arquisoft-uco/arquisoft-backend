@@ -389,7 +389,7 @@ logging:
   # binding relajado de Spring Boot solo llega a nivel de PAQUETE, nunca de clase, asi que sin
   # grupos no hay forma de tocar `org.hibernate.SQL` y `org.hibernate.type` a la vez desde .env.
   group:
-    negocio: com.arquisoft.fichas, com.arquisoft.seguridad, com.arquisoft.usuarios, com.arquisoft.notificaciones, com.arquisoft.evaluaciones
+    negocio: com.arquisoft.fichas, com.arquisoft.seguridad, com.arquisoft.usuarios, com.arquisoft.notificaciones, com.arquisoft.evaluaciones, com.arquisoft.proyectos, com.arquisoft.solicitudes
     plataforma: com.arquisoft.shared
     datos: org.hibernate.SQL, org.hibernate.type
     seguridad: org.springframework.security

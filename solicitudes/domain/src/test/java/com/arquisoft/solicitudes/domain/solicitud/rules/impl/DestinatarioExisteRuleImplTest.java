@@ -5,6 +5,7 @@ import com.arquisoft.solicitudes.domain.solicitud.model.ExistenciaDestinatario;
 import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -15,7 +16,7 @@ class DestinatarioExisteRuleImplTest {
     private final DestinatarioExisteRuleImpl regla = new DestinatarioExisteRuleImpl();
 
     private static UsuarioDomain usuario(UUID id) {
-        return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co");
+        return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co", Instant.now());
     }
 
     @Test

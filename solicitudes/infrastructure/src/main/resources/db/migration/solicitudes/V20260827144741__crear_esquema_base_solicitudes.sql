@@ -50,7 +50,7 @@ CREATE TABLE solicitud (
     id UUID PRIMARY KEY,
     destinatario_id UUID NOT NULL,
     remitente_id UUID NOT NULL,
-    fecha_creacion TIMESTAMPTZ NOT NULL,
+    fecha_creacion TIMESTAMP NOT NULL,
     mensaje_solicitud VARCHAR(100) NOT NULL,
     tipo_solicitud_id VARCHAR(60) NOT NULL,
     CONSTRAINT fk_solicitud_destinatario FOREIGN KEY (destinatario_id)

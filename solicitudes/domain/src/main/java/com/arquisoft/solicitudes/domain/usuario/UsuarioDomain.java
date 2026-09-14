@@ -2,34 +2,39 @@ package com.arquisoft.solicitudes.domain.usuario;
 
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public final class UsuarioDomain {
 
     public static final UsuarioDomain VACIO = UsuarioDomain.reconstruir(
-            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO);
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, UtilFecha.VACIO);
 
     private UUID id;
     private String identificador;
     private String nombre;
     private String email;
+    private Instant ocurridoEn;
 
     private UsuarioDomain() {}
 
-    private UsuarioDomain(UUID id, String identificador, String nombre, String email) {
+    private UsuarioDomain(UUID id, String identificador, String nombre, String email, Instant ocurridoEn) {
         this.id = id;
         this.identificador = identificador;
         this.nombre = nombre;
         this.email = email;
+        this.ocurridoEn = ocurridoEn;
     }
 
-    public static UsuarioDomain crear(UUID id, String identificador, String nombre, String email) {
+    public static UsuarioDomain crear(
+            UUID id, String identificador, String nombre, String email, Instant ocurridoEn) {
         var usuario = new UsuarioDomain();
         var result = new ValidationResult();
 
@@ -37,13 +42,15 @@ public final class UsuarioDomain {
         usuario.setIdentificador(identificador, result);
         usuario.setNombre(nombre, result);
         usuario.setEmail(email, result);
+        usuario.setOcurridoEn(ocurridoEn, result);
 
         result.lanzarSiTieneErrores();
         return usuario;
     }
 
-    public static UsuarioDomain reconstruir(UUID id, String identificador, String nombre, String email) {
-        return new UsuarioDomain(id, identificador, nombre, email);
+    public static UsuarioDomain reconstruir(
+            UUID id, String identificador, String nombre, String email, Instant ocurridoEn) {
+        return new UsuarioDomain(id, identificador, nombre, email, ocurridoEn);
     }
 
     private void setId(UUID id, ValidationResult result) {
@@ -82,6 +89,15 @@ public final class UsuarioDomain {
         this.email = email;
     }
 
+    private void setOcurridoEn(Instant ocurridoEn, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(ocurridoEn,
+                SolicitudesFields.Usuario.OCURRIDO_EN,
+                SolicitudesCodes.Usuario.OCURRIDO_EN_REQUERIDO, result)) {
+            return;
+        }
+        this.ocurridoEn = ocurridoEn;
+    }
+
     public UUID getId() {
         return id;
     }
@@ -96,6 +112,10 @@ public final class UsuarioDomain {
 
     public String getEmail() {
         return email;
+    }
+
+    public Instant getOcurridoEn() {
+        return ocurridoEn;
     }
 
     public boolean esVacio() {

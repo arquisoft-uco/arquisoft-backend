@@ -1,4 +1,4 @@
-package com.arquisoft.solicitudes.infrastructure.usuario.command.primaryadapter.amqp.usuarios.coordinador;
+package com.arquisoft.solicitudes.infrastructure.usuario.command.primaryadapter.amqp.usuarios.estudiante;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class CoordinadorAgregadoConsumerTest {
+class EstudianteAgregadoConsumerTest {
 
     @Mock
     private RegistrarUsuarioInteractor registrarUsuarioInteractor;
@@ -37,11 +37,11 @@ class CoordinadorAgregadoConsumerTest {
     @Mock
     private AppLogger logger;
 
-    private CoordinadorAgregadoConsumer consumer;
+    private EstudianteAgregadoConsumer consumer;
 
     @BeforeEach
     void setUp() {
-        consumer = new CoordinadorAgregadoConsumer(
+        consumer = new EstudianteAgregadoConsumer(
                 registrarUsuarioInteractor,
                 new ObjectMapper(),
                 logger,
@@ -57,8 +57,8 @@ class CoordinadorAgregadoConsumerTest {
                     "idEvento": "%s",
                     "ocurridoEn": "2026-09-12T10:00:00Z",
                     "usuario": "%s",
-                    "identificador": "COORD-001",
-                    "nombre": "Ana Coordinadora",
+                    "identificador": "20161020123",
+                    "nombre": "Ana Estudiante",
                     "email": "ana@uco.edu.co"
                 }
                 """.formatted(idEvento, UUID.randomUUID());
@@ -74,7 +74,7 @@ class CoordinadorAgregadoConsumerTest {
     @Test
     void debeInvocarElInteractor_cuandoLlegaElEvento() throws Exception {
         // Act
-        consumer.onCoordinadorAgregado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
+        consumer.onEstudianteAgregado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
 
         // Assert
         verify(registrarUsuarioInteractor).ejecutar(any());
@@ -83,7 +83,7 @@ class CoordinadorAgregadoConsumerTest {
     @Test
     void debeConfirmarElMensaje_cuandoElProcesamientoTermina() throws Exception {
         // Act
-        consumer.onCoordinadorAgregado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
+        consumer.onEstudianteAgregado(mensajeCon(UUID.randomUUID().toString(), 1L), channel);
 
         // Assert
         verify(channel).basicAck(1L, false);
@@ -96,7 +96,7 @@ class CoordinadorAgregadoConsumerTest {
                 .when(registrarUsuarioInteractor).ejecutar(any());
 
         // Act
-        consumer.onCoordinadorAgregado(mensajeCon(UUID.randomUUID().toString(), 2L), channel);
+        consumer.onEstudianteAgregado(mensajeCon(UUID.randomUUID().toString(), 2L), channel);
 
         // Assert
         verify(channel).basicNack(2L, false, false);
@@ -109,7 +109,7 @@ class CoordinadorAgregadoConsumerTest {
                 new AgregacionUsuarioResult.Descartada(UUID.randomUUID(), Instant.now()));
 
         // Act
-        consumer.onCoordinadorAgregado(mensajeCon(UUID.randomUUID().toString(), 3L), channel);
+        consumer.onEstudianteAgregado(mensajeCon(UUID.randomUUID().toString(), 3L), channel);
 
         // Assert
         verify(channel).basicAck(3L, false);

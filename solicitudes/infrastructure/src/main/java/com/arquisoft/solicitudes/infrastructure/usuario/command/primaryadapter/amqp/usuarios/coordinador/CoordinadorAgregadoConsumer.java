@@ -7,6 +7,7 @@ import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.solicitudes.application.usuario.command.primaryport.interactor.RegistrarUsuarioInteractor;
 import com.arquisoft.solicitudes.application.usuario.command.primaryport.model.RegistrarUsuarioCommand;
+import com.arquisoft.solicitudes.application.usuario.command.result.AgregacionUsuarioResult;
 import com.arquisoft.solicitudes.infrastructure.config.SolicitudesUsuariosQueueConfig;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
@@ -16,7 +17,6 @@ import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
-import java.util.UUID;
 
 @Component
 public class CoordinadorAgregadoConsumer extends AbstractEventConsumer {
@@ -43,11 +43,20 @@ public class CoordinadorAgregadoConsumer extends AbstractEventConsumer {
                     payload.usuario(), payload.identificador(), payload.nombre(),
                     UtilTexto.enmascararCorreo(payload.email()));
 
-            registrarUsuarioInteractor.ejecutar(new RegistrarUsuarioCommand(
-                    UUID.fromString(payload.usuario()),
-                    payload.identificador(),
-                    payload.nombre(),
-                    payload.email()));
+            var comando = RegistrarUsuarioCommand.crear(
+                    payload.usuario(), payload.identificador(), payload.nombre(), payload.email(),
+                    payload.ocurridoEn());
+            var resultado = registrarUsuarioInteractor.ejecutar(comando);
+
+            switch (resultado) {
+                case AgregacionUsuarioResult.Agregada agregada ->
+                        logger.info(UsuarioReplicaKey.LOG_AGREGADO, agregada.usuario());
+                case AgregacionUsuarioResult.Duplicada duplicada ->
+                        logger.info(UsuarioReplicaKey.LOG_DUPLICADO, duplicada.usuario());
+                case AgregacionUsuarioResult.Descartada descartada ->
+                        logger.debug(UsuarioReplicaKey.LOG_DESCARTADO,
+                                descartada.usuario(), descartada.ocurridoEnVigente());
+            }
         });
     }
 }
