@@ -1,9 +1,0 @@
-package com.arquisoft.proyectos.infrastructure.estudiante.command.secondaryadapter.repository;
-
-import com.arquisoft.proyectos.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import java.util.UUID;
-
-public interface EstudianteProyectosCommandRepository extends JpaRepository<EstudianteJpaEntity, UUID> {
-}

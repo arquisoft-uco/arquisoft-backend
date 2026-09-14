@@ -335,21 +335,19 @@ equivocan generando código y no se ven leyendo una regla:
   `mer/data/{NN}_data_{contexto}.sql`: esas y solo esas.** Si el plan no las lista, es ambigüedad —
   repórtala, no las deduzcas.
 - **Virtual Threads ya están activos:** nunca un `@Bean TaskExecutor` manual.
-- **El nombre simple de una clase anotada es único en TODO el repo, no por paquete.** Spring deriva
-  el nombre del bean del nombre simple, así que dos `@Configuration`/`@Component` homónimos en
-  contextos distintos abortan el arranque con `ConflictingBeanDefinitionException` — aunque cada
-  `@Bean` interno ya tenga nombre propio y `@Qualifier`. Una clase de `config/` va **prefijada por su
-  contexto** (`UsuariosRestTemplateConfig`, `SeguridadRestTemplateConfig`): así se lee a quién
-  pertenece desde el import. **Todo** bean de una réplica lleva el contexto que la aloja antes del
-  sufijo, **aunque hoy no exista homónimo** (`EstudianteFichasPorIdFinderImpl` en `fichas`,
-  `AgregarCoordinadorProyectosInteractorImpl` en `proyectos`); el `Consumer` lo pone tras el evento
-  (`CoordinadorAgregadoProyectosConsumer`). No copies el nombre de un bean de réplica que ya exista
-  sin calificador: renómbralo (interfaz, `Impl`, test, campos) en el mismo cambio y repórtalo. El
-  dueño y los tipos que no son bean (`Domain`, `Entity`, `Mapper`, `Command`, `Payload`) conservan el
-  nombre natural. Nunca `Espejo`/`Replica`. Nunca edites una migración ya aplicada para actualizar un
-  nombre de clase citado en su comentario. Detalle en
-  `arquisoft-arquitectura` → *Replicación entre contextos*. `verificarNombresBeanUnicos` cuelga de
-  `check` y lo rompe si repites un nombre.
+- **El nombre de un bean escaneado es su FQN, no su nombre simple.** `ArquisoftApplication` usa
+  `FullyQualifiedAnnotationBeanNameGenerator`, y cada `@EnableJpaRepositories` lo repite porque los
+  repositorios Spring Data no heredan el de la aplicación — un `{Contexto}DataSourceConfig` nuevo
+  **debe** declarar `nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class`. Por eso dos
+  clases homónimas en contextos distintos no chocan, y una réplica usa el nombre natural en todas sus
+  clases, beans incluidos (`AgregarCoordinadorInteractor`, `CoordinadorAgregadoConsumer`), sin
+  calificador de contexto ni `Espejo`/`Replica`. Ninguna réplica del repo lleva ese calificador: un
+  nombre con `Fichas`/`Proyectos` como calificador es la convención retirada. Nunca referencies un bean escaneado por nombre en
+  cadena (`@Qualifier("…")`, `@DependsOn`, SpEL): se inyecta por tipo. Los métodos `@Bean` no pasan
+  por el generador y llevan el contexto en el nombre (`fichasTransactionManager`); las clases de
+  `config/` siguen **prefijadas por su contexto** (`UsuariosRestTemplateConfig`) para leer a quién
+  pertenecen desde el import. Nunca edites una migración ya aplicada para actualizar un nombre de
+  clase citado en su comentario. Detalle en `arquisoft-arquitectura` → *Replicación entre contextos*.
 - **Sin Javadoc y sin comentarios que repitan el código.** El "por qué" va al mensaje de commit.
   Imports explícitos, nunca wildcard.
 

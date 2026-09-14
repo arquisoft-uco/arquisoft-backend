@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFichasFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
 import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.CambiarAsesorFichaUseCase;
@@ -25,7 +25,7 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
     private final FichaPerfilFinder fichaPerfilFinder;
-    private final AsesorFichaFichasFinder asesorFichaFichasFinder;
+    private final AsesorFichaFinder asesorFichaFinder;
     private final EstadoActualFichaPerfilFinder estadoActualFichaPerfilFinder;
     private final CambiarAsesorFichaValidator cambiarAsesorFichaValidator;
     private final EventPublisher eventPublisher;
@@ -39,7 +39,7 @@ public class CambiarAsesorFichaUseCaseImpl implements CambiarAsesorFichaUseCase 
         logger.info(FichaPerfilKey.LOG_CAMBIANDO_ASESOR, fichaPerfil, nuevoAsesorFicha);
 
         var ficha = fichaPerfilFinder.obtener(fichaPerfil).orElse(FichaPerfilDomain.VACIO);
-        var asesorFicha = asesorFichaFichasFinder.obtener(nuevoAsesorFicha).orElse(AsesorFichaDomain.VACIO);
+        var asesorFicha = asesorFichaFinder.obtener(nuevoAsesorFicha).orElse(AsesorFichaDomain.VACIO);
         var estadoActual = estadoActualFichaPerfilFinder.obtener(fichaPerfil)
                 .orElse(EstadoFichaPerfilDomain.VACIO);
 

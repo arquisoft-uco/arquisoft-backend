@@ -377,7 +377,7 @@ compilaría — invertiría la dirección `domain ← application ← infrastruc
 | Mapper Command → dominio | `{feature}/command/primaryport/mapper/` | `Mapper` | `RegistrarFichaPerfilMapper` |
 | Use case (comando) | `{feature}/command/usecase/` (+ `impl/`) | `UseCase` / `UseCaseImpl` | `RegistrarFichaPerfilUseCaseImpl` |
 | Validator | `{feature}/command/validator/` (+ `impl/`) | `Validator` / `ValidatorImpl` | `RegistrarFichaPerfilValidatorImpl` |
-| Finder | `{feature}/command/finder/` (+ `impl/`) | `Finder` / `FinderImpl` | `AsesorFichaFichasExisteFinderImpl` |
+| Finder | `{feature}/command/finder/` (+ `impl/`) | `Finder` / `FinderImpl` | `AsesorFichaExisteFinderImpl` |
 | Puerto de salida (escritura) | `{feature}/command/secondaryport/` | `OutputPort` | `FichaPerfilOutputPort` |
 | Entity (record plano) | `{feature}/command/secondaryport/entity/` | `Entity` | `FichaPerfilEntity` |
 | Mapper Entity ↔ Domain | `{feature}/command/secondaryport/mapper/` | `Mapper` | `FichaPerfilMapper` |

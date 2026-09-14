@@ -35,7 +35,7 @@ dato cuya integridad no se validó primero.
 |---|---|---|---|
 | `Validator` | Construye sus `Rule`s con `new` en un **constructor sin argumentos** (no `@RequiredArgsConstructor`); nunca inyecta `OutputPort`/`Finder`; **cero `if`** | No decide, solo orquesta en orden | `fichas/application/.../fichaperfil/command/validator/impl/RegistrarFichaPerfilValidatorImpl.java` |
 | `Rule` | Pura: sin Spring, sin Lombok, **sin dependencias de constructor**; no es un bean | Sí, sobre un `record` ya cargado con el dato | `fichas/domain/.../fichaperfil/rules/impl/FichaPerfilTituloUnicoRuleImpl.java` |
-| `Finder` | Delega en un `OutputPort` | Nunca por "no encontrado" — devuelve `Boolean`/`Long`/`Optional` | `fichas/application/.../asesorficha/command/finder/impl/AsesorFichaFichasExisteFinderImpl.java` |
+| `Finder` | Delega en un `OutputPort` | Nunca por "no encontrado" — devuelve `Boolean`/`Long`/`Optional` | `fichas/application/.../asesorficha/command/finder/impl/AsesorFichaExisteFinderImpl.java` |
 
 El I/O de un comando vive entero en el `UseCase`: los `Finder`s consultan todo el estado, el
 `Validator` orquesta las `Rule`s con lo ya consultado, el `OutputPort` persiste. Las `Rule`s corren

@@ -153,7 +153,7 @@ de `command/` de esa otra feature** (`application/{otraFeature}/command/secondar
 por un `Finder` propio de ella que el use case inyecta — nunca en el `OutputPort` de la feature que
 pregunta, nunca importando el `domain/` ajeno, y **nunca creando un `query/` solo para esto**: un
 paquete `query/` existe únicamente si hay una lectura real detrás de un `primaryport`. Patrón
-exacto: `AsesorFichaFichasExisteFinder` → `AsesorFichaOutputPort.existePorId(...)`, consumido por
+exacto: `AsesorFichaExisteFinder` → `AsesorFichaOutputPort.existePorId(...)`, consumido por
 `RegistrarFichaPerfilUseCaseImpl`. Un solo puerto, N consumidores.
 
 **8c. ¿Cuántos viajes a la base de datos cuesta el comando?** Enumera en el plan **cada `Finder` con
@@ -579,7 +579,8 @@ getters/setters ni métodos `private`.
 - [ ] **Presupuesto de I/O declarado** (pregunta 8c): cada `Finder` con su método del `OutputPort`, y ningún `Finder` cuya entrada sea la salida de otro salvo cascada justificada en una línea (lookup condicional · features/contextos distintos · el id intermedio lo necesita una `Rule`). Un `{Entidad}PorIdFinder` alimentado por un `Id{Entidad}Por{Otro}Finder` se colapsa en `{Entidad}Por{Otro}Finder` + `obtenerPor{Otro}(...)` con `JOIN`
 - [ ] Excepciones nuevas extienden la base correcta (`DomainException`/`DomainValidationException`→422, `ApplicationException`→400, `InfrastructureException`→503) y viven en el `exception/` **del slice del feature en la capa de esa base** — nunca en un `exception/` a nivel de contexto, y una subclase nunca en distinta capa que su padre
 - [ ] Sin handler de contexto salvo colisión de nombres; si el plan lo declara, va en `infrastructure/handler/`, nunca en `exception/`
-- [ ] Réplica entre contextos: **todo** bean del árbol (`Consumer`, `Interactor`, `UseCase`, `Finder`, `CommandOutputAdapter`, `CommandRepository`) lleva el contexto que lo aloja antes del sufijo, **aunque hoy no exista homónimo** (`EstudianteProyectosPorIdFinderImpl`, `AgregarCoordinadorProyectosInteractor`); el `Consumer` lo pone tras el evento (`CoordinadorAgregadoProyectosConsumer`). `Domain`/`Entity`/`Mapper`/`Command`/`Payload` conservan el nombre natural. Si el precedente que copias es una réplica con beans sin calificador, el plan **no** hereda ese nombre y lista el renombrado de esos beans como MODIFICAR (`arquisoft-arquitectura` → *Replicación entre contextos*)
+- [ ] Réplica entre contextos: **todas** las clases del árbol, beans incluidos, usan el nombre natural del concepto (`AgregarCoordinadorInteractor`, `CoordinadorAgregadoConsumer`), sin calificador de contexto — los homónimos entre contextos no chocan porque el nombre de bean es el FQN (`FullyQualifiedAnnotationBeanNameGenerator` en `ArquisoftApplication` y en cada `@EnableJpaRepositories`). Ninguna réplica del repo lleva ese calificador; si aparece, es la convención retirada (`arquisoft-arquitectura` → *Replicación entre contextos*)
+- [ ] Contexto nuevo con `{Contexto}DataSourceConfig`: su `@EnableJpaRepositories` declara `nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class`
 - [ ] Identificadores en el body: `String`, validados en `Command.crear(...)` vía `ValidatorUUID`, nunca con anotación Jakarta
 - [ ] `RequestDTO` = `record` desnudo + `{Accion}{Entidad}RequestMapper`; `ResponseDTO` = `record`. Sin Jakarta, sin Lombok, sin `toCommand()` en el DTO
 - [ ] Lectura: `ReadModel` → `{Entidad}ResponseDTO` vía `{Entidad}ResponseMapper`, nunca serializado directo

@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFichasExistentesFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.RemoverEstudianteFichaPerfilValidator;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.FichaPerfilExisteFinder;
@@ -40,7 +40,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
     private FichaPerfilExisteFinder fichaPerfilExisteFinder;
 
     @Mock
-    private EstudiantesFichasExistentesFinder estudiantesFichasExistentesFinder;
+    private EstudiantesExistentesFinder estudiantesExistentesFinder;
 
     @Mock
     private VinculoEstudianteFichaExisteFinder vinculoEstudianteFichaExisteFinder;
@@ -79,11 +79,11 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
         removerEstudianteFichaPerfilUseCase.ejecutar(entrada);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilExisteFinder, estudiantesFichasExistentesFinder,
+        InOrder inOrder = inOrder(fichaPerfilExisteFinder, estudiantesExistentesFinder,
                 vinculoEstudianteFichaExisteFinder, removerEstudianteFichaPerfilValidator,
                 estudianteFichaPerfilOutputPort);
         inOrder.verify(fichaPerfilExisteFinder).obtener(fichaPerfil);
-        inOrder.verify(estudiantesFichasExistentesFinder).obtener(List.of(estudiante));
+        inOrder.verify(estudiantesExistentesFinder).obtener(List.of(estudiante));
         inOrder.verify(vinculoEstudianteFichaExisteFinder)
                 .obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante));
         inOrder.verify(removerEstudianteFichaPerfilValidator)
@@ -138,7 +138,7 @@ class RemoverEstudianteFichaPerfilUseCaseTest {
 
     private void stubConsultas(boolean fichaExiste, List<UUID> estudiantesExistentes, boolean vinculoExiste) {
         when(fichaPerfilExisteFinder.obtener(fichaPerfil)).thenReturn(fichaExiste);
-        when(estudiantesFichasExistentesFinder.obtener(List.of(estudiante))).thenReturn(estudiantesExistentes);
+        when(estudiantesExistentesFinder.obtener(List.of(estudiante))).thenReturn(estudiantesExistentes);
         when(vinculoEstudianteFichaExisteFinder.obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante)))
                 .thenReturn(vinculoExiste);
     }

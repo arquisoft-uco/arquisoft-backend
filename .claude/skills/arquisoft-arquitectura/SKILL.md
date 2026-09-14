@@ -543,7 +543,7 @@ Solo se crea `query/` cuando la feature tiene una **lectura real alcanzada por u
 — aunque el dato pertenezca a **otra feature**.
 
 Ejemplo real: `RegistrarFichaPerfilUseCaseImpl` confirma que el asesor existe con
-`AsesorFichaFichasExisteFinder`, que delega en `AsesorFichaOutputPort.existePorId(...)` — el puerto de
+`AsesorFichaExisteFinder`, que delega en `AsesorFichaOutputPort.existePorId(...)` — el puerto de
 **command** de `asesorficha`. No hay `AsesorFichaQueryOutputPort` y no debe haberlo.
 `estudiante`, `representantecomite` y `evaluacionfichaperfil` no tienen paquete `query/` por lo
 mismo.
@@ -899,34 +899,26 @@ Todos los flujos entre contextos que existen hoy caen en la primera fila.
    sustantivo inventa un concepto que el negocio no tiene. `EstudianteDomain`,
    `AgregarEstudianteUseCase`, `EstudianteFinder`, `EstudianteOutputPort`.
 
-   **Excepción: el nombre de bean.** Spring nombra el bean por el nombre simple de la clase, así
-   que dos beans homónimos en contextos distintos abortan el arranque con
-   `ConflictingBeanDefinitionException`. Por eso, en la réplica, **toda clase que es bean** lleva el
-   **nombre del contexto que la aloja** antes del sufijo técnico — **siempre, desde que se crea, aunque
-   hoy no exista ningún homónimo**. Esperar al homónimo obliga a quien llega segundo a renombrar
-   beans ajenos que ya estaban en `develop`: la réplica de `coordinador` en `proyectos` y la de
-   `asesor_ficha` en `fichas` nacieron sin calificador y hubo que renombrarlas después. Toda la réplica
-   (`Consumer`, `Interactor`, `UseCase`, `Finder`, `CommandOutputAdapter`, `CommandRepository`) va
-   calificada, no solo las clases que hoy chocan. El dueño conserva el nombre natural; la interfaz se
-   renombra junto con su `Impl`.
+   **Los beans también llevan el nombre natural.** Spring nombraría cada bean por el nombre simple
+   de su clase, y dos homónimos en contextos distintos abortarían el arranque con
+   `ConflictingBeanDefinitionException`. Eso se resuelve en la configuración, no en el nombre:
+   `ArquisoftApplication` declara
+   `@SpringBootApplication(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class)` y cada
+   `{Contexto}DataSourceConfig` repite el mismo `nameGenerator` en su `@EnableJpaRepositories`. Los
+   repositorios Spring Data no pasan por el escaneo de componentes y **no** heredan el generador de la
+   aplicación: un `@EnableJpaRepositories` sin él vuelve a hacer chocar dos `{X}CommandRepository`.
+   Con el nombre de bean igual al FQN, la réplica usa el nombre natural en **todas** sus clases
+   (`AgregarCoordinadorInteractor`, `CoordinadorAgregadoConsumer`, `CoordinadorCommandRepository`),
+   sin `Espejo`/`Replica` y sin calificador de contexto.
 
-   Posición del calificador: `{Concepto}{Contexto}{Sufijo}` (`EstudianteFichasPorIdFinder`,
-   `AgregarCoordinadorProyectosInteractor`); en el `Consumer`, tras el evento completo:
-   `{Evento}{Contexto}Consumer` (`CoordinadorAgregadoProyectosConsumer`, nunca
-   `CoordinadorProyectosAgregadoConsumer`). Un concepto con calificador de rol lo conserva entero
-   antes del contexto: `AsesorFichaFichasPorIdFinder`, `AsesorFichaAgregadoFichasConsumer`.
-
-   | Es bean → calificador | No es bean → nombre natural |
-   |---|---|
-   | `EstudianteFichasPorIdFinder(Impl)`, `AgregarEstudianteFichasInteractor(Impl)`, `AgregarCoordinadorProyectosUseCase(Impl)`, `EstudianteAgregadoFichasConsumer`, `CoordinadorAgregadoProyectosConsumer`, `AsesorProyectosCommandOutputAdapter`, `AsesorProyectosCommandRepository`, `{Contexto}…Config` | `EstudianteDomain`, `EstudianteEntity`, `EstudianteJpaEntity`, `EstudianteMapper`, `EstudianteOutputPort`, `AgregarEstudianteCommand`, `EstudianteAgregadoPayload`, `AgregacionEstudianteResult` |
-
-   Un calificador de **contexto** no es un calificador de mecanismo: `Fichas` dice dónde vive, no
-   que sea copia, así que no choca con la prohibición de `Espejo`. Antes de crear o validar una
-   réplica, lista sus beans (`grep -rlE "^@(Component|Repository)" {contexto}/*/src/main/java/**/{feature}`)
-   y confirma que **todos** llevan el contexto: si un bean de una réplica ya existente no lo lleva,
-   se renombra en ese mismo cambio, no se copia su nombre. El gate `verificarNombresBeanUnicos`
-   (cuelga de `check`) solo falla ante un nombre simple repetido en `src/main`; no detecta una réplica
-   sin calificador mientras sea única, así que esa revisión es manual.
+   Consecuencias:
+   - Un bean escaneado **nunca** se referencia por nombre en cadena (`@Qualifier("…")`,
+     `@DependsOn`, SpEL `@nombre`): su nombre es el FQN. Se inyecta por tipo (interfaz).
+   - Los métodos `@Bean` no pasan por el generador: su nombre es el del método y lleva el contexto
+     (`fichasTransactionManager`), y las clases de `config/` siguen prefijadas por contexto
+     (`FichasDataSourceConfig`) para leer a quién pertenecen desde el import.
+   - Ningún bean de réplica lleva calificador de contexto: un nombre con `Fichas`/`Proyectos` como
+     calificador (`AgregarEstudianteFichasInteractor`) es la convención retirada, no un precedente.
 
 1. **`ocurridoEn` en el payload y en la tabla espejo.** Ya viaja en el JSON (`DomainEvent` lo asigna) y
    los payloads lo declaran. El espejo guarda el `ocurrido_en` del último evento aplicado y **descarta
