@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -23,7 +24,8 @@ import javax.sql.DataSource;
 @EnableJpaRepositories(
         basePackages = "com.arquisoft.proyectos.infrastructure",
         entityManagerFactoryRef = "proyectosEntityManagerFactory",
-        transactionManagerRef = "proyectosTransactionManager"
+        transactionManagerRef = "proyectosTransactionManager",
+        nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class
 )
 public class ProyectosDataSourceConfig {
 

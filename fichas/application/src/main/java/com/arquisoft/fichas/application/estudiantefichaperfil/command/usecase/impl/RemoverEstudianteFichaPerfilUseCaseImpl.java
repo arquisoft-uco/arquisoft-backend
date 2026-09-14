@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFichasExistentesFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.RemoverEstudianteFichaPerfilUseCase;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.RemoverEstudianteFichaPerfilValidator;
@@ -22,7 +22,7 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
 
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final FichaPerfilExisteFinder fichaPerfilExisteFinder;
-    private final EstudiantesFichasExistentesFinder estudiantesFichasExistentesFinder;
+    private final EstudiantesExistentesFinder estudiantesExistentesFinder;
     private final VinculoEstudianteFichaExisteFinder vinculoEstudianteFichaExisteFinder;
     private final RemoverEstudianteFichaPerfilValidator removerEstudianteFichaPerfilValidator;
     private final AppLogger logger;
@@ -35,7 +35,7 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
         logger.info(EstudianteFichaPerfilKey.LOG_REMOVIENDO, fichaPerfil, estudiante);
 
         boolean fichaExiste = fichaPerfilExisteFinder.obtener(fichaPerfil);
-        List<UUID> estudiantesExistentes = estudiantesFichasExistentesFinder.obtener(List.of(estudiante));
+        List<UUID> estudiantesExistentes = estudiantesExistentesFinder.obtener(List.of(estudiante));
         boolean vinculoExiste = vinculoEstudianteFichaExisteFinder.obtener(
                 new VinculoEstudianteFicha(fichaPerfil, estudiante));
 
