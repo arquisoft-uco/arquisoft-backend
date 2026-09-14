@@ -12,7 +12,8 @@ public final class UsuarioJpaMapper {
                 jpaEntity.getId(),
                 jpaEntity.getIdentificador(),
                 jpaEntity.getNombre(),
-                jpaEntity.getEmail());
+                jpaEntity.getEmail(),
+                jpaEntity.getOcurridoEn());
     }
 
     public static UsuarioJpaEntity toJpaEntity(UsuarioEntity entity) {
@@ -21,6 +22,7 @@ public final class UsuarioJpaMapper {
                 .identificador(entity.identificador())
                 .nombre(entity.nombre())
                 .email(entity.email())
+                .ocurridoEn(entity.ocurridoEn())
                 .build();
     }
 }
