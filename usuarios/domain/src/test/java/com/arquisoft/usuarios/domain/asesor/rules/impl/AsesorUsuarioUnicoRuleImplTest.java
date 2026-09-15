@@ -1,0 +1,38 @@
+package com.arquisoft.usuarios.domain.asesor.rules.impl;
+
+import com.arquisoft.usuarios.domain.asesor.exception.AsesorUsuarioDuplicadoException;
+import com.arquisoft.usuarios.domain.asesor.model.DisponibilidadAsesorUsuario;
+import com.arquisoft.shared.message.constant.UsuariosCodes;
+import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class AsesorUsuarioUnicoRuleImplTest {
+
+    private final AsesorUsuarioUnicoRuleImpl rule = new AsesorUsuarioUnicoRuleImpl();
+
+    @Test
+    void debeLanzarDuplicadoConSuCodigo_cuandoUsuarioYaEsAsesor() {
+        // Arrange
+        var usuario = UUID.randomUUID();
+        var disponibilidad = new DisponibilidadAsesorUsuario(usuario, true);
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(disponibilidad))
+                .isInstanceOf(AsesorUsuarioDuplicadoException.class)
+                .extracting(ex -> ((AsesorUsuarioDuplicadoException) ex).getCodigoError())
+                .isEqualTo(UsuariosCodes.Asesor.USUARIO_DUPLICADO);
+    }
+
+    @Test
+    void noDebeLanzar_cuandoUsuarioNoEsAsesor() {
+        // Arrange
+        var disponibilidad = new DisponibilidadAsesorUsuario(UUID.randomUUID(), false);
+
+        // Act & Assert
+        assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
+    }
+}

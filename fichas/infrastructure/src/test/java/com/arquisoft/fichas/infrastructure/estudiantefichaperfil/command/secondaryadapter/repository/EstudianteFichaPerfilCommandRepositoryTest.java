@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
-import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.repository.EstudianteFichasCommandRepository;
+import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.repository.EstudianteCommandRepository;
 import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ class EstudianteFichaPerfilCommandRepositoryTest {
     private EstudianteFichaPerfilCommandRepository repository;
 
     @Autowired
-    private EstudianteFichasCommandRepository estudianteRepository;
+    private EstudianteCommandRepository estudianteRepository;
 
     @Test
     void debeRetornarFalse_cuandoRelacionNoExiste() {
