@@ -4,7 +4,7 @@ import com.arquisoft.fichas.application.estudiante.command.primaryport.interacto
 import com.arquisoft.fichas.application.estudiante.command.primaryport.mapper.AgregarEstudianteMapper;
 import com.arquisoft.fichas.application.estudiante.command.primaryport.model.AgregarEstudianteCommand;
 import com.arquisoft.fichas.application.estudiante.command.result.AgregacionEstudianteResult;
-import com.arquisoft.fichas.application.estudiante.command.usecase.AgregarEstudianteFichasUseCase;
+import com.arquisoft.fichas.application.estudiante.command.usecase.AgregarEstudianteUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AgregarEstudianteInteractorImpl implements AgregarEstudianteInteractor {
 
-    private final AgregarEstudianteFichasUseCase agregarEstudianteUseCase;
+    private final AgregarEstudianteUseCase agregarEstudianteUseCase;
 
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
