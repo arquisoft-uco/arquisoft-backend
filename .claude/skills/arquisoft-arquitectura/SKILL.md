@@ -904,8 +904,9 @@ chequeo puntual de escritura" — ahí sigue siendo tabla espejo.
 ### Replicación entre contextos: dueño único, espejo y lápida
 
 Una entidad que "existe en varios contextos" tiene **un dueño** y los demás guardan una **tabla
-espejo** con lo poco que necesitan (`fichas/application/usuario/RegistrarUsuarioUseCase` alimentado
-por `UsuarioCreadoConsumer`). No es un registro replicado en N sitios que pueda fallar a medias: es un
+espejo** con lo poco que necesitan (`fichas/.../estudiante`, alimentada por
+`EstudianteAgregadoConsumer` desde `usuarios.estudiante.agregado`; `proyectos` replica el mismo
+evento con sus propias clases homónimas). No es un registro replicado en N sitios que pueda fallar a medias: es un
 hecho del dueño que los demás replican.
 
 El test que decide el diseño es **¿puede el contexto destino rechazar por regla de negocio?**
@@ -930,7 +931,34 @@ Todos los flujos entre contextos que existen hoy caen en la primera fila.
    Lo mismo vale para **clases y métodos**: el espejo no lleva `Espejo`, `Replica` ni `Mirror` en
    ningún nombre. Se replica un estudiante, no un "estudiante espejo" — pegar el mecanismo al
    sustantivo inventa un concepto que el negocio no tiene. `EstudianteDomain`,
-   `AgregarEstudianteUseCase`, `EstudianteFinder`, `EstudianteOutputPort`.
+   `AgregarEstudianteUseCase`, `EstudiantePorIdFinder`, `EstudianteOutputPort`.
+
+   **Los beans también llevan el nombre natural.** Spring nombraría cada bean por el nombre simple
+   de su clase, y dos homónimos en contextos distintos abortarían el arranque con
+   `ConflictingBeanDefinitionException`. Eso se resuelve en la configuración, no en el nombre:
+   `ArquisoftApplication` declara
+   `@SpringBootApplication(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class)` y cada
+   `{Contexto}DataSourceConfig` repite el mismo `nameGenerator` en su `@EnableJpaRepositories`. Los
+   repositorios Spring Data no pasan por el escaneo de componentes y **no** heredan el generador de la
+   aplicación: un `@EnableJpaRepositories` sin él vuelve a hacer chocar dos `{X}CommandRepository`.
+   Con el nombre de bean igual al FQN, la réplica usa el nombre natural en **todas** sus clases
+   (`AgregarCoordinadorInteractor`, `CoordinadorAgregadoConsumer`, `CoordinadorCommandRepository`),
+   sin `Espejo`/`Replica` y sin calificador de contexto.
+
+   Consecuencias:
+   - Un bean escaneado **nunca** se referencia por nombre en cadena (`@Qualifier("…")`,
+     `@DependsOn`, SpEL `@nombre`): su nombre es el FQN. Se inyecta por tipo (interfaz).
+   - Los métodos `@Bean` **no** pasan por el generador: su nombre es el del método, y dos métodos
+     homónimos en contextos distintos siguen abortando el arranque. Por eso llevan el contexto que
+     los aloja como prefijo (`fichasTransactionManager`). En una réplica esto afecta sobre todo a la
+     cola: el `@Bean Declarables` va en `{Contexto}{Productor}QueueConfig` y se llama
+     `{contexto}{Evento}Declarables` (`fichasEstudianteAgregadoDeclarables` en `FichasUsuariosQueueConfig`,
+     `proyectosEstudianteAgregadoDeclarables` en `ProyectosUsuariosQueueConfig`) — nunca
+     `estudianteAgregadoDeclarables`, que choca con la siguiente réplica del mismo evento.
+   - Las clases de `config/` siguen prefijadas por contexto (`FichasDataSourceConfig`) para leer a
+     quién pertenecen desde el import.
+   - Ningún bean de réplica lleva calificador de contexto: un nombre con `Fichas`/`Proyectos` como
+     calificador (`AgregarEstudianteFichasInteractor`) es la convención retirada, no un precedente.
 
 1. **`ocurridoEn` en el payload y en la tabla espejo.** Ya viaja en el JSON (`DomainEvent` lo asigna) y
    los payloads lo declaran. El espejo guarda el `ocurrido_en` del último evento aplicado y **descarta
