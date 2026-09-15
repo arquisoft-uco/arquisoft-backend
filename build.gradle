@@ -10,6 +10,14 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
+    // Las fuentes .java y los .properties del catálogo están en UTF-8. Sin esto, Gradle usa
+    // la codificación por defecto de la plataforma (Windows-1252 en las máquinas del equipo),
+    // y los literales acentuados de los tests se compilan corruptos — verde en el CI (Linux/UTF-8),
+    // rojo en local.
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
 }
 
 group = 'com.arquisoft'

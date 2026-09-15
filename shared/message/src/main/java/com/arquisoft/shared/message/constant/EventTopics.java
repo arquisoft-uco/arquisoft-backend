@@ -37,4 +37,11 @@ public final class EventTopics {
                 "usuarios.asesor.agregado";
     }
 
+    public static final class Solicitudes {
+
+        private Solicitudes() {}
+
+        public static final String NOVEDAD_COORDINADOR_ENVIADA =
+                "solicitudes.solicitud.novedad_coordinador_enviada";
+    }
 }
