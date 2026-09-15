@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -18,14 +19,14 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
 
-// Ningún bean se marca @Primary: ese lugar lo ocupa usuariosTransactionManager y duplicarlo
-// rompe el arranque.
+
 @Configuration
 @EnableTransactionManagement
 @EnableJpaRepositories(
         basePackages = "com.arquisoft.solicitudes.infrastructure",
         entityManagerFactoryRef = "solicitudesEntityManagerFactory",
-        transactionManagerRef = "solicitudesTransactionManager"
+        transactionManagerRef = "solicitudesTransactionManager",
+        nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class
 )
 public class SolicitudesDataSourceConfig {
 
