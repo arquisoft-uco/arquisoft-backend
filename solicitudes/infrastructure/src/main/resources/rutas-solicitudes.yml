@@ -17,3 +17,4 @@ rutas:
     respuesta:
       base: /solicitudes
       novedad-coordinador: /novedad-coordinador/{solicitudId}/respuesta
+      novedad-coordinador-recibidas: /novedad-coordinador/respuestas/recibidas
