@@ -372,4 +372,6 @@ def tareaVerificacion = tasks.register('verificarCapasHexagonales') {
     }
 }
 
-tasks.named('check') { dependsOn tareaVerificacion }
+tasks.named('check') {
+    dependsOn tareaVerificacion
+}

@@ -41,4 +41,18 @@ public class SolicitudesUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String ASESOR_AGREGADO_QUEUE =
+            SolicitudesQueues.PREFIJO + EventTopics.Usuarios.ASESOR_AGREGADO;
+
+    @Bean
+    public Declarables solicitudesAsesorAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ASESOR_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }
