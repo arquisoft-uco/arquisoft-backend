@@ -3,7 +3,7 @@ package com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.mapper.FichaPerfilMapper;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
-import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.repository.AsesorFichaFichasCommandRepository;
+import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.repository.AsesorFichaCommandRepository;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.mapper.FichaPerfilJpaMapper;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ class FichaPerfilCommandRepositoryTest {
     private FichaPerfilCommandRepository fichaPerfilRepository;
 
     @Autowired
-    private AsesorFichaFichasCommandRepository asesorFichaRepository;
+    private AsesorFichaCommandRepository asesorFichaRepository;
 
     @Test
     void debeActualizarSoloElAsesor_cuandoLaFichaExiste() {
