@@ -18,6 +18,7 @@ import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
+import com.arquisoft.shared.message.key.fichas.AsesorFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteKey;
 import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
@@ -30,6 +31,12 @@ import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
+import com.arquisoft.shared.message.key.proyectos.AsesorKey;
+import com.arquisoft.shared.message.key.proyectos.CoordinadorKey;
+import com.arquisoft.shared.message.key.proyectos.EstudianteProyectosKey;
+import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
+import com.arquisoft.shared.message.key.solicitudes.TipoSolicitudKey;
+import com.arquisoft.shared.message.key.solicitudes.UsuarioReplicaKey;
 import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
@@ -38,6 +45,9 @@ import com.arquisoft.shared.message.key.seguridad.RolKey;
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarAsesorKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarCoordinadorKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 
@@ -85,6 +95,7 @@ public final class ClavesCatalogo {
             EstadoFichaPerfilKey.class,
             EstudianteFichaPerfilKey.class,
             EstudianteKey.class,
+            AsesorFichaKey.class,
             EvaluacionFichaPerfilKey.class,
             ItemCualitativoJuradoKey.class,
             CriterioItemCualitativoJuradoKey.class,
@@ -96,6 +107,9 @@ public final class ClavesCatalogo {
             TipoItemKey.class,
             RepresentanteComiteKey.class,
             RevisionItemKey.class,
+            SolicitudKey.class,
+            TipoSolicitudKey.class,
+            UsuarioReplicaKey.class,
             ConsumidorKey.class,
             EnvioNotificacionKey.class,
             NotificacionKey.class,
@@ -109,7 +123,13 @@ public final class ClavesCatalogo {
             TokenInvalidadoKey.class,
             TokenKey.class,
             RegistrarUsuarioKey.class,
-            AgregarEstudianteKey.class
+            AgregarEstudianteKey.class,
+            AgregarCoordinadorKey.class,
+            CoordinadorKey.class,
+            AgregarAsesorFichaKey.class,
+            AgregarAsesorKey.class,
+            AsesorKey.class,
+            EstudianteProyectosKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

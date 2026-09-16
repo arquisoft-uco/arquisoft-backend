@@ -1,5 +1,8 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
+import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
+import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
+import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailIdentidadExisteFinder;
@@ -55,6 +58,12 @@ class RegistrarUsuarioUseCaseImplTest {
     @Mock
     private AgregarEstudianteUseCase agregarEstudianteUseCase;
     @Mock
+    private AgregarCoordinadorUseCase agregarCoordinadorUseCase;
+    @Mock
+    private AgregarAsesorFichaUseCase agregarAsesorFichaUseCase;
+    @Mock
+    private AgregarAsesorUseCase agregarAsesorUseCase;
+    @Mock
     private AppLogger logger;
 
     private RegistrarUsuarioUseCaseImpl useCase;
@@ -64,7 +73,8 @@ class RegistrarUsuarioUseCaseImplTest {
         useCase = new RegistrarUsuarioUseCaseImpl(
                 usuarioOutputPort, proveedorIdentidadOutputPort, identificadorUsuarioExisteFinder,
                 emailUsuarioExisteFinder, emailIdentidadExisteFinder, contactoUsuarioExisteFinder,
-                registrarUsuarioValidator, agregarEstudianteUseCase, logger);
+                registrarUsuarioValidator, agregarEstudianteUseCase, agregarCoordinadorUseCase,
+                agregarAsesorFichaUseCase, agregarAsesorUseCase, logger);
         when(identificadorUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailIdentidadExisteFinder.obtener(any())).thenReturn(false);
@@ -218,6 +228,34 @@ class RegistrarUsuarioUseCaseImplTest {
     }
 
     @Test
+    void debeAgregarCoordinador_cuandoRolesContieneCoordinador() {
+        // Arrange
+        var registro = registro(List.of("coordinador"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        InOrder orden = inOrder(usuarioOutputPort, agregarCoordinadorUseCase);
+        orden.verify(usuarioOutputPort).guardar(any());
+        orden.verify(agregarCoordinadorUseCase).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarCoordinador_cuandoRolesNoContieneCoordinador() {
+        // Arrange
+        var registro = registro(List.of("asesor"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarCoordinadorUseCase, never()).ejecutar(any());
+    }
+
+    @Test
     void debePropagarExcepcion_cuandoElProveedorDeIdentidadFalla() {
         // Arrange
         var registro = registro(List.of());
@@ -228,5 +266,91 @@ class RegistrarUsuarioUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(registro))
                 .isInstanceOf(InfrastructureException.class);
         verify(usuarioOutputPort, never()).guardar(any());
+    }
+
+    @Test
+    void debeAgregarAsesorFicha_cuandoRolesContieneAsesorFicha() {
+        // Arrange
+        var registro = registro(List.of("asesor-ficha"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        InOrder orden = inOrder(usuarioOutputPort, agregarAsesorFichaUseCase);
+        orden.verify(usuarioOutputPort).guardar(any());
+        orden.verify(agregarAsesorFichaUseCase).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarAsesorFicha_cuandoRolesNoContieneAsesorFicha() {
+        // Arrange
+        var registro = registro(List.of("estudiante"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarAmbosRoles_cuandoElRegistroTraeEstudianteYAsesorFicha() {
+        // Arrange
+        var registro = registro(List.of("estudiante", "asesor-ficha"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarEstudianteUseCase, times(1)).ejecutar(any());
+        verify(agregarAsesorFichaUseCase, times(1)).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarAsesor_cuandoRolesContieneAsesor() {
+        // Arrange
+        var registro = registro(List.of("asesor"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        InOrder orden = inOrder(usuarioOutputPort, agregarAsesorUseCase);
+        orden.verify(usuarioOutputPort).guardar(any());
+        orden.verify(agregarAsesorUseCase).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarAsesor_cuandoRolesNoContieneAsesor() {
+        // Arrange
+        var registro = registro(List.of("estudiante"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarAsesorUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarLosCuatroRoles_cuandoElRegistroLosTraeTodos() {
+        // Arrange
+        var registro = registro(List.of("estudiante", "coordinador", "asesor-ficha", "asesor"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarEstudianteUseCase, times(1)).ejecutar(any());
+        verify(agregarCoordinadorUseCase, times(1)).ejecutar(any());
+        verify(agregarAsesorFichaUseCase, times(1)).ejecutar(any());
+        verify(agregarAsesorUseCase, times(1)).ejecutar(any());
     }
 }

@@ -195,6 +195,7 @@ class RevisionItemQueryOutputAdapterTest {
                 .identificador("DOC-" + UUID.randomUUID().toString().substring(0, 8))
                 .nombre(nombre)
                 .email(email)
+                .ocurridoEn(Instant.now())
                 .build();
         entityManager.persist(asesor);
         return asesor.getId();
