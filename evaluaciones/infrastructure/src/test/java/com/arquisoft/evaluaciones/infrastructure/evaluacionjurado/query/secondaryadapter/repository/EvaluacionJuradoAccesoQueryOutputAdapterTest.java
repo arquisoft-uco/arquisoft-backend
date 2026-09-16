@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -66,8 +65,7 @@ class EvaluacionJuradoAccesoQueryOutputAdapterTest {
         entityManager.flush();
     }
 
-    private UUID sembrarEvaluacionJurado(UUID proyecto, UUID estudiante, boolean entregableActivo,
-            boolean membresiaActiva) {
+    private UUID sembrarEvaluacionJurado(String proyecto) {
         UUID jurado = UUID.randomUUID();
         UUID entregable = UUID.randomUUID();
         UUID evaluacion = UUID.randomUUID();
@@ -77,29 +75,14 @@ class EvaluacionJuradoAccesoQueryOutputAdapterTest {
                 "INSERT INTO jurado (id, identificador, nombre, email) VALUES (?, 'DOC-1', 'Jurado Uno', 'j1@uco.edu.co')")
                 .setParameter(1, jurado).executeUpdate();
         entityManager.createNativeQuery(
-                "INSERT INTO entregable (id, proyecto, version_entregable) VALUES (?, 'Proyecto', 1)")
-                .setParameter(1, entregable).executeUpdate();
+                "INSERT INTO entregable (id, proyecto, version_entregable) VALUES (?, ?, 1)")
+                .setParameter(1, entregable).setParameter(2, proyecto).executeUpdate();
         entityManager.createNativeQuery(
                 "INSERT INTO evaluacion (id, entregable_id, estado_evaluacion_id) VALUES (?, ?, 'PENDIENTE')")
                 .setParameter(1, evaluacion).setParameter(2, entregable).executeUpdate();
         entityManager.createNativeQuery(
                 "INSERT INTO evaluacion_jurado (id, evaluacion_id, jurado_id) VALUES (?, ?, ?)")
                 .setParameter(1, evaluacionJurado).setParameter(2, evaluacion).setParameter(3, jurado)
-                .executeUpdate();
-        entityManager.createNativeQuery("""
-                INSERT INTO entregable_proyecto_acceso
-                    (entregable_id, proyecto_id, version_entregable, activo, ocurrido_en)
-                VALUES (?, ?, 1, ?, ?)
-                """)
-                .setParameter(1, entregable).setParameter(2, proyecto)
-                .setParameter(3, entregableActivo).setParameter(4, Instant.now())
-                .executeUpdate();
-        entityManager.createNativeQuery("""
-                INSERT INTO proyecto_estudiante_acceso (proyecto_id, estudiante_id, activo, ocurrido_en)
-                VALUES (?, ?, ?, ?)
-                """)
-                .setParameter(1, proyecto).setParameter(2, estudiante)
-                .setParameter(3, membresiaActiva).setParameter(4, Instant.now())
                 .executeUpdate();
         entityManager.flush();
         entityManager.clear();
@@ -109,7 +92,7 @@ class EvaluacionJuradoAccesoQueryOutputAdapterTest {
     @Test
     void debeRetornarTrue_cuandoLaEvaluacionJuradoExiste() {
         // Arrange
-        UUID evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), UUID.randomUUID(), true, true);
+        UUID evaluacionJurado = sembrarEvaluacionJurado("Proyecto");
 
         // Act & Assert
         assertThat(adapter.existePorId(evaluacionJurado)).isTrue();
@@ -122,34 +105,17 @@ class EvaluacionJuradoAccesoQueryOutputAdapterTest {
     }
 
     @Test
-    void debePertenecer_cuandoElEstudianteTieneAccesoActivoAlEntregableYAlProyecto() {
+    void debeRetornarElProyectoDelEntregable_cuandoLaEvaluacionJuradoExiste() {
         // Arrange
-        UUID proyecto = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
-        UUID evaluacionJurado = sembrarEvaluacionJurado(proyecto, estudiante, true, true);
+        UUID evaluacionJurado = sembrarEvaluacionJurado("Proyecto de Grado X");
 
         // Act & Assert
-        assertThat(adapter.perteneceAlEstudiante(evaluacionJurado, estudiante)).isTrue();
+        assertThat(adapter.obtenerProyecto(evaluacionJurado)).contains("Proyecto de Grado X");
     }
 
     @Test
-    void noDebePertenecer_cuandoLaMembresiaDelEstudianteEstaInactiva() {
-        // Arrange
-        UUID proyecto = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
-        UUID evaluacionJurado = sembrarEvaluacionJurado(proyecto, estudiante, true, false);
-
+    void debeRetornarVacio_cuandoLaEvaluacionJuradoNoExiste() {
         // Act & Assert
-        assertThat(adapter.perteneceAlEstudiante(evaluacionJurado, estudiante)).isFalse();
-    }
-
-    @Test
-    void noDebePertenecer_cuandoElEstudianteEsAjenoAlProyecto() {
-        // Arrange
-        UUID proyecto = UUID.randomUUID();
-        UUID evaluacionJurado = sembrarEvaluacionJurado(proyecto, UUID.randomUUID(), true, true);
-
-        // Act & Assert
-        assertThat(adapter.perteneceAlEstudiante(evaluacionJurado, UUID.randomUUID())).isFalse();
+        assertThat(adapter.obtenerProyecto(UUID.randomUUID())).isEmpty();
     }
 }

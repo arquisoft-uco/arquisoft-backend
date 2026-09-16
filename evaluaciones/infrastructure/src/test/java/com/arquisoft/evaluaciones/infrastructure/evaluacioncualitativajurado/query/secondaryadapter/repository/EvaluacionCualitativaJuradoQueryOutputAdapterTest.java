@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 // evaluacion_cualitativa_jurado/criterio_item_cualitativo_jurado no tienen @Entity en el lado de
 // comando todavia (esta HU es de solo lectura), asi que Hibernate no las genera con ddl-auto. Se
 // crean aqui con el mismo DDL de las migraciones V20260906143120/V20260831121852 para poder
-// ejercitar el @Subselect real de siete tablas, tal como exige la skill de testing.
+// ejercitar el @Subselect real, tal como exige la skill de testing.
 @DataJpaTest
 class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
 
@@ -87,26 +86,11 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
         return jurado;
     }
 
-    private UUID sembrarAccesoEstudiante(UUID estudiante, boolean activo) {
+    private UUID sembrarEntregable() {
         UUID entregable = UUID.randomUUID();
-        UUID proyecto = UUID.randomUUID();
         entityManager.createNativeQuery(
                 "INSERT INTO entregable (id, proyecto, version_entregable) VALUES (?, 'Proyecto', 1)")
                 .setParameter(1, entregable).executeUpdate();
-        entityManager.createNativeQuery("""
-                INSERT INTO entregable_proyecto_acceso
-                    (entregable_id, proyecto_id, version_entregable, activo, ocurrido_en)
-                VALUES (?, ?, 1, true, ?)
-                """)
-                .setParameter(1, entregable).setParameter(2, proyecto).setParameter(3, Instant.now())
-                .executeUpdate();
-        entityManager.createNativeQuery("""
-                INSERT INTO proyecto_estudiante_acceso (proyecto_id, estudiante_id, activo, ocurrido_en)
-                VALUES (?, ?, ?, ?)
-                """)
-                .setParameter(1, proyecto).setParameter(2, estudiante)
-                .setParameter(3, activo).setParameter(4, Instant.now())
-                .executeUpdate();
         return entregable;
     }
 
@@ -150,9 +134,8 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
     @Test
     void debeRetornarLasEvaluacionesCualitativas_conElItemYElCriterioMapeados() {
         // Arrange
-        UUID estudiante = UUID.randomUUID();
         UUID jurado = sembrarJurado();
-        UUID entregable = sembrarAccesoEstudiante(estudiante, true);
+        UUID entregable = sembrarEntregable();
         UUID evaluacionJurado = sembrarEvaluacionJurado(jurado, entregable);
 
         UUID item = UUID.randomUUID();
@@ -166,7 +149,7 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
 
         // Act
         List<EvaluacionCualitativaJuradoReadModel> resultado =
-                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, estudiante));
+                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, UUID.randomUUID()));
 
         // Assert
         assertThat(resultado).hasSize(1);
@@ -183,41 +166,15 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
     @Test
     void debeRetornarListaVacia_cuandoLaEvaluacionJuradoNoTieneEvaluacionesCualitativas() {
         // Arrange
-        UUID estudiante = UUID.randomUUID();
         UUID jurado = sembrarJurado();
-        UUID entregable = sembrarAccesoEstudiante(estudiante, true);
+        UUID entregable = sembrarEntregable();
         UUID evaluacionJurado = sembrarEvaluacionJurado(jurado, entregable);
         entityManager.flush();
         entityManager.clear();
 
         // Act
         List<EvaluacionCualitativaJuradoReadModel> resultado =
-                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, estudiante));
-
-        // Assert
-        assertThat(resultado).isEmpty();
-    }
-
-    @Test
-    void noDebeRetornarNada_cuandoElEstudianteEsAjenoAlProyecto() {
-        // Arrange
-        UUID propietario = UUID.randomUUID();
-        UUID ajeno = UUID.randomUUID();
-        UUID jurado = sembrarJurado();
-        UUID entregable = sembrarAccesoEstudiante(propietario, true);
-        UUID evaluacionJurado = sembrarEvaluacionJurado(jurado, entregable);
-
-        UUID item = UUID.randomUUID();
-        UUID criterio = UUID.randomUUID();
-        sembrarItem(item, "Claridad", "desc");
-        sembrarCriterio(criterio, "Excelente", "desc");
-        sembrarEvaluacionCualitativa(UUID.randomUUID(), evaluacionJurado, item, criterio);
-        entityManager.flush();
-        entityManager.clear();
-
-        // Act
-        List<EvaluacionCualitativaJuradoReadModel> resultado =
-                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, ajeno));
+                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, UUID.randomUUID()));
 
         // Assert
         assertThat(resultado).isEmpty();
@@ -226,9 +183,8 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
     @Test
     void debeOrdenarPorNombreDelItemYLuegoPorId_deFormaDeterminista() {
         // Arrange
-        UUID estudiante = UUID.randomUUID();
         UUID jurado = sembrarJurado();
-        UUID entregable = sembrarAccesoEstudiante(estudiante, true);
+        UUID entregable = sembrarEntregable();
         UUID evaluacionJurado = sembrarEvaluacionJurado(jurado, entregable);
 
         UUID itemRigor = UUID.randomUUID();
@@ -244,7 +200,7 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
 
         // Act
         List<EvaluacionCualitativaJuradoReadModel> resultado =
-                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, estudiante));
+                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, UUID.randomUUID()));
 
         // Assert
         assertThat(resultado).extracting(r -> r.item().nombre())
