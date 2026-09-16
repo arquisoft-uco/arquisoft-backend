@@ -40,6 +40,8 @@ public final class SolicitudesCodes {
         public static final String SOLICITUD_YA_RESPONDIDA = "SOLICITUD_YA_RESPONDIDA";
         public static final String RESPUESTA_NO_ENCONTRADA = "RESPUESTA_NO_ENCONTRADA";
         public static final String RESPUESTA_NO_EN_REVISION = "RESPUESTA_NO_EN_REVISION";
+        public static final String ESTADO_REQUERIDO = "RESPUESTA_ESTADO_REQUERIDO";
+        public static final String ESTADO_NO_RESOLUTIVO = "RESPUESTA_ESTADO_NO_RESOLUTIVO";
     }
 
     public static final class EstadoRespuesta {

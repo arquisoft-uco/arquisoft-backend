@@ -35,6 +35,8 @@ class RespuestaCommandOutputAdapterTest {
 
         entityManager.persist(EstadoRespuestaJpaEntity.builder()
                 .id(ESTADO).nombre("En revisión").descripcion("desc").build());
+        entityManager.persist(EstadoRespuestaJpaEntity.builder()
+                .id("APROBADA").nombre("Aprobada").descripcion("desc").build());
         entityManager.flush();
     }
 
@@ -113,5 +115,25 @@ class RespuestaCommandOutputAdapterTest {
 
         // Assert
         assertThat(entityManager.find(RespuestaJpaEntity.class, id)).isNull();
+    }
+
+    @Test
+    void debeActualizarElEstadoPersistidoYLogear_cuandoActualizaEstadoPorSolicitud() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        UUID solicitudId = UUID.randomUUID();
+        adapter.registrar(new RespuestaEntity(
+                id, solicitudId, LocalDateTime.of(2026, 3, 1, 9, 0, 0), "r", ESTADO));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        adapter.actualizarEstadoPorSolicitud(solicitudId, "APROBADA");
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        RespuestaJpaEntity actualizada = entityManager.find(RespuestaJpaEntity.class, id);
+        assertThat(actualizada.getEstadoRespuesta().getId()).isEqualTo("APROBADA");
     }
 }

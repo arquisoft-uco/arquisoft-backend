@@ -25,7 +25,13 @@ public enum RespuestaKey implements ClaveMensaje {
     LOG_CONSULTANDO_NOVEDAD_COORDINADOR_ENVIADAS(
             "solicitudes.aplicacion.respuesta.log.consultando-novedad-coordinador-enviadas", 4),
     LOG_CONSULTA_NOVEDAD_COORDINADOR_ENVIADAS_COMPLETADA(
-            "solicitudes.aplicacion.respuesta.log.consulta-novedad-coordinador-enviadas-completada", 3);
+            "solicitudes.aplicacion.respuesta.log.consulta-novedad-coordinador-enviadas-completada", 3),
+    ERROR_ESTADO_RESPUESTA_NO_RESOLUTIVO(
+            "solicitudes.dominio.respuesta.error.estado-no-resolutivo", 2),
+    LOG_MODIFICANDO_ESTADO("solicitudes.aplicacion.respuesta.log.modificando-estado", 2),
+    LOG_VERIFICACION_MODIFICACION_ESTADO(
+            "solicitudes.aplicacion.respuesta.log.verificacion-modificacion-estado", 2),
+    LOG_ESTADO_MODIFICADO("solicitudes.aplicacion.respuesta.log.estado-modificado", 2);
 
     private final String clave;
     private final int parametros;

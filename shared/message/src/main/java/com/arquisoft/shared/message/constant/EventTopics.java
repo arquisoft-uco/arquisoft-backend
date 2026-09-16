@@ -61,5 +61,8 @@ public final class EventTopics {
 
         public static final String NOVEDAD_COORDINADOR_RESPUESTA_ELIMINADA =
                 "solicitudes.respuesta.novedad_coordinador_respuesta_eliminada";
+
+        public static final String NOVEDAD_COORDINADOR_ESTADO_MODIFICADO =
+                "solicitudes.respuesta.novedad_coordinador_estado_modificado";
     }
 }

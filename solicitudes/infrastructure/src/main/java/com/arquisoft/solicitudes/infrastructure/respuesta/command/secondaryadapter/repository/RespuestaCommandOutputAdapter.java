@@ -4,6 +4,7 @@ import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.entity.RespuestaEntity;
+import com.arquisoft.solicitudes.infrastructure.respuesta.command.secondaryadapter.mapper.EstadoRespuestaJpaMapper;
 import com.arquisoft.solicitudes.infrastructure.respuesta.command.secondaryadapter.mapper.RespuestaJpaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -38,5 +39,12 @@ public class RespuestaCommandOutputAdapter implements RespuestaOutputPort {
     public void eliminarPorSolicitud(UUID solicitudId) {
         respuestaCommandRepository.deleteBySolicitudId(solicitudId);
         logger.debug(RespuestaKey.LOG_ELIMINADA_REGISTRO, solicitudId);
+    }
+
+    @Override
+    public void actualizarEstadoPorSolicitud(UUID solicitudId, String nuevoEstado) {
+        respuestaCommandRepository.actualizarEstadoPorSolicitud(
+                solicitudId, EstadoRespuestaJpaMapper.toReferencia(nuevoEstado));
+        logger.debug(RespuestaKey.LOG_GUARDADA, solicitudId);
     }
 }
