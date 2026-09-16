@@ -96,4 +96,13 @@ public final class EvaluacionesFields {
         public static final String VALOR = "valor";
         public static final String ITEM = "itemCuantitativoJurado";
     }
+
+    public static final class ObservacionItemJurado {
+
+        private ObservacionItemJurado() {}
+
+        public static final String EVALUACION_CUANTITATIVA_JURADO = "evaluacionCuantitativaJurado";
+        public static final String DESCRIPCION = "descripcion";
+        public static final String JURADO = "jurado";
+    }
 }

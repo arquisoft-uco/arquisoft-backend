@@ -35,6 +35,9 @@ public final class EvaluacionesAuthorities {
     public static final String EVALUACION_CUALITATIVA_JURADO_CREATE =
             "evaluaciones:evaluacion-cualitativa-jurado:create";
 
+    public static final String OBSERVACION_ITEM_JURADO_CREATE =
+            "evaluaciones:observacion-item-jurado:create";
+
     public static final class Expresiones {
 
         private Expresiones() {}
@@ -72,5 +75,8 @@ public final class EvaluacionesAuthorities {
 
         public static final String HAS_EVALUACION_CUALITATIVA_JURADO_CREATE =
                 HAS_AUTHORITY_INICIO + EVALUACION_CUALITATIVA_JURADO_CREATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_OBSERVACION_ITEM_JURADO_CREATE =
+                HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_JURADO_CREATE + HAS_AUTHORITY_FIN;
     }
 }

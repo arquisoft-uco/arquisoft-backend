@@ -119,6 +119,23 @@ public final class EvaluacionesApiMessages {
                         + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
     }
 
+    public static final class ObservacionItemJurado {
+
+        private ObservacionItemJurado() {}
+
+        public static final String TAG_NAME = "Observaciones de ítems cuantitativos del jurado";
+        public static final String TAG_DESCRIPTION =
+                "Registro de observaciones textuales sobre evaluaciones cuantitativas del jurado";
+        public static final String REGISTRAR_SUMMARY = "Registrar observación";
+        public static final String REGISTRAR_DESCRIPTION =
+                "Registra una nueva observación textual sobre una evaluación cuantitativa propia del jurado";
+        public static final String REGISTRAR_RESP_201 = "Observación registrada";
+        public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String REGISTRAR_RESP_422 =
+                "La evaluación cuantitativa no existe, no pertenece al jurado autenticado, su evaluación de "
+                        + "jurado ya está finalizada, o ya existe una observación con esa descripción";
+    }
+
     public static final class ItemCuantitativoJurado {
 
         private ItemCuantitativoJurado() {}
