@@ -19,6 +19,9 @@ public final class EventTopics {
 
         public static final String REVISION_ITEM_AGREGADO =
                 "fichas.revision_item.agregado";
+
+        public static final String OBSERVACION_ITEM_AGREGADA =
+                "fichas.observacion_item.agregada";
     }
 
     public static final class Usuarios {
