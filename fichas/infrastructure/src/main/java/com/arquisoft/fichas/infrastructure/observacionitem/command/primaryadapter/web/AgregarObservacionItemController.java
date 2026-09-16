@@ -66,7 +66,7 @@ public class AgregarObservacionItemController {
 
         var asesorFichaId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
 
-        UUID id = agregarObservacionItemInteractor.ejecutar(
+        var id = agregarObservacionItemInteractor.ejecutar(
                 AgregarObservacionItemRequestMapper.toCommand(dto, revisionItemId, asesorFichaId));
 
         return ResponseEntity

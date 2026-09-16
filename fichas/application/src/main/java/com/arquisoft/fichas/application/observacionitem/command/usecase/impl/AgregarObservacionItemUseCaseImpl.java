@@ -40,19 +40,19 @@ public class AgregarObservacionItemUseCaseImpl implements AgregarObservacionItem
         logger.info(ObservacionItemKey.LOG_AGREGANDO, entrada.getRevisionItem());
 
         var revisionItemOpt = revisionItemFinder.obtener(entrada.getRevisionItem());
-        boolean revisionExiste = revisionItemOpt.isPresent();
-        String estadoRevisionId = revisionItemOpt.map(RevisionItemEntity::estadoRevision)
+        var revisionExiste = revisionItemOpt.isPresent();
+        var estadoRevisionId = revisionItemOpt.map(RevisionItemEntity::estadoRevision)
                 .orElse(UtilTexto.VACIO);
-        UUID item = revisionItemOpt.map(RevisionItemEntity::item)
+        var item = revisionItemOpt.map(RevisionItemEntity::item)
                 .orElse(UtilUUID.obtenerUUIDPorDefecto());
 
-        UUID fichaPerfil = fichaPerfilDelItemFinder.obtener(item)
+        var fichaPerfil = fichaPerfilDelItemFinder.obtener(item)
                 .orElse(UtilUUID.obtenerUUIDPorDefecto());
-        UUID asesorDeLaFicha = fichaPerfilFinder.obtener(fichaPerfil)
+        var asesorDeLaFicha = fichaPerfilFinder.obtener(fichaPerfil)
                 .map(FichaPerfilDomain::getAsesorFicha)
                 .orElse(UtilUUID.obtenerUUIDPorDefecto());
 
-        long observacionesIguales = observacionesIgualesEnRevisionFinder.obtener(entrada);
+        var observacionesIguales = observacionesIgualesEnRevisionFinder.obtener(entrada);
 
         logger.debug(ObservacionItemKey.LOG_VERIFICACION_AGREGAR,
                 revisionExiste, estadoRevisionId, asesorDeLaFicha, observacionesIguales);
