@@ -17,7 +17,7 @@ final class RespuestaSortMapper {
                 case FECHA_RESPUESTA     -> "fechaRespuesta";
                 case DESTINATARIO_NOMBRE -> "destinatarioNombre";
                 case CONTENIDO, ESTADO_RESPUESTA_ID, TIPO_SOLICITUD_ID,
-                     REMITENTE_USUARIO_ID, DESTINATARIO_IDENTIFICADOR,
+                     REMITENTE_USUARIO_ID, DESTINATARIO_USUARIO_ID, DESTINATARIO_IDENTIFICADOR,
                      DESTINATARIO_EMAIL -> null; // no ordenables
             };
             if (ruta != null) {

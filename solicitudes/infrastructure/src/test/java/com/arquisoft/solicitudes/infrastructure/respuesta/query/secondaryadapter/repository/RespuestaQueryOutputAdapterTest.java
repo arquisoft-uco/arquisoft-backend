@@ -188,6 +188,36 @@ class RespuestaQueryOutputAdapterTest {
     }
 
     @Test
+    void debeFiltrarPorDestinatarioUsuarioId_cuandoElCriteriaTraeEsePredicado() {
+        // Arrange
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        var coordUno = sembrarDestinatario("Coordinadora Uno", "COORD-1", "coord1@uco.edu.co");
+        var coordDos = sembrarDestinatario("Coordinador Dos", "COORD-2", "coord2@uco.edu.co");
+        var solicitudUno = sembrarSolicitud(ana, coordUno, TIPO_NOVEDAD,
+                LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "para coord uno");
+        var solicitudDos = sembrarSolicitud(ana, coordDos, TIPO_NOVEDAD,
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "para coord dos");
+        sembrarRespuesta(solicitudUno, ESTADO_EN_REVISION,
+                LocalDateTime.of(2026, 3, 3, 8, 0), "respuesta para coord uno");
+        sembrarRespuesta(solicitudDos, ESTADO_EN_REVISION,
+                LocalDateTime.of(2026, 3, 4, 8, 0), "respuesta para coord dos");
+        sincronizar();
+
+        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
+                        coordUno.getUsuarioId().toString()))
+                .build();
+
+        // Act
+        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(RespuestaReadModel::contenido)
+                .containsExactly("respuesta para coord uno");
+    }
+
+    @Test
     void debeFiltrarPorContenido_cuandoElCriteriaTraeEsePredicado() {
         // Arrange
         var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");

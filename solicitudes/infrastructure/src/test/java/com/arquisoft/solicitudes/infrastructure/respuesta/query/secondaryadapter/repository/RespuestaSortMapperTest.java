@@ -32,6 +32,7 @@ class RespuestaSortMapperTest {
         assertThat(RespuestaSortMapper.traducir("estadoRespuestaId")).isNull();
         assertThat(RespuestaSortMapper.traducir("tipoSolicitudId")).isNull();
         assertThat(RespuestaSortMapper.traducir("remitenteUsuarioId")).isNull();
+        assertThat(RespuestaSortMapper.traducir("destinatarioUsuarioId")).isNull();
         assertThat(RespuestaSortMapper.traducir("destinatarioIdentificador")).isNull();
         assertThat(RespuestaSortMapper.traducir("destinatarioEmail")).isNull();
     }

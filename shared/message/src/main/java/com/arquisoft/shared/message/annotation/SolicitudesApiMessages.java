@@ -157,5 +157,19 @@ public final class SolicitudesApiMessages {
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_RESP_403 =
                 "Sin permisos para consultar respuestas de solicitudes de novedad para el coordinador "
                         + "recibidas";
+
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_SUMMARY =
+                "Consultar respuestas de solicitudes de novedad para el coordinador enviadas";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_DESCRIPTION =
+                "Permite a un coordinador consultar de forma paginada y filtrable las respuestas que ha "
+                        + "enviado a solicitudes de novedad para el coordinador. El alcance se limita a "
+                        + "las respuestas de solicitudes cuyo destinatario es el coordinador autenticado.";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_200 =
+                "Página de respuestas de solicitudes de novedad para el coordinador enviadas";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_403 =
+                "Sin permisos para consultar respuestas de solicitudes de novedad para el coordinador "
+                        + "enviadas";
     }
 }
