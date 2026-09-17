@@ -3,7 +3,6 @@ package com.arquisoft.fichas.application.asesorficha.command.usecase.impl;
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaPorIdFinder;
 import com.arquisoft.fichas.application.asesorficha.command.result.AgregacionAsesorFichaResult;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +49,7 @@ class AgregarAsesorFichaUseCaseImplTest {
         // Arrange
         var id = UUID.randomUUID();
         var asesorFicha = asesorFicha(id, Instant.now());
-        when(asesorFichaPorIdFinder.obtener(id)).thenReturn(Optional.empty());
+        when(asesorFichaPorIdFinder.obtener(id)).thenReturn(AsesorFichaDomain.VACIO);
 
         // Act
         var resultado = useCase.ejecutar(asesorFicha);
@@ -69,8 +67,8 @@ class AgregarAsesorFichaUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now().minus(1, ChronoUnit.HOURS);
         var asesorFicha = asesorFicha(id, Instant.now());
-        when(asesorFichaPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new AsesorFichaEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(asesorFichaPorIdFinder.obtener(id))
+                .thenReturn(AsesorFichaDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(asesorFicha);
@@ -88,8 +86,8 @@ class AgregarAsesorFichaUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var asesorFicha = asesorFicha(id, vigente.minus(1, ChronoUnit.HOURS));
-        when(asesorFichaPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new AsesorFichaEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(asesorFichaPorIdFinder.obtener(id))
+                .thenReturn(AsesorFichaDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(asesorFicha);
@@ -109,8 +107,8 @@ class AgregarAsesorFichaUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var asesorFicha = asesorFicha(id, vigente);
-        when(asesorFichaPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new AsesorFichaEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(asesorFichaPorIdFinder.obtener(id))
+                .thenReturn(AsesorFichaDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(asesorFicha);

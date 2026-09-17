@@ -3,6 +3,7 @@ package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.k
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.RegistroIdentidadEntity;
 import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentidadUsuarioNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.usuarios.ProveedorIdentidadKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
@@ -31,6 +34,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -332,5 +336,146 @@ class KeycloakProveedorIdentidadOutputAdapterTest {
         // Act & Assert
         assertThatCode(() -> adapter.eliminar(id)).doesNotThrowAnyException();
         verify(logger, times(1)).error(any(com.arquisoft.shared.message.ClaveMensaje.class), eq(id.toString()));
+    }
+
+    private void stubRolEstudiante() {
+        when(restTemplate.exchange(
+                argThat((String url) -> url != null && url.endsWith("/roles/estudiante")), eq(HttpMethod.GET),
+                any(HttpEntity.class), ArgumentMatchers.<org.springframework.core.ParameterizedTypeReference<Map<String, Object>>>any()))
+                .thenReturn(ResponseEntity.ok(Map.of("id", "role-id-1", "name", "estudiante")));
+    }
+
+    private String urlRoleMappings(UUID usuario) {
+        return SERVER_URL + "/admin/realms/" + REALM + "/users/" + usuario + "/role-mappings/realm";
+    }
+
+    @Test
+    void debeRevocarElRealmRoleConSuRepresentacion_cuandoKeycloakResponde() {
+        // Arrange
+        stubToken();
+        stubRolEstudiante();
+        var usuario = UUID.randomUUID();
+        when(restTemplate.exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.DELETE), any(HttpEntity.class),
+                eq(Void.class)))
+                .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+
+        // Act & Assert
+        assertThatCode(() -> adapter.revocarRealmRole(usuario, "estudiante")).doesNotThrowAnyException();
+        verify(restTemplate, times(1)).exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.DELETE),
+                argThat((HttpEntity<?> entidad) -> entidad.getBody() instanceof List<?> cuerpo
+                        && cuerpo.size() == 1
+                        && ((Map<?, ?>) cuerpo.get(0)).get("name").equals("estudiante")),
+                eq(Void.class));
+        verify(restTemplate, never()).exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.POST),
+                any(HttpEntity.class), eq(Void.class));
+    }
+
+    @Test
+    void debeLanzarNoDisponible_cuandoElUsuarioNoExisteEnKeycloakAlRevocar() {
+        // Arrange
+        stubToken();
+        stubRolEstudiante();
+        var usuario = UUID.randomUUID();
+        when(restTemplate.exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.DELETE), any(HttpEntity.class),
+                eq(Void.class)))
+                .thenThrow(HttpClientErrorException.NotFound.create(
+                        HttpStatus.NOT_FOUND, "Not Found", null, null, null));
+
+        // Act & Assert
+        assertThatThrownBy(() -> adapter.revocarRealmRole(usuario, "estudiante"))
+                .isInstanceOf(ProveedorIdentidadUsuarioNoDisponibleException.class);
+    }
+
+    @Test
+    void debeLanzarNoDisponible_cuandoKeycloakNoRespondeAlRevocar() {
+        // Arrange
+        stubToken();
+        stubRolEstudiante();
+        var usuario = UUID.randomUUID();
+        when(restTemplate.exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.DELETE), any(HttpEntity.class),
+                eq(Void.class)))
+                .thenThrow(new ResourceAccessException("timeout"));
+
+        // Act & Assert
+        assertThatThrownBy(() -> adapter.revocarRealmRole(usuario, "estudiante"))
+                .isInstanceOf(ProveedorIdentidadUsuarioNoDisponibleException.class);
+    }
+
+    @Test
+    void debeReasignarElRol_cuandoLaTransaccionHaceRollbackTrasRevocar() {
+        // Arrange
+        stubToken();
+        stubRolEstudiante();
+        var usuario = UUID.randomUUID();
+        when(restTemplate.exchange(eq(urlRoleMappings(usuario)), any(HttpMethod.class), any(HttpEntity.class),
+                eq(Void.class)))
+                .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            adapter.revocarRealmRole(usuario, "estudiante");
+            var sincronizaciones = TransactionSynchronizationManager.getSynchronizations();
+
+            // Act
+            sincronizaciones.forEach(s -> s.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK));
+
+            // Assert
+            assertThat(sincronizaciones).hasSize(1);
+            verify(restTemplate, times(1)).exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.POST),
+                    any(HttpEntity.class), eq(Void.class));
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    @Test
+    void noDebeReasignar_cuandoLaTransaccionHaceCommit() {
+        // Arrange
+        stubToken();
+        stubRolEstudiante();
+        var usuario = UUID.randomUUID();
+        when(restTemplate.exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.DELETE), any(HttpEntity.class),
+                eq(Void.class)))
+                .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            adapter.revocarRealmRole(usuario, "estudiante");
+
+            // Act
+            TransactionSynchronizationManager.getSynchronizations()
+                    .forEach(s -> s.afterCompletion(TransactionSynchronization.STATUS_COMMITTED));
+
+            // Assert
+            verify(restTemplate, never()).exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.POST),
+                    any(HttpEntity.class), eq(Void.class));
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
+    }
+
+    @Test
+    void debeRegistrarErrorSinLanzar_cuandoLaCompensacionDelRolFalla() {
+        // Arrange
+        stubToken();
+        stubRolEstudiante();
+        var usuario = UUID.randomUUID();
+        when(restTemplate.exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.DELETE), any(HttpEntity.class),
+                eq(Void.class)))
+                .thenReturn(new ResponseEntity<>(HttpStatus.NO_CONTENT));
+        when(restTemplate.exchange(eq(urlRoleMappings(usuario)), eq(HttpMethod.POST), any(HttpEntity.class),
+                eq(Void.class)))
+                .thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "caido"));
+        TransactionSynchronizationManager.initSynchronization();
+        try {
+            adapter.revocarRealmRole(usuario, "estudiante");
+            var sincronizaciones = TransactionSynchronizationManager.getSynchronizations();
+
+            // Act & Assert
+            assertThatCode(() -> sincronizaciones.forEach(
+                    s -> s.afterCompletion(TransactionSynchronization.STATUS_ROLLED_BACK)))
+                    .doesNotThrowAnyException();
+            verify(logger, times(1)).error(ProveedorIdentidadKey.LOG_COMPENSACION_ROL_FALLIDA, usuario, "estudiante");
+        } finally {
+            TransactionSynchronizationManager.clearSynchronization();
+        }
     }
 }

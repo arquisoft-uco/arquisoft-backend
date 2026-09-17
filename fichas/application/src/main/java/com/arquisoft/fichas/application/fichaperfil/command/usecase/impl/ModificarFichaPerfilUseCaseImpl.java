@@ -1,10 +1,12 @@
 package com.arquisoft.fichas.application.fichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
+import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloEnOtraFichaExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.ModificarFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.ModificarFichaPerfilValidator;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
 import com.arquisoft.fichas.domain.fichaperfil.ModificacionFichaPerfilDomain;
 import com.arquisoft.fichas.application.fichaperfil.command.secondaryport.FichaPerfilOutputPort;
@@ -18,6 +20,7 @@ public class ModificarFichaPerfilUseCaseImpl implements ModificarFichaPerfilUseC
 
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
     private final VinculoEstudianteFichaExisteFinder vinculoEstudianteFichaExisteFinder;
+    private final EstadoActualFichaPerfilFinder estadoActualFichaPerfilFinder;
     private final TituloEnOtraFichaExisteFinder tituloEnOtraFichaExisteFinder;
     private final ModificarFichaPerfilValidator modificarFichaPerfilValidator;
     private final AppLogger logger;
@@ -27,14 +30,17 @@ public class ModificarFichaPerfilUseCaseImpl implements ModificarFichaPerfilUseC
         logger.info(FichaPerfilKey.LOG_MODIFICANDO,
                 entrada.getFichaPerfil(), entrada.getEstudiante());
 
-        boolean esPropietario = vinculoEstudianteFichaExisteFinder.obtener(
+        var esPropietario = vinculoEstudianteFichaExisteFinder.obtener(
                 new VinculoEstudianteFicha(entrada.getFichaPerfil(), entrada.getEstudiante()));
-        boolean tituloYaExiste = tituloEnOtraFichaExisteFinder.obtener(entrada);
+        var estadoActual = esPropietario
+                ? estadoActualFichaPerfilFinder.obtener(entrada.getFichaPerfil())
+                : EstadoFichaPerfilDomain.VACIO;
+        var tituloYaExiste = tituloEnOtraFichaExisteFinder.obtener(entrada);
 
         logger.debug(FichaPerfilKey.LOG_VERIFICACION_MODIFICAR,
                 esPropietario, tituloYaExiste);
 
-        modificarFichaPerfilValidator.validar(entrada, esPropietario, tituloYaExiste);
+        modificarFichaPerfilValidator.validar(entrada, esPropietario, estadoActual, tituloYaExiste);
 
         fichaPerfilOutputPort.actualizarTitulo(entrada.getFichaPerfil(), entrada.getTituloProyecto());
 
