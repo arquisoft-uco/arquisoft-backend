@@ -13,8 +13,28 @@ public enum SolicitudKey implements ClaveMensaje {
     LOG_ENVIANDO_ASESOR("solicitudes.aplicacion.solicitud.log.enviando-asesor", 2),
     LOG_VERIFICACION_ENVIO_ASESOR("solicitudes.aplicacion.solicitud.log.verificacion-envio-asesor", 2),
     LOG_ENVIADA_ASESOR("solicitudes.aplicacion.solicitud.log.enviada-asesor", 1),
+    LOG_ENVIANDO_CAMBIO_ASESOR("solicitudes.aplicacion.solicitud.log.enviando-cambio-asesor", 2),
+    LOG_VERIFICACION_ENVIO_CAMBIO_ASESOR(
+            "solicitudes.aplicacion.solicitud.log.verificacion-envio-cambio-asesor", 2),
+    LOG_ENVIADA_CAMBIO_ASESOR("solicitudes.aplicacion.solicitud.log.enviada-cambio-asesor", 1),
+    LOG_ENVIANDO_AMPLIACION_PLAZO("solicitudes.aplicacion.solicitud.log.enviando-ampliacion-plazo", 2),
+    LOG_VERIFICACION_ENVIO_AMPLIACION_PLAZO(
+            "solicitudes.aplicacion.solicitud.log.verificacion-envio-ampliacion-plazo", 2),
+    LOG_ENVIADA_AMPLIACION_PLAZO("solicitudes.aplicacion.solicitud.log.enviada-ampliacion-plazo", 1),
     LOG_GUARDADA("solicitudes.infraestructura.solicitud.log.guardada", 1),
-    LOG_ASIGNACION_NO_VERIFICADA("solicitudes.infraestructura.solicitud.log.asignacion-no-verificada", 2);
+    LOG_ASIGNACION_NO_VERIFICADA("solicitudes.infraestructura.solicitud.log.asignacion-no-verificada", 2),
+    ERROR_SOLICITUD_NO_ENCONTRADA("solicitudes.dominio.solicitud.error.no-encontrada", 1),
+    ERROR_SOLICITUD_NO_PROPIA("solicitudes.dominio.solicitud.error.no-propia", 1),
+    ERROR_SOLICITUD_TIPO_NO_COINCIDE("solicitudes.dominio.solicitud.error.tipo-no-coincide", 1),
+    ERROR_SOLICITUD_CON_RESPUESTAS("solicitudes.dominio.solicitud.error.con-respuestas", 1),
+    LOG_ELIMINANDO("solicitudes.aplicacion.solicitud.log.eliminando", 2),
+    LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.solicitud.log.verificacion-eliminacion", 2),
+    LOG_ELIMINADA("solicitudes.aplicacion.solicitud.log.eliminada", 1),
+    LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.solicitud.log.eliminada", 1),
+    ERROR_SOLICITUD_TIPO_NO_COINCIDE_ASESOR(
+            "solicitudes.dominio.solicitud.error.tipo-no-coincide-asesor", 1),
+    LOG_ELIMINANDO_ASESOR("solicitudes.aplicacion.solicitud.log.eliminando-asesor", 2),
+    LOG_ELIMINADA_ASESOR("solicitudes.aplicacion.solicitud.log.eliminada-asesor", 1);
 
     private final String clave;
     private final int parametros;

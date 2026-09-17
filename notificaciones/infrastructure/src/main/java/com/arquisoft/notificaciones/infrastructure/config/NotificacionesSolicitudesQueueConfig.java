@@ -20,6 +20,12 @@ public class NotificacionesSolicitudesQueueConfig {
     public static final String NOVEDAD_ASESOR_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.NOVEDAD_ASESOR_ENVIADA;
 
+    public static final String CAMBIO_ASESOR_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.CAMBIO_ASESOR_ENVIADA;
+
+    public static final String AMPLIACION_PLAZO_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.AMPLIACION_PLAZO_ENVIADA;
+
     @Bean
     public Declarables notificacionesSolicitudNovedadCoordinadorDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
@@ -38,6 +44,28 @@ public class NotificacionesSolicitudesQueueConfig {
         return ColaEvento.declarar(
                 NOVEDAD_ASESOR_QUEUE,
                 EventTopics.Solicitudes.NOVEDAD_ASESOR_ENVIADA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesSolicitudCambioAsesorDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                CAMBIO_ASESOR_QUEUE,
+                EventTopics.Solicitudes.CAMBIO_ASESOR_ENVIADA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    @Bean
+    public Declarables notificacionesSolicitudAmpliacionPlazoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                AMPLIACION_PLAZO_QUEUE,
+                EventTopics.Solicitudes.AMPLIACION_PLAZO_ENVIADA,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
