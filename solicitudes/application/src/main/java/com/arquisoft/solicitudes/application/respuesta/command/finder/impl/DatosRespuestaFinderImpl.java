@@ -6,7 +6,6 @@ import com.arquisoft.solicitudes.domain.respuesta.model.ResumenRespuesta;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -16,8 +15,9 @@ public class DatosRespuestaFinderImpl implements DatosRespuestaFinder {
     private final RespuestaOutputPort respuestaOutputPort;
 
     @Override
-    public Optional<ResumenRespuesta> obtener(UUID solicitud) {
+    public ResumenRespuesta obtener(UUID solicitud) {
         return respuestaOutputPort.buscarEstadoPorSolicitud(solicitud)
-                .map(estado -> new ResumenRespuesta(solicitud, estado));
+                .map(estado -> new ResumenRespuesta(solicitud, estado))
+                .orElse(ResumenRespuesta.VACIO);
     }
 }
