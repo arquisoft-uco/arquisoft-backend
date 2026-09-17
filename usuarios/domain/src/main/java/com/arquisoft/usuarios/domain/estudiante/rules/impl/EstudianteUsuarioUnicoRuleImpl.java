@@ -8,7 +8,8 @@ public class EstudianteUsuarioUnicoRuleImpl implements EstudianteUsuarioUnicoRul
 
     @Override
     public void validar(DisponibilidadEstudianteUsuario disponibilidad) {
-        if (disponibilidad.yaEsEstudiante()) {
+        var estudiante = disponibilidad.estudiante();
+        if (!estudiante.esVacio() && !estudiante.estaEliminado()) {
             throw new EstudianteUsuarioDuplicadoException(disponibilidad.usuario());
         }
     }

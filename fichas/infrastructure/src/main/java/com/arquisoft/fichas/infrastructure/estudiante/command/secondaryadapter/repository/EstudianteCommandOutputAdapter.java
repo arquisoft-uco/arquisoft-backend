@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.fichas.EstudianteKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -32,9 +33,27 @@ public class EstudianteCommandOutputAdapter implements EstudianteOutputPort {
     }
 
     @Override
+    public List<UUID> buscarIdsVigentes(List<UUID> ids) {
+        return estudianteRepository.findIdsVigentesByIdIn(ids);
+    }
+
+    @Override
     public void guardar(EstudianteEntity estudiante) {
         estudianteRepository.save(EstudianteJpaMapper.toJpaEntity(estudiante));
         logger.debug(EstudianteKey.LOG_GUARDADO, estudiante.id());
+    }
+
+    @Override
+    public void eliminarLogica(UUID id, Instant ocurridoEn) {
+        estudianteRepository.eliminarLogica(id, ocurridoEn);
+        logger.debug(EstudianteKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Override
+    public void reactivar(EstudianteEntity estudiante) {
+        estudianteRepository.reactivar(estudiante.id(), estudiante.identificador(), estudiante.nombre(),
+                estudiante.email(), estudiante.ocurridoEn());
+        logger.debug(EstudianteKey.LOG_ACTUALIZADO, estudiante.id());
     }
 
     @Override
