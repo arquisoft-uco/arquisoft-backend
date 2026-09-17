@@ -23,12 +23,12 @@ public class AgregarAsesorUseCaseImpl implements AgregarAsesorUseCase {
     @Override
     public AgregacionAsesorResult ejecutar(AsesorDomain asesor) {
         var vigente = asesorPorIdFinder.obtener(asesor.getId());
-        logger.debug(AsesorKey.LOG_VERIFICACION_AGREGAR, asesor.getId(), vigente.isPresent());
+        logger.debug(AsesorKey.LOG_VERIFICACION_AGREGAR, asesor.getId(), !vigente.esVacio());
 
-        if (vigente.isPresent()) {
-            if (!asesor.getOcurridoEn().isAfter(vigente.get().ocurridoEn())) {
+        if (!vigente.esVacio()) {
+            if (!asesor.getOcurridoEn().isAfter(vigente.getOcurridoEn())) {
                 return AgregacionAsesorResultMapper.toResultDescartada(
-                        asesor, vigente.get().ocurridoEn());
+                        asesor, vigente.getOcurridoEn());
             }
             return AgregacionAsesorResultMapper.toResultDuplicada(asesor);
         }

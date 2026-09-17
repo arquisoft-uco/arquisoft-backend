@@ -23,11 +23,11 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
     @Override
     public AgregacionUsuarioResult ejecutar(UsuarioDomain usuario) {
         var vigente = usuarioPorIdFinder.obtener(usuario.getId());
-        logger.debug(UsuarioReplicaKey.LOG_VERIFICACION_AGREGAR, usuario.getId(), vigente.isPresent());
+        logger.debug(UsuarioReplicaKey.LOG_VERIFICACION_AGREGAR, usuario.getId(), !vigente.esVacio());
 
-        if (vigente.isPresent()) {
-            if (!usuario.getOcurridoEn().isAfter(vigente.get().ocurridoEn())) {
-                return AgregacionUsuarioResultMapper.toResultDescartada(usuario, vigente.get().ocurridoEn());
+        if (!vigente.esVacio()) {
+            if (!usuario.getOcurridoEn().isAfter(vigente.getOcurridoEn())) {
+                return AgregacionUsuarioResultMapper.toResultDescartada(usuario, vigente.getOcurridoEn());
             }
             return AgregacionUsuarioResultMapper.toResultDuplicada(usuario);
         }

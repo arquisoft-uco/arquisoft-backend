@@ -7,7 +7,6 @@ import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.As
 import com.arquisoft.fichas.application.fichaperfil.command.finder.TituloFichaPerfilExisteFinder;
 import com.arquisoft.fichas.application.fichaperfil.command.usecase.RegistrarFichaPerfilUseCase;
 import com.arquisoft.fichas.application.fichaperfil.command.validator.RegistrarFichaPerfilValidator;
-import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.fichas.domain.asesorficha.model.ContactoAsesor;
 import com.arquisoft.fichas.domain.fichaperfil.RegistroFichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.event.FichaPerfilRegistradaEvent;
@@ -40,8 +39,7 @@ public class RegistrarFichaPerfilUseCaseImpl implements RegistrarFichaPerfilUseC
         logger.info(FichaPerfilKey.LOG_REGISTRANDO,
                 ficha.getTituloProyecto(), ficha.getAsesorFicha());
 
-        var asesorFicha = asesorFichaFinder.obtener(ficha.getAsesorFicha())
-                .orElse(AsesorFichaDomain.VACIO);
+        var asesorFicha = asesorFichaFinder.obtener(ficha.getAsesorFicha());
         boolean tituloYaExiste = tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto());
 
         logger.debug(FichaPerfilKey.LOG_VERIFICACION_PREVIA,

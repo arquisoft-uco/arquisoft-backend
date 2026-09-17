@@ -9,6 +9,8 @@ import com.arquisoft.shared.message.constant.FichasFields;
 import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.model.CambiarAsesorFichaCommand;
 import com.arquisoft.fichas.application.fichaperfil.command.primaryport.interactor.CambiarAsesorFichaInteractor;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.AsesorFichaNoEncontradoException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaPerfilNoEncontradaException;
 import com.arquisoft.fichas.infrastructure.security.FichasAuthorities;
@@ -216,14 +218,8 @@ class CambiarAsesorFichaControllerTest {
                 }
                 """, nuevoAsesorId);
 
-        ValidationResult result = new ValidationResult();
-        result.agregarError(
-                FichasFields.FichaPerfil.ESTADO_FICHA,
-                FichasCodes.FichaPerfil.ESTADO_TERMINAL,
-                Mensajes.formatear(FichaPerfilKey.ERROR_ESTADO_TERMINAL, "APROBADA")
-        );
-
-        doThrow(new DomainValidationException(result))
+        var excepcion = new EstadoFichaPerfilTerminalException(EstadoFicha.APROBADA);
+        doThrow(excepcion)
                 .when(cambiarAsesorFichaInteractor).ejecutar(any(CambiarAsesorFichaCommand.class));
 
         // Act & Assert
@@ -233,10 +229,8 @@ class CambiarAsesorFichaControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.errorCode").value(AppCodes.Validacion.DOMINIO))
-                .andExpect(jsonPath("$.fieldErrors[0].field").value(FichasFields.FichaPerfil.ESTADO_FICHA))
-                .andExpect(jsonPath("$.fieldErrors[0].message").value(Mensajes.formatear(FichaPerfilKey.ERROR_ESTADO_TERMINAL, "APROBADA")));
+                .andExpect(jsonPath("$.message").value(excepcion.getMessage()))
+                .andExpect(jsonPath("$.errorCode").value(FichasCodes.EstadoFichaPerfil.ESTADO_TERMINAL));
     }
 
     @Test

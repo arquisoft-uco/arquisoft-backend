@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.estudiante.command.secondaryport.mapper;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,7 @@ class EstudianteMapperTest {
         // Arrange
         var usuario = UUID.randomUUID();
         var entity = new com.arquisoft.usuarios.application.estudiante.command.secondaryport.entity
-                .EstudianteEntity(usuario);
+                .EstudianteEntity(usuario, UtilFecha.VACIO);
 
         // Act
         var domain = EstudianteMapper.toDomain(entity);

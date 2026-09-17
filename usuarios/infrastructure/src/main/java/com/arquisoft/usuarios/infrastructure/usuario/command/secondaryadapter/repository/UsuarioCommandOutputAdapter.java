@@ -8,6 +8,9 @@ import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
@@ -19,6 +22,11 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
     public void guardar(UsuarioEntity usuario) {
         usuarioCommandRepository.save(UsuarioJpaMapper.toJpaEntity(usuario));
         logger.debug(RegistrarUsuarioKey.LOG_USUARIO_GUARDADO, usuario.id());
+    }
+
+    @Override
+    public Optional<UsuarioEntity> obtenerPorId(UUID id) {
+        return usuarioCommandRepository.findById(id).map(UsuarioJpaMapper::toEntity);
     }
 
     @Override

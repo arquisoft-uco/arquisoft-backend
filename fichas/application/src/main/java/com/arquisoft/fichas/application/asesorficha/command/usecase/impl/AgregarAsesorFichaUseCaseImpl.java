@@ -23,12 +23,12 @@ public class AgregarAsesorFichaUseCaseImpl implements AgregarAsesorFichaUseCase 
     @Override
     public AgregacionAsesorFichaResult ejecutar(AsesorFichaDomain asesorFicha) {
         var vigente = asesorFichaPorIdFinder.obtener(asesorFicha.getId());
-        logger.debug(AsesorFichaKey.LOG_VERIFICACION_AGREGAR, asesorFicha.getId(), vigente.isPresent());
+        logger.debug(AsesorFichaKey.LOG_VERIFICACION_AGREGAR, asesorFicha.getId(), !vigente.esVacio());
 
-        if (vigente.isPresent()) {
-            if (!asesorFicha.getOcurridoEn().isAfter(vigente.get().ocurridoEn())) {
+        if (!vigente.esVacio()) {
+            if (!asesorFicha.getOcurridoEn().isAfter(vigente.getOcurridoEn())) {
                 return AgregacionAsesorFichaResultMapper.toResultDescartada(
-                        asesorFicha, vigente.get().ocurridoEn());
+                        asesorFicha, vigente.getOcurridoEn());
             }
             return AgregacionAsesorFichaResultMapper.toResultDuplicada(asesorFicha);
         }
