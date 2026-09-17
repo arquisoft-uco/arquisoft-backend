@@ -7,13 +7,13 @@ import com.arquisoft.solicitudes.application.remitente.command.usecase.Registrar
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DestinatarioAsignadoFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
-import com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper.EnviarSolicitudNovedadCoordinadorMapper;
-import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudNovedadCoordinadorCommand;
+import com.arquisoft.solicitudes.application.solicitud.command.primaryport.mapper.EnviarSolicitudNovedadAsesorMapper;
+import com.arquisoft.solicitudes.application.solicitud.command.primaryport.model.EnviarSolicitudNovedadAsesorCommand;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.entity.SolicitudEntity;
-import com.arquisoft.solicitudes.application.solicitud.command.validator.EnviarSolicitudNovedadCoordinadorValidator;
-import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudNovedadCoordinadorDomain;
-import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudNovedadCoordinadorEnviadaEvent;
+import com.arquisoft.solicitudes.application.solicitud.command.validator.EnviarSolicitudNovedadAsesorValidator;
+import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudNovedadAsesorDomain;
+import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudNovedadAsesorEnviadaEvent;
 import com.arquisoft.solicitudes.domain.solicitud.exception.DestinatarioNoAsignadoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.DestinatarioNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.RemitenteNoEncontradoException;
@@ -45,7 +45,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
+class EnviarSolicitudNovedadAsesorUseCaseImplTest {
 
     @Mock private SolicitudOutputPort solicitudOutputPort;
     @Mock private RegistrarRemitenteUseCase registrarRemitenteUseCase;
@@ -53,13 +53,13 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
     @Mock private DatosUsuarioFinder datosUsuarioFinder;
     @Mock private DestinatarioAsignadoFinder destinatarioAsignadoFinder;
     @Mock private SolicitudDuplicadaFinder solicitudDuplicadaFinder;
-    @Mock private EnviarSolicitudNovedadCoordinadorValidator validator;
+    @Mock private EnviarSolicitudNovedadAsesorValidator validator;
     @Mock private EventPublisher eventPublisher;
     @Mock private AppLogger logger;
 
-    private EnviarSolicitudNovedadCoordinadorUseCaseImpl useCase;
+    private EnviarSolicitudNovedadAsesorUseCaseImpl useCase;
 
-    private EnvioSolicitudNovedadCoordinadorDomain envio;
+    private EnvioSolicitudNovedadAsesorDomain envio;
 
     private static UsuarioDomain replica(UUID id) {
         return UsuarioDomain.reconstruir(id, "ID-" + id, "Nombre " + id, id + "@uco.edu.co", Instant.now());
@@ -67,13 +67,13 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new EnviarSolicitudNovedadCoordinadorUseCaseImpl(
+        useCase = new EnviarSolicitudNovedadAsesorUseCaseImpl(
                 solicitudOutputPort, registrarRemitenteUseCase, registrarDestinatarioUseCase, datosUsuarioFinder,
                 destinatarioAsignadoFinder, solicitudDuplicadaFinder, validator, eventPublisher, logger);
 
-        var command = EnviarSolicitudNovedadCoordinadorCommand.crear(
-                UUID.randomUUID(), UUID.randomUUID().toString(), "novedad para el coordinador");
-        envio = EnviarSolicitudNovedadCoordinadorMapper.toDomain(command);
+        var command = EnviarSolicitudNovedadAsesorCommand.crear(
+                UUID.randomUUID(), UUID.randomUUID().toString(), "novedad para el asesor");
+        envio = EnviarSolicitudNovedadAsesorMapper.toDomain(command);
     }
 
     @Test
@@ -84,7 +84,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
         var remitenteReplica = UsuarioDomain.reconstruir(
                 envio.getRemitenteUsuario(), "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now());
         var destinatarioReplica = UsuarioDomain.reconstruir(
-                envio.getDestinatarioUsuario(), "COORD-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now());
+                envio.getDestinatarioUsuario(), "ASE-1", "Pedro Asesor", "pedro@uco.edu.co", Instant.now());
         when(datosUsuarioFinder.obtener(envio.getRemitenteUsuario()))
                 .thenReturn(remitenteReplica);
         when(datosUsuarioFinder.obtener(envio.getDestinatarioUsuario()))
@@ -106,19 +106,19 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
         assertThat(persistida.id()).isEqualTo(resultado);
         assertThat(persistida.remitente()).isEqualTo(remitenteFila);
         assertThat(persistida.destinatario()).isEqualTo(destinatarioFila);
-        assertThat(persistida.mensajeSolicitud()).isEqualTo("novedad para el coordinador");
-        assertThat(persistida.tipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId());
+        assertThat(persistida.mensajeSolicitud()).isEqualTo("novedad para el asesor");
+        assertThat(persistida.tipoSolicitud()).isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId());
 
-        ArgumentCaptor<SolicitudNovedadCoordinadorEnviadaEvent> eventoCaptor =
-                ArgumentCaptor.forClass(SolicitudNovedadCoordinadorEnviadaEvent.class);
+        ArgumentCaptor<SolicitudNovedadAsesorEnviadaEvent> eventoCaptor =
+                ArgumentCaptor.forClass(SolicitudNovedadAsesorEnviadaEvent.class);
         verify(eventPublisher).publish(eventoCaptor.capture());
-        SolicitudNovedadCoordinadorEnviadaEvent evento = eventoCaptor.getValue();
+        SolicitudNovedadAsesorEnviadaEvent evento = eventoCaptor.getValue();
         assertThat(evento.getSolicitudId()).isEqualTo(resultado);
-        assertThat(evento.getTemaEvento()).isEqualTo(SolicitudNovedadCoordinadorEnviadaEvent.EVENT_TOPIC);
+        assertThat(evento.getTemaEvento()).isEqualTo(SolicitudNovedadAsesorEnviadaEvent.EVENT_TOPIC);
         assertThat(evento.getRemitenteNombre()).isEqualTo("Ana Estudiante");
-        assertThat(evento.getDestinatarioNombre()).isEqualTo("Pedro Coordinador");
+        assertThat(evento.getDestinatarioNombre()).isEqualTo("Pedro Asesor");
         assertThat(evento.getDestinatarioEmail()).isEqualTo("pedro@uco.edu.co");
-        assertThat(evento.getMensajeSolicitud()).isEqualTo("novedad para el coordinador");
+        assertThat(evento.getMensajeSolicitud()).isEqualTo("novedad para el asesor");
     }
 
     @Test

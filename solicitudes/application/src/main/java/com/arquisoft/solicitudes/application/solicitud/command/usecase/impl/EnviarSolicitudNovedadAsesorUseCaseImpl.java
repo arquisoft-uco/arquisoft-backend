@@ -10,11 +10,11 @@ import com.arquisoft.solicitudes.application.solicitud.command.finder.Destinatar
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.mapper.SolicitudMapper;
-import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudNovedadCoordinadorUseCase;
-import com.arquisoft.solicitudes.application.solicitud.command.validator.EnviarSolicitudNovedadCoordinadorValidator;
-import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.application.solicitud.command.usecase.EnviarSolicitudNovedadAsesorUseCase;
+import com.arquisoft.solicitudes.application.solicitud.command.validator.EnviarSolicitudNovedadAsesorValidator;
+import com.arquisoft.solicitudes.domain.solicitud.EnvioSolicitudNovedadAsesorDomain;
 import com.arquisoft.solicitudes.domain.solicitud.SolicitudDomain;
-import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudNovedadCoordinadorEnviadaEvent;
+import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudNovedadAsesorEnviadaEvent;
 import com.arquisoft.solicitudes.domain.solicitud.model.ClaveSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.ConsultaAsignacionResponsable;
 import com.arquisoft.solicitudes.domain.solicitud.model.DisponibilidadSolicitud;
@@ -26,8 +26,8 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
-        implements EnviarSolicitudNovedadCoordinadorUseCase {
+public class EnviarSolicitudNovedadAsesorUseCaseImpl
+        implements EnviarSolicitudNovedadAsesorUseCase {
 
     private final SolicitudOutputPort solicitudOutputPort;
     private final RegistrarRemitenteUseCase registrarRemitenteUseCase;
@@ -35,20 +35,25 @@ public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
     private final DatosUsuarioFinder datosUsuarioFinder;
     private final DestinatarioAsignadoFinder destinatarioAsignadoFinder;
     private final SolicitudDuplicadaFinder solicitudDuplicadaFinder;
-    private final EnviarSolicitudNovedadCoordinadorValidator validator;
+    private final EnviarSolicitudNovedadAsesorValidator validator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
-    public UUID ejecutar(EnvioSolicitudNovedadCoordinadorDomain envio) {
+    public UUID ejecutar(EnvioSolicitudNovedadAsesorDomain envio) {
+        logger.info(SolicitudKey.LOG_ENVIANDO_ASESOR,
+                envio.getRemitenteUsuario(), envio.getDestinatarioUsuario());
+
         UsuarioDomain remitenteUsuario =
                 datosUsuarioFinder.obtener(envio.getRemitenteUsuario());
         UsuarioDomain destinatarioUsuario =
                 datosUsuarioFinder.obtener(envio.getDestinatarioUsuario());
+        logger.debug(SolicitudKey.LOG_VERIFICACION_ENVIO_ASESOR,
+                !remitenteUsuario.esVacio(), !destinatarioUsuario.esVacio());
         validator.validarExistenciaUsuarios(envio, remitenteUsuario, destinatarioUsuario);
 
-        boolean destinatarioAsignado = destinatarioAsignadoFinder.obtener(new ConsultaAsignacionResponsable(
-                envio.getRemitenteUsuario(), envio.getDestinatarioUsuario()));
+        boolean destinatarioAsignado = destinatarioAsignadoFinder.obtener(
+                new ConsultaAsignacionResponsable(envio.getRemitenteUsuario(), envio.getDestinatarioUsuario()));
         validator.validarAsignacionDestinatario(envio, destinatarioAsignado);
 
         var remitenteId = registrarRemitenteUseCase.ejecutar(envio.getRemitente());
@@ -66,12 +71,12 @@ public class EnviarSolicitudNovedadCoordinadorUseCaseImpl
 
         solicitudOutputPort.registrar(SolicitudMapper.toEntity(solicitud));
 
-        eventPublisher.publish(new SolicitudNovedadCoordinadorEnviadaEvent(
+        eventPublisher.publish(new SolicitudNovedadAsesorEnviadaEvent(
                 solicitud.getId(), remitenteUsuario.getNombre(),
                 destinatarioUsuario.getNombre(), destinatarioUsuario.getEmail(),
                 solicitud.getMensajeSolicitud()));
 
-        logger.info(SolicitudKey.LOG_ENVIADA, solicitud.getId());
+        logger.info(SolicitudKey.LOG_ENVIADA_ASESOR, solicitud.getId());
         return solicitud.getId();
     }
 }
