@@ -14,7 +14,8 @@ public final class SolicitudCriteria extends QueryCriteria {
         REMITENTE_EMAIL        ("remitenteEmail",         true,  false),
         FECHA_CREACION         ("fechaCreacion",          false, true),
         DESTINATARIO_USUARIO_ID("destinatarioUsuarioId",  true,  false),
-        TIPO_SOLICITUD_ID      ("tipoSolicitudId",        true,  false);
+        TIPO_SOLICITUD_ID      ("tipoSolicitudId",        true,  false),
+        REMITENTE_USUARIO_ID   ("remitenteUsuarioId",     true,  false);
 
         private final String  clave;
         private final boolean filtrable;

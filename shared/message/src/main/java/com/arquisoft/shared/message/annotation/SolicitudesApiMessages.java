@@ -107,5 +107,18 @@ public final class SolicitudesApiMessages {
                 "Criterio de filtro, orden o paginación inválido";
         public static final String CONSULTAR_NOVEDAD_ASESOR_RECIBIDAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de novedad para el asesor recibidas";
+
+        public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_SUMMARY =
+                "Consultar solicitudes de novedad para el asesor enviadas";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_DESCRIPTION =
+                "Permite a un estudiante consultar de forma paginada y filtrable las solicitudes de "
+                        + "novedad para el asesor que ha enviado. El alcance se limita a las "
+                        + "solicitudes cuyo remitente es el estudiante autenticado.";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_RESP_200 =
+                "Página de solicitudes de novedad para el asesor enviadas";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_NOVEDAD_ASESOR_ENVIADAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de novedad para el asesor enviadas";
     }
 }

@@ -24,6 +24,7 @@ class SolicitudJpaSpecification extends QueryJpaSpecification<SolicitudJpaQueryE
                 case FECHA_CREACION          -> CampoSpec.fechaHora(root -> root.get("fechaCreacion"));
                 case DESTINATARIO_USUARIO_ID -> CampoSpec.uuid(root -> root.get("destinatarioUsuarioId"));
                 case TIPO_SOLICITUD_ID       -> CampoSpec.texto(root -> root.get("tipoSolicitudId"));
+                case REMITENTE_USUARIO_ID    -> CampoSpec.uuid(root -> root.get("remitenteUsuarioId"));
             };
             m.put(campo.getClave(), spec);
         }
