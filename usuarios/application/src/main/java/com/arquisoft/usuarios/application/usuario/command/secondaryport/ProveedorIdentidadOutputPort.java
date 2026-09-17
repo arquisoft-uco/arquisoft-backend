@@ -11,4 +11,6 @@ public interface ProveedorIdentidadOutputPort {
     UUID registrar(RegistroIdentidadEntity registro);
 
     void eliminar(UUID usuarioId);
+
+    void revocarRealmRole(UUID usuario, String realmRole);
 }

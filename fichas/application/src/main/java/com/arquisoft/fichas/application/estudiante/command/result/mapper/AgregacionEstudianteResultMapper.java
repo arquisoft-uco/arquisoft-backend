@@ -13,6 +13,10 @@ public final class AgregacionEstudianteResultMapper {
         return new AgregacionEstudianteResult.Agregada(estudiante.getId());
     }
 
+    public static AgregacionEstudianteResult.Reactivada toResultReactivada(EstudianteDomain estudiante) {
+        return new AgregacionEstudianteResult.Reactivada(estudiante.getId());
+    }
+
     public static AgregacionEstudianteResult.Duplicada toResultDuplicada(EstudianteDomain estudiante) {
         return new AgregacionEstudianteResult.Duplicada(estudiante.getId());
     }

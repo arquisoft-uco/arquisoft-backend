@@ -22,7 +22,6 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -64,8 +63,8 @@ class EliminarSolicitudNovedadCoordinadorUseCaseImplTest {
     }
 
     private void stubSolicitudPropiaSinRespuestas() {
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.of(new ResumenSolicitud(
-                solicitud, remitenteUsuario, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+                solicitud, remitenteUsuario, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
     }
 
@@ -115,8 +114,8 @@ class EliminarSolicitudNovedadCoordinadorUseCaseImplTest {
     void debePasarLosDatosProyectadosAlValidator_cuandoLaSolicitudExiste() {
         // Arrange — el remitente de la solicitud difiere del actor del JWT
         UUID remitenteDeLaFila = UUID.randomUUID();
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.of(new ResumenSolicitud(
-                solicitud, remitenteDeLaFila, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+                solicitud, remitenteDeLaFila, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
 
         // Act
@@ -131,7 +130,7 @@ class EliminarSolicitudNovedadCoordinadorUseCaseImplTest {
     @Test
     void debePasarLosValoresPorDefectoAlValidator_cuandoLaSolicitudNoExiste() {
         // Arrange
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.empty());
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
 
         // Act
