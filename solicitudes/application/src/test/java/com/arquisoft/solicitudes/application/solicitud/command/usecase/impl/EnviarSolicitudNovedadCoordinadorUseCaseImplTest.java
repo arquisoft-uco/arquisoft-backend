@@ -2,11 +2,8 @@ package com.arquisoft.solicitudes.application.solicitud.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.publisher.EventPublisher;
-import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.solicitudes.application.destinatario.command.finder.DestinatarioDeUsuarioFinder;
-import com.arquisoft.solicitudes.application.destinatario.command.secondaryport.DestinatarioOutputPort;
-import com.arquisoft.solicitudes.application.remitente.command.finder.RemitenteDeUsuarioFinder;
-import com.arquisoft.solicitudes.application.remitente.command.secondaryport.RemitenteOutputPort;
+import com.arquisoft.solicitudes.application.destinatario.command.usecase.RegistrarDestinatarioUseCase;
+import com.arquisoft.solicitudes.application.remitente.command.usecase.RegistrarRemitenteUseCase;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DestinatarioAsignadoFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudDuplicadaFinder;
@@ -51,10 +48,8 @@ import static org.mockito.Mockito.when;
 class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
 
     @Mock private SolicitudOutputPort solicitudOutputPort;
-    @Mock private RemitenteOutputPort remitenteOutputPort;
-    @Mock private DestinatarioOutputPort destinatarioOutputPort;
-    @Mock private RemitenteDeUsuarioFinder remitenteDeUsuarioFinder;
-    @Mock private DestinatarioDeUsuarioFinder destinatarioDeUsuarioFinder;
+    @Mock private RegistrarRemitenteUseCase registrarRemitenteUseCase;
+    @Mock private RegistrarDestinatarioUseCase registrarDestinatarioUseCase;
     @Mock private DatosUsuarioFinder datosUsuarioFinder;
     @Mock private DestinatarioAsignadoFinder destinatarioAsignadoFinder;
     @Mock private SolicitudDuplicadaFinder solicitudDuplicadaFinder;
@@ -73,8 +68,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
     @BeforeEach
     void setUp() {
         useCase = new EnviarSolicitudNovedadCoordinadorUseCaseImpl(
-                solicitudOutputPort, remitenteOutputPort, destinatarioOutputPort,
-                remitenteDeUsuarioFinder, destinatarioDeUsuarioFinder, datosUsuarioFinder,
+                solicitudOutputPort, registrarRemitenteUseCase, registrarDestinatarioUseCase, datosUsuarioFinder,
                 destinatarioAsignadoFinder, solicitudDuplicadaFinder, validator, eventPublisher, logger);
 
         var command = EnviarSolicitudNovedadCoordinadorCommand.crear(
@@ -96,10 +90,8 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
         when(datosUsuarioFinder.obtener(envio.getDestinatarioUsuario()))
                 .thenReturn(destinatarioReplica);
         when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
-        when(remitenteDeUsuarioFinder.obtener(envio.getRemitenteUsuario()))
-                .thenReturn(remitenteFila);
-        when(destinatarioDeUsuarioFinder.obtener(envio.getDestinatarioUsuario()))
-                .thenReturn(destinatarioFila);
+        when(registrarRemitenteUseCase.ejecutar(envio.getRemitente())).thenReturn(remitenteFila);
+        when(registrarDestinatarioUseCase.ejecutar(envio.getDestinatario())).thenReturn(destinatarioFila);
         when(solicitudDuplicadaFinder.obtener(any())).thenReturn(false);
 
         // Act
@@ -130,53 +122,24 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
     }
 
     @Test
-    void debeReutilizarLaFilaExistente_cuandoElFinderDevuelveUnId() {
+    void debeUsarLosIdsQueDevuelvenLosUseCasesDeRegistro_alPersistirLaSolicitud() {
         // Arrange
-        UUID remitenteFila = UUID.randomUUID();
-        UUID destinatarioFila = UUID.randomUUID();
+        UUID remitenteId = UUID.randomUUID();
+        UUID destinatarioId = UUID.randomUUID();
         when(datosUsuarioFinder.obtener(any())).thenReturn(replica(UUID.randomUUID()));
         when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
-        when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(remitenteFila);
-        when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(destinatarioFila);
+        when(registrarRemitenteUseCase.ejecutar(envio.getRemitente())).thenReturn(remitenteId);
+        when(registrarDestinatarioUseCase.ejecutar(envio.getDestinatario())).thenReturn(destinatarioId);
         when(solicitudDuplicadaFinder.obtener(any())).thenReturn(false);
 
         // Act
         useCase.ejecutar(envio);
 
-        // Assert — no se persiste ninguna fila de rol; la solicitud referencia los ids existentes
-        verify(remitenteOutputPort, never()).registrar(any());
-        verify(destinatarioOutputPort, never()).registrar(any());
-
+        // Assert — el orquestador delega la resolucion del id, no decide si viene de una fila existente o nueva
         ArgumentCaptor<SolicitudEntity> captor = ArgumentCaptor.forClass(SolicitudEntity.class);
         verify(solicitudOutputPort).registrar(captor.capture());
-        assertThat(captor.getValue().remitente()).isEqualTo(remitenteFila);
-        assertThat(captor.getValue().destinatario()).isEqualTo(destinatarioFila);
-    }
-
-    @Test
-    void debePersistirElCandidato_cuandoNoExisteFilaDeRolPrevia() {
-        // Arrange
-        when(datosUsuarioFinder.obtener(any())).thenReturn(replica(UUID.randomUUID()));
-        when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
-        when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(UtilUUID.obtenerUUIDPorDefecto());
-        when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(UtilUUID.obtenerUUIDPorDefecto());
-        when(solicitudDuplicadaFinder.obtener(any())).thenReturn(false);
-
-        // Act
-        useCase.ejecutar(envio);
-
-        // Assert — se persiste el candidato del bundle y su id queda en la solicitud
-        verify(remitenteOutputPort).registrar(org.mockito.ArgumentMatchers.argThat(e ->
-                e.id().equals(envio.getRemitente().getId())
-                        && e.usuario().equals(envio.getRemitenteUsuario())));
-        verify(destinatarioOutputPort).registrar(org.mockito.ArgumentMatchers.argThat(e ->
-                e.id().equals(envio.getDestinatario().getId())
-                        && e.usuario().equals(envio.getDestinatarioUsuario())));
-
-        ArgumentCaptor<SolicitudEntity> captor = ArgumentCaptor.forClass(SolicitudEntity.class);
-        verify(solicitudOutputPort).registrar(captor.capture());
-        assertThat(captor.getValue().remitente()).isEqualTo(envio.getRemitente().getId());
-        assertThat(captor.getValue().destinatario()).isEqualTo(envio.getDestinatario().getId());
+        assertThat(captor.getValue().remitente()).isEqualTo(remitenteId);
+        assertThat(captor.getValue().destinatario()).isEqualTo(destinatarioId);
     }
 
     @Test
@@ -194,8 +157,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
 
         verify(solicitudOutputPort, never()).registrar(any());
         verify(eventPublisher, never()).publish(any());
-        verifyNoInteractions(remitenteOutputPort, destinatarioOutputPort,
-                remitenteDeUsuarioFinder, destinatarioDeUsuarioFinder,
+        verifyNoInteractions(registrarRemitenteUseCase, registrarDestinatarioUseCase,
                 destinatarioAsignadoFinder, solicitudDuplicadaFinder);
     }
 
@@ -214,8 +176,7 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
 
         verify(solicitudOutputPort, never()).registrar(any());
         verify(eventPublisher, never()).publish(any());
-        verifyNoInteractions(remitenteDeUsuarioFinder, destinatarioDeUsuarioFinder,
-                solicitudDuplicadaFinder);
+        verifyNoInteractions(registrarRemitenteUseCase, registrarDestinatarioUseCase, solicitudDuplicadaFinder);
     }
 
     @Test
@@ -240,8 +201,8 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
         // Arrange
         when(datosUsuarioFinder.obtener(any())).thenReturn(replica(UUID.randomUUID()));
         when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
-        when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(UUID.randomUUID());
-        when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(UUID.randomUUID());
+        when(registrarRemitenteUseCase.ejecutar(any())).thenReturn(UUID.randomUUID());
+        when(registrarDestinatarioUseCase.ejecutar(any())).thenReturn(UUID.randomUUID());
         when(solicitudDuplicadaFinder.obtener(any())).thenReturn(true);
         doThrow(new SolicitudDuplicadaException())
                 .when(validator).validarUnicidad(any(DisponibilidadSolicitud.class));
@@ -259,8 +220,8 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
         // Arrange
         when(datosUsuarioFinder.obtener(any())).thenReturn(replica(UUID.randomUUID()));
         when(destinatarioAsignadoFinder.obtener(any())).thenReturn(true);
-        when(remitenteDeUsuarioFinder.obtener(any())).thenReturn(UUID.randomUUID());
-        when(destinatarioDeUsuarioFinder.obtener(any())).thenReturn(UUID.randomUUID());
+        when(registrarRemitenteUseCase.ejecutar(any())).thenReturn(UUID.randomUUID());
+        when(registrarDestinatarioUseCase.ejecutar(any())).thenReturn(UUID.randomUUID());
         when(solicitudDuplicadaFinder.obtener(any())).thenReturn(false);
 
         // Act
@@ -268,11 +229,11 @@ class EnviarSolicitudNovedadCoordinadorUseCaseImplTest {
 
         // Assert — existencia usuario -> asignacion -> get-or-create -> unicidad -> persistir -> publicar
         InOrder inOrder = inOrder(datosUsuarioFinder, validator, destinatarioAsignadoFinder,
-                remitenteDeUsuarioFinder, solicitudDuplicadaFinder, solicitudOutputPort, eventPublisher);
+                registrarRemitenteUseCase, solicitudDuplicadaFinder, solicitudOutputPort, eventPublisher);
         inOrder.verify(validator).validarExistenciaUsuarios(any(), any(), any());
         inOrder.verify(destinatarioAsignadoFinder).obtener(any());
         inOrder.verify(validator).validarAsignacionDestinatario(any(), anyBoolean());
-        inOrder.verify(remitenteDeUsuarioFinder).obtener(any());
+        inOrder.verify(registrarRemitenteUseCase).ejecutar(any());
         inOrder.verify(solicitudDuplicadaFinder).obtener(any());
         inOrder.verify(validator).validarUnicidad(any());
         inOrder.verify(solicitudOutputPort).registrar(any());
