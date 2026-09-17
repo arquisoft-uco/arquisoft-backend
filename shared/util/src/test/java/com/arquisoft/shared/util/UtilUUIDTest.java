@@ -41,4 +41,15 @@ class UtilUUIDTest {
     void debeRetornarNull_cuandoFormatoEsInvalido() {
         assertThat(UtilUUID.generarUUIDDesdeTexto("no-es-uuid")).isNull();
     }
+
+    @Test
+    void debeReconocerPorDefecto_cuandoEsElUUIDGenerico() {
+        assertThat(UtilUUID.esPorDefecto(UtilUUID.obtenerUUIDPorDefecto())).isTrue();
+    }
+
+    @Test
+    void debeRechazarPorDefecto_cuandoEsOtroUUIDONulo() {
+        assertThat(UtilUUID.esPorDefecto(UUID.randomUUID())).isFalse();
+        assertThat(UtilUUID.esPorDefecto(null)).isFalse();
+    }
 }

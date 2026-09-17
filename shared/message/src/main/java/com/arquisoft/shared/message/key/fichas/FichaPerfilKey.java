@@ -11,7 +11,6 @@ public enum FichaPerfilKey implements ClaveMensaje {
     ERROR_NO_PROPIETARIO("fichas.dominio.fichaperfil.error.no-propietario", 2),
     ERROR_NO_PERTENECE_ASESOR("fichas.dominio.fichaperfil.error.no-pertenece-asesor", 2),
     ERROR_MISMO_ASESOR("fichas.dominio.fichaperfil.error.mismo-asesor", 1),
-    ERROR_ESTADO_TERMINAL("fichas.dominio.fichaperfil.error.estado-terminal", 1),
     LOG_REGISTRANDO("fichas.aplicacion.fichaperfil.log.registrando", 2),
     LOG_VERIFICACION_PREVIA("fichas.aplicacion.fichaperfil.log.verificacion-previa", 3),
     LOG_REGISTRADA("fichas.aplicacion.fichaperfil.log.registrada", 1),
