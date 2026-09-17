@@ -23,6 +23,10 @@ public final class SolicitudesCodes {
         public static final String REMITENTE_REQUERIDO = "SOLICITUD_REMITENTE_REQUERIDO";
         public static final String REMITENTE_NO_ENCONTRADO = "REMITENTE_NO_ENCONTRADO";
         public static final String SOLICITUD_DUPLICADA = "SOLICITUD_DUPLICADA";
+        public static final String SOLICITUD_NO_ENCONTRADA = "SOLICITUD_NO_ENCONTRADA";
+        public static final String SOLICITUD_NO_PROPIA = "SOLICITUD_NO_PROPIA";
+        public static final String SOLICITUD_TIPO_NO_COINCIDE = "SOLICITUD_TIPO_NO_COINCIDE";
+        public static final String SOLICITUD_CON_RESPUESTAS = "SOLICITUD_CON_RESPUESTAS";
     }
 
     public static final class Remitente {
