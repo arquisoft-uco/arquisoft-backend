@@ -100,7 +100,8 @@
               "fichas:item-ficha-perfil-asesor:view",
               "fichas:estado-ficha:view",
               "fichas:ficha-perfil:create",
-              "fichas:tipo-item:view"
+              "fichas:tipo-item:view",
+              "fichas:observacion-item:create"
             ]
           }
         },
