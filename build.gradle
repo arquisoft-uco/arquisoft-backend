@@ -316,7 +316,7 @@ subprojects { subproject ->
 //                     agregados en el arrange)
 // ---------------------------------------------------------------------------------------------
 def contextosHexagonales = [
-        'seguridad', 'fichas', 'usuarios', 'notificaciones', 'evaluaciones',
+        'seguridad', 'fichas', 'usuarios', 'notificaciones', 'evaluaciones', 'solicitudes',
         'proyectos', 'artefactos', 'repositorio_artefactos', 'entregables'
 ]
 
