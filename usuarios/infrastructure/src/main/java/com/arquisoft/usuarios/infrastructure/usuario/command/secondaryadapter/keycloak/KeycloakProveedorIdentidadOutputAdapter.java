@@ -7,6 +7,7 @@ import com.arquisoft.usuarios.infrastructure.config.http.UsuariosRestTemplateCon
 import com.arquisoft.usuarios.infrastructure.usuario.exception.ProveedorIdentidadUsuarioNoDisponibleException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.Mensajes;
+import com.arquisoft.shared.message.key.usuarios.ProveedorIdentidadKey;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
@@ -117,6 +118,55 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
     @Override
     public void eliminar(UUID usuarioId) {
         eliminarIdentidad(usuarioId.toString());
+    }
+
+    @Override
+    public void revocarRealmRole(UUID usuario, String realmRole) {
+        try {
+            var token = obtenerTokenServicio();
+            var representacion = obtenerRealmRole(token, realmRole);
+            restTemplate.exchange(urlRoleMappingsRealm(usuario), HttpMethod.DELETE,
+                    new HttpEntity<>(List.of(representacion), cabecerasConToken(token)), Void.class);
+            logger.debug(ProveedorIdentidadKey.LOG_ROL_REVOCADO, usuario, realmRole);
+            registrarCompensacionRol(usuario, realmRole);
+        } catch (RestClientResponseException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, e.getStatusCode(), detalleDe(e));
+            throw noDisponible();
+        } catch (RestClientException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, DETALLE_CLIENTE_HTTP, e.getMessage());
+            throw noDisponible();
+        }
+    }
+
+    // Keycloak no participa en la transaccion: si el commit local falla despues de revocar, solo el
+    // adaptador puede devolver el rol. Una compensacion fallida no lanza; queda en el log para conciliar.
+    private void registrarCompensacionRol(UUID usuario, String realmRole) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == STATUS_ROLLED_BACK) {
+                    reasignarRealmRole(usuario, realmRole);
+                }
+            }
+        });
+    }
+
+    private void reasignarRealmRole(UUID usuario, String realmRole) {
+        try {
+            var token = obtenerTokenServicio();
+            var representacion = obtenerRealmRole(token, realmRole);
+            restTemplate.exchange(urlRoleMappingsRealm(usuario), HttpMethod.POST,
+                    new HttpEntity<>(List.of(representacion), cabecerasConToken(token)), Void.class);
+        } catch (RuntimeException fallo) {
+            logger.error(ProveedorIdentidadKey.LOG_COMPENSACION_ROL_FALLIDA, usuario, realmRole);
+        }
+    }
+
+    private String urlRoleMappingsRealm(UUID usuario) {
+        return urlAdmin("/users/" + usuario + "/role-mappings/realm");
     }
 
     private void eliminarIdentidad(String identidadId) {

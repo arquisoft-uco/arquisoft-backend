@@ -1,14 +1,17 @@
 package com.arquisoft.usuarios.infrastructure.estudiante.command.secondaryadapter.repository;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import com.arquisoft.usuarios.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
 import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +49,7 @@ class EstudianteCommandOutputAdapterTest {
         var usuarioId = sembrarUsuario();
 
         // Act
-        adapter.guardar(new EstudianteEntity(usuarioId));
+        adapter.guardar(new EstudianteEntity(usuarioId, UtilFecha.VACIO));
 
         // Assert
         assertThat(estudianteCommandRepository.existsById(usuarioId)).isTrue();
@@ -55,28 +58,75 @@ class EstudianteCommandOutputAdapterTest {
     }
 
     @Test
-    void debeRetornarTrue_cuandoElUsuarioYaEsEstudiante() {
+    void debeRetornarEstudiante_cuandoElUsuarioYaEsEstudiante() {
         // Arrange
         var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
         var usuarioId = sembrarUsuario();
         entityManager.persistAndFlush(EstudianteJpaEntity.builder().usuarioId(usuarioId).build());
 
         // Act
-        var existe = adapter.existePorUsuario(usuarioId);
+        var estudiante = adapter.obtenerPorUsuario(usuarioId);
 
         // Assert
-        assertThat(existe).isTrue();
+        assertThat(estudiante).map(EstudianteEntity::usuario).contains(usuarioId);
     }
 
     @Test
-    void debeRetornarFalse_cuandoElUsuarioNoEsEstudiante() {
+    void debeRetornarVacio_cuandoElUsuarioNoEsEstudiante() {
         // Arrange
         var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
 
         // Act
-        var existe = adapter.existePorUsuario(UUID.randomUUID());
+        var estudiante = adapter.obtenerPorUsuario(UUID.randomUUID());
 
         // Assert
-        assertThat(existe).isFalse();
+        assertThat(estudiante).isEmpty();
+    }
+
+    @Test
+    void debeTraducirColumnaNulaAVacio_cuandoElEstudianteEstaVigente() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var usuarioId = sembrarUsuario();
+        entityManager.persistAndFlush(EstudianteJpaEntity.builder().usuarioId(usuarioId).build());
+
+        // Act
+        var estudiante = adapter.obtenerPorUsuario(usuarioId);
+
+        // Assert
+        assertThat(estudiante).map(EstudianteEntity::eliminadoEn).contains(UtilFecha.VACIO);
+    }
+
+    @Test
+    void debePersistirEliminadoEn_cuandoSeEliminaLogicamente() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var usuarioId = sembrarUsuario();
+        entityManager.persistAndFlush(EstudianteJpaEntity.builder().usuarioId(usuarioId).build());
+        var eliminadoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        adapter.eliminarLogica(usuarioId, eliminadoEn);
+
+        // Assert
+        assertThat(entityManager.find(EstudianteJpaEntity.class, usuarioId).getEliminadoEn()).isEqualTo(eliminadoEn);
+        assertThat(adapter.obtenerPorUsuario(usuarioId)).map(EstudianteEntity::eliminadoEn).contains(eliminadoEn);
+        verify(logger).debug(AgregarEstudianteKey.LOG_ACTUALIZADO, usuarioId);
+    }
+
+    @Test
+    void debeDejarEliminadoEnNulo_cuandoSeReactiva() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var usuarioId = sembrarUsuario();
+        entityManager.persistAndFlush(EstudianteJpaEntity.builder()
+                .usuarioId(usuarioId).eliminadoEn(Instant.parse("2026-09-16T10:00:00Z")).build());
+
+        // Act
+        adapter.reactivar(usuarioId);
+
+        // Assert
+        assertThat(entityManager.find(EstudianteJpaEntity.class, usuarioId).getEliminadoEn()).isNull();
+        verify(logger).debug(AgregarEstudianteKey.LOG_ACTUALIZADO, usuarioId);
     }
 }

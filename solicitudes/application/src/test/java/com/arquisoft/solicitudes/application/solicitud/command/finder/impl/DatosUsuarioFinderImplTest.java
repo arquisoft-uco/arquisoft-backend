@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.solicitud.command.finder.impl;
 
+import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import com.arquisoft.solicitudes.application.usuario.command.secondaryport.UsuarioOutputPort;
 import com.arquisoft.solicitudes.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ class DatosUsuarioFinderImplTest {
 
         // Act & Assert
         assertThat(finder.obtener(usuario))
-                .hasValueSatisfying(dominio -> {
+                .satisfies(dominio -> {
                     assertThat(dominio.getId()).isEqualTo(usuario);
                     assertThat(dominio.getNombre()).isEqualTo("Ana");
                     assertThat(dominio.getEmail()).isEqualTo("ana@uco.edu.co");
@@ -47,6 +48,6 @@ class DatosUsuarioFinderImplTest {
         when(usuarioOutputPort.buscarPorId(usuario)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThat(finder.obtener(usuario)).isEmpty();
+        assertThat(finder.obtener(usuario)).isEqualTo(UsuarioDomain.VACIO);
     }
 }

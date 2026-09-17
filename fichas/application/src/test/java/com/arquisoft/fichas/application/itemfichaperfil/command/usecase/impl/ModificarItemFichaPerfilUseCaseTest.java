@@ -1,26 +1,23 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.usecase.impl;
 
-import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
-import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
-import com.arquisoft.fichas.application.itemfichaperfil.command.finder.FichaPerfilDelItemFinder;
+import com.arquisoft.fichas.application.itemfichaperfil.command.finder.PertenenciaItemFichaPerfilFinder;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.ModificarItemFichaPerfilValidator;
 import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
-import com.arquisoft.fichas.domain.estudiantefichaperfil.model.VinculoEstudianteFicha;
 import com.arquisoft.fichas.domain.itemfichaperfil.ModificacionItemFichaPerfilDomain;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaNoPropiaException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
-import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
+import com.arquisoft.fichas.domain.itemfichaperfil.model.ItemDeEstudiante;
+import com.arquisoft.fichas.domain.itemfichaperfil.model.PertenenciaItemFichaPerfil;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,33 +37,27 @@ class ModificarItemFichaPerfilUseCaseTest {
     private ItemFichaPerfilOutputPort itemFichaPerfilOutputPort;
 
     @Mock
-    private FichaPerfilDelItemFinder fichaPerfilDelItemFinder;
-
-    @Mock
-    private VinculoEstudianteFichaExisteFinder vinculoEstudianteFichaExisteFinder;
-
-    @Mock
-    private EstadoActualFichaPerfilFinder estadoActualFichaPerfilFinder;
+    private PertenenciaItemFichaPerfilFinder pertenenciaItemFichaPerfilFinder;
 
     @Mock
     private ModificarItemFichaPerfilValidator modificarItemFichaPerfilValidator;
 
     @Mock
     private AppLogger logger;
+
     @InjectMocks
     private ModificarItemFichaPerfilUseCaseImpl modificarItemFichaPerfilUseCase;
 
     private final UUID item = UUID.randomUUID();
     private final UUID estudiante = UUID.randomUUID();
     private final UUID fichaPerfil = UUID.randomUUID();
-    private final EstadoFichaPerfilDomain estadoEnConstruccion =
-            EstadoFichaPerfilDomain.crear(fichaPerfil);
+    private final EstadoFichaPerfilDomain estadoEnConstruccion = EstadoFichaPerfilDomain.crear(fichaPerfil);
 
     @Test
     void debeActualizarElContenido_cuandoDatosValidos() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(true, estadoEnConstruccion);
+        stubPertenencia(new PertenenciaItemFichaPerfil(fichaPerfil, true, estadoEnConstruccion));
 
         // Act
         modificarItemFichaPerfilUseCase.ejecutar(entrada);
@@ -76,32 +67,28 @@ class ModificarItemFichaPerfilUseCaseTest {
     }
 
     @Test
-    void debeResolverLaFichaDelItemAntesDeValidar_cuandoSeEjecuta() {
+    void debeConsultarLaPertenenciaUnaSolaVezAntesDeValidar_cuandoSeEjecuta() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(true, estadoEnConstruccion);
+        stubPertenencia(new PertenenciaItemFichaPerfil(fichaPerfil, true, estadoEnConstruccion));
 
         // Act
         modificarItemFichaPerfilUseCase.ejecutar(entrada);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilDelItemFinder, vinculoEstudianteFichaExisteFinder,
-                estadoActualFichaPerfilFinder, modificarItemFichaPerfilValidator, itemFichaPerfilOutputPort);
-        inOrder.verify(fichaPerfilDelItemFinder).obtener(item);
-        inOrder.verify(vinculoEstudianteFichaExisteFinder)
-                .obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante));
-        inOrder.verify(estadoActualFichaPerfilFinder).obtener(fichaPerfil);
+        var inOrder = inOrder(pertenenciaItemFichaPerfilFinder, modificarItemFichaPerfilValidator,
+                itemFichaPerfilOutputPort);
+        inOrder.verify(pertenenciaItemFichaPerfilFinder, times(1)).obtener(new ItemDeEstudiante(item, estudiante));
         inOrder.verify(modificarItemFichaPerfilValidator).validar(
-                item, estudiante, fichaPerfil, true, true,
-                estadoEnConstruccion);
+                item, estudiante, fichaPerfil, true, true, estadoEnConstruccion);
         inOrder.verify(itemFichaPerfilOutputPort).actualizarContenido(item, entrada.getContenido());
     }
 
     @Test
-    void noDebeConsultarPropiedadNiEstado_cuandoElItemNoExiste() {
+    void debePropagarLaExcepcion_cuandoElItemNoExiste() {
         // Arrange
         var entrada = entrada();
-        when(fichaPerfilDelItemFinder.obtener(item)).thenReturn(Optional.empty());
+        stubPertenencia(PertenenciaItemFichaPerfil.VACIO);
         doThrow(new ItemFichaPerfilNoEncontradoException(item))
                 .when(modificarItemFichaPerfilValidator)
                 .validar(item, estudiante, UtilUUID.obtenerUUIDPorDefecto(), false, false,
@@ -111,8 +98,6 @@ class ModificarItemFichaPerfilUseCaseTest {
         assertThatThrownBy(() -> modificarItemFichaPerfilUseCase.ejecutar(entrada))
                 .isInstanceOf(ItemFichaPerfilNoEncontradoException.class);
 
-        verify(vinculoEstudianteFichaExisteFinder, never()).obtener(any());
-        verify(estadoActualFichaPerfilFinder, never()).obtener(any());
         verify(itemFichaPerfilOutputPort, never()).actualizarContenido(any(), anyString());
     }
 
@@ -120,11 +105,10 @@ class ModificarItemFichaPerfilUseCaseTest {
     void debePropagarLaExcepcion_cuandoLaFichaNoEsDelEstudiante() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(false, estadoEnConstruccion);
+        stubPertenencia(new PertenenciaItemFichaPerfil(fichaPerfil, false, estadoEnConstruccion));
         doThrow(new ItemFichaNoPropiaException(fichaPerfil))
                 .when(modificarItemFichaPerfilValidator).validar(
-                        item, estudiante, fichaPerfil, true, false,
-                        estadoEnConstruccion);
+                        item, estudiante, fichaPerfil, true, false, estadoEnConstruccion);
 
         // Act & Assert
         assertThatThrownBy(() -> modificarItemFichaPerfilUseCase.ejecutar(entrada))
@@ -137,7 +121,7 @@ class ModificarItemFichaPerfilUseCaseTest {
     void debeLanzarExcepcion_cuandoRepositorioFalla() {
         // Arrange
         var entrada = entrada();
-        stubConsultasConFicha(true, estadoEnConstruccion);
+        stubPertenencia(new PertenenciaItemFichaPerfil(fichaPerfil, true, estadoEnConstruccion));
         doThrow(new InfrastructureException("ERROR_DB", "Error de BD"))
                 .when(itemFichaPerfilOutputPort).actualizarContenido(item, entrada.getContenido());
 
@@ -146,11 +130,9 @@ class ModificarItemFichaPerfilUseCaseTest {
                 .isInstanceOf(InfrastructureException.class);
     }
 
-    private void stubConsultasConFicha(boolean esPropietario, EstadoFichaPerfilDomain estadoActual) {
-        when(fichaPerfilDelItemFinder.obtener(item)).thenReturn(Optional.of(fichaPerfil));
-        when(vinculoEstudianteFichaExisteFinder.obtener(new VinculoEstudianteFicha(fichaPerfil, estudiante)))
-                .thenReturn(esPropietario);
-        when(estadoActualFichaPerfilFinder.obtener(fichaPerfil)).thenReturn(Optional.of(estadoActual));
+    private void stubPertenencia(PertenenciaItemFichaPerfil pertenencia) {
+        when(pertenenciaItemFichaPerfilFinder.obtener(new ItemDeEstudiante(item, estudiante)))
+                .thenReturn(pertenencia);
     }
 
     private ModificacionItemFichaPerfilDomain entrada() {

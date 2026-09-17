@@ -1,10 +1,12 @@
 package com.arquisoft.usuarios.domain.estudiante.rules.impl;
 
+import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
 import com.arquisoft.usuarios.domain.estudiante.exception.EstudianteUsuarioDuplicadoException;
 import com.arquisoft.usuarios.domain.estudiante.model.DisponibilidadEstudianteUsuario;
 import com.arquisoft.shared.message.constant.UsuariosCodes;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -18,7 +20,7 @@ class EstudianteUsuarioUnicoRuleImplTest {
     void debeLanzarDuplicadoConSuCodigo_cuandoUsuarioYaEsEstudiante() {
         // Arrange
         var usuario = UUID.randomUUID();
-        var disponibilidad = new DisponibilidadEstudianteUsuario(usuario, true);
+        var disponibilidad = new DisponibilidadEstudianteUsuario(usuario, EstudianteDomain.crear(usuario));
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(disponibilidad))
@@ -30,7 +32,18 @@ class EstudianteUsuarioUnicoRuleImplTest {
     @Test
     void noDebeLanzar_cuandoUsuarioNoEsEstudiante() {
         // Arrange
-        var disponibilidad = new DisponibilidadEstudianteUsuario(UUID.randomUUID(), false);
+        var disponibilidad = new DisponibilidadEstudianteUsuario(UUID.randomUUID(), EstudianteDomain.VACIO);
+
+        // Act & Assert
+        assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void noDebeLanzar_cuandoEstudianteEstaEliminado() {
+        // Arrange
+        var usuario = UUID.randomUUID();
+        var eliminado = EstudianteDomain.reconstruir(usuario, Instant.parse("2026-09-16T10:00:00Z"));
+        var disponibilidad = new DisponibilidadEstudianteUsuario(usuario, eliminado);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();

@@ -7,6 +7,8 @@ public sealed interface AgregacionEstudianteResult {
 
     record Agregada(UUID estudiante) implements AgregacionEstudianteResult {}
 
+    record Reactivada(UUID estudiante) implements AgregacionEstudianteResult {}
+
     record Duplicada(UUID estudiante) implements AgregacionEstudianteResult {}
 
     record Descartada(UUID estudiante, Instant ocurridoEnVigente) implements AgregacionEstudianteResult {}
