@@ -93,6 +93,7 @@ public final class ClavesCatalogo {
             ValidadorKey.class,
             EstadoEvaluacionFichaKey.class,
             EstadoEvaluacionKey.class,
+            com.arquisoft.shared.message.key.evaluaciones.EstadoEvaluacionKey.class,
             EstadoFichaKey.class,
             EstadoFichaPerfilKey.class,
             EstudianteFichaPerfilKey.class,

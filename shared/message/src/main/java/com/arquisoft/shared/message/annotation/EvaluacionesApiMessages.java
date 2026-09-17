@@ -162,4 +162,18 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "El ítem cuantitativo no existe";
     }
+
+    public static final class EstadoEvaluacion {
+
+        private EstadoEvaluacion() {}
+
+        public static final String TAG_NAME = "Estados de evaluación";
+        public static final String TAG_DESCRIPTION =
+                "Catálogo de estados disponibles para las evaluaciones de entregables";
+        public static final String CONSULTAR_SUMMARY = "Consultar estados de evaluación";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta todos los estados del catálogo por los que puede pasar una evaluación, "
+                        + "sin filtros ni paginación";
+        public static final String CONSULTAR_RESP_200 = "Listado de estados de evaluación";
+    }
 }
