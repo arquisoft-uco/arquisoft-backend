@@ -10,7 +10,14 @@ public enum EstudianteProyectosKey implements ClaveMensaje {
     LOG_DUPLICADO("proyectos.aplicacion.estudiante.log.duplicado", 1),
     LOG_DESCARTADO("proyectos.aplicacion.estudiante.log.descartado", 2),
     LOG_VERIFICACION_AGREGAR("proyectos.aplicacion.estudiante.log.verificacion-agregar", 2),
-    LOG_GUARDADO("proyectos.infraestructura.estudiante.log.guardado", 1);
+    LOG_GUARDADO("proyectos.infraestructura.estudiante.log.guardado", 1),
+    LOG_REMOVIDO_RECIBIDO("proyectos.infraestructura.estudiante.log.removido-recibido", 2),
+    LOG_REMOVIDO("proyectos.aplicacion.estudiante.log.removido", 1),
+    LOG_LAPIDA("proyectos.aplicacion.estudiante.log.lapida", 1),
+    LOG_REMOCION_DESCARTADA("proyectos.aplicacion.estudiante.log.remocion-descartada", 2),
+    LOG_REACTIVADO("proyectos.aplicacion.estudiante.log.reactivado", 1),
+    LOG_VERIFICACION_REMOVER("proyectos.aplicacion.estudiante.log.verificacion-remover", 2),
+    LOG_ACTUALIZADO("proyectos.infraestructura.estudiante.log.actualizado", 1);
 
     private final String clave;
     private final int parametros;

@@ -221,7 +221,7 @@ el enunciado, para reconocer una desviación de un vistazo.
   (Notification Pattern), solo getters, sufijo `Domain` sustantivo. `crear(...)`/`reconstruir(...)`,
   nunca `build`/`rebuild`. Sin Lombok, sin Spring, sin `record`.
 - Centinela `public static final X VACIO` + `esVacio()` (identidad) cuando el agregado puede llegar
-  ausente. **Nada de `Optional` en records de dominio ni en firmas de `Validator`.**
+  ausente. **Nada de `Optional` en records de dominio, firmas de `Validator` ni retornos de `Finder`.**
 - Objeto de acción `{Accion}{Entidad}Domain` solo si la acción arrastra más que el agregado; por
   defecto sus campos son `UUID` y escalares.
 - Las `Rule` son puras y **no son beans**; el `{Accion}{Entidad}ValidatorImpl` las construye con
@@ -247,7 +247,9 @@ el enunciado, para reconocer una desviación de un vistazo.
   prohibido en todo el repo.**
 - Los puertos hablan `Entity` (record plano), nunca `Domain`. `UseCase` mapea `Domain → Entity`;
   el `Finder` mapea de vuelta; el adaptador hace `Entity ↔ JpaEntity`.
-- Un `Finder` **siempre devuelve valor** y nunca lanza por "no encontrado".
+- Un `Finder` **siempre devuelve valor** y nunca lanza por "no encontrado". Nunca `Optional`: desenvuelve el del
+  puerto dentro de `obtener` y devuelve el `Domain` (ausente → `XDomain.VACIO`) o el `UUID` (ausente →
+  `UtilUUID.obtenerUUIDPorDefecto()`); quien llama pregunta con `esVacio()` o `UtilUUID.esPorDefecto(...)`.
 - Un fallo que el negocio registra es un **valor** (`sealed interface` de desenlace), no una
   excepción: cero `try/catch` en `application`.
 - El que llama compone: todos los pasos encadenados cuelgan del mismo orquestador, y cada llamado
