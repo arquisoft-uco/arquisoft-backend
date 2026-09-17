@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryada
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.ItemFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity.ItemFichaPerfilEntity;
+import com.arquisoft.fichas.application.itemfichaperfil.command.secondaryport.entity.PertenenciaItemFichaPerfilEntity;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.mapper.ItemFichaPerfilJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
@@ -43,6 +44,11 @@ public class ItemFichaPerfilCommandOutputAdapter implements ItemFichaPerfilOutpu
     @Override
     public Optional<UUID> obtenerFichaPerfilId(UUID itemId) {
         return repository.obtenerFichaPerfilId(itemId);
+    }
+
+    @Override
+    public Optional<PertenenciaItemFichaPerfilEntity> obtenerPertenencia(UUID item, UUID estudiante) {
+        return repository.obtenerPertenencia(item, estudiante);
     }
 
     @Override

@@ -7,6 +7,16 @@ public final class UsuarioJpaMapper {
 
     private UsuarioJpaMapper() {}
 
+    public static UsuarioEntity toEntity(UsuarioJpaEntity jpaEntity) {
+        return new UsuarioEntity(
+                jpaEntity.getId(),
+                jpaEntity.getIdentificador(),
+                jpaEntity.getNombre(),
+                jpaEntity.getEmail(),
+                jpaEntity.getContacto(),
+                jpaEntity.getEstadoId());
+    }
+
     public static UsuarioJpaEntity toJpaEntity(UsuarioEntity entity) {
         return UsuarioJpaEntity.builder()
                 .id(entity.id())

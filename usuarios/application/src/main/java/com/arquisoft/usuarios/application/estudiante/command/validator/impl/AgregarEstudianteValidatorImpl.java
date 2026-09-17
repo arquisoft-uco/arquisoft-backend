@@ -1,6 +1,7 @@
 package com.arquisoft.usuarios.application.estudiante.command.validator.impl;
 
 import com.arquisoft.usuarios.application.estudiante.command.validator.AgregarEstudianteValidator;
+import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
 import com.arquisoft.usuarios.domain.estudiante.model.DisponibilidadEstudianteUsuario;
 import com.arquisoft.usuarios.domain.estudiante.rules.EstudianteUsuarioUnicoRule;
 import com.arquisoft.usuarios.domain.estudiante.rules.impl.EstudianteUsuarioUnicoRuleImpl;
@@ -18,7 +19,7 @@ public class AgregarEstudianteValidatorImpl implements AgregarEstudianteValidato
     }
 
     @Override
-    public void validar(UUID usuario, boolean yaEsEstudiante) {
-        estudianteUsuarioUnicoRule.validar(new DisponibilidadEstudianteUsuario(usuario, yaEsEstudiante));
+    public void validar(UUID usuario, EstudianteDomain estudiante) {
+        estudianteUsuarioUnicoRule.validar(new DisponibilidadEstudianteUsuario(usuario, estudiante));
     }
 }

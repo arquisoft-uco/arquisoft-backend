@@ -53,4 +53,18 @@ public class ProyectosUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String ESTUDIANTE_REMOVIDO_QUEUE =
+            ProyectosQueues.PREFIJO + EventTopics.Usuarios.ESTUDIANTE_REMOVIDO;
+
+    @Bean
+    public Declarables proyectosEstudianteRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTE_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.ESTUDIANTE_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }
