@@ -2,8 +2,8 @@ dependencies {
     implementation project(':shared:domain')
 
     // Domain puro: sin dependencias de framework
-    // - DomainValidator (shared:domain → validation) centraliza los guards de invariantes
-    // - Messages (shared:message, transitivo por 'api' de shared:domain) resuelve los textos
+    // - Validator*/ValidationResult (shared:validation) acumulan los errores de invariante
+    // - Mensajes (shared:message, transitivo por 'api' de shared:domain) resuelve los textos
 
     // Test: AssertJ + JUnit launcher (versiones gestionadas por BOM heredado del raiz)
     testImplementation "org.assertj:assertj-core"
