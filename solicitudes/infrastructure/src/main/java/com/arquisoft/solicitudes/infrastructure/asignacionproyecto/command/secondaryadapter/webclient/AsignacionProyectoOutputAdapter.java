@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-// STUB — TODO(HU-081/HU-082): la comprobacion real es una consulta sincrona a `proyectos`
+// STUB — TODO(HU-081/HU-082/HU-083): la comprobacion real es una consulta sincrona a `proyectos`
 // (proyecto_grado.coordinador_id / asesor_proyecto_grado) via `shared:web-client`. Hoy no existen
 // ni el modulo ni la query, asi que el adaptador aprueba siempre y `DestinatarioAsignadoRule`
 // no rechaza nada todavia. La regla, el puerto y el finder ya estan cableados: activarlo es
