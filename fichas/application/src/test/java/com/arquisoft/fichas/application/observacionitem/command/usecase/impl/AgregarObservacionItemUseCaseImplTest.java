@@ -12,13 +12,11 @@ import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPerteneceAsesorException;
 import com.arquisoft.fichas.domain.observacionitem.AgregacionObservacionItemDomain;
 import com.arquisoft.fichas.domain.observacionitem.ObservacionItemDomain;
-import com.arquisoft.fichas.domain.observacionitem.event.ObservacionItemAgregadaEvent;
 import com.arquisoft.fichas.domain.observacionitem.exception.ObservacionItemDuplicadaException;
 import com.arquisoft.fichas.domain.revisionitem.RevisionItemDomain;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemCerradaException;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemNoEncontradoException;
 import com.arquisoft.shared.logger.AppLogger;
-import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -63,9 +61,6 @@ class AgregarObservacionItemUseCaseImplTest {
     private ObservacionItemOutputPort observacionItemOutputPort;
 
     @Mock
-    private EventPublisher eventPublisher;
-
-    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -103,18 +98,10 @@ class AgregarObservacionItemUseCaseImplTest {
         assertThat(entityCaptor.getValue().observacion()).isEqualTo("Observación válida");
         assertThat(entityCaptor.getValue().estadoObservacionRevision()).isEqualTo("PENDIENTE");
 
-        var eventCaptor = ArgumentCaptor.forClass(ObservacionItemAgregadaEvent.class);
-        verify(eventPublisher).publish(eventCaptor.capture());
-        assertThat(eventCaptor.getValue().getObservacionItemId()).isEqualTo(entrada.getObservacionItem().getId());
-        assertThat(eventCaptor.getValue().getRevisionItemId()).isEqualTo(revisionItemId);
-        assertThat(eventCaptor.getValue().getObservacion()).isEqualTo("Observación válida");
-        assertThat(eventCaptor.getValue().getEstadoObservacionRevisionId()).isEqualTo("PENDIENTE");
-        assertThat(eventCaptor.getValue().getEstadoObservacionRevisionNombre()).isEqualTo("Pendiente");
-
-        // Assert — orden: finders -> validator -> persistencia -> evento
+        // Assert — orden: finders -> validator -> persistencia
         InOrder inOrderVerifier = inOrder(revisionItemFinder, fichaPerfilDelItemFinder, fichaPerfilFinder,
                 observacionesIgualesEnRevisionFinder, agregarObservacionItemValidator,
-                observacionItemOutputPort, eventPublisher);
+                observacionItemOutputPort);
         inOrderVerifier.verify(revisionItemFinder).obtener(revisionItemId);
         inOrderVerifier.verify(fichaPerfilDelItemFinder).obtener(itemId);
         inOrderVerifier.verify(fichaPerfilFinder).obtener(fichaPerfilId);
@@ -122,7 +109,6 @@ class AgregarObservacionItemUseCaseImplTest {
         inOrderVerifier.verify(agregarObservacionItemValidator)
                 .validar(entrada, true, "NUEVA", fichaPerfilId, asesorFicha, 0L);
         inOrderVerifier.verify(observacionItemOutputPort).registrarObservacion(any());
-        inOrderVerifier.verify(eventPublisher).publish(any());
     }
 
     @Test
@@ -143,7 +129,6 @@ class AgregarObservacionItemUseCaseImplTest {
 
         verify(fichaPerfilDelItemFinder).obtener(UtilUUID.obtenerUUIDPorDefecto());
         verify(observacionItemOutputPort, never()).registrarObservacion(any());
-        verify(eventPublisher, never()).publish(any());
     }
 
     @Test
@@ -161,7 +146,6 @@ class AgregarObservacionItemUseCaseImplTest {
                 .isInstanceOf(RevisionItemCerradaException.class);
 
         verify(observacionItemOutputPort, never()).registrarObservacion(any());
-        verify(eventPublisher, never()).publish(any());
     }
 
     @Test
@@ -179,7 +163,6 @@ class AgregarObservacionItemUseCaseImplTest {
                 .isInstanceOf(FichaNoPerteneceAsesorException.class);
 
         verify(observacionItemOutputPort, never()).registrarObservacion(any());
-        verify(eventPublisher, never()).publish(any());
     }
 
     @Test
@@ -197,7 +180,6 @@ class AgregarObservacionItemUseCaseImplTest {
                 .isInstanceOf(ObservacionItemDuplicadaException.class);
 
         verify(observacionItemOutputPort, never()).registrarObservacion(any());
-        verify(eventPublisher, never()).publish(any());
     }
 
     private void stubFinders(AgregacionObservacionItemDomain entrada, RevisionItemDomain revisionItem,

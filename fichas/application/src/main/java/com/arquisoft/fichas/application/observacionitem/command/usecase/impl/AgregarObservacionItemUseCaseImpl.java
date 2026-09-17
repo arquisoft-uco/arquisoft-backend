@@ -9,10 +9,8 @@ import com.arquisoft.fichas.application.observacionitem.command.usecase.AgregarO
 import com.arquisoft.fichas.application.observacionitem.command.validator.AgregarObservacionItemValidator;
 import com.arquisoft.fichas.application.revisionitem.command.finder.RevisionItemFinder;
 import com.arquisoft.fichas.domain.observacionitem.AgregacionObservacionItemDomain;
-import com.arquisoft.fichas.domain.observacionitem.event.ObservacionItemAgregadaEvent;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.fichas.ObservacionItemKey;
-import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +26,6 @@ public class AgregarObservacionItemUseCaseImpl implements AgregarObservacionItem
     private final ObservacionesIgualesEnRevisionFinder observacionesIgualesEnRevisionFinder;
     private final AgregarObservacionItemValidator agregarObservacionItemValidator;
     private final ObservacionItemOutputPort observacionItemOutputPort;
-    private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
@@ -53,13 +50,6 @@ public class AgregarObservacionItemUseCaseImpl implements AgregarObservacionItem
 
         var observacionItem = entrada.getObservacionItem();
         observacionItemOutputPort.registrarObservacion(ObservacionItemMapper.toEntity(observacionItem));
-
-        eventPublisher.publish(new ObservacionItemAgregadaEvent(
-                observacionItem.getId(),
-                observacionItem.getRevisionItem(),
-                observacionItem.getObservacion(),
-                observacionItem.getEstadoObservacionRevision().getId(),
-                observacionItem.getEstadoObservacionRevision().getNombre()));
 
         logger.info(ObservacionItemKey.LOG_AGREGADA, observacionItem.getId(), observacionItem.getRevisionItem());
         return observacionItem.getId();
