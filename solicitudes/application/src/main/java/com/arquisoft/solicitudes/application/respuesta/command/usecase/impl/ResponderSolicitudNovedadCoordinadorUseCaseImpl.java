@@ -3,8 +3,6 @@ package com.arquisoft.solicitudes.application.respuesta.command.usecase.impl;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.publisher.EventPublisher;
-import com.arquisoft.shared.util.UtilTexto;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.mapper.RespuestaMapper;
 import com.arquisoft.solicitudes.application.respuesta.command.usecase.ResponderSolicitudNovedadCoordinadorUseCase;
@@ -20,7 +18,6 @@ import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -41,25 +38,21 @@ public class ResponderSolicitudNovedadCoordinadorUseCaseImpl
         logger.info(RespuestaKey.LOG_RESPONDIENDO,
                 entrada.getSolicitud(), entrada.getCoordinadorUsuario());
 
-        Optional<ResumenSolicitud> resumen = datosSolicitudFinder.obtener(entrada.getSolicitud());
-        boolean existe = resumen.isPresent();
-        String tipoProyectado = resumen.map(ResumenSolicitud::tipoSolicitud).orElse(UtilTexto.VACIO);
-        UUID destinatarioUsuarioProyectado = resumen.map(ResumenSolicitud::destinatarioUsuario)
-                .orElse(UtilUUID.obtenerUUIDPorDefecto());
+        ResumenSolicitud resumen = datosSolicitudFinder.obtener(entrada.getSolicitud());
+        boolean existe = !resumen.esVacio();
         boolean yaRespondida = solicitudTieneRespuestasFinder.obtener(entrada.getSolicitud());
 
         logger.debug(RespuestaKey.LOG_VERIFICACION_RESPUESTA, existe, yaRespondida);
 
-        validator.validar(entrada.getSolicitud(), existe, tipoProyectado,
-                destinatarioUsuarioProyectado, entrada.getCoordinadorUsuario(), yaRespondida);
+        validator.validar(entrada.getSolicitud(), existe, resumen.tipoSolicitud(),
+                resumen.destinatarioUsuario(), entrada.getCoordinadorUsuario(), yaRespondida);
 
         RespuestaDomain respuesta = RespuestaDomain.crear(
                 entrada.getSolicitud(), entrada.getContenido());
         respuestaOutputPort.registrar(RespuestaMapper.toEntity(respuesta));
 
-        ResumenSolicitud datos = resumen.orElseThrow();
-        UsuarioDomain remitente = datosUsuarioFinder.obtener(datos.remitenteUsuario()).orElseThrow();
-        UsuarioDomain coordinador = datosUsuarioFinder.obtener(datos.destinatarioUsuario()).orElseThrow();
+        UsuarioDomain remitente = datosUsuarioFinder.obtener(resumen.remitenteUsuario());
+        UsuarioDomain coordinador = datosUsuarioFinder.obtener(resumen.destinatarioUsuario());
 
         eventPublisher.publish(new SolicitudNovedadCoordinadorRespondidaEvent(
                 entrada.getSolicitud(), respuesta.getId(), respuesta.getContenido(),

@@ -25,7 +25,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -70,14 +69,14 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
     }
 
     private void stubFlujoValido() {
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.of(new ResumenSolicitud(
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
                 solicitud, remitenteUsuario, coordinadorUsuario,
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
-        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(Optional.of(
-                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now())));
-        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(Optional.of(
-                UsuarioDomain.reconstruir(coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now())));
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now()));
+        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(
+                UsuarioDomain.reconstruir(coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now()));
     }
 
     @Test
@@ -115,9 +114,9 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
     @Test
     void debeAbortarSinRegistrarNiPublicar_cuandoElValidatorLanza() {
         // Arrange
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.of(new ResumenSolicitud(
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
                 solicitud, remitenteUsuario, coordinadorUsuario,
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
         doThrow(new SolicitudYaRespondidaException(solicitud))
                 .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean());
@@ -133,7 +132,7 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
     @Test
     void debePasarLosValoresPorDefectoAlValidator_cuandoLaSolicitudNoExiste() {
         // Arrange
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.empty());
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
         doThrow(new SolicitudYaRespondidaException(solicitud))
                 .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean());
