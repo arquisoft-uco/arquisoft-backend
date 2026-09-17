@@ -55,5 +55,8 @@ public final class EventTopics {
 
         public static final String NOVEDAD_COORDINADOR_ELIMINADA =
                 "solicitudes.solicitud.novedad_coordinador_eliminada";
+
+        public static final String NOVEDAD_ASESOR_ELIMINADA =
+                "solicitudes.solicitud.novedad_asesor_eliminada";
     }
 }

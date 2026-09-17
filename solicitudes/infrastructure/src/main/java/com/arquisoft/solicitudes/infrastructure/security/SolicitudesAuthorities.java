@@ -10,6 +10,8 @@ public final class SolicitudesAuthorities {
     public static final String SOLICITUD_AMPLIACION_PLAZO_CREATE = "solicitudes:solicitud-ampliacion-plazo:create";
     public static final String SOLICITUD_NOVEDAD_COORDINADOR_DELETE =
             "solicitudes:solicitud-novedad-coordinador:delete";
+    public static final String SOLICITUD_NOVEDAD_ASESOR_DELETE =
+            "solicitudes:solicitud-novedad-asesor:delete";
 
     public static final class Expresiones {
 
@@ -32,5 +34,8 @@ public final class SolicitudesAuthorities {
 
         public static final String HAS_SOLICITUD_NOVEDAD_COORDINADOR_DELETE =
                 HAS_AUTHORITY_INICIO + SOLICITUD_NOVEDAD_COORDINADOR_DELETE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_SOLICITUD_NOVEDAD_ASESOR_DELETE =
+                HAS_AUTHORITY_INICIO + SOLICITUD_NOVEDAD_ASESOR_DELETE + HAS_AUTHORITY_FIN;
     }
 }

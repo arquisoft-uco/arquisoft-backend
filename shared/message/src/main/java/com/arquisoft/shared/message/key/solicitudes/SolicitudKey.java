@@ -30,7 +30,11 @@ public enum SolicitudKey implements ClaveMensaje {
     LOG_ELIMINANDO("solicitudes.aplicacion.solicitud.log.eliminando", 2),
     LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.solicitud.log.verificacion-eliminacion", 2),
     LOG_ELIMINADA("solicitudes.aplicacion.solicitud.log.eliminada", 1),
-    LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.solicitud.log.eliminada", 1);
+    LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.solicitud.log.eliminada", 1),
+    ERROR_SOLICITUD_TIPO_NO_COINCIDE_ASESOR(
+            "solicitudes.dominio.solicitud.error.tipo-no-coincide-asesor", 1),
+    LOG_ELIMINANDO_ASESOR("solicitudes.aplicacion.solicitud.log.eliminando-asesor", 2),
+    LOG_ELIMINADA_ASESOR("solicitudes.aplicacion.solicitud.log.eliminada-asesor", 1);
 
     private final String clave;
     private final int parametros;
