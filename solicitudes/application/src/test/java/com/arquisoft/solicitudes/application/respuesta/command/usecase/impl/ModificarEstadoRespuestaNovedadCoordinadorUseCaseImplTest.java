@@ -27,7 +27,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,21 +73,21 @@ class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImplTest {
     }
 
     private void stubSolicitudYRespuestaValidas() {
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.of(new ResumenSolicitud(
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
                 solicitud, remitenteUsuario, coordinadorUsuario,
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
         when(datosRespuestaFinder.obtener(solicitud))
-                .thenReturn(Optional.of(new ResumenRespuesta(solicitud, "EN_REVISION")));
+                .thenReturn(new ResumenRespuesta(solicitud, "EN_REVISION"));
     }
 
     private void stubFlujoValido() {
         stubSolicitudYRespuestaValidas();
-        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(Optional.of(
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
                 UsuarioDomain.reconstruir(
-                        remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now())));
-        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(Optional.of(
+                        remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now()));
+        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(
                 UsuarioDomain.reconstruir(
-                        coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now())));
+                        coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now()));
     }
 
     @Test
@@ -142,8 +141,8 @@ class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImplTest {
     @Test
     void debePasarLosValoresPorDefectoAlValidator_cuandoLaSolicitudNoExiste() {
         // Arrange
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.empty());
-        when(datosRespuestaFinder.obtener(solicitud)).thenReturn(Optional.empty());
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
+        when(datosRespuestaFinder.obtener(solicitud)).thenReturn(ResumenRespuesta.VACIO);
         doThrow(new SolicitudNoEncontradaException(solicitud))
                 .when(validator).validar(any(), anyBoolean(), any(), any(), anyBoolean(), any());
 
