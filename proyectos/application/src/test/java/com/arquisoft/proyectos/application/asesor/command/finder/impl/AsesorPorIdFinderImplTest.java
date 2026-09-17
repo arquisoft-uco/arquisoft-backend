@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.application.asesor.command.finder.impl;
 
+import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import com.arquisoft.proyectos.application.asesor.command.secondaryport.AsesorOutputPort;
 import com.arquisoft.proyectos.application.asesor.command.secondaryport.entity.AsesorEntity;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class AsesorPorIdFinderImplTest {
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).contains(entity);
+        assertThat(resultado.getId()).isEqualTo(id);
     }
 
     @Test
@@ -48,6 +49,6 @@ class AsesorPorIdFinderImplTest {
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).isEmpty();
+        assertThat(resultado).isEqualTo(AsesorDomain.VACIO);
     }
 }

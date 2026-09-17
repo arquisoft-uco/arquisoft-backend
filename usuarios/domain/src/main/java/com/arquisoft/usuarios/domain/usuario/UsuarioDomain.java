@@ -1,10 +1,15 @@
 package com.arquisoft.usuarios.domain.usuario;
 
+import com.arquisoft.shared.util.UtilTexto;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 
 import java.util.UUID;
 
 public final class UsuarioDomain {
+
+    public static final UsuarioDomain VACIO = UsuarioDomain.reconstruir(UtilUUID.obtenerUUIDPorDefecto(),
+            UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, EstadoUsuario.VACIO);
 
     private UUID id;
     private String identificador;
@@ -92,5 +97,9 @@ public final class UsuarioDomain {
 
     public EstadoUsuario getEstado() {
         return estado;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }
