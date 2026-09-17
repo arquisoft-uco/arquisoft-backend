@@ -7,18 +7,18 @@ import com.arquisoft.fichas.application.observacionitem.command.secondaryport.Ob
 import com.arquisoft.fichas.application.observacionitem.command.secondaryport.entity.ObservacionItemEntity;
 import com.arquisoft.fichas.application.observacionitem.command.validator.AgregarObservacionItemValidator;
 import com.arquisoft.fichas.application.revisionitem.command.finder.RevisionItemFinder;
-import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.RevisionItemEntity;
+import com.arquisoft.fichas.domain.estadorevision.EstadoRevision;
 import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPerteneceAsesorException;
 import com.arquisoft.fichas.domain.observacionitem.AgregacionObservacionItemDomain;
 import com.arquisoft.fichas.domain.observacionitem.ObservacionItemDomain;
 import com.arquisoft.fichas.domain.observacionitem.event.ObservacionItemAgregadaEvent;
 import com.arquisoft.fichas.domain.observacionitem.exception.ObservacionItemDuplicadaException;
+import com.arquisoft.fichas.domain.revisionitem.RevisionItemDomain;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemCerradaException;
 import com.arquisoft.fichas.domain.revisionitem.exception.RevisionItemNoEncontradoException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.publisher.EventPublisher;
-import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,8 +81,8 @@ class AgregarObservacionItemUseCaseImplTest {
     void debeAgregarObservacion_cuandoDatosValidos() {
         // Arrange
         var entrada = entradaValida();
-        var revisionEntity = new RevisionItemEntity(revisionItemId, itemId, "NUEVA", Instant.now());
-        stubFinders(entrada, Optional.of(revisionEntity), Optional.of(fichaPerfilId), asesorFicha, 0L);
+        var revisionItem = RevisionItemDomain.reconstruir(revisionItemId, itemId, EstadoRevision.NUEVA, Instant.now());
+        stubFinders(entrada, revisionItem, fichaPerfilId, asesorFicha, 0L);
 
         // Act
         var resultado = agregarObservacionItemUseCase.ejecutar(entrada);
@@ -128,13 +127,14 @@ class AgregarObservacionItemUseCaseImplTest {
 
     @Test
     void debeLanzarRevisionItemNoEncontrada_cuandoRevisionNoExiste() {
-        // Arrange — el Finder vuelve vacío: estadoRevisionId degrada a VACIO, item al UUID por
-        // defecto, sin lanzar NoSuchElementException
+        // Arrange — el Finder vuelve VACIO: estadoRevisionId e item degradan a sus centinelas,
+        // sin lanzar NoSuchElementException
         var entrada = entradaValida();
-        stubFinders(entrada, Optional.empty(), Optional.empty(), UtilUUID.obtenerUUIDPorDefecto(), 0L);
+        stubFinders(entrada, RevisionItemDomain.VACIO, UtilUUID.obtenerUUIDPorDefecto(),
+                UtilUUID.obtenerUUIDPorDefecto(), 0L);
         doThrow(new RevisionItemNoEncontradoException(revisionItemId))
                 .when(agregarObservacionItemValidator)
-                .validar(entrada, false, UtilTexto.VACIO,
+                .validar(entrada, false, EstadoRevision.VACIO.getId(),
                         UtilUUID.obtenerUUIDPorDefecto(), UtilUUID.obtenerUUIDPorDefecto(), 0L);
 
         // Act & Assert
@@ -150,8 +150,8 @@ class AgregarObservacionItemUseCaseImplTest {
     void debeLanzarRevisionItemCerrada_cuandoRevisionEstaCerrada() {
         // Arrange
         var entrada = entradaValida();
-        var revisionEntity = new RevisionItemEntity(revisionItemId, itemId, "CERRADA", Instant.now());
-        stubFinders(entrada, Optional.of(revisionEntity), Optional.of(fichaPerfilId), asesorFicha, 0L);
+        var revisionItem = RevisionItemDomain.reconstruir(revisionItemId, itemId, EstadoRevision.CERRADA, Instant.now());
+        stubFinders(entrada, revisionItem, fichaPerfilId, asesorFicha, 0L);
         doThrow(new RevisionItemCerradaException(revisionItemId))
                 .when(agregarObservacionItemValidator)
                 .validar(entrada, true, "CERRADA", fichaPerfilId, asesorFicha, 0L);
@@ -168,8 +168,8 @@ class AgregarObservacionItemUseCaseImplTest {
     void debeLanzarFichaNoPerteneceAsesor_cuandoAsesorNoEsPropietario() {
         // Arrange
         var entrada = entradaValida();
-        var revisionEntity = new RevisionItemEntity(revisionItemId, itemId, "NUEVA", Instant.now());
-        stubFinders(entrada, Optional.of(revisionEntity), Optional.of(fichaPerfilId), otroAsesor, 0L);
+        var revisionItem = RevisionItemDomain.reconstruir(revisionItemId, itemId, EstadoRevision.NUEVA, Instant.now());
+        stubFinders(entrada, revisionItem, fichaPerfilId, otroAsesor, 0L);
         doThrow(new FichaNoPerteneceAsesorException(fichaPerfilId, asesorFicha))
                 .when(agregarObservacionItemValidator)
                 .validar(entrada, true, "NUEVA", fichaPerfilId, otroAsesor, 0L);
@@ -186,8 +186,8 @@ class AgregarObservacionItemUseCaseImplTest {
     void debeLanzarObservacionItemDuplicada_cuandoTextoYaExiste() {
         // Arrange
         var entrada = entradaValida();
-        var revisionEntity = new RevisionItemEntity(revisionItemId, itemId, "NUEVA", Instant.now());
-        stubFinders(entrada, Optional.of(revisionEntity), Optional.of(fichaPerfilId), asesorFicha, 1L);
+        var revisionItem = RevisionItemDomain.reconstruir(revisionItemId, itemId, EstadoRevision.NUEVA, Instant.now());
+        stubFinders(entrada, revisionItem, fichaPerfilId, asesorFicha, 1L);
         doThrow(new ObservacionItemDuplicadaException(revisionItemId, entrada.getObservacion()))
                 .when(agregarObservacionItemValidator)
                 .validar(entrada, true, "NUEVA", fichaPerfilId, asesorFicha, 1L);
@@ -200,14 +200,14 @@ class AgregarObservacionItemUseCaseImplTest {
         verify(eventPublisher, never()).publish(any());
     }
 
-    private void stubFinders(AgregacionObservacionItemDomain entrada, Optional<RevisionItemEntity> revisionOpt,
-                              Optional<UUID> fichaPerfilOpt, UUID asesorDeLaFicha, long observacionesIguales) {
-        when(revisionItemFinder.obtener(entrada.getRevisionItem())).thenReturn(revisionOpt);
-        var item = revisionOpt.map(RevisionItemEntity::item).orElse(UtilUUID.obtenerUUIDPorDefecto());
-        when(fichaPerfilDelItemFinder.obtener(item)).thenReturn(fichaPerfilOpt);
-        var fichaResuelta = fichaPerfilOpt.orElse(UtilUUID.obtenerUUIDPorDefecto());
-        var ficha = FichaPerfilDomain.crear("Sistema de gestión", asesorDeLaFicha);
-        when(fichaPerfilFinder.obtener(fichaResuelta)).thenReturn(Optional.of(ficha));
+    private void stubFinders(AgregacionObservacionItemDomain entrada, RevisionItemDomain revisionItem,
+                              UUID fichaPerfilResuelta, UUID asesorDeLaFicha, long observacionesIguales) {
+        when(revisionItemFinder.obtener(entrada.getRevisionItem())).thenReturn(revisionItem);
+        when(fichaPerfilDelItemFinder.obtener(revisionItem.getItem())).thenReturn(fichaPerfilResuelta);
+        var ficha = UtilUUID.obtenerUUIDPorDefecto().equals(fichaPerfilResuelta)
+                ? FichaPerfilDomain.VACIO
+                : FichaPerfilDomain.reconstruir(fichaPerfilResuelta, "Sistema de gestión", asesorDeLaFicha);
+        when(fichaPerfilFinder.obtener(fichaPerfilResuelta)).thenReturn(ficha);
         when(observacionesIgualesEnRevisionFinder.obtener(entrada)).thenReturn(observacionesIguales);
     }
 

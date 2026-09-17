@@ -2,6 +2,7 @@ package com.arquisoft.fichas.application.revisionitem.command.finder.impl;
 
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.RevisionItemOutputPort;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.RevisionItemEntity;
+import com.arquisoft.fichas.domain.estadorevision.EstadoRevision;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,22 +27,26 @@ class RevisionItemFinderImplTest {
     private RevisionItemFinderImpl revisionItemFinder;
 
     @Test
-    void debeDelegarAlPuerto_cuandoLaRevisionExiste() {
+    void debeRetornarElDomain_cuandoLaRevisionExiste() {
         // Arrange
         var revisionItemId = UUID.randomUUID();
-        var entity = new RevisionItemEntity(revisionItemId, UUID.randomUUID(), "NUEVA", Instant.now());
+        var item = UUID.randomUUID();
+        var entity = new RevisionItemEntity(revisionItemId, item, "NUEVA", Instant.now());
         when(revisionItemOutputPort.buscarPorId(revisionItemId)).thenReturn(Optional.of(entity));
 
         // Act
         var resultado = revisionItemFinder.obtener(revisionItemId);
 
         // Assert
-        assertThat(resultado).contains(entity);
+        assertThat(resultado.esVacio()).isFalse();
+        assertThat(resultado.getId()).isEqualTo(revisionItemId);
+        assertThat(resultado.getItem()).isEqualTo(item);
+        assertThat(resultado.getEstadoRevision()).isEqualTo(EstadoRevision.NUEVA);
         verify(revisionItemOutputPort).buscarPorId(revisionItemId);
     }
 
     @Test
-    void debeDelegarAlPuerto_cuandoLaRevisionNoExiste() {
+    void debeRetornarVacio_cuandoLaRevisionNoExiste() {
         // Arrange
         var revisionItemId = UUID.randomUUID();
         when(revisionItemOutputPort.buscarPorId(revisionItemId)).thenReturn(Optional.empty());
@@ -50,7 +55,7 @@ class RevisionItemFinderImplTest {
         var resultado = revisionItemFinder.obtener(revisionItemId);
 
         // Assert
-        assertThat(resultado).isEmpty();
+        assertThat(resultado.esVacio()).isTrue();
         verify(revisionItemOutputPort).buscarPorId(revisionItemId);
     }
 }

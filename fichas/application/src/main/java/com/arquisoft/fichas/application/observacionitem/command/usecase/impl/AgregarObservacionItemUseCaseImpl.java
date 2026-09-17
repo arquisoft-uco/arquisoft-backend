@@ -8,15 +8,11 @@ import com.arquisoft.fichas.application.observacionitem.command.secondaryport.ma
 import com.arquisoft.fichas.application.observacionitem.command.usecase.AgregarObservacionItemUseCase;
 import com.arquisoft.fichas.application.observacionitem.command.validator.AgregarObservacionItemValidator;
 import com.arquisoft.fichas.application.revisionitem.command.finder.RevisionItemFinder;
-import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.RevisionItemEntity;
-import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.domain.observacionitem.AgregacionObservacionItemDomain;
 import com.arquisoft.fichas.domain.observacionitem.event.ObservacionItemAgregadaEvent;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.fichas.ObservacionItemKey;
 import com.arquisoft.shared.publisher.EventPublisher;
-import com.arquisoft.shared.util.UtilTexto;
-import com.arquisoft.shared.util.UtilUUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -39,18 +35,13 @@ public class AgregarObservacionItemUseCaseImpl implements AgregarObservacionItem
     public UUID ejecutar(AgregacionObservacionItemDomain entrada) {
         logger.info(ObservacionItemKey.LOG_AGREGANDO, entrada.getRevisionItem());
 
-        var revisionItemOpt = revisionItemFinder.obtener(entrada.getRevisionItem());
-        var revisionExiste = revisionItemOpt.isPresent();
-        var estadoRevisionId = revisionItemOpt.map(RevisionItemEntity::estadoRevision)
-                .orElse(UtilTexto.VACIO);
-        var item = revisionItemOpt.map(RevisionItemEntity::item)
-                .orElse(UtilUUID.obtenerUUIDPorDefecto());
+        var revisionItem = revisionItemFinder.obtener(entrada.getRevisionItem());
+        var revisionExiste = !revisionItem.esVacio();
+        var estadoRevisionId = revisionItem.getEstadoRevision().getId();
+        var item = revisionItem.getItem();
 
-        var fichaPerfil = fichaPerfilDelItemFinder.obtener(item)
-                .orElse(UtilUUID.obtenerUUIDPorDefecto());
-        var asesorDeLaFicha = fichaPerfilFinder.obtener(fichaPerfil)
-                .map(FichaPerfilDomain::getAsesorFicha)
-                .orElse(UtilUUID.obtenerUUIDPorDefecto());
+        var fichaPerfil = fichaPerfilDelItemFinder.obtener(item);
+        var asesorDeLaFicha = fichaPerfilFinder.obtener(fichaPerfil).getAsesorFicha();
 
         var observacionesIguales = observacionesIgualesEnRevisionFinder.obtener(entrada);
 
