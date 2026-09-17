@@ -100,9 +100,8 @@ dependencies {
     // controllers de cada contexto.
     implementation project(':shared:message')
 
-    // Catálogo de mensajes sobre Redis (ADR-013). Se declara explícitamente porque hoy solo llega
-    // por seguridad:infrastructure: el catálogo pasó a ser nuclear y no puede depender de que un
-    // contexto siga arrastrándolo.
+    // Catálogo de mensajes sobre Redis (ADR-013). Se declara aquí y en ningún contexto: el catálogo
+    // es nuclear y no puede depender de que un contexto siga arrastrándolo.
     implementation project(':shared:redis')
 
     // Flyway — version gestionada por el BOM de Spring Boot 4.0.5 (12.4.0).
