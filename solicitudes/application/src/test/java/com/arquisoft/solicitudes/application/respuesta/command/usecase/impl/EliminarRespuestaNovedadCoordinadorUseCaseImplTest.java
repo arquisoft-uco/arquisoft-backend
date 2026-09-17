@@ -25,7 +25,6 @@ import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,11 +66,11 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
     }
 
     private void stubFlujoValido() {
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.of(new ResumenSolicitud(
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
                 solicitud, UUID.randomUUID(), coordinadorUsuario,
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())));
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
         when(datosRespuestaFinder.obtener(solicitud))
-                .thenReturn(Optional.of(new ResumenRespuesta(solicitud, "EN_REVISION")));
+                .thenReturn(new ResumenRespuesta(solicitud, "EN_REVISION"));
     }
 
     @Test
@@ -110,8 +109,8 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
     @Test
     void debeAbortarSinEliminarNiPublicar_cuandoLaSolicitudNoExiste() {
         // Arrange
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(Optional.empty());
-        when(datosRespuestaFinder.obtener(solicitud)).thenReturn(Optional.empty());
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
+        when(datosRespuestaFinder.obtener(solicitud)).thenReturn(ResumenRespuesta.VACIO);
         doThrow(new SolicitudNoEncontradaException(solicitud))
                 .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean(), any());
 

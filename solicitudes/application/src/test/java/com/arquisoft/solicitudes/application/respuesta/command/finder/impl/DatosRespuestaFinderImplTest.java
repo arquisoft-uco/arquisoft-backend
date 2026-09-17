@@ -31,22 +31,19 @@ class DatosRespuestaFinderImplTest {
                 .thenReturn(Optional.of("EN_REVISION"));
 
         // Act
-        Optional<ResumenRespuesta> resultado = finder.obtener(solicitud);
+        var resultado = finder.obtener(solicitud);
 
         // Assert
-        assertThat(resultado).contains(new ResumenRespuesta(solicitud, "EN_REVISION"));
+        assertThat(resultado).isEqualTo(new ResumenRespuesta(solicitud, "EN_REVISION"));
     }
 
     @Test
-    void debeRetornarOptionalVacio_cuandoElPuertoNoEncuentraLaRespuesta() {
+    void debeRetornarVacio_cuandoElPuertoNoEncuentraLaRespuesta() {
         // Arrange
         UUID solicitud = UUID.randomUUID();
         when(respuestaOutputPort.buscarEstadoPorSolicitud(solicitud)).thenReturn(Optional.empty());
 
-        // Act
-        Optional<ResumenRespuesta> resultado = finder.obtener(solicitud);
-
-        // Assert
-        assertThat(resultado).isEmpty();
+        // Act & Assert
+        assertThat(finder.obtener(solicitud).esVacio()).isTrue();
     }
 }

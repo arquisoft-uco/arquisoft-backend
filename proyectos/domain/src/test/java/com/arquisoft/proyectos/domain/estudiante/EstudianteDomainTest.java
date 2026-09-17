@@ -2,6 +2,7 @@ package com.arquisoft.proyectos.domain.estudiante;
 
 import com.arquisoft.shared.message.constant.ProyectosCodes;
 import com.arquisoft.shared.message.constant.ProyectosFields;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
@@ -67,7 +68,7 @@ class EstudianteDomainTest {
     @Test
     void debeReconstruir_sinValidar() {
         // Act
-        var estudiante = EstudianteDomain.reconstruir(null, null, null, null, null);
+        var estudiante = EstudianteDomain.reconstruir(null, null, null, null, null, null);
 
         // Assert
         assertThat(estudiante.getId()).isNull();
@@ -78,5 +79,60 @@ class EstudianteDomainTest {
     void debeExponerElCentinelaVacio() {
         // Assert
         assertThat(EstudianteDomain.VACIO.esVacio()).isTrue();
+        assertThat(EstudianteDomain.VACIO.estaEliminado()).isFalse();
+        assertThat(EstudianteDomain.reconstruir(null, null, null, null, null, null).getEliminadoEn())
+                .isEqualTo(UtilFecha.VACIO);
+    }
+
+    @Test
+    void debeFijarEliminadoEnYOcurridoEn_cuandoSeRemueve() {
+        // Arrange
+        var estudiante = EstudianteDomain.crear(UUID.randomUUID(), "20161020123", "Ana Perez",
+                "ana@uco.edu.co", Instant.parse("2026-09-01T10:00:00Z"));
+        var ocurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        estudiante.remover(ocurridoEn);
+
+        // Assert
+        assertThat(estudiante.estaEliminado()).isTrue();
+        assertThat(estudiante.getEliminadoEn()).isEqualTo(ocurridoEn);
+        assertThat(estudiante.getOcurridoEn()).isEqualTo(ocurridoEn);
+    }
+
+    @Test
+    void debeLimpiarEliminadoYRefrescarDatos_cuandoSeReactiva() {
+        // Arrange
+        var eliminadoEn = Instant.parse("2026-09-10T10:00:00Z");
+        var estudiante = EstudianteDomain.reconstruir(UUID.randomUUID(), "20161020123", "Ana Perez",
+                "ana@uco.edu.co", eliminadoEn, eliminadoEn);
+        var ocurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        estudiante.reactivar("20161020999", "Ana Gomez", "ana.gomez@uco.edu.co", ocurridoEn);
+
+        // Assert
+        assertThat(estudiante.estaEliminado()).isFalse();
+        assertThat(estudiante.getIdentificador()).isEqualTo("20161020999");
+        assertThat(estudiante.getNombre()).isEqualTo("Ana Gomez");
+        assertThat(estudiante.getEmail()).isEqualTo("ana.gomez@uco.edu.co");
+        assertThat(estudiante.getOcurridoEn()).isEqualTo(ocurridoEn);
+    }
+
+    @Test
+    void debeAcumularErroresYSeguirEliminado_cuandoSeReactivaConDatosInvalidos() {
+        // Arrange
+        var eliminadoEn = Instant.parse("2026-09-10T10:00:00Z");
+        var estudiante = EstudianteDomain.reconstruir(UUID.randomUUID(), "20161020123", "Ana Perez",
+                "ana@uco.edu.co", eliminadoEn, eliminadoEn);
+
+        // Act & Assert
+        assertThatThrownBy(() -> estudiante.reactivar(" ", " ", " ", null))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(e -> e.campo())
+                        .contains(ProyectosFields.Estudiante.IDENTIFICADOR, ProyectosFields.Estudiante.NOMBRE,
+                                ProyectosFields.Estudiante.EMAIL, ProyectosFields.Estudiante.OCURRIDO_EN));
+        assertThat(estudiante.estaEliminado()).isTrue();
     }
 }

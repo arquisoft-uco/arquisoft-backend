@@ -2,6 +2,8 @@ package com.arquisoft.proyectos.domain.estudiante;
 
 import com.arquisoft.shared.message.constant.ProyectosCodes;
 import com.arquisoft.shared.message.constant.ProyectosFields;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -14,18 +16,20 @@ import java.util.UUID;
 public final class EstudianteDomain {
 
     public static final EstudianteDomain VACIO = EstudianteDomain.reconstruir(
-            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, Instant.EPOCH);
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO,
+            UtilFecha.VACIO, UtilFecha.VACIO);
 
     private UUID id;
     private String identificador;
     private String nombre;
     private String email;
     private Instant ocurridoEn;
+    private Instant eliminadoEn;
 
     private EstudianteDomain() {}
 
     public static EstudianteDomain crear(UUID id, String identificador, String nombre, String email,
-                                           Instant ocurridoEn) {
+                                          Instant ocurridoEn) {
         var estudiante = new EstudianteDomain();
         var result = new ValidationResult();
 
@@ -34,20 +38,43 @@ public final class EstudianteDomain {
         estudiante.setNombre(nombre, result);
         estudiante.setEmail(email, result);
         estudiante.setOcurridoEn(ocurridoEn, result);
+        estudiante.eliminadoEn = UtilFecha.VACIO;
 
         result.lanzarSiTieneErrores();
         return estudiante;
     }
 
     public static EstudianteDomain reconstruir(UUID id, String identificador, String nombre, String email,
-                                                 Instant ocurridoEn) {
+                                                Instant ocurridoEn, Instant eliminadoEn) {
         var estudiante = new EstudianteDomain();
         estudiante.id = id;
         estudiante.identificador = identificador;
         estudiante.nombre = nombre;
         estudiante.email = email;
         estudiante.ocurridoEn = ocurridoEn;
+        estudiante.eliminadoEn = UtilObjeto.aplicarPorDefecto(eliminadoEn, UtilFecha.VACIO);
         return estudiante;
+    }
+
+    public void remover(Instant ocurridoEn) {
+        this.eliminadoEn = ocurridoEn;
+        this.ocurridoEn = ocurridoEn;
+    }
+
+    public void reactivar(String identificador, String nombre, String email, Instant ocurridoEn) {
+        var result = new ValidationResult();
+
+        setIdentificador(identificador, result);
+        setNombre(nombre, result);
+        setEmail(email, result);
+        setOcurridoEn(ocurridoEn, result);
+
+        result.lanzarSiTieneErrores();
+        this.eliminadoEn = UtilFecha.VACIO;
+    }
+
+    public boolean estaEliminado() {
+        return !UtilFecha.VACIO.equals(eliminadoEn);
     }
 
     private void setId(UUID id, ValidationResult result) {
@@ -113,6 +140,10 @@ public final class EstudianteDomain {
 
     public Instant getOcurridoEn() {
         return ocurridoEn;
+    }
+
+    public Instant getEliminadoEn() {
+        return eliminadoEn;
     }
 
     public boolean esVacio() {
