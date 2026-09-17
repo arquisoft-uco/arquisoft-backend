@@ -55,6 +55,7 @@ class RemoverItemFichaPerfilUseCaseTest {
     private final UUID item = UUID.randomUUID();
     private final UUID estudiante = UUID.randomUUID();
     private final UUID fichaPerfil = UUID.randomUUID();
+    private final EstadoFichaPerfilDomain estadoEnConstruccion = EstadoFichaPerfilDomain.crear(fichaPerfil);
 
     @Test
     void debeRemoverElItem_cuandoDatosValidos() {
@@ -84,7 +85,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         inOrder.verify(pertenenciaItemFichaPerfilFinder, times(1)).obtener(new ItemDeEstudiante(item, estudiante));
         inOrder.verify(revisionesDelItemFinder, times(1)).obtener(item);
         inOrder.verify(removerItemFichaPerfilValidator)
-                .validar(item, estudiante, fichaPerfil, true, true, 0L);
+                .validar(item, estudiante, fichaPerfil, true, true, estadoEnConstruccion, 0L);
         inOrder.verify(itemOutputPort).removerItem(item);
     }
 
@@ -95,7 +96,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         stubConsultas(PertenenciaItemFichaPerfil.VACIO, 0L);
         doThrow(new ItemFichaPerfilNoEncontradoException(item))
                 .when(removerItemFichaPerfilValidator)
-                .validar(item, estudiante, UtilUUID.obtenerUUIDPorDefecto(), false, false, 0L);
+                .validar(item, estudiante, UtilUUID.obtenerUUIDPorDefecto(), false, false, EstadoFichaPerfilDomain.VACIO, 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> removerItemFichaPerfilUseCase.ejecutar(entrada))
@@ -111,7 +112,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         stubConsultas(pertenencia(false), 0L);
         doThrow(new FichaNoPropietarioException(fichaPerfil, estudiante))
                 .when(removerItemFichaPerfilValidator)
-                .validar(item, estudiante, fichaPerfil, true, false, 0L);
+                .validar(item, estudiante, fichaPerfil, true, false, estadoEnConstruccion, 0L);
 
         // Act & Assert
         assertThatThrownBy(() -> removerItemFichaPerfilUseCase.ejecutar(entrada))
@@ -127,7 +128,7 @@ class RemoverItemFichaPerfilUseCaseTest {
         stubConsultas(pertenencia(true), 2L);
         doThrow(new ItemConRevisionesException(item))
                 .when(removerItemFichaPerfilValidator)
-                .validar(item, estudiante, fichaPerfil, true, true, 2L);
+                .validar(item, estudiante, fichaPerfil, true, true, estadoEnConstruccion, 2L);
 
         // Act & Assert
         assertThatThrownBy(() -> removerItemFichaPerfilUseCase.ejecutar(entrada))
@@ -150,7 +151,7 @@ class RemoverItemFichaPerfilUseCaseTest {
     }
 
     private PertenenciaItemFichaPerfil pertenencia(boolean esPropietario) {
-        return new PertenenciaItemFichaPerfil(fichaPerfil, esPropietario, EstadoFichaPerfilDomain.crear(fichaPerfil));
+        return new PertenenciaItemFichaPerfil(fichaPerfil, esPropietario, estadoEnConstruccion);
     }
 
     private void stubConsultas(PertenenciaItemFichaPerfil pertenencia, long totalRevisiones) {

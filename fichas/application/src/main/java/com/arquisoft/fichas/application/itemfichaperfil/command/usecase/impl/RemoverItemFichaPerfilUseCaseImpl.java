@@ -36,7 +36,8 @@ public class RemoverItemFichaPerfilUseCaseImpl implements RemoverItemFichaPerfil
                 itemExiste, pertenencia.esPropietario(), totalRevisiones);
 
         removerItemFichaPerfilValidator.validar(entrada.getItem(), entrada.getEstudiante(),
-                pertenencia.fichaPerfil(), itemExiste, pertenencia.esPropietario(), totalRevisiones);
+                pertenencia.fichaPerfil(), itemExiste, pertenencia.esPropietario(), pertenencia.estadoActual(),
+                totalRevisiones);
 
         itemOutputPort.removerItem(entrada.getItem());
 
