@@ -25,7 +25,6 @@ public final class FichasCodes {
         public static final String FICHA_NO_PROPIETARIO = "FICHA_NO_PROPIETARIO";
         public static final String FICHA_NO_PERTENECE_ASESOR = "FICHA_NO_PERTENECE_ASESOR";
         public static final String MISMO_ASESOR = "MISMO_ASESOR";
-        public static final String ESTADO_TERMINAL = "ESTADO_TERMINAL";
     }
 
     public static final class ItemFichaPerfil {

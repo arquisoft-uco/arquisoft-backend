@@ -228,7 +228,9 @@ excepción o mapear a `Entity`.
 | `Validator` inyecta un `OutputPort`/`Finder`, recibe algo por `@RequiredArgsConstructor`, o contiene un `if` (debe ser puro: constructor sin argumentos que hace `new {Regla}RuleImpl()`) | ❌ |
 | Variable **local** declarada con tipo explícito pudiendo ser `var` — `long cantidadRevisiones = revisionesDelItemFinder.obtener(...)`, `boolean itemExiste = itemExisteFinder.obtener(...)`, `UUID id = UtilUUID.generarNuevoUUID()`. Va `var` siempre, sea escalar, envuelto o agregado. Solo se exceptúa donde `var` no compila o cambia la semántica (diamante sin tipar, array por llaves, lambda/referencia a método, inicializador `null`). No aplica a campos, parámetros, retornos ni componentes de `record` | ⚠️ |
 | `Rule` declarada como bean (`@Component`) o con dependencias de constructor | ❌ |
-| `Finder` lanza por "no encontrado" en vez de devolver `Boolean`/`Long`/`Optional` | ❌ |
+| `Finder` lanza por "no encontrado" en vez de devolver valor | ❌ |
+| `Finder` cuyo contrato o `obtener` devuelve `Optional<...>`, o devuelve un `Entity` en vez del `Domain` — debe resolver la ausencia dentro: `.map(XMapper::toDomain).orElse(XDomain.VACIO)` o `.orElseGet(UtilUUID::obtenerUUIDPorDefecto)` | ❌ |
+| `UseCase` que hace `isPresent()`, `get()`, `.orElse(...)`, `map`/`flatMap` sobre el resultado de un `Finder` — debe preguntar `esVacio()` o `UtilUUID.esPorDefecto(...)` | ❌ |
 | `Finder` que no extiende `Finder<T, R>` de `shared:application` (`com.arquisoft.shared.finder`), o cuyo método no es `obtener(entrada)` — la interfaz declara exactamente ese nombre | ❌ |
 | `FinderImpl` que encadena otro `Finder`, compara/deriva (`a.equals(b)`, `count > 0`) o hace lookups en varios pasos — un `Finder` es una sola llamada a un `OutputPort`. Combinar fuentes lo hace el `UseCase`; decidir sobre lo consultado es una `Rule` | ❌ |
 | El `UseCase` calcula un veredicto (`boolean esPropietario = ficha.getAsesorFicha().equals(solicitante)`) y se lo pasa al `Validator` — al `Validator` va el dato crudo del `Finder` (el agregado, los `UUID`, el conteo); la comparación de identidad/pertenencia vive en la `Rule` | ❌ |
@@ -238,7 +240,7 @@ excepción o mapear a `Entity`.
 | `{Entidad}OutputPort` declara un método sobre **otro** domain (debe vivir en el `OutputPort` de esa otra feature, consumido por un `Finder` propio de ella) | ❌ |
 | Un command use case lee estado de otra feature importando su `domain/` o su adaptador, en vez de pasar por el `Finder` + `OutputPort` de `command/` de esa feature | ❌ |
 | Se creó un `{Otra}QueryOutputPort` cuya única razón de existir es una verificación de existencia para un `Validator`/`Rule` de comando (eso va en el `OutputPort` de `command/`; ver `AsesorFichaExisteFinder` → `AsesorFichaOutputPort.existePorId`) | ❌ |
-| `Optional` como parámetro de un `Validator` o campo de un record de `Rule` (se desenvuelve en el `UseCase`: centinela `VACIO` para domains, valor + `boolean` para escalares) | ❌ |
+| `Optional` como parámetro de un `Validator` o campo de un record de `Rule` (lo desenvuelve el propio `Finder`: centinela `VACIO` para domains, UUID por defecto para ids, valor + `boolean` para escalares) | ❌ |
 | `@RequiredArgsConstructor`, no `@Autowired` en campos; se inyectan interfaces | ❌ |
 
 ### Nivel 2.7 — Autorización (Keycloak)

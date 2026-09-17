@@ -3,7 +3,6 @@ package com.arquisoft.proyectos.application.asesor.command.usecase.impl;
 import com.arquisoft.proyectos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.proyectos.application.asesor.command.result.AgregacionAsesorResult;
 import com.arquisoft.proyectos.application.asesor.command.secondaryport.AsesorOutputPort;
-import com.arquisoft.proyectos.application.asesor.command.secondaryport.entity.AsesorEntity;
 import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +49,7 @@ class AgregarAsesorUseCaseImplTest {
         // Arrange
         var id = UUID.randomUUID();
         var asesor = asesor(id, Instant.now());
-        when(asesorPorIdFinder.obtener(id)).thenReturn(Optional.empty());
+        when(asesorPorIdFinder.obtener(id)).thenReturn(AsesorDomain.VACIO);
 
         // Act
         var resultado = useCase.ejecutar(asesor);
@@ -69,8 +67,8 @@ class AgregarAsesorUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now().minus(1, ChronoUnit.HOURS);
         var asesor = asesor(id, Instant.now());
-        when(asesorPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new AsesorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(asesorPorIdFinder.obtener(id))
+                .thenReturn(AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(asesor);
@@ -88,8 +86,8 @@ class AgregarAsesorUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var asesor = asesor(id, vigente.minus(1, ChronoUnit.HOURS));
-        when(asesorPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new AsesorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(asesorPorIdFinder.obtener(id))
+                .thenReturn(AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(asesor);
@@ -109,8 +107,8 @@ class AgregarAsesorUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var asesor = asesor(id, vigente);
-        when(asesorPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new AsesorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(asesorPorIdFinder.obtener(id))
+                .thenReturn(AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(asesor);

@@ -574,6 +574,7 @@ getters/setters ni métodos `private`.
       el use case, sin `Rule` de por medio, y el corte devuelve la variante de la sellada que
       corresponde (`toResultDuplicada(...)`), nunca un `return;` mudo
 - [ ] Sin `Optional` en firmas de `Validator` ni en records de `Rule`
+- [ ] Cada `Finder` declarado devuelve `Boolean`/`Long`, el `Domain` (ausente → `VACIO`, que el agregado debe tener) o el `UUID` (ausente → `UtilUUID.obtenerUUIDPorDefecto()`) — nunca `Optional` ni `Entity`
 - [ ] Comprobaciones de nulidad con `UtilObjeto.esNulo`/`noEsNulo` (`shared:util`), nunca `== null`
       crudo; y ningún `tieneX()` declarado en un `Command`/`Query` para envolver ese chequeo — si el
       plan describe un mapper que ramifica sobre un campo opcional (`NodoFiltro raiz`, típicamente),

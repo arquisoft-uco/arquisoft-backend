@@ -7,7 +7,6 @@ import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -17,8 +16,9 @@ public class FichaPerfilFinderImpl implements FichaPerfilFinder {
     private final FichaPerfilOutputPort fichaPerfilOutputPort;
 
     @Override
-    public Optional<FichaPerfilDomain> obtener(UUID fichaPerfil) {
+    public FichaPerfilDomain obtener(UUID fichaPerfil) {
         return fichaPerfilOutputPort.buscarPorId(fichaPerfil)
-                .map(FichaPerfilMapper::toDomain);
+                .map(FichaPerfilMapper::toDomain)
+                .orElse(FichaPerfilDomain.VACIO);
     }
 }
