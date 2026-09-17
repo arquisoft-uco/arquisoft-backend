@@ -28,6 +28,20 @@ public class FichasUsuariosQueueConfig {
                 arquisoftDeadLetterExchange);
     }
 
+    public static final String ESTUDIANTE_REMOVIDO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.ESTUDIANTE_REMOVIDO;
+
+    @Bean
+    public Declarables fichasEstudianteRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTE_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.ESTUDIANTE_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     public static final String ASESOR_FICHA_AGREGADO_QUEUE =
             FichasQueues.PREFIJO + EventTopics.Usuarios.ASESOR_FICHA_AGREGADO;
 

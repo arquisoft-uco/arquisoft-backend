@@ -33,14 +33,14 @@ class AsesorFichaFinderImplTest {
         when(asesorFichaOutputPort.buscarContactoPorId(asesorId)).thenReturn(Optional.of(entity));
 
         // Act
-        Optional<AsesorFichaDomain> resultado = finder.obtener(asesorId);
+        var resultado = finder.obtener(asesorId);
 
         // Assert
-        assertThat(resultado).isPresent();
-        assertThat(resultado.get().getId()).isEqualTo(asesorId);
-        assertThat(resultado.get().getIdentificador()).isEqualTo("A001");
-        assertThat(resultado.get().getNombre()).isEqualTo("Ana Asesora");
-        assertThat(resultado.get().getEmail()).isEqualTo("ana@arquisoft.com");
+        assertThat(resultado.esVacio()).isFalse();
+        assertThat(resultado.getId()).isEqualTo(asesorId);
+        assertThat(resultado.getIdentificador()).isEqualTo("A001");
+        assertThat(resultado.getNombre()).isEqualTo("Ana Asesora");
+        assertThat(resultado.getEmail()).isEqualTo("ana@arquisoft.com");
     }
 
     @Test
@@ -50,9 +50,9 @@ class AsesorFichaFinderImplTest {
         when(asesorFichaOutputPort.buscarContactoPorId(asesorId)).thenReturn(Optional.empty());
 
         // Act
-        Optional<AsesorFichaDomain> resultado = finder.obtener(asesorId);
+        var resultado = finder.obtener(asesorId);
 
         // Assert — el finder nunca lanza por "no encontrado"; eso lo decide la rule
-        assertThat(resultado).isEmpty();
+        assertThat(resultado).isEqualTo(AsesorFichaDomain.VACIO);
     }
 }
