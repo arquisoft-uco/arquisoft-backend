@@ -133,9 +133,15 @@ omites).
   `Finder<T, R>.obtener(T)` (devuelve, nunca lanza). Y no viven juntas: `DomainRule` en
   `com.arquisoft.shared.rules` (`shared:domain`), `Finder` en `com.arquisoft.shared.finder`
   (`shared:application`).
-- Todo el I/O del comando vive en el `UseCase`: los `Finder`s traen el estado, se desenvuelve el
-  `Optional` ahí (centinela `VACIO` para domains, valor + `boolean` para escalares), se valida, se
+- Todo el I/O del comando vive en el `UseCase`: los `Finder`s traen el estado ya resuelto, se valida, se
   mapea `Domain → Entity` y se persiste.
+  **Un `Finder` nunca devuelve `Optional`.** Desenvuelve el `Optional<Entity>` del `OutputPort`
+  dentro de su `obtener`: `.map(XMapper::toDomain).orElse(XDomain.VACIO)` para agregados (devuelve el
+  `Domain`, jamás el `Entity`; si falta `VACIO`, añádelo al agregado) y
+  `.orElseGet(UtilUUID::obtenerUUIDPorDefecto)` para un `UUID`. El `UseCase` pregunta con
+  `esVacio()` o `UtilUUID.esPorDefecto(...)` — sin `isPresent()`, `get()` ni `.orElse(...)`. Los
+  tests del `Finder` afirman `isEqualTo(XDomain.VACIO)` / el UUID por defecto en la rama ausente, y
+  los del `UseCase` stubbean el `Finder` con el `Domain`/`VACIO` directo, no con `Optional`.
   El resultado de un `{X}ExisteFinder` se recibe con **`var`, como todo local** (`var itemExiste =
   itemExisteFinder.obtener(item);`). El contrato es `Finder<T, Boolean>` porque un genérico no admite
   primitivos, y eso no se "arregla": lo que hace seguro el unboxing en `validar(..., boolean existe)`

@@ -2,6 +2,7 @@ package com.arquisoft.fichas.domain.estudiante;
 
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
@@ -73,7 +74,7 @@ class EstudianteDomainTest {
         var ocurridoEn = Instant.now();
 
         // Act
-        var estudiante = EstudianteDomain.reconstruir(id, identificador, nombre, email, ocurridoEn);
+        var estudiante = EstudianteDomain.reconstruir(id, identificador, nombre, email, ocurridoEn, UtilFecha.VACIO);
 
         // Assert
         assertThat(estudiante).isNotNull();
@@ -94,7 +95,7 @@ class EstudianteDomainTest {
         Instant ocurridoEn = null;
 
         // Act
-        var estudiante = EstudianteDomain.reconstruir(id, identificador, nombre, email, ocurridoEn);
+        var estudiante = EstudianteDomain.reconstruir(id, identificador, nombre, email, ocurridoEn, UtilFecha.VACIO);
 
         // Assert
         assertThat(estudiante).isNotNull();
@@ -103,5 +104,73 @@ class EstudianteDomainTest {
         assertThat(estudiante.getNombre()).isNull();
         assertThat(estudiante.getEmail()).isNull();
         assertThat(estudiante.getOcurridoEn()).isNull();
+    }
+
+    @Test
+    void debeNacerVigente_cuandoSeCreaYReconstruirNormalizaEliminadoNulo() {
+        // Act
+        var creado = EstudianteDomain.crear(
+                UUID.randomUUID(), "20161020123", "Juan Pérez", "juan.perez@example.com", Instant.now());
+        var reconstruido = EstudianteDomain.reconstruir(
+                UUID.randomUUID(), "20161020123", "Juan Pérez", "juan.perez@example.com", Instant.now(), null);
+
+        // Assert
+        assertThat(creado.estaEliminado()).isFalse();
+        assertThat(reconstruido.getEliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(EstudianteDomain.VACIO.esVacio()).isTrue();
+        assertThat(EstudianteDomain.VACIO.estaEliminado()).isFalse();
+    }
+
+    @Test
+    void debeFijarEliminadoEnYOcurridoEn_cuandoSeRemueve() {
+        // Arrange
+        var estudiante = EstudianteDomain.crear(UUID.randomUUID(), "20161020123", "Juan Pérez",
+                "juan.perez@example.com", Instant.parse("2026-09-01T10:00:00Z"));
+        var ocurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        estudiante.remover(ocurridoEn);
+
+        // Assert
+        assertThat(estudiante.estaEliminado()).isTrue();
+        assertThat(estudiante.getEliminadoEn()).isEqualTo(ocurridoEn);
+        assertThat(estudiante.getOcurridoEn()).isEqualTo(ocurridoEn);
+    }
+
+    @Test
+    void debeLimpiarEliminadoYRefrescarDatos_cuandoSeReactiva() {
+        // Arrange
+        var eliminadoEn = Instant.parse("2026-09-10T10:00:00Z");
+        var estudiante = EstudianteDomain.reconstruir(UUID.randomUUID(), "20161020123", "Juan Pérez",
+                "juan.perez@example.com", eliminadoEn, eliminadoEn);
+        var ocurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        estudiante.reactivar("20161020999", "Juan P. Gómez", "juan.gomez@example.com", ocurridoEn);
+
+        // Assert
+        assertThat(estudiante.estaEliminado()).isFalse();
+        assertThat(estudiante.getEliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(estudiante.getIdentificador()).isEqualTo("20161020999");
+        assertThat(estudiante.getNombre()).isEqualTo("Juan P. Gómez");
+        assertThat(estudiante.getEmail()).isEqualTo("juan.gomez@example.com");
+        assertThat(estudiante.getOcurridoEn()).isEqualTo(ocurridoEn);
+    }
+
+    @Test
+    void debeAcumularErroresYSeguirEliminado_cuandoSeReactivaConDatosInvalidos() {
+        // Arrange
+        var eliminadoEn = Instant.parse("2026-09-10T10:00:00Z");
+        var estudiante = EstudianteDomain.reconstruir(UUID.randomUUID(), "20161020123", "Juan Pérez",
+                "juan.perez@example.com", eliminadoEn, eliminadoEn);
+
+        // Act & Assert
+        assertThatThrownBy(() -> estudiante.reactivar(" ", " ", "juan.perez@example.com", null))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(e -> e.campo())
+                        .contains(FichasFields.Estudiante.IDENTIFICADOR, FichasFields.Estudiante.NOMBRE,
+                                FichasFields.Estudiante.OCURRIDO_EN));
+        assertThat(estudiante.estaEliminado()).isTrue();
     }
 }

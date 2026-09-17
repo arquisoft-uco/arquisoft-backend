@@ -35,7 +35,7 @@ dato cuya integridad no se validó primero.
 |---|---|---|---|
 | `Validator` | Construye sus `Rule`s con `new` en un **constructor sin argumentos** (no `@RequiredArgsConstructor`); nunca inyecta `OutputPort`/`Finder`; **cero `if`** | No decide, solo orquesta en orden | `fichas/application/.../fichaperfil/command/validator/impl/RegistrarFichaPerfilValidatorImpl.java` |
 | `Rule` | Pura: sin Spring, sin Lombok, **sin dependencias de constructor**; no es un bean | Sí, sobre un `record` ya cargado con el dato | `fichas/domain/.../fichaperfil/rules/impl/FichaPerfilTituloUnicoRuleImpl.java` |
-| `Finder` | Delega en un `OutputPort` | Nunca por "no encontrado" — devuelve `Boolean`/`Long`/`Optional` | `fichas/application/.../asesorficha/command/finder/impl/AsesorFichaExisteFinderImpl.java` |
+| `Finder` | Delega en un `OutputPort` | Nunca por "no encontrado" — devuelve `Boolean`/`Long`, `Domain` o `UUID`; la ausencia es `{X}Domain.VACIO` o `UtilUUID.obtenerUUIDPorDefecto()`, nunca `Optional` | `fichas/application/.../asesorficha/command/finder/impl/AsesorFichaExisteFinderImpl.java` |
 
 El I/O de un comando vive entero en el `UseCase`: los `Finder`s consultan todo el estado, el
 `Validator` orquesta las `Rule`s con lo ya consultado, el `OutputPort` persiste. Las `Rule`s corren
@@ -80,7 +80,7 @@ El segundo caso es el corte de idempotencia de `notificaciones`: si
 iría a la DLQ y se haría rollback de la fila, cuando RabbitMQ solo estaba reentregando algo ya
 procesado. Un duplicado ahí no es un error, es el comportamiento normal de un broker con ACK manual.
 La guarda es de flujo ("ya está hecho, no hay trabajo"), de la misma familia que un
-`Optional.isPresent()`, no el `if/throw` de invariante que la convención prohíbe.
+`!vigente.esVacio()`, no el `if/throw` de invariante que la convención prohíbe.
 
 **La clave de idempotencia es el par `(idEvento, destinatario)`, no el `idEvento` solo.** La
 restricción en base es `uq_notificacion_event_id_destinatario`, y el puerto pregunta
@@ -96,9 +96,29 @@ Señal de que algo mal nombrado es en realidad un `Finder`: la clase termina en 
 un `OutputPort` y devuelve un `boolean` que el use case consume con un `if`. Eso no valida nada —
 consulta. Va a `command/finder/` con nombre de lo que responde (`NotificacionProcesadaFinder`).
 
-**Sin `Optional` en records de dominio ni en firmas de validator.** `Optional` es tipo de retorno de
-un `Finder` y nada más: el `UseCase` lo desenvuelve. Un domain ausente viaja como su centinela
-`VACIO` (`.orElse(FichaPerfilDomain.VACIO)`, con `esVacio()` comparando identidad); un valor suelto
+**Sin `Optional` fuera del `OutputPort`.** El `Optional<Entity>` del puerto muere **dentro del
+`Finder`**: ni el contrato `Finder<T, R>`, ni el `UseCase`, ni un record de dominio, ni un
+`Validator` lo ven. El `Finder` resuelve la ausencia en su propio `obtener`:
+
+| El puerto devuelve | El `Finder` devuelve | Ausente |
+|---|---|---|
+| `Optional<XEntity>` | `XDomain` — mapea él mismo con `XMapper::toDomain`, **nunca** el `Entity` | `XDomain.VACIO` |
+| `Optional<UUID>` | `UUID` | `UtilUUID.obtenerUUIDPorDefecto()` |
+
+```java
+public EstudianteDomain obtener(UUID id) {
+    return estudianteOutputPort.obtenerPorId(id)
+            .map(EstudianteMapper::toDomain)
+            .orElse(EstudianteDomain.VACIO);
+}
+```
+
+Quien llama pregunta con `vigente.esVacio()` (identidad) o `UtilUUID.esPorDefecto(uuid)`; nunca
+`isPresent()`/`get()`/`.orElse(...)` en el `UseCase`. Si el agregado aún no tiene `VACIO`, se le
+añade antes de escribir el `Finder`. Si en la rama "no existe" no debe consultarse nada más, se
+corta con el booleano (`var itemExiste = !UtilUUID.esPorDefecto(ficha); var esPropietario =
+itemExiste && vinculoFinder.obtener(...)`). Un domain ausente viaja así como su centinela
+`VACIO` (con `esVacio()` comparando identidad); un valor suelto
 viaja como el valor más un `boolean` explícito (`boolean asesorExiste`) dentro de su record
 `Existencia{Concepto}`.
 

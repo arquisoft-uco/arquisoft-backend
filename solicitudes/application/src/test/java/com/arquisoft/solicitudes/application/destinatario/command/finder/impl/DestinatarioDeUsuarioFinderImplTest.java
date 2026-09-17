@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.destinatario.command.finder.impl;
 
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.destinatario.command.secondaryport.DestinatarioOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +31,7 @@ class DestinatarioDeUsuarioFinderImplTest {
         when(destinatarioOutputPort.buscarIdPorUsuario(usuario)).thenReturn(Optional.of(destinatarioId));
 
         // Act & Assert
-        assertThat(finder.obtener(usuario)).contains(destinatarioId);
+        assertThat(finder.obtener(usuario)).isEqualTo(destinatarioId);
     }
 
     @Test
@@ -40,6 +41,6 @@ class DestinatarioDeUsuarioFinderImplTest {
         when(destinatarioOutputPort.buscarIdPorUsuario(usuario)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThat(finder.obtener(usuario)).isEmpty();
+        assertThat(finder.obtener(usuario)).isEqualTo(UtilUUID.obtenerUUIDPorDefecto());
     }
 }

@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.estudiante.command.finder;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.fichas.application.estudiante.command.finder.impl.EstudiantesFinderImpl;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.EstudianteOutputPort;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.entity.EstudianteEntity;
@@ -36,8 +37,8 @@ class EstudiantesFinderTest {
     void debeDevolverLosEstudiantesConNombreYCorreo_cuandoElPuertoLosEncuentra() {
         // Arrange
         when(estudianteOutputPort.buscarPorIds(List.of(ANA, LUIS))).thenReturn(List.of(
-                new EstudianteEntity(ANA, "1001", "Ana Gomez", "ana.gomez@soyuco.edu.co", Instant.now()),
-                new EstudianteEntity(LUIS, "1002", "Luis Diaz", "luis.diaz@soyuco.edu.co", Instant.now())));
+                new EstudianteEntity(ANA, "1001", "Ana Gomez", "ana.gomez@soyuco.edu.co", Instant.now(), UtilFecha.VACIO),
+                new EstudianteEntity(LUIS, "1002", "Luis Diaz", "luis.diaz@soyuco.edu.co", Instant.now(), UtilFecha.VACIO)));
 
         // Act
         List<EstudianteDomain> resultado = estudiantesFinder.obtener(List.of(ANA, LUIS));
@@ -75,7 +76,7 @@ class EstudiantesFinderTest {
     void debeDevolverSoloLosEncontrados_cuandoAlgunEstudianteNoExiste() {
         // Arrange
         when(estudianteOutputPort.buscarPorIds(List.of(ANA, LUIS))).thenReturn(List.of(
-                new EstudianteEntity(ANA, "1001", "Ana Gomez", "ana.gomez@soyuco.edu.co", Instant.now())));
+                new EstudianteEntity(ANA, "1001", "Ana Gomez", "ana.gomez@soyuco.edu.co", Instant.now(), UtilFecha.VACIO)));
 
         // Act
         List<EstudianteDomain> resultado = estudiantesFinder.obtener(List.of(ANA, LUIS));

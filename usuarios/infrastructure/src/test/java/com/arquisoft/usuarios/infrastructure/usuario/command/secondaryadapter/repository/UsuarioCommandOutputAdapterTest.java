@@ -2,12 +2,14 @@ package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.r
 
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -104,5 +106,31 @@ class UsuarioCommandOutputAdapterTest {
 
         // Act & Assert
         assertThat(adapter.existePorContacto("573001112233")).isFalse();
+    }
+
+    @Test
+    void debeRetornarEntidadMapeada_cuandoObtenerPorIdEncuentraElUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var jpa = UsuarioJpaEntity.builder().id(id).identificador("usr001").nombre("Ana Pérez")
+                .email("ana@uco.edu.co").contacto("573001112233").estadoId("ACTIVO").build();
+        when(usuarioCommandRepository.findById(id)).thenReturn(Optional.of(jpa));
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).contains(
+                new UsuarioEntity(id, "usr001", "Ana Pérez", "ana@uco.edu.co", "573001112233", "ACTIVO"));
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoObtenerPorIdNoEncuentraElUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        when(usuarioCommandRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThat(adapter.obtenerPorId(id)).isEmpty();
     }
 }

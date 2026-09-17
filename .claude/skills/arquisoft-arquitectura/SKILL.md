@@ -160,7 +160,7 @@ lo suyo al construirse, así que el de arriba solo comprueba `noNulo` de cada co
 | `command/primaryport/mapper/` | `Command` → dominio (`final`, constructor privado, `static toDomain`): construye el objeto de acción, o el domain directo (`toDomain(command)` → `{Entidad}Domain.crear(...)`) si el `Command` mapea 1-a-1. **Obligatorio en toda escritura**; lo invoca el `Interactor` antes de delegar. (`usuarios/CrearUsuario` llama `crear(...)` directo desde el use case — desviación previa, no se copia) | `RegistrarFichaPerfilMapper.java` |
 | `command/usecase/` (+`impl/`) | Colaborador interno — **NO** bajo `primaryport/`, sin transacción | `usecase/RegistrarFichaPerfilUseCase.java` + `usecase/impl/...UseCaseImpl.java` |
 | `command/validator/` (+`impl/`) | Puro: construye sus `Rule`s con `new` en un constructor sin argumentos; sin `OutputPort`, sin `Finder`, **sin un solo `if`** | `validator/impl/RegistrarFichaPerfilValidatorImpl.java` |
-| `command/finder/` (+`impl/`) | Uno por consulta; siempre devuelve valor (`Boolean`/`Long`/`Optional`), nunca lanza por "no encontrado" | `finder/impl/TituloFichaPerfilExisteFinderImpl.java` |
+| `command/finder/` (+`impl/`) | Uno por consulta; siempre devuelve valor, nunca `Optional` ni `null` ni lanza por "no encontrado": `Boolean`/`Long`, el `Domain` (o su `VACIO`), o el `UUID` (o `UtilUUID.obtenerUUIDPorDefecto()`) | `finder/impl/TituloFichaPerfilExisteFinderImpl.java` |
 | `command/finder/model/` | Entrada del `Finder` cuando **no** es un tipo de dominio ni un escalar — un criterio propio de la consulta. Condicional: la mayoría de finders reciben un `UUID`, un `String` o el domain | `notificaciones/.../finder/model/CriterioReintento.java` |
 | `command/secondaryport/` (+`entity/`, `mapper/`) | Puerto de salida — habla `Entity`, nunca `Domain` | `FichaPerfilOutputPort.java`, `entity/FichaPerfilEntity.java`, `mapper/FichaPerfilMapper.java` |
 | `command/secondaryport/model/` | Los tipos que el puerto usa en su firma y no son la `Entity`: lo que devuelve un sistema externo y las selladas de desenlace | `notificaciones/.../secondaryport/model/{MensajeNotificacion,ResultadoEntrega}.java`, `seguridad/.../secondaryport/model/CredencialesProveedor.java` |
@@ -427,7 +427,7 @@ public sealed interface ResultadoEntrega {
 El adaptador traduce lo que sabe diagnosticar y **registra ahí la traza técnica**, que es donde tiene
 la causa en la mano; una avería inesperada (mal configurado, fallo no previsto) **sí** se propaga y
 acaba en la DLQ o en un 503. Es el mismo criterio que ya usan los `Finder`: "no encontrado" devuelve
-`Optional`, decidir qué significa la ausencia es de quien llama. Referencia:
+el centinela (`VACIO` o el UUID por defecto), decidir qué significa la ausencia es de quien llama. Referencia:
 `EnvioNotificacionOutputPort` + `SmtpEnvioNotificacionOutputAdapter`.
 
 Si aun así application tiene que **nombrar** una excepción que lanza un adaptador, esa excepción vive

@@ -1,12 +1,17 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.validator;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl.RemoverItemFichaPerfilValidatorImpl;
+import com.arquisoft.fichas.domain.estadoficha.EstadoFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilNoEncontradoException;
+import com.arquisoft.fichas.domain.estadofichaperfil.exception.EstadoFichaPerfilTerminalException;
 import com.arquisoft.fichas.domain.fichaperfil.exception.FichaNoPropietarioException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemConRevisionesException;
 import com.arquisoft.fichas.domain.itemfichaperfil.exception.ItemFichaPerfilNoEncontradoException;
 import com.arquisoft.shared.util.UtilUUID;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -19,18 +24,19 @@ class RemoverItemFichaPerfilValidatorTest {
     private final UUID item = UUID.randomUUID();
     private final UUID estudiante = UUID.randomUUID();
     private final UUID fichaPerfil = UUID.randomUUID();
+    private final EstadoFichaPerfilDomain estadoEnConstruccion = EstadoFichaPerfilDomain.crear(fichaPerfil);
 
     @Test
     void debePasar_cuandoElItemExisteEsPropioYNoTieneRevisiones() {
         // Act / Assert
-        assertThatCode(() -> validator.validar(item, estudiante, fichaPerfil, true, true, 0L))
+        assertThatCode(() -> validator.validar(item, estudiante, fichaPerfil, true, true, estadoEnConstruccion, 0L))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void debeLanzarItemNoEncontrado_cuandoElItemNoExiste() {
         // Act / Assert
-        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, false, true, 0L))
+        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, false, true, estadoEnConstruccion, 0L))
                 .isInstanceOf(ItemFichaPerfilNoEncontradoException.class)
                 .hasMessageContaining(item.toString());
     }
@@ -38,14 +44,14 @@ class RemoverItemFichaPerfilValidatorTest {
     @Test
     void debeLanzarNoPropietario_cuandoElEstudianteNoEsDuenoDeLaFicha() {
         // Act / Assert
-        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, true, false, 0L))
+        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, true, false, estadoEnConstruccion, 0L))
                 .isInstanceOf(FichaNoPropietarioException.class);
     }
 
     @Test
     void debeLanzarItemConRevisiones_cuandoElItemTieneRevisiones() {
         // Act / Assert
-        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, true, true, 3L))
+        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, true, true, estadoEnConstruccion, 3L))
                 .isInstanceOf(ItemConRevisionesException.class);
     }
 
@@ -56,7 +62,37 @@ class RemoverItemFichaPerfilValidatorTest {
 
         // Act / Assert — gana la primera regla, prueba de que las dependientes no corren
         assertThatThrownBy(() -> validator.validar(
-                item, estudiante, UtilUUID.obtenerUUIDPorDefecto(), false, false, 3L))
+                item, estudiante, UtilUUID.obtenerUUIDPorDefecto(), false, false, EstadoFichaPerfilDomain.VACIO, 3L))
                 .isInstanceOf(ItemFichaPerfilNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzarEstadoTerminal_cuandoLaFichaEstaAprobada() {
+        // Arrange
+        var aprobada = EstadoFichaPerfilDomain.reconstruir(
+                UUID.randomUUID(), fichaPerfil, EstadoFicha.APROBADA, Instant.now());
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, true, true, aprobada, 0L))
+                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
+    }
+
+    @Test
+    void debeLanzarEstadoNoEncontrado_cuandoLaFichaNoTieneEstado() {
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(
+                item, estudiante, fichaPerfil, true, true, EstadoFichaPerfilDomain.VACIO, 0L))
+                .isInstanceOf(EstadoFichaPerfilNoEncontradoException.class);
+    }
+
+    @Test
+    void debeReportarEstadoTerminalAntesQueRevisiones_cuandoAmbasFallan() {
+        // Arrange
+        var noAprobada = EstadoFichaPerfilDomain.reconstruir(
+                UUID.randomUUID(), fichaPerfil, EstadoFicha.NO_APROBADA, Instant.now());
+
+        // Act / Assert
+        assertThatThrownBy(() -> validator.validar(item, estudiante, fichaPerfil, true, true, noAprobada, 3L))
+                .isInstanceOf(EstadoFichaPerfilTerminalException.class);
     }
 }
