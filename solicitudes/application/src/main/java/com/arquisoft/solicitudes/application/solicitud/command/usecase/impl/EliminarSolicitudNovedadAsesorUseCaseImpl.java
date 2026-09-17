@@ -3,8 +3,6 @@ package com.arquisoft.solicitudes.application.solicitud.command.usecase.impl;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
 import com.arquisoft.shared.publisher.EventPublisher;
-import com.arquisoft.shared.util.UtilTexto;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudTieneRespuestasFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
@@ -12,13 +10,9 @@ import com.arquisoft.solicitudes.application.solicitud.command.usecase.EliminarS
 import com.arquisoft.solicitudes.application.solicitud.command.validator.EliminarSolicitudNovedadAsesorValidator;
 import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudNovedadAsesorDomain;
 import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudNovedadAsesorEliminadaEvent;
-import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -36,12 +30,11 @@ public class EliminarSolicitudNovedadAsesorUseCaseImpl
     public void ejecutar(EliminacionSolicitudNovedadAsesorDomain entrada) {
         logger.info(SolicitudKey.LOG_ELIMINANDO_ASESOR, entrada.getSolicitud(), entrada.getRemitenteUsuario());
 
-        Optional<ResumenSolicitud> resumen = datosSolicitudFinder.obtener(entrada.getSolicitud());
-        boolean existe = resumen.isPresent();
-        UUID remitenteUsuarioProyectado = resumen.map(ResumenSolicitud::remitenteUsuario)
-                .orElse(UtilUUID.obtenerUUIDPorDefecto());
-        String tipoProyectado = resumen.map(ResumenSolicitud::tipoSolicitud).orElse(UtilTexto.VACIO);
-        boolean tieneRespuestas = solicitudTieneRespuestasFinder.obtener(entrada.getSolicitud());
+        var resumen = datosSolicitudFinder.obtener(entrada.getSolicitud());
+        var existe = !resumen.esVacio();
+        var remitenteUsuarioProyectado = resumen.remitenteUsuario();
+        var tipoProyectado = resumen.tipoSolicitud();
+        var tieneRespuestas = solicitudTieneRespuestasFinder.obtener(entrada.getSolicitud());
 
         logger.debug(SolicitudKey.LOG_VERIFICACION_ELIMINACION, existe, tieneRespuestas);
 
