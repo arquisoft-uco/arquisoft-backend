@@ -34,6 +34,7 @@ public final class FichasAuthorities {
 
     public static final String REVISION_ITEM_CREATE = "fichas:revision-item:create";
     public static final String REVISION_ITEM_ASESOR_VIEW = "fichas:revision-item-asesor:view";
+    public static final String REVISION_ITEM_ESTUDIANTE_VIEW = "fichas:revision-item-estudiante:view";
 
     public static final String OBSERVACION_ITEM_CREATE = "fichas:observacion-item:create";
 
@@ -98,6 +99,8 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + REVISION_ITEM_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_REVISION_ITEM_ASESOR_VIEW =
                 HAS_AUTHORITY_INICIO + REVISION_ITEM_ASESOR_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_REVISION_ITEM_ESTUDIANTE_VIEW =
+                HAS_AUTHORITY_INICIO + REVISION_ITEM_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_OBSERVACION_ITEM_CREATE =
                 HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_CREATE + HAS_AUTHORITY_FIN;
     }
