@@ -13,7 +13,9 @@ public enum RevisionItemKey implements ClaveMensaje {
     LOG_VERIFICACION_AGREGAR("fichas.aplicacion.revisionitem.log.verificacion-agregar", 3),
     LOG_AGREGADO("fichas.aplicacion.revisionitem.log.agregado", 2),
     LOG_CONSULTANDO_ELABORADAS("fichas.aplicacion.revisionitem.log.consultando-elaboradas", 2),
-    LOG_CONSULTA_ELABORADAS_COMPLETADA("fichas.aplicacion.revisionitem.log.consulta-elaboradas-completada", 1);
+    LOG_CONSULTA_ELABORADAS_COMPLETADA("fichas.aplicacion.revisionitem.log.consulta-elaboradas-completada", 1),
+    LOG_CONSULTANDO_ESTUDIANTE("fichas.aplicacion.revisionitem.log.consultando-estudiante", 2),
+    LOG_CONSULTA_ESTUDIANTE_COMPLETADA("fichas.aplicacion.revisionitem.log.consulta-estudiante-completada", 1);
 
     private final String clave;
     private final int parametros;
