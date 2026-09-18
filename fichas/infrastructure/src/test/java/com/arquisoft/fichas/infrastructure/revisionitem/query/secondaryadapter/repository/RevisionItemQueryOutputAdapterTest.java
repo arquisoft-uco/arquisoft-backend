@@ -1,11 +1,16 @@
 package com.arquisoft.fichas.infrastructure.revisionitem.query.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.revisionitem.query.criteria.RevisionItemCriteria;
+import com.arquisoft.fichas.application.revisionitem.query.criteria.RevisionItemEstudianteCriteria;
 import com.arquisoft.fichas.application.revisionitem.query.readmodel.RevisionItemReadModel;
 import com.arquisoft.fichas.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
+import com.arquisoft.fichas.infrastructure.estadoobservacionrevision.command.secondaryadapter.entity.EstadoObservacionRevisionJpaEntity;
 import com.arquisoft.fichas.infrastructure.estadorevision.command.secondaryadapter.entity.EstadoRevisionJpaEntity;
+import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.fichaperfil.command.secondaryadapter.entity.FichaPerfilJpaEntity;
 import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.entity.ItemFichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.observacionitem.command.secondaryadapter.entity.ObservacionItemJpaEntity;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.entity.RevisionItemJpaEntity;
 import com.arquisoft.fichas.infrastructure.tipoitem.command.secondaryadapter.entity.TipoItemJpaEntity;
 import com.arquisoft.shared.query.FiltroOperador;
@@ -34,15 +39,20 @@ class RevisionItemQueryOutputAdapterTest {
     @Autowired
     private RevisionItemQueryRepository revisionItemRepository;
 
+    @Autowired
+    private RevisionItemEstudianteQueryRepository revisionItemEstudianteRepository;
+
     private RevisionItemQueryOutputAdapter adapter;
 
     private EstadoRevisionJpaEntity estadoEnProgreso;
     private EstadoRevisionJpaEntity estadoCerrada;
     private TipoItemJpaEntity tipoItem;
+    private EstadoObservacionRevisionJpaEntity estadoPendiente;
 
     @BeforeEach
     void setUp() {
-        adapter = new RevisionItemQueryOutputAdapter(revisionItemRepository, new RevisionItemJpaSpecification());
+        adapter = new RevisionItemQueryOutputAdapter(revisionItemRepository, new RevisionItemJpaSpecification(),
+                revisionItemEstudianteRepository, new RevisionItemEstudianteJpaSpecification());
 
         estadoEnProgreso = entityManager.persist(EstadoRevisionJpaEntity.builder()
                 .id("EN_PROGRESO").nombre("En Progreso").descripcion("La revision esta en progreso")
@@ -52,6 +62,9 @@ class RevisionItemQueryOutputAdapterTest {
                 .build());
         tipoItem = entityManager.persist(TipoItemJpaEntity.builder()
                 .id("OBJETIVO_GENERAL").nombre("Objetivo General").descripcion("Objetivo general del proyecto")
+                .build());
+        estadoPendiente = entityManager.persist(EstadoObservacionRevisionJpaEntity.builder()
+                .id("PENDIENTE").nombre("Pendiente").descripcion("La observacion esta pendiente")
                 .build());
     }
 
@@ -187,6 +200,222 @@ class RevisionItemQueryOutputAdapterTest {
         assertThat(resultado.getContent())
                 .extracting(RevisionItemReadModel::estadoRevisionNombre)
                 .containsExactly("En Progreso", "Cerrada");
+    }
+
+    @Test
+    void debeRetornarRevision_cuandoTieneObservacionYEstudianteVinculado() {
+        // Arrange
+        var asesor = persistirAsesor("Rosa Nieto", "rosa@soyuco.edu.co");
+        var ficha = persistirFicha(asesor, "Proyecto de Rosa");
+        var item = persistirItem(ficha, "Item con observacion");
+        var revision = persistirRevision(item, estadoEnProgreso);
+        var estudiante = persistirEstudiante("Pedro Lara", "pedro@soyuco.edu.co");
+        persistirVinculoEstudianteFicha(ficha, estudiante);
+        persistirObservacion(revision);
+        entityManager.flush();
+
+        var criteria = RevisionItemEstudianteCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("estudianteId", FiltroOperador.ES, estudiante.toString()))
+                .build();
+
+        // Act
+        PaginatedResult<RevisionItemReadModel> resultado = adapter.consultarTodasEstudiante(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(1);
+        assertThat(resultado.getContent().get(0).item()).isEqualTo(item);
+    }
+
+    @Test
+    void debeExcluirRevision_cuandoNoTieneObservaciones() {
+        // Arrange — POL-12: sin observacion asociada, la revision no debe aparecer aunque el
+        // estudiante esté correctamente vinculado a la ficha.
+        var asesor = persistirAsesor("Hugo Campos", "hugo@soyuco.edu.co");
+        var ficha = persistirFicha(asesor, "Proyecto de Hugo");
+        var item = persistirItem(ficha, "Item sin observacion");
+        persistirRevision(item, estadoEnProgreso);
+        var estudiante = persistirEstudiante("Nadia Rios", "nadia@soyuco.edu.co");
+        persistirVinculoEstudianteFicha(ficha, estudiante);
+        entityManager.flush();
+
+        var criteria = RevisionItemEstudianteCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("estudianteId", FiltroOperador.ES, estudiante.toString()))
+                .build();
+
+        // Act
+        PaginatedResult<RevisionItemReadModel> resultado = adapter.consultarTodasEstudiante(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).isEmpty();
+        assertThat(resultado.getTotalElements()).isZero();
+    }
+
+    @Test
+    void debeExcluirRevision_cuandoEstudianteNoEstaVinculadoALaFicha() {
+        // Arrange — la revision tiene observacion (pasaria POL-12), pero el estudiante consultado
+        // no aparece en estudiante_ficha_perfil para esa ficha.
+        var asesor = persistirAsesor("Elena Puentes", "elena@soyuco.edu.co");
+        var ficha = persistirFicha(asesor, "Proyecto de Elena");
+        var item = persistirItem(ficha, "Item con observacion");
+        var revision = persistirRevision(item, estadoEnProgreso);
+        persistirObservacion(revision);
+        var estudianteVinculado = persistirEstudiante("Andres Soto", "andres@soyuco.edu.co");
+        persistirVinculoEstudianteFicha(ficha, estudianteVinculado);
+        var estudianteAjeno = persistirEstudiante("Camila Ruiz", "camila@soyuco.edu.co");
+        entityManager.flush();
+
+        var criteria = RevisionItemEstudianteCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("estudianteId", FiltroOperador.ES, estudianteAjeno.toString()))
+                .build();
+
+        // Act
+        PaginatedResult<RevisionItemReadModel> resultado = adapter.consultarTodasEstudiante(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).isEmpty();
+    }
+
+    @Test
+    void debeExcluirDuplicados_cuandoFichaTieneVariosEstudiantes() {
+        // Arrange — el JOIN con estudiante_ficha_perfil no debe multiplicar la fila de la revision
+        // para el estudiante consultado, aunque la ficha tenga mas de un estudiante vinculado.
+        var asesor = persistirAsesor("Fabian Leal", "fabian@soyuco.edu.co");
+        var ficha = persistirFicha(asesor, "Proyecto compartido");
+        var item = persistirItem(ficha, "Item compartido");
+        var revision = persistirRevision(item, estadoEnProgreso);
+        persistirObservacion(revision);
+        var estudianteUno = persistirEstudiante("Estudiante Uno", "uno@soyuco.edu.co");
+        var estudianteDos = persistirEstudiante("Estudiante Dos", "dos@soyuco.edu.co");
+        persistirVinculoEstudianteFicha(ficha, estudianteUno);
+        persistirVinculoEstudianteFicha(ficha, estudianteDos);
+        entityManager.flush();
+
+        var criteria = RevisionItemEstudianteCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("estudianteId", FiltroOperador.ES, estudianteUno.toString()))
+                .build();
+
+        // Act
+        PaginatedResult<RevisionItemReadModel> resultado = adapter.consultarTodasEstudiante(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(1);
+        assertThat(resultado.getTotalElements()).isEqualTo(1L);
+    }
+
+    @Test
+    void debeFiltrarPorItem_cuandoCriteriaLoIndica() {
+        // Arrange
+        var asesor = persistirAsesor("Gloria Mesa", "gloria@soyuco.edu.co");
+        var ficha = persistirFicha(asesor, "Proyecto de Gloria");
+        var itemBuscado = persistirItem(ficha, "Item buscado");
+        var otroItem = persistirItem(ficha, "Otro item");
+        var revisionBuscada = persistirRevision(itemBuscado, estadoEnProgreso);
+        var otraRevision = persistirRevision(otroItem, estadoEnProgreso);
+        persistirObservacion(revisionBuscada);
+        persistirObservacion(otraRevision);
+        var estudiante = persistirEstudiante("Ivan Coral", "ivan@soyuco.edu.co");
+        persistirVinculoEstudianteFicha(ficha, estudiante);
+        entityManager.flush();
+
+        var criteria = RevisionItemEstudianteCriteria.builder()
+                .pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("item", FiltroOperador.ES, itemBuscado.toString()))
+                .build();
+
+        // Act
+        PaginatedResult<RevisionItemReadModel> resultado = adapter.consultarTodasEstudiante(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(1);
+        assertThat(resultado.getContent().get(0).item()).isEqualTo(itemBuscado);
+    }
+
+    @Test
+    void debeOrdenarPorEstadoRevisionNombre_cuandoCriteriaLoIndica() {
+        // Arrange
+        var asesor = persistirAsesor("Teresa Vanegas", "teresa@soyuco.edu.co");
+        var ficha = persistirFicha(asesor, "Proyecto de Teresa");
+        var itemUno = persistirItem(ficha, "Item en progreso");
+        var itemDos = persistirItem(ficha, "Item cerrado");
+        var revisionUno = persistirRevision(itemUno, estadoEnProgreso);
+        var revisionDos = persistirRevision(itemDos, estadoCerrada);
+        persistirObservacion(revisionUno);
+        persistirObservacion(revisionDos);
+        var estudiante = persistirEstudiante("Oscar Bravo", "oscar@soyuco.edu.co");
+        persistirVinculoEstudianteFicha(ficha, estudiante);
+        entityManager.flush();
+
+        var criteria = RevisionItemEstudianteCriteria.builder()
+                .pagina(0).tamanio(10)
+                .ordenamiento(List.of(SortOrder.of("estadoRevision", SortDirection.DESC)))
+                .build();
+
+        // Act
+        PaginatedResult<RevisionItemReadModel> resultado = adapter.consultarTodasEstudiante(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(RevisionItemReadModel::estadoRevisionNombre)
+                .containsExactly("En Progreso", "Cerrada");
+    }
+
+    @Test
+    void debePaginar_segunPaginaYTamanio() {
+        // Arrange
+        var asesor = persistirAsesor("Ricardo Ariza", "ricardo@soyuco.edu.co");
+        var ficha = persistirFicha(asesor, "Proyecto de Ricardo");
+        var estudiante = persistirEstudiante("Silvia Nova", "silvia@soyuco.edu.co");
+        persistirVinculoEstudianteFicha(ficha, estudiante);
+        for (int i = 0; i < 3; i++) {
+            var item = persistirItem(ficha, "Item " + i);
+            var revision = persistirRevision(item, estadoEnProgreso);
+            persistirObservacion(revision);
+        }
+        entityManager.flush();
+
+        var criteria = RevisionItemEstudianteCriteria.builder().pagina(0).tamanio(2).build();
+
+        // Act
+        PaginatedResult<RevisionItemReadModel> resultado = adapter.consultarTodasEstudiante(criteria);
+
+        // Assert
+        assertThat(resultado.getContent()).hasSize(2);
+        assertThat(resultado.getTotalElements()).isEqualTo(3L);
+        assertThat(resultado.getPage()).isZero();
+        assertThat(resultado.getSize()).isEqualTo(2);
+    }
+
+    private UUID persistirEstudiante(String nombre, String email) {
+        var estudiante = EstudianteJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .identificador("EST-" + UUID.randomUUID().toString().substring(0, 8))
+                .nombre(nombre)
+                .email(email)
+                .ocurridoEn(Instant.now())
+                .build();
+        entityManager.persist(estudiante);
+        return estudiante.getId();
+    }
+
+    private void persistirVinculoEstudianteFicha(UUID fichaPerfilId, UUID estudianteId) {
+        entityManager.persist(EstudianteFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .fichaPerfilId(fichaPerfilId)
+                .estudianteId(estudianteId)
+                .build());
+    }
+
+    private void persistirObservacion(UUID revisionItemId) {
+        entityManager.persist(ObservacionItemJpaEntity.builder()
+                .id(UUID.randomUUID())
+                .revisionItemId(revisionItemId)
+                .observacion("Observacion de prueba")
+                .estadoObservacionRevision(estadoPendiente)
+                .build());
     }
 
     private UUID persistirAsesor(String nombre, String email) {
