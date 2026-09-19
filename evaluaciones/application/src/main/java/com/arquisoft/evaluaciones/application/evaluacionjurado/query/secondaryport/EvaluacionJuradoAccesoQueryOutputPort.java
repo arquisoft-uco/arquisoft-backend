@@ -5,6 +5,4 @@ import java.util.UUID;
 public interface EvaluacionJuradoAccesoQueryOutputPort {
 
     boolean existePorId(UUID evaluacionJurado);
-
-    boolean perteneceAlEstudiante(UUID evaluacionJurado, UUID estudiante);
 }

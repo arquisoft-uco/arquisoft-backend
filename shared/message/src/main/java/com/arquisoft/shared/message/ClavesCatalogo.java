@@ -13,26 +13,32 @@ import com.arquisoft.shared.message.key.evaluaciones.CriterioItemCualitativoJura
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
-import com.arquisoft.shared.message.key.evaluaciones.ProyeccionAccesoEvaluacionKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.ProyeccionAccesoEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
+import com.arquisoft.shared.message.key.fichas.AsesorFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteKey;
 import com.arquisoft.shared.message.key.fichas.EvaluacionFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.ItemFichaPerfilKey;
 import com.arquisoft.shared.message.key.fichas.MinioGuiaKey;
 import com.arquisoft.shared.message.key.fichas.TipoItemKey;
-import com.arquisoft.shared.message.key.fichas.UsuarioEspejoKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.PlantillaKey;
+import com.arquisoft.shared.message.key.proyectos.AsesorKey;
+import com.arquisoft.shared.message.key.proyectos.CoordinadorKey;
+import com.arquisoft.shared.message.key.proyectos.EstudianteProyectosKey;
+import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
+import com.arquisoft.shared.message.key.solicitudes.TipoSolicitudKey;
+import com.arquisoft.shared.message.key.solicitudes.UsuarioReplicaKey;
 import com.arquisoft.shared.message.key.seguridad.AutenticacionKey;
 import com.arquisoft.shared.message.key.seguridad.ConfiguracionKey;
 import com.arquisoft.shared.message.key.seguridad.IniciarSesionKey;
@@ -41,6 +47,10 @@ import com.arquisoft.shared.message.key.seguridad.RolKey;
 import com.arquisoft.shared.message.key.seguridad.SesionKey;
 import com.arquisoft.shared.message.key.seguridad.TokenInvalidadoKey;
 import com.arquisoft.shared.message.key.seguridad.TokenKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarAsesorKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarCoordinadorKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 
 
@@ -71,8 +81,8 @@ public final class ClavesCatalogo {
      * <p>Ese fallo ya ocurrió una vez, cuando cuatro nombres colisionaban por pares y había que
      * cualificarlos aquí: bastaba con que el "optimizar imports" del IDE colapsara un par para que dos
      * enums desaparecieran del registro. La defensa de verdad no era el {@code Set} sino renombrarlos
-     * —{@code EnvioNotificacionKey} y {@code UsuarioEspejoKey}—, porque un nombre único no se puede
-     * colapsar. Lo que queda aquí es la red por si alguien duplica una línea a mano.
+     * —{@code EnvioNotificacionKey}—, porque un nombre único no se puede colapsar. Lo que queda aquí
+     * es la red por si alguien duplica una línea a mano.
      */
     public static final Set<Class<? extends ClaveMensaje>> ENUMS = Set.of(
             AlmacenamientoKey.class,
@@ -87,6 +97,7 @@ public final class ClavesCatalogo {
             EstadoFichaPerfilKey.class,
             EstudianteFichaPerfilKey.class,
             EstudianteKey.class,
+            AsesorFichaKey.class,
             EvaluacionFichaPerfilKey.class,
             ItemCualitativoJuradoKey.class,
             ItemCuantitativoJuradoKey.class,
@@ -100,7 +111,9 @@ public final class ClavesCatalogo {
             TipoItemKey.class,
             RepresentanteComiteKey.class,
             RevisionItemKey.class,
-            UsuarioEspejoKey.class,
+            SolicitudKey.class,
+            TipoSolicitudKey.class,
+            UsuarioReplicaKey.class,
             ConsumidorKey.class,
             EnvioNotificacionKey.class,
             NotificacionKey.class,
@@ -113,7 +126,14 @@ public final class ClavesCatalogo {
             SesionKey.class,
             TokenInvalidadoKey.class,
             TokenKey.class,
-            RegistrarUsuarioKey.class
+            RegistrarUsuarioKey.class,
+            AgregarEstudianteKey.class,
+            AgregarCoordinadorKey.class,
+            CoordinadorKey.class,
+            AgregarAsesorFichaKey.class,
+            AgregarAsesorKey.class,
+            AsesorKey.class,
+            EstudianteProyectosKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

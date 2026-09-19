@@ -4,9 +4,6 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum ProyeccionAccesoEvaluacionKey implements ClaveMensaje {
 
-    LOG_EVENTO_RECIBIDO("evaluaciones.infraestructura.proyeccionacceso.log.evento-recibido", 2),
-    LOG_PROYECCION_ACTUALIZADA("evaluaciones.infraestructura.proyeccionacceso.log.proyeccion-actualizada", 1),
-    LOG_EVENTO_ANTIGUO_DESCARTADO("evaluaciones.aplicacion.proyeccionacceso.log.evento-antiguo-descartado", 1),
     ERROR_CONTACTOS_NO_DISPONIBLES("evaluaciones.infraestructura.proyeccionacceso.error.contactos-no-disponibles", 0),
     LOG_CONTACTOS_NO_VERIFICADOS("evaluaciones.infraestructura.proyeccionacceso.log.contactos-no-verificados", 1);
 

@@ -67,6 +67,22 @@ public final class FichasCodes {
         private Estudiante() {}
 
         public static final String ESTUDIANTE_NO_ENCONTRADO = "ESTUDIANTE_NO_ENCONTRADO";
+        public static final String ID_REQUERIDO = "ESTUDIANTE_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "ESTUDIANTE_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "ESTUDIANTE_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "ESTUDIANTE_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ESTUDIANTE_OCURRIDO_EN_REQUERIDO";
+    }
+
+    public static final class AsesorFicha {
+
+        private AsesorFicha() {}
+
+        public static final String ID_REQUERIDO = "ASESOR_FICHA_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "ASESOR_FICHA_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "ASESOR_FICHA_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "ASESOR_FICHA_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ASESOR_FICHA_OCURRIDO_EN_REQUERIDO";
     }
 
     public static final class EstudianteFichaPerfil {

@@ -17,8 +17,7 @@ public class EvaluacionCualitativaJuradoQueryOutputAdapter implements Evaluacion
 
     @Override
     public List<EvaluacionCualitativaJuradoReadModel> consultar(EvaluacionCualitativaJuradoCriteria criteria) {
-        return repository.findByEvaluacionJuradoIdAndEstudianteIdOrderByItemNombreAscIdAsc(
-                        criteria.evaluacionJuradoId(), criteria.estudianteId())
+        return repository.findByEvaluacionJuradoIdOrderByItemNombreAscIdAsc(criteria.evaluacionJuradoId())
                 .stream()
                 .map(EvaluacionCualitativaJuradoQueryMapper::toReadModel)
                 .toList();

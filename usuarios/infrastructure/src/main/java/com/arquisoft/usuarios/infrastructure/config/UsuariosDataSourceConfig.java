@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FullyQualifiedAnnotationBeanNameGenerator;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -24,7 +25,8 @@ import javax.sql.DataSource;
 @EnableJpaRepositories(
         basePackages = "com.arquisoft.usuarios.infrastructure",
         entityManagerFactoryRef = "usuariosEntityManagerFactory",
-        transactionManagerRef = "usuariosTransactionManager"
+        transactionManagerRef = "usuariosTransactionManager",
+        nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class
 )
 public class UsuariosDataSourceConfig {
 

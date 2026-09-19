@@ -21,6 +21,7 @@ spring:
       - "classpath:rutas-usuarios.yml"
       - "classpath:rutas-fichas.yml"
       - "classpath:rutas-evaluaciones.yml"
+      - "classpath:rutas-solicitudes.yml"
   banner:
     location: classpath:banner.txt
   application:
@@ -295,6 +296,17 @@ datasource:
       connection-timeout: 20000
       pool-name: HikariPool-Notificaciones
 
+  solicitudes:
+    url: ${DB_SOLICITUDES_URL:jdbc:postgresql://localhost:5432/solicitudes}
+    username: ${DB_SOLICITUDES_USERNAME:arquisoft_user}
+    password: ${DB_SOLICITUDES_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Solicitudes
+
 # ==================== KEYCLOAK ====================
 # Propiedades propias para KeycloakAuthAdapter y SecurityConfig.
 # No se usa el adapter keycloak-spring-boot-adapter (removido en SB3+).
@@ -377,7 +389,7 @@ logging:
   # binding relajado de Spring Boot solo llega a nivel de PAQUETE, nunca de clase, asi que sin
   # grupos no hay forma de tocar `org.hibernate.SQL` y `org.hibernate.type` a la vez desde .env.
   group:
-    negocio: com.arquisoft.fichas, com.arquisoft.seguridad, com.arquisoft.usuarios, com.arquisoft.notificaciones, com.arquisoft.evaluaciones
+    negocio: com.arquisoft.fichas, com.arquisoft.seguridad, com.arquisoft.usuarios, com.arquisoft.notificaciones, com.arquisoft.evaluaciones, com.arquisoft.proyectos, com.arquisoft.solicitudes
     plataforma: com.arquisoft.shared
     datos: org.hibernate.SQL, org.hibernate.type
     seguridad: org.springframework.security

@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,8 +36,8 @@ class EstudiantesFinderTest {
     void debeDevolverLosEstudiantesConNombreYCorreo_cuandoElPuertoLosEncuentra() {
         // Arrange
         when(estudianteOutputPort.buscarPorIds(List.of(ANA, LUIS))).thenReturn(List.of(
-                new EstudianteEntity(ANA, "1001", "Ana Gomez", "ana.gomez@soyuco.edu.co"),
-                new EstudianteEntity(LUIS, "1002", "Luis Diaz", "luis.diaz@soyuco.edu.co")));
+                new EstudianteEntity(ANA, "1001", "Ana Gomez", "ana.gomez@soyuco.edu.co", Instant.now()),
+                new EstudianteEntity(LUIS, "1002", "Luis Diaz", "luis.diaz@soyuco.edu.co", Instant.now())));
 
         // Act
         List<EstudianteDomain> resultado = estudiantesFinder.obtener(List.of(ANA, LUIS));
@@ -74,7 +75,7 @@ class EstudiantesFinderTest {
     void debeDevolverSoloLosEncontrados_cuandoAlgunEstudianteNoExiste() {
         // Arrange
         when(estudianteOutputPort.buscarPorIds(List.of(ANA, LUIS))).thenReturn(List.of(
-                new EstudianteEntity(ANA, "1001", "Ana Gomez", "ana.gomez@soyuco.edu.co")));
+                new EstudianteEntity(ANA, "1001", "Ana Gomez", "ana.gomez@soyuco.edu.co", Instant.now())));
 
         // Act
         List<EstudianteDomain> resultado = estudiantesFinder.obtener(List.of(ANA, LUIS));

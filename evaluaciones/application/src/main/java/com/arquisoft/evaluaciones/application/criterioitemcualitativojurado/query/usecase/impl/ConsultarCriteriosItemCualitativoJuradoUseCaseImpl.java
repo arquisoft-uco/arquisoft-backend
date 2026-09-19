@@ -20,7 +20,7 @@ public class ConsultarCriteriosItemCualitativoJuradoUseCaseImpl
     private final AppLogger logger;
 
     @Override
-    public List<CriterioItemCualitativoJuradoReadModel> ejecutar(Void entrada) {
+    public List<CriterioItemCualitativoJuradoReadModel> ejecutar() {
         var resultado = queryOutputPort.consultarTodos();
 
         logger.debug(Mensajes.obtener(CriterioItemCualitativoJuradoKey.LOG_CONSULTA_COMPLETADA), resultado.size());

@@ -1,5 +1,7 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
+import java.time.Instant;
+
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesVinculadosContadorFinder;
@@ -231,7 +233,7 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         when(estudiantesYaVinculadosFinder.obtener(any())).thenReturn(yaVinculados);
         when(estudiantesVinculadosContadorFinder.obtener(fichaPerfil)).thenReturn(vinculadosActuales);
         lenient().when(estudiantesFinder.obtener(List.of(estudiante))).thenReturn(
-                List.of(EstudianteDomain.reconstruir(estudiante, "1001", NOMBRE, EMAIL)));
+                List.of(EstudianteDomain.reconstruir(estudiante, "1001", NOMBRE, EMAIL, Instant.now())));
     }
 
     private static Optional<FichaPerfilDomain> presencia(FichaPerfilDomain fichaPerfilDomain) {
