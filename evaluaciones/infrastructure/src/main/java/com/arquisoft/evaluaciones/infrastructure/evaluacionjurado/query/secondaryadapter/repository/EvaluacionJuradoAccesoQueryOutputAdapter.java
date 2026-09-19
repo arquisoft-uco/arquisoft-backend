@@ -16,9 +16,4 @@ public class EvaluacionJuradoAccesoQueryOutputAdapter implements EvaluacionJurad
     public boolean existePorId(UUID evaluacionJurado) {
         return repository.existsById(evaluacionJurado);
     }
-
-    @Override
-    public boolean perteneceAlEstudiante(UUID evaluacionJurado, UUID estudiante) {
-        return repository.existePropiedad(evaluacionJurado, estudiante);
-    }
 }

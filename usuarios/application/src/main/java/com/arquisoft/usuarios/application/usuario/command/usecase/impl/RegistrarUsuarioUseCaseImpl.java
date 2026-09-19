@@ -1,5 +1,8 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
+import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
+import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
+import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailIdentidadExisteFinder;
@@ -34,6 +37,9 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
     private final ContactoUsuarioExisteFinder contactoUsuarioExisteFinder;
     private final RegistrarUsuarioValidator registrarUsuarioValidator;
     private final AgregarEstudianteUseCase agregarEstudianteUseCase;
+    private final AgregarCoordinadorUseCase agregarCoordinadorUseCase;
+    private final AgregarAsesorFichaUseCase agregarAsesorFichaUseCase;
+    private final AgregarAsesorUseCase agregarAsesorUseCase;
     private final AppLogger logger;
 
     @Override
@@ -58,6 +64,18 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
 
         if (registro.getRoles().contains(UsuariosRealmRoles.ESTUDIANTE)) {
             agregarEstudianteUseCase.ejecutar(usuario);
+        }
+
+        if (registro.getRoles().contains(UsuariosRealmRoles.COORDINADOR)) {
+            agregarCoordinadorUseCase.ejecutar(usuario);
+        }
+
+        if (registro.getRoles().contains(UsuariosRealmRoles.ASESOR_FICHA)) {
+            agregarAsesorFichaUseCase.ejecutar(usuario);
+        }
+
+        if (registro.getRoles().contains(UsuariosRealmRoles.ASESOR)) {
+            agregarAsesorUseCase.ejecutar(usuario);
         }
 
         logger.info(RegistrarUsuarioKey.LOG_REGISTRADO,
