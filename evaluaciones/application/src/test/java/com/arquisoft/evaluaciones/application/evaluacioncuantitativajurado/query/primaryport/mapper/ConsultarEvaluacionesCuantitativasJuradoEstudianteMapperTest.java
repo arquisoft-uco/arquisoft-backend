@@ -11,12 +11,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ConsultarEvaluacionesCuantitativasJuradoEstudianteMapperTest {
 
     @Test
-    void debeConservarAmbosIdentificadores_alConvertirQueryACriteria() {
+    void debeConservarLaEvaluacionJurado_alConvertirQueryACriteria() {
         // Arrange
         var evaluacionJurado = UUID.randomUUID();
-        var estudiante = UUID.randomUUID();
-        var query = ConsultarEvaluacionesCuantitativasJuradoEstudianteQuery.crear(
-                evaluacionJurado, estudiante.toString());
+        var query = ConsultarEvaluacionesCuantitativasJuradoEstudianteQuery.crear(evaluacionJurado);
 
         // Act
         EvaluacionCuantitativaJuradoCriteria criteria =
@@ -24,6 +22,5 @@ class ConsultarEvaluacionesCuantitativasJuradoEstudianteMapperTest {
 
         // Assert
         assertThat(criteria.evaluacionJuradoId()).isEqualTo(evaluacionJurado);
-        assertThat(criteria.estudianteId()).isEqualTo(estudiante);
     }
 }

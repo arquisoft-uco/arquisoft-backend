@@ -57,8 +57,6 @@ public final class EvaluacionesCodes {
 
         public static final String EVALUACION_JURADO_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_EVALUACION_JURADO_REQUERIDO";
-        public static final String ESTUDIANTE_REQUERIDO =
-                "EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_REQUERIDO";
         public static final String ITEM_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_ITEM_REQUERIDO";
         public static final String PUNTAJE_REQUERIDO =

@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface ConsultarEvaluacionesCuantitativasJuradoValidator {
 
-    void validar(UUID evaluacionJurado, boolean existe, boolean pertenece);
+    void validar(UUID evaluacionJurado, boolean existe);
 }
