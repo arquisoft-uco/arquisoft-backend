@@ -10,21 +10,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RegistrarObservacionItemJuradoMapperTest {
 
     @Test
-    void debeConstruirRegistro_cuandoCommandEsValido() {
+    void debeConstruirObservacion_cuandoCommandEsValido() {
         // Arrange
         var evaluacionCuantitativaJurado = UUID.randomUUID();
-        var jurado = UUID.randomUUID();
         var command = RegistrarObservacionItemJuradoCommand.crear(
-                evaluacionCuantitativaJurado, "Sustenta el puntaje otorgado", jurado.toString());
+                evaluacionCuantitativaJurado, "Sustenta el puntaje otorgado");
 
         // Act
-        var registro = RegistrarObservacionItemJuradoMapper.toDomain(command);
+        var observacion = RegistrarObservacionItemJuradoMapper.toDomain(command);
 
         // Assert
-        assertThat(registro.getJurado()).isEqualTo(jurado);
-        assertThat(registro.getObservacion().getId()).isNotNull();
-        assertThat(registro.getObservacion().getEvaluacionCuantitativaJurado())
-                .isEqualTo(evaluacionCuantitativaJurado);
-        assertThat(registro.getObservacion().getDescripcion()).isEqualTo("Sustenta el puntaje otorgado");
+        assertThat(observacion.getId()).isNotNull();
+        assertThat(observacion.getEvaluacionCuantitativaJurado()).isEqualTo(evaluacionCuantitativaJurado);
+        assertThat(observacion.getDescripcion()).isEqualTo("Sustenta el puntaje otorgado");
     }
 }

@@ -10,8 +10,7 @@ public final class RegistrarObservacionItemJuradoRequestMapper {
     private RegistrarObservacionItemJuradoRequestMapper() {}
 
     public static RegistrarObservacionItemJuradoCommand toCommand(
-            RegistrarObservacionItemJuradoRequestDTO dto, UUID evaluacionCuantitativaJurado, String juradoSubject) {
-        return RegistrarObservacionItemJuradoCommand.crear(
-                evaluacionCuantitativaJurado, dto.descripcion(), juradoSubject);
+            RegistrarObservacionItemJuradoRequestDTO dto, UUID evaluacionCuantitativaJurado) {
+        return RegistrarObservacionItemJuradoCommand.crear(evaluacionCuantitativaJurado, dto.descripcion());
     }
 }

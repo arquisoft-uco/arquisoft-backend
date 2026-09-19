@@ -15,17 +15,14 @@ class RegistrarObservacionItemJuradoRequestMapperTest {
     void debeConstruirCommand_cuandoDatosValidos() {
         // Arrange
         var evaluacionCuantitativaJurado = UUID.randomUUID();
-        var jurado = UUID.randomUUID();
         var dto = new RegistrarObservacionItemJuradoRequestDTO("Sustenta el puntaje otorgado");
 
         // Act
-        var command = RegistrarObservacionItemJuradoRequestMapper.toCommand(
-                dto, evaluacionCuantitativaJurado, jurado.toString());
+        var command = RegistrarObservacionItemJuradoRequestMapper.toCommand(dto, evaluacionCuantitativaJurado);
 
         // Assert
         assertThat(command.evaluacionCuantitativaJurado()).isEqualTo(evaluacionCuantitativaJurado);
         assertThat(command.descripcion()).isEqualTo("Sustenta el puntaje otorgado");
-        assertThat(command.jurado()).isEqualTo(jurado);
     }
 
     @Test
@@ -34,8 +31,7 @@ class RegistrarObservacionItemJuradoRequestMapperTest {
         var dto = new RegistrarObservacionItemJuradoRequestDTO(" ");
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistrarObservacionItemJuradoRequestMapper.toCommand(
-                dto, UUID.randomUUID(), UUID.randomUUID().toString()))
+        assertThatThrownBy(() -> RegistrarObservacionItemJuradoRequestMapper.toCommand(dto, UUID.randomUUID()))
                 .isInstanceOf(ApplicationValidationException.class);
     }
 }

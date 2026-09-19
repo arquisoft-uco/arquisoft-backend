@@ -4,20 +4,18 @@ import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.constant.EvaluacionesLimits;
 import com.arquisoft.shared.util.UtilTexto;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
-import com.arquisoft.shared.validation.ValidatorUUID;
 
 import java.util.UUID;
 
 public record RegistrarObservacionItemJuradoCommand(
-        UUID evaluacionCuantitativaJurado, String descripcion, UUID jurado) {
+        UUID evaluacionCuantitativaJurado, String descripcion) {
 
     public static RegistrarObservacionItemJuradoCommand crear(
-            UUID evaluacionCuantitativaJurado, String descripcion, String juradoSubject) {
+            UUID evaluacionCuantitativaJurado, String descripcion) {
         var result = new ValidationResult();
         var descripcionRecortada = UtilTexto.aplicarTrim(descripcion);
 
@@ -34,17 +32,8 @@ public record RegistrarObservacionItemJuradoCommand(
                     EvaluacionesCodes.ObservacionItemJurado.DESCRIPCION_DEMASIADO_LARGA, result);
         }
 
-        if (ValidatorTexto.noEnBlanco(juradoSubject,
-                EvaluacionesFields.ObservacionItemJurado.JURADO,
-                EvaluacionesCodes.ObservacionItemJurado.JURADO_REQUERIDO, result)) {
-            ValidatorUUID.uuidValido(juradoSubject,
-                    EvaluacionesFields.ObservacionItemJurado.JURADO,
-                    EvaluacionesCodes.ObservacionItemJurado.JURADO_REQUERIDO, result);
-        }
-
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new RegistrarObservacionItemJuradoCommand(
-                evaluacionCuantitativaJurado, descripcionRecortada, UtilUUID.generarUUIDDesdeTexto(juradoSubject));
+        return new RegistrarObservacionItemJuradoCommand(evaluacionCuantitativaJurado, descripcionRecortada);
     }
 }

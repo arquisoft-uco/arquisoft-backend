@@ -7,4 +7,6 @@ import java.util.UUID;
 public interface EvaluacionJuradoOutputPort {
 
     EstadoEvaluacionJuradoEntity obtenerEstado(UUID evaluacionJurado, UUID jurado);
+
+    boolean estaFinalizada(UUID evaluacionJurado);
 }

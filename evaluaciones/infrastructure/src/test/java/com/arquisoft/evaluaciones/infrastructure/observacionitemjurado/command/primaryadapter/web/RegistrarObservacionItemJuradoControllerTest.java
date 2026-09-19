@@ -3,7 +3,6 @@ package com.arquisoft.evaluaciones.infrastructure.observacionitemjurado.command.
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.primaryport.interactor.RegistrarObservacionItemJuradoInteractor;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.DescripcionObservacionItemJuradoDuplicadaException;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.EvaluacionCuantitativaJuradoNoEncontradaException;
-import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.EvaluacionCuantitativaJuradoNoPerteneceJuradoException;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.EvaluacionJuradoFinalizadaException;
 import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
@@ -115,7 +114,6 @@ class RegistrarObservacionItemJuradoControllerTest {
         // Act & Assert
         mockMvc.perform(post(RUTA)
                         .with(SecurityMockMvcRequestPostProcessors.jwt()
-                                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                                 .authorities(new SimpleGrantedAuthority(
                                         "evaluaciones:evaluacion-cuantitativa-jurado:update")))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -127,20 +125,6 @@ class RegistrarObservacionItemJuradoControllerTest {
     void debeRetornar422_cuandoLaEvaluacionNoExiste() throws Exception {
         // Arrange
         doThrow(new EvaluacionCuantitativaJuradoNoEncontradaException(EVALUACION_CUANTITATIVA_JURADO))
-                .when(interactor).ejecutar(any());
-
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(jwtConPermiso())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isUnprocessableEntity());
-    }
-
-    @Test
-    void debeRetornar422_cuandoNoPerteneceAlJuradoAutenticado() throws Exception {
-        // Arrange
-        doThrow(new EvaluacionCuantitativaJuradoNoPerteneceJuradoException(EVALUACION_CUANTITATIVA_JURADO))
                 .when(interactor).ejecutar(any());
 
         // Act & Assert
@@ -181,7 +165,6 @@ class RegistrarObservacionItemJuradoControllerTest {
 
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermiso() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                 .authorities(new SimpleGrantedAuthority(
                         EvaluacionesAuthorities.OBSERVACION_ITEM_JURADO_CREATE));
     }

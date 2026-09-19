@@ -19,4 +19,9 @@ public class EvaluacionJuradoCommandOutputAdapter implements EvaluacionJuradoOut
                 .map(p -> new EstadoEvaluacionJuradoEntity(p.isPertenece(), p.isFinalizada()))
                 .orElse(new EstadoEvaluacionJuradoEntity(false, false));
     }
+
+    @Override
+    public boolean estaFinalizada(UUID evaluacionJurado) {
+        return repository.estaFinalizada(evaluacionJurado).orElse(false);
+    }
 }

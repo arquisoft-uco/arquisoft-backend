@@ -122,11 +122,11 @@ public final class EvaluacionesApiMessages {
                 "Registro de observaciones textuales sobre evaluaciones cuantitativas del jurado";
         public static final String REGISTRAR_SUMMARY = "Registrar observación";
         public static final String REGISTRAR_DESCRIPTION =
-                "Registra una nueva observación textual sobre una evaluación cuantitativa propia del jurado";
+                "Registra una nueva observación textual sobre una evaluación cuantitativa del jurado";
         public static final String REGISTRAR_RESP_201 = "Observación registrada";
         public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos";
         public static final String REGISTRAR_RESP_422 =
-                "La evaluación cuantitativa no existe, no pertenece al jurado autenticado, su evaluación de "
+                "La evaluación cuantitativa no existe, su evaluación de "
                         + "jurado ya está finalizada, o ya existe una observación con esa descripción";
     }
 
