@@ -2,7 +2,7 @@ package com.arquisoft.fichas.application.asesorficha.command.primaryport.interac
 
 import com.arquisoft.fichas.application.asesorficha.command.primaryport.model.AgregarAsesorFichaCommand;
 import com.arquisoft.fichas.application.asesorficha.command.result.AgregacionAsesorFichaResult;
-import com.arquisoft.fichas.application.asesorficha.command.usecase.AgregarAsesorFichaFichasUseCase;
+import com.arquisoft.fichas.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class AgregarAsesorFichaInteractorImplTest {
 
     @Mock
-    private AgregarAsesorFichaFichasUseCase agregarAsesorFichaFichasUseCase;
+    private AgregarAsesorFichaUseCase agregarAsesorFichaUseCase;
 
     @InjectMocks
     private AgregarAsesorFichaInteractorImpl interactor;
@@ -33,13 +33,13 @@ class AgregarAsesorFichaInteractorImplTest {
         var command = AgregarAsesorFichaCommand.crear(
                 id.toString(), "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
         var esperado = new AgregacionAsesorFichaResult.Agregada(id);
-        when(agregarAsesorFichaFichasUseCase.ejecutar(any())).thenReturn(esperado);
+        when(agregarAsesorFichaUseCase.ejecutar(any())).thenReturn(esperado);
 
         // Act
         var resultado = interactor.ejecutar(command);
 
         // Assert
         assertThat(resultado).isSameAs(esperado);
-        verify(agregarAsesorFichaFichasUseCase).ejecutar(any());
+        verify(agregarAsesorFichaUseCase).ejecutar(any());
     }
 }

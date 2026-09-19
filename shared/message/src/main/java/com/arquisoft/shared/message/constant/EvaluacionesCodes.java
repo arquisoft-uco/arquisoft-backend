@@ -59,16 +59,12 @@ public final class EvaluacionesCodes {
 
         public static final String EVALUACION_JURADO_REQUERIDO =
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_REQUERIDO";
-        public static final String ESTUDIANTE_REQUERIDO =
-                "EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_REQUERIDO";
         public static final String ITEM_REQUERIDO =
                 "EVALUACION_CUALITATIVA_JURADO_ITEM_REQUERIDO";
         public static final String CRITERIO_REQUERIDO =
                 "EVALUACION_CUALITATIVA_JURADO_CRITERIO_REQUERIDO";
         public static final String EVALUACION_JURADO_NO_ENCONTRADA =
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_ENCONTRADA";
-        public static final String EVALUACION_JURADO_NO_PERTENECE =
-                "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_PERTENECE";
         public static final String EVALUACION_JURADO_NO_PERTENECE_JURADO =
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_PERTENECE_JURADO";
         public static final String ITEM_INVALIDO =
@@ -121,8 +117,6 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_JURADO_ID_REQUERIDO";
         public static final String EVALUACION_JURADO_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_EVALUACION_JURADO_REQUERIDO";
-        public static final String ESTUDIANTE_REQUERIDO =
-                "EVALUACION_CUANTITATIVA_JURADO_ESTUDIANTE_REQUERIDO";
         public static final String JURADO_REQUERIDO =
                 "EVALUACION_CUANTITATIVA_JURADO_JURADO_REQUERIDO";
         public static final String ITEM_REQUERIDO =
@@ -139,26 +133,6 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUANTITATIVA_JURADO_EVALUACION_FINALIZADA";
         public static final String PUNTAJE_EXCEDE_VALOR_ITEM =
                 "EVALUACION_CUANTITATIVA_JURADO_PUNTAJE_EXCEDE_VALOR_ITEM";
-    }
-
-    public static final class EntregableProyectoAcceso {
-
-        private EntregableProyectoAcceso() {}
-
-        public static final String ENTREGABLE_REQUERIDO = "ENTREGABLE_PROYECTO_ACCESO_ENTREGABLE_REQUERIDO";
-        public static final String PROYECTO_REQUERIDO = "ENTREGABLE_PROYECTO_ACCESO_PROYECTO_REQUERIDO";
-        public static final String VERSION_ENTREGABLE_INVALIDA =
-                "ENTREGABLE_PROYECTO_ACCESO_VERSION_ENTREGABLE_INVALIDA";
-        public static final String OCURRIDO_EN_REQUERIDO = "ENTREGABLE_PROYECTO_ACCESO_OCURRIDO_EN_REQUERIDO";
-    }
-
-    public static final class ProyectoEstudianteAcceso {
-
-        private ProyectoEstudianteAcceso() {}
-
-        public static final String PROYECTO_REQUERIDO = "PROYECTO_ESTUDIANTE_ACCESO_PROYECTO_REQUERIDO";
-        public static final String ESTUDIANTE_REQUERIDO = "PROYECTO_ESTUDIANTE_ACCESO_ESTUDIANTE_REQUERIDO";
-        public static final String OCURRIDO_EN_REQUERIDO = "PROYECTO_ESTUDIANTE_ACCESO_OCURRIDO_EN_REQUERIDO";
     }
 
     public static final class ItemCuantitativoJurado {

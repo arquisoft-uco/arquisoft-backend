@@ -31,11 +31,9 @@ class ConsultarEvaluacionesCuantitativasJuradoInteractorImplTest {
     void debeMapearQueryACriteriaYDelegarEnElUseCase_retornandoElMismoResultado() {
         // Arrange
         var evaluacionJurado = UUID.randomUUID();
-        var estudiante = UUID.randomUUID();
-        var query = ConsultarEvaluacionesCuantitativasJuradoEstudianteQuery.crear(
-                evaluacionJurado, estudiante.toString());
+        var query = ConsultarEvaluacionesCuantitativasJuradoEstudianteQuery.crear(evaluacionJurado);
         List<EvaluacionCuantitativaJuradoReadModel> resultado = List.of();
-        when(useCase.ejecutar(new EvaluacionCuantitativaJuradoCriteria(evaluacionJurado, estudiante)))
+        when(useCase.ejecutar(new EvaluacionCuantitativaJuradoCriteria(evaluacionJurado)))
                 .thenReturn(resultado);
 
         // Act
@@ -46,6 +44,5 @@ class ConsultarEvaluacionesCuantitativasJuradoInteractorImplTest {
         var captor = ArgumentCaptor.forClass(EvaluacionCuantitativaJuradoCriteria.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().evaluacionJuradoId()).isEqualTo(evaluacionJurado);
-        assertThat(captor.getValue().estudianteId()).isEqualTo(estudiante);
     }
 }

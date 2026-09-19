@@ -104,8 +104,10 @@ plan está desactualizado y qué partes hay que rehacer antes de tocar nada.
 
 `domain ← application ← infrastructure`. Los 9 bounded contexts (`seguridad`, `usuarios`, `fichas`,
 `notificaciones` y `evaluaciones` con código; `proyectos`, `artefactos`, `repositorio_artefactos` y
-`entregables` solo con su `{Contexto}DataSourceConfig`) **nunca** se importan entre sí — solo se comunican vía
-eventos de dominio en RabbitMQ (`shared:amqp`).
+`entregables` solo con su `{Contexto}DataSourceConfig`) **nunca** se importan entre sí. Se comunican
+por eventos de dominio en RabbitMQ (`shared:amqp`), con **una única excepción acotada**: una consulta
+síncrona de solo lectura a otro contexto, hecha por HTTP (nunca un import) — ver *Consultas síncronas
+entre contextos*.
 
 Dentro de un contexto sí hay tráfico entre features (`fichaperfil` consulta `asesorficha`), pero
 siempre a través del **puerto de application** de la otra feature, nunca de su `domain/` ni de su
@@ -868,11 +870,43 @@ parámetros no quedan en ninguna columna.
 
 Referencia completa: `ReintentarNotificacionesFallidasUseCaseImpl` + `ReintentoNotificacionesConfig`.
 
+### Consultas síncronas entre contextos
+
+El default para "el contexto A necesita algo del contexto B" es un evento: B publica, A replica
+local, A lee su tabla espejo (siguiente sección). Se recurre a una **consulta HTTP síncrona** solo si
+se cumplen las **tres**:
+
+1. El dato es **precondición de una escritura** en A y debe ser correcto al instante de escribir, no
+   eventualmente — una réplica desactualizada dejaría pasar un comando inválido.
+2. A **no necesita el dato para nada más**, así que mantener una réplica (más su backfill y su
+   consumer) es puro lastre.
+3. B ya **expone una consulta** que responde.
+
+Primer caso: el asesor/coordinador asignado al estudiante, verificado cuando `solicitudes` crea una
+solicitud de novedad / cambio de asesor (`AsignacionProyectoOutputPort` → `proyectos`).
+
+Forma, espejando cualquier otro puerto secundario:
+
+| Pieza | Dónde | Regla |
+|---|---|---|
+| Puerto | `application/{feature}/command/secondaryport/{Concepto}OutputPort` (o su propio paquete fino si no mapea a un agregado, p. ej. `application/asignacionproyecto/command/secondaryport/`) | Devuelve un `boolean`/valor plano. **La `Rule` sigue decidiendo**, el puerto solo responde |
+| `Finder` | `application/{feature}/command/finder/` | Lo consume igual que un chequeo contra réplica |
+| Adaptador | `infrastructure/{feature}/command/secondaryadapter/webclient/{Concepto}OutputAdapter`, `@Component` | Habla por **`shared:web-client`** — nunca `RestClient`/`WebClient` inline, nunca un cliente generado que importe B. Reenvía el bearer del llamante. Fallo de transporte → `InfrastructureException` (503): un peer caído falla la petición, no salta el chequeo |
+
+**`shared:web-client` no existe todavía** (lo trae una HT aparte). Hasta entonces, un contexto que
+necesita esto embarca el puerto + la `Rule` + el `Finder` **cableados y activos**, con el adaptador
+un **stub** documentado (devuelve el valor permisivo, loguea `warn`) — registrado en
+`CLAUDE.md` → *Desviaciones conocidas*. Activarlo es cambiar un solo archivo (el adaptador).
+
+Esto **no** reemplaza a la réplica por eventos para "A necesita el dato de B para algo más que un
+chequeo puntual de escritura" — ahí sigue siendo tabla espejo.
+
 ### Replicación entre contextos: dueño único, espejo y lápida
 
 Una entidad que "existe en varios contextos" tiene **un dueño** y los demás guardan una **tabla
-espejo** con lo poco que necesitan (`fichas/application/usuario/RegistrarUsuarioUseCase` alimentado
-por `UsuarioCreadoConsumer`). No es un registro replicado en N sitios que pueda fallar a medias: es un
+espejo** con lo poco que necesitan (`fichas/.../estudiante`, alimentada por
+`EstudianteAgregadoConsumer` desde `usuarios.estudiante.agregado`; `proyectos` replica el mismo
+evento con sus propias clases homónimas). No es un registro replicado en N sitios que pueda fallar a medias: es un
 hecho del dueño que los demás replican.
 
 El test que decide el diseño es **¿puede el contexto destino rechazar por regla de negocio?**
@@ -897,24 +931,34 @@ Todos los flujos entre contextos que existen hoy caen en la primera fila.
    Lo mismo vale para **clases y métodos**: el espejo no lleva `Espejo`, `Replica` ni `Mirror` en
    ningún nombre. Se replica un estudiante, no un "estudiante espejo" — pegar el mecanismo al
    sustantivo inventa un concepto que el negocio no tiene. `EstudianteDomain`,
-   `AgregarEstudianteUseCase`, `EstudianteFinder`, `EstudianteOutputPort`.
+   `AgregarEstudianteUseCase`, `EstudiantePorIdFinder`, `EstudianteOutputPort`.
 
-   **Excepción: el nombre de bean.** Spring nombra el bean por el nombre simple de la clase, así
-   que dos beans homónimos en contextos distintos abortan el arranque con
-   `ConflictingBeanDefinitionException`. Por eso, en la réplica, **toda clase que es bean** y ya
-   existe con ese nombre en otro contexto lleva el **nombre del contexto que la aloja** antes del sufijo
-   técnico: `{Concepto}{Contexto}{Sufijo}`. El dueño conserva el nombre natural; la interfaz se
-   renombra junto con su `Impl`.
+   **Los beans también llevan el nombre natural.** Spring nombraría cada bean por el nombre simple
+   de su clase, y dos homónimos en contextos distintos abortarían el arranque con
+   `ConflictingBeanDefinitionException`. Eso se resuelve en la configuración, no en el nombre:
+   `ArquisoftApplication` declara
+   `@SpringBootApplication(nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class)` y cada
+   `{Contexto}DataSourceConfig` repite el mismo `nameGenerator` en su `@EnableJpaRepositories`. Los
+   repositorios Spring Data no pasan por el escaneo de componentes y **no** heredan el generador de la
+   aplicación: un `@EnableJpaRepositories` sin él vuelve a hacer chocar dos `{X}CommandRepository`.
+   Con el nombre de bean igual al FQN, la réplica usa el nombre natural en **todas** sus clases
+   (`AgregarCoordinadorInteractor`, `CoordinadorAgregadoConsumer`, `CoordinadorCommandRepository`),
+   sin `Espejo`/`Replica` y sin calificador de contexto.
 
-   | Es bean → calificador | No es bean → nombre natural |
-   |---|---|
-   | `EstudianteFichasPorIdFinder(Impl)`, `AgregarEstudianteFichasInteractor(Impl)`, `AgregarCoordinadorProyectosUseCase(Impl)`, `EstudianteAgregadoFichasConsumer`, `AsesorProyectosCommandOutputAdapter`, `AsesorProyectosCommandRepository`, `{Contexto}…Config` | `EstudianteDomain`, `EstudianteEntity`, `EstudianteJpaEntity`, `EstudianteMapper`, `EstudianteOutputPort`, `AgregarEstudianteCommand`, `EstudianteAgregadoPayload`, `AgregacionEstudianteResult` |
-
-   Un calificador de **contexto** no es un calificador de mecanismo: `Fichas` dice dónde vive, no
-   que sea copia, así que no choca con la prohibición de `Espejo`. Un bean que hoy es único en todo
-   el repo puede quedarse con el nombre natural (`CoordinadorPorIdFinderImpl`), pero quien añada el
-   segundo homónimo renombra el suyo. El gate `verificarNombresBeanUnicos` (cuelga de `check`) falla
-   ante cualquier nombre simple de bean repetido en `src/main`.
+   Consecuencias:
+   - Un bean escaneado **nunca** se referencia por nombre en cadena (`@Qualifier("…")`,
+     `@DependsOn`, SpEL `@nombre`): su nombre es el FQN. Se inyecta por tipo (interfaz).
+   - Los métodos `@Bean` **no** pasan por el generador: su nombre es el del método, y dos métodos
+     homónimos en contextos distintos siguen abortando el arranque. Por eso llevan el contexto que
+     los aloja como prefijo (`fichasTransactionManager`). En una réplica esto afecta sobre todo a la
+     cola: el `@Bean Declarables` va en `{Contexto}{Productor}QueueConfig` y se llama
+     `{contexto}{Evento}Declarables` (`fichasEstudianteAgregadoDeclarables` en `FichasUsuariosQueueConfig`,
+     `proyectosEstudianteAgregadoDeclarables` en `ProyectosUsuariosQueueConfig`) — nunca
+     `estudianteAgregadoDeclarables`, que choca con la siguiente réplica del mismo evento.
+   - Las clases de `config/` siguen prefijadas por contexto (`FichasDataSourceConfig`) para leer a
+     quién pertenecen desde el import.
+   - Ningún bean de réplica lleva calificador de contexto: un nombre con `Fichas`/`Proyectos` como
+     calificador (`AgregarEstudianteFichasInteractor`) es la convención retirada, no un precedente.
 
 1. **`ocurridoEn` en el payload y en la tabla espejo.** Ya viaja en el JSON (`DomainEvent` lo asigna) y
    los payloads lo declaran. El espejo guarda el `ocurrido_en` del último evento aplicado y **descarta
@@ -973,8 +1017,10 @@ Consecuencias que se notan al escribir código:
   (`V20260504181427__crear_tablas_fichas_perfil.sql`), no una secuencia. Dos migraciones de la misma
   entrega se separan por un segundo. Nunca se retrocede un timestamp ni se renombra/edita una
   migración ya aplicada: se agrega otra.
-- **Una FK hacia otro contexto no es posible** — son bases distintas. Se modela como tabla réplica
-  local poblada por eventos AMQP (`asesor_ficha`, `estudiante` en `fichas`).
+- **Una FK hacia otro contexto no es posible** — son bases distintas. Un dato de otro contexto que A
+  necesita se modela como tabla réplica local poblada por eventos AMQP (`asesor_ficha`, `estudiante`
+  en `fichas`); un chequeo puntual de escritura que solo pregunta "¿esto es así ahora?" puede ser una
+  *Consulta síncrona entre contextos* (arriba) — nunca una tabla compartida, nunca un import.
 - `@Table` no lleva `schema` ni catálogo, y el SQL no prefija nombres de base: la conexión ya apunta
   a la base correcta.
 
