@@ -6,7 +6,6 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.usecase.ConsultarEvaluacionesCualitativasJuradoUseCase;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.validator.ConsultarEvaluacionesCualitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.finder.EvaluacionJuradoExisteQueryFinder;
-import com.arquisoft.evaluaciones.application.evaluacionjurado.query.finder.EvaluacionJuradoPerteneceEstudianteQueryFinder;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
 import lombok.RequiredArgsConstructor;
@@ -20,20 +19,17 @@ public class ConsultarEvaluacionesCualitativasJuradoUseCaseImpl
         implements ConsultarEvaluacionesCualitativasJuradoUseCase {
 
     private final EvaluacionJuradoExisteQueryFinder evaluacionJuradoExisteQueryFinder;
-    private final EvaluacionJuradoPerteneceEstudianteQueryFinder evaluacionJuradoPerteneceEstudianteQueryFinder;
     private final ConsultarEvaluacionesCualitativasJuradoValidator consultarEvaluacionesCualitativasJuradoValidator;
     private final EvaluacionCualitativaJuradoQueryOutputPort evaluacionCualitativaJuradoQueryOutputPort;
     private final AppLogger logger;
 
     @Override
     public List<EvaluacionCualitativaJuradoReadModel> ejecutar(EvaluacionCualitativaJuradoCriteria criteria) {
-        logger.debug(EvaluacionCualitativaJuradoKey.LOG_CONSULTANDO,
-                criteria.evaluacionJuradoId(), criteria.estudianteId());
+        logger.debug(EvaluacionCualitativaJuradoKey.LOG_CONSULTANDO, criteria.evaluacionJuradoId());
 
         boolean existe = evaluacionJuradoExisteQueryFinder.obtener(criteria.evaluacionJuradoId());
-        boolean pertenece = evaluacionJuradoPerteneceEstudianteQueryFinder.obtener(criteria);
 
-        consultarEvaluacionesCualitativasJuradoValidator.validar(criteria.evaluacionJuradoId(), existe, pertenece);
+        consultarEvaluacionesCualitativasJuradoValidator.validar(criteria.evaluacionJuradoId(), existe);
 
         var resultado = evaluacionCualitativaJuradoQueryOutputPort.consultar(criteria);
 

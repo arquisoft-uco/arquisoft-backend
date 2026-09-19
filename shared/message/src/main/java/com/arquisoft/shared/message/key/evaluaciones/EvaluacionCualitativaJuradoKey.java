@@ -6,8 +6,6 @@ public enum EvaluacionCualitativaJuradoKey implements ClaveMensaje {
 
     ERROR_EVALUACION_JURADO_NO_ENCONTRADA(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluacion-jurado-no-encontrada", 1),
-    ERROR_EVALUACION_JURADO_NO_PERTENECE(
-            "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluacion-jurado-no-pertenece", 1),
     ERROR_EVALUACION_JURADO_NO_PERTENECE_JURADO(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluacion-jurado-no-pertenece-jurado", 0),
     ERROR_ITEMS_NO_ENCONTRADOS(
@@ -18,7 +16,7 @@ public enum EvaluacionCualitativaJuradoKey implements ClaveMensaje {
             "evaluaciones.dominio.evaluacioncualitativajurado.error.items-ya-registrados", 1),
     ERROR_PADRES_DISTINTOS(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.padres-distintos", 0),
-    LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consultando", 2),
+    LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consulta-completada", 1),
     LOG_REGISTRANDO_LOTE("evaluaciones.aplicacion.evaluacioncualitativajurado.log.registrando-lote", 2),
     LOG_VERIFICACION_LOTE("evaluaciones.aplicacion.evaluacioncualitativajurado.log.verificacion-lote", 3),
