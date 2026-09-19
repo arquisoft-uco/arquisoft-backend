@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -138,6 +139,7 @@ class FichaPerfilCommandRepositoryTest {
                 .identificador(UUID.randomUUID().toString().substring(0, 20))
                 .nombre("Ana Gomez")
                 .email("ana.gomez@soyuco.edu.co")
+                .ocurridoEn(Instant.now())
                 .build();
     }
 }

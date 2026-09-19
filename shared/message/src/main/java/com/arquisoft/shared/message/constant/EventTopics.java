@@ -25,7 +25,16 @@ public final class EventTopics {
 
         private Usuarios() {}
 
-        public static final String USUARIO_CREADO = "usuarios.usuario.creado";
+        public static final String ESTUDIANTE_AGREGADO =
+                "usuarios.estudiante.agregado";
+
+        public static final String COORDINADOR_AGREGADO =
+                "usuarios.coordinador.agregado";
+        public static final String ASESOR_FICHA_AGREGADO =
+                "usuarios.asesorficha.agregado";
+
+        public static final String ASESOR_AGREGADO =
+                "usuarios.asesor.agregado";
     }
 
     public static final class Evaluaciones {
@@ -36,20 +45,11 @@ public final class EventTopics {
                 "evaluaciones.evaluacion_cualitativa_jurado.registradas";
     }
 
-    public static final class Proyectos {
+    public static final class Solicitudes {
 
-        private Proyectos() {}
+        private Solicitudes() {}
 
-        public static final String ESTUDIANTE_PROYECTO_ASIGNADO = "proyectos.estudiante_proyecto.asignado";
-
-        public static final String ESTUDIANTE_PROYECTO_DESTITUIDO = "proyectos.estudiante_proyecto.destituido";
-    }
-
-    public static final class Entregables {
-
-        private Entregables() {}
-
-        public static final String ENTREGABLE_PROYECTO_GRADO_GENERADO =
-                "entregables.entregable_proyecto_grado.generado";
+        public static final String NOVEDAD_COORDINADOR_ENVIADA =
+                "solicitudes.solicitud.novedad_coordinador_enviada";
     }
 }

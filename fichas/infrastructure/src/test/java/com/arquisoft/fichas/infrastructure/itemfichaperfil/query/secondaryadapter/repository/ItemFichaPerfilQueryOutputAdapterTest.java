@@ -283,6 +283,7 @@ class ItemFichaPerfilQueryOutputAdapterTest {
                 .identificador(identificador)
                 .nombre(nombre)
                 .email(email)
+                .ocurridoEn(Instant.now())
                 .build();
         entityManager.persist(estudiante);
         return estudiante.getId();
@@ -310,6 +311,7 @@ class ItemFichaPerfilQueryOutputAdapterTest {
                 .identificador(identificador)
                 .nombre(nombre)
                 .email(email)
+                .ocurridoEn(Instant.now())
                 .build();
         entityManager.persist(asesor);
         return asesor.getId();

@@ -18,7 +18,7 @@ public class ConsultarCriteriosItemCualitativoJuradoInteractorImpl
 
     @Override
     @Transactional(readOnly = true, transactionManager = "evaluacionesTransactionManager")
-    public List<CriterioItemCualitativoJuradoReadModel> ejecutar(Void entrada) {
-        return consultarCriteriosItemCualitativoJuradoUseCase.ejecutar(entrada);
+    public List<CriterioItemCualitativoJuradoReadModel> ejecutar() {
+        return consultarCriteriosItemCualitativoJuradoUseCase.ejecutar();
     }
 }

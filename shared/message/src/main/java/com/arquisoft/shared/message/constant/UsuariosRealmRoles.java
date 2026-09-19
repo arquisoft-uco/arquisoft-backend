@@ -8,7 +8,9 @@ import java.util.Set;
  *
  * <p>La asignación de rol vive solo en Keycloak (es autorización): {@code POST /usuarios} valida
  * cada valor recibido contra {@link #CONOCIDOS} en {@code RegistrarUsuarioCommand.crear} — un valor
- * fuera de la lista es un 400. No hay filas marcador de dominio ni eventos en HU256.
+ * fuera de la lista es un 400. No hay filas marcador de dominio ni eventos en HU256 para ninguno de
+ * los ocho roles, salvo {@link #ESTUDIANTE}: desde HU-247 ese realm role también materializa una fila
+ * en {@code estudiante} y publica {@code usuarios.estudiante.agregado}, consumido por {@code fichas}.
  */
 public final class UsuariosRealmRoles {
 

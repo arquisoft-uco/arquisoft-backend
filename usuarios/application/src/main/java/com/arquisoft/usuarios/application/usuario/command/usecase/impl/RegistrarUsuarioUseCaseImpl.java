@@ -1,5 +1,9 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
+import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
+import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
+import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
+import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailUsuarioExisteFinder;
@@ -13,6 +17,7 @@ import com.arquisoft.usuarios.application.usuario.command.validator.RegistrarUsu
 import com.arquisoft.usuarios.domain.usuario.RegistroUsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import com.arquisoft.shared.util.UtilTexto;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +36,10 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
     private final EmailIdentidadExisteFinder emailIdentidadExisteFinder;
     private final ContactoUsuarioExisteFinder contactoUsuarioExisteFinder;
     private final RegistrarUsuarioValidator registrarUsuarioValidator;
+    private final AgregarEstudianteUseCase agregarEstudianteUseCase;
+    private final AgregarCoordinadorUseCase agregarCoordinadorUseCase;
+    private final AgregarAsesorFichaUseCase agregarAsesorFichaUseCase;
+    private final AgregarAsesorUseCase agregarAsesorUseCase;
     private final AppLogger logger;
 
     @Override
@@ -50,7 +59,24 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
         var identidadId = proveedorIdentidadOutputPort.registrar(new RegistroIdentidadEntity(
                 registro.getEmail(), registro.getNombres(), registro.getApellidos(), registro.getRoles()));
 
-        usuarioOutputPort.guardar(UsuarioMapper.toEntity(UsuarioDomain.crear(identidadId, registro)));
+        var usuario = UsuarioDomain.crear(identidadId, registro);
+        usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));
+
+        if (registro.getRoles().contains(UsuariosRealmRoles.ESTUDIANTE)) {
+            agregarEstudianteUseCase.ejecutar(usuario);
+        }
+
+        if (registro.getRoles().contains(UsuariosRealmRoles.COORDINADOR)) {
+            agregarCoordinadorUseCase.ejecutar(usuario);
+        }
+
+        if (registro.getRoles().contains(UsuariosRealmRoles.ASESOR_FICHA)) {
+            agregarAsesorFichaUseCase.ejecutar(usuario);
+        }
+
+        if (registro.getRoles().contains(UsuariosRealmRoles.ASESOR)) {
+            agregarAsesorUseCase.ejecutar(usuario);
+        }
 
         logger.info(RegistrarUsuarioKey.LOG_REGISTRADO,
                 identidadId, UtilTexto.enmascararCorreo(registro.getEmail()));
