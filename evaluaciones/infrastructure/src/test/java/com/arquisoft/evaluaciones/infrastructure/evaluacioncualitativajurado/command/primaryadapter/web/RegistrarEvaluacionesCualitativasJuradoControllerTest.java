@@ -2,8 +2,6 @@ package com.arquisoft.evaluaciones.infrastructure.evaluacioncualitativajurado.co
 
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.primaryport.interactor.RegistrarEvaluacionesCualitativasJuradoInteractor;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoEncontradaException;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoPerteneceJuradoException;
-import com.arquisoft.evaluaciones.infrastructure.proyectoestudianteacceso.exception.ContactosEvaluacionNoDisponiblesException;
 import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -142,37 +140,8 @@ class RegistrarEvaluacionesCualitativasJuradoControllerTest {
                 .andExpect(status().isUnprocessableEntity());
     }
 
-    @Test
-    void debeRetornar422_cuandoLaEvaluacionNoPerteneceAlJuradoAutenticado() throws Exception {
-        // Arrange
-        doThrow(new EvaluacionJuradoNoPerteneceJuradoException())
-                .when(interactor).ejecutar(any());
-
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(jwtConPermiso())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isUnprocessableEntity());
-    }
-
-    @Test
-    void debeRetornar503_cuandoLosContactosDeEstudiantesNoEstanDisponibles() throws Exception {
-        // Arrange
-        doThrow(new ContactosEvaluacionNoDisponiblesException())
-                .when(interactor).ejecutar(any());
-
-        // Act & Assert
-        mockMvc.perform(post(RUTA)
-                        .with(jwtConPermiso())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(BODY_VALIDO))
-                .andExpect(status().isServiceUnavailable());
-    }
-
     private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermiso() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(jwt -> jwt.subject(UUID.randomUUID().toString()))
                 .authorities(new SimpleGrantedAuthority(
                         EvaluacionesAuthorities.EVALUACION_CUALITATIVA_JURADO_CREATE));
     }

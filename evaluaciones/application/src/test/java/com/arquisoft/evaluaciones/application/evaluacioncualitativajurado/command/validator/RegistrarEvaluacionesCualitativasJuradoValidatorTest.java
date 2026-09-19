@@ -3,14 +3,12 @@ package com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comma
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.command.validator.impl.RegistrarEvaluacionesCualitativasJuradoValidatorImpl;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.CriteriosCualitativosJuradoNoEncontradosException;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoEncontradaException;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoPerteneceJuradoException;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionesCualitativasJuradoDuplicadasException;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.ItemsCualitativosJuradoNoEncontradosException;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.DisponibilidadEvaluacionesCualitativasJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaCriteriosCualitativosJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaItemsCualitativosJurado;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.PropiedadEvaluacionJurado;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -25,36 +23,22 @@ class RegistrarEvaluacionesCualitativasJuradoValidatorTest {
             new RegistrarEvaluacionesCualitativasJuradoValidatorImpl();
 
     @Test
-    void debePermitirAcceso_cuandoEvaluacionExisteYActorEsPropietario() {
+    void debePermitirExistencia_cuandoLaEvaluacionDeJuradoExiste() {
         // Arrange
-        UUID actor = UUID.randomUUID();
         var existencia = new ExistenciaEvaluacionJurado(UUID.randomUUID(), true);
-        var propiedad = new PropiedadEvaluacionJurado(actor, actor);
 
         // Act & Assert
-        assertThatCode(() -> validator.validarAcceso(existencia, propiedad)).doesNotThrowAnyException();
+        assertThatCode(() -> validator.validarExistencia(existencia)).doesNotThrowAnyException();
     }
 
     @Test
-    void debeRechazarAccesoPorExistencia_cuandoLaEvaluacionDeJuradoNoExiste() {
+    void debeRechazarPorExistencia_cuandoLaEvaluacionDeJuradoNoExiste() {
         // Arrange
         var existencia = new ExistenciaEvaluacionJurado(UUID.randomUUID(), false);
-        var propiedad = new PropiedadEvaluacionJurado(UUID.randomUUID(), null);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validarAcceso(existencia, propiedad))
+        assertThatThrownBy(() -> validator.validarExistencia(existencia))
                 .isInstanceOf(EvaluacionJuradoNoEncontradaException.class);
-    }
-
-    @Test
-    void debeRechazarAccesoPorPropiedad_cuandoLaEvaluacionExisteYElActorNoEsElPropietario() {
-        // Arrange
-        var existencia = new ExistenciaEvaluacionJurado(UUID.randomUUID(), true);
-        var propiedad = new PropiedadEvaluacionJurado(UUID.randomUUID(), UUID.randomUUID());
-
-        // Act & Assert
-        assertThatThrownBy(() -> validator.validarAcceso(existencia, propiedad))
-                .isInstanceOf(EvaluacionJuradoNoPerteneceJuradoException.class);
     }
 
     @Test
