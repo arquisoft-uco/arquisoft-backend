@@ -2,8 +2,8 @@ package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.i
 
 import java.time.Instant;
 
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFichasExistentesFinder;
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFichasFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesVinculadosContadorFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesYaVinculadosFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
@@ -60,10 +60,10 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     private FichaPerfilFinder fichaPerfilFinder;
 
     @Mock
-    private EstudiantesFichasExistentesFinder estudiantesFichasExistentesFinder;
+    private EstudiantesExistentesFinder estudiantesExistentesFinder;
 
     @Mock
-    private EstudiantesFichasFinder estudiantesFichasFinder;
+    private EstudiantesFinder estudiantesFinder;
 
     @Mock
     private EstudiantesYaVinculadosFinder estudiantesYaVinculadosFinder;
@@ -111,11 +111,11 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
         asignarEstudiantesFichaPerfilUseCase.ejecutar(relaciones);
 
         // Assert
-        InOrder inOrder = inOrder(fichaPerfilFinder, estudiantesFichasExistentesFinder,
+        InOrder inOrder = inOrder(fichaPerfilFinder, estudiantesExistentesFinder,
                 estudiantesYaVinculadosFinder, estudiantesVinculadosContadorFinder,
                 asignarEstudiantesFichaPerfilValidator, estudianteFichaPerfilOutputPort);
         inOrder.verify(fichaPerfilFinder).obtener(fichaPerfil);
-        inOrder.verify(estudiantesFichasExistentesFinder).obtener(List.of(estudiante));
+        inOrder.verify(estudiantesExistentesFinder).obtener(List.of(estudiante));
         inOrder.verify(estudiantesYaVinculadosFinder).obtener(relaciones.getRelaciones());
         inOrder.verify(estudiantesVinculadosContadorFinder).obtener(fichaPerfil);
         inOrder.verify(asignarEstudiantesFichaPerfilValidator)
@@ -229,10 +229,10 @@ class AsignarEstudiantesFichaPerfilUseCaseTest {
     private void stubConsultas(FichaPerfilDomain fichaPerfilDomain, List<UUID> estudiantesExistentes,
                                List<UUID> yaVinculados, long vinculadosActuales) {
         when(fichaPerfilFinder.obtener(fichaPerfil)).thenReturn(presencia(fichaPerfilDomain));
-        when(estudiantesFichasExistentesFinder.obtener(List.of(estudiante))).thenReturn(estudiantesExistentes);
+        when(estudiantesExistentesFinder.obtener(List.of(estudiante))).thenReturn(estudiantesExistentes);
         when(estudiantesYaVinculadosFinder.obtener(any())).thenReturn(yaVinculados);
         when(estudiantesVinculadosContadorFinder.obtener(fichaPerfil)).thenReturn(vinculadosActuales);
-        lenient().when(estudiantesFichasFinder.obtener(List.of(estudiante))).thenReturn(
+        lenient().when(estudiantesFinder.obtener(List.of(estudiante))).thenReturn(
                 List.of(EstudianteDomain.reconstruir(estudiante, "1001", NOMBRE, EMAIL, Instant.now())));
     }
 

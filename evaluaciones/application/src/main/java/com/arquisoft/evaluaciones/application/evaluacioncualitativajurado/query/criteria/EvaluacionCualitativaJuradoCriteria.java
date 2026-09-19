@@ -3,7 +3,6 @@ package com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query
 import java.util.UUID;
 
 public record EvaluacionCualitativaJuradoCriteria(
-        UUID evaluacionJuradoId,
-        UUID estudianteId
+        UUID evaluacionJuradoId
 ) {
 }

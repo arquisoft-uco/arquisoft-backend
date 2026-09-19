@@ -75,12 +75,10 @@ public final class EvaluacionesApiMessages {
                 "Consulta de las evaluaciones cualitativas asociadas a una evaluación de jurado";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cualitativas del jurado";
         public static final String CONSULTAR_DESCRIPTION =
-                "Consulta todas las evaluaciones cualitativas de una evaluación de jurado a la que el "
-                        + "estudiante autenticado está vinculado";
+                "Consulta todas las evaluaciones cualitativas de una evaluación de jurado";
         public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cualitativas del jurado";
         public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
-        public static final String CONSULTAR_RESP_422 =
-                "La evaluación de jurado no existe o no pertenece al estudiante autenticado";
+        public static final String CONSULTAR_RESP_422 = "La evaluación de jurado no existe";
         public static final String REGISTRAR_SUMMARY = "Registrar lote de evaluaciones cualitativas";
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra un lote de evaluaciones cualitativas del jurado sobre una evaluación de jurado propia";
@@ -102,12 +100,10 @@ public final class EvaluacionesApiMessages {
                 "Consulta de las evaluaciones cuantitativas asociadas a una evaluación de jurado";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cuantitativas del jurado";
         public static final String CONSULTAR_DESCRIPTION =
-                "Consulta todas las evaluaciones cuantitativas de una evaluación de jurado a la que el "
-                        + "estudiante autenticado está vinculado";
+                "Consulta todas las evaluaciones cuantitativas de una evaluación de jurado";
         public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cuantitativas del jurado";
         public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
-        public static final String CONSULTAR_RESP_422 =
-                "La evaluación de jurado no existe o no pertenece al estudiante autenticado";
+        public static final String CONSULTAR_RESP_422 = "La evaluación de jurado no existe";
         public static final String CAMBIAR_PUNTAJE_SUMMARY = "Cambiar puntaje de evaluación cuantitativa";
         public static final String CAMBIAR_PUNTAJE_DESCRIPTION =
                 "Permite a un jurado corregir el puntaje que asignó a una de sus evaluaciones "

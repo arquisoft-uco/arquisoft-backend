@@ -8,8 +8,7 @@ public final class ConsultarEvaluacionesCuantitativasJuradoRequestMapper {
 
     private ConsultarEvaluacionesCuantitativasJuradoRequestMapper() {}
 
-    public static ConsultarEvaluacionesCuantitativasJuradoEstudianteQuery toQuery(
-            UUID evaluacionJuradoId, String estudianteSubject) {
-        return ConsultarEvaluacionesCuantitativasJuradoEstudianteQuery.crear(evaluacionJuradoId, estudianteSubject);
+    public static ConsultarEvaluacionesCuantitativasJuradoEstudianteQuery toQuery(UUID evaluacionJuradoId) {
+        return ConsultarEvaluacionesCuantitativasJuradoEstudianteQuery.crear(evaluacionJuradoId);
     }
 }

@@ -8,6 +8,6 @@ import java.util.UUID;
 public interface EvaluacionCuantitativaJuradoQueryRepository
         extends QueryRepository<EvaluacionCuantitativaJuradoJpaQueryEntity, UUID> {
 
-    List<EvaluacionCuantitativaJuradoJpaQueryEntity> findByEvaluacionJuradoIdAndEstudianteIdOrderByItemNombreAscIdAsc(
-            UUID evaluacionJuradoId, UUID estudianteId);
+    List<EvaluacionCuantitativaJuradoJpaQueryEntity> findByEvaluacionJuradoIdOrderByItemNombreAscIdAsc(
+            UUID evaluacionJuradoId);
 }

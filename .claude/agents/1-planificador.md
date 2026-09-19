@@ -343,7 +343,12 @@ las dos claves de `PlantillaKey` con su texto de catálogo.
 - **Sin FKs cruzadas hacia la base de otro contexto** — son bases distintas, la FK no es siquiera
   posible. Si necesitas datos de otro contexto, modela una **tabla réplica local** poblada por
   eventos AMQP: el patrón real de `fichas` (`asesor_ficha`, `estudiante`). El MER documenta la
-  relación lógica; el backend la resuelve con réplica + evento.
+  relación lógica; el backend la resuelve con réplica + evento. **Excepción acotada:** si el dato es
+  solo una precondición de escritura ("¿esto es así ahora?"), el contexto no lo necesita para nada
+  más, y el otro contexto ya expone la consulta → *Consulta síncrona entre contextos* (puerto en
+  `command/secondaryport/`, adaptador en `.../secondaryadapter/webclient/` que habla por
+  `shared:web-client`, la `Rule` decide). Ver `arquisoft-arquitectura` → *Consultas síncronas entre
+  contextos*. Hasta que exista `shared:web-client`, el adaptador va stub (documentado en *Desviaciones*).
 
 ## 12. Casos de Prueba Sugeridos
 {Ver "Presupuesto de tests" y bancos de casos abajo}
@@ -514,6 +519,13 @@ skills:
    Si hay modificación o baja, cubre las cuatro piezas ya decididas: `ocurrido_en` persistido con
    descarte de eventos viejos, baja lógica en vez de `DELETE`, lápida, y nada de cascada entre
    contextos.
+4. **¿El plan solo necesita un dato de otro contexto para un chequeo puntual de escritura** ("¿el
+   destinatario es el asesor asignado?", "¿el proyecto está activo?"), y el contexto **no lo usa
+   para nada más**? Entonces **no** es réplica + evento: es una *Consulta síncrona entre contextos*
+   (`arquisoft-arquitectura`). Puerto en `command/secondaryport/` que devuelve `boolean`, `Finder`,
+   adaptador en `.../secondaryadapter/webclient/` vía `shared:web-client`, la `Rule` decide. Si
+   `shared:web-client` aún no existe, el plan marca el adaptador como **stub** en "Fuera de alcance"
+   con checklist de activación, y la `Rule` no rechaza nada hasta entonces.
 
 **Un evento nuevo cuesta un `@Bean`, no cuatro.** Las cuatro declaraciones —cola, `.dead` y los dos
 bindings— salen de una sola llamada a `ColaEvento.declarar(...)` devuelta como `Declarables`; sin el
@@ -579,7 +591,9 @@ getters/setters ni métodos `private`.
 - [ ] **Presupuesto de I/O declarado** (pregunta 8c): cada `Finder` con su método del `OutputPort`, y ningún `Finder` cuya entrada sea la salida de otro salvo cascada justificada en una línea (lookup condicional · features/contextos distintos · el id intermedio lo necesita una `Rule`). Un `{Entidad}PorIdFinder` alimentado por un `Id{Entidad}Por{Otro}Finder` se colapsa en `{Entidad}Por{Otro}Finder` + `obtenerPor{Otro}(...)` con `JOIN`
 - [ ] Excepciones nuevas extienden la base correcta (`DomainException`/`DomainValidationException`→422, `ApplicationException`→400, `InfrastructureException`→503) y viven en el `exception/` **del slice del feature en la capa de esa base** — nunca en un `exception/` a nivel de contexto, y una subclase nunca en distinta capa que su padre
 - [ ] Sin handler de contexto salvo colisión de nombres; si el plan lo declara, va en `infrastructure/handler/`, nunca en `exception/`
-- [ ] Réplica entre contextos: cada bean del árbol cuyo nombre simple ya existe en otro contexto (`grep -r "class {Nombre}\b" --include=*.java */*/src/main`) lleva el contexto destino antes del sufijo (`EstudianteProyectosPorIdFinderImpl`); `Domain`/`Entity`/`Mapper`/`Command`/`Payload` conservan el nombre natural (`arquisoft-arquitectura` → *Replicación entre contextos*)
+- [ ] Réplica entre contextos: **todas** las clases del árbol, beans incluidos, usan el nombre natural del concepto (`AgregarCoordinadorInteractor`, `CoordinadorAgregadoConsumer`), sin calificador de contexto — los homónimos entre contextos no chocan porque el nombre de bean es el FQN (`FullyQualifiedAnnotationBeanNameGenerator` en `ArquisoftApplication` y en cada `@EnableJpaRepositories`). Ninguna réplica del repo lleva ese calificador; si aparece, es la convención retirada (`arquisoft-arquitectura` → *Replicación entre contextos*)
+- [ ] Contexto nuevo con `{Contexto}DataSourceConfig`: su `@EnableJpaRepositories` declara `nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class`
+- [ ] Métodos `@Bean` con el contexto como prefijo (el generador FQN no los cubre): la cola de una réplica es un `@Bean Declarables` llamado `{contexto}{Evento}Declarables` en `{Contexto}{Productor}QueueConfig` (`proyectosEstudianteAgregadoDeclarables` en `ProyectosUsuariosQueueConfig`)
 - [ ] Identificadores en el body: `String`, validados en `Command.crear(...)` vía `ValidatorUUID`, nunca con anotación Jakarta
 - [ ] `RequestDTO` = `record` desnudo + `{Accion}{Entidad}RequestMapper`; `ResponseDTO` = `record`. Sin Jakarta, sin Lombok, sin `toCommand()` en el DTO
 - [ ] Lectura: `ReadModel` → `{Entidad}ResponseDTO` vía `{Entidad}ResponseMapper`, nunca serializado directo

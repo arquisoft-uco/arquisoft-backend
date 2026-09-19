@@ -9,6 +9,6 @@ public final class ConsultarEvaluacionesCuantitativasJuradoEstudianteMapper {
 
     public static EvaluacionCuantitativaJuradoCriteria toCriteria(
             ConsultarEvaluacionesCuantitativasJuradoEstudianteQuery query) {
-        return new EvaluacionCuantitativaJuradoCriteria(query.evaluacionJurado(), query.estudiante());
+        return new EvaluacionCuantitativaJuradoCriteria(query.evaluacionJurado());
     }
 }
