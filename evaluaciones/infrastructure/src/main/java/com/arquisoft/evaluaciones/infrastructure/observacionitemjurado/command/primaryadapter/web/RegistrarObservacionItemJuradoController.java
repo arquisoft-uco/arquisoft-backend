@@ -20,8 +20,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -69,10 +67,9 @@ public class RegistrarObservacionItemJuradoController {
     })
     public ResponseEntity<RegistrarObservacionItemJuradoResponseDTO> registrar(
             @PathVariable UUID id,
-            @RequestBody RegistrarObservacionItemJuradoRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            @RequestBody RegistrarObservacionItemJuradoRequestDTO request) {
         UUID observacionId = interactor.ejecutar(
-                RegistrarObservacionItemJuradoRequestMapper.toCommand(request, id, jwt.getSubject()));
+                RegistrarObservacionItemJuradoRequestMapper.toCommand(request, id));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new RegistrarObservacionItemJuradoResponseDTO(observacionId));
     }

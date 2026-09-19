@@ -2,7 +2,7 @@ package com.arquisoft.evaluaciones.application.observacionitemjurado.command.pri
 
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.primaryport.model.RegistrarObservacionItemJuradoCommand;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.usecase.RegistrarObservacionItemJuradoUseCase;
-import com.arquisoft.evaluaciones.domain.observacionitemjurado.RegistroObservacionItemJuradoDomain;
+import com.arquisoft.evaluaciones.domain.observacionitemjurado.ObservacionItemJuradoDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -30,22 +30,19 @@ class RegistrarObservacionItemJuradoInteractorImplTest {
     void debeMapearDelegarYRetornarId_cuandoEjecutaCommand() {
         // Arrange
         var evaluacionCuantitativaJurado = UUID.randomUUID();
-        var jurado = UUID.randomUUID();
         var command = RegistrarObservacionItemJuradoCommand.crear(
-                evaluacionCuantitativaJurado, "Sustenta el puntaje otorgado", jurado.toString());
+                evaluacionCuantitativaJurado, "Sustenta el puntaje otorgado");
         var id = UUID.randomUUID();
-        when(useCase.ejecutar(any(RegistroObservacionItemJuradoDomain.class))).thenReturn(id);
+        when(useCase.ejecutar(any(ObservacionItemJuradoDomain.class))).thenReturn(id);
 
         // Act
         var resultado = interactor.ejecutar(command);
 
         // Assert
-        ArgumentCaptor<RegistroObservacionItemJuradoDomain> captor =
-                ArgumentCaptor.forClass(RegistroObservacionItemJuradoDomain.class);
+        ArgumentCaptor<ObservacionItemJuradoDomain> captor = ArgumentCaptor.forClass(ObservacionItemJuradoDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(resultado).isEqualTo(id);
-        assertThat(captor.getValue().getJurado()).isEqualTo(jurado);
-        assertThat(captor.getValue().getObservacion().getEvaluacionCuantitativaJurado())
-                .isEqualTo(evaluacionCuantitativaJurado);
+        assertThat(captor.getValue().getEvaluacionCuantitativaJurado()).isEqualTo(evaluacionCuantitativaJurado);
+        assertThat(captor.getValue().getDescripcion()).isEqualTo("Sustenta el puntaje otorgado");
     }
 }

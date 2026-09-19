@@ -15,41 +15,27 @@ class RegistrarObservacionItemJuradoCommandTest {
     void debeCrearYNormalizarCommandValido_cuandoDatosValidos() {
         // Arrange
         var evaluacionCuantitativaJurado = UUID.randomUUID();
-        var jurado = UUID.randomUUID();
 
         // Act
         var command = RegistrarObservacionItemJuradoCommand.crear(
-                evaluacionCuantitativaJurado, "  Sustenta el puntaje otorgado  ", jurado.toString());
+                evaluacionCuantitativaJurado, "  Sustenta el puntaje otorgado  ");
 
         // Assert
         assertThat(command.evaluacionCuantitativaJurado()).isEqualTo(evaluacionCuantitativaJurado);
         assertThat(command.descripcion()).isEqualTo("Sustenta el puntaje otorgado");
-        assertThat(command.jurado()).isEqualTo(jurado);
     }
 
     @Test
     void debeAcumularErroresDeEntrada_cuandoCamposRequeridosSonInvalidos() {
         // Act & Assert
-        assertThatThrownBy(() -> RegistrarObservacionItemJuradoCommand.crear(null, " ", " "))
+        assertThatThrownBy(() -> RegistrarObservacionItemJuradoCommand.crear(null, " "))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
                                 .containsExactlyInAnyOrder(
                                         EvaluacionesCodes.ObservacionItemJurado
                                                 .EVALUACION_CUANTITATIVA_JURADO_REQUERIDA,
-                                        EvaluacionesCodes.ObservacionItemJurado.DESCRIPCION_REQUERIDA,
-                                        EvaluacionesCodes.ObservacionItemJurado.JURADO_REQUERIDO));
-    }
-
-    @Test
-    void debeAcumularErrorJurado_cuandoSubjectNoEsUuidValido() {
-        // Act & Assert
-        assertThatThrownBy(() -> RegistrarObservacionItemJuradoCommand.crear(
-                UUID.randomUUID(), "Sustenta el puntaje otorgado", "no-es-un-uuid"))
-                .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
-                        assertThat(exception.getValidationResult().getErrores())
-                                .extracting(error -> error.codigoError())
-                                .containsExactly(EvaluacionesCodes.ObservacionItemJurado.JURADO_REQUERIDO));
+                                        EvaluacionesCodes.ObservacionItemJurado.DESCRIPCION_REQUERIDA));
     }
 
     @Test
@@ -58,8 +44,7 @@ class RegistrarObservacionItemJuradoCommandTest {
         var descripcionLarga = "a".repeat(501);
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistrarObservacionItemJuradoCommand.crear(
-                UUID.randomUUID(), descripcionLarga, UUID.randomUUID().toString()))
+        assertThatThrownBy(() -> RegistrarObservacionItemJuradoCommand.crear(UUID.randomUUID(), descripcionLarga))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())

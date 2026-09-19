@@ -1,12 +1,10 @@
 package com.arquisoft.evaluaciones.application.observacionitemjurado.command.validator;
 
-import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.EstadoEvaluacionJuradoEntity;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.validator.impl.RegistrarObservacionItemJuradoValidatorImpl;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.EvaluacionCuantitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.ObservacionItemJuradoDomain;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.DescripcionObservacionItemJuradoDuplicadaException;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.EvaluacionCuantitativaJuradoNoEncontradaException;
-import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.EvaluacionCuantitativaJuradoNoPerteneceJuradoException;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.EvaluacionJuradoFinalizadaException;
 import org.junit.jupiter.api.Test;
 
@@ -25,10 +23,9 @@ class RegistrarObservacionItemJuradoValidatorImplTest {
         // Arrange
         var observacion = observacionValida();
         var evaluacion = evaluacionExistente(observacion.getEvaluacionCuantitativaJurado());
-        var estado = new EstadoEvaluacionJuradoEntity(true, false);
 
         // Act & Assert
-        assertThatCode(() -> validator.validar(observacion, evaluacion, estado, false))
+        assertThatCode(() -> validator.validar(observacion, evaluacion, false, false))
                 .doesNotThrowAnyException();
     }
 
@@ -36,35 +33,21 @@ class RegistrarObservacionItemJuradoValidatorImplTest {
     void debeLanzarNoEncontrada_cuandoEvaluacionEsVacia() {
         // Arrange
         var observacion = observacionValida();
-        var estado = new EstadoEvaluacionJuradoEntity(true, false);
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
-                observacion, EvaluacionCuantitativaJuradoDomain.VACIO, estado, false))
+                observacion, EvaluacionCuantitativaJuradoDomain.VACIO, false, false))
                 .isInstanceOf(EvaluacionCuantitativaJuradoNoEncontradaException.class);
     }
 
     @Test
-    void debeLanzarNoPerteneceJurado_cuandoNoPerteneceAunConEvaluacionExistente() {
+    void debeLanzarEvaluacionFinalizada_cuandoLaEvaluacionExisteYEstaFinalizada() {
         // Arrange
         var observacion = observacionValida();
         var evaluacion = evaluacionExistente(observacion.getEvaluacionCuantitativaJurado());
-        var estado = new EstadoEvaluacionJuradoEntity(false, false);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(observacion, evaluacion, estado, false))
-                .isInstanceOf(EvaluacionCuantitativaJuradoNoPerteneceJuradoException.class);
-    }
-
-    @Test
-    void debeLanzarEvaluacionFinalizada_cuandoPerteneceYEvaluacionFinalizada() {
-        // Arrange
-        var observacion = observacionValida();
-        var evaluacion = evaluacionExistente(observacion.getEvaluacionCuantitativaJurado());
-        var estado = new EstadoEvaluacionJuradoEntity(true, true);
-
-        // Act & Assert
-        assertThatThrownBy(() -> validator.validar(observacion, evaluacion, estado, false))
+        assertThatThrownBy(() -> validator.validar(observacion, evaluacion, true, false))
                 .isInstanceOf(EvaluacionJuradoFinalizadaException.class);
     }
 
@@ -73,10 +56,9 @@ class RegistrarObservacionItemJuradoValidatorImplTest {
         // Arrange
         var observacion = observacionValida();
         var evaluacion = evaluacionExistente(observacion.getEvaluacionCuantitativaJurado());
-        var estado = new EstadoEvaluacionJuradoEntity(true, false);
 
         // Act & Assert
-        assertThatThrownBy(() -> validator.validar(observacion, evaluacion, estado, true))
+        assertThatThrownBy(() -> validator.validar(observacion, evaluacion, false, true))
                 .isInstanceOf(DescripcionObservacionItemJuradoDuplicadaException.class);
     }
 

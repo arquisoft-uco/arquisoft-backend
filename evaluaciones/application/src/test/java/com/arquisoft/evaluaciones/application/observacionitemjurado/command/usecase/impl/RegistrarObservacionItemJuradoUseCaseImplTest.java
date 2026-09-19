@@ -1,19 +1,15 @@
 package com.arquisoft.evaluaciones.application.observacionitemjurado.command.usecase.impl;
 
 import com.arquisoft.evaluaciones.application.evaluacioncuantitativajurado.command.finder.EvaluacionCuantitativaJuradoPorIdFinder;
-import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoEstadoFinder;
-import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.model.SolicitudEstadoEvaluacionJurado;
-import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.EstadoEvaluacionJuradoEntity;
+import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.EvaluacionJuradoFinalizadaFinder;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.finder.DescripcionObservacionItemJuradoExisteFinder;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.finder.model.CriterioDescripcionObservacionItemJurado;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.secondaryport.ObservacionItemJuradoOutputPort;
 import com.arquisoft.evaluaciones.application.observacionitemjurado.command.validator.RegistrarObservacionItemJuradoValidator;
 import com.arquisoft.evaluaciones.domain.evaluacioncuantitativajurado.EvaluacionCuantitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.ObservacionItemJuradoDomain;
-import com.arquisoft.evaluaciones.domain.observacionitemjurado.RegistroObservacionItemJuradoDomain;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.DescripcionObservacionItemJuradoDuplicadaException;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.EvaluacionCuantitativaJuradoNoEncontradaException;
-import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.EvaluacionCuantitativaJuradoNoPerteneceJuradoException;
 import com.arquisoft.evaluaciones.domain.observacionitemjurado.exception.EvaluacionJuradoFinalizadaException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.ObservacionItemJuradoKey;
@@ -47,7 +43,7 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
     private EvaluacionCuantitativaJuradoPorIdFinder evaluacionCuantitativaJuradoPorIdFinder;
 
     @Mock
-    private EvaluacionJuradoEstadoFinder evaluacionJuradoEstadoFinder;
+    private EvaluacionJuradoFinalizadaFinder evaluacionJuradoFinalizadaFinder;
 
     @Mock
     private DescripcionObservacionItemJuradoExisteFinder descripcionObservacionItemJuradoExisteFinder;
@@ -66,36 +62,32 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
         // Arrange
         var evaluacionCuantitativaJurado = UUID.randomUUID();
         var evaluacionJurado = UUID.randomUUID();
-        var jurado = UUID.randomUUID();
         var observacion = ObservacionItemJuradoDomain.crear(
                 evaluacionCuantitativaJurado, "Sustenta el puntaje otorgado");
-        var registro = RegistroObservacionItemJuradoDomain.crear(observacion, jurado);
         var evaluacion = EvaluacionCuantitativaJuradoDomain.reconstruir(
                 evaluacionCuantitativaJurado, evaluacionJurado, UUID.randomUUID(), 300);
-        var estado = new EstadoEvaluacionJuradoEntity(true, false);
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
                 .thenReturn(Optional.of(evaluacion));
-        when(evaluacionJuradoEstadoFinder.obtener(new SolicitudEstadoEvaluacionJurado(evaluacionJurado, jurado)))
-                .thenReturn(estado);
+        when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionJurado)).thenReturn(false);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(new CriterioDescripcionObservacionItemJurado(
                 evaluacionCuantitativaJurado, observacion.getDescripcion())))
                 .thenReturn(false);
 
         // Act
-        var resultado = useCase.ejecutar(registro);
+        var resultado = useCase.ejecutar(observacion);
 
         // Assert
         assertThat(resultado).isEqualTo(observacion.getId());
-        InOrder orden = inOrder(logger, evaluacionCuantitativaJuradoPorIdFinder, evaluacionJuradoEstadoFinder,
+        InOrder orden = inOrder(logger, evaluacionCuantitativaJuradoPorIdFinder, evaluacionJuradoFinalizadaFinder,
                 descripcionObservacionItemJuradoExisteFinder, validator, outputPort);
         orden.verify(logger).info(ObservacionItemJuradoKey.LOG_REGISTRANDO, evaluacionCuantitativaJurado);
         orden.verify(evaluacionCuantitativaJuradoPorIdFinder).obtener(evaluacionCuantitativaJurado);
-        orden.verify(evaluacionJuradoEstadoFinder).obtener(new SolicitudEstadoEvaluacionJurado(evaluacionJurado, jurado));
+        orden.verify(evaluacionJuradoFinalizadaFinder).obtener(evaluacionJurado);
         orden.verify(descripcionObservacionItemJuradoExisteFinder).obtener(new CriterioDescripcionObservacionItemJurado(
                 evaluacionCuantitativaJurado, observacion.getDescripcion()));
-        orden.verify(logger).debug(ObservacionItemJuradoKey.LOG_VERIFICACION_REGISTRAR, true, true, false, false);
-        orden.verify(validator).validar(observacion, evaluacion, estado, false);
+        orden.verify(logger).debug(ObservacionItemJuradoKey.LOG_VERIFICACION_REGISTRAR, true, false, false);
+        orden.verify(validator).validar(observacion, evaluacion, false, false);
         orden.verify(outputPort).registrar(any());
         orden.verify(logger).info(ObservacionItemJuradoKey.LOG_REGISTRADO, observacion.getId());
     }
@@ -104,48 +96,21 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
     void debeDetenerFlujo_cuandoEvaluacionNoExiste() {
         // Arrange
         var evaluacionCuantitativaJurado = UUID.randomUUID();
-        var jurado = UUID.randomUUID();
         var observacion = ObservacionItemJuradoDomain.crear(
                 evaluacionCuantitativaJurado, "Sustenta el puntaje otorgado");
-        var registro = RegistroObservacionItemJuradoDomain.crear(observacion, jurado);
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
                 .thenReturn(Optional.empty());
-        when(evaluacionJuradoEstadoFinder.obtener(any())).thenReturn(new EstadoEvaluacionJuradoEntity(false, false));
+        when(evaluacionJuradoFinalizadaFinder.obtener(any())).thenReturn(false);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(any())).thenReturn(false);
         doThrow(new EvaluacionCuantitativaJuradoNoEncontradaException(evaluacionCuantitativaJurado))
-                .when(validator).validar(eq(observacion), any(), any(), eq(false));
+                .when(validator).validar(eq(observacion), any(), eq(false), eq(false));
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(registro))
+        assertThatThrownBy(() -> useCase.ejecutar(observacion))
                 .isInstanceOf(EvaluacionCuantitativaJuradoNoEncontradaException.class);
         verify(outputPort, never()).registrar(any());
         verify(logger, never()).info(ObservacionItemJuradoKey.LOG_REGISTRADO, observacion.getId());
-    }
-
-    @Test
-    void debeDetenerFlujo_cuandoNoPerteneceAlJurado() {
-        // Arrange
-        var evaluacionCuantitativaJurado = UUID.randomUUID();
-        var evaluacionJurado = UUID.randomUUID();
-        var jurado = UUID.randomUUID();
-        var observacion = ObservacionItemJuradoDomain.crear(
-                evaluacionCuantitativaJurado, "Sustenta el puntaje otorgado");
-        var registro = RegistroObservacionItemJuradoDomain.crear(observacion, jurado);
-        var evaluacion = EvaluacionCuantitativaJuradoDomain.reconstruir(
-                evaluacionCuantitativaJurado, evaluacionJurado, UUID.randomUUID(), 300);
-
-        when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
-                .thenReturn(Optional.of(evaluacion));
-        when(evaluacionJuradoEstadoFinder.obtener(any())).thenReturn(new EstadoEvaluacionJuradoEntity(false, false));
-        when(descripcionObservacionItemJuradoExisteFinder.obtener(any())).thenReturn(false);
-        doThrow(new EvaluacionCuantitativaJuradoNoPerteneceJuradoException(evaluacionCuantitativaJurado))
-                .when(validator).validar(eq(observacion), eq(evaluacion), any(), eq(false));
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(registro))
-                .isInstanceOf(EvaluacionCuantitativaJuradoNoPerteneceJuradoException.class);
-        verify(outputPort, never()).registrar(any());
     }
 
     @Test
@@ -153,22 +118,20 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
         // Arrange
         var evaluacionCuantitativaJurado = UUID.randomUUID();
         var evaluacionJurado = UUID.randomUUID();
-        var jurado = UUID.randomUUID();
         var observacion = ObservacionItemJuradoDomain.crear(
                 evaluacionCuantitativaJurado, "Sustenta el puntaje otorgado");
-        var registro = RegistroObservacionItemJuradoDomain.crear(observacion, jurado);
         var evaluacion = EvaluacionCuantitativaJuradoDomain.reconstruir(
                 evaluacionCuantitativaJurado, evaluacionJurado, UUID.randomUUID(), 300);
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
                 .thenReturn(Optional.of(evaluacion));
-        when(evaluacionJuradoEstadoFinder.obtener(any())).thenReturn(new EstadoEvaluacionJuradoEntity(true, true));
+        when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionJurado)).thenReturn(true);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(any())).thenReturn(false);
         doThrow(new EvaluacionJuradoFinalizadaException(evaluacionCuantitativaJurado))
-                .when(validator).validar(eq(observacion), eq(evaluacion), any(), eq(false));
+                .when(validator).validar(eq(observacion), eq(evaluacion), eq(true), eq(false));
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(registro))
+        assertThatThrownBy(() -> useCase.ejecutar(observacion))
                 .isInstanceOf(EvaluacionJuradoFinalizadaException.class);
         verify(outputPort, never()).registrar(any());
     }
@@ -178,22 +141,20 @@ class RegistrarObservacionItemJuradoUseCaseImplTest {
         // Arrange
         var evaluacionCuantitativaJurado = UUID.randomUUID();
         var evaluacionJurado = UUID.randomUUID();
-        var jurado = UUID.randomUUID();
         var observacion = ObservacionItemJuradoDomain.crear(
                 evaluacionCuantitativaJurado, "Sustenta el puntaje otorgado");
-        var registro = RegistroObservacionItemJuradoDomain.crear(observacion, jurado);
         var evaluacion = EvaluacionCuantitativaJuradoDomain.reconstruir(
                 evaluacionCuantitativaJurado, evaluacionJurado, UUID.randomUUID(), 300);
 
         when(evaluacionCuantitativaJuradoPorIdFinder.obtener(evaluacionCuantitativaJurado))
                 .thenReturn(Optional.of(evaluacion));
-        when(evaluacionJuradoEstadoFinder.obtener(any())).thenReturn(new EstadoEvaluacionJuradoEntity(true, false));
+        when(evaluacionJuradoFinalizadaFinder.obtener(evaluacionJurado)).thenReturn(false);
         when(descripcionObservacionItemJuradoExisteFinder.obtener(any())).thenReturn(true);
         doThrow(new DescripcionObservacionItemJuradoDuplicadaException(evaluacionCuantitativaJurado))
-                .when(validator).validar(eq(observacion), eq(evaluacion), any(), eq(true));
+                .when(validator).validar(eq(observacion), eq(evaluacion), eq(false), eq(true));
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(registro))
+        assertThatThrownBy(() -> useCase.ejecutar(observacion))
                 .isInstanceOf(DescripcionObservacionItemJuradoDuplicadaException.class);
         verify(outputPort, never()).registrar(any());
     }

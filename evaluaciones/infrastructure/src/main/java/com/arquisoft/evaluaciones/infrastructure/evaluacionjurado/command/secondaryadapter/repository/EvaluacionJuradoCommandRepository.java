@@ -19,4 +19,12 @@ public interface EvaluacionJuradoCommandRepository extends JpaRepository<Evaluac
             """, nativeQuery = true)
     Optional<EstadoEvaluacionJuradoProjection> obtenerEstado(
             @Param("evaluacionJurado") UUID evaluacionJurado, @Param("jurado") UUID jurado);
+
+    @Query(value = """
+            SELECT (e.estado_evaluacion_id = 'FINALIZADA')
+            FROM evaluacion_jurado ej
+            JOIN evaluacion e ON e.id = ej.evaluacion_id
+            WHERE ej.id = :evaluacionJurado
+            """, nativeQuery = true)
+    Optional<Boolean> estaFinalizada(@Param("evaluacionJurado") UUID evaluacionJurado);
 }

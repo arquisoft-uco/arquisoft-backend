@@ -162,12 +162,8 @@ public final class EvaluacionesCodes {
                 "OBSERVACION_ITEM_JURADO_DESCRIPCION_REQUERIDA";
         public static final String DESCRIPCION_DEMASIADO_LARGA =
                 "OBSERVACION_ITEM_JURADO_DESCRIPCION_DEMASIADO_LARGA";
-        public static final String JURADO_REQUERIDO =
-                "OBSERVACION_ITEM_JURADO_JURADO_REQUERIDO";
         public static final String EVALUACION_NO_ENCONTRADA =
                 "OBSERVACION_ITEM_JURADO_EVALUACION_NO_ENCONTRADA";
-        public static final String EVALUACION_NO_PERTENECE_JURADO =
-                "OBSERVACION_ITEM_JURADO_EVALUACION_NO_PERTENECE_JURADO";
         public static final String EVALUACION_JURADO_FINALIZADA =
                 "OBSERVACION_ITEM_JURADO_EVALUACION_JURADO_FINALIZADA";
         public static final String DESCRIPCION_DUPLICADA =

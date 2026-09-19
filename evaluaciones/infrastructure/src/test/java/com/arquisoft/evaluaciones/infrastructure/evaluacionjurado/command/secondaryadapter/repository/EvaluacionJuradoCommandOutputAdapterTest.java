@@ -113,6 +113,30 @@ class EvaluacionJuradoCommandOutputAdapterTest {
     }
 
     @Test
+    void debeRetornarEstaFinalizadaTrue_cuandoLaEvaluacionEstaFinalizada() {
+        // Arrange
+        UUID evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "FINALIZADA");
+
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(evaluacionJurado)).isTrue();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaFalse_cuandoLaEvaluacionNoEstaFinalizada() {
+        // Arrange
+        UUID evaluacionJurado = sembrarEvaluacionJurado(UUID.randomUUID(), "PENDIENTE");
+
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(evaluacionJurado)).isFalse();
+    }
+
+    @Test
+    void debeRetornarEstaFinalizadaFalse_cuandoLaEvaluacionJuradoNoExiste() {
+        // Act & Assert
+        assertThat(adapter.estaFinalizada(UUID.randomUUID())).isFalse();
+    }
+
+    @Test
     void debeRetornarPerteneceFalseYFinalizadaFalse_cuandoLaEvaluacionJuradoNoExiste() {
         // Act
         var estado = adapter.obtenerEstado(UUID.randomUUID(), UUID.randomUUID());
