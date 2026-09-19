@@ -11,26 +11,20 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comman
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.ContextoRegistroEvaluacionJuradoEntity;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.finder.ItemsCualitativosJuradoExistentesFinder;
-import com.arquisoft.evaluaciones.application.proyectoestudianteacceso.command.finder.DestinatariosEvaluacionFinder;
-import com.arquisoft.evaluaciones.application.proyectoestudianteacceso.command.secondaryport.entity.DestinatarioEvaluacionEntity;
 import com.arquisoft.evaluaciones.domain.estadoevaluacion.EstadoEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacion.InicioEvaluacionDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.RegistroEvaluacionesCualitativasJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.event.EvaluacionesCualitativasJuradoRegistradasEvent;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.event.EvaluacionesCualitativasJuradoRegistradasEvent.DatosLoteRegistrado;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ContactoEstudianteEvaluacion;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.DisponibilidadEvaluacionesCualitativasJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaCriteriosCualitativosJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaItemsCualitativosJurado;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.PropiedadEvaluacionJurado;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,7 +38,6 @@ public class RegistrarEvaluacionesCualitativasJuradoUseCaseImpl
     private final ItemsCualitativosJuradoExistentesFinder itemsCualitativosJuradoExistentesFinder;
     private final CriteriosCualitativosJuradoExistentesFinder criteriosCualitativosJuradoExistentesFinder;
     private final ItemsEvaluacionCualitativaJuradoRegistradosFinder itemsEvaluacionCualitativaJuradoRegistradosFinder;
-    private final DestinatariosEvaluacionFinder destinatariosEvaluacionFinder;
     private final RegistrarEvaluacionesCualitativasJuradoValidator validator;
     private final EvaluacionCualitativaJuradoOutputPort evaluacionCualitativaJuradoOutputPort;
     private final IniciarEvaluacionUseCase iniciarEvaluacionUseCase;
@@ -58,37 +51,28 @@ public class RegistrarEvaluacionesCualitativasJuradoUseCaseImpl
         logger.info(EvaluacionCualitativaJuradoKey.LOG_REGISTRANDO_LOTE,
                 evaluacionJurado, registro.getEvaluaciones().size());
 
-        ContextoRegistroEvaluacionJuradoEntity contexto =
-                validarAccesoYObtenerContexto(evaluacionJurado, registro.getActor());
+        ContextoRegistroEvaluacionJuradoEntity contexto = validarExistenciaYObtenerContexto(evaluacionJurado);
 
         validarContenidoDelLote(registro, evaluacionJurado);
 
         iniciarEvaluacionUseCase.ejecutar(InicioEvaluacionDomain.crear(
                 contexto.evaluacion(), EstadoEvaluacion.desde(contexto.estado())));
 
-        List<DestinatarioEvaluacionEntity> destinatarios =
-                destinatariosEvaluacionFinder.obtener(contexto.entregable());
-
         var entidades = registro.getEvaluaciones().stream()
                 .map(EvaluacionCualitativaJuradoMapper::toEntity)
                 .toList();
         evaluacionCualitativaJuradoOutputPort.registrarTodas(entidades);
 
-        var evento = publicarEvento(evaluacionJurado, contexto, entidades.size(), destinatarios);
+        var evento = publicarEvento(contexto);
 
         logger.info(EvaluacionCualitativaJuradoKey.LOG_LOTE_REGISTRADO,
                 evaluacionJurado, entidades.size(), evento.getIdEvento());
     }
 
-    private ContextoRegistroEvaluacionJuradoEntity validarAccesoYObtenerContexto(
-            UUID evaluacionJurado, UUID actor) {
+    private ContextoRegistroEvaluacionJuradoEntity validarExistenciaYObtenerContexto(UUID evaluacionJurado) {
         var contextoOpt = contextoRegistroEvaluacionJuradoFinder.obtener(evaluacionJurado);
-        boolean existeEvaluacionJurado = contextoOpt.isPresent();
-        UUID propietario = contextoOpt.map(ContextoRegistroEvaluacionJuradoEntity::jurado).orElse(null);
 
-        validator.validarAcceso(
-                new ExistenciaEvaluacionJurado(evaluacionJurado, existeEvaluacionJurado),
-                new PropiedadEvaluacionJurado(actor, propietario));
+        validator.validarExistencia(new ExistenciaEvaluacionJurado(evaluacionJurado, contextoOpt.isPresent()));
 
         return contextoOpt.orElseThrow();
     }
@@ -116,25 +100,8 @@ public class RegistrarEvaluacionesCualitativasJuradoUseCaseImpl
     }
 
     private EvaluacionesCualitativasJuradoRegistradasEvent publicarEvento(
-            UUID evaluacionJurado,
-            ContextoRegistroEvaluacionJuradoEntity contexto,
-            int cantidad,
-            List<DestinatarioEvaluacionEntity> destinatarios) {
-        var contactos = destinatarios.stream()
-                .map(destinatario -> new ContactoEstudianteEvaluacion(
-                        destinatario.estudiante(), destinatario.email()))
-                .toList();
-
-        var evento = new EvaluacionesCualitativasJuradoRegistradasEvent(
-                new DatosLoteRegistrado(
-                        evaluacionJurado,
-                        contexto.evaluacion(),
-                        contexto.entregable(),
-                        contexto.jurado(),
-                        contexto.proyecto(),
-                        contexto.versionEntregable(),
-                        cantidad),
-                contactos);
+            ContextoRegistroEvaluacionJuradoEntity contexto) {
+        var evento = new EvaluacionesCualitativasJuradoRegistradasEvent(contexto.entregable());
         eventPublisher.publish(evento);
         return evento;
     }

@@ -6,8 +6,6 @@ public enum EvaluacionCualitativaJuradoKey implements ClaveMensaje {
 
     ERROR_EVALUACION_JURADO_NO_ENCONTRADA(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluacion-jurado-no-encontrada", 1),
-    ERROR_EVALUACION_JURADO_NO_PERTENECE_JURADO(
-            "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluacion-jurado-no-pertenece-jurado", 0),
     ERROR_ITEMS_NO_ENCONTRADOS(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.items-no-encontrados", 1),
     ERROR_CRITERIOS_NO_ENCONTRADOS(

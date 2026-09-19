@@ -10,13 +10,11 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.comman
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.finder.ContextoRegistroEvaluacionJuradoFinder;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.command.secondaryport.entity.ContextoRegistroEvaluacionJuradoEntity;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.command.finder.ItemsCualitativosJuradoExistentesFinder;
-import com.arquisoft.evaluaciones.application.proyectoestudianteacceso.command.finder.DestinatariosEvaluacionFinder;
-import com.arquisoft.evaluaciones.application.proyectoestudianteacceso.command.secondaryport.entity.DestinatarioEvaluacionEntity;
 import com.arquisoft.evaluaciones.domain.evaluacion.InicioEvaluacionDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.EvaluacionCualitativaJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.RegistroEvaluacionesCualitativasJuradoDomain;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.event.EvaluacionesCualitativasJuradoRegistradasEvent;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoPerteneceJuradoException;
+import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoEncontradaException;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.ItemsCualitativosJuradoNoEncontradosException;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
@@ -61,9 +59,6 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     private ItemsEvaluacionCualitativaJuradoRegistradosFinder itemsRegistradosFinder;
 
     @Mock
-    private DestinatariosEvaluacionFinder destinatariosFinder;
-
-    @Mock
     private RegistrarEvaluacionesCualitativasJuradoValidator validator;
 
     @Mock
@@ -87,20 +82,15 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         UUID evaluacionJurado = UUID.randomUUID();
         UUID evaluacion = UUID.randomUUID();
         UUID entregable = UUID.randomUUID();
-        UUID jurado = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
         UUID item = UUID.randomUUID();
         UUID criterio = UUID.randomUUID();
-        var registro = registroValido(evaluacionJurado, jurado, item, criterio);
-        var contexto = new ContextoRegistroEvaluacionJuradoEntity(
-                evaluacionJurado, evaluacion, jurado, "PENDIENTE", entregable, "Proyecto X", 3);
-        var destinatarios = List.of(new DestinatarioEvaluacionEntity(estudiante, "estudiante@uco.edu.co"));
+        var registro = registroValido(evaluacionJurado, item, criterio);
+        var contexto = new ContextoRegistroEvaluacionJuradoEntity(evaluacionJurado, evaluacion, "PENDIENTE", entregable);
 
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.of(contexto));
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
         when(itemsRegistradosFinder.obtener(any(CriterioItemsEvaluacion.class))).thenReturn(Set.of());
-        when(destinatariosFinder.obtener(entregable)).thenReturn(destinatarios);
 
         // Act
         useCase.ejecutar(registro);
@@ -108,7 +98,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         // Assert
         InOrder orden = inOrder(contextoFinder, validator, iniciarEvaluacionUseCase, outputPort, eventPublisher);
         orden.verify(contextoFinder).obtener(evaluacionJurado);
-        orden.verify(validator).validarAcceso(any(), any());
+        orden.verify(validator).validarExistencia(any());
         orden.verify(validator).validarContenido(any(), any(), any());
         orden.verify(iniciarEvaluacionUseCase).ejecutar(any(InicioEvaluacionDomain.class));
         orden.verify(outputPort).registrarTodas(any());
@@ -128,13 +118,7 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
                 ArgumentCaptor.forClass(EvaluacionesCualitativasJuradoRegistradasEvent.class);
         verify(eventPublisher).publish(eventoCaptor.capture());
         EvaluacionesCualitativasJuradoRegistradasEvent evento = eventoCaptor.getValue();
-        assertThat(evento.getEvaluacionJuradoId()).isEqualTo(evaluacionJurado);
-        assertThat(evento.getEvaluacionId()).isEqualTo(evaluacion);
         assertThat(evento.getEntregableId()).isEqualTo(entregable);
-        assertThat(evento.getCantidad()).isEqualTo(1);
-        assertThat(evento.getEstudiantes()).hasSize(1);
-        assertThat(evento.getEstudiantes().get(0).estudiante()).isEqualTo(estudiante);
-        assertThat(evento.getEstudiantes().get(0).email()).isEqualTo("estudiante@uco.edu.co");
 
         verify(logger).info(any(ClaveMensaje.class), eq(evaluacionJurado), eq(1));
         verify(logger).debug(any(ClaveMensaje.class), eq(evaluacionJurado), eq(1), eq(1));
@@ -145,18 +129,16 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     void debeRegistrarYPublicarEvento_cuandoLaEvaluacionYaEstaEnProgreso() {
         // Arrange
         UUID evaluacionJurado = UUID.randomUUID();
-        UUID jurado = UUID.randomUUID();
         UUID item = UUID.randomUUID();
         UUID criterio = UUID.randomUUID();
-        var registro = registroValido(evaluacionJurado, jurado, item, criterio);
+        var registro = registroValido(evaluacionJurado, item, criterio);
         var contexto = new ContextoRegistroEvaluacionJuradoEntity(
-                evaluacionJurado, UUID.randomUUID(), jurado, "EN_PROGRESO", UUID.randomUUID(), "Proyecto X", 1);
+                evaluacionJurado, UUID.randomUUID(), "EN_PROGRESO", UUID.randomUUID());
 
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.of(contexto));
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
         when(itemsRegistradosFinder.obtener(any(CriterioItemsEvaluacion.class))).thenReturn(Set.of());
-        when(destinatariosFinder.obtener(any())).thenReturn(List.of());
 
         // Act
         useCase.ejecutar(registro);
@@ -170,22 +152,16 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     }
 
     @Test
-    void debeAbortarSinConsultarContenido_cuandoValidarAccesoRechaza() {
+    void debeAbortarSinConsultarContenido_cuandoLaEvaluacionDeJuradoNoExiste() {
         // Arrange
         UUID evaluacionJurado = UUID.randomUUID();
-        UUID jurado = UUID.randomUUID();
-        UUID item = UUID.randomUUID();
-        UUID criterio = UUID.randomUUID();
-        var registro = registroValido(evaluacionJurado, jurado, item, criterio);
-        var contexto = new ContextoRegistroEvaluacionJuradoEntity(
-                evaluacionJurado, UUID.randomUUID(), UUID.randomUUID(), "PENDIENTE",
-                UUID.randomUUID(), "Proyecto X", 1);
-        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.of(contexto));
-        doThrow(new EvaluacionJuradoNoPerteneceJuradoException()).when(validator).validarAcceso(any(), any());
+        var registro = registroValido(evaluacionJurado, UUID.randomUUID(), UUID.randomUUID());
+        when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.empty());
+        doThrow(new EvaluacionJuradoNoEncontradaException(evaluacionJurado)).when(validator).validarExistencia(any());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(registro))
-                .isInstanceOf(EvaluacionJuradoNoPerteneceJuradoException.class);
+                .isInstanceOf(EvaluacionJuradoNoEncontradaException.class);
         verify(itemsFinder, never()).obtener(any());
         verify(iniciarEvaluacionUseCase, never()).ejecutar(any());
         verify(outputPort, never()).registrarTodas(any());
@@ -196,12 +172,11 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     void debeAbortarSinIniciarEvaluacion_cuandoValidarContenidoRechaza() {
         // Arrange
         UUID evaluacionJurado = UUID.randomUUID();
-        UUID jurado = UUID.randomUUID();
         UUID item = UUID.randomUUID();
         UUID criterio = UUID.randomUUID();
-        var registro = registroValido(evaluacionJurado, jurado, item, criterio);
+        var registro = registroValido(evaluacionJurado, item, criterio);
         var contexto = new ContextoRegistroEvaluacionJuradoEntity(
-                evaluacionJurado, UUID.randomUUID(), jurado, "PENDIENTE", UUID.randomUUID(), "Proyecto X", 1);
+                evaluacionJurado, UUID.randomUUID(), "PENDIENTE", UUID.randomUUID());
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.of(contexto));
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of());
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
@@ -213,7 +188,6 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(registro))
                 .isInstanceOf(ItemsCualitativosJuradoNoEncontradosException.class);
         verify(iniciarEvaluacionUseCase, never()).ejecutar(any());
-        verify(destinatariosFinder, never()).obtener(any());
         verify(outputPort, never()).registrarTodas(any());
         verify(eventPublisher, never()).publish(any());
     }
@@ -222,18 +196,16 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     void debeAbortarPublicacion_cuandoLaPersistenciaDelLoteFalla() {
         // Arrange
         UUID evaluacionJurado = UUID.randomUUID();
-        UUID jurado = UUID.randomUUID();
         UUID item = UUID.randomUUID();
         UUID criterio = UUID.randomUUID();
-        var registro = registroValido(evaluacionJurado, jurado, item, criterio);
+        var registro = registroValido(evaluacionJurado, item, criterio);
         var contexto = new ContextoRegistroEvaluacionJuradoEntity(
-                evaluacionJurado, UUID.randomUUID(), jurado, "PENDIENTE", UUID.randomUUID(), "Proyecto X", 1);
+                evaluacionJurado, UUID.randomUUID(), "PENDIENTE", UUID.randomUUID());
         RuntimeException fallo = new RuntimeException("fallo de persistencia");
         when(contextoFinder.obtener(evaluacionJurado)).thenReturn(Optional.of(contexto));
         when(itemsFinder.obtener(anySet())).thenReturn(Set.of(item));
         when(criteriosFinder.obtener(anySet())).thenReturn(Set.of(criterio));
         when(itemsRegistradosFinder.obtener(any(CriterioItemsEvaluacion.class))).thenReturn(Set.of());
-        when(destinatariosFinder.obtener(any())).thenReturn(List.of());
         doThrow(fallo).when(outputPort).registrarTodas(any());
 
         // Act & Assert
@@ -242,8 +214,8 @@ class RegistrarEvaluacionesCualitativasJuradoUseCaseImplTest {
     }
 
     private static RegistroEvaluacionesCualitativasJuradoDomain registroValido(
-            UUID evaluacionJurado, UUID actor, UUID item, UUID criterio) {
+            UUID evaluacionJurado, UUID item, UUID criterio) {
         var evaluacion = EvaluacionCualitativaJuradoDomain.crear(evaluacionJurado, item, criterio);
-        return RegistroEvaluacionesCualitativasJuradoDomain.crear(actor, List.of(evaluacion));
+        return RegistroEvaluacionesCualitativasJuradoDomain.crear(List.of(evaluacion));
     }
 }

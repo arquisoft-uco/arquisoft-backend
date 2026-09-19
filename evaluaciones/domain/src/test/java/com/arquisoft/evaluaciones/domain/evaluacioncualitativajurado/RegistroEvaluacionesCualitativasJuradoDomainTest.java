@@ -17,7 +17,6 @@ class RegistroEvaluacionesCualitativasJuradoDomainTest {
     @Test
     void debeCrearRegistro_cuandoDatosValidos() {
         // Arrange
-        UUID actor = UUID.randomUUID();
         UUID evaluacionJurado = UUID.randomUUID();
         var evaluaciones = List.of(
                 EvaluacionCualitativaJuradoDomain.crear(evaluacionJurado, UUID.randomUUID(), UUID.randomUUID()),
@@ -25,23 +24,20 @@ class RegistroEvaluacionesCualitativasJuradoDomainTest {
 
         // Act
         RegistroEvaluacionesCualitativasJuradoDomain registro =
-                RegistroEvaluacionesCualitativasJuradoDomain.crear(actor, evaluaciones);
+                RegistroEvaluacionesCualitativasJuradoDomain.crear(evaluaciones);
 
         // Assert
-        assertThat(registro.getActor()).isEqualTo(actor);
         assertThat(registro.getEvaluaciones()).hasSize(2);
     }
 
     @Test
-    void debeAcumularErrores_cuandoActorYEvaluacionesNulos() {
+    void debeRechazarLoteVacio_cuandoListaEvaluacionesEsNula() {
         // Act & Assert
-        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(null, null))
+        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(null))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
-                                .containsExactlyInAnyOrder(
-                                        tuple(EvaluacionesFields.RegistroEvaluacionesCualitativasJurado.ACTOR,
-                                                EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.ACTOR_REQUERIDO),
+                                .containsExactly(
                                         tuple(EvaluacionesFields.RegistroEvaluacionesCualitativasJurado.EVALUACIONES,
                                                 EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.LOTE_VACIO)));
     }
@@ -49,7 +45,7 @@ class RegistroEvaluacionesCualitativasJuradoDomainTest {
     @Test
     void debeRechazarLoteVacio_cuandoListaEvaluacionesEstaVacia() {
         // Act & Assert
-        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(UUID.randomUUID(), List.of()))
+        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(List.of()))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
@@ -66,7 +62,7 @@ class RegistroEvaluacionesCualitativasJuradoDomainTest {
                 EvaluacionCualitativaJuradoDomain.crear(evaluacionJurado, itemRepetido, UUID.randomUUID()));
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(UUID.randomUUID(), evaluaciones))
+        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(evaluaciones))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
@@ -81,7 +77,7 @@ class RegistroEvaluacionesCualitativasJuradoDomainTest {
                 EvaluacionCualitativaJuradoDomain.crear(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
 
         // Act & Assert
-        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(UUID.randomUUID(), evaluaciones))
+        assertThatThrownBy(() -> RegistroEvaluacionesCualitativasJuradoDomain.crear(evaluaciones))
                 .isInstanceOfSatisfying(DomainValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
