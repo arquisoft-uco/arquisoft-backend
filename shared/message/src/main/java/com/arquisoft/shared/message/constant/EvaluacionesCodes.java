@@ -65,8 +65,6 @@ public final class EvaluacionesCodes {
                 "EVALUACION_CUALITATIVA_JURADO_CRITERIO_REQUERIDO";
         public static final String EVALUACION_JURADO_NO_ENCONTRADA =
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_ENCONTRADA";
-        public static final String EVALUACION_JURADO_NO_PERTENECE_JURADO =
-                "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_PERTENECE_JURADO";
         public static final String ITEM_INVALIDO =
                 "EVALUACION_CUALITATIVA_JURADO_ITEM_INVALIDO";
         public static final String CRITERIO_INVALIDO =
@@ -83,8 +81,6 @@ public final class EvaluacionesCodes {
 
         private RegistroEvaluacionesCualitativasJurado() {}
 
-        public static final String ACTOR_REQUERIDO = "REGISTRO_EVALUACIONES_CUALITATIVAS_ACTOR_REQUERIDO";
-        public static final String ACTOR_INVALIDO = "REGISTRO_EVALUACIONES_CUALITATIVAS_ACTOR_INVALIDO";
         public static final String LOTE_REQUERIDO = "REGISTRO_EVALUACIONES_CUALITATIVAS_LOTE_REQUERIDO";
         public static final String LOTE_VACIO = "REGISTRO_EVALUACIONES_CUALITATIVAS_LOTE_VACIO";
         public static final String PAR_REQUERIDO = "REGISTRO_EVALUACIONES_CUALITATIVAS_PAR_REQUERIDO";
@@ -100,13 +96,6 @@ public final class EvaluacionesCodes {
         public static final String ESTADO_REQUERIDO = "EVALUACION_ESTADO_REQUERIDO";
         public static final String ESTADO_FINALIZADA = "EVALUACION_ESTADO_FINALIZADA";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
-    }
-
-    public static final class ContactoUsuario {
-
-        private ContactoUsuario() {}
-
-        public static final String CONTACTOS_NO_DISPONIBLES = "CONTACTOS_EVALUACION_NO_DISPONIBLES";
     }
 
     public static final class EvaluacionCuantitativaJurado {

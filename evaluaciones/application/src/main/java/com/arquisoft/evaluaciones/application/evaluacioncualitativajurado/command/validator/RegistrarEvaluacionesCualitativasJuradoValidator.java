@@ -4,11 +4,10 @@ import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.Dispo
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaCriteriosCualitativosJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaEvaluacionJurado;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.ExistenciaItemsCualitativosJurado;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.PropiedadEvaluacionJurado;
 
 public interface RegistrarEvaluacionesCualitativasJuradoValidator {
 
-    void validarAcceso(ExistenciaEvaluacionJurado existencia, PropiedadEvaluacionJurado propiedad);
+    void validarExistencia(ExistenciaEvaluacionJurado existencia);
 
     void validarContenido(
             ExistenciaItemsCualitativosJurado items,

@@ -23,10 +23,6 @@ public enum PlantillaKey implements ClaveMensaje {
             "notificaciones.aplicacion.plantilla.asunto.revision-item-agregada", 1),
     CUERPO_REVISION_ITEM_AGREGADA(
             "notificaciones.aplicacion.plantilla.cuerpo.revision-item-agregada", 2),
-    ASUNTO_EVALUACIONES_CUALITATIVAS_JURADO_REGISTRADAS(
-            "notificaciones.aplicacion.plantilla.asunto.evaluaciones-cualitativas-jurado-registradas", 1),
-    CUERPO_EVALUACIONES_CUALITATIVAS_JURADO_REGISTRADAS(
-            "notificaciones.aplicacion.plantilla.cuerpo.evaluaciones-cualitativas-jurado-registradas", 3),
     PIE_GENERICO("notificaciones.aplicacion.plantilla.pie.generico", 0);
 
     private final String clave;

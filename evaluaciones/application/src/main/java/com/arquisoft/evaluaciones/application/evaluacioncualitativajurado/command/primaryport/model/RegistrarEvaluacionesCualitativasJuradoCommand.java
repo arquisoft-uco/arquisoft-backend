@@ -16,13 +16,12 @@ import java.util.UUID;
 
 public record RegistrarEvaluacionesCualitativasJuradoCommand(
         UUID evaluacionJurado,
-        UUID actor,
         List<ParEvaluacionCualitativaJuradoCommand> evaluaciones) {
 
     public record ParEntrada(String item, String criterio) {}
 
     public static RegistrarEvaluacionesCualitativasJuradoCommand crear(
-            String evaluacionJurado, String actor, List<ParEntrada> pares) {
+            String evaluacionJurado, List<ParEntrada> pares) {
         var result = new ValidationResult();
 
         ValidatorTexto.noEnBlanco(evaluacionJurado,
@@ -32,22 +31,12 @@ public record RegistrarEvaluacionesCualitativasJuradoCommand(
                 EvaluacionesFields.EvaluacionCualitativaJurado.EVALUACION_JURADO,
                 EvaluacionesCodes.EvaluacionCualitativaJurado.EVALUACION_JURADO_REQUERIDO, result);
 
-        boolean actorPresente = ValidatorTexto.noEnBlanco(actor,
-                EvaluacionesFields.RegistroEvaluacionesCualitativasJurado.ACTOR,
-                EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.ACTOR_REQUERIDO, result);
-        if (actorPresente) {
-            ValidatorUUID.uuidValido(actor,
-                    EvaluacionesFields.RegistroEvaluacionesCualitativasJurado.ACTOR,
-                    EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.ACTOR_INVALIDO, result);
-        }
-
         List<ParEvaluacionCualitativaJuradoCommand> evaluaciones = validarLote(pares, result);
 
         result.lanzarSiTieneErroresDeEntrada();
 
         return new RegistrarEvaluacionesCualitativasJuradoCommand(
                 UtilUUID.generarUUIDDesdeTexto(evaluacionJurado),
-                UtilUUID.generarUUIDDesdeTexto(actor),
                 evaluaciones);
     }
 

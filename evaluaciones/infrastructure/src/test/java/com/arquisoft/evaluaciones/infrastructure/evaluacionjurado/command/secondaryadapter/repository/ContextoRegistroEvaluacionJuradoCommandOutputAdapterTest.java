@@ -42,9 +42,8 @@ class ContextoRegistroEvaluacionJuradoCommandOutputAdapterTest {
         // Arrange
         UUID evaluacionJurado = UUID.randomUUID();
         UUID evaluacion = UUID.randomUUID();
-        UUID jurado = UUID.randomUUID();
         UUID entregable = UUID.randomUUID();
-        Object[] fila = {evaluacionJurado, evaluacion, jurado, "PENDIENTE", entregable, "Proyecto X", 2};
+        Object[] fila = {evaluacionJurado, evaluacion, "PENDIENTE", entregable};
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
         when(query.setParameter(anyString(), any())).thenReturn(query);
         when(query.getResultList()).thenReturn(List.<Object[]>of(fila));
@@ -57,11 +56,8 @@ class ContextoRegistroEvaluacionJuradoCommandOutputAdapterTest {
         assertThat(resultado).hasValueSatisfying(contexto -> {
             assertThat(contexto.id()).isEqualTo(evaluacionJurado);
             assertThat(contexto.evaluacion()).isEqualTo(evaluacion);
-            assertThat(contexto.jurado()).isEqualTo(jurado);
             assertThat(contexto.estado()).isEqualTo("PENDIENTE");
             assertThat(contexto.entregable()).isEqualTo(entregable);
-            assertThat(contexto.proyecto()).isEqualTo("Proyecto X");
-            assertThat(contexto.versionEntregable()).isEqualTo(2);
         });
     }
 
