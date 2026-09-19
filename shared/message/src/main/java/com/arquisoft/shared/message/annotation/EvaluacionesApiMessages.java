@@ -59,11 +59,9 @@ public final class EvaluacionesApiMessages {
                 "Consulta de las evaluaciones cualitativas asociadas a una evaluación de jurado";
         public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones cualitativas del jurado";
         public static final String CONSULTAR_DESCRIPTION =
-                "Consulta todas las evaluaciones cualitativas de una evaluación de jurado a la que el "
-                        + "estudiante autenticado está vinculado";
+                "Consulta todas las evaluaciones cualitativas de una evaluación de jurado";
         public static final String CONSULTAR_RESP_200 = "Listado de evaluaciones cualitativas del jurado";
         public static final String CONSULTAR_RESP_400 = "Datos de entrada inválidos";
-        public static final String CONSULTAR_RESP_422 =
-                "La evaluación de jurado no existe o no pertenece al estudiante autenticado";
+        public static final String CONSULTAR_RESP_422 = "La evaluación de jurado no existe";
     }
 }

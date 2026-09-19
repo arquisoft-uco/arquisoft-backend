@@ -43,15 +43,11 @@ public final class EvaluacionesCodes {
 
         public static final String EVALUACION_JURADO_REQUERIDO =
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_REQUERIDO";
-        public static final String ESTUDIANTE_REQUERIDO =
-                "EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_REQUERIDO";
         public static final String ITEM_REQUERIDO =
                 "EVALUACION_CUALITATIVA_JURADO_ITEM_REQUERIDO";
         public static final String CRITERIO_REQUERIDO =
                 "EVALUACION_CUALITATIVA_JURADO_CRITERIO_REQUERIDO";
         public static final String EVALUACION_JURADO_NO_ENCONTRADA =
                 "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_ENCONTRADA";
-        public static final String EVALUACION_JURADO_NO_PERTENECE =
-                "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_PERTENECE";
     }
 }

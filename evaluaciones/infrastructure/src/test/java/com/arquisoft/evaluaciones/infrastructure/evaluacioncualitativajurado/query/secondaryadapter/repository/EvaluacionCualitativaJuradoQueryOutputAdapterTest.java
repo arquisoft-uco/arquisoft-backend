@@ -149,7 +149,7 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
 
         // Act
         List<EvaluacionCualitativaJuradoReadModel> resultado =
-                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, UUID.randomUUID()));
+                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado));
 
         // Assert
         assertThat(resultado).hasSize(1);
@@ -174,7 +174,7 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
 
         // Act
         List<EvaluacionCualitativaJuradoReadModel> resultado =
-                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, UUID.randomUUID()));
+                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado));
 
         // Assert
         assertThat(resultado).isEmpty();
@@ -200,7 +200,7 @@ class EvaluacionCualitativaJuradoQueryOutputAdapterTest {
 
         // Act
         List<EvaluacionCualitativaJuradoReadModel> resultado =
-                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado, UUID.randomUUID()));
+                adapter.consultar(new EvaluacionCualitativaJuradoCriteria(evaluacionJurado));
 
         // Assert
         assertThat(resultado).extracting(r -> r.item().nombre())

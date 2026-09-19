@@ -8,7 +8,6 @@ import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthoritie
 import com.arquisoft.shared.message.annotation.ApiCodes;
 import com.arquisoft.shared.message.annotation.ApiSecurity;
 import com.arquisoft.shared.message.annotation.EvaluacionesApiMessages;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.web.dto.ErrorResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,8 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -68,12 +65,9 @@ public class ConsultarEvaluacionesCualitativasJuradoController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<List<EvaluacionCualitativaJuradoResponseDTO>> consultarEvaluacionesCualitativasJurado(
-            @PathVariable UUID evaluacionJuradoId,
-            @AuthenticationPrincipal Jwt jwt) {
+            @PathVariable UUID evaluacionJuradoId) {
 
-        var estudianteId = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
-
-        var query = ConsultarEvaluacionesCualitativasJuradoRequestMapper.toQuery(evaluacionJuradoId, estudianteId);
+        var query = ConsultarEvaluacionesCualitativasJuradoRequestMapper.toQuery(evaluacionJuradoId);
 
         return ResponseEntity.ok(interactor.ejecutar(query).stream()
                 .map(EvaluacionCualitativaJuradoResponseMapper::toResponse)

@@ -14,43 +14,27 @@ import static org.assertj.core.groups.Tuple.tuple;
 class ConsultarEvaluacionesCualitativasJuradoEstudianteQueryTest {
 
     @Test
-    void debeCrearQuery_cuandoEvaluacionYEstudianteSonValidos() {
+    void debeCrearQuery_cuandoLaEvaluacionJuradoEsValida() {
         // Arrange
         UUID evaluacionJurado = UUID.randomUUID();
-        UUID estudiante = UUID.randomUUID();
 
         // Act
         ConsultarEvaluacionesCualitativasJuradoEstudianteQuery query =
-                ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(evaluacionJurado, estudiante);
+                ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(evaluacionJurado);
 
         // Assert
         assertThat(query.evaluacionJurado()).isEqualTo(evaluacionJurado);
-        assertThat(query.estudiante()).isEqualTo(estudiante);
     }
 
     @Test
-    void debeAcumularErroresDeEntrada_cuandoEvaluacionYEstudianteSonNulos() {
+    void debeAcumularErrorDeEntrada_cuandoLaEvaluacionJuradoEsNula() {
         // Act & Assert
-        assertThatThrownBy(() -> ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(null, null))
+        assertThatThrownBy(() -> ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
-                                .containsExactlyInAnyOrder(
-                                        tuple(EvaluacionesFields.EvaluacionCualitativaJurado.EVALUACION_JURADO,
-                                                EvaluacionesCodes.EvaluacionCualitativaJurado.EVALUACION_JURADO_REQUERIDO),
-                                        tuple(EvaluacionesFields.EvaluacionCualitativaJurado.ESTUDIANTE,
-                                                EvaluacionesCodes.EvaluacionCualitativaJurado.ESTUDIANTE_REQUERIDO)));
-    }
-
-    @Test
-    void debeAcumularErrorDeEntrada_cuandoEstudianteEsNulo() {
-        // Act & Assert
-        assertThatThrownBy(() -> ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.crear(
-                UUID.randomUUID(), null))
-                .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
-                        assertThat(exception.getValidationResult().getErrores())
-                                .extracting(error -> error.codigoError())
                                 .containsExactly(
-                                        EvaluacionesCodes.EvaluacionCualitativaJurado.ESTUDIANTE_REQUERIDO));
+                                        tuple(EvaluacionesFields.EvaluacionCualitativaJurado.EVALUACION_JURADO,
+                                                EvaluacionesCodes.EvaluacionCualitativaJurado.EVALUACION_JURADO_REQUERIDO)));
     }
 }

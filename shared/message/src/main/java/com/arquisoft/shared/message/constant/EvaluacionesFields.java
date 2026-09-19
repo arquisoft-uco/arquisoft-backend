@@ -26,7 +26,6 @@ public final class EvaluacionesFields {
         private EvaluacionCualitativaJurado() {}
 
         public static final String EVALUACION_JURADO = "evaluacionJurado";
-        public static final String ESTUDIANTE = "estudiante";
         public static final String ITEM = "item";
         public static final String CRITERIO = "criterio";
     }

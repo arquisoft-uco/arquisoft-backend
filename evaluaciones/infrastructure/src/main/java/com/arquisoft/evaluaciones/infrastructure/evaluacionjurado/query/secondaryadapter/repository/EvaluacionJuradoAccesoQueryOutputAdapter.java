@@ -4,7 +4,6 @@ import com.arquisoft.evaluaciones.application.evaluacionjurado.query.secondarypo
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -16,10 +15,5 @@ public class EvaluacionJuradoAccesoQueryOutputAdapter implements EvaluacionJurad
     @Override
     public boolean existePorId(UUID evaluacionJurado) {
         return repository.existsById(evaluacionJurado);
-    }
-
-    @Override
-    public Optional<String> obtenerProyecto(UUID evaluacionJurado) {
-        return repository.obtenerProyecto(evaluacionJurado);
     }
 }

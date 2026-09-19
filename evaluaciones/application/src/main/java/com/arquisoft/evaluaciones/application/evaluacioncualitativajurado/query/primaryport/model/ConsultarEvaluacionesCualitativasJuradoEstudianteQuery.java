@@ -8,24 +8,18 @@ import com.arquisoft.shared.validation.ValidatorObjeto;
 import java.util.UUID;
 
 public record ConsultarEvaluacionesCualitativasJuradoEstudianteQuery(
-        UUID evaluacionJurado,
-        UUID estudiante
+        UUID evaluacionJurado
 ) {
 
-    public static ConsultarEvaluacionesCualitativasJuradoEstudianteQuery crear(
-            UUID evaluacionJurado, UUID estudiante) {
+    public static ConsultarEvaluacionesCualitativasJuradoEstudianteQuery crear(UUID evaluacionJurado) {
         var result = new ValidationResult();
 
         ValidatorObjeto.noNulo(evaluacionJurado,
                 EvaluacionesFields.EvaluacionCualitativaJurado.EVALUACION_JURADO,
                 EvaluacionesCodes.EvaluacionCualitativaJurado.EVALUACION_JURADO_REQUERIDO, result);
 
-        ValidatorObjeto.noNulo(estudiante,
-                EvaluacionesFields.EvaluacionCualitativaJurado.ESTUDIANTE,
-                EvaluacionesCodes.EvaluacionCualitativaJurado.ESTUDIANTE_REQUERIDO, result);
-
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new ConsultarEvaluacionesCualitativasJuradoEstudianteQuery(evaluacionJurado, estudiante);
+        return new ConsultarEvaluacionesCualitativasJuradoEstudianteQuery(evaluacionJurado);
     }
 }
