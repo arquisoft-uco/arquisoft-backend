@@ -19,8 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -62,19 +60,14 @@ public class RegistrarEvaluacionesCualitativasJuradoController {
             @ApiResponse(
                     responseCode = ApiCodes.UNPROCESSABLE,
                     description = EvaluacionesApiMessages.EvaluacionCualitativaJurado.REGISTRAR_RESP_422,
-                    content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class))),
-            @ApiResponse(
-                    responseCode = ApiCodes.SERVICE_UNAVAILABLE,
-                    description = EvaluacionesApiMessages.EvaluacionCualitativaJurado.REGISTRAR_RESP_503,
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<Void> registrar(
             @PathVariable UUID evaluacionJuradoId,
-            @RequestBody RegistrarEvaluacionesCualitativasJuradoRequestDTO request,
-            @AuthenticationPrincipal Jwt jwt) {
+            @RequestBody RegistrarEvaluacionesCualitativasJuradoRequestDTO request) {
 
         interactor.ejecutar(RegistrarEvaluacionesCualitativasJuradoRequestMapper.toCommand(
-                request, evaluacionJuradoId, jwt.getSubject()));
+                request, evaluacionJuradoId));
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

@@ -6,37 +6,24 @@ import com.arquisoft.shared.message.constant.EvaluacionesFields;
 import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorColeccion;
-import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.List;
-import java.util.UUID;
 
 public final class RegistroEvaluacionesCualitativasJuradoDomain {
 
-    private UUID actor;
     private List<EvaluacionCualitativaJuradoDomain> evaluaciones;
 
     private RegistroEvaluacionesCualitativasJuradoDomain() {}
 
     public static RegistroEvaluacionesCualitativasJuradoDomain crear(
-            UUID actor, List<EvaluacionCualitativaJuradoDomain> evaluaciones) {
+            List<EvaluacionCualitativaJuradoDomain> evaluaciones) {
         var registro = new RegistroEvaluacionesCualitativasJuradoDomain();
         var result = new ValidationResult();
 
-        registro.setActor(actor, result);
         registro.setEvaluaciones(evaluaciones, result);
 
         result.lanzarSiTieneErrores();
         return registro;
-    }
-
-    private void setActor(UUID actor, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(actor,
-                EvaluacionesFields.RegistroEvaluacionesCualitativasJurado.ACTOR,
-                EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.ACTOR_REQUERIDO, result)) {
-            return;
-        }
-        this.actor = actor;
     }
 
     private void setEvaluaciones(List<EvaluacionCualitativaJuradoDomain> evaluaciones, ValidationResult result) {
@@ -66,10 +53,6 @@ public final class RegistroEvaluacionesCualitativasJuradoDomain {
         }
 
         this.evaluaciones = List.copyOf(evaluaciones);
-    }
-
-    public UUID getActor() {
-        return actor;
     }
 
     public List<EvaluacionCualitativaJuradoDomain> getEvaluaciones() {

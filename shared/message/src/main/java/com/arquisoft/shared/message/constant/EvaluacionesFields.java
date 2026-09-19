@@ -53,7 +53,6 @@ public final class EvaluacionesFields {
 
         private RegistroEvaluacionesCualitativasJurado() {}
 
-        public static final String ACTOR = "actor";
         public static final String EVALUACIONES = "evaluaciones";
     }
 
