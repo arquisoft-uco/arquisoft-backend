@@ -6,7 +6,6 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.readmodel.EvaluacionCualitativaJuradoReadModel;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.query.readmodel.ItemCualitativoJuradoReadModel;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoEncontradaException;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoPerteneceEstudianteException;
 import com.arquisoft.evaluaciones.infrastructure.security.EvaluacionesAuthorities;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -77,17 +76,15 @@ class ConsultarEvaluacionesCualitativasJuradoControllerTest {
     @MockitoBean
     private GestorTraza gestorTraza;
 
-    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermisoView(String subject) {
+    private static SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor jwtConPermisoView() {
         return SecurityMockMvcRequestPostProcessors.jwt()
-                .jwt(jwt -> jwt.subject(subject))
                 .authorities(new SimpleGrantedAuthority(
                         EvaluacionesAuthorities.EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW));
     }
 
     @Test
-    void debeRetornar200ConElContratoExacto_yPasarElSubjectDelJwtAlInteractor() throws Exception {
+    void debeRetornar200ConElContratoExacto_yPasarLaEvaluacionJuradoAlInteractor() throws Exception {
         // Arrange
-        String subject = UUID.randomUUID().toString();
         UUID idEvaluacionCualitativa = UUID.randomUUID();
         UUID idItem = UUID.randomUUID();
         UUID idCriterio = UUID.randomUUID();
@@ -98,7 +95,7 @@ class ConsultarEvaluacionesCualitativasJuradoControllerTest {
         when(interactor.ejecutar(any())).thenReturn(resultado);
 
         // Act & Assert
-        mockMvc.perform(get(RUTA).with(jwtConPermisoView(subject)))
+        mockMvc.perform(get(RUTA).with(jwtConPermisoView()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id").value(idEvaluacionCualitativa.toString()))
@@ -111,7 +108,6 @@ class ConsultarEvaluacionesCualitativasJuradoControllerTest {
                 ArgumentCaptor.forClass(ConsultarEvaluacionesCualitativasJuradoEstudianteQuery.class);
         verify(interactor).ejecutar(captor.capture());
         Assertions.assertThat(captor.getValue().evaluacionJurado()).isEqualTo(EVALUACION_JURADO_ID);
-        Assertions.assertThat(captor.getValue().estudiante()).isEqualTo(UUID.fromString(subject));
     }
 
     @Test
@@ -120,16 +116,9 @@ class ConsultarEvaluacionesCualitativasJuradoControllerTest {
         when(interactor.ejecutar(any())).thenReturn(List.of());
 
         // Act & Assert
-        mockMvc.perform(get(RUTA).with(jwtConPermisoView(UUID.randomUUID().toString())))
+        mockMvc.perform(get(RUTA).with(jwtConPermisoView()))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
-    }
-
-    @Test
-    void debeRetornar400_cuandoElSubjectDelJwtNoEsUnUuidValido() throws Exception {
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(jwtConPermisoView("no-es-un-uuid")))
-                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -153,18 +142,7 @@ class ConsultarEvaluacionesCualitativasJuradoControllerTest {
                 .thenThrow(new EvaluacionJuradoNoEncontradaException(EVALUACION_JURADO_ID));
 
         // Act & Assert
-        mockMvc.perform(get(RUTA).with(jwtConPermisoView(UUID.randomUUID().toString())))
-                .andExpect(status().isUnprocessableEntity());
-    }
-
-    @Test
-    void debeRetornar422_cuandoLaEvaluacionJuradoNoPerteneceAlEstudiante() throws Exception {
-        // Arrange
-        when(interactor.ejecutar(any()))
-                .thenThrow(new EvaluacionJuradoNoPerteneceEstudianteException(EVALUACION_JURADO_ID));
-
-        // Act & Assert
-        mockMvc.perform(get(RUTA).with(jwtConPermisoView(UUID.randomUUID().toString())))
+        mockMvc.perform(get(RUTA).with(jwtConPermisoView()))
                 .andExpect(status().isUnprocessableEntity());
     }
 }

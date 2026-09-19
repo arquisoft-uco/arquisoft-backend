@@ -6,9 +6,7 @@ public enum EvaluacionCualitativaJuradoKey implements ClaveMensaje {
 
     ERROR_EVALUACION_JURADO_NO_ENCONTRADA(
             "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluacion-jurado-no-encontrada", 1),
-    ERROR_EVALUACION_JURADO_NO_PERTENECE(
-            "evaluaciones.dominio.evaluacioncualitativajurado.error.evaluacion-jurado-no-pertenece", 1),
-    LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consultando", 2),
+    LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncualitativajurado.log.consulta-completada", 1);
 
     private final String clave;
