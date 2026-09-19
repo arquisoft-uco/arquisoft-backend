@@ -20,42 +20,38 @@ class RegistrarEvaluacionesCualitativasJuradoCommandTest {
     void debeCrearCommand_cuandoDatosValidos() {
         // Arrange
         String evaluacionJurado = UUID.randomUUID().toString();
-        String actor = UUID.randomUUID().toString();
         String item = UUID.randomUUID().toString();
         String criterio = UUID.randomUUID().toString();
 
         // Act
         RegistrarEvaluacionesCualitativasJuradoCommand command = RegistrarEvaluacionesCualitativasJuradoCommand.crear(
-                evaluacionJurado, actor, List.of(new ParEntrada(item, criterio)));
+                evaluacionJurado, List.of(new ParEntrada(item, criterio)));
 
         // Assert
         assertThat(command.evaluacionJurado()).isEqualTo(UUID.fromString(evaluacionJurado));
-        assertThat(command.actor()).isEqualTo(UUID.fromString(actor));
         assertThat(command.evaluaciones()).hasSize(1);
         assertThat(command.evaluaciones().get(0).item()).isEqualTo(UUID.fromString(item));
         assertThat(command.evaluaciones().get(0).criterio()).isEqualTo(UUID.fromString(criterio));
     }
 
     @Test
-    void debeAcumularErrores_cuandoEvaluacionJuradoYActorEstanEnBlanco() {
+    void debeAcumularError_cuandoEvaluacionJuradoEstaEnBlanco() {
         // Act & Assert
         assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasJuradoCommand.crear(
-                " ", " ", List.of(new ParEntrada(UUID.randomUUID().toString(), UUID.randomUUID().toString()))))
+                " ", List.of(new ParEntrada(UUID.randomUUID().toString(), UUID.randomUUID().toString()))))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())
                                 .contains(
                                         tuple(EvaluacionesFields.EvaluacionCualitativaJurado.EVALUACION_JURADO,
-                                                EvaluacionesCodes.EvaluacionCualitativaJurado.EVALUACION_JURADO_REQUERIDO),
-                                        tuple(EvaluacionesFields.RegistroEvaluacionesCualitativasJurado.ACTOR,
-                                                EvaluacionesCodes.RegistroEvaluacionesCualitativasJurado.ACTOR_REQUERIDO)));
+                                                EvaluacionesCodes.EvaluacionCualitativaJurado.EVALUACION_JURADO_REQUERIDO)));
     }
 
     @Test
     void debeAcumularErrorLoteRequerido_cuandoLaListaDeParesEsNula() {
         // Act & Assert
         assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasJuradoCommand.crear(
-                UUID.randomUUID().toString(), UUID.randomUUID().toString(), null))
+                UUID.randomUUID().toString(), null))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
@@ -66,7 +62,7 @@ class RegistrarEvaluacionesCualitativasJuradoCommandTest {
     void debeAcumularErrorLoteVacio_cuandoLaListaDeParesEsVacia() {
         // Act & Assert
         assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasJuradoCommand.crear(
-                UUID.randomUUID().toString(), UUID.randomUUID().toString(), List.of()))
+                UUID.randomUUID().toString(), List.of()))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.codigoError())
@@ -82,7 +78,7 @@ class RegistrarEvaluacionesCualitativasJuradoCommandTest {
 
         // Act & Assert
         assertThatThrownBy(() -> RegistrarEvaluacionesCualitativasJuradoCommand.crear(
-                UUID.randomUUID().toString(), UUID.randomUUID().toString(), pares))
+                UUID.randomUUID().toString(), pares))
                 .isInstanceOfSatisfying(ApplicationValidationException.class, exception ->
                         assertThat(exception.getValidationResult().getErrores())
                                 .extracting(error -> error.campo(), error -> error.codigoError())

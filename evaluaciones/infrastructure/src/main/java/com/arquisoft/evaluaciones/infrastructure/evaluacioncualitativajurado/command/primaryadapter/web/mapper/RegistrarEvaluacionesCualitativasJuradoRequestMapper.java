@@ -12,11 +12,10 @@ public final class RegistrarEvaluacionesCualitativasJuradoRequestMapper {
     private RegistrarEvaluacionesCualitativasJuradoRequestMapper() {}
 
     public static RegistrarEvaluacionesCualitativasJuradoCommand toCommand(
-            RegistrarEvaluacionesCualitativasJuradoRequestDTO dto, UUID evaluacionJurado, String actor) {
+            RegistrarEvaluacionesCualitativasJuradoRequestDTO dto, UUID evaluacionJurado) {
         var pares = UtilObjeto.esNulo(dto) ? null : toEntradas(dto);
 
-        return RegistrarEvaluacionesCualitativasJuradoCommand.crear(
-                evaluacionJurado.toString(), actor, pares);
+        return RegistrarEvaluacionesCualitativasJuradoCommand.crear(evaluacionJurado.toString(), pares);
     }
 
     private static List<RegistrarEvaluacionesCualitativasJuradoCommand.ParEntrada> toEntradas(

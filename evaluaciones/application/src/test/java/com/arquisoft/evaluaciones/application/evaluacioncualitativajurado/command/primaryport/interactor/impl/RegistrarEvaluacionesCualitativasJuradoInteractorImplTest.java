@@ -30,11 +30,10 @@ class RegistrarEvaluacionesCualitativasJuradoInteractorImplTest {
     void debeMapearYDelegarAlUseCase_cuandoEjecutaCommand() {
         // Arrange
         UUID evaluacionJurado = UUID.randomUUID();
-        UUID actor = UUID.randomUUID();
         UUID item = UUID.randomUUID();
         UUID criterio = UUID.randomUUID();
         var command = new RegistrarEvaluacionesCualitativasJuradoCommand(
-                evaluacionJurado, actor, List.of(new ParEvaluacionCualitativaJuradoCommand(item, criterio)));
+                evaluacionJurado, List.of(new ParEvaluacionCualitativaJuradoCommand(item, criterio)));
 
         // Act
         interactor.ejecutar(command);
@@ -44,7 +43,6 @@ class RegistrarEvaluacionesCualitativasJuradoInteractorImplTest {
                 ArgumentCaptor.forClass(RegistroEvaluacionesCualitativasJuradoDomain.class);
         verify(useCase).ejecutar(captor.capture());
         RegistroEvaluacionesCualitativasJuradoDomain registro = captor.getValue();
-        assertThat(registro.getActor()).isEqualTo(actor);
         assertThat(registro.getEvaluaciones()).hasSize(1);
         assertThat(registro.getEvaluaciones().get(0).getEvaluacionJurado()).isEqualTo(evaluacionJurado);
         assertThat(registro.getEvaluaciones().get(0).getItem()).isEqualTo(item);

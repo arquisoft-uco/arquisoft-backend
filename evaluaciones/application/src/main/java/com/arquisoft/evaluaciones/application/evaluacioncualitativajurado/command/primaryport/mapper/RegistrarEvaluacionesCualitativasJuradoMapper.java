@@ -15,6 +15,6 @@ public final class RegistrarEvaluacionesCualitativasJuradoMapper {
                         command.evaluacionJurado(), par.item(), par.criterio()))
                 .toList();
 
-        return RegistroEvaluacionesCualitativasJuradoDomain.crear(command.actor(), evaluaciones);
+        return RegistroEvaluacionesCualitativasJuradoDomain.crear(evaluaciones);
     }
 }
