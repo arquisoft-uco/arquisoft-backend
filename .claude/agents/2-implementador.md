@@ -111,7 +111,7 @@ omites).
   AMQP es el ejemplo, y la forma exacta es la de `EnviarNotificacionUseCaseImpl`:
 
   ```java
-  boolean yaProcesada = notificacionProcesadaFinder.obtener(entrada);
+  var yaProcesada = notificacionProcesadaFinder.obtener(entrada);
   logger.debug(NotificacionKey.LOG_VERIFICACION_PREVIA,
           entrada.getIdEvento(), yaProcesada);
 
@@ -136,15 +136,48 @@ omites).
 - Todo el I/O del comando vive en el `UseCase`: los `Finder`s traen el estado, se desenvuelve el
   `Optional` ahí (centinela `VACIO` para domains, valor + `boolean` para escalares), se valida, se
   mapea `Domain → Entity` y se persiste.
-  El resultado de un `{X}ExisteFinder` se declara **`boolean` explícito, nunca `var`**: el contrato
-  es `Finder<T, Boolean>` porque un genérico no admite primitivos, y con `var` ese envuelto llega
-  hasta el `validar(..., boolean existe)` desempaquetándose en silencio.
+  El resultado de un `{X}ExisteFinder` se recibe con **`var`, como todo local** (`var itemExiste =
+  itemExisteFinder.obtener(item);`). El contrato es `Finder<T, Boolean>` porque un genérico no admite
+  primitivos, y eso no se "arregla": lo que hace seguro el unboxing en `validar(..., boolean existe)`
+  es que el `existePor...` del `OutputPort` devuelve `boolean` primitivo y el `Finder` nunca devuelve
+  `null`.
   Un `Finder` es **una sola llamada a un `OutputPort`**: no encadena `Finder`s, no compara ni deriva
   (`a.equals(b)`, `count > 0`), no hace lookups en varios pasos. Al `Validator` le llega el dato
   crudo del `Finder` (agregado, `UUID`s, conteo) — **nunca un veredicto ya calculado** en el
-  `UseCase`; la comparación de identidad/pertenencia vive en la `Rule`. Y si un método del
-  `OutputPort` trae lo que se necesita, no se usan dos `Finder`s en cascada (lista de `UUID` → fetch
-  por elemento): una proyección con `JOIN`.
+  `UseCase`; la comparación de identidad/pertenencia vive en la `Rule`.
+- **Cada `Finder` es un viaje a la base de datos: cuéntalos antes de escribir el `UseCase`.** La
+  señal a cazar es el **`Finder` dependiente** — aquel cuya entrada es la salida de otro. Casi
+  siempre significa que falta un método en el `OutputPort` que navegue la relación de una vez:
+
+  ```java
+  // ❌ dos viajes: el primero solo existe para alimentar al segundo
+  var idFichaPerfil = idFichaPerfilPorItemFinder.obtener(entrada.getItem());
+  var fichaPerfil = fichaPerfilPorIdFinder.obtener(idFichaPerfil);
+
+  // ✅ un viaje: FichaPerfilOutputPort.obtenerPorItem(UUID item), con JOIN en el adaptador
+  var fichaPerfil = fichaPerfilPorItemFinder.obtener(entrada.getItem());
+  ```
+
+  La variante N+1 es la misma enfermedad y es peor: un `Finder` devuelve una lista de `UUID` y otro
+  se llama **por elemento**. Se colapsa igual, en una proyección con `JOIN`.
+
+  Esto **no** contradice "un `Finder` es una sola llamada a un `OutputPort`": el `JOIN` vive en la
+  consulta del adaptador, no en el `Finder`. Colapsar la cascada no engorda la capa de aplicación —
+  la adelgaza.
+
+  **No es un límite de cantidad, es un límite de cascadas.** Tres `Finder`s independientes (cada uno
+  con su propia entrada, sacada del `Command` o del domain de acción) están bien y no hay nada que
+  colapsar: no se pueden fusionar consultas a agregados que no se relacionan.
+
+  Y **hay cascadas legítimas** — no las fuerces a colapsar:
+  - El segundo lookup es **condicional** (solo se ejecuta si el primero decide que hace falta). Ahí
+    la cascada *ahorra* viajes en el camino corto; fusionarla los añadiría.
+  - Los dos `OutputPort` son de **features o contextos distintos**. Entre contextos no hay `JOIN`
+    posible: son bases de datos separadas.
+  - El identificador intermedio **es en sí un dato que la `Rule` necesita**, no un peldaño.
+
+  Si el plan declara la cascada y ves que colapsa, **párate y repórtalo antes de escribirla**: el
+  método del `OutputPort` lo decide el plan, no lo inventes sobre la marcha.
 - La existencia de un domain de **otra feature** se consulta con el `Finder` de esa feature sobre
   su `OutputPort` de `command/` — nunca creando un `query/` para eso.
 - Si el plan declara eventos, el `UseCase` inyecta la **interfaz** `EventPublisher`
@@ -273,9 +306,14 @@ equivocan generando código y no se ven leyendo una regla:
   escribas. Una ausencia declarada es una decisión, no un hueco que te toque llenar.
 - **Qualifier explícito siempre:** `@Transactional(transactionManager = "{contexto}TransactionManager")`.
   `usuariosTransactionManager` es `@Primary` y enlaza en silencio si lo omites.
-- **`boolean` explícito, nunca `var`,** para recibir el resultado de un `{X}ExisteFinder`: con `var`
-  el `Boolean` del genérico llega vivo hasta `validar(..., boolean existe)` y el unboxing pasa
-  callado.
+- **`var` en toda variable local, sin excepción por tipo.** Un `long`, un `int`, un `boolean`, un
+  `Boolean`, un `UUID`, un `String`, un `LocalDateTime` y un `Optional<X>` se declaran igual que un
+  agregado — también el resultado de un `{X}ExisteFinder`:
+  `var cantidadRevisiones = revisionesDelItemFinder.obtener(entrada.getItem());`, nunca
+  `long cantidadRevisiones = ...`. Es regla de forma, no un juicio por línea. Solo se sale de `var`
+  donde no compila o cambia la semántica (diamante sin tipar, array por llaves, lambda o referencia a
+  método, inicializador `null`), y solo aplica a **locales**: campos, parámetros, retornos y
+  componentes de `record` van explícitos.
 - **Al `AppLogger` se le pasa la `ClaveMensaje`, nunca el texto resuelto.**
   `logger.debug(FichaPerfilKey.LOG_X, a, b)`, no `logger.debug(Mensajes.obtener(...), a, b)`: la
   segunda compila, pero es un `GET` a Redis en cada llamada que Java evalúa aunque el nivel esté
@@ -297,6 +335,22 @@ equivocan generando código y no se ven leyendo una regla:
   `mer/data/{NN}_data_{contexto}.sql`: esas y solo esas.** Si el plan no las lista, es ambigüedad —
   repórtala, no las deduzcas.
 - **Virtual Threads ya están activos:** nunca un `@Bean TaskExecutor` manual.
+- **El nombre de un bean escaneado es su FQN, no su nombre simple.** `ArquisoftApplication` usa
+  `FullyQualifiedAnnotationBeanNameGenerator`, y cada `@EnableJpaRepositories` lo repite porque los
+  repositorios Spring Data no heredan el de la aplicación — un `{Contexto}DataSourceConfig` nuevo
+  **debe** declarar `nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class`. Por eso dos
+  clases homónimas en contextos distintos no chocan, y una réplica usa el nombre natural en todas sus
+  clases, beans incluidos (`AgregarCoordinadorInteractor`, `CoordinadorAgregadoConsumer`), sin
+  calificador de contexto ni `Espejo`/`Replica`. Ninguna réplica del repo lleva ese calificador: un
+  nombre con `Fichas`/`Proyectos` como calificador es la convención retirada. Nunca referencies un
+  bean escaneado por nombre en cadena (`@Qualifier("…")`, `@DependsOn`, SpEL): se inyecta por tipo.
+  Los métodos `@Bean` **no** pasan por el generador y llevan el contexto como prefijo
+  (`fichasTransactionManager`); en una réplica, el `@Bean Declarables` de su cola va en
+  `{Contexto}{Productor}QueueConfig` y se llama `{contexto}{Evento}Declarables`
+  (`proyectosEstudianteAgregadoDeclarables`), porque sin prefijo choca con la réplica del mismo evento
+  en otro contexto. Las clases de `config/` siguen **prefijadas por su contexto**
+  (`UsuariosRestTemplateConfig`) para leer a quién pertenecen desde el import. Nunca edites una migración ya aplicada para actualizar un nombre de
+  clase citado en su comentario. Detalle en `arquisoft-arquitectura` → *Replicación entre contextos*.
 - **Sin Javadoc y sin comentarios que repitan el código.** El "por qué" va al mensaje de commit.
   Imports explícitos, nunca wildcard.
 

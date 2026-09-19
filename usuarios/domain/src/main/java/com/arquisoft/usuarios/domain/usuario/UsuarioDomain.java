@@ -1,84 +1,96 @@
 package com.arquisoft.usuarios.domain.usuario;
 
-import com.arquisoft.shared.message.constant.UsuariosCodes;
-import com.arquisoft.shared.message.constant.UsuariosFields;
-import com.arquisoft.shared.util.UtilTexto;
-import com.arquisoft.shared.util.UtilUUID;
-import com.arquisoft.shared.validation.ValidationResult;
-import com.arquisoft.shared.validation.ValidatorObjeto;
-import com.arquisoft.shared.validation.ValidatorTexto;
-import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
+import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 
 import java.util.UUID;
 
 public final class UsuarioDomain {
 
     private UUID id;
+    private String identificador;
+    private String nombre;
     private String email;
-    private UsuarioRole rol;
+    private String contacto;
+    private EstadoUsuario estado;
 
     private UsuarioDomain() {}
 
-    public static UsuarioDomain crear(String email, UsuarioRole rol) {
+    public static UsuarioDomain crear(UUID id, RegistroUsuarioDomain registro) {
         var usuario = new UsuarioDomain();
-        var result = new ValidationResult();
 
-        usuario.setId();
-        usuario.setEmail(email, result);
-        usuario.setRol(rol, result);
-
-        result.lanzarSiTieneErrores();
+        usuario.setId(id);
+        usuario.setIdentificador(registro.getIdentificador());
+        usuario.setNombre(registro.getNombre());
+        usuario.setEmail(registro.getEmail());
+        usuario.setContacto(registro.getContacto());
+        usuario.setEstadoUsuarioActivo();
 
         return usuario;
     }
 
-    public static UsuarioDomain reconstruir(UUID id, String email, UsuarioRole rol) {
+    public static UsuarioDomain reconstruir(UUID id, String identificador, String nombre, String email,
+                                            String contacto, EstadoUsuario estado) {
         var usuario = new UsuarioDomain();
-        usuario.id = id;
-        usuario.email = email;
-        usuario.rol = rol;
+
+        usuario.setId(id);
+        usuario.setIdentificador(identificador);
+        usuario.setNombre(nombre);
+        usuario.setEmail(email);
+        usuario.setContacto(contacto);
+        usuario.setEstadoUsuario(estado);
+
         return usuario;
     }
 
-    private void setId() {
-        this.id = UtilUUID.generarNuevoUUID();
+    private void setId(UUID id) {
+        this.id = id;
     }
 
-    private void setEmail(String email, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(email,
-                UsuariosFields.Usuario.EMAIL,
-                UsuariosCodes.Usuario.EMAIL_REQUERIDO, result)) {
-            return;
-        }
-
-        var normalizado = UtilTexto.aplicarTrim(email).toLowerCase();
-
-        if (!ValidatorTexto.correoValido(normalizado,
-                UsuariosFields.Usuario.EMAIL,
-                UsuariosCodes.Usuario.EMAIL_REQUERIDO, result)) {
-            return;
-        }
-        this.email = normalizado;
+    private void setIdentificador(String identificador) {
+        this.identificador = identificador;
     }
 
-    private void setRol(UsuarioRole rol, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(rol,
-                UsuariosFields.Usuario.ROL,
-                UsuariosCodes.Usuario.ROL_REQUERIDO, result)) {
-            return;
-        }
-        this.rol = rol;
+    private void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    private void setEmail(String email) {
+        this.email = email;
+    }
+
+    private void setContacto(String contacto) {
+        this.contacto = contacto;
+    }
+
+    private void setEstadoUsuarioActivo() {
+        this.estado = EstadoUsuario.ACTIVO;
+    }
+
+    private void setEstadoUsuario(EstadoUsuario estado) {
+        this.estado = estado;
     }
 
     public UUID getId() {
         return id;
     }
 
+    public String getIdentificador() {
+        return identificador;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
     public String getEmail() {
         return email;
     }
 
-    public UsuarioRole getRol() {
-        return rol;
+    public String getContacto() {
+        return contacto;
+    }
+
+    public EstadoUsuario getEstado() {
+        return estado;
     }
 }

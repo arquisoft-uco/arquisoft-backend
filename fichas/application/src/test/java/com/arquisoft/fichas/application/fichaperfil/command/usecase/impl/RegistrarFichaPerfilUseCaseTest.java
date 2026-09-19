@@ -233,7 +233,7 @@ class RegistrarFichaPerfilUseCaseTest {
 
     private static AsesorFichaDomain asesor() {
         return AsesorFichaDomain.reconstruir(
-                UUID.randomUUID(), "1088", "Carlos Ruiz", "carlos.ruiz@soyuco.edu.co");
+                UUID.randomUUID(), "1088", "Carlos Ruiz", "carlos.ruiz@soyuco.edu.co", java.time.Instant.now());
     }
 
     private static RegistroFichaPerfilDomain registroValido() {

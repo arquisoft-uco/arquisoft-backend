@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,6 +24,7 @@ class EstudianteCommandRepositoryTest {
                 .identificador("1234567890")
                 .nombre("Estudiante de prueba")
                 .email("estudiante@example.com")
+                .ocurridoEn(Instant.now())
                 .build();
         repository.save(estudiante);
 

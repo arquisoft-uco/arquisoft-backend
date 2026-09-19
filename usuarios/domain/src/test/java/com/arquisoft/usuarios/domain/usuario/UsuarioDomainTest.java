@@ -1,75 +1,50 @@
 package com.arquisoft.usuarios.domain.usuario;
 
-import com.arquisoft.shared.exception.DomainException;
-import com.arquisoft.usuarios.domain.usuario.model.UsuarioRole;
+import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class UsuarioDomainTest {
 
     @Test
-    void debeCrearUsuario_cuandoDatosValidos() {
+    void debeCrearUsuarioActivo_cuandoSeLeAsignaUnaIdentidad() {
         // Arrange
-        String email = "test@example.com";
-        UsuarioRole rol = UsuarioRole.ESTUDIANTE;
+        var id = UUID.randomUUID();
+        var registro = RegistroUsuarioDomain.crear(
+                "usr001", "Ana Pérez", "ana@uco.edu.co", "573001112233",
+                "Ana", "Pérez", List.of("estudiante"));
 
         // Act
-        UsuarioDomain usuario = UsuarioDomain.crear(email, rol);
-
-        // Assert
-        assertThat(usuario.getId()).isNotNull();
-        assertThat(usuario.getEmail()).isEqualTo("test@example.com");
-        assertThat(usuario.getRol()).isEqualTo(UsuarioRole.ESTUDIANTE);
-    }
-
-    @Test
-    void debeReconstruirUsuario_cuandoIdExistente() {
-        // Arrange
-        UUID id = UUID.randomUUID();
-
-        // Act
-        UsuarioDomain usuario = UsuarioDomain.reconstruir(id, "test@example.com", UsuarioRole.COORDINADOR);
+        var usuario = UsuarioDomain.crear(id, registro);
 
         // Assert
         assertThat(usuario.getId()).isEqualTo(id);
-        assertThat(usuario.getEmail()).isEqualTo("test@example.com");
-        assertThat(usuario.getRol()).isEqualTo(UsuarioRole.COORDINADOR);
+        assertThat(usuario.getIdentificador()).isEqualTo("usr001");
+        assertThat(usuario.getNombre()).isEqualTo("Ana Pérez");
+        assertThat(usuario.getEmail()).isEqualTo("ana@uco.edu.co");
+        assertThat(usuario.getContacto()).isEqualTo("573001112233");
+        assertThat(usuario.getEstado()).isEqualTo(EstadoUsuario.ACTIVO);
     }
 
     @Test
-    void debeLanzarExcepcion_cuandoEmailEsNulo() {
-        // Arrange / Act / Assert
-        assertThatThrownBy(() -> UsuarioDomain.crear(null, UsuarioRole.BIBLIOTECARIO))
-                .isInstanceOf(DomainException.class)
-                .hasMessageContaining("email");
-    }
+    void debeReconstruirSinValidar_cuandoReconstruirEsInvocado() {
+        // Arrange
+        var id = UUID.randomUUID();
 
-    @Test
-    void debeLanzarExcepcion_cuandoEmailEsVacio() {
-        // Arrange / Act / Assert
-        assertThatThrownBy(() -> UsuarioDomain.crear("   ", UsuarioRole.ADMINISTRADOR))
-                .isInstanceOf(DomainException.class)
-                .hasMessageContaining("email");
-    }
-
-    @Test
-    void debeLanzarExcepcion_cuandoRolEsNulo() {
-        // Arrange / Act / Assert
-        assertThatThrownBy(() -> UsuarioDomain.crear("test@example.com", null))
-                .isInstanceOf(DomainException.class)
-                .hasMessageContaining("rol");
-    }
-
-    @Test
-    void debeNormalizarEmail_cuandoCrearEsInvocado() {
-        // Arrange / Act
-        UsuarioDomain usuario = UsuarioDomain.crear("  Test@Example.COM  ", UsuarioRole.ASESOR);
+        // Act
+        var usuario = UsuarioDomain.reconstruir(
+                id, "usr002", "Juan Pérez", "juan@uco.edu.co", "573001112233", EstadoUsuario.INACTIVO);
 
         // Assert
-        assertThat(usuario.getEmail()).isEqualTo("test@example.com");
+        assertThat(usuario.getId()).isEqualTo(id);
+        assertThat(usuario.getIdentificador()).isEqualTo("usr002");
+        assertThat(usuario.getNombre()).isEqualTo("Juan Pérez");
+        assertThat(usuario.getEmail()).isEqualTo("juan@uco.edu.co");
+        assertThat(usuario.getContacto()).isEqualTo("573001112233");
+        assertThat(usuario.getEstado()).isEqualTo(EstadoUsuario.INACTIVO);
     }
 }

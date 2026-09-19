@@ -37,9 +37,13 @@ Registra los archivos consultados para el Metadata del plan.
 
 ## FASE 2 — Localizar la historia y el contexto
 
-1. **HU** vive en `artefactos/estrategicos/propuestas-hu/historias_usuario_priorizadas.md`
-   (Actor, Objeto de Dominio, Comando). **HT** vive en `docs/stories/HT-XXX.*.story.md`. No las
-   confundas.
+1. **HU** vive en `artefactos/estrategicos/propuestas-hu/priorizacion/historias_usuario_priorizadas.md`
+   (Actor, Objeto de Dominio, Comando) — la carpeta se reestructuró el 2026-09-08 y la ruta plana
+   anterior da 404. HU278–HU280 no están ahí: solo en `propuestas-hu/backlog/fase-3-consolidacion.md`.
+   Complementa con el backlog de su fase (`propuestas-hu/backlog/fase-{1,2,3}-*.md`) para fase, flujo
+   y prioridad de ejecución — es derivado, ante discrepancia gana el priorizado, y la vieja
+   priorización por Release/Sprint está obsoleta: no la cites. Detalle en `gh-docs-reader`.
+   **HT** vive en `docs/stories/HT-XXX.*.story.md`. No las confundas.
 2. Cruza con el Event Storming del contexto (`{Contexto} - Event Storming.md`): políticas
    (`POL-XX`), eventos generados, aspectos por solucionar, comandos/eventos adyacentes.
 3. Identifica el bounded context con la tabla de mapeo de `gh-docs-reader`.
@@ -152,6 +156,29 @@ paquete `query/` existe únicamente si hay una lectura real detrás de un `prima
 exacto: `AsesorFichaExisteFinder` → `AsesorFichaOutputPort.existePorId(...)`, consumido por
 `RegistrarFichaPerfilUseCaseImpl`. Un solo puerto, N consumidores.
 
+**8c. ¿Cuántos viajes a la base de datos cuesta el comando?** Enumera en el plan **cada `Finder` con
+su método del `OutputPort`** — la lista es el presupuesto de I/O del use case, y planificarla es
+justo lo que evita descubrirla al implementar. Regla: **un `Finder` cuya entrada sea la salida de
+otro es una cascada, y una cascada se colapsa en un método del `OutputPort` que navegue la
+relación.** El caso que más aparece:
+
+| En vez de | Declara |
+|---|---|
+| `IdFichaPerfilPorItemFinder` → `FichaPerfilPorIdFinder` (2 viajes; el primero solo alimenta al segundo) | `FichaPerfilPorItemFinder` → `FichaPerfilOutputPort.obtenerPorItem(UUID item)`, con `JOIN` en el adaptador (1 viaje) |
+| Un `Finder` que devuelve `List<UUID>` + otro llamado por elemento (N+1) | Una proyección con `JOIN` que traiga todo en una consulta |
+
+El `JOIN` vive en la consulta del adaptador, así que colapsar **no** rompe "un `Finder` es una sola
+llamada a un `OutputPort`".
+
+No es un límite de cantidad: varios `Finder`s **independientes** (cada uno con su entrada propia) son
+correctos y no se fusionan. Y hay cascadas que **sí** se justifican — decláralas con su razón en una
+línea, para que el implementador no intente colapsarlas:
+
+- el segundo lookup es **condicional** y el camino corto se ahorra el viaje;
+- los dos `OutputPort` son de **features o contextos distintos** (entre contextos no hay `JOIN`: son
+  bases separadas);
+- el identificador intermedio **es un dato que la `Rule` necesita**, no un peldaño.
+
 **9. ¿Habla con un sistema externo** más allá de PostgreSQL/RabbitMQ (Keycloak, SMTP, MinIO, HTTP
 externo)? Si sí: puerto en `application/{feature}/command/secondaryport/` + adaptador en
 `infrastructure/{feature}/command/secondaryadapter/{tecnologia}/` — ninguna lógica de negocio en
@@ -216,6 +243,19 @@ Guarda como `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` (ruta relativa a la raíz d
 **El título, la Metadata y las secciones 1 a 3 salen de `.claude/templates/PLAN.md`.** Léela y
 copia ese bloque tal cual, sustituyendo los `{marcadores}` — no lo reescribas de memoria ni lo
 reordenes: `@4a-validator-analyze` lee esa cabecera para extraer contexto, tipo de use case y reglas.
+
+**El campo `Autor` de la Metadata sale de la configuración de git, no de una pregunta.** Resuélvelo
+tú antes de escribir el archivo:
+
+```bash
+git config user.name && git config user.email
+```
+
+Formato: `- **Autor:** Nombre Apellido <correo@dominio>`. Es quien está desarrollando la historia —
+el mismo que firmará los commits y aparecerá en el PR—, así que preguntarlo sería redundante y
+además abre la puerta a que el plan y el commit se atribuyan a personas distintas. Si `git config`
+no devuelve nada (repo sin identidad configurada), **entonces sí** pregunta, y dilo: es un repo mal
+configurado y el usuario querrá saberlo. Nunca lo dejes en `{Nombre}` ni inventes un valor.
 
 De la sección 4 en adelante el plan es condicional y su forma la decides tú con las respuestas de
 la FASE 3, así que **eso sí vive aquí**:
@@ -303,7 +343,12 @@ las dos claves de `PlantillaKey` con su texto de catálogo.
 - **Sin FKs cruzadas hacia la base de otro contexto** — son bases distintas, la FK no es siquiera
   posible. Si necesitas datos de otro contexto, modela una **tabla réplica local** poblada por
   eventos AMQP: el patrón real de `fichas` (`asesor_ficha`, `estudiante`). El MER documenta la
-  relación lógica; el backend la resuelve con réplica + evento.
+  relación lógica; el backend la resuelve con réplica + evento. **Excepción acotada:** si el dato es
+  solo una precondición de escritura ("¿esto es así ahora?"), el contexto no lo necesita para nada
+  más, y el otro contexto ya expone la consulta → *Consulta síncrona entre contextos* (puerto en
+  `command/secondaryport/`, adaptador en `.../secondaryadapter/webclient/` que habla por
+  `shared:web-client`, la `Rule` decide). Ver `arquisoft-arquitectura` → *Consultas síncronas entre
+  contextos*. Hasta que exista `shared:web-client`, el adaptador va stub (documentado en *Desviaciones*).
 
 ## 12. Casos de Prueba Sugeridos
 {Ver "Presupuesto de tests" y bancos de casos abajo}
@@ -474,6 +519,13 @@ skills:
    Si hay modificación o baja, cubre las cuatro piezas ya decididas: `ocurrido_en` persistido con
    descarte de eventos viejos, baja lógica en vez de `DELETE`, lápida, y nada de cascada entre
    contextos.
+4. **¿El plan solo necesita un dato de otro contexto para un chequeo puntual de escritura** ("¿el
+   destinatario es el asesor asignado?", "¿el proyecto está activo?"), y el contexto **no lo usa
+   para nada más**? Entonces **no** es réplica + evento: es una *Consulta síncrona entre contextos*
+   (`arquisoft-arquitectura`). Puerto en `command/secondaryport/` que devuelve `boolean`, `Finder`,
+   adaptador en `.../secondaryadapter/webclient/` vía `shared:web-client`, la `Rule` decide. Si
+   `shared:web-client` aún no existe, el plan marca el adaptador como **stub** en "Fuera de alcance"
+   con checklist de activación, y la `Rule` no rechaza nada hasta entonces.
 
 **Un evento nuevo cuesta un `@Bean`, no cuatro.** Las cuatro declaraciones —cola, `.dead` y los dos
 bindings— salen de una sola llamada a `ColaEvento.declarar(...)` devuelta como `Declarables`; sin el
@@ -536,8 +588,12 @@ getters/setters ni métodos `private`.
 - [ ] `Interactor` dueño de `@Transactional` con qualifier explícito; `UseCase` sin transacción propia
 - [ ] Si el plan descompone en varios `UseCase`, **todos los pasos cuelgan del orquestador**, no de un hermano: `RegistrarFichaPerfil` → `AsignarEstadoInicial` **y** → `AsignarEstudiantes`, no `RegistrarFichaPerfil` → `AsignarEstadoInicial` → `AsignarEstudiantes`. Cada paso recibe el objeto de dominio más estrecho que lee
 - [ ] `OutputPort` habla `Entity`, nunca `Domain`; existencia de otra feature vía el `Finder` de esa feature
+- [ ] **Presupuesto de I/O declarado** (pregunta 8c): cada `Finder` con su método del `OutputPort`, y ningún `Finder` cuya entrada sea la salida de otro salvo cascada justificada en una línea (lookup condicional · features/contextos distintos · el id intermedio lo necesita una `Rule`). Un `{Entidad}PorIdFinder` alimentado por un `Id{Entidad}Por{Otro}Finder` se colapsa en `{Entidad}Por{Otro}Finder` + `obtenerPor{Otro}(...)` con `JOIN`
 - [ ] Excepciones nuevas extienden la base correcta (`DomainException`/`DomainValidationException`→422, `ApplicationException`→400, `InfrastructureException`→503) y viven en el `exception/` **del slice del feature en la capa de esa base** — nunca en un `exception/` a nivel de contexto, y una subclase nunca en distinta capa que su padre
 - [ ] Sin handler de contexto salvo colisión de nombres; si el plan lo declara, va en `infrastructure/handler/`, nunca en `exception/`
+- [ ] Réplica entre contextos: **todas** las clases del árbol, beans incluidos, usan el nombre natural del concepto (`AgregarCoordinadorInteractor`, `CoordinadorAgregadoConsumer`), sin calificador de contexto — los homónimos entre contextos no chocan porque el nombre de bean es el FQN (`FullyQualifiedAnnotationBeanNameGenerator` en `ArquisoftApplication` y en cada `@EnableJpaRepositories`). Ninguna réplica del repo lleva ese calificador; si aparece, es la convención retirada (`arquisoft-arquitectura` → *Replicación entre contextos*)
+- [ ] Contexto nuevo con `{Contexto}DataSourceConfig`: su `@EnableJpaRepositories` declara `nameGenerator = FullyQualifiedAnnotationBeanNameGenerator.class`
+- [ ] Métodos `@Bean` con el contexto como prefijo (el generador FQN no los cubre): la cola de una réplica es un `@Bean Declarables` llamado `{contexto}{Evento}Declarables` en `{Contexto}{Productor}QueueConfig` (`proyectosEstudianteAgregadoDeclarables` en `ProyectosUsuariosQueueConfig`)
 - [ ] Identificadores en el body: `String`, validados en `Command.crear(...)` vía `ValidatorUUID`, nunca con anotación Jakarta
 - [ ] `RequestDTO` = `record` desnudo + `{Accion}{Entidad}RequestMapper`; `ResponseDTO` = `record`. Sin Jakarta, sin Lombok, sin `toCommand()` en el DTO
 - [ ] Lectura: `ReadModel` → `{Entidad}ResponseDTO` vía `{Entidad}ResponseMapper`, nunca serializado directo
@@ -568,7 +624,9 @@ getters/setters ni métodos `private`.
 7. Si la HU toca más de un bounded context, una sección del plan por contexto afectado.
 8. Comunicación entre contextos = evento RabbitMQ, nunca dependencia directa.
 9. El plan es el contrato: debe bastar para implementar sin ambigüedades.
-10. **La respuesta del usuario gana sobre la plantilla, siempre.** La plantilla de FASE 4 es un
+10. `Autor` de la Metadata se resuelve con `git config user.name` / `user.email`, nunca preguntando
+    ni dejando el marcador `{Nombre}`.
+11. **La respuesta del usuario gana sobre la plantilla, siempre.** La plantilla de FASE 4 es un
     *máximo*, no un formulario a completar: describe todo lo que un plan **podría** llevar. Cada
     sección marcada "si aplica" o "SOLO si" que la respuesta descartó se **borra** — no se deja
     vacía, ni con "N/A", ni con una tabla de encabezados sin filas, ni "preparada para el futuro".

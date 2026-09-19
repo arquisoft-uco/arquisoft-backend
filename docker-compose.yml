@@ -167,16 +167,25 @@ services:
       KC_DB_PASSWORD: arquisoft123
       KC_PROXY_HEADERS: xforwarded
       KC_LOG_LEVEL: INFO
+      KC_HEALTH_ENABLED: "true"
     ports:
       - "8081:8080"
-    command: start-dev
+    command: start-dev --import-realm
+    volumes:
+      # Aprovisionamiento del realm, hermano de catalogo/ y plantillas/: no pertenece a ningun
+      # bounded context. Keycloak solo importa si el realm no existe todavia en KC_DB.
+      - ./keycloak:/opt/keycloak/data/import:ro
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - arquisoft-network
     healthcheck:
-      test: [ "CMD-SHELL", "curl -sf http://localhost:8080/health/ready || exit 1" ]
+      # La imagen no trae curl/wget instalados, pero /bin/sh de este contenedor es en
+      # realidad bash (symlink), asi que /dev/tcp funciona. Sin KC_HEALTH_ENABLED el
+      # endpoint /health/ready ni siquiera existe (404), y en Keycloak 26 vive en la
+      # interfaz de gestion (puerto 9000), no en el 8080 de las apps.
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && head -1 <&3 | grep -q 200" ]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -275,6 +284,9 @@ services:
       DB_NOTIFICACIONES_URL: jdbc:postgresql://postgres:5432/notificaciones
       DB_NOTIFICACIONES_USERNAME: arquisoft_user
       DB_NOTIFICACIONES_PASSWORD: arquisoft123
+      DB_SOLICITUDES_URL: jdbc:postgresql://postgres:5432/solicitudes
+      DB_SOLICITUDES_USERNAME: arquisoft_user
+      DB_SOLICITUDES_PASSWORD: arquisoft123
       # 'log' no intenta conectar a ningún servidor SMTP — Mailpit es opcional.
       # Para probar la entrega real: levantar el servicio 'mailpit' y poner esta var en 'smtp'.
       NOTIFICACION_PROVEEDOR: ${NOTIFICACION_PROVEEDOR:-log}

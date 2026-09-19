@@ -6,10 +6,8 @@ import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.secondaryport.EvaluacionCualitativaJuradoQueryOutputPort;
 import com.arquisoft.evaluaciones.application.evaluacioncualitativajurado.query.validator.ConsultarEvaluacionesCualitativasJuradoValidator;
 import com.arquisoft.evaluaciones.application.evaluacionjurado.query.finder.EvaluacionJuradoExisteQueryFinder;
-import com.arquisoft.evaluaciones.application.evaluacionjurado.query.finder.EvaluacionJuradoPerteneceEstudianteQueryFinder;
 import com.arquisoft.evaluaciones.application.itemcualitativojurado.query.readmodel.ItemCualitativoJuradoReadModel;
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoEncontradaException;
-import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.exception.EvaluacionJuradoNoPerteneceEstudianteException;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,9 +35,6 @@ class ConsultarEvaluacionesCualitativasJuradoUseCaseImplTest {
     private EvaluacionJuradoExisteQueryFinder evaluacionJuradoExisteQueryFinder;
 
     @Mock
-    private EvaluacionJuradoPerteneceEstudianteQueryFinder evaluacionJuradoPerteneceEstudianteQueryFinder;
-
-    @Mock
     private ConsultarEvaluacionesCualitativasJuradoValidator validator;
 
     @Mock
@@ -52,11 +47,11 @@ class ConsultarEvaluacionesCualitativasJuradoUseCaseImplTest {
     private ConsultarEvaluacionesCualitativasJuradoUseCaseImpl useCase;
 
     private static EvaluacionCualitativaJuradoCriteria criteriaValido() {
-        return new EvaluacionCualitativaJuradoCriteria(UUID.randomUUID(), UUID.randomUUID());
+        return new EvaluacionCualitativaJuradoCriteria(UUID.randomUUID());
     }
 
     @Test
-    void debeRetornarResultados_cuandoExisteYPertenece() {
+    void debeRetornarResultados_cuandoLaEvaluacionExiste() {
         // Arrange
         EvaluacionCualitativaJuradoCriteria criteria = criteriaValido();
         List<EvaluacionCualitativaJuradoReadModel> esperado = List.of(new EvaluacionCualitativaJuradoReadModel(
@@ -64,7 +59,6 @@ class ConsultarEvaluacionesCualitativasJuradoUseCaseImplTest {
                 new ItemCualitativoJuradoReadModel(UUID.randomUUID(), "Claridad", "desc"),
                 new CriterioItemCualitativoJuradoReadModel(UUID.randomUUID(), "Excelente", "desc")));
         when(evaluacionJuradoExisteQueryFinder.obtener(criteria.evaluacionJuradoId())).thenReturn(true);
-        when(evaluacionJuradoPerteneceEstudianteQueryFinder.obtener(criteria)).thenReturn(true);
         when(queryOutputPort.consultar(criteria)).thenReturn(esperado);
 
         // Act
@@ -72,11 +66,9 @@ class ConsultarEvaluacionesCualitativasJuradoUseCaseImplTest {
 
         // Assert
         assertThat(resultado).isSameAs(esperado);
-        InOrder orden = inOrder(evaluacionJuradoExisteQueryFinder, evaluacionJuradoPerteneceEstudianteQueryFinder,
-                validator, queryOutputPort);
+        InOrder orden = inOrder(evaluacionJuradoExisteQueryFinder, validator, queryOutputPort);
         orden.verify(evaluacionJuradoExisteQueryFinder).obtener(criteria.evaluacionJuradoId());
-        orden.verify(evaluacionJuradoPerteneceEstudianteQueryFinder).obtener(criteria);
-        orden.verify(validator).validar(criteria.evaluacionJuradoId(), true, true);
+        orden.verify(validator).validar(criteria.evaluacionJuradoId(), true);
         orden.verify(queryOutputPort).consultar(criteria);
     }
 
@@ -85,7 +77,6 @@ class ConsultarEvaluacionesCualitativasJuradoUseCaseImplTest {
         // Arrange
         EvaluacionCualitativaJuradoCriteria criteria = criteriaValido();
         when(evaluacionJuradoExisteQueryFinder.obtener(criteria.evaluacionJuradoId())).thenReturn(true);
-        when(evaluacionJuradoPerteneceEstudianteQueryFinder.obtener(criteria)).thenReturn(true);
         when(queryOutputPort.consultar(criteria)).thenReturn(List.of());
 
         // Act
@@ -100,28 +91,12 @@ class ConsultarEvaluacionesCualitativasJuradoUseCaseImplTest {
         // Arrange
         EvaluacionCualitativaJuradoCriteria criteria = criteriaValido();
         when(evaluacionJuradoExisteQueryFinder.obtener(criteria.evaluacionJuradoId())).thenReturn(false);
-        when(evaluacionJuradoPerteneceEstudianteQueryFinder.obtener(criteria)).thenReturn(false);
         doThrow(new EvaluacionJuradoNoEncontradaException(criteria.evaluacionJuradoId()))
-                .when(validator).validar(criteria.evaluacionJuradoId(), false, false);
+                .when(validator).validar(criteria.evaluacionJuradoId(), false);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(criteria))
                 .isInstanceOf(EvaluacionJuradoNoEncontradaException.class);
-        verify(queryOutputPort, never()).consultar(any());
-    }
-
-    @Test
-    void debeLanzarYNoConsultar_cuandoLaEvaluacionNoPerteneceAlEstudiante() {
-        // Arrange
-        EvaluacionCualitativaJuradoCriteria criteria = criteriaValido();
-        when(evaluacionJuradoExisteQueryFinder.obtener(criteria.evaluacionJuradoId())).thenReturn(true);
-        when(evaluacionJuradoPerteneceEstudianteQueryFinder.obtener(criteria)).thenReturn(false);
-        doThrow(new EvaluacionJuradoNoPerteneceEstudianteException(criteria.evaluacionJuradoId()))
-                .when(validator).validar(criteria.evaluacionJuradoId(), true, false);
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(criteria))
-                .isInstanceOf(EvaluacionJuradoNoPerteneceEstudianteException.class);
         verify(queryOutputPort, never()).consultar(any());
     }
 }

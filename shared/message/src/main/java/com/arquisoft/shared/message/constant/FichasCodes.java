@@ -67,6 +67,22 @@ public final class FichasCodes {
         private Estudiante() {}
 
         public static final String ESTUDIANTE_NO_ENCONTRADO = "ESTUDIANTE_NO_ENCONTRADO";
+        public static final String ID_REQUERIDO = "ESTUDIANTE_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "ESTUDIANTE_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "ESTUDIANTE_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "ESTUDIANTE_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ESTUDIANTE_OCURRIDO_EN_REQUERIDO";
+    }
+
+    public static final class AsesorFicha {
+
+        private AsesorFicha() {}
+
+        public static final String ID_REQUERIDO = "ASESOR_FICHA_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "ASESOR_FICHA_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "ASESOR_FICHA_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "ASESOR_FICHA_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "ASESOR_FICHA_OCURRIDO_EN_REQUERIDO";
     }
 
     public static final class EstudianteFichaPerfil {
@@ -86,6 +102,7 @@ public final class FichasCodes {
         private EstadoFichaPerfil() {}
 
         public static final String FICHA_PERFIL_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_FICHA_PERFIL_ID_REQUERIDO";
+        public static final String ESTUDIANTE_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_ESTUDIANTE_ID_REQUERIDO";
         public static final String ESTADO_FICHA_REQUERIDO = "ESTADO_FICHA_PERFIL_ESTADO_FICHA_REQUERIDO";
         public static final String NO_ENCONTRADO = "ESTADO_FICHA_PERFIL_NO_ENCONTRADO";
         public static final String ESTADO_TERMINAL = "ESTADO_FICHA_PERFIL_ESTADO_TERMINAL";

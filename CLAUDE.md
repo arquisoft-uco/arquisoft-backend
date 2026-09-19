@@ -64,15 +64,20 @@ Guía completa: [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md).
 ## Architecture
 
 Arquitectura hexagonal (Ports & Adapters) con **9 bounded contexts** y **14 módulos compartidos**.
-Los contextos se comunican **exclusivamente** por eventos de dominio en RabbitMQ — nunca se importan
-entre sí. Dirección de dependencias: `domain ← application ← infrastructure`, impuesta por el grafo
-de módulos de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
+Los contextos se comunican por eventos de dominio en RabbitMQ y **nunca se importan entre sí**, con
+una única excepción acotada: una **consulta síncrona de solo lectura** a otro contexto, hecha por
+HTTP (nunca un import), para un dato que un comando debe verificar *al momento de escribir* y no
+puede obtener de un evento ni de una réplica local — ver *Consultas síncronas entre contextos*.
+Dirección de dependencias: `domain ← application ← infrastructure`, impuesta por el grafo de módulos
+de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 
 ### Bounded Contexts
 
-Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones` y `evaluaciones`. Los otros
-cuatro (`proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje: solo su
-`{Contexto}DataSourceConfig`.
+Con código hoy: `seguridad`, `fichas`, `notificaciones` y `evaluaciones`. Los otros cinco
+(`usuarios`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje: solo
+su `{Contexto}DataSourceConfig` (más, en `usuarios`, la migración de `event_publication` y
+`rutas-usuarios.yml`). El flujo `CrearUsuario` que vivía en `usuarios` se retiró; su HU de
+"registrar usuario" está por generarse.
 
 | Context | Database |
 |---------|----------|
@@ -87,8 +92,8 @@ cuatro (`proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`) son 
 | `evaluaciones` | `evaluaciones` |
 
 **Contexto de referencia: `fichas`** — el único completo (escritura, consulta, eventos, consumidor).
-Cada uno de los otros cuatro aporta algo distinto y tiene un límite conocido; ver
-`arquisoft-arquitectura`, que los enumera con su límite exacto.
+`seguridad`, `notificaciones` y `evaluaciones` aportan cada uno algo distinto y tienen un límite
+conocido; ver `arquisoft-arquitectura`, que los enumera con su límite exacto.
 
 **Son bases de datos separadas, no schemas.** `init-db.sql` hace un `CREATE DATABASE` por contexto y
 cada `{Contexto}DataSourceConfig` apunta su propio `DataSource`, `EntityManagerFactory`,
@@ -125,7 +130,30 @@ Lo que hay que saber de cada uno para no romper el grafo:
 | `shared:message` | Códigos, campos, límites, textos Swagger, `EventTopics`, enums `{Feature}Key`, fachada `Mensajes` | — |
 
 **Un `shared:*` con un solo consumidor no es compartido.** Exige dos consumidores reales antes de
-crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto.
+crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
+prevista es `shared:web-client` (transporte, no dominio: cliente HTTP configurable con URL, payload y
+tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Aún
+no existe (lo trae una HT aparte); hasta entonces esos adaptadores son stubs — ver *Desviaciones*.
+
+### Consultas síncronas entre contextos
+
+El default para "el contexto A necesita algo del contexto B" sigue siendo un evento: B publica, A
+replica local, A lee su tabla. Se recurre a una consulta HTTP síncrona **solo** si se cumplen las
+tres: (1) el dato es una **precondición de una escritura** en A y debe ser correcto al instante de
+escribir, no eventualmente — una réplica desactualizada dejaría pasar un comando inválido; (2) A no
+necesita el dato para nada más, así que mantener una réplica (más su backfill y su consumer) es puro
+lastre; (3) B ya expone una consulta que responde. Primer caso: el asesor/coordinador asignado al
+estudiante, verificado cuando `solicitudes` crea una solicitud de novedad / cambio de asesor.
+
+Forma, espejando cualquier otro puerto secundario:
+- Puerto en `application/{feature}/command/secondaryport/{Concepto}OutputPort` (o su propio paquete
+  fino si no mapea a un agregado, p. ej. `application/asignacionproyecto/command/secondaryport/`),
+  devuelve un `boolean`/valor plano — **la `Rule` sigue decidiendo**, el puerto solo responde.
+- Un `Finder` de comando lo consume, igual que un chequeo contra réplica.
+- Adaptador en `infrastructure/{feature}/command/secondaryadapter/webclient/{Concepto}OutputAdapter`,
+  `@Component`, habla por `shared:web-client` — nunca `RestClient`/`WebClient` inline, nunca un
+  cliente generado que importe B. Reenvía el bearer del llamante, y un fallo de transporte sale como
+  `InfrastructureException` (503): un peer caído falla la petición, no salta el chequeo.
 
 ### Layer Structure per Context
 
@@ -274,8 +302,11 @@ el enunciado, para reconocer una desviación de un vistazo.
 - Español para el concepto de negocio, inglés para el sufijo técnico. Paquete de feature todo en
   minúsculas y sin separadores (`fichaperfil`).
 - Nombres objetuales en contratos: `asesorFicha`, no `asesorFichaId`.
-- `var` para locales cuando el lado derecho ya nombra el tipo; **no** con diamante, ni con clases
-  anónimas, ni cuando el tipo declarado es deliberadamente una interfaz.
+- **`var` en toda variable local, sin excepción por tipo** — `boolean`, `long`, `UUID`, `String` y
+  agregado por igual (`var cantidadRevisiones = revisionesDelItemFinder.obtener(...)`, nunca
+  `long cantidadRevisiones = ...`). Solo se sale de `var` donde no compila o cambia la semántica
+  (diamante sin tipar, array por llaves, lambda o referencia a método, inicializador `null`), y solo
+  aplica a locales: campos, parámetros, retornos y componentes de `record` van explícitos.
 - Comprobación de nulidad **siempre** con `UtilObjeto.esNulo`/`noEsNulo`, nunca `== null` crudo, y
   sin declarar un `tieneX()` en un `record` para envolverlo.
 - **Sin Javadoc y sin comentarios que repitan el código.** `domain/` y `application/` no llevan
@@ -456,13 +487,12 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 
 | Qué | Dónde | Convención que rompe |
 |---|---|---|
-| `CrearUsuarioRequestDTO` con anotaciones Jakarta + `toCommand()` | `usuarios/…/web/dto/` | Debería ser un `record` desnudo + `CrearUsuarioRequestMapper` |
 | `EstadoEvaluacionCommandRepository` | `fichas/…/estadoevaluacion/…/repository/` | Código muerto: ningún `OutputPort`/`OutputAdapter` lo consume |
-| `UsuarioCommandOutputAdapter` no persiste | `usuarios/…/repository/` | **Deliberado**, no una tarea pendiente: `usuarios` es contexto de ejemplo. Consecuencia: `existePorEmail` siempre da `false` y `UsuarioEmailUnicoRule` nunca dispara |
 | `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub: por eso no tiene `Interactor` ni `@Transactional` y el `Consumer` inyecta el `UseCase` |
 | `UsuarioCreadoConsumer` en `amqp/` plano | `fichas/…/usuario/…/amqp/` | Le faltan los dos segmentos `{productor}/{entidad}/`. En vías de retirarse |
 | Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/auth/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |
 | Enums de catálogo en dos ubicaciones | `domain/{catalogo}/` vs `domain/{feature}/model/` | **Decisión abierta del proyecto, no la "arregles".** Un enum nuevo sigue lo que ya use su contexto |
+| `AsignacionProyectoOutputAdapter` stub | `solicitudes/…/asignacionproyecto/…/webclient/` | **Deliberado, HU-081.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` — ninguno existe aún. El puerto + `DestinatarioAsignadoRule` + `DestinatarioAsignadoFinder` están cableados y activos; el adaptador devuelve `true` y loguea `warn`. Consecuencia: la regla no rechaza nada todavía. Activar = reemplazar el cuerpo del adaptador; checklist en `PLAN-HU-081.md` §3.1 |
 
 ## Reference Documentation
 
