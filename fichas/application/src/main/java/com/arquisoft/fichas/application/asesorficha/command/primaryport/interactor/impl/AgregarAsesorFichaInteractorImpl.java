@@ -4,7 +4,7 @@ import com.arquisoft.fichas.application.asesorficha.command.primaryport.interact
 import com.arquisoft.fichas.application.asesorficha.command.primaryport.mapper.AgregarAsesorFichaMapper;
 import com.arquisoft.fichas.application.asesorficha.command.primaryport.model.AgregarAsesorFichaCommand;
 import com.arquisoft.fichas.application.asesorficha.command.result.AgregacionAsesorFichaResult;
-import com.arquisoft.fichas.application.asesorficha.command.usecase.AgregarAsesorFichaFichasUseCase;
+import com.arquisoft.fichas.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,11 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AgregarAsesorFichaInteractorImpl implements AgregarAsesorFichaInteractor {
 
-    private final AgregarAsesorFichaFichasUseCase agregarAsesorFichaFichasUseCase;
+    private final AgregarAsesorFichaUseCase agregarAsesorFichaUseCase;
 
     @Override
     @Transactional(transactionManager = "fichasTransactionManager")
     public AgregacionAsesorFichaResult ejecutar(AgregarAsesorFichaCommand command) {
-        return agregarAsesorFichaFichasUseCase.ejecutar(AgregarAsesorFichaMapper.toDomain(command));
+        return agregarAsesorFichaUseCase.ejecutar(AgregarAsesorFichaMapper.toDomain(command));
     }
 }

@@ -25,4 +25,32 @@ public class ProyectosUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String ASESOR_AGREGADO_QUEUE =
+            ProyectosQueues.PREFIJO + EventTopics.Usuarios.ASESOR_AGREGADO;
+
+    @Bean
+    public Declarables proyectosAsesorAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ASESOR_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String ESTUDIANTE_AGREGADO_QUEUE =
+            ProyectosQueues.PREFIJO + EventTopics.Usuarios.ESTUDIANTE_AGREGADO;
+
+    @Bean
+    public Declarables proyectosEstudianteAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTE_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ESTUDIANTE_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

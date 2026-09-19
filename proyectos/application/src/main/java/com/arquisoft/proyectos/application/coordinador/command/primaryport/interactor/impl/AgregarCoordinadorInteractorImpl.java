@@ -4,7 +4,7 @@ import com.arquisoft.proyectos.application.coordinador.command.primaryport.inter
 import com.arquisoft.proyectos.application.coordinador.command.primaryport.mapper.AgregarCoordinadorMapper;
 import com.arquisoft.proyectos.application.coordinador.command.primaryport.model.AgregarCoordinadorCommand;
 import com.arquisoft.proyectos.application.coordinador.command.result.AgregacionCoordinadorResult;
-import com.arquisoft.proyectos.application.coordinador.command.usecase.AgregarCoordinadorProyectosUseCase;
+import com.arquisoft.proyectos.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,11 +13,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AgregarCoordinadorInteractorImpl implements AgregarCoordinadorInteractor {
 
-    private final AgregarCoordinadorProyectosUseCase agregarCoordinadorProyectosUseCase;
+    private final AgregarCoordinadorUseCase agregarCoordinadorUseCase;
 
     @Override
     @Transactional(transactionManager = "proyectosTransactionManager")
     public AgregacionCoordinadorResult ejecutar(AgregarCoordinadorCommand command) {
-        return agregarCoordinadorProyectosUseCase.ejecutar(AgregarCoordinadorMapper.toDomain(command));
+        return agregarCoordinadorUseCase.ejecutar(AgregarCoordinadorMapper.toDomain(command));
     }
 }
