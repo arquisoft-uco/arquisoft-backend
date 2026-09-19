@@ -19,8 +19,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -67,10 +65,9 @@ public class ConsultarEvaluacionesCuantitativasJuradoController {
                     content = @Content(schema = @Schema(implementation = ErrorResponseDTO.class)))
     })
     public ResponseEntity<List<EvaluacionCuantitativaJuradoResponseDTO>> consultarEvaluacionesCuantitativasJurado(
-            @PathVariable UUID evaluacionJuradoId,
-            @AuthenticationPrincipal Jwt jwt) {
+            @PathVariable UUID evaluacionJuradoId) {
 
-        var query = ConsultarEvaluacionesCuantitativasJuradoRequestMapper.toQuery(evaluacionJuradoId, jwt.getSubject());
+        var query = ConsultarEvaluacionesCuantitativasJuradoRequestMapper.toQuery(evaluacionJuradoId);
 
         return ResponseEntity.ok(interactor.ejecutar(query).stream()
                 .map(EvaluacionCuantitativaJuradoResponseMapper::toResponse)

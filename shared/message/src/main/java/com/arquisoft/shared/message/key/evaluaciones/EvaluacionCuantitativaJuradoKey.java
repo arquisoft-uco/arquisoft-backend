@@ -4,7 +4,7 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum EvaluacionCuantitativaJuradoKey implements ClaveMensaje {
 
-    LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.consultando", 2),
+    LOG_CONSULTANDO("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.consultando", 1),
     LOG_CONSULTA_COMPLETADA("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.consulta-completada", 1),
     LOG_CAMBIANDO_PUNTAJE("evaluaciones.aplicacion.evaluacioncuantitativajurado.log.cambiando-puntaje", 2),
     LOG_VERIFICACION_CAMBIAR_PUNTAJE(
