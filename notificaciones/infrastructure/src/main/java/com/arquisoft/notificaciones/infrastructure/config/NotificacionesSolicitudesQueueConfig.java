@@ -29,6 +29,20 @@ public class NotificacionesSolicitudesQueueConfig {
     public static final String NOVEDAD_COORDINADOR_RESPONDIDA_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.NOVEDAD_COORDINADOR_RESPONDIDA;
 
+    public static final String NOVEDAD_ASESOR_RESPONDIDA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.NOVEDAD_ASESOR_RESPONDIDA;
+
+    @Bean
+    public Declarables notificacionesSolicitudNovedadAsesorRespondidaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                NOVEDAD_ASESOR_RESPONDIDA_QUEUE,
+                EventTopics.Solicitudes.NOVEDAD_ASESOR_RESPONDIDA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     @Bean
     public Declarables notificacionesSolicitudNovedadCoordinadorRespondidaDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,

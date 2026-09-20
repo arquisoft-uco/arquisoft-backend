@@ -128,5 +128,18 @@ public final class SolicitudesApiMessages {
                 "Sin permisos para responder solicitudes de novedad para el coordinador";
         public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_422 =
                 "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
+
+        public static final String RESPONDER_NOVEDAD_ASESOR_SUMMARY =
+                "Responder solicitud de novedad para el asesor";
+        public static final String RESPONDER_NOVEDAD_ASESOR_DESCRIPTION =
+                "Permite a un asesor responder una solicitud de novedad para el asesor que le fue "
+                        + "dirigida, registrando el contenido de la respuesta.";
+        public static final String RESPONDER_NOVEDAD_ASESOR_RESP_201 =
+                "Respuesta registrada — retorna el UUID asignado";
+        public static final String RESPONDER_NOVEDAD_ASESOR_RESP_400 = "Datos inválidos";
+        public static final String RESPONDER_NOVEDAD_ASESOR_RESP_403 =
+                "Sin permisos para responder solicitudes de novedad para el asesor";
+        public static final String RESPONDER_NOVEDAD_ASESOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro asesor, o ya respondida";
     }
 }
