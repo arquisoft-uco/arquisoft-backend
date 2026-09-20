@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -21,5 +22,10 @@ public class EvaluacionCuantitativaJuradoQueryOutputAdapter implements Evaluacio
                 .stream()
                 .map(EvaluacionCuantitativaJuradoQueryMapper::toReadModel)
                 .toList();
+    }
+
+    @Override
+    public boolean existePorId(UUID evaluacionCuantitativaJurado) {
+        return repository.existsById(evaluacionCuantitativaJurado);
     }
 }

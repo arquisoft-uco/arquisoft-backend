@@ -38,6 +38,9 @@ public final class EvaluacionesAuthorities {
     public static final String OBSERVACION_ITEM_JURADO_CREATE =
             "evaluaciones:observacion-item-jurado:create";
 
+    public static final String OBSERVACION_ITEM_JURADO_JURADO_VIEW =
+            "evaluaciones:observacion-item-jurado-jurado:view";
+
     public static final String ESTADO_EVALUACION_VIEW =
             "evaluaciones:estado-evaluacion:view";
 
@@ -81,6 +84,9 @@ public final class EvaluacionesAuthorities {
 
         public static final String HAS_OBSERVACION_ITEM_JURADO_CREATE =
                 HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_JURADO_CREATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_OBSERVACION_ITEM_JURADO_JURADO_VIEW =
+                HAS_AUTHORITY_INICIO + OBSERVACION_ITEM_JURADO_JURADO_VIEW + HAS_AUTHORITY_FIN;
 
         public static final String HAS_ESTADO_EVALUACION_VIEW =
                 HAS_AUTHORITY_INICIO + ESTADO_EVALUACION_VIEW + HAS_AUTHORITY_FIN;

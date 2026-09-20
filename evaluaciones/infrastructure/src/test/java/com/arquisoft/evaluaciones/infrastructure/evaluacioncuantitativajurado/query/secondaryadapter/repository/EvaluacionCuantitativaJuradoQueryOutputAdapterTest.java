@@ -165,4 +165,31 @@ class EvaluacionCuantitativaJuradoQueryOutputAdapterTest {
         assertThat(resultado).extracting(r -> r.item().nombre())
                 .containsExactly("Claridad", "Rigor");
     }
+
+    @Test
+    void debeRetornarVerdadero_cuandoLaEvaluacionCuantitativaExiste() {
+        // Arrange
+        var categoria = sembrarCategoria("Documentacion");
+        var item = UUID.randomUUID();
+        sembrarItem(item, "Rigor", "desc", categoria, 500);
+        var evaluacionCuantitativa = UUID.randomUUID();
+        sembrarEvaluacionCuantitativa(evaluacionCuantitativa, UUID.randomUUID(), item, 100);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Act
+        var existe = adapter.existePorId(evaluacionCuantitativa);
+
+        // Assert
+        assertThat(existe).isTrue();
+    }
+
+    @Test
+    void debeRetornarFalso_cuandoLaEvaluacionCuantitativaNoExiste() {
+        // Act
+        var existe = adapter.existePorId(UUID.randomUUID());
+
+        // Assert
+        assertThat(existe).isFalse();
+    }
 }

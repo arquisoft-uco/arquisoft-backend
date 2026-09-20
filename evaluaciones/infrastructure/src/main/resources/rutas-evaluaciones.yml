@@ -23,5 +23,6 @@ rutas:
       base: /evaluaciones/evaluaciones-cuantitativas-jurado
       puntaje: /{id}/puntaje
       observaciones: /{id}/observaciones
+      observaciones-jurado: /{id}/observaciones/jurado
     estados-evaluacion:
       base: /evaluaciones/estados-evaluacion
