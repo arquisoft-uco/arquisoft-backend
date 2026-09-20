@@ -174,7 +174,7 @@ class ConsultarRespuestasNovedadAsesorRecibidasControllerTest {
         mockMvc.perform(post(RUTA)
                         .contentType(MediaType.APPLICATION_JSON)
                         .with(jwtDe(UUID.randomUUID(),
-                                SolicitudesAuthorities.RESPUESTA_NOVEDAD_ASESOR_CREATE)))
+                                SolicitudesAuthorities.RESPUESTA_NOVEDAD_COORDINADOR_RECIBIDA_VIEW)))
                 .andExpect(status().isForbidden());
     }
 }

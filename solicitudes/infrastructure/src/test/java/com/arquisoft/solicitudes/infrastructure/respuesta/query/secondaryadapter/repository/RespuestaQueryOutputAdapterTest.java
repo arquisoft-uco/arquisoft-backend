@@ -33,6 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RespuestaQueryOutputAdapterTest {
 
     private static final String TIPO_NOVEDAD = "NOVEDAD_PARA_EL_COORDINADOR";
+    private static final String TIPO_NOVEDAD_ASESOR = "NOVEDAD_PARA_EL_ASESOR";
     private static final String TIPO_CAMBIO = "CAMBIO_DE_ASESOR";
     private static final String ESTADO_EN_REVISION = "EN_REVISION";
     private static final String ESTADO_APROBADA = "APROBADA";
@@ -51,6 +52,8 @@ class RespuestaQueryOutputAdapterTest {
 
         entityManager.persist(TipoSolicitudJpaEntity.builder()
                 .id(TIPO_NOVEDAD).nombre("Novedad para el Coordinador").descripcion("desc").build());
+        entityManager.persist(TipoSolicitudJpaEntity.builder()
+                .id(TIPO_NOVEDAD_ASESOR).nombre("Novedad para el Asesor").descripcion("desc").build());
         entityManager.persist(TipoSolicitudJpaEntity.builder()
                 .id(TIPO_CAMBIO).nombre("Cambio de Asesor").descripcion("desc").build());
         entityManager.persist(EstadoRespuestaJpaEntity.builder()
@@ -185,6 +188,40 @@ class RespuestaQueryOutputAdapterTest {
         assertThat(resultado.getContent())
                 .extracting(RespuestaReadModel::contenido)
                 .containsExactly("sobre novedad");
+    }
+
+    @Test
+    void debeSepararRespuestasDeNovedadAsesorYCoordinador_cuandoElCriteriaFuerzaElTipoAsesor() {
+        // Arrange
+        var ana = sembrarRemitente("Ana", "EST-1", "ana@uco.edu.co");
+        var coord = sembrarDestinatario("Coord", "COORD-1", "coord@uco.edu.co");
+        var asesor = sembrarDestinatario("Asesor", "ASES-1", "asesor@uco.edu.co");
+        var solicitudCoordinador = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
+                LocalDateTime.of(2026, 3, 1, 10, 0).toInstant(ZoneOffset.UTC), "para coordinador");
+        var solicitudAsesor = sembrarSolicitud(ana, asesor, TIPO_NOVEDAD_ASESOR,
+                LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "para asesor");
+        sembrarRespuesta(solicitudCoordinador, ESTADO_EN_REVISION,
+                LocalDateTime.of(2026, 3, 3, 8, 0), "responde el coordinador");
+        sembrarRespuesta(solicitudAsesor, ESTADO_EN_REVISION,
+                LocalDateTime.of(2026, 3, 4, 8, 0), "responde el asesor");
+        sincronizar();
+
+        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
+                        NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
+                                ana.getUsuarioId().toString()),
+                        NodoFiltro.predicado("tipoSolicitudId", FiltroOperador.ES, TIPO_NOVEDAD_ASESOR))))
+                .build();
+
+        // Act
+        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(RespuestaReadModel::contenido)
+                .containsExactly("responde el asesor");
+        assertThat(resultado.getContent().get(0).solicitud().tipoSolicitudId())
+                .isEqualTo(TIPO_NOVEDAD_ASESOR);
     }
 
     @Test
