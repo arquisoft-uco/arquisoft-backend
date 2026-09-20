@@ -7,7 +7,6 @@ import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -17,8 +16,9 @@ public class AsesorFichaFinderImpl implements AsesorFichaFinder {
     private final AsesorFichaOutputPort asesorFichaOutputPort;
 
     @Override
-    public Optional<AsesorFichaDomain> obtener(UUID asesorFicha) {
+    public AsesorFichaDomain obtener(UUID asesorFicha) {
         return asesorFichaOutputPort.buscarContactoPorId(asesorFicha)
-                .map(AsesorFichaMapper::toDomain);
+                .map(AsesorFichaMapper::toDomain)
+                .orElse(AsesorFichaDomain.VACIO);
     }
 }

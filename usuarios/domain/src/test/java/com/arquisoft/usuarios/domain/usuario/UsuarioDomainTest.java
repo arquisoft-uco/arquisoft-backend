@@ -46,5 +46,13 @@ class UsuarioDomainTest {
         assertThat(usuario.getEmail()).isEqualTo("juan@uco.edu.co");
         assertThat(usuario.getContacto()).isEqualTo("573001112233");
         assertThat(usuario.getEstado()).isEqualTo(EstadoUsuario.INACTIVO);
+        assertThat(usuario.esVacio()).isFalse();
+    }
+
+    @Test
+    void debeExponerElCentinelaVacio_cuandoSeConsultaVacio() {
+        // Assert
+        assertThat(UsuarioDomain.VACIO.esVacio()).isTrue();
+        assertThat(UsuarioDomain.VACIO.getEstado()).isEqualTo(EstadoUsuario.VACIO);
     }
 }

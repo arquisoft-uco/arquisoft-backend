@@ -10,6 +10,9 @@ public enum SolicitudKey implements ClaveMensaje {
     ERROR_DESTINATARIO_NO_ASIGNADO("solicitudes.dominio.solicitud.error.destinatario-no-asignado", 2),
     ERROR_SOLICITUD_DUPLICADA("solicitudes.dominio.solicitud.error.solicitud-duplicada", 0),
     LOG_ENVIADA("solicitudes.aplicacion.solicitud.log.enviada", 1),
+    LOG_ENVIANDO_ASESOR("solicitudes.aplicacion.solicitud.log.enviando-asesor", 2),
+    LOG_VERIFICACION_ENVIO_ASESOR("solicitudes.aplicacion.solicitud.log.verificacion-envio-asesor", 2),
+    LOG_ENVIADA_ASESOR("solicitudes.aplicacion.solicitud.log.enviada-asesor", 1),
     LOG_GUARDADA("solicitudes.infraestructura.solicitud.log.guardada", 1),
     LOG_ASIGNACION_NO_VERIFICADA("solicitudes.infraestructura.solicitud.log.asignacion-no-verificada", 2);
 

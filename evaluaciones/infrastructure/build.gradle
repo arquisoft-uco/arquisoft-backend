@@ -1,12 +1,11 @@
 dependencies {
     // La direccion domain <- application <- infrastructure la verifica :verificarCapasHexagonales
-    // del build raiz. Solo los tests ven el dominio (arrange de agregados en slices).
+    // del build raiz. Solo los tests ven el dominio (excepciones de dominio en los slices web).
     testImplementation project(':evaluaciones:domain')
     implementation project(':evaluaciones:application')
     implementation project(':shared:domain')
     implementation project(':shared:application')
     implementation project(':shared:query')
-    implementation project(':shared:exception')
     implementation project(':shared:logger')
     implementation project(':shared:web')
     implementation project(':shared:jpa')
@@ -18,7 +17,6 @@ dependencies {
 
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
-    implementation "org.springframework.boot:spring-boot-starter-validation"
 
     // AMQP — spring-amqp no es transitivo en compilacion desde shared:amqp (Gradle 'implementation').
     implementation "org.springframework.boot:spring-boot-starter-amqp"
@@ -39,5 +37,3 @@ dependencies {
     testImplementation project(':shared:tracing')
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
-
-

@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.repository;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.fichas.application.estudiante.command.secondaryport.entity.EstudianteEntity;
 import com.arquisoft.fichas.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
@@ -35,7 +36,7 @@ class EstudianteCommandOutputAdapterTest {
     void debeGuardarYRegistrarLog_cuandoSePersiste() {
         // Arrange
         var id = UUID.randomUUID();
-        var entity = new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+        var entity = new EstudianteEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), UtilFecha.VACIO);
 
         // Act
         adapter.guardar(entity);
@@ -85,5 +86,64 @@ class EstudianteCommandOutputAdapterTest {
 
         // Assert
         assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeDevolverEliminadosConSuFecha_cuandoObtenerPorIdEncuentraUnaBaja() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var baja = Instant.parse("2026-09-16T10:00:00Z");
+        when(estudianteRepository.findById(id)).thenReturn(Optional.of(EstudianteJpaEntity.builder()
+                .id(id).identificador("20161020123").nombre("Ana Perez").email("ana@uco.edu.co")
+                .ocurridoEn(baja).eliminadoEn(baja).build()));
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).map(EstudianteEntity::eliminadoEn).contains(baja);
+    }
+
+    @Test
+    void debeDelegarBusquedaDeVigentes_cuandoBuscaIdsVigentes() {
+        // Arrange
+        var ids = List.of(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
+        when(estudianteRepository.findIdsVigentesByIdIn(ids)).thenReturn(List.of(ids.get(1)));
+
+        // Act
+        var resultado = adapter.buscarIdsVigentes(ids);
+
+        // Assert
+        assertThat(resultado).containsExactly(ids.get(1));
+    }
+
+    @Test
+    void debeActualizarYRegistrarLog_cuandoSeEliminaLogicamente() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var baja = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        adapter.eliminarLogica(id, baja);
+
+        // Assert
+        verify(estudianteRepository).eliminarLogica(id, baja);
+        verify(logger).debug(EstudianteKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
+    void debeActualizarYRegistrarLog_cuandoSeReactiva() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var ocurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+        var entity = new EstudianteEntity(id, "20161020999", "Ana Gomez", "ana.gomez@uco.edu.co", ocurridoEn,
+                UtilFecha.VACIO);
+
+        // Act
+        adapter.reactivar(entity);
+
+        // Assert
+        verify(estudianteRepository).reactivar(id, "20161020999", "Ana Gomez", "ana.gomez@uco.edu.co", ocurridoEn);
+        verify(logger).debug(EstudianteKey.LOG_ACTUALIZADO, id);
     }
 }

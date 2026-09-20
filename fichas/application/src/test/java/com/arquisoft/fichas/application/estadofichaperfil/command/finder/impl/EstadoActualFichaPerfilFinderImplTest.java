@@ -36,9 +36,7 @@ class EstadoActualFichaPerfilFinderImplTest {
                 .thenReturn(Optional.of(entidadCon(fichaId, EstadoFicha.EN_CONSTRUCCION.getId())));
 
         // Act & Assert
-        assertThat(finder.obtener(fichaId))
-                .map(EstadoFichaPerfilDomain::getEstadoFicha)
-                .contains(EstadoFicha.EN_CONSTRUCCION);
+        assertThat(finder.obtener(fichaId).getEstadoFicha()).isEqualTo(EstadoFicha.EN_CONSTRUCCION);
     }
 
     @Test
@@ -60,7 +58,7 @@ class EstadoActualFichaPerfilFinderImplTest {
         when(estadoFichaPerfilOutputPort.obtenerEstadoActual(fichaId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThat(finder.obtener(fichaId)).isEmpty();
+        assertThat(finder.obtener(fichaId)).isEqualTo(EstadoFichaPerfilDomain.VACIO);
     }
 
     private EstadoFichaPerfilEntity entidadCon(UUID fichaId, String estadoFichaId) {

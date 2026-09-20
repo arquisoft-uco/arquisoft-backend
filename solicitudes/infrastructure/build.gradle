@@ -1,5 +1,5 @@
 dependencies {
-    implementation project(':solicitudes:domain')
+    testImplementation project(':solicitudes:domain')
     implementation project(':solicitudes:application')
     implementation project(':shared:domain')
     implementation project(':shared:application')
@@ -11,13 +11,11 @@ dependencies {
     // shared:amqp lo declara con 'implementation', asi que no llega transitivamente.
     implementation project(':shared:tracing')
     implementation project(':shared:web')
-    implementation project(':shared:minio')
     implementation project(':shared:jpa')
 
     // Spring Security (para @PreAuthorize y @EnableMethodSecurity)
     implementation "org.springframework.boot:spring-boot-starter-security"
     implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
-    implementation "org.springframework.boot:spring-boot-starter-validation"
 
     // AMQP — spring-amqp no es transitivo en compilación desde shared:amqp (Gradle 'implementation').
     // Se declara aquí para acceder a @RabbitListener, Message, Channel, QueueBuilder, etc.
@@ -33,6 +31,9 @@ dependencies {
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
 
     // Testing
+    // solicitudes:domain solo en test — los slices (@WebMvcTest/@DataJpaTest) arman agregados
+    // en el arrange; producción de infra no importa nada de domain (barrera de capas #88).
+    testImplementation project(':solicitudes:domain')
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.boot:spring-boot-test-autoconfigure"
     testImplementation "org.springframework.boot:spring-boot-data-jpa-test"

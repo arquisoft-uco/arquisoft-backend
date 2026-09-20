@@ -128,7 +128,9 @@ lanzar a la anterior y asserta cuál excepción gana.
 
 Si la HU no declara ninguna `Rule`, el use case **no tiene `Validator`** y no hay nada que mockear
 ni que testear aparte — no inventes uno. El `Finder` sí lleva su propio test (mock del `OutputPort`,
-assert sobre el valor devuelto; nunca esperes que lance). Cuando el use case consulta un `Finder`
+assert sobre el valor devuelto; nunca esperes que lance). El `Finder` no devuelve `Optional`: en la
+rama ausente asserta `isEqualTo(XDomain.VACIO)` o `isEqualTo(UtilUUID.obtenerUUIDPorDefecto())`, y en el test del
+`UseCase` stubbea el `Finder` con el `Domain`, su `VACIO` o el UUID directo — nunca con `Optional.of`/`Optional.empty()`. Cuando el use case consulta un `Finder`
 para cortar temprano sin lanzar — la idempotencia de un consumidor AMQP —, el test del caso
 "duplicado" asserta **ausencia de efectos**: `verify(outputPort, never()).guardar(any())` y
 `verify(envioOutputPort, never()).enviar(any())`, no una excepción. Ver
