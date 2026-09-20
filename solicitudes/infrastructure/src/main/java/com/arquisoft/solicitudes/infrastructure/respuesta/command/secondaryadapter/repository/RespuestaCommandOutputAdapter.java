@@ -8,6 +8,7 @@ import com.arquisoft.solicitudes.infrastructure.respuesta.command.secondaryadapt
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -26,5 +27,16 @@ public class RespuestaCommandOutputAdapter implements RespuestaOutputPort {
     @Override
     public boolean existePorSolicitud(UUID solicitudId) {
         return respuestaCommandRepository.existsBySolicitudId(solicitudId);
+    }
+
+    @Override
+    public Optional<String> buscarEstadoPorSolicitud(UUID solicitudId) {
+        return respuestaCommandRepository.buscarEstadoPorSolicitud(solicitudId);
+    }
+
+    @Override
+    public void eliminarPorSolicitud(UUID solicitudId) {
+        respuestaCommandRepository.deleteBySolicitudId(solicitudId);
+        logger.debug(RespuestaKey.LOG_ELIMINADA_REGISTRO, solicitudId);
     }
 }
