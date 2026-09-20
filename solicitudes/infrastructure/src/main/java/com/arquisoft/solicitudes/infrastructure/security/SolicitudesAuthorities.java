@@ -21,6 +21,8 @@ public final class SolicitudesAuthorities {
 
     public static final String RESPUESTA_NOVEDAD_COORDINADOR_DELETE =
             "solicitudes:respuesta-novedad-coordinador:delete";
+    public static final String RESPUESTA_NOVEDAD_ASESOR_DELETE =
+            "solicitudes:respuesta-novedad-asesor:delete";
 
     public static final class Expresiones {
 
@@ -58,5 +60,8 @@ public final class SolicitudesAuthorities {
 
         public static final String HAS_RESPUESTA_NOVEDAD_COORDINADOR_DELETE =
                 HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_COORDINADOR_DELETE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_RESPUESTA_NOVEDAD_ASESOR_DELETE =
+                HAS_AUTHORITY_INICIO + RESPUESTA_NOVEDAD_ASESOR_DELETE + HAS_AUTHORITY_FIN;
     }
 }

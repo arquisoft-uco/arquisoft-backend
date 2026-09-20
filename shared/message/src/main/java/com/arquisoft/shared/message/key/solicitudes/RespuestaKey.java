@@ -17,6 +17,8 @@ public enum RespuestaKey implements ClaveMensaje {
     LOG_ELIMINANDO("solicitudes.aplicacion.respuesta.log.eliminando", 2),
     LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.respuesta.log.verificacion-eliminacion", 2),
     LOG_ELIMINADA("solicitudes.aplicacion.respuesta.log.eliminada", 1),
+    LOG_ELIMINANDO_NOVEDAD_ASESOR("solicitudes.aplicacion.respuesta.log.eliminando-novedad-asesor", 2),
+    LOG_ELIMINADA_NOVEDAD_ASESOR("solicitudes.aplicacion.respuesta.log.eliminada-novedad-asesor", 1),
     LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.respuesta.log.eliminada", 1);
 
     private final String clave;
