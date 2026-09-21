@@ -9,4 +9,6 @@ public interface EvaluacionJuradoOutputPort {
     EstadoEvaluacionJuradoEntity obtenerEstado(UUID evaluacionJurado, UUID jurado);
 
     boolean estaFinalizada(UUID evaluacionJurado);
+
+    boolean estaFinalizadaPorObservacion(UUID observacion);
 }

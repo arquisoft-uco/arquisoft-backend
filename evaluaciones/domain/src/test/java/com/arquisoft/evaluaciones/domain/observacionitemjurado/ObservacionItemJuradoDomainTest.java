@@ -2,6 +2,8 @@ package com.arquisoft.evaluaciones.domain.observacionitemjurado;
 
 import com.arquisoft.shared.message.constant.EvaluacionesCodes;
 import com.arquisoft.shared.message.constant.EvaluacionesFields;
+import com.arquisoft.shared.util.UtilTexto;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.DomainValidationException;
 import org.junit.jupiter.api.Test;
 
@@ -77,5 +79,20 @@ class ObservacionItemJuradoDomainTest {
         assertThat(observacion.getId()).isEqualTo(id);
         assertThat(observacion.getEvaluacionCuantitativaJurado()).isNull();
         assertThat(observacion.getDescripcion()).isNull();
+    }
+
+    @Test
+    void debeIdentificarSoloElCentinelaComoVacio_cuandoSeConsultaEsVacio() {
+        // Arrange
+        var reconstruida = ObservacionItemJuradoDomain.reconstruir(
+                UUID.randomUUID(), UUID.randomUUID(), "Sustenta bien el puntaje otorgado");
+
+        // Act & Assert
+        assertThat(ObservacionItemJuradoDomain.VACIO.esVacio()).isTrue();
+        assertThat(ObservacionItemJuradoDomain.VACIO.getId()).isEqualTo(UtilUUID.obtenerUUIDPorDefecto());
+        assertThat(ObservacionItemJuradoDomain.VACIO.getEvaluacionCuantitativaJurado())
+                .isEqualTo(UtilUUID.obtenerUUIDPorDefecto());
+        assertThat(ObservacionItemJuradoDomain.VACIO.getDescripcion()).isEqualTo(UtilTexto.VACIO);
+        assertThat(reconstruida.esVacio()).isFalse();
     }
 }

@@ -79,6 +79,7 @@ public final class EvaluacionesFields {
 
         private ObservacionItemJurado() {}
 
+        public static final String ID = "id";
         public static final String EVALUACION_CUANTITATIVA_JURADO = "evaluacionCuantitativaJurado";
         public static final String DESCRIPCION = "descripcion";
     }

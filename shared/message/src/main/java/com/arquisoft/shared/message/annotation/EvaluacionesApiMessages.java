@@ -119,7 +119,8 @@ public final class EvaluacionesApiMessages {
 
         public static final String TAG_NAME = "Observaciones de ítems cuantitativos del jurado";
         public static final String TAG_DESCRIPTION =
-                "Registro y consulta de observaciones textuales sobre evaluaciones cuantitativas del jurado";
+                "Registro, consulta y modificación de observaciones textuales sobre evaluaciones "
+                        + "cuantitativas del jurado";
         public static final String REGISTRAR_SUMMARY = "Registrar observación";
         public static final String REGISTRAR_DESCRIPTION =
                 "Registra una nueva observación textual sobre una evaluación cuantitativa del jurado";
@@ -136,6 +137,15 @@ public final class EvaluacionesApiMessages {
         public static final String CONSULTAR_RESP_400 =
                 "El identificador no es válido o el filtro/orden solicitado no es aceptado";
         public static final String CONSULTAR_RESP_422 = "La evaluación cuantitativa del jurado no existe";
+        public static final String MODIFICAR_SUMMARY = "Modificar observación";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica la descripción de una observación registrada sobre una evaluación cuantitativa "
+                        + "del jurado";
+        public static final String MODIFICAR_RESP_204 = "Observación modificada";
+        public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
+        public static final String MODIFICAR_RESP_422 =
+                "La observación no existe, su evaluación de jurado ya está finalizada, "
+                        + "o ya existe otra observación con esa descripción";
     }
 
     public static final class ItemCuantitativoJurado {

@@ -24,4 +24,9 @@ public class EvaluacionJuradoCommandOutputAdapter implements EvaluacionJuradoOut
     public boolean estaFinalizada(UUID evaluacionJurado) {
         return repository.estaFinalizada(evaluacionJurado).orElse(false);
     }
+
+    @Override
+    public boolean estaFinalizadaPorObservacion(UUID observacion) {
+        return repository.estaFinalizadaPorObservacion(observacion).orElse(false);
+    }
 }

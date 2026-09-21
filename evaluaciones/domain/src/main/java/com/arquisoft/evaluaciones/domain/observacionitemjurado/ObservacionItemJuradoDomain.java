@@ -14,6 +14,11 @@ import java.util.UUID;
 
 public final class ObservacionItemJuradoDomain {
 
+    public static final ObservacionItemJuradoDomain VACIO = new ObservacionItemJuradoDomain(
+            UtilUUID.obtenerUUIDPorDefecto(),
+            UtilUUID.obtenerUUIDPorDefecto(),
+            UtilTexto.VACIO);
+
     private UUID id;
     private UUID evaluacionCuantitativaJurado;
     private String descripcion;
@@ -82,5 +87,9 @@ public final class ObservacionItemJuradoDomain {
 
     public String getDescripcion() {
         return descripcion;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

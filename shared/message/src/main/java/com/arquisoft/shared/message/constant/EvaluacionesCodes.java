@@ -168,5 +168,9 @@ public final class EvaluacionesCodes {
                 "OBSERVACION_ITEM_JURADO_EVALUACION_JURADO_FINALIZADA";
         public static final String DESCRIPCION_DUPLICADA =
                 "OBSERVACION_ITEM_JURADO_DESCRIPCION_DUPLICADA";
+        public static final String ID_REQUERIDO =
+                "OBSERVACION_ITEM_JURADO_ID_REQUERIDO";
+        public static final String NO_ENCONTRADA =
+                "OBSERVACION_ITEM_JURADO_NO_ENCONTRADA";
     }
 }
