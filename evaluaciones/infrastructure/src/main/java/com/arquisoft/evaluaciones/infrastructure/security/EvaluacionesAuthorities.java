@@ -47,6 +47,9 @@ public final class EvaluacionesAuthorities {
     public static final String ESTADO_EVALUACION_VIEW =
             "evaluaciones:estado-evaluacion:view";
 
+    public static final String EVALUACION_JURADO_ESTUDIANTE_VIEW =
+            "evaluaciones:evaluacion-jurado-estudiante:view";
+
     public static final class Expresiones {
 
         private Expresiones() {}
@@ -96,5 +99,8 @@ public final class EvaluacionesAuthorities {
 
         public static final String HAS_ESTADO_EVALUACION_VIEW =
                 HAS_AUTHORITY_INICIO + ESTADO_EVALUACION_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_EVALUACION_JURADO_ESTUDIANTE_VIEW =
+                HAS_AUTHORITY_INICIO + EVALUACION_JURADO_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
     }
 }

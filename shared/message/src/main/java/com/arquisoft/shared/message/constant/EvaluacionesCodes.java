@@ -96,6 +96,15 @@ public final class EvaluacionesCodes {
         public static final String ESTADO_REQUERIDO = "EVALUACION_ESTADO_REQUERIDO";
         public static final String ESTADO_FINALIZADA = "EVALUACION_ESTADO_FINALIZADA";
         public static final String ESTADO_NO_ENCONTRADO = "EVALUACION_ESTADO_NO_ENCONTRADO";
+        public static final String NO_ENCONTRADA = "EVALUACION_NO_ENCONTRADA";
+    }
+
+    public static final class EvaluacionJurado {
+
+        private EvaluacionJurado() {}
+
+        public static final String EVALUACION_REQUERIDO = "EVALUACION_JURADO_EVALUACION_REQUERIDO";
+        public static final String JURADO_REQUERIDO = "EVALUACION_JURADO_JURADO_REQUERIDO";
     }
 
     public static final class EvaluacionCuantitativaJurado {

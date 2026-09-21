@@ -113,6 +113,23 @@ public final class EvaluacionesApiMessages {
                         + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
     }
 
+    public static final class EvaluacionJurado {
+
+        private EvaluacionJurado() {}
+
+        public static final String TAG_NAME = "Evaluaciones de jurado";
+        public static final String TAG_DESCRIPTION =
+                "Consulta de las evaluaciones de jurado asociadas a una evaluación";
+        public static final String CONSULTAR_SUMMARY = "Consultar evaluaciones de jurado";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta de forma paginada las evaluaciones de jurado de una evaluación, con filtro "
+                        + "por nombre o identificador del jurado y orden por nombre (por defecto, ascendente)";
+        public static final String CONSULTAR_RESP_200 = "Página de evaluaciones de jurado de la evaluación";
+        public static final String CONSULTAR_RESP_400 =
+                "El identificador no es válido o el filtro/orden solicitado no es aceptado";
+        public static final String CONSULTAR_RESP_422 = "La evaluación no existe";
+    }
+
     public static final class ObservacionItemJurado {
 
         private ObservacionItemJurado() {}
