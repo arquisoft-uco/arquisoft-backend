@@ -20,4 +20,13 @@ public final class EvaluacionesFields {
         public static final String NOMBRE = "nombre";
         public static final String DESCRIPCION = "descripcion";
     }
+
+    public static final class EvaluacionCualitativaJurado {
+
+        private EvaluacionCualitativaJurado() {}
+
+        public static final String EVALUACION_JURADO = "evaluacionJurado";
+        public static final String ITEM = "item";
+        public static final String CRITERIO = "criterio";
+    }
 }
