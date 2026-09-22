@@ -9,3 +9,4 @@ rutas:
       base: /solicitudes
       novedad-coordinador: /novedad-coordinador
       novedad-asesor: /novedad-asesor
+      cambio-asesor: /cambio-asesor
