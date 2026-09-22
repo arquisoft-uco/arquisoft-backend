@@ -48,6 +48,7 @@ import com.arquisoft.shared.message.key.usuarios.AgregarAsesorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
+import com.arquisoft.shared.message.key.usuarios.ModificarUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ProveedorIdentidadKey;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverEstudianteKey;
@@ -123,6 +124,7 @@ public final class ClavesCatalogo {
             TokenInvalidadoKey.class,
             TokenKey.class,
             RegistrarUsuarioKey.class,
+            ModificarUsuarioKey.class,
             AgregarEstudianteKey.class,
             RemoverEstudianteKey.class,
             ProveedorIdentidadKey.class,

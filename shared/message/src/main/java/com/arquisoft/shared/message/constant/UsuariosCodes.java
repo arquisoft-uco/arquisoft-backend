@@ -11,6 +11,12 @@ public final class UsuariosCodes {
 
         private Usuario() {}
 
+        public static final String USUARIO_REQUERIDO = "USUARIO_REQUERIDO";
+        public static final String USUARIO_FORMATO = "USUARIO_FORMATO";
+        public static final String MODIFICACION_VACIA = "USUARIO_MODIFICACION_VACIA";
+        public static final String NO_ENCONTRADO = "USUARIO_NO_ENCONTRADO";
+        public static final String INACTIVO = "USUARIO_INACTIVO";
+
         public static final String IDENTIFICADOR_REQUERIDO = "USUARIO_IDENTIFICADOR_REQUERIDO";
         public static final String IDENTIFICADOR_LONGITUD = "USUARIO_IDENTIFICADOR_LONGITUD";
         public static final String IDENTIFICADOR_DUPLICADO = "USUARIO_IDENTIFICADOR_DUPLICADO";

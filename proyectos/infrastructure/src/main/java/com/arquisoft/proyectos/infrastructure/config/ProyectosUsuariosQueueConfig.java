@@ -67,4 +67,18 @@ public class ProyectosUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String USUARIO_MODIFICADO_QUEUE =
+            ProyectosQueues.PREFIJO + EventTopics.Usuarios.USUARIO_MODIFICADO;
+
+    @Bean
+    public Declarables proyectosUsuarioModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                USUARIO_MODIFICADO_QUEUE,
+                EventTopics.Usuarios.USUARIO_MODIFICADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }
