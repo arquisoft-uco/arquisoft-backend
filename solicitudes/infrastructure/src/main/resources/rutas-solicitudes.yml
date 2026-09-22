@@ -10,3 +10,4 @@ rutas:
       novedad-coordinador: /novedad-coordinador
       novedad-asesor: /novedad-asesor
       cambio-asesor: /cambio-asesor
+      ampliacion-plazo: /ampliacion-plazo
