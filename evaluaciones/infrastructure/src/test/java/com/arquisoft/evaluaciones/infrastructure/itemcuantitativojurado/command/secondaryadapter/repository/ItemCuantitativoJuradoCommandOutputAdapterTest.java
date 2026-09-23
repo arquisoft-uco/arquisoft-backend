@@ -26,9 +26,6 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
     private ItemCuantitativoJuradoCommandRepository repository;
 
     @Mock
-    private CategoriaItemCuantitativoJuradoCommandRepository categoriaRepository;
-
-    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -52,16 +49,6 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
         assertThat(captor.getValue().getValor()).isEqualTo(item.valor());
     }
 
-    @Test
-    void debeDelegarConsultaDeCategoria() {
-        // Arrange
-        UUID categoria = UUID.randomUUID();
-        when(categoriaRepository.existsById(categoria)).thenReturn(true);
-
-        // Act & Assert
-        assertThat(adapter.existeCategoriaPorId(categoria)).isTrue();
-        verify(categoriaRepository).existsById(categoria);
-    }
 
     @Test
     void debeDelegarConsultaDeNombreYCategoria() {

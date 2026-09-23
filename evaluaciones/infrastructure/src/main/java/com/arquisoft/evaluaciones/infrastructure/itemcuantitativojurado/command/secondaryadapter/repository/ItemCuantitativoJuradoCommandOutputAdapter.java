@@ -16,18 +16,12 @@ public class ItemCuantitativoJuradoCommandOutputAdapter
         implements ItemCuantitativoJuradoOutputPort {
 
     private final ItemCuantitativoJuradoCommandRepository repository;
-    private final CategoriaItemCuantitativoJuradoCommandRepository categoriaRepository;
     private final AppLogger logger;
 
     @Override
     public void registrar(ItemCuantitativoJuradoEntity item) {
         repository.save(ItemCuantitativoJuradoJpaMapper.toJpaEntity(item));
         logger.debug(ItemCuantitativoJuradoKey.LOG_GUARDADO, item.id());
-    }
-
-    @Override
-    public boolean existeCategoriaPorId(UUID categoriaId) {
-        return categoriaRepository.existsById(categoriaId);
     }
 
     @Override

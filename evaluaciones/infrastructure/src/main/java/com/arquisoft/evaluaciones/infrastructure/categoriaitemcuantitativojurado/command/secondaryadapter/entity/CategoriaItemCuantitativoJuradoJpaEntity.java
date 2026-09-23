@@ -1,4 +1,4 @@
-package com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.secondaryadapter.entity;
+package com.arquisoft.evaluaciones.infrastructure.categoriaitemcuantitativojurado.command.secondaryadapter.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
