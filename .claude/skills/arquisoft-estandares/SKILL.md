@@ -53,8 +53,8 @@ Tres reglas que se derivan de esto:
   (`boolean esPropietario = ficha.getAsesorFicha().equals(solicitante)`). Toda comparación de
   identidad/pertenencia vive en la `Rule`, sobre su record de entrada.
 - **Mínimo de consultas.** Si un método del `OutputPort` puede traer lo que se necesita, no se usan
-  dos `Finder`s donde el primero alimenta al segundo (lista de `UUID` → luego un fetch por cada
-  elemento). Una proyección con `JOIN` en el `OutputPort` y un `Finder` que la devuelve entera.
+  dos `Finder`s donde el primero alimenta al segundo. Ver *El `Finder` dependiente*, al final de
+  esta sección.
 
 Los métodos de ambas interfaces son fijos: `DomainRule<T>.validar(T)` (void, lanza) y
 `Finder<T, R>.obtener(T)` (devuelve, nunca lanza por "no encontrado"). **No viven en el mismo
@@ -91,6 +91,25 @@ silencio**, porque el consumidor trata el duplicado como caso esperado y confirm
 Un consumidor que abanica sin esto no falla: envía de menos. Por la misma razón `Duplicada` lleva el
 destinatario además del `idEvento`: con la clave compuesta, el evento solo ya no identifica qué se
 descartó.
+
+La forma del corte, tomada de `EnviarNotificacionUseCaseImpl` (que todavía declara `boolean
+yaProcesada`; la convención es `var`):
+
+```java
+var yaProcesada = notificacionProcesadaFinder.obtener(entrada);
+logger.debug(NotificacionKey.LOG_VERIFICACION_PREVIA,
+        entrada.getIdEvento(), yaProcesada);
+
+if (yaProcesada) {
+    return EnvioNotificacionResultMapper.toResultDuplicada(entrada);
+}
+```
+
+Tres detalles que no son cosméticos. El `Finder` recibe el **domain**, no el `idEvento` suelto,
+porque la clave es el par de arriba. El log es `debug` y va **antes** del `if`, con el booleano recién
+consultado, para que el corte quede explicado tanto si dispara como si no. Y el corte **devuelve una
+variante de la sellada**, nunca un `return;` mudo: el consumidor hace `switch` sobre ese resultado y
+necesita distinguir `Duplicada` de `Enviada`.
 
 Señal de que algo mal nombrado es en realidad un `Finder`: la clase termina en `Validator`, inyecta
 un `OutputPort` y devuelve un `boolean` que el use case consume con un `if`. Eso no valida nada —
@@ -131,6 +150,76 @@ del propio `Finder`: **siempre devuelve valor y nunca `null`**, porque un `exist
 implementado, y declararlo `boolean` en el use case solo escondería ese defecto un método más
 adelante en vez de arreglarlo. Ver "Estilo Java".
 
+### Validación en una consulta: política de acceso por instancia
+
+El `@PreAuthorize` autoriza el **endpoint** por client role, pero no dice nada de la **instancia** que
+se pide. Cuando la HU pone una condición sobre esa instancia —que exista, que el solicitante
+pertenezca a ella, que su estado permita verla—, la consulta lleva su propio `Finder` → `Validator`
+→ `Rule`, igual que un comando, y valida **antes** de leer. Sin eso, la consulta responde 200 con una
+lista vacía para un id que no existe o, peor, entrega a cualquiera con el rol los datos de otro
+usuario. Referencia: `ConsultarEvaluacionesCualitativasJuradoUseCaseImpl` (`evaluaciones`).
+
+| Pieza | Dónde | Por qué ahí |
+|---|---|---|
+| `Rule` + su record + su `DomainException` | `domain/{feature}/rules/`, `model/`, `exception/` | Es del dominio, no de un lado CQRS: la misma `Rule` sirve a un comando y a una consulta. Si ya existe para un comando, se reutiliza |
+| `Validator` de la consulta | `application/{feature}/query/validator/` (+`impl/`), `Consultar{…}Validator` | Uno por lado: el de una consulta nunca reutiliza el de un comando aunque compartan `Rule`, porque cada uno cambia con su propio caso de uso. Mismas reglas de pureza: constructor sin argumentos, `new {Regla}RuleImpl()`, cero `if` |
+| `Finder` | `application/{featureConsultada}/query/finder/` (+`impl/`), sufijo `QueryFinder` | La consulta no toca el lado comando: ni `command/finder/` ni `command/secondaryport/` |
+| Puerto | `application/{featureConsultada}/query/secondaryport/{X}AccesoQueryOutputPort` | Aparte del `{X}QueryOutputPort` de la lectura: aquel devuelve `ReadModel`s, este responde el dato crudo (`boolean`, `UUID`) |
+| Adaptador | `infrastructure/{featureConsultada}/query/secondaryadapter/repository/` con su propia `JpaQueryEntity` + `QueryRepository` | Aislamiento CQRS: nunca el `JpaEntity` ni el repositorio de comando |
+
+El orden del `UseCase` es `debug` de entrada → `Finder`(s) → `validator.validar(...)` →
+`QueryOutputPort` → `debug` de cierre. Validar después de leer ya habría cargado los datos que la
+política protege. La violación es una `DomainException` → 422, igual que en un comando (no hay 403
+por instancia). Para la pertenencia, el sujeto del JWT entra por un `{Consulta}{Entidad}Query`
+propio y el `Criteria` lo lleva al `UseCase`; el `Finder` trae el dato crudo (el dueño, el vínculo) y
+la `Rule` compara, nunca el `UseCase`.
+
+Dos cosas que parecen política y no lo son:
+
+- **Si la HU no pone una condición sobre la instancia, no hay `Validator`**, igual que un comando sin
+  `Rule`s. La política sale de la HU, no se añade "por seguridad": HU-016 tuvo un chequeo de
+  pertenencia que se retiró (commit `2b0faeca`) porque la historia no lo pedía y el client role era
+  todo el control de acceso.
+- **"Ver solo lo mío" en un listado es un filtro forzado, no una `Rule`.** Si la consulta lista
+  recursos y el usuario solo debe ver los suyos, el sujeto del JWT se fuerza en el `Criteria` y no hay
+  nada que rechazar, solo menos filas (`ConsultarFichasPerfilAsesoradasQuery`). La `Rule` es para
+  cuando la petición nombra una instancia concreta (path variable) y la respuesta es sí o no.
+
+Lo que la referencia hace y **no** se copia: declara `boolean existe` (va `var`), su `Criteria` expone
+`evaluacionJuradoId()` (nombre objetual: `evaluacionJurado`), y su `Query` se sigue llamando
+`…EstudianteQuery` aunque ya no lleva estudiante, residuo de la pertenencia retirada.
+
+### El `Finder` dependiente
+
+Cada `Finder` es un viaje a la base de datos, así que se cuentan antes de escribir el `UseCase`. La
+señal a buscar es el **`Finder` dependiente**: uno cuya entrada es la salida de otro. Casi siempre
+significa que falta un método en el `OutputPort` que navegue la relación de una vez. Ejemplo
+ilustrativo (los nombres no existen en el repo):
+
+```java
+// ❌ dos viajes: el primero solo existe para alimentar al segundo
+var idFichaPerfil = idFichaPerfilPorItemFinder.obtener(entrada.getItem());
+var fichaPerfil = fichaPerfilPorIdFinder.obtener(idFichaPerfil);
+
+// ✅ un viaje: un método obtenerPorItem(UUID item) en el OutputPort, con JOIN en el adaptador
+var fichaPerfil = fichaPerfilPorItemFinder.obtener(entrada.getItem());
+```
+
+La variante N+1 es el mismo problema, y peor: un `Finder` devuelve una lista de `UUID` y otro se
+llama por cada elemento. Se colapsa igual, en una proyección con `JOIN`. Esto no contradice "un
+`Finder` = una sola llamada a un `OutputPort`": el `JOIN` vive en la consulta del adaptador, no en
+el `Finder`.
+
+**El límite es a las cascadas, no a la cantidad.** Varios `Finder`s independientes, cada uno con su
+propia entrada sacada del `Command` o del domain de acción, están bien: no se pueden fusionar
+consultas a agregados que no se relacionan. Y hay cascadas legítimas que no se colapsan:
+
+- El segundo lookup es **condicional**: solo corre si el primero decide que hace falta, así que la
+  cascada ahorra viajes en el camino corto.
+- Los dos `OutputPort` son de **features o contextos distintos**. Entre contextos no hay `JOIN`
+  posible: son bases separadas.
+- El identificador intermedio **es un dato que la `Rule` necesita**, no un peldaño.
+
 ## Identificadores y DTOs
 
 Los IDs en el body HTTP llegan como `String`, nunca `UUID` tipado. Su formato **nunca** se valida
@@ -148,9 +237,7 @@ y `seguridad/infrastructure/.../auth/command/primaryadapter/web/mapper/IniciarSe
 Existió una variante "contexto pequeño" con `@NotBlank`/`@NotNull` y `toCommand()` propio en el DTO;
 se retiró porque dejaba dos puertas de validación para la misma regla y dos formas de error distintas
 (`MethodArgumentNotValidException` de Jakarta vs. los `fieldErrors[]` acumulados de
-`DomainValidationException`). `usuarios/.../CrearUsuarioRequestDTO` es el último rezagado: es
-**desviación conocida**, no una alternativa a elegir. Si trabajas en `usuarios`, escribe DTO desnudo +
-`RequestMapper`; no copies el que está ahí.
+`DomainValidationException`). Ya no queda ningún DTO con esa forma.
 
 **Todo `Command` tiene su fábrica `crear(...)`, sin excepción.** Un `record` que se construya con
 `new` desde el adaptador no valida nada y es bloqueante en revisión.
@@ -258,84 +345,14 @@ el MER), literales de test y textos de Swagger.
 
 ## Enums de catálogo
 
-`valueOf` **nunca** se llama fuera del propio enum. Cada enum expone `desde(String)` (devuelve la
-constante o lanza su `{Enum}NoEncontradoException` → 422) y `getId()` devolviendo `name()`; si el
-valor llega por el `crear(...)` de un domain, expone además `esValido(String)` para acumular en el
-`ValidationResult` en vez de abortar al primer error. Ambos delegan en `UtilEnum.desde(...)`.
-Los mappers persisten `getId()`, nunca un `.name()` desnudo.
+Lo mínimo, que aplica siempre: `valueOf` **nunca** se llama fuera del propio enum; cada enum expone
+`desde(String)` y `getId()`, más `esValido(String)` si el valor llega por el `crear(...)` de un
+domain. El `String` del cliente viaja crudo hasta el setter del domain, que es el único que lo
+convierte. Las constantes se copian de `mer/data/`, nunca se deducen.
 
-**Dónde se convierte el `String` que manda el cliente.** El id viaja crudo por toda la cadena y solo
-se convierte dentro del `crear(...)` del domain. Referencia: `TipoItem` en `ItemFichaPerfilDomain`.
-
-| Capa | Qué hace con el `String` |
-|---|---|
-| `{Accion}{Entidad}RequestDTO` | lo lleva como `String`, sin anotaciones |
-| `{Accion}{Entidad}RequestMapper` | lo pasa tal cual al `Command` |
-| `{Accion}{Entidad}Command.crear(...)` | solo `ValidatorTexto.noEnBlanco` — **no** valida pertenencia al catálogo |
-| `{Accion}{Entidad}Mapper.toDomain(...)` | lo pasa tal cual al `crear(...)` del domain |
-| **`{Entidad}Domain`**, setter privado | **`esValido(...)` acumula en el `ValidationResult`; `desde(...)` convierte** |
-
-```java
-private void setTipoItem(String tipoItem, ValidationResult result) {
-    if (!ValidatorTexto.noEnBlanco(tipoItem, /* ... */ result)) return;
-    if (!TipoItem.esValido(tipoItem)) {                    // acumula, no lanza
-        result.agregarError(/* TIPO_ITEM_INVALIDO */);
-        return;
-    }
-    this.tipoItem = TipoItem.desde(tipoItem);              // conversión real
-}
-```
-
-El campo es del tipo del enum; el parámetro del setter es `String`. Validar el catálogo en el
-`Command` o en el `{Accion}{Entidad}Mapper` rompe la acumulación: `desde(...)` lanza al primer error
-y el cliente pierde el resto de los `fieldErrors[]`.
-
-**Camino inverso (fila de BD → domain):** ahí sí convierte el mapper de `secondaryport`, antes de
-`reconstruir(...)` — `EstadoFicha.desde(entity.estadoFicha())` en `EstadoFichaPerfilMapper.toDomain`.
-`reconstruir(...)` recibe el enum ya tipado y no acumula: un id inválido guardado en BD es un fallo
-de integridad del catálogo, no un error de entrada, así que `desde(...)` lanza directo.
-
-**Sus constantes no se inventan ni se deducen del Event Storming: se copian de
-`mer/data/{NN}_data_{contexto}.sql` en `arquisoft-docs`** (ver la skill `gh-docs-reader`). Ese
-archivo es la fuente de verdad y define fila por fila las tres cosas que necesitas: `id` es la
-constante Java (`Enum.name()`, UPPER_SNAKE_CASE, ADR-012), `nombre` es la etiqueta que devuelve
-`getNombre()` — por eso se queda en Java y no va al catálogo Redis, su fuente de verdad es esa
-fila— y `descripcion` es solo documentación del MER. El conjunto de filas **es** el conjunto de
-constantes; la única que existe sin fila es el centinela `VACIO`, artefacto del código que nunca se
-persiste. Agregar un estado que el modelo enriquecido menciona pero el `data/` no tiene ya pasó una
-vez y hubo que revertirlo.
-
-**Dónde vive un enum de catálogo es una decisión abierta del proyecto** — hoy coexisten
-`domain/{catalogo}/` (cuando tiene tabla propia: `EstadoFicha`, `TipoItem`, `EstadoEvaluacion`) y
-`domain/{feature}/model/` (cuando no la tiene). Un enum nuevo sigue lo que ya use su contexto; no
-declares "settled" una convención que no lo está.
-
-### Cuando infrastructure necesita nombrar un enum de dominio
-
-No puede importarlo — la barrera de capas lo prohíbe. Se espeja: un enum propio en infraestructura
-que carga el código como texto, y el `Command.crear(...)` lo resuelve contra el catálogo del dominio.
-Es lo que hacen `RolUsuarioDTO` (usuarios, porque además es el contrato JSON) y `TipoNotificacionEvento`
-(notificaciones, `primaryadapter/amqp/`).
-
-**Una tabla espejo, no una constante por clase.** Con un solo consumidor una `private static final
-String` basta; con seis son seis literales sueltos y seis pruebas de deriva. El enum da un sitio
-único donde ver qué valores existen y **una** prueba que cubre las dos direcciones: que cada código
-resuelva con `desde(...)`, y que ambos enums declaren el mismo conjunto de constantes — así, si el
-dominio gana un valor y nadie lo espeja, el build falla.
-
-Hay dos espejos hoy y el nombre lleva **para qué lado** se espeja, no solo qué:
-
-| Espejo | Dónde vive | Para qué |
-|---|---|---|
-| `TipoNotificacionEvento` | `primaryadapter/amqp/` | el código que el consumidor pone en el `Command` |
-| `EstadoNotificacionPersistencia` | `secondaryadapter/repository/` | el valor de la columna en una consulta del adapter |
-
-Cada uno vive **en el paquete del adaptador que lo usa**, no en un `config/` común: es un detalle de
-ese adaptador, no del contexto. Y declara **todas** las constantes del enum de dominio, no solo la
-que se usa hoy — con una sola, la prueba no detectaría que el dominio ganó un valor que la
-infraestructura ignora, que es precisamente la deriva que se quiere cazar. Ver
-`TipoNotificacionEventoTest` y `EstadoNotificacionPersistenciaTest`.
-
+**Si la HU crea, modifica o convierte un enum de catálogo, lee `references/enums-catalogo.md`**: ahí
+está la cadena capa por capa, el camino inverso desde la BD, la fuente MER fila por fila, la ubicación
+del enum y los espejos de infraestructura.
 
 ## El objeto de acción desaparece cuando sus campos pasan a ser estado
 
@@ -367,32 +384,6 @@ ALTER TABLE notificacion
 Recordatorio de `CLAUDE.md`: versión **timestamp** (`V{yyyyMMddHHmmss}__…`), en
 `db/migration/{contexto}/`, y nunca se retrocede un timestamp para colar una migración antes de otra
 ya aplicada.
-
-## Payload de evento: campos fijos y prueba de contrato
-
-Todo `{Evento}Payload` declara al menos `idEvento` (clave de idempotencia) y **`ocurridoEn`**
-(`Instant`, instante del hecho en el origen), más lo suyo. Los dos viajan siempre en el JSON porque
-`DomainEvent` los asigna; omitirlos del record los tira en silencio. `ocurridoEn` es lo que permite
-descartar eventos viejos cuando llegan desordenados — ver la sección de espejos en
-`arquisoft-arquitectura`.
-
-Su prueba **instancia la configuración de producción**, no un mapper armado a mano:
-
-```java
-private final JsonMapper mapper = new RabbitMQConfig().rabbitObjectMapper();
-```
-
-El productor serializa con ese mismo bean (`RabbitTemplate` usa `JacksonJsonMessageConverter(rabbitObjectMapper)`),
-así que es lo único que prueba el contrato de verdad: un doble configurado a mano puede pasar el test
-y fallar en el broker. Dos casos, y el segundo importa tanto como el primero:
-
-1. Serializar una subclase real de `DomainEvent` y deserializarla en el payload — comprueba que los
-   tipos sobreviven el viaje (un `Instant` incluye la precisión de nanosegundos).
-2. Un JSON **sin** el campo nuevo deserializa con `null`, no revienta. Es lo que permite desplegar
-   productor y consumidor en cualquier orden, y deja fijado que `FAIL_ON_UNKNOWN_PROPERTIES` en
-   `false` no es casualidad.
-
-Ver `UsuarioCreadoPayloadTest` y `AsesorFichaCambiadoPayloadTest`.
 
 ## Excepciones (4 bases, en `com.arquisoft.shared.exception`)
 
@@ -479,7 +470,7 @@ El gate real es `check` (tests + `checkstyleMain`/`checkstyleTest` + cobertura),
 Constructor injection con `@RequiredArgsConstructor` — nunca `@Autowired`, nunca `@Service` (todo
 use case y adaptador es `@Component`). Se inyectan interfaces, nunca implementaciones. Logging vía
 el puerto `AppLogger` (`shared:logger`) inyectado por constructor — no `@Slf4j`, del que ya no queda
-ni uno en los cinco contextos con código. `warn` para 4xx, `error` para 5xx.
+ni uno en ningún contexto. `warn` para 4xx, `error` para 5xx.
 
 **Nunca loguear desde un método `@Bean` ni desde un `@PostConstruct`:** `Mensajes.instalar(...)`
 ocurre dentro de un `@Bean`, así que cualquier bean construido antes resuelve la **clave cruda** y,
@@ -571,38 +562,8 @@ de entrada no llevaría ningún dato: se omite y queda solo el `debug` de cierre
 
 ### Estructura de logs de un flujo de evento
 
-Un flujo disparado por un mensaje **no pasa por `TrazabilidadFilter`**: no hay petición HTTP y por
-tanto **no hay línea `AUDIT`**. El consumidor es lo único que puede dejar constancia de que el evento
-llegó, y por eso aquí el `INFO` de entrada sí va en el adaptador y no en el use case.
-
-| Punto | Nivel | Dónde |
-|---|---|---|
-| Encolado en el outbox | `debug` | `SpringModulithEventPublisher` (transversal, ya hecho) |
-| Envelope recibido / confirmado | `debug` | `AbstractEventConsumer` (transversal, ya hecho) — cola y `deliveryTag` |
-| **Evento recibido** | `info` | el `{Evento}Consumer`, tras `deserialize` — `idEvento` + identificadores de negocio |
-| Cierre de la operación | `info` | el **adaptador**, no el use case — ver abajo |
-| Nack a la DLQ | `error` | `AbstractEventConsumer` (transversal, ya hecho) |
-
-**Dos `INFO` por mensaje**, igual que por petición, y los dos los pone el adaptador. El `INFO` de
-entrada pertenece a quien es el punto de entrada del flujo: en un comando HTTP es el use case, en un
-evento es el consumidor. Por eso **un use case disparado por un consumidor no añade su propio `INFO`
-de entrada** — el del consumidor ya lo es.
-
-El cierre sigue la misma lógica y por eso tampoco vive en el use case. En `notificaciones` lo emite
-`AbstractNotificacionConsumer.registrar(EnvioNotificacionResult)`, con un `switch` exhaustivo que
-elige nivel y clave según el desenlace: `info` para `Enviada` y `Duplicada`, **`warn` para
-`Fallida`** — un envío rechazado es un 4xx de negocio, no un error del flujo. `EnviarNotificacionUseCaseImpl`
-no emite ningún `INFO`: solo su `debug` de verificación previa. Poner un `INFO` de cierre ahí daría
-tres líneas por mensaje y perdería el desenlace, que el use case devuelve pero no interpreta.
-
-La regla general: **cuando el use case devuelve una sellada de desenlace, el log de cierre lo hace
-quien la interpreta**, que es el adaptador. Un `{Evento}Consumer` nuevo hereda de
-`AbstractEventConsumer` los tres logs transversales y de `AbstractNotificacionConsumer` el de cierre:
-solo aporta su `INFO` de recepción.
-
-Todo log del consumidor va **dentro** del `withCorrelation(...)`, es decir dentro del `AlcanceTraza`.
-Fuera de él el MDC ya se restauró y la línea sale sin `correlacionId` ni `transaccionId` — que es
-justo lo que permite seguir el evento hasta el productor.
+Un flujo disparado por un mensaje no tiene línea `AUDIT` y reparte sus `INFO` distinto: ver
+`references/eventos.md`.
 
 ### Datos sensibles en logs
 
@@ -713,3 +674,14 @@ Conventional Commits en español: `feat(contexto): descripción corta`. La rama 
 `<prefijo>/<id>-<descripcion_snake_case>` y prefijos `feature/ fix/ refactor/ hotfix/ docs/ test/
 chore/ spike/`. El PR usa `.github/PULL_REQUEST_TEMPLATE.md` y requiere 1 aprobación. Ver
 `CONTRIBUTING.md`.
+
+## Referencias bajo demanda — `references/`
+
+Lo que sigue no aplica a toda HU, así que vive fuera de este archivo. **Antes de planificar,
+implementar, testear o validar la parte correspondiente, abre el archivo con `Read`**: su contenido
+es tan vinculante como el de arriba, solo se carga cuando hace falta. Si dudas de si aplica, ábrelo.
+
+| Abre | Cuando la HU… | Secciones |
+|---|---|---|
+| `references/eventos.md` | publica o consume un evento (el plan tiene la sección 10) | *Payload de evento: campos fijos y prueba de contrato* · *Estructura de logs de un flujo de evento* |
+| `references/enums-catalogo.md` | crea, modifica o convierte un enum de catálogo | *Enums de catálogo* (conversión capa por capa, camino inverso, fuente MER, ubicación) · *Cuando infrastructure necesita nombrar un enum de dominio* |
