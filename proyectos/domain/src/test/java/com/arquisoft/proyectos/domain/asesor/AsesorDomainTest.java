@@ -79,4 +79,36 @@ class AsesorDomainTest {
         // Assert
         assertThat(AsesorDomain.VACIO.esVacio()).isTrue();
     }
+
+    @Test
+    void debeActualizarDatosYOcurridoEn_cuandoActualizarEsInvocado() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var asesor = AsesorDomain.crear(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+        var nuevoOcurridoEn = Instant.now().plusSeconds(60);
+
+        // Act
+        asesor.actualizar("20161020999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn);
+
+        // Assert
+        assertThat(asesor.getIdentificador()).isEqualTo("20161020999");
+        assertThat(asesor.getNombre()).isEqualTo("Ana Actualizada");
+        assertThat(asesor.getEmail()).isEqualTo("actualizada@uco.edu.co");
+        assertThat(asesor.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
+        assertThat(asesor.getId()).isEqualTo(id);
+    }
+
+    @Test
+    void debeAcumularErrores_cuandoActualizarRecibeDatosInvalidos() {
+        // Arrange
+        var asesor = AsesorDomain.crear(
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+
+        // Act & Assert
+        assertThatThrownBy(() -> asesor.actualizar(" ", "Ana Perez", " ", Instant.now()))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> assertThat(((DomainValidationException) ex).getValidationResult().getErrores())
+                        .extracting(e -> e.campo())
+                        .contains(ProyectosFields.Asesor.IDENTIFICADOR, ProyectosFields.Asesor.EMAIL));
+    }
 }

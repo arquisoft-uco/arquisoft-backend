@@ -134,4 +134,40 @@ class EstudianteCommandOutputAdapterTest {
         assertThat(guardado.getOcurridoEn()).isEqualTo(ocurridoEn);
         verify(logger).debug(EstudianteProyectosKey.LOG_ACTUALIZADO, id);
     }
+
+    @Test
+    void debeActualizarLosDatosPersistidos_cuandoSeInvocaActualizar() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var id = sembrar(Instant.parse("2026-09-01T10:00:00Z"), null);
+        var nuevoOcurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        adapter.actualizar(new EstudianteEntity(
+                id, "20161020999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn, UtilFecha.VACIO));
+
+        // Assert
+        var guardado = entityManager.find(EstudianteJpaEntity.class, id);
+        assertThat(guardado.getIdentificador()).isEqualTo("20161020999");
+        assertThat(guardado.getNombre()).isEqualTo("Ana Actualizada");
+        assertThat(guardado.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
+        verify(logger).debug(EstudianteProyectosKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
+    void debeConservarEliminadoEn_cuandoActualizaUnEstudianteDadoDeBaja() {
+        // Arrange
+        var adapter = new EstudianteCommandOutputAdapter(estudianteCommandRepository, logger);
+        var baja = Instant.parse("2026-09-10T10:00:00Z");
+        var id = sembrar(baja, baja);
+        var nuevoOcurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act — el use case pasa el eliminadoEn vigente porque actualizar() del domain no lo toca
+        adapter.actualizar(new EstudianteEntity(
+                id, "20161020999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn, baja));
+
+        // Assert
+        var guardado = entityManager.find(EstudianteJpaEntity.class, id);
+        assertThat(guardado.getEliminadoEn()).isEqualTo(baja);
+    }
 }

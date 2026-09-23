@@ -11,6 +11,9 @@ public final class UsuariosLimits {
 
         private Usuario() {}
 
+        public static final String PATRON_NOMBRE = "^[\\p{L} ]+$";
+        public static final String PATRON_CONTACTO = "^\\d+$";
+
         public static final int IDENTIFICADOR_MIN = 4;
         public static final int IDENTIFICADOR_MAX = 30;
         public static final int NOMBRE_MIN = 2;

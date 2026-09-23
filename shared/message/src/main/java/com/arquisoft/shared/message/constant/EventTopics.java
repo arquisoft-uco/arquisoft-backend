@@ -25,6 +25,9 @@ public final class EventTopics {
 
         private Usuarios() {}
 
+        public static final String USUARIO_MODIFICADO =
+                "usuarios.usuario.modificado";
+
         public static final String ESTUDIANTE_AGREGADO =
                 "usuarios.estudiante.agregado";
         public static final String ESTUDIANTE_REMOVIDO =
