@@ -32,3 +32,4 @@ rutas:
     evaluacion:
       base: /evaluaciones
       evaluaciones-jurado: /{evaluacionId}/evaluaciones-jurado
+      coordinador: /coordinador

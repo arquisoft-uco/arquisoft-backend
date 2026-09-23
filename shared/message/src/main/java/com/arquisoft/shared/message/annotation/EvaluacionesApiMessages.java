@@ -113,6 +113,22 @@ public final class EvaluacionesApiMessages {
                         + "ya está finalizada, o el puntaje excede el valor máximo del ítem";
     }
 
+    public static final class Evaluacion {
+
+        private Evaluacion() {}
+
+        public static final String TAG_NAME = "Evaluaciones";
+        public static final String TAG_DESCRIPTION = "Consulta de las evaluaciones de los entregables";
+        public static final String CONSULTAR_SUMMARY = "Filtrar evaluaciones (coordinador)";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Consulta de forma paginada todas las evaluaciones con su entregable y su estado, con "
+                        + "filtro por estado, proyecto o identificador del entregable y orden por proyecto "
+                        + "(por defecto, ascendente) o estado";
+        public static final String CONSULTAR_RESP_200 = "Página de evaluaciones";
+        public static final String CONSULTAR_RESP_400 =
+                "El filtro, el orden o la paginación solicitados no son aceptados";
+    }
+
     public static final class EvaluacionJurado {
 
         private EvaluacionJurado() {}
