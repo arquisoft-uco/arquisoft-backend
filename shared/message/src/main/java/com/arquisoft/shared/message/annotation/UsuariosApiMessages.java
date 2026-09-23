@@ -36,6 +36,20 @@ public final class UsuariosApiMessages {
         public static final String REGISTRAR_RESP_400 = "Datos de entrada inválidos o rol no válido";
         public static final String REGISTRAR_RESP_422 = "Identificador, email o contacto ya registrados, o datos de dominio inválidos";
         public static final String REGISTRAR_RESP_503 = "No fue posible completar el registro; el servicio no está disponible temporalmente";
+
+        public static final String MODIFICAR_SUMMARY = "Modificar información de un usuario existente";
+        public static final String MODIFICAR_DESCRIPTION =
+                "Modifica los datos personales enviados de un usuario activo y sincroniza el email y el "
+                        + "nombre en el proveedor de identidad (Keycloak). Los roles enviados se agregan o, si "
+                        + "fueron eliminados lógicamente, se reactivan; un rol ausente de la lista no se revoca. "
+                        + "Solo cambian los campos presentes en el body. Exclusivo del rol administrador.";
+        public static final String MODIFICAR_RESP_204 = "Usuario modificado";
+        public static final String MODIFICAR_RESP_400 =
+                "Identificador de usuario inválido, rol no válido o body sin ningún dato ni rol";
+        public static final String MODIFICAR_RESP_422 =
+                "Usuario inexistente o inactivo, datos ya usados por otro usuario, o rol ya vigente";
+        public static final String MODIFICAR_RESP_503 =
+                "No fue posible sincronizar con el proveedor de identidad; el servicio no está disponible temporalmente";
     }
 
     public static final class Estudiante {

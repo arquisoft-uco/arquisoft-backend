@@ -38,4 +38,10 @@ public class AsesorFichaCommandOutputAdapter implements AsesorFichaOutputPort {
     public Optional<AsesorFichaEntity> obtenerPorId(UUID id) {
         return buscarContactoPorId(id);
     }
+
+    @Override
+    public void actualizar(AsesorFichaEntity asesorFicha) {
+        asesorFichaCommandRepository.save(AsesorFichaJpaMapper.toJpaEntity(asesorFicha));
+        logger.debug(AsesorFichaKey.LOG_ACTUALIZADO, asesorFicha.id());
+    }
 }
