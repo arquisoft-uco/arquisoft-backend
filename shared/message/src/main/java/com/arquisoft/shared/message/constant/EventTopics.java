@@ -56,5 +56,11 @@ public final class EventTopics {
 
         public static final String NOVEDAD_ASESOR_ENVIADA =
                 "solicitudes.solicitud.novedad_asesor_enviada";
+
+        public static final String CAMBIO_ASESOR_ENVIADA =
+                "solicitudes.solicitud.cambio_asesor_enviada";
+
+        public static final String AMPLIACION_PLAZO_ENVIADA =
+                "solicitudes.solicitud.ampliacion_plazo_enviada";
     }
 }
