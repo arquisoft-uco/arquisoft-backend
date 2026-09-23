@@ -71,4 +71,35 @@ class EvaluacionCualitativaJuradoCommandRepositoryTest {
         // Assert
         assertThat(encontrados).isEmpty();
     }
+
+    @Test
+    void debeRetornarTrue_cuandoItemTieneEvaluacionRegistrada() {
+        // Arrange
+        var item = UUID.randomUUID();
+        repository.saveAndFlush(EvaluacionCualitativaJuradoJpaEntity.builder()
+                .id(UUID.randomUUID()).evaluacionJurado(UUID.randomUUID()).item(item)
+                .criterio(UUID.randomUUID()).build());
+        entityManager.clear();
+
+        // Act
+        var existe = repository.existsByItem(item);
+
+        // Assert
+        assertThat(existe).isTrue();
+    }
+
+    @Test
+    void debeRetornarFalse_cuandoItemNoTieneEvaluaciones() {
+        // Arrange
+        repository.saveAndFlush(EvaluacionCualitativaJuradoJpaEntity.builder()
+                .id(UUID.randomUUID()).evaluacionJurado(UUID.randomUUID()).item(UUID.randomUUID())
+                .criterio(UUID.randomUUID()).build());
+        entityManager.clear();
+
+        // Act
+        var existe = repository.existsByItem(UUID.randomUUID());
+
+        // Assert
+        assertThat(existe).isFalse();
+    }
 }

@@ -67,4 +67,18 @@ class EvaluacionCualitativaJuradoCommandOutputAdapterTest {
         assertThat(resultado).containsExactly(itemRegistrado);
         verify(repository).findItemsRegistrados(evaluacionJurado, items);
     }
+
+    @Test
+    void debeDelegarEnRepositorio_cuandoConsultaExistenciaPorItem() {
+        // Arrange
+        var item = UUID.randomUUID();
+        when(repository.existsByItem(item)).thenReturn(true);
+
+        // Act
+        var resultado = adapter.existePorItem(item);
+
+        // Assert
+        assertThat(resultado).isTrue();
+        verify(repository).existsByItem(item);
+    }
 }

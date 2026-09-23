@@ -15,4 +15,6 @@ public interface EvaluacionCualitativaJuradoCommandRepository
             + "where e.evaluacionJurado = :evaluacionJurado and e.item in :items")
     Set<UUID> findItemsRegistrados(
             @Param("evaluacionJurado") UUID evaluacionJurado, @Param("items") Set<UUID> items);
+
+    boolean existsByItem(UUID item);
 }

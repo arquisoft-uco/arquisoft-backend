@@ -34,6 +34,14 @@ public final class EvaluacionesApiMessages {
         public static final String MODIFICAR_RESP_204 = "Descripción actualizada";
         public static final String MODIFICAR_RESP_400 = "Datos de entrada inválidos";
         public static final String MODIFICAR_RESP_422 = "El ítem cualitativo no existe";
+        public static final String REMOVER_SUMMARY = "Remover ítem cualitativo";
+        public static final String REMOVER_DESCRIPTION =
+                "Remueve un ítem cualitativo del jurado registrado por equivocación, "
+                        + "siempre que no se haya usado en ninguna evaluación";
+        public static final String REMOVER_RESP_204 = "Ítem cualitativo removido";
+        public static final String REMOVER_RESP_400 = "Identificador inválido";
+        public static final String REMOVER_RESP_422 =
+                "El ítem cualitativo no existe o ya fue usado en evaluaciones del jurado";
     }
 
     public static final class CriterioItemCualitativoJurado {
