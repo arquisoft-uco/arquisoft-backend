@@ -4,6 +4,7 @@ import com.arquisoft.evaluaciones.application.itemcuantitativojurado.command.sec
 import com.arquisoft.evaluaciones.infrastructure.itemcuantitativojurado.command.secondaryadapter.entity.ItemCuantitativoJuradoJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.ClaveMensaje;
+import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -118,5 +119,18 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
         // Assert
         verify(repository).actualizarDescripcion(id, "Nueva descripción");
         verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeEliminarPorIdYLoguear_cuandoEliminaItem() {
+        // Arrange
+        var id = UUID.randomUUID();
+
+        // Act
+        adapter.eliminar(id);
+
+        // Assert
+        verify(repository).deleteById(id);
+        verify(logger).debug(eq(ItemCuantitativoJuradoKey.LOG_ELIMINADO), eq(id));
     }
 }

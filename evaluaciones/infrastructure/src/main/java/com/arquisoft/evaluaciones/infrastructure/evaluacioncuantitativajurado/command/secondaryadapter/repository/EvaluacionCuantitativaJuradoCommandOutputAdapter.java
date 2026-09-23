@@ -28,4 +28,9 @@ public class EvaluacionCuantitativaJuradoCommandOutputAdapter implements Evaluac
         repository.actualizarPuntaje(id, nuevoPuntaje);
         logger.debug(EvaluacionCuantitativaJuradoKey.LOG_GUARDADO, id);
     }
+
+    @Override
+    public boolean existePorItem(UUID item) {
+        return repository.existsByItemId(item);
+    }
 }

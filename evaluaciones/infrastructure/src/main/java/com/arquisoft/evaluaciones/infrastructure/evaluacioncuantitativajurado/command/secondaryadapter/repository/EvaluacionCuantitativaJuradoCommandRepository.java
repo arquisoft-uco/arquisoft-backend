@@ -14,4 +14,6 @@ public interface EvaluacionCuantitativaJuradoCommandRepository
     @Modifying(clearAutomatically = true)
     @Query("UPDATE EvaluacionCuantitativaJuradoJpaEntity e SET e.puntaje = :puntaje WHERE e.id = :id")
     int actualizarPuntaje(@Param("id") UUID id, @Param("puntaje") Integer puntaje);
+
+    boolean existsByItemId(UUID itemId);
 }
