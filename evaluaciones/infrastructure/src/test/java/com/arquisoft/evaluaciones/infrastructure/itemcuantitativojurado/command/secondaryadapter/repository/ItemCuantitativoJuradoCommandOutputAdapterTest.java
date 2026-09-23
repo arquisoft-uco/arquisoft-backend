@@ -26,6 +26,9 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
     private ItemCuantitativoJuradoCommandRepository repository;
 
     @Mock
+    private CategoriaItemCuantitativoJuradoCommandRepository categoriaRepository;
+
+    @Mock
     private AppLogger logger;
 
     @InjectMocks
@@ -53,11 +56,11 @@ class ItemCuantitativoJuradoCommandOutputAdapterTest {
     void debeDelegarConsultaDeCategoria() {
         // Arrange
         UUID categoria = UUID.randomUUID();
-        when(repository.existsCategoriaById(categoria)).thenReturn(true);
+        when(categoriaRepository.existsById(categoria)).thenReturn(true);
 
         // Act & Assert
         assertThat(adapter.existeCategoriaPorId(categoria)).isTrue();
-        verify(repository).existsCategoriaById(categoria);
+        verify(categoriaRepository).existsById(categoria);
     }
 
     @Test

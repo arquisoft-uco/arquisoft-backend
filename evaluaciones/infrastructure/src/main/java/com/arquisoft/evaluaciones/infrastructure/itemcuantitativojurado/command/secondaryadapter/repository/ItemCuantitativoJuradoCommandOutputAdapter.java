@@ -16,6 +16,7 @@ public class ItemCuantitativoJuradoCommandOutputAdapter
         implements ItemCuantitativoJuradoOutputPort {
 
     private final ItemCuantitativoJuradoCommandRepository repository;
+    private final CategoriaItemCuantitativoJuradoCommandRepository categoriaRepository;
     private final AppLogger logger;
 
     @Override
@@ -26,7 +27,7 @@ public class ItemCuantitativoJuradoCommandOutputAdapter
 
     @Override
     public boolean existeCategoriaPorId(UUID categoriaId) {
-        return repository.existsCategoriaById(categoriaId);
+        return categoriaRepository.existsById(categoriaId);
     }
 
     @Override
