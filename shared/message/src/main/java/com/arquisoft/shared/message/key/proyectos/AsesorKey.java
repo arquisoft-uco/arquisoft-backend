@@ -10,7 +10,11 @@ public enum AsesorKey implements ClaveMensaje {
     LOG_DUPLICADO("proyectos.aplicacion.asesor.log.duplicado", 1),
     LOG_DESCARTADO("proyectos.aplicacion.asesor.log.descartado", 2),
     LOG_VERIFICACION_AGREGAR("proyectos.aplicacion.asesor.log.verificacion-agregar", 2),
-    LOG_GUARDADO("proyectos.infraestructura.asesor.log.guardado", 1);
+    LOG_GUARDADO("proyectos.infraestructura.asesor.log.guardado", 1),
+    LOG_ACTUALIZADO("proyectos.infraestructura.asesor.log.actualizado", 1),
+    LOG_VERIFICACION_ACTUALIZAR("proyectos.aplicacion.asesor.log.verificacion-actualizar", 2),
+    LOG_ACTUALIZACION_DESCARTADA("proyectos.infraestructura.asesor.log.actualizacion-descartada", 3),
+    LOG_ACTUALIZACION_NO_REPLICADO("proyectos.infraestructura.asesor.log.actualizacion-no-replicado", 1);
 
     private final String clave;
     private final int parametros;

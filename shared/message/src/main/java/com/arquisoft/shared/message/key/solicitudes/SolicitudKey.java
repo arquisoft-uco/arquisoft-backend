@@ -34,7 +34,15 @@ public enum SolicitudKey implements ClaveMensaje {
     ERROR_SOLICITUD_TIPO_NO_COINCIDE_ASESOR(
             "solicitudes.dominio.solicitud.error.tipo-no-coincide-asesor", 1),
     LOG_ELIMINANDO_ASESOR("solicitudes.aplicacion.solicitud.log.eliminando-asesor", 2),
-    LOG_ELIMINADA_ASESOR("solicitudes.aplicacion.solicitud.log.eliminada-asesor", 1);
+    LOG_ELIMINADA_ASESOR("solicitudes.aplicacion.solicitud.log.eliminada-asesor", 1),
+    LOG_CONSULTANDO_NOVEDAD_COORDINADOR_RECIBIDAS(
+            "solicitudes.aplicacion.solicitud.log.consultando-novedad-coordinador-recibidas", 4),
+    LOG_CONSULTA_NOVEDAD_COORDINADOR_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.solicitud.log.consulta-novedad-coordinador-recibidas-completada", 3),
+    LOG_CONSULTANDO_NOVEDAD_COORDINADOR_ENVIADAS(
+            "solicitudes.aplicacion.solicitud.log.consultando-novedad-coordinador-enviadas", 4),
+    LOG_CONSULTA_NOVEDAD_COORDINADOR_ENVIADAS_COMPLETADA(
+            "solicitudes.aplicacion.solicitud.log.consulta-novedad-coordinador-enviadas-completada", 3);
 
     private final String clave;
     private final int parametros;

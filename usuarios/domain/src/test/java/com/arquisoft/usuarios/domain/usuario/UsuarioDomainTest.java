@@ -55,4 +55,74 @@ class UsuarioDomainTest {
         assertThat(UsuarioDomain.VACIO.esVacio()).isTrue();
         assertThat(UsuarioDomain.VACIO.getEstado()).isEqualTo(EstadoUsuario.VACIO);
     }
+
+    @Test
+    void debeAsignarSoloLosCamposNoNulos_cuandoSeModificaConDatosParciales() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var usuario = UsuarioDomain.reconstruir(
+                id, "usr003", "Nombre Original", "original@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO);
+        var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
+                null, "Nombre Nuevo", null, null, null, null);
+        var modificacion = ModificacionUsuarioDomain.crear(id, datos, List.of());
+
+        // Act
+        usuario.modificar(modificacion);
+
+        // Assert
+        assertThat(usuario.getNombre()).isEqualTo("Nombre Nuevo");
+        assertThat(usuario.getIdentificador()).isEqualTo("usr003");
+        assertThat(usuario.getEmail()).isEqualTo("original@uco.edu.co");
+        assertThat(usuario.getContacto()).isEqualTo("573001112233");
+        assertThat(usuario.getId()).isEqualTo(id);
+        assertThat(usuario.getEstado()).isEqualTo(EstadoUsuario.ACTIVO);
+    }
+
+    @Test
+    void debeConservarEstadoEId_cuandoSeModificanTodosLosCamposPersonales() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var usuario = UsuarioDomain.reconstruir(
+                id, "usr004", "Nombre Original", "original@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO);
+        var datos = new ModificacionUsuarioDomain.DatosModificacionUsuario(
+                "usr005", "Nombre Actualizado", "actualizado@uco.edu.co", "573009998877", null, null);
+        var modificacion = ModificacionUsuarioDomain.crear(id, datos, List.of());
+
+        // Act
+        usuario.modificar(modificacion);
+
+        // Assert
+        assertThat(usuario.getIdentificador()).isEqualTo("usr005");
+        assertThat(usuario.getNombre()).isEqualTo("Nombre Actualizado");
+        assertThat(usuario.getEmail()).isEqualTo("actualizado@uco.edu.co");
+        assertThat(usuario.getContacto()).isEqualTo("573009998877");
+        assertThat(usuario.getId()).isEqualTo(id);
+        assertThat(usuario.getEstado()).isEqualTo(EstadoUsuario.ACTIVO);
+    }
+
+    @Test
+    void debeIndicarActivo_cuandoEstadoEsActivo() {
+        // Arrange
+        var usuario = UsuarioDomain.reconstruir(UUID.randomUUID(), "usr006", "Nombre",
+                "correo@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO);
+
+        // Act
+        var activo = usuario.estaActivo();
+
+        // Assert
+        assertThat(activo).isTrue();
+    }
+
+    @Test
+    void debeIndicarInactivo_cuandoEstadoEsInactivo() {
+        // Arrange
+        var usuario = UsuarioDomain.reconstruir(UUID.randomUUID(), "usr007", "Nombre",
+                "correo@uco.edu.co", "573001112233", EstadoUsuario.INACTIVO);
+
+        // Act
+        var activo = usuario.estaActivo();
+
+        // Assert
+        assertThat(activo).isFalse();
+    }
 }

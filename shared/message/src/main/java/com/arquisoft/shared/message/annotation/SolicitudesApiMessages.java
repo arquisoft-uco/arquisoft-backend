@@ -94,5 +94,31 @@ public final class SolicitudesApiMessages {
                 "Sin permisos para eliminar solicitudes de novedad para el asesor";
         public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_422 =
                 "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
+
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_SUMMARY =
+                "Consultar solicitudes de novedad para el coordinador recibidas";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_DESCRIPTION =
+                "Permite a un coordinador consultar de forma paginada y filtrable las solicitudes de "
+                        + "novedad para el coordinador que ha recibido. El alcance se limita a las "
+                        + "solicitudes dirigidas al coordinador autenticado.";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_RESP_200 =
+                "Página de solicitudes de novedad para el coordinador recibidas";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de novedad para el coordinador recibidas";
+
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_SUMMARY =
+                "Consultar solicitudes de novedad para el coordinador enviadas";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_DESCRIPTION =
+                "Permite a un estudiante consultar de forma paginada y filtrable las solicitudes de "
+                        + "novedad para el coordinador que ha enviado. El alcance se limita a las "
+                        + "solicitudes cuyo remitente es el estudiante autenticado.";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_200 =
+                "Página de solicitudes de novedad para el coordinador enviadas";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de novedad para el coordinador enviadas";
     }
 }

@@ -55,4 +55,18 @@ public class FichasUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String USUARIO_MODIFICADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.USUARIO_MODIFICADO;
+
+    @Bean
+    public Declarables fichasUsuarioModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                USUARIO_MODIFICADO_QUEUE,
+                EventTopics.Usuarios.USUARIO_MODIFICADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

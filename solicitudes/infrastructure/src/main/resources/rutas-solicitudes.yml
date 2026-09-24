@@ -9,6 +9,8 @@ rutas:
       base: /solicitudes
       novedad-coordinador: /novedad-coordinador
       novedad-coordinador-por-id: /novedad-coordinador/{solicitudId}
+      novedad-coordinador-recibidas: /novedad-coordinador/recibidas
+      novedad-coordinador-enviadas: /novedad-coordinador/enviadas
       novedad-asesor: /novedad-asesor
       novedad-asesor-por-id: /novedad-asesor/{solicitudId}
       cambio-asesor: /cambio-asesor

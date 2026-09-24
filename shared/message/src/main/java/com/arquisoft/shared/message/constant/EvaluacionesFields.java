@@ -29,4 +29,14 @@ public final class EvaluacionesFields {
         public static final String ITEM = "item";
         public static final String CRITERIO = "criterio";
     }
+
+    public static final class ItemCuantitativoJurado {
+
+        private ItemCuantitativoJurado() {}
+
+        public static final String NOMBRE = "nombre";
+        public static final String DESCRIPCION = "descripcion";
+        public static final String CATEGORIA = "categoria";
+        public static final String VALOR = "valor";
+    }
 }

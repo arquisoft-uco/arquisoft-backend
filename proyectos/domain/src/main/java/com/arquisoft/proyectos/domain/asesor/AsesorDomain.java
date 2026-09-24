@@ -50,6 +50,17 @@ public final class AsesorDomain {
         return asesor;
     }
 
+    public void actualizar(String identificador, String nombre, String email, Instant ocurridoEn) {
+        var result = new ValidationResult();
+
+        setIdentificador(identificador, result);
+        setNombre(nombre, result);
+        setEmail(email, result);
+        setOcurridoEn(ocurridoEn, result);
+
+        result.lanzarSiTieneErrores();
+    }
+
     private void setId(UUID id, ValidationResult result) {
         if (!ValidatorObjeto.noNulo(id,
                 ProyectosFields.Asesor.ID,
