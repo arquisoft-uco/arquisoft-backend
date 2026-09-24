@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.proyectos.CoordinadorKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +23,19 @@ public class CoordinadorCommandOutputAdapter implements CoordinadorOutputPort {
     public void guardar(CoordinadorEntity coordinador) {
         coordinadorCommandRepository.save(CoordinadorJpaMapper.toJpaEntity(coordinador));
         logger.debug(CoordinadorKey.LOG_GUARDADO, coordinador.id());
+    }
+
+    @Override
+    public void eliminarLogica(UUID id, Instant ocurridoEn) {
+        coordinadorCommandRepository.eliminarLogica(id, ocurridoEn);
+        logger.debug(CoordinadorKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Override
+    public void reactivar(CoordinadorEntity coordinador) {
+        coordinadorCommandRepository.reactivar(coordinador.id(), coordinador.identificador(), coordinador.nombre(),
+                coordinador.email(), coordinador.ocurridoEn());
+        logger.debug(CoordinadorKey.LOG_ACTUALIZADO, coordinador.id());
     }
 
     @Override

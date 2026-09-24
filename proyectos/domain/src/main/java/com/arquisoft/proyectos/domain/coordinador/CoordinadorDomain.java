@@ -2,6 +2,8 @@ package com.arquisoft.proyectos.domain.coordinador;
 
 import com.arquisoft.shared.message.constant.ProyectosCodes;
 import com.arquisoft.shared.message.constant.ProyectosFields;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -14,13 +16,15 @@ import java.util.UUID;
 public final class CoordinadorDomain {
 
     public static final CoordinadorDomain VACIO = CoordinadorDomain.reconstruir(
-            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, Instant.EPOCH);
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO,
+            Instant.EPOCH, UtilFecha.VACIO);
 
     private UUID id;
     private String identificador;
     private String nombre;
     private String email;
     private Instant ocurridoEn;
+    private Instant eliminadoEn;
 
     private CoordinadorDomain() {}
 
@@ -34,20 +38,39 @@ public final class CoordinadorDomain {
         coordinador.setNombre(nombre, result);
         coordinador.setEmail(email, result);
         coordinador.setOcurridoEn(ocurridoEn, result);
+        coordinador.eliminadoEn = UtilFecha.VACIO;
 
         result.lanzarSiTieneErrores();
         return coordinador;
     }
 
     public static CoordinadorDomain reconstruir(UUID id, String identificador, String nombre, String email,
-                                                 Instant ocurridoEn) {
+                                                 Instant ocurridoEn, Instant eliminadoEn) {
         var coordinador = new CoordinadorDomain();
         coordinador.id = id;
         coordinador.identificador = identificador;
         coordinador.nombre = nombre;
         coordinador.email = email;
         coordinador.ocurridoEn = ocurridoEn;
+        coordinador.eliminadoEn = UtilObjeto.aplicarPorDefecto(eliminadoEn, UtilFecha.VACIO);
         return coordinador;
+    }
+
+    public void remover(Instant ocurridoEn) {
+        this.eliminadoEn = ocurridoEn;
+        this.ocurridoEn = ocurridoEn;
+    }
+
+    public void reactivar(String identificador, String nombre, String email, Instant ocurridoEn) {
+        var result = new ValidationResult();
+
+        setIdentificador(identificador, result);
+        setNombre(nombre, result);
+        setEmail(email, result);
+        setOcurridoEn(ocurridoEn, result);
+
+        result.lanzarSiTieneErrores();
+        this.eliminadoEn = UtilFecha.VACIO;
     }
 
     public void actualizar(String identificador, String nombre, String email, Instant ocurridoEn) {
@@ -59,6 +82,10 @@ public final class CoordinadorDomain {
         setOcurridoEn(ocurridoEn, result);
 
         result.lanzarSiTieneErrores();
+    }
+
+    public boolean estaEliminado() {
+        return !UtilFecha.VACIO.equals(eliminadoEn);
     }
 
     private void setId(UUID id, ValidationResult result) {
@@ -124,6 +151,10 @@ public final class CoordinadorDomain {
 
     public Instant getOcurridoEn() {
         return ocurridoEn;
+    }
+
+    public Instant getEliminadoEn() {
+        return eliminadoEn;
     }
 
     public boolean esVacio() {

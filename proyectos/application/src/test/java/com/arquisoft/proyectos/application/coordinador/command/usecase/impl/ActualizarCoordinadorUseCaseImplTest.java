@@ -3,10 +3,12 @@ package com.arquisoft.proyectos.application.coordinador.command.usecase.impl;
 import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
 import com.arquisoft.proyectos.application.coordinador.command.result.ActualizacionCoordinadorResult;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.CoordinadorOutputPort;
+import com.arquisoft.proyectos.application.coordinador.command.secondaryport.entity.CoordinadorEntity;
 import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -84,5 +86,27 @@ class ActualizarCoordinadorUseCaseImplTest {
         // Assert
         assertThat(resultado).isInstanceOf(ActualizacionCoordinadorResult.NoReplicado.class);
         verify(coordinadorOutputPort, never()).actualizar(any());
+    }
+
+    @Test
+    void debeConservarLaBaja_cuandoSeActualizaUnCoordinadorEliminado() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var eliminadoEn = Instant.parse("2026-09-01T10:00:00Z");
+        var vigente = CoordinadorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co",
+                eliminadoEn, eliminadoEn);
+        var entrada = CoordinadorDomain.crear(id, "20161020999", "Ana Actualizada",
+                "actualizada@uco.edu.co", Instant.parse("2026-09-16T10:00:00Z"));
+        when(coordinadorPorIdFinder.obtener(id)).thenReturn(vigente);
+
+        // Act
+        var resultado = useCase.ejecutar(entrada);
+
+        // Assert
+        assertThat(resultado).isInstanceOf(ActualizacionCoordinadorResult.Actualizada.class);
+        var captor = ArgumentCaptor.forClass(CoordinadorEntity.class);
+        verify(coordinadorOutputPort, times(1)).actualizar(captor.capture());
+        assertThat(captor.getValue().nombre()).isEqualTo("Ana Actualizada");
+        assertThat(captor.getValue().eliminadoEn()).isEqualTo(eliminadoEn);
     }
 }
