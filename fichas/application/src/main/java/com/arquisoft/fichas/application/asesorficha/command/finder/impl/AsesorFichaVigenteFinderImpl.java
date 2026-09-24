@@ -1,6 +1,6 @@
 package com.arquisoft.fichas.application.asesorficha.command.finder.impl;
 
-import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaFinder;
+import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaVigenteFinder;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.mapper.AsesorFichaMapper;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
@@ -11,13 +11,13 @@ import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
-public class AsesorFichaFinderImpl implements AsesorFichaFinder {
+public class AsesorFichaVigenteFinderImpl implements AsesorFichaVigenteFinder {
 
     private final AsesorFichaOutputPort asesorFichaOutputPort;
 
     @Override
     public AsesorFichaDomain obtener(UUID asesorFicha) {
-        return asesorFichaOutputPort.buscarContactoPorId(asesorFicha)
+        return asesorFichaOutputPort.obtenerVigentePorId(asesorFicha)
                 .map(AsesorFichaMapper::toDomain)
                 .orElse(AsesorFichaDomain.VACIO);
     }

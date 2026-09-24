@@ -17,20 +17,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class AsesorFichaFinderImplTest {
+class AsesorFichaVigenteFinderImplTest {
 
     @Mock
     private AsesorFichaOutputPort asesorFichaOutputPort;
 
     @InjectMocks
-    private AsesorFichaFinderImpl finder;
+    private AsesorFichaVigenteFinderImpl finder;
 
     @Test
     void debeConvertirLaEntidadADominio_cuandoExiste() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
-        var entity = new AsesorFichaEntity(asesorId, "A001", "Ana Asesora", "ana@arquisoft.com", Instant.now());
-        when(asesorFichaOutputPort.buscarContactoPorId(asesorId)).thenReturn(Optional.of(entity));
+        var entity = new AsesorFichaEntity(asesorId, "A001", "Ana Asesora", "ana@arquisoft.com", Instant.now(), java.time.Instant.EPOCH);
+        when(asesorFichaOutputPort.obtenerVigentePorId(asesorId)).thenReturn(Optional.of(entity));
 
         // Act
         var resultado = finder.obtener(asesorId);
@@ -47,7 +47,7 @@ class AsesorFichaFinderImplTest {
     void debeRetornarVacio_cuandoNoExiste() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
-        when(asesorFichaOutputPort.buscarContactoPorId(asesorId)).thenReturn(Optional.empty());
+        when(asesorFichaOutputPort.obtenerVigentePorId(asesorId)).thenReturn(Optional.empty());
 
         // Act
         var resultado = finder.obtener(asesorId);

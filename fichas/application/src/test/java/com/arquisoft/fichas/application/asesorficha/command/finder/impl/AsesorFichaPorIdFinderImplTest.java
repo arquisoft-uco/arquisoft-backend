@@ -28,7 +28,7 @@ class AsesorFichaPorIdFinderImplTest {
     void debeDelegarEnElOutputPort_enAsesorFichaPorIdFinder() {
         // Arrange
         var id = UUID.randomUUID();
-        var entity = new AsesorFichaEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+        var entity = new AsesorFichaEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), java.time.Instant.EPOCH);
         when(asesorFichaOutputPort.obtenerPorId(id)).thenReturn(Optional.of(entity));
 
         // Act
