@@ -176,6 +176,13 @@ eso rompe el arranque. Sin prefijo de base ni de schema, y sin FK hacia la base 
   Data, `save` y no `saveAndFlush`, `boolean` primitivo en existencia, `logger.debug` solo en los
   métodos de escritura. (Sí es legítima una `InfrastructureException` **propia** de
   `infrastructure/{feature}/exception/` para lo que solo el adaptador diagnostica.)
+- Cada tabla que el comando lee o escribe tiene su `JpaEntity` + `CommandRepository` de comando,
+  aunque solo alimente una `Rule`. El adaptador nunca inyecta `EntityManager` ni arma SQL nativo, y
+  un repositorio no devuelve datos de otra tabla. El porqué y dónde va el SQL propio están en
+  `arquisoft-arquitectura` → *El `CommandOutputAdapter` es pura delegación*.
+- Si la consulta toca una réplica de usuario con columna `eliminado_en`, aplica la vigencia que
+  declara el plan: vigentes para crear un vínculo o para leer, sin filtro para operar sobre un
+  vínculo existente. Detalle en `arquisoft-arquitectura` → *Aislamiento de persistencia*.
 - El `QueryOutputAdapter` es pura delegación:
   `PageableMapper.toPageable(criteria, {Entidad}SortMapper::traducir)` +
   `PaginationMapper.toResult(page)` (`shared:jpa/util/`). No construyas `PageRequest`/`Sort` a mano

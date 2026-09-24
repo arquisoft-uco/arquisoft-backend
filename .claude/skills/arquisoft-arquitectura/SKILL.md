@@ -519,6 +519,7 @@ Su único trabajo es `Entity ↔ JpaEntity` y delegar en el repositorio.
 | `catch (DataIntegrityViolationException)` → `throw {X}DuplicadoException(...)` | Esa excepción vive en `domain/{feature}/exception/` e **infrastructure no ve el dominio en absoluto** — es la razón de que los puertos hablen `Entity` y no `Domain`. Además duplica la regla: la unicidad ya la declara `{X}UnicoRule` alimentada por su `Finder` sobre `existePor...`, en el paso 2 del orden de validación. La garantía real de integridad es el `UNIQUE` de la migración Flyway, no el `catch` |
 | `catch (DataAccessException)` → `errorPersistencia(...)` envolviendo en `InfrastructureException` | Sobra. `GlobalAppExceptionHandler` no mapea Spring Data, así que cae en su catch-all → 500 con log de error, que es exactamente el resultado correcto para "BD caída" o "bug de mapeo". El `try/catch` añade ruido por método y esconde la causa raíz tras un mensaje genérico |
 | `saveAndFlush(...)` en el adaptador | `flush` no cierra la transacción (el commit sigue siendo del interactor), pero al saltar una violación de constraint deja la transacción en *rollback-only* y el `EntityManager` en estado indefinido: capturar ahí y continuar produce un `UnexpectedRollbackException` en el commit, lejos del origen. Solo existía para adelantar el error al `catch`; eliminado el `catch`, pierde su razón de ser. Usa `save`. (En el *arrange* de un `@DataJpaTest` sí es legítimo, para forzar el insert) |
+| `EntityManager` en el adaptador (`@PersistenceContext`, `createNativeQuery`, `Object[]` con `@SuppressWarnings("unchecked")`), o un repositorio cuyo `@Query` devuelve columnas de otra tabla | Cada tabla que el lado comando toca, **aunque solo la lea para una `Rule`**, tiene su propio `{Entidad}JpaEntity` de comando y su `{Entidad}CommandRepository` en su feature, y el adaptador delega en él. El aislamiento CQRS prohíbe *importar* el `JpaQueryEntity`, no tener un `JpaEntity` de comando sobre la misma tabla: son dos mapeos independientes. Con `EntityManager`, el SQL queda en un string que nadie valida al arrancar y el resultado se mapea por posición de columna, así que un cambio en el `SELECT` compila y rompe en silencio. El SQL propio (un `JOIN ... FOR UPDATE`, un `UPDATE` puntual) va como `@Query`/`@NativeQuery` en el `CommandRepository` con proyección tipada; un `JOIN` para filtrar es legítimo, lo que se devuelve es de la tabla del repositorio. Referencia: `EstudianteCommandRepository` (`findIdsVigentesByIdIn` y su `UPDATE` con `@Modifying`) |
 | `Boolean existePorX(...)` | El repo es uniforme en `boolean` primitivo, puerto y adaptador (`existePorId`, `existePorTituloProyecto`, `existeTituloEnOtraFicha`). El envuelto introduce un `null` posible que nadie comprueba y un unboxing silencioso dentro de la `Rule`. Esto aplica al **puerto**, no al `Finder`: `Finder<T, Boolean>` lleva el envuelto por obligación del genérico y es correcto |
 | Método de escritura sin log | Los de escritura registran `logger.debug({Feature}Key.LOG_GUARDADA, id)` con el `AppLogger` inyectado por constructor. Los de lectura **no** logean. Es un eslabón de la estructura de logs del flujo de escritura — la estructura completa (las tres líneas del use case, el interactor que no logea, el caso anidado) está en `arquisoft-estandares` |
 
@@ -633,6 +634,27 @@ Consecuencias que se notan al escribir código:
   necesita se modela como tabla réplica local poblada por eventos AMQP (`asesor_ficha`, `estudiante`
   en `fichas`); un chequeo puntual de escritura que solo pregunta "¿esto es así ahora?" puede ser una
   *Consulta síncrona entre contextos* (ver `references/consultas-sincronas.md`) — nunca una tabla compartida, nunca un import.
+- **Una réplica de usuario con `eliminado_en` se lee declarando la vigencia.** Las bajas no se
+  borran: `eliminado_en` no nulo marca al usuario dado de baja (`estudiante` en `fichas`,
+  `estudiante`/`asesor` en `proyectos`). Toda consulta a esa tabla elige a propósito, según la
+  intención:
+  - **Crear un vínculo nuevo** (asignar, agregar, designar) → solo vigentes, con un
+    `{Entidad}sVigentesFinder` sobre un método de repositorio con `eliminadoEn IS NULL`
+    (`EstudiantesVigentesFinder` → `EstudianteCommandRepository.findIdsVigentesByIdIn`).
+  - **Operar sobre lo ya vinculado** (remover, modificar el vínculo) → sin filtro, para que un usuario
+    dado de baja se pueda desvincular (`EstudiantesExistentesFinder` en
+    `RemoverEstudianteFichaPerfilUseCaseImpl`).
+  - **Lectura** (`JpaQueryEntity` cuyo `@Subselect` hace `JOIN` a la réplica) → solo vigentes por
+    defecto. La excepción es la vista de **quien administra el vínculo** (el coordinador que puede
+    desvincular): ahí se incluyen las bajas, marcadas con un `boolean vigente` en el `ReadModel` y el
+    `ResponseDTO`, porque la baja no borra el vínculo y ocultarlo lo dejaría huérfano. Referencia:
+    `EstudianteFichaPerfilJpaQueryEntity` expone `(e.eliminado_en IS NULL) AS vigente`; el coordinador
+    lee con `consultarPorFicha` y el estudiante con `consultarVigentesPorFicha` /
+    `findCompanerosByFichaPerfilIdAndEstudianteId`. El historial pedido por la HU también incluye
+    bajas, y el plan lo declara.
+
+  Un `existsById` o un `JOIN` sin filtro compila y pasa los tests sembrados con datos frescos, y en
+  producción deja asignar o listar a alguien dado de baja sin que nada falle.
 - `@Table` no lleva `schema` ni catálogo, y el SQL no prefija nombres de base: la conexión ya apunta
   a la base correcta.
 

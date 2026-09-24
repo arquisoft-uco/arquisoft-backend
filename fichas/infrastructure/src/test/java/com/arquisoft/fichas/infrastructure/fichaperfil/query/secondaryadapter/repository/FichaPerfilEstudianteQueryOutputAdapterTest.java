@@ -38,7 +38,7 @@ class FichaPerfilEstudianteQueryOutputAdapterTest {
         var estudianteId = UUID.randomUUID();
         var criteria = new FichaPerfilEstudianteCriteria(fichaId, estudianteId);
         var vinculacion = new EstudianteFichaPerfilReadModel(
-                UUID.randomUUID(), fichaId, estudianteId, "Estudiante Uno", "e1@uco.edu.co");
+                UUID.randomUUID(), fichaId, estudianteId, "Estudiante Uno", "e1@uco.edu.co", true);
         var cabecera = FichaPerfilEstudianteJpaQueryEntity.builder()
                 .id(fichaId)
                 .tituloProyecto("Titulo")
@@ -49,7 +49,7 @@ class FichaPerfilEstudianteQueryOutputAdapterTest {
                 .estadoId("FORMULACION")
                 .estadoNombre("Formulacion")
                 .build();
-        when(estudianteFichaPerfilQueryOutputPort.consultarPorFicha(fichaId)).thenReturn(List.of(vinculacion));
+        when(estudianteFichaPerfilQueryOutputPort.consultarVigentesPorFicha(fichaId)).thenReturn(List.of(vinculacion));
         when(fichaPerfilEstudianteQueryRepository.findById(fichaId)).thenReturn(Optional.of(cabecera));
 
         // Act
@@ -70,8 +70,8 @@ class FichaPerfilEstudianteQueryOutputAdapterTest {
         var estudianteId = UUID.randomUUID();
         var criteria = new FichaPerfilEstudianteCriteria(fichaId, estudianteId);
         var otroEstudiante = new EstudianteFichaPerfilReadModel(
-                UUID.randomUUID(), fichaId, UUID.randomUUID(), "Otro", "otro@uco.edu.co");
-        when(estudianteFichaPerfilQueryOutputPort.consultarPorFicha(fichaId)).thenReturn(List.of(otroEstudiante));
+                UUID.randomUUID(), fichaId, UUID.randomUUID(), "Otro", "otro@uco.edu.co", true);
+        when(estudianteFichaPerfilQueryOutputPort.consultarVigentesPorFicha(fichaId)).thenReturn(List.of(otroEstudiante));
 
         // Act
         var resultado = adapter.consultar(criteria);
@@ -88,8 +88,8 @@ class FichaPerfilEstudianteQueryOutputAdapterTest {
         var estudianteId = UUID.randomUUID();
         var criteria = new FichaPerfilEstudianteCriteria(fichaId, estudianteId);
         var vinculacion = new EstudianteFichaPerfilReadModel(
-                UUID.randomUUID(), fichaId, estudianteId, "Estudiante Uno", "e1@uco.edu.co");
-        when(estudianteFichaPerfilQueryOutputPort.consultarPorFicha(fichaId)).thenReturn(List.of(vinculacion));
+                UUID.randomUUID(), fichaId, estudianteId, "Estudiante Uno", "e1@uco.edu.co", true);
+        when(estudianteFichaPerfilQueryOutputPort.consultarVigentesPorFicha(fichaId)).thenReturn(List.of(vinculacion));
         when(fichaPerfilEstudianteQueryRepository.findById(fichaId)).thenReturn(Optional.empty());
 
         // Act
@@ -106,9 +106,9 @@ class FichaPerfilEstudianteQueryOutputAdapterTest {
         var estudianteId = UUID.randomUUID();
         var criteria = new FichaPerfilEstudianteCriteria(fichaId, estudianteId);
         var solicitante = new EstudianteFichaPerfilReadModel(
-                UUID.randomUUID(), fichaId, estudianteId, "Solicitante", "sol@uco.edu.co");
+                UUID.randomUUID(), fichaId, estudianteId, "Solicitante", "sol@uco.edu.co", true);
         var companero = new EstudianteFichaPerfilReadModel(
-                UUID.randomUUID(), fichaId, UUID.randomUUID(), "Companero", "comp@uco.edu.co");
+                UUID.randomUUID(), fichaId, UUID.randomUUID(), "Companero", "comp@uco.edu.co", true);
         var cabecera = FichaPerfilEstudianteJpaQueryEntity.builder()
                 .id(fichaId)
                 .tituloProyecto("Titulo")
@@ -119,7 +119,7 @@ class FichaPerfilEstudianteQueryOutputAdapterTest {
                 .estadoId("FORMULACION")
                 .estadoNombre("Formulacion")
                 .build();
-        when(estudianteFichaPerfilQueryOutputPort.consultarPorFicha(fichaId))
+        when(estudianteFichaPerfilQueryOutputPort.consultarVigentesPorFicha(fichaId))
                 .thenReturn(List.of(solicitante, companero));
         when(fichaPerfilEstudianteQueryRepository.findById(fichaId)).thenReturn(Optional.of(cabecera));
 

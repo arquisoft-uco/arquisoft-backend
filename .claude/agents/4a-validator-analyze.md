@@ -85,6 +85,8 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | `CommandOutputAdapter` que lanza una `DomainException` — típicamente `catch (DataIntegrityViolationException)` → `throw {X}DuplicadoException(...)`. Infrastructure no ve `domain/` (por eso los puertos hablan `Entity`), y la unicidad ya la cubre `{X}UnicoRule` + `Finder` + el `UNIQUE` de la migración | ❌ |
 | `catch (DataAccessException)` o helper `errorPersistencia(...)` envolviendo Spring Data en `InfrastructureException`. El catch-all de `GlobalAppExceptionHandler` ya da el 500 correcto; envolver esconde la causa raíz. Distinto y **permitido**: una `InfrastructureException` propia de `infrastructure/{feature}/exception/` para lo que solo el adaptador diagnostica (proveedor externo caído, objeto ausente en MinIO) | ❌ |
 | `saveAndFlush(...)` en un `CommandOutputAdapter` (en el *arrange* de un `@DataJpaTest` sí es legítimo). Sin `catch` no aporta nada, y ante una violación de constraint deja la transacción en rollback-only → `UnexpectedRollbackException` en el commit, lejos del origen | ❌ |
+| `CommandOutputAdapter` con `EntityManager` (`@PersistenceContext`, `createNativeQuery`, `Object[]`, `@SuppressWarnings("unchecked")`), o repositorio de comando cuyo `@Query` devuelve columnas de otra tabla. Cada tabla que toca el comando, aunque solo la lea, lleva su `JpaEntity` + `CommandRepository`, y el SQL propio va como `@Query`/`@NativeQuery` en ese repositorio. Si un comentario lo justifica por "aislamiento CQRS", es incorrecto: CQRS prohíbe importar el `JpaQueryEntity`, no tener un `JpaEntity` de comando | ❌ |
+| Consulta sobre una réplica de usuario con `eliminado_en` que no declara la vigencia: un comando que **crea un vínculo** verificando con `existsById`/`existePorId` en vez de un `{Entidad}sVigentesFinder`, o una lectura que devuelve bajas sin filtrarlas ni marcarlas. Son correctos: quitar un vínculo existente sin filtro, la vista de quien administra el vínculo con las bajas marcadas con `vigente`, y el historial que el plan declara. Fuente: `arquisoft-arquitectura` → *Aislamiento de persistencia* | ❌ |
 | `Boolean` envuelto en un método de existencia del `OutputPort` o del `OutputAdapter` — el repo usa `boolean` primitivo; el envuelto mete un `null` sin comprobar y un unboxing silencioso en la `Rule`. No confundir con `Finder<T, Boolean>`: ahí el envuelto es obligado (un genérico no admite primitivos) y es correcto — lo que se declara `boolean` es el local del `UseCase` | ❌ |
 | Método de **escritura** del `CommandOutputAdapter` sin `logger.debug({Feature}Key.LOG_GUARDADA, id)`, o método de **lectura** que sí logea | ⚠️ |
 | `implementation project(':{contexto}:domain')` en el `build.gradle` de infrastructure. La dirección la impone el grafo de módulos; el dominio solo va en `testImplementation`. Añadirlo reabre la barrera y `verificarCapasHexagonales` falla | ❌ |
@@ -128,7 +130,11 @@ archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio fil
 
 **Siempre:** `reconstruir(...)` nunca publica eventos · el `CommandOutputAdapter` usa
 `reconstruir(...)` · el dominio no inyecta `EventPublisher` · no existe un `{Entidad}EventPublisher`
-local.
+local · cada evento publicado tiene consumidor: su constante de `EventTopics` aparece en algún
+`ColaEvento.declarar(...)` del repo. Si no aparece, es ❌ aunque el plan declare el evento o no haya
+plan: un evento sin cola enlazada se descarta en el exchange y deja un contrato público sin dueño.
+Repórtalo como decisión abierta (implementar el consumidor o retirar el evento), citando
+`arquisoft-arquitectura/references/eventos.md`.
 
 **Si el plan declara eventos** (❌ cada incumplimiento): el `UseCase` inyecta la **interfaz**
 `EventPublisher` —inyectar `SpringModulithEventPublisher` o `RabbitMQEventPublisher` es ❌— y publica
@@ -140,8 +146,7 @@ expone un método de drenaje, es ❌ (ese tipo base no existe y no compila). Los
 
 **Si el plan dice "Eventos: ninguno", el exceso también es ❌ bloqueante**, no una mejora: cualquier
 archivo bajo `event/`, cualquier `EventPublisher` inyectado, cualquier clave nueva para un evento.
-El plan declaró esa ausencia y publicar un evento que nadie consume crea un contrato que otro
-contexto puede empezar a consumir. Repórtalo citando la sección 4.
+El plan declaró esa ausencia. Repórtalo citando la sección 4.
 
 **Si el plan declara evento hacia `notificaciones`**, el evento solo cuenta como implementado si
 existe el camino completo: faltando cualquiera de las **ocho piezas** el correo nunca sale y el fallo
