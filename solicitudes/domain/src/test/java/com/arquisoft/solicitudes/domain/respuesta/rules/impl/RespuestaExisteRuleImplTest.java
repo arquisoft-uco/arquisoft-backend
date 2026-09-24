@@ -15,14 +15,21 @@ class RespuestaExisteRuleImplTest {
 
     @Test
     void debePasar_cuandoLaRespuestaExiste() {
-        assertThatCode(() -> rule.validar(new ExistenciaRespuesta(UUID.randomUUID(), true)))
-                .doesNotThrowAnyException();
+        // Arrange
+        var existencia = new ExistenciaRespuesta(UUID.randomUUID(), true);
+
+        // Act & Assert
+        assertThatCode(() -> rule.validar(existencia)).doesNotThrowAnyException();
     }
 
     @Test
     void debeLanzar_cuandoLaRespuestaNoExiste() {
-        UUID solicitud = UUID.randomUUID();
-        assertThatThrownBy(() -> rule.validar(new ExistenciaRespuesta(solicitud, false)))
+        // Arrange
+        var solicitud = UUID.randomUUID();
+        var existencia = new ExistenciaRespuesta(solicitud, false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(existencia))
                 .isInstanceOf(RespuestaNoEncontradaException.class)
                 .hasMessageContaining(solicitud.toString());
     }

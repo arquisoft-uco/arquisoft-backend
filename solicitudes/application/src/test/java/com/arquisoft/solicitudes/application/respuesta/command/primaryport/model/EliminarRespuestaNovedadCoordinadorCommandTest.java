@@ -14,13 +14,12 @@ class EliminarRespuestaNovedadCoordinadorCommandTest {
     @Test
     void debeCrearElComando_cuandoLosDatosSonValidos() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         // Act
-        EliminarRespuestaNovedadCoordinadorCommand command =
-                EliminarRespuestaNovedadCoordinadorCommand.crear(
-                        solicitud.toString(), coordinador);
+        var command = EliminarRespuestaNovedadCoordinadorCommand.crear(
+                solicitud.toString(), coordinador);
 
         // Assert
         assertThat(command.solicitud()).isEqualTo(solicitud);
@@ -28,37 +27,26 @@ class EliminarRespuestaNovedadCoordinadorCommandTest {
     }
 
     @Test
-    void debeLanzarErrorDeEntrada_cuandoLaSolicitudEstaEnBlanco() {
+    void debeAcumularLosErroresDeEntrada_cuandoAmbosIdentificadoresSonInvalidos() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
-                () -> EliminarRespuestaNovedadCoordinadorCommand.crear("  ", UUID.randomUUID()));
+        var excepcion = assertThrows(ApplicationValidationException.class,
+                () -> EliminarRespuestaNovedadCoordinadorCommand.crear("  ", null));
 
         // Assert
-        assertThat(excepcion.getValidationResult()
-                .tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
+        var resultado = excepcion.getValidationResult();
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.DESTINATARIO)).isTrue();
     }
 
     @Test
     void debeLanzarErrorDeEntrada_cuandoLaSolicitudNoEsUuid() {
         // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
+        var excepcion = assertThrows(ApplicationValidationException.class,
                 () -> EliminarRespuestaNovedadCoordinadorCommand.crear(
                         "no-es-uuid", UUID.randomUUID()));
 
         // Assert
         assertThat(excepcion.getValidationResult()
                 .tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
-    }
-
-    @Test
-    void debeLanzarErrorDeEntrada_cuandoElCoordinadorUsuarioEsNulo() {
-        // Act
-        ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,
-                () -> EliminarRespuestaNovedadCoordinadorCommand.crear(
-                        UUID.randomUUID().toString(), null));
-
-        // Assert
-        assertThat(excepcion.getValidationResult()
-                .tieneErroresDeCampo(SolicitudesFields.Solicitud.DESTINATARIO)).isTrue();
     }
 }

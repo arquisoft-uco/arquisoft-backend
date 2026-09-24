@@ -25,10 +25,10 @@ class EliminarRespuestaNovedadCoordinadorInteractorImplTest {
     private EliminarRespuestaNovedadCoordinadorInteractorImpl interactor;
 
     @Test
-    void debeMapearElComandoAObjetoDeAccionYDelegarEnElUseCase() {
+    void debeMapearYDelegarEnElUseCase_cuandoEjecutaElComando() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
         var command = EliminarRespuestaNovedadCoordinadorCommand.crear(
                 solicitud.toString(), coordinador);
 
@@ -36,8 +36,7 @@ class EliminarRespuestaNovedadCoordinadorInteractorImplTest {
         interactor.ejecutar(command);
 
         // Assert
-        ArgumentCaptor<EliminacionRespuestaNovedadCoordinadorDomain> captor =
-                ArgumentCaptor.forClass(EliminacionRespuestaNovedadCoordinadorDomain.class);
+        var captor = ArgumentCaptor.forClass(EliminacionRespuestaNovedadCoordinadorDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);
         assertThat(captor.getValue().getCoordinadorUsuario()).isEqualTo(coordinador);

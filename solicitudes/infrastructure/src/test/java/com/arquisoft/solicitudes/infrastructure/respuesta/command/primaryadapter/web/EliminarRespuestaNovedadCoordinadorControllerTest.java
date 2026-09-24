@@ -79,16 +79,15 @@ class EliminarRespuestaNovedadCoordinadorControllerTest {
     @Test
     void debe204YTomarElCoordinadorDelJwt_cuandoLaPeticionEsValida() throws Exception {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         // Act & Assert
         mockMvc.perform(delete(RUTA.formatted(solicitud))
                         .with(jwtDe(coordinador, SolicitudesAuthorities.RESPUESTA_NOVEDAD_COORDINADOR_DELETE)))
                 .andExpect(status().isNoContent());
 
-        ArgumentCaptor<EliminarRespuestaNovedadCoordinadorCommand> captor =
-                ArgumentCaptor.forClass(EliminarRespuestaNovedadCoordinadorCommand.class);
+        var captor = ArgumentCaptor.forClass(EliminarRespuestaNovedadCoordinadorCommand.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().solicitud()).isEqualTo(solicitud);
         assertThat(captor.getValue().coordinadorUsuario()).isEqualTo(coordinador);
@@ -114,7 +113,8 @@ class EliminarRespuestaNovedadCoordinadorControllerTest {
     void debe403_cuandoElTokenNoTieneElClientRole() throws Exception {
         // Act & Assert
         mockMvc.perform(delete(RUTA.formatted(UUID.randomUUID()))
-                        .with(jwtDe(UUID.randomUUID(), "solicitudes:solicitud:read")))
+                        .with(jwtDe(UUID.randomUUID(),
+                                SolicitudesAuthorities.RESPUESTA_NOVEDAD_COORDINADOR_CREATE)))
                 .andExpect(status().isForbidden());
     }
 

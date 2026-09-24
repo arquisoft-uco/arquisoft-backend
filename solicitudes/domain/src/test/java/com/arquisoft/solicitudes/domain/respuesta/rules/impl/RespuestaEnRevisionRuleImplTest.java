@@ -16,25 +16,33 @@ class RespuestaEnRevisionRuleImplTest {
 
     @Test
     void debePasar_cuandoElEstadoEsEnRevision() {
-        assertThatCode(() -> rule.validar(new EstadoRespuestaActual(
-                UUID.randomUUID(), EstadoRespuesta.EN_REVISION.getId())))
-                .doesNotThrowAnyException();
+        // Arrange
+        var estado = new EstadoRespuestaActual(UUID.randomUUID(), EstadoRespuesta.EN_REVISION.getId());
+
+        // Act & Assert
+        assertThatCode(() -> rule.validar(estado)).doesNotThrowAnyException();
     }
 
     @Test
     void debeLanzar_cuandoElEstadoEsAprobada() {
-        UUID solicitud = UUID.randomUUID();
-        assertThatThrownBy(() -> rule.validar(new EstadoRespuestaActual(
-                solicitud, EstadoRespuesta.APROBADA.getId())))
+        // Arrange
+        var solicitud = UUID.randomUUID();
+        var estado = new EstadoRespuestaActual(solicitud, EstadoRespuesta.APROBADA.getId());
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(estado))
                 .isInstanceOf(RespuestaNoEnRevisionException.class)
                 .hasMessageContaining(solicitud.toString());
     }
 
     @Test
     void debeLanzar_cuandoElEstadoEsNoAprobada() {
-        UUID solicitud = UUID.randomUUID();
-        assertThatThrownBy(() -> rule.validar(new EstadoRespuestaActual(
-                solicitud, EstadoRespuesta.NO_APROBADA.getId())))
+        // Arrange
+        var solicitud = UUID.randomUUID();
+        var estado = new EstadoRespuestaActual(solicitud, EstadoRespuesta.NO_APROBADA.getId());
+
+        // Act & Assert
+        assertThatThrownBy(() -> rule.validar(estado))
                 .isInstanceOf(RespuestaNoEnRevisionException.class)
                 .hasMessageContaining(solicitud.toString());
     }

@@ -25,8 +25,8 @@ class EliminarRespuestaNovedadCoordinadorValidatorImplTest {
     @Test
     void debePasar_cuandoLasCincoReglasSeCumplen() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         // Act & Assert
         assertThatCode(() -> validator.validar(
@@ -37,8 +37,8 @@ class EliminarRespuestaNovedadCoordinadorValidatorImplTest {
     @Test
     void debeLanzarSolicitudNoEncontrada_cuandoLaSolicitudNoExiste() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
@@ -50,7 +50,7 @@ class EliminarRespuestaNovedadCoordinadorValidatorImplTest {
     @Test
     void debeLanzarSolicitudTipoNoCoincide_cuandoLaSolicitudEsDeOtroTipo() {
         // Arrange
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
@@ -70,8 +70,8 @@ class EliminarRespuestaNovedadCoordinadorValidatorImplTest {
     @Test
     void debeLanzarRespuestaNoEncontrada_cuandoNoExisteRespuestaParaLaSolicitud() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
@@ -83,13 +83,53 @@ class EliminarRespuestaNovedadCoordinadorValidatorImplTest {
     @Test
     void debeLanzarRespuestaNoEnRevision_cuandoElEstadoNoEsEnRevision() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         // Act & Assert
         assertThatThrownBy(() -> validator.validar(
                 solicitud, true, TIPO_OK, coordinador, coordinador, true, "APROBADA"))
                 .isInstanceOf(RespuestaNoEnRevisionException.class)
                 .hasMessageContaining(solicitud.toString());
+    }
+
+    @Test
+    void debeLanzarSolicitudNoEncontrada_cuandoFallanLaExistenciaYElTipo() {
+        // Arrange
+        var coordinador = UUID.randomUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                UUID.randomUUID(), false, TipoSolicitud.CAMBIO_DE_ASESOR.getId(),
+                coordinador, coordinador, true, ESTADO_OK))
+                .isInstanceOf(SolicitudNoEncontradaException.class);
+    }
+
+    @Test
+    void debeLanzarSolicitudTipoNoCoincide_cuandoFallanElTipoYElDestinatario() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                UUID.randomUUID(), true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(),
+                UUID.randomUUID(), UUID.randomUUID(), true, ESTADO_OK))
+                .isInstanceOf(SolicitudTipoNoCoincideException.class);
+    }
+
+    @Test
+    void debeLanzarSolicitudNoEsDestinatario_cuandoFallanElDestinatarioYLaExistenciaDeLaRespuesta() {
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                UUID.randomUUID(), true, TIPO_OK, UUID.randomUUID(), UUID.randomUUID(), false, ESTADO_OK))
+                .isInstanceOf(SolicitudNoEsDestinatarioException.class);
+    }
+
+    @Test
+    void debeLanzarRespuestaNoEncontrada_cuandoFallanLaExistenciaDeLaRespuestaYElEstado() {
+        // Arrange
+        var coordinador = UUID.randomUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(
+                UUID.randomUUID(), true, TIPO_OK, coordinador, coordinador, false, "APROBADA"))
+                .isInstanceOf(RespuestaNoEncontradaException.class);
     }
 }

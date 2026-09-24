@@ -79,9 +79,9 @@ class RespuestaCommandOutputAdapterTest {
     @Test
     void debeRetornarElEstado_cuandoBuscaElEstadoDeUnaRespuestaExistente() {
         // Arrange
-        UUID solicitudId = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
         adapter.registrar(new RespuestaEntity(
-                UUID.randomUUID(), solicitudId, LocalDateTime.of(2026, 3, 1, 9, 0, 0), "r", ESTADO));
+                UUID.randomUUID(), solicitudId, FECHA, "r", ESTADO));
         entityManager.flush();
         entityManager.clear();
 
@@ -98,10 +98,10 @@ class RespuestaCommandOutputAdapterTest {
     @Test
     void debeBorrarLaFila_cuandoEliminaPorSolicitud() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID solicitudId = UUID.randomUUID();
+        var id = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
         adapter.registrar(new RespuestaEntity(
-                id, solicitudId, LocalDateTime.of(2026, 3, 1, 9, 0, 0), "r", ESTADO));
+                id, solicitudId, FECHA, "r", ESTADO));
         entityManager.flush();
         entityManager.clear();
 
