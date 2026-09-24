@@ -2,6 +2,7 @@ package com.arquisoft.solicitudes.domain.respuesta;
 
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
@@ -39,12 +40,13 @@ public final class RespuestaNovedadCoordinadorDomain {
     }
 
     private void setContenido(String contenido, ValidationResult result) {
-        if (!ValidatorTexto.noEnBlanco(contenido,
+        var recortado = UtilTexto.aplicarTrim(contenido);
+        if (!ValidatorTexto.noEnBlanco(recortado,
                 SolicitudesFields.Respuesta.CONTENIDO,
                 SolicitudesCodes.Respuesta.CONTENIDO_REQUERIDO, result)) {
             return;
         }
-        this.contenido = contenido;
+        this.contenido = recortado;
     }
 
     private void setCoordinadorUsuario(UUID coordinadorUsuario, ValidationResult result) {

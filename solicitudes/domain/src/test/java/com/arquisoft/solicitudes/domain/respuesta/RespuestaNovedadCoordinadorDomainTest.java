@@ -28,6 +28,16 @@ class RespuestaNovedadCoordinadorDomainTest {
     }
 
     @Test
+    void debeRecortarElContenido_cuandoTraeEspaciosAlrededor() {
+        // Act
+        var accion = RespuestaNovedadCoordinadorDomain.crear(
+                UUID.randomUUID(), "  contenido  ", UUID.randomUUID());
+
+        // Assert
+        assertThat(accion.getContenido()).isEqualTo("contenido");
+    }
+
+    @Test
     void debeAcumularErrores_cuandoSolicitudYCoordinadorSonNulos() {
         // Act
         DomainValidationException excepcion = assertThrows(DomainValidationException.class,

@@ -6,8 +6,6 @@ import com.arquisoft.shared.message.ClaveMensaje;
 public enum RespuestaKey implements ClaveMensaje {
 
     ERROR_SOLICITUD_YA_RESPONDIDA("solicitudes.dominio.respuesta.error.solicitud-ya-respondida", 1),
-    ERROR_SOLICITUD_NO_ES_DESTINATARIO("solicitudes.dominio.solicitud.error.no-es-destinatario", 1),
-    ERROR_ESTADO_RESPUESTA_NO_ENCONTRADO("solicitudes.dominio.estadorespuesta.error.no-encontrado", 1),
     LOG_RESPONDIENDO("solicitudes.aplicacion.respuesta.log.respondiendo", 2),
     LOG_VERIFICACION_RESPUESTA("solicitudes.aplicacion.respuesta.log.verificacion-respuesta", 2),
     LOG_RESPONDIDA("solicitudes.aplicacion.respuesta.log.respondida", 1),

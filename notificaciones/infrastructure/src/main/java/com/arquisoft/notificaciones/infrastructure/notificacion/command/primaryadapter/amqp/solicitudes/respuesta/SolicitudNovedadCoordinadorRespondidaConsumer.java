@@ -36,8 +36,7 @@ public class SolicitudNovedadCoordinadorRespondidaConsumer extends AbstractNotif
     @RabbitListener(queues = NotificacionesSolicitudesQueueConfig.NOVEDAD_COORDINADOR_RESPONDIDA_QUEUE)
     public void onSolicitudNovedadCoordinadorRespondida(Message message, Channel channel) throws IOException {
         withCorrelation(message, channel, () -> {
-            SolicitudNovedadCoordinadorRespondidaPayload payload =
-                    deserialize(message, SolicitudNovedadCoordinadorRespondidaPayload.class);
+            var payload = deserialize(message, SolicitudNovedadCoordinadorRespondidaPayload.class);
 
             logger.info(
                     ConsumidorKey.LOG_SOLICITUD_NOVEDAD_COORDINADOR_RESPONDIDA_RECIBIDO,

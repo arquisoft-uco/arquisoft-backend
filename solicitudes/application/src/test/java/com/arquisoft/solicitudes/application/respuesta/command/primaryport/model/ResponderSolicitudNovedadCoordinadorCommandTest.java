@@ -35,6 +35,19 @@ class ResponderSolicitudNovedadCoordinadorCommandTest {
     }
 
     @Test
+    void debeRecortarElContenidoAntesDeValidarLaLongitud_cuandoTraeEspaciosAlrededor() {
+        // Arrange
+        var contenidoDeLongitudMaxima = "x".repeat(100);
+
+        // Act
+        var command = ResponderSolicitudNovedadCoordinadorCommand.crear(
+                UUID.randomUUID().toString(), "  " + contenidoDeLongitudMaxima + " ", UUID.randomUUID());
+
+        // Assert
+        assertThat(command.contenido()).isEqualTo(contenidoDeLongitudMaxima);
+    }
+
+    @Test
     void debeLanzarErrorDeEntrada_cuandoElContenidoEstaEnBlanco() {
         // Act
         ApplicationValidationException excepcion = assertThrows(ApplicationValidationException.class,

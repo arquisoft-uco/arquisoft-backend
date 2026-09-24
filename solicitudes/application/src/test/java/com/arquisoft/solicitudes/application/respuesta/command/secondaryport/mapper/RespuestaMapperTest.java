@@ -5,7 +5,7 @@ import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 import com.arquisoft.solicitudes.domain.respuesta.RespuestaDomain;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,7 +32,7 @@ class RespuestaMapperTest {
         // Arrange
         UUID id = UUID.randomUUID();
         UUID solicitud = UUID.randomUUID();
-        LocalDateTime fecha = LocalDateTime.of(2026, 3, 1, 9, 0, 0);
+        var fecha = Instant.parse("2026-03-01T09:00:00Z");
         var entity = new RespuestaEntity(id, solicitud, fecha, "contenido", "APROBADA");
 
         // Act
