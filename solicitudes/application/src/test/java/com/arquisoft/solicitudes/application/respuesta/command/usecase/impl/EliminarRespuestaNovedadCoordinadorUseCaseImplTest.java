@@ -2,13 +2,11 @@ package com.arquisoft.solicitudes.application.respuesta.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
-import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.respuesta.command.finder.DatosRespuestaFinder;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
 import com.arquisoft.solicitudes.application.respuesta.command.validator.EliminarRespuestaNovedadCoordinadorValidator;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
 import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaNovedadCoordinadorDomain;
-import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorRespuestaEliminadaEvent;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisionException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEncontradaException;
 import com.arquisoft.solicitudes.domain.respuesta.model.ResumenRespuesta;
@@ -20,14 +18,14 @@ import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -45,7 +43,6 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
     @Mock private DatosRespuestaFinder datosRespuestaFinder;
     @Mock private RespuestaOutputPort respuestaOutputPort;
     @Mock private EliminarRespuestaNovedadCoordinadorValidator validator;
-    @Mock private EventPublisher eventPublisher;
     @Mock private AppLogger logger;
 
     private EliminarRespuestaNovedadCoordinadorUseCaseImpl useCase;
@@ -58,7 +55,7 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
     void setUp() {
         useCase = new EliminarRespuestaNovedadCoordinadorUseCaseImpl(
                 datosSolicitudFinder, datosRespuestaFinder, respuestaOutputPort,
-                validator, eventPublisher, logger);
+                validator, logger);
 
         solicitud = UUID.randomUUID();
         coordinadorUsuario = UUID.randomUUID();
@@ -74,7 +71,7 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
     }
 
     @Test
-    void debeEliminarYPublicarElEventoConLosLogsEnOrden_cuandoElFlujoEsValido() {
+    void debeEliminarConLosLogsEnOrden_cuandoElFlujoEsValido() {
         // Arrange
         stubFlujoValido();
 
@@ -84,30 +81,22 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
         // Assert
         verify(respuestaOutputPort).eliminarPorSolicitud(solicitud);
 
-        ArgumentCaptor<SolicitudNovedadCoordinadorRespuestaEliminadaEvent> captor =
-                ArgumentCaptor.forClass(SolicitudNovedadCoordinadorRespuestaEliminadaEvent.class);
-        verify(eventPublisher).publish(captor.capture());
-        SolicitudNovedadCoordinadorRespuestaEliminadaEvent evento = captor.getValue();
-        assertThat(evento.getSolicitudId()).isEqualTo(solicitud);
-        assertThat(evento.getCoordinadorUsuario()).isEqualTo(coordinadorUsuario);
-        assertThat(evento.getTipoSolicitud())
-                .isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId());
-
         verify(logger).info(eq(RespuestaKey.LOG_ELIMINANDO), eq(solicitud), eq(coordinadorUsuario));
         verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_ELIMINACION), eq(true), eq(true));
         verify(logger).info(eq(RespuestaKey.LOG_ELIMINADA), eq(solicitud));
 
-        InOrder inOrder = inOrder(datosSolicitudFinder, datosRespuestaFinder,
-                validator, respuestaOutputPort, eventPublisher);
+        var inOrder = inOrder(datosSolicitudFinder, datosRespuestaFinder,
+                validator, respuestaOutputPort);
         inOrder.verify(datosSolicitudFinder).obtener(solicitud);
         inOrder.verify(datosRespuestaFinder).obtener(solicitud);
-        inOrder.verify(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean(), any());
+        inOrder.verify(validator).validar(eq(solicitud), eq(true),
+                eq(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()), eq(coordinadorUsuario),
+                eq(coordinadorUsuario), eq(true), eq("EN_REVISION"));
         inOrder.verify(respuestaOutputPort).eliminarPorSolicitud(solicitud);
-        inOrder.verify(eventPublisher).publish(any());
     }
 
     @Test
-    void debeAbortarSinEliminarNiPublicar_cuandoLaSolicitudNoExiste() {
+    void debeAbortarSinEliminar_cuandoLaSolicitudNoExiste() {
         // Arrange
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(datosRespuestaFinder.obtener(solicitud)).thenReturn(ResumenRespuesta.VACIO);
@@ -118,67 +107,31 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
                 .isInstanceOf(SolicitudNoEncontradaException.class);
 
+        verify(validator).validar(eq(solicitud), eq(false), eq(ResumenSolicitud.VACIO.tipoSolicitud()),
+                eq(ResumenSolicitud.VACIO.destinatarioUsuario()), eq(coordinadorUsuario),
+                eq(false), eq(ResumenRespuesta.VACIO.estado()));
         verify(respuestaOutputPort, never()).eliminarPorSolicitud(any());
-        verify(eventPublisher, never()).publish(any());
     }
 
-    @Test
-    void debeAbortarSinEliminar_cuandoElTipoNoCoincide() {
+    static Stream<RuntimeException> excepcionesDelValidator() {
+        return Stream.of(
+                new SolicitudTipoNoCoincideException(UUID.randomUUID()),
+                new SolicitudNoEsDestinatarioException(UUID.randomUUID()),
+                new RespuestaNoEncontradaException(UUID.randomUUID()),
+                new RespuestaNoEnRevisionException(UUID.randomUUID()));
+    }
+
+    @ParameterizedTest
+    @MethodSource("excepcionesDelValidator")
+    void debeAbortarSinEliminar_cuandoElValidatorRechazaPorReglaDeNegocio(RuntimeException excepcion) {
         // Arrange
         stubFlujoValido();
-        doThrow(new SolicitudTipoNoCoincideException(solicitud))
+        doThrow(excepcion)
                 .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean(), any());
 
         // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(entrada))
-                .isInstanceOf(SolicitudTipoNoCoincideException.class);
+        assertThatThrownBy(() -> useCase.ejecutar(entrada)).isSameAs(excepcion);
 
         verify(respuestaOutputPort, never()).eliminarPorSolicitud(any());
-        verify(eventPublisher, never()).publish(any());
-    }
-
-    @Test
-    void debeAbortarSinEliminar_cuandoNoEsElDestinatario() {
-        // Arrange
-        stubFlujoValido();
-        doThrow(new SolicitudNoEsDestinatarioException(solicitud))
-                .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean(), any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(entrada))
-                .isInstanceOf(SolicitudNoEsDestinatarioException.class);
-
-        verify(respuestaOutputPort, never()).eliminarPorSolicitud(any());
-        verify(eventPublisher, never()).publish(any());
-    }
-
-    @Test
-    void debeAbortarSinEliminar_cuandoLaRespuestaNoExiste() {
-        // Arrange
-        stubFlujoValido();
-        doThrow(new RespuestaNoEncontradaException(solicitud))
-                .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean(), any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(entrada))
-                .isInstanceOf(RespuestaNoEncontradaException.class);
-
-        verify(respuestaOutputPort, never()).eliminarPorSolicitud(any());
-        verify(eventPublisher, never()).publish(any());
-    }
-
-    @Test
-    void debeAbortarSinEliminar_cuandoLaRespuestaNoEstaEnRevision() {
-        // Arrange
-        stubFlujoValido();
-        doThrow(new RespuestaNoEnRevisionException(solicitud))
-                .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean(), any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(entrada))
-                .isInstanceOf(RespuestaNoEnRevisionException.class);
-
-        verify(respuestaOutputPort, never()).eliminarPorSolicitud(any());
-        verify(eventPublisher, never()).publish(any());
     }
 }
