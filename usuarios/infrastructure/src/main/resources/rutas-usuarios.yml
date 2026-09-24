@@ -9,4 +9,5 @@ rutas:
       base: /usuarios
       estudiante: /{usuarioId}/estudiante
       asesor: /{usuarioId}/asesor
+      asesor-ficha: /{usuarioId}/asesor-ficha
       modificar: /{usuarioId}

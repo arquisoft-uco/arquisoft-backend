@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.fichas.AsesorFichaKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,8 +25,8 @@ public class AsesorFichaCommandOutputAdapter implements AsesorFichaOutputPort {
     }
 
     @Override
-    public Optional<AsesorFichaEntity> buscarContactoPorId(UUID id) {
-        return asesorFichaCommandRepository.findById(id).map(AsesorFichaJpaMapper::toEntity);
+    public Optional<AsesorFichaEntity> obtenerVigentePorId(UUID id) {
+        return asesorFichaCommandRepository.findByIdAndEliminadoEnIsNull(id).map(AsesorFichaJpaMapper::toEntity);
     }
 
     @Override
@@ -36,12 +37,25 @@ public class AsesorFichaCommandOutputAdapter implements AsesorFichaOutputPort {
 
     @Override
     public Optional<AsesorFichaEntity> obtenerPorId(UUID id) {
-        return buscarContactoPorId(id);
+        return asesorFichaCommandRepository.findById(id).map(AsesorFichaJpaMapper::toEntity);
     }
 
     @Override
     public void actualizar(AsesorFichaEntity asesorFicha) {
         asesorFichaCommandRepository.save(AsesorFichaJpaMapper.toJpaEntity(asesorFicha));
+        logger.debug(AsesorFichaKey.LOG_ACTUALIZADO, asesorFicha.id());
+    }
+
+    @Override
+    public void eliminarLogica(UUID id, Instant ocurridoEn) {
+        asesorFichaCommandRepository.eliminarLogica(id, ocurridoEn);
+        logger.debug(AsesorFichaKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Override
+    public void reactivar(AsesorFichaEntity asesorFicha) {
+        asesorFichaCommandRepository.reactivar(asesorFicha.id(), asesorFicha.identificador(), asesorFicha.nombre(),
+                asesorFicha.email(), asesorFicha.ocurridoEn());
         logger.debug(AsesorFichaKey.LOG_ACTUALIZADO, asesorFicha.id());
     }
 }

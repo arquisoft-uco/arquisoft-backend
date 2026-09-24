@@ -85,4 +85,21 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
     }
+
+    public static final class AsesorFicha {
+
+        private AsesorFicha() {}
+
+        public static final String REMOVER_SUMMARY = "Remover información de un asesor de ficha";
+        public static final String REMOVER_DESCRIPTION =
+                "Da de baja lógica el rol asesor de ficha de un usuario: marca la fecha de eliminación sin "
+                        + "borrar la fila, revoca el realm role asesor-ficha en Keycloak y notifica a los "
+                        + "contextos que replican al asesor de ficha. El usuario y sus demás roles no cambian. "
+                        + "Exclusivo del rol administrador.";
+        public static final String REMOVER_RESP_204 = "Asesor de ficha removido";
+        public static final String REMOVER_RESP_400 = "Identificador de usuario inválido";
+        public static final String REMOVER_RESP_422 = "El usuario no tiene un rol asesor de ficha vigente";
+        public static final String REMOVER_RESP_503 =
+                "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+    }
 }
