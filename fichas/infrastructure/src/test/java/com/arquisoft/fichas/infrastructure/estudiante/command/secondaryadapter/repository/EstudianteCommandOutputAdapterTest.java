@@ -146,4 +146,37 @@ class EstudianteCommandOutputAdapterTest {
         verify(estudianteRepository).reactivar(id, "20161020999", "Ana Gomez", "ana.gomez@uco.edu.co", ocurridoEn);
         verify(logger).debug(EstudianteKey.LOG_ACTUALIZADO, id);
     }
+
+    @Test
+    void debeGuardarLaEntidadActualizada_cuandoSeInvocaActualizar() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var ocurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+        var entity = new EstudianteEntity(id, "20161020999", "Ana Actualizada", "actualizada@uco.edu.co",
+                ocurridoEn, UtilFecha.VACIO);
+
+        // Act
+        adapter.actualizar(entity);
+
+        // Assert
+        verify(estudianteRepository, org.mockito.Mockito.times(1)).save(any(EstudianteJpaEntity.class));
+        verify(logger).debug(EstudianteKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
+    void debeConservarEliminadoEn_cuandoActualizaUnEstudianteDadoDeBaja() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var baja = Instant.parse("2026-09-10T10:00:00Z");
+        var nuevoOcurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+        var entity = new EstudianteEntity(
+                id, "20161020999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn, baja);
+
+        // Act — el use case pasa el eliminadoEn vigente porque actualizar() del domain no lo toca
+        adapter.actualizar(entity);
+
+        // Assert
+        verify(estudianteRepository).save(org.mockito.ArgumentMatchers.argThat(
+                jpa -> baja.equals(jpa.getEliminadoEn())));
+    }
 }

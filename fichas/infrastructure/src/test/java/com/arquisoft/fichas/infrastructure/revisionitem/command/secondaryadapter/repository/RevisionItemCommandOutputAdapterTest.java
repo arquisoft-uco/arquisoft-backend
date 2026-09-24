@@ -2,6 +2,7 @@ package com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapte
 
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.RevisionItemEntity;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.entity.RevisionItemJpaEntity;
+import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.mapper.RevisionItemJpaMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -10,6 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,5 +74,35 @@ class RevisionItemCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isZero();
         verify(repository, times(1)).countByItemId(itemId);
+    }
+
+    @Test
+    void debeRetornarLaRevision_cuandoExistePorId() {
+        // Arrange
+        var revision = new RevisionItemEntity(
+                UUID.randomUUID(), UUID.randomUUID(), "NUEVA", Instant.now());
+        var jpaEntity = RevisionItemJpaMapper.toJpaEntity(revision);
+        when(repository.findById(revision.id())).thenReturn(Optional.of(jpaEntity));
+
+        // Act
+        var resultado = adapter.buscarPorId(revision.id());
+
+        // Assert
+        assertThat(resultado).contains(revision);
+        verify(repository, times(1)).findById(revision.id());
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoNoExistePorId() {
+        // Arrange
+        var revisionItemId = UUID.randomUUID();
+        when(repository.findById(revisionItemId)).thenReturn(Optional.empty());
+
+        // Act
+        var resultado = adapter.buscarPorId(revisionItemId);
+
+        // Assert
+        assertThat(resultado).isEmpty();
+        verify(repository, times(1)).findById(revisionItemId);
     }
 }

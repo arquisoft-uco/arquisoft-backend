@@ -36,4 +36,42 @@ public final class EvaluacionesCodes {
         public static final String DESCRIPCION_DEMASIADO_LARGA =
                 "CRITERIO_ITEM_CUALITATIVO_JURADO_DESCRIPCION_DEMASIADO_LARGA";
     }
+
+    public static final class EvaluacionCualitativaJurado {
+
+        private EvaluacionCualitativaJurado() {}
+
+        public static final String EVALUACION_JURADO_REQUERIDO =
+                "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_REQUERIDO";
+        public static final String ITEM_REQUERIDO =
+                "EVALUACION_CUALITATIVA_JURADO_ITEM_REQUERIDO";
+        public static final String CRITERIO_REQUERIDO =
+                "EVALUACION_CUALITATIVA_JURADO_CRITERIO_REQUERIDO";
+        public static final String EVALUACION_JURADO_NO_ENCONTRADA =
+                "EVALUACION_CUALITATIVA_JURADO_EVALUACION_JURADO_NO_ENCONTRADA";
+    }
+
+    public static final class ItemCuantitativoJurado {
+
+        private ItemCuantitativoJurado() {}
+
+        public static final String NOMBRE_REQUERIDO =
+                "ITEM_CUANTITATIVO_JURADO_NOMBRE_REQUERIDO";
+        public static final String NOMBRE_DEMASIADO_LARGO =
+                "ITEM_CUANTITATIVO_JURADO_NOMBRE_DEMASIADO_LARGO";
+        public static final String DESCRIPCION_REQUERIDA =
+                "ITEM_CUANTITATIVO_JURADO_DESCRIPCION_REQUERIDA";
+        public static final String DESCRIPCION_DEMASIADO_LARGA =
+                "ITEM_CUANTITATIVO_JURADO_DESCRIPCION_DEMASIADO_LARGA";
+        public static final String CATEGORIA_REQUERIDA =
+                "ITEM_CUANTITATIVO_JURADO_CATEGORIA_REQUERIDA";
+        public static final String VALOR_REQUERIDO =
+                "ITEM_CUANTITATIVO_JURADO_VALOR_REQUERIDO";
+        public static final String VALOR_FUERA_DE_RANGO =
+                "ITEM_CUANTITATIVO_JURADO_VALOR_FUERA_DE_RANGO";
+        public static final String CATEGORIA_NO_ENCONTRADA =
+                "ITEM_CUANTITATIVO_JURADO_CATEGORIA_NO_ENCONTRADA";
+        public static final String NOMBRE_CATEGORIA_DUPLICADO =
+                "ITEM_CUANTITATIVO_JURADO_NOMBRE_CATEGORIA_DUPLICADO";
+    }
 }

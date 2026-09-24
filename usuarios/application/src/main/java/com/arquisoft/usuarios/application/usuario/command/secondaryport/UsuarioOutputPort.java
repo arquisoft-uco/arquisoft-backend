@@ -11,9 +11,17 @@ public interface UsuarioOutputPort {
 
     void guardar(UsuarioEntity usuario);
 
+    void actualizar(UsuarioEntity usuario);
+
     boolean existePorIdentificador(String identificador);
 
     boolean existePorEmail(String email);
 
     boolean existePorContacto(String contacto);
+
+    boolean existePorIdentificadorEnOtroUsuario(String identificador, UUID usuario);
+
+    boolean existePorEmailEnOtroUsuario(String email, UUID usuario);
+
+    boolean existePorContactoEnOtroUsuario(String contacto, UUID usuario);
 }

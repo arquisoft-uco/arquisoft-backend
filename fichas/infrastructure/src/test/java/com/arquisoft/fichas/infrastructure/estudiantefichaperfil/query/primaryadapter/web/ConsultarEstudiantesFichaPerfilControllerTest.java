@@ -75,7 +75,7 @@ class ConsultarEstudiantesFichaPerfilControllerTest {
         var estudianteId = UUID.randomUUID();
         when(consultarEstudiantesFichaPerfilInteractor.ejecutar(any(ConsultarEstudiantesFichaPerfilQuery.class)))
                 .thenReturn(List.of(new EstudianteFichaPerfilReadModel(
-                        vinculoId, FICHA_ID, estudianteId, "Ana Ruiz", "ana.ruiz@uco.edu.co")));
+                        vinculoId, FICHA_ID, estudianteId, "Ana Ruiz", "ana.ruiz@uco.edu.co", true)));
 
         // Act & Assert
         mockMvc.perform(get("/fichas-perfil/{fichaPerfilId}/estudiantes", FICHA_ID)

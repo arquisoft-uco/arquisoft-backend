@@ -115,4 +115,40 @@ class AsesorFichaDomainTest {
         assertThat(asesorFicha.esVacio()).isFalse();
         assertThat(AsesorFichaDomain.VACIO.esVacio()).isTrue();
     }
+
+    @Test
+    void debeActualizarDatosYOcurridoEn_cuandoActualizarEsInvocado() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var asesorFicha = AsesorFichaDomain.reconstruir(
+                id, "20161020123", "Juan Pérez", "juan.perez@example.com", Instant.now());
+        var nuevoOcurridoEn = Instant.now().plusSeconds(60);
+
+        // Act
+        asesorFicha.actualizar("20161020999", "Juan Actualizado", "actualizado@example.com", nuevoOcurridoEn);
+
+        // Assert
+        assertThat(asesorFicha.getIdentificador()).isEqualTo("20161020999");
+        assertThat(asesorFicha.getNombre()).isEqualTo("Juan Actualizado");
+        assertThat(asesorFicha.getEmail()).isEqualTo("actualizado@example.com");
+        assertThat(asesorFicha.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
+        assertThat(asesorFicha.getId()).isEqualTo(id);
+    }
+
+    @Test
+    void debeAcumularErrores_cuandoActualizarRecibeDatosInvalidos() {
+        // Arrange
+        var asesorFicha = AsesorFichaDomain.reconstruir(
+                UUID.randomUUID(), "20161020123", "Juan Pérez", "juan.perez@example.com", Instant.now());
+
+        // Act & Assert
+        assertThatThrownBy(() -> asesorFicha.actualizar(" ", "Juan Pérez", " ", Instant.now()))
+                .isInstanceOf(DomainValidationException.class)
+                .satisfies(ex -> {
+                    var errores = ((DomainValidationException) ex).getValidationResult().getErrores();
+                    assertThat(errores)
+                            .extracting(e -> e.campo())
+                            .contains(FichasFields.AsesorFicha.IDENTIFICADOR, FichasFields.AsesorFicha.EMAIL);
+                });
+    }
 }

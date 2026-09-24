@@ -14,7 +14,7 @@ dependencies {
     // pueda extenderlas sin formar un ciclo con la línea de arriba.
     api project(':shared:exception')
 
-    // shared:validation — DomainValidator y ValidationResult (Notification Pattern).
+    // shared:validation — Validator* y ValidationResult (Notification Pattern).
     api project(':shared:validation')
 
     // shared:util — helpers estáticos. Fuera de este módulo porque shared:validation los

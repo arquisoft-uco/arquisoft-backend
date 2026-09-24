@@ -36,21 +36,32 @@ class EstudianteFichaPerfilCommandRepositoryTest {
 
     @Test
     void debeContarRelacionesDeLaFicha_cuandoExistenVarias() {
-        // Arrange — la entidad usa columnas UUID crudas (sin @ManyToOne), no requiere filas padre
-        UUID fichaId = UUID.randomUUID();
-        UUID otraFicha = UUID.randomUUID();
-        repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
-                .id(UUID.randomUUID()).fichaPerfilId(fichaId).estudianteId(UUID.randomUUID()).build());
-        repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
-                .id(UUID.randomUUID()).fichaPerfilId(fichaId).estudianteId(UUID.randomUUID()).build());
-        repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
-                .id(UUID.randomUUID()).fichaPerfilId(otraFicha).estudianteId(UUID.randomUUID()).build());
+        // Arrange
+        var fichaId = UUID.randomUUID();
+        var otraFicha = UUID.randomUUID();
+        vincular(fichaId, persistirEstudiante("1000000011", null));
+        vincular(fichaId, persistirEstudiante("1000000012", null));
+        vincular(otraFicha, persistirEstudiante("1000000013", null));
 
         // Act
-        long resultado = repository.countByFichaPerfilId(fichaId);
+        var resultado = repository.countVigentesByFichaPerfilId(fichaId);
 
         // Assert
         assertThat(resultado).isEqualTo(2);
+    }
+
+    @Test
+    void debeExcluirDelConteo_cuandoElEstudianteEstaDadoDeBaja() {
+        // Arrange
+        var fichaId = UUID.randomUUID();
+        vincular(fichaId, persistirEstudiante("1000000021", null));
+        vincular(fichaId, persistirEstudiante("1000000022", Instant.now()));
+
+        // Act
+        var resultado = repository.countVigentesByFichaPerfilId(fichaId);
+
+        // Assert
+        assertThat(resultado).isEqualTo(1);
     }
 
     @Test
@@ -107,5 +118,36 @@ class EstudianteFichaPerfilCommandRepositoryTest {
                 .containsExactlyInAnyOrder(
                         org.assertj.core.groups.Tuple.tuple("Ana Gomez", "ana.gomez@soyuco.edu.co"),
                         org.assertj.core.groups.Tuple.tuple("Luis Ruiz", "luis.ruiz@soyuco.edu.co"));
+    }
+
+    @Test
+    void debeExcluirDeLosContactos_cuandoElEstudianteEstaDadoDeBaja() {
+        // Arrange
+        var fichaId = UUID.randomUUID();
+        var vigente = persistirEstudiante("1000000031", null);
+        vincular(fichaId, vigente);
+        vincular(fichaId, persistirEstudiante("1000000032", Instant.now()));
+
+        // Act
+        var resultado = repository.findContactosByFichaPerfilId(fichaId);
+
+        // Assert
+        assertThat(resultado)
+                .extracting("email")
+                .containsExactly("1000000031@soyuco.edu.co");
+    }
+
+    private UUID persistirEstudiante(String identificador, Instant eliminadoEn) {
+        var estudiante = EstudianteJpaEntity.builder()
+                .id(UUID.randomUUID()).identificador(identificador).nombre("Estudiante " + identificador)
+                .email(identificador + "@soyuco.edu.co").ocurridoEn(Instant.now()).eliminadoEn(eliminadoEn)
+                .build();
+        estudianteRepository.saveAndFlush(estudiante);
+        return estudiante.getId();
+    }
+
+    private void vincular(UUID fichaPerfilId, UUID estudianteId) {
+        repository.saveAndFlush(EstudianteFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID()).fichaPerfilId(fichaPerfilId).estudianteId(estudianteId).build());
     }
 }

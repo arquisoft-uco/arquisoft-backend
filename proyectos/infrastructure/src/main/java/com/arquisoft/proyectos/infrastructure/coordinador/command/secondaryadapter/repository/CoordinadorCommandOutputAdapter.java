@@ -28,4 +28,10 @@ public class CoordinadorCommandOutputAdapter implements CoordinadorOutputPort {
     public Optional<CoordinadorEntity> obtenerPorId(UUID id) {
         return coordinadorCommandRepository.findById(id).map(CoordinadorJpaMapper::toEntity);
     }
+
+    @Override
+    public void actualizar(CoordinadorEntity coordinador) {
+        coordinadorCommandRepository.save(CoordinadorJpaMapper.toJpaEntity(coordinador));
+        logger.debug(CoordinadorKey.LOG_ACTUALIZADO, coordinador.id());
+    }
 }

@@ -10,4 +10,6 @@ public interface CoordinadorOutputPort {
     void guardar(CoordinadorEntity coordinador);
 
     Optional<CoordinadorEntity> obtenerPorId(UUID id);
+
+    void actualizar(CoordinadorEntity coordinador);
 }

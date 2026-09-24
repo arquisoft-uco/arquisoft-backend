@@ -14,4 +14,6 @@ public interface AsesorFichaOutputPort {
     void guardar(AsesorFichaEntity asesorFicha);
 
     Optional<AsesorFichaEntity> obtenerPorId(UUID id);
+
+    void actualizar(AsesorFichaEntity asesorFicha);
 }
