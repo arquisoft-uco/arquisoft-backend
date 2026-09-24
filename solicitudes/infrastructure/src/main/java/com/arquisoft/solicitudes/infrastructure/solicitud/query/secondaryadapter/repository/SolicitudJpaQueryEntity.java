@@ -23,12 +23,16 @@ import java.util.UUID;
                ts.id               AS tipo_solicitud_id,
                ts.nombre           AS tipo_solicitud_nombre,
                d.usuario_id        AS destinatario_usuario_id,
+               du.identificador    AS destinatario_identificador,
+               du.nombre           AS destinatario_nombre,
+               du.email            AS destinatario_email,
                ru.id               AS remitente_usuario_id,
                ru.identificador    AS remitente_identificador,
                ru.nombre           AS remitente_nombre,
                ru.email            AS remitente_email
         FROM solicitud s
                  JOIN destinatario d    ON d.id  = s.destinatario_id
+                 JOIN usuario du        ON du.id = d.usuario_id
                  JOIN remitente r       ON r.id  = s.remitente_id
                  JOIN usuario ru        ON ru.id = r.usuario_id
                  JOIN tipo_solicitud ts ON ts.id = s.tipo_solicitud_id
@@ -58,6 +62,15 @@ public class SolicitudJpaQueryEntity {
 
     @Column(name = "destinatario_usuario_id", columnDefinition = "uuid")
     private UUID destinatarioUsuarioId;
+
+    @Column(name = "destinatario_identificador")
+    private String destinatarioIdentificador;
+
+    @Column(name = "destinatario_nombre")
+    private String destinatarioNombre;
+
+    @Column(name = "destinatario_email")
+    private String destinatarioEmail;
 
     @Column(name = "remitente_usuario_id", columnDefinition = "uuid")
     private UUID remitenteUsuarioId;

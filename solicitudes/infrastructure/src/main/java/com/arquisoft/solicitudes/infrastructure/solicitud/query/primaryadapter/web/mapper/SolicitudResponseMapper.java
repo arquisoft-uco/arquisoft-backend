@@ -1,6 +1,7 @@
 package com.arquisoft.solicitudes.infrastructure.solicitud.query.primaryadapter.web.mapper;
 
 import com.arquisoft.solicitudes.application.solicitud.query.readmodel.SolicitudReadModel;
+import com.arquisoft.solicitudes.infrastructure.destinatario.query.primaryadapter.web.dto.DestinatarioResponseDTO;
 import com.arquisoft.solicitudes.infrastructure.remitente.query.primaryadapter.web.dto.RemitenteResponseDTO;
 import com.arquisoft.solicitudes.infrastructure.solicitud.query.primaryadapter.web.dto.SolicitudResponseDTO;
 
@@ -19,6 +20,11 @@ public final class SolicitudResponseMapper {
                         readModel.remitente().usuarioId(),
                         readModel.remitente().identificador(),
                         readModel.remitente().nombre(),
-                        readModel.remitente().email()));
+                        readModel.remitente().email()),
+                new DestinatarioResponseDTO(
+                        readModel.destinatario().usuarioId(),
+                        readModel.destinatario().identificador(),
+                        readModel.destinatario().nombre(),
+                        readModel.destinatario().email()));
     }
 }
