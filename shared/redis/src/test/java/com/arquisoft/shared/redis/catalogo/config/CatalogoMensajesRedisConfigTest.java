@@ -19,7 +19,11 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -37,6 +41,10 @@ import static org.mockito.Mockito.when;
 class CatalogoMensajesRedisConfigTest {
 
     private static final String TEXTO_SIN_PARAMETROS = "Un texto cualquiera";
+
+    private static final Map<String, Integer> INDICE_POR_CLAVE = IntStream.range(0, ClavesCatalogo.TODAS.size())
+            .boxed()
+            .collect(Collectors.toMap(indice -> ClavesCatalogo.TODAS.get(indice).clave(), indice -> indice));
 
     @Mock
     private StringRedisTemplate plantilla;
@@ -162,7 +170,12 @@ class CatalogoMensajesRedisConfigTest {
 
     private void redisDevuelve(List<String> textos) {
         when(plantilla.opsForValue()).thenReturn(operaciones);
-        when(operaciones.multiGet(anyCollection())).thenReturn(textos);
+        // Responde por las claves pedidas, no con la lista entera: el catálogo consulta por lotes, y
+        // devolver siempre todos los textos desalinea cada lote posterior al primero.
+        when(operaciones.multiGet(anyCollection())).thenAnswer(invocacion -> {
+            Collection<String> pedidas = invocacion.getArgument(0);
+            return pedidas.stream().map(nombre -> textos.get(INDICE_POR_CLAVE.get(nombre))).toList();
+        });
     }
 
     /**
