@@ -101,7 +101,8 @@
               "fichas:estado-ficha:view",
               "fichas:ficha-perfil:create",
               "fichas:tipo-item:view",
-              "fichas:observacion-item:create"
+              "fichas:observacion-item:create",
+              "fichas:estado-revision:view"
             ]
           }
         },
@@ -627,6 +628,15 @@
         {
           "id": "d699bbcf-608d-4c40-a22a-f2e6cf28be0a",
           "name": "fichas:estado-evaluacion:view",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "14d00284-32ed-4cd8-8fa9-cefe71afc83b",
+          "name": "fichas:estado-revision:view",
           "description": "",
           "composite": false,
           "clientRole": true,
