@@ -8,8 +8,6 @@ import java.util.UUID;
 
 public interface AsesorFichaOutputPort {
 
-    boolean existePorId(UUID id);
-
     Optional<AsesorFichaEntity> obtenerVigentePorId(UUID id);
 
     void guardar(AsesorFichaEntity asesorFicha);

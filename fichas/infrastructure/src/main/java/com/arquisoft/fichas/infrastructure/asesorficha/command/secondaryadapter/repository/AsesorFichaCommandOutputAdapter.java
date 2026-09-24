@@ -20,11 +20,6 @@ public class AsesorFichaCommandOutputAdapter implements AsesorFichaOutputPort {
     private final AppLogger logger;
 
     @Override
-    public boolean existePorId(UUID id) {
-        return asesorFichaCommandRepository.existsById(id);
-    }
-
-    @Override
     public Optional<AsesorFichaEntity> obtenerVigentePorId(UUID id) {
         return asesorFichaCommandRepository.findByIdAndEliminadoEnIsNull(id).map(AsesorFichaJpaMapper::toEntity);
     }

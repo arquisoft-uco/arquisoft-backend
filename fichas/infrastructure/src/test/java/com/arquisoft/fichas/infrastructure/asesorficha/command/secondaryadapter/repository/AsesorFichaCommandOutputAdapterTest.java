@@ -35,34 +35,6 @@ class AsesorFichaCommandOutputAdapterTest {
     private AsesorFichaCommandOutputAdapter adapter;
 
     @Test
-    void debeRetornarTrue_cuandoAsesorExiste() {
-        // Arrange
-        UUID asesorId = UUID.randomUUID();
-        when(asesorFichaRepository.existsById(asesorId)).thenReturn(true);
-
-        // Act
-        boolean existe = adapter.existePorId(asesorId);
-
-        // Assert
-        assertThat(existe).isTrue();
-        verify(asesorFichaRepository, times(1)).existsById(asesorId);
-    }
-
-    @Test
-    void debeRetornarFalse_cuandoAsesorNoExiste() {
-        // Arrange
-        UUID asesorId = UUID.randomUUID();
-        when(asesorFichaRepository.existsById(asesorId)).thenReturn(false);
-
-        // Act
-        boolean existe = adapter.existePorId(asesorId);
-
-        // Assert
-        assertThat(existe).isFalse();
-        verify(asesorFichaRepository, times(1)).existsById(asesorId);
-    }
-
-    @Test
     void debeRetornarElContacto_cuandoAsesorExiste() {
         // Arrange
         UUID asesorId = UUID.randomUUID();
