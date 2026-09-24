@@ -4,5 +4,5 @@ import java.util.UUID;
 
 public interface AsignacionProyectoOutputPort {
 
-    boolean esCoordinadorAsignado(UUID estudianteUsuario, UUID coordinadorUsuario);
+    boolean esResponsableAsignado(UUID estudianteUsuario, UUID responsableUsuario);
 }

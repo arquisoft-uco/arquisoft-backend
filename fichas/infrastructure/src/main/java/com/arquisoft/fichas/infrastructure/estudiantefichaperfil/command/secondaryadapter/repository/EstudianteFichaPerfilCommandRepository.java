@@ -14,7 +14,14 @@ public interface EstudianteFichaPerfilCommandRepository
 
     boolean existsByFichaPerfilIdAndEstudianteId(UUID fichaPerfilId, UUID estudianteId);
 
-    long countByFichaPerfilId(UUID fichaPerfilId);
+    @Query("""
+            SELECT COUNT(ef)
+            FROM EstudianteFichaPerfilJpaEntity ef
+            JOIN EstudianteJpaEntity e ON e.id = ef.estudianteId
+            WHERE ef.fichaPerfilId = :fichaPerfilId
+              AND e.eliminadoEn IS NULL
+            """)
+    long countVigentesByFichaPerfilId(@Param("fichaPerfilId") UUID fichaPerfilId);
 
     void deleteByFichaPerfilIdAndEstudianteId(UUID fichaPerfilId, UUID estudianteId);
 
@@ -25,6 +32,7 @@ public interface EstudianteFichaPerfilCommandRepository
             FROM EstudianteFichaPerfilJpaEntity ef
             JOIN EstudianteJpaEntity e ON e.id = ef.estudianteId
             WHERE ef.fichaPerfilId = :fichaPerfilId
+              AND e.eliminadoEn IS NULL
             """)
     List<ContactoEstudianteEntity> findContactosByFichaPerfilId(@Param("fichaPerfilId") UUID fichaPerfilId);
 }

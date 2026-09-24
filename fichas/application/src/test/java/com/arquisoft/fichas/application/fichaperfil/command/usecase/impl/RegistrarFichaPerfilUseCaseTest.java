@@ -29,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -222,13 +221,9 @@ class RegistrarFichaPerfilUseCaseTest {
 
     private void stubConsultas(
             FichaPerfilDomain ficha, AsesorFichaDomain asesorFicha, boolean tituloYaExiste) {
-        when(asesorFichaFinder.obtener(ficha.getAsesorFicha())).thenReturn(presencia(asesorFicha));
+        when(asesorFichaFinder.obtener(ficha.getAsesorFicha())).thenReturn(asesorFicha);
         when(tituloFichaPerfilExisteFinder.obtener(ficha.getTituloProyecto()))
                 .thenReturn(tituloYaExiste);
-    }
-
-    private static Optional<AsesorFichaDomain> presencia(AsesorFichaDomain asesorFicha) {
-        return asesorFicha.esVacio() ? Optional.empty() : Optional.of(asesorFicha);
     }
 
     private static AsesorFichaDomain asesor() {

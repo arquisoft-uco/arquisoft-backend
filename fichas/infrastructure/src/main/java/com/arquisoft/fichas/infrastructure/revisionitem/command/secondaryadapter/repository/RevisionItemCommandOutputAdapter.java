@@ -6,6 +6,7 @@ import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -22,5 +23,10 @@ public class RevisionItemCommandOutputAdapter implements RevisionItemOutputPort 
     @Override
     public long contarPorItem(UUID itemId) {
         return repository.countByItemId(itemId);
+    }
+
+    @Override
+    public Optional<RevisionItemEntity> buscarPorId(UUID revisionItemId) {
+        return repository.findById(revisionItemId).map(RevisionItemJpaMapper::toEntity);
     }
 }

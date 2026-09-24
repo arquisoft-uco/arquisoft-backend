@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.application.coordinador.command.finder.impl;
 
+import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.CoordinadorOutputPort;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.entity.CoordinadorEntity;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ class CoordinadorPorIdFinderImplTest {
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).contains(entity);
+        assertThat(resultado.getId()).isEqualTo(id);
     }
 
     @Test
@@ -48,6 +49,6 @@ class CoordinadorPorIdFinderImplTest {
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).isEmpty();
+        assertThat(resultado).isEqualTo(CoordinadorDomain.VACIO);
     }
 }

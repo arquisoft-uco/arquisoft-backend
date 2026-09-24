@@ -23,12 +23,12 @@ public class AgregarCoordinadorUseCaseImpl implements AgregarCoordinadorUseCase 
     @Override
     public AgregacionCoordinadorResult ejecutar(CoordinadorDomain coordinador) {
         var vigente = coordinadorPorIdFinder.obtener(coordinador.getId());
-        logger.debug(CoordinadorKey.LOG_VERIFICACION_AGREGAR, coordinador.getId(), vigente.isPresent());
+        logger.debug(CoordinadorKey.LOG_VERIFICACION_AGREGAR, coordinador.getId(), !vigente.esVacio());
 
-        if (vigente.isPresent()) {
-            if (!coordinador.getOcurridoEn().isAfter(vigente.get().ocurridoEn())) {
+        if (!vigente.esVacio()) {
+            if (!coordinador.getOcurridoEn().isAfter(vigente.getOcurridoEn())) {
                 return AgregacionCoordinadorResultMapper.toResultDescartada(
-                        coordinador, vigente.get().ocurridoEn());
+                        coordinador, vigente.getOcurridoEn());
             }
             return AgregacionCoordinadorResultMapper.toResultDuplicada(coordinador);
         }

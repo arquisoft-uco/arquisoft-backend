@@ -7,7 +7,11 @@ public final class AsesorMapper {
 
     private AsesorMapper() {}
 
+    public static AsesorDomain toDomain(AsesorEntity entity) {
+        return AsesorDomain.reconstruir(entity.usuario(), entity.eliminadoEn());
+    }
+
     public static AsesorEntity toEntity(AsesorDomain asesor) {
-        return new AsesorEntity(asesor.getUsuario());
+        return new AsesorEntity(asesor.getUsuario(), asesor.getEliminadoEn());
     }
 }

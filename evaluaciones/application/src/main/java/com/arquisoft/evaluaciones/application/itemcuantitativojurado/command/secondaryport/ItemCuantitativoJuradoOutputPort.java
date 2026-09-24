@@ -8,8 +8,6 @@ public interface ItemCuantitativoJuradoOutputPort {
 
     void registrar(ItemCuantitativoJuradoEntity item);
 
-    boolean existeCategoriaPorId(UUID categoriaId);
-
     boolean existePorNombreYCategoriaIgnorandoMayusculas(
             String nombre, UUID categoriaId);
 }

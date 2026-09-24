@@ -3,7 +3,6 @@ package com.arquisoft.proyectos.application.coordinador.command.usecase.impl;
 import com.arquisoft.proyectos.application.coordinador.command.finder.CoordinadorPorIdFinder;
 import com.arquisoft.proyectos.application.coordinador.command.result.AgregacionCoordinadorResult;
 import com.arquisoft.proyectos.application.coordinador.command.secondaryport.CoordinadorOutputPort;
-import com.arquisoft.proyectos.application.coordinador.command.secondaryport.entity.CoordinadorEntity;
 import com.arquisoft.proyectos.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -51,7 +49,7 @@ class AgregarCoordinadorUseCaseImplTest {
         // Arrange
         var id = UUID.randomUUID();
         var coordinador = coordinador(id, Instant.now());
-        when(coordinadorPorIdFinder.obtener(id)).thenReturn(Optional.empty());
+        when(coordinadorPorIdFinder.obtener(id)).thenReturn(CoordinadorDomain.VACIO);
 
         // Act
         var resultado = useCase.ejecutar(coordinador);
@@ -69,8 +67,8 @@ class AgregarCoordinadorUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now().minus(1, ChronoUnit.HOURS);
         var coordinador = coordinador(id, Instant.now());
-        when(coordinadorPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(coordinadorPorIdFinder.obtener(id))
+                .thenReturn(CoordinadorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(coordinador);
@@ -88,8 +86,8 @@ class AgregarCoordinadorUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var coordinador = coordinador(id, vigente.minus(1, ChronoUnit.HOURS));
-        when(coordinadorPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(coordinadorPorIdFinder.obtener(id))
+                .thenReturn(CoordinadorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(coordinador);
@@ -109,8 +107,8 @@ class AgregarCoordinadorUseCaseImplTest {
         var id = UUID.randomUUID();
         var vigente = Instant.now();
         var coordinador = coordinador(id, vigente);
-        when(coordinadorPorIdFinder.obtener(id)).thenReturn(
-                Optional.of(new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente)));
+        when(coordinadorPorIdFinder.obtener(id))
+                .thenReturn(CoordinadorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", vigente));
 
         // Act
         var resultado = useCase.ejecutar(coordinador);

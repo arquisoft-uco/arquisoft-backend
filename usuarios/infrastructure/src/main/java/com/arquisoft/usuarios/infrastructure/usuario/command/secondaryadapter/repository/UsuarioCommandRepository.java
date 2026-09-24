@@ -12,4 +12,10 @@ public interface UsuarioCommandRepository extends JpaRepository<UsuarioJpaEntity
     boolean existsByEmailIgnoreCase(String email);
 
     boolean existsByContacto(String contacto);
+
+    boolean existsByIdentificadorAndIdNot(String identificador, UUID usuario);
+
+    boolean existsByEmailIgnoreCaseAndIdNot(String email, UUID usuario);
+
+    boolean existsByContactoAndIdNot(String contacto, UUID usuario);
 }

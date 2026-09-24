@@ -10,6 +10,12 @@ public enum ConsumidorKey implements ClaveMensaje {
     LOG_ESTUDIANTES_ASIGNADOS_RECIBIDO("notificaciones.infraestructura.consumidor.log.estudiantes-asignados-recibido", 2),
     LOG_SOLICITUD_NOVEDAD_COORDINADOR_RECIBIDO(
             "notificaciones.infraestructura.consumidor.log.solicitud-novedad-coordinador-recibido", 2),
+    LOG_SOLICITUD_NOVEDAD_ASESOR_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-novedad-asesor-recibido", 2),
+    LOG_SOLICITUD_CAMBIO_ASESOR_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-cambio-asesor-recibido", 2),
+    LOG_SOLICITUD_AMPLIACION_PLAZO_RECIBIDO(
+            "notificaciones.infraestructura.consumidor.log.solicitud-ampliacion-plazo-recibido", 2),
     LOG_REVISION_ITEM_AGREGADO_RECIBIDO("notificaciones.infraestructura.consumidor.log.revision-item-agregado-recibido", 2),
     LOG_NOTIFICACION_ENVIADA("notificaciones.infraestructura.consumidor.log.notificacion-enviada", 2),
     LOG_NOTIFICACION_DUPLICADA("notificaciones.infraestructura.consumidor.log.notificacion-duplicada", 2),

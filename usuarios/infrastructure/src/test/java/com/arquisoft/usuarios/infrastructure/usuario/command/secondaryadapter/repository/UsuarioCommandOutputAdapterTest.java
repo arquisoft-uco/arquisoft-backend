@@ -2,12 +2,14 @@ package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.r
 
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -104,5 +106,113 @@ class UsuarioCommandOutputAdapterTest {
 
         // Act & Assert
         assertThat(adapter.existePorContacto("573001112233")).isFalse();
+    }
+
+    @Test
+    void debeRetornarEntidadMapeada_cuandoObtenerPorIdEncuentraElUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var jpa = UsuarioJpaEntity.builder().id(id).identificador("usr001").nombre("Ana Pérez")
+                .email("ana@uco.edu.co").contacto("573001112233").estadoId("ACTIVO").build();
+        when(usuarioCommandRepository.findById(id)).thenReturn(Optional.of(jpa));
+
+        // Act
+        var resultado = adapter.obtenerPorId(id);
+
+        // Assert
+        assertThat(resultado).contains(
+                new UsuarioEntity(id, "usr001", "Ana Pérez", "ana@uco.edu.co", "573001112233", "ACTIVO"));
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoObtenerPorIdNoEncuentraElUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        when(usuarioCommandRepository.findById(id)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThat(adapter.obtenerPorId(id)).isEmpty();
+    }
+
+    @Test
+    void debeMapearYGuardarLaEntidadComoJpaEntity_cuandoActualizaElUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var entity = new UsuarioEntity(
+                id, "usr999", "Ana Actualizada", "actualizada@uco.edu.co", "573009998877", "ACTIVO");
+
+        // Act
+        adapter.actualizar(entity);
+
+        // Assert
+        verify(usuarioCommandRepository, times(1)).save(argThat(jpa ->
+                jpa.getId().equals(id)
+                        && jpa.getIdentificador().equals("usr999")
+                        && jpa.getNombre().equals("Ana Actualizada")
+                        && jpa.getEmail().equals("actualizada@uco.edu.co")
+                        && jpa.getContacto().equals("573009998877")));
+    }
+
+    @Test
+    void debeRetornarTrue_cuandoExistePorIdentificadorEnOtroUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        when(usuarioCommandRepository.existsByIdentificadorAndIdNot("usr001", id)).thenReturn(true);
+
+        // Act & Assert
+        assertThat(adapter.existePorIdentificadorEnOtroUsuario("usr001", id)).isTrue();
+        verify(usuarioCommandRepository, times(1)).existsByIdentificadorAndIdNot("usr001", id);
+    }
+
+    @Test
+    void debeRetornarFalse_cuandoNoExistePorIdentificadorEnOtroUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        when(usuarioCommandRepository.existsByIdentificadorAndIdNot("usr001", id)).thenReturn(false);
+
+        // Act & Assert
+        assertThat(adapter.existePorIdentificadorEnOtroUsuario("usr001", id)).isFalse();
+    }
+
+    @Test
+    void debeRetornarTrue_cuandoExistePorEmailEnOtroUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        when(usuarioCommandRepository.existsByEmailIgnoreCaseAndIdNot("ana@uco.edu.co", id)).thenReturn(true);
+
+        // Act & Assert
+        assertThat(adapter.existePorEmailEnOtroUsuario("ana@uco.edu.co", id)).isTrue();
+        verify(usuarioCommandRepository, times(1)).existsByEmailIgnoreCaseAndIdNot("ana@uco.edu.co", id);
+    }
+
+    @Test
+    void debeRetornarFalse_cuandoNoExistePorEmailEnOtroUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        when(usuarioCommandRepository.existsByEmailIgnoreCaseAndIdNot("ana@uco.edu.co", id)).thenReturn(false);
+
+        // Act & Assert
+        assertThat(adapter.existePorEmailEnOtroUsuario("ana@uco.edu.co", id)).isFalse();
+    }
+
+    @Test
+    void debeRetornarTrue_cuandoExistePorContactoEnOtroUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        when(usuarioCommandRepository.existsByContactoAndIdNot("573001112233", id)).thenReturn(true);
+
+        // Act & Assert
+        assertThat(adapter.existePorContactoEnOtroUsuario("573001112233", id)).isTrue();
+        verify(usuarioCommandRepository, times(1)).existsByContactoAndIdNot("573001112233", id);
+    }
+
+    @Test
+    void debeRetornarFalse_cuandoNoExistePorContactoEnOtroUsuario() {
+        // Arrange
+        var id = UUID.randomUUID();
+        when(usuarioCommandRepository.existsByContactoAndIdNot("573001112233", id)).thenReturn(false);
+
+        // Act & Assert
+        assertThat(adapter.existePorContactoEnOtroUsuario("573001112233", id)).isFalse();
     }
 }

@@ -1,10 +1,16 @@
 package com.arquisoft.usuarios.domain.usuario;
 
+import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.shared.util.UtilTexto;
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
 
 import java.util.UUID;
 
 public final class UsuarioDomain {
+
+    public static final UsuarioDomain VACIO = UsuarioDomain.reconstruir(UtilUUID.obtenerUUIDPorDefecto(),
+            UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, EstadoUsuario.VACIO);
 
     private UUID id;
     private String identificador;
@@ -40,6 +46,25 @@ public final class UsuarioDomain {
         usuario.setEstadoUsuario(estado);
 
         return usuario;
+    }
+
+    public void modificar(ModificacionUsuarioDomain modificacion) {
+        if (UtilObjeto.noEsNulo(modificacion.getIdentificador())) {
+            setIdentificador(modificacion.getIdentificador());
+        }
+        if (UtilObjeto.noEsNulo(modificacion.getNombre())) {
+            setNombre(modificacion.getNombre());
+        }
+        if (UtilObjeto.noEsNulo(modificacion.getEmail())) {
+            setEmail(modificacion.getEmail());
+        }
+        if (UtilObjeto.noEsNulo(modificacion.getContacto())) {
+            setContacto(modificacion.getContacto());
+        }
+    }
+
+    public boolean estaActivo() {
+        return estado == EstadoUsuario.ACTIVO;
     }
 
     private void setId(UUID id) {
@@ -92,5 +117,9 @@ public final class UsuarioDomain {
 
     public EstadoUsuario getEstado() {
         return estado;
+    }
+
+    public boolean esVacio() {
+        return this == VACIO;
     }
 }

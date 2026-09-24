@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.application.remitente.command.finder.impl;
 
+import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.remitente.command.secondaryport.RemitenteOutputPort;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,7 +31,7 @@ class RemitenteDeUsuarioFinderImplTest {
         when(remitenteOutputPort.buscarIdPorUsuario(usuario)).thenReturn(Optional.of(remitenteId));
 
         // Act & Assert
-        assertThat(finder.obtener(usuario)).contains(remitenteId);
+        assertThat(finder.obtener(usuario)).isEqualTo(remitenteId);
     }
 
     @Test
@@ -40,6 +41,6 @@ class RemitenteDeUsuarioFinderImplTest {
         when(remitenteOutputPort.buscarIdPorUsuario(usuario)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThat(finder.obtener(usuario)).isEmpty();
+        assertThat(finder.obtener(usuario)).isEqualTo(UtilUUID.obtenerUUIDPorDefecto());
     }
 }

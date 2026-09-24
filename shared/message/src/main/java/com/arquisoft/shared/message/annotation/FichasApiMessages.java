@@ -217,6 +217,26 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar revisiones de ítem";
     }
 
+    public static final class ObservacionItem {
+
+        private ObservacionItem() {}
+
+        public static final String TAG_NAME = "Observaciones de Ítem";
+        public static final String TAG_DESCRIPTION = "Gestión de observaciones sobre revisiones de ítems de fichas de perfil";
+
+        public static final String AGREGAR_SUMMARY = "Agregar observación a una revisión de ítem";
+        public static final String AGREGAR_DESCRIPTION =
+                "Permite al asesor asignado a la ficha registrar una observación de texto sobre una "
+                        + "revisión de ítem existente. El estado inicial de la observación siempre es "
+                        + "'PENDIENTE' y no puede agregarse si la revisión está cerrada.";
+        public static final String AGREGAR_RESP_201 = "Observación agregada exitosamente — retorna el UUID asignado";
+        public static final String AGREGAR_RESP_400 = "Observación inválida o ausente";
+        public static final String AGREGAR_RESP_403 = "Sin permiso para agregar observaciones";
+        public static final String AGREGAR_RESP_422 =
+                "Revisión no encontrada, revisión cerrada, ficha no asesorada por el usuario autenticado "
+                        + "o texto de observación duplicado";
+    }
+
     public static final class EstudianteFichaPerfil {
 
         private EstudianteFichaPerfil() {}

@@ -23,17 +23,24 @@ public class AgregarEstudianteUseCaseImpl implements AgregarEstudianteUseCase {
     @Override
     public AgregacionEstudianteResult ejecutar(EstudianteDomain estudiante) {
         var vigente = estudiantePorIdFinder.obtener(estudiante.getId());
-        logger.debug(EstudianteProyectosKey.LOG_VERIFICACION_AGREGAR, estudiante.getId(), vigente.isPresent());
+        logger.debug(EstudianteProyectosKey.LOG_VERIFICACION_AGREGAR, estudiante.getId(), !vigente.esVacio());
 
-        if (vigente.isPresent()) {
-            if (!estudiante.getOcurridoEn().isAfter(vigente.get().ocurridoEn())) {
-                return AgregacionEstudianteResultMapper.toResultDescartada(
-                        estudiante, vigente.get().ocurridoEn());
-            }
+        if (vigente.esVacio()) {
+            estudianteOutputPort.guardar(EstudianteMapper.toEntity(estudiante));
+            return AgregacionEstudianteResultMapper.toResultAgregada(estudiante);
+        }
+
+        if (!estudiante.getOcurridoEn().isAfter(vigente.getOcurridoEn())) {
+            return AgregacionEstudianteResultMapper.toResultDescartada(estudiante, vigente.getOcurridoEn());
+        }
+
+        if (!vigente.estaEliminado()) {
             return AgregacionEstudianteResultMapper.toResultDuplicada(estudiante);
         }
 
-        estudianteOutputPort.guardar(EstudianteMapper.toEntity(estudiante));
-        return AgregacionEstudianteResultMapper.toResultAgregada(estudiante);
+        vigente.reactivar(estudiante.getIdentificador(), estudiante.getNombre(), estudiante.getEmail(),
+                estudiante.getOcurridoEn());
+        estudianteOutputPort.reactivar(EstudianteMapper.toEntity(vigente));
+        return AgregacionEstudianteResultMapper.toResultReactivada(vigente);
     }
 }

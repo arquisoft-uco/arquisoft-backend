@@ -25,7 +25,6 @@ public final class FichasCodes {
         public static final String FICHA_NO_PROPIETARIO = "FICHA_NO_PROPIETARIO";
         public static final String FICHA_NO_PERTENECE_ASESOR = "FICHA_NO_PERTENECE_ASESOR";
         public static final String MISMO_ASESOR = "MISMO_ASESOR";
-        public static final String ESTADO_TERMINAL = "ESTADO_TERMINAL";
     }
 
     public static final class ItemFichaPerfil {
@@ -60,6 +59,22 @@ public final class FichasCodes {
         public static final String ESTADO_REVISION_NO_ENCONTRADO = "REVISION_ITEM_ESTADO_REVISION_NO_ENCONTRADO";
         public static final String YA_EXISTE = "REVISION_ITEM_YA_EXISTE";
         public static final String REVISION_ITEM_REQUERIDO = "REVISION_ITEM_REVISION_ITEM_REQUERIDO";
+        public static final String NO_ENCONTRADA = "REVISION_ITEM_NO_ENCONTRADA";
+        public static final String CERRADA = "REVISION_ITEM_CERRADA";
+    }
+
+    public static final class ObservacionItem {
+
+        private ObservacionItem() {}
+
+        public static final String REVISION_ITEM_REQUERIDO = "OBSERVACION_ITEM_REVISION_ITEM_REQUERIDO";
+        public static final String OBSERVACION_REQUERIDA = "OBSERVACION_ITEM_OBSERVACION_REQUERIDA";
+        public static final String OBSERVACION_DEMASIADO_LARGA = "OBSERVACION_ITEM_OBSERVACION_DEMASIADO_LARGA";
+        public static final String OBSERVACION_ITEM_REQUERIDO = "OBSERVACION_ITEM_OBSERVACION_ITEM_REQUERIDO";
+        public static final String ASESOR_FICHA_REQUERIDO = "OBSERVACION_ITEM_ASESOR_FICHA_REQUERIDO";
+        public static final String OBSERVACION_ITEM_DUPLICADA = "OBSERVACION_ITEM_DUPLICADA";
+        public static final String ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO =
+                "ESTADO_OBSERVACION_REVISION_NO_ENCONTRADO";
     }
 
     public static final class Estudiante {

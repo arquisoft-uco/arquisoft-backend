@@ -10,7 +10,7 @@ public final class EstadoFichaPerfilTerminalException extends DomainException {
 
     public EstadoFichaPerfilTerminalException(EstadoFicha estadoActual) {
         super(
-                Mensajes.formatear(EstadoFichaPerfilKey.ERROR_ESTADO_TERMINAL, estadoActual),
+                Mensajes.formatear(EstadoFichaPerfilKey.ERROR_ESTADO_TERMINAL, estadoActual.getNombre()),
                 FichasCodes.EstadoFichaPerfil.ESTADO_TERMINAL
         );
     }

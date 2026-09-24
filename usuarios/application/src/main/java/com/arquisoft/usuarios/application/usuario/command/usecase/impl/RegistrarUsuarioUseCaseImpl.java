@@ -62,19 +62,19 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
         var usuario = UsuarioDomain.crear(identidadId, registro);
         usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));
 
-        if (registro.getRoles().contains(UsuariosRealmRoles.ESTUDIANTE)) {
+        if (registro.contieneRol(UsuariosRealmRoles.ESTUDIANTE)) {
             agregarEstudianteUseCase.ejecutar(usuario);
         }
 
-        if (registro.getRoles().contains(UsuariosRealmRoles.COORDINADOR)) {
+        if (registro.contieneRol(UsuariosRealmRoles.COORDINADOR)) {
             agregarCoordinadorUseCase.ejecutar(usuario);
         }
 
-        if (registro.getRoles().contains(UsuariosRealmRoles.ASESOR_FICHA)) {
+        if (registro.contieneRol(UsuariosRealmRoles.ASESOR_FICHA)) {
             agregarAsesorFichaUseCase.ejecutar(usuario);
         }
 
-        if (registro.getRoles().contains(UsuariosRealmRoles.ASESOR)) {
+        if (registro.contieneRol(UsuariosRealmRoles.ASESOR)) {
             agregarAsesorUseCase.ejecutar(usuario);
         }
 

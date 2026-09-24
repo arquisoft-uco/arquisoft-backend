@@ -6,7 +6,9 @@ import com.arquisoft.shared.util.UtilEnum;
 public enum EstadoUsuario {
 
     ACTIVO("Activo"),
-    INACTIVO("Inactivo");
+    INACTIVO("Inactivo"),
+
+    VACIO("");
 
     private final String id;
     private final String nombre;
@@ -26,6 +28,7 @@ public enum EstadoUsuario {
 
     public static EstadoUsuario desde(String id) {
         return UtilEnum.desde(EstadoUsuario.class, id)
+                .filter(estado -> estado != VACIO)
                 .orElseThrow(() -> new EstadoUsuarioNoEncontradoException(id));
     }
 }

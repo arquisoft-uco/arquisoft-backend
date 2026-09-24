@@ -28,6 +28,20 @@ public class FichasUsuariosQueueConfig {
                 arquisoftDeadLetterExchange);
     }
 
+    public static final String ESTUDIANTE_REMOVIDO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.ESTUDIANTE_REMOVIDO;
+
+    @Bean
+    public Declarables fichasEstudianteRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTE_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.ESTUDIANTE_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     public static final String ASESOR_FICHA_AGREGADO_QUEUE =
             FichasQueues.PREFIJO + EventTopics.Usuarios.ASESOR_FICHA_AGREGADO;
 
@@ -38,6 +52,20 @@ public class FichasUsuariosQueueConfig {
         return ColaEvento.declarar(
                 ASESOR_FICHA_AGREGADO_QUEUE,
                 EventTopics.Usuarios.ASESOR_FICHA_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String USUARIO_MODIFICADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.USUARIO_MODIFICADO;
+
+    @Bean
+    public Declarables fichasUsuarioModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                USUARIO_MODIFICADO_QUEUE,
+                EventTopics.Usuarios.USUARIO_MODIFICADO,
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }

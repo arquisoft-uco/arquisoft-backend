@@ -7,3 +7,6 @@ rutas:
   usuarios:
     usuarios:
       base: /usuarios
+      estudiante: /{usuarioId}/estudiante
+      asesor: /{usuarioId}/asesor
+      modificar: /{usuarioId}

@@ -4,9 +4,13 @@ import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioO
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.mapper.UsuarioJpaMapper;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.usuarios.ModificarUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -22,6 +26,17 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
     }
 
     @Override
+    public void actualizar(UsuarioEntity usuario) {
+        usuarioCommandRepository.save(UsuarioJpaMapper.toJpaEntity(usuario));
+        logger.debug(ModificarUsuarioKey.LOG_ACTUALIZADO, usuario.id());
+    }
+
+    @Override
+    public Optional<UsuarioEntity> obtenerPorId(UUID id) {
+        return usuarioCommandRepository.findById(id).map(UsuarioJpaMapper::toEntity);
+    }
+
+    @Override
     public boolean existePorIdentificador(String identificador) {
         return usuarioCommandRepository.existsByIdentificador(identificador);
     }
@@ -34,5 +49,20 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
     @Override
     public boolean existePorContacto(String contacto) {
         return usuarioCommandRepository.existsByContacto(contacto);
+    }
+
+    @Override
+    public boolean existePorIdentificadorEnOtroUsuario(String identificador, UUID usuario) {
+        return usuarioCommandRepository.existsByIdentificadorAndIdNot(identificador, usuario);
+    }
+
+    @Override
+    public boolean existePorEmailEnOtroUsuario(String email, UUID usuario) {
+        return usuarioCommandRepository.existsByEmailIgnoreCaseAndIdNot(email, usuario);
+    }
+
+    @Override
+    public boolean existePorContactoEnOtroUsuario(String contacto, UUID usuario) {
+        return usuarioCommandRepository.existsByContactoAndIdNot(contacto, usuario);
     }
 }

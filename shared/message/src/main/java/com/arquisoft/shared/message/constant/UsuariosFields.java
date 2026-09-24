@@ -11,6 +11,7 @@ public final class UsuariosFields {
 
         private Usuario() {}
 
+        public static final String USUARIO = "usuario";
         public static final String IDENTIFICADOR = "identificador";
         public static final String NOMBRE = "nombre";
         public static final String NOMBRES = "nombres";

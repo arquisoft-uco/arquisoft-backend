@@ -23,7 +23,7 @@ class AsignacionProyectoOutputAdapterTest {
         UUID coordinador = UUID.randomUUID();
 
         // Act
-        boolean resultado = adapter.esCoordinadorAsignado(estudiante, coordinador);
+        boolean resultado = adapter.esResponsableAsignado(estudiante, coordinador);
 
         // Assert
         assertThat(resultado).isTrue();

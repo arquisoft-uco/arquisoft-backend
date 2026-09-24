@@ -145,4 +145,20 @@ class AsesorFichaCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isEmpty();
     }
+
+    @Test
+    void debeGuardarLaEntidadActualizada_cuandoSeInvocaActualizar() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var ocurridoEn = Instant.now();
+        var entity = new AsesorFichaEntity(id, "20161020999", "Ana Actualizada", "actualizada@uco.edu.co",
+                ocurridoEn);
+
+        // Act
+        adapter.actualizar(entity);
+
+        // Assert
+        verify(asesorFichaRepository, times(1)).save(any(AsesorFichaJpaEntity.class));
+        verify(logger).debug(AsesorFichaKey.LOG_ACTUALIZADO, id);
+    }
 }
