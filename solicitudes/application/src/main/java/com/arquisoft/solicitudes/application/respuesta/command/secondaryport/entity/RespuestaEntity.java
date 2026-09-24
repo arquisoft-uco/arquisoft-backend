@@ -1,12 +1,12 @@
 package com.arquisoft.solicitudes.application.respuesta.command.secondaryport.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public record RespuestaEntity(
         UUID id,
         UUID solicitud,
-        LocalDateTime fechaRespuesta,
+        Instant fechaRespuesta,
         String contenido,
         String estadoRespuesta) {
 }

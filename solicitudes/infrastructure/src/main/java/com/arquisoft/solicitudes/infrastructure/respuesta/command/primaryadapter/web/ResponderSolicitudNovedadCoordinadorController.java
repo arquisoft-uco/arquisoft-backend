@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
 
 @RestController
 @RequestMapping("${rutas.solicitudes.respuesta.base:/solicitudes}")
@@ -67,8 +66,8 @@ public class ResponderSolicitudNovedadCoordinadorController {
             @RequestBody ResponderSolicitudNovedadCoordinadorRequestDTO request,
             @AuthenticationPrincipal Jwt jwt) {
 
-        UUID coordinadorUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
-        UUID id = responderSolicitudNovedadCoordinadorInteractor.ejecutar(
+        var coordinadorUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var id = responderSolicitudNovedadCoordinadorInteractor.ejecutar(
                 ResponderSolicitudNovedadCoordinadorRequestMapper.toCommand(
                         request, solicitudId, coordinadorUsuario));
 

@@ -13,8 +13,6 @@ import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudT
 import com.arquisoft.solicitudes.domain.respuesta.RespuestaDomain;
 import com.arquisoft.solicitudes.domain.respuesta.RespuestaNovedadCoordinadorDomain;
 import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorRespondidaEvent;
-import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
-import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -38,21 +36,20 @@ public class ResponderSolicitudNovedadCoordinadorUseCaseImpl
         logger.info(RespuestaKey.LOG_RESPONDIENDO,
                 entrada.getSolicitud(), entrada.getCoordinadorUsuario());
 
-        ResumenSolicitud resumen = datosSolicitudFinder.obtener(entrada.getSolicitud());
-        boolean existe = !resumen.esVacio();
-        boolean yaRespondida = solicitudTieneRespuestasFinder.obtener(entrada.getSolicitud());
+        var resumen = datosSolicitudFinder.obtener(entrada.getSolicitud());
+        var existe = !resumen.esVacio();
+        var yaRespondida = solicitudTieneRespuestasFinder.obtener(entrada.getSolicitud());
 
         logger.debug(RespuestaKey.LOG_VERIFICACION_RESPUESTA, existe, yaRespondida);
 
         validator.validar(entrada.getSolicitud(), existe, resumen.tipoSolicitud(),
                 resumen.destinatarioUsuario(), entrada.getCoordinadorUsuario(), yaRespondida);
 
-        RespuestaDomain respuesta = RespuestaDomain.crear(
-                entrada.getSolicitud(), entrada.getContenido());
+        var respuesta = RespuestaDomain.crear(entrada.getSolicitud(), entrada.getContenido());
         respuestaOutputPort.registrar(RespuestaMapper.toEntity(respuesta));
 
-        UsuarioDomain remitente = datosUsuarioFinder.obtener(resumen.remitenteUsuario());
-        UsuarioDomain coordinador = datosUsuarioFinder.obtener(resumen.destinatarioUsuario());
+        var remitente = datosUsuarioFinder.obtener(resumen.remitenteUsuario());
+        var coordinador = datosUsuarioFinder.obtener(resumen.destinatarioUsuario());
 
         eventPublisher.publish(new SolicitudNovedadCoordinadorRespondidaEvent(
                 entrada.getSolicitud(), respuesta.getId(), respuesta.getContenido(),

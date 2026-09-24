@@ -3,6 +3,7 @@ package com.arquisoft.solicitudes.domain.respuesta;
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.message.constant.SolicitudesLimits;
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -11,7 +12,7 @@ import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 public final class RespuestaDomain {
@@ -19,19 +20,19 @@ public final class RespuestaDomain {
     public static final RespuestaDomain VACIO = new RespuestaDomain(
             UtilUUID.obtenerUUIDPorDefecto(),
             UtilUUID.obtenerUUIDPorDefecto(),
-            LocalDateTime.MIN,
+            UtilFecha.VACIO,
             UtilTexto.VACIO,
             EstadoRespuesta.VACIO);
 
     private UUID id;
     private UUID solicitud;
-    private LocalDateTime fechaRespuesta;
+    private Instant fechaRespuesta;
     private String contenido;
     private EstadoRespuesta estadoRespuesta;
 
     private RespuestaDomain() {}
 
-    private RespuestaDomain(UUID id, UUID solicitud, LocalDateTime fechaRespuesta,
+    private RespuestaDomain(UUID id, UUID solicitud, Instant fechaRespuesta,
                             String contenido, EstadoRespuesta estadoRespuesta) {
         this.id = id;
         this.solicitud = solicitud;
@@ -54,7 +55,7 @@ public final class RespuestaDomain {
         return respuesta;
     }
 
-    public static RespuestaDomain reconstruir(UUID id, UUID solicitud, LocalDateTime fechaRespuesta,
+    public static RespuestaDomain reconstruir(UUID id, UUID solicitud, Instant fechaRespuesta,
                                               String contenido, EstadoRespuesta estadoRespuesta) {
         return new RespuestaDomain(id, solicitud, fechaRespuesta, contenido, estadoRespuesta);
     }
@@ -64,7 +65,7 @@ public final class RespuestaDomain {
     }
 
     private void setFechaRespuesta() {
-        this.fechaRespuesta = LocalDateTime.now();
+        this.fechaRespuesta = UtilFecha.generarInstanteActual();
     }
 
     private void setSolicitud(UUID solicitud, ValidationResult result) {
@@ -104,7 +105,7 @@ public final class RespuestaDomain {
         return solicitud;
     }
 
-    public LocalDateTime getFechaRespuesta() {
+    public Instant getFechaRespuesta() {
         return fechaRespuesta;
     }
 
