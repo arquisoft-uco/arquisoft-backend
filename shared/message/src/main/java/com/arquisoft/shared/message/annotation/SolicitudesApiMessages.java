@@ -68,5 +68,18 @@ public final class SolicitudesApiMessages {
         public static final String ENVIAR_AMPLIACION_PLAZO_RESP_400 = "Datos inválidos";
         public static final String ENVIAR_AMPLIACION_PLAZO_RESP_422 =
                 "Remitente o destinatario no encontrado, o solicitud duplicada";
+
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_SUMMARY =
+                "Eliminar solicitud de novedad para el coordinador";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_DESCRIPTION =
+                "Permite a un estudiante eliminar definitivamente una solicitud de novedad para el "
+                        + "coordinador que envió por error.";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_204 = "Solicitud eliminada";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_403 =
+                "Sin permisos para eliminar solicitudes de novedad para el coordinador";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_422 =
+                "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
     }
 }
