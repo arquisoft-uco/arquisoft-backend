@@ -2,15 +2,12 @@ package com.arquisoft.solicitudes.application.solicitud.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
-import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudTieneRespuestasFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.usecase.EliminarSolicitudNovedadAsesorUseCase;
 import com.arquisoft.solicitudes.application.solicitud.command.validator.EliminarSolicitudNovedadAsesorValidator;
 import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudNovedadAsesorDomain;
-import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudNovedadAsesorEliminadaEvent;
-import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +20,6 @@ public class EliminarSolicitudNovedadAsesorUseCaseImpl
     private final DatosSolicitudFinder datosSolicitudFinder;
     private final SolicitudTieneRespuestasFinder solicitudTieneRespuestasFinder;
     private final EliminarSolicitudNovedadAsesorValidator validator;
-    private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
@@ -42,10 +38,6 @@ public class EliminarSolicitudNovedadAsesorUseCaseImpl
                 entrada.getRemitenteUsuario(), tieneRespuestas);
 
         solicitudOutputPort.eliminar(entrada.getSolicitud());
-
-        eventPublisher.publish(new SolicitudNovedadAsesorEliminadaEvent(
-                entrada.getSolicitud(), entrada.getRemitenteUsuario(),
-                TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()));
 
         logger.info(SolicitudKey.LOG_ELIMINADA_ASESOR, entrada.getSolicitud());
     }

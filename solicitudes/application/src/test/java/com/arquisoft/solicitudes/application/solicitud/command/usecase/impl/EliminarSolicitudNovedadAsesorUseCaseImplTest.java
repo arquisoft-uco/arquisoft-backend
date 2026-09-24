@@ -2,7 +2,6 @@ package com.arquisoft.solicitudes.application.solicitud.command.usecase.impl;
 
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.SolicitudKey;
-import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
@@ -10,20 +9,17 @@ import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudT
 import com.arquisoft.solicitudes.application.solicitud.command.secondaryport.SolicitudOutputPort;
 import com.arquisoft.solicitudes.application.solicitud.command.validator.EliminarSolicitudNovedadAsesorValidator;
 import com.arquisoft.solicitudes.domain.solicitud.EliminacionSolicitudNovedadAsesorDomain;
-import com.arquisoft.solicitudes.domain.solicitud.event.SolicitudNovedadAsesorEliminadaEvent;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudConRespuestasException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -42,7 +38,6 @@ class EliminarSolicitudNovedadAsesorUseCaseImplTest {
     @Mock private DatosSolicitudFinder datosSolicitudFinder;
     @Mock private SolicitudTieneRespuestasFinder solicitudTieneRespuestasFinder;
     @Mock private EliminarSolicitudNovedadAsesorValidator validator;
-    @Mock private EventPublisher eventPublisher;
     @Mock private AppLogger logger;
 
     private EliminarSolicitudNovedadAsesorUseCaseImpl useCase;
@@ -55,7 +50,7 @@ class EliminarSolicitudNovedadAsesorUseCaseImplTest {
     void setUp() {
         useCase = new EliminarSolicitudNovedadAsesorUseCaseImpl(
                 solicitudOutputPort, datosSolicitudFinder, solicitudTieneRespuestasFinder,
-                validator, eventPublisher, logger);
+                validator, logger);
 
         solicitud = UUID.randomUUID();
         remitenteUsuario = UUID.randomUUID();
@@ -69,7 +64,7 @@ class EliminarSolicitudNovedadAsesorUseCaseImplTest {
     }
 
     @Test
-    void debeEliminarYPublicarElEvento_cuandoElFlujoEsValido() {
+    void debeEliminar_cuandoElFlujoEsValido() {
         // Arrange
         stubSolicitudPropiaSinRespuestas();
 
@@ -80,23 +75,12 @@ class EliminarSolicitudNovedadAsesorUseCaseImplTest {
         verify(solicitudOutputPort).eliminar(solicitud);
         verify(datosSolicitudFinder, times(1)).obtener(solicitud);
         verify(solicitudTieneRespuestasFinder, times(1)).obtener(solicitud);
-
-        var captor = ArgumentCaptor.forClass(SolicitudNovedadAsesorEliminadaEvent.class);
-        verify(eventPublisher).publish(captor.capture());
-        var evento = captor.getValue();
-        assertThat(evento.getSolicitudId()).isEqualTo(solicitud);
-        assertThat(evento.getRemitenteUsuario()).isEqualTo(remitenteUsuario);
-        assertThat(evento.getTipoSolicitud())
-                .isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId());
-        assertThat(evento.getTemaEvento())
-                .isEqualTo(SolicitudNovedadAsesorEliminadaEvent.EVENT_TOPIC);
-
         verify(logger).info(eq(SolicitudKey.LOG_ELIMINANDO_ASESOR), eq(solicitud), eq(remitenteUsuario));
         verify(logger).info(eq(SolicitudKey.LOG_ELIMINADA_ASESOR), eq(solicitud));
     }
 
     @Test
-    void debeAbortarSinEliminarNiPublicar_cuandoElValidatorLanza() {
+    void debeAbortarSinEliminar_cuandoElValidatorLanza() {
         // Arrange
         stubSolicitudPropiaSinRespuestas();
         doThrow(new SolicitudConRespuestasException(solicitud))
@@ -107,7 +91,6 @@ class EliminarSolicitudNovedadAsesorUseCaseImplTest {
                 .isInstanceOf(SolicitudConRespuestasException.class);
 
         verify(solicitudOutputPort, never()).eliminar(any());
-        verify(eventPublisher, never()).publish(any());
         verify(logger, never()).info(eq(SolicitudKey.LOG_ELIMINADA_ASESOR), any());
     }
 
@@ -144,7 +127,7 @@ class EliminarSolicitudNovedadAsesorUseCaseImplTest {
     }
 
     @Test
-    void debeConsultarValidarEliminarYPublicarEnOrden_cuandoElFlujoEsValido() {
+    void debeConsultarValidarYEliminarEnOrden_cuandoElFlujoEsValido() {
         // Arrange
         stubSolicitudPropiaSinRespuestas();
 
@@ -153,11 +136,10 @@ class EliminarSolicitudNovedadAsesorUseCaseImplTest {
 
         // Assert
         var orden = inOrder(datosSolicitudFinder, solicitudTieneRespuestasFinder,
-                validator, solicitudOutputPort, eventPublisher);
+                validator, solicitudOutputPort);
         orden.verify(datosSolicitudFinder).obtener(solicitud);
         orden.verify(solicitudTieneRespuestasFinder).obtener(solicitud);
         orden.verify(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean());
         orden.verify(solicitudOutputPort).eliminar(solicitud);
-        orden.verify(eventPublisher).publish(any());
     }
 }
