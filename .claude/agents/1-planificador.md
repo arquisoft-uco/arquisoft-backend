@@ -305,7 +305,9 @@ la FASE 3, así que **eso sí vive aquí**:
 **Combinaciones únicas:** {atributos} → `UNIQUE` en Flyway + validación previa en el use case.
 ### Eventos de Dominio
 {Si la pregunta 5 fue A/B: tabla Evento/Clase/temaEvento/Consumidor/Cuándo, seguida de
-"**Publicación:** directa desde el `UseCase` tras persistir".
+"**Publicación:** directa desde el `UseCase` tras persistir". La columna Consumidor nombra un
+`{Evento}Consumer` real, ya existente o planificado en esta misma HU. Si no hay ninguno, el evento no
+entra en el plan: sin cola enlazada, el mensaje se descarta (`arquisoft-arquitectura/references/eventos.md`).
 Si fue C: exactamente la línea `Eventos: ninguno. Razón: {la del usuario}` y **nada más** — sin
 tabla vacía, sin línea de Publicación. Ver la tabla de las seis eliminaciones en FASE 3.}
 
@@ -404,7 +406,7 @@ Sustituye `{feature}` por el paquete en minúsculas sin separadores (`fichaperfi
 | application | `.../command/secondaryport/{Entidad}OutputPort.java` + `secondaryport/entity/{Entidad}Entity.java` + `secondaryport/mapper/{Entidad}Mapper.java` | Habla `Entity` (record plano), nunca `Domain` |
 | application | `.../command/result/{Concepto}Result.java` + `result/mapper/{Concepto}ResultMapper.java` | SOLO si la pregunta 11 fue **C) Objeto específico**. Con A) UUID o B) Void estas dos filas no existen |
 | infrastructure | `{contexto}/infrastructure/.../{feature}/command/primaryadapter/web/{Accion}{Entidad}Controller.java` + `dto/{Accion}{Entidad}RequestDTO.java` (+`ResponseDTO` si retorna cuerpo) + `mapper/{Accion}{Entidad}RequestMapper.java` (+`mapper/{Accion}{Entidad}ResponseMapper.java` si la pregunta 11 fue **C**) | Un Controller por acción; el `Result` nunca se serializa directo |
-| infrastructure | `.../command/secondaryadapter/entity/{Entidad}JpaEntity.java` + `mapper/{Entidad}JpaMapper.java` + `repository/{Entidad}CommandOutputAdapter.java` + `repository/{Entidad}CommandRepository.java` | JPA real; el repo de escritura sí extiende `JpaRepository` |
+| infrastructure | `.../command/secondaryadapter/entity/{Entidad}JpaEntity.java` + `mapper/{Entidad}JpaMapper.java` + `repository/{Entidad}CommandOutputAdapter.java` + `repository/{Entidad}CommandRepository.java` | JPA real; el repo de escritura sí extiende `JpaRepository`. Una tabla que el comando solo **lee** para una `Rule` también lleva estas cuatro piezas, en su propia feature: nunca `EntityManager` ni SQL nativo en el adaptador |
 | infrastructure | `{contexto}/infrastructure/.../security/{Contexto}Authorities.java` | MODIFICAR: añade el client role crudo + su expresión `Expresiones.HAS_*` |
 | infrastructure | `{contexto}/infrastructure/src/main/resources/db/migration/{contexto}/V{yyyyMMddHHmmss}__{descripcion}.sql` | Flyway con versión por timestamp, siempre dentro de la subcarpeta del contexto |
 | shared | `shared/message/.../constant/{Contexto}Codes.java` · `{Contexto}Fields.java` · `{Contexto}Limits.java` · `annotation/{Contexto}ApiMessages.java` | MODIFICAR: códigos, campos, límites y textos de Swagger nuevos |
@@ -597,6 +599,8 @@ Incluye un ítem por cada decisión que la FASE 3 haya tomado, y ninguno por las
 - [ ] **Encadenamiento:** qué `UseCase`s cuelgan del orquestador y qué recibe cada uno
 - [ ] **Client role:** el nuevo y cuál existente no se reutiliza
 - [ ] **Entre contextos:** réplica (tabla, evento, consumidor) o consulta síncrona (puerto y stub)
+- [ ] **Vigencia:** por cada consulta a una réplica con `eliminado_en`, si usa solo vigentes o
+      incluye bajas, y por qué (`arquisoft-arquitectura` → *Aislamiento de persistencia*)
 - [ ] **Migración y catálogos:** archivos con su timestamp y constantes copiadas del MER
 - [ ] Commit sugerido: `feat({contexto}): {descripción corta en español}`
 
