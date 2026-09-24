@@ -30,7 +30,11 @@ public enum SolicitudKey implements ClaveMensaje {
     LOG_ELIMINANDO("solicitudes.aplicacion.solicitud.log.eliminando", 2),
     LOG_VERIFICACION_ELIMINACION("solicitudes.aplicacion.solicitud.log.verificacion-eliminacion", 2),
     LOG_ELIMINADA("solicitudes.aplicacion.solicitud.log.eliminada", 1),
-    LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.solicitud.log.eliminada", 1);
+    LOG_ELIMINADA_REGISTRO("solicitudes.infraestructura.solicitud.log.eliminada", 1),
+    LOG_CONSULTANDO_NOVEDAD_COORDINADOR_RECIBIDAS(
+            "solicitudes.aplicacion.solicitud.log.consultando-novedad-coordinador-recibidas", 4),
+    LOG_CONSULTA_NOVEDAD_COORDINADOR_RECIBIDAS_COMPLETADA(
+            "solicitudes.aplicacion.solicitud.log.consulta-novedad-coordinador-recibidas-completada", 3);
 
     private final String clave;
     private final int parametros;
