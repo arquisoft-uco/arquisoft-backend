@@ -10,4 +10,6 @@ public interface AsesorOutputPort {
     void guardar(AsesorEntity asesor);
 
     Optional<AsesorEntity> obtenerPorId(UUID id);
+
+    void actualizar(AsesorEntity asesor);
 }

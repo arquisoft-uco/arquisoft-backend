@@ -72,4 +72,27 @@ class AsesorCommandOutputAdapterTest {
         // Assert
         assertThat(resultado).isEmpty();
     }
+
+    @Test
+    void debeActualizarLosDatosPersistidos_cuandoSeInvocaActualizar() {
+        // Arrange
+        var adapter = new AsesorCommandOutputAdapter(asesorCommandRepository, logger);
+        var id = UUID.randomUUID();
+        entityManager.persistAndFlush(AsesorJpaEntity.builder()
+                .id(id).identificador("20161020123").nombre("Ana Perez")
+                .email("ana@uco.edu.co").ocurridoEn(Instant.parse("2026-09-01T10:00:00Z")).build());
+        var nuevoOcurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        adapter.actualizar(new AsesorEntity(
+                id, "20161020999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn));
+
+        // Assert
+        var resultado = adapter.obtenerPorId(id);
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().identificador()).isEqualTo("20161020999");
+        assertThat(resultado.get().nombre()).isEqualTo("Ana Actualizada");
+        assertThat(resultado.get().ocurridoEn()).isEqualTo(nuevoOcurridoEn);
+        verify(logger).debug(AsesorKey.LOG_ACTUALIZADO, id);
+    }
 }

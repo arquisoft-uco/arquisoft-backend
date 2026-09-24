@@ -63,7 +63,7 @@ Guía completa: [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md).
 
 ## Architecture
 
-Arquitectura hexagonal (Ports & Adapters) con **9 bounded contexts** y **14 módulos compartidos**.
+Arquitectura hexagonal (Ports & Adapters) con **10 bounded contexts** y **14 módulos compartidos**.
 Los contextos se comunican por eventos de dominio en RabbitMQ y **nunca se importan entre sí**, con
 una única excepción acotada: una **consulta síncrona de solo lectura** a otro contexto, hecha por
 HTTP (nunca un import), para un dato que un comando debe verificar *al momento de escribir* y no
@@ -73,11 +73,11 @@ de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 
 ### Bounded Contexts
 
-Con código hoy: `seguridad`, `fichas`, `notificaciones` y `evaluaciones`. Los otros cinco
-(`usuarios`, `proyectos`, `artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje: solo
-su `{Contexto}DataSourceConfig` (más, en `usuarios`, la migración de `event_publication` y
-`rutas-usuarios.yml`). El flujo `CrearUsuario` que vivía en `usuarios` se retiró; su HU de
-"registrar usuario" está por generarse.
+Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones` y
+`solicitudes`. Los otros tres (`artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje:
+solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
+`RegistrarUsuario` lo da de alta en Keycloak y publica los eventos con los que `fichas` y `proyectos`
+mantienen sus réplicas.
 
 | Context | Database |
 |---------|----------|
@@ -90,10 +90,11 @@ su `{Contexto}DataSourceConfig` (más, en `usuarios`, la migración de `event_pu
 | `repositorio_artefactos` | `repositorio_artefactos` |
 | `entregables` | `entregables` |
 | `evaluaciones` | `evaluaciones` |
+| `solicitudes` | `solicitudes` |
 
 **Contexto de referencia: `fichas`** — el único completo (escritura, consulta, eventos, consumidor).
-`seguridad`, `notificaciones` y `evaluaciones` aportan cada uno algo distinto y tienen un límite
-conocido; ver `arquisoft-arquitectura`, que los enumera con su límite exacto.
+Los demás contextos con código aportan cada uno algo distinto y tienen un límite conocido; ver
+`arquisoft-arquitectura`, que los enumera con su límite exacto.
 
 **Son bases de datos separadas, no schemas.** `init-db.sql` hace un `CREATE DATABASE` por contexto y
 cada `{Contexto}DataSourceConfig` apunta su propio `DataSource`, `EntityManagerFactory`,
@@ -105,7 +106,7 @@ cada `{Contexto}DataSourceConfig` apunta su propio `DataSource`, `EntityManagerF
 - **Una FK entre contextos es imposible.** Se modela como tabla réplica local poblada por eventos
   (`asesor_ficha`, `estudiante` en `fichas`).
 
-`baselineOnMigrate` está en `false` en los cuatro contextos con `DataSource`. La versión es un
+`baselineOnMigrate` está en `false` en todo contexto con Flyway. La versión es un
 **timestamp**, `V{yyyyMMddHHmmss}__descripcion.sql`; nunca se retrocede un timestamp ni se edita una
 migración ya aplicada.
 
@@ -183,6 +184,8 @@ Forma, espejando cualquier otro puerto secundario:
     └── query/
         ├── primaryport/                    # interactor/impl (@Transactional readOnly), model/, mapper/
         ├── usecase/impl/                   # Recibe el Criteria, no el Query
+        ├── validator/impl/                 # Solo con política de acceso; distinto del de command
+        ├── finder/                         # {X}QueryFinder — nunca uno de command/
         ├── secondaryport/{Feature}QueryOutputPort.java
         ├── criteria/
         └── readmodel/
@@ -267,8 +270,13 @@ el enunciado, para reconocer una desviación de un vistazo.
   `boolean` primitivo en los métodos de existencia, `logger.debug` solo en los de escritura.
 - Aislamiento CQRS absoluto: `query/secondaryadapter` no importa nada de `command/secondaryadapter`,
   ni siquiera el `JpaEntity`. El `QueryRepository` **no extiende `JpaRepository`**.
-- Un paquete `query/` solo existe si hay una lectura real detrás de un `primaryport`. Un chequeo de
-  existencia para una `Rule` de comando va en el `OutputPort` de `command/`, vía `Finder`.
+- Un paquete `query/` existe si hay una lectura real detrás de un `primaryport`, o si una consulta lo
+  necesita para su política de acceso. El lado lo decide quién pregunta: un chequeo para una `Rule`
+  de comando va en el `OutputPort` de `command/`, vía `Finder`; uno para el `Validator` de una
+  consulta va en `query/finder/` + `query/secondaryport/`.
+- Una consulta con política sobre la instancia pedida (existencia, pertenencia, estado) valida con
+  su propio `query/validator/` **antes** de leer; las `Rule`s son del `domain/` y se comparten con los
+  comandos, los `Validator`s no. Sin política en la HU, no hay `Validator`.
 - Sin literales: códigos en `{Contexto}Codes`, campos en `{Contexto}Fields`, límites en
   `{Contexto}Limits`, Swagger en `{Contexto}ApiMessages`/`ApiCodes`/`ApiSecurity`, autorización en
   `{Contexto}Authorities.Expresiones.HAS_*`. **Las rutas son la excepción** y se quedan inline como
@@ -288,7 +296,7 @@ el enunciado, para reconocer una desviación de un vistazo.
   `ColaEvento.declarar(...)`, no bean a bean.
 - Una transición de estado notifica (consumidor: `notificaciones`) salvo que la HU diga lo
   contrario — con la excepción del estado que es paso interno. Son **ocho piezas** en dos contextos;
-  la lista está en `arquisoft-arquitectura`.
+  la lista está en `arquisoft-arquitectura/references/eventos.md`.
 
 **Excepciones**
 - Cuatro bases en `com.arquisoft.shared.exception`: `DomainException` (422),
@@ -343,7 +351,7 @@ barre `<contexto>.*`. Ver [plantillas/README.md](plantillas/README.md).
 ## Logging y correlación
 
 **Logging:** inyecta el puerto `AppLogger` (`shared:logger`) por constructor — no `@Slf4j`, del que
-no queda ninguno en los cinco contextos con código. `warn` para 4xx, `error` para 5xx. La estructura
+no queda ninguno en ningún contexto. `warn` para 4xx, `error` para 5xx. La estructura
 exacta por tipo de flujo (escritura: tres líneas; lectura: dos `debug`; evento: dos `INFO` que pone
 el adaptador) está en `arquisoft-estandares`.
 
@@ -490,11 +498,10 @@ Jackson 3 movió `databind` a `tools.jackson.databind.*`;
 | Qué | Dónde | Convención que rompe |
 |---|---|---|
 | `EstadoEvaluacionCommandRepository` | `fichas/…/estadoevaluacion/…/repository/` | Código muerto: ningún `OutputPort`/`OutputAdapter` lo consume |
-| `fichas/application/usuario` | `command/usecase/RegistrarUsuarioUseCase` | Stub: por eso no tiene `Interactor` ni `@Transactional` y el `Consumer` inyecta el `UseCase` |
-| `UsuarioCreadoConsumer` en `amqp/` plano | `fichas/…/usuario/…/amqp/` | Le faltan los dos segmentos `{productor}/{entidad}/`. En vías de retirarse |
 | Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/auth/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |
 | Enums de catálogo en dos ubicaciones | `domain/{catalogo}/` vs `domain/{feature}/model/` | **Decisión abierta del proyecto, no la "arregles".** Un enum nuevo sigue lo que ya use su contexto |
 | `AsignacionProyectoOutputAdapter` stub | `solicitudes/…/asignacionproyecto/…/webclient/` | **Deliberado, HU-081.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` — ninguno existe aún. El puerto + `DestinatarioAsignadoRule` + `DestinatarioAsignadoFinder` están cableados y activos; el adaptador devuelve `true` y loguea `warn`. Consecuencia: la regla no rechaza nada todavía. Activar = reemplazar el cuerpo del adaptador; checklist en `PLAN-HU-081.md` §3.1 |
+| `UsuarioSolicitudesCommandOutputAdapter` / `UsuarioSolicitudesCommandRepository` | `solicitudes/…/usuario/…/repository/` | La réplica lleva el contexto en el nombre. Con los beans nombrados por FQN, una réplica usa el nombre natural (`UsuarioCommandOutputAdapter`); ver `arquisoft-arquitectura/references/eventos.md` → *Replicación entre contextos* |
 
 ## Reference Documentation
 

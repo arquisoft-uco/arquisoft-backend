@@ -5,6 +5,7 @@ public final class UsuariosAuthorities {
     private UsuariosAuthorities() {}
 
     public static final String USUARIO_CREATE = "usuarios:usuario:create";
+    public static final String USUARIO_UPDATE = "usuarios:usuario:update";
     public static final String ESTUDIANTE_DELETE = "usuarios:estudiante:delete";
 
     public static final class Expresiones {
@@ -16,6 +17,9 @@ public final class UsuariosAuthorities {
 
         public static final String HAS_USUARIO_CREATE =
                 HAS_AUTHORITY_INICIO + USUARIO_CREATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_USUARIO_UPDATE =
+                HAS_AUTHORITY_INICIO + USUARIO_UPDATE + HAS_AUTHORITY_FIN;
 
         public static final String HAS_ESTUDIANTE_DELETE =
                 HAS_AUTHORITY_INICIO + ESTUDIANTE_DELETE + HAS_AUTHORITY_FIN;
