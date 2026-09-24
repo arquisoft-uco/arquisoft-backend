@@ -3,6 +3,7 @@ package com.arquisoft.proyectos.infrastructure.asesor.command.primaryadapter.amq
 import com.arquisoft.proyectos.application.asesor.command.primaryport.interactor.AgregarAsesorInteractor;
 import com.arquisoft.proyectos.application.asesor.command.result.AgregacionAsesorResult;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.proyectos.AsesorKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
 import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.MdcContextoDiagnosticoOutputAdapter;
 import com.rabbitmq.client.Channel;
@@ -126,5 +127,19 @@ class AsesorAgregadoConsumerTest {
 
         // Assert
         verify(channel).basicAck(4L, false);
+    }
+
+    @Test
+    void debeRegistrarReactivacionYConfirmar_cuandoElResultadoEsReactivada() throws Exception {
+        // Arrange
+        var asesor = UUID.randomUUID();
+        when(agregarAsesorInteractor.ejecutar(any())).thenReturn(new AgregacionAsesorResult.Reactivada(asesor));
+
+        // Act
+        adapter.onAsesorAgregado(mensajeCon(UUID.randomUUID().toString(), 5L), channel);
+
+        // Assert
+        verify(logger).info(AsesorKey.LOG_REACTIVADO, asesor);
+        verify(channel).basicAck(5L, false);
     }
 }

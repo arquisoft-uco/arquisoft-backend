@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 @DataJpaTest
 class EstudianteFichaPerfilQueryOutputAdapterTest {
@@ -176,13 +177,77 @@ class EstudianteFichaPerfilQueryOutputAdapterTest {
                 .containsExactly("Ana Ruiz", "Pedro Zapata");
     }
 
+    @Test
+    void debeIncluirAlEstudianteDadoDeBajaMarcadoNoVigente_cuandoConsultaElCoordinador() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var vigente = persistirEstudiante("EST-140", "Ana Ruiz", "ana140@uco.edu.co");
+        var dadoDeBaja = persistirEstudiante("EST-141", "Pedro Zapata", "pedro141@uco.edu.co", Instant.now());
+        vincular(ficha, vigente);
+        vincular(ficha, dadoDeBaja);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarPorFicha(ficha);
+
+        // Assert
+        assertThat(resultado)
+                .extracting(EstudianteFichaPerfilReadModel::estudianteId, EstudianteFichaPerfilReadModel::vigente)
+                .containsExactly(tuple(vigente, true), tuple(dadoDeBaja, false));
+    }
+
+    @Test
+    void debeRetornarSoloVigentes_cuandoSeConsultanLosVigentesDeLaFicha() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var vigente = persistirEstudiante("EST-160", "Ana Ruiz", "ana160@uco.edu.co");
+        var dadoDeBaja = persistirEstudiante("EST-161", "Pedro Zapata", "pedro161@uco.edu.co", Instant.now());
+        vincular(ficha, vigente);
+        vincular(ficha, dadoDeBaja);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarVigentesPorFicha(ficha);
+
+        // Assert
+        assertThat(resultado)
+                .extracting(EstudianteFichaPerfilReadModel::estudianteId)
+                .containsExactly(vigente);
+    }
+
+    @Test
+    void debeExcluirAlCompaneroDadoDeBaja_cuandoConsultaElEstudiante() {
+        // Arrange
+        var ficha = UUID.randomUUID();
+        var solicitante = persistirEstudiante("EST-150", "Luis Paz", "luis150@uco.edu.co");
+        var vigente = persistirEstudiante("EST-151", "Ana Ruiz", "ana151@uco.edu.co");
+        var dadoDeBaja = persistirEstudiante("EST-152", "Pedro Zapata", "pedro152@uco.edu.co", Instant.now());
+        vincular(ficha, solicitante);
+        vincular(ficha, vigente);
+        vincular(ficha, dadoDeBaja);
+        entityManager.flush();
+
+        // Act
+        var resultado = adapter.consultarCompanerosPorFichaYEstudiante(ficha, solicitante);
+
+        // Assert
+        assertThat(resultado)
+                .extracting(EstudianteFichaPerfilReadModel::estudianteId)
+                .containsExactly(vigente);
+    }
+
     private UUID persistirEstudiante(String identificador, String nombre, String email) {
+        return persistirEstudiante(identificador, nombre, email, null);
+    }
+
+    private UUID persistirEstudiante(String identificador, String nombre, String email, Instant eliminadoEn) {
         var estudiante = EstudianteJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .identificador(identificador)
                 .nombre(nombre)
                 .email(email)
                 .ocurridoEn(Instant.now())
+                .eliminadoEn(eliminadoEn)
                 .build();
         entityManager.persist(estudiante);
         return estudiante.getId();

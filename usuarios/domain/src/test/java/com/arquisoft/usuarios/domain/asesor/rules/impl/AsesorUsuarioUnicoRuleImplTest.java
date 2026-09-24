@@ -1,10 +1,12 @@
 package com.arquisoft.usuarios.domain.asesor.rules.impl;
 
+import com.arquisoft.usuarios.domain.asesor.AsesorDomain;
 import com.arquisoft.usuarios.domain.asesor.exception.AsesorUsuarioDuplicadoException;
 import com.arquisoft.usuarios.domain.asesor.model.DisponibilidadAsesorUsuario;
 import com.arquisoft.shared.message.constant.UsuariosCodes;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -18,7 +20,7 @@ class AsesorUsuarioUnicoRuleImplTest {
     void debeLanzarDuplicadoConSuCodigo_cuandoUsuarioYaEsAsesor() {
         // Arrange
         var usuario = UUID.randomUUID();
-        var disponibilidad = new DisponibilidadAsesorUsuario(usuario, true);
+        var disponibilidad = new DisponibilidadAsesorUsuario(usuario, AsesorDomain.crear(usuario));
 
         // Act & Assert
         assertThatThrownBy(() -> rule.validar(disponibilidad))
@@ -30,7 +32,18 @@ class AsesorUsuarioUnicoRuleImplTest {
     @Test
     void noDebeLanzar_cuandoUsuarioNoEsAsesor() {
         // Arrange
-        var disponibilidad = new DisponibilidadAsesorUsuario(UUID.randomUUID(), false);
+        var disponibilidad = new DisponibilidadAsesorUsuario(UUID.randomUUID(), AsesorDomain.VACIO);
+
+        // Act & Assert
+        assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();
+    }
+
+    @Test
+    void noDebeLanzar_cuandoElAsesorEstaEliminado() {
+        // Arrange
+        var usuario = UUID.randomUUID();
+        var eliminado = AsesorDomain.reconstruir(usuario, Instant.parse("2026-09-23T10:00:00Z"));
+        var disponibilidad = new DisponibilidadAsesorUsuario(usuario, eliminado);
 
         // Act & Assert
         assertThatCode(() -> rule.validar(disponibilidad)).doesNotThrowAnyException();

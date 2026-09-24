@@ -25,6 +25,9 @@ public final class EventTopics {
 
         private Usuarios() {}
 
+        public static final String USUARIO_MODIFICADO =
+                "usuarios.usuario.modificado";
+
         public static final String ESTUDIANTE_AGREGADO =
                 "usuarios.estudiante.agregado";
         public static final String ESTUDIANTE_REMOVIDO =
@@ -37,6 +40,8 @@ public final class EventTopics {
 
         public static final String ASESOR_AGREGADO =
                 "usuarios.asesor.agregado";
+        public static final String ASESOR_REMOVIDO =
+                "usuarios.asesor.removido";
     }
 
     public static final class Solicitudes {
@@ -54,9 +59,6 @@ public final class EventTopics {
 
         public static final String AMPLIACION_PLAZO_ENVIADA =
                 "solicitudes.solicitud.ampliacion_plazo_enviada";
-
-        public static final String NOVEDAD_COORDINADOR_ELIMINADA =
-                "solicitudes.solicitud.novedad_coordinador_eliminada";
 
         public static final String NOVEDAD_COORDINADOR_RESPONDIDA =
                 "solicitudes.respuesta.novedad_coordinador_respondida";

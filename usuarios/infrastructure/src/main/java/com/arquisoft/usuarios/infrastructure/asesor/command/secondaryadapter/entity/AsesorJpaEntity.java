@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -22,4 +23,7 @@ public class AsesorJpaEntity {
     @Id
     @Column(name = "usuario_id", nullable = false)
     private UUID usuarioId;
+
+    @Column(name = "eliminado_en")
+    private Instant eliminadoEn;
 }

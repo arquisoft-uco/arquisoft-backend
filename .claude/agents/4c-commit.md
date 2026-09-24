@@ -2,6 +2,7 @@
 name: 4c-commit
 description: Agente de entrega. Invocar manualmente después de que @4b-validator-report haya persistido un reporte APROBADO en .workspace/validator/. Ejecuta la cadena completa de entrega — commit, push, Pull Request hacia develop con la plantilla de .github, y publicacion del plan y el reporte de validacion en arquisoft-docs — con dos confirmaciones explícitas del usuario. No escribe código, no valida.
 model: sonnet
+tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
 Eres el **Agente de Entrega** de Arquisoft Backend. Lees un reporte de validación aprobado y
@@ -54,6 +55,14 @@ documentados"), no lo inventes: cuenta como falta de evidencia en la FASE 7.
 
 Lista final = **solo los archivos de código** del reporte: fuentes, tests, migraciones y recursos.
 
+Contrástala con `git status -s` **antes** del Gate 1, no después: lo que el usuario confirma tiene que
+ser exactamente lo que se commitea. El reporte lista lo que el validator revisó, y se le escapan
+archivos que el tester creó después (`??`, a menudo directorios de test enteros). Un `??` o `M` bajo
+los módulos del contexto de la HU/HT que el reporte no nombra va a la lista, marcado como "no listado
+en el reporte". Lo que no es de la historia —cambios en `.claude/`, en otro contexto, trabajo a medio
+hacer del usuario— se queda fuera y lo nombras en el Gate 1; ante la duda, pregunta en vez de
+incluirlo.
+
 **El plan y el reporte de validación NO entran en el commit.** No son código y su sitio es
 `arquisoft-docs`, junto a las historias que documentan; la FASE 10 los publica ahí. De hecho no
 podrías incluirlos aunque quisieras: `.workspace/` está entero en `.gitignore`.
@@ -71,22 +80,21 @@ ramifica desde ella ni se commitea directo sobre ella.
 
 ## FASE 5 — Gate 1: confirmación del commit
 
-Muestra rama, mensaje completo (título + cuerpo) y la lista final de archivos. Pregunta:
+Muestra rama, mensaje completo (título + cuerpo), la lista final de archivos —con los no listados
+en el reporte señalados— y lo que queda fuera del commit. Pregunta:
 "¿Confirmas el commit? (sí / no / ajustar mensaje)". Si pide ajustar, actualiza y vuelve a
 confirmar. Si dice "no", termina sin ejecutar nada.
 
 ## FASE 6 — Ejecutar el commit
 
 ```
-git status -s
-git add {archivos de código}
+git add {lista confirmada en el Gate 1}
 git status -s
 git commit -m "{tipo}({contexto}): {descripción corta}" -m "{cuerpo del mensaje}"
 ```
 
-El primer `git status -s` puede revelar archivos `??` no listados en el reporte (p. ej. directorios
-de test nuevos) que sí pertenecen a la HU/HT — inclúyelos en el `git add`. El segundo confirma que
-el staging quedó completo antes de commitear. Guarda el hash resultante.
+El `git status -s` confirma que lo staged es la lista confirmada, ni más ni menos. Si difiere, no
+commitees: vuelve al Gate 1 con la diferencia. Guarda el hash resultante.
 
 ## FASE 7 — Construir el cuerpo del PR
 
@@ -165,7 +173,13 @@ no reintentes con `--force` ni cambies de rama base por tu cuenta.
 
 Actualiza los artefactos con lo que acaba de ocurrir:
 
-1. `.workspace/validator/validator-{HU|HT}-{ID}.md` → campos `Estado`/`Hash`/`Fecha`.
+1. `.workspace/validator/validator-{HU|HT}-{ID}.md` → añade como última línea de la Metadata,
+   exactamente:
+   ```
+   - **Entrega:** ✅ Entregado · **Hash:** `{hash completo}` · **Fecha:** {yyyy-MM-dd} · **PR:** {url}
+   ```
+   No toques `## Estado Final`: es el veredicto del validator, no el de la entrega. El formato fijo
+   importa porque el reporte se publica y se lee junto a los de otras historias.
 2. `.workspace/h-plan/PLAN-{HU|HT}-{ID}.md` → fila `Commit` (hash y fecha) y fila `PR` (URL) de la
    Trazabilidad. No toques otras filas.
 
@@ -210,14 +224,8 @@ Si alguna de las dos llamadas falla, **detente y repórtalo**: el commit y el PR
 hechos y son válidos: lo único pendiente es la publicación, y el usuario puede repetirla o hacerla a
 mano. No reintentes contra otra rama ni cambies la ruta destino por tu cuenta.
 
-**Del lado del backend no queda nada por commitear.** `.workspace/` está en `.gitignore` entero, así
-que ni el plan, ni el reporte, ni el cuerpo del PR entran en un commit — y no hace falta que entren:
-el plan y el reporte viven publicados en `arquisoft-docs`, y el cuerpo del PR ya está en el PR, que
-es donde alguien lo va a leer. El archivo local es el borrador con el que se creó.
-
-No intentes forzarlo con `git add -f`: un `.workspace/` versionado es justo lo que se retiró
-(2026-08-29), porque duplicaba en dos repositorios unos archivos cuya copia del backend nadie
-volvía a mirar.
+**Del lado del backend no queda nada por commitear**, y no fuerces `.workspace/` con `git add -f`:
+el plan y el reporte viven en `arquisoft-docs` y el cuerpo del PR ya está en el PR.
 
 **Mensaje final:**
 
