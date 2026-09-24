@@ -88,7 +88,7 @@ class EstudianteFichaPerfilConsultasFinderTest {
     @Test
     void debeTrasladarElConteoDeVinculados_cuandoElPuertoResponde() {
         // Arrange
-        when(estudianteFichaPerfilOutputPort.contarPorFichaPerfilId(fichaPerfil)).thenReturn(2L);
+        when(estudianteFichaPerfilOutputPort.contarVigentesPorFichaPerfilId(fichaPerfil)).thenReturn(2L);
 
         // Act & Assert
         assertThat(contadorFinder.obtener(fichaPerfil)).isEqualTo(2L);

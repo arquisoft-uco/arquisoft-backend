@@ -17,7 +17,7 @@ class EstudianteFichaPerfilResponseMapperTest {
         var fichaPerfilId = UUID.randomUUID();
         var estudianteId = UUID.randomUUID();
         var readModel = new EstudianteFichaPerfilReadModel(
-                id, fichaPerfilId, estudianteId, "Ana Ruiz", "ana.ruiz@uco.edu.co");
+                id, fichaPerfilId, estudianteId, "Ana Ruiz", "ana.ruiz@uco.edu.co", true);
 
         // Act
         EstudianteFichaPerfilResponseDTO dto = EstudianteFichaPerfilResponseMapper.toResponse(readModel);
@@ -28,5 +28,6 @@ class EstudianteFichaPerfilResponseMapperTest {
         assertThat(dto.estudianteId()).isEqualTo(estudianteId);
         assertThat(dto.nombre()).isEqualTo("Ana Ruiz");
         assertThat(dto.email()).isEqualTo("ana.ruiz@uco.edu.co");
+        assertThat(dto.vigente()).isTrue();
     }
 }

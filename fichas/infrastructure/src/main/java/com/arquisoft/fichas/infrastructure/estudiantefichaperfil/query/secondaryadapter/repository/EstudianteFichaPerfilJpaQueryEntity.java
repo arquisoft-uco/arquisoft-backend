@@ -20,7 +20,8 @@ import java.util.UUID;
                efp.ficha_perfil_id AS ficha_perfil_id,
                efp.estudiante_id   AS estudiante_id,
                e.nombre            AS nombre,
-               e.email             AS email
+               e.email             AS email,
+               (e.eliminado_en IS NULL) AS vigente
         FROM estudiante_ficha_perfil efp
                  JOIN estudiante e ON e.id = efp.estudiante_id
         """)
@@ -46,4 +47,7 @@ public class EstudianteFichaPerfilJpaQueryEntity {
 
     @Column(name = "email")
     private String email;
+
+    @Column(name = "vigente")
+    private boolean vigente;
 }
