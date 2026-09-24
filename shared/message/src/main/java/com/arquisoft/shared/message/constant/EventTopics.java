@@ -40,6 +40,8 @@ public final class EventTopics {
 
         public static final String ASESOR_AGREGADO =
                 "usuarios.asesor.agregado";
+        public static final String ASESOR_REMOVIDO =
+                "usuarios.asesor.removido";
     }
 
     public static final class Solicitudes {

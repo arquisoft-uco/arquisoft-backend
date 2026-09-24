@@ -81,5 +81,6 @@ public final class UsuariosCodes {
 
         public static final String USUARIO_REQUERIDO = "ASESOR_USUARIO_REQUERIDO";
         public static final String USUARIO_DUPLICADO = "ASESOR_USUARIO_DUPLICADO";
+        public static final String ASESOR_NO_ENCONTRADO = "ASESOR_NO_ENCONTRADO";
     }
 }
