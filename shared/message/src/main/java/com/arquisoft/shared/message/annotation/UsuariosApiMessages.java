@@ -128,6 +128,21 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_422 = "El usuario no tiene un rol asesor de ficha vigente";
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+
+        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
+                "Consultar información de los asesores de ficha (administrador)";
+        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de todos los asesores de ficha, incluidos los dados de "
+                        + "baja. Cada fila indica el estado del usuario y si el rol asesor de ficha sigue vigente. "
+                        + "Exclusivo del rol administrador.";
+        public static final String CONSULTAR_VIGENTES_SUMMARY =
+                "Consultar información de los asesores de ficha vigentes";
+        public static final String CONSULTAR_VIGENTES_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de los asesores de ficha con el rol vigente. Expone y "
+                        + "permite filtrar por el estado del usuario, pero no la vigencia. Disponible para "
+                        + "asesores de ficha y representantes del comité de currículo.";
+        public static final String CONSULTAR_RESP_200 = "Página de asesores de ficha";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 
     public static final class Coordinador {
