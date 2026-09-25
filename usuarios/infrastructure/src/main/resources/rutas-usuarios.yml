@@ -16,3 +16,5 @@ rutas:
       coordinadores-vigentes: /coordinadores/vigentes
       estudiantes-administrador: /estudiantes/administrador
       estudiantes-vigentes: /estudiantes/vigentes
+      asesores-administrador: /asesores/administrador
+      asesores-vigentes: /asesores/vigentes
