@@ -118,5 +118,18 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_422 = "El usuario no tiene un rol coordinador vigente";
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+
+        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
+                "Consultar información de los coordinadores (administrador)";
+        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de todos los coordinadores, incluidos los dados de baja. "
+                        + "Cada fila indica el estado del usuario y si el rol coordinador sigue vigente. "
+                        + "Exclusivo del rol administrador.";
+        public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los coordinadores vigentes";
+        public static final String CONSULTAR_VIGENTES_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de los coordinadores con el rol vigente. No expone el "
+                        + "estado del usuario ni la vigencia. Disponible para asesores, estudiantes y coordinadores.";
+        public static final String CONSULTAR_RESP_200 = "Página de coordinadores";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 }

@@ -12,3 +12,5 @@ rutas:
       asesor-ficha: /{usuarioId}/asesor-ficha
       coordinador: /{usuarioId}/coordinador
       modificar: /{usuarioId}
+      coordinadores-administrador: /coordinadores/administrador
+      coordinadores-vigentes: /coordinadores/vigentes
