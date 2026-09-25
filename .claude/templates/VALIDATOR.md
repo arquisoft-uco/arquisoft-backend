@@ -28,7 +28,11 @@ Destino: .workspace/validator/validator-{HU|HT}-{ID}.md
 | 4 — Tests | | | | ⏳ N/A si no se ejecutaron |
 | **Total** | | | | **XX/100** |
 
+<!-- "Checks" es la cifra exacta de checks aplicados, sin los N/A — nunca un aproximado ("~60"):
+un número que no se puede recontar no demuestra que se recorrió la lista. -->
+
 **Bloqueantes:** X · **Menores:** X
+**Compilación:** {cada comando de la FASE 3, literal, con su resultado}
 
 ## Estado Final
 
@@ -64,6 +68,13 @@ Un solo bloqueante = RECHAZADO, sin importar el score.
 **Rama:** `feature/{HU|HT}-{ID}-{descripcion}`
 **Archivos a incluir:** {solo código, tests, migraciones y recursos — el plan y este reporte NO
 van al repositorio de backend, los publica `@4c-commit` en `arquisoft-docs`}
+```
+M  ruta/modificada.java
+?? ruta/nueva.java
+D  ruta/eliminada.java
+```
+<!-- una ruta por línea, prefijada con su estado de `git status -s -uall`, sin anotaciones libres -->
+
 **Endpoints documentados:** {Sí / N/A — la HU no expone endpoints}
 
 ## Próximos pasos
