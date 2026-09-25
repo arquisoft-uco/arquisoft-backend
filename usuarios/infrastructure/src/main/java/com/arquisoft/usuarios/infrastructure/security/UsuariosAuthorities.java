@@ -16,6 +16,8 @@ public final class UsuariosAuthorities {
     public static final String ESTUDIANTE_VIGENTE_VIEW = "usuarios:estudiante-vigente:view";
     public static final String ASESOR_ADMINISTRADOR_VIEW = "usuarios:asesor-administrador:view";
     public static final String ASESOR_VIGENTE_VIEW = "usuarios:asesor-vigente:view";
+    public static final String ASESOR_FICHA_ADMINISTRADOR_VIEW = "usuarios:asesor-ficha-administrador:view";
+    public static final String ASESOR_FICHA_VIGENTE_VIEW = "usuarios:asesor-ficha-vigente:view";
 
     public static final class Expresiones {
 
@@ -59,5 +61,11 @@ public final class UsuariosAuthorities {
 
         public static final String HAS_ASESOR_VIGENTE_VIEW =
                 HAS_AUTHORITY_INICIO + ASESOR_VIGENTE_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_ASESOR_FICHA_ADMINISTRADOR_VIEW =
+                HAS_AUTHORITY_INICIO + ASESOR_FICHA_ADMINISTRADOR_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_ASESOR_FICHA_VIGENTE_VIEW =
+                HAS_AUTHORITY_INICIO + ASESOR_FICHA_VIGENTE_VIEW + HAS_AUTHORITY_FIN;
     }
 }

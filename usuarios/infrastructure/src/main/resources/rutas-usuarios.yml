@@ -18,3 +18,5 @@ rutas:
       estudiantes-vigentes: /estudiantes/vigentes
       asesores-administrador: /asesores/administrador
       asesores-vigentes: /asesores/vigentes
+      asesores-ficha-administrador: /asesores-ficha/administrador
+      asesores-ficha-vigentes: /asesores-ficha/vigentes
