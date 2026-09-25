@@ -65,6 +65,7 @@ public final class UsuariosCodes {
 
         public static final String USUARIO_REQUERIDO = "COORDINADOR_USUARIO_REQUERIDO";
         public static final String USUARIO_DUPLICADO = "COORDINADOR_USUARIO_DUPLICADO";
+        public static final String COORDINADOR_NO_ENCONTRADO = "COORDINADOR_NO_ENCONTRADO";
     }
 
     public static final class AsesorFicha {

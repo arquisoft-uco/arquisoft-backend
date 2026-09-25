@@ -10,4 +10,5 @@ rutas:
       estudiante: /{usuarioId}/estudiante
       asesor: /{usuarioId}/asesor
       asesor-ficha: /{usuarioId}/asesor-ficha
+      coordinador: /{usuarioId}/coordinador
       modificar: /{usuarioId}

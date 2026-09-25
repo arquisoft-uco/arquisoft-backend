@@ -102,4 +102,21 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
     }
+
+    public static final class Coordinador {
+
+        private Coordinador() {}
+
+        public static final String REMOVER_SUMMARY = "Remover información de un coordinador";
+        public static final String REMOVER_DESCRIPTION =
+                "Da de baja lógica el rol coordinador de un usuario: marca la fecha de eliminación sin borrar "
+                        + "la fila, revoca el realm role coordinador en Keycloak y notifica a los contextos "
+                        + "que replican al coordinador. El usuario y sus demás roles no cambian. "
+                        + "Exclusivo del rol administrador.";
+        public static final String REMOVER_RESP_204 = "Coordinador removido";
+        public static final String REMOVER_RESP_400 = "Identificador de usuario inválido";
+        public static final String REMOVER_RESP_422 = "El usuario no tiene un rol coordinador vigente";
+        public static final String REMOVER_RESP_503 =
+                "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+    }
 }

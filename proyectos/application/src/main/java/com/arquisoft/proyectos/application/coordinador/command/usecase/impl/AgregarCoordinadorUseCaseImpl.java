@@ -25,15 +25,22 @@ public class AgregarCoordinadorUseCaseImpl implements AgregarCoordinadorUseCase 
         var vigente = coordinadorPorIdFinder.obtener(coordinador.getId());
         logger.debug(CoordinadorKey.LOG_VERIFICACION_AGREGAR, coordinador.getId(), !vigente.esVacio());
 
-        if (!vigente.esVacio()) {
-            if (!coordinador.getOcurridoEn().isAfter(vigente.getOcurridoEn())) {
-                return AgregacionCoordinadorResultMapper.toResultDescartada(
-                        coordinador, vigente.getOcurridoEn());
-            }
+        if (vigente.esVacio()) {
+            coordinadorOutputPort.guardar(CoordinadorMapper.toEntity(coordinador));
+            return AgregacionCoordinadorResultMapper.toResultAgregada(coordinador);
+        }
+
+        if (!coordinador.getOcurridoEn().isAfter(vigente.getOcurridoEn())) {
+            return AgregacionCoordinadorResultMapper.toResultDescartada(coordinador, vigente.getOcurridoEn());
+        }
+
+        if (!vigente.estaEliminado()) {
             return AgregacionCoordinadorResultMapper.toResultDuplicada(coordinador);
         }
 
-        coordinadorOutputPort.guardar(CoordinadorMapper.toEntity(coordinador));
-        return AgregacionCoordinadorResultMapper.toResultAgregada(coordinador);
+        vigente.reactivar(coordinador.getIdentificador(), coordinador.getNombre(), coordinador.getEmail(),
+                coordinador.getOcurridoEn());
+        coordinadorOutputPort.reactivar(CoordinadorMapper.toEntity(vigente));
+        return AgregacionCoordinadorResultMapper.toResultReactivada(vigente);
     }
 }
