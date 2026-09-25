@@ -40,7 +40,7 @@ class ConsultarEstudiantesVigentesUseCaseImplTest {
         // Arrange
         var criteria = EstudianteVigenteCriteria.builder().pagina(0).tamanio(10).build();
         var esperado = PaginatedResult.of(
-                List.of(new EstudianteVigenteReadModel(UUID.randomUUID(), "1000", "Ana", "ana@uco.edu.co", "3000000000")),
+                List.of(new EstudianteVigenteReadModel(UUID.randomUUID(), "1000", "Ana", "ana@uco.edu.co", "3000000000", "ACTIVO")),
                 0, 10, 1L);
         when(estudianteQueryOutputPort.consultarVigentes(criteria)).thenReturn(esperado);
 

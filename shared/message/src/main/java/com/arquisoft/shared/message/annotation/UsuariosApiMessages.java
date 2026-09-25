@@ -76,9 +76,9 @@ public final class UsuariosApiMessages {
                         + "Exclusivo del rol administrador.";
         public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los estudiantes vigentes";
         public static final String CONSULTAR_VIGENTES_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de los estudiantes con el rol vigente. No expone el "
-                        + "estado del usuario ni la vigencia. Disponible para asesores, asesores de ficha, "
-                        + "coordinadores y representantes del comité.";
+                "Lista paginada, filtrable y ordenable de los estudiantes con el rol vigente. Expone y "
+                        + "permite filtrar por el estado del usuario, pero no la vigencia. Disponible para "
+                        + "asesores, asesores de ficha, coordinadores y representantes del comité.";
         public static final String CONSULTAR_RESP_200 = "Página de estudiantes";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
@@ -107,8 +107,9 @@ public final class UsuariosApiMessages {
                         + "Exclusivo del rol administrador.";
         public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los asesores vigentes";
         public static final String CONSULTAR_VIGENTES_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de los asesores con el rol vigente. No expone el "
-                        + "estado del usuario ni la vigencia. Disponible para asesores, coordinadores y asesores de ficha.";
+                "Lista paginada, filtrable y ordenable de los asesores con el rol vigente. Expone y "
+                        + "permite filtrar por el estado del usuario, pero no la vigencia. Disponible para "
+                        + "asesores, coordinadores y asesores de ficha.";
         public static final String CONSULTAR_RESP_200 = "Página de asesores";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
@@ -169,8 +170,9 @@ public final class UsuariosApiMessages {
                         + "Exclusivo del rol administrador.";
         public static final String CONSULTAR_VIGENTES_SUMMARY = "Consultar información de los coordinadores vigentes";
         public static final String CONSULTAR_VIGENTES_DESCRIPTION =
-                "Lista paginada, filtrable y ordenable de los coordinadores con el rol vigente. No expone el "
-                        + "estado del usuario ni la vigencia. Disponible para asesores, estudiantes y coordinadores.";
+                "Lista paginada, filtrable y ordenable de los coordinadores con el rol vigente. Expone y "
+                        + "permite filtrar por el estado del usuario, pero no la vigencia. Disponible para "
+                        + "asesores, estudiantes y coordinadores.";
         public static final String CONSULTAR_RESP_200 = "Página de coordinadores";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }

@@ -2,6 +2,8 @@ package com.arquisoft.usuarios.infrastructure.coordinador.query.primaryadapter.w
 
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
+import com.arquisoft.shared.query.FiltroOperador;
+import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
@@ -10,6 +12,7 @@ import com.arquisoft.usuarios.application.coordinador.query.primaryport.interact
 import com.arquisoft.usuarios.application.coordinador.query.readmodel.CoordinadorVigenteReadModel;
 import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -28,7 +31,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -69,10 +74,10 @@ class ConsultarCoordinadoresVigentesControllerTest {
     }
 
     @Test
-    void debe200SinEstadoNiVigente_cuandoBodyVacio() throws Exception {
+    void debe200ConEstadoSinVigente_cuandoBodyVacio() throws Exception {
         // Arrange
         var readModel = new CoordinadorVigenteReadModel(UUID.randomUUID(), "1001", "Ana Ramirez",
-                "ana.ramirez@uco.edu.co", "3000000000");
+                "ana.ramirez@uco.edu.co", "3000000000", "ACTIVO");
         when(consultarCoordinadoresVigentesInteractor.ejecutar(any(ConsultaCriteriaQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(readModel), 0, 10, 1L));
 
@@ -80,7 +85,7 @@ class ConsultarCoordinadoresVigentesControllerTest {
         mockMvc.perform(post(RUTA).with(vigente()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].nombre").value("Ana Ramirez"))
-                .andExpect(jsonPath("$.content[0].estado").doesNotExist())
+                .andExpect(jsonPath("$.content[0].estado").value("ACTIVO"))
                 .andExpect(jsonPath("$.content[0].vigente").doesNotExist());
     }
 
@@ -93,6 +98,8 @@ class ConsultarCoordinadoresVigentesControllerTest {
 
         var body = """
                 {
+                  "pagina": 0,
+                  "tamanio": 10,
                   "filtros": {
                     "tipo": "PREDICADO",
                     "campo": "vigente",
@@ -108,6 +115,39 @@ class ConsultarCoordinadoresVigentesControllerTest {
                         .content(body)
                         .with(vigente()))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void debe200_cuandoFiltraPorEstado() throws Exception {
+        // Arrange
+        when(consultarCoordinadoresVigentesInteractor.ejecutar(any(ConsultaCriteriaQuery.class)))
+                .thenReturn(PaginatedResult.of(List.of(), 0, 10, 0L));
+        var captor = ArgumentCaptor.forClass(ConsultaCriteriaQuery.class);
+
+        var body = """
+                {
+                  "pagina": 0,
+                  "tamanio": 10,
+                  "filtros": {
+                    "tipo": "PREDICADO",
+                    "campo": "estado",
+                    "operador": "ES",
+                    "valor": "INACTIVO"
+                  }
+                }
+                """;
+
+        // Act
+        mockMvc.perform(post(RUTA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+                        .with(vigente()))
+                .andExpect(status().isOk());
+
+        // Assert
+        verify(consultarCoordinadoresVigentesInteractor).ejecutar(captor.capture());
+        assertThat(captor.getValue().raiz())
+                .isEqualTo(NodoFiltro.predicado("estado", FiltroOperador.ES, "INACTIVO"));
     }
 
     @Test

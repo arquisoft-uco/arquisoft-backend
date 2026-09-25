@@ -10,6 +10,7 @@ public record EstudianteVigenteResponseDTO(
         String identificador,
         String nombre,
         String email,
-        String contacto
+        String contacto,
+        String estado
 ) {
 }

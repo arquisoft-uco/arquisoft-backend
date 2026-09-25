@@ -17,6 +17,7 @@ final class EstudianteVigenteSortMapper {
                 case IDENTIFICADOR -> "identificador";
                 case NOMBRE        -> "nombre";
                 case EMAIL         -> "email";
+                case ESTADO        -> null;
             };
             m.put(campo.getClave(), ruta);
         }

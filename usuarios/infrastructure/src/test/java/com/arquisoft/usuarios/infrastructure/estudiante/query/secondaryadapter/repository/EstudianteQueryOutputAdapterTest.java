@@ -163,6 +163,24 @@ class EstudianteQueryOutputAdapterTest {
                 .doesNotContain("1004");
     }
 
+    @Test
+    void debeFiltrarPorEstadoSinIncluirBajas_cuandoConsultaVigentesConEstadoInactivo() {
+        // Arrange — dadoDeBaja también es INACTIVO: el filtro por estado se suma a la vigencia
+        var inactivoPeroVigente = persistirEstudiante("1005", "Elena Roa", "elena.roa@uco.edu.co", "INACTIVO", null);
+        entityManager.flush();
+        var criteria = EstudianteVigenteCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("estado", FiltroOperador.ES, "INACTIVO"))
+                .build();
+
+        // Act
+        var resultado = adapter.consultarVigentes(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(EstudianteVigenteReadModel::id, EstudianteVigenteReadModel::estado)
+                .containsExactly(tuple(inactivoPeroVigente, "INACTIVO"));
+    }
+
     private UUID persistirEstudiante(String identificador, String nombre, String email,
                                       String estado, Instant eliminadoEn) {
         var usuarioId = UUID.randomUUID();

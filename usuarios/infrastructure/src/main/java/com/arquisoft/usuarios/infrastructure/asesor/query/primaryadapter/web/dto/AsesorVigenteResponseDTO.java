@@ -10,6 +10,7 @@ public record AsesorVigenteResponseDTO(
         String identificador,
         String nombre,
         String email,
-        String contacto
+        String contacto,
+        String estado
 ) {
 }

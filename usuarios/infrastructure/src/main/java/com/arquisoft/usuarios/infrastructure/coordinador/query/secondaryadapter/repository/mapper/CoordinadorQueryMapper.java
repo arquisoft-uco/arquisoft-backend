@@ -26,6 +26,7 @@ public final class CoordinadorQueryMapper {
                 entity.getIdentificador(),
                 entity.getNombre(),
                 entity.getEmail(),
-                entity.getContacto());
+                entity.getContacto(),
+                entity.getEstado());
     }
 }

@@ -45,19 +45,21 @@ class ConsultarAsesoresVigentesMapperTest {
     }
 
     @Test
-    void debeLanzarFiltroException_cuandoFiltraPorEstado() {
-        // Arrange — estado no existe en la whitelist de este endpoint
+    void debeAceptarFiltro_cuandoFiltraPorEstado() {
+        // Arrange
         var raiz = NodoFiltro.predicado("estado", FiltroOperador.ES, "ACTIVO");
         var query = ConsultaCriteriaQuery.crear(0, 10, List.of(), raiz);
 
-        // Act & Assert
-        assertThatThrownBy(() -> ConsultarAsesoresVigentesMapper.toCriteria(query))
-                .isInstanceOf(FiltroException.class);
+        // Act
+        var criteria = ConsultarAsesoresVigentesMapper.toCriteria(query);
+
+        // Assert
+        assertThat(criteria.getRaiz()).isEqualTo(raiz);
     }
 
     @Test
     void debeLanzarFiltroException_cuandoOrdenaPorEstadoOVigente() {
-        // Arrange — ninguno de los dos existe en la whitelist de este endpoint
+        // Arrange — estado no es ordenable y vigente no existe en la whitelist de este endpoint
         var queryEstado = ConsultaCriteriaQuery.crear(
                 0, 10, List.of(SortOrder.of("estado", SortDirection.ASC)), null);
         var queryVigente = ConsultaCriteriaQuery.crear(

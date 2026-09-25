@@ -20,7 +20,8 @@ import java.util.UUID;
                u.identificador AS identificador,
                u.nombre        AS nombre,
                u.email         AS email,
-               u.contacto      AS contacto
+               u.contacto      AS contacto,
+               u.estado_id     AS estado
         FROM coordinador c
                  JOIN usuario u ON u.id = c.usuario_id
         WHERE c.eliminado_en IS NULL
@@ -47,4 +48,7 @@ public class CoordinadorVigenteJpaQueryEntity {
 
     @Column(name = "contacto")
     private String contacto;
+
+    @Column(name = "estado")
+    private String estado;
 }
