@@ -21,6 +21,7 @@ class AsesorVigenteJpaSpecification extends QueryJpaSpecification<AsesorVigenteJ
                 case IDENTIFICADOR -> CampoSpec.texto(root -> root.get("identificador"));
                 case NOMBRE        -> CampoSpec.texto(root -> root.get("nombre"));
                 case EMAIL         -> CampoSpec.texto(root -> root.get("email"));
+                case ESTADO        -> CampoSpec.texto(root -> root.get("estado"));
             };
             m.put(campo.getClave(), spec);
         }

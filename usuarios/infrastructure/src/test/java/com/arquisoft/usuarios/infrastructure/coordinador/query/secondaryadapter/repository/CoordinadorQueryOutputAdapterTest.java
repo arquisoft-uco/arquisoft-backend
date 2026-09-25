@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 @DataJpaTest
 class CoordinadorQueryOutputAdapterTest {
@@ -173,6 +174,24 @@ class CoordinadorQueryOutputAdapterTest {
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
         assertThat(resultado.getTotalElements()).isEqualTo(2L);
+    }
+
+    @Test
+    void debeFiltrarPorEstadoSinIncluirBajas_cuandoConsultaVigentesConEstadoInactivo() {
+        // Arrange — dadoDeBaja también es INACTIVO: el filtro por estado se suma a la vigencia
+        var inactivoPeroVigente = persistirCoordinador("1004", "Dario Leon", "dario.leon@uco.edu.co", "INACTIVO", null);
+        entityManager.flush();
+        var criteria = CoordinadorVigenteCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("estado", FiltroOperador.ES, "INACTIVO"))
+                .build();
+
+        // Act
+        var resultado = adapter.consultarVigentes(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(CoordinadorVigenteReadModel::id, CoordinadorVigenteReadModel::estado)
+                .containsExactly(tuple(inactivoPeroVigente, "INACTIVO"));
     }
 
     private UUID persistirCoordinador(String identificador, String nombre, String email,

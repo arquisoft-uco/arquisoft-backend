@@ -45,8 +45,21 @@ class ConsultarCoordinadoresVigentesMapperTest {
     }
 
     @Test
+    void debeAceptarFiltro_cuandoFiltraPorEstado() {
+        // Arrange
+        var raiz = NodoFiltro.predicado("estado", FiltroOperador.ES, "INACTIVO");
+        var query = ConsultaCriteriaQuery.crear(0, 10, List.of(), raiz);
+
+        // Act
+        var criteria = ConsultarCoordinadoresVigentesMapper.toCriteria(query);
+
+        // Assert
+        assertThat(criteria.getRaiz()).isEqualTo(raiz);
+    }
+
+    @Test
     void debeLanzarFiltroException_cuandoOrdenaPorEstado() {
-        // Arrange — estado no existe en la whitelist de este endpoint
+        // Arrange — estado es filtrable pero no ordenable en este endpoint
         var query = ConsultaCriteriaQuery.crear(
                 0, 10, List.of(SortOrder.of("estado", SortDirection.ASC)), null);
 

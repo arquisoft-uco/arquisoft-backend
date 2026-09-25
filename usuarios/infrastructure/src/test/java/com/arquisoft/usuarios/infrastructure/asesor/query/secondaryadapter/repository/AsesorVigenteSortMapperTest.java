@@ -17,8 +17,8 @@ class AsesorVigenteSortMapperTest {
     }
 
     @Test
-    void debeRetornarNull_cuandoCampoNoExiste() {
-        // estado/vigente no existen en este Criteria: no hay ruta que puedan resolver
+    void debeRetornarNull_cuandoCampoNoEsOrdenableONoExiste() {
+        // estado es solo filtrable y vigente no existe en este Criteria: ninguno tiene ruta de orden
         // Act & Assert
         assertThat(AsesorVigenteSortMapper.traducir("estado")).isNull();
         assertThat(AsesorVigenteSortMapper.traducir("vigente")).isNull();

@@ -26,6 +26,7 @@ public final class AsesorQueryMapper {
                 entity.getIdentificador(),
                 entity.getNombre(),
                 entity.getEmail(),
-                entity.getContacto());
+                entity.getContacto(),
+                entity.getEstado());
     }
 }

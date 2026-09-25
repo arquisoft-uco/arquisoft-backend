@@ -11,7 +11,8 @@ public final class EstudianteVigenteCriteria extends QueryCriteria {
     public enum Campo {
         IDENTIFICADOR("identificador", true, true),
         NOMBRE       ("nombre",        true, true),
-        EMAIL        ("email",         true, true);
+        EMAIL        ("email",         true, true),
+        ESTADO       ("estado",        true, false);
 
         private final String  clave;
         private final boolean filtrable;

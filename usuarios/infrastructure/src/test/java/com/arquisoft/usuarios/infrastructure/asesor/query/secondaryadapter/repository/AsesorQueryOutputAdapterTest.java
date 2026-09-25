@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.groups.Tuple.tuple;
 
 @DataJpaTest
 class AsesorQueryOutputAdapterTest {
@@ -195,6 +196,22 @@ class AsesorQueryOutputAdapterTest {
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
         assertThat(resultado.getContent().get(0).id()).isEqualTo(vigenteDos);
+    }
+
+    @Test
+    void debeFiltrarPorEstadoSinIncluirBajas_cuandoConsultaVigentesConEstadoActivo() {
+        // Arrange — dadoDeBaja también es ACTIVO: el filtro por estado se suma a la vigencia
+        var criteria = AsesorVigenteCriteria.builder().pagina(0).tamanio(10)
+                .raiz(NodoFiltro.predicado("estado", FiltroOperador.ES, "ACTIVO"))
+                .build();
+
+        // Act
+        var resultado = adapter.consultarVigentes(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(AsesorVigenteReadModel::id, AsesorVigenteReadModel::estado)
+                .containsExactlyInAnyOrder(tuple(vigenteUno, "ACTIVO"), tuple(vigenteDos, "ACTIVO"));
     }
 
     private UUID persistirAsesor(String identificador, String nombre, String email,

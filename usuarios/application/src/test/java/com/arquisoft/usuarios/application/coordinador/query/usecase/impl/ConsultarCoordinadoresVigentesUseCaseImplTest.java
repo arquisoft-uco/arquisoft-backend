@@ -40,7 +40,7 @@ class ConsultarCoordinadoresVigentesUseCaseImplTest {
         // Arrange
         var criteria = CoordinadorVigenteCriteria.builder().pagina(0).tamanio(10).build();
         var esperado = PaginatedResult.of(
-                List.of(new CoordinadorVigenteReadModel(UUID.randomUUID(), "1000", "Ana", "ana@uco.edu.co", "3000000000")),
+                List.of(new CoordinadorVigenteReadModel(UUID.randomUUID(), "1000", "Ana", "ana@uco.edu.co", "3000000000", "ACTIVO")),
                 0, 10, 1L);
         when(coordinadorQueryOutputPort.consultarVigentes(criteria)).thenReturn(esperado);
 

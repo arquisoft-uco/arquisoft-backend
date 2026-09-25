@@ -13,6 +13,7 @@ public final class AsesorVigenteResponseMapper {
                 readModel.identificador(),
                 readModel.nombre(),
                 readModel.email(),
-                readModel.contacto());
+                readModel.contacto(),
+                readModel.estado());
     }
 }

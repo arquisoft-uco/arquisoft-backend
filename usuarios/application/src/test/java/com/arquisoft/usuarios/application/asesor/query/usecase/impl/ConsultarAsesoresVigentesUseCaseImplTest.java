@@ -40,7 +40,7 @@ class ConsultarAsesoresVigentesUseCaseImplTest {
         // Arrange
         var criteria = AsesorVigenteCriteria.builder().pagina(0).tamanio(10).build();
         var esperado = PaginatedResult.of(
-                List.of(new AsesorVigenteReadModel(UUID.randomUUID(), "1000", "Ana", "ana@uco.edu.co", "3000000000")),
+                List.of(new AsesorVigenteReadModel(UUID.randomUUID(), "1000", "Ana", "ana@uco.edu.co", "3000000000", "ACTIVO")),
                 0, 10, 1L);
         when(asesorQueryOutputPort.consultarVigentes(criteria)).thenReturn(esperado);
 
