@@ -66,7 +66,7 @@ class RemoverCoordinadorUseCaseImplTest {
 
     private UsuarioDomain usuario(UUID id) {
         return UsuarioDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co", "573001112233",
-                EstadoUsuario.ACTIVO);
+                EstadoUsuario.ACTIVO, UtilFecha.VACIO);
     }
 
     @Test

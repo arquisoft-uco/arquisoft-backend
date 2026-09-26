@@ -39,17 +39,31 @@ public final class UsuariosApiMessages {
 
         public static final String MODIFICAR_SUMMARY = "Modificar información de un usuario existente";
         public static final String MODIFICAR_DESCRIPTION =
-                "Modifica los datos personales enviados de un usuario activo y sincroniza el email y el "
-                        + "nombre en el proveedor de identidad (Keycloak). Los roles enviados se agregan o, si "
-                        + "fueron eliminados lógicamente, se reactivan; un rol ausente de la lista no se revoca. "
-                        + "Solo cambian los campos presentes en el body. Exclusivo del rol administrador.";
+                "Modifica los datos personales enviados de un usuario, cualquiera sea su estado, y sincroniza "
+                        + "el email y el nombre en el proveedor de identidad (Keycloak). Los roles enviados se "
+                        + "agregan o, si fueron eliminados lógicamente, se reactivan; un rol ausente de la lista "
+                        + "no se revoca. Solo cambian los campos presentes en el body; el estado del usuario no "
+                        + "cambia. Un usuario eliminado no puede modificarse; primero debe activarse mediante el "
+                        + "cambio de estado. Exclusivo del rol administrador.";
         public static final String MODIFICAR_RESP_204 = "Usuario modificado";
         public static final String MODIFICAR_RESP_400 =
                 "Identificador de usuario inválido, rol no válido o body sin ningún dato ni rol";
         public static final String MODIFICAR_RESP_422 =
-                "Usuario inexistente o inactivo, datos ya usados por otro usuario, o rol ya vigente";
+                "Usuario inexistente o eliminado, datos ya usados por otro usuario, o rol ya vigente";
         public static final String MODIFICAR_RESP_503 =
                 "No fue posible sincronizar con el proveedor de identidad; el servicio no está disponible temporalmente";
+
+        public static final String ELIMINAR_SUMMARY = "Eliminar definitivamente la información de un usuario";
+        public static final String ELIMINAR_DESCRIPTION =
+                "Elimina lógicamente un usuario sin roles vigentes: marca la fecha de eliminación y, si estaba "
+                        + "activo, lo pasa a inactivo, lo que deshabilita su identidad en el proveedor de identidad "
+                        + "(Keycloak). El usuario se recupera activándolo mediante el cambio de estado. "
+                        + "Exclusivo del rol administrador.";
+        public static final String ELIMINAR_RESP_204 = "Usuario eliminado";
+        public static final String ELIMINAR_RESP_400 = "Identificador de usuario inválido";
+        public static final String ELIMINAR_RESP_422 = "Usuario inexistente, ya eliminado o con roles vigentes";
+        public static final String ELIMINAR_RESP_503 =
+                "No fue posible deshabilitar la identidad en el proveedor; el servicio no está disponible temporalmente";
     }
 
     public static final class Estudiante {

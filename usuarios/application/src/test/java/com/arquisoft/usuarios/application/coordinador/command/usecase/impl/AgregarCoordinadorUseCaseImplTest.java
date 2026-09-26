@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.coordinador.command.usecase.impl;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.coordinador.command.finder.CoordinadorPorUsuarioFinder;
 import com.arquisoft.usuarios.application.coordinador.command.secondaryport.CoordinadorOutputPort;
 import com.arquisoft.usuarios.application.coordinador.command.secondaryport.entity.CoordinadorEntity;
@@ -58,7 +59,7 @@ class AgregarCoordinadorUseCaseImplTest {
     private UsuarioDomain usuario() {
         return UsuarioDomain.reconstruir(
                 UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", "573001112233",
-                EstadoUsuario.ACTIVO);
+                EstadoUsuario.ACTIVO, UtilFecha.VACIO);
     }
 
     @Test

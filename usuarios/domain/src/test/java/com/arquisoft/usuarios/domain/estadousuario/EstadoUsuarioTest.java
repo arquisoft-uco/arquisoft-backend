@@ -25,4 +25,11 @@ class EstadoUsuarioTest {
         assertThatThrownBy(() -> EstadoUsuario.desde("XXX"))
                 .isInstanceOf(EstadoUsuarioNoEncontradoException.class);
     }
+
+    @Test
+    void debeHabilitarAccesoSoloEnActivo_cuandoSeConsultaHabilitaAcceso() {
+        // Act & Assert
+        assertThat(EstadoUsuario.ACTIVO.habilitaAcceso()).isTrue();
+        assertThat(EstadoUsuario.INACTIVO.habilitaAcceso()).isFalse();
+    }
 }
