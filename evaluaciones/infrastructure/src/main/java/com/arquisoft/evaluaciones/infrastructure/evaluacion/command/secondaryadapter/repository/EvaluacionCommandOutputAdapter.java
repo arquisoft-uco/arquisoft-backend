@@ -1,29 +1,23 @@
 package com.arquisoft.evaluaciones.infrastructure.evaluacion.command.secondaryadapter.repository;
 
 import com.arquisoft.evaluaciones.application.evaluacion.command.secondaryport.EvaluacionOutputPort;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.evaluaciones.EvaluacionKey;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
-// Solo transporte SQL: la decision de a que estado transicionar ya la tomo el dominio
-// (InicioEvaluacionDomain). Participa en la misma transaccion/bloqueo que el SELECT ... FOR
-// UPDATE de ContextoRegistroEvaluacionJuradoCommandOutputAdapter.
 @Component
+@RequiredArgsConstructor
 public class EvaluacionCommandOutputAdapter implements EvaluacionOutputPort {
 
-    private static final String SQL_ACTUALIZAR_ESTADO =
-            "UPDATE evaluacion SET estado_evaluacion_id = :estado WHERE id = :evaluacion";
-
-    @PersistenceContext(unitName = "evaluaciones")
-    private EntityManager entityManager;
+    private final EvaluacionCommandRepository repository;
+    private final AppLogger logger;
 
     @Override
     public void actualizarEstado(UUID evaluacion, String estado) {
-        entityManager.createNativeQuery(SQL_ACTUALIZAR_ESTADO)
-                .setParameter("estado", estado)
-                .setParameter("evaluacion", evaluacion)
-                .executeUpdate();
+        repository.actualizarEstado(evaluacion, estado);
+        logger.debug(EvaluacionKey.LOG_ESTADO_ACTUALIZADO, evaluacion, estado);
     }
 }

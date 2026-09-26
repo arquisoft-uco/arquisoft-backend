@@ -5,14 +5,12 @@ import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.model.Exist
 import com.arquisoft.evaluaciones.domain.evaluacioncualitativajurado.rules.ItemsCualitativosJuradoExistentesRule;
 
 import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 
 public class ItemsCualitativosJuradoExistentesRuleImpl implements ItemsCualitativosJuradoExistentesRule {
 
     @Override
     public void validar(ExistenciaItemsCualitativosJurado existencia) {
-        Set<UUID> faltantes = new HashSet<>(existencia.solicitados());
+        var faltantes = new HashSet<>(existencia.solicitados());
         faltantes.removeAll(existencia.existentes());
 
         if (!faltantes.isEmpty()) {
