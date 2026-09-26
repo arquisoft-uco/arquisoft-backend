@@ -21,4 +21,6 @@ public interface ProveedorIdentidadOutputPort {
     void eliminar(UUID usuarioId);
 
     void revocarRealmRole(UUID usuario, String realmRole);
+
+    void cambiarHabilitacion(UUID usuario, boolean habilitado);
 }

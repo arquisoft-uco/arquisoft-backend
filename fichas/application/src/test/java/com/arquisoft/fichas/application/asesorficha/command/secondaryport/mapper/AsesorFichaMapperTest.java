@@ -16,7 +16,7 @@ class AsesorFichaMapperTest {
         // Arrange
         var ocurridoEn = Instant.now();
         var entity = new AsesorFichaEntity(
-                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn);
+                UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn, java.time.Instant.EPOCH);
 
         // Act
         var domain = AsesorFichaMapper.toDomain(entity);

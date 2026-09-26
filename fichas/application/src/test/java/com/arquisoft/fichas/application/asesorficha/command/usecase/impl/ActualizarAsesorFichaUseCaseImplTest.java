@@ -3,10 +3,12 @@ package com.arquisoft.fichas.application.asesorficha.command.usecase.impl;
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaPorIdFinder;
 import com.arquisoft.fichas.application.asesorficha.command.result.ActualizacionAsesorFichaResult;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
 import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -84,5 +86,27 @@ class ActualizarAsesorFichaUseCaseImplTest {
         // Assert
         assertThat(resultado).isInstanceOf(ActualizacionAsesorFichaResult.NoReplicado.class);
         verify(asesorFichaOutputPort, never()).actualizar(any());
+    }
+
+    @Test
+    void debeActualizarConservandoEliminadoEn_cuandoElAsesorFichaEstaDadoDeBaja() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var eliminadoEn = Instant.parse("2026-09-01T10:00:00Z");
+        var eliminado = AsesorFichaDomain.reconstruir(id, "20161020123", "Juan Pérez", "juan@example.com",
+                eliminadoEn, eliminadoEn);
+        var entrada = AsesorFichaDomain.crear(id, "20161020999", "Juan Actualizado",
+                "actualizado@example.com", Instant.parse("2026-09-16T10:00:00Z"));
+        when(asesorFichaPorIdFinder.obtener(id)).thenReturn(eliminado);
+
+        // Act
+        var resultado = useCase.ejecutar(entrada);
+
+        // Assert
+        assertThat(resultado).isInstanceOf(ActualizacionAsesorFichaResult.Actualizada.class);
+        var captor = ArgumentCaptor.forClass(AsesorFichaEntity.class);
+        verify(asesorFichaOutputPort, times(1)).actualizar(captor.capture());
+        assertThat(captor.getValue().nombre()).isEqualTo("Juan Actualizado");
+        assertThat(captor.getValue().eliminadoEn()).isEqualTo(eliminadoEn);
     }
 }

@@ -48,7 +48,11 @@ Lee `.workspace/validator/validator-{HU|HT}-{ID}.md`.
   son la evidencia con la que llenarás el checklist del PR — sin ellos no marcas nada.
 
 La sección se llama `## Datos para la entrega`; los reportes generados antes de agosto de 2026 la
-titulan `## Datos para el commit` — acepta ambas. Si un dato no está (p. ej. "Endpoints
+titulan `## Datos para el commit` — acepta ambas. Si faltan `Mensaje`, `Rama` o `Archivos a
+incluir` (o este último remite a `git status` en vez de listar), el reporte no sigue
+`.claude/templates/VALIDATOR.md`: detente y pide repetir `@4a-validator-analyze` → `@4b-validator-report`.
+Esos tres datos son lo que el usuario confirma en el Gate 1, y derivarlos tú es confirmar algo que
+nadie validó. Si falta otro dato (p. ej. "Endpoints
 documentados"), no lo inventes: cuenta como falta de evidencia en la FASE 7.
 
 ## FASE 3 — Construir la lista de archivos
@@ -72,8 +76,16 @@ podrías incluirlos aunque quisieras: `.workspace/` está entero en `.gitignore`
 `git branch --show-current`. Si no coincide con la rama destino del reporte:
 
 ```
-git checkout develop && git pull && git checkout -b {prefijo}/{HU|HT}-{ID}-{descripcion_snake_case}
+git fetch origin
+git switch -c {prefijo}/{HU|HT}-{ID}-{descripcion_snake_case} origin/develop
 ```
+
+La rama sale de `origin/develop`, no del `develop` local: el implementador trabaja sin commitear
+sobre `develop`, y ese local suele ir atrasado. Una rama atrasada lleva conflictos al PR, o un diff
+que revierte lo que otros ya mergearon. Los cambios sin commitear no son motivo para saltarse esto:
+git los arrastra a la rama nueva, y si alguno choca con lo que trae `origin`, aborta sin tocar el
+working tree. Si aborta, detente y reporta los archivos en conflicto; no hagas `stash` ni descartes
+nada por tu cuenta.
 
 Si la rama ya existe, **pregunta antes** de hacer checkout. `main` es la rama estable: nunca se
 ramifica desde ella ni se commitea directo sobre ella.
@@ -81,7 +93,10 @@ ramifica desde ella ni se commitea directo sobre ella.
 ## FASE 5 — Gate 1: confirmación del commit
 
 Muestra rama, mensaje completo (título + cuerpo), la lista final de archivos —con los no listados
-en el reporte señalados— y lo que queda fuera del commit. Pregunta:
+en el reporte señalados— y lo que queda fuera del commit. Todo conteo que muestres (total, por
+carpeta, por estado) sale de un comando (`git status -s -uall | wc -l`, `… | cut -d/ -f1 | sort |
+uniq -c`), no de una suma tuya: el usuario confirma sobre esos números, y un total que no cuadra con
+la lista le hace dudar de la lista entera. Pregunta:
 "¿Confirmas el commit? (sí / no / ajustar mensaje)". Si pide ajustar, actualiza y vuelve a
 confirmar. Si dice "no", termina sin ejecutar nada.
 
@@ -118,7 +133,10 @@ afirmación de que algo se verificó. Marca `[x]` solo con evidencia explícita 
   y 2 del reporte; si esos niveles pasaron sin bloqueantes, márcalas.
 - *Cobertura ≥ 75%* y *Tests unitarios* → solo si la fila `Tests` de la Trazabilidad está
   `✅ Completado`. Si está `⏳ Pendiente`, **déjalas sin marcar** y dilo en las notas al reviewer.
-- *Build exitoso* → solo si la fase de compilación del reporte pasó.
+- *Build exitoso* → solo si la fase de compilación del reporte pasó, y en las notas al reviewer
+  copia el campo `**Compilación:**` del reporte. La casilla nombra `./gradlew build` y el validator
+  corre tareas sueltas por contexto; sin los comandos a la vista, el reviewer cree que se corrió
+  algo que no se corrió. Un reporte sin ese campo no da evidencia: la casilla se queda sin marcar.
 - *Criterios de aceptación verificados* → solo si el Nivel 1 los dio por evidenciados.
 - *Endpoints documentados* → solo si la HU tiene endpoints y el check de `@Tag`/`@Operation` pasó;
   si no aplica, deja la casilla sin marcar y anota "N/A — la HU no expone endpoints".
@@ -136,7 +154,10 @@ Antes de `gh pr create`, revisa el `.workspace/pr/PR-{HU|HT}-{ID}.md` y bórrala
 ## FASE 8 — Gate 2: confirmación de push, PR y publicación
 
 Muestra al usuario la rama y su destino (`develop`), el hash y título del commit, el título del PR,
-la ruta del cuerpo (`.workspace/pr/PR-{HU|HT}-{ID}.md`) y el cuerpo completo renderizado. Pregunta:
+la ruta del cuerpo (`.workspace/pr/PR-{HU|HT}-{ID}.md`) y el cuerpo completo, leído del archivo
+(`cat`) y no recompuesto de memoria: el usuario aprueba lo que ve, y `--body-file` publica lo que
+hay en disco. Si tu vista previa añade o quita algo —una marca de agua que el archivo no tiene, una
+casilla distinta—, lo aprobado y lo publicado dejan de ser lo mismo. Pregunta:
 "¿Confirmas hacer push y abrir el PR hacia `develop`? (sí / no / ajustar PR)".
 
 Si dice "no", termina — el commit ya está hecho localmente y se lo dices explícitamente. Si pide
