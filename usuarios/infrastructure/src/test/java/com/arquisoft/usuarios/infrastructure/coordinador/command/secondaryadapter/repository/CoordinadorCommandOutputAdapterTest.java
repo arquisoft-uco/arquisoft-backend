@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -47,7 +48,7 @@ class CoordinadorCommandOutputAdapterTest {
         var usuarioId = sembrarUsuario();
 
         // Act
-        adapter.guardar(new CoordinadorEntity(usuarioId));
+        adapter.guardar(new CoordinadorEntity(usuarioId, null));
 
         // Assert
         assertThat(coordinadorCommandRepository.existsById(usuarioId)).isTrue();
@@ -62,7 +63,7 @@ class CoordinadorCommandOutputAdapterTest {
         entityManager.persistAndFlush(CoordinadorJpaEntity.builder().usuarioId(usuarioId).build());
 
         // Act
-        var existe = adapter.existePorUsuario(usuarioId);
+        var existe = adapter.obtenerPorUsuario(usuarioId).isPresent();
 
         // Assert
         assertThat(existe).isTrue();
@@ -74,9 +75,42 @@ class CoordinadorCommandOutputAdapterTest {
         var adapter = new CoordinadorCommandOutputAdapter(coordinadorCommandRepository, logger);
 
         // Act
-        var existe = adapter.existePorUsuario(UUID.randomUUID());
+        var existe = adapter.obtenerPorUsuario(UUID.randomUUID()).isPresent();
 
         // Assert
         assertThat(existe).isFalse();
+    }
+
+    @Test
+    void debePersistirEliminadoEn_cuandoSeEliminaLogicamente() {
+        // Arrange
+        var adapter = new CoordinadorCommandOutputAdapter(coordinadorCommandRepository, logger);
+        var usuarioId = sembrarUsuario();
+        entityManager.persistAndFlush(CoordinadorJpaEntity.builder().usuarioId(usuarioId).build());
+        var eliminadoEn = Instant.parse("2026-09-24T10:00:00Z");
+
+        // Act
+        adapter.eliminarLogica(usuarioId, eliminadoEn);
+
+        // Assert
+        assertThat(entityManager.find(CoordinadorJpaEntity.class, usuarioId).getEliminadoEn()).isEqualTo(eliminadoEn);
+        assertThat(adapter.obtenerPorUsuario(usuarioId)).map(CoordinadorEntity::eliminadoEn).contains(eliminadoEn);
+        verify(logger).debug(AgregarCoordinadorKey.LOG_ACTUALIZADO, usuarioId);
+    }
+
+    @Test
+    void debeDejarEliminadoEnNulo_cuandoSeReactiva() {
+        // Arrange
+        var adapter = new CoordinadorCommandOutputAdapter(coordinadorCommandRepository, logger);
+        var usuarioId = sembrarUsuario();
+        entityManager.persistAndFlush(CoordinadorJpaEntity.builder()
+                .usuarioId(usuarioId).eliminadoEn(Instant.parse("2026-09-24T10:00:00Z")).build());
+
+        // Act
+        adapter.reactivar(usuarioId);
+
+        // Assert
+        assertThat(entityManager.find(CoordinadorJpaEntity.class, usuarioId).getEliminadoEn()).isNull();
+        verify(logger).debug(AgregarCoordinadorKey.LOG_ACTUALIZADO, usuarioId);
     }
 }

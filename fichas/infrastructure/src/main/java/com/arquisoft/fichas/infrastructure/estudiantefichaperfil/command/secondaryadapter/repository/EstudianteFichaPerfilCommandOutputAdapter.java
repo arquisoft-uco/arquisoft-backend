@@ -32,8 +32,8 @@ public class EstudianteFichaPerfilCommandOutputAdapter implements EstudianteFich
     }
 
     @Override
-    public long contarPorFichaPerfilId(UUID fichaPerfilId) {
-        return repository.countByFichaPerfilId(fichaPerfilId);
+    public long contarVigentesPorFichaPerfilId(UUID fichaPerfilId) {
+        return repository.countVigentesByFichaPerfilId(fichaPerfilId);
     }
 
     @Override

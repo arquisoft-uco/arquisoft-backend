@@ -8,3 +8,15 @@ rutas:
     usuarios:
       base: /usuarios
       estudiante: /{usuarioId}/estudiante
+      asesor: /{usuarioId}/asesor
+      asesor-ficha: /{usuarioId}/asesor-ficha
+      coordinador: /{usuarioId}/coordinador
+      modificar: /{usuarioId}
+      coordinadores-administrador: /coordinadores/administrador
+      coordinadores-vigentes: /coordinadores/vigentes
+      estudiantes-administrador: /estudiantes/administrador
+      estudiantes-vigentes: /estudiantes/vigentes
+      asesores-administrador: /asesores/administrador
+      asesores-vigentes: /asesores/vigentes
+      asesores-ficha-administrador: /asesores-ficha/administrador
+      asesores-ficha-vigentes: /asesores-ficha/vigentes

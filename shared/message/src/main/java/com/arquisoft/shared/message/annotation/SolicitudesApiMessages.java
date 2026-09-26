@@ -46,5 +46,79 @@ public final class SolicitudesApiMessages {
         public static final String ENVIAR_NOVEDAD_ASESOR_RESP_400 = "Datos inválidos";
         public static final String ENVIAR_NOVEDAD_ASESOR_RESP_422 =
                 "Remitente o destinatario no encontrado, o solicitud duplicada";
+
+        public static final String ENVIAR_CAMBIO_ASESOR_SUMMARY =
+                "Enviar solicitud para cambio de asesor";
+        public static final String ENVIAR_CAMBIO_ASESOR_DESCRIPTION =
+                "Permite a un estudiante enviar una solicitud para justificar un cambio de asesor, "
+                        + "dirigida a un coordinador.";
+        public static final String ENVIAR_CAMBIO_ASESOR_RESP_201 =
+                "Solicitud enviada — retorna el UUID asignado";
+        public static final String ENVIAR_CAMBIO_ASESOR_RESP_400 = "Datos inválidos";
+        public static final String ENVIAR_CAMBIO_ASESOR_RESP_422 =
+                "Remitente o destinatario no encontrado, o solicitud duplicada";
+
+        public static final String ENVIAR_AMPLIACION_PLAZO_SUMMARY =
+                "Enviar solicitud para ampliación de plazo";
+        public static final String ENVIAR_AMPLIACION_PLAZO_DESCRIPTION =
+                "Permite a un estudiante enviar una solicitud para justificar la ampliación del plazo "
+                        + "de entrega de su proyecto de grado, dirigida a un coordinador.";
+        public static final String ENVIAR_AMPLIACION_PLAZO_RESP_201 =
+                "Solicitud enviada — retorna el UUID asignado";
+        public static final String ENVIAR_AMPLIACION_PLAZO_RESP_400 = "Datos inválidos";
+        public static final String ENVIAR_AMPLIACION_PLAZO_RESP_422 =
+                "Remitente o destinatario no encontrado, o solicitud duplicada";
+
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_SUMMARY =
+                "Eliminar solicitud de novedad para el coordinador";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_DESCRIPTION =
+                "Permite a un estudiante eliminar definitivamente una solicitud de novedad para el "
+                        + "coordinador que envió por error.";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_204 = "Solicitud eliminada";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_403 =
+                "Sin permisos para eliminar solicitudes de novedad para el coordinador";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_422 =
+                "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
+
+        public static final String ELIMINAR_NOVEDAD_ASESOR_SUMMARY =
+                "Eliminar solicitud de novedad para el asesor";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_DESCRIPTION =
+                "Permite a un estudiante eliminar definitivamente una solicitud de novedad para el "
+                        + "asesor que envió por error.";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_204 = "Solicitud eliminada";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_403 =
+                "Sin permisos para eliminar solicitudes de novedad para el asesor";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_422 =
+                "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
+
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_SUMMARY =
+                "Consultar solicitudes de novedad para el coordinador recibidas";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_DESCRIPTION =
+                "Permite a un coordinador consultar de forma paginada y filtrable las solicitudes de "
+                        + "novedad para el coordinador que ha recibido. El alcance se limita a las "
+                        + "solicitudes dirigidas al coordinador autenticado.";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_RESP_200 =
+                "Página de solicitudes de novedad para el coordinador recibidas";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de novedad para el coordinador recibidas";
+
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_SUMMARY =
+                "Consultar solicitudes de novedad para el coordinador enviadas";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_DESCRIPTION =
+                "Permite a un estudiante consultar de forma paginada y filtrable las solicitudes de "
+                        + "novedad para el coordinador que ha enviado. El alcance se limita a las "
+                        + "solicitudes cuyo remitente es el estudiante autenticado.";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_200 =
+                "Página de solicitudes de novedad para el coordinador enviadas";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_400 =
+                "Criterio de filtro, orden o paginación inválido";
+        public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_403 =
+                "Sin permisos para consultar solicitudes de novedad para el coordinador enviadas";
     }
 }

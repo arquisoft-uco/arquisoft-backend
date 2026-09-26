@@ -19,7 +19,10 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -161,8 +164,16 @@ class CatalogoMensajesRedisConfigTest {
     // -------------------------------------------------------------------------
 
     private void redisDevuelve(List<String> textos) {
+        Map<String, String> textoPorClave = new HashMap<>();
+        for (int i = 0; i < ClavesCatalogo.TODAS.size(); i++) {
+            textoPorClave.put(ClavesCatalogo.TODAS.get(i).clave(), textos.get(i));
+        }
+
         when(plantilla.opsForValue()).thenReturn(operaciones);
-        when(operaciones.multiGet(anyCollection())).thenReturn(textos);
+        when(operaciones.multiGet(anyCollection())).thenAnswer(invocacion -> {
+            Collection<String> pedidas = invocacion.getArgument(0);
+            return pedidas.stream().map(textoPorClave::get).toList();
+        });
     }
 
     /**

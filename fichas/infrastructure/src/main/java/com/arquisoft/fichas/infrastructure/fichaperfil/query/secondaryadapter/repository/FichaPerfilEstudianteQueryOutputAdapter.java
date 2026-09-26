@@ -22,7 +22,7 @@ public class FichaPerfilEstudianteQueryOutputAdapter implements FichaPerfilEstud
 
     @Override
     public Optional<FichaPerfilEstudianteReadModel> consultar(FichaPerfilEstudianteCriteria criteria) {
-        var estudiantes = estudianteFichaPerfilQueryOutputPort.consultarPorFicha(criteria.fichaPerfil());
+        var estudiantes = estudianteFichaPerfilQueryOutputPort.consultarVigentesPorFicha(criteria.fichaPerfil());
 
         if (!estaVinculado(estudiantes, criteria.estudiante())) {
             return Optional.empty();

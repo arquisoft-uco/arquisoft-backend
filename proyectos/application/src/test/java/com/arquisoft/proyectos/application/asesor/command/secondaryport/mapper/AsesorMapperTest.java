@@ -1,5 +1,6 @@
 package com.arquisoft.proyectos.application.asesor.command.secondaryport.mapper;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.proyectos.application.asesor.command.secondaryport.entity.AsesorEntity;
 import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class AsesorMapperTest {
         // Arrange
         var id = UUID.randomUUID();
         var ocurridoEn = Instant.now();
-        var entity = new AsesorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn);
+        var entity = new AsesorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn, UtilFecha.VACIO);
 
         // Act
         var domain = AsesorMapper.toDomain(entity);

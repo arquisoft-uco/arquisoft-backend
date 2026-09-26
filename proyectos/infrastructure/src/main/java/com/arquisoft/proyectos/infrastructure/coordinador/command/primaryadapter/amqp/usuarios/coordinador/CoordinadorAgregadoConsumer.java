@@ -49,6 +49,8 @@ public class CoordinadorAgregadoConsumer extends AbstractEventConsumer {
             switch (resultado) {
                 case AgregacionCoordinadorResult.Agregada agregada ->
                         logger.info(CoordinadorKey.LOG_AGREGADO, agregada.coordinador());
+                case AgregacionCoordinadorResult.Reactivada reactivada ->
+                        logger.info(CoordinadorKey.LOG_REACTIVADO, reactivada.coordinador());
                 case AgregacionCoordinadorResult.Duplicada duplicada ->
                         logger.info(CoordinadorKey.LOG_DUPLICADO, duplicada.coordinador());
                 case AgregacionCoordinadorResult.Descartada descartada ->

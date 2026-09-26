@@ -34,7 +34,7 @@
   "loginWithEmailAllowed": true,
   "duplicateEmailsAllowed": false,
   "resetPasswordAllowed": false,
-  "editUsernameAllowed": false,
+  "editUsernameAllowed": true,
   "bruteForceProtected": false,
   "permanentLockout": false,
   "maxTemporaryLockouts": 0,
@@ -120,6 +120,7 @@
               "evaluaciones:item-cualitativo-jurado:create",
               "evaluaciones:item-cuantitativo-jurado:create",
               "usuarios:usuario:create",
+              "usuarios:usuario:update",
               "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view",
               "evaluaciones:item-cualitativo-jurado:update",
               "usuarios:representante-comite-curriculum:create",
@@ -464,6 +465,15 @@
         {
           "id": "e54ccb2c-970e-467a-8cf8-c0b5a5cbd74d",
           "name": "usuarios:usuario:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "3f8a6d21-5c47-4b92-8e1a-7d2f4c9b60ae",
+          "name": "usuarios:usuario:update",
           "description": "",
           "composite": false,
           "clientRole": true,

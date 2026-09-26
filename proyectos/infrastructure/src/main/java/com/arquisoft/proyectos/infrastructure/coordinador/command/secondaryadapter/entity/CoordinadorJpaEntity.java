@@ -35,4 +35,7 @@ public class CoordinadorJpaEntity {
 
     @Column(name = "ocurrido_en", nullable = false)
     private Instant ocurridoEn;
+
+    @Column(name = "eliminado_en")
+    private Instant eliminadoEn;
 }
