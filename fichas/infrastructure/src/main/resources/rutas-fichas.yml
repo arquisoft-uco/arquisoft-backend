@@ -14,6 +14,7 @@ rutas:
       estados-ficha: /estados-ficha
       tipos-item: /tipos-item
       estados-evaluacion: /estados-evaluacion
+      estados-revision: /estados-revision
       items: /{fichaPerfilId}/items
       items-estudiante: /{fichaPerfilId}/items/estudiante
       items-representante: /{fichaPerfilId}/items/representante
