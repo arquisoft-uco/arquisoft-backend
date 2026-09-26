@@ -10,7 +10,10 @@ public enum ProveedorIdentidadKey implements ClaveMensaje {
     LOG_COMPENSACION_ROL_FALLIDA("usuarios.infraestructura.proveedor-identidad.log.compensacion-rol-fallida", 2),
     LOG_IDENTIDAD_ACTUALIZADA("usuarios.infraestructura.proveedor-identidad.log.identidad-actualizada", 1),
     LOG_COMPENSACION_IDENTIDAD_FALLIDA(
-            "usuarios.infraestructura.proveedor-identidad.log.compensacion-identidad-fallida", 1);
+            "usuarios.infraestructura.proveedor-identidad.log.compensacion-identidad-fallida", 1),
+    LOG_HABILITACION_CAMBIADA("usuarios.infraestructura.proveedor-identidad.log.habilitacion-cambiada", 2),
+    LOG_COMPENSACION_HABILITACION_FALLIDA(
+            "usuarios.infraestructura.proveedor-identidad.log.compensacion-habilitacion-fallida", 2);
 
     private final String clave;
     private final int parametros;

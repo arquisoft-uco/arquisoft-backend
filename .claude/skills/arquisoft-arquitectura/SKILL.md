@@ -149,15 +149,23 @@ Rutas abreviadas desde `fichas/{capa}/src/main/java/com/arquisoft/fichas/{capa}/
 #### El objeto de acción lleva solo lo que la acción necesita
 
 No es el domain cargado ni una copia suya: es lo mínimo con lo que la acción se puede decidir y
-ejecutar. La forma dominante — 8 de los 10 que existen — es **ids planos y escalares**:
-`CambioAsesorFichaDomain` son dos `UUID` (ficha y nuevo asesor), `ModificacionFichaPerfilDomain` son
+ejecutar. Cuando la acción **modifica o referencia** lo que ya existe, la forma — 8 de los 10 que
+existen — es **ids planos y escalares**: `CambioAsesorFichaDomain` son dos `UUID` (ficha y nuevo asesor), `ModificacionFichaPerfilDomain` son
 `UUID` + título + `UUID` del estudiante. No cargues `FichaPerfilDomain` entero para cambiar su
 asesor; lo que hace falta para eso son dos identificadores.
 
-Solo cuando la acción crea de verdad varios objetos a la vez el objeto de acción **contiene otros
-`Domain`**, y entonces el orden de construcción es de menor a mayor jerarquía — el compuesto se arma
-al final, porque los de abajo necesitan el id del de arriba... que ya existe porque se creó primero.
-`RegistrarFichaPerfilMapper` es el único caso hoy y se lee entero:
+Cuando la acción **crea** un domain y además arrastra algo que ese domain no posee (un id del
+contexto, otra pieza), el objeto de acción **contiene ese `Domain`**, construido por el mapper que
+invoca el `Interactor` — nunca copia sus campos para que el `UseCase` haga `{Entidad}Domain.crear(...)`
+después. Así la integridad se valida una sola vez y antes de cualquier `Finder` (orden 1 → 2 → 3). Con
+los campos copiados se valida dos veces, las dos versiones divergen y lo que solo valida el `crear`
+del `UseCase` (una longitud máxima, p. ej.) se rechaza después de consultar la BD. La señal es un
+`{Entidad}Domain.crear(...)` dentro de un `UseCase`; solo se justifica si `crear` necesita un dato
+que únicamente existe tras una consulta o escritura previa, y el plan lo dice.
+
+El orden de construcción del compuesto es de menor a mayor jerarquía — se arma al final, porque los
+de abajo necesitan el id del de arriba... que ya existe porque se creó primero.
+`RegistrarFichaPerfilMapper` es la referencia y se lee entero:
 
 1. `FichaPerfilDomain.crear(...)` — el domain, que genera su propio id.
 2. `AsignarEstadoInicialFichaPerfilMapper.toDomain(ficha.getId())` y

@@ -235,6 +235,14 @@ public final class FichasApiMessages {
         public static final String AGREGAR_RESP_422 =
                 "Revisión no encontrada, revisión cerrada, ficha no asesorada por el usuario autenticado "
                         + "o texto de observación duplicado";
+
+        public static final String CONSULTAR_ASESOR_SUMMARY = "Consultar observaciones de ítem elaboradas";
+        public static final String CONSULTAR_ASESOR_DESCRIPTION =
+                "Permite al asesor de ficha consultar, de forma paginada y filtrable, las observaciones "
+                        + "de ítem que él mismo ha elaborado sobre las revisiones de las fichas de perfil que asesora.";
+        public static final String CONSULTAR_ASESOR_RESP_200 = "Página de observaciones de ítem elaboradas por el asesor";
+        public static final String CONSULTAR_ASESOR_RESP_400 = "Criterio de búsqueda inválido";
+        public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar observaciones de ítem";
     }
 
     public static final class EstudianteFichaPerfil {

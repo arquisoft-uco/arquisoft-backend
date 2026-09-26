@@ -27,6 +27,8 @@ public final class EventTopics {
 
         public static final String USUARIO_MODIFICADO =
                 "usuarios.usuario.modificado";
+        public static final String USUARIO_ESTADO_CAMBIADO =
+                "usuarios.usuario.estado_cambiado";
 
         public static final String ESTUDIANTE_AGREGADO =
                 "usuarios.estudiante.agregado";
@@ -35,8 +37,12 @@ public final class EventTopics {
 
         public static final String COORDINADOR_AGREGADO =
                 "usuarios.coordinador.agregado";
+        public static final String COORDINADOR_REMOVIDO =
+                "usuarios.coordinador.removido";
         public static final String ASESOR_FICHA_AGREGADO =
                 "usuarios.asesorficha.agregado";
+        public static final String ASESOR_FICHA_REMOVIDO =
+                "usuarios.asesorficha.removido";
 
         public static final String ASESOR_AGREGADO =
                 "usuarios.asesor.agregado";

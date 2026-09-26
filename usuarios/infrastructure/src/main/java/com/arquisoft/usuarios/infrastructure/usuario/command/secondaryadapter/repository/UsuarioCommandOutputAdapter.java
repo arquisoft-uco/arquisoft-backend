@@ -9,6 +9,7 @@ import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,6 +30,18 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
     public void actualizar(UsuarioEntity usuario) {
         usuarioCommandRepository.save(UsuarioJpaMapper.toJpaEntity(usuario));
         logger.debug(ModificarUsuarioKey.LOG_ACTUALIZADO, usuario.id());
+    }
+
+    @Override
+    public void eliminarLogica(UUID usuario, Instant eliminadoEn) {
+        usuarioCommandRepository.eliminarLogica(usuario, UsuarioJpaMapper.aColumna(eliminadoEn));
+        logger.debug(ModificarUsuarioKey.LOG_ACTUALIZADO, usuario);
+    }
+
+    @Override
+    public void cambiarEstado(UUID usuario, String estado, Instant eliminadoEn) {
+        usuarioCommandRepository.cambiarEstado(usuario, estado, UsuarioJpaMapper.aColumna(eliminadoEn));
+        logger.debug(ModificarUsuarioKey.LOG_ACTUALIZADO, usuario);
     }
 
     @Override
