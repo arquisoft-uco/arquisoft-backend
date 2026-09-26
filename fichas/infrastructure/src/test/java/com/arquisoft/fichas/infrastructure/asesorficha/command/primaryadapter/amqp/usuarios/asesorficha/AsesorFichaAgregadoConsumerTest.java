@@ -3,6 +3,7 @@ package com.arquisoft.fichas.infrastructure.asesorficha.command.primaryadapter.a
 import com.arquisoft.fichas.application.asesorficha.command.primaryport.interactor.AgregarAsesorFichaInteractor;
 import com.arquisoft.fichas.application.asesorficha.command.result.AgregacionAsesorFichaResult;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.fichas.AsesorFichaKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.impl.GestorTrazaImpl;
 import com.arquisoft.shared.tracing.infrastructure.traza.secondaryadapter.mdc.MdcContextoDiagnosticoOutputAdapter;
 import com.rabbitmq.client.Channel;
@@ -113,5 +114,20 @@ class AsesorFichaAgregadoConsumerTest {
 
         // Assert
         verify(channel).basicAck(3L, false);
+    }
+
+    @Test
+    void debeRegistrarLaReactivacionYConfirmar_cuandoElResultadoEsReactivada() throws Exception {
+        // Arrange
+        var asesorFicha = UUID.randomUUID();
+        when(agregarAsesorFichaInteractor.ejecutar(any()))
+                .thenReturn(new AgregacionAsesorFichaResult.Reactivada(asesorFicha));
+
+        // Act
+        adapter.onAsesorFichaAgregado(mensajeCon(UUID.randomUUID().toString(), 4L), channel);
+
+        // Assert
+        verify(logger).info(AsesorFichaKey.LOG_REACTIVADO, asesorFicha);
+        verify(channel).basicAck(4L, false);
     }
 }

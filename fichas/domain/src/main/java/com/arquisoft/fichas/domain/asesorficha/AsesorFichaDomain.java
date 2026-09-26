@@ -2,6 +2,8 @@ package com.arquisoft.fichas.domain.asesorficha;
 
 import com.arquisoft.shared.message.constant.FichasCodes;
 import com.arquisoft.shared.message.constant.FichasFields;
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
@@ -14,13 +16,15 @@ import java.util.UUID;
 public final class AsesorFichaDomain {
 
     public static final AsesorFichaDomain VACIO = reconstruir(
-            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, Instant.EPOCH);
+            UtilUUID.obtenerUUIDPorDefecto(), UtilTexto.VACIO, UtilTexto.VACIO, UtilTexto.VACIO, Instant.EPOCH,
+            UtilFecha.VACIO);
 
     private UUID id;
     private String identificador;
     private String nombre;
     private String email;
     private Instant ocurridoEn;
+    private Instant eliminadoEn;
 
     private AsesorFichaDomain() {}
 
@@ -34,20 +38,54 @@ public final class AsesorFichaDomain {
         asesorFicha.setNombre(nombre, result);
         asesorFicha.setEmail(email, result);
         asesorFicha.setOcurridoEn(ocurridoEn, result);
+        asesorFicha.eliminadoEn = UtilFecha.VACIO;
 
         result.lanzarSiTieneErrores();
         return asesorFicha;
     }
 
     public static AsesorFichaDomain reconstruir(UUID id, String identificador, String nombre, String email,
-                                                 Instant ocurridoEn) {
+                                                 Instant ocurridoEn, Instant eliminadoEn) {
         var asesorFicha = new AsesorFichaDomain();
         asesorFicha.id = id;
         asesorFicha.identificador = identificador;
         asesorFicha.nombre = nombre;
         asesorFicha.email = email;
         asesorFicha.ocurridoEn = ocurridoEn;
+        asesorFicha.eliminadoEn = UtilObjeto.aplicarPorDefecto(eliminadoEn, UtilFecha.VACIO);
         return asesorFicha;
+    }
+
+    public void remover(Instant ocurridoEn) {
+        this.eliminadoEn = ocurridoEn;
+        this.ocurridoEn = ocurridoEn;
+    }
+
+    public void reactivar(String identificador, String nombre, String email, Instant ocurridoEn) {
+        var result = new ValidationResult();
+
+        setIdentificador(identificador, result);
+        setNombre(nombre, result);
+        setEmail(email, result);
+        setOcurridoEn(ocurridoEn, result);
+
+        result.lanzarSiTieneErrores();
+        this.eliminadoEn = UtilFecha.VACIO;
+    }
+
+    public void actualizar(String identificador, String nombre, String email, Instant ocurridoEn) {
+        var result = new ValidationResult();
+
+        setIdentificador(identificador, result);
+        setNombre(nombre, result);
+        setEmail(email, result);
+        setOcurridoEn(ocurridoEn, result);
+
+        result.lanzarSiTieneErrores();
+    }
+
+    public boolean estaEliminado() {
+        return !UtilFecha.VACIO.equals(eliminadoEn);
     }
 
     private void setId(UUID id, ValidationResult result) {
@@ -113,6 +151,10 @@ public final class AsesorFichaDomain {
 
     public Instant getOcurridoEn() {
         return ocurridoEn;
+    }
+
+    public Instant getEliminadoEn() {
+        return eliminadoEn;
     }
 
     public boolean esVacio() {

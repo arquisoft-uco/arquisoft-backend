@@ -86,4 +86,28 @@ class UsuarioSolicitudesCommandOutputAdapterTest {
                 });
         assertThat(adapter.buscarPorId(UUID.randomUUID())).isEmpty();
     }
+
+    @Test
+    void debeActualizarLosDatosPersistidos_cuandoSeInvocaActualizar() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        entityManager.persist(UsuarioJpaEntity.builder()
+                .id(id).identificador("EST-1").nombre("Ana").email("ana@uco.edu.co")
+                .ocurridoEn(Instant.parse("2026-09-01T10:00:00Z")).build());
+        entityManager.flush();
+        entityManager.clear();
+        var nuevoOcurridoEn = Instant.parse("2026-09-16T10:00:00Z");
+
+        // Act
+        adapter.actualizar(new UsuarioEntity(id, "EST-999", "Ana Actualizada", "actualizada@uco.edu.co",
+                nuevoOcurridoEn));
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        var guardada = entityManager.find(UsuarioJpaEntity.class, id);
+        assertThat(guardada.getIdentificador()).isEqualTo("EST-999");
+        assertThat(guardada.getNombre()).isEqualTo("Ana Actualizada");
+        assertThat(guardada.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
+    }
 }

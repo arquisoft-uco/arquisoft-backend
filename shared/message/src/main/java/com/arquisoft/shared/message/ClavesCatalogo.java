@@ -10,7 +10,9 @@ import com.arquisoft.shared.message.key.app.MensajeriaKey;
 import com.arquisoft.shared.message.key.app.PaginacionKey;
 import com.arquisoft.shared.message.key.app.ValidadorKey;
 import com.arquisoft.shared.message.key.evaluaciones.CriterioItemCualitativoJuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.EvaluacionCualitativaJuradoKey;
 import com.arquisoft.shared.message.key.evaluaciones.ItemCualitativoJuradoKey;
+import com.arquisoft.shared.message.key.evaluaciones.ItemCuantitativoJuradoKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstadoEvaluacionKey;
 import com.arquisoft.shared.message.key.fichas.EstadoFichaKey;
@@ -48,8 +50,20 @@ import com.arquisoft.shared.message.key.usuarios.AgregarAsesorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ModificarUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ProveedorIdentidadKey;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
+import com.arquisoft.shared.message.key.usuarios.RemoverAsesorFichaKey;
+import com.arquisoft.shared.message.key.usuarios.RemoverAsesorKey;
+import com.arquisoft.shared.message.key.usuarios.RemoverCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverEstudianteKey;
 
 
@@ -99,7 +113,9 @@ public final class ClavesCatalogo {
             AsesorFichaKey.class,
             EvaluacionFichaPerfilKey.class,
             ItemCualitativoJuradoKey.class,
+            ItemCuantitativoJuradoKey.class,
             CriterioItemCualitativoJuradoKey.class,
+            EvaluacionCualitativaJuradoKey.class,
             FichaPerfilKey.class,
             ItemFichaPerfilKey.class,
             MinioGuiaKey.class,
@@ -123,6 +139,7 @@ public final class ClavesCatalogo {
             TokenInvalidadoKey.class,
             TokenKey.class,
             RegistrarUsuarioKey.class,
+            ModificarUsuarioKey.class,
             AgregarEstudianteKey.class,
             RemoverEstudianteKey.class,
             ProveedorIdentidadKey.class,
@@ -130,8 +147,19 @@ public final class ClavesCatalogo {
             CoordinadorKey.class,
             AgregarAsesorFichaKey.class,
             AgregarAsesorKey.class,
+            RemoverAsesorKey.class,
+            RemoverCoordinadorKey.class,
+            RemoverAsesorFichaKey.class,
             AsesorKey.class,
-            EstudianteProyectosKey.class
+            EstudianteProyectosKey.class,
+            ConsultarCoordinadoresAdministradorKey.class,
+            ConsultarCoordinadoresVigentesKey.class,
+            ConsultarEstudiantesAdministradorKey.class,
+            ConsultarEstudiantesVigentesKey.class,
+            ConsultarAsesoresAdministradorKey.class,
+            ConsultarAsesoresVigentesKey.class,
+            ConsultarAsesoresFichaAdministradorKey.class,
+            ConsultarAsesoresFichaVigentesKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.application.asesorficha.command.usecase.impl;
 
-import com.arquisoft.usuarios.application.asesorficha.command.finder.AsesorFichaUsuarioExisteFinder;
+import com.arquisoft.usuarios.application.asesorficha.command.finder.AsesorFichaPorUsuarioFinder;
 import com.arquisoft.usuarios.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
 import com.arquisoft.usuarios.application.asesorficha.command.secondaryport.mapper.AsesorFichaMapper;
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
@@ -19,22 +19,32 @@ import org.springframework.stereotype.Component;
 public class AgregarAsesorFichaUseCaseImpl implements AgregarAsesorFichaUseCase {
 
     private final AsesorFichaOutputPort asesorFichaOutputPort;
-    private final AsesorFichaUsuarioExisteFinder asesorFichaUsuarioExisteFinder;
+    private final AsesorFichaPorUsuarioFinder asesorFichaPorUsuarioFinder;
     private final AgregarAsesorFichaValidator agregarAsesorFichaValidator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
     public void ejecutar(UsuarioDomain usuario) {
-        var yaEsAsesorFicha = asesorFichaUsuarioExisteFinder.obtener(usuario.getId());
-        logger.debug(AgregarAsesorFichaKey.LOG_VERIFICACION_AGREGAR, usuario.getId(), yaEsAsesorFicha);
+        var asesorFicha = asesorFichaPorUsuarioFinder.obtener(usuario.getId());
+        logger.debug(AgregarAsesorFichaKey.LOG_VERIFICACION_AGREGAR,
+                usuario.getId(), !asesorFicha.esVacio(), asesorFicha.estaEliminado());
 
-        agregarAsesorFichaValidator.validar(usuario.getId(), yaEsAsesorFicha);
+        agregarAsesorFichaValidator.validar(usuario.getId(), asesorFicha);
 
-        var asesorFicha = AsesorFichaDomain.crear(usuario.getId());
-        asesorFichaOutputPort.guardar(AsesorFichaMapper.toEntity(asesorFicha));
+        if (asesorFicha.esVacio()) {
+            asesorFichaOutputPort.guardar(AsesorFichaMapper.toEntity(AsesorFichaDomain.crear(usuario.getId())));
+        } else {
+            reactivar(asesorFicha);
+        }
 
         eventPublisher.publish(new AsesorFichaAgregadoEvent(
                 usuario.getId(), usuario.getIdentificador(), usuario.getNombre(), usuario.getEmail()));
+    }
+
+    private void reactivar(AsesorFichaDomain asesorFicha) {
+        asesorFicha.reactivar();
+        asesorFichaOutputPort.reactivar(asesorFicha.getUsuario());
+        logger.info(AgregarAsesorFichaKey.LOG_REACTIVADO, asesorFicha.getUsuario());
     }
 }

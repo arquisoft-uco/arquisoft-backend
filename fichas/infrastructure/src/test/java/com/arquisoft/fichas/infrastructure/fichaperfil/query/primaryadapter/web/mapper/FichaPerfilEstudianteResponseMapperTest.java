@@ -20,7 +20,7 @@ class FichaPerfilEstudianteResponseMapperTest {
         var fichaId = UUID.randomUUID();
         var asesorId = UUID.randomUUID();
         var estudianteReadModel = new EstudianteFichaPerfilReadModel(
-                UUID.randomUUID(), fichaId, UUID.randomUUID(), "Estudiante Uno", "e1@uco.edu.co");
+                UUID.randomUUID(), fichaId, UUID.randomUUID(), "Estudiante Uno", "e1@uco.edu.co", true);
         var readModel = new FichaPerfilEstudianteReadModel(
                 fichaId, "Sistema de gestion",
                 new AsesorFichaReadModel(asesorId, "A100", "Asesor Uno", "asesor@uco.edu.co"),

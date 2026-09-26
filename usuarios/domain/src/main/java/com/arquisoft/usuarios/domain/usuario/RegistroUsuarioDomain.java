@@ -16,9 +16,6 @@ import java.util.Locale;
 
 public final class RegistroUsuarioDomain {
 
-    private static final String PATRON_NOMBRE = "^[\\p{L} ]+$";
-    private static final String PATRON_CONTACTO = "^\\d+$";
-
     private String identificador;
     private String nombre;
     private String email;
@@ -72,7 +69,7 @@ public final class RegistroUsuarioDomain {
                 UsuariosCodes.Usuario.NOMBRE_LONGITUD, result)) {
             return;
         }
-        if (!UtilTexto.coincidePatron(nombreRecortado, PATRON_NOMBRE)) {
+        if (!UtilTexto.coincidePatron(nombreRecortado, UsuariosLimits.Usuario.PATRON_NOMBRE)) {
             result.agregarError(UsuariosFields.Usuario.NOMBRE, UsuariosCodes.Usuario.NOMBRE_FORMATO,
                     Mensajes.formatear(RegistrarUsuarioKey.ERROR_NOMBRE_FORMATO, nombreRecortado));
             return;
@@ -104,7 +101,7 @@ public final class RegistroUsuarioDomain {
             return;
         }
         var contactoRecortado = UtilTexto.aplicarTrim(contacto);
-        if (!UtilTexto.coincidePatron(contactoRecortado, PATRON_CONTACTO)) {
+        if (!UtilTexto.coincidePatron(contactoRecortado, UsuariosLimits.Usuario.PATRON_CONTACTO)) {
             result.agregarError(UsuariosFields.Usuario.CONTACTO, UsuariosCodes.Usuario.CONTACTO_FORMATO,
                     Mensajes.formatear(RegistrarUsuarioKey.ERROR_CONTACTO_FORMATO, contactoRecortado));
             return;
@@ -135,6 +132,10 @@ public final class RegistroUsuarioDomain {
 
     private void setRoles(List<String> roles) {
         this.roles = UtilColeccion.aplicarPorDefecto(roles);
+    }
+
+    public boolean contieneRol(String rol) {
+        return roles.contains(rol);
     }
 
     public String getIdentificador() {
