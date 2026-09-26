@@ -61,6 +61,10 @@ public final class KeycloakUsuarioRepresentationMapper {
         return representacion;
     }
 
+    public static Map<String, Object> toUserRepresentationHabilitacion(boolean habilitado) {
+        return Map.of(CAMPO_ENABLED, habilitado);
+    }
+
     public static Map<String, Object> toRoleRepresentation(String id, String name) {
         var rol = new LinkedHashMap<String, Object>();
         rol.put(CAMPO_ID, id);

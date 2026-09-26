@@ -26,6 +26,10 @@ public enum EstadoUsuario {
         return nombre;
     }
 
+    public boolean habilitaAcceso() {
+        return this == ACTIVO;
+    }
+
     public static EstadoUsuario desde(String id) {
         return UtilEnum.desde(EstadoUsuario.class, id)
                 .filter(estado -> estado != VACIO)
