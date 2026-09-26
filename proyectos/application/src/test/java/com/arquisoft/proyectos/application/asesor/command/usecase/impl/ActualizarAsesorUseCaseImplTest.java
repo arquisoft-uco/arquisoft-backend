@@ -3,10 +3,12 @@ package com.arquisoft.proyectos.application.asesor.command.usecase.impl;
 import com.arquisoft.proyectos.application.asesor.command.finder.AsesorPorIdFinder;
 import com.arquisoft.proyectos.application.asesor.command.result.ActualizacionAsesorResult;
 import com.arquisoft.proyectos.application.asesor.command.secondaryport.AsesorOutputPort;
+import com.arquisoft.proyectos.application.asesor.command.secondaryport.entity.AsesorEntity;
 import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import com.arquisoft.shared.logger.AppLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -84,5 +86,27 @@ class ActualizarAsesorUseCaseImplTest {
         // Assert
         assertThat(resultado).isInstanceOf(ActualizacionAsesorResult.NoReplicado.class);
         verify(asesorOutputPort, never()).actualizar(any());
+    }
+
+    @Test
+    void debeConservarEliminadoEnEnLaEntity_cuandoSeActualizaUnAsesorEliminado() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var eliminadoEn = Instant.parse("2026-09-10T10:00:00Z");
+        var vigente = AsesorDomain.reconstruir(id, "20161020123", "Ana Perez", "ana@uco.edu.co",
+                eliminadoEn, eliminadoEn);
+        var entrada = AsesorDomain.crear(id, "20161020999", "Ana Actualizada",
+                "actualizada@uco.edu.co", Instant.parse("2026-09-23T10:00:00Z"));
+        when(asesorPorIdFinder.obtener(id)).thenReturn(vigente);
+
+        // Act
+        var resultado = useCase.ejecutar(entrada);
+
+        // Assert
+        assertThat(resultado).isInstanceOf(ActualizacionAsesorResult.Actualizada.class);
+        var captor = ArgumentCaptor.forClass(AsesorEntity.class);
+        verify(asesorOutputPort, times(1)).actualizar(captor.capture());
+        assertThat(captor.getValue().eliminadoEn()).isEqualTo(eliminadoEn);
+        assertThat(captor.getValue().nombre()).isEqualTo("Ana Actualizada");
     }
 }

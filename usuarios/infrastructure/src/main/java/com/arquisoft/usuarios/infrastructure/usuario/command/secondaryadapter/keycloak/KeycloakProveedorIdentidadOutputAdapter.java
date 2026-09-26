@@ -272,6 +272,49 @@ public class KeycloakProveedorIdentidadOutputAdapter implements ProveedorIdentid
         }
     }
 
+    @Override
+    public void cambiarHabilitacion(UUID usuario, boolean habilitado) {
+        try {
+            enviarHabilitacion(obtenerTokenServicio(), usuario, habilitado);
+            logger.debug(ProveedorIdentidadKey.LOG_HABILITACION_CAMBIADA, usuario, habilitado);
+            registrarCompensacionHabilitacion(usuario, !habilitado);
+        } catch (RestClientResponseException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, e.getStatusCode(), detalleDe(e));
+            throw noDisponible();
+        } catch (RestClientException e) {
+            logger.error(RegistrarUsuarioKey.LOG_IDP_ERROR, DETALLE_CLIENTE_HTTP, e.getMessage());
+            throw noDisponible();
+        }
+    }
+
+    private void enviarHabilitacion(String token, UUID usuario, boolean habilitado) {
+        restTemplate.exchange(urlUsuario(usuario), HttpMethod.PUT,
+                new HttpEntity<>(KeycloakUsuarioRepresentationMapper.toUserRepresentationHabilitacion(habilitado),
+                        cabecerasConToken(token)), Void.class);
+    }
+
+    private void registrarCompensacionHabilitacion(UUID usuario, boolean valorPrevio) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCompletion(int status) {
+                if (status == STATUS_ROLLED_BACK) {
+                    restaurarHabilitacion(usuario, valorPrevio);
+                }
+            }
+        });
+    }
+
+    private void restaurarHabilitacion(UUID usuario, boolean valorPrevio) {
+        try {
+            enviarHabilitacion(obtenerTokenServicio(), usuario, valorPrevio);
+        } catch (RuntimeException fallo) {
+            logger.error(ProveedorIdentidadKey.LOG_COMPENSACION_HABILITACION_FALLIDA, usuario, valorPrevio);
+        }
+    }
+
     private String urlRoleMappingsRealm(UUID usuario) {
         return urlAdmin("/users/" + usuario + "/role-mappings/realm");
     }

@@ -85,6 +85,8 @@ Cada fila con ❌ es **bloqueante** (RECHAZADO); ⚠️ es **menor** (no bloquea
 | `CommandOutputAdapter` que lanza una `DomainException` — típicamente `catch (DataIntegrityViolationException)` → `throw {X}DuplicadoException(...)`. Infrastructure no ve `domain/` (por eso los puertos hablan `Entity`), y la unicidad ya la cubre `{X}UnicoRule` + `Finder` + el `UNIQUE` de la migración | ❌ |
 | `catch (DataAccessException)` o helper `errorPersistencia(...)` envolviendo Spring Data en `InfrastructureException`. El catch-all de `GlobalAppExceptionHandler` ya da el 500 correcto; envolver esconde la causa raíz. Distinto y **permitido**: una `InfrastructureException` propia de `infrastructure/{feature}/exception/` para lo que solo el adaptador diagnostica (proveedor externo caído, objeto ausente en MinIO) | ❌ |
 | `saveAndFlush(...)` en un `CommandOutputAdapter` (en el *arrange* de un `@DataJpaTest` sí es legítimo). Sin `catch` no aporta nada, y ante una violación de constraint deja la transacción en rollback-only → `UnexpectedRollbackException` en el commit, lejos del origen | ❌ |
+| `CommandOutputAdapter` con `EntityManager` (`@PersistenceContext`, `createNativeQuery`, `Object[]`, `@SuppressWarnings("unchecked")`), o repositorio de comando cuyo `@Query` devuelve columnas de otra tabla. Cada tabla que toca el comando, aunque solo la lea, lleva su `JpaEntity` + `CommandRepository`, y el SQL propio va como `@Query`/`@NativeQuery` en ese repositorio. Si un comentario lo justifica por "aislamiento CQRS", es incorrecto: CQRS prohíbe importar el `JpaQueryEntity`, no tener un `JpaEntity` de comando | ❌ |
+| Consulta sobre una réplica de usuario con `eliminado_en` que no declara la vigencia: un comando que **crea un vínculo** verificando con `existsById`/`existePorId` en vez de un `{Entidad}sVigentesFinder`, o una lectura que devuelve bajas sin filtrarlas ni marcarlas. Son correctos: quitar un vínculo existente sin filtro, la vista de quien administra el vínculo con las bajas marcadas con `vigente`, y el historial que el plan declara. Fuente: `arquisoft-arquitectura` → *Aislamiento de persistencia* | ❌ |
 | `Boolean` envuelto en un método de existencia del `OutputPort` o del `OutputAdapter` — el repo usa `boolean` primitivo; el envuelto mete un `null` sin comprobar y un unboxing silencioso en la `Rule`. No confundir con `Finder<T, Boolean>`: ahí el envuelto es obligado (un genérico no admite primitivos) y es correcto — lo que se declara `boolean` es el local del `UseCase` | ❌ |
 | Método de **escritura** del `CommandOutputAdapter` sin `logger.debug({Feature}Key.LOG_GUARDADA, id)`, o método de **lectura** que sí logea | ⚠️ |
 | `implementation project(':{contexto}:domain')` en el `build.gradle` de infrastructure. La dirección la impone el grafo de módulos; el dominio solo va en `testImplementation`. Añadirlo reabre la barrera y `verificarCapasHexagonales` falla | ❌ |
@@ -128,7 +130,11 @@ archivo cambia?" Sí → infraestructura, bien. No → es lógica de dominio fil
 
 **Siempre:** `reconstruir(...)` nunca publica eventos · el `CommandOutputAdapter` usa
 `reconstruir(...)` · el dominio no inyecta `EventPublisher` · no existe un `{Entidad}EventPublisher`
-local.
+local · cada evento publicado tiene consumidor: su constante de `EventTopics` aparece en algún
+`ColaEvento.declarar(...)` del repo. Si no aparece, es ❌ aunque el plan declare el evento o no haya
+plan: un evento sin cola enlazada se descarta en el exchange y deja un contrato público sin dueño.
+Repórtalo como decisión abierta (implementar el consumidor o retirar el evento), citando
+`arquisoft-arquitectura/references/eventos.md`.
 
 **Si el plan declara eventos** (❌ cada incumplimiento): el `UseCase` inyecta la **interfaz**
 `EventPublisher` —inyectar `SpringModulithEventPublisher` o `RabbitMQEventPublisher` es ❌— y publica
@@ -136,12 +142,13 @@ tras persistir. El domain es una clase plana: si acumula eventos, extiende una b
 expone un método de drenaje, es ❌ (ese tipo base no existe y no compila). Los eventos van en
 `domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
 (`{contexto}.{entidad}.{accion}`) pasado a `super(...)`, no sobrescriben `getTemaEvento()` (es
-`final`), y cargan todo lo que el consumidor necesita.
+`final`), y cargan todo lo que el consumidor necesita. Un `Finder` que alimenta el evento y se
+consulta después de persistir, o cuyo `VACIO` ninguna `Rule` rechaza antes, es ❌: el evento sale con
+datos vacíos y `notificaciones` lo descarta con la escritura ya confirmada.
 
 **Si el plan dice "Eventos: ninguno", el exceso también es ❌ bloqueante**, no una mejora: cualquier
 archivo bajo `event/`, cualquier `EventPublisher` inyectado, cualquier clave nueva para un evento.
-El plan declaró esa ausencia y publicar un evento que nadie consume crea un contrato que otro
-contexto puede empezar a consumir. Repórtalo citando la sección 4.
+El plan declaró esa ausencia. Repórtalo citando la sección 4.
 
 **Si el plan declara evento hacia `notificaciones`**, el evento solo cuenta como implementado si
 existe el camino completo: faltando cualquiera de las **ocho piezas** el correo nunca sale y el fallo
@@ -172,6 +179,7 @@ del commit y no en un plan cuando el cambio no vino de una HU: búscala ahí ant
 | Objeto de acción `{Accion}{Entidad}Domain` que declara un `{Otro}Domain` como campo cuando la acción no crea ese objeto — la forma por defecto son `UUID` y escalares (`CambioAsesorFichaDomain` = dos `UUID`) | ⚠️ |
 | Objeto de acción **compuesto** cuyo `{Accion}{Entidad}Mapper` no construye de menor a mayor jerarquía: domain primero, cada pieza con el mapper de **su propia feature** recibiendo `entidad.getId()`, compuesto al final (`RegistrarFichaPerfilMapper`) | ❌ |
 | `crear(...)` de un objeto de acción compuesto que repite validaciones de sus piezas en vez de solo `noNulo` de cada componente | ⚠️ |
+| `{Entidad}Domain.crear(...)` dentro de un `UseCase` con campos que el objeto de acción ya trajo validados — el objeto de acción debió contener ese domain, armado por el mapper del `Interactor`. Se valida dos veces y lo que solo valida el segundo `crear` se rechaza después de consultar la BD. No es hallazgo si `crear` necesita un dato que solo existe tras una consulta o escritura previa | ⚠️ |
 | `if/throw` en el `UseCase` sobre una restricción de conjunto (existencia, unicidad, propiedad) en vez de una `Rule` de dominio orquestada por el `Validator` | ❌ |
 
 **Restricciones de conjunto → `Rule` de dominio → 422, no 400/403.** Existencia, unicidad y
@@ -447,13 +455,24 @@ compila una línea del contexto. Si la historia tocó un `shared:*`, añade
 `build`/`check`: arrastran la verificación de JaCoCo, que con tests `⏳ Pendiente` falla por
 cobertura y no por un defecto del código.
 
+Si la fila `Tests` está `✅ Completado`, añade `test jacocoTestCoverageVerification` a la primera
+línea y reporta en `## Tests` la cobertura por módulo que sale de
+`{modulo}/build/reports/jacoco/test/jacocoTestReport.xml`. La cifra que anotó `@3-tester` en la
+Trazabilidad no es evidencia: es el dato que estás validando, y `@4c-commit` marca "Cobertura ≥ 75%"
+en el PR fiándose de lo que escribas.
+
 Cualquier error de compilación, de Checkstyle o de capas es bloqueante: incluye el mensaje exacto.
 
 ## FASE 4 — Reporte final
 
-**El formato completo está en `.claude/templates/VALIDATOR.md`.** Léela y produce el reporte con
-esas secciones, en ese orden. Dos cosas que la plantilla fija y conviene tener presentes al
-llenarla:
+**El formato completo está en `.claude/templates/VALIDATOR.md`.** Léela en esta fase —no la
+reconstruyas de memoria— y produce el reporte con sus encabezados `##` exactos, en ese orden. Los
+hallazgos se agrupan en `## Errores Bloqueantes` / `## Errores Menores` con su `[Nivel X.Y]`, no en
+una sección por Nivel. El formato es un contrato: `@4c-commit` saca de campos fijos (`**Mensaje:**`,
+`**Rama:**`, `**Archivos a incluir:**`, `**Endpoints documentados:**`, el Score y los bloqueantes) lo
+que el usuario confirma y la evidencia del checklist del PR. Con otra estructura, ese agente se ve
+obligado a inventar el mensaje o a dejar casillas verificadas sin marcar. Cosas que la plantilla fija
+y conviene tener presentes al llenarla:
 
 - **`Autor` se copia literal del campo `Autor` de la Metadata del plan**, que ya leíste en la FASE 1.
   Copiarlo en vez de deducirlo es lo que garantiza que el plan y el reporte que `@4c-commit` publica
@@ -461,10 +480,18 @@ llenarla:
   anteriores a que el campo existiera), resuélvelo con `git config user.name` / `user.email` y
   adviértelo en el mensaje que acompaña al reporte — el plan viejo se queda sin ese campo y conviene
   que se sepa. Nunca lo dejes en `{Nombre}` ni lo preguntes.
+- **El `Cuerpo` del mensaje se escribe desde el código, no desde el resumen que ya tienes en la
+  cabeza.** Cada identificador que nombra —rol, routing key, ruta, clase, tabla— se copia del archivo
+  donde vive, y dos identificadores distintos nunca se funden en una frase (el client role que
+  protege un endpoint no es el realm role que ese endpoint revoca). `@4c-commit` publica el cuerpo
+  literal en el commit y en el PR, y nadie lo revisa después: un identificador cruzado queda en el
+  historial.
 - Una sección sin hallazgos se deja con "Ninguno" — **no se borra**. Una sección ausente no se
   distingue de un olvido, y `@4b-validator-report` la persiste tal cual la escribas.
-- En "Datos para la entrega", la lista de archivos es **solo código, tests, migraciones y
-  recursos**. El plan y este reporte no van al repositorio de backend: los publica `@4c-commit` en
+- En "Datos para la entrega", `Archivos a incluir` es la lista explícita, una ruta por línea con su
+  estado de `git status -s -uall` — nunca "ver `git status`". Es lo que el usuario confirma en el
+  Gate 1 de `@4c-commit`, y una remisión no se puede confirmar. La lista es **solo código, tests,
+  migraciones y recursos**. El plan y este reporte no van al repositorio de backend: los publica `@4c-commit` en
   `arquisoft-docs`.
 
 No hagas nada más después de este mensaje.

@@ -26,7 +26,7 @@ class CambiarAsesorFichaValidatorTest {
     private final FichaPerfilDomain ficha = FichaPerfilDomain.crear("Titulo de prueba", asesorActual);
 
     private AsesorFichaDomain asesor(UUID id) {
-        return AsesorFichaDomain.reconstruir(id, "A001", "Ana Asesora", "ana@arquisoft.com", Instant.now());
+        return AsesorFichaDomain.reconstruir(id, "A001", "Ana Asesora", "ana@arquisoft.com", Instant.now(), null);
     }
 
     private CambioAsesorFichaDomain cambio(UUID nuevo) {

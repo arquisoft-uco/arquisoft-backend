@@ -55,9 +55,22 @@ import com.arquisoft.shared.message.key.usuarios.AgregarAsesorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.CambiarEstadoUsuarioKey;
+import com.arquisoft.shared.message.key.usuarios.EliminarUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ModificarUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ProveedorIdentidadKey;
 import com.arquisoft.shared.message.key.usuarios.RegistrarUsuarioKey;
+import com.arquisoft.shared.message.key.usuarios.RemoverAsesorFichaKey;
+import com.arquisoft.shared.message.key.usuarios.RemoverAsesorKey;
+import com.arquisoft.shared.message.key.usuarios.RemoverCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverEstudianteKey;
 
 
@@ -140,6 +153,8 @@ public final class ClavesCatalogo {
             TokenKey.class,
             RegistrarUsuarioKey.class,
             ModificarUsuarioKey.class,
+            EliminarUsuarioKey.class,
+            CambiarEstadoUsuarioKey.class,
             AgregarEstudianteKey.class,
             RemoverEstudianteKey.class,
             ProveedorIdentidadKey.class,
@@ -147,8 +162,19 @@ public final class ClavesCatalogo {
             CoordinadorKey.class,
             AgregarAsesorFichaKey.class,
             AgregarAsesorKey.class,
+            RemoverAsesorKey.class,
+            RemoverCoordinadorKey.class,
+            RemoverAsesorFichaKey.class,
             AsesorKey.class,
-            EstudianteProyectosKey.class
+            EstudianteProyectosKey.class,
+            ConsultarCoordinadoresAdministradorKey.class,
+            ConsultarCoordinadoresVigentesKey.class,
+            ConsultarEstudiantesAdministradorKey.class,
+            ConsultarEstudiantesVigentesKey.class,
+            ConsultarAsesoresAdministradorKey.class,
+            ConsultarAsesoresVigentesKey.class,
+            ConsultarAsesoresFichaAdministradorKey.class,
+            ConsultarAsesoresFichaVigentesKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

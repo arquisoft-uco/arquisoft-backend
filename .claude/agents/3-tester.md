@@ -200,7 +200,10 @@ le escribas un test propio al mapper salvo que tenga lógica que el flujo del us
 `TestEntityManager` (nunca con un `QueryRepository`, que no tiene `save`); confirma que el adapter
 usa `reconstruir(...)`, nunca `crear(...)`, al leer de BD. Un `QueryOutputAdapter` sobre una entidad
 con `@Subselect` va con `@DataJpaTest` aunque solo delegue: mockear el `QueryRepository` deja la
-vista sin ejecutar y no detecta un alias que no case con su `@Column`.
+vista sin ejecutar y no detecta un alias que no case con su `@Column`. Si la consulta toca una
+réplica con `eliminado_en`, siembra también una fila dada de baja y verifica que se excluya, o que
+aparezca con `vigente = false` en la vista de quien administra el vínculo
+(`EstudianteFichaPerfilQueryOutputAdapterTest`). Con solo datos vigentes, un filtro olvidado pasa el test.
 
 `@WebMvcTest` en `fichas` necesita `@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class,
 TrazabilidadConfig.class, {Test}.TestSecurityConfig.class})` — sin `GlobalAppExceptionHandler` toda

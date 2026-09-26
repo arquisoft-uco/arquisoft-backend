@@ -82,6 +82,19 @@ public final class SolicitudesApiMessages {
         public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_422 =
                 "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
 
+        public static final String ELIMINAR_NOVEDAD_ASESOR_SUMMARY =
+                "Eliminar solicitud de novedad para el asesor";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_DESCRIPTION =
+                "Permite a un estudiante eliminar definitivamente una solicitud de novedad para el "
+                        + "asesor que envió por error.";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_204 = "Solicitud eliminada";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_403 =
+                "Sin permisos para eliminar solicitudes de novedad para el asesor";
+        public static final String ELIMINAR_NOVEDAD_ASESOR_RESP_422 =
+                "Solicitud no encontrada, no propia, de otro tipo, o con respuestas";
+
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_SUMMARY =
                 "Consultar solicitudes de novedad para el coordinador recibidas";
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_RECIBIDAS_DESCRIPTION =

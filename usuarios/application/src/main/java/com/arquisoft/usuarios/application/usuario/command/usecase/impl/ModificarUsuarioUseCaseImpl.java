@@ -62,8 +62,7 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
                         new UnicidadOtroUsuario(modificacion.getUsuario(), modificacion.getContacto()));
 
         logger.debug(ModificarUsuarioKey.LOG_VERIFICACION_MODIFICAR, modificacion.getUsuario(),
-                !usuario.esVacio(), usuario.estaActivo(), identificadorDuplicado, emailDuplicado,
-                contactoDuplicado);
+                !usuario.esVacio(), usuario.estaEliminado(), identificadorDuplicado, emailDuplicado, contactoDuplicado);
 
         modificarUsuarioValidator.validar(modificacion, usuario, identificadorDuplicado, emailDuplicado,
                 contactoDuplicado);

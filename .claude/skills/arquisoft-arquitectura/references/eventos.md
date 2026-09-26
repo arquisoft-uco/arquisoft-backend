@@ -23,10 +23,27 @@ no inyecta `EventPublisher`. `DomainEvent` sí sigue vigente: es la clase base d
 valida que `EVENT_TOPIC` tenga el formato `{contexto}.{entidad}.{accion}` — que es además la
 routing key de RabbitMQ.
 
+**Un evento se publica solo si alguien lo consume.** Todo `EVENT_TOPIC` publicado aparece en al menos
+un `ColaEvento.declarar(...)` de algún `*QueueConfig`, ya existente o creado en la misma HU (ver
+`FichasUsuariosQueueConfig`). Sin una cola enlazada, RabbitMQ descarta el mensaje en el exchange: se
+paga el outbox y la publicación para nada, y la routing key queda como contrato público que otro
+contexto puede empezar a consumir sin que nadie lo haya decidido. Un evento "por si acaso" se agrega en
+la HU que trae su consumidor; si ya se publicó, se retira completo: evento, test, routing key de
+`EventTopics` y `EventPublisher` del use case (commit `97d73dab`, HU-086).
+
 `reconstruir(...)` nunca publica eventos y el `CommandOutputAdapter` siempre lee con
 `reconstruir(...)`, nunca con `crear(...)`. Un evento carga todo lo que su consumidor necesita
 (`AsesorFichaCambiadoEvent` lleva nombre y email del asesor) para que el consumidor no tenga que
 volver a consultar al productor.
+
+**Lo que el evento carga desde un `Finder` se consulta y se valida antes de escribir.** Ese `Finder`
+corre al inicio del `UseCase`, en la fase de existencia, y una `Rule` rechaza su `VACIO` antes de
+persistir. Consultado después de `registrar(...)`, un `Finder` que no encuentra devuelve el centinela
+sin lanzar: el evento sale con nombre y correo vacíos, `notificaciones` lo rechaza y la escritura ya
+quedó confirmada sin correo. Compila y pasa los tests. Referencia:
+`EnviarSolicitudCambioAsesorUseCaseImpl` (`validarExistenciaUsuarios` antes de registrar). Quedan
+fuera lo que genera la propia escritura (id, fecha) y una ausencia que la HU declare aceptable; en ese
+caso el plan dice qué hace el evento sin el dato.
 
 La publicación está centralizada en `shared:amqp` y **nunca se crea un `{Entidad}EventPublisher`
 local**. Hay dos implementaciones del puerto y no son intercambiables: `SpringModulithEventPublisher`
@@ -351,9 +368,13 @@ Todos los flujos entre contextos que existen hoy caen en la primera fila.
 1. **`ocurridoEn` en el payload y en la tabla espejo.** Ya viaja en el JSON (`DomainEvent` lo asigna) y
    los payloads lo declaran. El espejo guarda el `ocurrido_en` del último evento aplicado y **descarta
    todo evento más viejo**: última escritura gana por tiempo del hecho, no por orden de llegada.
-2. **La baja es lógica, nunca `DELETE`.** Un estado (`ANULADO`) con su fecha. Sin fila borrada no hay
-   nada que resucitar, y en un sistema académico saber que alguien fue dado de baja importa más que
-   ahorrar la fila.
+2. **La baja es lógica, nunca `DELETE`.** Columna `eliminado_en TIMESTAMPTZ NULL` (nulo = vigente)
+   con índice parcial `WHERE eliminado_en IS NULL`
+   (`fichas/.../V20260916183407__agregar_eliminado_en_estudiante.sql`). El `{Entidad}Removido` la
+   marca (`eliminarLogica`) y un `{Entidad}Agregado` posterior la limpia (`reactivar`), ambos en
+   `EstudianteCommandRepository` de `fichas`. Sin fila borrada no hay nada que resucitar, y en un
+   sistema académico saber que alguien fue dado de baja importa más que ahorrar la fila. Cómo se lee
+   esa tabla después: `SKILL.md` → *Aislamiento de persistencia*.
 3. **Lápida.** Un borrado que llega para una entidad que el espejo nunca recibió **inserta el registro
    ya marcado como anulado**. Si no, el `UsuarioCreado` atrasado entra después y revive a un usuario
    eliminado — la resurrección. Corolario: borrar algo que no está es un **no-op exitoso**, nunca una

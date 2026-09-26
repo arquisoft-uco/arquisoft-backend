@@ -15,7 +15,8 @@ public final class UsuarioMapper {
                 entity.nombre(),
                 entity.email(),
                 entity.contacto(),
-                EstadoUsuario.desde(entity.estado()));
+                EstadoUsuario.desde(entity.estado()),
+                entity.eliminadoEn());
     }
 
     public static UsuarioEntity toEntity(UsuarioDomain domain) {
@@ -25,6 +26,7 @@ public final class UsuarioMapper {
                 domain.getNombre(),
                 domain.getEmail(),
                 domain.getContacto(),
-                domain.getEstado().getId());
+                domain.getEstado().getId(),
+                domain.getEliminadoEn());
     }
 }

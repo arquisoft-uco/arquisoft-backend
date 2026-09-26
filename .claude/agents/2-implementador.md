@@ -74,7 +74,9 @@ escalares (`CambioAsesorFichaDomain` son dos `UUID`), no el domain cargado. Solo
 un objeto de acción **compuesto** contiene otros `Domain`, y entonces su `{Accion}{Entidad}Mapper`
 los arma de menor a mayor jerarquía: primero `{Entidad}Domain.crear(...)`, luego cada pieza con el
 mapper de **su propia feature** pasándole `entidad.getId()`, y el compuesto al final
-(`RegistrarFichaPerfilMapper` es el patrón exacto). El `crear(...)` del compuesto solo valida
+(`RegistrarFichaPerfilMapper` es el patrón exacto). Un `{Entidad}Domain.crear(...)` dentro del
+`UseCase` es la señal de un domain que debió llegar armado en el objeto de acción: si el plan copia
+sus campos en vez de contenerlo, repórtalo como ambigüedad. El `crear(...)` del compuesto solo valida
 `noNulo` de cada componente: no repite las validaciones que cada pieza ya hizo.
 
 **Las invariantes del domain no tienen clase de excepción propia** — se acumulan con
@@ -137,7 +139,9 @@ omites).
   (`com.arquisoft.shared.publisher`, en `shared:application` — nunca una de sus dos
   implementaciones) y publica directamente tras persistir:
   `eventPublisher.publish(new {Entidad}{Accion}Event(...))`. Es la única forma: el domain es una
-  clase plana, no acumula eventos ni los drena.
+  clase plana, no acumula eventos ni los drena. Todo `Finder` que alimenta el evento corre al inicio
+  y su ausencia la rechaza una `Rule` antes de persistir — nunca entre `registrar(...)` y `publish`
+  (`arquisoft-arquitectura/references/eventos.md`).
 - **Si el evento va hacia `notificaciones`**, la clase de evento es la mitad del trabajo: faltando
   cualquiera de las ocho piezas del lado consumidor, el correo no sale y nada falla. Implementa las
   que el plan lista siguiendo `arquisoft-arquitectura/references/eventos.md` → *Transición de estado ⇒
@@ -176,6 +180,13 @@ eso rompe el arranque. Sin prefijo de base ni de schema, y sin FK hacia la base 
   Data, `save` y no `saveAndFlush`, `boolean` primitivo en existencia, `logger.debug` solo en los
   métodos de escritura. (Sí es legítima una `InfrastructureException` **propia** de
   `infrastructure/{feature}/exception/` para lo que solo el adaptador diagnostica.)
+- Cada tabla que el comando lee o escribe tiene su `JpaEntity` + `CommandRepository` de comando,
+  aunque solo alimente una `Rule`. El adaptador nunca inyecta `EntityManager` ni arma SQL nativo, y
+  un repositorio no devuelve datos de otra tabla. El porqué y dónde va el SQL propio están en
+  `arquisoft-arquitectura` → *El `CommandOutputAdapter` es pura delegación*.
+- Si la consulta toca una réplica de usuario con columna `eliminado_en`, aplica la vigencia que
+  declara el plan: vigentes para crear un vínculo o para leer, sin filtro para operar sobre un
+  vínculo existente. Detalle en `arquisoft-arquitectura` → *Aislamiento de persistencia*.
 - El `QueryOutputAdapter` es pura delegación:
   `PageableMapper.toPageable(criteria, {Entidad}SortMapper::traducir)` +
   `PaginationMapper.toResult(page)` (`shared:jpa/util/`). No construyas `PageRequest`/`Sort` a mano
