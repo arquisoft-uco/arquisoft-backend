@@ -62,18 +62,32 @@ class UsuarioCommandOutputAdapterPersistenciaTest {
     }
 
     @Test
-    void debeEscribirElEstadoSinTocarEliminadoEn_cuandoSeCambiaElEstado() {
+    void debeEscribirEstadoYEliminadoEn_cuandoSeCambiaElEstado() {
         // Arrange
         var eliminadoEn = Instant.parse("2026-09-25T10:15:30Z");
-        var id = sembrarUsuario("ACTIVO", eliminadoEn);
+        var id = sembrarUsuario("ACTIVO", null);
 
         // Act
-        adapter.cambiarEstado(id, "INACTIVO");
+        adapter.cambiarEstado(id, "INACTIVO", eliminadoEn);
 
         // Assert
         var guardado = entityManager.find(UsuarioJpaEntity.class, id);
         assertThat(guardado.getEstadoId()).isEqualTo("INACTIVO");
         assertThat(guardado.getEliminadoEn()).isEqualTo(eliminadoEn);
+    }
+
+    @Test
+    void debeLimpiarEliminadoEn_cuandoSeActivaConElCentinelaVacio() {
+        // Arrange
+        var id = sembrarUsuario("INACTIVO", Instant.parse("2026-09-20T08:00:00Z"));
+
+        // Act
+        adapter.cambiarEstado(id, "ACTIVO", UtilFecha.VACIO);
+
+        // Assert
+        var guardado = entityManager.find(UsuarioJpaEntity.class, id);
+        assertThat(guardado.getEstadoId()).isEqualTo("ACTIVO");
+        assertThat(guardado.getEliminadoEn()).isNull();
     }
 
     @Test

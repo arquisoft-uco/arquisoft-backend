@@ -7,6 +7,7 @@ public final class UsuariosAuthorities {
     public static final String USUARIO_CREATE = "usuarios:usuario:create";
     public static final String USUARIO_UPDATE = "usuarios:usuario:update";
     public static final String USUARIO_DELETE = "usuarios:usuario:delete";
+    public static final String USUARIO_ESTADO_UPDATE = "usuarios:usuario-estado:update";
     public static final String ESTUDIANTE_DELETE = "usuarios:estudiante:delete";
     public static final String ASESOR_DELETE = "usuarios:asesor:delete";
     public static final String ASESOR_FICHA_DELETE = "usuarios:asesor-ficha:delete";
@@ -35,6 +36,9 @@ public final class UsuariosAuthorities {
 
         public static final String HAS_USUARIO_DELETE =
                 HAS_AUTHORITY_INICIO + USUARIO_DELETE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_USUARIO_ESTADO_UPDATE =
+                HAS_AUTHORITY_INICIO + USUARIO_ESTADO_UPDATE + HAS_AUTHORITY_FIN;
 
         public static final String HAS_ESTUDIANTE_DELETE =
                 HAS_AUTHORITY_INICIO + ESTUDIANTE_DELETE + HAS_AUTHORITY_FIN;

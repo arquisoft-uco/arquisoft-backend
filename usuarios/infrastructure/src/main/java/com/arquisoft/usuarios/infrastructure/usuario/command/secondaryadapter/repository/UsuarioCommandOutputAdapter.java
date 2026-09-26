@@ -39,8 +39,8 @@ public class UsuarioCommandOutputAdapter implements UsuarioOutputPort {
     }
 
     @Override
-    public void cambiarEstado(UUID usuario, String estado) {
-        usuarioCommandRepository.cambiarEstado(usuario, estado);
+    public void cambiarEstado(UUID usuario, String estado, Instant eliminadoEn) {
+        usuarioCommandRepository.cambiarEstado(usuario, estado, UsuarioJpaMapper.aColumna(eliminadoEn));
         logger.debug(ModificarUsuarioKey.LOG_ACTUALIZADO, usuario);
     }
 

@@ -4,7 +4,11 @@ import com.arquisoft.shared.message.ClaveMensaje;
 
 public enum CambiarEstadoUsuarioKey implements ClaveMensaje {
 
-    LOG_ESTADO_CAMBIADO("usuarios.aplicacion.usuario.log.estado-cambiado", 2);
+    ERROR_ESTADO_INVALIDO("usuarios.dominio.usuario.error.estado-invalido", 1),
+    ERROR_ESTADO_SIN_CAMBIO("usuarios.dominio.usuario.error.estado-sin-cambio", 2),
+    LOG_CAMBIANDO_ESTADO("usuarios.aplicacion.usuario.log.cambiando-estado", 2),
+    LOG_VERIFICACION_CAMBIAR_ESTADO("usuarios.aplicacion.usuario.log.verificacion-cambiar-estado", 4),
+    LOG_ESTADO_CAMBIADO("usuarios.aplicacion.usuario.log.estado-cambiado", 3);
 
     private final String clave;
     private final int parametros;

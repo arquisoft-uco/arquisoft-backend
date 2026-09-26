@@ -13,6 +13,7 @@ rutas:
       coordinador: /{usuarioId}/coordinador
       modificar: /{usuarioId}
       eliminar: /{usuarioId}
+      estado: /{usuarioId}/estado
       coordinadores-administrador: /coordinadores/administrador
       coordinadores-vigentes: /coordinadores/vigentes
       estudiantes-administrador: /estudiantes/administrador

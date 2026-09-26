@@ -36,6 +36,15 @@ la HU que trae su consumidor; si ya se publicó, se retira completo: evento, tes
 (`AsesorFichaCambiadoEvent` lleva nombre y email del asesor) para que el consumidor no tenga que
 volver a consultar al productor.
 
+**Lo que el evento carga desde un `Finder` se consulta y se valida antes de escribir.** Ese `Finder`
+corre al inicio del `UseCase`, en la fase de existencia, y una `Rule` rechaza su `VACIO` antes de
+persistir. Consultado después de `registrar(...)`, un `Finder` que no encuentra devuelve el centinela
+sin lanzar: el evento sale con nombre y correo vacíos, `notificaciones` lo rechaza y la escritura ya
+quedó confirmada sin correo. Compila y pasa los tests. Referencia:
+`EnviarSolicitudCambioAsesorUseCaseImpl` (`validarExistenciaUsuarios` antes de registrar). Quedan
+fuera lo que genera la propia escritura (id, fecha) y una ausencia que la HU declare aceptable; en ese
+caso el plan dice qué hace el evento sin el dato.
+
 La publicación está centralizada en `shared:amqp` y **nunca se crea un `{Entidad}EventPublisher`
 local**. Hay dos implementaciones del puerto y no son intercambiables: `SpringModulithEventPublisher`
 (`@Component @Primary`) pasa por el outbox — inserta en `event_publication` dentro de la misma
