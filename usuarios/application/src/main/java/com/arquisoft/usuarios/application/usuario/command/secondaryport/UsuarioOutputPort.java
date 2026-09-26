@@ -16,7 +16,7 @@ public interface UsuarioOutputPort {
 
     void eliminarLogica(UUID usuario, Instant eliminadoEn);
 
-    void cambiarEstado(UUID usuario, String estado);
+    void cambiarEstado(UUID usuario, String estado, Instant eliminadoEn);
 
     boolean existePorIdentificador(String identificador);
 

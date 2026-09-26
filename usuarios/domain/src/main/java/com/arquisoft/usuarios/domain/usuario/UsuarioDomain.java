@@ -73,6 +73,13 @@ public final class UsuarioDomain {
         setEliminadoEn(instante);
     }
 
+    public void cambiarEstado(EstadoUsuario estado) {
+        setEstadoUsuario(estado);
+        if (estado.habilitaAcceso()) {
+            setEliminadoEn(UtilFecha.VACIO);
+        }
+    }
+
     public boolean estaEliminado() {
         return !UtilFecha.VACIO.equals(eliminadoEn);
     }

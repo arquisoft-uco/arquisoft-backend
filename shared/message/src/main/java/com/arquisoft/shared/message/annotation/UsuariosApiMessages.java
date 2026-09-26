@@ -64,6 +64,18 @@ public final class UsuariosApiMessages {
         public static final String ELIMINAR_RESP_422 = "Usuario inexistente, ya eliminado o con roles vigentes";
         public static final String ELIMINAR_RESP_503 =
                 "No fue posible deshabilitar la identidad en el proveedor; el servicio no está disponible temporalmente";
+
+        public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar la información de estado de un usuario existente";
+        public static final String CAMBIAR_ESTADO_DESCRIPTION =
+                "Activa o inactiva un usuario. Inactivar deshabilita su identidad en el proveedor de identidad "
+                        + "(Keycloak); activar la habilita y, si el usuario estaba eliminado, lo restaura. "
+                        + "Notifica el cambio al usuario por correo. Exclusivo del rol administrador.";
+        public static final String CAMBIAR_ESTADO_RESP_204 = "Estado del usuario cambiado";
+        public static final String CAMBIAR_ESTADO_RESP_400 = "Identificador de usuario inválido o estado no enviado";
+        public static final String CAMBIAR_ESTADO_RESP_422 =
+                "Usuario inexistente, estado fuera del catálogo o igual al actual";
+        public static final String CAMBIAR_ESTADO_RESP_503 =
+                "No fue posible actualizar la identidad en el proveedor; el servicio no está disponible temporalmente";
     }
 
     public static final class Estudiante {

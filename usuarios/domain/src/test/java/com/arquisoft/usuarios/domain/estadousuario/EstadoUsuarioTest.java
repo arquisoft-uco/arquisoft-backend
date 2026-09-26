@@ -27,6 +27,17 @@ class EstadoUsuarioTest {
     }
 
     @Test
+    void debeReconocerSoloLasConstantesDelCatalogo_cuandoSeConsultaEsValido() {
+        // Act & Assert
+        assertThat(EstadoUsuario.esValido("ACTIVO")).isTrue();
+        assertThat(EstadoUsuario.esValido("INACTIVO")).isTrue();
+        assertThat(EstadoUsuario.esValido("VACIO")).isFalse();
+        assertThat(EstadoUsuario.esValido("activo")).isFalse();
+        assertThat(EstadoUsuario.esValido("BLOQUEADO")).isFalse();
+        assertThat(EstadoUsuario.esValido(null)).isFalse();
+    }
+
+    @Test
     void debeHabilitarAccesoSoloEnActivo_cuandoSeConsultaHabilitaAcceso() {
         // Act & Assert
         assertThat(EstadoUsuario.ACTIVO.habilitaAcceso()).isTrue();

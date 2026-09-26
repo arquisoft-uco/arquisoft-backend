@@ -54,7 +54,7 @@ public class EliminarUsuarioUseCaseImpl implements EliminarUsuarioUseCase {
 
         if (usuario.estaActivo()) {
             cambiarEstadoUsuarioUseCase.ejecutar(
-                    CambioEstadoUsuarioDomain.crear(usuario.getId(), EstadoUsuario.INACTIVO));
+                    CambioEstadoUsuarioDomain.crear(usuario.getId(), EstadoUsuario.INACTIVO.getId()));
         }
 
         logger.info(EliminarUsuarioKey.LOG_ELIMINADO, eliminacion.getUsuario(), usuario.estaActivo());

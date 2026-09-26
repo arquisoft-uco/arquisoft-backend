@@ -19,11 +19,31 @@ class CambioEstadoUsuarioDomainTest {
         var usuario = UtilUUID.generarNuevoUUID();
 
         // Act
-        var cambio = CambioEstadoUsuarioDomain.crear(usuario, EstadoUsuario.INACTIVO);
+        var cambio = CambioEstadoUsuarioDomain.crear(usuario, EstadoUsuario.INACTIVO.getId());
 
         // Assert
         assertThat(cambio.getUsuario()).isEqualTo(usuario);
         assertThat(cambio.getEstado()).isEqualTo(EstadoUsuario.INACTIVO);
+    }
+
+    @Test
+    void debeResolverElEstadoRecortado_cuandoLlegaConEspacios() {
+        // Act
+        var cambio = CambioEstadoUsuarioDomain.crear(UtilUUID.generarNuevoUUID(), "  ACTIVO ");
+
+        // Assert
+        assertThat(cambio.getEstado()).isEqualTo(EstadoUsuario.ACTIVO);
+    }
+
+    @Test
+    void debeRechazarConEstadoInvalido_cuandoElEstadoNoPerteneceAlCatalogo() {
+        // Act & Assert
+        assertThatThrownBy(() -> CambioEstadoUsuarioDomain.crear(UtilUUID.generarNuevoUUID(), "BLOQUEADO"))
+                .isInstanceOfSatisfying(DomainValidationException.class, ex ->
+                        assertThat(ex.getValidationResult().getErrores())
+                                .extracting("campo", "codigoError")
+                                .containsExactly(
+                                        tuple(UsuariosFields.Usuario.ESTADO, UsuariosCodes.Usuario.ESTADO_INVALIDO)));
     }
 
     @Test

@@ -18,6 +18,8 @@ public final class UsuariosCodes {
         public static final String ELIMINADO = "USUARIO_ELIMINADO";
         public static final String ROLES_VIGENTES = "USUARIO_ROLES_VIGENTES";
         public static final String ESTADO_REQUERIDO = "USUARIO_ESTADO_REQUERIDO";
+        public static final String ESTADO_INVALIDO = "USUARIO_ESTADO_INVALIDO";
+        public static final String ESTADO_SIN_CAMBIO = "USUARIO_ESTADO_SIN_CAMBIO";
 
         public static final String IDENTIFICADOR_REQUERIDO = "USUARIO_IDENTIFICADOR_REQUERIDO";
         public static final String IDENTIFICADOR_LONGITUD = "USUARIO_IDENTIFICADOR_LONGITUD";

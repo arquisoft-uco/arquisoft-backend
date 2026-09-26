@@ -129,7 +129,7 @@ class EliminarUsuarioUseCaseImplTest {
 
         // Assert
         verify(usuarioOutputPort, times(1)).eliminarLogica(eq(id), any());
-        verify(usuarioOutputPort, never()).cambiarEstado(any(), any());
+        verify(usuarioOutputPort, never()).cambiarEstado(any(), any(), any());
         verifyNoInteractions(cambiarEstadoUsuarioUseCase);
     }
 

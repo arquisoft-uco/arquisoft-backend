@@ -172,6 +172,51 @@ class UsuarioDomainTest {
     }
 
     @Test
+    void debeActivarYRestaurar_cuandoSeActivaUnUsuarioEliminado() {
+        // Arrange
+        var usuario = UsuarioDomain.reconstruir(UUID.randomUUID(), "usr012", "Nombre",
+                "correo@uco.edu.co", "573001112233", EstadoUsuario.INACTIVO, Instant.parse("2026-09-20T08:00:00Z"));
+
+        // Act
+        usuario.cambiarEstado(EstadoUsuario.ACTIVO);
+
+        // Assert
+        assertThat(usuario.getEstado()).isEqualTo(EstadoUsuario.ACTIVO);
+        assertThat(usuario.getEliminadoEn()).isEqualTo(UtilFecha.VACIO);
+        assertThat(usuario.estaEliminado()).isFalse();
+    }
+
+    @Test
+    void debeInactivarConservandoEliminadoEn_cuandoElUsuarioYaEstaEliminado() {
+        // Arrange
+        var eliminadoEn = Instant.parse("2026-09-26T08:00:00Z");
+        var usuario = UsuarioDomain.reconstruir(UUID.randomUUID(), "usr013", "Nombre",
+                "correo@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO, eliminadoEn);
+
+        // Act
+        usuario.cambiarEstado(EstadoUsuario.INACTIVO);
+
+        // Assert
+        assertThat(usuario.getEstado()).isEqualTo(EstadoUsuario.INACTIVO);
+        assertThat(usuario.getEliminadoEn()).isEqualTo(eliminadoEn);
+        assertThat(usuario.estaEliminado()).isTrue();
+    }
+
+    @Test
+    void debeActivarSinMarcarEliminado_cuandoElUsuarioInactivoEstaVigente() {
+        // Arrange
+        var usuario = UsuarioDomain.reconstruir(UUID.randomUUID(), "usr014", "Nombre",
+                "correo@uco.edu.co", "573001112233", EstadoUsuario.INACTIVO, UtilFecha.VACIO);
+
+        // Act
+        usuario.cambiarEstado(EstadoUsuario.ACTIVO);
+
+        // Assert
+        assertThat(usuario.estaActivo()).isTrue();
+        assertThat(usuario.estaEliminado()).isFalse();
+    }
+
+    @Test
     void debeIndicarNoActivo_cuandoElUsuarioEstaInactivo() {
         // Arrange
         var usuario = UsuarioDomain.reconstruir(UUID.randomUUID(), "usr011", "Nombre",
