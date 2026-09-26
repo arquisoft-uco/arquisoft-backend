@@ -16,7 +16,5 @@ public interface SolicitudOutputPort {
 
     Optional<DatosSolicitudEntity> buscarDatos(UUID solicitudId);
 
-    boolean tieneRespuestas(UUID solicitudId);
-
     void eliminar(UUID solicitudId);
 }

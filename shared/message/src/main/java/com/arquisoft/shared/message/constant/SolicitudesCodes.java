@@ -28,6 +28,24 @@ public final class SolicitudesCodes {
         public static final String SOLICITUD_TIPO_NO_COINCIDE = "SOLICITUD_TIPO_NO_COINCIDE";
         public static final String SOLICITUD_TIPO_NO_COINCIDE_ASESOR = "SOLICITUD_TIPO_NO_COINCIDE_ASESOR";
         public static final String SOLICITUD_CON_RESPUESTAS = "SOLICITUD_CON_RESPUESTAS";
+        public static final String SOLICITUD_NO_ES_DESTINATARIO = "SOLICITUD_NO_ES_DESTINATARIO";
+    }
+
+    public static final class Respuesta {
+
+        private Respuesta() {}
+
+        public static final String SOLICITUD_REQUERIDO = "RESPUESTA_SOLICITUD_REQUERIDO";
+        public static final String CONTENIDO_REQUERIDO = "RESPUESTA_CONTENIDO_REQUERIDO";
+        public static final String CONTENIDO_DEMASIADO_LARGO = "RESPUESTA_CONTENIDO_DEMASIADO_LARGO";
+        public static final String SOLICITUD_YA_RESPONDIDA = "SOLICITUD_YA_RESPONDIDA";
+    }
+
+    public static final class EstadoRespuesta {
+
+        private EstadoRespuesta() {}
+
+        public static final String ESTADO_NO_ENCONTRADO = "ESTADO_RESPUESTA_NO_ENCONTRADO";
     }
 
     public static final class Remitente {
