@@ -142,7 +142,9 @@ tras persistir. El domain es una clase plana: si acumula eventos, extiende una b
 expone un método de drenaje, es ❌ (ese tipo base no existe y no compila). Los eventos van en
 `domain/{feature}/event/`, extienden `DomainEvent`, declaran `EVENT_TOPIC`
 (`{contexto}.{entidad}.{accion}`) pasado a `super(...)`, no sobrescriben `getTemaEvento()` (es
-`final`), y cargan todo lo que el consumidor necesita.
+`final`), y cargan todo lo que el consumidor necesita. Un `Finder` que alimenta el evento y se
+consulta después de persistir, o cuyo `VACIO` ninguna `Rule` rechaza antes, es ❌: el evento sale con
+datos vacíos y `notificaciones` lo descarta con la escritura ya confirmada.
 
 **Si el plan dice "Eventos: ninguno", el exceso también es ❌ bloqueante**, no una mejora: cualquier
 archivo bajo `event/`, cualquier `EventPublisher` inyectado, cualquier clave nueva para un evento.
@@ -177,6 +179,7 @@ del commit y no en un plan cuando el cambio no vino de una HU: búscala ahí ant
 | Objeto de acción `{Accion}{Entidad}Domain` que declara un `{Otro}Domain` como campo cuando la acción no crea ese objeto — la forma por defecto son `UUID` y escalares (`CambioAsesorFichaDomain` = dos `UUID`) | ⚠️ |
 | Objeto de acción **compuesto** cuyo `{Accion}{Entidad}Mapper` no construye de menor a mayor jerarquía: domain primero, cada pieza con el mapper de **su propia feature** recibiendo `entidad.getId()`, compuesto al final (`RegistrarFichaPerfilMapper`) | ❌ |
 | `crear(...)` de un objeto de acción compuesto que repite validaciones de sus piezas en vez de solo `noNulo` de cada componente | ⚠️ |
+| `{Entidad}Domain.crear(...)` dentro de un `UseCase` con campos que el objeto de acción ya trajo validados — el objeto de acción debió contener ese domain, armado por el mapper del `Interactor`. Se valida dos veces y lo que solo valida el segundo `crear` se rechaza después de consultar la BD. No es hallazgo si `crear` necesita un dato que solo existe tras una consulta o escritura previa | ⚠️ |
 | `if/throw` en el `UseCase` sobre una restricción de conjunto (existencia, unicidad, propiedad) en vez de una `Rule` de dominio orquestada por el `Validator` | ❌ |
 
 **Restricciones de conjunto → `Rule` de dominio → 422, no 400/403.** Existencia, unicidad y

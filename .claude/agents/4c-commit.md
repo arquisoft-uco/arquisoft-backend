@@ -93,10 +93,24 @@ ramifica desde ella ni se commitea directo sobre ella.
 ## FASE 5 — Gate 1: confirmación del commit
 
 Muestra rama, mensaje completo (título + cuerpo), la lista final de archivos —con los no listados
-en el reporte señalados— y lo que queda fuera del commit. Todo conteo que muestres (total, por
-carpeta, por estado) sale de un comando (`git status -s -uall | wc -l`, `… | cut -d/ -f1 | sort |
-uniq -c`), no de una suma tuya: el usuario confirma sobre esos números, y un total que no cuadra con
-la lista le hace dudar de la lista entera. Pregunta:
+en el reporte señalados— y lo que queda fuera del commit.
+
+Cada número del Gate 1 —el total, un subtotal por estado o por carpeta, o el que encabeza un bloque
+de la lista (`Modificados (N)`)— es la salida de un comando, copiada tal cual. Los comandos corren
+sobre la **lista final**, no sobre el working tree completo: este incluye lo que queda fuera, y
+restarlo a mano es otra suma tuya. Guarda la lista final en formato `git status -s -uall` y cuenta
+sobre ese archivo:
+
+```
+mkdir -p .workspace/pr
+git status -s -uall | grep -v -e '{patrón de lo que queda fuera}' > .workspace/pr/archivos-{HU|HT}-{ID}.txt
+wc -l < .workspace/pr/archivos-{HU|HT}-{ID}.txt                                     # total
+cut -c1-2 .workspace/pr/archivos-{HU|HT}-{ID}.txt | sort | uniq -c                  # por estado
+cut -c4- .workspace/pr/archivos-{HU|HT}-{ID}.txt | cut -d/ -f1 | sort | uniq -c     # por carpeta
+```
+
+El usuario confirma sobre esos números, y un subtotal que contradice el bloque que encabeza le hace
+dudar de la lista entera. Pregunta:
 "¿Confirmas el commit? (sí / no / ajustar mensaje)". Si pide ajustar, actualiza y vuelve a
 confirmar. Si dice "no", termina sin ejecutar nada.
 
