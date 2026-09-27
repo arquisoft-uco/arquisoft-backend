@@ -215,6 +215,16 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_ASESOR_RESP_200 = "Página de revisiones de ítem elaboradas por el asesor";
         public static final String CONSULTAR_ASESOR_RESP_400 = "Criterio de búsqueda inválido";
         public static final String CONSULTAR_ASESOR_RESP_403 = "Sin permiso para consultar revisiones de ítem";
+
+        public static final String CONSULTAR_ESTUDIANTE_SUMMARY = "Consultar revisiones de ítem de su ficha perfil";
+        public static final String CONSULTAR_ESTUDIANTE_DESCRIPTION =
+                "Permite al estudiante consultar, de forma paginada y filtrable, las revisiones de ítem "
+                        + "de las fichas de perfil a las que está vinculado que ya tengan al menos una "
+                        + "observación de ítem asociada.";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_200 =
+                "Página de revisiones de ítem visibles para el estudiante";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Criterio de búsqueda inválido";
+        public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permiso para consultar revisiones de ítem";
     }
 
     public static final class ObservacionItem {
