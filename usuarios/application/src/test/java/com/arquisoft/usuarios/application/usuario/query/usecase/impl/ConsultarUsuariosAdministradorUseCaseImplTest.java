@@ -41,9 +41,9 @@ class ConsultarUsuariosAdministradorUseCaseImplTest {
         // Arrange
         var criteria = UsuarioCriteria.builder().pagina(0).tamanio(10).build();
         var estudianteAsesor = new UsuarioReadModel(UtilUUID.generarNuevoUUID(), "1001", "Ana Ramirez",
-                "ana.ramirez@uco.edu.co", "3000000000", "ACTIVO", true, true, true, false, false);
+                "ana.ramirez@uco.edu.co", "3000000000", "ACTIVO", true, true, true, false, false, false);
         var eliminado = new UsuarioReadModel(UtilUUID.generarNuevoUUID(), "1002", "Bruno Diaz",
-                "bruno.diaz@uco.edu.co", "3000000001", "INACTIVO", false, false, false, false, false);
+                "bruno.diaz@uco.edu.co", "3000000001", "INACTIVO", false, false, false, false, false, false);
         var esperado = PaginatedResult.of(List.of(estudianteAsesor, eliminado), 0, 10, 2L);
         when(usuarioQueryOutputPort.consultarTodos(criteria)).thenReturn(esperado);
 

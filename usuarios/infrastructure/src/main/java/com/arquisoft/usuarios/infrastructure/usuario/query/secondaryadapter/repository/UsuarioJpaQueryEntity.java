@@ -22,10 +22,6 @@ import java.util.UUID;
 // TODO HU252 (jurados): cuando exista la tabla jurado (la crea HU250), agregar al @Subselect
 //  "CASE WHEN EXISTS (SELECT 1 FROM jurado j WHERE j.usuario_id = u.id AND j.eliminado_en IS NULL)
 //  THEN TRUE ELSE FALSE END AS es_jurado" y "jurado" a @Synchronize.
-// TODO HU255 (representantes del comite): cuando exista la tabla representante_comite_curriculum (la crea HU253),
-//  agregar al @Subselect "CASE WHEN EXISTS (SELECT 1 FROM representante_comite_curriculum r WHERE r.usuario_id = u.id
-//  AND r.eliminado_en IS NULL) THEN TRUE ELSE FALSE END AS es_representante_comite" y
-//  "representante_comite_curriculum" a @Synchronize.
 // Siempre EXISTS, nunca JOIN: un JOIN duplica filas por rol y rompe la paginacion.
 @Entity
 @Immutable
@@ -48,10 +44,13 @@ import java.util.UUID;
                     THEN TRUE ELSE FALSE END AS es_asesor_ficha,
                CASE WHEN EXISTS (SELECT 1 FROM coordinador c
                        WHERE c.usuario_id = u.id AND c.eliminado_en IS NULL)
-                    THEN TRUE ELSE FALSE END AS es_coordinador
+                    THEN TRUE ELSE FALSE END AS es_coordinador,
+               CASE WHEN EXISTS (SELECT 1 FROM representante_comite_curriculum r
+                       WHERE r.usuario_id = u.id AND r.eliminado_en IS NULL)
+                    THEN TRUE ELSE FALSE END AS es_representante_comite
         FROM usuario u
         """)
-@Synchronize({"usuario", "estudiante", "asesor", "asesor_ficha", "coordinador"})
+@Synchronize({"usuario", "estudiante", "asesor", "asesor_ficha", "coordinador", "representante_comite_curriculum"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -92,8 +91,10 @@ public class UsuarioJpaQueryEntity {
     @Column(name = "es_coordinador")
     private boolean esCoordinador;
 
+    @Column(name = "es_representante_comite")
+    private boolean esRepresentanteComite;
+
     // TODO HU233: @Column(name = "es_administrador") private boolean esAdministrador;
     // TODO HU242: @Column(name = "es_bibliotecario") private boolean esBibliotecario;
     // TODO HU252: @Column(name = "es_jurado") private boolean esJurado;
-    // TODO HU255: @Column(name = "es_representante_comite") private boolean esRepresentanteComite;
 }
