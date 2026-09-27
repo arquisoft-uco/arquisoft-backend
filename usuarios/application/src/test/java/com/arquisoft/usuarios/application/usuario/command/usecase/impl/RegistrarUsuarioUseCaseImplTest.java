@@ -4,6 +4,7 @@ import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoo
 import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
+import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailUsuarioExisteFinder;
@@ -13,6 +14,7 @@ import com.arquisoft.usuarios.application.usuario.command.secondaryport.UsuarioO
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.RegistroIdentidadEntity;
 import com.arquisoft.usuarios.application.usuario.command.validator.RegistrarUsuarioValidator;
 import com.arquisoft.usuarios.domain.usuario.RegistroUsuarioDomain;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEmailDuplicadoException;
 import com.arquisoft.shared.exception.InfrastructureException;
 import com.arquisoft.shared.logger.AppLogger;
@@ -64,6 +66,8 @@ class RegistrarUsuarioUseCaseImplTest {
     @Mock
     private AgregarAsesorUseCase agregarAsesorUseCase;
     @Mock
+    private AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
+    @Mock
     private AppLogger logger;
 
     private RegistrarUsuarioUseCaseImpl useCase;
@@ -74,7 +78,7 @@ class RegistrarUsuarioUseCaseImplTest {
                 usuarioOutputPort, proveedorIdentidadOutputPort, identificadorUsuarioExisteFinder,
                 emailUsuarioExisteFinder, emailIdentidadExisteFinder, contactoUsuarioExisteFinder,
                 registrarUsuarioValidator, agregarEstudianteUseCase, agregarCoordinadorUseCase,
-                agregarAsesorFichaUseCase, agregarAsesorUseCase, logger);
+                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase, logger);
         when(identificadorUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailUsuarioExisteFinder.obtener(any())).thenReturn(false);
         when(emailIdentidadExisteFinder.obtener(any())).thenReturn(false);
@@ -336,6 +340,39 @@ class RegistrarUsuarioUseCaseImplTest {
 
         // Assert
         verify(agregarAsesorUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void debeAgregarRepresentanteComiteConElUsuarioGuardado_cuandoRolesContieneRepresentanteComite() {
+        // Arrange
+        var registro = registro(List.of("representante-comite"));
+        var identidadId = UUID.randomUUID();
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(identidadId);
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        var captor = ArgumentCaptor.forClass(UsuarioDomain.class);
+        var orden = inOrder(usuarioOutputPort, agregarRepresentanteComiteUseCase);
+        orden.verify(usuarioOutputPort).guardar(any());
+        orden.verify(agregarRepresentanteComiteUseCase, times(1)).ejecutar(captor.capture());
+        assertThat(captor.getValue().getId()).isEqualTo(identidadId);
+        verify(agregarEstudianteUseCase, never()).ejecutar(any());
+        verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
+    }
+
+    @Test
+    void noDebeAgregarRepresentanteComite_cuandoRolesNoContieneRepresentanteComite() {
+        // Arrange
+        var registro = registro(List.of("estudiante", "coordinador", "asesor-ficha", "asesor"));
+        when(proveedorIdentidadOutputPort.registrar(any())).thenReturn(UUID.randomUUID());
+
+        // Act
+        useCase.ejecutar(registro);
+
+        // Assert
+        verify(agregarRepresentanteComiteUseCase, never()).ejecutar(any());
     }
 
     @Test

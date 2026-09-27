@@ -4,6 +4,7 @@ import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoo
 import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
+import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailUsuarioExisteFinder;
@@ -40,6 +41,7 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
     private final AgregarCoordinadorUseCase agregarCoordinadorUseCase;
     private final AgregarAsesorFichaUseCase agregarAsesorFichaUseCase;
     private final AgregarAsesorUseCase agregarAsesorUseCase;
+    private final AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
     private final AppLogger logger;
 
     @Override
@@ -78,7 +80,11 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
             agregarAsesorUseCase.ejecutar(usuario);
         }
 
-        // TODO HU250 (jurado), HU240 (bibliotecario), HU231 (administrador), HU253 (representante comite):
+        if (registro.contieneRol(UsuariosRealmRoles.REPRESENTANTE_COMITE)) {
+            agregarRepresentanteComiteUseCase.ejecutar(usuario);
+        }
+
+        // TODO HU250 (jurado), HU240 (bibliotecario), HU231 (administrador):
         //  despachar aqui su Agregar{Rol}UseCase con registro.contieneRol(...); es el mismo use case que
         //  ModificarUsuarioUseCaseImpl invoca para reactivar el rol.
 

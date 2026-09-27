@@ -49,6 +49,7 @@ import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAsesorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarRepresentanteComiteKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaAdministradorKey;
@@ -156,6 +157,7 @@ public final class ClavesCatalogo {
             RemoverAsesorKey.class,
             RemoverCoordinadorKey.class,
             RemoverAsesorFichaKey.class,
+            AgregarRepresentanteComiteKey.class,
             AsesorKey.class,
             EstudianteProyectosKey.class,
             ConsultarCoordinadoresAdministradorKey.class,

@@ -1,8 +1,19 @@
 package com.arquisoft.fichas.application.representantecomite.command.secondaryport;
 
+import com.arquisoft.fichas.application.representantecomite.command.secondaryport.entity.RepresentanteComiteEntity;
+
+import java.util.Optional;
 import java.util.UUID;
 
 public interface RepresentanteComiteOutputPort {
 
-    boolean existePorId(UUID id);
+    boolean existeVigentePorId(UUID id);
+
+    Optional<RepresentanteComiteEntity> obtenerPorId(UUID id);
+
+    void guardar(RepresentanteComiteEntity representanteComite);
+
+    void actualizar(RepresentanteComiteEntity representanteComite);
+
+    void reactivar(RepresentanteComiteEntity representanteComite);
 }
