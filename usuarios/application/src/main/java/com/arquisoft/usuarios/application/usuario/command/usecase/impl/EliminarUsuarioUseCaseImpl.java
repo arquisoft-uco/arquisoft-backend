@@ -41,6 +41,9 @@ public class EliminarUsuarioUseCaseImpl implements EliminarUsuarioUseCase {
         var asesor = asesorPorUsuarioFinder.obtener(eliminacion.getUsuario());
         var asesorFicha = asesorFichaPorUsuarioFinder.obtener(eliminacion.getUsuario());
         var coordinador = coordinadorPorUsuarioFinder.obtener(eliminacion.getUsuario());
+        // TODO HU251 (jurado), HU241 (bibliotecario), HU232 (administrador), HU254 (representante comite):
+        //  obtener aqui el rol con su {Rol}PorUsuarioFinder y pasarlo a EliminarUsuarioValidator, para que
+        //  UsuarioSinRolesVigentesRule impida eliminar al usuario mientras ese rol no este removido.
 
         logger.debug(EliminarUsuarioKey.LOG_VERIFICACION_ELIMINAR, eliminacion.getUsuario(),
                 !usuario.esVacio(), usuario.estaEliminado(), usuario.estaActivo(), !estudiante.esVacio(),
