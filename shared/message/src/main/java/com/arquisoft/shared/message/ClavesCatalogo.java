@@ -58,6 +58,7 @@ import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresAdministr
 import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarEstudiantesVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarEstadosUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarUsuariosAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.CambiarEstadoUsuarioKey;
 import com.arquisoft.shared.message.key.usuarios.EliminarUsuarioKey;
@@ -165,7 +166,8 @@ public final class ClavesCatalogo {
             ConsultarAsesoresVigentesKey.class,
             ConsultarAsesoresFichaAdministradorKey.class,
             ConsultarAsesoresFichaVigentesKey.class,
-            ConsultarUsuariosAdministradorKey.class
+            ConsultarUsuariosAdministradorKey.class,
+            ConsultarEstadosUsuarioKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

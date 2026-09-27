@@ -214,4 +214,16 @@ public final class UsuariosApiMessages {
         public static final String CONSULTAR_RESP_200 = "Página de coordinadores";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
+
+    public static final class EstadoUsuario {
+
+        private EstadoUsuario() {}
+
+        public static final String CONSULTAR_SUMMARY =
+                "Consultar información de todos los estados disponibles para los usuarios";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Retorna el catálogo completo de estados que puede tener un usuario, con su identificador, "
+                        + "nombre y descripción. Exclusivo del rol administrador.";
+        public static final String CONSULTAR_RESP_200 = "Catálogo de estados de usuario";
+    }
 }
