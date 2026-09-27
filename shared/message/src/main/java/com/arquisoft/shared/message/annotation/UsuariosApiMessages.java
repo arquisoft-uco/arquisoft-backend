@@ -77,15 +77,15 @@ public final class UsuariosApiMessages {
         public static final String CAMBIAR_ESTADO_RESP_503 =
                 "No fue posible actualizar la identidad en el proveedor; el servicio no está disponible temporalmente";
 
-        // TODO HU233, HU242, HU252, HU255: agregar administrador, bibliotecario, jurado y representante del
-        //  comite a la lista de roles de CONSULTAR_ADMINISTRADOR_DESCRIPTION.
+        // TODO HU233, HU242, HU252: agregar administrador, bibliotecario y jurado a la lista de roles de
+        //  CONSULTAR_ADMINISTRADOR_DESCRIPTION.
         public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
                 "Consultar información de los usuarios (administrador)";
         public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
                 "Lista paginada, filtrable y ordenable de todos los usuarios, incluidos los "
                         + "eliminados (vigente = false). Indica con un booleano por rol si el usuario tiene hoy el rol vigente "
-                        + "de estudiante, asesor, asesor de ficha o coordinador; esos booleanos se combinan con OR/AND en el "
-                        + "filtro. Exclusivo del rol administrador.";
+                        + "de estudiante, asesor, asesor de ficha, coordinador o representante del comité; esos booleanos "
+                        + "se combinan con OR/AND en el filtro. Exclusivo del rol administrador.";
         public static final String CONSULTAR_RESP_200 = "Página de usuarios";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
@@ -230,6 +230,21 @@ public final class UsuariosApiMessages {
         public static final String REMOVER_RESP_422 = "El usuario no tiene un rol representante del comité vigente";
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+
+        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
+                "Consultar información de los representantes del comité (administrador)";
+        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de todos los representantes del comité, incluidos los dados "
+                        + "de baja. Cada fila indica el estado del usuario y si el rol representante del comité sigue "
+                        + "vigente. Exclusivo del rol administrador.";
+        public static final String CONSULTAR_VIGENTES_SUMMARY =
+                "Consultar información de los representantes del comité vigentes";
+        public static final String CONSULTAR_VIGENTES_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de los representantes del comité con el rol vigente. Expone "
+                        + "y permite filtrar por el estado del usuario, pero no la vigencia. Disponible para "
+                        + "coordinadores, asesores de ficha y representantes del comité de currículo.";
+        public static final String CONSULTAR_RESP_200 = "Página de representantes del comité";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 
     public static final class EstadoUsuario {

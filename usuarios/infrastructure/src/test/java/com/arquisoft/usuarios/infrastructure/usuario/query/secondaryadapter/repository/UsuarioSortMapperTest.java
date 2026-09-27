@@ -25,11 +25,13 @@ class UsuarioSortMapperTest {
     void debeRetornarNulo_cuandoCampoNoOrdenable() {
         // Act
         var esEstudiante = UsuarioSortMapper.traducir("esEstudiante");
+        var esRepresentanteComite = UsuarioSortMapper.traducir("esRepresentanteComite");
         var vigente = UsuarioSortMapper.traducir("vigente");
         var inexistente = UsuarioSortMapper.traducir("campoInexistente");
 
         // Assert
         assertThat(esEstudiante).isNull();
+        assertThat(esRepresentanteComite).isNull();
         assertThat(vigente).isNull();
         assertThat(inexistente).isNull();
     }

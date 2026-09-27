@@ -13,6 +13,7 @@ import com.arquisoft.usuarios.infrastructure.asesor.command.secondaryadapter.ent
 import com.arquisoft.usuarios.infrastructure.asesorficha.command.secondaryadapter.entity.AsesorFichaJpaEntity;
 import com.arquisoft.usuarios.infrastructure.coordinador.command.secondaryadapter.entity.CoordinadorJpaEntity;
 import com.arquisoft.usuarios.infrastructure.estudiante.command.secondaryadapter.entity.EstudianteJpaEntity;
+import com.arquisoft.usuarios.infrastructure.representantecomite.command.secondaryadapter.entity.RepresentanteComiteJpaEntity;
 import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,9 +62,11 @@ class UsuarioQueryOutputAdapterTest {
         coordinadorAsesorFicha = persistirUsuario("1003", "Carla Vidal", "ACTIVO", null);
         entityManager.persist(CoordinadorJpaEntity.builder().usuarioId(coordinadorAsesorFicha).build());
         entityManager.persist(AsesorFichaJpaEntity.builder().usuarioId(coordinadorAsesorFicha).build());
+        entityManager.persist(RepresentanteComiteJpaEntity.builder().usuarioId(coordinadorAsesorFicha).build());
 
         estudianteDadoDeBaja = persistirUsuario("1004", "Dario Solano", "ACTIVO", null);
         entityManager.persist(EstudianteJpaEntity.builder().usuarioId(estudianteDadoDeBaja).eliminadoEn(baja).build());
+        entityManager.persist(RepresentanteComiteJpaEntity.builder().usuarioId(estudianteDadoDeBaja).eliminadoEn(baja).build());
 
         eliminado = persistirUsuario("1005", "Elena Roa", "INACTIVO", baja);
         entityManager.persist(AsesorJpaEntity.builder().usuarioId(eliminado).eliminadoEn(baja).build());
@@ -84,14 +87,15 @@ class UsuarioQueryOutputAdapterTest {
         assertThat(resultado.getTotalElements()).isEqualTo(6L);
         assertThat(resultado.getContent())
                 .extracting(UsuarioReadModel::id, UsuarioReadModel::vigente, UsuarioReadModel::esEstudiante,
-                        UsuarioReadModel::esAsesor, UsuarioReadModel::esAsesorFicha, UsuarioReadModel::esCoordinador)
+                        UsuarioReadModel::esAsesor, UsuarioReadModel::esAsesorFicha, UsuarioReadModel::esCoordinador,
+                        UsuarioReadModel::esRepresentanteComite)
                 .containsExactlyInAnyOrder(
-                        tuple(estudiante, true, true, false, false, false),
-                        tuple(estudianteAsesor, true, true, true, false, false),
-                        tuple(coordinadorAsesorFicha, true, false, false, true, true),
-                        tuple(estudianteDadoDeBaja, true, false, false, false, false),
-                        tuple(eliminado, false, false, false, false, false),
-                        tuple(sinRolesInactivo, true, false, false, false, false));
+                        tuple(estudiante, true, true, false, false, false, false),
+                        tuple(estudianteAsesor, true, true, true, false, false, false),
+                        tuple(coordinadorAsesorFicha, true, false, false, true, true, true),
+                        tuple(estudianteDadoDeBaja, true, false, false, false, false, false),
+                        tuple(eliminado, false, false, false, false, false, false),
+                        tuple(sinRolesInactivo, true, false, false, false, false, false));
         assertThat(resultado.getContent())
                 .filteredOn(u -> u.id().equals(estudiante))
                 .extracting(UsuarioReadModel::identificador, UsuarioReadModel::nombre, UsuarioReadModel::email,
@@ -112,6 +116,38 @@ class UsuarioQueryOutputAdapterTest {
                 .extracting(UsuarioReadModel::id)
                 .containsExactlyInAnyOrder(estudiante, estudianteAsesor)
                 .doesNotContain(estudianteDadoDeBaja);
+    }
+
+    @Test
+    void debeFiltrarRepresentantesVigentes_cuandoEsRepresentanteComiteEsTrue() {
+        // Arrange
+        var criteria = conFiltro(NodoFiltro.predicado("esRepresentanteComite", FiltroOperador.ES, "true"));
+
+        // Act
+        var resultado = adapter.consultarTodos(criteria);
+
+        // Assert
+        assertThat(resultado.getContent())
+                .extracting(UsuarioReadModel::id)
+                .containsExactly(coordinadorAsesorFicha)
+                .doesNotContain(estudianteDadoDeBaja);
+    }
+
+    @Test
+    void debeRetornarUnaSolaFila_cuandoOrRepresentanteComiteCoordinadorSobreElMismoUsuario() {
+        // Arrange
+        var criteria = conFiltro(NodoFiltro.grupo(FiltroConector.OR, List.of(
+                NodoFiltro.predicado("esRepresentanteComite", FiltroOperador.ES, "true"),
+                NodoFiltro.predicado("esCoordinador", FiltroOperador.ES, "true"))));
+
+        // Act
+        var resultado = adapter.consultarTodos(criteria);
+
+        // Assert
+        assertThat(resultado.getTotalElements()).isEqualTo(1L);
+        assertThat(resultado.getContent())
+                .extracting(UsuarioReadModel::id)
+                .containsExactly(coordinadorAsesorFicha);
     }
 
     @Test
@@ -183,6 +219,7 @@ class UsuarioQueryOutputAdapterTest {
         var criteria = conFiltro(NodoFiltro.grupo(FiltroConector.AND, List.of(
                 NodoFiltro.predicado("esAsesorFicha", FiltroOperador.ES, "true"),
                 NodoFiltro.predicado("esCoordinador", FiltroOperador.ES, "true"),
+                NodoFiltro.predicado("esRepresentanteComite", FiltroOperador.ES, "true"),
                 NodoFiltro.predicado("identificador", FiltroOperador.ES, "1003"),
                 NodoFiltro.predicado("nombre", FiltroOperador.CONTIENE, "Carla"),
                 NodoFiltro.predicado("email", FiltroOperador.CONTIENE, "1003@"),
