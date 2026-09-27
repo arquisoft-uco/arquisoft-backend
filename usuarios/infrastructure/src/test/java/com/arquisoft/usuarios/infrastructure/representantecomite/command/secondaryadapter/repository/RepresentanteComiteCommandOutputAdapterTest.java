@@ -74,6 +74,24 @@ class RepresentanteComiteCommandOutputAdapterTest {
     }
 
     @Test
+    void debeAsignarEliminadoEn_cuandoSeEliminaLogicamente() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        var eliminadoEn = Instant.parse("2026-09-27T10:00:00Z");
+        entityManager.persistAndFlush(RepresentanteComiteJpaEntity.builder().usuarioId(usuario).build());
+
+        // Act
+        adapter.eliminarLogica(usuario, eliminadoEn);
+
+        // Assert
+        assertThat(entityManager.find(RepresentanteComiteJpaEntity.class, usuario).getEliminadoEn())
+                .isEqualTo(eliminadoEn);
+        assertThat(adapter.obtenerPorUsuario(usuario)).map(RepresentanteComiteEntity::eliminadoEn)
+                .contains(eliminadoEn);
+        verify(logger).debug(AgregarRepresentanteComiteKey.LOG_ACTUALIZADO, usuario);
+    }
+
+    @Test
     void debeRetornarVacio_cuandoElUsuarioNoEsRepresentante() {
         // Act
         var representanteComite = adapter.obtenerPorUsuario(UtilUUID.generarNuevoUUID());

@@ -164,6 +164,24 @@ class RepresentanteComiteDomainTest {
     }
 
     @Test
+    void debeMarcarBajaYVersion_cuandoSeRemueveConUnOcurridoEnNuevo() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var representanteComite = RepresentanteComiteDomain.reconstruir(
+                id, "20161020123", "Ana Pérez", "ana.perez@uco.edu.co", OCURRIDO_EN, null);
+
+        // Act
+        representanteComite.remover(OCURRIDO_EN_NUEVO);
+
+        // Assert
+        assertThat(representanteComite.getEliminadoEn()).isEqualTo(OCURRIDO_EN_NUEVO);
+        assertThat(representanteComite.getOcurridoEn()).isEqualTo(OCURRIDO_EN_NUEVO);
+        assertThat(representanteComite.estaEliminado()).isTrue();
+        assertThat(representanteComite.getId()).isEqualTo(id);
+        assertThat(representanteComite.getIdentificador()).isEqualTo("20161020123");
+    }
+
+    @Test
     void debeExponerCentinelaVacioNoEliminado_cuandoSeConsultaVacio() {
         // Act
         var vacio = RepresentanteComiteDomain.VACIO;

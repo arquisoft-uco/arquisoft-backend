@@ -15,6 +15,10 @@ public interface RepresentanteComiteCommandRepository
     boolean existsByIdAndEliminadoEnIsNull(UUID id);
 
     @Modifying(clearAutomatically = true)
+    @Query("UPDATE RepresentanteComiteJpaEntity r SET r.eliminadoEn = :ocurridoEn, r.ocurridoEn = :ocurridoEn WHERE r.id = :id")
+    int eliminarLogica(@Param("id") UUID id, @Param("ocurridoEn") Instant ocurridoEn);
+
+    @Modifying(clearAutomatically = true)
     @Query("""
             UPDATE RepresentanteComiteJpaEntity r
             SET r.identificador = :identificador, r.nombre = :nombre, r.email = :email,

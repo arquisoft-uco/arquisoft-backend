@@ -132,6 +132,25 @@ class RepresentanteComiteCommandOutputAdapterTest {
     }
 
     @Test
+    void debeMarcarBajaYVersionSinTocarDatos_cuandoSeEliminaLogicamente() {
+        // Arrange
+        var id = sembrar(null);
+        var otro = sembrar(null);
+
+        // Act
+        adapter.eliminarLogica(id, DESPUES);
+
+        // Assert
+        var guardado = leer(id);
+        assertThat(guardado.getEliminadoEn()).isEqualTo(DESPUES);
+        assertThat(guardado.getOcurridoEn()).isEqualTo(DESPUES);
+        assertThat(guardado.getIdentificador()).isEqualTo("20161020123");
+        assertThat(adapter.existeVigentePorId(id)).isFalse();
+        assertThat(adapter.existeVigentePorId(otro)).isTrue();
+        verify(logger).debug(RepresentanteComiteKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
     void debeLimpiarLaBajaYRefrescarDatos_cuandoSeReactiva() {
         // Arrange
         var id = sembrar(ANTES);

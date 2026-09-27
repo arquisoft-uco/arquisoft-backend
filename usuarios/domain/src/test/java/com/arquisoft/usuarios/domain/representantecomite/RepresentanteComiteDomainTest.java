@@ -72,6 +72,20 @@ class RepresentanteComiteDomainTest {
     }
 
     @Test
+    void debeQuedarEliminadoEnElInstante_cuandoSeRemueveUnVigente() {
+        // Arrange
+        var instante = Instant.parse("2026-09-27T10:00:00Z");
+        var representanteComite = RepresentanteComiteDomain.crear(UtilUUID.generarNuevoUUID());
+
+        // Act
+        representanteComite.remover(instante);
+
+        // Assert
+        assertThat(representanteComite.getEliminadoEn()).isEqualTo(instante);
+        assertThat(representanteComite.estaEliminado()).isTrue();
+    }
+
+    @Test
     void debeExponerCentinelaVacioNoEliminado_cuandoSeConsultaVacio() {
         // Act
         var vacio = RepresentanteComiteDomain.VACIO;

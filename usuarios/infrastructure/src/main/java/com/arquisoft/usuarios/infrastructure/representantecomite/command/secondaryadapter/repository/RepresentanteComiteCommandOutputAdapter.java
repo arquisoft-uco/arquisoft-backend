@@ -8,6 +8,7 @@ import com.arquisoft.usuarios.infrastructure.representantecomite.command.seconda
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +23,12 @@ public class RepresentanteComiteCommandOutputAdapter implements RepresentanteCom
     public void guardar(RepresentanteComiteEntity representanteComite) {
         representanteComiteCommandRepository.save(RepresentanteComiteJpaMapper.toJpaEntity(representanteComite));
         logger.debug(AgregarRepresentanteComiteKey.LOG_GUARDADO, representanteComite.usuario());
+    }
+
+    @Override
+    public void eliminarLogica(UUID usuario, Instant eliminadoEn) {
+        representanteComiteCommandRepository.eliminarLogica(usuario, RepresentanteComiteJpaMapper.aColumna(eliminadoEn));
+        logger.debug(AgregarRepresentanteComiteKey.LOG_ACTUALIZADO, usuario);
     }
 
     @Override
