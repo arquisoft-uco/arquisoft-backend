@@ -45,6 +45,11 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
+    // TODO HU250 (jurado), HU240 (bibliotecario), HU231 (administrador), HU253 (representante comite):
+    //  despachar en ejecutar su Agregar{Rol}UseCase con modificacion.contieneRol(...), junto a AgregarAsesorUseCase:
+    //  si la fila del rol ya existe eliminada logicamente (removida por HU251/HU241/HU232/HU254), el use case
+    //  la reactiva en vez de crear una nueva. Al sumar los cuatro despachos, ejecutar supera las 60 lineas de
+    //  Checkstyle: extraerlos a un metodo privado.
     @Override
     public void ejecutar(ModificacionUsuarioDomain modificacion) {
         logger.info(ModificarUsuarioKey.LOG_MODIFICANDO, modificacion.getUsuario());

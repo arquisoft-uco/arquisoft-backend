@@ -14,6 +14,7 @@ rutas:
       modificar: /{usuarioId}
       eliminar: /{usuarioId}
       estado: /{usuarioId}/estado
+      usuarios-administrador: /administrador
       coordinadores-administrador: /coordinadores/administrador
       coordinadores-vigentes: /coordinadores/vigentes
       estudiantes-administrador: /estudiantes/administrador

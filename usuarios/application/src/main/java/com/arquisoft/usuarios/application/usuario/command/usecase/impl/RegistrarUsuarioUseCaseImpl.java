@@ -78,6 +78,10 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
             agregarAsesorUseCase.ejecutar(usuario);
         }
 
+        // TODO HU250 (jurado), HU240 (bibliotecario), HU231 (administrador), HU253 (representante comite):
+        //  despachar aqui su Agregar{Rol}UseCase con registro.contieneRol(...); es el mismo use case que
+        //  ModificarUsuarioUseCaseImpl invoca para reactivar el rol.
+
         logger.info(RegistrarUsuarioKey.LOG_REGISTRADO,
                 identidadId, UtilTexto.enmascararCorreo(registro.getEmail()));
 
