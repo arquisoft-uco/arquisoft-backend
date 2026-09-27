@@ -4,5 +4,5 @@ import com.arquisoft.shared.finder.Finder;
 
 import java.util.UUID;
 
-public interface RepresentanteComiteExisteFinder extends Finder<UUID, Boolean> {
+public interface RepresentanteComiteVigenteFinder extends Finder<UUID, Boolean> {
 }

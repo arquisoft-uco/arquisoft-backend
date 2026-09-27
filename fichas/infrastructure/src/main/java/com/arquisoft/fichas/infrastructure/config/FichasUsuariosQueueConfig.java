@@ -70,6 +70,20 @@ public class FichasUsuariosQueueConfig {
                 arquisoftDeadLetterExchange);
     }
 
+    public static final String REPRESENTANTE_COMITE_AGREGADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.REPRESENTANTE_COMITE_AGREGADO;
+
+    @Bean
+    public Declarables fichasRepresentanteComiteAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REPRESENTANTE_COMITE_AGREGADO_QUEUE,
+                EventTopics.Usuarios.REPRESENTANTE_COMITE_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     public static final String USUARIO_MODIFICADO_QUEUE =
             FichasQueues.PREFIJO + EventTopics.Usuarios.USUARIO_MODIFICADO;
 
