@@ -44,6 +44,8 @@ public final class FichasAuthorities {
 
     public static final String ESTADO_REVISION_VIEW = "fichas:estado-revision:view";
 
+    public static final String ESTADO_OBSERVACION_REVISION_VIEW = "fichas:estado-observacion-revision:view";
+
     public static final class Expresiones {
 
         private Expresiones() {}
@@ -99,6 +101,8 @@ public final class FichasAuthorities {
                 HAS_AUTHORITY_INICIO + ESTADO_EVALUACION_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_ESTADO_REVISION_VIEW =
                 HAS_AUTHORITY_INICIO + ESTADO_REVISION_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ESTADO_OBSERVACION_REVISION_VIEW =
+                HAS_AUTHORITY_INICIO + ESTADO_OBSERVACION_REVISION_VIEW + HAS_AUTHORITY_FIN;
         public static final String HAS_REVISION_ITEM_CREATE =
                 HAS_AUTHORITY_INICIO + REVISION_ITEM_CREATE + HAS_AUTHORITY_FIN;
         public static final String HAS_REVISION_ITEM_ASESOR_VIEW =

@@ -362,6 +362,20 @@ public final class FichasApiMessages {
         public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
     }
 
+    public static final class EstadoObservacionRevision {
+
+        private EstadoObservacionRevision() {}
+
+        public static final String TAG_NAME = "Estados de Observación de Revisión";
+        public static final String TAG_DESCRIPTION = "Catálogo de estados disponibles para las observaciones de ítem de una revisión de ficha";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar todos los estados de observación de revisión disponibles";
+        public static final String CONSULTAR_DESCRIPTION = "Retorna todos los estados de observación de ítem del catálogo sin filtros ni paginación";
+        public static final String CONSULTAR_RESP_200 = "Lista de estados de observación de revisión retornada exitosamente";
+        public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
+        public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
+    }
+
     public static final class MinioGuia {
 
         private MinioGuia() {}
