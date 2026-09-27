@@ -12,6 +12,9 @@ rutas:
       asesor-ficha: /{usuarioId}/asesor-ficha
       coordinador: /{usuarioId}/coordinador
       modificar: /{usuarioId}
+      eliminar: /{usuarioId}
+      estado: /{usuarioId}/estado
+      usuarios-administrador: /administrador
       coordinadores-administrador: /coordinadores/administrador
       coordinadores-vigentes: /coordinadores/vigentes
       estudiantes-administrador: /estudiantes/administrador
@@ -20,3 +23,4 @@ rutas:
       asesores-vigentes: /asesores/vigentes
       asesores-ficha-administrador: /asesores-ficha/administrador
       asesores-ficha-vigentes: /asesores-ficha/vigentes
+      estados: /estados

@@ -15,7 +15,11 @@ public final class UsuariosCodes {
         public static final String USUARIO_FORMATO = "USUARIO_FORMATO";
         public static final String MODIFICACION_VACIA = "USUARIO_MODIFICACION_VACIA";
         public static final String NO_ENCONTRADO = "USUARIO_NO_ENCONTRADO";
-        public static final String INACTIVO = "USUARIO_INACTIVO";
+        public static final String ELIMINADO = "USUARIO_ELIMINADO";
+        public static final String ROLES_VIGENTES = "USUARIO_ROLES_VIGENTES";
+        public static final String ESTADO_REQUERIDO = "USUARIO_ESTADO_REQUERIDO";
+        public static final String ESTADO_INVALIDO = "USUARIO_ESTADO_INVALIDO";
+        public static final String ESTADO_SIN_CAMBIO = "USUARIO_ESTADO_SIN_CAMBIO";
 
         public static final String IDENTIFICADOR_REQUERIDO = "USUARIO_IDENTIFICADOR_REQUERIDO";
         public static final String IDENTIFICADOR_LONGITUD = "USUARIO_IDENTIFICADOR_LONGITUD";

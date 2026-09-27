@@ -1,0 +1,87 @@
+package com.arquisoft.usuarios.application.usuario.command.validator.impl;
+
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilUUID;
+import com.arquisoft.usuarios.domain.asesor.AsesorDomain;
+import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
+import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
+import com.arquisoft.usuarios.domain.estadousuario.EstadoUsuario;
+import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
+import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
+import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEliminadoException;
+import com.arquisoft.usuarios.domain.usuario.exception.UsuarioNoEncontradoException;
+import com.arquisoft.usuarios.domain.usuario.exception.UsuarioRolesVigentesException;
+import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class EliminarUsuarioValidatorImplTest {
+
+    private final EliminarUsuarioValidatorImpl validator = new EliminarUsuarioValidatorImpl();
+
+    private static UsuarioDomain usuario(UUID id, Instant eliminadoEn) {
+        return UsuarioDomain.reconstruir(id, "usr001", "Nombre", "correo@uco.edu.co", "573001112233",
+                EstadoUsuario.ACTIVO, eliminadoEn);
+    }
+
+    @Test
+    void debeLanzarUsuarioNoEncontrado_cuandoElEncontradoEsVacio() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(id, UsuarioDomain.VACIO, EstudianteDomain.VACIO,
+                AsesorDomain.VACIO, AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO))
+                .isInstanceOf(UsuarioNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzarUsuarioNoEncontradoAntesQueRolesVigentes_cuandoNoExisteYTieneRolVigente() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(id, UsuarioDomain.VACIO, EstudianteDomain.crear(id),
+                AsesorDomain.VACIO, AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO))
+                .isInstanceOf(UsuarioNoEncontradoException.class);
+    }
+
+    @Test
+    void debeLanzarUsuarioEliminado_cuandoElUsuarioYaEstaEliminado() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var eliminado = usuario(id, Instant.parse("2026-09-25T10:15:30Z"));
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(id, eliminado, EstudianteDomain.VACIO,
+                AsesorDomain.VACIO, AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO))
+                .isInstanceOf(UsuarioEliminadoException.class);
+    }
+
+    @Test
+    void debeLanzarRolesVigentes_cuandoElUsuarioConservaUnRolVigente() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+
+        // Act & Assert
+        assertThatThrownBy(() -> validator.validar(id, usuario(id, UtilFecha.VACIO), EstudianteDomain.VACIO,
+                AsesorDomain.VACIO, AsesorFichaDomain.VACIO, CoordinadorDomain.crear(id)))
+                .isInstanceOf(UsuarioRolesVigentesException.class);
+    }
+
+    @Test
+    void noDebeLanzar_cuandoExisteNoEstaEliminadoYNoTieneRolesVigentes() {
+        // Arrange
+        var id = UtilUUID.generarNuevoUUID();
+        var removido = Instant.parse("2026-09-20T12:00:00Z");
+
+        // Act & Assert
+        assertThatCode(() -> validator.validar(id, usuario(id, UtilFecha.VACIO), EstudianteDomain.VACIO,
+                AsesorDomain.reconstruir(id, removido), AsesorFichaDomain.VACIO, CoordinadorDomain.VACIO))
+                .doesNotThrowAnyException();
+    }
+}

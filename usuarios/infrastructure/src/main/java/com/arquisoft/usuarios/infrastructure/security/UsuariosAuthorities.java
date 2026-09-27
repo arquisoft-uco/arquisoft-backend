@@ -6,6 +6,9 @@ public final class UsuariosAuthorities {
 
     public static final String USUARIO_CREATE = "usuarios:usuario:create";
     public static final String USUARIO_UPDATE = "usuarios:usuario:update";
+    public static final String USUARIO_DELETE = "usuarios:usuario:delete";
+    public static final String USUARIO_ESTADO_UPDATE = "usuarios:usuario-estado:update";
+    public static final String USUARIO_ADMINISTRADOR_VIEW = "usuarios:usuario-administrador:view";
     public static final String ESTUDIANTE_DELETE = "usuarios:estudiante:delete";
     public static final String ASESOR_DELETE = "usuarios:asesor:delete";
     public static final String ASESOR_FICHA_DELETE = "usuarios:asesor-ficha:delete";
@@ -18,6 +21,7 @@ public final class UsuariosAuthorities {
     public static final String ASESOR_VIGENTE_VIEW = "usuarios:asesor-vigente:view";
     public static final String ASESOR_FICHA_ADMINISTRADOR_VIEW = "usuarios:asesor-ficha-administrador:view";
     public static final String ASESOR_FICHA_VIGENTE_VIEW = "usuarios:asesor-ficha-vigente:view";
+    public static final String ESTADO_USUARIO_VIEW = "usuarios:estado-usuario:view";
 
     public static final class Expresiones {
 
@@ -31,6 +35,15 @@ public final class UsuariosAuthorities {
 
         public static final String HAS_USUARIO_UPDATE =
                 HAS_AUTHORITY_INICIO + USUARIO_UPDATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_USUARIO_DELETE =
+                HAS_AUTHORITY_INICIO + USUARIO_DELETE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_USUARIO_ESTADO_UPDATE =
+                HAS_AUTHORITY_INICIO + USUARIO_ESTADO_UPDATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_USUARIO_ADMINISTRADOR_VIEW =
+                HAS_AUTHORITY_INICIO + USUARIO_ADMINISTRADOR_VIEW + HAS_AUTHORITY_FIN;
 
         public static final String HAS_ESTUDIANTE_DELETE =
                 HAS_AUTHORITY_INICIO + ESTUDIANTE_DELETE + HAS_AUTHORITY_FIN;
@@ -67,5 +80,8 @@ public final class UsuariosAuthorities {
 
         public static final String HAS_ASESOR_FICHA_VIGENTE_VIEW =
                 HAS_AUTHORITY_INICIO + ASESOR_FICHA_VIGENTE_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_ESTADO_USUARIO_VIEW =
+                HAS_AUTHORITY_INICIO + ESTADO_USUARIO_VIEW + HAS_AUTHORITY_FIN;
     }
 }

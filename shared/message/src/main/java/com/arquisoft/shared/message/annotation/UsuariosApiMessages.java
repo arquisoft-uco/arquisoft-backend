@@ -39,17 +39,55 @@ public final class UsuariosApiMessages {
 
         public static final String MODIFICAR_SUMMARY = "Modificar información de un usuario existente";
         public static final String MODIFICAR_DESCRIPTION =
-                "Modifica los datos personales enviados de un usuario activo y sincroniza el email y el "
-                        + "nombre en el proveedor de identidad (Keycloak). Los roles enviados se agregan o, si "
-                        + "fueron eliminados lógicamente, se reactivan; un rol ausente de la lista no se revoca. "
-                        + "Solo cambian los campos presentes en el body. Exclusivo del rol administrador.";
+                "Modifica los datos personales enviados de un usuario, cualquiera sea su estado, y sincroniza "
+                        + "el email y el nombre en el proveedor de identidad (Keycloak). Los roles enviados se "
+                        + "agregan o, si fueron eliminados lógicamente, se reactivan; un rol ausente de la lista "
+                        + "no se revoca. Solo cambian los campos presentes en el body; el estado del usuario no "
+                        + "cambia. Un usuario eliminado no puede modificarse; primero debe activarse mediante el "
+                        + "cambio de estado. Exclusivo del rol administrador.";
         public static final String MODIFICAR_RESP_204 = "Usuario modificado";
         public static final String MODIFICAR_RESP_400 =
                 "Identificador de usuario inválido, rol no válido o body sin ningún dato ni rol";
         public static final String MODIFICAR_RESP_422 =
-                "Usuario inexistente o inactivo, datos ya usados por otro usuario, o rol ya vigente";
+                "Usuario inexistente o eliminado, datos ya usados por otro usuario, o rol ya vigente";
         public static final String MODIFICAR_RESP_503 =
                 "No fue posible sincronizar con el proveedor de identidad; el servicio no está disponible temporalmente";
+
+        public static final String ELIMINAR_SUMMARY = "Eliminar definitivamente la información de un usuario";
+        public static final String ELIMINAR_DESCRIPTION =
+                "Elimina lógicamente un usuario sin roles vigentes: marca la fecha de eliminación y, si estaba "
+                        + "activo, lo pasa a inactivo, lo que deshabilita su identidad en el proveedor de identidad "
+                        + "(Keycloak). El usuario se recupera activándolo mediante el cambio de estado. "
+                        + "Exclusivo del rol administrador.";
+        public static final String ELIMINAR_RESP_204 = "Usuario eliminado";
+        public static final String ELIMINAR_RESP_400 = "Identificador de usuario inválido";
+        public static final String ELIMINAR_RESP_422 = "Usuario inexistente, ya eliminado o con roles vigentes";
+        public static final String ELIMINAR_RESP_503 =
+                "No fue posible deshabilitar la identidad en el proveedor; el servicio no está disponible temporalmente";
+
+        public static final String CAMBIAR_ESTADO_SUMMARY = "Cambiar la información de estado de un usuario existente";
+        public static final String CAMBIAR_ESTADO_DESCRIPTION =
+                "Activa o inactiva un usuario. Inactivar deshabilita su identidad en el proveedor de identidad "
+                        + "(Keycloak); activar la habilita y, si el usuario estaba eliminado, lo restaura. "
+                        + "Notifica el cambio al usuario por correo. Exclusivo del rol administrador.";
+        public static final String CAMBIAR_ESTADO_RESP_204 = "Estado del usuario cambiado";
+        public static final String CAMBIAR_ESTADO_RESP_400 = "Identificador de usuario inválido o estado no enviado";
+        public static final String CAMBIAR_ESTADO_RESP_422 =
+                "Usuario inexistente, estado fuera del catálogo o igual al actual";
+        public static final String CAMBIAR_ESTADO_RESP_503 =
+                "No fue posible actualizar la identidad en el proveedor; el servicio no está disponible temporalmente";
+
+        // TODO HU233, HU242, HU252, HU255: agregar administrador, bibliotecario, jurado y representante del
+        //  comite a la lista de roles de CONSULTAR_ADMINISTRADOR_DESCRIPTION.
+        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
+                "Consultar información de los usuarios (administrador)";
+        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de todos los usuarios, incluidos los "
+                        + "eliminados (vigente = false). Indica con un booleano por rol si el usuario tiene hoy el rol vigente "
+                        + "de estudiante, asesor, asesor de ficha o coordinador; esos booleanos se combinan con OR/AND en el "
+                        + "filtro. Exclusivo del rol administrador.";
+        public static final String CONSULTAR_RESP_200 = "Página de usuarios";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 
     public static final class Estudiante {
@@ -175,5 +213,17 @@ public final class UsuariosApiMessages {
                         + "asesores, estudiantes y coordinadores.";
         public static final String CONSULTAR_RESP_200 = "Página de coordinadores";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
+    }
+
+    public static final class EstadoUsuario {
+
+        private EstadoUsuario() {}
+
+        public static final String CONSULTAR_SUMMARY =
+                "Consultar información de todos los estados disponibles para los usuarios";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Retorna el catálogo completo de estados que puede tener un usuario, con su identificador, "
+                        + "nombre y descripción. Exclusivo del rol administrador.";
+        public static final String CONSULTAR_RESP_200 = "Catálogo de estados de usuario";
     }
 }
