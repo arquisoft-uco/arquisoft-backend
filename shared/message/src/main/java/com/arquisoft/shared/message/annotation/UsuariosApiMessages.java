@@ -76,6 +76,18 @@ public final class UsuariosApiMessages {
                 "Usuario inexistente, estado fuera del catálogo o igual al actual";
         public static final String CAMBIAR_ESTADO_RESP_503 =
                 "No fue posible actualizar la identidad en el proveedor; el servicio no está disponible temporalmente";
+
+        // TODO HU233, HU242, HU252, HU255: agregar administrador, bibliotecario, jurado y representante del
+        //  comite a la lista de roles de CONSULTAR_ADMINISTRADOR_DESCRIPTION.
+        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
+                "Consultar información de los usuarios (administrador)";
+        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de todos los usuarios, incluidos los "
+                        + "eliminados (vigente = false). Indica con un booleano por rol si el usuario tiene hoy el rol vigente "
+                        + "de estudiante, asesor, asesor de ficha o coordinador; esos booleanos se combinan con OR/AND en el "
+                        + "filtro. Exclusivo del rol administrador.";
+        public static final String CONSULTAR_RESP_200 = "Página de usuarios";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 
     public static final class Estudiante {
