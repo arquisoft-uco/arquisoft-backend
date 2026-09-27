@@ -51,6 +51,8 @@ public final class EventTopics {
 
         public static final String REPRESENTANTE_COMITE_AGREGADO =
                 "usuarios.representantecomite.agregado";
+        public static final String REPRESENTANTE_COMITE_REMOVIDO =
+                "usuarios.representantecomite.removido";
     }
 
     public static final class Solicitudes {

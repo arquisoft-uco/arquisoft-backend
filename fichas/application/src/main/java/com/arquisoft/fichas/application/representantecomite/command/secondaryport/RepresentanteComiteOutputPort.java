@@ -2,6 +2,7 @@ package com.arquisoft.fichas.application.representantecomite.command.secondarypo
 
 import com.arquisoft.fichas.application.representantecomite.command.secondaryport.entity.RepresentanteComiteEntity;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,4 +17,6 @@ public interface RepresentanteComiteOutputPort {
     void actualizar(RepresentanteComiteEntity representanteComite);
 
     void reactivar(RepresentanteComiteEntity representanteComite);
+
+    void eliminarLogica(UUID id, Instant ocurridoEn);
 }

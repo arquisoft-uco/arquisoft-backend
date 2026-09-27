@@ -70,6 +70,7 @@ import com.arquisoft.shared.message.key.usuarios.RemoverAsesorFichaKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverAsesorKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverEstudianteKey;
+import com.arquisoft.shared.message.key.usuarios.RemoverRepresentanteComiteKey;
 
 
 /**
@@ -158,6 +159,7 @@ public final class ClavesCatalogo {
             RemoverCoordinadorKey.class,
             RemoverAsesorFichaKey.class,
             AgregarRepresentanteComiteKey.class,
+            RemoverRepresentanteComiteKey.class,
             AsesorKey.class,
             EstudianteProyectosKey.class,
             ConsultarCoordinadoresAdministradorKey.class,

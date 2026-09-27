@@ -11,6 +11,7 @@ rutas:
       asesor: /{usuarioId}/asesor
       asesor-ficha: /{usuarioId}/asesor-ficha
       coordinador: /{usuarioId}/coordinador
+      representante-comite: /{usuarioId}/representante-comite
       modificar: /{usuarioId}
       eliminar: /{usuarioId}
       estado: /{usuarioId}/estado

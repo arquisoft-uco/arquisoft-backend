@@ -56,6 +56,11 @@ public final class RepresentanteComiteDomain {
         return representanteComite;
     }
 
+    public void remover(Instant ocurridoEn) {
+        this.eliminadoEn = ocurridoEn;
+        this.ocurridoEn = ocurridoEn;
+    }
+
     public void reactivar(String identificador, String nombre, String email, Instant ocurridoEn) {
         var result = new ValidationResult();
 

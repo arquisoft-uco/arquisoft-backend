@@ -39,6 +39,10 @@ public final class RepresentanteComiteDomain {
         return representanteComite;
     }
 
+    public void remover(Instant instante) {
+        this.eliminadoEn = instante;
+    }
+
     public void reactivar() {
         this.eliminadoEn = UtilFecha.VACIO;
     }

@@ -96,5 +96,6 @@ public final class UsuariosCodes {
 
         public static final String USUARIO_REQUERIDO = "REPRESENTANTE_COMITE_USUARIO_REQUERIDO";
         public static final String USUARIO_DUPLICADO = "REPRESENTANTE_COMITE_USUARIO_DUPLICADO";
+        public static final String REPRESENTANTE_COMITE_NO_ENCONTRADO = "REPRESENTANTE_COMITE_NO_ENCONTRADO";
     }
 }

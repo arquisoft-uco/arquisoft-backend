@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,5 +46,11 @@ public class RepresentanteComiteCommandOutputAdapter implements RepresentanteCom
         representanteComiteCommandRepository.reactivar(representanteComite.id(), representanteComite.identificador(),
                 representanteComite.nombre(), representanteComite.email(), representanteComite.ocurridoEn());
         logger.debug(RepresentanteComiteKey.LOG_ACTUALIZADO, representanteComite.id());
+    }
+
+    @Override
+    public void eliminarLogica(UUID id, Instant ocurridoEn) {
+        representanteComiteCommandRepository.eliminarLogica(id, ocurridoEn);
+        logger.debug(RepresentanteComiteKey.LOG_ACTUALIZADO, id);
     }
 }

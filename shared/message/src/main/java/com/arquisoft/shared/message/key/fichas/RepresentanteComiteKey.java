@@ -16,7 +16,12 @@ public enum RepresentanteComiteKey implements ClaveMensaje {
     LOG_ACTUALIZADO("fichas.infraestructura.representantecomite.log.actualizado", 1),
     LOG_VERIFICACION_ACTUALIZAR("fichas.aplicacion.representantecomite.log.verificacion-actualizar", 2),
     LOG_ACTUALIZACION_DESCARTADA("fichas.infraestructura.representantecomite.log.actualizacion-descartada", 3),
-    LOG_ACTUALIZACION_NO_REPLICADO("fichas.infraestructura.representantecomite.log.actualizacion-no-replicado", 1);
+    LOG_ACTUALIZACION_NO_REPLICADO("fichas.infraestructura.representantecomite.log.actualizacion-no-replicado", 1),
+    LOG_VERIFICACION_REMOVER("fichas.aplicacion.representantecomite.log.verificacion-remover", 2),
+    LOG_REMOVIDO_RECIBIDO("fichas.infraestructura.representantecomite.log.removido-recibido", 2),
+    LOG_REMOVIDO("fichas.infraestructura.representantecomite.log.removido", 1),
+    LOG_LAPIDA("fichas.infraestructura.representantecomite.log.lapida", 1),
+    LOG_REMOCION_DESCARTADA("fichas.infraestructura.representantecomite.log.remocion-descartada", 2);
 
     private final String clave;
     private final int parametros;
