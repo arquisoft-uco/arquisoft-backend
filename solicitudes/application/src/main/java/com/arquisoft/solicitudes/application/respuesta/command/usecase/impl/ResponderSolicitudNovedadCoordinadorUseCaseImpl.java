@@ -10,7 +10,6 @@ import com.arquisoft.solicitudes.application.respuesta.command.validator.Respond
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudTieneRespuestasFinder;
-import com.arquisoft.solicitudes.domain.respuesta.RespuestaDomain;
 import com.arquisoft.solicitudes.domain.respuesta.RespuestaNovedadCoordinadorDomain;
 import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorRespondidaEvent;
 import lombok.RequiredArgsConstructor;
@@ -39,17 +38,18 @@ public class ResponderSolicitudNovedadCoordinadorUseCaseImpl
         var resumen = datosSolicitudFinder.obtener(entrada.getSolicitud());
         var existe = !resumen.esVacio();
         var yaRespondida = solicitudTieneRespuestasFinder.obtener(entrada.getSolicitud());
+        var remitente = datosUsuarioFinder.obtener(resumen.remitenteUsuario());
+        var coordinador = datosUsuarioFinder.obtener(resumen.destinatarioUsuario());
 
         logger.debug(RespuestaKey.LOG_VERIFICACION_RESPUESTA, existe, yaRespondida);
 
-        validator.validar(entrada.getSolicitud(), existe, resumen.tipoSolicitud(),
+        validator.validarExistencia(entrada.getSolicitud(), existe,
+                resumen.remitenteUsuario(), remitente, resumen.destinatarioUsuario(), coordinador);
+        validator.validarReglasDeNegocio(entrada.getSolicitud(), resumen.tipoSolicitud(),
                 resumen.destinatarioUsuario(), entrada.getCoordinadorUsuario(), yaRespondida);
 
-        var respuesta = RespuestaDomain.crear(entrada.getSolicitud(), entrada.getContenido());
+        var respuesta = entrada.getRespuesta();
         respuestaOutputPort.registrar(RespuestaMapper.toEntity(respuesta));
-
-        var remitente = datosUsuarioFinder.obtener(resumen.remitenteUsuario());
-        var coordinador = datosUsuarioFinder.obtener(resumen.destinatarioUsuario());
 
         eventPublisher.publish(new SolicitudNovedadCoordinadorRespondidaEvent(
                 entrada.getSolicitud(), respuesta.getId(), respuesta.getContenido(),

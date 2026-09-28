@@ -2,51 +2,37 @@ package com.arquisoft.solicitudes.domain.respuesta;
 
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
-import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
-import com.arquisoft.shared.validation.ValidatorTexto;
 
 import java.util.UUID;
 
 public final class RespuestaNovedadCoordinadorDomain {
 
-    private UUID solicitud;
-    private String contenido;
+    private RespuestaDomain respuesta;
     private UUID coordinadorUsuario;
 
     private RespuestaNovedadCoordinadorDomain() {}
 
     public static RespuestaNovedadCoordinadorDomain crear(
-            UUID solicitud, String contenido, UUID coordinadorUsuario) {
-        var respuesta = new RespuestaNovedadCoordinadorDomain();
+            RespuestaDomain respuesta, UUID coordinadorUsuario) {
+        var accion = new RespuestaNovedadCoordinadorDomain();
         var result = new ValidationResult();
 
-        respuesta.setSolicitud(solicitud, result);
-        respuesta.setContenido(contenido, result);
-        respuesta.setCoordinadorUsuario(coordinadorUsuario, result);
+        accion.setRespuesta(respuesta, result);
+        accion.setCoordinadorUsuario(coordinadorUsuario, result);
 
         result.lanzarSiTieneErrores();
-        return respuesta;
+        return accion;
     }
 
-    private void setSolicitud(UUID solicitud, ValidationResult result) {
-        if (!ValidatorObjeto.noNulo(solicitud,
+    private void setRespuesta(RespuestaDomain respuesta, ValidationResult result) {
+        if (!ValidatorObjeto.noNulo(respuesta,
                 SolicitudesFields.Respuesta.SOLICITUD,
                 SolicitudesCodes.Respuesta.SOLICITUD_REQUERIDO, result)) {
             return;
         }
-        this.solicitud = solicitud;
-    }
-
-    private void setContenido(String contenido, ValidationResult result) {
-        var recortado = UtilTexto.aplicarTrim(contenido);
-        if (!ValidatorTexto.noEnBlanco(recortado,
-                SolicitudesFields.Respuesta.CONTENIDO,
-                SolicitudesCodes.Respuesta.CONTENIDO_REQUERIDO, result)) {
-            return;
-        }
-        this.contenido = recortado;
+        this.respuesta = respuesta;
     }
 
     private void setCoordinadorUsuario(UUID coordinadorUsuario, ValidationResult result) {
@@ -58,12 +44,12 @@ public final class RespuestaNovedadCoordinadorDomain {
         this.coordinadorUsuario = coordinadorUsuario;
     }
 
-    public UUID getSolicitud() {
-        return solicitud;
+    public RespuestaDomain getRespuesta() {
+        return respuesta;
     }
 
-    public String getContenido() {
-        return contenido;
+    public UUID getSolicitud() {
+        return respuesta.getSolicitud();
     }
 
     public UUID getCoordinadorUsuario() {

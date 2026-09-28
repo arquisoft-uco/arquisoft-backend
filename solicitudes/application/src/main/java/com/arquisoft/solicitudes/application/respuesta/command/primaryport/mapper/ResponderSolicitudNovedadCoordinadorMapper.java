@@ -1,6 +1,7 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ResponderSolicitudNovedadCoordinadorCommand;
+import com.arquisoft.solicitudes.domain.respuesta.RespuestaDomain;
 import com.arquisoft.solicitudes.domain.respuesta.RespuestaNovedadCoordinadorDomain;
 
 public final class ResponderSolicitudNovedadCoordinadorMapper {
@@ -9,7 +10,7 @@ public final class ResponderSolicitudNovedadCoordinadorMapper {
 
     public static RespuestaNovedadCoordinadorDomain toDomain(
             ResponderSolicitudNovedadCoordinadorCommand command) {
-        return RespuestaNovedadCoordinadorDomain.crear(
-                command.solicitud(), command.contenido(), command.coordinadorUsuario());
+        var respuesta = RespuestaDomain.crear(command.solicitud(), command.contenido());
+        return RespuestaNovedadCoordinadorDomain.crear(respuesta, command.coordinadorUsuario());
     }
 }
