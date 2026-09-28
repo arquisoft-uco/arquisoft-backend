@@ -56,6 +56,8 @@ public final class EventTopics {
 
         public static final String ADMINISTRADOR_AGREGADO =
                 "usuarios.administrador.agregado";
+        public static final String ADMINISTRADOR_REMOVIDO =
+                "usuarios.administrador.removido";
     }
 
     public static final class Solicitudes {

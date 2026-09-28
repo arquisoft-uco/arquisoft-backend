@@ -39,6 +39,10 @@ public final class AdministradorDomain {
         return administrador;
     }
 
+    public void remover(Instant instante) {
+        this.eliminadoEn = instante;
+    }
+
     public void reactivar() {
         this.eliminadoEn = UtilFecha.VACIO;
     }

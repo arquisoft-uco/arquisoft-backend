@@ -62,5 +62,6 @@ public final class UsuariosFields {
         private Administrador() {}
 
         public static final String USUARIO = "usuario";
+        public static final String ACTOR = "actor";
     }
 }

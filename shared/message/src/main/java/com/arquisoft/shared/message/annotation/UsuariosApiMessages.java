@@ -258,4 +258,24 @@ public final class UsuariosApiMessages {
                         + "nombre y descripción. Exclusivo del rol administrador.";
         public static final String CONSULTAR_RESP_200 = "Catálogo de estados de usuario";
     }
+
+    public static final class Administrador {
+
+        private Administrador() {}
+
+        public static final String REMOVER_SUMMARY = "Remover información de un administrador";
+        public static final String REMOVER_DESCRIPTION =
+                "Da de baja lógica el rol administrador de un usuario: marca la fecha de eliminación sin borrar "
+                        + "la fila, revoca el realm role administrador en Keycloak y notifica a los contextos "
+                        + "que replican al administrador. El usuario y sus demás roles no cambian. Un "
+                        + "administrador no puede removerse a sí mismo ni remover al único administrador "
+                        + "vigente. Exclusivo del rol administrador.";
+        public static final String REMOVER_RESP_204 = "Administrador removido";
+        public static final String REMOVER_RESP_400 = "Identificador de usuario inválido";
+        public static final String REMOVER_RESP_422 =
+                "El usuario no tiene un rol administrador vigente, es el propio solicitante o es el único "
+                        + "administrador vigente";
+        public static final String REMOVER_RESP_503 =
+                "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+    }
 }

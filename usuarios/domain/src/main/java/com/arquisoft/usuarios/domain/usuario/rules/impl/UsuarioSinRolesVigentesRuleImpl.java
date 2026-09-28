@@ -30,7 +30,10 @@ public class UsuarioSinRolesVigentesRuleImpl implements UsuarioSinRolesVigentesR
         if (vigente(roles.representanteComite().esVacio(), roles.representanteComite().estaEliminado())) {
             vigentes.add(UsuariosRealmRoles.REPRESENTANTE_COMITE);
         }
-        // TODO HU251 (JURADO), HU241 (BIBLIOTECARIO), HU232 (ADMINISTRADOR):
+        if (vigente(roles.administrador().esVacio(), roles.administrador().estaEliminado())) {
+            vigentes.add(UsuariosRealmRoles.ADMINISTRADOR);
+        }
+        // TODO HU251 (JURADO), HU241 (BIBLIOTECARIO):
         //  agregar el {Rol}Domain a RolesUsuario y marcarlo vigente aqui si existe y no esta eliminado,
         //  para que el usuario solo pueda eliminarse con ese rol ya removido.
 
