@@ -3,7 +3,6 @@ package com.arquisoft.solicitudes.application.respuesta.command.usecase.impl;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.solicitudes.RespuestaKey;
 import com.arquisoft.shared.publisher.EventPublisher;
-import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.RespuestaOutputPort;
 import com.arquisoft.solicitudes.application.respuesta.command.secondaryport.entity.RespuestaEntity;
 import com.arquisoft.solicitudes.application.respuesta.command.validator.ResponderSolicitudNovedadCoordinadorValidator;
@@ -119,7 +118,7 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         // Arrange
         stubFlujoValido();
         doThrow(new SolicitudYaRespondidaException(solicitud))
-                .when(validator).validarReglasDeNegocio(any(), any(), any(), any(), anyBoolean());
+                .when(validator).validar(any(), any(), any(), any(), any(), anyBoolean());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
@@ -135,15 +134,14 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
         doThrow(new SolicitudYaRespondidaException(solicitud))
-                .when(validator).validarReglasDeNegocio(any(), any(), any(), any(), anyBoolean());
+                .when(validator).validar(any(), any(), any(), any(), any(), anyBoolean());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
                 .isInstanceOf(SolicitudYaRespondidaException.class);
 
-        var usuarioPorDefecto = UtilUUID.obtenerUUIDPorDefecto();
-        verify(validator).validarExistencia(eq(solicitud), eq(false),
-                eq(usuarioPorDefecto), any(), eq(usuarioPorDefecto), any());
+        verify(validator).validar(eq(solicitud), eq(ResumenSolicitud.VACIO), any(), any(),
+                eq(coordinadorUsuario), eq(false));
         verify(respuestaOutputPort, never()).registrar(any());
     }
 
@@ -162,8 +160,7 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         inOrder.verify(solicitudTieneRespuestasFinder).obtener(solicitud);
         inOrder.verify(datosUsuarioFinder).obtener(remitenteUsuario);
         inOrder.verify(datosUsuarioFinder).obtener(coordinadorUsuario);
-        inOrder.verify(validator).validarExistencia(any(), anyBoolean(), any(), any(), any(), any());
-        inOrder.verify(validator).validarReglasDeNegocio(any(), any(), any(), any(), anyBoolean());
+        inOrder.verify(validator).validar(any(), any(), any(), any(), any(), anyBoolean());
         inOrder.verify(respuestaOutputPort).registrar(any());
         inOrder.verify(eventPublisher).publish(any());
     }

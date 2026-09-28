@@ -7,6 +7,7 @@ import com.arquisoft.solicitudes.domain.solicitud.exception.RemitenteNoEncontrad
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
+import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,13 @@ class ResponderSolicitudNovedadCoordinadorValidatorImplTest {
     private final ResponderSolicitudNovedadCoordinadorValidatorImpl validator =
             new ResponderSolicitudNovedadCoordinadorValidatorImpl();
 
+    private static final UUID REMITENTE = UUID.randomUUID();
     private static final String TIPO_OK = TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId();
+
+    private static ResumenSolicitud resumen(boolean existe, String tipo, UUID remitente, UUID destinatario) {
+        return existe ? new ResumenSolicitud(UUID.randomUUID(), remitente, destinatario, tipo)
+                : ResumenSolicitud.VACIO;
+    }
 
     private static UsuarioDomain usuario(UUID id) {
         return UsuarioDomain.reconstruir(id, "EST-1", "Nombre", "correo@uco.edu.co", Instant.now());
@@ -34,8 +41,8 @@ class ResponderSolicitudNovedadCoordinadorValidatorImplTest {
         UUID remitente = UUID.randomUUID();
         UUID coordinador = UUID.randomUUID();
 
-        assertThatCode(() -> validator.validarExistencia(
-                solicitud, true, remitente, usuario(remitente), coordinador, usuario(coordinador)))
+        assertThatCode(() -> validator.validar(solicitud, resumen(true, TIPO_OK, remitente, coordinador),
+                usuario(remitente), usuario(coordinador), coordinador, false))
                 .doesNotThrowAnyException();
     }
 
@@ -44,8 +51,8 @@ class ResponderSolicitudNovedadCoordinadorValidatorImplTest {
         UUID remitente = UUID.randomUUID();
         UUID coordinador = UUID.randomUUID();
 
-        assertThatThrownBy(() -> validator.validarExistencia(UUID.randomUUID(), false,
-                remitente, UsuarioDomain.VACIO, coordinador, UsuarioDomain.VACIO))
+        assertThatThrownBy(() -> validator.validar(UUID.randomUUID(), resumen(false, TIPO_OK, remitente, coordinador),
+                UsuarioDomain.VACIO, UsuarioDomain.VACIO, coordinador, false))
                 .isInstanceOf(SolicitudNoEncontradaException.class);
     }
 
@@ -54,8 +61,8 @@ class ResponderSolicitudNovedadCoordinadorValidatorImplTest {
         UUID remitente = UUID.randomUUID();
         UUID coordinador = UUID.randomUUID();
 
-        assertThatThrownBy(() -> validator.validarExistencia(UUID.randomUUID(), true,
-                remitente, UsuarioDomain.VACIO, coordinador, usuario(coordinador)))
+        assertThatThrownBy(() -> validator.validar(UUID.randomUUID(), resumen(true, TIPO_OK, remitente, coordinador),
+                UsuarioDomain.VACIO, usuario(coordinador), coordinador, false))
                 .isInstanceOf(RemitenteNoEncontradoException.class);
     }
 
@@ -64,22 +71,22 @@ class ResponderSolicitudNovedadCoordinadorValidatorImplTest {
         UUID remitente = UUID.randomUUID();
         UUID coordinador = UUID.randomUUID();
 
-        assertThatThrownBy(() -> validator.validarExistencia(UUID.randomUUID(), true,
-                remitente, usuario(remitente), coordinador, UsuarioDomain.VACIO))
+        assertThatThrownBy(() -> validator.validar(UUID.randomUUID(), resumen(true, TIPO_OK, remitente, coordinador),
+                usuario(remitente), UsuarioDomain.VACIO, coordinador, false))
                 .isInstanceOf(DestinatarioNoEncontradoException.class);
     }
 
     @Test
     void debeValidarSolicitudAntesQueRemitente_cuandoAmbasFallan() {
-        assertThatThrownBy(() -> validator.validarExistencia(UUID.randomUUID(), false,
-                UUID.randomUUID(), UsuarioDomain.VACIO, UUID.randomUUID(), UsuarioDomain.VACIO))
+        assertThatThrownBy(() -> validator.validar(UUID.randomUUID(), resumen(false, TIPO_OK, UUID.randomUUID(), UUID.randomUUID()),
+                UsuarioDomain.VACIO, UsuarioDomain.VACIO, UUID.randomUUID(), false))
                 .isInstanceOf(SolicitudNoEncontradaException.class);
     }
 
     @Test
     void debeValidarRemitenteAntesQueDestinatario_cuandoAmbosFallan() {
-        assertThatThrownBy(() -> validator.validarExistencia(UUID.randomUUID(), true,
-                UUID.randomUUID(), UsuarioDomain.VACIO, UUID.randomUUID(), UsuarioDomain.VACIO))
+        assertThatThrownBy(() -> validator.validar(UUID.randomUUID(), resumen(true, TIPO_OK, UUID.randomUUID(), UUID.randomUUID()),
+                UsuarioDomain.VACIO, UsuarioDomain.VACIO, UUID.randomUUID(), false))
                 .isInstanceOf(RemitenteNoEncontradoException.class);
     }
 
@@ -88,8 +95,8 @@ class ResponderSolicitudNovedadCoordinadorValidatorImplTest {
         UUID solicitud = UUID.randomUUID();
         UUID coordinador = UUID.randomUUID();
 
-        assertThatCode(() -> validator.validarReglasDeNegocio(
-                solicitud, TIPO_OK, coordinador, coordinador, false))
+        assertThatCode(() -> validator.validar(solicitud, resumen(true, TIPO_OK, REMITENTE, coordinador),
+                usuario(REMITENTE), usuario(coordinador), coordinador, false))
                 .doesNotThrowAnyException();
     }
 
@@ -97,15 +104,15 @@ class ResponderSolicitudNovedadCoordinadorValidatorImplTest {
     void debeLanzarTipoNoCoincide_cuandoLaSolicitudEsDeOtroTipo() {
         UUID coordinador = UUID.randomUUID();
 
-        assertThatThrownBy(() -> validator.validarReglasDeNegocio(UUID.randomUUID(),
-                TipoSolicitud.CAMBIO_DE_ASESOR.getId(), coordinador, coordinador, false))
+        assertThatThrownBy(() -> validator.validar(UUID.randomUUID(), resumen(true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(), REMITENTE, coordinador),
+                usuario(REMITENTE), usuario(coordinador), coordinador, false))
                 .isInstanceOf(SolicitudTipoNoCoincideException.class);
     }
 
     @Test
     void debeLanzarNoEsDestinatario_cuandoElCoordinadorNoEsElDestinatario() {
-        assertThatThrownBy(() -> validator.validarReglasDeNegocio(
-                UUID.randomUUID(), TIPO_OK, UUID.randomUUID(), UUID.randomUUID(), false))
+        assertThatThrownBy(() -> validator.validar(UUID.randomUUID(), resumen(true, TIPO_OK, REMITENTE, UUID.randomUUID()),
+                usuario(REMITENTE), usuario(UUID.randomUUID()), UUID.randomUUID(), false))
                 .isInstanceOf(SolicitudNoEsDestinatarioException.class);
     }
 
@@ -113,22 +120,23 @@ class ResponderSolicitudNovedadCoordinadorValidatorImplTest {
     void debeLanzarYaRespondida_cuandoLaSolicitudTieneRespuesta() {
         UUID coordinador = UUID.randomUUID();
 
-        assertThatThrownBy(() -> validator.validarReglasDeNegocio(
-                UUID.randomUUID(), TIPO_OK, coordinador, coordinador, true))
+        assertThatThrownBy(() -> validator.validar(UUID.randomUUID(), resumen(true, TIPO_OK, REMITENTE, coordinador),
+                usuario(REMITENTE), usuario(coordinador), coordinador, true))
                 .isInstanceOf(SolicitudYaRespondidaException.class);
     }
 
     @Test
     void debeValidarTipoAntesQueDestinatario_cuandoAmbosFallan() {
-        assertThatThrownBy(() -> validator.validarReglasDeNegocio(UUID.randomUUID(),
-                TipoSolicitud.CAMBIO_DE_ASESOR.getId(), UUID.randomUUID(), UUID.randomUUID(), true))
+        assertThatThrownBy(() -> validator.validar(UUID.randomUUID(), resumen(true, TipoSolicitud.CAMBIO_DE_ASESOR.getId(),
+                        REMITENTE, UUID.randomUUID()),
+                usuario(REMITENTE), usuario(UUID.randomUUID()), UUID.randomUUID(), true))
                 .isInstanceOf(SolicitudTipoNoCoincideException.class);
     }
 
     @Test
     void debeValidarDestinatarioAntesQueUnicidad_cuandoAmbosFallan() {
-        assertThatThrownBy(() -> validator.validarReglasDeNegocio(
-                UUID.randomUUID(), TIPO_OK, UUID.randomUUID(), UUID.randomUUID(), true))
+        assertThatThrownBy(() -> validator.validar(UUID.randomUUID(), resumen(true, TIPO_OK, REMITENTE, UUID.randomUUID()),
+                usuario(REMITENTE), usuario(UUID.randomUUID()), UUID.randomUUID(), true))
                 .isInstanceOf(SolicitudNoEsDestinatarioException.class);
     }
 }

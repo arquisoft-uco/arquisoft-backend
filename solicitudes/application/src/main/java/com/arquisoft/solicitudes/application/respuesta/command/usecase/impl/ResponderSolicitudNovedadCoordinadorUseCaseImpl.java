@@ -36,17 +36,14 @@ public class ResponderSolicitudNovedadCoordinadorUseCaseImpl
                 entrada.getSolicitud(), entrada.getCoordinadorUsuario());
 
         var resumen = datosSolicitudFinder.obtener(entrada.getSolicitud());
-        var existe = !resumen.esVacio();
         var yaRespondida = solicitudTieneRespuestasFinder.obtener(entrada.getSolicitud());
         var remitente = datosUsuarioFinder.obtener(resumen.remitenteUsuario());
         var coordinador = datosUsuarioFinder.obtener(resumen.destinatarioUsuario());
 
-        logger.debug(RespuestaKey.LOG_VERIFICACION_RESPUESTA, existe, yaRespondida);
+        logger.debug(RespuestaKey.LOG_VERIFICACION_RESPUESTA, !resumen.esVacio(), yaRespondida);
 
-        validator.validarExistencia(entrada.getSolicitud(), existe,
-                resumen.remitenteUsuario(), remitente, resumen.destinatarioUsuario(), coordinador);
-        validator.validarReglasDeNegocio(entrada.getSolicitud(), resumen.tipoSolicitud(),
-                resumen.destinatarioUsuario(), entrada.getCoordinadorUsuario(), yaRespondida);
+        validator.validar(entrada.getSolicitud(), resumen, remitente, coordinador,
+                entrada.getCoordinadorUsuario(), yaRespondida);
 
         var respuesta = entrada.getRespuesta();
         respuestaOutputPort.registrar(RespuestaMapper.toEntity(respuesta));

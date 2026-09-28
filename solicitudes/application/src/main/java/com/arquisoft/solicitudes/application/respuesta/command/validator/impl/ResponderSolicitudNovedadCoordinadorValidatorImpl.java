@@ -8,6 +8,7 @@ import com.arquisoft.solicitudes.domain.solicitud.model.ExistenciaDestinatario;
 import com.arquisoft.solicitudes.domain.solicitud.model.ExistenciaRemitente;
 import com.arquisoft.solicitudes.domain.solicitud.model.ExistenciaSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.PropiedadDestinatarioSolicitud;
+import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.TipoSolicitudConcordante;
 import com.arquisoft.solicitudes.domain.solicitud.rules.DestinatarioExisteRule;
 import com.arquisoft.solicitudes.domain.solicitud.rules.RemitenteExisteRule;
@@ -46,22 +47,16 @@ public class ResponderSolicitudNovedadCoordinadorValidatorImpl
     }
 
     @Override
-    public void validarExistencia(UUID solicitud, boolean existeSolicitud,
-                                  UUID remitenteUsuario, UsuarioDomain remitente,
-                                  UUID coordinadorUsuario, UsuarioDomain coordinador) {
-        solicitudExisteRule.validar(new ExistenciaSolicitud(solicitud, existeSolicitud));
-        remitenteExisteRule.validar(new ExistenciaRemitente(remitenteUsuario, remitente));
-        destinatarioExisteRule.validar(new ExistenciaDestinatario(coordinadorUsuario, coordinador));
-    }
-
-    @Override
-    public void validarReglasDeNegocio(UUID solicitud, String tipoProyectado,
-                                       UUID destinatarioUsuarioProyectado, UUID solicitante,
-                                       boolean yaRespondida) {
+    public void validar(UUID solicitud, ResumenSolicitud resumen,
+                        UsuarioDomain remitente, UsuarioDomain coordinador,
+                        UUID solicitante, boolean yaRespondida) {
+        solicitudExisteRule.validar(new ExistenciaSolicitud(solicitud, !resumen.esVacio()));
+        remitenteExisteRule.validar(new ExistenciaRemitente(resumen.remitenteUsuario(), remitente));
+        destinatarioExisteRule.validar(new ExistenciaDestinatario(resumen.destinatarioUsuario(), coordinador));
         solicitudEsNovedadCoordinadorRule.validar(new TipoSolicitudConcordante(
-                solicitud, tipoProyectado, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
+                solicitud, resumen.tipoSolicitud(), TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
         solicitudEsDelDestinatarioRule.validar(new PropiedadDestinatarioSolicitud(
-                solicitud, destinatarioUsuarioProyectado, solicitante));
+                solicitud, resumen.destinatarioUsuario(), solicitante));
         solicitudRespondidaRule.validar(new RespuestaSolicitud(solicitud, yaRespondida));
     }
 }
