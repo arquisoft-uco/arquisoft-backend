@@ -122,6 +122,7 @@ public final class FichasCodes {
         public static final String ESTADO_FICHA_REQUERIDO = "ESTADO_FICHA_PERFIL_ESTADO_FICHA_REQUERIDO";
         public static final String NO_ENCONTRADO = "ESTADO_FICHA_PERFIL_NO_ENCONTRADO";
         public static final String ESTADO_TERMINAL = "ESTADO_FICHA_PERFIL_ESTADO_TERMINAL";
+        public static final String ASESOR_FICHA_ID_REQUERIDO = "ESTADO_FICHA_PERFIL_ASESOR_FICHA_ID_REQUERIDO";
     }
 
     public static final class EstadoFicha {
