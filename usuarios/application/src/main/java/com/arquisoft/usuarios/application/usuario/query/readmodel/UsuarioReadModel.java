@@ -13,10 +13,10 @@ public record UsuarioReadModel(
         boolean esEstudiante,
         boolean esAsesor,
         boolean esAsesorFicha,
-        boolean esCoordinador
+        boolean esCoordinador,
+        boolean esRepresentanteComite
         // TODO HU233: boolean esAdministrador
         // TODO HU242: boolean esBibliotecario
         // TODO HU252: boolean esJurado
-        // TODO HU255: boolean esRepresentanteComite
 ) {
 }

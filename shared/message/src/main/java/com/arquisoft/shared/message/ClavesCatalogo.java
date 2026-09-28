@@ -49,10 +49,14 @@ import com.arquisoft.shared.message.key.seguridad.TokenKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAsesorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarRepresentanteComiteKey;
+import com.arquisoft.shared.message.key.usuarios.AgregarAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.AgregarEstudianteKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresFichaVigentesKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarRepresentantesComiteAdministradorKey;
+import com.arquisoft.shared.message.key.usuarios.ConsultarRepresentantesComiteVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarAsesoresVigentesKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresAdministradorKey;
 import com.arquisoft.shared.message.key.usuarios.ConsultarCoordinadoresVigentesKey;
@@ -69,6 +73,7 @@ import com.arquisoft.shared.message.key.usuarios.RemoverAsesorFichaKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverAsesorKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverCoordinadorKey;
 import com.arquisoft.shared.message.key.usuarios.RemoverEstudianteKey;
+import com.arquisoft.shared.message.key.usuarios.RemoverRepresentanteComiteKey;
 
 
 /**
@@ -156,6 +161,9 @@ public final class ClavesCatalogo {
             RemoverAsesorKey.class,
             RemoverCoordinadorKey.class,
             RemoverAsesorFichaKey.class,
+            AgregarRepresentanteComiteKey.class,
+            RemoverRepresentanteComiteKey.class,
+            AgregarAdministradorKey.class,
             AsesorKey.class,
             EstudianteProyectosKey.class,
             ConsultarCoordinadoresAdministradorKey.class,
@@ -166,6 +174,8 @@ public final class ClavesCatalogo {
             ConsultarAsesoresVigentesKey.class,
             ConsultarAsesoresFichaAdministradorKey.class,
             ConsultarAsesoresFichaVigentesKey.class,
+            ConsultarRepresentantesComiteAdministradorKey.class,
+            ConsultarRepresentantesComiteVigentesKey.class,
             ConsultarUsuariosAdministradorKey.class,
             ConsultarEstadosUsuarioKey.class
     );

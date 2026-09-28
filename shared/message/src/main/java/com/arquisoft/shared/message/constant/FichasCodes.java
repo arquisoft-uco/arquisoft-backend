@@ -146,6 +146,11 @@ public final class FichasCodes {
         private RepresentanteComite() {}
 
         public static final String REPRESENTANTE_NO_ENCONTRADO = "REPRESENTANTE_NO_ENCONTRADO";
+        public static final String ID_REQUERIDO = "REPRESENTANTE_COMITE_ID_REQUERIDO";
+        public static final String IDENTIFICADOR_REQUERIDO = "REPRESENTANTE_COMITE_IDENTIFICADOR_REQUERIDO";
+        public static final String NOMBRE_REQUERIDO = "REPRESENTANTE_COMITE_NOMBRE_REQUERIDO";
+        public static final String EMAIL_REQUERIDO = "REPRESENTANTE_COMITE_EMAIL_REQUERIDO";
+        public static final String OCURRIDO_EN_REQUERIDO = "REPRESENTANTE_COMITE_OCURRIDO_EN_REQUERIDO";
     }
 
     public static final class EstadoEvaluacionFicha {

@@ -15,6 +15,9 @@ public final class UsuariosAuthorities {
     public static final String COORDINADOR_DELETE = "usuarios:coordinador:delete";
     public static final String COORDINADOR_ADMINISTRADOR_VIEW = "usuarios:coordinador-administrador:view";
     public static final String COORDINADOR_VIGENTE_VIEW = "usuarios:coordinador-vigente:view";
+    public static final String REPRESENTANTE_COMITE_DELETE = "usuarios:representante-comite:delete";
+    public static final String REPRESENTANTE_COMITE_ADMINISTRADOR_VIEW = "usuarios:representante-comite-administrador:view";
+    public static final String REPRESENTANTE_COMITE_VIGENTE_VIEW = "usuarios:representante-comite-vigente:view";
     public static final String ESTUDIANTE_ADMINISTRADOR_VIEW = "usuarios:estudiante-administrador:view";
     public static final String ESTUDIANTE_VIGENTE_VIEW = "usuarios:estudiante-vigente:view";
     public static final String ASESOR_ADMINISTRADOR_VIEW = "usuarios:asesor-administrador:view";
@@ -62,6 +65,15 @@ public final class UsuariosAuthorities {
 
         public static final String HAS_COORDINADOR_VIGENTE_VIEW =
                 HAS_AUTHORITY_INICIO + COORDINADOR_VIGENTE_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_REPRESENTANTE_COMITE_DELETE =
+                HAS_AUTHORITY_INICIO + REPRESENTANTE_COMITE_DELETE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_REPRESENTANTE_COMITE_ADMINISTRADOR_VIEW =
+                HAS_AUTHORITY_INICIO + REPRESENTANTE_COMITE_ADMINISTRADOR_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_REPRESENTANTE_COMITE_VIGENTE_VIEW =
+                HAS_AUTHORITY_INICIO + REPRESENTANTE_COMITE_VIGENTE_VIEW + HAS_AUTHORITY_FIN;
 
         public static final String HAS_ESTUDIANTE_ADMINISTRADOR_VIEW =
                 HAS_AUTHORITY_INICIO + ESTUDIANTE_ADMINISTRADOR_VIEW + HAS_AUTHORITY_FIN;

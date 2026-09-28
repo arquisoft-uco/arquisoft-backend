@@ -5,6 +5,7 @@ import com.arquisoft.usuarios.domain.asesor.AsesorDomain;
 import com.arquisoft.usuarios.domain.asesorficha.AsesorFichaDomain;
 import com.arquisoft.usuarios.domain.coordinador.CoordinadorDomain;
 import com.arquisoft.usuarios.domain.estudiante.EstudianteDomain;
+import com.arquisoft.usuarios.domain.representantecomite.RepresentanteComiteDomain;
 import com.arquisoft.usuarios.domain.usuario.UsuarioDomain;
 import com.arquisoft.usuarios.domain.usuario.model.ExistenciaUsuario;
 import com.arquisoft.usuarios.domain.usuario.model.RolesUsuario;
@@ -34,10 +35,11 @@ public class EliminarUsuarioValidatorImpl implements EliminarUsuarioValidator {
 
     @Override
     public void validar(UUID usuario, UsuarioDomain encontrado, EstudianteDomain estudiante, AsesorDomain asesor,
-                        AsesorFichaDomain asesorFicha, CoordinadorDomain coordinador) {
+                        AsesorFichaDomain asesorFicha, CoordinadorDomain coordinador,
+                        RepresentanteComiteDomain representanteComite) {
         usuarioExisteRule.validar(new ExistenciaUsuario(usuario, encontrado));
         usuarioNoEliminadoRule.validar(new VigenciaUsuario(usuario, encontrado));
         usuarioSinRolesVigentesRule.validar(
-                new RolesUsuario(usuario, estudiante, asesor, asesorFicha, coordinador));
+                new RolesUsuario(usuario, estudiante, asesor, asesorFicha, coordinador, representanteComite));
     }
 }
