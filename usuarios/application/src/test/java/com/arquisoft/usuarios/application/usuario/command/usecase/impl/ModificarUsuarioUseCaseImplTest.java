@@ -9,6 +9,7 @@ import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAse
 import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
 import com.arquisoft.usuarios.application.estudiante.command.usecase.AgregarEstudianteUseCase;
 import com.arquisoft.usuarios.application.representantecomite.command.usecase.AgregarRepresentanteComiteUseCase;
+import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
 import com.arquisoft.usuarios.application.usuario.command.finder.ContactoOtroUsuarioExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtraIdentidadExisteFinder;
 import com.arquisoft.usuarios.application.usuario.command.finder.EmailOtroUsuarioExisteFinder;
@@ -76,6 +77,8 @@ class ModificarUsuarioUseCaseImplTest {
     @Mock
     private AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
     @Mock
+    private AgregarAdministradorUseCase agregarAdministradorUseCase;
+    @Mock
     private EventPublisher eventPublisher;
     @Mock
     private AppLogger logger;
@@ -91,7 +94,8 @@ class ModificarUsuarioUseCaseImplTest {
                 usuarioPorIdFinder, identificadorOtroUsuarioExisteFinder, emailOtroUsuarioExisteFinder,
                 emailOtraIdentidadExisteFinder, contactoOtroUsuarioExisteFinder, modificarUsuarioValidator,
                 agregarEstudianteUseCase, agregarCoordinadorUseCase, agregarAsesorFichaUseCase,
-                agregarAsesorUseCase, agregarRepresentanteComiteUseCase, eventPublisher, logger);
+                agregarAsesorUseCase, agregarRepresentanteComiteUseCase, agregarAdministradorUseCase, eventPublisher,
+                logger);
         usuarioId = UUID.randomUUID();
         usuarioActivo = UsuarioDomain.reconstruir(usuarioId, "usr001", "Nombre Original",
                 "original@uco.edu.co", "573001112233", EstadoUsuario.ACTIVO, UtilFecha.VACIO);
@@ -112,7 +116,8 @@ class ModificarUsuarioUseCaseImplTest {
         verify(proveedorIdentidadOutputPort, times(1)).asignarRealmRoles(usuarioId, List.of());
         verify(proveedorIdentidadOutputPort, never()).actualizar(any());
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
-                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase);
+                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
+                agregarAdministradorUseCase);
         // presupuesto de I/O: un solo viaje por finder de unicidad tocado
         verify(usuarioPorIdFinder, times(1)).obtener(usuarioId);
         verify(identificadorOtroUsuarioExisteFinder, never()).obtener(any());
@@ -223,6 +228,27 @@ class ModificarUsuarioUseCaseImplTest {
     }
 
     @Test
+    void debeAgregarRolAdministradorConUsuarioModificado_cuandoLaModificacionIncluyeAdministrador() {
+        // Arrange
+        var modificacion = modificacionConRol("administrador");
+        when(usuarioPorIdFinder.obtener(usuarioId)).thenReturn(usuarioActivo);
+
+        // Act
+        useCase.ejecutar(modificacion);
+
+        // Assert
+        var orden = inOrder(usuarioOutputPort, agregarAdministradorUseCase, proveedorIdentidadOutputPort);
+        orden.verify(usuarioOutputPort).actualizar(any());
+        orden.verify(agregarAdministradorUseCase, times(1)).ejecutar(usuarioActivo);
+        orden.verify(proveedorIdentidadOutputPort).asignarRealmRoles(usuarioId, List.of("administrador"));
+        verify(agregarEstudianteUseCase, never()).ejecutar(any());
+        verify(agregarCoordinadorUseCase, never()).ejecutar(any());
+        verify(agregarAsesorFichaUseCase, never()).ejecutar(any());
+        verify(agregarAsesorUseCase, never()).ejecutar(any());
+        verify(agregarRepresentanteComiteUseCase, never()).ejecutar(any());
+    }
+
+    @Test
     void noDebeConsultarFinderDeUnicidad_cuandoElCampoCorrespondienteEsAusente() {
         // Arrange — solo llega nombre; identificador/email/contacto ausentes
         var modificacion = modificacionSoloNombre();
@@ -266,7 +292,8 @@ class ModificarUsuarioUseCaseImplTest {
         verify(eventPublisher, never()).publish(any());
         verifyNoInteractions(proveedorIdentidadOutputPort);
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
-                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase);
+                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
+                agregarAdministradorUseCase);
     }
 
     @Test
@@ -285,7 +312,8 @@ class ModificarUsuarioUseCaseImplTest {
         verify(usuarioOutputPort, never()).actualizar(any());
         verifyNoInteractions(eventPublisher, proveedorIdentidadOutputPort);
         verifyNoInteractions(agregarEstudianteUseCase, agregarCoordinadorUseCase,
-                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase);
+                agregarAsesorFichaUseCase, agregarAsesorUseCase, agregarRepresentanteComiteUseCase,
+                agregarAdministradorUseCase);
     }
 
     @Test

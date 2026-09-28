@@ -69,4 +69,18 @@ public class SolicitudesUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String ADMINISTRADOR_AGREGADO_QUEUE =
+            SolicitudesQueues.PREFIJO + EventTopics.Usuarios.ADMINISTRADOR_AGREGADO;
+
+    @Bean
+    public Declarables solicitudesAdministradorAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ADMINISTRADOR_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ADMINISTRADOR_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }
