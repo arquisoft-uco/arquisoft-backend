@@ -81,4 +81,41 @@ class AdministradorCommandOutputAdapterTest {
         // Assert
         assertThat(administrador).isEmpty();
     }
+
+    @Test
+    void debeMarcarEliminadoEn_cuandoSeRemueveLaVigencia() {
+        // Arrange
+        var usuario = UtilUUID.generarNuevoUUID();
+        entityManager.persistAndFlush(AdministradorJpaEntity.builder()
+                .usuarioId(usuario).eliminadoEn(null).build());
+        var eliminadoEn = Instant.parse("2026-09-28T09:00:00Z");
+
+        // Act
+        adapter.eliminarLogica(usuario, eliminadoEn);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        assertThat(entityManager.find(AdministradorJpaEntity.class, usuario).getEliminadoEn())
+                .isEqualTo(eliminadoEn);
+        verify(logger).debug(AgregarAdministradorKey.LOG_ACTUALIZADO, usuario);
+    }
+
+    @Test
+    void debeContarSoloLosVigentes_cuandoHayVigentesYEliminados() {
+        // Arrange
+        entityManager.persistAndFlush(AdministradorJpaEntity.builder()
+                .usuarioId(UtilUUID.generarNuevoUUID()).eliminadoEn(null).build());
+        entityManager.persistAndFlush(AdministradorJpaEntity.builder()
+                .usuarioId(UtilUUID.generarNuevoUUID()).eliminadoEn(null).build());
+        entityManager.persistAndFlush(AdministradorJpaEntity.builder()
+                .usuarioId(UtilUUID.generarNuevoUUID())
+                .eliminadoEn(Instant.parse("2026-09-01T00:00:00Z")).build());
+
+        // Act
+        var vigentes = adapter.contarVigentes();
+
+        // Assert
+        assertThat(vigentes).isEqualTo(2L);
+    }
 }

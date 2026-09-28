@@ -72,6 +72,20 @@ class AdministradorDomainTest {
     }
 
     @Test
+    void debeQuedarEliminado_cuandoSeRemueve() {
+        // Arrange
+        var administrador = AdministradorDomain.crear(UtilUUID.generarNuevoUUID());
+        var instante = Instant.parse("2026-09-28T10:00:00Z");
+
+        // Act
+        administrador.remover(instante);
+
+        // Assert
+        assertThat(administrador.getEliminadoEn()).isEqualTo(instante);
+        assertThat(administrador.estaEliminado()).isTrue();
+    }
+
+    @Test
     void debeExponerCentinelaVacioNoEliminado_cuandoSeConsultaVacio() {
         // Act
         var vacio = AdministradorDomain.VACIO;
