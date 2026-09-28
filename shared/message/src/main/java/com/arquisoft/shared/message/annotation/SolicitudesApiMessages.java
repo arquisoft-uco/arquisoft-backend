@@ -121,4 +121,18 @@ public final class SolicitudesApiMessages {
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de novedad para el coordinador enviadas";
     }
+
+    public static final class TipoSolicitud {
+
+        private TipoSolicitud() {}
+
+        public static final String TAG_NAME = "Tipos de Solicitud";
+        public static final String TAG_DESCRIPTION =
+                "Catálogo de tipos de solicitud disponibles en el flujo de solicitudes";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar todos los tipos de solicitud";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Retorna todos los tipos de solicitud disponibles en el catálogo, sin filtros ni paginación.";
+        public static final String CONSULTAR_RESP_200 = "Lista de tipos de solicitud retornada exitosamente";
+    }
 }
