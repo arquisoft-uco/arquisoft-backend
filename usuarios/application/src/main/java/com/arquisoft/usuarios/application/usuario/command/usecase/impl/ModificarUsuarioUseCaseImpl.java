@@ -5,6 +5,7 @@ import com.arquisoft.shared.message.constant.UsuariosRealmRoles;
 import com.arquisoft.shared.message.key.usuarios.ModificarUsuarioKey;
 import com.arquisoft.shared.publisher.EventPublisher;
 import com.arquisoft.shared.util.UtilObjeto;
+import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
 import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
 import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
@@ -45,6 +46,7 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
     private final AgregarAsesorFichaUseCase agregarAsesorFichaUseCase;
     private final AgregarAsesorUseCase agregarAsesorUseCase;
     private final AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
+    private final AgregarAdministradorUseCase agregarAdministradorUseCase;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
@@ -92,9 +94,9 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
                 modificacion.getRoles().size());
     }
 
-    // TODO HU250 (jurado), HU240 (bibliotecario), HU231 (administrador):
+    // TODO HU250 (jurado), HU240 (bibliotecario):
     //  despachar aqui su Agregar{Rol}UseCase con modificacion.contieneRol(...): si la fila del rol ya existe
-    //  eliminada logicamente (removida por HU251/HU241/HU232), el use case la reactiva en vez de crear una nueva.
+    //  eliminada logicamente (removida por HU251/HU241), el use case la reactiva en vez de crear una nueva.
     private void agregarRoles(ModificacionUsuarioDomain modificacion, UsuarioDomain usuario) {
         if (modificacion.contieneRol(UsuariosRealmRoles.ESTUDIANTE)) {
             agregarEstudianteUseCase.ejecutar(usuario);
@@ -114,6 +116,10 @@ public class ModificarUsuarioUseCaseImpl implements ModificarUsuarioUseCase {
 
         if (modificacion.contieneRol(UsuariosRealmRoles.REPRESENTANTE_COMITE)) {
             agregarRepresentanteComiteUseCase.ejecutar(usuario);
+        }
+
+        if (modificacion.contieneRol(UsuariosRealmRoles.ADMINISTRADOR)) {
+            agregarAdministradorUseCase.ejecutar(usuario);
         }
     }
 }

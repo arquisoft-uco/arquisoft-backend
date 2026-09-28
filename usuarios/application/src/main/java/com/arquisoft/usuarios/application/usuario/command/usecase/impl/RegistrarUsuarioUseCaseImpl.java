@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.usuario.command.usecase.impl;
 
+import com.arquisoft.usuarios.application.administrador.command.usecase.AgregarAdministradorUseCase;
 import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
 import com.arquisoft.usuarios.application.asesor.command.usecase.AgregarAsesorUseCase;
 import com.arquisoft.usuarios.application.asesorficha.command.usecase.AgregarAsesorFichaUseCase;
@@ -42,6 +43,7 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
     private final AgregarAsesorFichaUseCase agregarAsesorFichaUseCase;
     private final AgregarAsesorUseCase agregarAsesorUseCase;
     private final AgregarRepresentanteComiteUseCase agregarRepresentanteComiteUseCase;
+    private final AgregarAdministradorUseCase agregarAdministradorUseCase;
     private final AppLogger logger;
 
     @Override
@@ -84,7 +86,11 @@ public class RegistrarUsuarioUseCaseImpl implements RegistrarUsuarioUseCase {
             agregarRepresentanteComiteUseCase.ejecutar(usuario);
         }
 
-        // TODO HU250 (jurado), HU240 (bibliotecario), HU231 (administrador):
+        if (registro.contieneRol(UsuariosRealmRoles.ADMINISTRADOR)) {
+            agregarAdministradorUseCase.ejecutar(usuario);
+        }
+
+        // TODO HU250 (jurado), HU240 (bibliotecario):
         //  despachar aqui su Agregar{Rol}UseCase con registro.contieneRol(...); es el mismo use case que
         //  ModificarUsuarioUseCaseImpl invoca para reactivar el rol.
 
