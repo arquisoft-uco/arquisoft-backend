@@ -20,6 +20,7 @@ rutas:
       item-por-id: /items/{itemId}
       item-revisiones: /items/{itemId}/revisiones
       revision-observaciones: /revisiones/{revisionItemId}/observaciones
+      revision-visualizada: /revisiones/{revisionItemId}/visualizada
       revisiones-item-asesor: /revisiones-item/asesor
       observaciones-item-asesor: /observaciones-item/asesor
       revisiones-item-estudiante: /revisiones-item/estudiante

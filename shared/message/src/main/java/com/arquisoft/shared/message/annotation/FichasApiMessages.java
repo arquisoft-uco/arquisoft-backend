@@ -236,6 +236,17 @@ public final class FichasApiMessages {
                 "Página de revisiones de ítem visibles para el estudiante";
         public static final String CONSULTAR_ESTUDIANTE_RESP_400 = "Criterio de búsqueda inválido";
         public static final String CONSULTAR_ESTUDIANTE_RESP_403 = "Sin permiso para consultar revisiones de ítem";
+
+        public static final String VISUALIZAR_SUMMARY = "Marcar revisión de ítem como visualizada";
+        public static final String VISUALIZAR_DESCRIPTION =
+                "Permite al estudiante vinculado a la ficha confirmar que vio la revisión de un ítem, "
+                        + "llevándola de 'NUEVA' a 'VISUALIZADA'. Es idempotente: si la revisión ya salió "
+                        + "de 'NUEVA' responde igual, sin cambio. Una revisión cerrada se rechaza.";
+        public static final String VISUALIZAR_RESP_204 = "Revisión marcada como visualizada, o ya lo estaba";
+        public static final String VISUALIZAR_RESP_400 = "Identificador de revisión inválido";
+        public static final String VISUALIZAR_RESP_403 = "Sin permiso para marcar revisiones como visualizadas";
+        public static final String VISUALIZAR_RESP_422 =
+                "Revisión no encontrada, ficha no vinculada al estudiante autenticado o revisión cerrada";
     }
 
     public static final class ObservacionItem {
