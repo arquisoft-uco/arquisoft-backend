@@ -19,8 +19,8 @@ public final class UsuarioCriteria extends QueryCriteria {
         ES_ASESOR      ("esAsesor",      true, false),
         ES_ASESOR_FICHA("esAsesorFicha", true, false),
         ES_COORDINADOR ("esCoordinador", true, false),
-        ES_REPRESENTANTE_COMITE("esRepresentanteComite", true, false);
-        // TODO HU233: ES_ADMINISTRADOR("esAdministrador", true, false)
+        ES_REPRESENTANTE_COMITE("esRepresentanteComite", true, false),
+        ES_ADMINISTRADOR("esAdministrador", true, false);
         // TODO HU242: ES_BIBLIOTECARIO("esBibliotecario", true, false)
         // TODO HU252: ES_JURADO("esJurado", true, false)
         // Cada constante nueva obliga a cubrirla en los switch de UsuarioJpaSpecification y UsuarioSortMapper.

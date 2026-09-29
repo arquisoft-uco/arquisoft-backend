@@ -77,14 +77,15 @@ public final class UsuariosApiMessages {
         public static final String CAMBIAR_ESTADO_RESP_503 =
                 "No fue posible actualizar la identidad en el proveedor; el servicio no está disponible temporalmente";
 
-        // TODO HU233, HU242, HU252: agregar administrador, bibliotecario y jurado a la lista de roles de
+        // TODO HU242, HU252: agregar bibliotecario y jurado a la lista de roles de
         //  CONSULTAR_ADMINISTRADOR_DESCRIPTION.
         public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
                 "Consultar información de los usuarios (administrador)";
         public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
                 "Lista paginada, filtrable y ordenable de todos los usuarios, incluidos los "
                         + "eliminados (vigente = false). Indica con un booleano por rol si el usuario tiene hoy el rol vigente "
-                        + "de estudiante, asesor, asesor de ficha, coordinador o representante del comité; esos booleanos "
+                        + "de estudiante, asesor, asesor de ficha, coordinador, representante del comité o administrador; "
+                        + "esos booleanos "
                         + "se combinan con OR/AND en el filtro. Exclusivo del rol administrador.";
         public static final String CONSULTAR_RESP_200 = "Página de usuarios";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
@@ -277,5 +278,14 @@ public final class UsuariosApiMessages {
                         + "administrador vigente";
         public static final String REMOVER_RESP_503 =
                 "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+
+        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
+                "Consultar información de los administradores (administrador)";
+        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de todos los administradores, incluidos los dados de baja. "
+                        + "Cada fila indica el estado del usuario y si el rol administrador sigue vigente. "
+                        + "Exclusivo del rol administrador.";
+        public static final String CONSULTAR_RESP_200 = "Página de administradores";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 }

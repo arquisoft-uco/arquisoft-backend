@@ -3,6 +3,7 @@ package com.arquisoft.usuarios.infrastructure.usuario.query.primaryadapter.web;
 import com.arquisoft.shared.logger.AppLoggerConfig;
 import com.arquisoft.shared.message.constant.AppCodes;
 import com.arquisoft.shared.query.ConsultaCriteriaQuery;
+import com.arquisoft.shared.query.exception.FiltroException;
 import com.arquisoft.shared.query.exception.FiltroInvalidoException;
 import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
@@ -78,7 +79,7 @@ class ConsultarUsuariosAdministradorControllerTest {
         // Arrange
         var id = UtilUUID.generarNuevoUUID();
         var readModel = new UsuarioReadModel(id, "1002", "Bruno Diaz", "bruno.diaz@uco.edu.co",
-                "3000000000", "ACTIVO", true, true, true, false, false, true);
+                "3000000000", "ACTIVO", true, true, true, false, false, true, true);
         when(consultarUsuariosAdministradorInteractor.ejecutar(any(ConsultaCriteriaQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(readModel), 0, 20, 1L));
         var body = """
@@ -110,6 +111,7 @@ class ConsultarUsuariosAdministradorControllerTest {
                 .andExpect(jsonPath("$.content[0].esAsesorFicha").value(false))
                 .andExpect(jsonPath("$.content[0].esCoordinador").value(false))
                 .andExpect(jsonPath("$.content[0].esRepresentanteComite").value(true))
+                .andExpect(jsonPath("$.content[0].esAdministrador").value(true))
                 .andExpect(jsonPath("$.totalElements").value(1));
         var captor = ArgumentCaptor.forClass(ConsultaCriteriaQuery.class);
         verify(consultarUsuariosAdministradorInteractor).ejecutar(captor.capture());
@@ -162,6 +164,30 @@ class ConsultarUsuariosAdministradorControllerTest {
         // Assert
         respuesta.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errorCode").value(AppCodes.Consulta.FILTRO_INVALIDO));
+    }
+
+    @Test
+    void debeRetornar400_cuandoOrdenaPorEsAdministrador() throws Exception {
+        // Arrange — esAdministrador es filtrable pero no ordenable
+        when(consultarUsuariosAdministradorInteractor.ejecutar(any(ConsultaCriteriaQuery.class)))
+                .thenThrow(new FiltroException("campo de ordenamiento no permitido: esAdministrador",
+                        "usuarios.consulta.campo-orden-no-permitido"));
+        var body = """
+                {
+                  "pagina": 0,
+                  "tamanio": 10,
+                  "ordenamiento": ["esAdministrador:ASC"]
+                }
+                """;
+
+        // Act
+        var respuesta = mockMvc.perform(post(RUTA)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+                .with(administrador()));
+
+        // Assert
+        respuesta.andExpect(status().isBadRequest());
     }
 
     @Test

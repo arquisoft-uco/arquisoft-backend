@@ -20,8 +20,8 @@ public final class UsuarioQueryMapper {
                 entity.isEsAsesor(),
                 entity.isEsAsesorFicha(),
                 entity.isEsCoordinador(),
-                entity.isEsRepresentanteComite());
-        // TODO HU233: pasar entity.isEsAdministrador()
+                entity.isEsRepresentanteComite(),
+                entity.isEsAdministrador());
         // TODO HU242: pasar entity.isEsBibliotecario()
         // TODO HU252: pasar entity.isEsJurado()
     }
