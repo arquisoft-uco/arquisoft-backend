@@ -66,4 +66,12 @@ public final class EventTopics {
         public static final String AMPLIACION_PLAZO_ENVIADA =
                 "solicitudes.solicitud.ampliacion_plazo_enviada";
     }
+
+    public static final class MapasRuta {
+
+        private MapasRuta() {}
+
+        public static final String MAPA_RUTA_AGREGADO =
+                "mapas_ruta.mapa_ruta.agregado";
+    }
 }

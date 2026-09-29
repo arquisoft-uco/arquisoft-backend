@@ -28,6 +28,8 @@ import com.arquisoft.shared.message.key.fichas.ObservacionItemKey;
 import com.arquisoft.shared.message.key.fichas.TipoItemKey;
 import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.message.key.fichas.RevisionItemKey;
+import com.arquisoft.shared.message.key.mapas_ruta.MapaRutaKey;
+import com.arquisoft.shared.message.key.mapas_ruta.ProyectoGradoKey;
 import com.arquisoft.shared.message.key.notificaciones.ConsumidorKey;
 import com.arquisoft.shared.message.key.notificaciones.EnvioNotificacionKey;
 import com.arquisoft.shared.message.key.notificaciones.NotificacionKey;
@@ -167,7 +169,9 @@ public final class ClavesCatalogo {
             ConsultarAsesoresFichaAdministradorKey.class,
             ConsultarAsesoresFichaVigentesKey.class,
             ConsultarUsuariosAdministradorKey.class,
-            ConsultarEstadosUsuarioKey.class
+            ConsultarEstadosUsuarioKey.class,
+            MapaRutaKey.class,
+            ProyectoGradoKey.class
     );
 
     /** Todas las claves declaradas por los enums de {@link #ENUMS}. */

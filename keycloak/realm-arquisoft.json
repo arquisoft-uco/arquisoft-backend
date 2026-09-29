@@ -62,7 +62,8 @@
               "fichas:estudiante-ficha-perfil:create",
               "fichas:estudiante-ficha-perfil:delete",
               "fichas:estudiante-ficha-perfil-coordinador:view",
-              "solicitudes:solicitud-novedad-coordinador-recibida:view"
+              "solicitudes:solicitud-novedad-coordinador-recibida:view",
+              "mapas-ruta:mapa-ruta:create"
             ]
           }
         },
@@ -844,6 +845,15 @@
         {
           "id": "40b33b29-21ea-406b-88f9-1b971c26ef97",
           "name": "solicitudes:solicitud-cambio-asesor:create",
+          "description": "",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "cffeb896-738c-4000-80cf-8cf99e05233f",
+          "attributes": {}
+        },
+        {
+          "id": "4e14e03e-1781-4b41-992f-b64ada537fbf",
+          "name": "mapas-ruta:mapa-ruta:create",
           "description": "",
           "composite": false,
           "clientRole": true,

@@ -22,7 +22,7 @@ import org.springframework.context.annotation.Configuration;
         description = "API REST del sistema de gestion de proyectos de grado — Universidad Cooperativa de Colombia. "
             + "Autenticacion via Keycloak (OAuth2/OIDC). "
             + "Contextos: Seguridad, Usuarios, Fichas de Perfil, Proyectos de Grado, "
-            + "Artefactos, Repositorio de Artefactos, Entregables y Evaluaciones.",
+            + "Artefactos, Repositorio de Artefactos, Entregables, Evaluaciones y Mapas de Ruta.",
         contact = @Contact(
             name = "Equipo Arquisoft UCO",
             email = "arquisoft@uco.edu.co"
@@ -62,6 +62,9 @@ public class OpenApiConfig {
 
     @Value("${rutas.solicitudes.solicitud.base:/solicitudes}")
     private String solicitudesBasePath;
+
+    @Value("${rutas.mapas-ruta.mapas-ruta.base:/mapas-ruta}")
+    private String mapasRutaBasePath;
 
     @Bean
     public GroupedOpenApi allApi() {
@@ -150,6 +153,15 @@ public class OpenApiConfig {
             .group("09-solicitudes")
             .displayName("Solicitudes")
             .pathsToMatch(solicitudesBasePath + "/**")
+            .build();
+    }
+
+    @Bean
+    public GroupedOpenApi mapasRutaApi() {
+        return GroupedOpenApi.builder()
+            .group("10-mapas-ruta")
+            .displayName("Mapas de Ruta")
+            .pathsToMatch(mapasRutaBasePath + "/**")
             .build();
     }
 }

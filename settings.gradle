@@ -78,3 +78,9 @@ include 'solicitudes'
 include 'solicitudes:domain'
 include 'solicitudes:application'
 include 'solicitudes:infrastructure'
+
+// Contexto 11: Mapas de Ruta (planificación del proyecto de grado: fechas, tareas y planes)
+include 'mapas_ruta'
+include 'mapas_ruta:domain'
+include 'mapas_ruta:application'
+include 'mapas_ruta:infrastructure'
