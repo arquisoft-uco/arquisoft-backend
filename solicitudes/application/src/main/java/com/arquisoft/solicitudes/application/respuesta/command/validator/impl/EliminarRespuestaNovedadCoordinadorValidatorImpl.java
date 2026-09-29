@@ -1,14 +1,17 @@
 package com.arquisoft.solicitudes.application.respuesta.command.validator.impl;
 
 import com.arquisoft.solicitudes.application.respuesta.command.validator.EliminarRespuestaNovedadCoordinadorValidator;
+import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaNovedadCoordinadorDomain;
 import com.arquisoft.solicitudes.domain.respuesta.model.EstadoRespuestaActual;
 import com.arquisoft.solicitudes.domain.respuesta.model.ExistenciaRespuesta;
+import com.arquisoft.solicitudes.domain.respuesta.model.ResumenRespuesta;
 import com.arquisoft.solicitudes.domain.respuesta.rules.RespuestaEnRevisionRule;
 import com.arquisoft.solicitudes.domain.respuesta.rules.RespuestaExisteRule;
 import com.arquisoft.solicitudes.domain.respuesta.rules.impl.RespuestaEnRevisionRuleImpl;
 import com.arquisoft.solicitudes.domain.respuesta.rules.impl.RespuestaExisteRuleImpl;
 import com.arquisoft.solicitudes.domain.solicitud.model.ExistenciaSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.PropiedadDestinatarioSolicitud;
+import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.solicitud.model.TipoSolicitudConcordante;
 import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudEsDelDestinatarioRule;
 import com.arquisoft.solicitudes.domain.solicitud.rules.SolicitudEsNovedadCoordinadorRule;
@@ -18,8 +21,6 @@ import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudEsNovedadC
 import com.arquisoft.solicitudes.domain.solicitud.rules.impl.SolicitudExisteRuleImpl;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class EliminarRespuestaNovedadCoordinadorValidatorImpl
@@ -40,15 +41,19 @@ public class EliminarRespuestaNovedadCoordinadorValidatorImpl
     }
 
     @Override
-    public void validar(UUID solicitud, boolean existeSolicitud, String tipoProyectado,
-                        UUID destinatarioUsuarioProyectado, UUID solicitante,
-                        boolean existeRespuesta, String estadoActual) {
-        solicitudExisteRule.validar(new ExistenciaSolicitud(solicitud, existeSolicitud));
+    public void validar(EliminacionRespuestaNovedadCoordinadorDomain entrada,
+                        ResumenSolicitud resumenSolicitud, ResumenRespuesta resumenRespuesta) {
+        solicitudExisteRule.validar(new ExistenciaSolicitud(
+                entrada.getSolicitud(), !resumenSolicitud.esVacio()));
         solicitudEsNovedadCoordinadorRule.validar(new TipoSolicitudConcordante(
-                solicitud, tipoProyectado, TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
+                entrada.getSolicitud(), resumenSolicitud.tipoSolicitud(),
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
         solicitudEsDelDestinatarioRule.validar(new PropiedadDestinatarioSolicitud(
-                solicitud, destinatarioUsuarioProyectado, solicitante));
-        respuestaExisteRule.validar(new ExistenciaRespuesta(solicitud, existeRespuesta));
-        respuestaEnRevisionRule.validar(new EstadoRespuestaActual(solicitud, estadoActual));
+                entrada.getSolicitud(), resumenSolicitud.destinatarioUsuario(),
+                entrada.getCoordinadorUsuario()));
+        respuestaExisteRule.validar(new ExistenciaRespuesta(
+                entrada.getSolicitud(), !resumenRespuesta.esVacio()));
+        respuestaEnRevisionRule.validar(new EstadoRespuestaActual(
+                entrada.getSolicitud(), resumenRespuesta.estado()));
     }
 }

@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -50,6 +49,8 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
     private UUID solicitud;
     private UUID coordinadorUsuario;
     private EliminacionRespuestaNovedadCoordinadorDomain entrada;
+    private ResumenSolicitud resumenSolicitud;
+    private ResumenRespuesta resumenRespuesta;
 
     @BeforeEach
     void setUp() {
@@ -60,14 +61,15 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
         solicitud = UUID.randomUUID();
         coordinadorUsuario = UUID.randomUUID();
         entrada = EliminacionRespuestaNovedadCoordinadorDomain.crear(solicitud, coordinadorUsuario);
+        resumenSolicitud = new ResumenSolicitud(
+                solicitud, UUID.randomUUID(), coordinadorUsuario,
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId());
+        resumenRespuesta = new ResumenRespuesta(solicitud, "EN_REVISION");
     }
 
     private void stubFlujoValido() {
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
-                solicitud, UUID.randomUUID(), coordinadorUsuario,
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
-        when(datosRespuestaFinder.obtener(solicitud))
-                .thenReturn(new ResumenRespuesta(solicitud, "EN_REVISION"));
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(resumenSolicitud);
+        when(datosRespuestaFinder.obtener(solicitud)).thenReturn(resumenRespuesta);
     }
 
     @Test
@@ -89,9 +91,7 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
                 validator, respuestaOutputPort);
         inOrder.verify(datosSolicitudFinder).obtener(solicitud);
         inOrder.verify(datosRespuestaFinder).obtener(solicitud);
-        inOrder.verify(validator).validar(eq(solicitud), eq(true),
-                eq(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()), eq(coordinadorUsuario),
-                eq(coordinadorUsuario), eq(true), eq("EN_REVISION"));
+        inOrder.verify(validator).validar(entrada, resumenSolicitud, resumenRespuesta);
         inOrder.verify(respuestaOutputPort).eliminarPorSolicitud(solicitud);
     }
 
@@ -101,15 +101,13 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(datosRespuestaFinder.obtener(solicitud)).thenReturn(ResumenRespuesta.VACIO);
         doThrow(new SolicitudNoEncontradaException(solicitud))
-                .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean(), any());
+                .when(validator).validar(entrada, ResumenSolicitud.VACIO, ResumenRespuesta.VACIO);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
                 .isInstanceOf(SolicitudNoEncontradaException.class);
 
-        verify(validator).validar(eq(solicitud), eq(false), eq(ResumenSolicitud.VACIO.tipoSolicitud()),
-                eq(ResumenSolicitud.VACIO.destinatarioUsuario()), eq(coordinadorUsuario),
-                eq(false), eq(ResumenRespuesta.VACIO.estado()));
+        verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_ELIMINACION), eq(false), eq(false));
         verify(respuestaOutputPort, never()).eliminarPorSolicitud(any());
     }
 
@@ -126,8 +124,7 @@ class EliminarRespuestaNovedadCoordinadorUseCaseImplTest {
     void debeAbortarSinEliminar_cuandoElValidatorRechazaPorReglaDeNegocio(RuntimeException excepcion) {
         // Arrange
         stubFlujoValido();
-        doThrow(excepcion)
-                .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean(), any());
+        doThrow(excepcion).when(validator).validar(entrada, resumenSolicitud, resumenRespuesta);
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada)).isSameAs(excepcion);

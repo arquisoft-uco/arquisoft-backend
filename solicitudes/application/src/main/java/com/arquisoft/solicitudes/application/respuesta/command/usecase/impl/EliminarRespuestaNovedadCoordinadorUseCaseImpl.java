@@ -28,16 +28,12 @@ public class EliminarRespuestaNovedadCoordinadorUseCaseImpl
                 entrada.getSolicitud(), entrada.getCoordinadorUsuario());
 
         var resumenSolicitud = datosSolicitudFinder.obtener(entrada.getSolicitud());
-        var existeSolicitud = !resumenSolicitud.esVacio();
-
         var resumenRespuesta = datosRespuestaFinder.obtener(entrada.getSolicitud());
-        var existeRespuesta = !resumenRespuesta.esVacio();
 
-        logger.debug(RespuestaKey.LOG_VERIFICACION_ELIMINACION, existeSolicitud, existeRespuesta);
+        logger.debug(RespuestaKey.LOG_VERIFICACION_ELIMINACION,
+                !resumenSolicitud.esVacio(), !resumenRespuesta.esVacio());
 
-        validator.validar(entrada.getSolicitud(), existeSolicitud, resumenSolicitud.tipoSolicitud(),
-                resumenSolicitud.destinatarioUsuario(), entrada.getCoordinadorUsuario(),
-                existeRespuesta, resumenRespuesta.estado());
+        validator.validar(entrada, resumenSolicitud, resumenRespuesta);
 
         respuestaOutputPort.eliminarPorSolicitud(entrada.getSolicitud());
 
