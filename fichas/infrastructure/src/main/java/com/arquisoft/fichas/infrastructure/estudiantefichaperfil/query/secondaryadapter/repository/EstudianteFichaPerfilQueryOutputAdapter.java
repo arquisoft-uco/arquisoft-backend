@@ -25,6 +25,15 @@ public class EstudianteFichaPerfilQueryOutputAdapter implements EstudianteFichaP
     }
 
     @Override
+    public List<EstudianteFichaPerfilReadModel> consultarVigentesPorFicha(UUID fichaPerfil) {
+        return estudianteFichaPerfilQueryRepository
+                .findByFichaPerfilIdAndVigenteTrueOrderByNombreAsc(fichaPerfil)
+                .stream()
+                .map(EstudianteFichaPerfilQueryMapper::toReadModel)
+                .toList();
+    }
+
+    @Override
     public List<EstudianteFichaPerfilReadModel> consultarCompanerosPorFichaYEstudiante(UUID fichaPerfil, UUID estudiante) {
         return estudianteFichaPerfilQueryRepository
                 .findCompanerosByFichaPerfilIdAndEstudianteId(fichaPerfil, estudiante)

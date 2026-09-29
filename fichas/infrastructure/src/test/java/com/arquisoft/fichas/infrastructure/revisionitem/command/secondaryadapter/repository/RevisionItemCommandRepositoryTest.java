@@ -1,9 +1,15 @@
 package com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.repository;
 
+import com.arquisoft.fichas.infrastructure.estadorevision.command.secondaryadapter.entity.EstadoRevisionJpaEntity;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.command.secondaryadapter.entity.EstudianteFichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.itemfichaperfil.command.secondaryadapter.entity.ItemFichaPerfilJpaEntity;
+import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.entity.RevisionItemJpaEntity;
+import com.arquisoft.fichas.infrastructure.tipoitem.command.secondaryadapter.entity.TipoItemJpaEntity;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.Instant;
@@ -23,6 +29,9 @@ class RevisionItemCommandRepositoryTest {
 
     @Autowired
     private EntityManager entityManager;
+
+    @Autowired
+    private TestEntityManager testEntityManager;
 
     private void sembrarEstadoRevision(String id) {
         entityManager.createNativeQuery(
@@ -79,5 +88,93 @@ class RevisionItemCommandRepositoryTest {
 
         // Assert
         assertThat(count).isZero();
+    }
+
+    private RevisionItemJpaEntity sembrarRevision(UUID fichaPerfil, UUID estudianteVinculado, String estado) {
+        var estadoRevision = testEntityManager.persistAndFlush(EstadoRevisionJpaEntity.builder()
+                .id(estado).nombre(estado).descripcion("Estado de prueba " + estado).build());
+        var tipoItem = testEntityManager.persistAndFlush(TipoItemJpaEntity.builder()
+                .id("TIPO_PRUEBA").nombre("Tipo").descripcion("Tipo de prueba").build());
+        var item = testEntityManager.persistAndFlush(ItemFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID()).fichaPerfilId(fichaPerfil).tipoItem(tipoItem).contenido("Contenido").build());
+        testEntityManager.persistAndFlush(EstudianteFichaPerfilJpaEntity.builder()
+                .id(UUID.randomUUID()).fichaPerfilId(fichaPerfil).estudianteId(estudianteVinculado).build());
+        var revision = testEntityManager.persistAndFlush(RevisionItemJpaEntity.builder()
+                .id(UUID.randomUUID()).itemId(item.getId()).estadoRevision(estadoRevision)
+                .fechaCreacion(Instant.now()).build());
+        testEntityManager.clear();
+        return revision;
+    }
+
+    @Test
+    void debeMarcarPropietarioYDevolverElEstado_cuandoElEstudianteEstaVinculadoALaFicha() {
+        // Arrange
+        var fichaPerfil = UUID.randomUUID();
+        var estudiante = UUID.randomUUID();
+        var revision = sembrarRevision(fichaPerfil, estudiante, "NUEVA");
+
+        // Act
+        var resultado = repository.obtenerPertenencia(revision.getId(), estudiante);
+
+        // Assert
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().fichaPerfilId()).isEqualTo(fichaPerfil);
+        assertThat(resultado.get().esPropietario()).isTrue();
+        assertThat(resultado.get().estadoRevision()).isEqualTo("NUEVA");
+    }
+
+    @Test
+    void debeMarcarNoPropietario_cuandoElEstudianteNoEstaVinculadoALaFicha() {
+        // Arrange
+        var revision = sembrarRevision(UUID.randomUUID(), UUID.randomUUID(), "EN_PROGRESO");
+
+        // Act
+        var resultado = repository.obtenerPertenencia(revision.getId(), UUID.randomUUID());
+
+        // Assert
+        assertThat(resultado).isPresent();
+        assertThat(resultado.get().esPropietario()).isFalse();
+        assertThat(resultado.get().estadoRevision()).isEqualTo("EN_PROGRESO");
+    }
+
+    @Test
+    void debeRetornarVacio_cuandoLaRevisionNoExiste() {
+        // Act
+        var resultado = repository.obtenerPertenencia(UUID.randomUUID(), UUID.randomUUID());
+
+        // Assert
+        assertThat(resultado).isEmpty();
+    }
+
+    @Test
+    void debeActualizarUnaFilaYPersistir_cuandoElEstadoActualCoincide() {
+        // Arrange
+        var revision = sembrarRevision(UUID.randomUUID(), UUID.randomUUID(), "NUEVA");
+        testEntityManager.persistAndFlush(EstadoRevisionJpaEntity.builder()
+                .id("VISUALIZADA").nombre("VISUALIZADA").descripcion("Estado de prueba").build());
+
+        // Act
+        var filas = repository.actualizarEstado(revision.getId(), "NUEVA", "VISUALIZADA");
+
+        // Assert
+        var persistida = testEntityManager.find(RevisionItemJpaEntity.class, revision.getId());
+        assertThat(filas).isEqualTo(1);
+        assertThat(persistida.getEstadoRevision().getId()).isEqualTo("VISUALIZADA");
+    }
+
+    @Test
+    void debeAfectarCeroFilasYNoCambiarNada_cuandoElEstadoActualDifiere() {
+        // Arrange
+        var revision = sembrarRevision(UUID.randomUUID(), UUID.randomUUID(), "EN_PROGRESO");
+        testEntityManager.persistAndFlush(EstadoRevisionJpaEntity.builder()
+                .id("VISUALIZADA").nombre("VISUALIZADA").descripcion("Estado de prueba").build());
+
+        // Act
+        var filas = repository.actualizarEstado(revision.getId(), "NUEVA", "VISUALIZADA");
+
+        // Assert
+        var persistida = testEntityManager.find(RevisionItemJpaEntity.class, revision.getId());
+        assertThat(filas).isZero();
+        assertThat(persistida.getEstadoRevision().getId()).isEqualTo("EN_PROGRESO");
     }
 }

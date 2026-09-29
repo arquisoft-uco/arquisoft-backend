@@ -3,6 +3,7 @@ package com.arquisoft.solicitudes.application.respuesta.command.primaryport.mode
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
 import com.arquisoft.shared.message.constant.SolicitudesLimits;
+import com.arquisoft.shared.util.UtilTexto;
 import com.arquisoft.shared.util.UtilUUID;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorLongitud;
@@ -20,6 +21,7 @@ public record ResponderSolicitudNovedadCoordinadorCommand(
     public static ResponderSolicitudNovedadCoordinadorCommand crear(
             String solicitud, String contenido, UUID coordinadorUsuario) {
         var result = new ValidationResult();
+        var contenidoRecortado = UtilTexto.aplicarTrim(contenido);
 
         if (ValidatorTexto.noEnBlanco(solicitud,
                 SolicitudesFields.Solicitud.ID,
@@ -29,10 +31,10 @@ public record ResponderSolicitudNovedadCoordinadorCommand(
                     SolicitudesCodes.Solicitud.ID_REQUERIDO, result);
         }
 
-        if (ValidatorTexto.noEnBlanco(contenido,
+        if (ValidatorTexto.noEnBlanco(contenidoRecortado,
                 SolicitudesFields.Respuesta.CONTENIDO,
                 SolicitudesCodes.Respuesta.CONTENIDO_REQUERIDO, result)) {
-            ValidatorLongitud.longitudEntre(contenido,
+            ValidatorLongitud.longitudEntre(contenidoRecortado,
                     SolicitudesLimits.Respuesta.CONTENIDO_MIN, SolicitudesLimits.Respuesta.CONTENIDO_MAX,
                     SolicitudesFields.Respuesta.CONTENIDO,
                     SolicitudesCodes.Respuesta.CONTENIDO_DEMASIADO_LARGO, result);
@@ -46,7 +48,7 @@ public record ResponderSolicitudNovedadCoordinadorCommand(
 
         return new ResponderSolicitudNovedadCoordinadorCommand(
                 UtilUUID.generarUUIDDesdeTexto(solicitud),
-                contenido,
+                contenidoRecortado,
                 coordinadorUsuario);
     }
 }

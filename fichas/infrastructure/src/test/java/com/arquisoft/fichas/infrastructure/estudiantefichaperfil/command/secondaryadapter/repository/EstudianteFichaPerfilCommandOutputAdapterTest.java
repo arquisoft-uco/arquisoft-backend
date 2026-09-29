@@ -88,10 +88,10 @@ class EstudianteFichaPerfilCommandOutputAdapterTest {
         // Arrange
         UUID fichaId = UUID.randomUUID();
 
-        when(repository.countByFichaPerfilId(fichaId)).thenReturn(2L);
+        when(repository.countVigentesByFichaPerfilId(fichaId)).thenReturn(2L);
 
         // Act
-        long resultado = adapter.contarPorFichaPerfilId(fichaId);
+        long resultado = adapter.contarVigentesPorFichaPerfilId(fichaId);
 
         // Assert
         assertThat(resultado).isEqualTo(2L);

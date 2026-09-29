@@ -65,4 +65,38 @@ class UsuarioDomainTest {
         assertThat(UsuarioDomain.crear(UUID.randomUUID(), "EST-001", "Ana Estudiante", "ana@uco.edu.co", Instant.now())
                 .esVacio()).isFalse();
     }
+
+    @Test
+    void debeActualizarDatosYOcurridoEn_cuandoActualizarEsInvocado() {
+        // Arrange
+        var id = UUID.randomUUID();
+        var usuario = UsuarioDomain.crear(id, "EST-001", "Ana Estudiante", "ana@uco.edu.co", Instant.now());
+        var nuevoOcurridoEn = Instant.now().plusSeconds(60);
+
+        // Act
+        usuario.actualizar("EST-999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn);
+
+        // Assert
+        assertThat(usuario.getIdentificador()).isEqualTo("EST-999");
+        assertThat(usuario.getNombre()).isEqualTo("Ana Actualizada");
+        assertThat(usuario.getEmail()).isEqualTo("actualizada@uco.edu.co");
+        assertThat(usuario.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
+        assertThat(usuario.getId()).isEqualTo(id);
+    }
+
+    @Test
+    void debeAcumularErrores_cuandoActualizarRecibeDatosInvalidos() {
+        // Arrange
+        var usuario = UsuarioDomain.crear(
+                UUID.randomUUID(), "EST-001", "Ana Estudiante", "ana@uco.edu.co", Instant.now());
+
+        // Act
+        DomainValidationException excepcion = assertThrows(DomainValidationException.class,
+                () -> usuario.actualizar(" ", "Ana Estudiante", " ", Instant.now()));
+
+        // Assert
+        var resultado = excepcion.getValidationResult();
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Usuario.IDENTIFICADOR)).isTrue();
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Usuario.EMAIL)).isTrue();
+    }
 }

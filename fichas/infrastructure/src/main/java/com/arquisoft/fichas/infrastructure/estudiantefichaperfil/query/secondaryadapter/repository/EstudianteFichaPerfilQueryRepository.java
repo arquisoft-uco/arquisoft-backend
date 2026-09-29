@@ -12,10 +12,13 @@ public interface EstudianteFichaPerfilQueryRepository
 
     List<EstudianteFichaPerfilJpaQueryEntity> findByFichaPerfilIdOrderByNombreAsc(UUID fichaPerfilId);
 
+    List<EstudianteFichaPerfilJpaQueryEntity> findByFichaPerfilIdAndVigenteTrueOrderByNombreAsc(UUID fichaPerfilId);
+
     @Query("""
             SELECT e FROM EstudianteFichaPerfilJpaQueryEntity e
             WHERE e.fichaPerfilId = :fichaPerfil
               AND e.estudianteId <> :estudiante
+              AND e.vigente = true
               AND EXISTS (
                   SELECT 1 FROM EstudianteFichaPerfilJpaQueryEntity propio
                   WHERE propio.fichaPerfilId = e.fichaPerfilId

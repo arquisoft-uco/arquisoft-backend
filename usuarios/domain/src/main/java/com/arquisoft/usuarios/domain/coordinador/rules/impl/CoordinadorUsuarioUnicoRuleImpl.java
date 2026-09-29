@@ -8,7 +8,8 @@ public class CoordinadorUsuarioUnicoRuleImpl implements CoordinadorUsuarioUnicoR
 
     @Override
     public void validar(DisponibilidadCoordinadorUsuario disponibilidad) {
-        if (disponibilidad.yaEsCoordinador()) {
+        var coordinador = disponibilidad.coordinador();
+        if (!coordinador.esVacio() && !coordinador.estaEliminado()) {
             throw new CoordinadorUsuarioDuplicadoException(disponibilidad.usuario());
         }
     }

@@ -23,7 +23,7 @@ class ResponderSolicitudNovedadCoordinadorMapperTest {
 
         // Assert
         assertThat(accion.getSolicitud()).isEqualTo(solicitud);
-        assertThat(accion.getContenido()).isEqualTo("contenido");
+        assertThat(accion.getRespuesta().getContenido()).isEqualTo("contenido");
         assertThat(accion.getCoordinadorUsuario()).isEqualTo(coordinador);
     }
 }

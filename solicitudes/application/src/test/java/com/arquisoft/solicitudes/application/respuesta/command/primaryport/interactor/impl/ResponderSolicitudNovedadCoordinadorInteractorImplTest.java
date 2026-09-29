@@ -45,7 +45,7 @@ class ResponderSolicitudNovedadCoordinadorInteractorImplTest {
                 ArgumentCaptor.forClass(RespuestaNovedadCoordinadorDomain.class);
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);
-        assertThat(captor.getValue().getContenido()).isEqualTo("una respuesta");
+        assertThat(captor.getValue().getRespuesta().getContenido()).isEqualTo("una respuesta");
         assertThat(captor.getValue().getCoordinadorUsuario()).isEqualTo(coordinador);
     }
 }

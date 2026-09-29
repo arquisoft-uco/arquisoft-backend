@@ -2,8 +2,7 @@ dependencies {
     implementation project(':shared:domain')
 
     // Domain puro: sin dependencias de framework
-    // - Las excepciones de dominio extienden DomainException (shared:domain → exceptions)
-    // - Los puertos usan solo tipos de Java stdlib (Map, List, String)
+    // - Validator*/ValidationResult (shared:validation) acumulan los errores de invariante
 
     // Test: AssertJ + JUnit launcher (versiones gestionadas por BOM heredado del raiz)
     // junit-platform-launcher requerido explicitamente por Gradle 9 en modulos sin

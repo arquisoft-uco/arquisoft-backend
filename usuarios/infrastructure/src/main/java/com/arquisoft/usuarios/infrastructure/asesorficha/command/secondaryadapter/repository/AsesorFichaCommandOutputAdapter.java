@@ -8,6 +8,8 @@ import com.arquisoft.shared.message.key.usuarios.AgregarAsesorFichaKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -24,7 +26,19 @@ public class AsesorFichaCommandOutputAdapter implements AsesorFichaOutputPort {
     }
 
     @Override
-    public boolean existePorUsuario(UUID usuario) {
-        return asesorFichaCommandRepository.existsById(usuario);
+    public void eliminarLogica(UUID usuario, Instant eliminadoEn) {
+        asesorFichaCommandRepository.eliminarLogica(usuario, AsesorFichaJpaMapper.aColumna(eliminadoEn));
+        logger.debug(AgregarAsesorFichaKey.LOG_ACTUALIZADO, usuario);
+    }
+
+    @Override
+    public void reactivar(UUID usuario) {
+        asesorFichaCommandRepository.reactivar(usuario);
+        logger.debug(AgregarAsesorFichaKey.LOG_ACTUALIZADO, usuario);
+    }
+
+    @Override
+    public Optional<AsesorFichaEntity> obtenerPorUsuario(UUID usuario) {
+        return asesorFichaCommandRepository.findById(usuario).map(AsesorFichaJpaMapper::toEntity);
     }
 }

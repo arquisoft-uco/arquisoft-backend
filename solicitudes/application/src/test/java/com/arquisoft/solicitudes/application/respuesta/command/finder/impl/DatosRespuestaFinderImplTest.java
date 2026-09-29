@@ -26,7 +26,7 @@ class DatosRespuestaFinderImplTest {
     @Test
     void debeDelegarEnElPuertoYArmarElResumen_cuandoLaRespuestaExiste() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
         when(respuestaOutputPort.buscarEstadoPorSolicitud(solicitud))
                 .thenReturn(Optional.of("EN_REVISION"));
 
@@ -40,7 +40,7 @@ class DatosRespuestaFinderImplTest {
     @Test
     void debeRetornarVacio_cuandoElPuertoNoEncuentraLaRespuesta() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
         when(respuestaOutputPort.buscarEstadoPorSolicitud(solicitud)).thenReturn(Optional.empty());
 
         // Act & Assert

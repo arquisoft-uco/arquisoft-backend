@@ -12,7 +12,6 @@ import org.hibernate.annotations.Subselect;
 import org.hibernate.annotations.Synchronize;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -61,7 +60,7 @@ public class RespuestaJpaQueryEntity {
     private String contenido;
 
     @Column(name = "fecha_respuesta")
-    private LocalDateTime fechaRespuesta;
+    private Instant fechaRespuesta;
 
     @Column(name = "estado_respuesta_id")
     private String estadoRespuestaId;

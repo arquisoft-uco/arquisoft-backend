@@ -12,7 +12,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -31,7 +31,7 @@ public class RespuestaJpaEntity {
     private UUID solicitudId;
 
     @Column(name = "fecha_respuesta", nullable = false)
-    private LocalDateTime fechaRespuesta;
+    private Instant fechaRespuesta;
 
     @Column(name = "contenido", nullable = false, length = 100)
     private String contenido;

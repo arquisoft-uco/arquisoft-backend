@@ -12,7 +12,7 @@ public interface EstudianteFichaPerfilOutputPort {
 
     boolean existePorFichaYEstudiante(UUID fichaPerfilId, UUID estudianteId);
 
-    long contarPorFichaPerfilId(UUID fichaPerfilId);
+    long contarVigentesPorFichaPerfilId(UUID fichaPerfilId);
 
     void desvincularEstudiante(UUID fichaPerfilId, UUID estudianteId);
 
