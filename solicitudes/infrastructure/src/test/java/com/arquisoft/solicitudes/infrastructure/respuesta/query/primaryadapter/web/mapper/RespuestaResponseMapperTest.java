@@ -7,7 +7,6 @@ import com.arquisoft.solicitudes.application.solicitud.query.readmodel.Solicitud
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +23,7 @@ class RespuestaResponseMapperTest {
                 Instant.parse("2026-03-01T10:00:00Z"), "NOVEDAD_PARA_EL_COORDINADOR",
                 "Novedad para el Coordinador", remitente, destinatario);
         var readModel = new RespuestaReadModel(UUID.randomUUID(), "contenido de la respuesta",
-                LocalDateTime.of(2026, 3, 5, 9, 0), "EN_REVISION", "En revisión", solicitud);
+                Instant.parse("2026-03-05T09:00:00Z"), "EN_REVISION", "En revisión", solicitud);
 
         // Act
         var dto = RespuestaResponseMapper.toResponse(readModel);

@@ -97,7 +97,7 @@ class RespuestaQueryOutputAdapterTest {
     }
 
     private void sembrarRespuesta(SolicitudJpaEntity solicitud, String estadoId,
-            LocalDateTime fechaRespuesta, String contenido) {
+            Instant fechaRespuesta, String contenido) {
         entityManager.persist(RespuestaJpaEntity.builder()
                 .id(UUID.randomUUID())
                 .solicitudId(solicitud.getId())
@@ -130,9 +130,9 @@ class RespuestaQueryOutputAdapterTest {
         var solicitudBeto = sembrarSolicitud(beto, coord, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "novedad de Beto");
         sembrarRespuesta(solicitudAna, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 3, 8, 0), "respuesta para Ana");
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "respuesta para Ana");
         sembrarRespuesta(solicitudBeto, ESTADO_APROBADA,
-                LocalDateTime.of(2026, 3, 4, 8, 0), "respuesta para Beto");
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "respuesta para Beto");
         sincronizar();
 
         // Act
@@ -166,9 +166,9 @@ class RespuestaQueryOutputAdapterTest {
         var solicitudCambio = sembrarSolicitud(ana, coord, TIPO_CAMBIO,
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "es cambio");
         sembrarRespuesta(solicitudNovedad, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 3, 8, 0), "sobre novedad");
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "sobre novedad");
         sembrarRespuesta(solicitudCambio, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 4, 8, 0), "sobre cambio");
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "sobre cambio");
         sincronizar();
 
         RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
@@ -197,9 +197,9 @@ class RespuestaQueryOutputAdapterTest {
         var solicitud2 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "m2");
         sembrarRespuesta(solicitud1, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 3, 8, 0), "aprobado con observaciones");
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "aprobado con observaciones");
         sembrarRespuesta(solicitud2, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 4, 8, 0), "rechazado por incompleto");
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "rechazado por incompleto");
         sincronizar();
 
         RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
@@ -228,9 +228,9 @@ class RespuestaQueryOutputAdapterTest {
         var solicitud2 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "m2");
         sembrarRespuesta(solicitud1, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 3, 8, 0), "en revision todavia");
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "en revision todavia");
         sembrarRespuesta(solicitud2, ESTADO_APROBADA,
-                LocalDateTime.of(2026, 3, 4, 8, 0), "ya aprobada");
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "ya aprobada");
         sincronizar();
 
         RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
@@ -259,9 +259,9 @@ class RespuestaQueryOutputAdapterTest {
         var solicitud2 = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "s2");
         sembrarRespuesta(solicitud1, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 1, 15, 8, 0), "vieja");
+                LocalDateTime.of(2026, 1, 15, 8, 0).toInstant(ZoneOffset.UTC), "vieja");
         sembrarRespuesta(solicitud2, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 5, 25, 8, 0), "nueva");
+                LocalDateTime.of(2026, 5, 25, 8, 0).toInstant(ZoneOffset.UTC), "nueva");
         sincronizar();
 
         RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
@@ -290,9 +290,9 @@ class RespuestaQueryOutputAdapterTest {
         var solicitudAlba = sembrarSolicitud(ana, alba, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 5, 20, 10, 0).toInstant(ZoneOffset.UTC), "para alba");
         sembrarRespuesta(solicitudZulma, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 1, 15, 8, 0), "z");
+                LocalDateTime.of(2026, 1, 15, 8, 0).toInstant(ZoneOffset.UTC), "z");
         sembrarRespuesta(solicitudAlba, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 5, 25, 8, 0), "a");
+                LocalDateTime.of(2026, 5, 25, 8, 0).toInstant(ZoneOffset.UTC), "a");
         sincronizar();
 
         RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
@@ -319,7 +319,7 @@ class RespuestaQueryOutputAdapterTest {
             var solicitud = sembrarSolicitud(ana, coord, TIPO_NOVEDAD,
                     LocalDateTime.of(2026, 3, 1 + i, 10, 0).toInstant(ZoneOffset.UTC), "m" + i);
             sembrarRespuesta(solicitud, ESTADO_EN_REVISION,
-                    LocalDateTime.of(2026, 3, 1 + i, 8, 0), "r" + i);
+                    LocalDateTime.of(2026, 3, 1 + i, 8, 0).toInstant(ZoneOffset.UTC), "r" + i);
         }
         sincronizar();
 

@@ -30,7 +30,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -106,7 +105,7 @@ class ConsultarRespuestasNovedadCoordinadorRecibidasControllerTest {
                 Instant.parse("2026-03-01T10:00:00Z"), "NOVEDAD_PARA_EL_COORDINADOR",
                 "Novedad para el Coordinador", remitente, destinatario);
         var respuesta = new RespuestaReadModel(UUID.randomUUID(), "contenido de la respuesta",
-                LocalDateTime.of(2026, 3, 5, 9, 0), "EN_REVISION", "En revisión", solicitud);
+                Instant.parse("2026-03-05T09:00:00Z"), "EN_REVISION", "En revisión", solicitud);
         when(interactor.ejecutar(any(ConsultarRespuestasNovedadCoordinadorRecibidasQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(respuesta), 0, 10, 1L));
 
