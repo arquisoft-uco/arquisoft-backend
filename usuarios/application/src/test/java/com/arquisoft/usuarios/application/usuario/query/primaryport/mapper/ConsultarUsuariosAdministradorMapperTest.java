@@ -43,7 +43,8 @@ class ConsultarUsuariosAdministradorMapperTest {
                         NodoFiltro.predicado("esAsesor", FiltroOperador.ES, "true"),
                         NodoFiltro.predicado("esAsesorFicha", FiltroOperador.ES, "true"),
                         NodoFiltro.predicado("esCoordinador", FiltroOperador.ES, "true"),
-                        NodoFiltro.predicado("esRepresentanteComite", FiltroOperador.ES, "true"))),
+                        NodoFiltro.predicado("esRepresentanteComite", FiltroOperador.ES, "true"),
+                        NodoFiltro.predicado("esAdministrador", FiltroOperador.ES, "true"))),
                 NodoFiltro.predicado("vigente", FiltroOperador.ES, "true"),
                 NodoFiltro.predicado("estado", FiltroOperador.ES, "ACTIVO")));
         var query = ConsultaCriteriaQuery.crear(0, 10, List.of(), raiz);
@@ -87,6 +88,19 @@ class ConsultarUsuariosAdministradorMapperTest {
         // Arrange
         var query = ConsultaCriteriaQuery.crear(
                 0, 10, List.of(SortOrder.of("esRepresentanteComite", SortDirection.DESC)), null);
+
+        // Act
+        var lanzamiento = assertThatThrownBy(() -> ConsultarUsuariosAdministradorMapper.toCriteria(query));
+
+        // Assert
+        lanzamiento.isInstanceOf(FiltroException.class);
+    }
+
+    @Test
+    void debeLanzarFiltroException_cuandoOrdenaPorEsAdministrador() {
+        // Arrange
+        var query = ConsultaCriteriaQuery.crear(
+                0, 10, List.of(SortOrder.of("esAdministrador", SortDirection.ASC)), null);
 
         // Act
         var lanzamiento = assertThatThrownBy(() -> ConsultarUsuariosAdministradorMapper.toCriteria(query));

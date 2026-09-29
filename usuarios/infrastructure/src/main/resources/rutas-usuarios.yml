@@ -27,4 +27,5 @@ rutas:
       asesores-ficha-vigentes: /asesores-ficha/vigentes
       representantes-comite-administrador: /representantes-comite/administrador
       representantes-comite-vigentes: /representantes-comite/vigentes
+      administradores-administrador: /administradores/administrador
       estados: /estados

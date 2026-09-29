@@ -13,9 +13,6 @@ import org.hibernate.annotations.Synchronize;
 
 import java.util.UUID;
 
-// TODO HU233 (administradores): cuando exista la tabla administrador (la crea HU231), agregar al @Subselect
-//  "CASE WHEN EXISTS (SELECT 1 FROM administrador ad WHERE ad.usuario_id = u.id AND ad.eliminado_en IS NULL)
-//  THEN TRUE ELSE FALSE END AS es_administrador" y "administrador" a @Synchronize.
 // TODO HU242 (bibliotecarios): cuando exista la tabla bibliotecario (la crea HU240), agregar al @Subselect
 //  "CASE WHEN EXISTS (SELECT 1 FROM bibliotecario b WHERE b.usuario_id = u.id AND b.eliminado_en IS NULL)
 //  THEN TRUE ELSE FALSE END AS es_bibliotecario" y "bibliotecario" a @Synchronize.
@@ -47,10 +44,14 @@ import java.util.UUID;
                     THEN TRUE ELSE FALSE END AS es_coordinador,
                CASE WHEN EXISTS (SELECT 1 FROM representante_comite_curriculum r
                        WHERE r.usuario_id = u.id AND r.eliminado_en IS NULL)
-                    THEN TRUE ELSE FALSE END AS es_representante_comite
+                    THEN TRUE ELSE FALSE END AS es_representante_comite,
+               CASE WHEN EXISTS (SELECT 1 FROM administrador ad
+                       WHERE ad.usuario_id = u.id AND ad.eliminado_en IS NULL)
+                    THEN TRUE ELSE FALSE END AS es_administrador
         FROM usuario u
         """)
-@Synchronize({"usuario", "estudiante", "asesor", "asesor_ficha", "coordinador", "representante_comite_curriculum"})
+@Synchronize({"usuario", "estudiante", "asesor", "asesor_ficha", "coordinador", "representante_comite_curriculum",
+        "administrador"})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -94,7 +95,9 @@ public class UsuarioJpaQueryEntity {
     @Column(name = "es_representante_comite")
     private boolean esRepresentanteComite;
 
-    // TODO HU233: @Column(name = "es_administrador") private boolean esAdministrador;
+    @Column(name = "es_administrador")
+    private boolean esAdministrador;
+
     // TODO HU242: @Column(name = "es_bibliotecario") private boolean esBibliotecario;
     // TODO HU252: @Column(name = "es_jurado") private boolean esJurado;
 }

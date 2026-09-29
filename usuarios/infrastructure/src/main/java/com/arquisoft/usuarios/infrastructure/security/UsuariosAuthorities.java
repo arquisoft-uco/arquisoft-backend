@@ -26,6 +26,7 @@ public final class UsuariosAuthorities {
     public static final String ASESOR_FICHA_VIGENTE_VIEW = "usuarios:asesor-ficha-vigente:view";
     public static final String ESTADO_USUARIO_VIEW = "usuarios:estado-usuario:view";
     public static final String ADMINISTRADOR_DELETE = "usuarios:administrador:delete";
+    public static final String ADMINISTRADOR_ADMINISTRADOR_VIEW = "usuarios:administrador-administrador:view";
 
     public static final class Expresiones {
 
@@ -99,5 +100,8 @@ public final class UsuariosAuthorities {
 
         public static final String HAS_ADMINISTRADOR_DELETE =
                 HAS_AUTHORITY_INICIO + ADMINISTRADOR_DELETE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_ADMINISTRADOR_ADMINISTRADOR_VIEW =
+                HAS_AUTHORITY_INICIO + ADMINISTRADOR_ADMINISTRADOR_VIEW + HAS_AUTHORITY_FIN;
     }
 }

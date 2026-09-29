@@ -29,7 +29,7 @@ class UsuarioJpaSpecification extends QueryJpaSpecification<UsuarioJpaQueryEntit
                 case ES_ASESOR_FICHA -> CampoSpec.booleano(root -> root.get("esAsesorFicha"));
                 case ES_COORDINADOR  -> CampoSpec.booleano(root -> root.get("esCoordinador"));
                 case ES_REPRESENTANTE_COMITE -> CampoSpec.booleano(root -> root.get("esRepresentanteComite"));
-                // TODO HU233: case ES_ADMINISTRADOR -> CampoSpec.booleano(root -> root.get("esAdministrador"));
+                case ES_ADMINISTRADOR -> CampoSpec.booleano(root -> root.get("esAdministrador"));
                 // TODO HU242: case ES_BIBLIOTECARIO -> CampoSpec.booleano(root -> root.get("esBibliotecario"));
                 // TODO HU252: case ES_JURADO -> CampoSpec.booleano(root -> root.get("esJurado"));
             };
