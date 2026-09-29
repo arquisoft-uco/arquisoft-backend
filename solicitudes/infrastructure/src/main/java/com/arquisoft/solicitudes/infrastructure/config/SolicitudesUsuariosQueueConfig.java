@@ -83,4 +83,18 @@ public class SolicitudesUsuariosQueueConfig {
                 arquisoftEventsExchange,
                 arquisoftDeadLetterExchange);
     }
+
+    public static final String ADMINISTRADOR_REMOVIDO_QUEUE =
+            SolicitudesQueues.PREFIJO + EventTopics.Usuarios.ADMINISTRADOR_REMOVIDO;
+
+    @Bean
+    public Declarables solicitudesAdministradorRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ADMINISTRADOR_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.ADMINISTRADOR_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
 }

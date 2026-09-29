@@ -109,7 +109,9 @@ omites).
   si te pide el objeto de acción completo para pasárselo a un tercero, ese paso es del que llama.
 - El `Validator` es **puro**: `@Component` con un **constructor sin argumentos** que hace
   `this.xRule = new XRuleImpl();`. Nada de `@RequiredArgsConstructor`, nada de `Finder`/`OutputPort`,
-  ni un solo `if` — solo arma el record de cada Rule y las invoca en orden.
+  ni un solo `if` — solo arma el record de cada Rule y las invoca en orden. Expone un único
+  `validar(...)` con todos los datos del caso de uso, y el `UseCase` lo llama una sola vez
+  (`arquisoft-estandares` → *Validator, Rule, Finder*).
 - Las `Rule`s **no son beans**: no llevan `@Component` y no se registran en ninguna config.
 - **Si la HU no declara ninguna `Rule`, no escribas `Validator`**: una capa que no orquesta nada es
   ruido. `notificaciones/.../EnviarNotificacionUseCaseImpl` es el caso real de un comando sin él.

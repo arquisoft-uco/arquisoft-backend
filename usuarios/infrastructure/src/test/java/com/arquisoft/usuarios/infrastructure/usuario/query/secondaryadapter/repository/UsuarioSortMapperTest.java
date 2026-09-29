@@ -26,12 +26,14 @@ class UsuarioSortMapperTest {
         // Act
         var esEstudiante = UsuarioSortMapper.traducir("esEstudiante");
         var esRepresentanteComite = UsuarioSortMapper.traducir("esRepresentanteComite");
+        var esAdministrador = UsuarioSortMapper.traducir("esAdministrador");
         var vigente = UsuarioSortMapper.traducir("vigente");
         var inexistente = UsuarioSortMapper.traducir("campoInexistente");
 
         // Assert
         assertThat(esEstudiante).isNull();
         assertThat(esRepresentanteComite).isNull();
+        assertThat(esAdministrador).isNull();
         assertThat(vigente).isNull();
         assertThat(inexistente).isNull();
     }

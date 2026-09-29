@@ -351,6 +351,11 @@ Aplica a la consulta que no lleva `Query` ni `Criteria` porque no hay nada que f
 ordenar: `ConsultarEstadosFicha` es la referencia — `estado_ficha` es un catálogo cerrado y el
 endpoint lo devuelve entero.
 
+Lo mismo vale para un `Finder` cuyo puerto no recibe argumentos (un conteo global, p. ej.
+`AdministradoresVigentesCountFinder` → `contarVigentes()`): extiende `SupplierFinder<R>` con
+`obtener()` sin parámetros. Nunca `Finder<Void, R>`, ni `Finder<UUID, R>` con un parámetro que la
+consulta ignora: es el mismo parámetro fantasma con otro tipo.
+
 Dos salidas falsas que no debes tomar. Un `record` vacío como objeto de consulta es la
 indirección-por-nada que la propia convención rechaza en el objeto de acción: renombra el nada. Y el
 centinela `VACIO` tampoco sirve: existe para representar un dato que **pudo estar y no está** (una
@@ -589,7 +594,7 @@ mismo.
 (`com.arquisoft.shared.rules`). Todo lo demás vive en `shared:application`:
 `UseCase`/`VoidUseCase`/`SupplierUseCase` (`com.arquisoft.shared.usecase`),
 `Interactor`/`VoidInteractor`/`SupplierInteractor` (`com.arquisoft.shared.interactor`),
-`Finder` (`com.arquisoft.shared.finder`) y el puerto `EventPublisher`
+`Finder`/`SupplierFinder` (`com.arquisoft.shared.finder`) y el puerto `EventPublisher`
 (`com.arquisoft.shared.publisher`).
 
 Antes eran un solo módulo llamado `domain`, así que `{contexto}/domain` recibía `UseCase` e

@@ -8,6 +8,7 @@ import com.arquisoft.usuarios.infrastructure.administrador.command.secondaryadap
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,7 +32,18 @@ public class AdministradorCommandOutputAdapter implements AdministradorOutputPor
     }
 
     @Override
+    public void eliminarLogica(UUID usuario, Instant eliminadoEn) {
+        administradorCommandRepository.eliminarLogica(usuario, AdministradorJpaMapper.aColumna(eliminadoEn));
+        logger.debug(AgregarAdministradorKey.LOG_ACTUALIZADO, usuario);
+    }
+
+    @Override
     public Optional<AdministradorEntity> obtenerPorUsuario(UUID usuario) {
         return administradorCommandRepository.findById(usuario).map(AdministradorJpaMapper::toEntity);
+    }
+
+    @Override
+    public long contarVigentes() {
+        return administradorCommandRepository.countByEliminadoEnIsNull();
     }
 }

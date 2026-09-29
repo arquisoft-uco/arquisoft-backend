@@ -77,14 +77,15 @@ public final class UsuariosApiMessages {
         public static final String CAMBIAR_ESTADO_RESP_503 =
                 "No fue posible actualizar la identidad en el proveedor; el servicio no está disponible temporalmente";
 
-        // TODO HU233, HU242, HU252: agregar administrador, bibliotecario y jurado a la lista de roles de
+        // TODO HU242, HU252: agregar bibliotecario y jurado a la lista de roles de
         //  CONSULTAR_ADMINISTRADOR_DESCRIPTION.
         public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
                 "Consultar información de los usuarios (administrador)";
         public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
                 "Lista paginada, filtrable y ordenable de todos los usuarios, incluidos los "
                         + "eliminados (vigente = false). Indica con un booleano por rol si el usuario tiene hoy el rol vigente "
-                        + "de estudiante, asesor, asesor de ficha, coordinador o representante del comité; esos booleanos "
+                        + "de estudiante, asesor, asesor de ficha, coordinador, representante del comité o administrador; "
+                        + "esos booleanos "
                         + "se combinan con OR/AND en el filtro. Exclusivo del rol administrador.";
         public static final String CONSULTAR_RESP_200 = "Página de usuarios";
         public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
@@ -257,5 +258,34 @@ public final class UsuariosApiMessages {
                 "Retorna el catálogo completo de estados que puede tener un usuario, con su identificador, "
                         + "nombre y descripción. Exclusivo del rol administrador.";
         public static final String CONSULTAR_RESP_200 = "Catálogo de estados de usuario";
+    }
+
+    public static final class Administrador {
+
+        private Administrador() {}
+
+        public static final String REMOVER_SUMMARY = "Remover información de un administrador";
+        public static final String REMOVER_DESCRIPTION =
+                "Da de baja lógica el rol administrador de un usuario: marca la fecha de eliminación sin borrar "
+                        + "la fila, revoca el realm role administrador en Keycloak y notifica a los contextos "
+                        + "que replican al administrador. El usuario y sus demás roles no cambian. Un "
+                        + "administrador no puede removerse a sí mismo ni remover al único administrador "
+                        + "vigente. Exclusivo del rol administrador.";
+        public static final String REMOVER_RESP_204 = "Administrador removido";
+        public static final String REMOVER_RESP_400 = "Identificador de usuario inválido";
+        public static final String REMOVER_RESP_422 =
+                "El usuario no tiene un rol administrador vigente, es el propio solicitante o es el único "
+                        + "administrador vigente";
+        public static final String REMOVER_RESP_503 =
+                "No fue posible revocar el rol en el proveedor de identidad; el servicio no está disponible temporalmente";
+
+        public static final String CONSULTAR_ADMINISTRADOR_SUMMARY =
+                "Consultar información de los administradores (administrador)";
+        public static final String CONSULTAR_ADMINISTRADOR_DESCRIPTION =
+                "Lista paginada, filtrable y ordenable de todos los administradores, incluidos los dados de baja. "
+                        + "Cada fila indica el estado del usuario y si el rol administrador sigue vigente. "
+                        + "Exclusivo del rol administrador.";
+        public static final String CONSULTAR_RESP_200 = "Página de administradores";
+        public static final String CONSULTAR_RESP_400 = "Filtro, orden o paginación inválidos";
     }
 }
