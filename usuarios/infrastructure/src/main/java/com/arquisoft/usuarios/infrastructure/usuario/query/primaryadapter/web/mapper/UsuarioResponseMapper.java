@@ -19,10 +19,10 @@ public final class UsuarioResponseMapper {
                 readModel.esEstudiante(),
                 readModel.esAsesor(),
                 readModel.esAsesorFicha(),
-                readModel.esCoordinador());
-        // TODO HU233: pasar readModel.esAdministrador()
+                readModel.esCoordinador(),
+                readModel.esRepresentanteComite(),
+                readModel.esAdministrador());
         // TODO HU242: pasar readModel.esBibliotecario()
         // TODO HU252: pasar readModel.esJurado()
-        // TODO HU255: pasar readModel.esRepresentanteComite()
     }
 }

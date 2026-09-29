@@ -48,6 +48,24 @@ public final class EventTopics {
                 "usuarios.asesor.agregado";
         public static final String ASESOR_REMOVIDO =
                 "usuarios.asesor.removido";
+
+        public static final String REPRESENTANTE_COMITE_AGREGADO =
+                "usuarios.representantecomite.agregado";
+        public static final String REPRESENTANTE_COMITE_REMOVIDO =
+                "usuarios.representantecomite.removido";
+
+        public static final String ADMINISTRADOR_AGREGADO =
+                "usuarios.administrador.agregado";
+        public static final String ADMINISTRADOR_REMOVIDO =
+                "usuarios.administrador.removido";
+    }
+
+    public static final class Evaluaciones {
+
+        private Evaluaciones() {}
+
+        public static final String EVALUACIONES_CUALITATIVAS_JURADO_REGISTRADAS =
+                "evaluaciones.evaluacion_cualitativa_jurado.registradas";
     }
 
     public static final class Solicitudes {
@@ -65,6 +83,9 @@ public final class EventTopics {
 
         public static final String AMPLIACION_PLAZO_ENVIADA =
                 "solicitudes.solicitud.ampliacion_plazo_enviada";
+
+        public static final String NOVEDAD_COORDINADOR_RESPONDIDA =
+                "solicitudes.respuesta.novedad_coordinador_respondida";
     }
 
     public static final class MapasRuta {

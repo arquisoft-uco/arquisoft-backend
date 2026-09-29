@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -92,5 +93,20 @@ class ItemCualitativoJuradoCommandOutputAdapterTest {
         verify(repository).actualizarDescripcion(id, descripcion);
         verify(repository, never()).saveAndFlush(any());
         verify(logger).debug(any(ClaveMensaje.class), eq(id));
+    }
+
+    @Test
+    void debeDelegarEnRepositorio_cuandoConsultaIdsExistentes() {
+        // Arrange
+        UUID id = UUID.randomUUID();
+        Set<UUID> solicitados = Set.of(id);
+        when(repository.findIdsByIdIn(solicitados)).thenReturn(Set.of(id));
+
+        // Act
+        Set<UUID> resultado = adapter.consultarIdsExistentes(solicitados);
+
+        // Assert
+        assertThat(resultado).containsExactly(id);
+        verify(repository).findIdsByIdIn(solicitados);
     }
 }

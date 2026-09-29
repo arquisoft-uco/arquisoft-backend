@@ -121,4 +121,53 @@ public final class SolicitudesApiMessages {
         public static final String CONSULTAR_NOVEDAD_COORDINADOR_ENVIADAS_RESP_403 =
                 "Sin permisos para consultar solicitudes de novedad para el coordinador enviadas";
     }
+
+    public static final class Respuesta {
+
+        private Respuesta() {}
+
+        public static final String TAG_NAME = "Respuestas";
+        public static final String TAG_DESCRIPTION = "Gestión de respuestas a las solicitudes";
+
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_SUMMARY =
+                "Responder solicitud de novedad para el coordinador";
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_DESCRIPTION =
+                "Permite a un coordinador responder una solicitud de novedad para el coordinador que "
+                        + "le fue dirigida, registrando el contenido de la respuesta.";
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_201 =
+                "Respuesta registrada — retorna el UUID asignado";
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_400 = "Datos inválidos";
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_403 =
+                "Sin permisos para responder solicitudes de novedad para el coordinador";
+        public static final String RESPONDER_NOVEDAD_COORDINADOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador, o ya respondida";
+
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_SUMMARY =
+                "Eliminar respuesta de solicitud de novedad para el coordinador";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_DESCRIPTION =
+                "Permite a un coordinador eliminar definitivamente la respuesta que registró para una "
+                        + "solicitud de novedad para el coordinador, mientras siga en revisión.";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_204 = "Respuesta eliminada";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_400 =
+                "Identificador de solicitud inválido";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_403 =
+                "Sin permisos para eliminar respuestas de solicitudes de novedad para el coordinador";
+        public static final String ELIMINAR_NOVEDAD_COORDINADOR_RESP_422 =
+                "Solicitud no encontrada, de otro tipo, dirigida a otro coordinador; respuesta no "
+                        + "encontrada o ya no está en revisión";
+    }
+
+    public static final class TipoSolicitud {
+
+        private TipoSolicitud() {}
+
+        public static final String TAG_NAME = "Tipos de Solicitud";
+        public static final String TAG_DESCRIPTION =
+                "Catálogo de tipos de solicitud disponibles en el flujo de solicitudes";
+
+        public static final String CONSULTAR_SUMMARY = "Consultar todos los tipos de solicitud";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Retorna todos los tipos de solicitud disponibles en el catálogo, sin filtros ni paginación.";
+        public static final String CONSULTAR_RESP_200 = "Lista de tipos de solicitud retornada exitosamente";
+    }
 }

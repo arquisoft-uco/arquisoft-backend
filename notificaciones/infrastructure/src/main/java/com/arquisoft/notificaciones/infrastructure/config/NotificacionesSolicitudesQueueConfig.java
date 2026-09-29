@@ -26,6 +26,20 @@ public class NotificacionesSolicitudesQueueConfig {
     public static final String AMPLIACION_PLAZO_QUEUE =
             NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.AMPLIACION_PLAZO_ENVIADA;
 
+    public static final String NOVEDAD_COORDINADOR_RESPONDIDA_QUEUE =
+            NotificacionesQueues.PREFIJO + EventTopics.Solicitudes.NOVEDAD_COORDINADOR_RESPONDIDA;
+
+    @Bean
+    public Declarables notificacionesSolicitudNovedadCoordinadorRespondidaDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                NOVEDAD_COORDINADOR_RESPONDIDA_QUEUE,
+                EventTopics.Solicitudes.NOVEDAD_COORDINADOR_RESPONDIDA,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
     @Bean
     public Declarables notificacionesSolicitudNovedadCoordinadorDeclarables(
             @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,

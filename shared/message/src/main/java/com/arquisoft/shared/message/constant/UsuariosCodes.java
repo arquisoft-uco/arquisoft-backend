@@ -89,4 +89,25 @@ public final class UsuariosCodes {
         public static final String USUARIO_DUPLICADO = "ASESOR_USUARIO_DUPLICADO";
         public static final String ASESOR_NO_ENCONTRADO = "ASESOR_NO_ENCONTRADO";
     }
+
+    public static final class RepresentanteComite {
+
+        private RepresentanteComite() {}
+
+        public static final String USUARIO_REQUERIDO = "REPRESENTANTE_COMITE_USUARIO_REQUERIDO";
+        public static final String USUARIO_DUPLICADO = "REPRESENTANTE_COMITE_USUARIO_DUPLICADO";
+        public static final String REPRESENTANTE_COMITE_NO_ENCONTRADO = "REPRESENTANTE_COMITE_NO_ENCONTRADO";
+    }
+
+    public static final class Administrador {
+
+        private Administrador() {}
+
+        public static final String USUARIO_REQUERIDO = "ADMINISTRADOR_USUARIO_REQUERIDO";
+        public static final String USUARIO_DUPLICADO = "ADMINISTRADOR_USUARIO_DUPLICADO";
+        public static final String ACTOR_REQUERIDO = "ADMINISTRADOR_ACTOR_REQUERIDO";
+        public static final String ADMINISTRADOR_NO_ENCONTRADO = "ADMINISTRADOR_NO_ENCONTRADO";
+        public static final String ADMINISTRADOR_AUTOELIMINACION = "ADMINISTRADOR_AUTOELIMINACION";
+        public static final String ADMINISTRADOR_UNICO_VIGENTE = "ADMINISTRADOR_UNICO_VIGENTE";
+    }
 }

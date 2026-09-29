@@ -59,7 +59,8 @@ class EliminarSolicitudNovedadAsesorUseCaseImplTest {
 
     private void stubSolicitudPropiaSinRespuestas() {
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
-                solicitud, remitenteUsuario, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()));
+                solicitud, remitenteUsuario, UUID.randomUUID(),
+                TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()));
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
     }
 
@@ -99,7 +100,8 @@ class EliminarSolicitudNovedadAsesorUseCaseImplTest {
         // Arrange — el remitente de la solicitud difiere del actor del JWT
         var remitenteDeLaFila = UUID.randomUUID();
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
-                solicitud, remitenteDeLaFila, TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()));
+                solicitud, remitenteDeLaFila, UUID.randomUUID(),
+                TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()));
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
 
         // Act

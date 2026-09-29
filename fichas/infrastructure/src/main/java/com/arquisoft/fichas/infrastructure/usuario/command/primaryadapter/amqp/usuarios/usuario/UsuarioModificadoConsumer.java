@@ -6,11 +6,15 @@ import com.arquisoft.fichas.application.asesorficha.command.result.Actualizacion
 import com.arquisoft.fichas.application.estudiante.command.primaryport.interactor.ActualizarEstudianteInteractor;
 import com.arquisoft.fichas.application.estudiante.command.primaryport.model.ActualizarEstudianteCommand;
 import com.arquisoft.fichas.application.estudiante.command.result.ActualizacionEstudianteResult;
+import com.arquisoft.fichas.application.representantecomite.command.primaryport.interactor.ActualizarRepresentanteComiteInteractor;
+import com.arquisoft.fichas.application.representantecomite.command.primaryport.model.ActualizarRepresentanteComiteCommand;
+import com.arquisoft.fichas.application.representantecomite.command.result.ActualizacionRepresentanteComiteResult;
 import com.arquisoft.fichas.infrastructure.config.FichasUsuariosQueueConfig;
 import com.arquisoft.shared.amqp.consumer.AbstractEventConsumer;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.fichas.AsesorFichaKey;
 import com.arquisoft.shared.message.key.fichas.EstudianteKey;
+import com.arquisoft.shared.message.key.fichas.RepresentanteComiteKey;
 import com.arquisoft.shared.tracing.application.traza.primaryport.GestorTraza;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
@@ -26,17 +30,20 @@ public class UsuarioModificadoConsumer extends AbstractEventConsumer {
 
     private final ActualizarEstudianteInteractor actualizarEstudianteInteractor;
     private final ActualizarAsesorFichaInteractor actualizarAsesorFichaInteractor;
+    private final ActualizarRepresentanteComiteInteractor actualizarRepresentanteComiteInteractor;
     private final AppLogger logger;
 
     public UsuarioModificadoConsumer(
             ActualizarEstudianteInteractor actualizarEstudianteInteractor,
             ActualizarAsesorFichaInteractor actualizarAsesorFichaInteractor,
+            ActualizarRepresentanteComiteInteractor actualizarRepresentanteComiteInteractor,
             @Qualifier("rabbitObjectMapper") ObjectMapper objectMapper,
             AppLogger logger,
             GestorTraza gestorTraza) {
         super(objectMapper, gestorTraza);
         this.actualizarEstudianteInteractor = actualizarEstudianteInteractor;
         this.actualizarAsesorFichaInteractor = actualizarAsesorFichaInteractor;
+        this.actualizarRepresentanteComiteInteractor = actualizarRepresentanteComiteInteractor;
         this.logger = logger;
     }
 
@@ -50,6 +57,7 @@ public class UsuarioModificadoConsumer extends AbstractEventConsumer {
 
             registrarEstudiante(payload);
             registrarAsesorFicha(payload);
+            registrarRepresentanteComite(payload);
         });
     }
 
@@ -83,6 +91,23 @@ public class UsuarioModificadoConsumer extends AbstractEventConsumer {
             case ActualizacionAsesorFichaResult.NoReplicado noReplicado ->
                     logger.debug(AsesorFichaKey.LOG_ACTUALIZACION_NO_REPLICADO,
                             noReplicado.asesorFicha());
+        }
+    }
+
+    private void registrarRepresentanteComite(UsuarioModificadoPayload payload) {
+        var resultado = actualizarRepresentanteComiteInteractor.ejecutar(ActualizarRepresentanteComiteCommand.crear(
+                payload.usuario(), payload.identificador(), payload.nombre(), payload.email(),
+                payload.ocurridoEn()));
+
+        switch (resultado) {
+            case ActualizacionRepresentanteComiteResult.Actualizada actualizada ->
+                    logger.info(RepresentanteComiteKey.LOG_ACTUALIZADO, actualizada.representanteComite());
+            case ActualizacionRepresentanteComiteResult.Descartada descartada ->
+                    logger.info(RepresentanteComiteKey.LOG_ACTUALIZACION_DESCARTADA,
+                            descartada.representanteComite(), descartada.ocurridoEnVigente(), payload.ocurridoEn());
+            case ActualizacionRepresentanteComiteResult.NoReplicado noReplicado ->
+                    logger.debug(RepresentanteComiteKey.LOG_ACTUALIZACION_NO_REPLICADO,
+                            noReplicado.representanteComite());
         }
     }
 }
