@@ -30,8 +30,11 @@ no analizas código, solo escribes en disco lo que ya viene decidido.
    recibido tal cual (si trae un prefijo conversacional tipo "📋 Análisis de validación
    completado — ...", elimina esa línea inicial y deja el resto desde "# Reporte de Validación — ...").
    El formato canónico es `.claude/templates/VALIDATOR.md`: no reescribas el contenido para que
-   encaje, pero si falta una sección entera de esa plantilla, dilo en el mensaje final en vez de
-   inventarla.
+   encaje, pero compara los encabezados `##` del contenido con los de la plantilla (`grep '^## '`
+   en los dos) y, si falta alguno, nómbralo en el mensaje final en vez de inventarlo. Si lo que
+   falta es `## Datos para la entrega` o sus campos `Mensaje`/`Rama`/`Archivos a incluir`,
+   recomienda repetir `@4a-validator-analyze` antes de `@4c-commit`: sin ellos la entrega se
+   detiene.
    **Única excepción al "tal cual": el campo `Autor` de la Metadata.** Si llega sin resolver
    (`{Nombre}`, vacío o ausente), complétalo copiándolo del campo `Autor` del plan que ya leíste en
    el paso 2; si el plan tampoco lo trae, usa `git config user.name` / `user.email`. Un marcador sin

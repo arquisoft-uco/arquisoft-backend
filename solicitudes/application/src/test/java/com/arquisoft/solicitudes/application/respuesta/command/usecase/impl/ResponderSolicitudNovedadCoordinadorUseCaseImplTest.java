@@ -10,6 +10,7 @@ import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolic
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.SolicitudTieneRespuestasFinder;
 import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
+import com.arquisoft.solicitudes.domain.respuesta.RespuestaDomain;
 import com.arquisoft.solicitudes.domain.respuesta.RespuestaNovedadCoordinadorDomain;
 import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorRespondidaEvent;
 import com.arquisoft.solicitudes.domain.respuesta.exception.SolicitudYaRespondidaException;
@@ -65,7 +66,8 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         solicitud = UUID.randomUUID();
         coordinadorUsuario = UUID.randomUUID();
         remitenteUsuario = UUID.randomUUID();
-        entrada = RespuestaNovedadCoordinadorDomain.crear(solicitud, "No puedo asistir", coordinadorUsuario);
+        var respuesta = RespuestaDomain.crear(solicitud, "No puedo asistir");
+        entrada = RespuestaNovedadCoordinadorDomain.crear(respuesta, coordinadorUsuario);
     }
 
     private void stubFlujoValido() {
@@ -114,12 +116,9 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
     @Test
     void debeAbortarSinRegistrarNiPublicar_cuandoElValidatorLanza() {
         // Arrange
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
-                solicitud, remitenteUsuario, coordinadorUsuario,
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
-        when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
+        stubFlujoValido();
         doThrow(new SolicitudYaRespondidaException(solicitud))
-                .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean());
+                .when(validator).validar(any(), any(), any(), any(), any(), anyBoolean());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
@@ -135,13 +134,14 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
         when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
         when(solicitudTieneRespuestasFinder.obtener(solicitud)).thenReturn(false);
         doThrow(new SolicitudYaRespondidaException(solicitud))
-                .when(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean());
+                .when(validator).validar(any(), any(), any(), any(), any(), anyBoolean());
 
         // Act & Assert
         assertThatThrownBy(() -> useCase.ejecutar(entrada))
                 .isInstanceOf(SolicitudYaRespondidaException.class);
 
-        verify(validator).validar(eq(solicitud), eq(false), any(), any(), eq(coordinadorUsuario), eq(false));
+        verify(validator).validar(eq(solicitud), eq(ResumenSolicitud.VACIO), any(), any(),
+                eq(coordinadorUsuario), eq(false));
         verify(respuestaOutputPort, never()).registrar(any());
     }
 
@@ -155,10 +155,12 @@ class ResponderSolicitudNovedadCoordinadorUseCaseImplTest {
 
         // Assert
         InOrder inOrder = inOrder(datosSolicitudFinder, solicitudTieneRespuestasFinder,
-                validator, respuestaOutputPort, eventPublisher);
+                datosUsuarioFinder, validator, respuestaOutputPort, eventPublisher);
         inOrder.verify(datosSolicitudFinder).obtener(solicitud);
         inOrder.verify(solicitudTieneRespuestasFinder).obtener(solicitud);
-        inOrder.verify(validator).validar(any(), anyBoolean(), any(), any(), any(), anyBoolean());
+        inOrder.verify(datosUsuarioFinder).obtener(remitenteUsuario);
+        inOrder.verify(datosUsuarioFinder).obtener(coordinadorUsuario);
+        inOrder.verify(validator).validar(any(), any(), any(), any(), any(), anyBoolean());
         inOrder.verify(respuestaOutputPort).registrar(any());
         inOrder.verify(eventPublisher).publish(any());
     }

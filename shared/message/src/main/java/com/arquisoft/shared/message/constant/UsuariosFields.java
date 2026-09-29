@@ -49,4 +49,19 @@ public final class UsuariosFields {
 
         public static final String USUARIO = "usuario";
     }
+
+    public static final class RepresentanteComite {
+
+        private RepresentanteComite() {}
+
+        public static final String USUARIO = "usuario";
+    }
+
+    public static final class Administrador {
+
+        private Administrador() {}
+
+        public static final String USUARIO = "usuario";
+        public static final String ACTOR = "actor";
+    }
 }

@@ -4,6 +4,7 @@ import com.arquisoft.proyectos.application.coordinador.command.secondaryport.ent
 import com.arquisoft.proyectos.infrastructure.coordinador.command.secondaryadapter.entity.CoordinadorJpaEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.shared.message.key.proyectos.CoordinadorKey;
+import com.arquisoft.shared.util.UtilFecha;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -35,7 +36,7 @@ class CoordinadorCommandOutputAdapterTest {
         var ocurridoEn = Instant.now();
 
         // Act
-        adapter.guardar(new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn));
+        adapter.guardar(new CoordinadorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", ocurridoEn, null));
 
         // Assert
         assertThat(coordinadorCommandRepository.existsById(id)).isTrue();
@@ -85,7 +86,7 @@ class CoordinadorCommandOutputAdapterTest {
 
         // Act
         adapter.actualizar(new CoordinadorEntity(
-                id, "20161020999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn));
+                id, "20161020999", "Ana Actualizada", "actualizada@uco.edu.co", nuevoOcurridoEn, null));
 
         // Assert
         var resultado = adapter.obtenerPorId(id);
@@ -93,6 +94,52 @@ class CoordinadorCommandOutputAdapterTest {
         assertThat(resultado.get().identificador()).isEqualTo("20161020999");
         assertThat(resultado.get().nombre()).isEqualTo("Ana Actualizada");
         assertThat(resultado.get().ocurridoEn()).isEqualTo(nuevoOcurridoEn);
+        verify(logger).debug(CoordinadorKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
+    void debeFijarEliminadoEnYOcurridoEn_cuandoSeEliminaLogicamente() {
+        // Arrange
+        var adapter = new CoordinadorCommandOutputAdapter(coordinadorCommandRepository, logger);
+        var id = UUID.randomUUID();
+        entityManager.persistAndFlush(CoordinadorJpaEntity.builder()
+                .id(id).identificador("20161020123").nombre("Ana Perez")
+                .email("ana@uco.edu.co").ocurridoEn(Instant.parse("2026-09-01T10:00:00Z")).build());
+        var ocurridoEn = Instant.parse("2026-09-24T10:00:00Z");
+
+        // Act
+        adapter.eliminarLogica(id, ocurridoEn);
+
+        // Assert
+        var persistido = entityManager.find(CoordinadorJpaEntity.class, id);
+        assertThat(persistido.getEliminadoEn()).isEqualTo(ocurridoEn);
+        assertThat(persistido.getOcurridoEn()).isEqualTo(ocurridoEn);
+        assertThat(adapter.obtenerPorId(id)).map(CoordinadorEntity::eliminadoEn).contains(ocurridoEn);
+        verify(logger).debug(CoordinadorKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Test
+    void debeActualizarDatosYLimpiarEliminadoEn_cuandoSeReactiva() {
+        // Arrange
+        var adapter = new CoordinadorCommandOutputAdapter(coordinadorCommandRepository, logger);
+        var id = UUID.randomUUID();
+        var eliminadoEn = Instant.parse("2026-09-01T10:00:00Z");
+        entityManager.persistAndFlush(CoordinadorJpaEntity.builder()
+                .id(id).identificador("20161020123").nombre("Ana Perez")
+                .email("ana@uco.edu.co").ocurridoEn(eliminadoEn).eliminadoEn(eliminadoEn).build());
+        var nuevoOcurridoEn = Instant.parse("2026-09-24T10:00:00Z");
+
+        // Act
+        adapter.reactivar(new CoordinadorEntity(
+                id, "20161020999", "Ana Reactivada", "reactivada@uco.edu.co", nuevoOcurridoEn, UtilFecha.VACIO));
+
+        // Assert
+        var persistido = entityManager.find(CoordinadorJpaEntity.class, id);
+        assertThat(persistido.getEliminadoEn()).isNull();
+        assertThat(persistido.getIdentificador()).isEqualTo("20161020999");
+        assertThat(persistido.getNombre()).isEqualTo("Ana Reactivada");
+        assertThat(persistido.getEmail()).isEqualTo("reactivada@uco.edu.co");
+        assertThat(persistido.getOcurridoEn()).isEqualTo(nuevoOcurridoEn);
         verify(logger).debug(CoordinadorKey.LOG_ACTUALIZADO, id);
     }
 }

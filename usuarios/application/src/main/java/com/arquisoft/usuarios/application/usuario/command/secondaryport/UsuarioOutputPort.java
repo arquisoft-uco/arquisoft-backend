@@ -2,6 +2,7 @@ package com.arquisoft.usuarios.application.usuario.command.secondaryport;
 
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,6 +13,10 @@ public interface UsuarioOutputPort {
     void guardar(UsuarioEntity usuario);
 
     void actualizar(UsuarioEntity usuario);
+
+    void eliminarLogica(UUID usuario, Instant eliminadoEn);
+
+    void cambiarEstado(UUID usuario, String estado, Instant eliminadoEn);
 
     boolean existePorIdentificador(String identificador);
 

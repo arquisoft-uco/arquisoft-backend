@@ -33,7 +33,7 @@ dato cuya integridad no se validó primero.
 
 | Componente | Pureza | Puede lanzar | Ejemplo real |
 |---|---|---|---|
-| `Validator` | Construye sus `Rule`s con `new` en un **constructor sin argumentos** (no `@RequiredArgsConstructor`); nunca inyecta `OutputPort`/`Finder`; **cero `if`** | No decide, solo orquesta en orden | `fichas/application/.../fichaperfil/command/validator/impl/RegistrarFichaPerfilValidatorImpl.java` |
+| `Validator` | Construye sus `Rule`s con `new` en un **constructor sin argumentos** (no `@RequiredArgsConstructor`); nunca inyecta `OutputPort`/`Finder`; **cero `if`**; expone **un único método `validar(...)`** que recibe todo lo que sus `Rule`s necesitan — partirlo (`validarExistencia` + `validarReglasDeNegocio`) deja que otro llamador invoque solo una parte y se salte reglas sin que nada falle | No decide, solo orquesta en orden | `fichas/application/.../fichaperfil/command/validator/impl/RegistrarFichaPerfilValidatorImpl.java` |
 | `Rule` | Pura: sin Spring, sin Lombok, **sin dependencias de constructor**; no es un bean | Sí, sobre un `record` ya cargado con el dato | `fichas/domain/.../fichaperfil/rules/impl/FichaPerfilTituloUnicoRuleImpl.java` |
 | `Finder` | Delega en un `OutputPort` | Nunca por "no encontrado" — devuelve `Boolean`/`Long`, `Domain` o `UUID`; la ausencia es `{X}Domain.VACIO` o `UtilUUID.obtenerUUIDPorDefecto()`, nunca `Optional` | `fichas/application/.../asesorficha/command/finder/impl/AsesorFichaExisteFinderImpl.java` |
 
