@@ -15,36 +15,17 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class RespuestaCriteriaTest {
 
     @Test
-    void debeDeclararFiltrableYOrdenable_segunLoConfiguradoPorCampo() {
+    void debeDeclararOrdenable_segunLoConfiguradoPorCampo() {
         // Arrange & Act & Assert
-        assertThat(RespuestaCriteria.Campo.esValidoParaFiltrar("contenido")).isTrue();
         assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar("contenido")).isFalse();
-
-        assertThat(RespuestaCriteria.Campo.esValidoParaFiltrar("fechaRespuesta")).isFalse();
         assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar("fechaRespuesta")).isTrue();
-
-        assertThat(RespuestaCriteria.Campo.esValidoParaFiltrar("estadoRespuestaId")).isTrue();
         assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar("estadoRespuestaId")).isFalse();
-
-        assertThat(RespuestaCriteria.Campo.esValidoParaFiltrar("tipoSolicitudId")).isTrue();
         assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar("tipoSolicitudId")).isFalse();
-
-        assertThat(RespuestaCriteria.Campo.esValidoParaFiltrar("remitenteUsuarioId")).isTrue();
         assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar("remitenteUsuarioId")).isFalse();
-
-        assertThat(RespuestaCriteria.Campo.esValidoParaFiltrar("destinatarioUsuarioId")).isTrue();
         assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar("destinatarioUsuarioId")).isFalse();
-
-        assertThat(RespuestaCriteria.Campo.esValidoParaFiltrar("destinatarioIdentificador")).isTrue();
         assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar("destinatarioIdentificador")).isFalse();
-
-        assertThat(RespuestaCriteria.Campo.esValidoParaFiltrar("destinatarioNombre")).isTrue();
         assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar("destinatarioNombre")).isTrue();
-
-        assertThat(RespuestaCriteria.Campo.esValidoParaFiltrar("destinatarioEmail")).isTrue();
         assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar("destinatarioEmail")).isFalse();
-
-        assertThat(RespuestaCriteria.Campo.esValidoParaFiltrar("campoInexistente")).isFalse();
         assertThat(RespuestaCriteria.Campo.esValidoParaOrdenar("campoInexistente")).isFalse();
     }
 

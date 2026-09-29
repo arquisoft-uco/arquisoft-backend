@@ -197,18 +197,18 @@ class RespuestaQueryOutputAdapterTest {
         var solicitudDos = sembrarSolicitud(ana, coordDos, TIPO_NOVEDAD,
                 LocalDateTime.of(2026, 3, 2, 10, 0).toInstant(ZoneOffset.UTC), "para coord dos");
         sembrarRespuesta(solicitudUno, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 3, 8, 0), "respuesta para coord uno");
+                LocalDateTime.of(2026, 3, 3, 8, 0).toInstant(ZoneOffset.UTC), "respuesta para coord uno");
         sembrarRespuesta(solicitudDos, ESTADO_EN_REVISION,
-                LocalDateTime.of(2026, 3, 4, 8, 0), "respuesta para coord dos");
+                LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "respuesta para coord dos");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("destinatarioUsuarioId", FiltroOperador.ES,
                         coordUno.getUsuarioId().toString()))
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())

@@ -30,7 +30,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -97,7 +96,7 @@ class ConsultarRespuestasNovedadCoordinadorEnviadasControllerTest {
     @Test
     void debeSerializarRespuestaResponseDTOConSolicitudEmbebida_yTomarElCoordinadorDelJwt() throws Exception {
         // Arrange
-        UUID coordinador = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
         var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana Estudiante",
                 "ana@uco.edu.co");
         var destinatario = new DestinatarioReadModel(UUID.randomUUID(), "COORD-1", "Coordinadora Uno",
@@ -106,7 +105,7 @@ class ConsultarRespuestasNovedadCoordinadorEnviadasControllerTest {
                 Instant.parse("2026-03-01T10:00:00Z"), "NOVEDAD_PARA_EL_COORDINADOR",
                 "Novedad para el Coordinador", remitente, destinatario);
         var respuesta = new RespuestaReadModel(UUID.randomUUID(), "contenido de la respuesta",
-                LocalDateTime.of(2026, 3, 5, 9, 0), "EN_REVISION", "En revisión", solicitud);
+                Instant.parse("2026-03-05T09:00:00Z"), "EN_REVISION", "En revisión", solicitud);
         when(interactor.ejecutar(any(ConsultarRespuestasNovedadCoordinadorEnviadasQuery.class)))
                 .thenReturn(PaginatedResult.of(List.of(respuesta), 0, 10, 1L));
 
@@ -141,7 +140,7 @@ class ConsultarRespuestasNovedadCoordinadorEnviadasControllerTest {
                 .thenThrow(new FiltroException("campo de filtro no permitido: solicitudId",
                         "app.consulta.campo-filtro-no-permitido"));
 
-        String body = """
+        var body = """
                 {
                   "filtros": {
                     "tipo": "PREDICADO",
