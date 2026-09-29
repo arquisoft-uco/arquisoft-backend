@@ -13,6 +13,7 @@ public final class EstudianteFichaPerfilQueryMapper {
                 entity.getFichaPerfilId(),
                 entity.getEstudianteId(),
                 entity.getNombre(),
-                entity.getEmail());
+                entity.getEmail(),
+                entity.isVigente());
     }
 }

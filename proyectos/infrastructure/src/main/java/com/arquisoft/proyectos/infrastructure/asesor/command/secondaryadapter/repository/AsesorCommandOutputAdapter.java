@@ -8,6 +8,7 @@ import com.arquisoft.shared.message.key.proyectos.AsesorKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,7 +26,26 @@ public class AsesorCommandOutputAdapter implements AsesorOutputPort {
     }
 
     @Override
+    public void eliminarLogica(UUID id, Instant ocurridoEn) {
+        asesorCommandRepository.eliminarLogica(id, ocurridoEn);
+        logger.debug(AsesorKey.LOG_ACTUALIZADO, id);
+    }
+
+    @Override
+    public void reactivar(AsesorEntity asesor) {
+        asesorCommandRepository.reactivar(asesor.id(), asesor.identificador(), asesor.nombre(),
+                asesor.email(), asesor.ocurridoEn());
+        logger.debug(AsesorKey.LOG_ACTUALIZADO, asesor.id());
+    }
+
+    @Override
     public Optional<AsesorEntity> obtenerPorId(UUID id) {
         return asesorCommandRepository.findById(id).map(AsesorJpaMapper::toEntity);
+    }
+
+    @Override
+    public void actualizar(AsesorEntity asesor) {
+        asesorCommandRepository.save(AsesorJpaMapper.toJpaEntity(asesor));
+        logger.debug(AsesorKey.LOG_ACTUALIZADO, asesor.id());
     }
 }

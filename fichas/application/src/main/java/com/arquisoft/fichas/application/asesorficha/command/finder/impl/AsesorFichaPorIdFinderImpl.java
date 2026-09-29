@@ -2,11 +2,11 @@ package com.arquisoft.fichas.application.asesorficha.command.finder.impl;
 
 import com.arquisoft.fichas.application.asesorficha.command.finder.AsesorFichaPorIdFinder;
 import com.arquisoft.fichas.application.asesorficha.command.secondaryport.AsesorFichaOutputPort;
-import com.arquisoft.fichas.application.asesorficha.command.secondaryport.entity.AsesorFichaEntity;
+import com.arquisoft.fichas.application.asesorficha.command.secondaryport.mapper.AsesorFichaMapper;
+import com.arquisoft.fichas.domain.asesorficha.AsesorFichaDomain;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -16,7 +16,9 @@ public class AsesorFichaPorIdFinderImpl implements AsesorFichaPorIdFinder {
     private final AsesorFichaOutputPort asesorFichaOutputPort;
 
     @Override
-    public Optional<AsesorFichaEntity> obtener(UUID id) {
-        return asesorFichaOutputPort.obtenerPorId(id);
+    public AsesorFichaDomain obtener(UUID id) {
+        return asesorFichaOutputPort.obtenerPorId(id)
+                .map(AsesorFichaMapper::toDomain)
+                .orElse(AsesorFichaDomain.VACIO);
     }
 }

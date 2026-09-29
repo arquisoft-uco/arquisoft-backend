@@ -11,6 +11,16 @@ public final class UsuariosCodes {
 
         private Usuario() {}
 
+        public static final String USUARIO_REQUERIDO = "USUARIO_REQUERIDO";
+        public static final String USUARIO_FORMATO = "USUARIO_FORMATO";
+        public static final String MODIFICACION_VACIA = "USUARIO_MODIFICACION_VACIA";
+        public static final String NO_ENCONTRADO = "USUARIO_NO_ENCONTRADO";
+        public static final String ELIMINADO = "USUARIO_ELIMINADO";
+        public static final String ROLES_VIGENTES = "USUARIO_ROLES_VIGENTES";
+        public static final String ESTADO_REQUERIDO = "USUARIO_ESTADO_REQUERIDO";
+        public static final String ESTADO_INVALIDO = "USUARIO_ESTADO_INVALIDO";
+        public static final String ESTADO_SIN_CAMBIO = "USUARIO_ESTADO_SIN_CAMBIO";
+
         public static final String IDENTIFICADOR_REQUERIDO = "USUARIO_IDENTIFICADOR_REQUERIDO";
         public static final String IDENTIFICADOR_LONGITUD = "USUARIO_IDENTIFICADOR_LONGITUD";
         public static final String IDENTIFICADOR_DUPLICADO = "USUARIO_IDENTIFICADOR_DUPLICADO";
@@ -49,6 +59,7 @@ public final class UsuariosCodes {
 
         public static final String USUARIO_REQUERIDO = "ESTUDIANTE_USUARIO_REQUERIDO";
         public static final String USUARIO_DUPLICADO = "ESTUDIANTE_USUARIO_DUPLICADO";
+        public static final String ESTUDIANTE_NO_ENCONTRADO = "ESTUDIANTE_NO_ENCONTRADO";
     }
 
     public static final class Coordinador {
@@ -58,6 +69,7 @@ public final class UsuariosCodes {
 
         public static final String USUARIO_REQUERIDO = "COORDINADOR_USUARIO_REQUERIDO";
         public static final String USUARIO_DUPLICADO = "COORDINADOR_USUARIO_DUPLICADO";
+        public static final String COORDINADOR_NO_ENCONTRADO = "COORDINADOR_NO_ENCONTRADO";
     }
 
     public static final class AsesorFicha {
@@ -66,6 +78,7 @@ public final class UsuariosCodes {
 
         public static final String USUARIO_REQUERIDO = "ASESOR_FICHA_USUARIO_REQUERIDO";
         public static final String USUARIO_DUPLICADO = "ASESOR_FICHA_USUARIO_DUPLICADO";
+        public static final String ASESOR_FICHA_NO_ENCONTRADO = "ASESOR_FICHA_NO_ENCONTRADO";
     }
 
     public static final class Asesor {
@@ -74,5 +87,27 @@ public final class UsuariosCodes {
 
         public static final String USUARIO_REQUERIDO = "ASESOR_USUARIO_REQUERIDO";
         public static final String USUARIO_DUPLICADO = "ASESOR_USUARIO_DUPLICADO";
+        public static final String ASESOR_NO_ENCONTRADO = "ASESOR_NO_ENCONTRADO";
+    }
+
+    public static final class RepresentanteComite {
+
+        private RepresentanteComite() {}
+
+        public static final String USUARIO_REQUERIDO = "REPRESENTANTE_COMITE_USUARIO_REQUERIDO";
+        public static final String USUARIO_DUPLICADO = "REPRESENTANTE_COMITE_USUARIO_DUPLICADO";
+        public static final String REPRESENTANTE_COMITE_NO_ENCONTRADO = "REPRESENTANTE_COMITE_NO_ENCONTRADO";
+    }
+
+    public static final class Administrador {
+
+        private Administrador() {}
+
+        public static final String USUARIO_REQUERIDO = "ADMINISTRADOR_USUARIO_REQUERIDO";
+        public static final String USUARIO_DUPLICADO = "ADMINISTRADOR_USUARIO_DUPLICADO";
+        public static final String ACTOR_REQUERIDO = "ADMINISTRADOR_ACTOR_REQUERIDO";
+        public static final String ADMINISTRADOR_NO_ENCONTRADO = "ADMINISTRADOR_NO_ENCONTRADO";
+        public static final String ADMINISTRADOR_AUTOELIMINACION = "ADMINISTRADOR_AUTOELIMINACION";
+        public static final String ADMINISTRADOR_UNICO_VIGENTE = "ADMINISTRADOR_UNICO_VIGENTE";
     }
 }

@@ -1,6 +1,13 @@
 package com.arquisoft.fichas.application.itemfichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.itemfichaperfil.command.validator.RemoverItemFichaPerfilValidator;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.ExistenciaEstadoFichaPerfil;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilExisteRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnTerminalRuleImpl;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilExisteRuleImpl;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.PropiedadFicha;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.EstudiantePropietarioFichaRule;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.rules.impl.EstudiantePropietarioFichaRuleImpl;
@@ -19,22 +26,31 @@ public class RemoverItemFichaPerfilValidatorImpl implements RemoverItemFichaPerf
 
     private final ItemFichaPerfilExisteRule itemFichaPerfilExisteRule;
     private final EstudiantePropietarioFichaRule estudiantePropietarioFichaRule;
+    private final EstadoFichaPerfilExisteRule estadoFichaPerfilExisteRule;
+    private final EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
     private final ItemSinRevisionesRule itemSinRevisionesRule;
 
     public RemoverItemFichaPerfilValidatorImpl() {
         this.itemFichaPerfilExisteRule = new ItemFichaPerfilExisteRuleImpl();
         this.estudiantePropietarioFichaRule = new EstudiantePropietarioFichaRuleImpl();
+        this.estadoFichaPerfilExisteRule = new EstadoFichaPerfilExisteRuleImpl();
+        this.estadoFichaPerfilEnTerminalRule = new EstadoFichaPerfilEnTerminalRuleImpl();
         this.itemSinRevisionesRule = new ItemSinRevisionesRuleImpl();
     }
 
     @Override
     public void validar(UUID item, UUID estudiante, UUID fichaDelItem, boolean itemExiste,
-                        boolean esPropietario, long totalRevisiones) {
+                        boolean esPropietario, EstadoFichaPerfilDomain estadoActual, long totalRevisiones) {
 
         itemFichaPerfilExisteRule.validar(new ExistenciaItemFichaPerfil(item, itemExiste));
 
         estudiantePropietarioFichaRule.validar(
                 new PropiedadFicha(fichaDelItem, estudiante, esPropietario));
+
+        estadoFichaPerfilExisteRule.validar(
+                new ExistenciaEstadoFichaPerfil(fichaDelItem, !estadoActual.esVacio()));
+        estadoFichaPerfilEnTerminalRule.validar(
+                new EstadoActualFicha(fichaDelItem, estadoActual.getEstadoFicha()));
 
         itemSinRevisionesRule.validar(new RevisionesItem(item, totalRevisiones));
     }

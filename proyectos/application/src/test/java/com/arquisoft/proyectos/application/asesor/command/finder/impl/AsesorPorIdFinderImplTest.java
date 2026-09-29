@@ -1,5 +1,7 @@
 package com.arquisoft.proyectos.application.asesor.command.finder.impl;
 
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.proyectos.domain.asesor.AsesorDomain;
 import com.arquisoft.proyectos.application.asesor.command.secondaryport.AsesorOutputPort;
 import com.arquisoft.proyectos.application.asesor.command.secondaryport.entity.AsesorEntity;
 import org.junit.jupiter.api.Test;
@@ -28,14 +30,14 @@ class AsesorPorIdFinderImplTest {
     void debeDelegarEnElOutputPort_enAsesorPorIdFinder() {
         // Arrange
         var id = UUID.randomUUID();
-        var entity = new AsesorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now());
+        var entity = new AsesorEntity(id, "20161020123", "Ana Perez", "ana@uco.edu.co", Instant.now(), UtilFecha.VACIO);
         when(asesorOutputPort.obtenerPorId(id)).thenReturn(Optional.of(entity));
 
         // Act
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).contains(entity);
+        assertThat(resultado.getId()).isEqualTo(id);
     }
 
     @Test
@@ -48,6 +50,6 @@ class AsesorPorIdFinderImplTest {
         var resultado = finder.obtener(id);
 
         // Assert
-        assertThat(resultado).isEmpty();
+        assertThat(resultado).isEqualTo(AsesorDomain.VACIO);
     }
 }

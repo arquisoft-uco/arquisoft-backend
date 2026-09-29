@@ -1,7 +1,7 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
-import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
+import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesVigentesFinder;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesVinculadosContadorFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.EstudiantesYaVinculadosFinder;
@@ -12,7 +12,6 @@ import com.arquisoft.fichas.domain.estudiante.EstudianteDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.AgregacionEstudiantesFichaPerfilDomain;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.event.EstudiantesFichaPerfilAsignadosEvent;
 import com.arquisoft.fichas.domain.estudiantefichaperfil.model.ContactoEstudiante;
-import com.arquisoft.fichas.domain.fichaperfil.FichaPerfilDomain;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.EstudianteFichaPerfilOutputPort;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.secondaryport.mapper.EstudianteFichaPerfilMapper;
 import com.arquisoft.shared.logger.AppLogger;
@@ -29,7 +28,7 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
 
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final FichaPerfilFinder fichaPerfilFinder;
-    private final EstudiantesExistentesFinder estudiantesExistentesFinder;
+    private final EstudiantesVigentesFinder estudiantesVigentesFinder;
     private final EstudiantesFinder estudiantesFinder;
     private final EstudiantesYaVinculadosFinder estudiantesYaVinculadosFinder;
     private final EstudiantesVinculadosContadorFinder estudiantesVinculadosContadorFinder;
@@ -42,16 +41,16 @@ public class AsignarEstudiantesFichaPerfilUseCaseImpl implements AsignarEstudian
         logger.info(EstudianteFichaPerfilKey.LOG_ASIGNANDO,
                 entrada.getFichaPerfil(), entrada.getCantidad());
 
-        var ficha = fichaPerfilFinder.obtener(entrada.getFichaPerfil()).orElse(FichaPerfilDomain.VACIO);
-        List<UUID> estudiantesExistentes = estudiantesExistentesFinder.obtener(entrada.getEstudiantes());
+        var ficha = fichaPerfilFinder.obtener(entrada.getFichaPerfil());
+        var estudiantesVigentes = estudiantesVigentesFinder.obtener(entrada.getEstudiantes());
         List<UUID> yaVinculados = estudiantesYaVinculadosFinder.obtener(entrada.getRelaciones());
         long vinculadosActuales = estudiantesVinculadosContadorFinder.obtener(entrada.getFichaPerfil());
 
         logger.debug(EstudianteFichaPerfilKey.LOG_VERIFICACION_ASIGNAR,
-                !ficha.esVacio(), estudiantesExistentes.size(), yaVinculados.size(), vinculadosActuales);
+                !ficha.esVacio(), estudiantesVigentes.size(), yaVinculados.size(), vinculadosActuales);
 
         asignarEstudiantesFichaPerfilValidator.validar(
-                entrada, ficha, estudiantesExistentes, yaVinculados, vinculadosActuales);
+                entrada, ficha, estudiantesVigentes, yaVinculados, vinculadosActuales);
 
         entrada.getRelaciones().stream()
                 .map(EstudianteFichaPerfilMapper::toEntity)

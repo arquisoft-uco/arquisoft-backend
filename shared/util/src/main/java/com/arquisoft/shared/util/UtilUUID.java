@@ -27,6 +27,10 @@ public final class UtilUUID {
         return generarUUIDDesdeTexto(UUID_POR_DEFECTO);
     }
 
+    public static boolean esPorDefecto(final UUID uuid) {
+        return obtenerUUIDPorDefecto().equals(uuid);
+    }
+
     public static UUID generarUUIDDesdeTexto(final String uuid) {
         return uuidValido(uuid) ? UUID.fromString(uuid) : null;
     }

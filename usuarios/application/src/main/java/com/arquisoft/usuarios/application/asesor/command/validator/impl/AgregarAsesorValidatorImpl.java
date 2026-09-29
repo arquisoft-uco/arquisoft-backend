@@ -1,6 +1,7 @@
 package com.arquisoft.usuarios.application.asesor.command.validator.impl;
 
 import com.arquisoft.usuarios.application.asesor.command.validator.AgregarAsesorValidator;
+import com.arquisoft.usuarios.domain.asesor.AsesorDomain;
 import com.arquisoft.usuarios.domain.asesor.model.DisponibilidadAsesorUsuario;
 import com.arquisoft.usuarios.domain.asesor.rules.AsesorUsuarioUnicoRule;
 import com.arquisoft.usuarios.domain.asesor.rules.impl.AsesorUsuarioUnicoRuleImpl;
@@ -18,7 +19,7 @@ public class AgregarAsesorValidatorImpl implements AgregarAsesorValidator {
     }
 
     @Override
-    public void validar(UUID usuario, boolean yaEsAsesor) {
-        asesorUsuarioUnicoRule.validar(new DisponibilidadAsesorUsuario(usuario, yaEsAsesor));
+    public void validar(UUID usuario, AsesorDomain asesor) {
+        asesorUsuarioUnicoRule.validar(new DisponibilidadAsesorUsuario(usuario, asesor));
     }
 }

@@ -7,3 +7,25 @@ rutas:
   usuarios:
     usuarios:
       base: /usuarios
+      estudiante: /{usuarioId}/estudiante
+      asesor: /{usuarioId}/asesor
+      asesor-ficha: /{usuarioId}/asesor-ficha
+      coordinador: /{usuarioId}/coordinador
+      representante-comite: /{usuarioId}/representante-comite
+      administrador: /{usuarioId}/administrador
+      modificar: /{usuarioId}
+      eliminar: /{usuarioId}
+      estado: /{usuarioId}/estado
+      usuarios-administrador: /administrador
+      coordinadores-administrador: /coordinadores/administrador
+      coordinadores-vigentes: /coordinadores/vigentes
+      estudiantes-administrador: /estudiantes/administrador
+      estudiantes-vigentes: /estudiantes/vigentes
+      asesores-administrador: /asesores/administrador
+      asesores-vigentes: /asesores/vigentes
+      asesores-ficha-administrador: /asesores-ficha/administrador
+      asesores-ficha-vigentes: /asesores-ficha/vigentes
+      representantes-comite-administrador: /representantes-comite/administrador
+      representantes-comite-vigentes: /representantes-comite/vigentes
+      administradores-administrador: /administradores/administrador
+      estados: /estados

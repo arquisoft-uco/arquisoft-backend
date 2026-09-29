@@ -1,6 +1,6 @@
 package com.arquisoft.usuarios.application.coordinador.command.usecase.impl;
 
-import com.arquisoft.usuarios.application.coordinador.command.finder.CoordinadorUsuarioExisteFinder;
+import com.arquisoft.usuarios.application.coordinador.command.finder.CoordinadorPorUsuarioFinder;
 import com.arquisoft.usuarios.application.coordinador.command.secondaryport.CoordinadorOutputPort;
 import com.arquisoft.usuarios.application.coordinador.command.secondaryport.mapper.CoordinadorMapper;
 import com.arquisoft.usuarios.application.coordinador.command.usecase.AgregarCoordinadorUseCase;
@@ -19,22 +19,32 @@ import org.springframework.stereotype.Component;
 public class AgregarCoordinadorUseCaseImpl implements AgregarCoordinadorUseCase {
 
     private final CoordinadorOutputPort coordinadorOutputPort;
-    private final CoordinadorUsuarioExisteFinder coordinadorUsuarioExisteFinder;
+    private final CoordinadorPorUsuarioFinder coordinadorPorUsuarioFinder;
     private final AgregarCoordinadorValidator agregarCoordinadorValidator;
     private final EventPublisher eventPublisher;
     private final AppLogger logger;
 
     @Override
     public void ejecutar(UsuarioDomain usuario) {
-        var yaEsCoordinador = coordinadorUsuarioExisteFinder.obtener(usuario.getId());
-        logger.debug(AgregarCoordinadorKey.LOG_VERIFICACION_AGREGAR, usuario.getId(), yaEsCoordinador);
+        var coordinador = coordinadorPorUsuarioFinder.obtener(usuario.getId());
+        logger.debug(AgregarCoordinadorKey.LOG_VERIFICACION_AGREGAR,
+                usuario.getId(), !coordinador.esVacio(), coordinador.estaEliminado());
 
-        agregarCoordinadorValidator.validar(usuario.getId(), yaEsCoordinador);
+        agregarCoordinadorValidator.validar(usuario.getId(), coordinador);
 
-        var coordinador = CoordinadorDomain.crear(usuario.getId());
-        coordinadorOutputPort.guardar(CoordinadorMapper.toEntity(coordinador));
+        if (coordinador.esVacio()) {
+            coordinadorOutputPort.guardar(CoordinadorMapper.toEntity(CoordinadorDomain.crear(usuario.getId())));
+        } else {
+            reactivar(coordinador);
+        }
 
         eventPublisher.publish(new CoordinadorAgregadoEvent(
                 usuario.getId(), usuario.getIdentificador(), usuario.getNombre(), usuario.getEmail()));
+    }
+
+    private void reactivar(CoordinadorDomain coordinador) {
+        coordinador.reactivar();
+        coordinadorOutputPort.reactivar(coordinador.getUsuario());
+        logger.info(AgregarCoordinadorKey.LOG_REACTIVADO, coordinador.getUsuario());
     }
 }
