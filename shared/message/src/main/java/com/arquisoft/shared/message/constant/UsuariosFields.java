@@ -11,6 +11,7 @@ public final class UsuariosFields {
 
         private Usuario() {}
 
+        public static final String USUARIO = "usuario";
         public static final String IDENTIFICADOR = "identificador";
         public static final String NOMBRE = "nombre";
         public static final String NOMBRES = "nombres";
@@ -47,5 +48,20 @@ public final class UsuariosFields {
         private Asesor() {}
 
         public static final String USUARIO = "usuario";
+    }
+
+    public static final class RepresentanteComite {
+
+        private RepresentanteComite() {}
+
+        public static final String USUARIO = "usuario";
+    }
+
+    public static final class Administrador {
+
+        private Administrador() {}
+
+        public static final String USUARIO = "usuario";
+        public static final String ACTOR = "actor";
     }
 }

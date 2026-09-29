@@ -12,26 +12,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class RespuestaNovedadCoordinadorDomainTest {
 
     @Test
-    void debeCrearLaAccion_cuandoLosTresDatosSonValidos() {
+    void debeCrearLaAccion_cuandoLosDatosSonValidos() {
         // Arrange
         UUID solicitud = UUID.randomUUID();
         UUID coordinador = UUID.randomUUID();
+        RespuestaDomain respuesta = RespuestaDomain.crear(solicitud, "contenido");
 
         // Act
         RespuestaNovedadCoordinadorDomain accion =
-                RespuestaNovedadCoordinadorDomain.crear(solicitud, "contenido", coordinador);
+                RespuestaNovedadCoordinadorDomain.crear(respuesta, coordinador);
 
         // Assert
+        assertThat(accion.getRespuesta()).isEqualTo(respuesta);
         assertThat(accion.getSolicitud()).isEqualTo(solicitud);
-        assertThat(accion.getContenido()).isEqualTo("contenido");
         assertThat(accion.getCoordinadorUsuario()).isEqualTo(coordinador);
     }
 
     @Test
-    void debeAcumularErrores_cuandoSolicitudYCoordinadorSonNulos() {
+    void debeAcumularErrores_cuandoRespuestaYCoordinadorSonNulos() {
         // Act
         DomainValidationException excepcion = assertThrows(DomainValidationException.class,
-                () -> RespuestaNovedadCoordinadorDomain.crear(null, "contenido", null));
+                () -> RespuestaNovedadCoordinadorDomain.crear(null, null));
 
         // Assert
         var resultado = excepcion.getValidationResult();

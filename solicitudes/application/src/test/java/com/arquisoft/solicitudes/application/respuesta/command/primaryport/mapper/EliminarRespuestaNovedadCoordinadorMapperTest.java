@@ -1,7 +1,6 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.EliminarRespuestaNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.domain.respuesta.EliminacionRespuestaNovedadCoordinadorDomain;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -13,14 +12,13 @@ class EliminarRespuestaNovedadCoordinadorMapperTest {
     @Test
     void debeCopiarSolicitudYCoordinadorUsuario_cuandoMapeaElComando() {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
         var command = EliminarRespuestaNovedadCoordinadorCommand.crear(
                 solicitud.toString(), coordinador);
 
         // Act
-        EliminacionRespuestaNovedadCoordinadorDomain dominio =
-                EliminarRespuestaNovedadCoordinadorMapper.toDomain(command);
+        var dominio = EliminarRespuestaNovedadCoordinadorMapper.toDomain(command);
 
         // Assert
         assertThat(dominio.getSolicitud()).isEqualTo(solicitud);

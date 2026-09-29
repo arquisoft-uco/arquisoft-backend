@@ -12,8 +12,10 @@ rutas:
       novedad-coordinador-recibidas: /novedad-coordinador/recibidas
       novedad-coordinador-enviadas: /novedad-coordinador/enviadas
       novedad-asesor: /novedad-asesor
+      novedad-asesor-por-id: /novedad-asesor/{solicitudId}
       cambio-asesor: /cambio-asesor
       ampliacion-plazo: /ampliacion-plazo
+      tipos-solicitud: /tipos-solicitud
     respuesta:
       base: /solicitudes
       novedad-coordinador: /novedad-coordinador/{solicitudId}/respuesta

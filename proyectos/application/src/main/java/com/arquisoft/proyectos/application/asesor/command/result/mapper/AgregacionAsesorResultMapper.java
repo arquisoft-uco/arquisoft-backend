@@ -13,6 +13,10 @@ public final class AgregacionAsesorResultMapper {
         return new AgregacionAsesorResult.Agregada(asesor.getId());
     }
 
+    public static AgregacionAsesorResult.Reactivada toResultReactivada(AsesorDomain asesor) {
+        return new AgregacionAsesorResult.Reactivada(asesor.getId());
+    }
+
     public static AgregacionAsesorResult.Duplicada toResultDuplicada(AsesorDomain asesor) {
         return new AgregacionAsesorResult.Duplicada(asesor.getId());
     }
