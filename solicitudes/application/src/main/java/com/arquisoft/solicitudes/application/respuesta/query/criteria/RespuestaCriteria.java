@@ -42,10 +42,6 @@ public final class RespuestaCriteria extends QueryCriteria {
                 .map(Campo::getClave)
                 .collect(Collectors.toUnmodifiableSet());
 
-        public static boolean esValidoParaFiltrar(String clave) {
-            return CLAVES_FILTRABLES.contains(clave);
-        }
-
         public static boolean esValidoParaOrdenar(String clave) {
             return CLAVES_ORDENABLES.contains(clave);
         }

@@ -13,7 +13,6 @@ import com.arquisoft.shared.query.FiltroConector;
 import com.arquisoft.shared.query.FiltroOperador;
 import com.arquisoft.shared.query.NodoFiltro;
 import com.arquisoft.shared.query.SortOrder;
-import com.arquisoft.shared.query.pagination.PaginatedResult;
 import com.arquisoft.shared.query.pagination.SortDirection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -136,11 +135,11 @@ class RespuestaQueryOutputAdapterTest {
         sincronizar();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(porRemitente(ana.getUsuarioId()));
+        var resultado = adapter.consultar(porRemitente(ana.getUsuarioId()));
 
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
-        RespuestaReadModel leida = resultado.getContent().get(0);
+        var leida = resultado.getContent().get(0);
         assertThat(leida.contenido()).isEqualTo("respuesta para Ana");
         assertThat(leida.estadoRespuestaId()).isEqualTo(ESTADO_EN_REVISION);
         assertThat(leida.estadoRespuestaNombre()).isEqualTo("En revisión");
@@ -171,7 +170,7 @@ class RespuestaQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "sobre cambio");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                                 ana.getUsuarioId().toString()),
@@ -179,7 +178,7 @@ class RespuestaQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -202,7 +201,7 @@ class RespuestaQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "rechazado por incompleto");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                                 ana.getUsuarioId().toString()),
@@ -210,7 +209,7 @@ class RespuestaQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -233,7 +232,7 @@ class RespuestaQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 3, 4, 8, 0).toInstant(ZoneOffset.UTC), "ya aprobada");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.grupo(FiltroConector.AND, List.of(
                         NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                                 ana.getUsuarioId().toString()),
@@ -241,7 +240,7 @@ class RespuestaQueryOutputAdapterTest {
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -264,14 +263,14 @@ class RespuestaQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 5, 25, 8, 0).toInstant(ZoneOffset.UTC), "nueva");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                         ana.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("fechaRespuesta", SortDirection.DESC)))
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -295,14 +294,14 @@ class RespuestaQueryOutputAdapterTest {
                 LocalDateTime.of(2026, 5, 25, 8, 0).toInstant(ZoneOffset.UTC), "a");
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
+        var criteria = RespuestaCriteria.builder().pagina(0).tamanio(10)
                 .raiz(NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                         ana.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("destinatarioNombre", SortDirection.ASC)))
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent())
@@ -323,14 +322,14 @@ class RespuestaQueryOutputAdapterTest {
         }
         sincronizar();
 
-        RespuestaCriteria criteria = RespuestaCriteria.builder().pagina(1).tamanio(2)
+        var criteria = RespuestaCriteria.builder().pagina(1).tamanio(2)
                 .raiz(NodoFiltro.predicado("remitenteUsuarioId", FiltroOperador.ES,
                         ana.getUsuarioId().toString()))
                 .ordenamiento(List.of(SortOrder.of("fechaRespuesta", SortDirection.ASC)))
                 .build();
 
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(criteria);
+        var resultado = adapter.consultar(criteria);
 
         // Assert
         assertThat(resultado.getContent()).hasSize(1);
@@ -342,7 +341,7 @@ class RespuestaQueryOutputAdapterTest {
     @Test
     void debeRetornarVacio_cuandoNoHayRespuestasParaElEstudiante() {
         // Act
-        PaginatedResult<RespuestaReadModel> resultado = adapter.consultar(porRemitente(UUID.randomUUID()));
+        var resultado = adapter.consultar(porRemitente(UUID.randomUUID()));
 
         // Assert
         assertThat(resultado.getContent()).isEmpty();

@@ -96,7 +96,7 @@ class ConsultarRespuestasNovedadCoordinadorRecibidasControllerTest {
     @Test
     void debeSerializarRespuestaResponseDTOConSolicitudEmbebida_yTomarElEstudianteDelJwt() throws Exception {
         // Arrange
-        UUID estudiante = UUID.randomUUID();
+        var estudiante = UUID.randomUUID();
         var remitente = new RemitenteReadModel(UUID.randomUUID(), "EST-1", "Ana Estudiante",
                 "ana@uco.edu.co");
         var destinatario = new DestinatarioReadModel(UUID.randomUUID(), "COORD-1", "Coordinadora Uno",
@@ -140,7 +140,7 @@ class ConsultarRespuestasNovedadCoordinadorRecibidasControllerTest {
                 .thenThrow(new FiltroException("campo de filtro no permitido: solicitudId",
                         "app.consulta.campo-filtro-no-permitido"));
 
-        String body = """
+        var body = """
                 {
                   "filtros": {
                     "tipo": "PREDICADO",

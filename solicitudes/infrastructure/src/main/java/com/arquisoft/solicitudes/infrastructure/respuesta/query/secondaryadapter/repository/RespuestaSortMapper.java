@@ -1,5 +1,6 @@
 package com.arquisoft.solicitudes.infrastructure.respuesta.query.secondaryadapter.repository;
 
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.solicitudes.application.respuesta.query.criteria.RespuestaCriteria;
 
 import java.util.Collections;
@@ -11,16 +12,16 @@ final class RespuestaSortMapper {
     private static final Map<String, String> RUTAS;
 
     static {
-        Map<String, String> m = new LinkedHashMap<>();
-        for (RespuestaCriteria.Campo campo : RespuestaCriteria.Campo.values()) {
-            String ruta = switch (campo) {
+        var m = new LinkedHashMap<String, String>();
+        for (var campo : RespuestaCriteria.Campo.values()) {
+            var ruta = switch (campo) {
                 case FECHA_RESPUESTA     -> "fechaRespuesta";
                 case DESTINATARIO_NOMBRE -> "destinatarioNombre";
                 case CONTENIDO, ESTADO_RESPUESTA_ID, TIPO_SOLICITUD_ID,
                      REMITENTE_USUARIO_ID, DESTINATARIO_IDENTIFICADOR,
-                     DESTINATARIO_EMAIL -> null; // no ordenables
+                     DESTINATARIO_EMAIL -> null;
             };
-            if (ruta != null) {
+            if (UtilObjeto.noEsNulo(ruta)) {
                 m.put(campo.getClave(), ruta);
             }
         }
