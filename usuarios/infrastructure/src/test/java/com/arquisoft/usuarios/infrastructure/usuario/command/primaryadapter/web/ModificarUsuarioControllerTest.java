@@ -2,6 +2,8 @@ package com.arquisoft.usuarios.infrastructure.usuario.command.primaryadapter.web
 
 import com.arquisoft.shared.tracing.infrastructure.traza.config.TrazabilidadConfig;
 import com.arquisoft.usuarios.application.usuario.command.primaryport.interactor.ModificarUsuarioInteractor;
+import com.arquisoft.shared.message.constant.UsuariosCodes;
+import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEliminadoException;
 import com.arquisoft.usuarios.domain.usuario.exception.UsuarioEmailDuplicadoException;
 import com.arquisoft.usuarios.infrastructure.security.UsuariosAuthorities;
 import com.arquisoft.shared.web.handler.GlobalAppExceptionHandler;
@@ -26,6 +28,7 @@ import java.util.UUID;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ModificarUsuarioController.class)
@@ -132,5 +135,25 @@ class ModificarUsuarioControllerTest {
                                 }
                                 """))
                 .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void debe422ConSuCodigo_cuandoElUsuarioEstaEliminado() throws Exception {
+        // Arrange
+        var usuario = UUID.randomUUID();
+        doThrow(new UsuarioEliminadoException(usuario)).when(modificarUsuarioInteractor).ejecutar(any());
+
+        // Act & Assert
+        mockMvc.perform(patch("/usuarios/{usuarioId}", usuario)
+                        .with(SecurityMockMvcRequestPostProcessors.jwt()
+                                .authorities(new SimpleGrantedAuthority(UsuariosAuthorities.USUARIO_UPDATE)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "nombre": "Ana Corregida"
+                                }
+                                """))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.errorCode").value(UsuariosCodes.Usuario.ELIMINADO));
     }
 }

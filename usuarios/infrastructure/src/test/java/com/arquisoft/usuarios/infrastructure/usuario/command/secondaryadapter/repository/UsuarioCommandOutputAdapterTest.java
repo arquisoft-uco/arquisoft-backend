@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.repository;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import com.arquisoft.shared.logger.AppLogger;
 import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
@@ -36,7 +37,7 @@ class UsuarioCommandOutputAdapterTest {
     void debeMapearYGuardarLaEntidadComoJpaEntity_cuandoGuardaElUsuario() {
         // Arrange
         var id = UUID.randomUUID();
-        var entity = new UsuarioEntity(id, "usr001", "Ana Pérez", "ana@uco.edu.co", "573001112233", "ACTIVO");
+        var entity = new UsuarioEntity(id, "usr001", "Ana Pérez", "ana@uco.edu.co", "573001112233", "ACTIVO", UtilFecha.VACIO);
 
         // Act
         adapter.guardar(entity);
@@ -121,7 +122,7 @@ class UsuarioCommandOutputAdapterTest {
 
         // Assert
         assertThat(resultado).contains(
-                new UsuarioEntity(id, "usr001", "Ana Pérez", "ana@uco.edu.co", "573001112233", "ACTIVO"));
+                new UsuarioEntity(id, "usr001", "Ana Pérez", "ana@uco.edu.co", "573001112233", "ACTIVO", UtilFecha.VACIO));
     }
 
     @Test
@@ -139,7 +140,7 @@ class UsuarioCommandOutputAdapterTest {
         // Arrange
         var id = UUID.randomUUID();
         var entity = new UsuarioEntity(
-                id, "usr999", "Ana Actualizada", "actualizada@uco.edu.co", "573009998877", "ACTIVO");
+                id, "usr999", "Ana Actualizada", "actualizada@uco.edu.co", "573009998877", "ACTIVO", UtilFecha.VACIO);
 
         // Act
         adapter.actualizar(entity);

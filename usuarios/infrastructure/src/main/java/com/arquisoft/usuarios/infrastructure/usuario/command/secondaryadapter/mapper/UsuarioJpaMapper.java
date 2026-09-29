@@ -1,7 +1,11 @@
 package com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.mapper;
 
+import com.arquisoft.shared.util.UtilFecha;
+import com.arquisoft.shared.util.UtilObjeto;
 import com.arquisoft.usuarios.application.usuario.command.secondaryport.entity.UsuarioEntity;
 import com.arquisoft.usuarios.infrastructure.usuario.command.secondaryadapter.entity.UsuarioJpaEntity;
+
+import java.time.Instant;
 
 public final class UsuarioJpaMapper {
 
@@ -14,7 +18,8 @@ public final class UsuarioJpaMapper {
                 jpaEntity.getNombre(),
                 jpaEntity.getEmail(),
                 jpaEntity.getContacto(),
-                jpaEntity.getEstadoId());
+                jpaEntity.getEstadoId(),
+                UtilObjeto.aplicarPorDefecto(jpaEntity.getEliminadoEn(), UtilFecha.VACIO));
     }
 
     public static UsuarioJpaEntity toJpaEntity(UsuarioEntity entity) {
@@ -25,6 +30,11 @@ public final class UsuarioJpaMapper {
                 .email(entity.email())
                 .contacto(entity.contacto())
                 .estadoId(entity.estado())
+                .eliminadoEn(aColumna(entity.eliminadoEn()))
                 .build();
+    }
+
+    public static Instant aColumna(Instant eliminadoEn) {
+        return UtilFecha.VACIO.equals(eliminadoEn) ? null : eliminadoEn;
     }
 }

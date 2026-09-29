@@ -3,6 +3,8 @@ package com.arquisoft.usuarios.domain.estadousuario;
 import com.arquisoft.usuarios.domain.estadousuario.exception.EstadoUsuarioNoEncontradoException;
 import com.arquisoft.shared.util.UtilEnum;
 
+import java.util.Optional;
+
 public enum EstadoUsuario {
 
     ACTIVO("Activo"),
@@ -26,9 +28,19 @@ public enum EstadoUsuario {
         return nombre;
     }
 
+    public boolean habilitaAcceso() {
+        return this == ACTIVO;
+    }
+
     public static EstadoUsuario desde(String id) {
-        return UtilEnum.desde(EstadoUsuario.class, id)
-                .filter(estado -> estado != VACIO)
-                .orElseThrow(() -> new EstadoUsuarioNoEncontradoException(id));
+        return delCatalogo(id).orElseThrow(() -> new EstadoUsuarioNoEncontradoException(id));
+    }
+
+    public static boolean esValido(String id) {
+        return delCatalogo(id).isPresent();
+    }
+
+    private static Optional<EstadoUsuario> delCatalogo(String id) {
+        return UtilEnum.desde(EstadoUsuario.class, id).filter(estado -> estado != VACIO);
     }
 }

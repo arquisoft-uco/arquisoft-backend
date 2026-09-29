@@ -1,5 +1,6 @@
 package com.arquisoft.usuarios.application.asesor.command.usecase.impl;
 
+import com.arquisoft.shared.util.UtilFecha;
 import com.arquisoft.usuarios.application.asesor.command.finder.AsesorPorUsuarioFinder;
 import com.arquisoft.usuarios.application.asesor.command.secondaryport.AsesorOutputPort;
 import com.arquisoft.usuarios.application.asesor.command.secondaryport.entity.AsesorEntity;
@@ -57,7 +58,7 @@ class AgregarAsesorUseCaseImplTest {
     private UsuarioDomain usuario() {
         return UsuarioDomain.reconstruir(
                 UUID.randomUUID(), "20161020123", "Ana Perez", "ana@uco.edu.co", "573001112233",
-                EstadoUsuario.ACTIVO);
+                EstadoUsuario.ACTIVO, UtilFecha.VACIO);
     }
 
     @Test
