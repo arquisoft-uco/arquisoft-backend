@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.repository;
 
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.RevisionItemOutputPort;
+import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.AsesoriaRevisionItemEntity;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.PertenenciaRevisionItemEntity;
 import com.arquisoft.fichas.application.revisionitem.command.secondaryport.entity.RevisionItemEntity;
 import com.arquisoft.fichas.infrastructure.revisionitem.command.secondaryadapter.mapper.RevisionItemJpaMapper;
@@ -40,8 +41,19 @@ public class RevisionItemCommandOutputAdapter implements RevisionItemOutputPort 
     }
 
     @Override
+    public Optional<AsesoriaRevisionItemEntity> obtenerAsesoria(UUID revisionItem) {
+        return repository.obtenerAsesoria(revisionItem);
+    }
+
+    @Override
     public void actualizarEstado(UUID revisionItem, String estadoActual, String estadoNuevo) {
         repository.actualizarEstado(revisionItem, estadoActual, estadoNuevo);
         logger.debug(RevisionItemKey.LOG_ACTUALIZADO, revisionItem, estadoNuevo);
+    }
+
+    @Override
+    public void removerRevision(UUID revisionItem) {
+        repository.removerPorId(revisionItem);
+        logger.debug(RevisionItemKey.LOG_ELIMINADO, revisionItem);
     }
 }
