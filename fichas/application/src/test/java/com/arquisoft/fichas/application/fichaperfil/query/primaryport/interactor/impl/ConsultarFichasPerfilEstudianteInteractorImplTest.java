@@ -3,9 +3,9 @@ package com.arquisoft.fichas.application.fichaperfil.query.primaryport.interacto
 import com.arquisoft.fichas.application.asesorficha.query.readmodel.AsesorFichaReadModel;
 import com.arquisoft.fichas.application.estadofichaperfil.query.readmodel.EstadoFichaPerfilReadModel;
 import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilEstudianteCriteria;
-import com.arquisoft.fichas.application.fichaperfil.query.primaryport.model.ConsultarFichaPerfilEstudianteQuery;
+import com.arquisoft.fichas.application.fichaperfil.query.primaryport.model.ConsultarFichasPerfilEstudianteQuery;
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilEstudianteReadModel;
-import com.arquisoft.fichas.application.fichaperfil.query.usecase.ConsultarFichaPerfilEstudianteUseCase;
+import com.arquisoft.fichas.application.fichaperfil.query.usecase.ConsultarFichasPerfilEstudianteUseCase;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -15,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,45 +23,43 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarFichaPerfilEstudianteInteractorImplTest {
+class ConsultarFichasPerfilEstudianteInteractorImplTest {
 
     @Mock
-    private ConsultarFichaPerfilEstudianteUseCase consultarFichaPerfilEstudianteUseCase;
+    private ConsultarFichasPerfilEstudianteUseCase consultarFichasPerfilEstudianteUseCase;
 
     @InjectMocks
-    private ConsultarFichaPerfilEstudianteInteractorImpl interactor;
+    private ConsultarFichasPerfilEstudianteInteractorImpl interactor;
 
     @Test
     void debeDelegarEnUseCase_conCriteriaMapeado() {
         // Arrange
-        var fichaPerfil = UUID.randomUUID();
         var estudiante = UUID.randomUUID();
-        var query = ConsultarFichaPerfilEstudianteQuery.crear(fichaPerfil, estudiante);
+        var query = ConsultarFichasPerfilEstudianteQuery.crear(estudiante);
         var readModel = new FichaPerfilEstudianteReadModel(
                 UUID.randomUUID(), "Titulo",
                 new AsesorFichaReadModel(UUID.randomUUID(), "id", "Nombre", "correo@uco.edu.co"),
                 new EstadoFichaPerfilReadModel("FORMULACION", "Formulacion", Instant.now()),
                 List.of());
-        when(consultarFichaPerfilEstudianteUseCase.ejecutar(any(FichaPerfilEstudianteCriteria.class)))
-                .thenReturn(Optional.of(readModel));
+        when(consultarFichasPerfilEstudianteUseCase.ejecutar(any(FichaPerfilEstudianteCriteria.class)))
+                .thenReturn(List.of(readModel));
 
         // Act
         var resultado = interactor.ejecutar(query);
 
         // Assert
-        assertThat(resultado).containsSame(readModel);
+        assertThat(resultado).containsExactly(readModel);
         var captor = ArgumentCaptor.forClass(FichaPerfilEstudianteCriteria.class);
-        verify(consultarFichaPerfilEstudianteUseCase).ejecutar(captor.capture());
-        assertThat(captor.getValue().fichaPerfil()).isEqualTo(fichaPerfil);
+        verify(consultarFichasPerfilEstudianteUseCase).ejecutar(captor.capture());
         assertThat(captor.getValue().estudiante()).isEqualTo(estudiante);
     }
 
     @Test
-    void debeRetornarVacio_cuandoUseCaseNoEncuentra() {
+    void debeRetornarListaVacia_cuandoUseCaseNoEncuentraFichas() {
         // Arrange
-        var query = ConsultarFichaPerfilEstudianteQuery.crear(UUID.randomUUID(), UUID.randomUUID());
-        when(consultarFichaPerfilEstudianteUseCase.ejecutar(any(FichaPerfilEstudianteCriteria.class)))
-                .thenReturn(Optional.empty());
+        var query = ConsultarFichasPerfilEstudianteQuery.crear(UUID.randomUUID());
+        when(consultarFichasPerfilEstudianteUseCase.ejecutar(any(FichaPerfilEstudianteCriteria.class)))
+                .thenReturn(List.of());
 
         // Act
         var resultado = interactor.ejecutar(query);

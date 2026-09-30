@@ -7,17 +7,12 @@ import com.arquisoft.shared.validation.ValidatorObjeto;
 
 import java.util.UUID;
 
-public record ConsultarFichaPerfilEstudianteQuery(
-        UUID fichaPerfil,
+public record ConsultarFichasPerfilEstudianteQuery(
         UUID estudiante
 ) {
 
-    public static ConsultarFichaPerfilEstudianteQuery crear(UUID fichaPerfil, UUID estudiante) {
+    public static ConsultarFichasPerfilEstudianteQuery crear(UUID estudiante) {
         var result = new ValidationResult();
-
-        ValidatorObjeto.noNulo(fichaPerfil,
-                FichasFields.FichaPerfil.ID,
-                FichasCodes.FichaPerfil.ID_REQUERIDO, result);
 
         ValidatorObjeto.noNulo(estudiante,
                 FichasFields.FichaPerfil.ESTUDIANTE,
@@ -25,6 +20,6 @@ public record ConsultarFichaPerfilEstudianteQuery(
 
         result.lanzarSiTieneErroresDeEntrada();
 
-        return new ConsultarFichaPerfilEstudianteQuery(fichaPerfil, estudiante);
+        return new ConsultarFichasPerfilEstudianteQuery(estudiante);
     }
 }

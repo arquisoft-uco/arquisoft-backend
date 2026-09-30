@@ -12,4 +12,6 @@ public interface EstudianteFichaPerfilQueryOutputPort {
     List<EstudianteFichaPerfilReadModel> consultarVigentesPorFicha(UUID fichaPerfil);
 
     List<EstudianteFichaPerfilReadModel> consultarCompanerosPorFichaYEstudiante(UUID fichaPerfil, UUID estudiante);
+
+    List<EstudianteFichaPerfilReadModel> consultarVigentesDeFichasDelEstudiante(UUID estudiante);
 }

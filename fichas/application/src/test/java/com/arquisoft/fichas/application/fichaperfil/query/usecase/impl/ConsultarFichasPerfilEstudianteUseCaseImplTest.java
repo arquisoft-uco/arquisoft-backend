@@ -6,6 +6,7 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilEs
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilEstudianteReadModel;
 import com.arquisoft.fichas.application.fichaperfil.query.secondaryport.FichaPerfilEstudianteQueryOutputPort;
 import com.arquisoft.shared.logger.AppLogger;
+import com.arquisoft.shared.message.key.fichas.FichaPerfilKey;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,15 +15,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ConsultarFichaPerfilEstudianteUseCaseImplTest {
+class ConsultarFichasPerfilEstudianteUseCaseImplTest {
 
     @Mock
     private FichaPerfilEstudianteQueryOutputPort fichaPerfilEstudianteQueryOutputPort;
@@ -31,37 +31,41 @@ class ConsultarFichaPerfilEstudianteUseCaseImplTest {
     private AppLogger logger;
 
     @InjectMocks
-    private ConsultarFichaPerfilEstudianteUseCaseImpl useCase;
+    private ConsultarFichasPerfilEstudianteUseCaseImpl useCase;
 
     @Test
-    void debeDelegarEnPuerto_conCriteria() {
+    void debeDelegarEnPuertoYRetornarListaSinTransformar_cuandoHayFichas() {
         // Arrange
-        var criteria = new FichaPerfilEstudianteCriteria(UUID.randomUUID(), UUID.randomUUID());
+        var estudiante = UUID.randomUUID();
+        var criteria = new FichaPerfilEstudianteCriteria(estudiante);
         var readModel = new FichaPerfilEstudianteReadModel(
                 UUID.randomUUID(), "Titulo",
                 new AsesorFichaReadModel(UUID.randomUUID(), "id", "Nombre", "correo@uco.edu.co"),
                 new EstadoFichaPerfilReadModel("FORMULACION", "Formulacion", Instant.now()),
                 List.of());
-        when(fichaPerfilEstudianteQueryOutputPort.consultar(criteria)).thenReturn(Optional.of(readModel));
+        var fichas = List.of(readModel, readModel);
+        when(fichaPerfilEstudianteQueryOutputPort.consultarPorEstudiante(criteria)).thenReturn(fichas);
 
         // Act
         var resultado = useCase.ejecutar(criteria);
 
         // Assert
-        assertThat(resultado).containsSame(readModel);
+        assertThat(resultado).isSameAs(fichas);
+        verify(logger).debug(FichaPerfilKey.LOG_CONSULTANDO_ESTUDIANTE, estudiante);
+        verify(logger).debug(FichaPerfilKey.LOG_CONSULTA_ESTUDIANTE_COMPLETADA, 2);
     }
 
     @Test
-    void debeRetornarVacio_cuandoPuertoNoEncuentra() {
+    void debeRetornarListaVacia_cuandoPuertoNoEncuentraFichas() {
         // Arrange
-        var criteria = new FichaPerfilEstudianteCriteria(UUID.randomUUID(), UUID.randomUUID());
-        when(fichaPerfilEstudianteQueryOutputPort.consultar(any(FichaPerfilEstudianteCriteria.class)))
-                .thenReturn(Optional.empty());
+        var criteria = new FichaPerfilEstudianteCriteria(UUID.randomUUID());
+        when(fichaPerfilEstudianteQueryOutputPort.consultarPorEstudiante(criteria)).thenReturn(List.of());
 
         // Act
         var resultado = useCase.ejecutar(criteria);
 
         // Assert
         assertThat(resultado).isEmpty();
+        verify(logger).debug(FichaPerfilKey.LOG_CONSULTA_ESTUDIANTE_COMPLETADA, 0);
     }
 }
