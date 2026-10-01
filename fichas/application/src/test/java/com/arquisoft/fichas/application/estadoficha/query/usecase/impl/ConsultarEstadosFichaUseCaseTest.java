@@ -1,5 +1,6 @@
 package com.arquisoft.fichas.application.estadoficha.query.usecase.impl;
 
+import com.arquisoft.fichas.application.estadoficha.query.criteria.EstadoFichaCriteria;
 import com.arquisoft.fichas.application.estadoficha.query.secondaryport.EstadoFichaQueryOutputPort;
 import com.arquisoft.fichas.application.estadoficha.query.readmodel.EstadoFichaReadModel;
 import com.arquisoft.shared.logger.AppLogger;
@@ -29,36 +30,34 @@ class ConsultarEstadosFichaUseCaseTest {
     private ConsultarEstadosFichaUseCaseImpl useCase;
 
     @Test
-    void debeRetornarListaCompleta_cuandoExistenEstados() {
+    void debeRetornarEstadosDelPuerto_cuandoElRolTieneEstadosHabilitados() {
         // Arrange
-        List<EstadoFichaReadModel> estadosEsperados = List.of(
+        var roles = List.of("ASESOR_FICHA");
+        var estadosEsperados = List.of(
                 new EstadoFichaReadModel("EN_CONSTRUCCION", "En Construccion", "Ficha en desarrollo"),
-                new EstadoFichaReadModel("APROBADA", "Aprobada", "Ficha aprobada por el comite"),
-                new EstadoFichaReadModel("NO_APROBADA", "No Aprobada", "Ficha rechazada")
+                new EstadoFichaReadModel("DISPONIBLE_PARA_EVALUACION", "Disponible Para Evaluacion", "Lista para evaluar")
         );
-        when(queryOutputPort.findAll()).thenReturn(estadosEsperados);
+        when(queryOutputPort.consultarPorRoles(roles)).thenReturn(estadosEsperados);
 
         // Act
-        List<EstadoFichaReadModel> resultado = useCase.ejecutar();
+        var resultado = useCase.ejecutar(new EstadoFichaCriteria(roles));
 
         // Assert
-        assertThat(resultado).isNotNull();
-        assertThat(resultado).hasSize(3);
         assertThat(resultado).containsExactlyElementsOf(estadosEsperados);
-        verify(queryOutputPort, times(1)).findAll();
+        verify(queryOutputPort, times(1)).consultarPorRoles(roles);
     }
 
     @Test
-    void debeRetornarListaVacia_cuandoNoHayEstados() {
+    void debeRetornarListaVacia_cuandoElPuertoNoDevuelveEstados() {
         // Arrange
-        when(queryOutputPort.findAll()).thenReturn(List.of());
+        var roles = List.<String>of();
+        when(queryOutputPort.consultarPorRoles(roles)).thenReturn(List.of());
 
         // Act
-        List<EstadoFichaReadModel> resultado = useCase.ejecutar();
+        var resultado = useCase.ejecutar(new EstadoFichaCriteria(roles));
 
         // Assert
-        assertThat(resultado).isNotNull();
         assertThat(resultado).isEmpty();
-        verify(queryOutputPort, times(1)).findAll();
+        verify(queryOutputPort, times(1)).consultarPorRoles(roles);
     }
 }

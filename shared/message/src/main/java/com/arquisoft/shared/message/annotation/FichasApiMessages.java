@@ -346,8 +346,9 @@ public final class FichasApiMessages {
         public static final String TAG_DESCRIPTION = "Catálogo de estados del ciclo de vida de las fichas de perfil";
 
         public static final String CONSULTAR_SUMMARY = "Consultar todos los estados ficha";
-        public static final String CONSULTAR_DESCRIPTION = "Retorna todos los estados ficha disponibles en el catálogo sin filtros ni paginación";
-        public static final String CONSULTAR_RESP_200 = "Lista de estados ficha retornada exitosamente";
+        public static final String CONSULTAR_DESCRIPTION =
+                "Retorna los estados ficha habilitados para alguno de los roles del usuario autenticado, tomados del token JWT";
+        public static final String CONSULTAR_RESP_200 = "Lista de estados ficha habilitados para el rol del usuario retornada exitosamente";
         public static final String CONSULTAR_RESP_401 = "No autenticado - token JWT ausente o inválido";
         public static final String CONSULTAR_RESP_403 = "No autorizado - client role insuficiente";
     }

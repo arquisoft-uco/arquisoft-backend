@@ -1,6 +1,10 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.impl;
 
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.validator.AsignarEstudiantesFichaPerfilValidator;
+import com.arquisoft.fichas.domain.estadofichaperfil.EstadoFichaPerfilDomain;
+import com.arquisoft.fichas.domain.estadofichaperfil.model.EstadoActualFicha;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.EstadoFichaPerfilEnTerminalRule;
+import com.arquisoft.fichas.domain.estadofichaperfil.rules.impl.EstadoFichaPerfilEnTerminalRuleImpl;
 import com.arquisoft.fichas.domain.estudiante.model.ExistenciaEstudiantes;
 import com.arquisoft.fichas.domain.estudiante.rules.EstudiantesExistenRule;
 import com.arquisoft.fichas.domain.estudiante.rules.impl.EstudiantesExistenRuleImpl;
@@ -29,6 +33,7 @@ public class AsignarEstudiantesFichaPerfilValidatorImpl implements AsignarEstudi
     private final FichaPerfilExisteRule fichaPerfilExisteRule;
     private final EstudiantesExistenRule estudiantesExistenRule;
     private final EstudiantesNoVinculadosRule estudiantesNoVinculadosRule;
+    private final EstadoFichaPerfilEnTerminalRule estadoFichaPerfilEnTerminalRule;
     private final EstudianteFichaPerfilCupoDisponibleRule estudianteFichaPerfilCupoDisponibleRule;
 
     public AsignarEstudiantesFichaPerfilValidatorImpl() {
@@ -36,12 +41,14 @@ public class AsignarEstudiantesFichaPerfilValidatorImpl implements AsignarEstudi
         this.fichaPerfilExisteRule = new FichaPerfilExisteRuleImpl();
         this.estudiantesExistenRule = new EstudiantesExistenRuleImpl();
         this.estudiantesNoVinculadosRule = new EstudiantesNoVinculadosRuleImpl();
+        this.estadoFichaPerfilEnTerminalRule = new EstadoFichaPerfilEnTerminalRuleImpl();
         this.estudianteFichaPerfilCupoDisponibleRule = new EstudianteFichaPerfilCupoDisponibleRuleImpl();
     }
 
     @Override
     public void validar(AgregacionEstudiantesFichaPerfilDomain entrada, FichaPerfilDomain ficha,
-                        List<UUID> estudiantesExistentes, List<UUID> yaVinculados, long vinculadosActuales) {
+                        EstadoFichaPerfilDomain estadoActual, List<UUID> estudiantesExistentes,
+                        List<UUID> yaVinculados, long vinculadosActuales) {
 
         estudiantesSinDuplicadosRule.validar(entrada.getEstudiantes());
 
@@ -51,6 +58,8 @@ public class AsignarEstudiantesFichaPerfilValidatorImpl implements AsignarEstudi
                 new ExistenciaEstudiantes(entrada.getEstudiantes(), estudiantesExistentes));
         estudiantesNoVinculadosRule.validar(new VinculosEstudiantesFicha(yaVinculados));
 
+        estadoFichaPerfilEnTerminalRule.validar(
+                new EstadoActualFicha(entrada.getFichaPerfil(), estadoActual.getEstadoFicha()));
         estudianteFichaPerfilCupoDisponibleRule.validar(
                 new CupoEstudiantesFicha(vinculadosActuales, entrada.getCantidad()));
     }

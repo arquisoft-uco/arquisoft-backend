@@ -62,6 +62,7 @@
               "fichas:estudiante-ficha-perfil:create",
               "fichas:estudiante-ficha-perfil:delete",
               "fichas:estudiante-ficha-perfil-coordinador:view",
+              "fichas:estado-ficha:view",
               "solicitudes:solicitud-novedad-coordinador-recibida:view"
             ]
           }
@@ -173,7 +174,6 @@
               "fichas:estado-ficha-perfil-estudiante:view",
               "solicitudes:solicitud-ampliacion-plazo:create",
               "solicitudes:solicitud-novedad-coordinador:delete",
-              "fichas:estado-ficha:view",
               "fichas:item-ficha-perfil-estudiante:view",
               "fichas:item-ficha-perfil:create",
               "solicitudes:solicitud-cambio-asesor:create"
