@@ -128,4 +128,11 @@ public final class FichasFields {
         public static final String ESTADO_EVALUACION = "estadoEvaluacion";
         public static final String REPRESENTANTE_COMITE = "representanteComite";
     }
+
+    public static final class EstadoFicha {
+
+        private EstadoFicha() {}
+
+        public static final String ROLES = "roles";
+    }
 }

@@ -1,6 +1,7 @@
 package com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.impl;
 
 import com.arquisoft.shared.message.key.fichas.EstudianteFichaPerfilKey;
+import com.arquisoft.fichas.application.estadofichaperfil.command.finder.EstadoActualFichaPerfilFinder;
 import com.arquisoft.fichas.application.estudiante.command.finder.EstudiantesExistentesFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.finder.VinculoEstudianteFichaExisteFinder;
 import com.arquisoft.fichas.application.estudiantefichaperfil.command.usecase.RemoverEstudianteFichaPerfilUseCase;
@@ -14,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -22,6 +22,7 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
 
     private final EstudianteFichaPerfilOutputPort estudianteFichaPerfilOutputPort;
     private final FichaPerfilExisteFinder fichaPerfilExisteFinder;
+    private final EstadoActualFichaPerfilFinder estadoActualFichaPerfilFinder;
     private final EstudiantesExistentesFinder estudiantesExistentesFinder;
     private final VinculoEstudianteFichaExisteFinder vinculoEstudianteFichaExisteFinder;
     private final RemoverEstudianteFichaPerfilValidator removerEstudianteFichaPerfilValidator;
@@ -29,21 +30,22 @@ public class RemoverEstudianteFichaPerfilUseCaseImpl implements RemoverEstudiant
 
     @Override
     public void ejecutar(RemocionEstudianteFichaPerfilDomain entrada) {
-        UUID fichaPerfil = entrada.getFichaPerfil();
-        UUID estudiante = entrada.getEstudiante();
+        var fichaPerfil = entrada.getFichaPerfil();
+        var estudiante = entrada.getEstudiante();
 
         logger.info(EstudianteFichaPerfilKey.LOG_REMOVIENDO, fichaPerfil, estudiante);
 
-        boolean fichaExiste = fichaPerfilExisteFinder.obtener(fichaPerfil);
-        List<UUID> estudiantesExistentes = estudiantesExistentesFinder.obtener(List.of(estudiante));
-        boolean vinculoExiste = vinculoEstudianteFichaExisteFinder.obtener(
+        var fichaExiste = fichaPerfilExisteFinder.obtener(fichaPerfil);
+        var estadoActual = estadoActualFichaPerfilFinder.obtener(fichaPerfil);
+        var estudiantesExistentes = estudiantesExistentesFinder.obtener(List.of(estudiante));
+        var vinculoExiste = vinculoEstudianteFichaExisteFinder.obtener(
                 new VinculoEstudianteFicha(fichaPerfil, estudiante));
 
         logger.debug(EstudianteFichaPerfilKey.LOG_VERIFICACION_REMOVER,
                 fichaExiste, !estudiantesExistentes.isEmpty(), vinculoExiste);
 
         removerEstudianteFichaPerfilValidator.validar(
-                entrada, fichaExiste, estudiantesExistentes, vinculoExiste);
+                entrada, fichaExiste, estadoActual, estudiantesExistentes, vinculoExiste);
 
         estudianteFichaPerfilOutputPort.desvincularEstudiante(fichaPerfil, estudiante);
 
