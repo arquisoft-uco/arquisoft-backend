@@ -23,6 +23,7 @@ rutas:
       revision-visualizada: /revisiones/{revisionItemId}/visualizada
       revisiones-item-asesor: /revisiones-item/asesor
       observaciones-item-asesor: /observaciones-item/asesor
+      observaciones-item-estudiante: /observaciones-item/estudiante
       revisiones-item-estudiante: /revisiones-item/estudiante
       estudiantes: /{fichaPerfilId}/estudiantes
       estudiante-por-id: /{fichaPerfilId}/estudiantes/{estudianteId}
