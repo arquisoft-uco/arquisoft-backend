@@ -27,8 +27,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.UUID;
-
 @RestController
 @RequestMapping("${rutas.solicitudes.respuesta.base:/solicitudes}")
 @RequiredArgsConstructor
@@ -66,7 +64,7 @@ public class ModificarEstadoRespuestaNovedadCoordinadorController {
             @RequestBody ModificarEstadoRespuestaNovedadCoordinadorRequestDTO request,
             @AuthenticationPrincipal Jwt jwt) {
 
-        UUID coordinadorUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
+        var coordinadorUsuario = UtilUUID.generarUUIDDesdeTexto(jwt.getSubject());
         modificarEstadoRespuestaNovedadCoordinadorInteractor.ejecutar(
                 ModificarEstadoRespuestaNovedadCoordinadorRequestMapper.toCommand(
                         request, solicitudId, coordinadorUsuario));

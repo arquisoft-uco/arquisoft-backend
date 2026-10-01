@@ -9,7 +9,6 @@ import com.arquisoft.solicitudes.application.respuesta.command.usecase.Modificar
 import com.arquisoft.solicitudes.application.respuesta.command.validator.ModificarEstadoRespuestaNovedadCoordinadorValidator;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosSolicitudFinder;
 import com.arquisoft.solicitudes.application.solicitud.command.finder.DatosUsuarioFinder;
-import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNovedadCoordinadorDomain;
 import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorEstadoModificadoEvent;
 import lombok.RequiredArgsConstructor;
@@ -34,26 +33,22 @@ public class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImpl
                 entrada.getSolicitud(), entrada.getCoordinadorUsuario());
 
         var resumenSolicitud = datosSolicitudFinder.obtener(entrada.getSolicitud());
-        var existeSolicitud = !resumenSolicitud.esVacio();
-
         var resumenRespuesta = datosRespuestaFinder.obtener(entrada.getSolicitud());
-        var existeRespuesta = !resumenRespuesta.esVacio();
-
-        logger.debug(RespuestaKey.LOG_VERIFICACION_MODIFICACION_ESTADO, existeSolicitud, existeRespuesta);
-
-        validator.validar(entrada, existeSolicitud, resumenSolicitud.tipoSolicitud(),
-                resumenSolicitud.destinatarioUsuario(), existeRespuesta, resumenRespuesta.estado());
-
-        respuestaOutputPort.actualizarEstadoPorSolicitud(entrada.getSolicitud(), entrada.getNuevoEstado());
-
         var remitente = datosUsuarioFinder.obtener(resumenSolicitud.remitenteUsuario());
         var coordinador = datosUsuarioFinder.obtener(resumenSolicitud.destinatarioUsuario());
 
+        logger.debug(RespuestaKey.LOG_VERIFICACION_MODIFICACION_ESTADO,
+                !resumenSolicitud.esVacio(), !resumenRespuesta.esVacio());
+
+        validator.validar(entrada, resumenSolicitud, resumenRespuesta, remitente, coordinador);
+
+        var nuevoEstado = entrada.getNuevoEstado();
+        respuestaOutputPort.actualizarEstadoPorSolicitud(entrada.getSolicitud(), nuevoEstado.getId());
+
         eventPublisher.publish(new SolicitudNovedadCoordinadorEstadoModificadoEvent(
-                entrada.getSolicitud(), entrada.getNuevoEstado(),
-                EstadoRespuesta.desde(entrada.getNuevoEstado()).getNombre(),
+                entrada.getSolicitud(), nuevoEstado.getId(), nuevoEstado.getNombre(),
                 remitente.getNombre(), remitente.getEmail(), coordinador.getNombre()));
 
-        logger.info(RespuestaKey.LOG_ESTADO_MODIFICADO, entrada.getSolicitud(), entrada.getNuevoEstado());
+        logger.info(RespuestaKey.LOG_ESTADO_MODIFICADO, entrada.getSolicitud(), nuevoEstado.getId());
     }
 }

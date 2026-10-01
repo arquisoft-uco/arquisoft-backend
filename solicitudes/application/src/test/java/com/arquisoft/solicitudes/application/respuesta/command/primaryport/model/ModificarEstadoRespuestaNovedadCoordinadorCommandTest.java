@@ -28,15 +28,16 @@ class ModificarEstadoRespuestaNovedadCoordinadorCommandTest {
     }
 
     @Test
-    void debeLanzarErrorDeEntrada_cuandoLaSolicitudEstaEnBlanco() {
+    void debeAcumularLosErroresDeEntrada_cuandoLosTresDatosSonInvalidos() {
         // Act
         var excepcion = assertThrows(ApplicationValidationException.class,
-                () -> ModificarEstadoRespuestaNovedadCoordinadorCommand.crear(
-                        "  ", "APROBADA", UUID.randomUUID()));
+                () -> ModificarEstadoRespuestaNovedadCoordinadorCommand.crear("  ", "  ", null));
 
         // Assert
-        assertThat(excepcion.getValidationResult()
-                .tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
+        var resultado = excepcion.getValidationResult();
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Respuesta.ESTADO)).isTrue();
+        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.DESTINATARIO)).isTrue();
     }
 
     @Test
@@ -49,43 +50,5 @@ class ModificarEstadoRespuestaNovedadCoordinadorCommandTest {
         // Assert
         assertThat(excepcion.getValidationResult()
                 .tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
-    }
-
-    @Test
-    void debeLanzarErrorDeEntrada_cuandoElNuevoEstadoEstaEnBlanco() {
-        // Act
-        var excepcion = assertThrows(ApplicationValidationException.class,
-                () -> ModificarEstadoRespuestaNovedadCoordinadorCommand.crear(
-                        UUID.randomUUID().toString(), "  ", UUID.randomUUID()));
-
-        // Assert
-        assertThat(excepcion.getValidationResult()
-                .tieneErroresDeCampo(SolicitudesFields.Respuesta.ESTADO)).isTrue();
-    }
-
-    @Test
-    void debeLanzarErrorDeEntrada_cuandoElCoordinadorUsuarioEsNulo() {
-        // Act
-        var excepcion = assertThrows(ApplicationValidationException.class,
-                () -> ModificarEstadoRespuestaNovedadCoordinadorCommand.crear(
-                        UUID.randomUUID().toString(), "APROBADA", null));
-
-        // Assert
-        assertThat(excepcion.getValidationResult()
-                .tieneErroresDeCampo(SolicitudesFields.Solicitud.DESTINATARIO)).isTrue();
-    }
-
-    @Test
-    void debeAcumularVariosErrores_cuandoLaSolicitudYElNuevoEstadoEstanEnBlanco() {
-        // Act
-        var excepcion = assertThrows(ApplicationValidationException.class,
-                () -> ModificarEstadoRespuestaNovedadCoordinadorCommand.crear(
-                        "  ", "  ", null));
-
-        // Assert
-        var resultado = excepcion.getValidationResult();
-        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.ID)).isTrue();
-        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Respuesta.ESTADO)).isTrue();
-        assertThat(resultado.tieneErroresDeCampo(SolicitudesFields.Solicitud.DESTINATARIO)).isTrue();
     }
 }

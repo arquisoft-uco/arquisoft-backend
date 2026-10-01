@@ -1,7 +1,7 @@
 package com.arquisoft.solicitudes.application.respuesta.command.primaryport.mapper;
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ModificarEstadoRespuestaNovedadCoordinadorCommand;
-import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNovedadCoordinadorDomain;
+import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -19,12 +19,11 @@ class ModificarEstadoRespuestaNovedadCoordinadorMapperTest {
                 solicitud.toString(), "APROBADA", coordinador);
 
         // Act
-        ModificacionEstadoRespuestaNovedadCoordinadorDomain dominio =
-                ModificarEstadoRespuestaNovedadCoordinadorMapper.toDomain(command);
+        var dominio = ModificarEstadoRespuestaNovedadCoordinadorMapper.toDomain(command);
 
         // Assert
         assertThat(dominio.getSolicitud()).isEqualTo(solicitud);
         assertThat(dominio.getCoordinadorUsuario()).isEqualTo(coordinador);
-        assertThat(dominio.getNuevoEstado()).isEqualTo("APROBADA");
+        assertThat(dominio.getNuevoEstado()).isEqualTo(EstadoRespuesta.APROBADA);
     }
 }

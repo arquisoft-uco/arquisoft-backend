@@ -2,6 +2,7 @@ package com.arquisoft.solicitudes.application.respuesta.command.primaryport.inte
 
 import com.arquisoft.solicitudes.application.respuesta.command.primaryport.model.ModificarEstadoRespuestaNovedadCoordinadorCommand;
 import com.arquisoft.solicitudes.application.respuesta.command.usecase.ModificarEstadoRespuestaNovedadCoordinadorUseCase;
+import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNovedadCoordinadorDomain;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,6 +41,6 @@ class ModificarEstadoRespuestaNovedadCoordinadorInteractorImplTest {
         verify(useCase).ejecutar(captor.capture());
         assertThat(captor.getValue().getSolicitud()).isEqualTo(solicitud);
         assertThat(captor.getValue().getCoordinadorUsuario()).isEqualTo(coordinador);
-        assertThat(captor.getValue().getNuevoEstado()).isEqualTo("APROBADA");
+        assertThat(captor.getValue().getNuevoEstado()).isEqualTo(EstadoRespuesta.APROBADA);
     }
 }

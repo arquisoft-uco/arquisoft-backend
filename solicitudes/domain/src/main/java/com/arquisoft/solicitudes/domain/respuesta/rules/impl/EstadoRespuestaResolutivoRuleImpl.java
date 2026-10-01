@@ -9,9 +9,9 @@ public class EstadoRespuestaResolutivoRuleImpl implements EstadoRespuestaResolut
 
     @Override
     public void validar(NuevoEstadoRespuesta entrada) {
-        if (!EstadoRespuesta.esValido(entrada.nuevoEstado())
-                || EstadoRespuesta.EN_REVISION.getId().equals(entrada.nuevoEstado())) {
-            throw new EstadoRespuestaNoResolutivoException(entrada.solicitud(), entrada.nuevoEstado());
+        if (entrada.nuevoEstado() == EstadoRespuesta.EN_REVISION) {
+            throw new EstadoRespuestaNoResolutivoException(
+                    entrada.solicitud(), entrada.nuevoEstado().getId());
         }
     }
 }

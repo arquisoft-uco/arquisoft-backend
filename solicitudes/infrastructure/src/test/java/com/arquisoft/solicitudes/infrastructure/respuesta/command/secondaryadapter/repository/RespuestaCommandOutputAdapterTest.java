@@ -119,10 +119,9 @@ class RespuestaCommandOutputAdapterTest {
     @Test
     void debeActualizarElEstadoPersistidoYLogear_cuandoActualizaEstadoPorSolicitud() {
         // Arrange
-        UUID id = UUID.randomUUID();
-        UUID solicitudId = UUID.randomUUID();
-        adapter.registrar(new RespuestaEntity(
-                id, solicitudId, LocalDateTime.of(2026, 3, 1, 9, 0, 0), "r", ESTADO));
+        var id = UUID.randomUUID();
+        var solicitudId = UUID.randomUUID();
+        adapter.registrar(new RespuestaEntity(id, solicitudId, FECHA, "r", ESTADO));
         entityManager.flush();
         entityManager.clear();
 
@@ -132,7 +131,7 @@ class RespuestaCommandOutputAdapterTest {
         entityManager.clear();
 
         // Assert
-        RespuestaJpaEntity actualizada = entityManager.find(RespuestaJpaEntity.class, id);
+        var actualizada = entityManager.find(RespuestaJpaEntity.class, id);
         assertThat(actualizada.getEstadoRespuesta().getId()).isEqualTo("APROBADA");
     }
 }

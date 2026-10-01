@@ -1,10 +1,13 @@
 package com.arquisoft.solicitudes.domain.respuesta;
 
+import com.arquisoft.shared.message.Mensajes;
 import com.arquisoft.shared.message.constant.SolicitudesCodes;
 import com.arquisoft.shared.message.constant.SolicitudesFields;
+import com.arquisoft.shared.message.key.solicitudes.EstadoRespuestaKey;
 import com.arquisoft.shared.validation.ValidationResult;
 import com.arquisoft.shared.validation.ValidatorObjeto;
 import com.arquisoft.shared.validation.ValidatorTexto;
+import com.arquisoft.solicitudes.domain.estadorespuesta.EstadoRespuesta;
 
 import java.util.UUID;
 
@@ -12,7 +15,7 @@ public final class ModificacionEstadoRespuestaNovedadCoordinadorDomain {
 
     private UUID solicitud;
     private UUID coordinadorUsuario;
-    private String nuevoEstado;
+    private EstadoRespuesta nuevoEstado;
 
     private ModificacionEstadoRespuestaNovedadCoordinadorDomain() {}
 
@@ -53,7 +56,14 @@ public final class ModificacionEstadoRespuestaNovedadCoordinadorDomain {
                 SolicitudesCodes.Respuesta.ESTADO_REQUERIDO, result)) {
             return;
         }
-        this.nuevoEstado = nuevoEstado;
+        if (!EstadoRespuesta.esValido(nuevoEstado)) {
+            result.agregarError(
+                    SolicitudesFields.Respuesta.ESTADO,
+                    SolicitudesCodes.EstadoRespuesta.ESTADO_NO_ENCONTRADO,
+                    Mensajes.formatear(EstadoRespuestaKey.ERROR_ESTADO_RESPUESTA_NO_ENCONTRADO, nuevoEstado));
+            return;
+        }
+        this.nuevoEstado = EstadoRespuesta.desde(nuevoEstado);
     }
 
     public UUID getSolicitud() {
@@ -64,7 +74,7 @@ public final class ModificacionEstadoRespuestaNovedadCoordinadorDomain {
         return coordinadorUsuario;
     }
 
-    public String getNuevoEstado() {
+    public EstadoRespuesta getNuevoEstado() {
         return nuevoEstado;
     }
 }

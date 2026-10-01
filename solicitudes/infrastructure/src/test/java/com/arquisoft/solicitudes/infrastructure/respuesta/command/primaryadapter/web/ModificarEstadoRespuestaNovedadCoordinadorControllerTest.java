@@ -81,8 +81,8 @@ class ModificarEstadoRespuestaNovedadCoordinadorControllerTest {
     @Test
     void debe204YTomarElCoordinadorDelJwt_cuandoLaPeticionEsValida() throws Exception {
         // Arrange
-        UUID solicitud = UUID.randomUUID();
-        UUID coordinador = UUID.randomUUID();
+        var solicitud = UUID.randomUUID();
+        var coordinador = UUID.randomUUID();
 
         // Act & Assert
         mockMvc.perform(patch(RUTA.formatted(solicitud))
@@ -91,8 +91,7 @@ class ModificarEstadoRespuestaNovedadCoordinadorControllerTest {
                         .with(jwtDe(coordinador, SolicitudesAuthorities.RESPUESTA_NOVEDAD_COORDINADOR_UPDATE)))
                 .andExpect(status().isNoContent());
 
-        ArgumentCaptor<ModificarEstadoRespuestaNovedadCoordinadorCommand> captor =
-                ArgumentCaptor.forClass(ModificarEstadoRespuestaNovedadCoordinadorCommand.class);
+        var captor = ArgumentCaptor.forClass(ModificarEstadoRespuestaNovedadCoordinadorCommand.class);
         verify(interactor).ejecutar(captor.capture());
         assertThat(captor.getValue().solicitud()).isEqualTo(solicitud);
         assertThat(captor.getValue().nuevoEstado()).isEqualTo("APROBADA");
@@ -136,7 +135,8 @@ class ModificarEstadoRespuestaNovedadCoordinadorControllerTest {
         mockMvc.perform(patch(RUTA.formatted(UUID.randomUUID()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"nuevoEstado\":\"APROBADA\"}")
-                        .with(jwtDe(UUID.randomUUID(), "solicitudes:solicitud:read")))
+                        .with(jwtDe(UUID.randomUUID(),
+                                SolicitudesAuthorities.RESPUESTA_NOVEDAD_COORDINADOR_CREATE)))
                 .andExpect(status().isForbidden());
     }
 

@@ -13,26 +13,32 @@ import com.arquisoft.solicitudes.domain.respuesta.ModificacionEstadoRespuestaNov
 import com.arquisoft.solicitudes.domain.respuesta.event.SolicitudNovedadCoordinadorEstadoModificadoEvent;
 import com.arquisoft.solicitudes.domain.respuesta.exception.EstadoRespuestaNoResolutivoException;
 import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEnRevisionException;
+import com.arquisoft.solicitudes.domain.respuesta.exception.RespuestaNoEncontradaException;
 import com.arquisoft.solicitudes.domain.respuesta.model.ResumenRespuesta;
+import com.arquisoft.solicitudes.domain.solicitud.exception.DestinatarioNoEncontradoException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.RemitenteNoEncontradoException;
 import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEncontradaException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudNoEsDestinatarioException;
+import com.arquisoft.solicitudes.domain.solicitud.exception.SolicitudTipoNoCoincideException;
 import com.arquisoft.solicitudes.domain.solicitud.model.ResumenSolicitud;
 import com.arquisoft.solicitudes.domain.tiposolicitud.TipoSolicitud;
 import com.arquisoft.solicitudes.domain.usuario.UsuarioDomain;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -58,6 +64,10 @@ class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImplTest {
     private UUID coordinadorUsuario;
     private UUID remitenteUsuario;
     private ModificacionEstadoRespuestaNovedadCoordinadorDomain entrada;
+    private ResumenSolicitud resumenSolicitud;
+    private ResumenRespuesta resumenRespuesta;
+    private UsuarioDomain remitente;
+    private UsuarioDomain coordinador;
 
     @BeforeEach
     void setUp() {
@@ -70,24 +80,21 @@ class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImplTest {
         remitenteUsuario = UUID.randomUUID();
         entrada = ModificacionEstadoRespuestaNovedadCoordinadorDomain.crear(
                 solicitud, coordinadorUsuario, "APROBADA");
-    }
-
-    private void stubSolicitudYRespuestaValidas() {
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(new ResumenSolicitud(
+        resumenSolicitud = new ResumenSolicitud(
                 solicitud, remitenteUsuario, coordinadorUsuario,
-                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId()));
-        when(datosRespuestaFinder.obtener(solicitud))
-                .thenReturn(new ResumenRespuesta(solicitud, "EN_REVISION"));
+                TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId());
+        resumenRespuesta = new ResumenRespuesta(solicitud, "EN_REVISION");
+        remitente = UsuarioDomain.reconstruir(
+                remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now());
+        coordinador = UsuarioDomain.reconstruir(
+                coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now());
     }
 
     private void stubFlujoValido() {
-        stubSolicitudYRespuestaValidas();
-        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(
-                UsuarioDomain.reconstruir(
-                        remitenteUsuario, "EST-1", "Ana Estudiante", "ana@uco.edu.co", Instant.now()));
-        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(
-                UsuarioDomain.reconstruir(
-                        coordinadorUsuario, "COO-1", "Pedro Coordinador", "pedro@uco.edu.co", Instant.now()));
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(resumenSolicitud);
+        when(datosRespuestaFinder.obtener(solicitud)).thenReturn(resumenRespuesta);
+        when(datosUsuarioFinder.obtener(remitenteUsuario)).thenReturn(remitente);
+        when(datosUsuarioFinder.obtener(coordinadorUsuario)).thenReturn(coordinador);
     }
 
     @Test
@@ -124,53 +131,7 @@ class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImplTest {
     }
 
     @Test
-    void debeAbortarSinActualizarNiPublicar_cuandoElValidatorLanza() {
-        // Arrange
-        stubSolicitudYRespuestaValidas();
-        doThrow(new RespuestaNoEnRevisionException(solicitud))
-                .when(validator).validar(any(), anyBoolean(), any(), any(), anyBoolean(), any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(entrada))
-                .isInstanceOf(RespuestaNoEnRevisionException.class);
-
-        verify(respuestaOutputPort, never()).actualizarEstadoPorSolicitud(any(), any());
-        verify(eventPublisher, never()).publish(any());
-    }
-
-    @Test
-    void debePasarLosValoresPorDefectoAlValidator_cuandoLaSolicitudNoExiste() {
-        // Arrange
-        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
-        when(datosRespuestaFinder.obtener(solicitud)).thenReturn(ResumenRespuesta.VACIO);
-        doThrow(new SolicitudNoEncontradaException(solicitud))
-                .when(validator).validar(any(), anyBoolean(), any(), any(), anyBoolean(), any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(entrada))
-                .isInstanceOf(SolicitudNoEncontradaException.class);
-
-        verify(validator).validar(eq(entrada), eq(false), any(), any(), eq(false), any());
-        verify(respuestaOutputPort, never()).actualizarEstadoPorSolicitud(any(), any());
-    }
-
-    @Test
-    void debeLanzarEstadoRespuestaNoResolutivo_cuandoElValidatorRechazaElNuevoEstado() {
-        // Arrange
-        stubSolicitudYRespuestaValidas();
-        doThrow(new EstadoRespuestaNoResolutivoException(solicitud, "APROBADA"))
-                .when(validator).validar(any(), anyBoolean(), any(), any(), anyBoolean(), any());
-
-        // Act & Assert
-        assertThatThrownBy(() -> useCase.ejecutar(entrada))
-                .isInstanceOf(EstadoRespuestaNoResolutivoException.class);
-
-        verify(respuestaOutputPort, never()).actualizarEstadoPorSolicitud(any(), any());
-        verify(eventPublisher, never()).publish(any());
-    }
-
-    @Test
-    void debeConsultarValidarActualizarYPublicarEnOrden_cuandoElFlujoEsValido() {
+    void debeConsultarTodoAntesDeValidarYValidarAntesDeActualizarYPublicar_cuandoElFlujoEsValido() {
         // Arrange
         stubFlujoValido();
 
@@ -178,12 +139,61 @@ class ModificarEstadoRespuestaNovedadCoordinadorUseCaseImplTest {
         useCase.ejecutar(entrada);
 
         // Assert
-        InOrder inOrder = inOrder(datosSolicitudFinder, datosRespuestaFinder,
+        var inOrder = inOrder(datosSolicitudFinder, datosRespuestaFinder, datosUsuarioFinder,
                 validator, respuestaOutputPort, eventPublisher);
         inOrder.verify(datosSolicitudFinder).obtener(solicitud);
         inOrder.verify(datosRespuestaFinder).obtener(solicitud);
-        inOrder.verify(validator).validar(any(), anyBoolean(), any(), any(), anyBoolean(), any());
+        inOrder.verify(datosUsuarioFinder).obtener(remitenteUsuario);
+        inOrder.verify(datosUsuarioFinder).obtener(coordinadorUsuario);
+        inOrder.verify(validator).validar(entrada, resumenSolicitud, resumenRespuesta, remitente, coordinador);
         inOrder.verify(respuestaOutputPort).actualizarEstadoPorSolicitud(solicitud, "APROBADA");
         inOrder.verify(eventPublisher).publish(any());
+    }
+
+    @Test
+    void debePasarLosResumenesVaciosAlValidator_cuandoLaSolicitudNoExiste() {
+        // Arrange
+        when(datosSolicitudFinder.obtener(solicitud)).thenReturn(ResumenSolicitud.VACIO);
+        when(datosRespuestaFinder.obtener(solicitud)).thenReturn(ResumenRespuesta.VACIO);
+        when(datosUsuarioFinder.obtener(ResumenSolicitud.VACIO.remitenteUsuario()))
+                .thenReturn(UsuarioDomain.VACIO);
+        doThrow(new SolicitudNoEncontradaException(solicitud)).when(validator).validar(
+                entrada, ResumenSolicitud.VACIO, ResumenRespuesta.VACIO,
+                UsuarioDomain.VACIO, UsuarioDomain.VACIO);
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(entrada))
+                .isInstanceOf(SolicitudNoEncontradaException.class);
+
+        verify(logger).debug(eq(RespuestaKey.LOG_VERIFICACION_MODIFICACION_ESTADO), eq(false), eq(false));
+        verify(respuestaOutputPort, never()).actualizarEstadoPorSolicitud(any(), any());
+        verify(eventPublisher, never()).publish(any());
+    }
+
+    static Stream<RuntimeException> excepcionesDelValidator() {
+        return Stream.of(
+                new RemitenteNoEncontradoException(UUID.randomUUID()),
+                new DestinatarioNoEncontradoException(UUID.randomUUID()),
+                new SolicitudTipoNoCoincideException(UUID.randomUUID()),
+                new SolicitudNoEsDestinatarioException(UUID.randomUUID()),
+                new RespuestaNoEncontradaException(UUID.randomUUID()),
+                new RespuestaNoEnRevisionException(UUID.randomUUID()),
+                new EstadoRespuestaNoResolutivoException(UUID.randomUUID(), "EN_REVISION"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("excepcionesDelValidator")
+    void debeAbortarSinActualizarNiPublicar_cuandoElValidatorRechazaPorReglaDeNegocio(
+            RuntimeException excepcion) {
+        // Arrange
+        stubFlujoValido();
+        doThrow(excepcion).when(validator)
+                .validar(entrada, resumenSolicitud, resumenRespuesta, remitente, coordinador);
+
+        // Act & Assert
+        assertThatThrownBy(() -> useCase.ejecutar(entrada)).isSameAs(excepcion);
+
+        verify(respuestaOutputPort, never()).actualizarEstadoPorSolicitud(any(), any());
+        verify(eventPublisher, never()).publish(any());
     }
 }
