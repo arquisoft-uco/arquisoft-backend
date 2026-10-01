@@ -9,33 +9,29 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
-class ConsultarFichaPerfilEstudianteQueryTest {
+class ConsultarFichasPerfilEstudianteQueryTest {
 
     @Test
     void debeCrearQuery_cuandoDatosValidos() {
         // Arrange
-        var fichaPerfil = UUID.randomUUID();
         var estudiante = UUID.randomUUID();
 
         // Act
-        var query = ConsultarFichaPerfilEstudianteQuery.crear(fichaPerfil, estudiante);
+        var query = ConsultarFichasPerfilEstudianteQuery.crear(estudiante);
 
         // Assert
-        assertThat(query.fichaPerfil()).isEqualTo(fichaPerfil);
         assertThat(query.estudiante()).isEqualTo(estudiante);
     }
 
     @Test
-    void debeLanzarApplicationValidationException_conAmbosFieldErrors_cuandoFichaPerfilYEstudianteNulos() {
+    void debeLanzarApplicationValidationException_cuandoEstudianteNulo() {
         // Act
         var ex = catchThrowableOfType(ApplicationValidationException.class,
-                () -> ConsultarFichaPerfilEstudianteQuery.crear(null, null));
+                () -> ConsultarFichasPerfilEstudianteQuery.crear(null));
 
         // Assert
         assertThat(ex.getValidationResult().getErrores())
                 .extracting("codigoError")
-                .containsExactlyInAnyOrder(
-                        FichasCodes.FichaPerfil.ID_REQUERIDO,
-                        FichasCodes.FichaPerfil.ESTUDIANTE_REQUERIDO);
+                .containsExactly(FichasCodes.FichaPerfil.ESTUDIANTE_REQUERIDO);
     }
 }

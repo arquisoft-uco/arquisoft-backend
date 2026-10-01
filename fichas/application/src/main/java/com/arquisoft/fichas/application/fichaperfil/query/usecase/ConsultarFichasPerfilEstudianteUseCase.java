@@ -4,8 +4,8 @@ import com.arquisoft.fichas.application.fichaperfil.query.criteria.FichaPerfilEs
 import com.arquisoft.fichas.application.fichaperfil.query.readmodel.FichaPerfilEstudianteReadModel;
 import com.arquisoft.shared.usecase.UseCase;
 
-import java.util.Optional;
+import java.util.List;
 
-public interface ConsultarFichaPerfilEstudianteUseCase
-        extends UseCase<FichaPerfilEstudianteCriteria, Optional<FichaPerfilEstudianteReadModel>> {
+public interface ConsultarFichasPerfilEstudianteUseCase
+        extends UseCase<FichaPerfilEstudianteCriteria, List<FichaPerfilEstudianteReadModel>> {
 }
