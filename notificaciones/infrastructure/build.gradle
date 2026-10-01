@@ -1,0 +1,35 @@
+dependencies {
+    // domain solo en tests: la barrera de capas prohibe que infrastructure vea el dominio.
+    testImplementation project(':notificaciones:domain')
+    implementation project(':notificaciones:application')
+    implementation project(':shared:domain')
+    implementation project(':shared:application')
+    implementation project(':shared:jpa')
+    implementation project(':shared:amqp')
+    implementation project(':shared:logger')
+
+    // shared:tracing — el consumidor AMQP recibe el GestorTraza por constructor.
+    // shared:amqp lo declara con 'implementation', asi que no llega transitivamente.
+    implementation project(':shared:tracing')
+
+    // AMQP — spring-amqp no es transitivo en compilacion desde shared:amqp (Gradle 'implementation').
+    // Se declara aqui para acceder a @RabbitListener, Message, Channel, QueueBuilder, etc.
+    implementation "org.springframework.boot:spring-boot-starter-amqp"
+
+    // StringRedisTemplate — la plantilla de correo se lee de Redis al arrancar.
+    implementation "org.springframework.boot:spring-boot-starter-data-redis"
+
+    // JavaMailSender + MimeMessageHelper — unica dependencia de transporte del contexto.
+    implementation "org.springframework.boot:spring-boot-starter-mail"
+
+    // Database
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
+    runtimeOnly "org.postgresql:postgresql"
+
+    // Testing — Spring Boot 4.x: @DataJpaTest requiere modulo separado
+    testImplementation "org.springframework.boot:spring-boot-starter-data-jpa-test"
+    testImplementation "com.h2database:h2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

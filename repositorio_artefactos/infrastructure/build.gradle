@@ -1,5 +1,5 @@
 dependencies {
-    implementation project(':repositorio_artefactos:domain')
+    testImplementation project(':repositorio_artefactos:domain')
     implementation project(':repositorio_artefactos:application')
     implementation "org.springframework.boot:spring-boot-starter-jdbc:${springBootVersion}"
 }

@@ -1,0 +1,31 @@
+# ==================== RUTAS DE CONTROLADORES — CONTEXTO USUARIOS ====================
+# Un placeholder por segmento de path. OpenApiConfig lee la misma clave via @Value
+# para no duplicar el literal entre el controlador REST y la agrupacion de Swagger.
+# Vive en este modulo (no en el application.yml raiz) para que, si este contexto se
+# extrae a microservicio, se lleve su propia configuracion de rutas consigo.
+rutas:
+  usuarios:
+    usuarios:
+      base: /usuarios
+      estudiante: /{usuarioId}/estudiante
+      asesor: /{usuarioId}/asesor
+      asesor-ficha: /{usuarioId}/asesor-ficha
+      coordinador: /{usuarioId}/coordinador
+      representante-comite: /{usuarioId}/representante-comite
+      administrador: /{usuarioId}/administrador
+      modificar: /{usuarioId}
+      eliminar: /{usuarioId}
+      estado: /{usuarioId}/estado
+      usuarios-administrador: /administrador
+      coordinadores-administrador: /coordinadores/administrador
+      coordinadores-vigentes: /coordinadores/vigentes
+      estudiantes-administrador: /estudiantes/administrador
+      estudiantes-vigentes: /estudiantes/vigentes
+      asesores-administrador: /asesores/administrador
+      asesores-vigentes: /asesores/vigentes
+      asesores-ficha-administrador: /asesores-ficha/administrador
+      asesores-ficha-vigentes: /asesores-ficha/vigentes
+      representantes-comite-administrador: /representantes-comite/administrador
+      representantes-comite-vigentes: /representantes-comite/vigentes
+      administradores-administrador: /administradores/administrador
+      estados: /estados

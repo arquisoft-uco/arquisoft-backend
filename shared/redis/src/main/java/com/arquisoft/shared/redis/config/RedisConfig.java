@@ -1,16 +1,21 @@
 package com.arquisoft.shared.redis.config;
 
-import com.arquisoft.shared.util.UtilText;
+import com.arquisoft.shared.util.UtilTexto;
+import io.lettuce.core.ClientOptions;
+import io.lettuce.core.TimeoutOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import java.time.Duration;
 
 @Configuration
 public class RedisConfig {
@@ -27,46 +32,52 @@ public class RedisConfig {
     @Value("${spring.data.redis.password}")
     private String password;
 
-    /**
-     * Crea explicitamente el LettuceConnectionFactory con credenciales opcionales.
-     * Desplaza la auto-configuracion de Spring Boot (RedisAutoConfiguration) que no
-     * expone username cuando se usa la propiedad spring.data.redis.username en ciertas versiones.
-     * Si REDIS_USERNAME o REDIS_PASSWORD estan vacios, no se envian al servidor (compatible con Redis sin auth).
-     */
+    @Value("${spring.data.redis.timeout}")
+    private Duration timeout;
+
     @Bean
     @Primary
     public LettuceConnectionFactory redisConnectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-        if (!UtilText.isEmptyOrNull(username)) {
+        var config = new RedisStandaloneConfiguration(host, port);
+        if (!UtilTexto.esVacioONulo(username)) {
             config.setUsername(username);
         }
-        if (!UtilText.isEmptyOrNull(password)) {
+        if (!UtilTexto.esVacioONulo(password)) {
             config.setPassword(password);
         }
-        return new LettuceConnectionFactory(config);
+        return new LettuceConnectionFactory(config, clientConfiguration());
     }
 
-    /**
-     * Sobreescribe el RedisTemplate<Object,Object> por defecto de Spring Boot,
-     * que usa serializacion JDK (no legible, no portable entre JVMs).
-     * Usa String como clave y JSON Jackson 3.x como valor.
-     *
-     * StringRedisTemplate es auto-configurado por Spring Boot — no se redeclara aqui.
-     */
+    // La fábrica se construye a mano, así que Spring Boot no aplica aquí spring.data.redis.timeout
+    // ni las opciones de cliente. Por defecto Lettuce encola indefinidamente los comandos con el
+    // canal caído, y el timeout no cuenta hasta que el comando se escribe en él: la combinación
+    // cuelga la petición para siempre.
+    private LettuceClientConfiguration clientConfiguration() {
+        var opciones = ClientOptions.builder()
+                .disconnectedBehavior(ClientOptions.DisconnectedBehavior.REJECT_COMMANDS)
+                .timeoutOptions(TimeoutOptions.enabled())
+                .build();
+
+        return LettuceClientConfiguration.builder()
+                .clientOptions(opciones)
+                .commandTimeout(timeout)
+                .build();
+    }
+
     @Bean
     @Primary
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        StringRedisSerializer stringSerializer = new StringRedisSerializer();
+        var stringSerializer = new StringRedisSerializer();
         template.setKeySerializer(stringSerializer);
         template.setHashKeySerializer(stringSerializer);
 
         // GenericJacksonJsonRedisSerializer es el reemplazo Jackson 3.x de GenericJackson2JsonRedisSerializer.
         // builder().build() crea un mapper con DefaultTyping habilitado para serialización polimórfica
         // (tipo guardado como @class en el JSON), permitiendo deserializar sin conocer el tipo en tiempo de lectura.
-        GenericJacksonJsonRedisSerializer jsonSerializer = GenericJacksonJsonRedisSerializer.builder().build();
+        var jsonSerializer = GenericJacksonJsonRedisSerializer.builder().build();
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
 

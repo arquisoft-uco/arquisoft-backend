@@ -2,7 +2,7 @@
 
 ## Antes de Contribuir
 
-1. Lee los [Estándares de Código](https://github.com/arquisoft-uco/arquisoft-docs/blob/main/docs/architecture/coding-standards.md)
+1. Lee los estándares de código: [`.claude/skills/arquisoft-estandares/SKILL.md`](.claude/skills/arquisoft-estandares/SKILL.md) (local, siempre actualizado) — el repo privado [arquisoft-docs](https://github.com/arquisoft-uco/arquisoft-docs/blob/main/docs/architecture/coding-standards.md) tiene una versión complementaria de más alto nivel
 2. Asegúrate de tener asignada la tarea correspondiente
 
 ## Flujo de Trabajo
@@ -23,7 +23,7 @@
   - Formato: `<prefijo>/<id>-<descripcion_snake_case>`
 - **Nomenclatura:** Español para negocio (`ProyectoGrado`), inglés para sufijos técnicos (`UseCase`, `Adapter`, `DTO`)
 - **Arquitectura:** Hexagonal (puertos y adaptadores) por Bounded Context
-- **Testing:** JUnit 5 + Mockito + AssertJ — Convención: `debeHacerAlgo_cuandoCondicion()`
+- **Testing:** JUnit 6 + Mockito + AssertJ — Convención: `debeHacerAlgo_cuandoCondicion()`
 
 ## Estructura del PR
 

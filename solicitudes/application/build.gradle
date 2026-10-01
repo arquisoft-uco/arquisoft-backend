@@ -1,0 +1,13 @@
+dependencies {
+    implementation project(':solicitudes:domain')
+    implementation project(':shared:application')
+    implementation project(':shared:query')
+
+    implementation project(':shared:logger')
+
+    // Transactional — solo necesitamos @Transactional, no todo el starter
+    implementation 'org.springframework:spring-tx'
+
+    // Testing — junit-platform-launcher requerido explicitamente por Gradle 9
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

@@ -1,0 +1,79 @@
+package com.arquisoft.solicitudes.domain.tiposolicitud;
+
+import com.arquisoft.solicitudes.domain.tiposolicitud.exception.TipoSolicitudNoEncontradoException;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class TipoSolicitudTest {
+
+    @Test
+    void debeRetornarLaConstante_cuandoElIdCoincideConElCatalogo() {
+        assertThat(TipoSolicitud.desde("NOVEDAD_PARA_EL_COORDINADOR"))
+                .isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR);
+    }
+
+    @Test
+    void debeLanzar_cuandoElIdEsDesconocidoNuloEnBlancoOElCentinela() {
+        assertThatThrownBy(() -> TipoSolicitud.desde("INEXISTENTE"))
+                .isInstanceOf(TipoSolicitudNoEncontradoException.class);
+        assertThatThrownBy(() -> TipoSolicitud.desde(null))
+                .isInstanceOf(TipoSolicitudNoEncontradoException.class);
+        assertThatThrownBy(() -> TipoSolicitud.desde("  "))
+                .isInstanceOf(TipoSolicitudNoEncontradoException.class);
+        assertThatThrownBy(() -> TipoSolicitud.desde("VACIO"))
+                .isInstanceOf(TipoSolicitudNoEncontradoException.class);
+    }
+
+    @Test
+    void debeReportarValidez_sinLanzar_cuandoSeConsultaConEsValido() {
+        assertThat(TipoSolicitud.esValido("CAMBIO_DE_ASESOR")).isTrue();
+        assertThat(TipoSolicitud.esValido("NO_EXISTE")).isFalse();
+        assertThat(TipoSolicitud.esValido("VACIO")).isFalse();
+        assertThat(TipoSolicitud.esValido(null)).isFalse();
+    }
+
+    @Test
+    void debeExponerElIdIgualAlNombreDeLaConstante() {
+        assertThat(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getId())
+                .isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.name());
+    }
+
+    @Test
+    void debeReconocerNovedadParaElAsesor_delCatalogo() {
+        assertThat(TipoSolicitud.desde("NOVEDAD_PARA_EL_ASESOR"))
+                .isEqualTo(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR);
+        assertThat(TipoSolicitud.NOVEDAD_PARA_EL_ASESOR.getId()).isEqualTo("NOVEDAD_PARA_EL_ASESOR");
+        assertThat(TipoSolicitud.esValido("NOVEDAD_PARA_EL_ASESOR")).isTrue();
+    }
+
+    @Test
+    void debeReconocerCambioDeAsesor_delCatalogo() {
+        assertThat(TipoSolicitud.desde("CAMBIO_DE_ASESOR"))
+                .isEqualTo(TipoSolicitud.CAMBIO_DE_ASESOR);
+        assertThat(TipoSolicitud.CAMBIO_DE_ASESOR.getId()).isEqualTo("CAMBIO_DE_ASESOR");
+        assertThat(TipoSolicitud.CAMBIO_DE_ASESOR.getId())
+                .isEqualTo(TipoSolicitud.CAMBIO_DE_ASESOR.name());
+        assertThat(TipoSolicitud.esValido("CAMBIO_DE_ASESOR")).isTrue();
+    }
+
+    @Test
+    void debeReconocerAmpliacionDePlazo_delCatalogo() {
+        assertThat(TipoSolicitud.desde("AMPLIACION_DE_PLAZO"))
+                .isEqualTo(TipoSolicitud.AMPLIACION_DE_PLAZO);
+        assertThat(TipoSolicitud.AMPLIACION_DE_PLAZO.getId()).isEqualTo("AMPLIACION_DE_PLAZO");
+        assertThat(TipoSolicitud.AMPLIACION_DE_PLAZO.getId())
+                .isEqualTo(TipoSolicitud.AMPLIACION_DE_PLAZO.name());
+        assertThat(TipoSolicitud.AMPLIACION_DE_PLAZO.getNombre()).isEqualTo("Ampliación de Plazo");
+        assertThat(TipoSolicitud.esValido("AMPLIACION_DE_PLAZO")).isTrue();
+    }
+
+    @Test
+    void debeExponerElNombreLegibleDelCatalogo() {
+        assertThat(TipoSolicitud.NOVEDAD_PARA_EL_COORDINADOR.getNombre())
+                .isEqualTo("Novedad para el Coordinador");
+        assertThat(TipoSolicitud.CAMBIO_DE_ASESOR.getNombre()).isEqualTo("Cambio de Asesor");
+        assertThat(TipoSolicitud.VACIO.getNombre()).isEmpty();
+    }
+}

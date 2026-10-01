@@ -1,71 +1,114 @@
 package com.arquisoft.fichas.infrastructure.config;
 
-import com.arquisoft.shared.amqp.RabbitMQConfig;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.QueueBuilder;
+import com.arquisoft.shared.amqp.ColaEvento;
+import com.arquisoft.shared.message.constant.EventTopics;
+import org.springframework.amqp.core.Declarables;
+import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.TopicExchange;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Declaración de colas y bindings del contexto Fichas para eventos publicados
- * por el contexto Seguridad relativos a usuarios.
- *
- * <p>Cada cola es durable y exclusiva de este contexto — ningún otro bounded context
- * comparte estas colas. La misma routing key puede estar vinculada a otras colas
- * en otros contextos sin interferencia.
- *
- * <p>Dead Letter: mensajes rechazados tras agotar reintentos en el consumer son
- * reenviados al exchange {@value RabbitMQConfig#DLX_NAME} con routing key
- * {@code {queue-name}.dead} para inspección manual o reprocesamiento.
- *
- * <p>Nomenclatura de colas: {@code {contexto-consumidor}.{routing-key-del-evento}}.
- */
 @Configuration
 public class FichasUsuariosQueueConfig {
 
-    /**
-     * Nombre de la cola donde Fichas recibe eventos {@code seguridad.usuario.creado}.
-     * Debe coincidir con el routing key definido en
-     * {@link com.arquisoft.fichas.infrastructure.adapter.in.amqp.UsuarioCreadoConsumer}.
-     */
-    public static final String USUARIO_CREADO_QUEUE = "fichas.seguridad.usuario.creado";
-
-    /**
-     * Routing key del evento publicado por el contexto {@code seguridad}.
-     *
-     * <p><b>Duplicación intencional:</b> este valor duplica {@code UsuarioCreadoEvent#EVENT_TOPIC}
-     * del contexto {@code seguridad:domain}. No se importa esa clase para preservar el
-     * aislamiento entre bounded contexts — fichas no puede depender de seguridad:domain.
-     * El routing key es el contrato de mensajería; si cambia en el productor, debe
-     * actualizarse aquí manualmente.
-     */
-    public static final String USUARIO_CREADO_ROUTING_KEY = "seguridad.usuario.creado";
+    // El nombre de la cola tiene que seguir siendo una expresion constante: @RabbitListener lo lee
+    // como valor de anotacion (JLS 9.7.1), asi que no puede salir de una llamada a metodo.
+    public static final String ESTUDIANTE_AGREGADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.ESTUDIANTE_AGREGADO;
 
     @Bean
-    public Queue fichasUsuarioCreadoQueue() {
-        return QueueBuilder
-                .durable(USUARIO_CREADO_QUEUE)
-                .withArgument("x-dead-letter-exchange", RabbitMQConfig.DLX_NAME)
-                .withArgument("x-dead-letter-routing-key", USUARIO_CREADO_QUEUE + ".dead")
-                .build();
+    public Declarables fichasEstudianteAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTE_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ESTUDIANTE_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
     }
 
-    /**
-     * Vincula la cola al exchange central usando la routing key del evento.
-     * RabbitMQ entregará una copia del evento a esta cola cada vez que
-     * Seguridad publique con routing key {@code seguridad.usuario.creado}.
-     */
+    public static final String ESTUDIANTE_REMOVIDO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.ESTUDIANTE_REMOVIDO;
+
     @Bean
-    public Binding fichasUsuarioCreadoBinding(
-            Queue fichasUsuarioCreadoQueue,
-            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange) {
-        return BindingBuilder
-                .bind(fichasUsuarioCreadoQueue)
-                .to(arquisoftEventsExchange)
-                .with(USUARIO_CREADO_ROUTING_KEY);
+    public Declarables fichasEstudianteRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ESTUDIANTE_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.ESTUDIANTE_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String ASESOR_FICHA_AGREGADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.ASESOR_FICHA_AGREGADO;
+
+    @Bean
+    public Declarables fichasAsesorFichaAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_FICHA_AGREGADO_QUEUE,
+                EventTopics.Usuarios.ASESOR_FICHA_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String ASESOR_FICHA_REMOVIDO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.ASESOR_FICHA_REMOVIDO;
+
+    @Bean
+    public Declarables fichasAsesorFichaRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                ASESOR_FICHA_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.ASESOR_FICHA_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String REPRESENTANTE_COMITE_AGREGADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.REPRESENTANTE_COMITE_AGREGADO;
+
+    @Bean
+    public Declarables fichasRepresentanteComiteAgregadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REPRESENTANTE_COMITE_AGREGADO_QUEUE,
+                EventTopics.Usuarios.REPRESENTANTE_COMITE_AGREGADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String REPRESENTANTE_COMITE_REMOVIDO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.REPRESENTANTE_COMITE_REMOVIDO;
+
+    @Bean
+    public Declarables fichasRepresentanteComiteRemovidoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                REPRESENTANTE_COMITE_REMOVIDO_QUEUE,
+                EventTopics.Usuarios.REPRESENTANTE_COMITE_REMOVIDO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
+    }
+
+    public static final String USUARIO_MODIFICADO_QUEUE =
+            FichasQueues.PREFIJO + EventTopics.Usuarios.USUARIO_MODIFICADO;
+
+    @Bean
+    public Declarables fichasUsuarioModificadoDeclarables(
+            @Qualifier("arquisoftEventsExchange") TopicExchange arquisoftEventsExchange,
+            @Qualifier("arquisoftDeadLetterExchange") DirectExchange arquisoftDeadLetterExchange) {
+        return ColaEvento.declarar(
+                USUARIO_MODIFICADO_QUEUE,
+                EventTopics.Usuarios.USUARIO_MODIFICADO,
+                arquisoftEventsExchange,
+                arquisoftDeadLetterExchange);
     }
 }

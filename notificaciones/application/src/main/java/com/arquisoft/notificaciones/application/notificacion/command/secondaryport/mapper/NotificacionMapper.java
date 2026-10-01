@@ -1,0 +1,48 @@
+package com.arquisoft.notificaciones.application.notificacion.command.secondaryport.mapper;
+
+import com.arquisoft.notificaciones.application.notificacion.command.secondaryport.entity.NotificacionEntity;
+import com.arquisoft.notificaciones.domain.notificacion.NotificacionDomain;
+import com.arquisoft.notificaciones.domain.notificacion.model.EstadoNotificacion;
+import com.arquisoft.notificaciones.domain.notificacion.model.TipoNotificacion;
+
+public final class NotificacionMapper {
+
+    private NotificacionMapper() {}
+
+    public static NotificacionEntity toEntity(NotificacionDomain aggregate) {
+        return new NotificacionEntity(
+                aggregate.getId(),
+                aggregate.getIdEvento(),
+                aggregate.getTipo().getId(),
+                aggregate.getDestinatario().email(),
+                aggregate.getContenido().asunto(),
+                aggregate.getDestinatario().nombre(),
+                aggregate.getContenido().cuerpo(),
+                aggregate.getContenido().pie(),
+                aggregate.getEstado().getId(),
+                aggregate.getDetalleError(),
+                aggregate.getFechaCreacion(),
+                aggregate.getFechaEnvio(),
+                aggregate.getIntentos(),
+                aggregate.getFechaUltimoIntento());
+    }
+
+    public static NotificacionDomain toDomain(NotificacionEntity entity) {
+        return NotificacionDomain.reconstruir(
+                new NotificacionDomain.DatosNotificacion(
+                        entity.id(),
+                        entity.idEvento(),
+                        TipoNotificacion.desde(entity.tipo()),
+                        entity.destinatario(),
+                        entity.asunto(),
+                        entity.destinatarioNombre(),
+                        entity.cuerpo(),
+                        entity.pie(),
+                        entity.fechaCreacion(),
+                        entity.fechaEnvio(),
+                        entity.intentos(),
+                        entity.fechaUltimoIntento()),
+                EstadoNotificacion.desde(entity.estado()),
+                entity.detalleError());
+    }
+}

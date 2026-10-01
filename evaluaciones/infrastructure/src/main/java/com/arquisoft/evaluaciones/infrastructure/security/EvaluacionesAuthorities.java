@@ -1,0 +1,52 @@
+package com.arquisoft.evaluaciones.infrastructure.security;
+
+public final class EvaluacionesAuthorities {
+
+    private EvaluacionesAuthorities() {}
+
+    public static final String ITEM_CUALITATIVO_JURADO_CREATE =
+            "evaluaciones:item-cualitativo-jurado:create";
+    public static final String ITEM_CUALITATIVO_JURADO_UPDATE =
+            "evaluaciones:item-cualitativo-jurado:update";
+
+    public static final String ITEM_CUALITATIVO_JURADO_VIEW =
+            "evaluaciones:item-cualitativo-jurado:view";
+
+    public static final String CRITERIO_ITEM_CUALITATIVO_JURADO_VIEW =
+            "evaluaciones:criterio-item-cualitativo-jurado:view";
+
+    public static final String EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW =
+            "evaluaciones:evaluacion-cualitativa-jurado-estudiante:view";
+    public static final String ITEM_CUANTITATIVO_JURADO_CREATE =
+            "evaluaciones:item-cuantitativo-jurado:create";
+
+    public static final String EVALUACION_CUALITATIVA_JURADO_CREATE =
+            "evaluaciones:evaluacion-cualitativa-jurado:create";
+
+    public static final class Expresiones {
+
+        private Expresiones() {}
+
+        private static final String HAS_AUTHORITY_INICIO = "hasAuthority('";
+        private static final String HAS_AUTHORITY_FIN = "')";
+
+        public static final String HAS_ITEM_CUALITATIVO_JURADO_CREATE =
+                HAS_AUTHORITY_INICIO + ITEM_CUALITATIVO_JURADO_CREATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_ITEM_CUALITATIVO_JURADO_VIEW =
+                HAS_AUTHORITY_INICIO + ITEM_CUALITATIVO_JURADO_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ITEM_CUALITATIVO_JURADO_UPDATE =
+                HAS_AUTHORITY_INICIO + ITEM_CUALITATIVO_JURADO_UPDATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_CRITERIO_ITEM_CUALITATIVO_JURADO_VIEW =
+                HAS_AUTHORITY_INICIO + CRITERIO_ITEM_CUALITATIVO_JURADO_VIEW + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW =
+                HAS_AUTHORITY_INICIO + EVALUACION_CUALITATIVA_JURADO_ESTUDIANTE_VIEW + HAS_AUTHORITY_FIN;
+        public static final String HAS_ITEM_CUANTITATIVO_JURADO_CREATE =
+                HAS_AUTHORITY_INICIO + ITEM_CUANTITATIVO_JURADO_CREATE + HAS_AUTHORITY_FIN;
+
+        public static final String HAS_EVALUACION_CUALITATIVA_JURADO_CREATE =
+                HAS_AUTHORITY_INICIO + EVALUACION_CUALITATIVA_JURADO_CREATE + HAS_AUTHORITY_FIN;
+    }
+}

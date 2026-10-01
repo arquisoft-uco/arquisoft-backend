@@ -1,10 +1,13 @@
 dependencies {
-    implementation project(':seguridad:domain')
     implementation project(':seguridad:application')
     implementation project(':shared:domain')
+    implementation project(':shared:application')
     implementation project(':shared:web')
     implementation project(':shared:logger')
-    implementation project(':shared:redis')
+
+    // shared:tracing — IdentidadTrazaFilter enriquece la traza con el sub del JWT y
+    // SeguridadRestTemplateConfig propaga la correlacion en las llamadas salientes a Keycloak.
+    implementation project(':shared:tracing')
 
     // Spring Security & OAuth2 Resource Server
     // Nota arquitectonica: NO se usa keycloak-admin-client ni keycloak-spring-boot-starter.
@@ -16,7 +19,6 @@ dependencies {
 
     // Spring Data Redis — necesario para StringRedisTemplate, LettuceConnectionFactory y
     // io.lettuce.core.* (Lettuce viene transitivo desde spring-boot-starter-data-redis).
-    // shared:redis usa 'implementation' (no 'api') por lo que no lo expone como API transitivo.
     implementation "org.springframework.boot:spring-boot-starter-data-redis"
 
     // JWT: validación y parseo gestionados íntegramente por spring-boot-starter-oauth2-resource-server
@@ -30,19 +32,11 @@ dependencies {
     implementation "com.bucket4j:bucket4j_jdk17-redis-common:${bucket4jVersion}"
     implementation "com.bucket4j:bucket4j_jdk17-lettuce:${bucket4jVersion}"
 
-    // Database
-    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
-    implementation "org.flywaydb:flyway-core"
-    implementation "org.flywaydb:flyway-database-postgresql"
-    runtimeOnly "org.postgresql:postgresql"
-
     // OpenAPI / Swagger (ADR-011)
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
 
-    // Testing — Spring Boot 4.x: @DataJpaTest y @WebMvcTest requieren modulos separados
-    testImplementation "org.springframework.boot:spring-boot-starter-data-jpa-test"
+    // Testing — Spring Boot 4.x: @WebMvcTest requiere modulo separado
     testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
     testImplementation "org.springframework.security:spring-security-test"
-    testImplementation "com.h2database:h2"
     testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }

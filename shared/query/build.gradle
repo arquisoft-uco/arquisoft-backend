@@ -1,0 +1,26 @@
+// java-library habilita la configuración 'api', que expone dependencias
+// transitivamente a los consumidores del módulo.
+apply plugin: 'java-library'
+
+dependencies {
+    // shared:exception — FiltroException/FiltroInvalidoException extienden ApplicationException.
+    // Va con 'api' porque el tipo base forma parte de la firma pública de este módulo.
+    api project(':shared:exception')
+
+    // shared:message — textos y códigos del subsistema de consulta (ConsultaKey, AppCodes.Consulta).
+    api project(':shared:message')
+
+    // shared:util — UtilTexto/UtilColeccion/UtilObjeto para las validaciones de nulos.
+    implementation project(':shared:util')
+
+    // Jackson: SOLO las anotaciones. Los DTO de consulta se deserializan con @JsonTypeInfo,
+    // pero este módulo no debe arrastrar databind ni el starter web: el objetivo es que
+    // shared:query siga siendo utilizable desde cualquier capa, no solo desde la web.
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+    testImplementation "org.assertj:assertj-core"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

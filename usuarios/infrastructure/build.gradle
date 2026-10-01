@@ -1,0 +1,35 @@
+dependencies {
+    // La direccion domain <- application <- infrastructure la verifica :verificarCapasHexagonales
+    // del build raiz. Solo los tests ven el dominio (arrange de agregados en slices).
+    testImplementation project(':usuarios:domain')
+    implementation project(':usuarios:application')
+    implementation project(':shared:domain')
+    implementation project(':shared:application')
+    implementation project(':shared:jpa')
+    implementation project(':shared:web')
+    implementation project(':shared:logger')
+
+    // shared:tracing — GlobalAppExceptionHandler lee la correlacion de la traza, y los
+    // slices @WebMvcTest importan TrazabilidadConfig para satisfacer esa dependencia.
+    implementation project(':shared:tracing')
+
+    // Spring Security (para @PreAuthorize y @EnableMethodSecurity)
+    implementation "org.springframework.boot:spring-boot-starter-security"
+    implementation "org.springframework.boot:spring-boot-starter-oauth2-resource-server"
+
+    // Database
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.flywaydb:flyway-core"
+    implementation "org.flywaydb:flyway-database-postgresql"
+    runtimeOnly "org.postgresql:postgresql"
+
+    // OpenAPI / Swagger (ADR-011)
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
+
+    // Testing — Spring Boot 4.x: @DataJpaTest y @WebMvcTest requieren modulos separados
+    testImplementation "org.springframework.boot:spring-boot-starter-data-jpa-test"
+    testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
+    testImplementation "org.springframework.security:spring-security-test"
+    testImplementation "com.h2database:h2"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}

@@ -1,0 +1,15 @@
+dependencies {
+    implementation project(':notificaciones:domain')
+    implementation project(':shared:application')
+    implementation project(':shared:logger')
+
+    // Transactional — solo necesitamos @Transactional, no todo el starter
+    implementation 'org.springframework:spring-tx'
+
+    // Testing — junit-platform-launcher requerido explicitamente por Gradle 9
+    testImplementation "org.assertj:assertj-core"
+    testImplementation "org.mockito:mockito-core"
+    testImplementation "org.mockito:mockito-junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+}

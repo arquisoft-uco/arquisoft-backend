@@ -1,0 +1,21 @@
+# ==================== RUTAS DE CONTROLADORES — CONTEXTO SOLICITUDES ====================
+# Un placeholder por segmento de path. OpenApiConfig lee la clave base via @Value
+# para no duplicar el literal entre el controlador REST y la agrupacion de Swagger.
+# Vive en este modulo (no en el application.yml raiz) para que, si este contexto se
+# extrae a microservicio, se lleve su propia configuracion de rutas consigo.
+rutas:
+  solicitudes:
+    solicitud:
+      base: /solicitudes
+      novedad-coordinador: /novedad-coordinador
+      novedad-coordinador-por-id: /novedad-coordinador/{solicitudId}
+      novedad-coordinador-recibidas: /novedad-coordinador/recibidas
+      novedad-coordinador-enviadas: /novedad-coordinador/enviadas
+      novedad-asesor: /novedad-asesor
+      novedad-asesor-por-id: /novedad-asesor/{solicitudId}
+      cambio-asesor: /cambio-asesor
+      ampliacion-plazo: /ampliacion-plazo
+      tipos-solicitud: /tipos-solicitud
+    respuesta:
+      base: /solicitudes
+      novedad-coordinador: /novedad-coordinador/{solicitudId}/respuesta

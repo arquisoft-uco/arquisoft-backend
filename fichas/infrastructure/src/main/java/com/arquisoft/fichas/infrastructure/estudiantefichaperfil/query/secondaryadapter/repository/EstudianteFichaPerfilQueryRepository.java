@@ -1,0 +1,45 @@
+package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.query.secondaryadapter.repository;
+
+import com.arquisoft.shared.jpa.repository.QueryRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface EstudianteFichaPerfilQueryRepository
+        extends QueryRepository<EstudianteFichaPerfilJpaQueryEntity, UUID> {
+
+    List<EstudianteFichaPerfilJpaQueryEntity> findByFichaPerfilIdOrderByNombreAsc(UUID fichaPerfilId);
+
+    List<EstudianteFichaPerfilJpaQueryEntity> findByFichaPerfilIdAndVigenteTrueOrderByNombreAsc(UUID fichaPerfilId);
+
+    @Query("""
+            SELECT e FROM EstudianteFichaPerfilJpaQueryEntity e
+            WHERE e.fichaPerfilId = :fichaPerfil
+              AND e.estudianteId <> :estudiante
+              AND e.vigente = true
+              AND EXISTS (
+                  SELECT 1 FROM EstudianteFichaPerfilJpaQueryEntity propio
+                  WHERE propio.fichaPerfilId = e.fichaPerfilId
+                    AND propio.estudianteId = :estudiante
+              )
+            ORDER BY e.nombre ASC
+            """)
+    List<EstudianteFichaPerfilJpaQueryEntity> findCompanerosByFichaPerfilIdAndEstudianteId(
+            @Param("fichaPerfil") UUID fichaPerfil,
+            @Param("estudiante") UUID estudiante);
+
+    @Query("""
+            SELECT e FROM EstudianteFichaPerfilJpaQueryEntity e
+            WHERE e.vigente = true
+              AND e.fichaPerfilId IN (
+                  SELECT propio.fichaPerfilId FROM EstudianteFichaPerfilJpaQueryEntity propio
+                  WHERE propio.estudianteId = :estudiante
+                    AND propio.vigente = true
+              )
+            ORDER BY e.nombre ASC
+            """)
+    List<EstudianteFichaPerfilJpaQueryEntity> findVigentesDeFichasDelEstudiante(
+            @Param("estudiante") UUID estudiante);
+}

@@ -15,6 +15,13 @@ spring:
       - "optional:file:./.env[.properties]"
       - "optional:file:./.env.properties"
       - "optional:file:./.env-${spring.profiles.active:dev}.properties"
+      # Rutas de controladores por bounded context: cada modulo infrastructure trae su propio
+      # archivo, para poder llevarselo intacto si ese contexto se extrae a microservicio.
+      - "classpath:rutas-seguridad.yml"
+      - "classpath:rutas-usuarios.yml"
+      - "classpath:rutas-fichas.yml"
+      - "classpath:rutas-evaluaciones.yml"
+      - "classpath:rutas-solicitudes.yml"
   banner:
     location: classpath:banner.txt
   application:
@@ -33,11 +40,46 @@ spring:
   # en su clase *DataSourceConfig.java dentro de infrastructure/config/.
   # Sin esta exclusión, Spring Boot intentaría autoconfigurar un DataSource primario
   # y fallaría con NoUniqueBeanDefinitionException al encontrar 7 beans DataSource.
+  # ==================== DESHABILITAR AUTOCONFIGURACIÓN DE DATASOURCE GLOBAL ====================
+  # Spring Boot 4.x movió la autoconfiguración a jars/paquetes separados respecto a SB 3.x.
+  # Los nombres SB 3.x (org.springframework.boot.autoconfigure.*) ya NO existen y se ignoran
+  # silenciosamente — causan que los beans se activen aunque estén "excluidos".
   autoconfigure:
     exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-      - org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration
+      # spring-boot-jdbc (era spring-boot-autoconfigure.jdbc en SB 3.x)
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      # spring-boot-hibernate (era spring-boot-autoconfigure.orm.jpa en SB 3.x)
+      - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
+      # spring-boot-data-jpa — cada contexto configura sus repos via @EnableJpaRepositories
+      - org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
+      # FlywayAutoConfiguration: no existe en classpath (no hay spring-boot-starter-flyway).
+      # Cada contexto instancia su propio Flyway bean en su *DataSourceConfig.
+      # JdbcEventPublicationAutoConfiguration: excluir el bean por defecto de Modulith
+      # porque usamos ContextAwareEventPublicationRepository personalizado.
+      - org.springframework.modulith.events.jdbc.JdbcEventPublicationAutoConfiguration
+
+  # ==================== SPRING MODULITH (Outbox Pattern) ====================
+  # Spring Modulith persiste los DomainEvents en event_publication (misma transacción
+  # que el save del aggregate) y los publica al broker tras el commit.
+  modulith:
+    events:
+      # delete: borra las filas exitosas — la tabla solo contiene pendientes/fallidos.
+      # Alternativa: archive (conserva todo para auditoría, pero la tabla crece indefinidamente).
+      completion-mode: delete
+      # Al reiniciar, republica los eventos con completion_date = NULL que quedaron
+      # pendientes por caída del broker u otro fallo en publicación.
+      republish-outstanding-events-on-restart: true
+      jdbc:
+        schema-initialization.enabled: false
+      staleness:
+        # Frecuencia con la que Spring Modulith revisa si hay eventos atascados.
+        check-intervall: 1m
+        # Marca como FAILED los eventos que llevan más de 2m en estado PROCESSING
+        # (e.g. app crasheó durante la publicación).
+        processing: 2m
+        # Marca como FAILED los eventos que llevan más de 10m en estado RESUBMITTED
+        # (e.g. app crasheó durante un reintento iniciado por FailedEventRetryConfig).
+        resubmission: 10m
 
   # ==================== RABBITMQ ====================
   rabbitmq:
@@ -107,6 +149,49 @@ spring:
               authorization-grant-type: password
               scope: openid, profile, email
 
+# ==================== NOTIFICACIONES (envío de correos) ====================
+# 'proveedor' decide qué implementación de NotificationSender queda activa:
+#   log  → LoggingNotificationSender: registra y NO entrega. Es el valor por defecto a propósito,
+#          para que un entorno mal configurado nunca escriba a una persona real.
+#   smtp → SmtpNotificationSender: entrega vía spring.mail.*, que sirve para Brevo, Gmail o
+#          Mailpit sin tocar código — solo cambian host, puerto y credenciales.
+# Agregar un proveedor con API REST es añadir una clase con @ConditionalOnProperty y su valor;
+# ni el dominio ni la aplicación se enteran.
+notificacion:
+  proveedor: ${NOTIFICACION_PROVEEDOR:smtp}
+  remitente-email: ${NOTIFICACION_REMITENTE_EMAIL:no-reply@arquisoft.local}
+  remitente-nombre: ${NOTIFICACION_REMITENTE_NOMBRE:Arquisoft}
+  # Clave de Redis, cargada por plantillas/cargar.sh. Espacio propio: el podador del catalogo
+  # escanea "<contexto>.*" y borraria la plantilla si colgara de "notificaciones.".
+  plantilla: ${NOTIFICACION_PLANTILLA:plantilla.correo-base}
+  # Relee la plantilla de Redis cada intervalo, para ajustar el maquetado sin desplegar. Solo
+  # publica la version nueva si conserva los tres huecos; si no, se queda con la anterior.
+  plantilla-refresco:
+    habilitado: ${NOTIFICACION_PLANTILLA_REFRESCO:true}
+    intervalo: ${NOTIFICACION_PLANTILLA_REFRESCO_INTERVALO:PT5M}
+  # Un envio rechazado se guarda como FALLIDA y lo reintenta un job programado, no el consumidor:
+  # con prefetch=1 reintentar dentro del listener bloquearia la cola, y reencolar el evento no
+  # sirve porque la idempotencia por event_id lo daria por duplicado sin reenviarlo.
+  reintento:
+    max-intentos: ${NOTIFICACION_REINTENTO_MAX_INTENTOS:5}
+    limite-por-ciclo: ${NOTIFICACION_REINTENTO_LIMITE:50}
+    intervalo: ${NOTIFICACION_REINTENTO_INTERVALO:PT5M}
+
+# ==================== SMTP ====================
+# Valores por defecto apuntando a Mailpit (docker-compose): captura los correos en local
+# sin enviar nada a internet. En prod: smtp-relay.brevo.com:587 con auth y STARTTLS.
+spring.mail:
+  host: ${MAIL_HOST:localhost}
+  port: ${MAIL_PORT:1025}
+  username: ${MAIL_USERNAME:}
+  password: ${MAIL_PASSWORD:}
+  properties:
+    mail:
+      smtp:
+        auth: ${MAIL_SMTP_AUTH:false}
+        starttls:
+          enable: ${MAIL_SMTP_STARTTLS:false}
+
 # ==================== MINIO (Object Storage) ====================
 # Presigned URLs permiten subir/descargar archivos directamente desde el cliente,
 # sin que el backend actúe como proxy — conserva recursos en servidores limitados.
@@ -123,16 +208,16 @@ minio:
 # Cada contexto lee su propio bloque en su clase *DataSourceConfig.java
 # usando @ConfigurationProperties("datasource.{contexto}").
 datasource:
-  seguridad:
-    url: ${DB_SEGURIDAD_URL:jdbc:postgresql://localhost:5432/usuarios}
-    username: ${DB_SEGURIDAD_USERNAME:arquisoft_user}
-    password: ${DB_SEGURIDAD_PASSWORD:arquisoft123}
+  usuarios:
+    url: ${DB_USUARIOS_URL:jdbc:postgresql://localhost:5432/usuarios}
+    username: ${DB_USUARIOS_USERNAME:arquisoft_user}
+    password: ${DB_USUARIOS_PASSWORD:arquisoft123}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
       minimum-idle: 2
       connection-timeout: 20000
-      pool-name: HikariPool-Seguridad
+      pool-name: HikariPool-Usuarios
 
   fichas:
     url: ${DB_FICHAS_URL:jdbc:postgresql://localhost:5432/fichas_perfil}
@@ -200,31 +285,95 @@ datasource:
       connection-timeout: 20000
       pool-name: HikariPool-Evaluaciones
 
+  notificaciones:
+    url: ${DB_NOTIFICACIONES_URL:jdbc:postgresql://localhost:5432/notificaciones}
+    username: ${DB_NOTIFICACIONES_USERNAME:arquisoft_user}
+    password: ${DB_NOTIFICACIONES_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Notificaciones
+
+  solicitudes:
+    url: ${DB_SOLICITUDES_URL:jdbc:postgresql://localhost:5432/solicitudes}
+    username: ${DB_SOLICITUDES_USERNAME:arquisoft_user}
+    password: ${DB_SOLICITUDES_PASSWORD:arquisoft123}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+      pool-name: HikariPool-Solicitudes
+
 # ==================== KEYCLOAK ====================
 # Propiedades propias para KeycloakAuthAdapter y SecurityConfig.
 # No se usa el adapter keycloak-spring-boot-adapter (removido en SB3+).
 # La validación JWT usa Spring Security OAuth2 Resource Server de forma nativa.
 arquisoft:
+  # Trazabilidad (shared:tracing). Claves MDC emitidas como campos JSON de primer nivel en
+  # perfil prod: correlacionId, transaccionId, origen, usuarioId, clienteIp, metodoHttp,
+  # rutaUri, tiempoEntrada; y solo en la linea AUDIT: codigoEstado, duracionMs, tiempoSalida.
+  trazas:
+    # La IP completa esta cubierta por la base legal de interes legitimo (seguridad y abuso
+    # de la API). Activar para anonimizar el ultimo octeto IPv4 / truncar IPv6 a /48.
+    anonimizar-ip: ${TRAZAS_ANONIMIZAR_IP:false}
+    rutas-excluidas-auditoria: /api/actuator/,/api/swagger-ui,/api/v3/api-docs,/api/swagger-resources
+
   keycloak:
     server-url: ${KEYCLOAK_URL:http://localhost:8081}
     realm: ${KEYCLOAK_REALM:arquisoft}
-    client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-app}
+    client-id: ${KEYCLOAK_CLIENT_ID:arquisoft-api}
     client-secret: ${KEYCLOAK_CLIENT_SECRET:}
+    expected-audience: ${KEYCLOAK_EXPECTED_AUDIENCE:arquisoft-api}
 
-  security:
-    cors:
-      allowed-origins: http://localhost:3000,http://localhost:4200,http://localhost:5173
-    rate-limit:
-      enabled: ${RATE_LIMIT_ENABLED:true}
+  events:
+    # Intervalo entre reintentos de eventos con estado FAILED.
+    # Formato ISO-8601: PT5M = 5 minutos, PT30S = 30 segundos.
+    failed-retry-interval: PT5M
+
+  # Catálogo de mensajes (ADR-013). Intervalo del monitor que reintenta la conexión con Redis
+  # cuando el catálogo quedó degradado. Solo consulta Redis mientras está en ese estado.
+  catalogo:
+    reintento-intervalo: PT30S
+
+  # Limitador de peticiones. Mismo patrón que el catálogo: cuando Redis cae, el limitador degrada
+  # a cuota local por instancia y este monitor es quien lo devuelve a la cuota distribuida.
+  limite-solicitudes:
+    reintento-intervalo: PT30S
 
 # ==================== SERVER ====================
+# ==================== CORS Y RATE LIMITING (BASE) ====================
+# En la RAIZ, no bajo 'arquisoft:'. Quien las lee espera exactamente estos prefijos:
+# LimiteSolicitudesProperties bindea @ConfigurationProperties("security.rate-limit") y
+# CorsConfig resuelve @Value("${security.cors.*}"). Anidadas bajo 'arquisoft:' quedaban
+# como 'arquisoft.security.*' y no las veia nadie: los valores efectivos salian de
+# application-dev.yml / application-prod.yml, que si las declaran en la raiz, y estos
+# supuestos "valores base" no eran base de nada.
+security:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:4200,http://localhost:5173}
+    allowed-methods: ${CORS_ALLOWED_METHODS:GET,POST,PUT,DELETE,OPTIONS,PATCH}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type}
+    max-age: ${CORS_MAX_AGE:3600}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
+  rate-limit:
+    enabled: ${RATE_LIMIT_ENABLED:true}
+    requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:100}
+    login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:5}
+    # Tope de la cuota local que sustituye a Redis mientras esta caido. Vuelve la propiedad
+    # que se dio de baja al migrar a RedisBucketResolver: con una cache en memoria por IP,
+    # sin tope una caida de Redis se convierte en un vector de agotamiento de memoria.
+    max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:10000}
+
 server:
   port: 8080
   servlet:
     context-path: /api
   # ForwardedHeaderFilter de Spring valida X-Forwarded-For/X-Real-IP contra trusted-proxies
   # antes de reescribir request.getRemoteAddr() — evita IP spoofing desde internet.
-  # AuditFilter lee solo request.getRemoteAddr() y obtiene la IP real del cliente.
+  # TrazabilidadFilter lee solo request.getRemoteAddr() y obtiene la IP real del cliente.
   forward-headers-strategy: FRAMEWORK
   compression:
     enabled: true
@@ -235,9 +384,38 @@ server:
 # Aquí solo se declaran niveles — el resto (file.name, pattern.*, logback.rollingpolicy.*)
 # no tiene efecto cuando existe un logback-spring.xml custom y genera confusión.
 logging:
+  # Grupos: un nombre de negocio por familia de loggers, para poder subir o bajar el nivel de
+  # toda la familia con UNA variable. Es necesario, no cosmetico: por variable de entorno el
+  # binding relajado de Spring Boot solo llega a nivel de PAQUETE, nunca de clase, asi que sin
+  # grupos no hay forma de tocar `org.hibernate.SQL` y `org.hibernate.type` a la vez desde .env.
+  group:
+    negocio: com.arquisoft.fichas, com.arquisoft.seguridad, com.arquisoft.usuarios, com.arquisoft.notificaciones, com.arquisoft.evaluaciones, com.arquisoft.proyectos, com.arquisoft.solicitudes
+    plataforma: com.arquisoft.shared
+    datos: org.hibernate.SQL, org.hibernate.type
+    seguridad: org.springframework.security
+    mensajeria: org.springframework.amqp, com.rabbitmq, org.springframework.modulith
+    framework: org.springframework.web, org.springframework.data, org.hibernate, com.zaxxer.hikari, org.flywaydb, org.apache.tomcat, io.micrometer
+  # El default de cada variable lo pone el perfil activo (application-dev.yml /
+  # application-prod.yml). Estos son los de "sin perfil": arranque suelto y slices de test.
   level:
-    root: INFO
-    org.springframework.web: INFO
+    root: ${LOG_NIVEL_ROOT:INFO}
+    negocio: ${LOG_NIVEL_NEGOCIO:INFO}
+    plataforma: ${LOG_NIVEL_PLATAFORMA:INFO}
+    datos: ${LOG_NIVEL_DATOS:OFF}
+    seguridad: ${LOG_NIVEL_SEGURIDAD:INFO}
+    mensajeria: ${LOG_NIVEL_MENSAJERIA:INFO}
+    framework: ${LOG_NIVEL_FRAMEWORK:INFO}
+  # servicioNombre y version NO van al MDC: son constantes del proceso, no contexto de la
+  # peticion. El formateador logstash de Spring Boot 4 solo serializa el MDC y los
+  # KeyValuePairs del evento — nunca las propiedades de contexto de Logback, asi que
+  # <springProperty scope="context"> no funcionaria aqui. StructuredLogEncoder resuelve
+  # estas propiedades desde el Environment aunque el encoder se declare en logback-spring.xml.
+  structured:
+    json:
+      add:
+        servicioNombre: ${spring.application.name}
+        version: ${spring.application.version}
+
 
 # ==================== ACTUATOR ====================
 management:
@@ -248,6 +426,17 @@ management:
   endpoint:
     health:
       show-details: always
+  # Health check de correo DESACTIVADO a proposito (2026-08-27).
+  # notificacion.proveedor=log no envia correos, pero spring.mail sigue
+  # autoconfigurando JavaMailSender y su MailHealthIndicator, que intenta
+  # conectarse a Mailpit (localhost:1025) — un contenedor que solo existe en el
+  # docker-compose local. En el servidor eso deja /actuator/health en DOWN y hace
+  # fallar el health check del despliegue.
+  # Reactivar (borrar este bloque) cuando se defina el SMTP real: la config de
+  # spring.mail se conserva intacta mas arriba.
+  health:
+    mail:
+      enabled: false
   metrics:
     export:
       prometheus:

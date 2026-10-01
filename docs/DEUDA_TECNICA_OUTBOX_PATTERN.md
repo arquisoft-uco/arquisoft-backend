@@ -1,96 +1,132 @@
 # Deuda Técnica — Outbox Pattern para publicación de eventos
 
-**Contexto afectado:** `seguridad`  
-**Clase afectada:** `CrearUsuarioUseCaseImpl`  
-**Prioridad:** Media — el riesgo es bajo con repositorio en memoria, pero se vuelve crítico al migrar a JPA.
+> **Estado: RESUELTA** — Implementado con Spring Modulith 2.0.0 en la rama
+> `feature/spring-modulith-outbox-pattern`. Ver sección [Solución implementada](#solución-implementada).
+
+**Contexto afectado:** `usuarios` (histórico — el flujo `CrearUsuario` y su `CrearUsuarioUseCaseImpl` se retiraron después; el patrón vive hoy en `fichas`)  
+**Prioridad:** ~~Media~~ → Resuelta
 
 ---
 
-## Problema actual
+## Problema original
 
-En `CrearUsuarioUseCaseImpl`, la persistencia del aggregate y la publicación del evento son dos operaciones **no atómicas**:
+En `CrearUsuarioUseCaseImpl`, la persistencia del aggregate y la publicación del evento eran dos operaciones **no atómicas**:
 
 ```java
-usuarioRepository.save(usuario);                              // (1) transacción JDBC
-usuario.getUnPublishedEvents().forEach(eventPublisher::publish); // (2) envío a RabbitMQ
+usuarioOutputPort.guardar(UsuarioMapper.toEntity(usuario));   // (1) escribe en PostgreSQL
+eventPublisher.publish(new UsuarioCreadoEvent(...));          // (2) publica en RabbitMQ
 ```
 
-Si el paso (1) se completa y el paso (2) falla después de agotar los 3 reintentos de `RabbitMQEventPublisher` (broker caído, timeout, etc.), el sistema queda en estado inconsistente:
+> El problema es la falta de atomicidad entre (1) y (2), y es **independiente de cómo se emita el
+> evento**: lo resuelve el outbox, no la forma de publicación. La forma sí cambió desde que se
+> escribió este documento — hoy el `UseCase` construye y publica el evento directamente, que es la
+> única que existe — y el fragmento de arriba ya está actualizado a ella.
 
-- El usuario **existe** en la base de datos de `seguridad`.
-- El contexto `fichas` **nunca recibió** el evento `seguridad.usuario.creado`.
-- El usuario no tiene ficha perfil asociada → falla en consultas posteriores.
+Si el paso (1) se completaba y el paso (2) fallaba (broker caído, timeout, etc.), el sistema quedaba inconsistente:
+
+- El usuario **existía** en la base de datos de `usuarios`.
+- El contexto `fichas` **nunca recibía** el evento `usuarios.usuario.creado`.
+- `fichas` quedaba sin enterarse de un usuario que ya existía.
 
 ---
 
-## Por qué ocurre
+## Solución implementada
 
-RabbitMQ y PostgreSQL son sistemas independientes. No existe un coordinador de transacciones distribuidas (2PC) entre ellos en esta arquitectura. Cualquier intento de publicar al broker _dentro_ de una transacción JDBC no garantiza atomicidad entre ambos.
+Se integró **Spring Modulith 2.0.0** con su Event Publication Registry (Outbox Pattern nativo).
 
----
+### Flujo actual
 
-## Solución: Outbox Pattern
-
-El **Outbox Pattern** resuelve esto guardando el evento como una fila en la misma base de datos, dentro de la misma transacción JDBC que el `save` del aggregate. Un proceso separado (scheduler o CDC) lee la tabla outbox y publica los eventos pendientes al broker.
-
-### Flujo
+El ejemplo usa `fichas` y no `usuarios`, que es donde nació esta deuda: el flujo `CrearUsuario` se
+retiró por completo de `usuarios` (a la espera de la HU "registrar usuario"), así que allí ya no
+hay ni escritura del aggregate ni emisión de evento. La tabla `event_publication` de `usuarios`
+permanece (migración `V20260619224326`) lista para cuando el contexto vuelva a publicar. `fichas`
+es hoy el único que ejercita el patrón.
 
 ```
-[CrearUsuarioUseCaseImpl]
+[CambiarAsesorFichaInteractorImpl.ejecutar] — @Transactional(transactionManager = "fichasTransactionManager")
         │
-        ├── BEGIN TRANSACTION
-        │     ├── INSERT usuarios (aggregate)
-        │     └── INSERT domain_events (outbox)
-        └── COMMIT
+        ├── delega en CambiarAsesorFichaUseCaseImpl.ejecutar (sin @Transactional propia)
+        │     ├── BEGIN TRANSACTION (abierta por el Interactor)
+        │     │     ├── UPDATE ficha_perfil (aggregate, BD del contexto `fichas`)
+        │     │     └── INSERT event_publication (outbox — misma TX, misma BD)
+        │     └── COMMIT
+        │
+        [Spring Modulith — post-commit]
                 │
-        [OutboxPublisher — scheduler @Scheduled o Debezium CDC]
+                ├── Publica a RabbitMQ vía AMQP externalization
+                │     ├── OK  → DELETE event_publication (completion-mode: delete)
+                │     └── FAIL → status = FAILED, row permanece en BD
                 │
-                ├── SELECT * FROM domain_events WHERE published = false
-                ├── RabbitTemplate.convertAndSend(...)
-                └── UPDATE domain_events SET published = true
+        [FailedEventRetryConfig — @Scheduled cada 5 min]
+                │
+                └── Llama FailedEventPublications.resubmit()
+                      └── Reintenta eventos FAILED con minAge = 2m
 ```
 
-### Tabla outbox propuesta
+### Componentes clave
+
+| Componente | Ubicación | Responsabilidad |
+|---|---|---|
+| `SpringModulithEventPublisher` | `shared/amqp` | Delega a `ApplicationEventPublisher` — Spring Modulith intercepta y persiste |
+| `ModulithAmqpExternalizationConfig` | `shared/amqp` | Routing: `DomainEvent` → exchange `arquisoft.events` con routing key del `temaEvento` |
+| `ContextAwareEventPublicationRepository` | `src/main/java/com/arquisoft/config/outbox/` | Auto-detecta al arranque qué `DataSource` de contexto tiene la tabla `event_publication` y enruta el `INSERT` a la transacción activa de ese contexto |
+| `FailedEventRetryConfig` | `src/main/config` | Reintenta eventos `FAILED` periódicamente sin reinicio |
+| `event_publication` (tabla) | PostgreSQL, **por contexto** | **No hay una BD centralizada.** Cada contexto con `event_publication` tiene su propia tabla en su propia BD — hoy `V20260619224326__crear_event_publication.sql` (`usuarios`, sin publicador activo aún) y `V20260724005915__crear_event_publication.sql` (`fichas`, el que ejercita el patrón) |
+
+### Tabla `event_publication` (schema v2)
 
 ```sql
--- Schema: usuarios (contexto seguridad)
-CREATE TABLE domain_events (
-    event_id       UUID        PRIMARY KEY,
-    aggregate_id   UUID        NOT NULL,
-    event_type     VARCHAR(100) NOT NULL,
-    event_topic    VARCHAR(200) NOT NULL,     -- routing key de RabbitMQ
-    payload        JSONB       NOT NULL,
-    occurred_at    TIMESTAMPTZ NOT NULL,
-    published      BOOLEAN     NOT NULL DEFAULT FALSE,
-    published_at   TIMESTAMPTZ
+CREATE TABLE event_publication (
+    id                    UUID         PRIMARY KEY,
+    listener_id           TEXT         NOT NULL,
+    event_type            TEXT         NOT NULL,
+    serialized_event      TEXT         NOT NULL,
+    publication_date      TIMESTAMPTZ  NOT NULL,
+    completion_date       TIMESTAMPTZ,
+    status                TEXT,        -- NULL | PROCESSING | RESUBMITTED | FAILED | COMPLETED
+    completion_attempts   INT,
+    last_resubmission_date TIMESTAMPTZ
 );
-
-CREATE INDEX idx_domain_events_unpublished ON domain_events (published, occurred_at)
-    WHERE published = FALSE;
 ```
 
-### Cambios en código
+### Configuración en `application.yml`
 
-| Archivo | Cambio |
-|---|---|
-| `UsuarioRepositoryPort` | Añadir método `saveWithEvent(Usuario, DomainEvent)` o `saveAll(Usuario, List<DomainEvent>)` |
-| `UsuarioJpaRepository` (JPA) | Persistir usuario + insertar en `domain_events` en misma `@Transactional` |
-| `CrearUsuarioUseCaseImpl` | Reemplazar `eventPublisher.publish()` inline por delegación al repositorio; eliminar drenado manual |
-| `OutboxPublisherJob` (nuevo) | `@Scheduled` que lee `domain_events WHERE published = false`, publica y marca como publicado |
-| Migración Flyway | `V{n}__create_domain_events_table.sql` en `seguridad/infrastructure` |
+```yaml
+spring:
+  modulith:
+    events:
+      completion-mode: delete
+      republish-outstanding-events-on-restart: true
+      staleness:
+        check-intervall: 1m
+        processing: 2m
+        resubmission: 10m
 
----
+arquisoft:
+  events:
+    failed-retry-interval: PT5M
+```
 
-## Estado actual (temporal)
+### Ciclo de vida de un evento
 
-`InMemoryUsuarioRepository` no tiene transacción real — el riesgo de inconsistencia es teórico mientras no haya JPA. Los 3 reintentos con backoff exponencial de `RabbitMQEventPublisher` mitigan el problema en escenarios de caída momentánea del broker.
+| Estado `status` | Descripción | Quién lo maneja |
+|---|---|---|
+| `NULL` | Recién persistido, pendiente de publicar | Spring Modulith post-commit |
+| `PROCESSING` | En proceso de publicación | Staleness checker → FAILED si >2m |
+| `RESUBMITTED` | En reintento | Staleness checker → FAILED si >10m |
+| `FAILED` | Publicación fallida explícitamente | `FailedEventRetryConfig` → reintento cada 5m |
+| `COMPLETED` | Publicado correctamente | Borrado (completion-mode: delete) |
 
-**Este pendiente debe implementarse antes de pasar a producción**, cuando `InMemoryUsuarioRepository` sea reemplazado por el adaptador JPA.
+### Importante: qué hace el staleness checker
+
+El staleness checker **NO reintenta** eventos. Solo **marca como `FAILED`** los eventos
+que llevan demasiado tiempo en `PROCESSING` o `RESUBMITTED` (e.g., la app crasheó
+durante la publicación). El reintento real de eventos `FAILED` lo ejecuta `FailedEventRetryConfig`.
 
 ---
 
 ## Referencias
 
-- [Pattern: Transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html) — microservices.io
-- [Debezium CDC](https://debezium.io/documentation/reference/stable/connectors/postgresql.html) — alternativa a scheduler para captura de cambios a nivel de WAL de PostgreSQL
+- [Pattern: Transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html)
+- [Spring Modulith — Event Publications](https://docs.spring.io/spring-modulith/docs/current/reference/html/#events)
 - `docs/ARQUITECTURA_ASINCRONICO_ARQUISOFT.md` — arquitectura de eventos del proyecto

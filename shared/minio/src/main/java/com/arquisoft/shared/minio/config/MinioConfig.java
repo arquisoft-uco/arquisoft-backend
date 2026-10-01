@@ -36,7 +36,7 @@ public class MinioConfig {
                 return new X509Certificate[0];
             }
         };
-        SSLContext sslContext = SSLContext.getInstance("TLS");
+        var sslContext = SSLContext.getInstance("TLS");
         sslContext.init(null, new TrustManager[]{trustAll}, null);
 
         return new OkHttpClient.Builder()

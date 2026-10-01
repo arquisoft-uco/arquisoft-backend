@@ -10,6 +10,14 @@ allprojects {
     repositories {
         mavenCentral()
     }
+
+    // Las fuentes .java y los .properties del catálogo están en UTF-8. Sin esto, Gradle usa
+    // la codificación por defecto de la plataforma (Windows-1252 en las máquinas del equipo),
+    // y los literales acentuados de los tests se compilan corruptos — verde en el CI (Linux/UTF-8),
+    // rojo en local.
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
 }
 
 group = 'com.arquisoft'
@@ -25,6 +33,14 @@ checkstyle {
     configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
     maxWarnings = 0
     maxErrors = 0
+}
+
+// El reporte HTML requiere Xalan (procesador XSLT) que no está en el classpath de Checkstyle.
+// Solo se genera XML — suficiente para CI y herramientas de análisis.
+tasks.withType(Checkstyle).configureEach {
+    reports {
+        html.required = false
+    }
 }
 
 configurations {
@@ -44,6 +60,8 @@ repositories {
 dependencyManagement {
     imports {
         mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        // Spring Modulith BOM: gestiona versiones de spring-modulith-* de forma consistente.
+        mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
     }
     dependencies {
         // PostgreSQL driver: pin explicito por compatibilidad con PostgreSQL 18.x del docker-compose
@@ -64,8 +82,27 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-amqp"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
 
-    // Logging estructurado (ADR-005): JSON encoder con traceId/userId en MDC via AuditFilter
+    // Registry de Micrometer que materializa /actuator/prometheus. Sin el, el endpoint
+    // no se registra y responde 404 aunque figure en management.endpoints.web.exposure.
+    runtimeOnly "io.micrometer:micrometer-registry-prometheus"
+
+    // Logging estructurado (ADR-005): JSON encoder que emite el MDC como campos de primer nivel
     implementation project(':shared:logger')
+
+    // Trazabilidad: GestorTraza y su adaptador MDC. Se declara explicitamente aunque llegue
+    // transitivamente — si el jar no esta en el classpath de runtime, los @Component del
+    // modulo no se registran y la aplicacion arranca sin trazas y sin ningun error.
+    implementation project(':shared:tracing')
+
+    // Catálogo de mensajes: MessageCatalogConfig lo expone como bean y publica los textos
+    // de OpenAPI en el Environment. También aporta message/openapi/, donde OpenApiConfig
+    // declara el esquema de seguridad (ApiSecurity.BEARER_AUTH) que referencian los
+    // controllers de cada contexto.
+    implementation project(':shared:message')
+
+    // Catálogo de mensajes sobre Redis (ADR-013). Se declara aquí y en ningún contexto: el catálogo
+    // es nuclear y no puede depender de que un contexto siga arrastrándolo.
+    implementation project(':shared:redis')
 
     // Flyway — version gestionada por el BOM de Spring Boot 4.0.5 (12.4.0).
     // flyway-database-postgresql es necesario en Flyway 11+ para soportar PostgreSQL.
@@ -75,12 +112,27 @@ dependencies {
     // OpenAPI / Swagger UI (ADR-011) — describe la API ensamblada completa
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui"
 
+    // Spring Modulith core: habilita el runtime de publicación de eventos (Outbox Pattern).
+    implementation "org.springframework.modulith:spring-modulith-starter-core"
+    // API pública de Spring Modulith Events: FailedEventPublications, ResubmissionOptions.
+    implementation "org.springframework.modulith:spring-modulith-events-api"
+    // Spring Modulith JDBC: interfaces de EventPublicationRepository y EventSerializer.
+    implementation "org.springframework.modulith:spring-modulith-events-jdbc"
+
+    // JDBC para ContextAwareEventPublicationRepository (DataSource distribuido por contexto).
+    implementation "org.springframework.boot:spring-boot-starter-jdbc"
+    // JPA para EntityManagerFactory en OutboxContext.
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+
     // Incluir todos los módulos de infraestructura (contextos)
     subprojects.each { subproject ->
         if (subproject.name.endsWith('infrastructure')) {
             implementation project(subproject.path)
         }
     }
+
+    compileOnly "org.projectlombok:lombok:${lombokVersion}"
+    annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.junit.jupiter:junit-jupiter:${jUnitVersion}"
@@ -106,6 +158,7 @@ subprojects { subproject ->
     dependencyManagement {
         imports {
             mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+            mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
         }
         dependencies {
             dependency "org.postgresql:postgresql:${postgresVersion}"
@@ -120,6 +173,69 @@ subprojects { subproject ->
         configFile = rootProject.file("config/checkstyle/checkstyle.xml")
         maxWarnings = 0
         maxErrors = 0
+    }
+
+    tasks.withType(Checkstyle).configureEach {
+        reports {
+            html.required = false
+        }
+    }
+
+    // ==================== JACOCO ====================
+    // Aplica a todos los contextos de negocio; 'shared:*' queda excluido porque son
+    // librerías transversales sin lógica de dominio propia que justifique el umbral.
+    if (!subproject.path.startsWith(':shared:')) {
+        apply plugin: 'jacoco'
+
+        jacoco {
+            toolVersion = '0.8.12'
+        }
+
+        def jacocoExcludes = [
+            '**/*DTO.class',
+            '**/*Command.class',
+            '**/*ReadModel.class',
+            '**/*Application.class',
+            '**/config/**',
+            '**/*Entity.class'
+        ]
+
+        jacocoTestReport {
+            dependsOn test
+            // classDirectories se reconstruye abajo con fileTree() para aplicar exclusiones,
+            // lo que rompe el rastreo automático de dependencias de Gradle (fileTree() no sabe
+            // qué tarea produjo esos directorios) — se declara explícita para evitar el error
+            // de validación "implicit dependency" en builds limpios (CI).
+            dependsOn tasks.named('compileJava'), tasks.named('processResources')
+            reports {
+                xml.required = true
+                html.required = true
+            }
+            afterEvaluate {
+                classDirectories.setFrom(files(classDirectories.files.collect {
+                    fileTree(dir: it, excludes: jacocoExcludes)
+                }))
+            }
+        }
+
+        jacocoTestCoverageVerification {
+            dependsOn jacocoTestReport
+            dependsOn tasks.named('compileJava'), tasks.named('processResources')
+            afterEvaluate {
+                classDirectories.setFrom(files(classDirectories.files.collect {
+                    fileTree(dir: it, excludes: jacocoExcludes)
+                }))
+            }
+            violationRules {
+                rule {
+                    limit {
+                        minimum = 0.75
+                    }
+                }
+            }
+        }
+
+        check.dependsOn jacocoTestCoverageVerification
     }
 
     if (subproject.name.endsWith('application') || subproject.name.endsWith('infrastructure')) {
@@ -172,4 +288,89 @@ subprojects { subproject ->
     compileJava {
         options.compilerArgs.addAll(['-parameters', '-Xlint:deprecation'])
     }
+
+    // Catálogo de prueba (ADR-013): permite que los tests resuelvan el texto real de
+    // catalogo/*.properties. Se declara aquí y no módulo a módulo porque lo necesita cualquier test
+    // que afirme sobre un mensaje — incluidos los que lo resuelven por la fachada estática del
+    // dominio sin saberlo — y averiguar por qué falla uno que no lo declaró cuesta más que esto.
+    if (subproject.path != ':shared:message') {
+        dependencies {
+            testImplementation testFixtures(project(':shared:message'))
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Verificación de la dirección de dependencias hexagonal, por contexto acotado.
+//
+// La barrera real es el grafo de módulos: si infrastructure no declara :{ctx}:domain, un import del
+// dominio no compila. Esta tarea existe porque esa barrera se reabre en silencio con una línea en un
+// build.gradle, y el fallo se descubriría meses después. Verifica el classpath de compilación
+// *resuelto*, así que también detecta una fuga transitiva (un shared que reexporte con `api`).
+//
+// Reglas, para todo contexto de negocio:
+//   domain         -> no ve application ni infrastructure de su contexto, ni shared:application
+//   application    -> no ve infrastructure de su contexto
+//   infrastructure -> no ve domain de su contexto en `main` (sí en `test`: los slices arman
+//                     agregados en el arrange)
+// ---------------------------------------------------------------------------------------------
+def contextosHexagonales = [
+        'seguridad', 'fichas', 'usuarios', 'notificaciones', 'evaluaciones', 'solicitudes',
+        'proyectos', 'artefactos', 'repositorio_artefactos', 'entregables'
+]
+
+def prohibicionesPorCapa = [
+        domain        : ['application', 'infrastructure'],
+        application   : ['infrastructure'],
+        infrastructure: ['domain']
+]
+
+def proyectosDeDependencia = { Configuration configuracion ->
+    configuracion.incoming.resolutionResult.allComponents
+            .findAll { it.id instanceof ProjectComponentIdentifier }
+            .collect { ((ProjectComponentIdentifier) it.id).projectPath }
+}
+
+def tareaVerificacion = tasks.register('verificarCapasHexagonales') {
+    group = 'verification'
+    description = 'Falla si un contexto viola la dirección domain <- application <- infrastructure.'
+
+    doLast {
+        def violaciones = []
+
+        contextosHexagonales.each { contexto ->
+            prohibicionesPorCapa.each { capa, capasProhibidas ->
+                def modulo = findProject(":${contexto}:${capa}")
+                if (modulo == null) {
+                    return
+                }
+                def compileClasspath = modulo.configurations.findByName('compileClasspath')
+                if (compileClasspath == null) {
+                    return
+                }
+                def alcanzables = proyectosDeDependencia(compileClasspath)
+
+                capasProhibidas.each { capaProhibida ->
+                    def prohibido = ":${contexto}:${capaProhibida}".toString()
+                    if (alcanzables.contains(prohibido)) {
+                        violaciones << ":${contexto}:${capa} alcanza ${prohibido}"
+                    }
+                }
+
+                if (capa == 'domain' && alcanzables.contains(':shared:application')) {
+                    violaciones << ":${contexto}:domain alcanza :shared:application " +
+                            '(UseCase/Interactor/EventPublisher no pertenecen al dominio)'
+                }
+            }
+        }
+
+        if (!violaciones.isEmpty()) {
+            throw new GradleException(
+                    "Dirección de dependencias hexagonal violada:\n  - " + violaciones.join('\n  - '))
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tareaVerificacion
 }

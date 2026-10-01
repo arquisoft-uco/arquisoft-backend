@@ -1,5 +1,8 @@
 # ==================== STAGE 1: BUILD ====================
-FROM eclipse-temurin:21-jdk-alpine AS builder
+# --platform=$BUILDPLATFORM: el jar es bytecode agnóstico de arquitectura, así que
+# esta etapa siempre corre nativa en el runner (evita compilar bajo emulación QEMU
+# cuando el target es arm64, que sería órdenes de magnitud más lento).
+FROM --platform=$BUILDPLATFORM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /build
 
 # Copiar todo el proyecto (.dockerignore excluye secretos, .git, build/, *.bat, etc.)

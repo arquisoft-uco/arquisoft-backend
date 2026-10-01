@@ -63,16 +63,16 @@ spring:
 
 # ==================== DATASOURCES POR BOUNDED CONTEXT (PROD) ====================
 datasource:
-  seguridad:
-    url: ${DB_SEGURIDAD_URL}
-    username: ${DB_SEGURIDAD_USERNAME}
-    password: ${DB_SEGURIDAD_PASSWORD}
+  usuarios:
+    url: ${DB_USUARIOS_URL}
+    username: ${DB_USUARIOS_USERNAME}
+    password: ${DB_USUARIOS_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 20
       minimum-idle: 5
       connection-timeout: 30000
-      pool-name: HikariPool-Seguridad-Prod
+      pool-name: HikariPool-Usuarios-Prod
 
   fichas:
     url: ${DB_FICHAS_URL}
@@ -140,6 +140,26 @@ datasource:
       connection-timeout: 30000
       pool-name: HikariPool-Evaluaciones-Prod
 
+  solicitudes:
+    url: ${DB_SOLICITUDES_URL}
+    username: ${DB_SOLICITUDES_USERNAME}
+    password: ${DB_SOLICITUDES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      pool-name: HikariPool-Solicitudes-Prod
+
+  arquisoft-events:
+    url: ${DB_ARQUISOFT_EVENTS_URL}
+    username: ${DB_ARQUISOFT_EVENTS_USERNAME}
+    password: ${DB_ARQUISOFT_EVENTS_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+
 # ==================== KEYCLOAK (propiedades propias) ====================
 # Leídas por KeycloakAuthAdapter y SecurityConfig via @Value("${arquisoft.keycloak.*}").
 # Sin defaults — obligatorias en producción.
@@ -149,41 +169,39 @@ arquisoft:
     realm: ${KEYCLOAK_REALM}
     client-id: ${KEYCLOAK_CLIENT_ID}
     client-secret: ${KEYCLOAK_CLIENT_SECRET}
+    expected-audience: ${KEYCLOAK_EXPECTED_AUDIENCE:arquisoft-api}
 
 # ==================== CORS Y RATE LIMITING (PROD) ====================
 # Leídas por CorsConfig y RateLimitConfig via @Value("${security.cors.*}") y @Value("${security.rate-limit.*}")
 security:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS}
+    allowed-headers: ${CORS_ALLOWED_HEADERS:Authorization,Content-Type}
+    allow-credentials: ${CORS_ALLOW_CREDENTIALS:false}
   rate-limit:
     enabled: ${RATE_LIMIT_ENABLED:true}
     requests-per-minute: ${RATE_LIMIT_REQUESTS_PER_MINUTE:60}
     login-requests-per-minute: ${RATE_LIMIT_LOGIN_REQUESTS_PER_MINUTE:3}
-    # RATE_LIMIT_MAX_TRACKED_IPS eliminado — propiedad removida al migrar a RedisBucketResolver
+    max-tracked-ips: ${RATE_LIMIT_MAX_TRACKED_IPS:10000}
 
 # ==================== LOGGING ====================
 # logback-spring.xml gestiona TODOS los appenders (ASYNC_STDOUT + ASYNC_FILE_PROD).
 # NO configurar logging.file.name aquí: Spring Boot crearía un FileAppender adicional
 # en texto plano que conflictaría con el LogstashEncoder de logback-spring.xml.
+# Los grupos se declaran una sola vez en application.yml. Aqui solo van los niveles por
+# defecto del perfil; cualquiera se sobreescribe desde .env sin redesplegar la imagen.
 logging:
   level:
-    root: WARN
+    root: ${LOG_NIVEL_ROOT:WARN}
     # Código propio: INFO — captura eventos de negocio y errores de dominio en Loki
-    com.arquisoft: INFO
-    # Framework: solo WARN/ERROR — el ruido de inicialización no genera valor en Loki
-    org.springframework.security: WARN
-    org.springframework.web: WARN
-    org.springframework.amqp: WARN
-    org.springframework.data: WARN
-    com.zaxxer.hikari: WARN
-    org.flywaydb: WARN
-    org.apache.tomcat: WARN
-    com.rabbitmq: WARN
-    io.micrometer: WARN
+    negocio: ${LOG_NIVEL_NEGOCIO:INFO}
+    plataforma: ${LOG_NIVEL_PLATAFORMA:INFO}
     # Hibernate SQL: OFF en prod — demasiado verboso, sin valor en Loki, usar traceId para debug
-    org.hibernate: WARN
-    org.hibernate.SQL: OFF
-    org.hibernate.type: OFF
+    datos: ${LOG_NIVEL_DATOS:OFF}
+    # Framework: solo WARN/ERROR — el ruido de inicialización no genera valor en Loki
+    seguridad: ${LOG_NIVEL_SEGURIDAD:WARN}
+    mensajeria: ${LOG_NIVEL_MENSAJERIA:WARN}
+    framework: ${LOG_NIVEL_FRAMEWORK:WARN}
     # SpringDoc deshabilitado en prod — suprimir sus logs también
     springdoc: OFF
 

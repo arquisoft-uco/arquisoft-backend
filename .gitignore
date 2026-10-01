@@ -1,6 +1,10 @@
 HELP.md
 .gradle
 build/
+META-INF/
+# ...pero el META-INF de un source set es codigo fuente, no salida de compilacion:
+# ahi vive el registro por ServiceLoader del instalador del catalogo de prueba.
+!**/src/*/resources/META-INF/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -45,3 +49,13 @@ logs/
 .env*.properties
 .env
 *.key
+
+.claude/settings.local.json
+/commit
+
+### MCP local (config de IDE por maquina, no del repo) ###
+.mcp.json
+
+### Artefactos de los subagentes (planes, validaciones, cuerpos de PR) ###
+# Su sitio es arquisoft-uco/arquisoft-docs -> docs/hus/, donde los publica 4c-commit.
+.workspace/

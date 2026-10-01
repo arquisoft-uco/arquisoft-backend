@@ -1,0 +1,53 @@
+package com.arquisoft.fichas.infrastructure.estudiantefichaperfil.query.secondaryadapter.repository;
+
+import com.arquisoft.fichas.application.estudiantefichaperfil.query.readmodel.EstudianteFichaPerfilReadModel;
+import com.arquisoft.fichas.application.estudiantefichaperfil.query.secondaryport.EstudianteFichaPerfilQueryOutputPort;
+import com.arquisoft.fichas.infrastructure.estudiantefichaperfil.query.secondaryadapter.repository.mapper.EstudianteFichaPerfilQueryMapper;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.UUID;
+
+@Component
+@RequiredArgsConstructor
+public class EstudianteFichaPerfilQueryOutputAdapter implements EstudianteFichaPerfilQueryOutputPort {
+
+    private final EstudianteFichaPerfilQueryRepository estudianteFichaPerfilQueryRepository;
+
+    @Override
+    public List<EstudianteFichaPerfilReadModel> consultarPorFicha(UUID fichaPerfil) {
+        return estudianteFichaPerfilQueryRepository
+                .findByFichaPerfilIdOrderByNombreAsc(fichaPerfil)
+                .stream()
+                .map(EstudianteFichaPerfilQueryMapper::toReadModel)
+                .toList();
+    }
+
+    @Override
+    public List<EstudianteFichaPerfilReadModel> consultarVigentesPorFicha(UUID fichaPerfil) {
+        return estudianteFichaPerfilQueryRepository
+                .findByFichaPerfilIdAndVigenteTrueOrderByNombreAsc(fichaPerfil)
+                .stream()
+                .map(EstudianteFichaPerfilQueryMapper::toReadModel)
+                .toList();
+    }
+
+    @Override
+    public List<EstudianteFichaPerfilReadModel> consultarCompanerosPorFichaYEstudiante(UUID fichaPerfil, UUID estudiante) {
+        return estudianteFichaPerfilQueryRepository
+                .findCompanerosByFichaPerfilIdAndEstudianteId(fichaPerfil, estudiante)
+                .stream()
+                .map(EstudianteFichaPerfilQueryMapper::toReadModel)
+                .toList();
+    }
+
+    @Override
+    public List<EstudianteFichaPerfilReadModel> consultarVigentesDeFichasDelEstudiante(UUID estudiante) {
+        return estudianteFichaPerfilQueryRepository
+                .findVigentesDeFichasDelEstudiante(estudiante)
+                .stream()
+                .map(EstudianteFichaPerfilQueryMapper::toReadModel)
+                .toList();
+    }
+}

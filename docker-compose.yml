@@ -57,6 +57,105 @@ services:
       timeout: 5s
       retries: 5
 
+  # ==================== CARGADOR DEL CATÁLOGO DE MENSAJES (ADR-013) ====================
+  # Un solo disparo: carga el catálogo en Redis y termina. El backend lo espera con
+  # service_completed_successfully porque con el fail-fast de arranque no puede levantar sin
+  # catálogo — sin esta compuerta arrancaría antes de la carga y moriría en bucle.
+  #
+  # Solo afecta al flujo local con docker-compose. Contra la instancia en la nube, el mismo script
+  # se ejecuta suelto como paso previo del despliegue.
+  catalogo-loader:
+    image: redis:7-alpine
+    container_name: arquisoft-catalogo-loader
+    restart: "no"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: default123
+    volumes:
+      - ./catalogo:/catalogo:ro
+    command: ["sh", "/catalogo/cargar.sh"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - arquisoft-network
+
+  # Poda del catálogo: borra de Redis las claves que ya no están en los .properties.
+  # Bajo perfil 'mantenimiento' a propósito — 'docker compose up' NO debe borrar nada por su
+  # cuenta. Se invoca a mano:  docker compose --profile mantenimiento up catalogo-podador
+  # Para ver qué borraría sin borrarlo, añadir DRY_RUN=1 al environment.
+  #
+  # Los datos de conexión son sobreescribibles: por defecto apunta al servicio 'redis' de este
+  # compose, pero contra un Redis que ya esté arriba fuera de él hay que pasar PODA_REDIS_HOST
+  # (host.docker.internal desde el contenedor) o el script podaría la instancia equivocada.
+  catalogo-podador:
+    image: redis:7-alpine
+    container_name: arquisoft-catalogo-podador
+    restart: "no"
+    profiles: ["mantenimiento"]
+    environment:
+      REDIS_HOST: "${PODA_REDIS_HOST:-redis}"
+      REDIS_PORT: "${PODA_REDIS_PORT:-6379}"
+      REDIS_USER: "${PODA_REDIS_USER:-}"
+      REDIS_PASSWORD: "${PODA_REDIS_PASSWORD:-default123}"
+      DRY_RUN: "${DRY_RUN:-0}"
+      PODA_TOTAL: "${PODA_TOTAL:-0}"
+    volumes:
+      - ./catalogo:/catalogo:ro
+    command: ["sh", "/catalogo/podar.sh"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - arquisoft-network
+
+
+  # ==================== PLANTILLAS DE CORREO ====================
+  # Las plantillas viven en Redis, no en el jar: cambiar el maquetado de un correo no cuesta un
+  # build. Igual que el catálogo, el backend las lee al arrancar y no levanta si faltan, así que
+  # este servicio corre antes que él.
+  plantillas-loader:
+    image: redis:7-alpine
+    container_name: arquisoft-plantillas-loader
+    restart: "no"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: default123
+    volumes:
+      - ./plantillas:/plantillas:ro
+    command: ["sh", "/plantillas/cargar.sh"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - arquisoft-network
+
+  # Poda de plantillas: borra de Redis las que ya no están declaradas en plantillas/cargar.sh.
+  # Bajo perfil 'mantenimiento', como el podador del catálogo — 'docker compose up' no borra nada.
+  #   docker compose --profile mantenimiento up plantillas-podador
+  plantillas-podador:
+    image: redis:7-alpine
+    container_name: arquisoft-plantillas-podador
+    restart: "no"
+    profiles: ["mantenimiento"]
+    environment:
+      REDIS_HOST: "${PODA_REDIS_HOST:-redis}"
+      REDIS_PORT: "${PODA_REDIS_PORT:-6379}"
+      REDIS_USER: "${PODA_REDIS_USER:-}"
+      REDIS_PASSWORD: "${PODA_REDIS_PASSWORD:-default123}"
+      DRY_RUN: "${DRY_RUN:-0}"
+      PODA_TOTAL: "${PODA_TOTAL:-0}"
+    volumes:
+      - ./plantillas:/plantillas:ro
+    command: ["sh", "/plantillas/podar.sh"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - arquisoft-network
+
   # ==================== KEYCLOAK ====================
   keycloak:
     image: quay.io/keycloak/keycloak:26.6
@@ -70,16 +169,25 @@ services:
       KC_DB_PASSWORD: arquisoft123
       KC_PROXY_HEADERS: xforwarded
       KC_LOG_LEVEL: INFO
+      KC_HEALTH_ENABLED: "true"
     ports:
       - "8081:8080"
-    command: start-dev
+    command: start-dev --import-realm
+    volumes:
+      # Aprovisionamiento del realm, hermano de catalogo/ y plantillas/: no pertenece a ningun
+      # bounded context. Keycloak solo importa si el realm no existe todavia en KC_DB.
+      - ./keycloak:/opt/keycloak/data/import:ro
     depends_on:
       postgres:
         condition: service_healthy
     networks:
       - arquisoft-network
     healthcheck:
-      test: [ "CMD-SHELL", "curl -sf http://localhost:8080/health/ready || exit 1" ]
+      # La imagen no trae curl/wget instalados, pero /bin/sh de este contenedor es en
+      # realidad bash (symlink), asi que /dev/tcp funciona. Sin KC_HEALTH_ENABLED el
+      # endpoint /health/ready ni siquiera existe (404), y en Keycloak 26 vive en la
+      # interfaz de gestion (puerto 9000), no en el 8080 de las apps.
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && printf 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && head -1 <&3 | grep -q 200" ]
       interval: 15s
       timeout: 10s
       retries: 10
@@ -108,6 +216,29 @@ services:
       retries: 5
       start_period: 20s
 
+  # ==================== MAILPIT (servidor SMTP de desarrollo) ====================
+  # Captura todo el correo que envía el backend y lo muestra en una bandeja web.
+  # Nada sale a internet: permite probar la entrega real sin escribirle a una persona.
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: arquisoft-mailpit
+    environment:
+      TZ: America/Bogota
+      MP_MAX_MESSAGES: 500
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Bandeja web — http://localhost:8025
+    networks:
+      - arquisoft-network
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   # ==================== BACKEND ====================
   arquisoft-backend:
     build:
@@ -115,9 +246,25 @@ services:
       dockerfile: Dockerfile
     container_name: arquisoft-backend
     environment:
-      DB_SEGURIDAD_URL: jdbc:postgresql://postgres:5432/usuarios
-      DB_SEGURIDAD_USERNAME: arquisoft_user
-      DB_SEGURIDAD_PASSWORD: arquisoft123
+      # Sin esto el contenedor arrancaba SIN perfil activo: caia en el fallback
+      # '!dev & !prod' de logback-spring.xml y en los niveles base de application.yml,
+      # ignorando el SPRING_PROFILES_ACTIVE del .env.
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      # Niveles de log. Los defaults de aqui son los del perfil dev, que es el que
+      # docker-compose levanta: NO se puede dejar `${VAR:-}` porque Compose inyectaria
+      # cadena vacia y Spring haria LogLevel.valueOf("") -> fallo de arranque.
+      # Si cambias SPRING_PROFILES_ACTIVE a prod aqui, fija tambien estas siete.
+      # Presets listos para copiar en la seccion OBSERVABILIDAD del .env.example.
+      LOG_NIVEL_ROOT: ${LOG_NIVEL_ROOT:-INFO}
+      LOG_NIVEL_NEGOCIO: ${LOG_NIVEL_NEGOCIO:-DEBUG}
+      LOG_NIVEL_PLATAFORMA: ${LOG_NIVEL_PLATAFORMA:-DEBUG}
+      LOG_NIVEL_DATOS: ${LOG_NIVEL_DATOS:-DEBUG}
+      LOG_NIVEL_SEGURIDAD: ${LOG_NIVEL_SEGURIDAD:-DEBUG}
+      LOG_NIVEL_MENSAJERIA: ${LOG_NIVEL_MENSAJERIA:-DEBUG}
+      LOG_NIVEL_FRAMEWORK: ${LOG_NIVEL_FRAMEWORK:-INFO}
+      DB_USUARIOS_URL: jdbc:postgresql://postgres:5432/usuarios
+      DB_USUARIOS_USERNAME: arquisoft_user
+      DB_USUARIOS_PASSWORD: arquisoft123
       DB_FICHAS_URL: jdbc:postgresql://postgres:5432/fichas_perfil
       DB_FICHAS_USERNAME: arquisoft_user
       DB_FICHAS_PASSWORD: arquisoft123
@@ -136,6 +283,19 @@ services:
       DB_EVALUACIONES_URL: jdbc:postgresql://postgres:5432/evaluaciones
       DB_EVALUACIONES_USERNAME: arquisoft_user
       DB_EVALUACIONES_PASSWORD: arquisoft123
+      DB_NOTIFICACIONES_URL: jdbc:postgresql://postgres:5432/notificaciones
+      DB_NOTIFICACIONES_USERNAME: arquisoft_user
+      DB_NOTIFICACIONES_PASSWORD: arquisoft123
+      DB_SOLICITUDES_URL: jdbc:postgresql://postgres:5432/solicitudes
+      DB_SOLICITUDES_USERNAME: arquisoft_user
+      DB_SOLICITUDES_PASSWORD: arquisoft123
+      # 'log' no intenta conectar a ningún servidor SMTP — Mailpit es opcional.
+      # Para probar la entrega real: levantar el servicio 'mailpit' y poner esta var en 'smtp'.
+      NOTIFICACION_PROVEEDOR: ${NOTIFICACION_PROVEEDOR:-log}
+      MAIL_HOST: ${MAIL_HOST:-mailpit}
+      MAIL_PORT: 1025
+      MAIL_SMTP_AUTH: "false"
+      MAIL_SMTP_STARTTLS: "false"
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_REDIS_HOST: redis
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080
@@ -151,6 +311,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      catalogo-loader:
+        condition: service_completed_successfully
+      plantillas-loader:
+        condition: service_completed_successfully
       keycloak:
         condition: service_healthy  # ✅ Backend espera Keycloak listo
       minio:

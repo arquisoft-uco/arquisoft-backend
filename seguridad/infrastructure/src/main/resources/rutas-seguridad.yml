@@ -1,0 +1,14 @@
+# ==================== RUTAS DE CONTROLADORES — CONTEXTO SEGURIDAD ====================
+# Un placeholder por segmento de path. SecurityConfig y OpenApiConfig leen las mismas
+# claves via @Value para no duplicar literales entre el controlador REST, la whitelist
+# de seguridad y la agrupacion de Swagger.
+# Vive en este modulo (no en el application.yml raiz) para que, si este contexto se
+# extrae a microservicio, se lleve su propia configuracion de rutas consigo.
+rutas:
+  seguridad:
+    auth:
+      base: /auth
+      login: /login
+      refresh: /refresh
+      logout: /logout
+      validate: /validate

@@ -1,5 +1,6 @@
 package com.arquisoft.config;
 
+import com.arquisoft.shared.message.annotation.ApiSecurity;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
@@ -9,26 +10,10 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.annotations.servers.Server;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Configuracion global de OpenAPI / Swagger UI para Arquisoft.
- *
- * <p>Reside en el paquete config de la aplicacion principal porque es la unica
- * capa que ensambla todos los contextos y tiene visibilidad completa de la API.
- * No duplicar en modulos individuales.
- *
- * <p>Define:
- * - Metadata global de la API (titulo, version, contacto, licencia, servidores)
- * - Esquema de seguridad JWT bearerAuth aplicado por defecto a todos los endpoints
- * - Grupos de API por bounded context para navegacion organizada en Swagger UI
- *
- * <p>Acceso en desarrollo: http://localhost:8080/api/swagger-ui/index.html
- * (sin autenticacion — endpoints /swagger-ui/** y /v3/api-docs/** son permit-all)
- *
- * <p>ADR-011: documentacion-api-springdoc-openapi
- */
 @Configuration
 @OpenAPIDefinition(
     info = @Info(
@@ -36,7 +21,7 @@ import org.springframework.context.annotation.Configuration;
         version = "1.0.0",
         description = "API REST del sistema de gestion de proyectos de grado — Universidad Cooperativa de Colombia. "
             + "Autenticacion via Keycloak (OAuth2/OIDC). "
-            + "Contextos: Seguridad, Fichas de Perfil, Proyectos de Grado, "
+            + "Contextos: Seguridad, Usuarios, Fichas de Perfil, Proyectos de Grado, "
             + "Artefactos, Repositorio de Artefactos, Entregables y Evaluaciones.",
         contact = @Contact(
             name = "Equipo Arquisoft UCO",
@@ -53,10 +38,10 @@ import org.springframework.context.annotation.Configuration;
 /*            ,
         @Server(url = "https://arquisoft.uco.edu.co/api", description = "Servidor de produccion UCO")*/
     },
-    security = @SecurityRequirement(name = "bearerAuth")
+    security = @SecurityRequirement(name = ApiSecurity.BEARER_AUTH)
 )
 @SecurityScheme(
-    name = "bearerAuth",
+    name = ApiSecurity.BEARER_AUTH,
     type = SecuritySchemeType.HTTP,
     scheme = "bearer",
     bearerFormat = "JWT",
@@ -66,9 +51,18 @@ import org.springframework.context.annotation.Configuration;
 )
 public class OpenApiConfig {
 
-    /**
-     * Grupo: todos los endpoints de la API (vista completa).
-     */
+    @Value("${rutas.seguridad.auth.base:/auth}")
+    private String authBasePath;
+
+    @Value("${rutas.usuarios.usuarios.base:/usuarios}")
+    private String usuariosBasePath;
+
+    @Value("${rutas.fichas.fichas-perfil.base:/fichas-perfil}")
+    private String fichasPerfilBasePath;
+
+    @Value("${rutas.solicitudes.solicitud.base:/solicitudes}")
+    private String solicitudesBasePath;
+
     @Bean
     public GroupedOpenApi allApi() {
         return GroupedOpenApi.builder()
@@ -78,88 +72,84 @@ public class OpenApiConfig {
             .build();
     }
 
-    /**
-     * Grupo: Seguridad — autenticacion, tokens, validacion y gestion de usuarios.
-     * Incluye: /auth/** (login, refresh, logout, validate) y /seguridad/** (usuarios)
-     */
     @Bean
     public GroupedOpenApi seguridadApi() {
         return GroupedOpenApi.builder()
             .group("01-seguridad")
             .displayName("Seguridad")
-            .pathsToMatch("/auth/**", "/seguridad/**")
+            .pathsToMatch(authBasePath + "/**", "/seguridad/**")
             .build();
     }
 
-    /**
-     * Grupo: Fichas de Perfil — ciclo de vida de fichas de trabajos de grado.
-     */
+    @Bean
+    public GroupedOpenApi usuariosApi() {
+        return GroupedOpenApi.builder()
+            .group("02-usuarios")
+            .displayName("Usuarios")
+            .pathsToMatch(usuariosBasePath + "/**")
+            .build();
+    }
+
     @Bean
     public GroupedOpenApi fichasApi() {
         return GroupedOpenApi.builder()
-            .group("02-fichas")
+            .group("03-fichas")
             .displayName("Fichas de Perfil")
-            .pathsToMatch("/fichas-perfil/**")
+            .pathsToMatch(fichasPerfilBasePath + "/**")
             .build();
     }
 
-    /**
-     * Grupo: Proyectos de Grado — gestion de proyectos, asesores y estudiantes.
-     */
     @Bean
     public GroupedOpenApi proyectosApi() {
         return GroupedOpenApi.builder()
-            .group("03-proyectos")
+            .group("04-proyectos")
             .displayName("Proyectos de Grado")
             .pathsToMatch("/proyectos/**")
             .build();
     }
 
-    /**
-     * Grupo: Artefactos — documentos y artefactos versionados.
-     */
     @Bean
     public GroupedOpenApi artefactosApi() {
         return GroupedOpenApi.builder()
-            .group("04-artefactos")
+            .group("05-artefactos")
             .displayName("Artefactos")
             .pathsToMatch("/artefactos/**")
             .build();
     }
 
-    /**
-     * Grupo: Repositorio de Artefactos — control de versiones y almacenamiento.
-     */
     @Bean
     public GroupedOpenApi repositorioArtefactosApi() {
         return GroupedOpenApi.builder()
-            .group("05-repositorio-artefactos")
+            .group("06-repositorio-artefactos")
             .displayName("Repositorio de Artefactos")
             .pathsToMatch("/repositorio-artefactos/**")
             .build();
     }
 
-    /**
-     * Grupo: Entregables — entregables e hitos de proyectos de grado.
-     */
     @Bean
     public GroupedOpenApi entregablesApi() {
         return GroupedOpenApi.builder()
-            .group("06-entregables")
+            .group("07-entregables")
             .displayName("Entregables")
             .pathsToMatch("/entregables/**")
             .build();
     }
 
-    /**
-     * Grupo: Evaluaciones — evaluaciones definitivas y calificaciones.
-     */
     @Bean
     public GroupedOpenApi evaluacionesApi() {
         return GroupedOpenApi.builder()
-            .group("07-evaluaciones")
+            .group("08-evaluaciones")
             .displayName("Evaluaciones")
             .pathsToMatch("/evaluaciones/**")
+            .build();
+    }
+
+    @Bean
+    public GroupedOpenApi solicitudesApi() {
+        return GroupedOpenApi.builder()
+            .group("09-solicitudes")
+            .displayName("Solicitudes")
+            .pathsToMatch(solicitudesBasePath + "/**")
             .build();
     }
 }

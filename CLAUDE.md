@@ -1,6 +1,20 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guía operativa del repositorio para Claude Code.
+
+**Este archivo es un índice, no el tratado de arquitectura.** La fuente de verdad de convenciones
+está en las skills de `.claude/skills/`, verificadas contra el código real:
+
+| Necesitas | Carga |
+|---|---|
+| Capas, paquetes, puertos, eventos, CQRS, sufijos | `arquisoft-arquitectura` |
+| Notification Pattern, validación, catálogo de mensajes, excepciones, logs, testing, estilo | `arquisoft-estandares` |
+| MCPs preferidos y sus fallbacks | `arquisoft-mcps` |
+| IDs de Context7 por tecnología del stack | `context7-stack` |
+| Leer HU/HT, MER y ADRs de `arquisoft-docs` | `gh-docs-reader` |
+
+El detalle largo y humano vive en `docs/ARQUITECTURA_Y_ESTRUCTURA.md`. **Si algo aquí contradice a
+una skill, gana la skill.**
 
 ## Commands
 
@@ -26,6 +40,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ./gradlew projects
 ```
 
+El gate real es `check` (tests + checkstyle + `jacocoTestCoverageVerification` + la tarea
+`verificarCapasHexagonales` del build raíz), no `test`.
+
 ## Local Environment
 
 ```bash
@@ -34,120 +51,466 @@ docker-compose up postgres rabbitmq redis keycloak  # infra only
 ./gradlew bootRun --args='--spring.profiles.active=dev'
 ```
 
-`docker-compose up` starts everything including the backend on port 8080. Swagger UI is available at `http://localhost:8080/api/swagger-ui/index.html` (disabled in prod).
+`docker-compose up` levanta todo, backend incluido, en el puerto 8080. Swagger UI en
+`http://localhost:8080/api/swagger-ui/index.html` (deshabilitado en prod). Los cargadores del
+catálogo (`catalogo/cargar.sh`) y de las plantillas (`plantillas/cargar.sh`) corren **antes** del
+backend (`service_completed_successfully`).
 
-**Dev profile:** DEBUG logging, rate limiting disabled, Swagger enabled.  
-**Prod profile:** INFO logging to file, rate limiting 60 req/min global, Swagger disabled.
+**Dev:** logging DEBUG, rate limiting deshabilitado, Swagger habilitado.
+**Prod:** logging INFO a archivo, rate limiting 60 req/min global, Swagger deshabilitado.
+
+Guía completa: [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md).
 
 ## Architecture
 
-Hexagonal Architecture (Ports & Adapters) with **7 bounded contexts** and **7 shared modules**. Contexts communicate exclusively via RabbitMQ domain events — they never import each other.
+Arquitectura hexagonal (Ports & Adapters) con **10 bounded contexts** y **14 módulos compartidos**.
+Los contextos se comunican por eventos de dominio en RabbitMQ y **nunca se importan entre sí**, con
+una única excepción acotada: una **consulta síncrona de solo lectura** a otro contexto, hecha por
+HTTP (nunca un import), para un dato que un comando debe verificar *al momento de escribir* y no
+puede obtener de un evento ni de una réplica local — ver *Consultas síncronas entre contextos*.
+Dirección de dependencias: `domain ← application ← infrastructure`, impuesta por el grafo de módulos
+de Gradle y verificada por `verificarCapasHexagonales` (cuelga de `check`).
 
 ### Bounded Contexts
 
-| Context | DB Schema |
-|---------|-----------|
-| `seguridad` | `usuarios` |
+Con código hoy: `seguridad`, `usuarios`, `fichas`, `notificaciones`, `proyectos`, `evaluaciones` y
+`solicitudes`. Los otros tres (`artefactos`, `repositorio_artefactos`, `entregables`) son andamiaje:
+solo su `{Contexto}DataSourceConfig`. `usuarios` es el dueño del ciclo de vida del usuario:
+`RegistrarUsuario` lo da de alta en Keycloak y publica los eventos con los que `fichas` y `proyectos`
+mantienen sus réplicas.
+
+| Context | Database |
+|---------|----------|
+| `seguridad` | *(sin DB — auth vía Keycloak + Redis)* |
+| `usuarios` | `usuarios` |
 | `fichas` | `fichas_perfil` |
+| `notificaciones` | `notificaciones` |
 | `proyectos` | `proyectos_grado` |
 | `artefactos` | `artefactos` |
 | `repositorio_artefactos` | `repositorio_artefactos` |
 | `entregables` | `entregables` |
 | `evaluaciones` | `evaluaciones` |
+| `solicitudes` | `solicitudes` |
+
+**Contexto de referencia: `fichas`** — el único completo (escritura, consulta, eventos, consumidor).
+Los demás contextos con código aportan cada uno algo distinto y tienen un límite conocido; ver
+`arquisoft-arquitectura`, que los enumera con su límite exacto.
+
+**Son bases de datos separadas, no schemas.** `init-db.sql` hace un `CREATE DATABASE` por contexto y
+cada `{Contexto}DataSourceConfig` apunta su propio `DataSource`, `EntityManagerFactory`,
+`TransactionManager` y bean de Flyway a una URL distinta. Dos consecuencias no negociables:
+
+- **Las migraciones viven en `db/migration/{contexto}/`, nunca sueltas en `db/migration/`.** Todos
+  los contextos comparten un classpath en runtime: un archivo en la raíz lo recoge el Flyway de
+  *cada* contexto y lo aplica en la base equivocada.
+- **Una FK entre contextos es imposible.** Se modela como tabla réplica local poblada por eventos
+  (`asesor_ficha`, `estudiante` en `fichas`).
+
+`baselineOnMigrate` está en `false` en todo contexto con Flyway. La versión es un
+**timestamp**, `V{yyyyMMddHHmmss}__descripcion.sql`; nunca se retrocede un timestamp ni se edita una
+migración ya aplicada.
 
 ### Shared Modules
 
-`shared:domain`, `shared:amqp`, `shared:logger`, `shared:redis`, `shared:web`, `shared:validation`, `shared:postgres`
+`shared:util`, `shared:exception`, `shared:validation`, `shared:domain`, `shared:application`,
+`shared:query`, `shared:logger`, `shared:tracing`, `shared:redis`, `shared:amqp`, `shared:web`,
+`shared:minio`, `shared:jpa`, `shared:message`
+
+Lo que hay que saber de cada uno para no romper el grafo:
+
+| Módulo | Contiene | Restricción que sostiene el diseño |
+|---|---|---|
+| `shared:exception` | Las 5 bases de excepción + `BaseException`/`BaseError` | **Cero dependencias** — es hoja, para que `shared:message` pueda extender `InfrastructureException` sin ciclo |
+| `shared:domain` | Solo `DomainEvent` (`…shared.events`) y `DomainRule` (`…shared.rules`) | Es lo único que ve `{contexto}/domain` |
+| `shared:application` | `UseCase`/`VoidUseCase`/`SupplierUseCase`, `Interactor`/`VoidInteractor`/`SupplierInteractor`, `Finder`/`SupplierFinder`, puerto `EventPublisher` | Declara `api shared:domain`. **Un `{contexto}/domain` nunca lo declara** — si parece necesitarlo, el tipo está en la capa equivocada |
+| `shared:validation` | Familia `Validator*` + `ValidationResult` + las dos excepciones de validación | Módulo propio, no un paquete de `shared:domain`: lo usan domain y application por igual |
+| `shared:query` | Todo el vocabulario de lectura (`QueryCriteria`, `NodoFiltro`, `pagination/`, `dto/`, `ConsultaCriteriaQuery`) | **Cero Spring**; solo anotaciones Jackson, nunca `databind` |
+| `shared:jpa` | Lo irreduciblemente atado a Spring Data (`PageableMapper`, `PaginationMapper`, `CampoSpec`, `QueryJpaSpecification`, `QueryRepository`) | Separado de `shared:query` para no imponer Spring a quien solo declara un criteria |
+| `shared:util` | `UtilTexto`, `UtilUUID`, `UtilColeccion`, `UtilFecha`, `UtilNumero`, `UtilObjeto`, `UtilEnum` | Prefijo `Util` en inglés, el resto en español |
+| `shared:tracing` | Contexto de traza completo (ver *Correlación*) | Único `shared:*` con capas hexagonales internas; **no** depende de spring-web ni spring-security |
+| `shared:message` | Códigos, campos, límites, textos Swagger, `EventTopics`, enums `{Feature}Key`, fachada `Mensajes` | — |
+
+**Un `shared:*` con un solo consumidor no es compartido.** Exige dos consumidores reales antes de
+crear uno; `shared:notification` se disolvió dentro de `notificaciones` justo por esto. La excepción
+prevista es `shared:web-client` (transporte, no dominio: cliente HTTP configurable con URL, payload y
+tipo de respuesta) — todo contexto que haga una *Consulta síncrona entre contextos* lo consume. Aún
+no existe (lo trae una HT aparte); hasta entonces esos adaptadores son stubs — ver *Desviaciones*.
+
+### Consultas síncronas entre contextos
+
+El default para "el contexto A necesita algo del contexto B" sigue siendo un evento: B publica, A
+replica local, A lee su tabla. Se recurre a una consulta HTTP síncrona **solo** si se cumplen las
+tres: (1) el dato es una **precondición de una escritura** en A y debe ser correcto al instante de
+escribir, no eventualmente — una réplica desactualizada dejaría pasar un comando inválido; (2) A no
+necesita el dato para nada más, así que mantener una réplica (más su backfill y su consumer) es puro
+lastre; (3) B ya expone una consulta que responde. Primer caso: el asesor/coordinador asignado al
+estudiante, verificado cuando `solicitudes` crea una solicitud de novedad / cambio de asesor.
+
+Forma, espejando cualquier otro puerto secundario:
+- Puerto en `application/{feature}/command/secondaryport/{Concepto}OutputPort` (o su propio paquete
+  fino si no mapea a un agregado, p. ej. `application/asignacionproyecto/command/secondaryport/`),
+  devuelve un `boolean`/valor plano — **la `Rule` sigue decidiendo**, el puerto solo responde.
+- Un `Finder` de comando lo consume, igual que un chequeo contra réplica.
+- Adaptador en `infrastructure/{feature}/command/secondaryadapter/webclient/{Concepto}OutputAdapter`,
+  `@Component`, habla por `shared:web-client` — nunca `RestClient`/`WebClient` inline, nunca un
+  cliente generado que importe B. Reenvía el bearer del llamante, y un fallo de transporte sale como
+  `InfrastructureException` (503): un peer caído falla la petición, no salta el chequeo.
 
 ### Layer Structure per Context
 
 ```
 {context}/domain/
-├── model/           # Aggregate roots (suffix Aggregate), value objects — no Spring
-├── port/in/         # Input port interfaces (suffix InputPort)
-├── port/out/        # Output port interfaces (suffix OutputPort)
-├── event/           # Domain events (extend DomainEvent)
-└── exception/       # Domain exceptions (extend DomainException)
+└── {feature}/
+    ├── {Entity}Domain.java          # Agregado (sufijo Domain, sustantivo) — directo aquí, sin subpaquete
+    ├── {Action}{Entity}Domain.java  # Objeto de acción — al lado del agregado, condicional
+    ├── model/                # Value objects + el record de entrada de cada Rule
+    ├── rules/impl/           # {Regla}RuleImpl — puras: sin Spring, sin dependencias de constructor
+    ├── event/                # Eventos de dominio (extienden DomainEvent)
+    ├── exception/            # Excepciones de dominio (→ 422)
+    └── message/              # Constantes de mensaje de dominio (opcional)
 
 {context}/application/
-├── {feature}/command/   # Command use case interface (InputPort) + implementation (UseCaseImpl)
-├── {feature}/query/     # Query use case interface (InputPort) + implementation (UseCaseImpl)
-└── {feature}/dto/       # DTOs (suffix DTO), ReadModels (suffix ReadModel)
+└── {feature}/
+    ├── command/
+    │   ├── primaryport/                    # Contrato primario del comando
+    │   │   ├── interactor/impl/            # Dueño de @Transactional
+    │   │   ├── model/{Action}{Entity}Command.java
+    │   │   └── mapper/                     # Command → dominio. OBLIGATORIO en toda escritura
+    │   ├── usecase/impl/                   # Colaborador interno — NO bajo primaryport/
+    │   ├── validator/impl/                 # @Component, puro, sin if
+    │   ├── finder/                         # Uno por consulta, implementa Finder<T,R>
+    │   ├── secondaryport/                  # OutputPort + entity/ (record plano) + mapper/
+    │   └── result/                         # Solo si el comando no devuelve UUID ni void
+    └── query/
+        ├── primaryport/                    # interactor/impl (@Transactional readOnly), model/, mapper/
+        ├── usecase/impl/                   # Recibe el Criteria, no el Query
+        ├── validator/impl/                 # Solo con política de acceso; distinto del de command
+        ├── finder/                         # {X}QueryFinder — nunca uno de command/
+        ├── secondaryport/{Feature}QueryOutputPort.java
+        ├── criteria/
+        └── readmodel/
 
 {context}/infrastructure/
-├── adapter/in/      # REST controllers and AMQP consumers (suffix InputAdapter)
-├── adapter/out/     # Repository and external service adapters (suffix OutputAdapter)
-├── config/          # Spring configuration
-├── filter/          # HTTP filters
-└── db/migration/    # Flyway migrations
+└── {feature}/
+    ├── exception/                          # Excepciones de infraestructura (→ 503)
+    ├── command/
+    │   ├── primaryadapter/
+    │   │   ├── web/                        # Un Controller por acción + dto/ + mapper/
+    │   │   └── amqp/{productor}/{entidad}/ # {Evento}Consumer + {Evento}Payload
+    │   └── secondaryadapter/               # entity/ (JpaEntity) + mapper/ + repository/
+    │                                       #   (o keycloak/, redis/, jwt/, smtp/…)
+    └── query/
+        ├── primaryadapter/web/             # Controller + dto/ + mapper/
+        └── secondaryadapter/repository/    # JpaQueryEntity (@Subselect) + Specification +
+                                            #   SortMapper + QueryOutputAdapter + QueryRepository
+config/     # {Context}DataSourceConfig, {Contexto}Queues, *QueueConfig
+security/   # {Context}Authorities
+handler/    # {Context}GlobalExceptionHandler (@RestControllerAdvice) — solo seguridad tiene uno
+filter/     # Filtros HTTP del contexto
+src/main/resources/db/migration/{contexto}/   # Flyway — subcarpeta propia, siempre
 ```
 
-Dependency direction is strictly enforced: `domain ← application ← infrastructure`.
+**Cada paquete se llama como el sufijo de las clases que aloja** (`mapper/` → `*Mapper`,
+`exception/` → `*Exception`). De ahí sale la regla que más se equivoca: un `@RestControllerAdvice`
+va en `handler/`, nunca en `exception/`.
 
-## Key Conventions
+## Key Conventions — resumen
 
-**Aggregate roots:** Immutable, final fields, no public constructor, suffix `Aggregate` (e.g., `UsuarioAggregate`, `FichaPerfilAggregate`). Use `build()` for new instances, `rebuild()` for reconstructing from DB.
+Cada punto está desarrollado, con su porqué y su archivo de referencia real, en las skills. Aquí solo
+el enunciado, para reconocer una desviación de un vistazo.
 
-**IDs:** Always UUID — never `Long` or `Integer`.
+**Dominio**
+- Agregado: constructor privado, campos privados **no-`final`** asignados por setters privados
+  (Notification Pattern), solo getters, sufijo `Domain` sustantivo. `crear(...)`/`reconstruir(...)`,
+  nunca `build`/`rebuild`. Sin Lombok, sin Spring, sin `record`.
+- Centinela `public static final X VACIO` + `esVacio()` (identidad) cuando el agregado puede llegar
+  ausente. **Nada de `Optional` en records de dominio, firmas de `Validator` ni retornos de `Finder`.**
+- Objeto de acción `{Accion}{Entidad}Domain` solo si la acción arrastra más que el agregado; por
+  defecto sus campos son `UUID` y escalares.
+- Las `Rule` son puras y **no son beans**; el `{Accion}{Entidad}ValidatorImpl` las construye con
+  `new` en un constructor sin argumentos y **no contiene un solo `if`**.
+- Invariantes locales → `ValidationResult` acumulado → una `DomainValidationException`. Restricciones
+  de conjunto (existencia, unicidad, propiedad) → `Rule` → `DomainException` 422. Nunca `if/throw`
+  en el use case.
+- **Orden de validación:** 1) integridad del dato → 2) existencia/unicidad contra BD → 3) reglas de
+  negocio. Nunca se consulta la BD sobre un dato cuya integridad no se validó.
+- **IDs siempre `UUID`.** Enums de catálogo: `desde(String)`/`esValido(String)`/`getId()`, nunca
+  `valueOf` fuera del enum.
 
-**Domain events:** Extend `DomainEvent`. After persisting an aggregate, drain its unpublished events and publish via `SharedEventPublisher` (RabbitMQ, publisher confirms, manual ACK, prefetch=1).
+**Aplicación**
+- El `Interactor` es el punto de entrada y dueño de
+  `@Transactional(transactionManager = "{contexto}TransactionManager")` — qualifier **siempre**
+  explícito (`usuariosTransactionManager` es `@Primary` y enlaza en silencio si se omite). Lectura:
+  `@Transactional(readOnly = true, ...)`. `seguridad` no lleva ninguno: no tiene `DataSource`.
+- El `UseCase` de escritura recibe **un objeto de dominio, nunca el `Command`**. El de consulta
+  recibe el `Criteria`; el `Interactor` de consulta recibe **siempre un `Query`**
+  (`ConsultaCriteriaQuery` genérico, o un `{Consulta}{Entidad}Query` propio que lo compone) y lo
+  convierte con un `query/primaryport/mapper/`.
+- Sin entrada → `SupplierInteractor<O>`/`SupplierUseCase<O>`. **`Void` como tipo de entrada está
+  prohibido en todo el repo.**
+- Los puertos hablan `Entity` (record plano), nunca `Domain`. `UseCase` mapea `Domain → Entity`;
+  el `Finder` mapea de vuelta; el adaptador hace `Entity ↔ JpaEntity`.
+- Un `Finder` **siempre devuelve valor** y nunca lanza por "no encontrado". Nunca `Optional`: desenvuelve el del
+  puerto dentro de `obtener` y devuelve el `Domain` (ausente → `XDomain.VACIO`) o el `UUID` (ausente →
+  `UtilUUID.obtenerUUIDPorDefecto()`); quien llama pregunta con `esVacio()` o `UtilUUID.esPorDefecto(...)`.
+- Un fallo que el negocio registra es un **valor** (`sealed interface` de desenlace), no una
+  excepción: cero `try/catch` en `application`.
+- El que llama compone: todos los pasos encadenados cuelgan del mismo orquestador, y cada llamado
+  recibe el objeto de dominio más estrecho que lee.
+- Use cases y adaptadores son `@Component` — **nunca `@Service`**. Inyección por
+  `@RequiredArgsConstructor`, nunca `@Autowired`, y siempre interfaces.
 
-**Input ports:** Interfaces in `application/{feature}/command/` or `application/{feature}/query/`, suffix `InputPort` (e.g., `CrearUsuarioInputPort`, `ConsultarFichasPerfilInputPort`).
+**Infraestructura**
+- Un `Controller` por acción. `RequestDTO` = `record` **sin ninguna anotación** +
+  `{Accion}{Entidad}RequestMapper` que llama a `Command.crear(...)`. Los identificadores del body
+  llegan como `String` y se validan con `ValidatorUUID`, **nunca con una anotación Jakarta**.
+- Ni el `ReadModel` ni el `Result` se serializan directo: van a un `ResponseDTO` por su
+  `ResponseMapper`.
+- El `CommandOutputAdapter` es pura delegación: **cero `try/catch`**, `save` (no `saveAndFlush`),
+  `boolean` primitivo en los métodos de existencia, `logger.debug` solo en los de escritura.
+- Aislamiento CQRS absoluto: `query/secondaryadapter` no importa nada de `command/secondaryadapter`,
+  ni siquiera el `JpaEntity`. El `QueryRepository` **no extiende `JpaRepository`**.
+- Un paquete `query/` existe si hay una lectura real detrás de un `primaryport`, o si una consulta lo
+  necesita para su política de acceso. El lado lo decide quién pregunta: un chequeo para una `Rule`
+  de comando va en el `OutputPort` de `command/`, vía `Finder`; uno para el `Validator` de una
+  consulta va en `query/finder/` + `query/secondaryport/`.
+- Una consulta con política sobre la instancia pedida (existencia, pertenencia, estado) valida con
+  su propio `query/validator/` **antes** de leer; las `Rule`s son del `domain/` y se comparten con los
+  comandos, los `Validator`s no. Sin política en la HU, no hay `Validator`.
+- Sin literales: códigos en `{Contexto}Codes`, campos en `{Contexto}Fields`, límites en
+  `{Contexto}Limits`, Swagger en `{Contexto}ApiMessages`/`ApiCodes`/`ApiSecurity`, autorización en
+  `{Contexto}Authorities.Expresiones.HAS_*`. **Las rutas son la excepción** y se quedan inline como
+  placeholder de propiedad (`"${rutas.seguridad.auth.login:/login}"`); no existe `{Contexto}Routes`.
+  Nunca el prefijo `/api`: ya es el `context-path`.
+- **Un client role por endpoint, propio y distinto** — nunca se reutiliza el de otro. Dos endpoints
+  sobre el mismo recurso se diferencian con un calificador
+  (`fichas:ficha-perfil-coordinador:view` vs `fichas:ficha-perfil-asesor:view`).
 
-**Output ports:** Interfaces in `domain/port/out/` or `application/port/out/`, suffix `OutputPort` (e.g., `UsuarioOutputPort`, `FichaPerfilOutputPort`).
+**Eventos**
+- El `UseCase` inyecta la **interfaz** `EventPublisher` y publica tras persistir. El agregado es una
+  clase plana: no acumula eventos ni los drena.
+- Un evento por **hecho de negocio**, no por destinatario, emitido por el use case dueño del hecho
+  aunque otro lo orqueste. Carga todo lo que su consumidor necesita.
+- La routing key se declara **una sola vez** en `EventTopics`; el nombre de cola se **deriva**
+  (`{Contexto}Queues.PREFIJO + topic`). Una cola se declara con un `@Bean Declarables` que devuelve
+  `ColaEvento.declarar(...)`, no bean a bean.
+- Una transición de estado notifica (consumidor: `notificaciones`) salvo que la HU diga lo
+  contrario — con la excepción del estado que es paso interno. Son **ocho piezas** en dos contextos;
+  la lista está en `arquisoft-arquitectura/references/eventos.md`.
 
-**Input adapters:** REST controllers and AMQP consumers in `infrastructure/adapter/in/`, suffix `InputAdapter` (e.g., `AuthInputAdapter`, `UsuarioCreadoInputAdapter`).
+**Excepciones**
+- Cuatro bases en `com.arquisoft.shared.exception`: `DomainException` (422),
+  `DomainValidationException` (422 + `fieldErrors[]`), `ApplicationException` (400),
+  `InfrastructureException` (503). Nunca `RuntimeException` directa. Constructor
+  `super(message, errorCode)` — invertirlos compila y produce un bug silencioso.
+- Viven **dentro del slice vertical del feature**, en la capa de su clase base. No hay `exception/` a
+  nivel de contexto, y una subclase nunca va en distinta capa que su padre.
+- `GlobalAppExceptionHandler` (`shared:web`) resuelve el status recorriendo la jerarquía; un contexto
+  no define handler propio (solo `seguridad`, por colisión de nombres con Spring Security).
 
-**Output adapters:** JPA repositories, Redis, Keycloak, MinIO integrations in `infrastructure/adapter/out/`, suffix `OutputAdapter` (e.g., `FichaPerfilOutputAdapter`, `JwtTokenOutputAdapter`). Implement the corresponding `OutputPort` interface.
+**Estilo**
+- Español para el concepto de negocio, inglés para el sufijo técnico. Paquete de feature todo en
+  minúsculas y sin separadores (`fichaperfil`).
+- Nombres objetuales en contratos: `asesorFicha`, no `asesorFichaId`.
+- **`var` en toda variable local, sin excepción por tipo** — `boolean`, `long`, `UUID`, `String` y
+  agregado por igual (`var cantidadRevisiones = revisionesDelItemFinder.obtener(...)`, nunca
+  `long cantidadRevisiones = ...`). Solo se sale de `var` donde no compila o cambia la semántica
+  (diamante sin tipar, array por llaves, lambda o referencia a método, inicializador `null`), y solo
+  aplica a locales: campos, parámetros, retornos y componentes de `record` van explícitos.
+- Comprobación de nulidad **siempre** con `UtilObjeto.esNulo`/`noEsNulo`, nunca `== null` crudo, y
+  sin declarar un `tieneX()` en un `record` para envolverlo.
+- **Sin Javadoc y sin comentarios que repitan el código.** `domain/` y `application/` no llevan
+  ninguno. En infraestructura, solo para lo que el código no puede mostrar; si cabe, va al mensaje de
+  commit o a la skill.
 
-**Use case implementations:** `{Action}{Entity}UseCaseImpl` (e.g., `CrearUsuarioUseCaseImpl`), implement the corresponding `InputPort`.
+## Catálogo de mensajes
 
-**ReadModels:** Flat query projections in `application/{feature}/dto/`, suffix `ReadModel` (e.g., `FichaPerfilReadModel`). Own a static `fromDomain(Aggregate)` factory method.
+Dos mundos que no se mezclan:
 
-**DTOs:** `@Data @NoArgsConstructor @AllArgsConstructor @Builder`, suffix `DTO`. Own `toDomain()` and `fromDomain()` static methods.
+- **Constantes Java** (`shared:message`) — lo que el compilador exige constante o una herramienta
+  matchea exacto: códigos, nombres de campo, límites, textos de Swagger, routing keys, nombres de
+  cola/exchange/bean/header, marcadores de log greppables, etiquetas de display de un enum (su fuente
+  es el MER). Un identificador usado **solo dentro de una clase** se queda `private static final` de
+  esa clase; se promueve cuando aparece un segundo lector.
+- **Catálogo en Redis** — la prosa que lee un humano (errores y logs). Texto en
+  `catalogo/{contexto}.properties`, cargado por `catalogo/cargar.sh` (ADR-013), referenciado por un
+  enum `{Feature}Key` que declara clave y **aridad**, registrado en `ClavesCatalogo`. Clave con
+  formato `contexto.capa.objeto.tipo.descripcion`.
 
-**Naming:** Spanish for business concepts (`crearFicha`, `FichaException`), English for technical suffixes (`Aggregate`, `InputPort`, `OutputPort`, `InputAdapter`, `OutputAdapter`, `UseCaseImpl`, `ReadModel`, `DTO`).
+Se resuelve **siempre** por la fachada estática `Mensajes` — no hay bean inyectable. Marcadores `%s`
+para el cliente (`Mensajes.formatear`), `{}` para logs (al `AppLogger` se le pasa **la clave**, nunca
+el texto ya resuelto). **Nunca `Mensajes.obtener(clave).formatted(args)`.** `CatalogoCargaTest` rompe
+el build ante una clave sin texto, un texto sin clave, un enum ausente de `ClavesCatalogo` o una
+aridad que contradice los marcadores. Procedimiento en [catalogo/README.md](catalogo/README.md).
 
-**Injection:** Always constructor injection via `@RequiredArgsConstructor` — never `@Autowired`.
+**Las plantillas de correo viven en Redis también**, en su propio espacio de claves
+(`plantilla.correo-base`, subido por `plantillas/cargar.sh`) y con refresco periódico validado por
+`HuecosPlantillaCorreo.verificar`. El prefijo `plantilla.` no es negociable: `catalogo/podar.sh`
+barre `<contexto>.*`. Ver [plantillas/README.md](plantillas/README.md).
 
-**Logging:** `@Slf4j`. `warn` for 4xx, `error` for 5xx. Structured JSON via `shared:logger` (includes `traceId`, `userId`).
+## Logging y correlación
 
-**No Lombok in domain layer.**
+**Logging:** inyecta el puerto `AppLogger` (`shared:logger`) por constructor — no `@Slf4j`, del que
+no queda ninguno en ningún contexto. `warn` para 4xx, `error` para 5xx. La estructura
+exacta por tipo de flujo (escritura: tres líneas; lectura: dos `debug`; evento: dos `INFO` que pone
+el adaptador) está en `arquisoft-estandares`.
+
+**Nunca loguees desde un método `@Bean` ni desde un `@PostConstruct`.** `Mensajes.instalar(...)`
+ocurre dentro de un `@Bean` de `CatalogoMensajesRedisConfig`, así que cualquier bean construido antes
+resuelve **la clave cruda** y, como esa clave no lleva `{}`, SLF4J descarta también los argumentos:
+se pierden a la vez el texto y los valores. Un log de arranque que reporte configuración efectiva va
+en un `@EventListener(ApplicationReadyEvent.class)`. La excepción es la rama que aborta el arranque:
+ahí el log se queda, porque `ApplicationReadyEvent` no llega a dispararse.
+
+**Correlación — `shared:tracing` es dueño de todo el contexto de traza.** Es el único `shared:*` con
+capas hexagonales internas (`domain/traza` → `application/traza/{primaryport,secondaryport}` →
+`infrastructure/traza`), de modo que `MdcContextoDiagnosticoOutputAdapter` es la única clase del repo
+que toca `org.slf4j.MDC` y el dominio (`Traceparent`, `IdentificadorTraza`, `ClienteIp`) queda en
+Java puro.
+
+- `TrazaDomain` guarda solo lo común a todo origen; lo específico va en `DetalleOrigenTraza`
+  (`sealed`, un record por origen: `DetalleHttpTraza`, `DetalleEventoTraza`,
+  `DetalleProgramadoTraza`). El pattern-matching exhaustivo del adaptador impide que un campo
+  HTTP-only se filtre a una línea `EVENTO`, y obliga al compilador a cubrir cada origen nuevo.
+- **Ningún otro módulo implementa un contrato de `shared:tracing`**: se inyecta `GestorTraza`, se
+  abre un alcance y se llaman métodos con nombre.
+  `try (var alcance = gestorTraza.abrir(SolicitudTraza.paraHttp(...))) { … }` —
+  `AlcanceTraza` es `AutoCloseable` y **debe** usarse con try-with-resources: `close()` restaura el
+  MDC capturado, no hace un `remove`, para que un alcance anidado devuelva el valor externo. No hay
+  `registrarAtributo(clave, valor)` genérico a propósito: cada campo nuevo cuesta una clave en
+  `TrazaKeys` más un método con nombre, que es lo que impide que tokens y PII acaben en el MDC.
+- `correlacionId` agrupa la transacción entre saltos y se reutiliza **verbatim** si llega en
+  `X-Correlation-Id` (normalizarlo rompería la correlación con quien llama); `transaccionId` se
+  regenera en cada salto; `transaccionPadreId` nombra qué salto originó este. `ErrorResponseDTO` los
+  expone como `traceId` y `transaccionId` (`traceId` conserva el nombre: es contrato con el front).
+- **El MDC no es ambiente:** solo tiene datos dentro de un `AlcanceTraza` abierto.
+  `TrazabilidadFilter` abre uno por petición HTTP y `AbstractEventConsumer` uno por consumo AMQP,
+  pero un `@Scheduled` **no recibe ninguno**: debe abrir el suyo con
+  `gestorTraza.abrir(SolicitudTraza.paraProgramado())` o sus líneas salen sin traza.
+- **Dos filtros, y el orden importa:** `TrazabilidadFilter` (`shared:web`, `@Order(-300)`) es el más
+  externo y dueño del alcance y de la línea `AUDIT`; `IdentidadTrazaFilter`
+  (`seguridad:infrastructure`) solo añade el usuario y se registra **dentro** de la cadena de Spring
+  Security (`addFilterAfter(BearerTokenAuthenticationFilter.class)`) — en `LOWEST_PRECEDENCE`
+  quedaría tras `AuthorizationFilter` y todo 403 se auditaría como anónimo. Va declarado como `@Bean`
+  más un `FilterRegistrationBean` deshabilitado, porque si no el servlet container lo registraría
+  también y `OncePerRequestFilter` saltaría la segunda pasada.
+- **MDC a través de `@Async`:** la externalización de eventos de Spring Modulith a RabbitMQ corre en
+  otro hilo (`applicationTaskExecutor`, tras el commit), donde el MDC estaría vacío y
+  `TrazaMessagePostProcessor` fabricaría una correlación nueva. `MdcTaskDecorator`
+  (`shared:tracing/infrastructure/traza/config/`) cierra ese hueco capturando el contexto vía
+  `ContextoDiagnosticoOutputPort` al encolar la tarea y restaurándolo dentro del ejecutor. Se
+  registra como `TaskDecorator` `@Bean` en `TrazabilidadConfig`; Spring Boot lo aplica solo, por eso
+  no hay `@EnableAsync` ni executor propio en el proyecto. Es un problema cruzando **hilos** del
+  mismo proceso, distinto de la propagación entre procesos por headers AMQP.
+- `servicioNombre`/`version` **no** son claves de MDC: son constantes de proceso añadidas como
+  miembros JSON estáticos con `logging.structured.json.add.*`.
 
 ## Technology Stack
 
 | Component | Version |
 |-----------|---------|
-| Java | 21 (Virtual Threads active automatically) |
+| Java | 21 (Virtual Threads activos automáticamente) |
 | Spring Boot | 4.0.5 |
 | Gradle | 9.0.0 |
-| PostgreSQL | 18 (7 schemas, separate DataSource per context) |
+| PostgreSQL | 18 (una **base** por contexto, con su DataSource, EntityManagerFactory y Flyway) |
 | RabbitMQ | 4.2.5 |
 | Redis | 7 (Lettuce) |
 | Keycloak | 26.6 (OAuth2/OIDC Resource Server) |
 | Flyway | 12.4.0 |
-| JUnit | 6 (Jupiter) |
+| JUnit | 6.0.3 (Jupiter) |
+| Spring Modulith | 2.0.0 |
+| Jackson | 3 — `tools.jackson.databind.*` |
+| Lombok | 1.18.36 |
+| Bucket4j | 8.18.0 (`com.bucket4j:bucket4j_jdk17-core`) |
 
-DataSource autoconfiguration is excluded globally — each context configures its own `DataSource`, `EntityManagerFactory`, and `Flyway` bean.
+La autoconfiguración de `DataSource` está excluida globalmente. Ninguno es `@Primary` salvo
+`usuarios`, cuyo `usuariosTransactionManager` **sí** lo es — de ahí que el qualifier de
+`@Transactional` sea obligatorio.
+
+Jackson 3 movió `databind` a `tools.jackson.databind.*`;
+`com.fasterxml.jackson.databind.ObjectMapper` **no resuelve**. Las **anotaciones** siguen en
+`com.fasterxml.jackson.annotation.*`.
+
+**Nunca crear un `@Bean TaskExecutor` manual** (ADR-008 — Virtual Threads ya gestionados).
 
 ## Security
 
-- JWT validated against Keycloak JWK Set (configured in `seguridad/infrastructure/config/SecurityConfig`)
-- Rate limiting via Bucket4j: per-IP buckets in `ConcurrentHashMap` (100 req/min global dev, 60 prod; 5 login/min)
-- `AuditFilter` logs all requests with METHOD, URI, USER, TIME, STATUS (skips Swagger paths)
-- CORS default origins: `localhost:3000`, `4200`, `5173` (configurable via `CORS_ALLOWED_ORIGINS`)
-- CSRF disabled, sessions stateless
+- JWT validado contra el JWK Set de Keycloak (`seguridad/infrastructure/config/security/SeguridadConfig`).
+- CORS por defecto: `localhost:3000`, `4200`, `5173` (`CORS_ALLOWED_ORIGINS`). CSRF deshabilitado,
+  sesiones stateless.
+- `TrazabilidadFilter` emite una línea `AUDIT` por petición con método, URI, usuario, duración y
+  status (salta Swagger/actuator). Al ser el filtro más externo, también audita 401, 403 y 429.
+- **Rate limiting con Bucket4j**, buckets por IP en Redis (`RedisBucketResolver`, Lettuce). Defaults:
+  100 req/min global en dev, 60 en prod; 5 login/min dev, 3 prod. Ambas cuotas recargan
+  **`greedily`** — con recarga por lotes, `getNanosToWaitForRefill()` reportaría el tiempo de
+  reponer la ventana entera y `X-Rate-Limit-Retry-After-Seconds` diría al cliente que espere 60 s
+  cuando solo necesita un token.
+
+  **Ante un error de Redis el limitador degrada a cuota local — no falla abierto ni cerrado.** Fallar
+  cerrado convertía cualquier caída en la denegación de servicio que el limitador existe para
+  evitar; fallar abierto borraba el límite y dejaba `/login` expuesto a fuerza bruta mientras durara.
+  Así que replica lo que `CatalogoMensajesRedis` hace con el catálogo: un `AtomicBoolean degradado`,
+  un respaldo en memoria, y `MonitorLimiteSolicitudes` (`@Scheduled`, con su propio `AlcanceTraza`)
+  restaurando la cuota distribuida. Tres consecuencias:
+  - **El resolver consume, no reparte buckets.** `BucketResolver.consumir(ip, esLogin)` sustituyó a
+    `resolveBucket`/`resolveLoginBucket`, y el filtro perdió su `try/catch`. Lo obliga que
+    `proxyManager.getProxy` sea perezoso: contacta Redis solo al consumir, así que quien reparte el
+    bucket nunca se entera de la caída. El fallo hay que capturarlo donde vive el estado que
+    reacciona a él.
+  - **La bandera de degradado no es una optimización.** Sin ella, cada petición de la caída sigue
+    intentando Redis y paga su timeout, agotando hilos y pool: la misma autolesión que fallar
+    cerrado, por otra ruta.
+  - **La caché local está acotada y debe seguirlo.** `BucketsLocales` es un `LinkedHashMap` por orden
+    de acceso, con techo en `security.rate-limit.max-tracked-ips` (10 000 por defecto). Sin techo,
+    una caída de Redis se convierte en vector de agotamiento de memoria. Mientras degrada, la cuota
+    es por instancia: N réplicas dan N× cuota — sigue siendo un límite, y es el precio de no tener
+    estado compartido justo cuando el estado compartido es lo que falló.
+
+  `JwtBlacklistFilter` **sí** falla abierto, y ahí es lo correcto por una razón que no aplica arriba:
+  el radio de impacto está acotado porque la entrada de la lista negra expira con el propio token
+  (5–15 min), así que una caída solo puede honrar un token revocado hasta que habría expirado igual.
+  Detalle: [docs/fail-open-vs-fail-closed.md](docs/fail-open-vs-fail-closed.md).
 
 ## Testing
 
-- **Unit:** JUnit 6 + Mockito + AssertJ, `@ExtendWith(MockitoExtension.class)`, no Spring context loaded
-- **Integration:** `@SpringBootTest` with H2 for repositories
-- Method naming: `debeHacerAlgo_cuandoCondicion()`
-- Pattern: Arrange / Act / Assert
+- **Unitario:** JUnit 6 + Mockito + AssertJ, `@ExtendWith(MockitoExtension.class)`, sin contexto
+  Spring. Los tests de `Rule` y `Validator` no necesitan Mockito — las reglas son puras.
+- **Slice de repositorio:** `@DataJpaTest`
+  (`org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest`) + H2, sembrando con
+  `TestEntityManager`. **`@SpringBootTest` no se usa en ningún test de este repo.**
+- **Slice de controller:** `@WebMvcTest`
+  (`org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest`) con
+  `@Import({AppLoggerConfig.class, GlobalAppExceptionHandler.class, TrazabilidadConfig.class, …})`
+  — sin `GlobalAppExceptionHandler` toda excepción sale 500; sin `AppLoggerConfig` falta el bean
+  `AppLogger`. Mocks con `@MockitoBean` (nunca `@MockBean`), autenticación con
+  `SecurityMockMvcRequestPostProcessors.jwt().authorities(...)` usando la constante de
+  `{Contexto}Authorities` — nunca `@WithMockUser` (prefija `ROLE_`).
+- Spring Boot 4 reubicó los paquetes de slice test: las rutas
+  `org.springframework.boot.test.autoconfigure.*` de Boot 3 no existen.
+- Nombres `debeHacerAlgo_cuandoCondicion()`, patrón Arrange / Act / Assert con sus marcadores, sin
+  Javadoc.
+- **Cobertura mínima 75%**, verificada por `check`. Excluidos: `*DTO`, `*Command`, `*ReadModel`,
+  `*Application`, `*Entity` y `config/**`. **`*Domain` NO está excluido.** Los `shared:*` no aplican
+  JaCoCo.
+
+## Desviaciones conocidas — presentes en el código, NO copiar
+
+| Qué | Dónde | Convención que rompe |
+|---|---|---|
+| `EstadoEvaluacionCommandRepository` | `fichas/…/estadoevaluacion/…/repository/` | Código muerto: ningún `OutputPort`/`OutputAdapter` lo consume |
+| Los cuatro `*ResponseDTO` como clases Lombok | `seguridad/…/auth/…/web/dto/` | Los `ResponseDTO` son `record`s. Copia de ahí la cadena `Result → ResponseMapper → ResponseDTO`, no la forma del DTO |
+| Enums de catálogo en dos ubicaciones | `domain/{catalogo}/` vs `domain/{feature}/model/` | **Decisión abierta del proyecto, no la "arregles".** Un enum nuevo sigue lo que ya use su contexto |
+| `AsignacionProyectoOutputAdapter` stub | `solicitudes/…/asignacionproyecto/…/webclient/` | **Deliberado, HU-081.** La impl real es una *Consulta síncrona entre contextos* a `proyectos` vía `shared:web-client` — ninguno existe aún. El puerto + `DestinatarioAsignadoRule` + `DestinatarioAsignadoFinder` están cableados y activos; el adaptador devuelve `true` y loguea `warn`. Consecuencia: la regla no rechaza nada todavía. Activar = reemplazar el cuerpo del adaptador; checklist en `PLAN-HU-081.md` §3.1 |
+| `AdministradorRemovidoConsumer` stub | `solicitudes/…/usuario/…/amqp/usuarios/administrador/` | **Deliberado, HU-232.** Consume `usuarios.administrador.removido` para que el evento tenga cola enlazada, pero solo loguea `info` y confirma: la réplica de `usuario` en `solicitudes` es genérica y no distingue el rol, y qué significa "dejó de ser administrador" ahí es una decisión de negocio pendiente. Activar = invocar un `Interactor` de baja/actualización de la réplica cuando una HU lo defina |
+| `UsuarioSolicitudesCommandOutputAdapter` / `UsuarioSolicitudesCommandRepository` | `solicitudes/…/usuario/…/repository/` | La réplica lleva el contexto en el nombre. Con los beans nombrados por FQN, una réplica usa el nombre natural (`UsuarioCommandOutputAdapter`); ver `arquisoft-arquitectura/references/eventos.md` → *Replicación entre contextos* |
 
 ## Reference Documentation
 
-- [AGENTS.md](AGENTS.md) — comprehensive project guide and ADR index
-- [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md) — 900-line architecture reference
-- [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md) — full local setup guide
-- [CONTRIBUTING.md](CONTRIBUTING.md) — git workflow and branch naming
+- [docs/ARQUITECTURA_Y_ESTRUCTURA.md](docs/ARQUITECTURA_Y_ESTRUCTURA.md) — referencia larga de arquitectura
+- [docs/ARQUITECTURA_ASINCRONICO_ARQUISOFT.md](docs/ARQUITECTURA_ASINCRONICO_ARQUISOFT.md) — eventos de dominio + outbox
+- [docs/PATRON_QUERY_OBJECT_FILTROS_DINAMICOS.md](docs/PATRON_QUERY_OBJECT_FILTROS_DINAMICOS.md) — Query Object + Specification
+- [docs/EJECUCION_LOCAL.md](docs/EJECUCION_LOCAL.md) — setup local completo
+- [CONTRIBUTING.md](CONTRIBUTING.md) — flujo git y nomenclatura de ramas
+
+Los tres primeros son de lectura humana: no los cargues enteros en contexto — las skills ya traen lo
+que un agente necesita.
